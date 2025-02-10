@@ -223,7 +223,8 @@ public class RaMasterApiSystemTest {
             new MethodApiDescriptor("getKeyExchangeCertificate", "java.security.cert.Certificate", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "int", "int"), "a6aef899bc21"),
             new MethodApiDescriptor("getGlobalConfigurationLocalFirst", "org.cesecore.configuration.ConfigurationBase", Arrays.asList("java.lang.Class"), "d48ed5d749db"),
             new MethodApiDescriptor("findUsernameByIssuerDnAndSerialNumber", "java.lang.String", Arrays.asList("java.lang.String", "java.lang.String"), "980858d82ee7"),
-            new MethodApiDescriptor(EjbcaVersion.EJBCA_8_3_0, "generateOrKeyRecoverTokenV2", "[B", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "org.ejbca.core.model.era.GenerateOrKeyRecoverTokenRequest"), "c3c6329c0edc")
+            new MethodApiDescriptor(EjbcaVersion.EJBCA_8_3_0, "generateOrKeyRecoverTokenV2", "[B", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "org.ejbca.core.model.era.GenerateOrKeyRecoverTokenRequest"), "c3c6329c0edc"),
+            new MethodApiDescriptor("getCertificateCount", "java.lang.Long", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "java.lang.Boolean"), "940551e8dbe3")
     // @formatter:on
     );
 

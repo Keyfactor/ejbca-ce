@@ -86,6 +86,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
@@ -108,6 +109,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 
 import com.keyfactor.util.CeSecoreNameStyle;
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.RandomHelper;
 import com.keyfactor.util.certificate.DnComponents;
 
 /**
@@ -162,7 +164,7 @@ public abstract class EstTestCase extends CaTestCase {
         // Configure a Certificate profile (CmpRA) using ENDUSER as template and
         // check "Allow validity override".
         this.cpId = addCertificateProfile(CP_NAME);
-        this.eepId = addEndEntityProfile(EEP_NAME, this.cpId);
+        this.eepId = addEndEntityProfile(EEP_NAME, this.cpId, true);
     } 
     
     @Override
@@ -204,11 +206,12 @@ public abstract class EstTestCase extends CaTestCase {
      * 
      * @param name the name of the end entity profile.
      * @param certificateProfileId the default certificate profiles ID.
+     * @param emptyProfile if true the profile is initialized as 'EMPTY' profile.
      * @return the ID of the newly created end entity profile. 
      */
-    protected final int addEndEntityProfile(final String name, final int certificateProfileId) {
+    protected final int addEndEntityProfile(final String name, final int certificateProfileId, final boolean emptyProfile) {
         assertTrue("End entity profile with name " + name + " already exists. Clear test data first.", this.endEntityProfileSession.getEndEntityProfile(name)  == null);
-        final EndEntityProfile result = new EndEntityProfile(true);
+        final EndEntityProfile result = new EndEntityProfile(emptyProfile);
         result.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(certificateProfileId));
         int id = 0;
         try {
@@ -282,7 +285,7 @@ public abstract class EstTestCase extends CaTestCase {
         } else {
             km = null;
         }
-        context.init(km, tm, new SecureRandom());
+        context.init(km, tm, RandomHelper.getInstance(CesecoreConfiguration.getCaSerialNumberAlgorithm()));
 
         SSLSocketFactory factory = context.getSocketFactory();
         HttpsURLConnection.setDefaultSSLSocketFactory(factory);

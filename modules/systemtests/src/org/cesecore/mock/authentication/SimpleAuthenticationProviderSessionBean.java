@@ -15,18 +15,15 @@ package org.cesecore.mock.authentication;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.Principal;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Set;
 
-import jakarta.ejb.Stateless;
-import jakarta.ejb.TransactionAttribute;
-import jakarta.ejb.TransactionAttributeType;
 import javax.security.auth.x500.X500Principal;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -36,8 +33,13 @@ import org.cesecore.mock.authentication.tokens.UsernameAccessMatchValue;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
+
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 
 /**
  * @see SimpleAuthenticationProvider
@@ -122,9 +124,15 @@ public class SimpleAuthenticationProviderSessionBean implements SimpleAuthentica
                 throw new InvalidAuthenticationTokenException("Could not create authentication token.", e);
             }
             try {
-                certificate = CertTools.genSelfCert(dn, 365, null, keys.getPrivate(), keys.getPublic(),
-                        AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
-            } catch (CertificateEncodingException e) {
+                certificate = SimpleCertGenerator.forTESTLeafCert()
+                        .setSubjectDn(dn)
+                        .setIssuerDn(dn)
+                        .setValidityDays(1)
+                        .setIssuerPrivKey(keys.getPrivate())
+                        .setEntityPubKey(keys.getPublic())
+                        .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA)
+                        .generateCertificate(); 
+            } catch (CertIOException e) {
                 throw new IllegalStateException("Error encountered when creating certificate", e);
             } catch (OperatorCreationException e) {
                 throw new IllegalStateException("Error encountered when creating certificate", e);

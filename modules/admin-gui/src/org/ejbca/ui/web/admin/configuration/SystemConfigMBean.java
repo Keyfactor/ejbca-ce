@@ -198,6 +198,13 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         //redact pii
         private boolean redactPiiByDefault;
         private boolean redactPiiEnforced;
+        
+        //Global CT Settings
+        private boolean ctCacheEnabled;
+        private long ctCacheSize;
+        private long ctCacheCleanupInterval;
+        private boolean ctCacheFastFailEnabled;
+        private long ctCacheFastFailBackoff;
 
         private GuiInfo(GlobalConfiguration globalConfig, GlobalCesecoreConfiguration globalCesecoreConfiguration, AdminPreference adminPreference) {
             if(globalConfig == null) {
@@ -238,6 +245,12 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 
                 this.redactPiiByDefault = globalCesecoreConfiguration.getRedactPiiByDefault();
                 this.redactPiiEnforced = globalCesecoreConfiguration.getRedactPiiEnforced();
+                
+                this.ctCacheEnabled = globalCesecoreConfiguration.getCtCacheEnabled();
+                this.ctCacheSize = globalCesecoreConfiguration.getCtCacheSize();
+                this.ctCacheCleanupInterval = globalCesecoreConfiguration.getCtCacheCleanupInterval();
+                this.ctCacheFastFailEnabled = globalCesecoreConfiguration.getCtCacheFastFailEnabled();
+                this.ctCacheFastFailBackoff = globalCesecoreConfiguration.getCtCacheFastFailBackoff();
             } catch (RuntimeException e) {
                 log.error(e.getMessage(), e);
             }
@@ -311,6 +324,18 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public void setRedactPiiByDefault(boolean redactPiiByDefault) { this.redactPiiByDefault = redactPiiByDefault; }
         public boolean isRedactPiiEnforced() { return redactPiiEnforced; }
         public void setRedactPiiEnforced(boolean redactPiiEnforced) { this.redactPiiEnforced = redactPiiEnforced; }
+        
+        //Global CT Settings
+        public boolean isCtCacheEnabled() { return ctCacheEnabled; }
+        public void setCtCacheEnabled(boolean cacheEnabled) { this.ctCacheEnabled = cacheEnabled; }        
+        public long getCtCacheSize() { return ctCacheSize; }
+        public void setCtCacheSize(final long ctCacheSize) { this.ctCacheSize = ctCacheSize; }
+        public long getCtCacheCleanupInterval() { return ctCacheCleanupInterval; }
+        public void setCtCacheCleanupInterval(final long interval) { this.ctCacheCleanupInterval = interval; }
+        public boolean getCtCacheFastFailEnabled() { return  ctCacheFastFailEnabled; }
+        public void setCtCacheFastFailEnabled(boolean fastFailEnabled) { this.ctCacheFastFailEnabled = fastFailEnabled; }
+        public long getCtCacheFastFailBackoff() { return ctCacheFastFailBackoff; }
+        public void setCtCacheFastFailBackoff(final long backoff) { this.ctCacheFastFailBackoff = backoff; }
     }
 
     public class EKUInfo {
@@ -418,6 +443,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             }
             tabIndex++;
         }
+        flushCache();
     }
 
     public void authorizeViewCt(ComponentSystemEvent event) throws Exception {
@@ -494,7 +520,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     public SystemConfigurationOAuthKeyManager getOauthKeyManager() {
         if (oauthKeyManager == null) {
             this.oAuthConfiguration = null;
-            getEjbcaWebBean().reloadOAuthConfiguration();
             oauthKeyManager = new SystemConfigurationOAuthKeyManager(getOauthKeys(),
                 new SystemConfigurationOAuthKeyManager.SystemConfigurationHelper() {
                     @Override
@@ -1049,6 +1074,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalConfig.setSessionTimeoutTime(currentConfig.getSessionTimeoutTime());
                 globalConfig.setVaStatusTimeConstraint(currentConfig.getVaStatusTimeConstraint());
                 globalConfig.setEnableIcaoCANameChange(currentConfig.getEnableIcaoCANameChange());
+                
 
                 if (isValidOcspCleanupSettings()) {
                     globalConfig.setOcspCleanupSchedule(currentConfig.getOcspCleanupSchedule());
@@ -1077,6 +1103,11 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalCesecoreConfiguration.setMaximumQueryTimeout(currentConfig.getMaximumQueryTimeout());
                 globalCesecoreConfiguration.setRedactPiiByDefault(currentConfig.isRedactPiiByDefault());
                 globalCesecoreConfiguration.setRedactPiiEnforced(currentConfig.isRedactPiiEnforced());
+                globalCesecoreConfiguration.setCtCacheEnabled(currentConfig.isCtCacheEnabled());
+                globalCesecoreConfiguration.setCtCacheSize(currentConfig.getCtCacheSize());
+                globalCesecoreConfiguration.setCtCacheCleanupInterval(currentConfig.getCtCacheCleanupInterval());
+                globalCesecoreConfiguration.setCtCacheFastFailEnabled(currentConfig.getCtCacheFastFailEnabled());
+                globalCesecoreConfiguration.setCtCacheFastFailBackoff(currentConfig.getCtCacheFastFailBackoff());
                 getEjbcaWebBean().getEjb().getGlobalConfigurationSession().saveConfiguration(getAdmin(), globalCesecoreConfiguration);
                 // Purge access rule for key recovery from all roles if key recovery is disabled
                 // This is done after the configuration has been saved successfully, thus making
@@ -1617,7 +1648,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         ArrayList<String> cpNamesUsingEKU = getCertProfilesUsingEKU(oid);
         if(!cpNamesUsingEKU.isEmpty()) {
             final String cpNamesMessage = getCertProfilesNamesMessage(cpNamesUsingEKU);
-            final String message = "ExtendedKeyUsage '" + ekuToRemove.getName() + "' has been removed, but is still used in the following certitifcate profiles: " +  cpNamesMessage;
+            final String message = "ExtendedKeyUsage '" + ekuToRemove.getName() + "' has been removed, but is still used in the following certificate profiles: " +  cpNamesMessage;
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, message, null));
         }
     }
@@ -1928,7 +1959,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         final ArrayList<String> cpNamedUsingExtension = getCertProfilesUsingExtension(extID);
         if(!cpNamedUsingExtension.isEmpty()) {
             final String cpNamesMessage = getCertProfilesNamesMessage(cpNamedUsingExtension);
-            final String message = "CustomCertificateExtension '" + extensionToRemove.getDisplayName() + "' has been removed, but it is still used in the following certitifcate profiles: " +  cpNamesMessage;
+            final String message = "CustomCertificateExtension '" + extensionToRemove.getDisplayName() + "' has been removed, but it is still used in the following certificate profiles: " +  cpNamesMessage;
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, message, null));
         }
     }
@@ -1937,12 +1968,12 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         String newOID = getNewOID();
         if (StringUtils.isEmpty(newOID)) {
             FacesContext.getCurrentInstance()
-            .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "No CustomCertificateExenstion OID is set.", null));
+            .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "No CustomCertificateExtension OID is set.", null));
             return;
         }
         if (!isOidNumericalOnly(newOID)) {
             FacesContext.getCurrentInstance()
-                    .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "OID " + currentEKUOid + " contains non-numerical values.", null));
+                    .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "OID " + newOID + " contains non-numerical values.", null));
             return;
         }
 
@@ -1956,7 +1987,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
 
         if (StringUtils.isEmpty(getNewDisplayName())) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "No CustomCertificateExension Label is set.", null));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "No CustomCertificateExtension Label is set.", null));
             return;
         }
 
@@ -2206,5 +2237,45 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     public boolean renderStatedumpTab() {
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.ROLE_ROOT.resource()) && isStatedumpAvailable();
     }
+    
+    public boolean isCtCacheEnabled() {
+        return getCurrentConfig().isCtCacheEnabled();
+    }
+    
+    public void setCtCacheEnabled(final boolean cacheEnabled) {
+        getCurrentConfig().setCtCacheEnabled(cacheEnabled);
+    }
+    
+    public long getCtCacheSize() {
+        return getCurrentConfig().getCtCacheSize();
+    }
+    
+    public void setCtCacheSize(final long ctCacheSize) {
+        getCurrentConfig().setCtCacheSize(ctCacheSize);
+    }
+    
+    public long getCtCacheCleanupInterval() {
+        return getCurrentConfig().getCtCacheCleanupInterval();
+    }
+    
+    public void setCtCacheCleanupInterval(final long interval) {
+        getCurrentConfig().setCtCacheCleanupInterval(interval);
+    }
+    
+    public boolean getCtCacheFastFailEnabled() {
+        return getCurrentConfig().getCtCacheFastFailEnabled();
+    }
+    
+    public void setCtCacheFastFailEnabled(final boolean fastFailEnabled) {
+        getCurrentConfig().setCtCacheFastFailEnabled(fastFailEnabled);
+    }
 
+    
+    public long getCtCacheFastFailBackoff() {
+        return getCurrentConfig().getCtCacheFastFailBackoff();
+    }
+    
+    public void setCtCacheFastFailBackoff(final long backoffTime) {
+        getCurrentConfig().setCtCacheFastFailBackoff(backoffTime);
+    }
 }

@@ -17,18 +17,27 @@ import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.conn.ssl.TrustStrategy;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.log4j.Logger;
+
+import com.keyfactor.util.StringTools;
 
 import jakarta.faces.context.FacesContext;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
-
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-
-import com.keyfactor.util.StringTools;
 
 /**
  * Utility methods for working with HTTP related things (file uploads, headers etc.)
@@ -228,4 +237,33 @@ public class HttpTools {
       }
     }
 
+    public static HttpClient buildHttpClient(final KeyStore keystore, final TrustStrategy trustStrategy, final int maxConnections, final int maxConnectionsPerRoute, final int timeout) {
+        final HttpClientBuilder clientBuilder = HttpClientBuilder.create()
+                .setMaxConnTotal(maxConnections)
+                .setMaxConnPerRoute(maxConnectionsPerRoute)
+                .setConnectionManagerShared(false)
+                .disableAutomaticRetries()
+                .disableConnectionState()
+                .disableCookieManagement()
+                .disableRedirectHandling();
+
+        final RequestConfig reqcfg = RequestConfig.custom()
+            .setConnectionRequestTimeout(timeout)
+            .setConnectTimeout(timeout)
+            .setSocketTimeout(timeout)
+            .setStaleConnectionCheckEnabled(true)
+            .build();
+        clientBuilder.setDefaultRequestConfig(reqcfg);
+        
+        try {
+            final SSLContextBuilder scb = new SSLContextBuilder();
+            scb.loadTrustMaterial(keystore, trustStrategy);
+            clientBuilder.setSSLContext(scb.build());
+        } catch (NoSuchAlgorithmException | KeyStoreException | KeyManagementException e) {
+            throw new IllegalStateException(e);
+        }
+       
+        clientBuilder.setUserTokenHandler(null);
+        return clientBuilder.useSystemProperties().build();
+    }
 }

@@ -32,9 +32,10 @@ import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyStoreCipher;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -266,11 +267,26 @@ public class MsKeyArchivalRequestMessageUnitTest {
         Properties.setThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS, true);
         
         final KeyPair caEncKeyPair = KeyTools.genKeys("2048", "RSA");
-        X509Certificate caCert = CertTools.genSelfCert("CN=IssuerCa", 10L, "1.1.1.1", caEncKeyPair.getPrivate(),
-                caEncKeyPair.getPublic(), "SHA256WithRSA", false);
-        X509Certificate eeCert = CertTools.genSelfCert("CN=User", 2L, "1.1.1.1", 
-                caEncKeyPair.getPrivate(),
-                msg.getKeyPairToArchive().getPublic(), "SHA256WithRSA", false);
+        X509Certificate caCert = SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn("CN=IssuerCa")
+                .setIssuerDn("CN=IssuerCa")
+                .setValidityDays(10)
+                .setPolicyId("1.1.1.1")
+                .setIssuerPrivKey(caEncKeyPair.getPrivate())
+                .setEntityPubKey(caEncKeyPair.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setLdapOrder(true)
+                .generateCertificate();      
+        X509Certificate eeCert = SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn("CN=User")
+                .setIssuerDn("CN=User")
+                .setValidityDays(2)
+                .setPolicyId("1.1.1.1")
+                .setIssuerPrivKey(caEncKeyPair.getPrivate())
+                .setEntityPubKey(msg.getKeyPairToArchive().getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setLdapOrder(true)
+                .generateCertificate(); 
         
         // these fails cause spec validation in BC
          KeyTools.createP12("abcd", msg.getKeyPairToArchive().getPrivate(), eeCert, caCert, KeyStoreCipher.PKCS12_AES256_AES128); 

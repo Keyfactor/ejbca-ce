@@ -23,4 +23,4 @@ modules/ra-gui/resources/js/jquery.min.js
 jacoco.exec
 **/*.log
 modules/ejbca-common/result.ser
-*.hprof
+java_*.hprof

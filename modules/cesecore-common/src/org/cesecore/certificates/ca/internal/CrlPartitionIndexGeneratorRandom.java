@@ -18,6 +18,10 @@ import java.security.SecureRandom;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.config.CesecoreConfiguration;
+
+import com.keyfactor.util.RandomHelper;
+
 
 /**
  * Generates random CRL partition indexes. Used in {@link org.cesecore.certificates.certificate.certextensions.standard.CrlDistributionPoints CrlDistributionPoints}.
@@ -31,10 +35,11 @@ public enum CrlPartitionIndexGeneratorRandom {
 
     private CrlPartitionIndexGeneratorRandom() {
         try {
-            random = SecureRandom.getInstance("SHA1PRNG");
-        } catch (NoSuchAlgorithmException e) {
+            String algorithm = CesecoreConfiguration.getCaSerialNumberAlgorithm();
+            random = RandomHelper.getInstance(algorithm);
+        } catch (IllegalStateException e) {
             initializationFailure = e;
-            Logger.getLogger(CrlPartitionIndexGeneratorRandom.class).error("Could not initialized random generator", e);
+            Logger.getLogger(CrlPartitionIndexGeneratorRandom.class).error("Could not initialize random generator", e);
         }
     }
 

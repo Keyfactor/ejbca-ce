@@ -24,16 +24,6 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.Certificate;
 import java.util.Date;
-import java.util.List;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PostLoad;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
-import jakarta.persistence.TypedQuery;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -50,6 +40,13 @@ import org.ejbca.util.FixEndOfBrokenXML;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.PostLoad;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 /**
  * Representation of historical information about the data user to create a certificate.
@@ -404,28 +401,4 @@ public class CertReqHistoryData extends ProtectedData implements Serializable {
     //
     // End Database integrity protection methods
     //
-
-	//
-	// Search functions. 
-	//
-
-	/** @return the found entity instance or null if the entity does not exist */
-	public static CertReqHistoryData findById(EntityManager entityManager, String fingerprint) {
-		return entityManager.find(CertReqHistoryData.class, fingerprint);
-	}
-	
-	/** @return return the query results as a List. */
-    public static List<CertReqHistoryData> findByIssuerDNSerialNumber(EntityManager entityManager, String issuerDN, String serialNumber) {
-		final TypedQuery<CertReqHistoryData> query = entityManager.createQuery("SELECT a FROM CertReqHistoryData a WHERE a.issuerDN=:issuerDN AND a.serialNumber=:serialNumber", CertReqHistoryData.class);
-		query.setParameter("issuerDN", issuerDN);
-		query.setParameter("serialNumber", serialNumber);
-		return query.getResultList();
-	}
-
-	/** @return return the query results as a List. */
-    public static List<CertReqHistoryData> findByUsername(EntityManager entityManager, String username) {
-	    final TypedQuery<CertReqHistoryData> query = entityManager.createQuery("SELECT a FROM CertReqHistoryData a WHERE a.username=:username", CertReqHistoryData.class);
-		query.setParameter("username", username);
-		return query.getResultList();
-	}
 }

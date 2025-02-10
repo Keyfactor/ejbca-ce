@@ -55,7 +55,6 @@ import org.cesecore.config.ExternalScriptsConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.oscp.OcspResponseData;
 import org.cesecore.util.ExternalScriptsAllowlist;
-import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ocsp.OcspDataSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -572,6 +571,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
         }
     }
 
+
     /** Publishers do not run a part of regular transactions and expect to run in auto-commit mode. */
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
@@ -612,10 +612,9 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
     public List<Object> publishCertificateNonTransactionalInternal(final List<BasePublisher> publishers, final AuthenticationToken admin,
             final CertificateDataWrapper certWrapper, final String password, final String userDN, final ExtendedInformation extendedinformation) {
         final List<Object> publisherResults = new ArrayList<Object>();
-        final boolean parallel = EjbcaConfiguration.isPublishParallelEnabled();
         // Are we doing parallel publishing (only meaningful if there is more than one publisher configured)?
-        if (parallel && publishers.size() > 1) {
-            final List<Future<Boolean>> futures = new ArrayList<Future<Boolean>>();
+        if (publishers.size() > 1) {
+            final List<Future<Boolean>> futures = new ArrayList<>();
             BasePublisher publisherFirst = null;
             for (final BasePublisher publisher : publishers) {
                 if (publisherFirst == null) {
@@ -623,7 +622,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
                     publisherFirst = publisher;
                 } else {
                     // ...and the rest of the publishers will be executed in new threads
-                    final Future<Boolean> future = getExecutorService().submit(new Callable<Boolean>() {
+                    final Future<Boolean> future = getExecutorService().submit(new Callable<>() {
                         @Override
                         public Boolean call() throws Exception {
                             if (!publishCertificateNonTransactional(publisher, admin, certWrapper, password, userDN, extendedinformation)) {
@@ -674,6 +673,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
         }
         return publisherResults;
     }
+
 
     private PublisherException getAsPublisherException(final Exception e) {
         if (log.isDebugEnabled()) {

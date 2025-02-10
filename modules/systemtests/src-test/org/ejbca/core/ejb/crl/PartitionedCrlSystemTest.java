@@ -67,6 +67,7 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueProxySessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.ejbca.core.ejb.db.DatabaseContentRule;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.services.ServiceSessionRemote;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
@@ -83,6 +84,7 @@ import org.ejbca.core.model.services.workers.CRLUpdateWorker;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 
 import com.keyfactor.util.CertTools;
@@ -146,6 +148,9 @@ public class PartitionedCrlSystemTest {
 
     // Used for CRL download tests
     private byte[] downloadExpectedCrlPart0, downloadExpectedCrlPart1;
+
+    @ClassRule
+    public static DatabaseContentRule databaseContentRule = new DatabaseContentRule();
 
     @BeforeClass
     public static void beforeClass() throws Exception {

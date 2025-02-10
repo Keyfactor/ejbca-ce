@@ -78,7 +78,7 @@ public class EjbcaAuditorTestSessionBean implements EjbcaAuditorTestSessionRemot
         }
         if (parameters!=null) {
             for (int i=0; i<parameters.size(); i++) {
-                query.setParameter(i, parameters.get(i));
+                query.setParameter(i+1, parameters.get(i));
             }
         }
 

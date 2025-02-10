@@ -22,6 +22,7 @@
     	<antcall target="optional-test-acme-system" inheritall="true" inheritrefs="true"/>
         <antcall target="optional-test-rest-system" inheritall="true" inheritrefs="true"/>
         <antcall target="optional-test-caa-system" inheritall="true" inheritrefs="true"/>
+        <antcall target="optional-test-mpic-system" inheritall="true" inheritrefs="true"/>
         <antcall target="optional-test-ssh-system" inheritall="true" inheritrefs="true"/>
         <antcall target="optional-test-cits-system" inheritall="true" inheritrefs="true"/>
     	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
@@ -67,7 +68,8 @@
         <antcall target="optional-test-configdump-unit" inheritall="true" inheritrefs="true"/>
     	<antcall target="optional-test-ct" inheritall="true" inheritrefs="true"/>
     	<antcall target="optional-test-caa-unit" inheritall="true" inheritrefs="true"/>
-    	<antcall target="optional-test-ssh-unit" inheritall="true" inheritrefs="true"/>
+        <antcall target="optional-test-mpic-unit" inheritall="true" inheritrefs="true"/>
+        <antcall target="optional-test-ssh-unit" inheritall="true" inheritrefs="true"/>
     	<antcall target="optional-test-cits-unit" inheritall="true" inheritrefs="true"/>
         <antcall target="optional-test-peerconnector-unit" inheritall="true" inheritrefs="true"/>
         <antcall target="optional-test-plugins-ee-unit" inheritall="true" inheritrefs="true"/>
@@ -134,6 +136,13 @@
     <target name="optional-test-caa-system" if="${caa.exists}">
         <ant antfile="build.xml" dir="modules/caa" target="test:system" inheritall="true" inheritrefs="true"/>
     </target>
+    <condition property="mpic.exists"><available file="modules/caa/build.xml" /></condition>
+    <target name="optional-test-mpic-unit" if="${mpic.exists}">
+        <ant antfile="build.xml" dir="modules/mpic" target="test:unit" inheritall="true" inheritrefs="true"/>
+    </target>
+    <target name="optional-test-mpic-system" if="${mpic.exists}">
+        <ant antfile="build.xml" dir="modules/mpic" target="test:system" inheritall="true" inheritrefs="true"/>
+    </target>
     <condition property="ssh.exists"><available file="modules/ssh/build.xml" /></condition>
     <target name="optional-test-ssh-unit" if="${ssh.exists}">
         <ant antfile="build.xml" dir="modules/ssh" target="test:unit" inheritall="true" inheritrefs="true"/>
@@ -175,6 +184,7 @@
 					<include name="modules/acme/src-test/**/${test.runone}.java" />
 					<include name="modules/acme/src-common-test/**/${test.runone}.java" />
 					<include name="modules/caa/src-test/**/${test.runone}.java" />
+					<include name="modules/mpic/src-test/**/${test.runone}.java" />
 					<include name="modules/ejbca-ws-cli/src-test/**/${test.runone}.java" />
 					<include name="modules/ejbca-rest-api/src-test/**/${test.runone}.java" />
                     <include name="modules/admin-gui/src-test/**/${test.runone}.java" />
@@ -254,6 +264,9 @@
     	</condition>
         <condition property="module" value="modules/caa">
             <matches string="${test-fullname}" pattern="^modules/caa/.*$"/>
+        </condition>
+        <condition property="module" value="modules/mpic">
+            <matches string="${test-fullname}" pattern="^modules/mpic/.*$"/>
         </condition>
     	<condition property="module" value="modules/ejbca-ws-cli">
     	    <matches string="${test-fullname}" pattern="^modules/ejbca-ws-cli/.*$"/>
@@ -486,6 +499,16 @@
 
     <target name="test:system:caa" description="run all System tests for caa." depends="deleteDirectories">
         <ant antfile="build.xml" dir="modules/caa" target="test:system" inheritall="true" inheritrefs="true"/>
+        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
+    </target>
+
+    <target name="test:unit:mpic" description="run all JUnit tests for mpic." depends="deleteDirectories">
+        <ant antfile="build.xml" dir="modules/mpic" target="test:unit" inheritall="true" inheritrefs="true"/>
+        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
+    </target>
+
+    <target name="test:system:mpic" description="run all System tests for mpic." depends="deleteDirectories">
+        <ant antfile="build.xml" dir="modules/mpic" target="test:system" inheritall="true" inheritrefs="true"/>
         <antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 

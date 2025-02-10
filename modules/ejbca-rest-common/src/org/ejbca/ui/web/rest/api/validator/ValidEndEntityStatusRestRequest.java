@@ -13,6 +13,7 @@
 package org.ejbca.ui.web.rest.api.validator;
 
 import org.apache.commons.lang.StringUtils;
+import org.ejbca.ui.web.rest.api.io.request.EndEntityStatus;
 import org.ejbca.ui.web.rest.api.io.request.SetEndEntityStatusRestRequest;
 
 import jakarta.validation.Constraint;
@@ -22,6 +23,7 @@ import jakarta.validation.Payload;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
+import org.ejbca.ui.web.rest.api.io.request.TokenType;
 
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.PARAMETER;
@@ -77,7 +79,7 @@ public @interface ValidEndEntityStatusRestRequest {
             	ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidEditEndEntityRestRequest.invalid.token.nullOrEmpty}");
                 return false;
             }
-            final SetEndEntityStatusRestRequest.TokenType tokenType = SetEndEntityStatusRestRequest.TokenType.resolveEndEntityTokenByName(tokenValue);
+            final TokenType tokenType = TokenType.resolveEndEntityTokenByName(tokenValue);
             if (tokenType == null) {
             	ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidEditEndEntityRestRequest.invalid.token.unknown}");
                 return false;
@@ -87,7 +89,7 @@ public @interface ValidEndEntityStatusRestRequest {
             	ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidEditEndEntityRestRequest.invalid.status.nullOrEmpty}");
                 return false;
             }
-            final SetEndEntityStatusRestRequest.EndEntityStatus endEntityStatus = SetEndEntityStatusRestRequest.EndEntityStatus.resolveEndEntityStatusByName(statusValue);
+            final EndEntityStatus endEntityStatus = EndEntityStatus.resolveEndEntityStatusByName(statusValue);
             if (endEntityStatus == null) {
             	ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidEditEndEntityRestRequest.invalid.status.unknown}");
                 return false;

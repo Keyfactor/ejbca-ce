@@ -186,6 +186,120 @@
                         <h:outputLabel value="" rendered="#{!acmeAliasConfigMBean.currentAlias.wildcardCertificateIssuanceAllowed}" />
                     </h:panelGroup>
                     
+                    <h:panelGroup>
+                    	<h:outputLabel for="useMpicService" value="#{web.text.ACME_USE_MPIC_SERVICE}" styleClass="titles" />
+                    	<br />
+                    	<h:outputText value="#{web.text.ACME_USE_MPIC_SERVICE_HELP}" styleClass="help" style="font-size: smaller" rendered="#{acmeAliasConfigMBean.currentAlias.useMpicService}"/>
+                    </h:panelGroup>
+                    <h:panelGroup>
+	                    <h:selectBooleanCheckbox id="useMpicService" value="#{acmeAliasConfigMBean.currentAlias.useMpicService}" disabled="#{!acmeAliasConfigMBean.currentAliasEditMode}" >
+	                    	<f:ajax event="change" render="mpicGroupPanelWrapper"></f:ajax>
+	                    </h:selectBooleanCheckbox>
+                    </h:panelGroup>
+         		  </h:panelGrid>
+                    
+                    <!-- MPIC section  -->
+                    <h:panelGroup id="mpicGroupPanelWrapper">
+	                   <h:panelGrid id="mpicGroupPanel" columns="2" columnClasses="fixEditColumn1,fixEditColumn2" rendered="#{acmeAliasConfigMBean.currentAlias.useMpicService}">
+	                    <h:panelGroup id="mpicServicesLabel" >
+	                    	<h:outputLabel for="mpicServicesPanel" value="#{web.text.ACME_MPIC_SERVICES}" styleClass="titles" rendered="#{acmeAliasConfigMBean.currentAlias.useMpicService}"/>
+	                    	<br />
+	                    	<h:outputText value="#{web.text.ACME_MPIC_SERVICES_HELP}" styleClass="help" style="font-size: smaller" rendered="#{acmeAliasConfigMBean.currentAlias.useMpicService}"/>
+	                    </h:panelGroup>
+	                    <h:panelGroup id="mpicServicesPanel" >
+	                        <h:inputText id="mpicServices" value="#{acmeAliasConfigMBean.currentAlias.mpicServices}" size="65" title="#{web.text.FORMAT_URL}"
+	                        rendered="#{acmeAliasConfigMBean.currentAliasEditMode and acmeAliasConfigMBean.currentAlias.useMpicService}" required="false" requiredMessage="#{web.text.ACME_MPIC_SERVICES_REQUIRED}">
+	                            <f:validator validatorId="urlValidator"/>
+	                        </h:inputText>
+	                        <h:outputText value="#{acmeAliasConfigMBean.currentAlias.mpicServices}" rendered="#{!acmeAliasConfigMBean.currentAliasEditMode and acmeAliasConfigMBean.currentAlias.useMpicService}"/>
+	                    </h:panelGroup>
+	                    
+	                    <h:panelGroup id="mpicApiKeysLabel">
+	                    	<h:outputLabel for="mpicApiKeysPanel" value="#{web.text.ACME_MPIC_API_KEYS}" styleClass="titles" rendered="#{acmeAliasConfigMBean.currentAlias.useMpicService}"/>
+	                    	<br />
+	                    	<h:outputText value="#{web.text.ACME_MPIC_API_KEYS_HELP}" styleClass="help" style="font-size: smaller" rendered="#{acmeAliasConfigMBean.currentAlias.useMpicService}"/>
+	                    </h:panelGroup>
+	                    <h:panelGroup id="mpicApiKeysPanel" >
+	                        <h:inputSecret id="mpicApiKeys" value="#{acmeAliasConfigMBean.currentAlias.mpicApiKeys}" redisplay="true" size="65" title="#{web.text.FORMAT_URL}"
+	                        rendered="#{acmeAliasConfigMBean.currentAliasEditMode and acmeAliasConfigMBean.currentAlias.useMpicService}" required="false">
+	                        </h:inputSecret>
+	                        <h:outputText value="**********" rendered="#{!acmeAliasConfigMBean.currentAliasEditMode and acmeAliasConfigMBean.currentAlias.useMpicService}"/>
+	                    </h:panelGroup>
+	                    
+	                    <!-- This is for the RFC draft of MPIC. -->
+	                    <!-- h:panelGroup id="mpicCaaValidationLabel">
+	                    	<h:outputLabel for="mpicCaaValidation" value="#{web.text.ACME_MPIC_CAA_VALIDATION}" styleClass="titles" rendered="#{acmeAliasConfigMBean.currentAlias.useMpicService}"/>
+	                    	<br />
+	                    	<h:outputText value="#{web.text.ACME_MPIC_CAA_VALIDATION_HELP}" styleClass="help" style="font-size: smaller" rendered="#{acmeAliasConfigMBean.currentAlias.useMpicService}"/>
+	                    </h:panelGroup-->
+	                    <!-- h:panelGroup id="mpicCaaValidationPanel">
+		                    <h:selectBooleanCheckbox id="mpicCaaValidation" value="#{acmeAliasConfigMBean.currentAlias.mpicCaaValidation}" 
+		                    	disabled="#{!acmeAliasConfigMBean.currentAliasEditMode}" rendered="#{acmeAliasConfigMBean.currentAlias.useMpicService}"/>
+	                    </h:panelGroup-->	
+	                    
+	                    <h:panelGroup id="useMpicOrchestrationParametersLabel">
+	                    	<h:outputLabel for="useMpicOrchestrationParameters" value="#{web.text.ACME_MPIC_USE_ORCHESTRATION_PARAMETERS}" styleClass="titles" rendered="#{acmeAliasConfigMBean.currentAlias.useMpicService}"/>
+	                    	<br />
+	                    	<h:outputText value="#{web.text.ACME_MPIC_USE_ORCHESTRATION_PARAMETERS_HELP}" styleClass="help" style="font-size: smaller" rendered="#{acmeAliasConfigMBean.currentAlias.useMpicService}"/>
+	                    </h:panelGroup>
+	                    <h:panelGroup id="useMpicOrchestrationParametersPanel">
+		                    <h:selectBooleanCheckbox id="useMpicOrchestrationParameters" value="#{acmeAliasConfigMBean.currentAlias.useMpicOrchestrationParameters}" 
+		                    	disabled="#{!acmeAliasConfigMBean.currentAliasEditMode}" rendered="#{acmeAliasConfigMBean.currentAlias.useMpicService}">
+		                    	<f:ajax render=":currentAliasForm:mpicPerpectiveCountLabel :currentAliasForm:mpicPerpectiveCountPanel 
+		                    					:currentAliasForm:mpicQuorumCountLabel :currentAliasForm:mpicQuorumCountPanel 
+		                    					:currentAliasForm:mpicAttemptCountLabel :currentAliasForm:mpicAttemptCountPanel "/>
+		                    </h:selectBooleanCheckbox>
+	                    </h:panelGroup>
+	                    
+	                    <h:panelGroup id="mpicPerpectiveCountLabel">
+	                    	<h:outputLabel for="mpicPerpectiveCountPanel" value="#{web.text.ACME_MPIC_PERPECTIVE_COUNT}" styleClass="titles" rendered="#{acmeAliasConfigMBean.currentAlias.useMpicService}"/>
+	                    	<br />
+	                    	<h:outputText value="#{web.text.ACME_MPIC_PERPECTIVE_COUNT_HELP}" styleClass="help" style="font-size: smaller" rendered="#{acmeAliasConfigMBean.currentAlias.useMpicService}"/>
+	                    </h:panelGroup>
+	                    <h:panelGroup id="mpicPerpectiveCountPanel" >
+	                        <h:inputText id="mpicPerpectiveCount" value="#{acmeAliasConfigMBean.currentAlias.mpicPerpectiveCount}" size="3" title="#{web.text.FORMAT_INTEGER}"
+	                        	rendered="#{acmeAliasConfigMBean.currentAliasEditMode and acmeAliasConfigMBean.currentAlias.useMpicService}"
+	                        	disabled="#{!acmeAliasConfigMBean.currentAlias.useMpicOrchestrationParameters}"> 
+	                        	required="false">
+	                        	<f:validateLongRange minimum="1" maximum="10" />
+	                        </h:inputText>
+	                        <h:outputText value="#{acmeAliasConfigMBean.currentAlias.mpicPerpectiveCount}" rendered="#{!acmeAliasConfigMBean.currentAliasEditMode and acmeAliasConfigMBean.currentAlias.useMpicService}"/>
+	                    </h:panelGroup>
+	                    
+	                    <h:panelGroup id="mpicQuorumCountLabel">
+	                    	<h:outputLabel for="mpicQuorumCountPanel" value="#{web.text.ACME_MPIC_QUORUM_COUNT}" styleClass="titles" rendered="#{acmeAliasConfigMBean.currentAlias.useMpicService}"/>
+	                    	<br />
+	                    	<h:outputText value="#{web.text.ACME_MPIC_QUORUM_COUNT_HELP}" styleClass="help" style="font-size: smaller" rendered="#{acmeAliasConfigMBean.currentAlias.useMpicService}"/>
+	                    </h:panelGroup>
+	                    <h:panelGroup id="mpicQuorumCountPanel" >
+	                        <h:inputText id="mpicQuorumCount" value="#{acmeAliasConfigMBean.currentAlias.mpicQuorumCount}" size="3" title="#{web.text.FORMAT_INTEGER}"
+	                        	rendered="#{acmeAliasConfigMBean.currentAliasEditMode and acmeAliasConfigMBean.currentAlias.useMpicService}"
+	                        	disabled="#{!acmeAliasConfigMBean.currentAlias.useMpicOrchestrationParameters}"> 
+	                        	required="false">
+	                        	<f:validateLongRange minimum="1" maximum="10" />
+	                        </h:inputText>
+	                        <h:outputText value="#{acmeAliasConfigMBean.currentAlias.mpicQuorumCount}" rendered="#{!acmeAliasConfigMBean.currentAliasEditMode and acmeAliasConfigMBean.currentAlias.useMpicService}"/>
+	                    </h:panelGroup>
+	                    
+	                    <h:panelGroup id="mpicAttemptCountLabel">
+	                    	<h:outputLabel for="mpicAttemptCountPanel" value="#{web.text.ACME_MPIC_ATTEMPT_COUNT}" styleClass="titles" rendered="#{acmeAliasConfigMBean.currentAlias.useMpicService}"/>
+	                    	<br />
+	                    	<h:outputText value="#{web.text.ACME_MPIC_ATTEMPT_COUNT_HELP}" styleClass="help" style="font-size: smaller" rendered="#{acmeAliasConfigMBean.currentAlias.useMpicService}"/>
+	                    </h:panelGroup>
+	                    <h:panelGroup id="mpicAttemptCountPanel" >
+	                        <h:inputText id="mpicAttemptCount" value="#{acmeAliasConfigMBean.currentAlias.mpicAttemptCount}" size="3" title="#{web.text.FORMAT_INTEGER}"
+	                        	rendered="#{acmeAliasConfigMBean.currentAliasEditMode and acmeAliasConfigMBean.currentAlias.useMpicService}"
+	                        	disabled="#{!acmeAliasConfigMBean.currentAlias.useMpicOrchestrationParameters}"> 
+	                        	required="false">
+	                        	<f:validateLongRange minimum="1" maximum="10" />
+	                        </h:inputText>
+	                        <h:outputText value="#{acmeAliasConfigMBean.currentAlias.mpicAttemptCount}" rendered="#{!acmeAliasConfigMBean.currentAliasEditMode and acmeAliasConfigMBean.currentAlias.useMpicService}"/>
+	                    </h:panelGroup>
+	                  </h:panelGrid>
+                  </h:panelGroup>
+                  <!-- MPIC section  end -->
+                    
+                  <h:panelGrid columns="2" columnClasses="fixEditColumn1,fixEditColumn2">
                     <h:panelGroup id="dnsIdentifierChallengeTypesLabel">
                     	<h:outputLabel for="dnsIdentifierChallengeTypesLabel" value="#{web.text.ACME_DNS_IDENTIFIER_CHALLENGE_TYPES}" styleClass="titles"/>
                     	<h:outputLabel for="dnsIdentifierChallengeTypesLabel" value="" />
@@ -324,6 +438,19 @@
                     </h:panelGroup>
                     
                     <h:panelGroup>
+                    	<h:outputLabel for="challengeResponseTimout" value="#{web.text.ACME_CHALLENGE_RESPONSE_TIMOUT}" styleClass="titles"/>
+                    	<br />
+                    	<h:outputText value="#{web.text.ACME_CHALLENGE_RESPONSE_TIMOUT_HELP}" styleClass="help" style="font-size: smaller"/>
+                    </h:panelGroup>
+                    <h:panelGroup id="challengeResponseTimout" >
+                        <h:inputText title="#{web.text.FORMAT_SECONDS}" value="#{acmeAliasConfigMBean.currentAlias.challengeResponseTimout}" 
+                        			 validatorMessage="#{web.text.ONLYNUMBERS_INRETRYAFTER}" rendered="#{acmeAliasConfigMBean.currentAliasEditMode}">
+                            <f:validateLongRange minimum="0" maximum="2147483647"/>
+                        </h:inputText>
+                        <h:outputText value="#{acmeAliasConfigMBean.currentAlias.challengeResponseTimout}" rendered="#{!acmeAliasConfigMBean.currentAliasEditMode}"/>
+                    </h:panelGroup>
+                    
+                    <h:panelGroup>
                     	<h:outputLabel for="authorizedRedirectPorts" value="#{web.text.ACME_AUTHORIZED_REDIRECT_PORTS}" styleClass="titles"/>
                     	<br />
 						<h:outputText value="#{web.text.ACME_AUTHORIZED_REDIRECT_PORTS_HELP}" styleClass="help" style="font-size: smaller"/>
@@ -411,7 +538,7 @@
 						                    
                 </h:panelGrid>
                 
-                <h:panelGrid columns="2" id="eab-settings">                    
+                <h:panelGrid columns="2" columnClasses="fixEditColumn1,fixEditColumn2" id="eab-settings">                    
                     <h:outputLabel for="eabType" value="#{web.text.ACME_EAB_TYPE}" rendered="#{acmeAliasConfigMBean.currentAlias.requireExternalAccountBinding}" styleClass="titles"/>
 					<h:selectOneMenu id="eabType" value="#{acmeAliasConfigMBean.eabType}" 
 						rendered="#{acmeAliasConfigMBean.currentAlias.requireExternalAccountBinding}"
@@ -425,7 +552,6 @@
 						<h:commandButton action="#{acmeAliasConfigMBean.addEab}" value="#{web.text.ACME_ADD_EAB}" rendered="#{acmeAliasConfigMBean.currentAliasEditMode and acmeAliasConfigMBean.currentAlias.requireExternalAccountBinding}" style="margin-right:3px;" immediate="true"/>					
 						<h:commandButton action="#{acmeAliasConfigMBean.removeEab}" value="#{web.text.ACME_REMOVE_EAB}" rendered="#{acmeAliasConfigMBean.currentAliasEditMode and acmeAliasConfigMBean.currentAlias.requireExternalAccountBinding}" style="margin-right:3px;" immediate="true"/>
 					</h:panelGroup>
-										                    
                 </h:panelGrid>
                 
                 <h:panelGroup id="eab-group-container">

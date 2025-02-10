@@ -35,8 +35,10 @@ import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.management.RoleInitializationSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.db.DatabaseContentRule;
 import org.ejbca.core.model.era.RaAuthorizationResult;
 import org.ejbca.core.model.era.TestRaMasterApiProxySessionRemote;
+import org.junit.ClassRule;
 import org.junit.Test;
 
 import com.keyfactor.util.CryptoProviderTools;
@@ -59,7 +61,10 @@ public class AuthorizationSystemSessionBeanSystemTest {
             .getRemoteSession(TestRaMasterApiProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = 
             EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    
+
+    @ClassRule
+    public static DatabaseContentRule databaseContentRule = new DatabaseContentRule();
+
     @SuppressWarnings("deprecation")
     @Test
     public void testAccessSets() throws RoleExistsException, AuthorizationDeniedException, RoleNotFoundException, AuthenticationFailedException {

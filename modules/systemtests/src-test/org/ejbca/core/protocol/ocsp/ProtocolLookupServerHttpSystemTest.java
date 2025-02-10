@@ -77,14 +77,18 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.ejbca.core.ejb.db.DatabaseContentRule;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.unidfnr.UnidfnrProxySessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.protocol.ocsp.extension.unid.FnrFromUnidExtension;
 import org.junit.After;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.keyfactor.util.CryptoProviderTools;
@@ -117,6 +121,7 @@ import com.keyfactor.util.keys.KeyTools;
     rowVersion INT(11) NOT NULL,
     PRIMARY KEY (unid);
  */
+@Ignore("Requires special configuration to work")
 public class ProtocolLookupServerHttpSystemTest extends CaTestCase {
     private static Logger log = Logger.getLogger(ProtocolLookupServerHttpSystemTest.class);
 
@@ -130,40 +135,51 @@ public class ProtocolLookupServerHttpSystemTest extends CaTestCase {
     private static final String USER_PASS_PHRASE = "foo123";
     private static final String TEST_USER_NAME = "unidtest";
     private static final String TEST_USER_EMAIL = TEST_USER_NAME+"@anatom.se";
-    private static final String TRUSTED_CA_NAME = CaTestUtils.getClientCertCaName(admin); // Defaults to ManagementCA but can be overridden with target.clientcert.ca
+    private static String TRUSTED_CA_NAME;
     private static final String SAMPLE_UNID = "123456789";
     private static final String SAMPLE_FNR = "654321";
     private static final String TEST_USER_SUBJECTDN_GOOD_SERIAL = "C=SE,O=AnaTom,surname=Jansson,serialNumber="+SAMPLE_UNID+",CN=UNIDTest";
     private static final String TEST_USER_SUBJECTDN_BAD_SERIAL = "C=SE,O=AnaTom,surname=Jansson,serialNumber=123456,CN=UNIDTest";
     private static final String TEST_USER_SUBJECTDN_NO_SERIAL = "C=SE,O=AnaTom,surname=Jansson,CN=UNIDTest";
 
-    
     private String httpReqPath;
     private String resourceOcsp;
 
-    private int caid = getTestCAId(TRUSTED_CA_NAME);
+    private int caid;
     private static X509Certificate cacert = null;
     private static X509Certificate ocspTestCert = null;
     private static KeyPair keys = null;
 
-    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-    private RevocationSessionRemote revocationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RevocationSessionRemote.class);
-    private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
-    private static UnidfnrProxySessionRemote unidfnrProxySessionBean = EjbRemoteHelper.INSTANCE.getRemoteSession(UnidfnrProxySessionRemote.class,
-            EjbRemoteHelper.MODULE_TEST);
+    private EndEntityManagementSessionRemote endEntityManagementSession;
+    private RevocationSessionRemote revocationSession;
+    private SignSessionRemote signSession;
+    private static UnidfnrProxySessionRemote unidfnrProxySessionBean;
+
+    @ClassRule
+    public static DatabaseContentRule databaseContentRule = new DatabaseContentRule();
 
     @BeforeClass
     public static void beforeClass() {
+        TRUSTED_CA_NAME = CaTestUtils.getClientCertCaName(admin); // Defaults to ManagementCA but can be overridden with target.clientcert.ca
+
         // Install BouncyCastle provider
         CryptoProviderTools.installBCProvider();
-        unidfnrProxySessionBean.removeUnidFnrDataIfPresent(SAMPLE_UNID);
-        unidfnrProxySessionBean.storeUnidFnrData(SAMPLE_UNID, SAMPLE_FNR);
+        unidfnrProxySessionBean = EjbRemoteHelper.INSTANCE.getRemoteSession(UnidfnrProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+        if (unidfnrProxySessionBean.isUnidFnrAvailable()) {
+            unidfnrProxySessionBean.removeUnidFnrDataIfPresent(SAMPLE_UNID);
+            unidfnrProxySessionBean.storeUnidFnrData(SAMPLE_UNID, SAMPLE_FNR);
+        }
     }
 
     @Override
     @Before
     public void setUp() throws Exception {
+        Assume.assumeTrue("unidfnr is an special module and is not included with EJBCA", unidfnrProxySessionBean.isUnidFnrAvailable());
         super.setUp();
+        endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+        revocationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RevocationSessionRemote.class);
+        signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
+        caid = getTestCAId(TRUSTED_CA_NAME);
         httpReqPath = "https://127.0.0.1:8443/ejbca";
         resourceOcsp = "publicweb/status/ocsp";
         cacert = (X509Certificate) getTestCACertUsingItsName(TRUSTED_CA_NAME);
