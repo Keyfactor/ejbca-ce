@@ -202,7 +202,7 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
 		getPrintStream().println("Usage : edituser <username> <password|null> <clearpwd (true|false)> <subjectdn> <subjectaltname or NULL> <email or NULL> <caname> <type> <token> <status> <endentityprofilename> <certificateprofilename> <starttime or NULL (optional)> <endtime (starttime)>\n\n");
         getPrintStream().println("DN is of form \"C=SE, O=MyOrg, OU=MyOrgUnit, CN=MyName\" etc.");
         getPrintStream().println("SubjectAltName is of form \"rfc822Name=<email>, dNSName=<host name>, uri=<http://host.com/>, ipaddress=<address>, guid=<globally unique id>, directoryName=<LDAP escaped DN>,"
-                + " permanentIdentifier=<Permanent Identifier values>, subjectIdentificationMethod=<Subject Identification Method values or parameters>, "
+                + " permanentIdentifier=<Permanent Identifier values>, hardwareModuleName=<OID/serial>, subjectIdentificationMethod=<Subject Identification Method values or parameters>, "
                 + " registeredID=<object identifier>, xmppAddr=<RFC6120 XmppAddr>, srvName=<RFC4985 SRVName>, fascN=<FIPS 201-2 PIV FASC-N>\"");
         getPrintStream().println("Type (mask): INVALID=0; END-USER=1; KEYRECOVERABLE=128; SENDNOTIFICATION=256");
         getPrintStream().println("Existing tokens: USERGENERATED, P12, JKS, PEM, BCFKS");

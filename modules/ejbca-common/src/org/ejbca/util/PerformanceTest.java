@@ -22,10 +22,12 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * @version $Id$
@@ -37,6 +39,7 @@ public class PerformanceTest {
     private final Log log;
     private final Random random;
     private boolean isSomeThreadUsingRandom;
+    private final Set<Long> generatedUsernameNumbers = new HashSet<>();
 
     public PerformanceTest() {
         this.log = new Log();
@@ -44,7 +47,17 @@ public class PerformanceTest {
         this.isSomeThreadUsingRandom = false;
     }
 
-    public long nextLong() {
+    /**
+     * Returns a random long >= min and < max
+     * @param min Inclusive
+     * @param max Exclusive
+     * @return A random long >= min and < max
+     */
+    protected long nextLong(long min, long max) {
+        return min + Math.abs(random.nextLong()) % (max - min);
+    }
+
+    public long nextLong(boolean forCvc) {
         synchronized (this.random) {
             while (this.isSomeThreadUsingRandom) {
                 try {
@@ -55,10 +68,21 @@ public class PerformanceTest {
                 }
             }
             this.isSomeThreadUsingRandom = true;
-            final long result = this.random.nextLong();
+            final long result = forCvc ? this.nextLong(1, 99999999) : this.random.nextLong();
             this.isSomeThreadUsingRandom = false;
             this.random.notifyAll();
             return result;
+        }
+    }
+
+    public Long generateUniqueUsernameNumber() {
+        synchronized (generatedUsernameNumbers) {
+            long nextUsernameNumber = nextLong(true);
+            while (generatedUsernameNumbers.contains(nextUsernameNumber)) {
+                nextUsernameNumber = nextLong(true);
+            }
+            generatedUsernameNumbers.add(nextUsernameNumber);
+            return nextUsernameNumber;
         }
     }
 

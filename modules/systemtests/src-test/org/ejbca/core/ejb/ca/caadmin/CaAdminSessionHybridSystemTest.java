@@ -20,6 +20,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.StringTools;
@@ -54,6 +55,7 @@ import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.KeyPairInfo;
@@ -323,6 +325,7 @@ public class CaAdminSessionHybridSystemTest {
         X509CAInfo hybridSub = null;
         final String rootCaName = testName.getMethodName() + "RootCa";
         final String subCaName = testName.getMethodName() + "SubCa";
+        boolean success = false;
         try {
             // given
             rootCryptoTokenId = createCryptoTokenAndKeypairsForNonHybridCA(rootCryptoTokenName, "foo123");
@@ -336,11 +339,15 @@ public class CaAdminSessionHybridSystemTest {
                 String msg = "InvalidConfigurationException: Sub CA '" + subCaName+ "' should be hybrid CA if and only if Root CA is hybrid CA.";
                 // then
                 assertTrue(e.getMessage().endsWith(msg));
+                success = true;
             }
         } finally {
-            deleteCryptoTokenAndKeys(rootCryptoTokenId);
-            deleteCryptoTokenAndKeys(subCryptoTokenId);
-
+            if (rootCryptoTokenId != null) {
+                deleteCryptoTokenAndKeys(rootCryptoTokenId);
+            }
+            if (subCryptoTokenId != null) {
+                deleteCryptoTokenAndKeys(subCryptoTokenId);
+            }
             if (hybridRoot != null) {
                 CAInfo caInfo = caSession.getCAInfo(alwaysAllowToken, hybridRoot.getCAId());
                 if (caInfo != null) {
@@ -357,6 +364,7 @@ public class CaAdminSessionHybridSystemTest {
                 caSession.removeCA(alwaysAllowToken, hybridSub.getCAId());
             }
         }
+        assertTrue("Expected EJBException was not thrown", success);
     }
 
     private X509CAInfo constructCa(final int cryptoTokenId, final String caName, final int certificateProfileId, final int signedBy, boolean hybrid)
@@ -410,6 +418,7 @@ public class CaAdminSessionHybridSystemTest {
             NoSuchSlotException, InvalidKeyException, InvalidAlgorithmParameterException {
         final Properties cryptoTokenProperties = new Properties();
         cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, cryptoTokenPin);
+        deleteCryptoTokenIfItExists(cryptoTokenName);
         int cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(alwaysAllowToken, cryptoTokenName, SoftCryptoToken.class.getName(),
                 cryptoTokenProperties, null, cryptoTokenPin.toCharArray());
         cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS,
@@ -419,11 +428,23 @@ public class CaAdminSessionHybridSystemTest {
         return cryptoTokenId;
     }
 
+    private void deleteCryptoTokenIfItExists(final String cryptoTokenName) throws AuthorizationDeniedException {
+        var idList = cryptoTokenManagementSession.getCryptoTokenInfos(alwaysAllowToken)
+                .stream()
+                .filter(cryptoToken -> cryptoToken.getName().equals(cryptoTokenName))
+                .map(CryptoTokenInfo::getCryptoTokenId)
+                .collect(Collectors.toUnmodifiableList());
+        for (var id : idList) {
+            cryptoTokenManagementSession.deleteCryptoToken(alwaysAllowToken, id);
+        }
+    }
+
     private int createCryptoTokenAndKeypairsForNonHybridCA(final String cryptoTokenName, final String cryptoTokenPin)
             throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException, AuthorizationDeniedException,
             NoSuchSlotException, InvalidKeyException, InvalidAlgorithmParameterException {
         final Properties cryptoTokenProperties = new Properties();
         cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, cryptoTokenPin);
+        deleteCryptoTokenIfItExists(cryptoTokenName);
         int cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(alwaysAllowToken, cryptoTokenName, SoftCryptoToken.class.getName(),
                 cryptoTokenProperties, null, cryptoTokenPin.toCharArray());
         cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS,

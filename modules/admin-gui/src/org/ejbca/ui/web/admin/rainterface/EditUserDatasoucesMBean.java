@@ -288,6 +288,7 @@ public class EditUserDatasoucesMBean extends BaseManagedBean implements Serializ
             modifyableFieldTexts.put(subjectaltnametext + " : " + getEjbcaWebBean().getText("ALT_MS_GUID"), Integer.valueOf(DNFieldExtractor.GUID));
             modifyableFieldTexts.put(subjectaltnametext + " : " + getEjbcaWebBean().getText("ALT_KERBEROS_KPN"), Integer.valueOf(DNFieldExtractor.KRB5PRINCIPAL));
             modifyableFieldTexts.put(subjectaltnametext + " : " + getEjbcaWebBean().getText("ALT_PKIX_PERMANENTIDENTIFIER"), Integer.valueOf(DNFieldExtractor.PERMANTIDENTIFIER));
+            modifyableFieldTexts.put(subjectaltnametext + " : " + getEjbcaWebBean().getText("ALT_PKIX_HARDWAREMODULENAME"), Integer.valueOf(DNFieldExtractor.HARDWAREMODULENAME));
             modifyableFieldTexts.put(subjectaltnametext + " : " + getEjbcaWebBean().getText("ALT_PKIX_SUBJECTIDENTIFICATIONMETHOD"), Integer.valueOf(DNFieldExtractor.SUBJECTIDENTIFICATIONMETHOD));
 
             modifyableFieldTexts.put(subjectdirattrtext + " : " + getEjbcaWebBean().getText("SDA_DATEOFBIRTH"), Integer.valueOf(DNFieldExtractor.DATEOFBIRTH));

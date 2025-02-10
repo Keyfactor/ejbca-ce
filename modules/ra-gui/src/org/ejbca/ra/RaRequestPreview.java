@@ -32,6 +32,8 @@ public class RaRequestPreview {
     
     private String issuerDn = "";
     private String subjectDn = "";
+    private String csrSubjectDn = "";
+    private boolean sdnOverrideByCsr = false;
     private String publicKeyAlgorithm = "";
     private String subjectAlternativeName = "";
     private String subjectDirectoryAttributes = "";
@@ -93,6 +95,13 @@ public class RaRequestPreview {
         }
         this.subjectDn = subjectDn.getUpdatedValue();
     }
+
+    public final void updateCsrSubjectDn(String subjectDnString) {
+        if (subjectDnString == null) {
+            return;
+        }
+        this.csrSubjectDn = subjectDnString;
+    }
     
     public final void updateSubjectAlternativeName(SubjectAlternativeName subjectAlternativeName, final EndEntityProfile profile){
         if (subjectAlternativeName == null) {
@@ -152,6 +161,14 @@ public class RaRequestPreview {
     public final void setMore(boolean more) {
         this.more = more;
         styleRowCallCounter = 0; // Reset
+    }
+
+    public final boolean isSdnOverrideByCsr() {
+        return sdnOverrideByCsr;
+    }
+
+    public final void setSdnOverrideByCsr(boolean sdnOverrideByCsr) {
+        this.sdnOverrideByCsr = sdnOverrideByCsr;
     }
 
     /** @return true every twice starting with every forth call */
@@ -221,7 +238,8 @@ public class RaRequestPreview {
     }
 
     public boolean isAnyRequestDataPresent() {
-        return !subjectDn.isEmpty() || !subjectAlternativeName.isEmpty() || !subjectDirectoryAttributes.isEmpty();
+        return !StringUtils.isEmpty(subjectDn) || (isSdnOverrideByCsr() && !StringUtils.isEmpty(csrSubjectDn))
+                || !StringUtils.isEmpty(subjectAlternativeName) || !StringUtils.isEmpty(subjectDirectoryAttributes);
     }
 
     /**

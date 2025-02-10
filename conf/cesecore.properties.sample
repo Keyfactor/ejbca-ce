@@ -44,8 +44,7 @@
 # ------------ Basic CA configuration ---------------------
 #
 # Default Random Number Generator algorithm for certificate serial number generation.
-# Available algorithms are: BCSP800Hybrid, SHA1PRNG, default, defaultstrong
-# From Java 11 and onwards, DRBG is also available
+# Available algorithms are: BCSP800Hybrid, default, DRBG, SHA1PRNG
 # See Java documentation on "SecureRandom Number Generation Algorithms", https://docs.oracle.com/en/java/javase/11/docs/specs/security/standard-names.html#securerandom-number-generation-algorithms
 # 
 # BCSP800Hybrid implements a FIPS/SP800 compliant DRBG chain. After initial seed generation the base source uses a 
@@ -59,17 +58,12 @@
 #
 # Using the value "default" (or an empty value which is hard to set here) uses the OS:es default implementation, 
 #   which may vary. See the documentation of Java's SecureRandom for more information. On Linux this uses /dev/(u)random.
-# Using the value "defaultstrong" is only available in JDK 8 and later and will use the SecureRandom.getInstanceStrong(), to get
-#   an ensured "strong" random number generator. On JDK's below 8 it will throw an error if used. 
-#   Before using "defaultstrong" take note that it will on most cases use a blocking random number generator, 
-#   and if you don't have enough entropy it may take a long time, >60 seconds, to create a single random number (i.e. to generate a certificate). 
-#   Test well before using. 
-# Default value (if property left unset) is SHA1PRNG which is/was FIPS compliant according to Java documentation
-#ca.rngalgorithm=SHA1PRNG
+# Default value fo CA serial numbers (if property left unset) is BCSP800Hybrid which is FIPS compliant.
+#ca.rngalgorithm=BCSP800Hybrid
 #ca.rngalgorithm=default
 #ca.rngalgorithm=DRBG
-#ca.rngalgorithm=BCSP800Hybrid
 #ca.rngalgorithm=PKCS11
+#ca.rngalgorithm=SHA1PRNG
 
 # The default length in octets of certificate serial numbers configured when creating new CAs. 
 # Note: since EJBCA 7.0.1 this only affects the default value of this field, which is editable in the CA configuration 
@@ -209,47 +203,6 @@ securityeventsaudit.exporter.1=org.cesecore.audit.impl.AuditExporterXml
 # Caching the references to PKCS#11 objects can make a big performance difference.
 # Default: true
 #cryptotoken.keystorecache=true
-
-# ------------------- Certificate Transparency settings -------------------
-# If your EJBCA has support for CT in it, you may configure caching of SCTs
-# here. The cache is only used when using CT in OCSP responses (and not in
-# the CT publisher or when using CT in new certificates). The fastfail
-# options are applied to all CT log submissions.
-#
-# Enables or disables the cache.
-# Default: true (caching enabled)
-#ct.cache.enabled=false
-#
-# Maximum number of OCSP response extensions to cache, or -1 for no limit.
-# You may need to adjust java heap parameters if you adjust this.
-# Default: 100000
-#ct.cache.maxentries=1000000
-#
-# Maximum frequency in milliseconds of clean ups when the cache is over its
-# limit. During a clean up, cache entries are randomly queued for removal
-# at the next clean up if they aren't used.
-# Default: 10000 (10 seconds)
-#ct.cache.cleanupinterval=60000
-#
-# Whether log availability should be tracked, and requests should "fast fail"
-# whenever a log is known to be down. A log is "known to be down" when it
-# is either unreachable or responds with an HTTP error status to a request.
-# NOTE: Since a single error will cause ALL subsequent requests that are not
-# cached to "fast fail" until the backoff time is over, make sure to:
-#   1. Disallow CAs that are not trusted by the CT logs in CT-enabled
-#      certificate profiles. If a log server receives a request for a
-#      certificate from an untrusted CA, it will return an error, and trigger
-#      "fail fail" for other certificates.
-#   2. Make sure the certificate profiles are restrictive and do not allow
-#      uncommon certificate fields etc., that could cause a parse error
-#      in the CT log, which would also trigger fast fail.
-# Default: true (fast fail enabled)
-#ct.fastfail.enabled=true
-#
-# How long time (in milliseconds) EJBCA should wait until trying to use a log
-# which has failed to respond to a request.
-# Default: 1000 (1 second)
-#ct.fastfail.backoff=60000
 
 # ------------ Upgrade and compatibility setting ---------------------
 # In order to enable 100% uptime, i.e. old versions running in parallell with new versions

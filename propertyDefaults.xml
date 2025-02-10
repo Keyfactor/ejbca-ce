@@ -122,7 +122,6 @@
 		<equals arg1="internal" arg2="${web.docbaseuri}" casesensitive="false" trim="true" />
 	</condition>
 
-	<property name="ocsp.enabled" value="true" />
 	<property name="ocsp.contextroot" value="/ejbca/publicweb/status" />
 	<property name="crlstore.enabled" value="true" />
     <property name="crlstore.contextroot" value="/ejbca/publicweb/crls" />
@@ -168,11 +167,9 @@ mail.debug               = ${mail.debug}
 httpserver.pubhttp	     = ${httpserver.pubhttp}
 httpserver.pubhttps	     = ${httpserver.pubhttps}
 httpserver.privhttps     = ${httpserver.privhttps}
-httpserver.external.privhttps = ${httpserver.external.privhttps}
 httpsserver.hostname     = ${httpsserver.hostname}
 httpsserver.password     = ***
 httpserver.external.fqdn = ${httpserver.external.fqdn}
-web.contentencoding      = ${web.contentencoding}
 unidfnr.enabled          = ${unidfnr.enabled}
 
       </echo>

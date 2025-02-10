@@ -169,6 +169,10 @@
 	<property name="mod.ssh.path" location="${mod.path}/ssh" />
 	<property name="mod.ssh.lib" location="${mod.dist.path}/ejbca-ssh.jar" />
 	<property name="mod.ssh.war" location="${mod.dist.path}/ssh.war" />
+	<property name="mod.iodef.path" location="${mod.path}/iodef" />
+	<property name="mod.iodef.lib" location="${mod.dist.path}/iodef.jar" />
+	<property name="mod.mpic.path" location="${mod.path}/mpic" />
+	<property name="mod.mpic.lib" location="${mod.dist.path}/mpic.jar" />
 	<property name="mod.msae.path" location="${mod.path}/msae" />
 	<property name="mod.msae.war" location="${mod.dist.path}/msae.war" />
 	<property name="mod.cits.path" location="${mod.path}/cits" />
@@ -182,9 +186,6 @@
     <property name="java.target.version" value="${java.specification.version}"/>
 
 	<!-- Files of global interest -->
-	<!-- Depends on load of propertyDefaults.xml...therefore put in the end
-    <property name="jndi.properties.file" location="${ejbca.home}/conf/jndi.properties.${appserver.type}" />
-    -->
     <property name="profilemappings.properties.file" location="${ejbca.home}/src/java/profilemappings.properties" />
     <property name="profilemappings_enterprise.properties.file" location="${ejbca.home}/src/java/profilemappings_enterprise.properties" />
     <property name="log4j.test.file" location="${mod.common.path}/resources/log4j-test.xml" />
@@ -524,7 +525,7 @@
     <condition property="jndi.properties.file" value="${ejbca.home}/conf/jndi.properties.${appserver.subtype}">
         <available file="${ejbca.home}/conf/jndi.properties.${appserver.subtype}"/>
     </condition>
-    <property name="jndi.properties.file" location="${ejbca.home}/conf/jndi.properties.${appserver.type}" />
+    <property name="jndi.properties.file" location="${ejbca.home}/conf/jndi.properties.jboss7" />
     <!-- jboss-ejb-client.properties is only used in JBoss 7 (or higher?), but it does not hurt to simply copy it for earlier versions either -->
     <property name="jboss-ejb-client.properties" location="${ejbca.home}/src/appserver/jboss/jboss7/jboss-ejb-client.properties" />
 	<!-- This is mainly useful for debugging and normally not needed
@@ -536,12 +537,7 @@
 		<available file="${mod.peerconnector.path}/build.xml" />
     </condition>
 	<condition property="mod.peerconnector-rar.exists">
-		<and>
-			<available file="${mod.peerconnector.path}/build.xml"/>
-			<not>
-				<istrue value="${peerconnector.rar.disabled}"/>
-			</not>
-		</and>
+	    <available file="${mod.peerconnector.path}/build.xml"/>
     </condition>
 	
     <condition property="mod.cesecore-x509ca.exists">
@@ -652,10 +648,7 @@
     </condition>
     
     <condition property="status.war.enabled" value="true">
-        <and>
-            <istrue value="${ocsp.enabled}"/>
-            <istrue value="${variant.va.enabled}"/>
-        </and>
+        <istrue value="${variant.va.enabled}"/>
     </condition>
     
     <condition property="swagger-ui.exists">
@@ -676,6 +669,14 @@
 	
 	<condition property="mod.ct.exists">
 		<available file="${mod.ct.path}/build.xml" />
+    </condition>
+
+	<condition property="mod.iodef.exists">
+		<available file="${mod.iodef.path}/build.xml" />
+    </condition>
+
+	<condition property="mod.mpic.exists">
+		<available file="${mod.mpic.path}/build.xml" />
     </condition>
 
 	<condition property="mod.proxy-ca.exists">

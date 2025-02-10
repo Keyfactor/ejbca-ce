@@ -129,7 +129,6 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     public static final  String DOCWINDOW           = "_ejbcaDocWindow"; // Name of browser window used to display help
 
     // Private constants
-    private static final   String AVAILABLELANGUAGES    = "availablelanguages";
     private static final   String AVAILABLETHEMES       = "availablethemes";
     private static final   String PUBLICPORT            = "publicport";
     private static final   String PRIVATEPORT           = "privateport";
@@ -172,7 +171,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final String ENABLESESSIONTIMEOUT = "use_session_timeout";
     private static final String SESSIONTIMEOUTTIME = "session_timeout_time";
     private static final String VA_STATUS_TIME_CONSTRAINT_KEY = "va_status_time_constraint";
-
+    
     /** Creates a new instance of GlobalConfiguration */
     public GlobalConfiguration()  {
        super();
@@ -197,28 +196,25 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     }
 
     /** Initializes a new global configuration with data used in ra web interface. */
-    private void initialize(String availablelanguages, String availablethemes,
+    private void initialize(String availablethemes,
                             String publicport, String privateport){
 
-       data.put(AVAILABLELANGUAGES,availablelanguages.trim());
        data.put(AVAILABLETHEMES,availablethemes.trim());
        data.put(PUBLICPORT,publicport.trim());
        data.put(PRIVATEPORT,privateport.trim());
     }
 
     public void initializeAdminWeb() {
-        initialize(WebConfiguration.getAvailableLanguages(), "default_theme.css,second_theme.css",
-                ""+WebConfiguration.getPublicHttpPort(), ""+WebConfiguration.getPrivateHttpsPort());
+        initialize("default_theme.css,second_theme.css", "" + WebConfiguration.getPublicHttpPort(), "" + WebConfiguration.getPrivateHttpsPort());
     }
     
     public void initializeRaWeb() {
-        initialize(WebConfiguration.getAvailableLanguages(), "default_theme.css,second_theme.css",
-                ""+WebConfiguration.getPublicHttpPort(), ""+WebConfiguration.getPrivateHttpsPort());
+        initialize("default_theme.css,second_theme.css", "" + WebConfiguration.getPublicHttpPort(), "" + WebConfiguration.getPrivateHttpsPort());
     }
 
     /** Checks if global data configuration have been initialized. */
     public boolean isInitialized(){
-      return data.get(AVAILABLELANGUAGES)!=null;
+      return data.get(PUBLICPORT)!=null;
     }
 
     /**
@@ -346,7 +342,6 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     public   String[] getPossibleEntiresPerPage(){return DEFAULTPOSSIBLEENTRIESPERPAGE;}
     public   String[] getPossibleLogEntiresPerPage(){return DEFAULTPOSSIBLELOGENTRIESPERPAGE;}
 
-    public   String getAvailableLanguagesAsString(){return (String) data.get(AVAILABLELANGUAGES);}
     public   String getAvailableThemesAsString(){return (String) data.get(AVAILABLETHEMES);}
 
     public boolean getEnableEndEntityProfileLimitations() { return getBoolean(ENABLEEEPROFILELIMITATIONS, true); }
@@ -366,7 +361,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
 
     public boolean getEnableIcaoCANameChange() { return getBoolean(ENABLEICAOCANAMECHANGE, false); }
     public void setEnableIcaoCANameChange(final boolean value) { putBoolean(ENABLEICAOCANAMECHANGE, value);}
-
+    
     /** @return true of email notification of requested approvals should be sent (default false) */
      @Deprecated // Used during upgrade to EJBCA 6.6.0
      public boolean getUseApprovalNotifications() { return getBoolean(USEAPPROVALNOTIFICATIONS, false); }

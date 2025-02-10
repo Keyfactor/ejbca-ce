@@ -76,4 +76,8 @@ public interface EjbcaJSFHelper extends Serializable {
     /** @return true if the client browser has identified itself as a legacy Internet Explorer 10 (or earlier) */
     boolean isLegacyInternetExplorer();
 
+    /**
+     * Returns the current year for the copyright notice.
+     */
+    int getCurrentYear();
 }

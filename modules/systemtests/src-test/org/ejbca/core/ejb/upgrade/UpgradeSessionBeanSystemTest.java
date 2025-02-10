@@ -71,6 +71,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.ocsp.OcspTestUtils;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
+import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
@@ -1504,6 +1505,48 @@ public class UpgradeSessionBeanSystemTest {
         
         assertNull("ConfigurationCheckerConfiguration was not removed.", globalConfigurationProxySession.findByConfigurationId(ConfigurationCheckerConfiguration.CONFIGURATION_ID));
         
+    }
+    
+    @Test
+    public void testMigrateCtCacheValues920() throws AuthorizationDeniedException {
+       
+        GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+        boolean oldEnableCache = globalCesecoreConfiguration.getCtCacheEnabled();
+        long oldCacheSize = globalCesecoreConfiguration.getCtCacheSize();
+        long oldCleanupInterval = globalCesecoreConfiguration.getCtCacheCleanupInterval();
+        boolean oldFastFail = globalCesecoreConfiguration.getCtCacheFastFailEnabled();
+        long oldBackoff = globalCesecoreConfiguration.getCtCacheFastFailBackoff();
+        try {
+            final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            guc.setUpgradedToVersion("8.3.0");
+            guc.setPostUpgradedToVersion("8.3.0");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+            //Set some non-default values to test with
+            cesecoreConfigSession.setConfigurationValue("ct.cache.enabled", "false");
+            cesecoreConfigSession.setConfigurationValue("ct.cache.maxentries", "200");
+            cesecoreConfigSession.setConfigurationValue("ct.cache.cleanupinterval", "300");
+            cesecoreConfigSession.setConfigurationValue("ct.fastfail.enabled", "false");
+            cesecoreConfigSession.setConfigurationValue("ct.fastfail.backoff", "400");
+            //Perform upgrade
+            upgradeSession.upgrade(null, "8.3.0", false);
+            //Verify values
+            globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+            assertEquals("CT Cache Enable was not upgraded as expected", false, globalCesecoreConfiguration.getCtCacheEnabled());
+            assertEquals("CT Cache Size was not upgraded as expected", 200, globalCesecoreConfiguration.getCtCacheSize());
+            assertEquals("CT Cache Cleanup Interval was not upgraded as expected", 300, globalCesecoreConfiguration.getCtCacheCleanupInterval());
+            assertEquals("CT Cache Fast Fail Enable was not upgraded as expected", false, globalCesecoreConfiguration.getCtCacheFastFailEnabled());
+            assertEquals("CT Cache Fast Fail Backoff was not upgraded as expected", 400, globalCesecoreConfiguration.getCtCacheFastFailBackoff());         
+        } finally {
+            //Restore old values
+            globalCesecoreConfiguration.setCtCacheEnabled(oldEnableCache);
+            globalCesecoreConfiguration.setCtCacheSize(oldCacheSize);
+            globalCesecoreConfiguration.setCtCacheCleanupInterval(oldCleanupInterval);
+            globalCesecoreConfiguration.setCtCacheFastFailEnabled(oldFastFail);
+            globalCesecoreConfiguration.setCtCacheFastFailBackoff(oldBackoff);
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, globalCesecoreConfiguration);
+        }
     }
 
     private EndEntityInformation makeEndEntityInfo(final String username, final String startTime, final String endTime) {
