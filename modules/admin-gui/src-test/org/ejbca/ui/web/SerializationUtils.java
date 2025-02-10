@@ -47,8 +47,6 @@ public class SerializationUtils {
                 continue;
             }
     
-            java.awt.datatransfer.StringSelection classNameSelection = new java.awt.datatransfer.StringSelection(clazz.getCanonicalName());
-            java.awt.Toolkit.getDefaultToolkit().getSystemClipboard().setContents(classNameSelection, classNameSelection);
             if (!SerializationUtils.isSerializable(type))
                 return Optional.of(Pair.of(field, type));
         }
