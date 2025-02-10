@@ -106,6 +106,12 @@ public class KeyRecoveryProxySessionBean implements KeyRecoveryProxySessionRemot
     }
 
     @Override
+    public boolean addKeyRecoveryDataInternal(AuthenticationToken admin, CertificateWrapper caCertificate, CertificateWrapper certificate, String username,
+                                                            KeyPairWrapper keypair, int cryptoTokenId, String keyAlias, final String issuerDN) {
+        return keyRecoverySession.addKeyRecoveryDataInternal(admin, caCertificate, certificate, username, keypair, cryptoTokenId, keyAlias, issuerDN);
+    }
+
+    @Override
     public KeyRecoveryInformation recoverKeysInternal(AuthenticationToken admin, String username, int cryptoTokenId, String keyAlias, final X509Certificate caCertificate ) {
         return keyRecoverySession.recoverKeysInternal(admin, username, cryptoTokenId, keyAlias, caCertificate);
     }

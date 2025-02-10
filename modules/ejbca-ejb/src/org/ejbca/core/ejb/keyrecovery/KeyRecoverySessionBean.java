@@ -43,6 +43,8 @@ import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.certificate.CertificateData;
+import org.cesecore.certificates.certificate.CertificateDataSessionLocal;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -112,6 +114,8 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
     private CaSessionLocal caSession;
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
+    @EJB
+    private CertificateDataSessionLocal certificateDataSession;
     @EJB
     private CryptoTokenSessionLocal cryptoTokenSession;
     @EJB
@@ -206,11 +210,18 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
         }
         
     }
-    
+
+    @Override
+    public boolean addKeyRecoveryDataInternal(final AuthenticationToken admin, final CertificateWrapper caCertificateWrapper,
+                                              final CertificateWrapper certificateWrapper, final String username, final KeyPairWrapper keyPairWrapper, final int cryptoTokenId,
+                                              final String keyAlias) {
+        return addKeyRecoveryDataInternal(admin, caCertificateWrapper, certificateWrapper, username, keyPairWrapper, cryptoTokenId, keyAlias, null);
+    }
+
     @Override
     public boolean addKeyRecoveryDataInternal(final AuthenticationToken admin, final CertificateWrapper caCertificateWrapper,
             final CertificateWrapper certificateWrapper, final String username, final KeyPairWrapper keyPairWrapper, final int cryptoTokenId,
-            final String keyAlias) {
+            final String keyAlias, String issuerDn) {
         if (log.isTraceEnabled()) {
             log.trace(">addKeyRecoveryDataInternal(user: " + username + ")");
         }
@@ -220,15 +231,17 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
         final String certSerialNumber = CertTools.getSerialNumberAsString(certificate);
         boolean returnval = false;
         try {
+            if (issuerDn == null) {
+                issuerDn = CertTools.getIssuerDN(certificate);
+            }
             final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
             final String publicKeyId = getPublicKeyIdFromKey(cryptoToken, keyAlias);
-            
             final byte[] encryptedKeyData = CryptoTools.encryptKeys(caCertificate, cryptoToken, keyAlias, keypair);
-            entityManager.persist(new org.ejbca.core.ejb.keyrecovery.KeyRecoveryData(CertTools.getSerialNumber(certificate), CertTools
-                            .getIssuerDN(certificate), username, encryptedKeyData, cryptoTokenId, keyAlias, publicKeyId));
+            entityManager.persist(new org.ejbca.core.ejb.keyrecovery.KeyRecoveryData(CertTools.getSerialNumber(certificate), issuerDn, username, encryptedKeyData,
+                    cryptoTokenId, keyAlias, publicKeyId));
             // same method to make hex serno as in KeyRecoveryDataBean
             String msg = intres.getLocalizedMessage("keyrecovery.addeddata", CertTools.getSerialNumber(certificate).toString(16),
-                    CertTools.getIssuerDN(certificate), keyAlias, publicKeyId, cryptoTokenId);
+                    issuerDn, keyAlias, publicKeyId, cryptoTokenId);
             final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.KEYRECOVERY_ADDDATA, EventStatus.SUCCESS, EjbcaModuleTypes.KEYRECOVERY, EjbcaServiceTypes.EJBCA,
@@ -236,7 +249,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
             returnval = true;
         } catch (Exception e) {
             final String msg = intres.getLocalizedMessage("keyrecovery.erroradddata", CertTools.getSerialNumber(certificate).toString(16),
-                    CertTools.getIssuerDN(certificate));
+                    issuerDn);
             final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.KEYRECOVERY_ADDDATA, EventStatus.FAILURE, EjbcaModuleTypes.KEYRECOVERY, EjbcaServiceTypes.EJBCA,
@@ -482,6 +495,19 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
     	}
         boolean returnval = false;
     	org.ejbca.core.ejb.keyrecovery.KeyRecoveryData krd = findByPK(new KeyRecoveryDataPK(hexSerial, dn));
+        // When searching for keyrecoverydata based on the actual certificate's issuerDN yielded no results we should search for
+        // keyrecoverydata based on the CertificateData entry's issuerDN instead. In the case of key import they are usually different.
+        if (krd == null) {
+            final String fingerprint = CertTools.getFingerprintAsString(certificate);
+            CertificateData certificateData = certificateDataSession.findByFingerprint(fingerprint);
+            if (certificateData != null) {
+                final String issuerDnFromCertificateData = certificateData.getIssuerDN();
+                krd = findByPK(new KeyRecoveryDataPK(hexSerial, issuerDnFromCertificateData));
+                if (krd != null) {
+                    log.debug("Found key for user: "+krd.getUsername());
+                }
+            }
+        }
         if (krd != null) {
             String username = krd.getUsername();
             // Check that the administrator is authorized to keyrecover
@@ -586,9 +612,25 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
             log.debug("Found key for user: "+krd.getUsername());
             returnval = true;
         }
+        // If searching for key recovery data based on the certificate's issuer dn fails, try searching based on the CertificateData's issuer DN.
+        // These may and often do differ when dealing with imported certificates.
+        if (!returnval) {
+            final String fingerprint = CertTools.getFingerprintAsString(certificate);
+            CertificateData certificateData = certificateDataSession.findByFingerprint(fingerprint);
+            // An imported certificate should have a filled tag field
+            if (certificateData != null && certificateData.getTag() != null) {
+                final String issuerDnFromCertificateData = certificateData.getIssuerDN();
+                KeyRecoveryData krd2 = findByPK(new KeyRecoveryDataPK(hexSerial, issuerDnFromCertificateData));
+                if (krd2 != null) {
+                    log.debug("Found key for user: "+krd2.getUsername());
+                    returnval = true;
+                }
+            }
+        }
     	if (log.isTraceEnabled()) {
             log.trace("<existsKeys(" + returnval + ")");
     	}
+
         return returnval;
     }
     

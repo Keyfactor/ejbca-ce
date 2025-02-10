@@ -64,6 +64,31 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
             int type, int certificateProfileId, int endEntityProfileId, int crlPartitionIndex, String tag, long updateTime, String accountBindingId) throws AuthorizationDeniedException;
 
     /**
+     * Stores a certificate.
+     *
+     * @param admin An authentication token to authorize the action
+     * @param incert The certificate to be stored.
+     * @param cafp Fingerprint (hex) of the CAs certificate.
+     * @param username username of end entity owning the certificate.
+     * @param status the status from the CertificateConstants.CERT_ constants
+     * @param type Type of certificate (CERTTYPE_ENDENTITY etc from CertificateConstants).
+     * @param certificateProfileId the certificate profile id this cert was issued under
+     * @param endEntityProfileId the end entity profile id this cert was issued under
+     * @param crlPartitionIndex the CRL partition that the certificate belongs to, or CertificateConstants.NO_CRL_PARTITION if partitioning is not used.
+     * @param tag a custom string tagging this certificate for some purpose
+     * @param updateTime epoch millis to use as last update time of the stored object
+     * @param accountBindingId external account binding identifier
+     * @param issuerDn custom issuerDN to save instead of the certificate's own issuerDN. Used during key import.
+     * @return CertificateDataWrapper with the certificate just stored that can be used for further publishing
+     *
+     * @throws AuthorizationDeniedException if admin was not authorized to store certificate in database
+     */
+    CertificateDataWrapper storeCertificate(AuthenticationToken admin, Certificate incert, String username, String cafp, int status,
+                                            int type, int certificateProfileId, int endEntityProfileId, int crlPartitionIndex, String tag, long updateTime,
+                                            String accountBindingId, String issuerDn) throws AuthorizationDeniedException;
+
+
+    /**
      * Stores a certificate in the same principle of <strong>storeCertificate</strong> method but creates a new transaction.
      * 
      */
@@ -94,6 +119,34 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      */
     CertificateDataWrapper storeCertificateNoAuth(AuthenticationToken admin, Certificate incert, String username, String cafp, String certificateRequest, 
             int status, int type, int certificateProfileId, int endEntityProfileId, int crlPartitionIndex, String tag, long updateTime, String accountBindingId);
+
+    /**
+     * Stores a certificate without checking authorization. This should be used from other methods where authorization to
+     * the CA issuing the certificate has already been checked. For efficiency this method can then be used.
+     * Has an issuerDn parameter to set a custom issuerDn which differs from the certificate's actual issuerDN.
+     *
+     * @param admin authentication token of the admin performing the operation
+     * @param incert The certificate to be stored.
+     * @param cafp Fingerprint (hex) of the CAs certificate.
+     * @param certificateRequest CSR used during certificate creation
+     * @param username username of end entity owning the certificate.
+     * @param status the status from the CertificateConstants.CERT_ constants
+     * @param type Type of certificate (CERTTYPE_ENDENTITY etc from CertificateConstants).
+     * @param certificateProfileId the certificate profile id this cert was issued under
+     * @param endEntityProfileId the end entity profile id this cert was issued under
+     * @param crlPartitionIndex the CRL partition that the certificate belongs to, or CertificateConstants.NO_CRL_PARTITION if partitioning is not used.
+     * @param tag a custom string tagging this certificate for some purpose
+     * @param updateTime epoch millis to use as last update time of the stored object
+     * @param accountBindingId external account binding identifier
+     * @param issuerDn issuerDn which will be written to the issuerDn field
+     *
+     * @return CertificateDataWrapper with the certificate just stored that can be used for further publishing
+     *
+     */
+    CertificateDataWrapper storeCertificateNoAuth(AuthenticationToken admin, Certificate incert, String username, String cafp, String certificateRequest,
+                                                  int status, int type, int certificateProfileId, int endEntityProfileId, int crlPartitionIndex, String tag,
+                                                                long updateTime, String accountBindingId, String issuerDn);
+
 
     /**
      * Stores a certificate without checking authorization. This should be used from other methods where authorization to
