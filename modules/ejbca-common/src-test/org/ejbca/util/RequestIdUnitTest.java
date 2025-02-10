@@ -43,13 +43,15 @@ public class RequestIdUnitTest {
         Thread.currentThread().setName(ORIGINAL_THREAD_NAME);
         assertNull(RequestId.parse());
         assertFalse(Thread.currentThread().getName().contains(RequestId.SEPARATOR));
+        assertEquals(1, Thread.currentThread().getName().split(RequestId.SEPARATOR).length);
     }
 
     @After
     public void tearDown() throws Exception {
+        closeAllRequestIds();
         assertNull(RequestId.parse());
         assertFalse(Thread.currentThread().getName().contains(RequestId.SEPARATOR));
-        closeAllRequestIds();
+        assertEquals(1, Thread.currentThread().getName().split(RequestId.SEPARATOR).length);
     }
 
     @Test
@@ -60,6 +62,7 @@ public class RequestIdUnitTest {
             assertNotNull(requestId);
             assertEquals(requestId, RequestId.parse());
             assertTrue(Thread.currentThread().getName().contains(RequestId.SEPARATOR));
+            assertEquals(2, Thread.currentThread().getName().split(RequestId.SEPARATOR).length);
         }
     }
 
@@ -73,6 +76,7 @@ public class RequestIdUnitTest {
             assertNotNull(outerRequestId);
             assertEquals(outerRequestId, RequestId.parse());
             assertTrue(Thread.currentThread().getName().contains(RequestId.SEPARATOR));
+            assertEquals(2, Thread.currentThread().getName().split(RequestId.SEPARATOR).length);
 
             // Inner filter
 
@@ -83,8 +87,20 @@ public class RequestIdUnitTest {
                 assertEquals(outerRequestId, RequestId.parse());
                 assertEquals(innerRequestId.getId(), outerRequestId.getId());
                 assertTrue(Thread.currentThread().getName().contains(RequestId.SEPARATOR));
+                assertEquals(2, Thread.currentThread().getName().split(RequestId.SEPARATOR).length);
             }
         }
+    }
+
+    @Test
+    public void testSeparatorCount() {
+        assertEquals(1, Thread.currentThread().getName().split(RequestId.SEPARATOR).length);
+        var first = new RequestId();
+        assertEquals(2, Thread.currentThread().getName().split(RequestId.SEPARATOR).length);
+        var second = new RequestId();
+        assertEquals(2, Thread.currentThread().getName().split(RequestId.SEPARATOR).length);
+        var third = new RequestId();
+        assertEquals(2, Thread.currentThread().getName().split(RequestId.SEPARATOR).length);
     }
 
 }

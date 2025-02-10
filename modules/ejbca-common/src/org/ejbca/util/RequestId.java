@@ -18,6 +18,7 @@ import org.apache.log4j.Logger;
 import java.nio.ByteBuffer;
 import java.security.SecureRandom;
 import java.util.Objects;
+import java.util.UUID;
 
 public final class RequestId implements AutoCloseable {
 
@@ -56,10 +57,13 @@ public final class RequestId implements AutoCloseable {
     public RequestId() {
         this.originalThreadName = Thread.currentThread().getName();
         RequestId parsed = parse();
-        this.id = parsed == null ?
-                String.format("request-id-%06d", secureRandom.nextInt(100_000)) :
-                parsed.getId();
-        Thread.currentThread().setName(originalThreadName+SEPARATOR+id);
+        if (parsed == null) {
+            this.id = String.format("request-id-%06d", secureRandom.nextInt(100_000));
+            Thread.currentThread().setName(originalThreadName+SEPARATOR+id);
+        }
+        else {
+            this.id = parsed.id;
+        }
     }
 
     public String getOriginalThreadName() {
