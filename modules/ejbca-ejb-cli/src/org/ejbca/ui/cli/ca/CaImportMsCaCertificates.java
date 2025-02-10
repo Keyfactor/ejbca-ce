@@ -127,9 +127,10 @@ public class CaImportMsCaCertificates extends BaseCaAdminCommand {
     {
         registerParameter(new Parameter(INPUT_FILE, "Filename", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Path to a dump file created by certutil. You can create a dump with the appropriate data using the following command in Windows:"
-                        + System.lineSeparator() + System.lineSeparator() + "    certutil -view -restrict \"GeneralFlags > 0\" /out \\"
-                        + System.lineSeparator() + "        \"UPN,CertificateTemplate,Disposition,RawCertificate\" > certdump.txt"
-                        + System.lineSeparator()));
+                        + System.lineSeparator() + System.lineSeparator()
+                        + "    certutil -view -restrict \"GeneralFlags > 0\" /out \\"  + System.lineSeparator()
+                        + "        \"UPN,CertificateTemplate,Disposition,RawCertificate,\\"  + System.lineSeparator()
+                        + "        SerialNumber,DistinguishedName\" > certdump.txt" + System.lineSeparator()));
         registerParameter(new Parameter(CA_NAME_KEY, "CA Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "The name of an existing CA in EJBCA, whose certificates are going to be imported."));
         registerParameter(new Parameter(EE_USERNAME, "End Entity Username", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
