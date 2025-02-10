@@ -21,20 +21,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.keyfactor.util.CertTools;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.cert.ocsp.CertificateID;
+import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.util.LogRedactionUtils;
-
-import com.keyfactor.util.CertTools;
 
 /**
  * Hold information needed to create OCSP responses without database lookups.
  */
 public enum OcspSigningCache {
     INSTANCE;
-    
+
     private Map<Integer, OcspSigningCacheEntry> cache = new HashMap<>();
     private Map<Integer, OcspSigningCacheEntry> staging = new HashMap<>();
     private OcspSigningCacheEntry defaultResponderCacheEntry = null;
@@ -42,13 +43,13 @@ public enum OcspSigningCache {
     private final static Logger log = Logger.getLogger(OcspSigningCache.class);
     /** Flag to detect and log non-existence of a default responder once. */
     private boolean logDefaultHasRunOnce = false;
- 
+
     public OcspSigningCacheEntry getEntry(final CertificateID certID) {
         return cache.get(getCacheIdFromCertificateID(certID));
     }
 
     /**
-     * 
+     *
      * @return the entry corresponding to the default responder, or null if it wasn't found.
      */
     public OcspSigningCacheEntry getDefaultEntry() {
@@ -67,15 +68,15 @@ public enum OcspSigningCache {
 
     public void stagingAdd(OcspSigningCacheEntry ocspSigningCacheEntry) {
         for (CertificateID certID : ocspSigningCacheEntry.getCertificateID()) {
-            staging.put(getCacheIdFromCertificateID(certID), ocspSigningCacheEntry);            
+            staging.put(getCacheIdFromCertificateID(certID), ocspSigningCacheEntry);
         }
         for (CertificateID certID : ocspSigningCacheEntry.getSignedBehalfOfCaIds()) {
             // override cache only if no OCSP key binding present or the entry is a placeholder
             int cacheId = getCacheIdFromCertificateID(certID);
-            if(!staging.containsKey(cacheId) || staging.get(cacheId).isPlaceholder() 
+            if(!staging.containsKey(cacheId) || staging.get(cacheId).isPlaceholder()
                             || staging.get(cacheId).getOcspKeyBinding()==null ) {
                 staging.put(cacheId, ocspSigningCacheEntry);
-            }      
+            }
         }
     }
 
@@ -111,7 +112,7 @@ public enum OcspSigningCache {
                     entry.setCrlSigningAlgorithm(stagedDefaultResponder.getCrlSigningAlgorithm());
                     modifiedEntries.put(key, entry);
                 } else {
-                    //If no default responder is defined, remove placeholder. 
+                    //If no default responder is defined, remove placeholder.
                     removedEntries.add(key);
                 }
             }
@@ -192,7 +193,7 @@ public enum OcspSigningCache {
 
     /**
      * This method will add a single cache entry to the cache. It should only be used to solve temporary cache inconsistencies.
-     * 
+     *
      * @param ocspSigningCacheEntry the entry to add
      */
     public void addSingleEntry(OcspSigningCacheEntry ocspSigningCacheEntry) {
@@ -208,10 +209,10 @@ public enum OcspSigningCache {
                 for (CertificateID certIDOnBehalf : ocspSigningCacheEntry.getSignedBehalfOfCaIds()) {
                     // override cache only if no OCSP key binding present or the entry is a placeholder
                     int cacheIdOnBehalf = getCacheIdFromCertificateID(certIDOnBehalf);
-                    if(!cache.containsKey(cacheIdOnBehalf) || cache.get(cacheIdOnBehalf).isPlaceholder() 
+                    if(!cache.containsKey(cacheIdOnBehalf) || cache.get(cacheIdOnBehalf).isPlaceholder()
                                     || cache.get(cacheIdOnBehalf).getOcspKeyBinding()==null ) {
                         cache.put(cacheIdOnBehalf, ocspSigningCacheEntry);
-                    }      
+                    }
                 }
             } finally {
                 lock.unlock();
@@ -233,8 +234,8 @@ public enum OcspSigningCache {
         final BigInteger issuerKeyHash = bigIntFromBytes(certID.getIssuerKeyHash());
         int result = issuerNameHash.hashCode() ^ issuerKeyHash.hashCode();
         if (log.isDebugEnabled()) {
-            log.debug("Using getIssuerNameHash " + issuerNameHash.toString(16) + " and getIssuerKeyHash "
-                    + issuerKeyHash.toString(16) + " to produce id " + result);
+            log.debug("Using getIssuerNameHash " + Hex.toHexString(certID.getIssuerNameHash()) + " and getIssuerKeyHash "
+                    + Hex.toHexString(certID.getIssuerKeyHash()) + " to produce cache ID " + result);
         }
         return result;
     }
