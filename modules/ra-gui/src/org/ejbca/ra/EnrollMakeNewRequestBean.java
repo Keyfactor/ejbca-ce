@@ -1187,6 +1187,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (getSubjectDirectoryAttributes() != null) {
             extendedInformation.setSubjectDirectoryAttributes(getSubjectDirectoryAttributes().toString());
         }
+        
+        if (getEndEntityProfile().isAllowedRequestsUsed()) {
+            extendedInformation.setAllowedRequests(String.valueOf(getEndEntityProfile().getAllowedRequests()));            
+        }
 
         // Add extension data
         if (extensionData != null) {
