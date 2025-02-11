@@ -20,10 +20,11 @@ import org.ejbca.ui.web.configuration.WebLanguage;
  * An class interpreting the language properties files. It contains a method {@link WebLanguages#getText(String, Object...)}
  * that returns the presented text in the users preferred language.
  *
- * @version $Id$
  */
 public interface WebLanguages {
 
+    final String[] AVAILABLE_LANGUAGES = new String[] { "en", "bs", "cs", "de", "fr", "ja", "pt", "sv", "uk", "zh", "vi" };
+    
     /**
      * Lookup up a language string in the users preferred language.
      *
