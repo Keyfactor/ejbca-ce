@@ -198,6 +198,12 @@ public abstract class CryptoTokenRunner {
     
     protected X509CAInfo createTestX509Ca(final String caName, String cadn, char[] tokenpin, boolean genKeys, String cryptoTokenImplementation, int signedBy, final String keyspec,
             String validity, String signingAlgorithm) throws CryptoTokenOfflineException, CertificateParsingException, OperatorCreationException {
+        return createTestX509Ca(caName, cadn, tokenpin, genKeys, cryptoTokenImplementation, signedBy, keyspec,
+                 validity, signingAlgorithm, false);
+    }
+    
+    protected X509CAInfo createTestX509Ca(final String caName, String cadn, char[] tokenpin, boolean genKeys, String cryptoTokenImplementation, int signedBy, final String keyspec,
+            String validity, String signingAlgorithm, boolean isMsCompatible) throws CryptoTokenOfflineException, CertificateParsingException, OperatorCreationException {
         final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("createTestX509CAOptionalGenKeys"));
 
         CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
@@ -230,6 +236,8 @@ public abstract class CryptoTokenRunner {
         cainfo.setDeltaCRLPeriod(10 * SimpleTime.MILLISECONDS_PER_HOUR); // In order to be able to create deltaCRLs
         cainfo.setDoEnforceUniqueDistinguishedName(true);
         cainfo.setDoEnforceUniquePublicKeys(true);
+        cainfo.setMsCaCompatible(isMsCompatible);
+        cainfo.setCrlDistributionPointOnCrlCritical(isMsCompatible);
         cryptoTokenManagementProxySession.flushCache();
         
         final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
@@ -264,5 +272,9 @@ public abstract class CryptoTokenRunner {
     
     
     protected abstract String getTokenImplementation();
+
+    public abstract X509CAInfo createX509CaMsCompatible(String subjectDn, String caName) throws Exception;
+    
+    public abstract X509CAInfo createX509CaMsCompatible(String subjectDn, String caName, int signedBy) throws Exception;
 
 }
