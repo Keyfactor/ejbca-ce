@@ -36,7 +36,9 @@ public class CertificateProfileInfoRestResponseV2 {
     private List<String> availableEcdsaCurves;
     private List<String> availableCas;
     
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<Integer> keyUsages;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<String> extendedKeyUsages;
     private String validity;
     
