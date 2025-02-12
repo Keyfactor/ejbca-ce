@@ -92,7 +92,6 @@ public class RaCertificateProfileResponseV2 implements Serializable {
             if (certificateProfile.getKeyUsage(CertificateConstants.DIGITALSIGNATURE)) {
                 results.add(CertificateConstants.DIGITALSIGNATURE);
             }
-
             if (certificateProfile.getKeyUsage(CertificateConstants.NONREPUDIATION)) {
                 results.add(CertificateConstants.NONREPUDIATION);
             }
@@ -114,7 +113,6 @@ public class RaCertificateProfileResponseV2 implements Serializable {
             if (certificateProfile.getKeyUsage(CertificateConstants.ENCIPHERONLY)) {
                 results.add(CertificateConstants.ENCIPHERONLY);
             }
-
             if (certificateProfile.getKeyUsage(CertificateConstants.DECIPHERONLY)) {
                 results.add(CertificateConstants.DECIPHERONLY);
             }
@@ -168,8 +166,13 @@ public class RaCertificateProfileResponseV2 implements Serializable {
             response.availableBitLengths = availableBitLengthsFromProfile;
             response.availableEcdsaCurves = availableEcdsaCurvesFromProfile;
             response.availableCas = getAvailableCasFromProfile(caIds, caInfos);
-            response.keyUsages = getCertProfileKeyUsages(certificateProfile);
-            response.extendedKeyUsages = certificateProfile.getExtendedKeyUsageOids();
+            
+            if (certificateProfile.getUseKeyUsage()) {
+                response.keyUsages = getCertProfileKeyUsages(certificateProfile);
+            }
+            if (certificateProfile.getUseExtendedKeyUsage()) {
+                response.extendedKeyUsages = certificateProfile.getExtendedKeyUsageOids();
+            }
             response.validity = certificateProfile.getEncodedValidity();
 
             if (useAlternativeSignature) {
