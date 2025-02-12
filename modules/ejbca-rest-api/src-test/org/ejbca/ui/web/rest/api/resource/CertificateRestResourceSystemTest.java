@@ -24,18 +24,12 @@ import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
 import java.security.cert.X509CRLEntry;
 import java.security.cert.X509Certificate;
+import java.text.DateFormat;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
-import java.util.TimeZone;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -47,7 +41,10 @@ import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
+import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.IETFUtils;
 import org.bouncycastle.jce.X509KeyUsage;
@@ -61,6 +58,9 @@ import org.cesecore.certificates.ca.CvcCA;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateData;
+import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
+import org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
@@ -71,9 +71,11 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.cert.CrlExtensions;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.ValidityDate;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeProxySessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -90,6 +92,8 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
+import org.ejbca.ui.web.rest.api.io.request.EnrollCertificateRestRequest;
+import org.ejbca.ui.web.rest.api.io.request.ExtendedInformationRestRequestComponent;
 import org.ejbca.ui.web.rest.api.io.request.FinalizeRestRequest;
 import org.ejbca.ui.web.rest.api.resource.util.CertificateRestResourceSystemTestUtil;
 import org.ejbca.ui.web.rest.api.resource.util.TestEndEntityParamHolder;
@@ -113,6 +117,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.xml.bind.DatatypeConverter;
 
+import static java.lang.Thread.sleep;
 import static org.cesecore.certificates.crl.RevocationReasons.AACOMPROMISE;
 import static org.cesecore.certificates.crl.RevocationReasons.AFFILIATIONCHANGED;
 import static org.cesecore.certificates.crl.RevocationReasons.CACOMPROMISE;
@@ -123,6 +128,7 @@ import static org.cesecore.certificates.crl.RevocationReasons.NOT_REVOKED;
 import static org.cesecore.certificates.crl.RevocationReasons.PRIVILEGESWITHDRAWN;
 import static org.cesecore.certificates.crl.RevocationReasons.SUPERSEDED;
 import static org.cesecore.certificates.crl.RevocationReasons.UNSPECIFIED;
+import static org.cesecore.util.ValidityDate.TIMEZONE_UTC;
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertJsonContentType;
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertProperJsonExceptionErrorResponse;
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertProperJsonStatusResponse;
@@ -156,6 +162,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     private static final UnidfnrProxySessionRemote unidfnrProxySessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(UnidfnrProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private static final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private static final EnterpriseEditionEjbBridgeProxySessionRemote enterpriseEjbBridgeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EnterpriseEditionEjbBridgeProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
 
     private static final Random RANDOM = new Random();
     private X509CA x509TestCa;
@@ -170,6 +177,16 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     private CvcCA cvcTestCa = null; // Don't create this for every test
     private String testCaNameCVC = "TESTCVC";
     private String testCVCIssuerDn = "C=SE,CN=CAREF001";
+    private final String oid = "2.5.29.36";
+    private String overwriteSdn = "CN=pkcs10enrollOveriteSystemTest";
+    // right now + 3 days
+    Instant start = Instant.now().plusSeconds(60 * 60 * 24*3);
+    private String validityStart = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss", TIMEZONE_UTC)
+            .format(Date.from(start));
+    // right now + 5 days
+    Instant end = Instant.now().plusSeconds(60 * 60 * 24*7);
+    private String validityEnd = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss", TIMEZONE_UTC)
+            .format(Date.from(end));
 
     public static final String BEGIN_CSR = "-----BEGIN CERTIFICATE REQUEST-----";
     public static final String END_CSR = "-----END CERTIFICATE REQUEST-----";
@@ -260,6 +277,33 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             + "hKyNv2RBgfyehJioap8wLA0dCe1oJIz9Jy4WNGTNSXSB/Okj/3dZhDjB+qfnXe/k"
             + "GesEGlVKuoZFbjVE06+a0ja/0QlDjSW6xBdrtECWhD7rHZvPid1OdA==";
 
+    // CN=primekey.com,OU=Infra,O=PrimeKey Solutions AB,C=SE
+    // Subject Alternative Name - DNS Name: primekey.com
+    private static final String CSR_TO_OVERWRITE =
+            "MIIC5TCCAc0CAQAwVDELMAkGA1UEBhMCU0UxHjAcBgNVBAoMFVByaW1lS2V5IFNv\n" +
+            "bHV0aW9ucyBBQjEOMAwGA1UECwwFSW5mcmExFTATBgNVBAMMDHByaW1la2V5LmNv\n" +
+            "bTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALRru0MGopCMN0eaznY8\n" +
+            "BAgr1KB3hzUvhrzLwW0rWD4uMfD1EJSezthxDuJXo5egSp9LDt4S3TFBHwzHwiy0\n" +
+            "kMZKGHgkMs6uJ64swHgO5Jy6CuSRQ9DgVQ7DqppoIs2096M0bnbp9ck3AHMeHUUr\n" +
+            "OdeGfga1nGDzEGlI123TK1f83rQiiyNaRdT6IYgAQz95c4lcZ5vgEYMAmUHr9TmB\n" +
+            "CwsA8FuK/ND1UXL9ASAge4PLDIKk9Xe4JTvCHqgbR/2/OFd5kLPdCiebmo4pUPIf\n" +
+            "9124vDf77WDd+fF68Di/bZ6z0jxZwscQV8Dbu8zJDooi92pY2YodxihA51DBocJa\n" +
+            "M8MCAwEAAaBMMEoGCSqGSIb3DQEJDjE9MDswCwYDVR0PBAQDAgWgMBMGA1UdJQQM\n" +
+            "MAoGCCsGAQUFBwMBMBcGA1UdEQQQMA6CDHByaW1la2V5LmNvbTANBgkqhkiG9w0B\n" +
+            "AQsFAAOCAQEAAXZUloRPDWNM+yg7F/t9d011eYIV2bwLqVT01Yoia7XqivGRg1hQ\n" +
+            "MwBGwcCgYYjfZ9Mozin9kmm3gDHcWZMGRoCgCu+x06awmk3XiYwLGCU9m8kjDW3F\n" +
+            "OTcDnFx4FDAj8iU+W2wpUgXcoGhi6GdvNs1md5DiNPiY291ASaea5PEDCU/HoLPm\n" +
+            "PMkWt9Gr0JAoiTfCE7kjSqxPYevTebFvyz5DwO1q7FzWmA4KRcTinxF+lTeotwUM\n" +
+            "UMw3yBkmcRg1G25QzMmEIS/Xb4viaopb9PVt2+h8FPzoI56W6MQ+E7jHx+6muWU4\n" +
+            "ArRUer6mI/77v4GrwYmGGpMfWZkz9oB+iQ==";
+
+    private static final String CSR_TO_OVERWRITE_WITH_HEADERS =
+            BEGIN_CSR
+                    + "\n"
+                    + CSR_TO_OVERWRITE
+                    + "\n"
+                    + END_CSR;
+
     @BeforeClass
     public static void beforeClass() throws Exception {
         RestResourceSystemTestBase.beforeClass();
@@ -305,6 +349,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void shouldReturnStatusInformation() throws Exception {
         // given
         final String expectedStatus = "OK";
@@ -320,6 +365,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void shouldReturnCertificateProfileInfo() throws Exception {
         // Given
         final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
@@ -369,6 +415,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     @SuppressWarnings("unused")
     public void shouldNotReturnAltKeysIfNotUsed() throws Exception {
         // Given
@@ -403,6 +450,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     @SuppressWarnings("unused")
     public void shouldReturnEmptyAltKeysListIfNoneSelected() throws Exception {
         // Given
@@ -436,18 +484,21 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void shouldRevokeCertificateWithRsaKey() throws Exception {
         createTestEndEntity();
         revokeCertificate(createKeystore("1024", AlgorithmConstants.KEYALGORITHM_RSA));
     }
 
     @Test
+
     public void shouldRevokeCertificateMLDSA44() throws Exception {
         createTestEndEntity();
         revokeCertificate(createKeystore(AlgorithmConstants.SIGALG_MLDSA44, AlgorithmConstants.KEYALGORITHM_MLDSA44));
     }
 
     @Test
+
     public void shouldRevokeCertificateFalcon512() throws Exception {
         createTestEndEntity();
         revokeCertificate(createKeystore(AlgorithmConstants.SIGALG_FALCON512, AlgorithmConstants.KEYALGORITHM_FALCON512));
@@ -480,6 +531,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void shouldRevokeCertificateWithInvalidityDate() throws Exception {
         // given
         enableInvalidityDate();
@@ -515,6 +567,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void shouldAddInvalidityDateToRevokedCertificate() throws Exception {
         // given
         enableInvalidityDate();
@@ -553,6 +606,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void shouldAllowInvalidityDateChange() throws Exception {
         // given
         enableInvalidityDate();
@@ -599,6 +653,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void shouldPreventRevocationWithAFutureInvalidityDate() throws Exception {
         // given
         final String serialNumber = generateTestSerialNumber();
@@ -612,6 +667,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void shouldPreventRevocationWithInvalidityDateIfDisabledOnCaLevel() throws Exception {
         // given
         disableInvalidityDate();
@@ -629,6 +685,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void shouldPreserveInvalidityDateWhenOnlyRevocationReasonIsChanged() throws Exception {
         // given
         enableInvalidityDate();
@@ -672,6 +729,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void shouldPreventAnyInvalidityDateChangeWhenRevocationReasonChangeFails() throws Exception {
         // given
         enableInvalidityDate();
@@ -719,6 +777,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void shouldAllowRevocationReasonChange() throws Exception {
         enableRevocationReasonChange();
         // User and certificate generation
@@ -774,6 +833,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void shouldPreventRevocationWithInvalidReason() throws Exception {
         // given
         final String serialNumber = generateTestSerialNumber();
@@ -787,6 +847,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void shouldPreventRevocationWithAFutureDate() throws Exception {
         // given
         final String serialNumber = generateTestSerialNumber();
@@ -800,6 +861,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void shouldPreventRevocationReasonChangeIfDisabledOnCaLevel() throws Exception {
         // given
         disableRevocationReasonChange();
@@ -817,6 +879,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void shouldPreventBackdatingRevocationIfDisabledInCertificateProfile() throws Exception {
         // given
         disableRevocationBackdating();
@@ -833,6 +896,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void shouldPreserveRevocationDateWhenOnlyReasonIsChanged() throws Exception {
         // given
         enableRevocationReasonChange();
@@ -842,7 +906,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         // when
         JSONObject initialRevocationResponse = revokeCertificate(testIssuerDn, serialNumber, initialRevocationReason, null);
         final String initialRevocationDate = initialRevocationResponse.get("revocation_date").toString();
-        Thread.sleep(1000);
+        sleep(1000);
         final JSONObject revocationReasonChangeResponse = revokeCertificate(testIssuerDn, serialNumber, updatedRevocationReason, null);
         // then
         assertEquals("Changing revocation reson should have preserved the initial revocation date",
@@ -850,6 +914,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void shouldAllowBackdatingRevocation() throws Exception {
         // given
         enableRevocationBackdating();
@@ -863,6 +928,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void shouldAllowBackdatingRevocationDuringReasonChange() throws Exception {
         // given
         enableRevocationReasonChange();
@@ -880,6 +946,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void shouldAllowBackdatingRevokedCertificateWithReasonKeyCompromise() throws Exception {
         // given
         enableRevocationReasonChange();
@@ -897,6 +964,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void shouldAllowRevocationReasonChangeFromUnspecifiedToKeyCompromise() throws Exception {
         // given
         enableRevocationReasonChange();
@@ -912,6 +980,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void shouldAllowRevocationReasonChangeFromPrivilegesWithdrawnToKeyCompromise() throws Exception {
         // given
         enableRevocationReasonChange();
@@ -927,6 +996,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void shouldAllowRevocationReasonChangeFromCessationOfOperationToKeyCompromise() throws Exception {
         // given
         enableRevocationReasonChange();
@@ -942,6 +1012,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void shouldAllowRevocationReasonChangeFromAffiliationChangedToKeyCompromise() throws Exception {
         // given
         enableRevocationReasonChange();
@@ -957,6 +1028,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void shouldAllowRevocationReasonChangeFromSupersededToKeyCompromise() throws Exception {
         // given
         enableRevocationReasonChange();
@@ -972,6 +1044,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void shouldPreventRevocationReasonChangeFromCaCompromiseToAnother() throws Exception {
         // given
         enableRevocationReasonChange();
@@ -990,6 +1063,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void shouldPreventRevocationReasonChangeFromAACompromiseToAnother() throws Exception {
         // given
         enableRevocationReasonChange();
@@ -1008,6 +1082,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void shouldAllowReactivatingACertificateOnHold() throws Exception {
         // given
         createTestEndEntity();
@@ -1019,7 +1094,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         // when
         final JSONObject revocationResponse = revokeCertificate(testIssuerDn, serialNumber, revocationReason, null);
         final Date preActivationSystemDate = new Date();
-        Thread.sleep(1000);
+        sleep(1000);
         final JSONObject reactivationResponse = revokeCertificate(testIssuerDn, serialNumber, reactivationReason, null);
         final CertificateData certificateData = internalCertificateStoreSession.getCertificateData(fingerprint);
         // then
@@ -1035,6 +1110,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void shouldContainUpdatedRevocationReasonInBaseCrl() throws Exception {
         assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
         // given
@@ -1053,6 +1129,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void shouldContainBackdatedRevocationDateInBaseCrl() throws Exception {
         assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
         // given
@@ -1076,6 +1153,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void shouldContainUpdatedRevocationReasonInDeltaCrl() throws Exception {
         assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
         // given
@@ -1085,7 +1163,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         final String updatedRevocationReason = KEYCOMPROMISE.getStringValue();
         // when
         revokeCertificate(testIssuerDn, serialNumber, initialRevocationReason, null);
-        Thread.sleep(1000);
+        sleep(1000);
         revokeCertificate(testIssuerDn, serialNumber, updatedRevocationReason, null);
         createCrl(false);
         final X509CRL deltaCrl = createCrl(true);
@@ -1094,6 +1172,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void shouldContainBackdatedRevocationDateInDeltaCrl() throws Exception {
         assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
         // Scenario: initial revocation > revocation backdating with a date after last base CRL > base CRL > delta CRL
@@ -1103,11 +1182,11 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         final String serialNumber = generateTestSerialNumber();
         final String revocationReason = KEYCOMPROMISE.getStringValue();
         // when
-        Thread.sleep(1000);
+        sleep(1000);
         final String backdatedRevocationDate = getRevocationRequestDate();
         final long backdatedRevocationTime = DatatypeConverter.parseDateTime(backdatedRevocationDate).getTime().getTime();
         revokeCertificate(testIssuerDn, serialNumber, revocationReason, null); // revoke using sysdate
-        Thread.sleep(1000);
+        sleep(1000);
         revokeCertificate(testIssuerDn, serialNumber, revocationReason, backdatedRevocationDate); // backdate
         createCrl(false);
         final X509CRL deltaCrl = createCrl(true);
@@ -1117,6 +1196,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void shouldGenerateCrlUponRevocationReasonChange() throws Exception {
         assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
         // given
@@ -1138,6 +1218,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void shouldChangeRevocationReasonUponCrlImport() throws Exception {
         assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
         // given
@@ -1158,21 +1239,25 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void enrollPkcs10ExpectCertificateResponseWithRequestedSubjectDnAndIssuerWithoutEmail() throws Exception {
         enrollPkcs10ExpectCertificateResponseWithRequestedSubjectDnAndIssuer(null, false, true);
     }
 
     @Test
+
     public void enrollPkcs10ExpectCertificateResponseWithRequestedSubjectDnAndIssuerWithoutHeaders() throws Exception {
         enrollPkcs10ExpectCertificateResponseWithRequestedSubjectDnAndIssuer("random@samp.de", false, false);
     }
 
     @Test
+
     public void enrollPkcs10ExpectCertificateResponseWithRequestedSubjectDnAndIssuerWithEmail() throws Exception {
         enrollPkcs10ExpectCertificateResponseWithRequestedSubjectDnAndIssuer("random@samp.de", false, true);
     }
 
     @Test
+
     public void enrollPkcs10ExpectCertificateResponseWithCVC() throws Exception {
         assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
         cvcTestCa = CryptoTokenTestUtils.createTestCVCAWithSoftCryptoToken(INTERNAL_ADMIN_TOKEN, testCVCIssuerDn);
@@ -1180,6 +1265,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void enrollPkcs10ExpectCertificateResponseWithoutHeadersWithCVC() throws Exception {
         assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
         cvcTestCa = CryptoTokenTestUtils.createTestCVCAWithSoftCryptoToken(INTERNAL_ADMIN_TOKEN, testCVCIssuerDn);
@@ -1238,11 +1324,13 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void enrollPkcs10ExpectResponseFormatPKCS7() throws Exception {
-        enrollPkcs10("ENDUSER", "EMPTY", "PKCS7", CSR_WITHOUT_HEADERS, 201, null);
+        enrollPkcs10("ENDUSER", "EMPTY", "PKCS7", CSR_WITHOUT_HEADERS, 201, null, false);
     }
 
     @Test
+
     public void enrollPkcs10WithSan() throws Exception {
     	// given
         final EndEntityProfile eep = new EndEntityProfile(false);
@@ -1254,7 +1342,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
 
         // when
         X509Certificate certificate = (X509Certificate) enrollPkcs10("ENDUSER", testEeProfileNameWithSan, "PKCS7", CSR_WITH_SAN_WITHOUT_HEADERS,
-                400, "Wrong number of RFC822NAME fields in Subject Alternative Name.");
+                400, "Wrong number of RFC822NAME fields in Subject Alternative Name.", false);
         // then
         assertNull("No certificate must habe been generated after an end entity profile exception.", certificate);
 
@@ -1272,19 +1360,119 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         eep.addField(DnComponents.RFC822NAME);
         endEntityProfileSession.changeEndEntityProfile(INTERNAL_ADMIN_TOKEN, testEeProfileNameWithSan, eep);
 
-        certificate = (X509Certificate) enrollPkcs10("ENDUSER", testEeProfileNameWithSan, "PKCS7", CSR_WITH_SAN_WITHOUT_HEADERS, 201, null);
+        certificate = (X509Certificate) enrollPkcs10("ENDUSER", testEeProfileNameWithSan, "PKCS7", CSR_WITH_SAN_WITHOUT_HEADERS, 201, null, false);
         assertNotNull("The certificate generated must not be null.", certificate);
         assertSansPkcs10Enroll(certificate);
     }
 
-    private Certificate enrollPkcs10(final String cpName, final String eepName, final String responseFormat, final String pemCsrWithoutHeaders, final int responseStatus, final String error) throws Exception {
-        final EnrollPkcs10CertificateRequest pkcs10req = new EnrollPkcs10CertificateRequest.Builder().
-                certificateAuthorityName(testCaName).
-                certificateProfileName(cpName).
-                endEntityProfileName(eepName).
-                username(testUsername).
-                password("foo123").includeChain(false).responseFormat(responseFormat).
-                certificateRequest(pemCsrWithoutHeaders).build();
+    @Test
+    public void enrollPkcs10Overwrite() throws Exception {
+        Properties props = new Properties();
+        props.put("encoding", "DEROBJECT");
+        props.put("value", "3006800100810100");
+        CertificateExtension extension = new BasicCertificateExtension();
+        extension.init(1, oid, "BasicCertificateExtension", false, false, props);
+        AvailableCustomCertificateExtensionsConfiguration customCertificateConfiguration = (AvailableCustomCertificateExtensionsConfiguration) globalConfigurationSession
+                .getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
+        customCertificateConfiguration.addCustomCertExtension(extension);
+        int extensionId = customCertificateConfiguration.getAllAvailableCustomCertificateExtensions().get(0).getId();
+        globalConfigurationSession.saveConfiguration(INTERNAL_ADMIN_TOKEN, customCertificateConfiguration);
+
+        final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+
+        final List<Integer> availableCas = new ArrayList<>();
+        availableCas.add(x509TestCa.getCAId());
+        certificateProfile.setAvailableCAs(availableCas);
+
+        final int[] availableBitLengths = { 2048 };
+        certificateProfile.setAvailableBitLengths(availableBitLengths);
+
+        final String[] availableAlgorithms = { "RSA" };
+        certificateProfile.setAvailableKeyAlgorithms(availableAlgorithms);
+
+        certificateProfile.setUseAlternativeSignature(true);
+        certificateProfile.setAlternativeAvailableKeyAlgorithms(new String[0]);
+
+        certificateProfile.setAllowValidityOverride(true);
+        certificateProfile.setAllowExpiredValidityEndDate(true);
+        certificateProfile.setAllowExtensionOverride(true);
+        certificateProfile.setOverridableExtensionOIDs(Set.of(oid));
+        certificateProfile.setUsedCertificateExtensions(List.of(extensionId));
+
+        final int certProfileId = certificateProfileSession.addCertificateProfile(
+                INTERNAL_ADMIN_TOKEN,
+                testCertProfileName,
+                certificateProfile
+        );
+
+        final EndEntityProfile eep = new EndEntityProfile(false);
+        eep.setDefaultCertificateProfile(certProfileId);
+        eep.setAvailableCertificateProfileIds(List.of(certProfileId));
+        eep.setDefaultCA(x509TestCa.getCAId());
+        eep.setAvailableCAs(List.of(x509TestCa.getCAId()));
+        eep.setEmailUsed(false);
+        eep.addField(DnComponents.DNSNAME);
+        endEntityProfileSession.addEndEntityProfile(INTERNAL_ADMIN_TOKEN, testEeProfileName, eep);
+
+        X509Certificate certificate = (X509Certificate) enrollPkcs10(
+                testCertProfileName,
+                testEeProfileName,
+                "PKCS7",
+                CSR_TO_OVERWRITE_WITH_HEADERS,
+                201,
+                null,
+                true
+        );
+
+        assertEquals("Wrong subjectDn", overwriteSdn, certificate.getSubjectDN().getName());
+        String actualValidityStart = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss", TIMEZONE_UTC)
+                .format(certificate.getNotBefore());
+        assertEquals("Wrong validity start time.", validityStart, actualValidityStart);
+        String actualValidityEnd = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss", TIMEZONE_UTC)
+                .format(certificate.getNotAfter());
+        assertEquals("Wrong validity end time.", validityEnd , actualValidityEnd);
+
+
+        byte[] value = certificate.getExtensionValue(oid);
+        ASN1InputStream asn1InputStream = new ASN1InputStream(value);
+        ASN1Primitive obj = asn1InputStream.readObject();
+
+        assertEquals("Extension overwrite value is wrong", "1", obj);
+
+    }
+
+    private Certificate enrollPkcs10(
+            final String cpName,
+            final String eepName,
+            final String responseFormat,
+            final String pemCsrWithoutHeaders,
+            final int responseStatus,
+            final String error,
+            final boolean overwrite
+    ) throws Exception {
+
+        final EnrollCertificateRestRequest pkcs10req = new EnrollCertificateRestRequest();
+        pkcs10req.setCertificateAuthorityName(testCaName);
+        pkcs10req.setCertificateProfileName(cpName);
+        pkcs10req.setEndEntityProfileName(eepName);
+        pkcs10req.setUsername(testUsername);
+        pkcs10req.setPassword("foo123");
+        pkcs10req.setIncludeChain(false);
+        pkcs10req.setResponseFormat(responseFormat);
+        pkcs10req.setCertificateRequest(pemCsrWithoutHeaders);
+
+        ExtendedInformationRestRequestComponent extension;
+
+        if (overwrite) {
+            pkcs10req.setSubjectDn(overwriteSdn);
+            pkcs10req.setStartTime(validityStart);
+            pkcs10req.setEndTime(validityEnd);
+            extension = ExtendedInformationRestRequestComponent.builder()
+                    .setName(oid)
+                    .setValue("1")
+                    .build();
+            pkcs10req.setExtensionData(List.of(extension));
+        }
 
         // Construct POST request
         final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
@@ -1327,11 +1515,13 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void certificateRequestExpectCsrSubjectIgnoredWithoutHeaders() throws Exception {
         certificateRequestExpectCsrSubjectIgnored(false);
     }
 
     @Test
+
     public void certificateRequestExpectCsrSubjectIgnoredWithHeaders() throws Exception {
         certificateRequestExpectCsrSubjectIgnored(true);
     }
@@ -1374,6 +1564,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void testGetCertificateAboutToExpireSmoke() throws Exception {
         final Response actualResponse = newRequest("/v1/certificate/expire?days=1").request().get();
         final String actualJsonString = actualResponse.readEntity(String.class);
@@ -1384,6 +1575,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void testGetCertificateAboutToExpireDetailedSearch() throws Exception {
 
         final String issuerDN = "CN=CaSigningForVariedValidity";
@@ -1555,6 +1747,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void testCreateCertificateNonExistingCa() throws Exception {
 
         final KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
@@ -1583,6 +1776,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void testCreateCertificateRequestWithSan() throws Exception {
         // given
         // TODO: The UNIFORMRESOURCEIDENTIFIER does not get into the certificate.
@@ -1788,6 +1982,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void enrollPkcs10WithUnidFnr() throws Exception {
         final String username = "enrollPkcs10WithUnidFnr";
         final String password = "foo123";
@@ -1861,6 +2056,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+
     public void finalizeKeyStoreExpectPkcs12Response() throws Exception {
         // Create an add end entity approval request
         final AuthenticationToken approvalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EjbcaRestApiApprovalTestAdmin"));
@@ -1945,6 +2141,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
      * @throws Exception
      */
     @Test
+
     public void shouldRestrictAccessToRestResourceIfProtocolDisabled() throws Exception {
         // given
         disableRestProtocolConfiguration();
