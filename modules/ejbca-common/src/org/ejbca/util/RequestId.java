@@ -45,9 +45,6 @@ public final class RequestId implements AutoCloseable {
         this.originalThreadName = originalThreadName;
         this.id = id;
         Thread.currentThread().setName(originalThreadName+SEPARATOR+id);
-        if (!originalThreadName.contains(SEPARATOR)) {
-            log.info("Start of request");
-        }
     }
 
     public RequestId(String id) {
@@ -76,9 +73,6 @@ public final class RequestId implements AutoCloseable {
 
     @Override
     public void close() {
-        if (!originalThreadName.contains(SEPARATOR)) {
-            log.info("End of request");
-        }
         Thread.currentThread().setName(originalThreadName);
     }
 
