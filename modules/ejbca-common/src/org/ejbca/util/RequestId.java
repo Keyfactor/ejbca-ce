@@ -13,16 +13,11 @@
 
 package org.ejbca.util;
 
-import org.apache.log4j.Logger;
-
 import java.nio.ByteBuffer;
 import java.security.SecureRandom;
 import java.util.Objects;
-import java.util.UUID;
 
 public final class RequestId implements AutoCloseable {
-
-    private static final Logger log = Logger.getLogger(RequestId.class);
 
     protected static final String SEPARATOR = ": ";
     private static final SecureRandom secureRandom;
@@ -44,7 +39,7 @@ public final class RequestId implements AutoCloseable {
     private RequestId(String originalThreadName, String id) {
         this.originalThreadName = originalThreadName;
         this.id = id;
-        Thread.currentThread().setName(originalThreadName+SEPARATOR+id);
+        Thread.currentThread().setName(originalThreadName + SEPARATOR + id);
     }
 
     public RequestId(String id) {
@@ -56,9 +51,8 @@ public final class RequestId implements AutoCloseable {
         RequestId parsed = parse();
         if (parsed == null) {
             this.id = String.format("request-id-%06d", secureRandom.nextInt(100_000));
-            Thread.currentThread().setName(originalThreadName+SEPARATOR+id);
-        }
-        else {
+            Thread.currentThread().setName(originalThreadName + SEPARATOR + id);
+        } else {
             this.id = parsed.id;
         }
     }
