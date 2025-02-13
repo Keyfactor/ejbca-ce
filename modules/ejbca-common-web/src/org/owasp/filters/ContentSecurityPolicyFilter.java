@@ -21,8 +21,6 @@
 package org.owasp.filters;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.ejbca.util.RequestId;
 import org.ejbca.config.WebConfiguration;
 
 import jakarta.servlet.Filter;
@@ -31,7 +29,6 @@ import jakarta.servlet.FilterConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -47,8 +44,6 @@ import java.util.List;
  * adapted.
  */
 public class ContentSecurityPolicyFilter implements Filter {
-
-    private static final Logger log = Logger.getLogger(ContentSecurityPolicyFilter.class);
 
     /**
      * Configuration member to specify if web app use web fonts Set to true to allow PrimeFaces to load icons, but only
@@ -131,33 +126,29 @@ public class ContentSecurityPolicyFilter implements Filter {
      */
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain fchain) throws IOException, ServletException {
-        try (final RequestId requestId = new RequestId()) {
-            HttpServletResponse httpResponse = ((HttpServletResponse) response);
-            StringBuilder policiesBuffer = new StringBuilder(this.policies);
-            for (String header : this.cspHeaders) {
-                String configuredValue = WebConfiguration.getContentSecurityPolicy();
-                httpResponse.setHeader(header, StringUtils.isNotBlank(configuredValue)
-                        ? configuredValue
-                        : policiesBuffer.toString());
-            }
-            // See https://www.owasp.org/index.php/List_of_useful_HTTP_headers
-            // An information regarding X-XSS-Protection: https://blogs.msdn.microsoft.com/ie/2008/07/02/ie8-security-part-iv-the-xss-filter/
-            httpResponse.setHeader("X-XSS-Protection", "1; mode=block");
-            // Also X-Content-Type-Options, see https://blogs.msdn.microsoft.com/ie/2008/09/02/ie8-security-part-vi-beta-2-update/
-            httpResponse.setHeader("X-Content-Type-Options", "nosniff");
-            // Also X-FRAME-OPTIONS, see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options
-            // Used to be in a separate filter, ClickjackFilter, but there is no point in having multiple filters adding security headers
-            httpResponse.setHeader("X-FRAME-OPTIONS", frameOptionsMode);
-            // New header in 2018, Feature-Policy. https://scotthelme.co.uk/a-new-security-header-feature-policy/
-            // https://github.com/w3c/webappsec-feature-policy/blob/master/features.md
-            // https://w3c.github.io/webappsec-feature-policy/
-            httpResponse.setHeader("Feature-Policy", "vibrate 'none'; autoplay 'none'; camera 'none'; microphone 'none'; midi 'none'; gyroscope 'none'; accelerometer 'none'; magnetometer 'none'; payment 'none'");
-            // Referrer policy: https://www.w3.org/TR/referrer-policy/
-            httpResponse.setHeader("Referrer-Policy", "no-referrer-when-downgrade");
-            String sessionId = ((HttpServletRequest) request).getRequestedSessionId();
-            log.info("Received sessionId: " + sessionId);
-            fchain.doFilter(request, response);
+        HttpServletResponse httpResponse = ((HttpServletResponse) response);
+        StringBuilder policiesBuffer = new StringBuilder(this.policies);
+        for (String header : this.cspHeaders) {
+            String configuredValue = WebConfiguration.getContentSecurityPolicy();
+            httpResponse.setHeader(header, StringUtils.isNotBlank(configuredValue)
+                    ? configuredValue
+                    : policiesBuffer.toString());
         }
+        // See https://www.owasp.org/index.php/List_of_useful_HTTP_headers
+        // An information regarding X-XSS-Protection: https://blogs.msdn.microsoft.com/ie/2008/07/02/ie8-security-part-iv-the-xss-filter/
+        httpResponse.setHeader("X-XSS-Protection", "1; mode=block");
+        // Also X-Content-Type-Options, see https://blogs.msdn.microsoft.com/ie/2008/09/02/ie8-security-part-vi-beta-2-update/
+        httpResponse.setHeader("X-Content-Type-Options", "nosniff");
+        // Also X-FRAME-OPTIONS, see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options
+        // Used to be in a separate filter, ClickjackFilter, but there is no point in having multiple filters adding security headers
+        httpResponse.setHeader("X-FRAME-OPTIONS", frameOptionsMode );
+        // New header in 2018, Feature-Policy. https://scotthelme.co.uk/a-new-security-header-feature-policy/
+        // https://github.com/w3c/webappsec-feature-policy/blob/master/features.md
+        // https://w3c.github.io/webappsec-feature-policy/
+        httpResponse.setHeader("Feature-Policy", "vibrate 'none'; autoplay 'none'; camera 'none'; microphone 'none'; midi 'none'; gyroscope 'none'; accelerometer 'none'; magnetometer 'none'; payment 'none'" );
+        // Referrer policy: https://www.w3.org/TR/referrer-policy/
+        httpResponse.setHeader("Referrer-Policy", "no-referrer-when-downgrade" );
+        fchain.doFilter(request, response);
     }
 
     private String normalizePolicies(List<String> cspPolicies) {
