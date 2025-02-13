@@ -18,10 +18,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.annotation.WebFilter;
-import org.apache.log4j.Logger;
 
 import java.io.IOException;
-import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * <p>This filter is responsible for appending a unique Request ID to the application server's thread name.</p>
@@ -30,14 +28,10 @@ import java.util.concurrent.ThreadLocalRandom;
 @WebFilter(filterName = "RequestIdFilter", urlPatterns = {"/*"})
 public class RequestIdFilter implements Filter {
 
-    private static final Logger log = Logger.getLogger(RequestIdFilter.class);
-
     @Override
+    @SuppressWarnings("unused")
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        final int randomInt = ThreadLocalRandom.current().nextInt(1000000, 10000000); // TODO delete me
-        log.info("\uD83D\uDC40 RequestIdFilter filter hit. " + randomInt); // TODO delete me
         try (final RequestId requestId = new RequestId()) {
-            log.info("\uD83D\uDC40 RequestId assigned. " + randomInt); // TODO delete me
             chain.doFilter(request, response);
         }
     }
