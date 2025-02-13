@@ -34,7 +34,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
-import org.ejbca.util.RequestId;
 
 /**
  * Use this filter to synchronize requests to your web application and
@@ -139,50 +138,48 @@ public class RequestControlFilter implements Filter {
             ServletResponse response,
             FilterChain chain)
                     throws IOException, ServletException {
-        try (final RequestId requestId = new RequestId()) {
-            HttpServletRequest httpRequest = (HttpServletRequest)request;
-            HttpSession session = httpRequest.getSession();
+        HttpServletRequest httpRequest = (HttpServletRequest)request;
+        HttpSession session = httpRequest.getSession();
 
-            // if this request is excluded from the filter, then just process it
-            if (!isFilteredRequest( httpRequest)) {
-                if (log.isTraceEnabled()) {
-                    log.trace("URL matches excludePattern, not filtering: " + httpRequest.getRequestURI());
-                }
-                chain.doFilter(request, response);
-                return;
-            }
+        // if this request is excluded from the filter, then just process it
+        if (!isFilteredRequest( httpRequest)) {
             if (log.isTraceEnabled()) {
-                log.trace("URL not excluded, will filter: " + httpRequest.getRequestURI());
+                log.trace("URL matches excludePattern, not filtering: " + httpRequest.getRequestURI());
             }
+            chain.doFilter(request, response);
+            return;
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("URL not excluded, will filter: " + httpRequest.getRequestURI());
+        }
 
-            synchronized(getSynchronizationObject(session)) {
-                // if another request is being processed, then wait
-                if (isRequestInProcess(session)) {
-                    // Put this request in the queue and wait
-                    if (log.isTraceEnabled()) {
-                        log.trace("Put this request in the queue and wait: "+httpRequest);
-                    }
-                    enqueueRequest(httpRequest);
-                    if (!waitForRelease(httpRequest)) {
-                        if (log.isTraceEnabled()) {
-                            log.trace("this request was replaced in the queue by another request, so it need not be processed");
-                        }
-                        // this request was replaced in the queue by another request, so it need not be processed
-                        return;
-                    }
+        synchronized(getSynchronizationObject(session)) {
+            // if another request is being processed, then wait
+            if (isRequestInProcess(session)) {
+                // Put this request in the queue and wait
+                if (log.isTraceEnabled()) {
+                    log.trace("Put this request in the queue and wait: "+httpRequest);
                 }
-
-                // lock the session, so that no other requests are processed until this one finishes
-                setRequestInProgress(httpRequest);
+                enqueueRequest(httpRequest);
+                if (!waitForRelease(httpRequest)) {
+                    if (log.isTraceEnabled()) {
+                        log.trace("this request was replaced in the queue by another request, so it need not be processed");
+                    }
+                    // this request was replaced in the queue by another request, so it need not be processed
+                    return;
+                }
             }
 
-            // process this request, and then release the session lock regardless of
-            // any exceptions thrown farther down the chain.
-            try {
-                chain.doFilter(request, response);
-            } finally {
-                releaseQueuedRequest(httpRequest);
-            }
+            // lock the session, so that no other requests are processed until this one finishes
+            setRequestInProgress(httpRequest);
+        }
+
+        // process this request, and then release the session lock regardless of
+        // any exceptions thrown farther down the chain.
+        try {
+            chain.doFilter(request, response);
+        } finally {
+            releaseQueuedRequest(httpRequest);
         }
     }
 

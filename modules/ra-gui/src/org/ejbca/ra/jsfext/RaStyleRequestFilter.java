@@ -36,7 +36,6 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.config.RaStyleInfo.RaCssInfo;
-import org.ejbca.util.RequestId;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
@@ -81,69 +80,67 @@ public class RaStyleRequestFilter implements Filter {
     /** Called once for every requested resource on a RA page load. If modified resources are available, the response will be intercept */
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        try (final RequestId requestId = new RequestId()) {
-            HttpServletRequest httpRequest = (HttpServletRequest) request;
-            HttpServletResponse httpResponse = (HttpServletResponse) response;
-            String requestPath = httpRequest.getRequestURI();
-            String resource = requestPath.substring(requestPath.lastIndexOf('/') + 1, requestPath.length());
-            RaStyleInfo customResponse;
-            AuthenticationToken authenticationToken = null;
-            authenticationToken = getAuthenticationToken(httpRequest, httpResponse);
-            try {
-                customResponse = adminPreferenceSessionLocal.getPreferedRaStyleInfo(authenticationToken);
-            } catch (Exception e) {
-                // In any case of error loading the styles, display default style rather than no styles at all.
-                e.printStackTrace();
-                chain.doFilter(httpRequest, httpResponse);
-                return;
-            }
-
-            // TODO pure/base.css is currently unsupported for injection since it can't be differentiated from /css/base.css by name
-            if (customResponse == null || requestPath.equals("/ejbca/ra/css/pure/base.css")) {
-                chain.doFilter(httpRequest, httpResponse);
-                return;
-            }
-
-            // When logo is requested and a custom logo is applied to the administrators role, the response is intercept with
-            // the replaced logo.
-            if (requestPath.equals(RA_LOGO_PATH) && customResponse.getLogoBytes() != null) {
-                OutputStream clientPrintWriter = response.getOutputStream();
-                try {
-                    ResponseWrapper responseWrapper = new ResponseWrapper((HttpServletResponse) response);
-                    chain.doFilter(httpRequest, responseWrapper);
-
-                    byte[] newLogoContent = customResponse.getLogoBytes();
-                    httpResponse.setContentType(customResponse.getLogoContentType());
-                    httpResponse.setContentLength(newLogoContent.length);
-                    clientPrintWriter.write(newLogoContent);
-                } finally {
-                    clientPrintWriter.close();
-                }
-                return;
-            }
-
-            // When a CSS resource is requested, the response is intercept with a modified CSS if the administrators role
-            // has one applied
-            RaCssInfo cssResponse = customResponse.getRaCssInfos().get(resource);
-            if (cssResponse != null) {
-                PrintWriter clientPrintWriter = response.getWriter();
-                try {
-                    ResponseWrapper responseWrapper = new ResponseWrapper((HttpServletResponse) response);
-                    chain.doFilter(httpRequest, responseWrapper);
-                    String newCssContent = new String(cssResponse.getCssBytes());
-                    httpResponse.setContentType("text/css");
-                    httpResponse.setContentLength(newCssContent.length());
-                    clientPrintWriter.write(newCssContent);
-                } finally {
-                    clientPrintWriter.close();
-
-                }
-                return;
-            }
-
-            // No match. Pass on request
+        HttpServletRequest httpRequest = (HttpServletRequest) request;
+        HttpServletResponse httpResponse = (HttpServletResponse) response;
+        String requestPath = httpRequest.getRequestURI();
+        String resource = requestPath.substring(requestPath.lastIndexOf('/') + 1, requestPath.length());
+        RaStyleInfo customResponse;
+        AuthenticationToken authenticationToken = null;
+        authenticationToken = getAuthenticationToken(httpRequest, httpResponse);
+        try {
+            customResponse = adminPreferenceSessionLocal.getPreferedRaStyleInfo(authenticationToken);
+        } catch (Exception e) {
+            // In any case of error loading the styles, display default style rather than no styles at all.
+            e.printStackTrace();
             chain.doFilter(httpRequest, httpResponse);
+            return;
         }
+        
+        // TODO pure/base.css is currently unsupported for injection since it can't be differentiated from /css/base.css by name
+        if (customResponse == null || requestPath.equals("/ejbca/ra/css/pure/base.css")) {
+            chain.doFilter(httpRequest, httpResponse);
+            return;
+        }
+        
+        // When logo is requested and a custom logo is applied to the administrators role, the response is intercept with
+        // the replaced logo.
+        if (requestPath.equals(RA_LOGO_PATH) && customResponse.getLogoBytes() != null) {
+            OutputStream clientPrintWriter = response.getOutputStream();
+            try {
+                ResponseWrapper responseWrapper = new ResponseWrapper((HttpServletResponse) response);
+                chain.doFilter(httpRequest, responseWrapper);
+                
+                byte[] newLogoContent = customResponse.getLogoBytes();
+                httpResponse.setContentType(customResponse.getLogoContentType());
+                httpResponse.setContentLength(newLogoContent.length);
+                clientPrintWriter.write(newLogoContent);
+            } finally {
+                clientPrintWriter.close();
+            }
+            return;
+        }
+        
+        // When a CSS resource is requested, the response is intercept with a modified CSS if the administrators role
+        // has one applied
+        RaCssInfo cssResponse = customResponse.getRaCssInfos().get(resource);
+        if (cssResponse != null) {
+            PrintWriter clientPrintWriter = response.getWriter();
+            try {
+                ResponseWrapper responseWrapper = new ResponseWrapper((HttpServletResponse) response);
+                chain.doFilter(httpRequest, responseWrapper);
+                String newCssContent = new String(cssResponse.getCssBytes());
+                httpResponse.setContentType("text/css");
+                httpResponse.setContentLength(newCssContent.length());
+                clientPrintWriter.write(newCssContent);
+            } finally {
+                clientPrintWriter.close();
+                
+            }
+            return;
+        }
+
+        // No match. Pass on request
+        chain.doFilter(httpRequest, httpResponse);
     }
 
     /** @return the X509CertificateAuthenticationToken if the client has provided a certificate or a PublicAccessAuthenticationToken otherwise. */
