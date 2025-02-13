@@ -15,7 +15,6 @@ package org.ejbca.util;
 
 import java.io.IOException;
 import java.security.cert.X509Certificate;
-import java.util.Random;
 
 import jakarta.ejb.EJB;
 import jakarta.servlet.Filter;
@@ -66,9 +65,6 @@ public class ServiceControlFilter implements Filter {
     private AuthorizationSessionLocal authorizationSession;
     @EJB
     private EjbcaRestHelperSessionLocal ejbcaRestHelperSession;
-    
-    // use secure random or uuid generator
-    Random random;
 
     @Override
     public void destroy() {
@@ -82,7 +78,6 @@ public class ServiceControlFilter implements Filter {
         if (log.isDebugEnabled()) {
             log.debug("Initialized service control filter for '" + serviceName + "'");
         }
-        random = new Random();
     }
     
     private boolean allowPossibleDirectBrowserCalls(AvailableProtocolsConfiguration availableProtocolsConfiguration, 
@@ -111,48 +106,45 @@ public class ServiceControlFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        try (final RequestId requestId = new RequestId()) {
-            final HttpServletRequest httpRequest = (HttpServletRequest) request;
-            final HttpServletResponse httpResponse = (HttpServletResponse) response;
-            AvailableProtocolsConfiguration availableProtocolsConfiguration = (AvailableProtocolsConfiguration) globalConfigurationSession
-                    .getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
-
-            // Note: Swagger gets serviceName == AvailableProtocols.REST_CERTIFICATE_MANAGEMENT
-            if (!availableProtocolsConfiguration.getProtocolStatus(serviceName)) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Access to service " + serviceName + " is disabled. HTTP request " + httpRequest.getRequestURL() + " is filtered.");
-                }
-
-                if(serviceName.equalsIgnoreCase(
-                        AvailableProtocolsConfiguration.AvailableProtocols.REST_CONFIGDUMP.getName())
-                        && allowPossibleDirectBrowserCalls(availableProtocolsConfiguration, httpRequest)) {
-                    AuthenticationToken authenticationToken = getAdmin(httpRequest);
-                    if(authenticationToken!=null &&
-                            authorizationSession.isAuthorized(authenticationToken, StandardRules.ROLE_ROOT.resource())) {
-                        if (log.isDebugEnabled()) {
-                            log.debug("Access to disabled service " + serviceName + " is allowed due to superadmin access. "
-                                                    + "HTTP request " + httpRequest.getRequestURL() + " is let through.");
-                        }
-                        // protocol, session id
-                        chain.doFilter(request, response);
-                        return;
-                    }
-                }
-                httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "This service has been disabled.");
-                return;
-            }
-
-            // service is enabled
-            if(!allowPossibleDirectBrowserCalls(availableProtocolsConfiguration, httpRequest)) {
-                httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "This service has been disabled.");
-                return;
-            }
-
+        final HttpServletRequest httpRequest = (HttpServletRequest) request;
+        final HttpServletResponse httpResponse = (HttpServletResponse) response;
+        AvailableProtocolsConfiguration availableProtocolsConfiguration = (AvailableProtocolsConfiguration) globalConfigurationSession
+                .getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
+        
+        // Note: Swagger gets serviceName == AvailableProtocols.REST_CERTIFICATE_MANAGEMENT
+        if (!availableProtocolsConfiguration.getProtocolStatus(serviceName)) {
             if (log.isDebugEnabled()) {
-                log.debug("Access to service " + serviceName + " is allowed. HTTP request " + httpRequest.getRequestURL() + " is let through.");
+                log.debug("Access to service " + serviceName + " is disabled. HTTP request " + httpRequest.getRequestURL() + " is filtered.");
             }
-            chain.doFilter(request, response);
+            
+            if(serviceName.equalsIgnoreCase(
+                    AvailableProtocolsConfiguration.AvailableProtocols.REST_CONFIGDUMP.getName())
+                    && allowPossibleDirectBrowserCalls(availableProtocolsConfiguration, httpRequest)) {
+                AuthenticationToken authenticationToken = getAdmin(httpRequest);
+                if(authenticationToken!=null &&
+                        authorizationSession.isAuthorized(authenticationToken, StandardRules.ROLE_ROOT.resource())) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Access to disabled service " + serviceName + " is allowed due to superadmin access. "
+                                                + "HTTP request " + httpRequest.getRequestURL() + " is let through.");
+                    }
+                    chain.doFilter(request, response);
+                    return;
+                }
+            }
+            httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "This service has been disabled.");
+            return;
         }
+        
+        // service is enabled
+        if(!allowPossibleDirectBrowserCalls(availableProtocolsConfiguration, httpRequest)) {
+            httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "This service has been disabled.");
+            return;
+        }
+
+        if (log.isDebugEnabled()) {
+            log.debug("Access to service " + serviceName + " is allowed. HTTP request " + httpRequest.getRequestURL() + " is let through.");
+        }
+        chain.doFilter(request, response);
     }
         
     private AuthenticationToken getAdmin(HttpServletRequest requestContext) {
