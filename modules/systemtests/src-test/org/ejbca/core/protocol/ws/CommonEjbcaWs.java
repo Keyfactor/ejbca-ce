@@ -135,6 +135,7 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.cert.CrlExtensions;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.Role;
@@ -204,6 +205,7 @@ import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.RandomHelper;
 
 
 public abstract class CommonEjbcaWs extends CaTestCase {
@@ -874,7 +876,8 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         final UserDataVOWS ca1userData2 = getUserData(CA1_WSTESTUSER2);
         final UserDataVOWS ca2userData1 = getUserData(CA2_WSTESTUSER1);
         final CAInfo ca1Info = caSession.getCAInfo(admin, CA1);
-        final int iRandom = SecureRandom.getInstance("SHA1PRNG").nextInt(); // to
+        String algorithm =  CesecoreConfiguration.getCaSerialNumberAlgorithm();
+        final int iRandom = RandomHelper.getInstance(algorithm).nextInt();
         // make sure a new DN is used in next test
         final String subjectDN_A = "CN=EnforcementOfUniqueSubjectDN Test A " + iRandom;
         final String subjectDN_B = "CN=EnforcementOfUniqueSubjectDN Test B " + iRandom;
