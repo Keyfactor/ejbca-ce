@@ -34,7 +34,6 @@ import jakarta.servlet.http.HttpServletResponseWrapper;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.log4j.Logger;
 import org.cesecore.util.LogRedactionUtils;
-import org.ejbca.util.RequestId;
 import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
 
 /**
@@ -144,78 +143,76 @@ public class RestLoggingFilter implements Filter {
     public void destroy() {}
 
     @Override
-    public void doFilter(final ServletRequest servletRequest, final ServletResponse servletResponse, final FilterChain filterChain) throws IOException, ServletException {
-        try (final RequestId requestId = new RequestId()) {
-            final long startTime = System.currentTimeMillis();
-            final HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
-            final StringBuilder sbInfo = new StringBuilder(200);
-            sbInfo.append(httpServletRequest.getMethod() + " " + httpServletRequest.getRequestURL().toString() + " received from " + servletRequest.getRemoteAddr());
-            sbInfo.append("  X-Forwarded-For: " + httpServletRequest.getHeader("X-Forwarded-For"));
-            log.info(sbInfo.toString());
-
-            if (log.isTraceEnabled()) {
-                final StringBuilder sb = new StringBuilder(200);
-                sb.append(sbInfo);
-                sb.append("\nRequest headers:\n");
-                final Enumeration<String> requestHeaderNames = httpServletRequest.getHeaderNames();
-                while (requestHeaderNames.hasMoreElements()) {
-                    final String headerName = requestHeaderNames.nextElement();
-                    final Enumeration<String> headers = httpServletRequest.getHeaders(headerName);
-                    while (headers.hasMoreElements()) {
-                        final String headerValue = headers.nextElement();
-                        sb.append("  " + headerName + ": " + headerValue + "\n");
-                    }
+    public void doFilter(final ServletRequest servletRequest, final ServletResponse servletResponse, final FilterChain filterChain) throws IOException, ServletException {        
+        final long startTime = System.currentTimeMillis();
+        final HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
+        final StringBuilder sbInfo = new StringBuilder(200);
+        sbInfo.append(httpServletRequest.getMethod() + " " + httpServletRequest.getRequestURL().toString() + " received from " + servletRequest.getRemoteAddr());
+        sbInfo.append("  X-Forwarded-For: " + httpServletRequest.getHeader("X-Forwarded-For"));
+        log.info(sbInfo.toString());
+        
+        if (log.isTraceEnabled()) {
+            final StringBuilder sb = new StringBuilder(200);
+            sb.append(sbInfo);
+            sb.append("\nRequest headers:\n");
+            final Enumeration<String> requestHeaderNames = httpServletRequest.getHeaderNames();
+            while (requestHeaderNames.hasMoreElements()) {
+                final String headerName = requestHeaderNames.nextElement();
+                final Enumeration<String> headers = httpServletRequest.getHeaders(headerName);
+                while (headers.hasMoreElements()) {
+                    final String headerValue = headers.nextElement();
+                    sb.append("  " + headerName + ": " + headerValue + "\n");
                 }
-                final ByteArrayOutputStream requestBaos = new ByteArrayOutputStream();
-                final HttpServletRequestWrapper httpServletRequestWrapper = new HttpServletRequestWrapper(httpServletRequest) {
-                    private final CopyingServletInputStream copyingServletInputStream = new CopyingServletInputStream(servletRequest.getInputStream(), requestBaos);
-                    @Override
-                    public ServletInputStream getInputStream() throws IOException {
-                        return copyingServletInputStream;
-                    }
-                };
-                final ByteArrayOutputStream responseBaos = new ByteArrayOutputStream();
-                final HttpServletResponseWrapper httpServletResponseWrapper = new HttpServletResponseWrapper((HttpServletResponse) servletResponse) {
-                    private final CopyingServletOutputStream copyingServletOutputStream = new CopyingServletOutputStream(super.getOutputStream(), responseBaos);
-                    @Override
-                    public ServletOutputStream getOutputStream() {
-                        return copyingServletOutputStream;
-                    }
-                };
-
-                filterChain.doFilter(httpServletRequestWrapper, httpServletResponseWrapper);
-
-                String url = httpServletRequest.getRequestURL().toString();
-                boolean logRequestAndResponseBody = true;
-                if(LogRedactionUtils.redactPii() && // RA
-                        (url.contains(AvailableProtocols.REST_ENDENTITY_MANAGEMENT.getUrl()) ||
-                         url.contains(AvailableProtocols.REST_ENDENTITY_MANAGEMENT_V2.getUrl()) ||
-                         url.contains(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT.getUrl()) ||
-                         url.contains(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT_V2.getUrl()) ||
-                         url.contains(AvailableProtocols.REST_SSH_V1.getUrl()))) {
-                    logRequestAndResponseBody = false;
-                }
-
-                if (logRequestAndResponseBody) {
-                    sb.append("Request data:\n");
-                    final String requestData = new String(requestBaos.toByteArray(), StandardCharsets.UTF_8);
-                    sb.append("  ").append(requestData).append("\n");
-
-
-                    final String responseData = new String(responseBaos.toByteArray(), StandardCharsets.UTF_8);
-                    sb.append("Response data:\n");
-                    sb.append(responseData).append("\n");
-                } else {
-                    sb.append("Request and response data is redacted.\n");
-                }
-
-                final long endTime = System.currentTimeMillis();
-                sb.append("Time taken: ").append(endTime-startTime).append("ms").append("\n");;
-
-                log.trace(sb.toString());
-            } else {
-                filterChain.doFilter(servletRequest, servletResponse);
             }
+            final ByteArrayOutputStream requestBaos = new ByteArrayOutputStream();
+            final HttpServletRequestWrapper httpServletRequestWrapper = new HttpServletRequestWrapper(httpServletRequest) {
+                private final CopyingServletInputStream copyingServletInputStream = new CopyingServletInputStream(servletRequest.getInputStream(), requestBaos);
+                @Override
+                public ServletInputStream getInputStream() throws IOException {
+                    return copyingServletInputStream;
+                }
+            };
+            final ByteArrayOutputStream responseBaos = new ByteArrayOutputStream();
+            final HttpServletResponseWrapper httpServletResponseWrapper = new HttpServletResponseWrapper((HttpServletResponse) servletResponse) {
+                private final CopyingServletOutputStream copyingServletOutputStream = new CopyingServletOutputStream(super.getOutputStream(), responseBaos);
+                @Override
+                public ServletOutputStream getOutputStream() {
+                    return copyingServletOutputStream;
+                }            
+            };
+            
+            filterChain.doFilter(httpServletRequestWrapper, httpServletResponseWrapper);
+            
+            String url = httpServletRequest.getRequestURL().toString();
+            boolean logRequestAndResponseBody = true;
+            if(LogRedactionUtils.redactPii() && // RA
+                    (url.contains(AvailableProtocols.REST_ENDENTITY_MANAGEMENT.getUrl()) ||
+                     url.contains(AvailableProtocols.REST_ENDENTITY_MANAGEMENT_V2.getUrl()) ||
+                     url.contains(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT.getUrl()) ||
+                     url.contains(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT_V2.getUrl()) ||
+                     url.contains(AvailableProtocols.REST_SSH_V1.getUrl()))) {
+                logRequestAndResponseBody = false;
+            }
+            
+            if (logRequestAndResponseBody) {
+                sb.append("Request data:\n");
+                final String requestData = new String(requestBaos.toByteArray(), StandardCharsets.UTF_8);
+                sb.append("  ").append(requestData).append("\n");
+                
+                
+                final String responseData = new String(responseBaos.toByteArray(), StandardCharsets.UTF_8);
+                sb.append("Response data:\n");
+                sb.append(responseData).append("\n");
+            } else {
+                sb.append("Request and response data is redacted.\n");
+            }
+            
+            final long endTime = System.currentTimeMillis();
+            sb.append("Time taken: ").append(endTime-startTime).append("ms").append("\n");;
+            
+            log.trace(sb.toString());
+        } else {
+            filterChain.doFilter(servletRequest, servletResponse);
         }
     }
 }
