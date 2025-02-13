@@ -296,7 +296,7 @@ public class CertificateRestResource extends BaseRestResource {
             return Response.status(Status.CREATED).entity(enrollCertificateRestResponse).build();
 
         } catch (CertificateParsingException | CMSException e) {
-            log.info("Exception during enrollPkcs10Certificate: ", LogRedactionUtils.getRedactedThrowable(e));
+            log.info("Exception during enrollCertificate: ", LogRedactionUtils.getRedactedThrowable(e));
             throw new RestException(Status.BAD_REQUEST.getStatusCode(),
                     e.getCause() != null ? e.getCause().getMessage() : e.getMessage());
         }
@@ -357,6 +357,13 @@ public class CertificateRestResource extends BaseRestResource {
 
     private RestException makeCertificateCreationException(CertificateCreateException exception) {
         ErrorCode errorCode = exception.getErrorCode();
+        
+        if (exception.getCause()!=null && exception.getCause().getClass().equals(
+                            org.cesecore.keys.validation.ValidationException.class)) {
+            return new RestException(Status.BAD_REQUEST.getStatusCode(), 
+                    "Failed to generate certificate due to validator failure: " + exception.getCause().getMessage());
+        }
+        
         if (CUSTOM_CERTIFICATE_EXTENSION_ERROR.equals(errorCode)) {
             return new RestException(Status.BAD_REQUEST.getStatusCode(), "Failed to generate certificate due to an issue with certificate extensions.");
         } else {

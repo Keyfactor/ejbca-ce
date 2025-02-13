@@ -84,6 +84,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLoc
 import org.cesecore.certificates.endentity.EndEntityApprovalRequest;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
@@ -116,6 +117,7 @@ import org.ejbca.ui.web.protocol.CertificateRenewalException;
 
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.RandomHelper;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
@@ -136,7 +138,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
     private transient ScepOperationPlugin scepRaModeExtension = null;
     private transient ScepResponsePlugin scepClientCertificateRenewal = null;
 
-    private static final Random secureRandom = new SecureRandom();
+    private static final Random secureRandom = RandomHelper.getInstance(CesecoreConfiguration.getCaSerialNumberAlgorithm());
 
     @EJB
     private ApprovalSessionLocal approvalSession;
