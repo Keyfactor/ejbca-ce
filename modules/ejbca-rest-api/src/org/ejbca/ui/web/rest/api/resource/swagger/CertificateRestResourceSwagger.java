@@ -131,8 +131,8 @@ public class CertificateRestResourceSwagger extends CertificateRestResource {
     @Path("/enroll")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Enrollment with client generated keys. If end entity does not exist, it will be created. Existing end entity will be updated with provided input",
-            description = "Enroll for a certificate given a PEM encoded PKCS#10 CSR. "
+    @Operation(summary = "Enrollment with client generated keys. If end entity does not exist, it will be created.",
+            description = "Enroll for a certificate given a PEM encoded  PUBLICKEY, PKCS10, CRMF, SPKAC, or CVC. "
                     + "\nResponse Format is 'DER' (default when excluded) or 'PKCS7' in base64 encoded PEM format",
             responses = {
                     @ApiResponse(responseCode = "200",

@@ -72,6 +72,7 @@ import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.certextensions.standard.CabForumOrganizationIdentifier;
 import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
@@ -91,6 +92,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.endentity.PSD2RoleOfPSPStatement;
 import org.cesecore.certificates.util.cert.SubjectDirAttrExtension;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.EABConfiguration;
 import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.PrintableStringNameStyle;
@@ -113,6 +115,7 @@ import org.ejbca.util.cert.OID;
 import com.keyfactor.ErrorCode;
 import com.keyfactor.util.CeSecoreNameStyle;
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.RandomHelper;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
@@ -1184,6 +1187,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (getSubjectDirectoryAttributes() != null) {
             extendedInformation.setSubjectDirectoryAttributes(getSubjectDirectoryAttributes().toString());
         }
+        
+        if (getEndEntityProfile().isAllowedRequestsUsed()) {
+            extendedInformation.setAllowedRequests(String.valueOf(getEndEntityProfile().getAllowedRequests()));            
+        }
 
         // Add extension data
         if (extensionData != null) {
@@ -1330,7 +1337,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
         // Fill end-entity information (Username and Password)
         final byte[] randomData = new byte[16];
-        final Random random = new SecureRandom();
+        final Random random = RandomHelper.getInstance(CesecoreConfiguration.getCaSerialNumberAlgorithm());
         random.nextBytes(randomData);
         if (StringUtils.isBlank(endEntityInformation.getUsername())) {
             String autousername = new String(Hex.encode(randomData));
@@ -1501,6 +1508,21 @@ public class EnrollMakeNewRequestBean implements Serializable {
      * @param exception  Exception
      */
     private void reportGenericError(final String messageKey, final String logMessage, final ErrorCode errorCode, final Exception exception) {
+        
+        // Show Validator exception
+        // EjbcaException -> CertificateCreateException -> ValidationException
+        if (exception.getCause()!=null && 
+                exception.getCause().getClass().equals(CertificateCreateException.class) &&
+                exception.getCause().getCause()!=null && 
+                exception.getCause().getCause().getClass().equals(
+                            org.cesecore.keys.validation.ValidationException.class)) {
+            String validationErrorOutMessage = exception.getCause().getCause().getMessage();
+            String[] validationErrorOutLines = validationErrorOutMessage.split("ERROUT:");
+            raLocaleBean.addMessageError(messageKey, getEndEntityInformation().getUsername(), 
+                    Arrays.asList(validationErrorOutLines));
+            return;
+        }
+        
         if (errorCode != null) {
             raLocaleBean.addMessageError(messageKey, getEndEntityInformation().getUsername(), raLocaleBean.getErrorCodeMessage(errorCode));
         } else {
@@ -3393,7 +3415,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         String password = getEndEntityInformation().getPassword();
         if (StringUtils.isEmpty(password)) {
             final byte[] randomData = new byte[16];
-            final Random random = new SecureRandom();
+            final Random random = RandomHelper.getInstance(CesecoreConfiguration.getCaSerialNumberAlgorithm());
             random.nextBytes(randomData);
             password = new String(Hex.encode(CertTools.generateSHA256Fingerprint(randomData)));
         }

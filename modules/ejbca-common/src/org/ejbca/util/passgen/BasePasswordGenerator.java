@@ -16,6 +16,10 @@ package org.ejbca.util.passgen;
 import java.security.SecureRandom;
 import java.util.Random;
 
+import org.cesecore.config.CesecoreConfiguration;
+
+import com.keyfactor.util.RandomHelper;
+
 /**
  * BasePasswordGenerator is a base class for generating random passwords.
  * Inheriting classes should overload the constants USEDCHARS, MIN_CHARS
@@ -27,7 +31,7 @@ public abstract class BasePasswordGenerator implements IPasswordGenerator {
 
     private final char[] usedchars;
     // Declare the random here so that the seed only have to be generated once. This will save time.
-	final private static Random ran = new SecureRandom();
+	final private static Random ran = RandomHelper.getInstance(CesecoreConfiguration.getCaSerialNumberAlgorithm());
 
     protected BasePasswordGenerator(char[] usedchars){
        this.usedchars = usedchars;

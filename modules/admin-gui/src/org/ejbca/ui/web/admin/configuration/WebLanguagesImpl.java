@@ -46,7 +46,6 @@ public class WebLanguagesImpl implements Serializable, WebLanguages {
     private final int userspreferedlanguage;
     private final int userssecondarylanguage;
 
-    private final String[] AVAILABLE_LANGUAGES = new String[] { "en", "bs", "cs", "de", "fr", "ja", "pt", "sv", "uk", "zh", "vi" };
     private LanguageProperties[] languages = null;
     private List<WebLanguage> webLanguages;
 
