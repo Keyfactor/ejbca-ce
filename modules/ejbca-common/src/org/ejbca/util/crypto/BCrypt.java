@@ -30,6 +30,10 @@ package org.ejbca.util.crypto;
 import java.io.UnsupportedEncodingException;
 import java.security.SecureRandom;
 
+import org.cesecore.config.CesecoreConfiguration;
+
+import com.keyfactor.util.RandomHelper;
+
 /**
  * BCrypt implements OpenBSD-style Blowfish password hashing using
  * the scheme described in "A Future-Adaptable Password Scheme" by
@@ -758,7 +762,7 @@ public class BCrypt {
 	 * @return	an encoded salt value
 	 */
 	public static String gensalt(final int log_rounds) {
-		return gensalt(log_rounds, new SecureRandom());
+		return gensalt(log_rounds, RandomHelper.getInstance(CesecoreConfiguration.getCaSerialNumberAlgorithm()));
 	}
 
 	/**

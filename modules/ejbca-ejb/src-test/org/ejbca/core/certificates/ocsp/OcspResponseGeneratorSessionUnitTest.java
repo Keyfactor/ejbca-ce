@@ -35,6 +35,7 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Properties;
+import java.util.Random;
 
 import jakarta.ejb.Timer;
 import jakarta.ejb.TimerService;
@@ -75,6 +76,7 @@ import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
 import org.cesecore.certificates.ocsp.logging.AuditLogger;
 import org.cesecore.certificates.ocsp.logging.TransactionCounter;
 import org.cesecore.certificates.ocsp.logging.TransactionLogger;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
@@ -93,6 +95,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.RandomHelper;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoToken;
@@ -307,7 +310,7 @@ public class OcspResponseGeneratorSessionUnitTest {
     public void testWithRandomBytes() throws OCSPException {
         log.trace(">testWithRandomBytes");
         final int MAX_REQUEST_SIZE = 100000;
-        SecureRandom random = new SecureRandom();
+        Random random = new Random();
         byte[] fakeRequest = new byte[MAX_REQUEST_SIZE + 1];
         random.nextBytes(fakeRequest);
         boolean caught = false;
