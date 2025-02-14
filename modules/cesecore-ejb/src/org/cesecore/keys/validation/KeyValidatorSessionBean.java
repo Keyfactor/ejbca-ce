@@ -13,17 +13,28 @@
 
 package org.cesecore.keys.validation;
 
-import com.keyfactor.ErrorCode;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.certificate.DnComponents;
-import jakarta.ejb.EJB;
-import jakarta.ejb.Stateless;
-import jakarta.ejb.TransactionAttribute;
-import jakarta.ejb.TransactionAttributeType;
+import java.io.Serializable;
+import java.security.PublicKey;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.Extension;
-import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
@@ -49,29 +60,18 @@ import org.cesecore.profiles.ProfileData;
 import org.cesecore.profiles.ProfileSessionLocal;
 import org.cesecore.util.ExternalScriptsAllowlist;
 
-import java.io.Serializable;
-import java.security.PublicKey;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
+
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 
 /**
  * Handles management of key validators.
  *
- * @version $Id$
  */
 @Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -418,25 +418,19 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                     final CertificateProfile certificateProfile = certificateProfileSession
                             .getCertificateProfile(endEntityInformation.getCertificateProfileId());
 
+                    // Determine the domain names to validate.
+                    // This is ALWAYS both dnsNames and domain names in e-mails, regardless of EKU settings.
+                    // That way, we can be sure that validation is not skipped in case of a misconfiguration.
                     final Set<String> dnsNames = new TreeSet<>();
-                    final boolean isEmailProtection = certificateProfile.getExtendedKeyUsageOids().contains(KeyPurposeId.id_kp_emailProtection.getId());
-                    
-                    if (isEmailProtection) {
-                        dnsNames.addAll(findAllEmailDomainsInSubject(endEntityInformation.getSubjectAltName()));
-                    } else {
-                        dnsNames.addAll(findAllDNSInSubject(endEntityInformation.getSubjectAltName()));
-                    }
-                    
+                    dnsNames.addAll(findAllEmailDomainsInSubject(endEntityInformation.getSubjectAltName()));
+                    dnsNames.addAll(findAllDNSInSubject(endEntityInformation.getSubjectAltName()));
+
                     if (certificateProfile.getAllowExtensionOverride() && requestMessage != null && requestMessage.getRequestExtensions() != null) {
                         var extension = requestMessage.getRequestExtensions().getExtension(Extension.subjectAlternativeName);
                         if (extension != null) {
                             var san = DnComponents.getAltNameStringFromExtension(extension);
-                            
-                            if (isEmailProtection) {
-                                dnsNames.addAll(findAllEmailDomainsInSubject(san));
-                            } else {
-                                dnsNames.addAll(findAllDNSInSubject(san));
-                            }
+                            dnsNames.addAll(findAllEmailDomainsInSubject(san));
+                            dnsNames.addAll(findAllDNSInSubject(san));
                         }
                     }
 
@@ -572,12 +566,13 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         }
         if (ca != null && !CollectionUtils.isEmpty(ca.getValidators())) {
             Validator baseValidator;
-            CertificateValidator validator;
+            CertificateValidatorBase validator;
             String name;
             for (final int id : ca.getValidators()) {
                 baseValidator = getValidatorInternal(id, true);
-                if (baseValidator != null && baseValidator.getValidatorSubType().equals(CertificateValidator.class)) {
-                    validator = (CertificateValidator) baseValidator;
+                if (baseValidator != null && (baseValidator.getValidatorSubType().equals(CertificateValidator.class)
+                        || baseValidator.getValidatorSubType().equals(ExternalScriptCertificateValidator.class))) {
+                    validator = (CertificateValidatorBase) baseValidator;
                     name = validator.getProfileName();
                     if (phase.getIndex() != validator.getPhase()) {
                         continue;
@@ -594,12 +589,25 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                         final String fingerprint = CertTools.createPublicKeyFingerprint(certificate.getPublicKey(), "SHA-256");
                         log.info(intres.getLocalizedMessage("validator.certificate.isbeingprocessed", name, phase, endEntityInformation.getUsername(),
                                 fingerprint));
-                        final ExternalScriptsConfiguration externalScriptsConfiguration = (ExternalScriptsConfiguration) globalConfigurationSession
-                                .getCachedConfiguration("0");
-                        final ExternalScriptsAllowlist externalScriptsWhitelist = ExternalScriptsAllowlist.fromText(
-                                externalScriptsConfiguration.getExternalScriptsWhitelist(),
-                                externalScriptsConfiguration.getIsExternalScriptsWhitelistEnabled());
-                        final List<String> messages = validator.validate(ca, certificate, externalScriptsWhitelist);
+                        
+                      
+                        final List<String> messages;
+                        
+                        if (baseValidator.getValidatorSubType().equals(ExternalScriptCertificateValidator.class)) {
+                            ExternalScriptCertificateValidator externalScriptCertificateValidator = (ExternalScriptCertificateValidator) baseValidator;
+                            final ExternalScriptsConfiguration externalScriptsConfiguration = (ExternalScriptsConfiguration) globalConfigurationSession
+                                    .getCachedConfiguration("0");
+                            final ExternalScriptsAllowlist externalScriptsWhitelist = ExternalScriptsAllowlist.fromText(
+                                    externalScriptsConfiguration.getExternalScriptsWhitelist(),
+                                    externalScriptsConfiguration.getIsExternalScriptsWhitelistEnabled());
+                            messages = externalScriptCertificateValidator.validate(certificate, externalScriptsWhitelist);
+                        } else if (baseValidator.getValidatorSubType().equals(CertificateValidator.class)) {
+                            CertificateValidator certificateValidator = (CertificateValidator) baseValidator;
+                            messages = certificateValidator.validate(certificate);
+                        } else {
+                            throw new IllegalStateException("Validator was of unknown subtype: " + baseValidator.getValidatorSubType());
+                        }
+ 
                         if (messages.size() > 0) { // Evaluation has failed.
                             final String message = intres.getLocalizedMessage("validator.certificate.validation_failed", name, messages);
                             final Map<String, Object> details = new LinkedHashMap<String, Object>();

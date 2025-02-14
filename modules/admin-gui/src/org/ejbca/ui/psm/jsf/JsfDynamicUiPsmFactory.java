@@ -141,6 +141,8 @@ public class JsfDynamicUiPsmFactory {
         } else if (property.isStringType()) {
             if (DynamicUiProperty.RENDER_TEXTFIELD.equals(hint)) {
                 component = createTextFieldInstance(keyPrefix, property);
+            } else if (DynamicUiProperty.RENDER_SECRET.equals(hint)) {
+                component = createSecretTextFieldInstance(keyPrefix, property);
             } else if (DynamicUiProperty.RENDER_TEXTAREA.equals(hint)) {
                 component = createTextAreaInstance(keyPrefix, property);
             } else if (DynamicUiProperty.RENDER_SELECT_ONE.equals(hint)) {
@@ -247,6 +249,19 @@ public class JsfDynamicUiPsmFactory {
         return result;
     }
 
+    /**
+     * Creates a secret text field component by the given dynamic UI property.
+     * @param property the dynamic UI property.
+     * @return the text field instance.
+     */
+    public static final JsfDynamicUiHtmlInputSecret createSecretTextFieldInstance(final String keyPrefix, final DynamicUiProperty<?> property) {
+        final JsfDynamicUiHtmlInputSecret result = new JsfDynamicUiHtmlInputSecret();
+        result.setDynamicUiProperty(property);
+        setUIInputAttributes(result, keyPrefix, property);
+        result.setDisabled(property.getDynamicUiModel().isDisabled() || property.isDisabled());
+        return result;
+    }
+    
     /**
      * Creates text field component for {@link java.lang.Integer} by the given dynamic UI property.
      * @param property the dynamic UI property.
