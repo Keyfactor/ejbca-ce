@@ -757,7 +757,8 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     public boolean isExistsClientCertificateRenewalExtension() {
-        return editionEjbBridgeSession.isRunningEnterprise();
+        //return editionEjbBridgeSession.isRunningEnterprise();
+        return true;
     }
 
 }
