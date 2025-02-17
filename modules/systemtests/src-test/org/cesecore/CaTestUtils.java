@@ -234,6 +234,7 @@ public abstract class CaTestUtils {
             if (caInfo.getCAToken() != null) {
                 cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, caInfo.getCAToken().getCryptoTokenId());
             }
+            internalCertificateStoreSession.removeCertificatesByIssuer(caInfo.getSubjectDN());
             internalCertificateStoreSession.removeCertificatesBySubject(caInfo.getSubjectDN());
             internalCertificateStoreSession.removeCRLs(authenticationToken, caInfo.getSubjectDN());
         }
