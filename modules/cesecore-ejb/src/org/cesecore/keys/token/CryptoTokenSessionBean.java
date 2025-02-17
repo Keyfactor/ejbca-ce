@@ -145,17 +145,9 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
         }
         localTokenSemaphores.remove(cryptoTokenId);
         
-        
-        // https://stackoverflow.com/questions/17027398/java-lang-illegalargumentexception-removing-a-detached-instance-com-test-user5
-        CryptoTokenClusterSemaphore cryptoTokenClusterSemaphore = new CryptoTokenClusterSemaphore();
-        cryptoTokenClusterSemaphore.setId(cryptoTokenId);
-        
-        // entityManager may not know about cryptoTokenId, so we may need to merge it in before deleting
-        if (entityManager.contains(cryptoTokenClusterSemaphore)) {
+        var cryptoTokenClusterSemaphore = entityManager.find(CryptoTokenClusterSemaphore.class, cryptoTokenId);
+        if (cryptoTokenClusterSemaphore != null) {
             entityManager.remove(cryptoTokenClusterSemaphore);
-        }
-        else {
-            entityManager.remove(entityManager.merge(cryptoTokenClusterSemaphore));
         }
     }
     
