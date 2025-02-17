@@ -158,6 +158,9 @@ public abstract class CryptoTokenRunner {
         } catch (AuthorizationDeniedException e) {
             throw new IllegalStateException(e);
         }
+        // Delete certs issued by the CA
+        internalCertificateStoreSession.removeCertificatesByIssuer( ca.getSubjectDN());
+
         casToRemove.remove(ca.getCAId());
     }
 
