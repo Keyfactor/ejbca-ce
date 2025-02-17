@@ -64,6 +64,8 @@ public class ProcessKeystoreSessionBean implements ProcessKeystoreSessionLocal, 
     
     private static final Logger log = Logger.getLogger(ProcessKeystoreSessionBean.class);
 
+    private static final String CERTIFICATE_TAG = "IMPORTED";
+
     @EJB
     private AuthorizationSessionLocal authorizationSession;
     @EJB
@@ -155,13 +157,14 @@ public class ProcessKeystoreSessionBean implements ProcessKeystoreSessionLocal, 
         CertificateInfo certInfo = certificateStoreSession.getCertificateInfo(fingerprint);
         // Import the old certificate into EJBCA
         final int crlPartitionIndex = caInfo.determineCrlPartitionIndex(userCertificate);
+        final String issuerDn = caInfo.getSubjectDN();
         if (certInfo == null) {
             log.info("Adding end entity certificate with fingerprint '" + fingerprint +
                     "' to the database, with status active (not revoked), for end entity: " + userInfo.getUsername());
             certificateStoreSession.storeCertificate(authenticationToken, userCertificate,
                     userInfo.getUsername(), CertTools.getFingerprintAsString(caCert), CertificateConstants.CERT_ACTIVE,
-                    CertificateConstants.CERTTYPE_ENDENTITY, certificateProfileId, endEntityProfileId, crlPartitionIndex, null,
-                    new Date().getTime(), null);
+                    CertificateConstants.CERTTYPE_ENDENTITY, certificateProfileId, endEntityProfileId, crlPartitionIndex, CERTIFICATE_TAG,
+                    new Date().getTime(), null, issuerDn);
         } else {
             throw new KeyImportException("Certificate can't be added since it already exists in the database");
         }
@@ -177,7 +180,7 @@ public class ProcessKeystoreSessionBean implements ProcessKeystoreSessionLocal, 
         final int cryptoTokenId = caInfo.getCAToken().getCryptoTokenId();
         if (encryptKeyAlias != null && authorizationSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_KEYRECOVERY)) {
             keyRecoverySession.addKeyRecoveryDataInternal(authenticationToken, EJBTools.wrap(cacert),
-                    EJBTools.wrap(userCertificate), userInfo.getUsername(), EJBTools.wrap(keypair), cryptoTokenId, encryptKeyAlias);
+                    EJBTools.wrap(userCertificate), userInfo.getUsername(), EJBTools.wrap(keypair), cryptoTokenId, encryptKeyAlias, caInfo.getSubjectDN());
         } else {
             log.info("Not authorized to add key recovery data to CA or unable to get CA encrypt key.");
             throw new KeyImportException("Not authorized to add key recovery data to CA or unable to get CA encrypt key.");
@@ -199,7 +202,7 @@ public class ProcessKeystoreSessionBean implements ProcessKeystoreSessionLocal, 
                         new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, certificateProfileId, null, null,
                         SecConst.TOKEN_SOFT_P12, null);
                 endEntityInformation.setPassword(password);
-                endEntityManagementSession.addUser(authenticationToken, endEntityInformation, false);
+                endEntityManagementSession.addUserForKeyImport(authenticationToken, endEntityInformation, false);
             } catch (Exception e) {
                 log.info("Exception: " + e.getMessage());
                 throw new KeyImportException(e.getMessage());

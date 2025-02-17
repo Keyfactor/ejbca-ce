@@ -300,7 +300,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     ) throws AuthorizationDeniedException, EndEntityProfileValidationException, EndEntityExistsException,
             WaitingForApprovalException, CADoesntExistsException, CustomFieldException, IllegalNameException,
             ApprovalException, CertificateSerialNumberException {
-        addUser(authenticationToken, userdata, clearPwd, lastApprovingAdmin);
+        addUser(authenticationToken, userdata, clearPwd, lastApprovingAdmin, false);
     }
 
     @Override
@@ -309,7 +309,16 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     ) throws AuthorizationDeniedException, EndEntityExistsException, EndEntityProfileValidationException,
             WaitingForApprovalException, CADoesntExistsException, CustomFieldException, IllegalNameException,
             ApprovalException, CertificateSerialNumberException {
-        return addUser(authenticationToken, endEntity, clearPwd, null);
+        return addUser(authenticationToken, endEntity, clearPwd, null, false);
+    }
+
+    @Override
+    public EndEntityInformation addUserForKeyImport(
+            final AuthenticationToken authenticationToken, final EndEntityInformation endEntity, final boolean clearPwd
+    ) throws AuthorizationDeniedException, EndEntityExistsException, EndEntityProfileValidationException,
+            WaitingForApprovalException, CADoesntExistsException, CustomFieldException, IllegalNameException,
+            ApprovalException, CertificateSerialNumberException {
+        return addUser(authenticationToken, endEntity, clearPwd, null, true);
     }
 
     /**
@@ -324,13 +333,10 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
      * @throws EndEntityProfileValidationException if the end entity fails constrains set by the end entity profile
      * @throws WaitingForApprovalException to mark that a request has been created and is awaiting approval. The request ID will be included as a field in this exception.
      */
-    private EndEntityInformation addUser(final AuthenticationToken authenticationToken,
-                                         EndEntityInformation endEntity,
-                                         final boolean clearPwd,
-                                         final AuthenticationToken lastApprovingAdmin)
-            throws AuthorizationDeniedException, EndEntityExistsException, EndEntityProfileValidationException,
-            WaitingForApprovalException, CADoesntExistsException, CustomFieldException, IllegalNameException,
-            ApprovalException, CertificateSerialNumberException {
+    private EndEntityInformation addUser(final AuthenticationToken authenticationToken, EndEntityInformation endEntity, final boolean clearPwd,
+            final AuthenticationToken lastApprovingAdmin, final boolean isForKeyImport)
+            throws AuthorizationDeniedException, EndEntityExistsException, EndEntityProfileValidationException, WaitingForApprovalException, CADoesntExistsException,
+            CustomFieldException, IllegalNameException, ApprovalException, CertificateSerialNumberException {
         final int endEntityProfileId = endEntity.getEndEntityProfileId();
         final int caId = endEntity.getCAId();
         // Check if administrator is authorized to add user to CA.
@@ -517,7 +523,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 // insert statement. If we do a home.create and the some setXX, it will create one insert and one update statement to the database.
                 // Probably not important in EJB3 anymore.
                 final UserData userData = new UserData(username, newpassword, clearPwd, dn, caId, endEntity.getCardNumber(), altName, email, type.getHexValue(),
-                        endEntityProfileId, endEntity.getCertificateProfileId(), endEntity.getTokenType(), extendedInformation);
+                        endEntityProfileId, endEntity.getCertificateProfileId(), endEntity.getTokenType(), extendedInformation, isForKeyImport);
                 // Since persist will not commit and fail if the user already exists, we need to check for this
                 // Flushing the entityManager will not allow us to rollback the persisted user if this is a part of a larger transaction.
                 if (existsUser(userData.getUsername())){
