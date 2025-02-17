@@ -149,6 +149,7 @@ import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.IllegalKeyException;
+import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
@@ -308,8 +309,14 @@ public abstract class CmpTestCase extends CaTestCase {
     }
 
     protected final void removeCAs(CA[] cas) throws AuthorizationDeniedException {
+        final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
+                InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
         for (CA ca : cas) {
             if (ca != null ) {
+                
+                // Delete certs issued by the CA
+                internalCertificateStoreSession.removeCertificatesByIssuer( ca.getSubjectDN());
+
                 CaTestUtils.removeCa(ADMIN, ca.getCAInfo());
             }
         }
