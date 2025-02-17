@@ -25,7 +25,7 @@ import com.keyfactor.util.certificate.CertificateWrapper;
 import com.keyfactor.util.keys.KeyPairWrapper;
 
 /**
- * @version $Id$
+ *
  */
 public interface KeyRecoverySession {
 
@@ -106,7 +106,7 @@ public interface KeyRecoverySession {
      *
      * @param admin the administrator calling the function
      * @param username or the user.
-     * @param the end entity profile of the user, used for access control
+     * @param endEntityProfileId end entity profile of the user, used for access control
      * @return true if operation went successful or false if no certificates could be found for
      *         user, or user already marked.
      *         
