@@ -505,6 +505,7 @@ public class ProtocolOcspHttpSystemTest extends ProtocolOcspTestBase {
         } finally {
             endEntityManagementSession.deleteUser(admin, "ocsptest");
             CryptoTokenTestUtils.removeCryptoToken(admin, caInfo.getCAToken().getCryptoTokenId());
+            internalCertStoreSession.removeCertificatesByIssuer( caInfo.getSubjectDN());
         }
     } // test08OcspEcdsaGood
 
