@@ -34,12 +34,14 @@ import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.SecConst;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
  * Creates tons of end entities. The baseline should be the user creation time for a single thread using an always allow token (forgoing database
  * checks), while this test should press the database to the point where caching influences behavior.
  */
+@Ignore("Takes a very long time to complete")
 public class AddLotsOfUsersSystemTest extends CaTestCase {
 
 	private static final Logger log = Logger.getLogger(AddLotsOfUsersSystemTest.class);

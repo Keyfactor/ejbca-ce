@@ -23,10 +23,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.keyfactor.CesecoreException;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-
-import com.keyfactor.CesecoreException;
 
 /**
  * Base implementation for domain objects (or other objects) with dynamic UI properties.
@@ -158,7 +158,7 @@ public class DynamicUiModel implements Serializable {
      * Gets the raw data map for the dynamic properties.
      * @return the raw data map.
      */
-    public Map<String,Object> getRawData() throws CesecoreException{
+    public Map<String,Object> getRawData() throws CesecoreException {
         final LinkedHashMap<String,Object> result = new LinkedHashMap<>();
         for (Entry<String,DynamicUiProperty<?>> entry : properties.entrySet()) {
             if (entry.getValue().isTransientValue()) {

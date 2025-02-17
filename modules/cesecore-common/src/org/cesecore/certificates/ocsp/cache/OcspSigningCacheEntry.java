@@ -130,7 +130,7 @@ public class OcspSigningCacheEntry {
                 signingCertificateForOcspSigning = CertTools.isOCSPCert(signingCertificate);
             }
             signingCertificateIssuerDn = CertTools.getIssuerDN(signingCertificate);
-            signingCertificateIssuerDnRaw = signingCertificate.getIssuerDN().getName();
+            signingCertificateIssuerDnRaw = signingCertificate.getIssuerX500Principal().getName();
         }
         if (fullCertificateChain==null) {
             responseCertChain = null;

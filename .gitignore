@@ -20,3 +20,7 @@ modules/ra-gui/resources/js/jquery.min.js
 /.metadata
 /.project
 .gradle
+jacoco.exec
+**/*.log
+modules/ejbca-common/result.ser
+java_*.hprof

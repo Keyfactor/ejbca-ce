@@ -13,6 +13,13 @@
 
 package org.ejbca.core.model.ra.raadmin;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.Serializable;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
@@ -67,18 +74,11 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * Tests the end entity profile entity bean.
@@ -654,8 +654,15 @@ public class EndEntityProfileSessionBeanSystemTest extends RoleUsingTestCase {
     public void testAuthorization() throws Exception {
         log.trace(">testAuthorization");
         final KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        X509Certificate certificate = CertTools.genSelfCert("C=SE,O=Test,CN=Test EndEntityProfileSessionNoAuth", 365, null, keys.getPrivate(), keys.getPublic(),
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
+        X509Certificate certificate = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn("C=SE,O=Test,CN=Test EndEntityProfileSessionNoAuth")
+                .setIssuerDn("C=SE,O=Test,CN=Test EndEntityProfileSessionNoAuth")
+                .setValidityDays(365)
+                .setIssuerPrivKey(keys.getPrivate())
+                .setEntityPubKey(keys.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setLdapOrder(true)
+                .generateCertificate();
         AuthenticationToken adminTokenNoAuth = new X509CertificateAuthenticationToken(certificate);
         try {
             EndEntityProfile eep = endEntityProfileSession.getEndEntityProfile("TESTEEPROFNOAUTH");

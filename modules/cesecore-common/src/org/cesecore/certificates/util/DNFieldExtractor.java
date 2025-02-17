@@ -121,6 +121,7 @@ public class DNFieldExtractor implements Serializable {
     public static final int KRB5PRINCIPAL = 52;
     public static final int PERMANTIDENTIFIER = 56;
     public static final int SUBJECTIDENTIFICATIONMETHOD = 59;
+    public static final int HARDWAREMODULENAME = 71;
 
     // Subject Directory Attributes
     public static final int DATEOFBIRTH = 27;

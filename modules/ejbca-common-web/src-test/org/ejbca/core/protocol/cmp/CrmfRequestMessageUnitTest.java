@@ -13,14 +13,23 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
@@ -28,15 +37,11 @@ import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.keys.KeyTools;
 
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
@@ -63,6 +68,7 @@ import org.bouncycastle.asn1.crmf.CertRequest;
 import org.bouncycastle.asn1.crmf.CertTemplateBuilder;
 import org.bouncycastle.asn1.crmf.OptionalValidity;
 import org.bouncycastle.asn1.crmf.ProofOfPossession;
+import org.bouncycastle.asn1.crmf.SubsequentMessage;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
@@ -70,9 +76,19 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.cert.CertIOException;
+import org.bouncycastle.cert.cmp.CMPException;
+import org.bouncycastle.cert.cmp.ProtectedPKIMessage;
+import org.bouncycastle.cert.cmp.ProtectedPKIMessageBuilder;
+import org.bouncycastle.cert.crmf.CRMFException;
+import org.bouncycastle.cert.crmf.CertificateReqMessagesBuilder;
+import org.bouncycastle.cert.crmf.jcajce.JcaCertificateRequestMessageBuilder;
+import org.bouncycastle.jcajce.spec.MLKEMParameterSpec;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.MacCalculator;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.pkcs.jcajce.JcePBMac1CalculatorBuilder;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.model.UsernameGenerateMode;
 import org.ejbca.core.model.ra.UsernameGenerator;
@@ -80,12 +96,10 @@ import org.ejbca.core.model.ra.UsernameGeneratorParams;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
+import com.keyfactor.util.keys.KeyTools;
 
 /**
  * Test to verify that CrmfRequestMessage can be properly Serialized.
@@ -280,9 +294,18 @@ public class CrmfRequestMessageUnitTest {
                 ASN1Primitive derObject = in.readObject();
                 PKIMessage myPKIMessage = PKIMessage.getInstance(derObject);
                 KeyPair keys = KeyTools.genKeys("512", "RSA");
-                X509Certificate signCert = CertTools.genSelfCert("CN=CMP Sign Test", 3650, null, keys.getPrivate(), keys.getPublic(), sigAlg, false);
+                X509Certificate signCert = SimpleCertGenerator.forTESTLeafCert()
+                        .setSubjectDn("CN=CMP Sign Test")
+                        .setIssuerDn("CN=CMP Sign Test")
+                        .setValidityDays(3650)
+                        .setIssuerPrivKey(keys.getPrivate())
+                        .setEntityPubKey(keys.getPublic())
+                        .setSignatureAlgorithm(sigAlg)
+                        .setLdapOrder(true)
+                        .generateCertificate();
+                        
                 // Re-sign the message
-                Collection<Certificate> signCertChain = new ArrayList<Certificate>();
+                Collection<Certificate> signCertChain = new ArrayList<>();
                 signCertChain.add(signCert);
                 byte[] newmsg = CmpMessageHelper.signPKIMessage(myPKIMessage, signCertChain, keys.getPrivate(), sigAlg, null, BouncyCastleProvider.PROVIDER_NAME);
                 in.close();
@@ -489,6 +512,153 @@ public class CrmfRequestMessageUnitTest {
             }
         } finally {
             in.close();
+        }
+    }
+
+    /** Tests using SubsequentMessage.encrCert POP in CRMF requests (RFC4211 section 4.2), something that can only be used with PQC KEMs
+     */
+    @Test
+    public void testPOPOEncrCert() throws InvalidAlgorithmParameterException, CertificateParsingException, OperatorCreationException, CertIOException, NoSuchAlgorithmException, NoSuchProviderException, CRMFException, CMPException, InvalidKeyException {
+
+        // First step for the client - we generate a key pair
+        KeyPairGenerator mlKemKpGen = KeyPairGenerator.getInstance("ML-KEM", "BC");
+        mlKemKpGen.initialize(MLKEMParameterSpec.ml_kem_512);
+        KeyPair mlKemKp = mlKemKpGen.generateKeyPair();
+        // The good case, ML-KEM public key with SubsequentMessage.encrCert POP request, should pass
+        {
+            GeneralName sender = new GeneralName(new X500Name("CN=ML-KEM Subject"));
+            GeneralName recipient = new GeneralName(new X500Name("CN=ML-DSA Issuer"));
+            // First step for the client - we generate a key pair
+            // Second Step: We generate our certification request (CRMF).
+            BigInteger certReqId = BigInteger.valueOf(System.currentTimeMillis());
+            JcaCertificateRequestMessageBuilder certReqBuild = new JcaCertificateRequestMessageBuilder(certReqId);
+            certReqBuild
+            .setPublicKey(mlKemKp.getPublic())
+            .setSubject(X500Name.getInstance(sender.getName()))
+            .setProofOfPossessionSubsequentMessage(SubsequentMessage.encrCert);
+            CertificateReqMessagesBuilder certReqMsgsBldr = new CertificateReqMessagesBuilder();
+            certReqMsgsBldr.addRequest(certReqBuild.build());
+            certReqMsgsBldr.build();
+            certReqMsgsBldr.addRequest(certReqBuild.build());
+            // Third Step: We wrap the CRMF certification request in a CMP message for sending, protecting it using a MAC.
+            char[] senderMacPassword = "secret".toCharArray();
+            MacCalculator senderMacCalculator = new JcePBMac1CalculatorBuilder("HmacSHA256", 256).
+                    setProvider(BouncyCastleProvider.PROVIDER_NAME).build(senderMacPassword);
+            ProtectedPKIMessage message = new ProtectedPKIMessageBuilder(sender, recipient)
+                    .setBody(PKIBody.TYPE_INIT_REQ, certReqMsgsBldr.build())
+                    .build(senderMacCalculator);
+
+            CrmfRequestMessage msg = new CrmfRequestMessage(message.toASN1Structure(), null, false, null);
+            assertTrue("CMP message with ML-KEM public key and encrCert POP should pass POP verification", msg.verify());
+        }
+        // Bad case and good case, ML-KEM public key with raVerified POP request, should fail if we don't allow it and pass if we do
+        {
+            GeneralName sender = new GeneralName(new X500Name("CN=ML-KEM Subject"));
+            GeneralName recipient = new GeneralName(new X500Name("CN=ML-DSA Issuer"));
+            // Second Step: We generate our certification request (CRMF).
+            BigInteger certReqId = BigInteger.valueOf(System.currentTimeMillis());
+            JcaCertificateRequestMessageBuilder certReqBuild = new JcaCertificateRequestMessageBuilder(certReqId);
+            certReqBuild
+            .setPublicKey(mlKemKp.getPublic())
+            .setSubject(X500Name.getInstance(sender.getName()))
+            .setProofOfPossessionRaVerified();
+            CertificateReqMessagesBuilder certReqMsgsBldr = new CertificateReqMessagesBuilder();
+            certReqMsgsBldr.addRequest(certReqBuild.build());
+            certReqMsgsBldr.build();
+            certReqMsgsBldr.addRequest(certReqBuild.build());
+            // Third Step: We wrap the CRMF certification request in a CMP message for sending, protecting it using a MAC.
+            char[] senderMacPassword = "secret".toCharArray();
+            MacCalculator senderMacCalculator = new JcePBMac1CalculatorBuilder("HmacSHA256", 256).
+                    setProvider(BouncyCastleProvider.PROVIDER_NAME).build(senderMacPassword);
+            ProtectedPKIMessage message = new ProtectedPKIMessageBuilder(sender, recipient)
+                    .setBody(PKIBody.TYPE_INIT_REQ, certReqMsgsBldr.build())
+                    .build(senderMacCalculator);
+
+            CrmfRequestMessage msg = new CrmfRequestMessage(message.toASN1Structure(), null, false, null);
+            assertFalse("CMP message with ML-KEM public key and raVerified POP should fail POP verification when not allowed", msg.verify());
+            msg = new CrmfRequestMessage(message.toASN1Structure(), null, true, null);
+            assertTrue("CMP message with ML-KEM public key and raVerified POP should pass POP verification when allowed", msg.verify());
+        }
+        // Bad case, EC public key with SubsequentMessage.encrCert POP request, should fail
+        {
+            KeyPair kp = KeyTools.genKeys("secp256r1", "EC");
+            GeneralName sender = new GeneralName(new X500Name("CN=EC Subject"));
+            GeneralName recipient = new GeneralName(new X500Name("CN=ML-DSA Issuer"));
+            // Second Step: We generate our certification request (CRMF).
+            BigInteger certReqId = BigInteger.valueOf(System.currentTimeMillis());
+            JcaCertificateRequestMessageBuilder certReqBuild = new JcaCertificateRequestMessageBuilder(certReqId);
+            certReqBuild
+            .setPublicKey(kp.getPublic())
+            .setSubject(X500Name.getInstance(sender.getName()))
+            .setProofOfPossessionSubsequentMessage(SubsequentMessage.encrCert);
+            CertificateReqMessagesBuilder certReqMsgsBldr = new CertificateReqMessagesBuilder();
+            certReqMsgsBldr.addRequest(certReqBuild.build());
+            certReqMsgsBldr.build();
+            certReqMsgsBldr.addRequest(certReqBuild.build());
+            // Third Step: We wrap the CRMF certification request in a CMP message for sending, protecting it using a MAC.
+            char[] senderMacPassword = "secret".toCharArray();
+            MacCalculator senderMacCalculator = new JcePBMac1CalculatorBuilder("HmacSHA256", 256).
+                    setProvider(BouncyCastleProvider.PROVIDER_NAME).build(senderMacPassword);
+            ProtectedPKIMessage message = new ProtectedPKIMessageBuilder(sender, recipient)
+                    .setBody(PKIBody.TYPE_INIT_REQ, certReqMsgsBldr.build())
+                    .build(senderMacCalculator);
+
+            CrmfRequestMessage msg = new CrmfRequestMessage(message.toASN1Structure(), null, false, null);
+            assertFalse("CMP message with EC public key and encrCert POP should fail POP verification", msg.verify());
+        }
+        // Bad case, RSA public key with SubsequentMessage.encrCert POP request, should fail
+        {
+            KeyPair kp = KeyTools.genKeys("1024", "RSA");
+            GeneralName sender = new GeneralName(new X500Name("CN=RSA Subject"));
+            GeneralName recipient = new GeneralName(new X500Name("CN=ML-DSA Issuer"));
+            // Second Step: We generate our certification request (CRMF).
+            BigInteger certReqId = BigInteger.valueOf(System.currentTimeMillis());
+            JcaCertificateRequestMessageBuilder certReqBuild = new JcaCertificateRequestMessageBuilder(certReqId);
+            certReqBuild
+            .setPublicKey(kp.getPublic())
+            .setSubject(X500Name.getInstance(sender.getName()))
+            .setProofOfPossessionSubsequentMessage(SubsequentMessage.encrCert);
+            CertificateReqMessagesBuilder certReqMsgsBldr = new CertificateReqMessagesBuilder();
+            certReqMsgsBldr.addRequest(certReqBuild.build());
+            certReqMsgsBldr.build();
+            certReqMsgsBldr.addRequest(certReqBuild.build());
+            // Third Step: We wrap the CRMF certification request in a CMP message for sending, protecting it using a MAC.
+            char[] senderMacPassword = "secret".toCharArray();
+            MacCalculator senderMacCalculator = new JcePBMac1CalculatorBuilder("HmacSHA256", 256).
+                    setProvider(BouncyCastleProvider.PROVIDER_NAME).build(senderMacPassword);
+            ProtectedPKIMessage message = new ProtectedPKIMessageBuilder(sender, recipient)
+                    .setBody(PKIBody.TYPE_INIT_REQ, certReqMsgsBldr.build())
+                    .build(senderMacCalculator);
+
+            CrmfRequestMessage msg = new CrmfRequestMessage(message.toASN1Structure(), null, false, null);
+            assertFalse("CMP message with RSA public key and encrCert POP should fail POP verification", msg.verify());
+        }
+        // Bad case, ML-DSA public key with SubsequentMessage.encrCert POP request, should fail
+        {
+            KeyPair kp = KeyTools.genKeys("ML-DSA-44", "ML-DSA-44");
+            GeneralName sender = new GeneralName(new X500Name("CN=ML-DSA Subject"));
+            GeneralName recipient = new GeneralName(new X500Name("CN=ML-DSA Issuer"));
+            // Second Step: We generate our certification request (CRMF).
+            BigInteger certReqId = BigInteger.valueOf(System.currentTimeMillis());
+            JcaCertificateRequestMessageBuilder certReqBuild = new JcaCertificateRequestMessageBuilder(certReqId);
+            certReqBuild
+            .setPublicKey(kp.getPublic())
+            .setSubject(X500Name.getInstance(sender.getName()))
+            .setProofOfPossessionSubsequentMessage(SubsequentMessage.encrCert);
+            CertificateReqMessagesBuilder certReqMsgsBldr = new CertificateReqMessagesBuilder();
+            certReqMsgsBldr.addRequest(certReqBuild.build());
+            certReqMsgsBldr.build();
+            certReqMsgsBldr.addRequest(certReqBuild.build());
+            // Third Step: We wrap the CRMF certification request in a CMP message for sending, protecting it using a MAC.
+            char[] senderMacPassword = "secret".toCharArray();
+            MacCalculator senderMacCalculator = new JcePBMac1CalculatorBuilder("HmacSHA256", 256).
+                    setProvider(BouncyCastleProvider.PROVIDER_NAME).build(senderMacPassword);
+            ProtectedPKIMessage message = new ProtectedPKIMessageBuilder(sender, recipient)
+                    .setBody(PKIBody.TYPE_INIT_REQ, certReqMsgsBldr.build())
+                    .build(senderMacCalculator);
+
+            CrmfRequestMessage msg = new CrmfRequestMessage(message.toASN1Structure(), null, false, null);
+            assertFalse("CMP message with RSA public key and encrCert POP should fail POP verification", msg.verify());
         }
     }
 

@@ -136,7 +136,7 @@ public class RaLoginBean implements Serializable {
                     servletRequest.getSession(true).setAttribute("ejbca.id.token", token.getIdToken());
                     servletRequest.getSession(true).setAttribute("ejbca.refresh.token", token.getRefreshToken());
                     raAuthenticationBean.resetAuthentication();
-                    FacesContext.getCurrentInstance().getExternalContext().redirect("index.xhtml");
+                    HttpTools.sendRedirect(FacesContext.getCurrentInstance(), "/index.html");
                 } else {
                     log.info("Received OAuth token of unsupported type '" + token.getTokenType() + "'");
                 }

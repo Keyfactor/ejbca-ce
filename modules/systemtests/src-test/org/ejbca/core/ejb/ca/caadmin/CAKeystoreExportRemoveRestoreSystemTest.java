@@ -13,6 +13,11 @@
 
 package org.ejbca.core.ejb.ca.caadmin;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.util.Date;
 
 import org.apache.log4j.Logger;
@@ -25,6 +30,7 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.junit.util.TraceLogMethodsTestWatcher;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
@@ -33,23 +39,18 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
 
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * Tests for the Soft catoken removal functionality.
  * 
  * A CA keystore can be exported using caAdminSessionBean.exportCAKeyStore(). A CA keystore can be removed using 
  * caAdminSessionBean.removeCAKeyStore(). A CA keystore can be restored using caAdminSessionBean.restoreCAKeyStore().
- * 
- * @version $Id$
  */
 public class CAKeystoreExportRemoveRestoreSystemTest {
 
@@ -62,6 +63,9 @@ public class CAKeystoreExportRemoveRestoreSystemTest {
     
     private AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CAKeystoreExportRemoveRestoreSystemTest"));
 
+    @Rule
+    public final TestWatcher traceLogMethodsRule = new TraceLogMethodsTestWatcher(log);
+    
     @BeforeClass
     public static void installProvider() {
         CryptoProviderTools.installBCProviderIfNotAvailable();
@@ -93,9 +97,7 @@ public class CAKeystoreExportRemoveRestoreSystemTest {
      */
     @Test
     public void test01ExportRemoveRestoreSHA1WithRSA() throws Exception {
-        log.trace("<test01ExportRemoveRestoreSHA1WithRSA()");
         subTestExportRemoveRestore("test01", "1024", "1024", AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-        log.trace("<test01ExportRemoveRestoreSHA1WithRSA()");
     }
 
     /**
@@ -107,9 +109,7 @@ public class CAKeystoreExportRemoveRestoreSystemTest {
      */
     @Test
     public void test02ExportRemoveRestoreSHA256WithRSAForSigning() throws Exception {
-        log.trace(">test02ExportRemoveRestoreSHA256WithRSAForSigning()");
         subTestExportRemoveRestore("test02", "1024", "1024", AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-        log.trace("<test02ExportRemoveRestoreSHA256WithRSAForSigning()");
     }
 
     /**
@@ -121,9 +121,29 @@ public class CAKeystoreExportRemoveRestoreSystemTest {
      */
     @Test
     public void test03ExportRemoveRestoreSHA1WithECDSAForSigning() throws Exception {
-        log.trace(">test03ExportRemoveRestoreSHA1WithECDSAForSigning()");
         subTestExportRemoveRestore("test03", "secp256r1", "1024", AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
-        log.trace("<test03ExportRemoveRestoreSHA1WithECDSAForSigning()");
+    }
+    
+    /**
+     * Tries to export, remove and restore with a CA that is using an ML-DSA-44
+     * key for signing and SHA256WithRSA for encryption.
+     * 
+     * @throws Exception any
+     */
+    @Test
+    public void test04ExportRemoveRestoreMLDSA44ForSigning() throws Exception {
+        subTestExportRemoveRestore("test04", AlgorithmConstants.KEYALGORITHM_MLDSA44, "1024", AlgorithmConstants.SIGALG_MLDSA44, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
+    }
+    
+    /**
+     * Tries to export, remove and restore with a CA that is using an FALCON-512
+     * key for signing and SHA256WithRSA for encryption.
+     * 
+     * @throws Exception any
+     */
+    @Test
+    public void test05ExportRemoveRestoreFalcon521ForSigning() throws Exception {
+        subTestExportRemoveRestore("test04", AlgorithmConstants.KEYALGORITHM_FALCON512, "1024", AlgorithmConstants.SIGALG_FALCON512, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
     }
     
     /** Create CryptoToken, generates keys, executes test and cleans up CryptoToken. */
@@ -145,9 +165,8 @@ public class CAKeystoreExportRemoveRestoreSystemTest {
      * @throws Exception
      */
     @Test
-    public void test05RestoreWrong() throws Exception {
+    public void test06RestoreWrong() throws Exception {
         final String capassword = "foo123";
-        log.trace(">test05RestoreWrong()");
         int cryptoTokenId1 = 0;
         int cryptoTokenId3 = 0;
         try {
@@ -207,7 +226,6 @@ public class CAKeystoreExportRemoveRestoreSystemTest {
             CryptoTokenTestUtils.removeCryptoToken(internalAdmin, cryptoTokenId1);
             CryptoTokenTestUtils.removeCryptoToken(internalAdmin, cryptoTokenId3);
         }
-        log.trace("<test05RestoreWrong()");
     }
 
     /**
@@ -217,9 +235,8 @@ public class CAKeystoreExportRemoveRestoreSystemTest {
      * @throws Exception
      */
     @Test
-    public void test06RestoreNotRemoved() throws Exception {
+    public void test07RestoreNotRemoved() throws Exception {
         final String capassword = "foo123";
-        log.trace(">test06RestoreNotRemoved()");
         CAInfo cainfo = null;
         try {
             // CA using SHA1withRSA and 2048 bit RSA KEY
@@ -251,7 +268,6 @@ public class CAKeystoreExportRemoveRestoreSystemTest {
             // Clean up
             CaTestUtils.removeCa(internalAdmin, cainfo);
         }
-        log.trace("<test06RestoreNotRemoved()");
     }
 
     /**

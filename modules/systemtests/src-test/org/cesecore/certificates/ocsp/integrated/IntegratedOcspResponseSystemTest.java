@@ -110,11 +110,13 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.TraceLogMethodsRule;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.ejbca.core.ejb.db.DatabaseContentRule;
 import org.ejbca.core.ejb.ocsp.OcspDataSessionRemote;
 import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionRemote;
 import org.ejbca.core.ejb.ocsp.PresignResponseValidity;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -128,6 +130,7 @@ import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.SHA1DigestCalculator;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
@@ -172,6 +175,9 @@ public class IntegratedOcspResponseSystemTest {
     private List<String> createdCertificateSerialNumbers = new ArrayList<>();
 
     private final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Internal Admin"));
+
+    @ClassRule
+    public static DatabaseContentRule databaseContentRule = new DatabaseContentRule();
 
     @Rule
     public TestRule traceLogMethodsRule = new TraceLogMethodsRule();
@@ -1202,11 +1208,18 @@ public class IntegratedOcspResponseSystemTest {
             // Now, construct an external CA. 
             final String externalCaName = "testStandAloneOcspResponseExternalCa";
             final String externalCaSubjectDn = "CN=" + externalCaName;
-            final long validity = 3650L;
+            final int validity = 3650;
             final String encodedValidity = "3650d";
             KeyPair externalCaKeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-            Certificate externalCaCertificate = CertTools.genSelfCert(externalCaSubjectDn, validity, null, externalCaKeys.getPrivate(),
-                    externalCaKeys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
+            Certificate externalCaCertificate = SimpleCertGenerator.forTESTCaCert()
+                    .setSubjectDn(externalCaSubjectDn)
+                    .setIssuerDn(externalCaSubjectDn)
+                    .setValidityDays(validity)
+                    .setIssuerPrivKey(externalCaKeys.getPrivate())
+                    .setEntityPubKey(externalCaKeys.getPublic())
+                    .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA)
+                    .setLdapOrder(true)
+                    .generateCertificate();
             X509CAInfo externalCaInfo = X509CAInfo.getDefaultX509CAInfo(externalCaSubjectDn, externalCaName, CAConstants.CA_EXTERNAL,
                     CertificateProfileConstants.CERTPROFILE_NO_PROFILE, encodedValidity, CAInfo.SELFSIGNED, null, null);
             CAToken token = new CAToken(externalCaInfo.getCAId(), new NullCryptoToken().getProperties());

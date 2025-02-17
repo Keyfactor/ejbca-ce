@@ -12,8 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
-import static org.junit.Assert.assertNotNull;
-
 import java.security.InvalidAlgorithmParameterException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -25,6 +23,15 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
+
+import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -35,17 +42,11 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.SoftCryptoToken;
 
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Base class for X509CAUnitTest and X509CAPartitionedCrlUnitTest
- * 
+ *
  * @version $Id$
  */
 public class X509CAUnitTestBase {
@@ -60,13 +61,13 @@ public class X509CAUnitTestBase {
     }
 
     protected static X509CA createTestCA(CryptoToken cryptoToken, final String cadn) throws CertificateParsingException,
-            InvalidAlgorithmParameterException, CryptoTokenOfflineException, InvalidAlgorithmException, OperatorCreationException {
+            InvalidAlgorithmParameterException, CryptoTokenOfflineException, InvalidAlgorithmException, OperatorCreationException, CertIOException {
         return createTestCA(cryptoToken, cadn, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, null, null);
     }
 
     protected static X509CA createTestCA(CryptoToken cryptoToken, final String cadn, final String sigAlg, Date notBefore, Date notAfter)
             throws InvalidAlgorithmParameterException, CryptoTokenOfflineException, InvalidAlgorithmException, CertificateParsingException,
-            OperatorCreationException {
+            OperatorCreationException, CertIOException {
         cryptoToken.generateKeyPair(getTestKeySpec(sigAlg), CAToken.SOFTPRIVATESIGNKEYALIAS);
         cryptoToken.generateKeyPair(getTestKeySpec(sigAlg), CAToken.SOFTPRIVATEDECKEYALIAS);
         // Create CAToken
@@ -93,7 +94,20 @@ public class X509CAUnitTestBase {
         final PublicKey publicKey = cryptoToken.getPublicKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
         final PrivateKey privateKey = cryptoToken.getPrivateKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
         int keyusage = X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
-        X509Certificate cacert = CertTools.genSelfCertForPurpose(cadn, 10L, "1.1.1.1", privateKey, publicKey, sigAlg, true, keyusage, notBefore, notAfter, BouncyCastleProvider.PROVIDER_NAME);
+        X509Certificate cacert = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn(cadn)
+                .setIssuerDn(cadn)
+                .setValidityDays(10)
+                .setPolicyId("1.1.1.1")
+                .setIssuerPrivKey(privateKey)
+                .setEntityPubKey(publicKey)
+                .setKeyUsage(keyusage)
+                .setPrivateKeyNotBefore(notBefore)
+                .setPrivateKeyNotAfter(notAfter)
+                .setSignatureAlgorithm(sigAlg)
+                .setLdapOrder(true)
+                .setProvider(BouncyCastleProvider.PROVIDER_NAME)
+                .generateCertificate();
         assertNotNull(cacert);
         List<Certificate> cachain = new ArrayList<>();
         cachain.add(cacert);
@@ -125,7 +139,11 @@ public class X509CAUnitTestBase {
             algName.equals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA) ||
             algName.equals(AlgorithmConstants.SIGALG_SHA512_WITH_RSA) ||
             algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1) ||
-            algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_SHA512_WITH_RSA_AND_MGF1)) {
+            algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_SHA512_WITH_RSA_AND_MGF1) ||
+            algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_MLDSA44) ||
+            algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_MLDSA65) ||
+            algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_MLDSA87) ||
+            algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_LMS)) {
             return algName;
         } else {
             return "SHA256withRSA";
@@ -145,10 +163,16 @@ public class X509CAUnitTestBase {
             return "2048"; // RSA-PSS required at least 2014 bits
         } else if (algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_SHA512_WITH_RSA_AND_MGF1)) {
             return "2048"; // RSA-PSS required at least 2014 bits
+        } else if (algName.equals(AlgorithmConstants.SIGALG_MLDSA44)) {
+            return AlgorithmConstants.KEYALGORITHM_MLDSA44;
         } else if (algName.equals(AlgorithmConstants.SIGALG_MLDSA65)) {
             return AlgorithmConstants.KEYALGORITHM_MLDSA65;
+        } else if (algName.equals(AlgorithmConstants.SIGALG_MLDSA87)) {
+            return AlgorithmConstants.KEYALGORITHM_MLDSA87;
         } else if (algName.equals(AlgorithmConstants.SIGALG_FALCON512)) {
             return AlgorithmConstants.KEYALGORITHM_FALCON512;
+        } else if (algName.equals(AlgorithmConstants.SIGALG_LMS)) {
+            return AlgorithmConstants.KEYALGORITHM_LMS;
         } else {
             return "1024"; // Assume RSA
         }

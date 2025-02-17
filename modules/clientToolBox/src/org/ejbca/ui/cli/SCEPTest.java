@@ -105,6 +105,7 @@ import org.ejbca.util.PerformanceTest.NrOfThreadsAndNrOfTests;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 
 /**
@@ -201,7 +202,7 @@ class SCEPTest extends ClientToolBox {
                 }
                 for (int i = 0; i < certs.length; i++) {
                     if (this.sessionData.certchain == null) {
-                        StressTest.this.performanceTest.getLog().info("Cert " + i + " " + certs[i].getSubjectDN());
+                        StressTest.this.performanceTest.getLog().info("Cert " + i + " " + certs[i].getSubjectX500Principal());
                     } else if (!certs[i].equals(this.sessionData.certchain[i])) {
                         StressTest.this.performanceTest.getLog().error("New cert chain is not equal to old!");
                         return false;
@@ -273,9 +274,14 @@ class SCEPTest extends ClientToolBox {
                                 bcKeyUsage += i < 8 ? 1 << (7 - i) : 1 << (15 + 8 - i);
                             }
                         }
-                        X509Certificate senderCertificate = CertTools.genSelfCert(userDN, 24 * 60 * 60 * 1000, null,
-                                StressTest.this.keyPair.getPrivate(), StressTest.this.keyPair.getPublic(), StressTest.this.signatureAlg,
-                                false);
+                        X509Certificate senderCertificate = SimpleCertGenerator.forTESTLeafCert()
+                                .setSubjectDn(userDN)
+                                .setIssuerDn(userDN)
+                                .setValidityDays(24 * 60 * 60 * 1000)
+                                .setIssuerPrivKey(StressTest.this.keyPair.getPrivate())
+                                .setEntityPubKey(StressTest.this.keyPair.getPublic())
+                                .setSignatureAlgorithm(StressTest.this.signatureAlg)
+                                .generateCertificate(); 
                         msgBytes = gen.generateCertReq(userDN, "foo123", transactionId, this.sessionData.certchain[0],
                                 generateExtensions(bcKeyUsage), senderCertificate, StressTest.this.keyPair.getPrivate());
                     }
@@ -306,9 +312,14 @@ class SCEPTest extends ClientToolBox {
                 for (int keeprunning = 0; keeprunning < 5; keeprunning++) {
                     Thread.sleep(5000); // wait 5 seconds between polls
                     // Generate a SCEP GerCertInitial message
-                    X509Certificate senderCertificate = CertTools.genSelfCert(userDN, 24 * 60 * 60 * 1000, null,
-                            StressTest.this.keyPair.getPrivate(), StressTest.this.keyPair.getPublic(), StressTest.this.signatureAlg,
-                            false);
+                    X509Certificate senderCertificate = SimpleCertGenerator.forTESTLeafCert()
+                            .setSubjectDn(userDN)
+                            .setIssuerDn(userDN)
+                            .setValidityDays(24 * 60 * 60 * 1000)
+                            .setIssuerPrivKey(StressTest.this.keyPair.getPrivate())
+                            .setEntityPubKey(StressTest.this.keyPair.getPublic())
+                            .setSignatureAlgorithm(StressTest.this.signatureAlg)
+                            .generateCertificate(); 
                     final byte[] msgBytes = gen.generateGetCertInitial(userDN, transactionId, this.sessionData.certchain[0], senderCertificate, StressTest.this.keyPair.getPrivate());
                     // Get some valuable things to verify later on
                     final String senderNonce = gen.getSenderNonce();
@@ -419,7 +430,7 @@ class SCEPTest extends ClientToolBox {
                 }
                 SignerId sinfo = signerInfo.getSID();
                 // Check that the signer is the expected CA
-                String raCertIssuer = DnComponents.stringToBCDNString(this.sessionData.certchain[0].getIssuerDN().getName());
+                String raCertIssuer = DnComponents.stringToBCDNString(this.sessionData.certchain[0].getIssuerX500Principal().getName());
                 String sinfoIssuer = DnComponents.stringToBCDNString(sinfo.getIssuer().toString());
                 if (!StringUtils.equals(raCertIssuer, sinfoIssuer)) {
                     StressTest.this.performanceTest.getLog().error("Issuers does not match: " + raCertIssuer + ", " + sinfoIssuer);
@@ -580,8 +591,8 @@ class SCEPTest extends ClientToolBox {
                     //                            fos.close();
                     //                        } catch (Exception e) {}
                     // check the returned CRL
-                    if (!StringUtils.equals(this.sessionData.certchain[1].getSubjectDN().getName(), retCrl.getIssuerDN().getName())) {
-                        StressTest.this.performanceTest.getLog().error("CRL issuerDN should be " + this.sessionData.certchain[1].getSubjectDN().getName() + " but was: " + retCrl.getIssuerDN().getName());
+                    if (!StringUtils.equals(this.sessionData.certchain[1].getSubjectX500Principal().getName(), retCrl.getIssuerX500Principal().getName())) {
+                        StressTest.this.performanceTest.getLog().error("CRL issuerDN should be " + this.sessionData.certchain[1].getSubjectX500Principal().getName() + " but was: " + retCrl.getIssuerX500Principal().getName());
                         return false;
                     }
                     retCrl.verify(this.sessionData.certchain[1].getPublicKey());
@@ -616,7 +627,7 @@ class SCEPTest extends ClientToolBox {
                 //                            } catch (Exception e) {}
 
                 // check the returned certificate
-                final String subjectdn = DnComponents.stringToBCDNString(usercert.getSubjectDN().getName());
+                final String subjectdn = DnComponents.stringToBCDNString(usercert.getSubjectX500Principal().getName());
                 if (!subjectdn.equals(userDN)) {
                     StressTest.this.performanceTest.getLog().info("subjectdn='" + subjectdn + "', mysubjectdn='" + userDN + "'.");
                     return false;
@@ -635,8 +646,8 @@ class SCEPTest extends ClientToolBox {
                 }
                 if (cacert != null) {
                     // ca certificate
-                    if (!StringUtils.equals(this.sessionData.certchain[1].getSubjectDN().getName(), cacert.getSubjectDN().getName())) {
-                        StressTest.this.performanceTest.getLog().error("CA certs subejctDN should be " + this.sessionData.certchain[1].getSubjectDN().getName() + " but was: " + usercert.getSubjectDN().getName());
+                    if (!StringUtils.equals(this.sessionData.certchain[1].getSubjectX500Principal().getName(), cacert.getSubjectX500Principal().getName())) {
+                        StressTest.this.performanceTest.getLog().error("CA certs subejctDN should be " + this.sessionData.certchain[1].getSubjectX500Principal().getName() + " but was: " + usercert.getSubjectX500Principal().getName());
                         return false;
                     }
                     usercert.verify(cacert.getPublicKey());
@@ -777,7 +788,7 @@ class SCEPTest extends ClientToolBox {
                 //      subject "the requester subject name as given in PKCS#10" 
                 //  } 
                 ASN1EncodableVector vec = new ASN1EncodableVector();
-                vec.add(new DERUTF8String(ca.getIssuerDN().getName()));
+                vec.add(new DERUTF8String(ca.getIssuerX500Principal().getName()));
                 vec.add(new DERUTF8String(dn));
                 DERSequence seq = new DERSequence(vec);
 

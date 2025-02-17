@@ -12,23 +12,30 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.Locale;
+
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x9.ECNamedCurveTable;
-
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.KeyTools;
+import org.bouncycastle.openssl.PEMParser;
+import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
+import org.bouncycastle.util.encoders.Base64;
 
 /**
  * Constants for CAs.
@@ -696,6 +703,17 @@ public final class CAConstants {
                 + "L7LsxImp6UTNSiyROIReLgiOdSS+WgeN8KGo16272sGU\n"
                 + "-----END PRIVATE KEY-----";
 
+    public static final String PRESIGN_VALIDATION_KEY_LMS_PRIV =
+            "-----BEGIN PRIVATE KEY-----\n"
+            + "MIG6AgEBMA0GCyqGSIb3DQEJEAMRBGcEZQAAAAEAAAAAAAAAAQAAAAAAAAABAAAA\n"
+            + "AAAAACAAAAAAAAAAAAUAAAAEJhOgMWPANDpulEXo3rRecAAAAAEAAAAgAAAAIL0p\n"
+            + "GnpYORLqh0yMIPclZQrM5RBSomBrhmyqZtNx4s8EgT0AAAAAAQAAAAUAAAAEJhOg\n"
+            + "MWPANDpulEXo3rRecBqsHi8wV33H+jzIPdRYufQNqo2LnbPHCIWu5mA9zhxp\n"
+            + "-----END PRIVATE KEY-----";
+
+    public static final String PRESIGN_VALIDATION_KEY_LMS_PUB =
+            "ME4wDQYLKoZIhvcNAQkQAxEDPQAAAAABAAAABQAAAAQmE6AxY8A0Om6URejetF5w\n"
+            + "GqweLzBXfcf6PMg91Fi59A2qjYuds8cIha7mYD3OHGk=\n";
 
     public static final String KEY_EXCHANGE_CERTIFICATE_SDN_ENDING = "-Xchg";
 
@@ -746,11 +764,27 @@ public final class CAConstants {
                 return KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_MLDSA_65_PRIV);
             case AlgorithmConstants.KEYALGORITHM_MLDSA87:
                 return KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_MLDSA_87_PRIV);
+            case AlgorithmConstants.KEYALGORITHM_LMS:
+                final PublicKey pub = KeyTools.getPublicKeyFromBytes(Base64.decode(PRESIGN_VALIDATION_KEY_LMS_PUB));
+                final PrivateKey priv = CAConstants.getPrivateKeyFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_LMS_PRIV);
+                return new KeyPair(pub, priv);
             default:
                 return null;
         }
     }
-    
+
+    private static PrivateKey getPrivateKeyFromPEM(final String pemData) {
+        try (PEMParser pemParser = new PEMParser(new StringReader(pemData))) {
+            Object obj = pemParser.readObject();
+                final PrivateKeyInfo privInfo = (PrivateKeyInfo)obj;
+                final String alg = privInfo.getPrivateKeyAlgorithm().getAlgorithm().getId();
+                final JcaPEMKeyConverter keyConverter = new JcaPEMKeyConverter().setProvider(CryptoProviderTools.getProviderNameFromAlg(alg));
+                return keyConverter.getPrivateKey(privInfo);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
     /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
     public static final String INCLUDE_IN_HEALTH_CHECK = "includeInHealthCheck";
 
@@ -834,12 +868,12 @@ public final class CAConstants {
 
     /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
     public static final String USE_AUTHORITY_KEY_IDENTIFIER = "useAuthorityKeyIdentifier";
-    
+
     /**
-     * List of supported fields when calling the WS createCa method.  This list allows the caller to set fields 
+     * List of supported fields when calling the WS createCa method.  This list allows the caller to set fields
      * on {@link org.cesecore.certificates.ca.X509CAInfo} during CA creation and may be changed when new fields
      * are added that should be exposed to WS clients.
-     * 
+     *
      * @see org.cesecore.certificates.ca.X509CAInfo
      */
     public static final String[] CA_PROPERTY_FIELD_NAMES = {

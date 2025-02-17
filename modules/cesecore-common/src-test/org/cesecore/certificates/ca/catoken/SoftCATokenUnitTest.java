@@ -13,18 +13,18 @@
 package org.cesecore.certificates.ca.catoken;
 
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.Properties;
-
-import org.cesecore.keys.token.CryptoTokenFactory;
-import org.cesecore.keys.token.SoftCryptoToken;
-import org.junit.Test;
 
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
+
+import org.cesecore.keys.token.CryptoTokenFactory;
+import org.cesecore.keys.token.SoftCryptoToken;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Tests soft keystore CA tokens.
@@ -119,7 +119,7 @@ public class SoftCATokenUnitTest extends CATokenTestBase {
         assertEquals(CryptoToken.STATUS_ACTIVE, catoken.getTokenStatus(false, cryptoToken));
         assertEquals(CryptoToken.STATUS_ACTIVE, catoken.getTokenStatus(true, cryptoToken));
 	}
-	
+
     @Test
     public void testTokenStatusCommonAliases() throws Exception {
         final CryptoToken cryptoToken = createSoftToken(false);
@@ -142,11 +142,11 @@ public class SoftCATokenUnitTest extends CATokenTestBase {
         assertEquals(CryptoToken.STATUS_OFFLINE, catoken.getTokenStatus(false, cryptoToken));
         assertEquals(CryptoToken.STATUS_OFFLINE, catoken.getTokenStatus(true, cryptoToken));
     }
-    
-	/** When nodefaultpwd == true, the property SoftCryptoToken.NODEFAULTPWD is set in order to avoid 
+
+	/** When nodefaultpwd == true, the property SoftCryptoToken.NODEFAULTPWD is set in order to avoid
 	 * trying to use default pwd, if pwd is not specified.
 	 * Also the auto activation pin is not set when nodefaultpwd == false.
-	 * 
+	 *
 	 * @param useAutoActivationPin
 	 * @return
 	 */
@@ -167,7 +167,7 @@ public class SoftCATokenUnitTest extends CATokenTestBase {
         cryptoToken.setProperties(cryptoTokenProperties);
         return cryptoToken;
     }
-	
+
 	private Properties getCaTokenProperties(final String signAlias) {
         Properties caTokenProperties = new Properties();
         caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, signAlias); // does not exist and never will, will be moved to new keys
@@ -175,10 +175,10 @@ public class SoftCATokenUnitTest extends CATokenTestBase {
         caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, ENCRYPTION_KEY); // does not exist but will soon, after first generate
         return caTokenProperties;
 	}
-    
+
     @Override
     String getProvider() {
     	return "BC";
     }
-    
+
 }

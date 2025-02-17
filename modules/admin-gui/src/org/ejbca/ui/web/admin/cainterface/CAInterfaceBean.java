@@ -37,6 +37,15 @@ import java.util.stream.Collectors;
 
 import jakarta.ejb.EJBException;
 
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
@@ -100,15 +109,6 @@ import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.RevokedInfoView;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.cert.OID;
-
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * A class used as an interface between CA jsp pages and CA ejbca functions.
@@ -334,7 +334,7 @@ public class CAInterfaceBean implements Serializable {
     }
 
     /**
-     * 
+     *
      * @throws ParameterException if any of the input from the web was invalid
      * @throws AuthorizationDeniedException if the current admin did not have access to the selected resources
      * @throws CryptoTokenOfflineException if the crypto token was unavailable
@@ -401,8 +401,8 @@ public class CAInterfaceBean implements Serializable {
             if (!StringUtils.isEmpty(caInfoDto.getCryptoTokenAlternativeCertSignKey())) {
                 caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_ALTERNATIVE_CERTSIGN_STRING,
                         caInfoDto.getCryptoTokenAlternativeCertSignKey());
-            } 
-            
+            }
+
         }
         final CAToken caToken = new CAToken(cryptoTokenId, caTokenProperties);
         //Hybrid certs only implemented for X509
@@ -410,16 +410,16 @@ public class CAInterfaceBean implements Serializable {
             if (!StringUtils.isEmpty(caInfoDto.getAlternativeSignatureAlgorithmParam())) {
                 caToken.setAlternativeSignatureAlgorithm(caInfoDto.getAlternativeSignatureAlgorithmParam());
                 //Future proofing to allow the alternative key to potentially be on a different crypto token
-            }      
+            }
         }
-       
+
         if (caInfoDto.getSignatureAlgorithmParam() == null) {
             throw new InvalidAlgorithmException("No signature algorithm supplied!");
         }
         caToken.setSignatureAlgorithm(caInfoDto.getSignatureAlgorithmParam());
         PublicKey encryptionKey = getCryptoTokenManagementSession().getCryptoToken(cryptoTokenId).getPublicKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT));
         caToken.setEncryptionAlgorithm(AlgorithmTools.getEncSigAlgFromSigAlg(caInfoDto.getSignatureAlgorithmParam(), encryptionKey));
-                
+
         if (caInfoDto.getKeySequenceFormatAsString() == null) {
             caToken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
         } else {
@@ -449,7 +449,7 @@ public class CAInterfaceBean implements Serializable {
 	    if (buttonMakeRequest && caInfoDto.getCaType() != CAInfo.CATYPE_CITS) {
 	        caInfoDto.setCaEncodedValidity("0d"); // not applicable
         } else {
-            String errorMessage = isValidityTimeValid(caInfoDto.getCaEncodedValidity(), 
+            String errorMessage = isValidityTimeValid(caInfoDto.getCaEncodedValidity(),
                                         caInfoDto.getCaType()==CAInfo.CATYPE_CITS);
             if(!StringUtils.isEmpty(errorMessage)) {
                 throw new ParameterException(errorMessage);
@@ -753,7 +753,7 @@ public class CAInterfaceBean implements Serializable {
             } else {
                 throw new IllegalStateException("Unknown CA type with identifier " + caInfoDto.getCaType() + " was encountered.");
             }
-	    } 
+	    }
         if (buttonMakeRequest && !illegaldnoraltname) {
             CAInfo cainfo = getRequestInfo();
             getCaadminsession().createCA(getAuthenticationToken(), cainfo);
@@ -787,7 +787,7 @@ public class CAInterfaceBean implements Serializable {
     }
 
     public String isValidityTimeValid(String validityString, boolean isCitsCa) {
-        
+
         if(isCitsCa) {
             if(StringUtils.isEmpty(validityString)) {
                 return ""; // during edit CA
@@ -886,7 +886,7 @@ public class CAInterfaceBean implements Serializable {
         if (caInfoDto.getDescription() == null) {
             caInfoDto.setDescription("");
         }
-        
+
         if(caInfoDto.isCaTypeCits()) {
             if(StringUtils.isEmpty(caInfoDto.getCaEncodedValidity())){
                 // only needed if remote bean is used i.e. non CA GUI
@@ -900,7 +900,7 @@ public class CAInterfaceBean implements Serializable {
                 throw new ParameterException(getEjbcawebbean().getText("INVALIDVALIDITYORCERTEND") + ": " + e.getMessage());
             }
             // no need to convert to hours(not days like other cases) here
-        } else if (StringUtils.isBlank(caInfoDto.getCaEncodedValidity()) 
+        } else if (StringUtils.isBlank(caInfoDto.getCaEncodedValidity())
                 && caInfoDto.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA) {
             // A validityString of null is allowed, when using a validity is not applicable
             caInfoDto.setCaEncodedValidity("0d");
@@ -1026,7 +1026,7 @@ public class CAInterfaceBean implements Serializable {
                // Create the CAInfo to be used for either generating the whole CA or making a request
                cainfo = new CVCCAInfo(caid, caInfoDto.getCaEncodedValidity(),
                        catoken, caInfoDto.getDescription(),
-                       caInfoDto.getCrlPeriod(), caInfoDto.getCrlIssueInterval(), caInfoDto.getcrlOverlapTime(), caInfoDto.getDeltaCrlPeriod(), 
+                       caInfoDto.getCrlPeriod(), caInfoDto.getCrlIssueInterval(), caInfoDto.getcrlOverlapTime(), caInfoDto.getDeltaCrlPeriod(),
                        caInfoDto.isGenerateCrlUponRevocation(), crlpublishers, keyValidators,
                        caInfoDto.isFinishUser(), extendedcaservices,
                        approvals,
@@ -1099,7 +1099,7 @@ public class CAInterfaceBean implements Serializable {
 
                 cainfo = citsCaInfoBuilder.buildForUpdate();
             }
-           
+
             cainfo.setSubjectDN(subjectDn);
             cainfo.setStatus(caInfo.getStatus());
             cainfo.setName(caInfo.getName());
@@ -1107,7 +1107,7 @@ public class CAInterfaceBean implements Serializable {
         }
         return null;
 	}
-    
+
     public List<Entry<String, String>> getAvailableCryptoTokens(boolean isEditingCA)
             throws AuthorizationDeniedException {
         return getAvailableCryptoTokens(isEditingCA, false);
@@ -1117,7 +1117,6 @@ public class CAInterfaceBean implements Serializable {
             throws AuthorizationDeniedException {
         final List<Entry<String, String>> availableCryptoTokens = new ArrayList<>();
         final List<CryptoTokenInfo> cryptoTokenInfos = getCryptoTokenManagementSession().getCryptoTokenInfos(getAuthenticationToken());
-        
         Set<String> eccKeysForCurvePresent = new HashSet<>();
         boolean citsEligible = false;
         String keySpec;
@@ -1233,7 +1232,7 @@ public class CAInterfaceBean implements Serializable {
             }
             // ML-DSA and Falcon can only sign, so skip the PQ algorithms
         }
-        
+
         return aliases;
     }
 
@@ -1340,7 +1339,7 @@ public class CAInterfaceBean implements Serializable {
     public boolean isCaTypeCits() {
         return cainfo.getCAType()==CAInfo.CATYPE_CITS;
     }
-    
+
     public String getExpiryTime(Date expireTime) {
         return getEjbcawebbean().formatAsISO8601(expireTime);
     }

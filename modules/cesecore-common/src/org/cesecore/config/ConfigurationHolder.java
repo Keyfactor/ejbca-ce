@@ -45,8 +45,12 @@ import org.apache.commons.configuration2.convert.LegacyListDelimiterHandler;
 import org.apache.commons.configuration2.event.EventListener;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.configuration2.reloading.ReloadingController;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.log4j.Logger;
+
+import com.keyfactor.util.crypto.provider.CryptoProviderConfigurationCache;
+import com.keyfactor.util.string.StringConfigurationCache;
 
 /**
  * This is a singleton. Used to configure common-configuration with our sources.
@@ -462,7 +466,15 @@ public final class ConfigurationHolder {
                 @Override
                 public void onEvent(ConfigurationBuilderEvent event) {
                     log.info("Loaded external configuration file: " + ((ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration>) event.getSource()).getFileHandler().getFile().getAbsolutePath());
-                    logReloadedConfiguration(event);
+                    final ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration> builder = ((ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration>) event.getSource());                         
+                    final String file = builder.getFileHandler().getFile().getAbsolutePath();
+                    try {
+                        final PropertiesConfiguration properties = builder.getConfiguration();
+                        logReloadedConfiguration(properties);
+                        updateCaches(properties);
+                    } catch (ConfigurationException e) {
+                        log.error("Failed to reload external configuration file: '" + file + "'");
+                    }
                 }
             }
         );
@@ -474,21 +486,66 @@ public final class ConfigurationHolder {
         return config;
     }
     
-    @SuppressWarnings("unchecked")
-    private static void logReloadedConfiguration(ConfigurationBuilderEvent event) {
+    private static void logReloadedConfiguration(final PropertiesConfiguration properties) {
         if (log.isDebugEnabled()) {
-            final ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration> builder = ((ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration>) event.getSource());                         
-            final String file = builder.getFileHandler().getFile().getAbsolutePath();
-            try {
-                final PropertiesConfiguration properties = builder.getConfiguration();
-                final Iterator<String> it = properties.getKeys();
-                while(it.hasNext()) {
-                    final String key = it.next();
-                    log.debug("Reloaded property '" + key + "' = '" + properties.getString(key) + "'");
-                }
-            } catch (ConfigurationException e) {
-                log.error("Failed to reload external configuration file: '" + file + "'");
+            final Iterator<String> it = properties.getKeys();
+            while(it.hasNext()) {
+                final String key = it.next();
+                log.debug("Reloaded property '" + key + "' = '" + properties.getString(key) + "'");
             }
+        }
+    }
+    
+    /**
+     * The method updates cached content which is cached once in the StartupSingletonBean, 
+     * if this content has changed. Those are atm.:
+     * 
+     * StringConfigurationCache:
+     * - password.encryption.key
+     * - password.encryption.count
+     * - forbidden.characters
+     * 
+     * CryptoProviderConfigurationCache:
+     * - pkcs11.disableHashingSignMechanisms
+     * - cryptotoken.keystorecache
+     * - ca.doPermitExtractablePrivateKeys
+     * 
+     * @param properties the reloaded properties.
+     */
+    private static void updateCaches(final PropertiesConfiguration properties) {
+        final Iterator<String> it = properties.getKeys();
+        final List<String> updated = new ArrayList<>();
+        while(it.hasNext()) {
+            final String key = it.next();
+            final String value = properties.getString(key);
+            if ("password.encryption.key".equals(key) && value != null && !value.toCharArray().equals(StringConfigurationCache.INSTANCE.getEncryptionKey())) {
+                StringConfigurationCache.INSTANCE.setEncryptionKey(value.toCharArray());
+                updated.add(key);
+            } else if ("password.encryption.count".equals(key) && !Integer.toString(StringConfigurationCache.INSTANCE.getPasswordEncryptionCount()).equals(value)) {
+                if (StringUtils.isNumeric(value) && Integer.parseInt(value) > 0) {
+                    final int count = Integer.parseInt(value);
+                    StringConfigurationCache.INSTANCE.setPasswordEncryptionCount(count);
+                    updated.add(key);
+                } else {
+                    log.warn("Failed to updated property password.encryption.count: Value is no positive integer: '" + value + "'.");
+                }
+            } else if ("forbidden.characters".equals(key) && value != null && !value.toCharArray().equals(StringConfigurationCache.INSTANCE.getForbiddenCharacters())) {
+                StringConfigurationCache.INSTANCE.setForbiddenCharacters(value.toCharArray());
+                updated.add(key);
+            } else if ("pkcs11.disableHashingSignMechanisms".equals(key) && !Boolean.valueOf(value).equals(CryptoProviderConfigurationCache.INSTANCE.isP11disableHashingSignMechanisms())) {
+                CryptoProviderConfigurationCache.INSTANCE.setP11disableHashingSignMechanisms(Boolean.parseBoolean(value));
+                updated.add(key);
+            } else if ("cryptotoken.keystorecache".equals(key) && !Boolean.valueOf(value).equals(CryptoProviderConfigurationCache.INSTANCE.isKeystoreCacheEnabled())) {
+                CryptoProviderConfigurationCache.INSTANCE.setKeystoreCacheEnabled(Boolean.parseBoolean(value));
+                updated.add(key);
+            } else if ("ca.doPermitExtractablePrivateKeys".equals(key) && !Boolean.valueOf(value).equals(CryptoProviderConfigurationCache.INSTANCE.isPermitExtractablePrivateKeys())) {
+                CryptoProviderConfigurationCache.INSTANCE.setPermitExtractablePrivateKeys(Boolean.parseBoolean(value));
+                updated.add(key);
+            }
+        }
+        
+        if (log.isTraceEnabled() && updated.size() > 0) {
+            log.trace("Updated cache keys: " + updated);
         }
     }
     

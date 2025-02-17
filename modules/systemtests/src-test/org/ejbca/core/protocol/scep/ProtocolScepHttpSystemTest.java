@@ -32,6 +32,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -519,7 +520,7 @@ public class ProtocolScepHttpSystemTest extends ScepTestBase {
         assertTrue(respBytes.length > 0);
         X509Certificate cert = CertTools.getCertfromByteArray(respBytes, X509Certificate.class);
         // Check that we got the right cert back, should be Root first since we historically reverse the order. 
-        assertEquals(cacert.getSubjectDN().getName(), cert.getSubjectDN().getName());
+        assertEquals(cacert.getSubjectX500Principal().getName(), cert.getSubjectX500Principal().getName());
 
     }
     
@@ -556,7 +557,7 @@ public class ProtocolScepHttpSystemTest extends ScepTestBase {
         assertTrue(respBytes.length > 0);
         X509Certificate cert = CertTools.getCertfromByteArray(respBytes, X509Certificate.class);
         // Check that we got the right cert back, should be Root first since we historically reverse the order. 
-        assertEquals(rootCaCert.getSubjectDN().getName(), cert.getSubjectDN().getName());
+        assertEquals(rootCaCert.getSubjectX500Principal().getName(), cert.getSubjectX500Principal().getName());
 
     }
     
@@ -593,7 +594,7 @@ public class ProtocolScepHttpSystemTest extends ScepTestBase {
         assertTrue(respBytes.length > 0);
         X509Certificate cert = CertTools.getCertfromByteArray(respBytes, X509Certificate.class);
         // Check that we got the right cert back – should be the SubCA first. 
-        assertEquals(cacert.getSubjectDN().getName(), cert.getSubjectDN().getName());
+        assertEquals(cacert.getSubjectX500Principal().getName(), cert.getSubjectX500Principal().getName());
 
     }
     @Test
@@ -635,7 +636,7 @@ public class ProtocolScepHttpSystemTest extends ScepTestBase {
         assertTrue(respBytes.length > 0);
         X509Certificate cert = CertTools.getCertfromByteArray(respBytes, X509Certificate.class);
         // Check that we got the right cert back. Should be the Root CA, as default is reverse order
-        assertEquals(rootCaCert.getSubjectDN().getName(), cert.getSubjectDN().getName());
+        assertEquals(rootCaCert.getSubjectX500Principal().getName(), cert.getSubjectX500Principal().getName());
 
         // Try with no default CA, should respond with a 404
         updatePropertyOnServer("scep.defaultca", "");
@@ -672,7 +673,7 @@ public class ProtocolScepHttpSystemTest extends ScepTestBase {
         assertTrue(respBytes.length > 0);
         cert = CertTools.getCertfromByteArray(respBytes, X509Certificate.class);
         // Check that we got the right cert back. Should be the Root CA, as default is reverse order
-        assertEquals(rootCaCert.getSubjectDN().getName(), cert.getSubjectDN().getName());
+        assertEquals(rootCaCert.getSubjectX500Principal().getName(), cert.getSubjectX500Principal().getName());
         conWithCAName.disconnect();
 
         // Now set the CA as default CA in the alias instead, it should pick up that, if we are in RA mode
@@ -710,7 +711,7 @@ public class ProtocolScepHttpSystemTest extends ScepTestBase {
         assertTrue(respBytes.length > 0);
         cert = CertTools.getCertfromByteArray(respBytes, X509Certificate.class);
         // Check that we got the right cert back
-        assertEquals(rootCaCert.getSubjectDN().getName(), cert.getSubjectDN().getName());
+        assertEquals(rootCaCert.getSubjectX500Principal().getName(), cert.getSubjectX500Principal().getName());
 
     }
         
@@ -997,8 +998,15 @@ public class ProtocolScepHttpSystemTest extends ScepTestBase {
         this.rand.nextBytes(randBytes);
         byte[] digest = CertTools.generateMD5Fingerprint(randBytes);
         transId = new String(Base64.encode(digest));
-        final X509Certificate senderCertificate = CertTools.genSelfCert("CN=SenderCertificate", 24 * 60 * 60 * 1000, null,
-                keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false);
+        final X509Certificate senderCertificate = SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn("CN=SenderCertificate")
+                .setIssuerDn("CN=SenderCertificate")
+                .setValidityDays(24 * 60 * 60 * 1000)
+                .setIssuerPrivKey(keyPair.getPrivate())
+                .setEntityPubKey(keyPair.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .generateCertificate(); 
+
         if (makeCrlReq) {
             msgBytes = gen.generateCrlReq(userDN, transId, cacert, senderCertificate, keyPair.getPrivate(), encryptionAlg);
         } else {

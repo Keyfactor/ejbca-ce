@@ -44,7 +44,7 @@ import org.cesecore.authentication.AuthenticationFailedException;
  */
 public class CaExceptionHandlerFactory extends ExceptionHandlerFactory {
 
-    private static final Logger log = Logger.getLogger(CaExceptionHandler.class);
+    private static final Logger log = Logger.getLogger(CaExceptionHandlerFactory.class);
     public static final String REQUESTMAP_KEY = "org.ejbca.ui.web.admin.throwables";
     private static final String ERROR_PAGE = "/error.xhtml";
     private static final String LOGIN_PAGE = "/login.xhtml";
@@ -69,7 +69,9 @@ public class CaExceptionHandlerFactory extends ExceptionHandlerFactory {
         }
 
         @Override
-        public ExceptionHandler getWrapped() { return wrappedExceptionHandler; }
+        public ExceptionHandler getWrapped() {
+            return wrappedExceptionHandler;
+        }
 
         @SuppressWarnings("unchecked")
         @Override
@@ -79,7 +81,8 @@ public class CaExceptionHandlerFactory extends ExceptionHandlerFactory {
             for (final Iterator<ExceptionQueuedEvent> iterator = super.getUnhandledExceptionQueuedEvents().iterator(); iterator.hasNext();) {
                 Throwable throwable = iterator.next().getContext().getException();
                 // Filter away JEE Exception wrappers
-                while ((throwable instanceof FacesException || throwable instanceof EJBException || throwable instanceof ELException) && throwable.getCause() != null) {
+                while ((throwable instanceof FacesException || throwable instanceof EJBException || throwable instanceof ELException)
+                        && throwable.getCause() != null) {
                     throwable = throwable.getCause();
                 }
                 if (log.isDebugEnabled()) {
@@ -98,38 +101,40 @@ public class CaExceptionHandlerFactory extends ExceptionHandlerFactory {
             }
             if (!throwables.isEmpty()) {
                 final FacesContext facesContext = FacesContext.getCurrentInstance();
-                final ExternalContext externalContext = facesContext.getExternalContext();
-                if (externalContext.getRequestMap().get(REQUESTMAP_KEY) == null) {
-                    externalContext.getRequestMap().put(REQUESTMAP_KEY, throwables);
-                    try {
-                        if (isAuthenException) {
-                            externalContext.dispatch(LOGIN_PAGE);
-                        } else {
-                            externalContext.dispatch(ERROR_PAGE);
+                if (facesContext != null) {
+                    final ExternalContext externalContext = facesContext.getExternalContext();
+                    if (externalContext.getRequestMap().get(REQUESTMAP_KEY) == null) {
+                        externalContext.getRequestMap().put(REQUESTMAP_KEY, throwables);
+                        try {
+                            if (isAuthenException) {
+                                externalContext.dispatch(LOGIN_PAGE);
+                            } else {
+                                externalContext.dispatch(ERROR_PAGE);
+                            }
+                        } catch (final IOException e) {
+                            log.error("Unable to dispatch client to unknown error page '" + ERROR_PAGE + "'.", e);
                         }
-                    } catch (final IOException e) {
-                        log.error("Unable to dispatch client to unknown error page '" + ERROR_PAGE + "'.", e);
-                    }
-                    facesContext.responseComplete();
-                } else {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Additional ExceptionHandler invocation during same round trip...");
-                    }
-                    boolean hasViewExpiredException = false;
-                    for (final Throwable throwable : throwables) {
-                        if (throwable instanceof ViewExpiredException) {
-                            hasViewExpiredException = true;
-                            break;
+                        facesContext.responseComplete();
+                    } else {
+                        if (log.isDebugEnabled()) {
+                            log.debug("Additional ExceptionHandler invocation during same round trip...");
                         }
-                    }
-                    for (final Throwable throwable : (List<Throwable>) externalContext.getRequestMap().get(REQUESTMAP_KEY)) {
-                        if (hasViewExpiredException && throwable instanceof ViewExpiredException) {
-                            log.debug("Skipping add of another ViewExpiredException.");
-                        } else {
-                            throwables.add(throwable);
+                        boolean hasViewExpiredException = false;
+                        for (final Throwable throwable : throwables) {
+                            if (throwable instanceof ViewExpiredException) {
+                                hasViewExpiredException = true;
+                                break;
+                            }
                         }
+                        for (final Throwable throwable : (List<Throwable>) externalContext.getRequestMap().get(REQUESTMAP_KEY)) {
+                            if (hasViewExpiredException && throwable instanceof ViewExpiredException) {
+                                log.debug("Skipping add of another ViewExpiredException.");
+                            } else {
+                                throwables.add(throwable);
+                            }
+                        }
+                        externalContext.getRequestMap().put(REQUESTMAP_KEY, throwables);
                     }
-                    externalContext.getRequestMap().put(REQUESTMAP_KEY, throwables);
                 }
             }
             getWrapped().handle();
