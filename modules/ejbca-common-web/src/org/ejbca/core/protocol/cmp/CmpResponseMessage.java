@@ -279,10 +279,10 @@ public class CmpResponseMessage implements CertificateResponseMessage {
         }
         if (cert != null) {
             final X509Certificate x509cert = (X509Certificate) cert;
-            issuer = x509cert.getIssuerX500Principal().getName();
-            subject = x509cert.getSubjectX500Principal().getName();
+            issuer = CertTools.getIssuerDN(x509cert);
+            subject = CertTools.getSubjectDN(x509cert);
         } else if (signCert != null) {
-            issuer = ((X509Certificate) signCert).getSubjectX500Principal().getName();
+            issuer = CertTools.getIssuerDN((X509Certificate) signCert);
             subject = reqMsg.getRequestDN() != null ? reqMsg.getRequestDN() : "CN=fooSubject";
         } else {
             issuer = reqMsg.getIssuerDN() != null ? reqMsg.getIssuerDN() : "CN=fooIssuer";
