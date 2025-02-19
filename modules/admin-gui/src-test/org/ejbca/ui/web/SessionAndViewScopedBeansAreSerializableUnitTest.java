@@ -58,6 +58,9 @@ public class SessionAndViewScopedBeansAreSerializableUnitTest {
     }
 
     /**
+     * If you hit this, you have violated the Serialization contract and are breaking Session Sharing.
+     * See https://keyfactor.atlassian.net/wiki/spaces/DTS/pages/1210417155/Serialization+and+High+Availability
+     * 
      * For EJBCA to work in an HA environment, all members of View or Session scoped beans must be serializable.
      * In HA mode, the state of these beans are serialized to a session store and de-serialized on other nodes 
      * in a load balanced environment.

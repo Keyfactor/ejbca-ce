@@ -143,13 +143,14 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     private String[] profileNames = null; 
     
     private GlobalConfiguration globalConfiguration;
-    private RAInterfaceBean raBean;
+    private transient RAInterfaceBean raBean;
     
     // Authentication check and audit log page access request
     @PostConstruct
-    public void initialize() throws AuthorizationDeniedException, EjbcaException {
+    public void initialize() {
         if (!getEjbcaWebBean().isAuthorizedNoLogSilent(AccessRulesConstants.ROLE_ADMINISTRATOR)) {
-            throw new AuthorizationDeniedException("You are not authorized to view this page.");
+            // PostConstruct methods can't throw checked exceptions
+            throw new IllegalStateException("You are not authorized to view this page.");
         }
 
         final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
@@ -1755,6 +1756,11 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     }
 
     public RAInterfaceBean getRaBean() {
+        // if raBean is null we're on a new JVM and the PostConstruct method "initialize"
+        // hasn't been called yet.  Call it on this JVM.
+        if (raBean == null) {
+            initialize();
+        }
         return raBean;
     }
     

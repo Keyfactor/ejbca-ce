@@ -19,9 +19,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.reflect.ClassPath;
-import com.google.common.reflect.ClassPath.ClassInfo;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.util.CeSecoreNameStyleEnumSingleton;
@@ -55,7 +53,7 @@ public class SerializableClassesAreReallySerializableUnitTest {
 
         // find all classes that implement serializable in our packages
         var serializableClasses = new TreeSet<Class<?>>((c1, c2) -> c1.getName().compareTo(c2.getName()));
-        ImmutableSet<ClassInfo> allClasses = ClassPath.from(SerializableClassesAreReallySerializableUnitTest.class.getClassLoader()).getAllClasses();
+        var allClasses = ClassPath.from(SerializableClassesAreReallySerializableUnitTest.class.getClassLoader()).getAllClasses();
         allClasses.forEach(c -> {
             if (SerializationUtils.isOurClass(c)) {
                 // dont worry about unit tests
