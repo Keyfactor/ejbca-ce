@@ -49,7 +49,7 @@ public @interface ValidEnrollCertificateWithEntityRestRequest {
             }
 
             if (enrollCertificateWithEntityRestRequest.getEndEntity() == null) {
-                ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidEnrollCertificateWithEntityRestRequest.invalid.endentity.null}");
+                ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidEnrollCertificateWithEntityRestRequest.invalid.endEntity.null}");
                 return false;
             }
 
