@@ -175,28 +175,7 @@ public class CertificateRestResource extends BaseRestResource {
                 final Certificate certificate = CertTools.getCertfromByteArray(certificateBytes, Certificate.class);
                 final List<Certificate> certificateChain = fetchCaCertificateChain(authenticationToken, includeChain,
                         enrollCertificateRestRequest.getCertificateAuthorityName());
-                CertificateRestResponse enrollCertificateRestResponse;
-
-                switch (TokenDownloadType.valueOf(responseFormat)) {
-                    case PKCS7:
-                        byte[] certResponseBytes = CertTools.getPemFromPkcs7(certificateBytes);
-                        if (includeChain && !certificateChain.isEmpty()) {
-                            byte[] certificateChainBytes = CertTools.getPemFromPkcs7(CertTools.createCertsOnlyCMS(
-                                    CertTools.convertCertificateChainToX509Chain(certificateChain)));
-                            enrollCertificateRestResponse = CertificateRestResponse.converter()
-                                    .toRestResponse(certResponseBytes, certificateChainBytes, certificate, responseFormat);
-                        } else {
-                            enrollCertificateRestResponse = CertificateRestResponse.converter()
-                                    .toRestResponse(certResponseBytes, certificate, responseFormat);
-                        }
-                        break;
-                    case DER:
-                        enrollCertificateRestResponse = CertificateRestResponse.converter()
-                                .toRestResponse(certificateChain, certificate);
-                        break;
-                    default:
-                        throw new RestException(400, "Invalid input. Incorrect response format");
-                }
+                CertificateRestResponse enrollCertificateRestResponse = getCertificateRestResponse(responseFormat, certificateBytes, includeChain, certificateChain, certificate);
                 return Response.status(Status.CREATED).entity(enrollCertificateRestResponse).build();
             } else {
                 throw new RestException(400, "Invalid input. Response format can only be DER or PKCS7");
@@ -271,28 +250,7 @@ public class CertificateRestResource extends BaseRestResource {
             final Certificate certificate = CertTools.getCertfromByteArray(certificateBytes, Certificate.class);
             final List<Certificate> certificateChain = fetchCaCertificateChain(authenticationToken, includeChain,
                     caName);
-            CertificateRestResponse enrollCertificateRestResponse;
-
-            switch (TokenDownloadType.valueOf(responseFormat)) {
-                case PKCS7:
-                    byte[] certResponseBytes = CertTools.getPemFromPkcs7(certificateBytes);
-                    if (includeChain && !certificateChain.isEmpty()) {
-                        byte[] certificateChainBytes = CertTools.getPemFromPkcs7(CertTools.createCertsOnlyCMS(
-                                CertTools.convertCertificateChainToX509Chain(certificateChain)));
-                        enrollCertificateRestResponse = CertificateRestResponse.converter()
-                                .toRestResponse(certResponseBytes, certificateChainBytes, certificate, responseFormat);
-                    } else {
-                        enrollCertificateRestResponse = CertificateRestResponse.converter()
-                                .toRestResponse(certResponseBytes, certificate, responseFormat);
-                    }
-                    break;
-                case DER:
-                    enrollCertificateRestResponse = CertificateRestResponse.converter()
-                            .toRestResponse(certificateChain, certificate);
-                    break;
-                default:
-                    throw new RestException(400, "Invalid input. Incorrect response format");
-            }
+            CertificateRestResponse enrollCertificateRestResponse = getCertificateRestResponse(responseFormat, certificateBytes, includeChain, certificateChain, certificate);
             return Response.status(Status.CREATED).entity(enrollCertificateRestResponse).build();
 
         } catch (EjbcaException | CertificateParsingException | CMSException e) {
@@ -300,6 +258,32 @@ public class CertificateRestResource extends BaseRestResource {
             throw new RestException(Status.BAD_REQUEST.getStatusCode(),
                     e.getCause() != null ? e.getCause().getMessage() : e.getMessage());
         }
+    }
+
+    private static CertificateRestResponse getCertificateRestResponse(String responseFormat, byte[] certificateBytes, boolean includeChain, List<Certificate> certificateChain, Certificate certificate) throws CertificateEncodingException, CMSException, RestException {
+        CertificateRestResponse enrollCertificateRestResponse;
+
+        switch (TokenDownloadType.valueOf(responseFormat)) {
+            case PKCS7:
+                byte[] certResponseBytes = CertTools.getPemFromPkcs7(certificateBytes);
+                if (includeChain && !certificateChain.isEmpty()) {
+                    byte[] certificateChainBytes = CertTools.getPemFromPkcs7(CertTools.createCertsOnlyCMS(
+                            CertTools.convertCertificateChainToX509Chain(certificateChain)));
+                    enrollCertificateRestResponse = CertificateRestResponse.converter()
+                            .toRestResponse(certResponseBytes, certificateChainBytes, certificate, responseFormat);
+                } else {
+                    enrollCertificateRestResponse = CertificateRestResponse.converter()
+                            .toRestResponse(certResponseBytes, certificate, responseFormat);
+                }
+                break;
+            case DER:
+                enrollCertificateRestResponse = CertificateRestResponse.converter()
+                        .toRestResponse(certificateChain, certificate);
+                break;
+            default:
+                throw new RestException(400, "Invalid input. Incorrect response format");
+        }
+        return enrollCertificateRestResponse;
     }
 
     private List<Certificate> fetchCaCertificateChain(AuthenticationToken authenticationToken, boolean includeChain, String caName) throws AuthorizationDeniedException, CADoesntExistsException {
