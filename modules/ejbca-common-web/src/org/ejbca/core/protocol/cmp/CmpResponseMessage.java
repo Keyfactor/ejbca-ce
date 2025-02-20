@@ -297,8 +297,8 @@ public class CmpResponseMessage implements CertificateResponseMessage {
                 throw new IllegalStateException(e);
             }
             issuerName = new GeneralName(certHolder.getIssuer());
-            String subject = reqMsg.getRequestDN() != null ? reqMsg.getRequestDN() : "CN=fooSubject";
-            subjectName = new GeneralName(new X500Name(subject));
+            subjectName = reqMsg.getRequestX500Name() != null ? 
+                    new GeneralName(reqMsg.getRequestX500Name()) : new GeneralName(new X500Name("CN=fooSubject"));
         } else {
             String issuer = reqMsg.getIssuerDN() != null ? reqMsg.getIssuerDN() : "CN=fooIssuer";
             issuerName = new GeneralName(new X500Name(issuer));
