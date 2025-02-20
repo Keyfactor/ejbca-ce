@@ -26,7 +26,7 @@ public class EnrollCertificateWithEntityRestRequest {
     private String certificateRequest;
 
     @Schema(description = "Key recoverable or not", example = "false", nullable = true)
-    private Boolean includeChain;
+    private boolean includeChain;
 
     @Schema(description = "Certificate Request Type", example = "PUBLICKEY, PKCS10, CRMF, SPKAC, or CVC")
     private String certificateRequestType;
@@ -53,11 +53,11 @@ public class EnrollCertificateWithEntityRestRequest {
         this.certificateRequest = certificateRequest;
     }
 
-    public Boolean getIncludeChain() {
+    public boolean getIncludeChain() {
         return includeChain;
     }
 
-    public void setIncludeChain(Boolean includeChain) {
+    public void setIncludeChain(boolean includeChain) {
         this.includeChain = includeChain;
     }
 
