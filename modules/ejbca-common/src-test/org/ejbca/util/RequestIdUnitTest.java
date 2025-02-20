@@ -64,6 +64,7 @@ public class RequestIdUnitTest {
             assertTrue(Thread.currentThread().getName().contains(RequestId.SEPARATOR));
             assertEquals(2, Thread.currentThread().getName().split(RequestId.SEPARATOR).length);
         }
+        assertEquals(1, Thread.currentThread().getName().split(RequestId.SEPARATOR).length);
     }
 
     @Test
@@ -89,18 +90,9 @@ public class RequestIdUnitTest {
                 assertTrue(Thread.currentThread().getName().contains(RequestId.SEPARATOR));
                 assertEquals(2, Thread.currentThread().getName().split(RequestId.SEPARATOR).length);
             }
+            assertEquals(2, Thread.currentThread().getName().split(RequestId.SEPARATOR).length);
         }
-    }
-
-    @Test
-    public void testSeparatorCount() {
         assertEquals(1, Thread.currentThread().getName().split(RequestId.SEPARATOR).length);
-        var first = new RequestId();
-        assertEquals(2, Thread.currentThread().getName().split(RequestId.SEPARATOR).length);
-        var second = new RequestId();
-        assertEquals(2, Thread.currentThread().getName().split(RequestId.SEPARATOR).length);
-        var third = new RequestId();
-        assertEquals(2, Thread.currentThread().getName().split(RequestId.SEPARATOR).length);
     }
 
 }
