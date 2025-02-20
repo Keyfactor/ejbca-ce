@@ -113,7 +113,8 @@ public class CmpRaThrowAwaySystemTest extends CmpTestCase {
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProviderIfNotAvailable();
         StringConfigurationCache.INSTANCE.setEncryptionKey("qhrnf.f8743;12%#75".toCharArray());
-        createTestCA(TESTCA_NAME); // Create test CA
+        //createTestCA(TESTCA_NAME); // Create test CA
+        createTestCA(TESTCA_NAME, 2048, "CN=" + TESTCA_NAME + ",OU=someorg", CAInfo.SELFSIGNED, null);
         
     }
 
