@@ -71,6 +71,7 @@ import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.cert.cmp.CMSProcessableCMPCertificate;
 import org.bouncycastle.cert.crmf.CRMFException;
 import org.bouncycastle.cert.crmf.jcajce.JceCRMFEncryptorBuilder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.cms.CMSAlgorithm;
 import org.bouncycastle.cms.CMSEnvelopedData;
 import org.bouncycastle.cms.CMSEnvelopedDataGenerator;
@@ -271,25 +272,38 @@ public class CmpResponseMessage implements CertificateResponseMessage {
     public boolean create() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
         boolean ret = false;
         // Some general stuff, common for all types of messages
-        String issuer = null;
-        String subject = null;
+        GeneralName issuerName = null;
+        GeneralName subjectName = null;
         Certificate signCert = null;
         if (CollectionUtils.isNotEmpty(signCertChain)) {
             signCert = signCertChain.iterator().next();
         }
         if (cert != null) {
-            final X509Certificate x509cert = (X509Certificate) cert;
-            issuer = CertTools.getIssuerDN(x509cert);
-            subject = CertTools.getSubjectDN(x509cert);
+            JcaX509CertificateHolder certHolder;
+            try {
+                certHolder = new JcaX509CertificateHolder((X509Certificate)cert);
+            } catch (CertificateEncodingException e) {
+                log.debug("Failed to decode issued certificate", e);
+                throw new IllegalStateException(e);
+            }
+            issuerName = new GeneralName(certHolder.getIssuer());
+            subjectName = new GeneralName(certHolder.getSubject());
         } else if (signCert != null) {
-            issuer = CertTools.getIssuerDN((X509Certificate) signCert);
-            subject = reqMsg.getRequestDN() != null ? reqMsg.getRequestDN() : "CN=fooSubject";
+            JcaX509CertificateHolder certHolder;
+            try {
+                certHolder = new JcaX509CertificateHolder((X509Certificate)signCert);
+            } catch (CertificateEncodingException e) {
+                log.debug("Failed to decode signing certificate", e);
+                throw new IllegalStateException(e);
+            }
+            issuerName = new GeneralName(certHolder.getIssuer());
+            String subject = reqMsg.getRequestDN() != null ? reqMsg.getRequestDN() : "CN=fooSubject";
+            subjectName = new GeneralName(new X500Name(subject));
         } else {
-            issuer = reqMsg.getIssuerDN() != null ? reqMsg.getIssuerDN() : "CN=fooIssuer";
+            String issuer = reqMsg.getIssuerDN() != null ? reqMsg.getIssuerDN() : "CN=fooIssuer";
+            issuerName = new GeneralName(new X500Name(issuer));
         }
 
-		final GeneralName issuerName = new GeneralName(new X500Name(issuer));
-		final GeneralName subjectName = new GeneralName(new X500Name(subject));
 		final PKIHeaderBuilder myPKIHeader = CmpMessageHelper.createPKIHeaderBuilder(issuerName, subjectName, senderNonce, recipientNonce, transactionId);
 		PKIBody myPKIBody = null;
 		final PKIMessage myPKIMessage;
