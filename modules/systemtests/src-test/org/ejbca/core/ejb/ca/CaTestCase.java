@@ -288,6 +288,19 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                         : CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, null, null, false, false, null);
         return result != CA_CREATION_FAIL;
     }
+    
+    public static boolean createTestCAWithLdapDnOrder(
+            String caName, int keyStrength, String dn, int signedBy, Collection<Certificate> certificateChain, boolean useLdapDnOrder)
+            throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException,
+            CryptoTokenAuthenticationFailedException {
+        if(dn.hashCode()==-CA_CREATION_FAIL)
+            throw new IllegalArgumentException("subjectDN hash code calculates to "
+                    + CA_CREATION_FAIL + ". Please use alternate subjectDN.");
+        int result = createTestCA(caName, keyStrength, dn, signedBy, certificateChain,
+                signedBy == CAInfo.SELFSIGNED ? CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA
+                        : CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, null, null, false, false, null, null, useLdapDnOrder);
+        return result != CA_CREATION_FAIL;
+    }
 
     public static int createTestCA(String caName, int keyStrength, String dn, int signedBy,
             int certificateProfileId, List<Integer> validators)
@@ -331,12 +344,23 @@ public abstract class CaTestCase extends RoleUsingTestCase {
             CryptoTokenAuthenticationFailedException {
         return createTestCA(caName, keyStrength, dn, signedBy, certificateChain,
                 certificateProfileId, nameConstraintPermitted, nameConstraintExcluded,
-                relaxUniquenessSubjectDN, relaxUniquenessPublicKey, validators, null);
+                relaxUniquenessSubjectDN, relaxUniquenessPublicKey, validators, null, true);
+    }
+    
+    public static int createTestCA(String caName, int keyStrength, String dn, int signedBy, Collection<Certificate> certificateChain,
+            int certificateProfileId, List<String> nameConstraintPermitted, List<String> nameConstraintExcluded,
+            boolean relaxUniquenessSubjectDN, boolean relaxUniquenessPublicKey, List<Integer> validators, String subjectAltName)
+            throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException,
+            CryptoTokenAuthenticationFailedException {
+        return createTestCA(caName, keyStrength, dn, signedBy, certificateChain,
+                certificateProfileId, nameConstraintPermitted, nameConstraintExcluded,
+                relaxUniquenessSubjectDN, relaxUniquenessPublicKey, validators, subjectAltName, true);
     }
 
     public static int createTestCA(String caName, int keyStrength, String dn, int signedBy, Collection<Certificate> certificateChain,
             int certificateProfileId, List<String> nameConstraintPermitted, List<String> nameConstraintExcluded,
-            boolean relaxUniquenessSubjectDN, boolean relaxUniquenessPublicKey, List<Integer> validators, String subjectAltName)
+            boolean relaxUniquenessSubjectDN, boolean relaxUniquenessPublicKey, List<Integer> validators, String subjectAltName,
+            boolean useLdapDnOrder)
             throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException,
             CryptoTokenAuthenticationFailedException {
         log.trace(">createTestCA("+caName+", "+dn+")");
@@ -390,6 +414,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         log.info("setting validators: " + validators);
         cainfo.setValidators(validators);
         cainfo.setSubjectAltName(subjectAltName);
+        cainfo.setUseLdapDnOrder(useLdapDnOrder);
 
         try {
             caAdminSession.createCA(internalAdmin, cainfo);
