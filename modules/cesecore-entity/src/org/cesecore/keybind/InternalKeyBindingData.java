@@ -225,4 +225,10 @@ public class InternalKeyBindingData extends ProtectedData implements Serializabl
     public void setStatusEnum(InternalKeyBindingStatus status) {
         setStatus(status.name());
     }
+    
+    @Transient
+    public String getNextKeyPairAlias() {
+        return (String) getDataMap().getOrDefault(InternalKeyBindingBase.SUBCLASS_PREFIX + InternalKeyBindingBase.PROP_NEXT_KEY_PAIR_ALIAS,
+                (String) null);
+    }
 }
