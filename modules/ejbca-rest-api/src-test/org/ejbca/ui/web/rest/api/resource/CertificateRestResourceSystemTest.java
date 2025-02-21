@@ -1409,13 +1409,211 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+    public void addEEAndGetCertificateMissingResponseFormat() throws Exception {
+        String newUsername = testUsername + "New";
+        try {
+            EnrollCertificateWithEntityRestRequest request = new EnrollCertificateWithEntityRestRequest();
+            request.setCertificateRequestType("PUBLICKEY");
+            request.setResponseFormat(null);
+            request.setIncludeChain(false);
+            request.setCertificateRequest(PUBLIC_KEY);
+            AddEndEntityRestRequest eeRequest = new AddEndEntityRestRequest.Builder().
+                    caName(testCaName).
+                    certificateProfileName("ENDUSER").
+                    endEntityProfileName("EMPTY").
+                    username(newUsername).
+                    password("foo123").
+                    subjectDn("O=NoResponseFormat,CN=" + newUsername).
+                    subjectAltName("rfc822Name=" + newUsername + "@example.com").
+                    token("USERGENERATED").build();
+            request.setEndEntity(eeRequest);
+
+            // Construct POST  request
+            final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
+            final String requestBody = objectMapper.writeValueAsString(request);
+            final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
+
+            // send request
+            final Response actualResponse = newRequest("/v1/certificate/enroll").request().post(requestEntity);
+            assertEquals("Unexpected HTTP response code.", 400, actualResponse.getStatus());
+                final String actualJsonString = actualResponse.readEntity(String.class);
+                // Verify response
+                assertJsonContentType(actualResponse);
+                final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+                assertEquals("The response error message does not match.", "Invalid input. Incorrect response format", actualJsonObject.get("error_message"));
+        } catch (Exception e) {
+            log.error("Exception while testing certificate creation from public key: ", e);
+            fail("Exception while testing certificate creation from public key");
+        }
+    }
+    @Test
+    public void addEEAndGetCertificateWrongResponseFormat() throws Exception {
+        String newUsername = testUsername + "New";
+        try {
+            EnrollCertificateWithEntityRestRequest request = new EnrollCertificateWithEntityRestRequest();
+            request.setCertificateRequestType("PUBLICKEY");
+            request.setResponseFormat("MJAU");
+            request.setIncludeChain(false);
+            request.setCertificateRequest(PUBLIC_KEY);
+            AddEndEntityRestRequest eeRequest = new AddEndEntityRestRequest.Builder().
+                    caName(testCaName).
+                    certificateProfileName("ENDUSER").
+                    endEntityProfileName("EMPTY").
+                    username(newUsername).
+                    password("foo123").
+                    subjectDn("O=NoResponseFormat,CN=" + newUsername).
+                    subjectAltName("rfc822Name=" + newUsername + "@example.com").
+                    token("USERGENERATED").build();
+            request.setEndEntity(eeRequest);
+
+            // Construct POST  request
+            final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
+            final String requestBody = objectMapper.writeValueAsString(request);
+            final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
+
+            // send request
+            final Response actualResponse = newRequest("/v1/certificate/enroll").request().post(requestEntity);
+            assertEquals("Unexpected HTTP response code.", 400, actualResponse.getStatus());
+                final String actualJsonString = actualResponse.readEntity(String.class);
+                // Verify response
+                assertJsonContentType(actualResponse);
+                final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+                assertEquals("The response error message does not match.",
+                        "Invalid input. Response format can only be DER or PKCS7", actualJsonObject.get("error_message"));
+        } catch (Exception e) {
+            log.error("Exception while testing certificate creation from public key: ", e);
+            fail("Exception while testing certificate creation from public key");
+        }
+    }
+
+    @Test
+    public void addEEAndGetCertificateMissingCa() throws Exception {
+        String newUsername = testUsername + "New";
+        try {
+            EnrollCertificateWithEntityRestRequest request = new EnrollCertificateWithEntityRestRequest();
+            request.setCertificateRequestType("PUBLICKEY");
+            request.setResponseFormat("DER");
+            request.setIncludeChain(false);
+            request.setCertificateRequest(PUBLIC_KEY);
+            AddEndEntityRestRequest eeRequest = new AddEndEntityRestRequest.Builder().
+                    caName("KotCa").
+                    certificateProfileName("ENDUSER").
+                    endEntityProfileName("EMPTY").
+                    username(newUsername).
+                    password("foo123").
+                    subjectDn("O=NoResponseFormat,CN=" + newUsername).
+                    subjectAltName("rfc822Name=" + newUsername + "@example.com").
+                    token("USERGENERATED").build();
+            request.setEndEntity(eeRequest);
+
+            // Construct POST  request
+            final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
+            final String requestBody = objectMapper.writeValueAsString(request);
+            final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
+
+            // send request
+            final Response actualResponse = newRequest("/v1/certificate/enroll").request().post(requestEntity);
+            assertEquals("Unexpected HTTP response code.", 404, actualResponse.getStatus());
+                final String actualJsonString = actualResponse.readEntity(String.class);
+                // Verify response
+                assertJsonContentType(actualResponse);
+                final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+                assertEquals("The response error message does not match.",
+                        "No CA found by name of KotCa", actualJsonObject.get("error_message"));
+        } catch (Exception e) {
+            log.error("Exception while testing certificate creation from public key: ", e);
+            fail("Exception while testing certificate creation from public key");
+        }
+    }
+
+    @Test
+    public void addEEAndGetCertificateMissingCP() throws Exception {
+        String newUsername = testUsername + "New";
+        try {
+            EnrollCertificateWithEntityRestRequest request = new EnrollCertificateWithEntityRestRequest();
+            request.setCertificateRequestType("PUBLICKEY");
+            request.setResponseFormat("DER");
+            request.setIncludeChain(false);
+            request.setCertificateRequest(PUBLIC_KEY);
+            AddEndEntityRestRequest eeRequest = new AddEndEntityRestRequest.Builder().
+                    caName(testCaName).
+                    certificateProfileName("KotCp").
+                    endEntityProfileName("EMPTY").
+                    username(newUsername).
+                    password("foo123").
+                    subjectDn("O=NoResponseFormat,CN=" + newUsername).
+                    subjectAltName("rfc822Name=" + newUsername + "@example.com").
+                    token("USERGENERATED").build();
+            request.setEndEntity(eeRequest);
+
+            // Construct POST  request
+            final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
+            final String requestBody = objectMapper.writeValueAsString(request);
+            final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
+
+            // send request
+            final Response actualResponse = newRequest("/v1/certificate/enroll").request().post(requestEntity);
+            assertEquals("Unexpected HTTP response code.", 404, actualResponse.getStatus());
+                final String actualJsonString = actualResponse.readEntity(String.class);
+                // Verify response
+                assertJsonContentType(actualResponse);
+                final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+                assertEquals("The response error message does not match.",
+                        "Error Certificate profile KotCp does not exist.", actualJsonObject.get("error_message"));
+        } catch (Exception e) {
+            log.error("Exception while testing certificate creation from public key: ", e);
+            fail("Exception while testing certificate creation from public key");
+        }
+    }
+
+
+    @Test
+    public void addEEAndGetCertificateMissingUsername() throws Exception {
+        String newUsername = testUsername + "New";
+        try {
+            EnrollCertificateWithEntityRestRequest request = new EnrollCertificateWithEntityRestRequest();
+            request.setCertificateRequestType("PUBLICKEY");
+            request.setResponseFormat("DER");
+            request.setIncludeChain(false);
+            request.setCertificateRequest(PUBLIC_KEY);
+            AddEndEntityRestRequest eeRequest = new AddEndEntityRestRequest.Builder().
+                    caName(testCaName).
+                    certificateProfileName("ENDUSER").
+                    endEntityProfileName("EMPTY").
+                    password("foo123").
+                    subjectDn("O=NoResponseFormat,CN=" + newUsername).
+                    subjectAltName("rfc822Name=" + newUsername + "@example.com").
+                    token("USERGENERATED").build();
+            request.setEndEntity(eeRequest);
+
+            // Construct POST  request
+            final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
+            final String requestBody = objectMapper.writeValueAsString(request);
+            final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
+
+            // send request
+            final Response actualResponse = newRequest("/v1/certificate/enroll").request().post(requestEntity);
+            assertEquals("Unexpected HTTP response code.", 422, actualResponse.getStatus());
+                final String actualJsonString = actualResponse.readEntity(String.class);
+                // Verify response
+                assertJsonContentType(actualResponse);
+                final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+                assertEquals("The response error message does not match.",
+                        "Username cannot be empty or null.", actualJsonObject.get("error_message"));
+        } catch (Exception e) {
+            log.error("Exception while testing certificate creation from public key: ", e);
+            fail("Exception while testing certificate creation from public key");
+        }
+    }
+
+    @Test
     public void addEEAndGetCertificateFromPublicKey() throws Exception {
         String newUsername = testUsername + "New";
         try {
             EnrollCertificateWithEntityRestRequest request = new EnrollCertificateWithEntityRestRequest();
             request.setCertificateRequestType("PUBLICKEY");
             request.setIncludeChain(false);
-            request.setResponseFormat("DER");
+            request.setResponseFormat("PKCS7");
             request.setCertificateRequest(PUBLIC_KEY);
             AddEndEntityRestRequest eeRequest = new AddEndEntityRestRequest.Builder().
                     caName(testCaName).
@@ -1450,8 +1648,8 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         try {
             EnrollCertificateWithEntityRestRequest request = new EnrollCertificateWithEntityRestRequest();
             request.setCertificateRequestType("PKCS10");
-            request.setIncludeChain(false);
-            request.setResponseFormat("DER");
+            request.setIncludeChain(true);
+            request.setResponseFormat("PKCS7");
             request.setCertificateRequest(CSR_WITH_SAN_WITHOUT_HEADERS);
             AddEndEntityRestRequest eeRequest = new AddEndEntityRestRequest.Builder().
                     caName(testCaName).
