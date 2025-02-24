@@ -215,7 +215,7 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
         }
         
         if (log.isDebugEnabled()) {
-            log.debug("The provider in use by decryptPrivateKey function is " + provider);
+            log.debug("The provider in use by decryptPrivateKey method is " + provider);
         }
         
         try {
