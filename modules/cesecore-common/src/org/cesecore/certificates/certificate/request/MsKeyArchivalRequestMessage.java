@@ -213,6 +213,11 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
         if (log.isTraceEnabled()) {
             log.trace("<decryptPrivateKey()");
         }
+        
+        if (log.isDebugEnabled()) {
+            log.debug("The provider in use by decryptPrivateKey function is " + provider);
+        }
+        
         try {
             CMSEnvelopedDataParser ep = new CMSEnvelopedDataParser(encryptedPrivateKey);
             RecipientInformationStore recipients = ep.getRecipientInfos();
@@ -235,11 +240,9 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
             
             testKeyPair();
 
-        } catch (CMSException|IOException e) {
+        } catch (CMSException | IOException | InvalidKeyException e) {
             throw new IllegalStateException(e);
-        } catch (InvalidKeyException e) {
-            throw new IllegalStateException(e);
-        } catch (NoSuchAlgorithmException e) {
+        }  catch (NoSuchAlgorithmException e) {
             // nopmd
         }
 
