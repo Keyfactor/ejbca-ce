@@ -167,13 +167,14 @@ public class CertificateRestResourceV2Swagger extends CertificateRestResourceV2 
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(description = "Import keystores to CA in base64 format")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Keystores imported successfully"),
-            @ApiResponse(responseCode = "500", description = "Something went wrong"),
+            @ApiResponse(responseCode = "200", description = "Keystores imported successfully."),
+            @ApiResponse(responseCode = "207", description = "Keystores imported partially. Some key imports have failed."),
+            @ApiResponse(responseCode = "500", description = "Something went wrong."),
     })
     public Response importKeystores(@Context HttpServletRequest requestContext,
                                     @Parameter(description = "Subject DN of CA that will take over key management") @PathParam("issuer_dn") String issuerDN,
                                     @Parameter(name = "request") KeyImportRestRequestV2 request)
-            throws AuthorizationDeniedException, RestException, EjbcaException, CADoesntExistsException {
+            throws AuthorizationDeniedException, RestException {
         return super.importKeystores(requestContext, issuerDN, request);
     }
 }

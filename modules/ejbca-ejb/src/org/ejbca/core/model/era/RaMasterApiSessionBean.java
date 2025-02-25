@@ -129,8 +129,8 @@ import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.keys.keyimport.KeyImportFailure;
 import org.cesecore.keys.keyimport.KeyImportRequestData;
-import org.cesecore.keys.keyimport.KeyImportResponseData;
 import org.cesecore.keys.validation.CaaIdentitiesValidator;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.keys.validation.Validator;
@@ -3452,13 +3452,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public RaKeyImportResponseV2 keyImportV2(final AuthenticationToken authenticationToken, final KeyImportRequestData keyImportRequestData)
-            throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
-        KeyImportResponseData responseData = keyImportSession.importKeys(authenticationToken, keyImportRequestData);
-        RaKeyImportResponseV2 raResponse = new RaKeyImportResponseV2();
-        raResponse.setGeneralErrorMessage(responseData.getGeneralErrorMessage());
-        raResponse.setFailedKeys(responseData.getFailures());
-        return raResponse;
+    public List<KeyImportFailure> keyImportV2(final AuthenticationToken authenticationToken, final KeyImportRequestData keyImportRequestData)
+            throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException, CertificateProfileDoesNotExistException {
+        return keyImportSession.importKeys(authenticationToken, keyImportRequestData);
     }
 
     @Override
