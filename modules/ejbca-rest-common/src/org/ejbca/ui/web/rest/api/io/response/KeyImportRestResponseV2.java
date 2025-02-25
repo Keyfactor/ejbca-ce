@@ -12,9 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.response;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import org.cesecore.keys.keyimport.KeyImportFailure;
-import org.ejbca.core.model.era.RaKeyImportResponseV2;
 
 import java.util.List;
 
@@ -22,22 +20,14 @@ import java.util.List;
  * Response for key import.
  */
 public class KeyImportRestResponseV2 {
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String generalErrorMessage;
     private List<KeyImportFailure> keyImportFailures;
 
-    public KeyImportRestResponseV2(String generalErrorMessage, List<KeyImportFailure> keyImportFailures) {
-        this.generalErrorMessage = generalErrorMessage;
+    public KeyImportRestResponseV2(List<KeyImportFailure> keyImportFailures) {
         this.keyImportFailures = keyImportFailures;
     }
 
     public KeyImportRestResponseV2() {
         
-    }
-
-    public String getGeneralErrorMessage() {
-        return generalErrorMessage;
     }
 
     public List<KeyImportFailure> getKeyImportFailures() {
@@ -54,15 +44,9 @@ public class KeyImportRestResponseV2 {
     }
 
     public static class KeyImportRestResponseBuilderV2 {
-        private String generalErrorMessage;
         private List<KeyImportFailure> keyImportFailures;
         
         public KeyImportRestResponseBuilderV2() {}
-
-        public KeyImportRestResponseBuilderV2 setGeneralErrorMessage(final String generalErrorMessage) {
-            this.generalErrorMessage = generalErrorMessage;
-            return this;
-        }
 
         public KeyImportRestResponseBuilderV2 setKeyImportFailures(final List<KeyImportFailure> keyImportFailures) {
             this.keyImportFailures = keyImportFailures;
@@ -70,7 +54,7 @@ public class KeyImportRestResponseV2 {
         }
 
         public KeyImportRestResponseV2 build() {
-            return new KeyImportRestResponseV2(generalErrorMessage, keyImportFailures);
+            return new KeyImportRestResponseV2(keyImportFailures);
         }
     }
     
@@ -81,10 +65,8 @@ public class KeyImportRestResponseV2 {
     public static class KeyImportRestResponseConverterV2 {
         public KeyImportRestResponseConverterV2() {}
         
-        public KeyImportRestResponseV2 toKeyImportRestResponse(RaKeyImportResponseV2 raResponse) {
-            return KeyImportRestResponseV2.builder().setKeyImportFailures(raResponse.getFailedKeys())
-                    .setGeneralErrorMessage(raResponse.getGeneralErrorMessage())
-                    .build();
+        public KeyImportRestResponseV2 toKeyImportRestResponse(List<KeyImportFailure> keyImportFailures) {
+            return KeyImportRestResponseV2.builder().setKeyImportFailures(keyImportFailures).build();
         }
     }
 }

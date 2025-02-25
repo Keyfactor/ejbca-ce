@@ -166,7 +166,7 @@ public class ProcessKeystoreSessionBean implements ProcessKeystoreSessionLocal, 
                     CertificateConstants.CERTTYPE_ENDENTITY, certificateProfileId, endEntityProfileId, crlPartitionIndex, CERTIFICATE_TAG,
                     new Date().getTime(), null, issuerDn);
         } else {
-            throw new KeyImportException("Certificate can't be added since it already exists in the database");
+            throw new KeyImportException("Key import failed because the certificate already exists in the database.");
         }
     }
 

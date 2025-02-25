@@ -16,6 +16,7 @@ package org.ejbca.core.ejb.keyimport;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertThrows;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,24 +26,22 @@ import java.util.List;
 import com.keyfactor.util.certificate.CertificateWrapper;
 import com.keyfactor.util.certificate.DnComponents;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
 import org.ejbca.core.ejb.ra.KeyImportSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 
 import com.keyfactor.util.CryptoProviderTools;
 
@@ -51,9 +50,13 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.keys.keyimport.KeyImportFailure;
 import org.cesecore.keys.keyimport.KeyImportKeystoreData;
 import org.cesecore.keys.keyimport.KeyImportRequestData;
-import org.cesecore.keys.keyimport.KeyImportResponseData;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 public class KeyImportSystemTest extends CaTestCase {
 
@@ -158,27 +161,16 @@ public class KeyImportSystemTest extends CaTestCase {
             requestData.setKeystores(keystoreDataList);
 
             // Call the method under test
-            KeyImportResponseData responseData = null;
+            List<KeyImportFailure> importResult;
             try {
-                responseData = keyImportSession.importKeys(authenticationToken, requestData);
-            } catch (EjbcaException e) {
+                importResult = keyImportSession.importKeys(authenticationToken, requestData);
+            } catch (Exception e) {
                 throw new AssertionError("Key import operation failed unexpectedly: " + e.getMessage(), e);
             }
 
-            // Verify results
-            // The KeyImportResponseData should not be null
-            assertNotNull("Expected a non-null KeyImportResponseData", responseData);
-
-            // Check for any general error message
-            if (responseData.getGeneralErrorMessage() != null) {
-                throw new AssertionError("Key import reported a general error: " + responseData.getGeneralErrorMessage());
-            }
-
             // Should have no failures if everything went right
-            List<KeyImportFailure> failures = responseData.getFailures();
-            assertNotNull("Expected a non-null list of failures (could be empty).", failures);
-
-            assertTrue("Expected zero failures, but got: " + failures, failures.isEmpty());
+            assertNotNull("Expected a non-null list of failures (could be empty).", importResult);
+            assertTrue("Expected zero failures, but got: " + importResult, importResult.isEmpty());
 
             // Confirm that the end entity was created in the DB
             EndEntityInformation endEntity = endEntityAccessSession.findUser(authenticationToken, TEST_USERNAME);
@@ -222,27 +214,17 @@ public class KeyImportSystemTest extends CaTestCase {
             requestData.setKeystores(keystoreDataList);
 
             // Call the method under test
-            KeyImportResponseData responseData = null;
+            List<KeyImportFailure> importResult;
             try {
-                responseData = keyImportSession.importKeys(authenticationToken, requestData);
-            } catch (EjbcaException e) {
+                importResult = keyImportSession.importKeys(authenticationToken, requestData);
+            } catch (Exception e) {
                 throw new AssertionError("Key import operation failed unexpectedly: " + e.getMessage(), e);
             }
 
-            // Verify results
-            // The KeyImportResponseData should not be null
-            assertNotNull("Expected a non-null KeyImportResponseData", responseData);
-
-            // Check for any general error message
-            if (responseData.getGeneralErrorMessage() != null) {
-                throw new AssertionError("Key import reported a general error: " + responseData.getGeneralErrorMessage());
-            }
-
             // Should have no failures if everything went right
-            List<KeyImportFailure> failures = responseData.getFailures();
-            assertNotNull("Expected a non-null list of failures (could be empty).", failures);
+            assertNotNull("Expected a non-null list of failures (could be empty).", importResult);
 
-            assertTrue("Expected zero failures, but got: " + failures, failures.isEmpty());
+            assertTrue("Expected zero failures, but got: " + importResult, importResult.isEmpty());
 
             // Confirm that the end entity was created in the DB
             EndEntityInformation endEntity = endEntityAccessSession.findUser(authenticationToken, TEST_USERNAME);
@@ -261,37 +243,43 @@ public class KeyImportSystemTest extends CaTestCase {
         }
     }
 
+    @Test
+    public void testImportSingleKeystoreWithNonExistingCertificateAuthority()  {
+        KeyImportRequestData requestData = new KeyImportRequestData();
+        requestData.setIssuerDn("This CA Does Not Exist");
+        requestData.setCertificateProfileName(TEST_CP_NAME);
+        requestData.setEndEntityProfileName(TEST_EEP_NAME);
+        requestData.setKeystores(Collections.emptyList()); // intentionally empty to cause an error
+
+        Exception exception = assertThrows(CADoesntExistsException.class,
+                                           () -> keyImportSession.importKeys(authenticationToken, requestData));
+        assertEquals("CA does not exist. CA DN: This CA Does Not Exist", exception.getMessage());
+    }
 
     @Test
-    public void testImportSingleKeystoreWithNonExistingCertificateProfile() throws Exception {
+    public void testImportSingleKeystoreWithNonExistingCertificateProfile() {
         KeyImportRequestData requestData = new KeyImportRequestData();
         requestData.setIssuerDn(TEST_CA_DN);
         requestData.setCertificateProfileName("SomeNonExistentProfile");
         requestData.setEndEntityProfileName(TEST_EEP_NAME);
         requestData.setKeystores(Collections.emptyList()); // intentionally empty to cause an error
 
-        KeyImportResponseData responseData = keyImportSession.importKeys(authenticationToken, requestData);
-
-        // We expect a general error message or an exception.
-        assertNotNull("Expected a KeyImportResponseData even when call fails", responseData);
-        String generalError = responseData.getGeneralErrorMessage();
-        assertNotNull("Expected a general error message due to invalid certificate profile", generalError);
+        Exception exception = assertThrows(CertificateProfileDoesNotExistException.class,
+                                           () -> keyImportSession.importKeys(authenticationToken, requestData));
+        assertEquals("Certificate profile does not exist: SomeNonExistentProfile", exception.getMessage());
     }
 
     @Test
-    public void testImportSingleKeystoreWithNonExistingEndEntityProfile() throws Exception {
+    public void testImportSingleKeystoreWithNonExistingEndEntityProfile() {
         KeyImportRequestData requestData = new KeyImportRequestData();
         requestData.setIssuerDn(TEST_CA_DN);
         requestData.setCertificateProfileName(TEST_CP_NAME);
         requestData.setEndEntityProfileName("NonExistingEndEntityProfile");
         requestData.setKeystores(Collections.emptyList()); // intentionally empty to cause an error
 
-        KeyImportResponseData responseData = keyImportSession.importKeys(authenticationToken, requestData);
-
-        // We expect a general error message or an exception.
-        assertNotNull("Expected a KeyImportResponseData even when call fails", responseData);
-        String generalError = responseData.getGeneralErrorMessage();
-        assertNotNull("Expected a general error message due to invalid end entity profile", generalError);
+        Exception exception = assertThrows(EndEntityProfileNotFoundException.class,
+                                           () -> keyImportSession.importKeys(authenticationToken, requestData));
+        assertEquals("End Entity Profile of name \"NonExistingEndEntityProfile\" was not found", exception.getMessage());
     }
 
     @Override
