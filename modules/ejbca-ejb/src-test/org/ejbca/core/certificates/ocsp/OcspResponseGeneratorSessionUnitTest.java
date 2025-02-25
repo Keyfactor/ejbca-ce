@@ -75,7 +75,6 @@ import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
 import org.cesecore.certificates.ocsp.logging.AuditLogger;
 import org.cesecore.certificates.ocsp.logging.TransactionCounter;
 import org.cesecore.certificates.ocsp.logging.TransactionLogger;
-import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
@@ -94,7 +93,6 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import com.keyfactor.util.CertTools;
-import com.keyfactor.util.RandomHelper;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoToken;
