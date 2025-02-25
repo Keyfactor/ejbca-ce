@@ -13,7 +13,6 @@
 
 package org.ejbca.util.passgen;
 
-import java.security.SecureRandom;
 import java.util.Random;
 
 import org.cesecore.config.CesecoreConfiguration;
