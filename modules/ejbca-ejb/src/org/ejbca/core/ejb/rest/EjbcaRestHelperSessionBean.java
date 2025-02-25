@@ -13,7 +13,6 @@
 
 package org.ejbca.core.ejb.rest;
 
-import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.util.Date;

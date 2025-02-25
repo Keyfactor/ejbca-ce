@@ -14,7 +14,6 @@ package org.ejbca.ui.web.admin;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
