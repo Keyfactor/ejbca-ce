@@ -2999,6 +2999,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public boolean keyRecoveryPossible(final AuthenticationToken authenticationToken, Certificate cert, String username) {
         boolean returnValue = isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_KEYRECOVERY);
+        if (!((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableKeyRecovery()) {
+            return false;
+        }
         if (((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableEndEntityProfileLimitations()) {
             try {
                 EndEntityInformation data = endEntityAccessSession.findUser(authenticationToken, username);
