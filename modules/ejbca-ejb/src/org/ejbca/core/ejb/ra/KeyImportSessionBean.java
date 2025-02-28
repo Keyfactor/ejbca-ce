@@ -124,7 +124,8 @@ public class KeyImportSessionBean implements KeyImportSessionLocal, KeyImportSes
             throw new CADoesntExistsException("CAInfo is empty, looks like CA does not exist. CA id: " + caData.getCaId());
         }
 
-        if (caInfo.getStatus() != CAConstants.CA_ACTIVE) {
+        if (caInfo.getStatus() == CAConstants.CA_OFFLINE ||
+            caInfo.getStatus() == CAConstants.CA_UNINITIALIZED) {
             throw new EjbcaException("CA is not active");
         }
 
