@@ -155,11 +155,14 @@ public abstract class CryptoTokenRunner {
             if (caCertificate != null) {
                 internalCertificateStoreSession.removeCertificate(caCertificate);
             }
+            
+            // Delete certs and CRLs issued by the CA
+            internalCertificateStoreSession.removeCertificatesByIssuer(ca.getSubjectDN());
+            internalCertificateStoreSession.removeCertificatesBySubject(ca.getSubjectDN());
+            internalCertificateStoreSession.removeCRLs(alwaysAllowToken, ca.getSubjectDN());
         } catch (AuthorizationDeniedException e) {
             throw new IllegalStateException(e);
         }
-        // Delete certs issued by the CA
-        internalCertificateStoreSession.removeCertificatesByIssuer( ca.getSubjectDN());
 
         casToRemove.remove(ca.getCAId());
     }
