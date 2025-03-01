@@ -147,9 +147,6 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
 
     @AfterClass
     public static void tearDownFinal() throws RoleNotFoundException, AuthorizationDeniedException {
-        // Remove issued certs
-        internalCertStoreSession.removeCertificatesByIssuer(ISSUER_DN);
-
         if (testx509ca != null) {
             CaTestUtils.removeCa(ADMIN, testx509ca.getCAInfo());
         }
@@ -802,7 +799,6 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
             } finally {
                 try {
                     this.endEntityManagementSession.deleteUser(ADMIN, userName1);
-                    internalCertStoreSession.removeCertificatesByUsername(userName1);
                 } catch (NoSuchEndEntityException e) {// Do nothing
                 }
             }
