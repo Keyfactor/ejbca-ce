@@ -47,6 +47,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.keyimport.KeyImportException;
 
+import java.io.EOFException;
 import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.PrivateKey;
@@ -145,6 +146,8 @@ public class ProcessKeystoreSessionBean implements ProcessKeystoreSessionLocal, 
 
                 persistKeyRecoveryData(authenticationToken, userInfo, caInfo, userCertificate, p12PrivateKey, caCert);
             }
+        } catch (EOFException e) {
+            throw new KeyImportException("Invalid keystore file.");
         } catch (Exception e) {
             throw new KeyImportException(e.getMessage());
         }
