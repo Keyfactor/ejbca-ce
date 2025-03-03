@@ -20,10 +20,13 @@ import java.util.List;
  * Response for key import.
  */
 public class KeyImportRestResponseV2 {
+    private String message;
+
     private List<KeyImportFailure> keyImportFailures;
 
-    public KeyImportRestResponseV2(List<KeyImportFailure> keyImportFailures) {
+    public KeyImportRestResponseV2(List<KeyImportFailure> keyImportFailures, String message) {
         this.keyImportFailures = keyImportFailures;
+        this.message = message;
     }
 
     public KeyImportRestResponseV2() {
@@ -31,9 +34,12 @@ public class KeyImportRestResponseV2 {
     }
 
     public List<KeyImportFailure> getKeyImportFailures() {
-        return keyImportFailures;
+        return this.keyImportFailures;
     }
 
+    public String getMessage() {
+        return this.message;
+    }
     /**
      * Returns a builder instance for this class.
      *
@@ -54,7 +60,11 @@ public class KeyImportRestResponseV2 {
         }
 
         public KeyImportRestResponseV2 build() {
-            return new KeyImportRestResponseV2(keyImportFailures);
+            final String message = keyImportFailures.isEmpty() ?
+                    "All keystores are imported successfully. " :
+                    keyImportFailures.size() + " keystores failed to import";
+
+            return new KeyImportRestResponseV2(keyImportFailures, message);
         }
     }
     
