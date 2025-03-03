@@ -64,11 +64,13 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.CollectionStore;
+import org.cesecore.config.CesecoreConfiguration;
 
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.RandomHelper;
 
 /**
  * Class used to generate SCEP messages. Used for SCEP clients and testing
@@ -89,7 +91,8 @@ public class ScepRequestGenerator {
     public ScepRequestGenerator() {
     	try { 
     		if (randomSource == null) {
-        		randomSource = SecureRandom.getInstance("SHA1PRNG");    			
+                String algorithm = CesecoreConfiguration.getCaSerialNumberAlgorithm();
+                randomSource = RandomHelper.getInstance(algorithm);
     		}
     	} catch (Exception e) {
     		log.error(e);

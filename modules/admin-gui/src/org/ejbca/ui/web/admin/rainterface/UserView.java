@@ -17,6 +17,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
@@ -60,7 +61,7 @@ public class UserView implements Serializable, Comparable<UserView> {
         subjectdirattrs = new DNFieldExtractor(dirattrs, DNFieldExtractor.TYPE_SUBJECTDIRATTR);
         setCommonName();
 
-        cleartextpwd = userdata.getPassword() != null;
+        cleartextpwd = StringUtils.isNotBlank(userdata.getPassword());
     }
 
     public void setUsername(String user) {

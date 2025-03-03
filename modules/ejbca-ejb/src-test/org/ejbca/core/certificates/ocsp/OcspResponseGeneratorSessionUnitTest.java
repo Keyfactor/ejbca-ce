@@ -28,13 +28,13 @@ import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
 import java.security.PrivateKey;
-import java.security.SecureRandom;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Properties;
+import java.util.Random;
 
 import jakarta.ejb.Timer;
 import jakarta.ejb.TimerService;
@@ -307,7 +307,7 @@ public class OcspResponseGeneratorSessionUnitTest {
     public void testWithRandomBytes() throws OCSPException {
         log.trace(">testWithRandomBytes");
         final int MAX_REQUEST_SIZE = 100000;
-        SecureRandom random = new SecureRandom();
+        Random random = new Random();
         byte[] fakeRequest = new byte[MAX_REQUEST_SIZE + 1];
         random.nextBytes(fakeRequest);
         boolean caught = false;
