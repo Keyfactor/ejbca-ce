@@ -251,6 +251,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private String nameConstraintPermitted;
     private String nameConstraintExcluded;
     private Boolean sendNotification;
+    private Integer selectedNumberOfRequests;
 
     private int numberOfOptionalSdnFieldsToShow = MIN_OPTIONAL_FIELDS_TO_SHOW;
     private int numberOfOptionalSanFieldsToShow = MIN_OPTIONAL_FIELDS_TO_SHOW;
@@ -853,12 +854,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     public boolean isRenderOtherCertificateData() {
         return getEndEntityProfile().getUseExtensiondata() || getEndEntityProfile().isPsd2QcStatementUsed() ||
-                isCabfOrganizationIdentifierRendered() || getEndEntityProfile().isIssuanceRevocationReasonUsed() ||
-                getEndEntityProfile().isValidityStartTimeUsed() || getEndEntityProfile().isValidityEndTimeUsed();
+                isCabfOrganizationIdentifierRendered() || getEndEntityProfile().isValidityStartTimeUsed() || getEndEntityProfile().isValidityEndTimeUsed();
     }
 
     public boolean isRenderOtherData() {
-        return getEndEntityProfile().isKeyRecoverableUsed();
+        return getEndEntityProfile().isKeyRecoverableUsed() || getEndEntityProfile().isAllowedRequestsUsed() || getEndEntityProfile().isSendNotificationUsed()
+                || getEndEntityProfile().isIssuanceRevocationReasonUsed();
     }
 
     public boolean isRenderCertExtensionDataField() {
@@ -871,6 +872,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     public boolean isRenderIssuanceRevocationReason() {
         return getEndEntityProfile().isIssuanceRevocationReasonUsed();
+    }
+    
+    public boolean isRenderNumberOfAllowedRequests() {
+        return getEndEntityProfile().isAllowedRequestsUsed();
     }
 
     public boolean isRenderCertValidityStartTime() {
@@ -1189,6 +1194,14 @@ public class EnrollMakeNewRequestBean implements Serializable {
         
         if (getEndEntityProfile().isAllowedRequestsUsed()) {
             extendedInformation.setAllowedRequests(String.valueOf(getEndEntityProfile().getAllowedRequests()));            
+        }
+        
+        if (getEndEntityProfile().isAllowedRequestsUsed()) {
+            if (selectedNumberOfRequests == null) {
+                extendedInformation.setAllowedRequests(String.valueOf(getEndEntityProfile().getAllowedRequests()));
+            } else { 
+                extendedInformation.setAllowedRequests(String.valueOf(selectedNumberOfRequests));
+            }
         }
 
         // Add extension data
@@ -2530,6 +2543,23 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public boolean isIssuanceRevocationReasonModifable() {
         return getEndEntityProfile().isIssuanceRevocationReasonModifiable();
     }
+    
+    public int getSelectedNumberOfRequests() {
+            return getEndEntityProfile().getAllowedRequests();
+    }
+
+    public void setSelectedNumberOfRequests(final int selectedNumberOfRequests) {
+        this.selectedNumberOfRequests = selectedNumberOfRequests;
+    }
+
+    public List<SelectItem> getAllowedRequests() {
+        final int allowedRequests = getEndEntityProfile().getAllowedRequests() + 1;
+        List<SelectItem> allowedRequestsList = new ArrayList<>();
+        for (int j = 1; j < allowedRequests; j++) {
+            allowedRequestsList.add(new SelectItem(String.valueOf(j), String.valueOf(j)));
+        }
+        return allowedRequestsList;
+    }    
 
     /**
      * @return validation regex for the CA/B Forum Organization Identifier field
