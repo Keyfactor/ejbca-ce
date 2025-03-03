@@ -50,7 +50,7 @@ public final class RequestId implements AutoCloseable {
         this.originalThreadName = Thread.currentThread().getName();
         RequestId parsed = parse();
         if (parsed == null) {
-            this.id = String.format("%08d", secureRandom.nextInt(10_000_000));
+            this.id = String.format("%08d", secureRandom.nextInt(100_000_000));
             Thread.currentThread().setName(originalThreadName + SEPARATOR + id);
         } else {
             this.id = parsed.id;
