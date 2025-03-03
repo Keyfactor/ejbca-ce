@@ -26,12 +26,14 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.KeyBindingFinder;
 import org.cesecore.keys.util.PublicKeyWrapper;
 
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.RandomHelper;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
@@ -61,7 +63,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.Provider;
 import java.security.PublicKey;
-import java.security.SecureRandom;
 import java.security.Security;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
@@ -86,7 +87,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     private static final Logger log = Logger.getLogger(CryptoTokenManagementSessionBean.class);
     /** Internal localization of logs and errors */
     private static final InternalResources INTRES = InternalResources.getInstance();
-    private static final Random rnd = new SecureRandom();
+    private static final Random rnd = RandomHelper.getInstance(CesecoreConfiguration.getCaSerialNumberAlgorithm());
 
     @EJB
     private AuthorizationSessionLocal authorizationSession;

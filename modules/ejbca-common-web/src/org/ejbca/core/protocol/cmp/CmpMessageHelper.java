@@ -40,6 +40,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.RandomHelper;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 
@@ -105,6 +106,7 @@ import org.bouncycastle.pkcs.jcajce.JcePBMac1CalculatorBuilder;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.model.InternalEjbcaResources;
 
@@ -116,7 +118,7 @@ public class CmpMessageHelper {
 
     private static Logger LOG = Logger.getLogger(CmpMessageHelper.class);
     private static final InternalEjbcaResources INTRES = InternalEjbcaResources.getInstance();
-    private static final SecureRandom secureRandom = new SecureRandom();
+    private static final SecureRandom secureRandom = RandomHelper.getInstance(CesecoreConfiguration.getCaSerialNumberAlgorithm());
 
     private static final String CMP_ERRORGENERAL = "cmp.errorgeneral";
     public static final int MAX_LEVEL_OF_NESTING = 15;
