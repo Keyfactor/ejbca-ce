@@ -24,6 +24,7 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.PARAMETER;
@@ -55,16 +56,17 @@ public @interface ValidKeyImportRestRequest {
             }
 
             final String certificateProfileName = request.getCertificateProfileName();
-            if (StringUtils.isEmpty(certificateProfileName)) {
+            if (StringUtils.isBlank(certificateProfileName)) {
                 ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidKeyImportRestRequest.invalid.certificateProfileName.nullOrEmpty}");
                 return false;
             }
 
             final String endEntityProfileName = request.getEndEntityProfileName();
-            if (StringUtils.isEmpty(endEntityProfileName)) {
+            if (StringUtils.isBlank(endEntityProfileName)) {
                 ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidKeyImportRestRequest.invalid.endEntityProfileName.nullOrEmpty}");
                 return false;
             }
+
             final List<KeystoreRestRequestComponent> keystores = request.getKeystores();
             if (keystores == null || keystores.isEmpty()) {
                 ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidKeyImportRestRequest.invalid.keystores.nullOrEmpty}");
@@ -72,19 +74,28 @@ public @interface ValidKeyImportRestRequest {
             }
 
             for (KeystoreRestRequestComponent keystore : keystores) {
-                if (keystore.getUsername() == null || keystore.getUsername().isEmpty()) {
+                if (StringUtils.isBlank(keystore.getUsername())) {
                     ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidKeyImportRestRequest.invalid.keystore.username.nullOrEmpty}");
                     return false;
                 }
-                if (keystore.getPassword() == null || keystore.getPassword().isEmpty()) {
+
+                if (StringUtils.isBlank(keystore.getPassword())) {
                     ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidKeyImportRestRequest.invalid.keystore.password.nullOrEmpty}");
                     return false;
                 }
-                if (keystore.getKeystore() == null || keystore.getKeystore().isEmpty()) {
+
+                if (StringUtils.isBlank(keystore.getKeystore())) {
                     ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidKeyImportRestRequest.invalid.keystore.keystore.nullOrEmpty}");
                     return false;
                 }
+
+                final Pattern pattern = Pattern.compile("^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$");
+                if (!pattern.matcher(keystore.getKeystore()).matches()) {
+                    ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidKeyImportRestRequest.invalid.keystore.keystore.invalid}");
+                    return false;
+                }
             }
+
             return true;
         }
     }

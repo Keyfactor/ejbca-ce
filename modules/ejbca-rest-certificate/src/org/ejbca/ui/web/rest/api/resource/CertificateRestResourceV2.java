@@ -190,6 +190,9 @@ public class CertificateRestResourceV2 extends BaseRestResource {
      */
     public Response importKeystores(final HttpServletRequest requestContext, final String issuerDN, @Valid final KeyImportRestRequestV2 request)
             throws AuthorizationDeniedException, RestException {
+        if(request == null) {
+            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Key import request cannot be null.");
+        }
 
         final AuthenticationToken authenticationToken = getAdmin(requestContext, true);
         KeyImportRequestData requestData = KeyImportRestRequestV2.converter().toRequestData(request, issuerDN);
@@ -206,6 +209,8 @@ public class CertificateRestResourceV2 extends BaseRestResource {
             throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), e.getMessage());
         } catch (EjbcaException e) {
             throw new RestException(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage());
+        } catch (Exception e) {
+            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "An unexpected error happened: " + e.getMessage());
         }
     }
     
