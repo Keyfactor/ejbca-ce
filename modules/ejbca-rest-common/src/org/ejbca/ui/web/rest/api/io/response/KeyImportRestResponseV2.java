@@ -62,7 +62,7 @@ public class KeyImportRestResponseV2 {
         public KeyImportRestResponseV2 build() {
             final String message = keyImportFailures.isEmpty() ?
                     "All keystores are imported successfully. " :
-                    keyImportFailures.size() + " keystores failed to import";
+                    keyImportFailures.size() + " keystore(s) failed to import";
 
             return new KeyImportRestResponseV2(keyImportFailures, message);
         }
