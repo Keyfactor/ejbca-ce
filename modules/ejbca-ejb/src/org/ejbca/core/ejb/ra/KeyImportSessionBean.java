@@ -31,9 +31,11 @@ import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.keyimport.KeyImportFailure;
 import org.cesecore.keys.keyimport.KeyImportKeystoreData;
 import org.cesecore.keys.keyimport.KeyImportRequestData;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
@@ -55,6 +57,8 @@ public class KeyImportSessionBean implements KeyImportSessionLocal, KeyImportSes
     private static final Logger log = Logger.getLogger(KeyImportSessionBean.class);
 
     @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
+    @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
     @EJB
     private CertificateProfileSessionLocal certificateProfileSession;
@@ -66,6 +70,11 @@ public class KeyImportSessionBean implements KeyImportSessionLocal, KeyImportSes
     @Override
     public List<KeyImportFailure> importKeys(final AuthenticationToken authenticationToken, final KeyImportRequestData keyImportRequestData) throws CADoesntExistsException, AuthorizationDeniedException, CertificateProfileDoesNotExistException, EjbcaException {
         List<KeyImportFailure> keyImportFailures = new ArrayList<>();
+
+        GlobalConfiguration globalConfig = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        if (globalConfig.getEnableKeyRecovery() && globalConfig.getLocalKeyRecovery()) {
+            throw new EjbcaException("Local Key Generation is not supported for Key Import.");
+        }
 
         final String caDn = keyImportRequestData.getIssuerDn();
         final CAData caData = caSession.findBySubjectDN(caDn);
