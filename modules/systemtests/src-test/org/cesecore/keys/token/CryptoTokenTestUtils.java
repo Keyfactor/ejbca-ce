@@ -12,8 +12,6 @@
  *************************************************************************/
 package org.cesecore.keys.token;
 
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.util.Properties;
 
 import com.keyfactor.util.keys.token.BaseCryptoToken;
@@ -43,7 +41,7 @@ import org.cesecore.util.EjbRemoteHelper;
  * Utility methods for creating CAs and CryptoTokens for tests. Both soft and PKCS#11 tokens.
  * <p>
  * PKCS#11 tokens will be created with the properties defined in systemtests.properties, if present.
- * Otherwise defaults will be used (see systemtest.properties.sample or {@link SystemTestsConfiguration}) 
+ * Otherwise defaults will be used (see systemtest.properties.sample or {@link SystemTestsConfiguration})
  */
 public class CryptoTokenTestUtils {
 
@@ -60,7 +58,7 @@ public class CryptoTokenTestUtils {
     public static X509CA createTestCAWithSoftCryptoToken(AuthenticationToken authenticationToken, String dN) throws Exception {
       return (X509CA)internalCreateTestCAWithSoftCryptoToken(authenticationToken, dN, CAInfo.SELFSIGNED, false);
     }
-    
+
     public static X509CA createTestCAWithSoftCryptoToken(AuthenticationToken authenticationToken, String dN, int signedBy) throws Exception {
         return (X509CA)internalCreateTestCAWithSoftCryptoToken(authenticationToken, dN, signedBy, false);
     }
@@ -73,10 +71,10 @@ public class CryptoTokenTestUtils {
         CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
         final CA ca;
         if (cvc) {
-            ca = CaTestUtils.createTestCVCCA(dN, SOFT_TOKEN_PIN, false);            
+            ca = CaTestUtils.createTestCVCCA(dN, SOFT_TOKEN_PIN, false);
         } else {
             ca = CaTestUtils.createTestX509CA(dN, SOFT_TOKEN_PIN, SoftCryptoToken.class.getName(), signedBy, X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign
-                    + X509KeyUsage.cRLSign);            
+                    + X509KeyUsage.cRLSign);
         }
         // Remove any lingering test CA before starting the tests
         CAInfo oldCaInfo = caSession.getCAInfo(authenticationToken, ca.getCAId());
@@ -98,24 +96,24 @@ public class CryptoTokenTestUtils {
             String encKeySpec, final String signingKeyName, final String encryptionKeyName) {
         return createCryptoTokenForCA(authenticationToken, pin, true, false, tokenName, signKeySpec, encKeySpec, signingKeyName, encryptionKeyName);
     }
-    
+
     public static int createCryptoTokenForCA(AuthenticationToken authenticationToken, char[] pin, boolean generateKeys, boolean pkcs11,
             String tokenName, String signKeySpec, String encKeySpec, final String signingKeyName, final String encryptionKeyName) {
-       
+
         final String cryptoTokenImplementation;
-        if (pkcs11) {         
+        if (pkcs11) {
             cryptoTokenImplementation = PKCS11CryptoToken.class.getName();
         } else {
 
             cryptoTokenImplementation = SoftCryptoToken.class.getName();
-        }     
+        }
         return createCryptoTokenForCA(authenticationToken, pin, generateKeys, cryptoTokenImplementation, tokenName, signKeySpec, encKeySpec, signingKeyName, encryptionKeyName);
 
     }
 
     /**
-     * Creates a simple crypto token, no frills. 
-     * 
+     * Creates a simple crypto token, no frills.
+     *
      * @param pin the pin of the slot
      * @param cryptoTokenImplementation the implemenation name, i.e org.cesecore.keys.token.SoftCryptoToken
      * @param tokenName the name of the crypto token
@@ -170,7 +168,7 @@ public class CryptoTokenTestUtils {
 
         return cryptoTokenId;
     }
-    
+
     public static int createCryptoTokenForCA(AuthenticationToken authenticationToken, final char[] pin, final boolean generateKeys,
             final String cryptoTokenImplementation, final String tokenName, final String signKeySpec, final String encKeySpec,
             final String signingKeyName, final String encryptionKeyName) {
@@ -185,7 +183,7 @@ public class CryptoTokenTestUtils {
                 cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, encryptionKeyName,
                         KeyGenParams.builder(encKeySpec).build());
             }
-        } catch (AuthorizationDeniedException | InvalidKeyException | CryptoTokenOfflineException | InvalidAlgorithmParameterException e) {
+        } catch (Exception e) { // Make sure to catch all, can be wrapped in EJBException
             // Cleanup token if we failed during the key creation stage
             try {
                 removeCryptoToken(null, cryptoTokenId);

@@ -13,7 +13,6 @@
 
 package org.ejbca.core.ejb.rest;
 
-import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.util.Date;
@@ -49,6 +48,7 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.cert.SubjectDirAttrExtension;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.EjbcaException;
@@ -63,6 +63,7 @@ import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 
 import com.keyfactor.ErrorCode;
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.RandomHelper;
 import com.keyfactor.util.certificate.DnComponents;
 
 
@@ -201,7 +202,7 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
         } else if (StringUtils.isEmpty(enrollcertificateRequest.getPassword())) {
             // If not needed just use some random data
             final byte[] randomData = new byte[16];
-            final Random random = new SecureRandom();
+            final Random random = RandomHelper.getInstance(CesecoreConfiguration.getCaSerialNumberAlgorithm());
             random.nextBytes(randomData);
             endEntityInformation.setPassword(new String(Hex.encode(CertTools.generateSHA256Fingerprint(randomData))));
         } else {

@@ -13,74 +13,49 @@
 
 package org.ejbca.util.mail;
 
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 
 import jakarta.activation.DataHandler;
-import jakarta.activation.FileDataSource;
+import jakarta.mail.util.ByteArrayDataSource;
 
 /**
  * Representation of an email attachment.
- * 
  */
 public class MailAttachment {
 
-	private String filename;
-	private String fullFilePathName;
+	private ByteArrayDataSource dataSource;
 	
-	public MailAttachment(String fullFilePathName) {
-		this.filename = new File(fullFilePathName).getName();
-	}
-
-	public MailAttachment(String filename, String fullFilePathName) {
-		this.filename = filename;
-		this.fullFilePathName = fullFilePathName;
-	}
+	private String filename = "attachement";
 
 	/**
-	 * Write's the object to a temporary file that is then attached.
-	 * TODO: In later versions of JavaMail we can use ByteArrayDataSource directly in getDataHandler instead.
-	 * 
-	 * @param filename
-	 * @param attachedObject
-	 */
-	public MailAttachment(String filename, Object attachedObject) {
-		this.filename = filename;
-		try {
-			byte[] attachmentData;
-			if (attachedObject instanceof Certificate) {
-				try {
-					attachmentData = ((Certificate)attachedObject).getEncoded();
-				} catch (CertificateEncodingException e) {
-					throw new IllegalStateException("The email attachment type is not supported.", e);
-				}
-			} else {
-				throw new IllegalStateException("The email attachment type is not supported.");
-			}
-			File file = File.createTempFile("ejbca-mailattachment", ".tmp");
-			fullFilePathName = file.getCanonicalPath();
-			try (
-			        FileOutputStream fos = new FileOutputStream(file);
-			        DataOutputStream dos = new DataOutputStream (fos);
-			        ) {
-			dos.write(attachmentData);
-			}
-		} catch (IOException e) {
-			throw new IllegalStateException("The email attachment type is not supported.", e);
-		}
-	}
-	
-	public String getName() {
-		return filename;
-	}
+     * Creates a mail attachment either by a ByteArrayDataSource or a java.security.cert.Certificate object.
+     * 
+     * @param attachedObject the object to be attached.
+     * @param filename the attachment filename.
+     */
+    public MailAttachment(final Object attachedObject, final String filename) {
+        this.filename = filename;
+        if (attachedObject instanceof ByteArrayDataSource) {
+            dataSource = (ByteArrayDataSource) attachedObject;
+        } else if (attachedObject instanceof Certificate) {
+            try {
+                dataSource = new ByteArrayDataSource(((Certificate) attachedObject).getEncoded(), "application/pkix-cert");
+            } catch (CertificateEncodingException e) {
+                throw new IllegalStateException("The email attachment type is not supported.", e);
+            }
+        } else {
+            throw new IllegalStateException("The email attachment type is not supported.");
+        }
+    }
+    
+    public String getName() {
+        return filename;
+    }
 
 	public DataHandler getDataHandler() {
-		if (fullFilePathName != null) {
-			return new DataHandler(new FileDataSource(getName()));
+		if (dataSource != null) {
+			return new DataHandler(dataSource);
 		}
 		return null;
 	}

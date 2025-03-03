@@ -68,7 +68,7 @@ public class JsfDynamicUiHtmlInputSecret extends HtmlInputSecret implements Dyna
     @Override
     public void setDisabled(boolean disabled) {
         if (this.dynamicUiProperty != null) {
-            this.dynamicUiProperty.setDisabled(disabled);
+            super.setDisabled(disabled);
         }
     }
 
