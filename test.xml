@@ -68,7 +68,8 @@
         <antcall target="optional-test-configdump-unit" inheritall="true" inheritrefs="true"/>
     	<antcall target="optional-test-ct" inheritall="true" inheritrefs="true"/>
     	<antcall target="optional-test-caa-unit" inheritall="true" inheritrefs="true"/>
-    	<antcall target="optional-test-ssh-unit" inheritall="true" inheritrefs="true"/>
+        <antcall target="optional-test-mpic-unit" inheritall="true" inheritrefs="true"/>
+        <antcall target="optional-test-ssh-unit" inheritall="true" inheritrefs="true"/>
     	<antcall target="optional-test-cits-unit" inheritall="true" inheritrefs="true"/>
         <antcall target="optional-test-peerconnector-unit" inheritall="true" inheritrefs="true"/>
         <antcall target="optional-test-plugins-ee-unit" inheritall="true" inheritrefs="true"/>
@@ -135,6 +136,10 @@
     <target name="optional-test-caa-system" if="${caa.exists}">
         <ant antfile="build.xml" dir="modules/caa" target="test:system" inheritall="true" inheritrefs="true"/>
     </target>
+    <condition property="mpic.exists"><available file="modules/caa/build.xml" /></condition>
+    <target name="optional-test-mpic-unit" if="${mpic.exists}">
+        <ant antfile="build.xml" dir="modules/mpic" target="test:unit" inheritall="true" inheritrefs="true"/>
+    </target>
     <target name="optional-test-mpic-system" if="${mpic.exists}">
         <ant antfile="build.xml" dir="modules/mpic" target="test:system" inheritall="true" inheritrefs="true"/>
     </target>
@@ -179,6 +184,7 @@
 					<include name="modules/acme/src-test/**/${test.runone}.java" />
 					<include name="modules/acme/src-common-test/**/${test.runone}.java" />
 					<include name="modules/caa/src-test/**/${test.runone}.java" />
+					<include name="modules/iodef/src-test/**/${test.runone}.java" />
 					<include name="modules/mpic/src-test/**/${test.runone}.java" />
 					<include name="modules/ejbca-ws-cli/src-test/**/${test.runone}.java" />
 					<include name="modules/ejbca-rest-api/src-test/**/${test.runone}.java" />
@@ -259,6 +265,9 @@
     	</condition>
         <condition property="module" value="modules/caa">
             <matches string="${test-fullname}" pattern="^modules/caa/.*$"/>
+        </condition>
+        <condition property="module" value="modules/iodef">
+            <matches string="${test-fullname}" pattern="^modules/iodef/.*$"/>
         </condition>
         <condition property="module" value="modules/mpic">
             <matches string="${test-fullname}" pattern="^modules/mpic/.*$"/>
@@ -497,6 +506,16 @@
         <antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
+    <target name="test:unit:mpic" description="run all JUnit tests for mpic." depends="deleteDirectories">
+        <ant antfile="build.xml" dir="modules/mpic" target="test:unit" inheritall="true" inheritrefs="true"/>
+        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
+    </target>
+
+    <target name="test:system:mpic" description="run all System tests for mpic." depends="deleteDirectories">
+        <ant antfile="build.xml" dir="modules/mpic" target="test:system" inheritall="true" inheritrefs="true"/>
+        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
+    </target>
+
     <target name="test:unit:cesecore-entity" description="run all JUnit tests for cesecore-entity." depends="deleteDirectories">
         <ant antfile="build.xml" dir="modules/cesecore-entity" target="test:unit" inheritall="true" inheritrefs="true"/>
         <antcall target="createreport" inheritall="true" inheritrefs="true"/>
@@ -579,6 +598,8 @@
                                                  --sourcefiles ./modules/ejbca-ws-cli/src
                                                  --sourcefiles ./modules/est/src
                                                  --sourcefiles ./modules/healthcheck-war/src
+                                                 --sourcefiles ./modules/iodef/src
+                                                 --sourcefiles ./modules/mpic/src
                                                  --sourcefiles ./modules/msae/src
                                                  --sourcefiles ./modules/plugins/src
                                                  --sourcefiles ./modules/plugins-ee/src
@@ -637,6 +658,8 @@
                                                  --classfiles ./modules/ejbca-ws-cli/build
                                                  --classfiles ./modules/est/build-war
                                                  --classfiles ./modules/healthcheck-war/build
+                                                 --classfiles ./modules/iodef/build
+                                                 --classfiles ./modules/mpic/build
                                                  --classfiles ./modules/msae/build
                                                  --classfiles ./modules/plugins/build-plugins
                                                  --classfiles ./modules/plugins-ee/build-plugins-ee

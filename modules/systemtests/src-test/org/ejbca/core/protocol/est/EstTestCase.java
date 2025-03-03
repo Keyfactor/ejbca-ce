@@ -33,7 +33,6 @@ import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
@@ -86,6 +85,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
@@ -108,6 +108,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 
 import com.keyfactor.util.CeSecoreNameStyle;
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.RandomHelper;
 import com.keyfactor.util.certificate.DnComponents;
 
 /**
@@ -283,7 +284,7 @@ public abstract class EstTestCase extends CaTestCase {
         } else {
             km = null;
         }
-        context.init(km, tm, new SecureRandom());
+        context.init(km, tm, RandomHelper.getInstance(CesecoreConfiguration.getCaSerialNumberAlgorithm()));
 
         SSLSocketFactory factory = context.getSocketFactory();
         HttpsURLConnection.setDefaultSSLSocketFactory(factory);
