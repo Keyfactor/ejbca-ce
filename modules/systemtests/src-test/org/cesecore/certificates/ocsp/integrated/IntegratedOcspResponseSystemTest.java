@@ -12,13 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp.integrated;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyPair;
@@ -33,6 +26,18 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.Random;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.SHA1DigestCalculator;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.KeyGenParams;
 
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.DEROctetString;
@@ -125,17 +130,12 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.EJBTools;
-import com.keyfactor.util.SHA1DigestCalculator;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.certificate.SimpleCertGenerator;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.KeyTools;
-import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.KeyGenParams;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 /**
  */
@@ -146,7 +146,7 @@ public class IntegratedOcspResponseSystemTest {
     public static Collection<CryptoTokenRunner> runners() {
        return CryptoTokenRunner.defaultRunners;
     }
-    
+
     private static final String PKIX_OCSP_NONCE = "123456789";
     private CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
@@ -171,7 +171,7 @@ public class IntegratedOcspResponseSystemTest {
     private X509Certificate ocspCertificate;
     private X509CAInfo testx509ca;
     private String originalDefaultResponder;
-    
+
     private List<String> createdCertificateSerialNumbers = new ArrayList<>();
 
     private final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Internal Admin"));
@@ -181,7 +181,7 @@ public class IntegratedOcspResponseSystemTest {
 
     @Rule
     public TestRule traceLogMethodsRule = new TraceLogMethodsRule();
-    
+
     @Rule
     public TestName testName = new TestName();
 
@@ -189,13 +189,13 @@ public class IntegratedOcspResponseSystemTest {
 
     public IntegratedOcspResponseSystemTest(CryptoTokenRunner cryptoTokenRunner) throws Exception {
         this.cryptoTokenRunner = cryptoTokenRunner;
-       
+
     }
-    
+
     @Before
     public void setUp() throws Exception {
         assumeTrue("Test with runner " + cryptoTokenRunner.getSimpleName() + " cannot run on this platform.", cryptoTokenRunner.canRun());
-        testx509ca = cryptoTokenRunner.createX509Ca("CN="+testName.getMethodName(), testName.getMethodName()); 
+        testx509ca = cryptoTokenRunner.createX509Ca("CN="+testName.getMethodName(), testName.getMethodName());
         caCertificate = (X509Certificate) testx509ca.getCertificateChain().get(0);
         EndEntityInformation user = new EndEntityInformation("username", "CN=User", testx509ca.getCAId(), "rfc822Name=user@user.com", "user@user.com",
                 EndEntityTypes.ENDUSER.toEndEntityType(), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
@@ -217,86 +217,102 @@ public class IntegratedOcspResponseSystemTest {
         }
         // Restore the default value
         setOcspDefaultResponderReference(originalDefaultResponder);
-        
+
         for (String eeCertificateSerial : createdCertificateSerialNumbers) {
             try {
                 internalCertificateStoreSession.removeCertificate(eeCertificateSerial);
             } catch (Exception e) {}
         }
-        
+
     }
-    
+
     @Test
     public void testOcspSigningAlgorithm() throws Exception {
-        
+
         if (!cryptoTokenRunner.getSimpleName().equals("PKCS12TestRunner")) {
             // Hard tokens try to use same keys with different cryptotoken name and cause errors
             // this test only verifies selection of algorithm
             return;
         }
-        
+
         String caName;
         X509CAInfo testCa;
         X509Certificate caCert;
         String caNamePrefix = "IntegOcspResTest." + testName.getMethodName();
-        
+
         // EcRootCa
         caName = caNamePrefix+"Ec256";
         testCa = cryptoTokenRunner.createX509Ca("CN="+caName, "CN="+caName, caNamePrefix + caName, "7300d",
-                "secp256r1", AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA); 
+                "secp256r1", AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
         caCert = (X509Certificate) testCa.getCertificateChain().get(0);
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
         createUserAndGetEndEntityResponse(caCert, caCert, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
-        
+
         // EcSubCa
         String rootCaName = caName;
         caName = caNamePrefix+"Ec256Subca";
         testCa = cryptoTokenRunner.createX509Ca("CN="+caName, "CN="+rootCaName, caNamePrefix + caName, "3600d",
-                "secp256r1", AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA); 
+                "secp256r1", AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
         caCert = (X509Certificate) testCa.getCertificateChain().get(0);
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
         createUserAndGetEndEntityResponse(caCert, caCert, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
-        
+
         //  RsaSubCa
         caName = caNamePrefix+"Ec256RsaSubca";
         testCa = cryptoTokenRunner.createX509Ca("CN="+caName, "CN="+rootCaName, caNamePrefix + caName, "3600d",
-                "2048", AlgorithmConstants.SIGALG_SHA256_WITH_RSA); 
+                "2048", AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
         caCert = (X509Certificate) testCa.getCertificateChain().get(0);
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
         createUserAndGetEndEntityResponse(caCert, caCert, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
-        
+
         caName = caNamePrefix+"Ec256RsaMgf1Subca";
         testCa = cryptoTokenRunner.createX509Ca("CN="+caName, "CN="+rootCaName, caNamePrefix + caName, "3600d",
-                "2048", AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1); 
+                "2048", AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
         caCert = (X509Certificate) testCa.getCertificateChain().get(0);
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
         createUserAndGetEndEntityResponse(caCert, caCert, AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
-        
-        // EcRootCaSha384 
+
+        // EcRootCaSha384
         caName = caNamePrefix+"Ec384";
         testCa = cryptoTokenRunner.createX509Ca("CN="+caName, "CN="+caName, caNamePrefix + caName, "7300d",
-                "secp384r1", AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA); 
+                "secp384r1", AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA);
         caCert = (X509Certificate) testCa.getCertificateChain().get(0);
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
         createUserAndGetEndEntityResponse(caCert, caCert, AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA);
-        
+
         rootCaName = caName;
         caName = caNamePrefix+"Ec256Subca";
         testCa = cryptoTokenRunner.createX509Ca("CN="+caName, "CN="+rootCaName, caNamePrefix + caName, "3600d",
-                "secp256r1", AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA); 
+                "secp256r1", AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
         caCert = (X509Certificate) testCa.getCertificateChain().get(0);
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
         createUserAndGetEndEntityResponse(caCert, caCert, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
-        
-        // CAs are removed automatically
+
+        // ML-DSA-87 Root CA
+        caName = caNamePrefix+"Mldsa87";
+        testCa = cryptoTokenRunner.createX509Ca("CN="+caName, "CN="+caName, caNamePrefix + caName, "7300d",
+                "ML-DSA-87", AlgorithmConstants.SIGALG_MLDSA87);
+        caCert = (X509Certificate) testCa.getCertificateChain().get(0);
+        ocspResponseGeneratorTestSession.reloadOcspSigningCache();
+        createUserAndGetEndEntityResponse(caCert, caCert, AlgorithmConstants.SIGALG_MLDSA87);
+
+        rootCaName = caName;
+        caName = caNamePrefix+"Mldsa44Subca";
+        testCa = cryptoTokenRunner.createX509Ca("CN="+caName, "CN="+rootCaName, caNamePrefix + caName, "3600d",
+                "ML-DSA-44", AlgorithmConstants.SIGALG_MLDSA44);
+        caCert = (X509Certificate) testCa.getCertificateChain().get(0);
+        ocspResponseGeneratorTestSession.reloadOcspSigningCache();
+        createUserAndGetEndEntityResponse(caCert, caCert, AlgorithmConstants.SIGALG_MLDSA44);
+
+        // CAs created with cryptoTokenRunner.createX509Ca are removed automatically by cryptoTokenRunner.cleanUp()
     }
-    
-    private void createUserAndGetEndEntityResponse(X509Certificate caCert, 
+
+    private void createUserAndGetEndEntityResponse(X509Certificate caCert,
             X509Certificate ocspSignerCert, String expectedSigningAlgorithm) throws Exception {
         String username = "IntegOcspResTestUser" + new Random().nextLong();
-        
-        EndEntityInformation user = new EndEntityInformation(username, "CN=" + username, 
-                CertTools.getSubjectDN(caCert).hashCode(), 
+
+        EndEntityInformation user = new EndEntityInformation(username, "CN=" + username,
+                CertTools.getSubjectDN(caCert).hashCode(),
                 "rfc822Name=" + username + "@user.com", username + "@user.com",
                 EndEntityTypes.ENDUSER.toEndEntityType(), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
         user.setPassword("foo123");
@@ -305,7 +321,7 @@ public class IntegratedOcspResponseSystemTest {
         X509Certificate eeCertificate = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(internalAdmin, user, reqMsg,
                 X509ResponseMessage.class, signSession.fetchCertGenParams())).getCertificate());
         createdCertificateSerialNumbers.add(CertTools.getSerialNumberAsString(eeCertificate));
-        
+
         // ocsp request
         OCSPReqBuilder gen = new OCSPReqBuilder();
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCert, eeCertificate.getSerialNumber()));
@@ -334,15 +350,15 @@ public class IntegratedOcspResponseSystemTest {
         assertEquals("Response cert did not match up with request cert", eeCertificate.getSerialNumber(),
                 singleResponses[0].getCertID().getSerialNumber());
         assertEquals("Status is not null (good)", null, singleResponses[0].getCertStatus());
-        
+
         if (expectedSigningAlgorithm.equals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1)) {
-            assertEquals("Signature algorithm is wrong", "1.2.840.113549.1.1.10", 
+            assertEquals("Signature algorithm is wrong", "1.2.840.113549.1.1.10",
                     basicOcspResponse.getSignatureAlgOID().toString());
         } else {
-            assertEquals("Signature algorithm is wrong", expectedSigningAlgorithm, 
+            assertEquals("Signature algorithm is wrong", expectedSigningAlgorithm,
                 AlgorithmTools.getAlgorithmNameFromOID(basicOcspResponse.getSignatureAlgOID()));
         }
-        
+
     }
 
     @Test
@@ -489,7 +505,7 @@ public class IntegratedOcspResponseSystemTest {
             /*
              * If we query for EE certificate with the previous issuer cert, the responder will think it is from an unknown CA,
              * since we do the lookup of the issuer from the combination of issuerName and keyHash.
-             * 
+             *
              * The expected outcome is "unauthorized", since the default responder is disabled during this test.
              */
             testOcspSignerIssuerRenewalInternal(eeCertificate, caCertificateRenew, OCSPResp.UNAUTHORIZED);
@@ -570,7 +586,7 @@ public class IntegratedOcspResponseSystemTest {
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, caCertificate.getSerialNumber()));
         Extension[] extensions = new Extension[1];
 
-        // Use a nonce with more than 128 bytes to see if we reject it. We should not allow too long nonces due to the possibility of using 
+        // Use a nonce with more than 128 bytes to see if we reject it. We should not allow too long nonces due to the possibility of using
         // this as a chosen-prefix attack on hash collisions.
         // https://groups.google.com/forum/#!topic/mozilla.dev.security.policy/x3TOIJL7MGw
         // https://www.rfc-editor.org/rfc/rfc9654.txt (which supersedes RFC-8954)
@@ -999,7 +1015,7 @@ public class IntegratedOcspResponseSystemTest {
 
     /**
      * Note that this test is time dependent. Debugging it will create strange behavior.
-     * 
+     *
      * @throws OCSPException
      * @throws AuthorizationDeniedException
      * @throws MalformedRequestException
@@ -1007,7 +1023,7 @@ public class IntegratedOcspResponseSystemTest {
      * @throws InterruptedException
      * @throws IllegalCryptoTokenException
      * @throws CADoesntExistsException
-     * @throws CertificateEncodingException 
+     * @throws CertificateEncodingException
      */
     @Test
     public void testCacheUpdates() throws OCSPException, AuthorizationDeniedException, MalformedRequestException, IOException, InterruptedException,
@@ -1047,7 +1063,7 @@ public class IntegratedOcspResponseSystemTest {
             OCSPResp response = new OCSPResp(responseBytes);
             assertEquals("Response status not OCSPRespBuilder.UNAUTHORIZED.", OCSPRespBuilder.UNAUTHORIZED, response.getStatus());
             assertNull("Response should not have contained a response object.", response.getResponseObject());
-            
+
         } finally {
             // Reset sign trust valid time.
             cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNING_CERTD_VALID_TIME,
@@ -1058,7 +1074,7 @@ public class IntegratedOcspResponseSystemTest {
 
     /**
      * This test should use the default OCSP responder to sign the response as unknown.
-     * 
+     *
      * @throws OCSPException
      * @throws AuthorizationDeniedException
      * @throws IOException
@@ -1066,8 +1082,8 @@ public class IntegratedOcspResponseSystemTest {
      * @throws CADoesntExistsException
      * @throws IllegalCryptoTokenException
      * @throws NoSuchProviderException
-     * @throws CertificateEncodingException 
-     * @throws OperatorCreationException 
+     * @throws CertificateEncodingException
+     * @throws OperatorCreationException
      */
     @Test
     public void testGetOcspResponseWithCertificateFromUnknownCa()
@@ -1135,11 +1151,11 @@ public class IntegratedOcspResponseSystemTest {
 
     /**
      * Makes sure that the OcspSigningCache doesn't add Unsigned CAs
-     * @throws AuthorizationDeniedException 
-     * @throws IllegalCryptoTokenException 
-     * @throws CAExistsException 
-     * @throws CADoesntExistsException 
-     * @throws InvalidAlgorithmException 
+     * @throws AuthorizationDeniedException
+     * @throws IllegalCryptoTokenException
+     * @throws CAExistsException
+     * @throws CADoesntExistsException
+     * @throws InvalidAlgorithmException
      */
     @Test
     public void testOcspSigningCacheDoesntAddUnsignedCa()
@@ -1205,7 +1221,7 @@ public class IntegratedOcspResponseSystemTest {
         ocspConfiguration.setOcspDefaultResponderReference(testx509ca.getSubjectDN());
         globalConfigurationSession.saveConfiguration(internalAdmin, ocspConfiguration);
         try {
-            // Now, construct an external CA. 
+            // Now, construct an external CA.
             final String externalCaName = "testStandAloneOcspResponseExternalCa";
             final String externalCaSubjectDn = "CN=" + externalCaName;
             final int validity = 3650;
@@ -1256,7 +1272,7 @@ public class IntegratedOcspResponseSystemTest {
                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.NO_END_ENTITY_PROFILE,
                         CertificateConstants.NO_CRL_PARTITION, null, new Date().getTime(), null);
                 try {
-                    //Now everything is in place. Perform a request, make sure that the default responder signed it. 
+                    //Now everything is in place. Perform a request, make sure that the default responder signed it.
                     OCSPReqBuilder gen = new OCSPReqBuilder();
                     gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), (X509Certificate) externalCaCertificate,
                             importedCertificate.getSerialNumber()));

@@ -80,7 +80,7 @@ public class CvcKeyToolsUnitTest {
         X509Certificate cert = SimpleCertGenerator.forTESTCaCert()
                 .setSubjectDn("C=SE,O=Test,CN=Test")
                 .setIssuerDn("C=SE,O=Test,CN=Test")
-                .setValidityDays(265)
+                .setValidityDays(365)
                 .setIssuerPrivKey(keys.getPrivate())
                 .setEntityPubKey(keys.getPublic())
                 .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA)

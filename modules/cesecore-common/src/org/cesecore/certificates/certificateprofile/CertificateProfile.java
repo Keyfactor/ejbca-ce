@@ -3327,7 +3327,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             }
         }
         if (AlgorithmTools.isPQC(keyAlgorithm)) {
-            //We implicitly allow a specific key length when configuring FALCON and/or ML-DSA algorithms,
+            //We implicitly allow a specific key length when configuring FALCON, ML-DSA, LMS algorithms,
             //hence we don't need to check for key length compliancy with the certificate profile.
             return;
          }
@@ -3696,7 +3696,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 setUseValidityAssuredShortTerm(false);
                 setValidityAssuredShortTermCritical(false);
             }
-            
+
             // v53: Remove support for GOST and DSTU if present
             List<String> availableKeyAlgorithms = getAvailableKeyAlgorithmsAsList();
             availableKeyAlgorithms.remove("ECGOST3410");

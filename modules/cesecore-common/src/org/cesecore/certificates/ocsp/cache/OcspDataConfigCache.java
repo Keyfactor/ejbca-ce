@@ -13,14 +13,15 @@
 
 package org.cesecore.certificates.ocsp.cache;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.log4j.Logger;
-import org.bouncycastle.cert.ocsp.CertificateID;
-
 import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.log4j.Logger;
+import org.bouncycastle.cert.ocsp.CertificateID;
+import org.bouncycastle.util.encoders.Hex;
 
 /**
  * Cache holding performance sensitive CA configuration required by OCSP lookups
@@ -29,9 +30,9 @@ import java.util.Map;
  */
 public enum OcspDataConfigCache {
     INSTANCE;
-    
+
     private final static Logger log = Logger.getLogger(OcspDataConfigCache.class);
-    
+
     private Map<Integer, OcspDataConfigCacheEntry> cache = new HashMap<>();
     private Map<Integer, OcspDataConfigCacheEntry> staging = new HashMap<>();
     private Boolean isCaModeCompatiblePresent = false;
@@ -44,9 +45,9 @@ public enum OcspDataConfigCache {
     public OcspDataConfigCacheEntry getEntry(final CertificateID certID) {
         return cache.get(getCacheIdFromCertificateID(certID));
     }
-    
+
     /**
-     * Adds a cache entry to the cache. Invocation may add multiple entries since we support more than 
+     * Adds a cache entry to the cache. Invocation may add multiple entries since we support more than
      * one AlgorithmIdentifier for OCSP.
      * @param ocspPreProductionConfigCacheEntry cache entry to add
      */
@@ -54,7 +55,7 @@ public enum OcspDataConfigCache {
         final List<CertificateID> certIDs = ocspPreProductionConfigCacheEntry.getCertificateID();
         for (CertificateID certID : certIDs) {
             // CertificateID doesn't have a unique identifier. Construct one using issue hashes
-            staging.put(getCacheIdFromCertificateID(certID), ocspPreProductionConfigCacheEntry);            
+            staging.put(getCacheIdFromCertificateID(certID), ocspPreProductionConfigCacheEntry);
         }
     }
 
@@ -63,7 +64,7 @@ public enum OcspDataConfigCache {
         staging = new HashMap<>();
         isCaModeCompatibleStagingValue = false;
     }
-    
+
     /** Commits the staged cache to the live one. Invoke when staging cache is considered ready. */
     public void stagingCommit() {
         cache = staging;
@@ -79,12 +80,12 @@ public enum OcspDataConfigCache {
         final BigInteger issuerKeyHash = bigIntFromBytes(certID.getIssuerKeyHash());
         int result = issuerNameHash.hashCode() ^ issuerKeyHash.hashCode();
         if (log.isDebugEnabled()) {
-            log.debug("Using getIssuerNameHash " + issuerNameHash.toString(16) + " and getIssuerKeyHash "
-                    + issuerKeyHash.toString(16) + " to produce id " + result);
+            log.debug("Using getIssuerNameHash " + Hex.toHexString(certID.getIssuerNameHash()) + " and getIssuerKeyHash "
+                    + Hex.toHexString(certID.getIssuerKeyHash()) + " to produce cache ID " + result);
         }
         return result;
     }
-    
+
     private static BigInteger bigIntFromBytes(final byte[] bytes) {
         if (ArrayUtils.isEmpty(bytes)) {
             return BigInteger.valueOf(0);

@@ -21,7 +21,6 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
-import java.security.SecureRandom;
 import java.security.cert.Certificate;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -72,6 +71,7 @@ import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.certextensions.standard.CabForumOrganizationIdentifier;
 import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
@@ -91,6 +91,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.endentity.PSD2RoleOfPSPStatement;
 import org.cesecore.certificates.util.cert.SubjectDirAttrExtension;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.EABConfiguration;
 import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.PrintableStringNameStyle;
@@ -113,6 +114,7 @@ import org.ejbca.util.cert.OID;
 import com.keyfactor.ErrorCode;
 import com.keyfactor.util.CeSecoreNameStyle;
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.RandomHelper;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
@@ -139,6 +141,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     private static final String ENROLL_USERNAME_ALREADY_EXISTS = "enroll_username_already_exists";
     private static final String ENROLL_USERNAME_CONTAINS_INVALID_CHARACTERS = "enroll_username_contains_invalid_characters";
+    private static final String ENROLL_SAN_EMAIL_INVALID = "enroll_san_email_invalid";
     private static final String ENROLL_INVALID_CERTIFICATE_REQUEST = "enroll_invalid_certificate_request";
     private static final String ENROLL_SELECT_KA_NOCHOICE = "enroll_select_ka_nochoice";
 
@@ -248,6 +251,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private String nameConstraintPermitted;
     private String nameConstraintExcluded;
     private Boolean sendNotification;
+    private Integer selectedNumberOfRequests;
 
     private int numberOfOptionalSdnFieldsToShow = MIN_OPTIONAL_FIELDS_TO_SHOW;
     private int numberOfOptionalSanFieldsToShow = MIN_OPTIONAL_FIELDS_TO_SHOW;
@@ -850,12 +854,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     public boolean isRenderOtherCertificateData() {
         return getEndEntityProfile().getUseExtensiondata() || getEndEntityProfile().isPsd2QcStatementUsed() ||
-                isCabfOrganizationIdentifierRendered() || getEndEntityProfile().isIssuanceRevocationReasonUsed() ||
-                getEndEntityProfile().isValidityStartTimeUsed() || getEndEntityProfile().isValidityEndTimeUsed();
+                isCabfOrganizationIdentifierRendered() || getEndEntityProfile().isValidityStartTimeUsed() || getEndEntityProfile().isValidityEndTimeUsed();
     }
 
     public boolean isRenderOtherData() {
-        return getEndEntityProfile().isKeyRecoverableUsed();
+        return getEndEntityProfile().isKeyRecoverableUsed() || getEndEntityProfile().isAllowedRequestsUsed() || getEndEntityProfile().isSendNotificationUsed()
+                || getEndEntityProfile().isIssuanceRevocationReasonUsed();
     }
 
     public boolean isRenderCertExtensionDataField() {
@@ -868,6 +872,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     public boolean isRenderIssuanceRevocationReason() {
         return getEndEntityProfile().isIssuanceRevocationReasonUsed();
+    }
+    
+    public boolean isRenderNumberOfAllowedRequests() {
+        return getEndEntityProfile().isAllowedRequestsUsed();
     }
 
     public boolean isRenderCertValidityStartTime() {
@@ -1183,6 +1191,18 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (getSubjectDirectoryAttributes() != null) {
             extendedInformation.setSubjectDirectoryAttributes(getSubjectDirectoryAttributes().toString());
         }
+        
+        if (getEndEntityProfile().isAllowedRequestsUsed()) {
+            extendedInformation.setAllowedRequests(String.valueOf(getEndEntityProfile().getAllowedRequests()));            
+        }
+        
+        if (getEndEntityProfile().isAllowedRequestsUsed()) {
+            if (selectedNumberOfRequests == null) {
+                extendedInformation.setAllowedRequests(String.valueOf(getEndEntityProfile().getAllowedRequests()));
+            } else { 
+                extendedInformation.setAllowedRequests(String.valueOf(selectedNumberOfRequests));
+            }
+        }
 
         // Add extension data
         if (extensionData != null) {
@@ -1279,6 +1299,16 @@ public class EnrollMakeNewRequestBean implements Serializable {
         getSubjectAlternativeName().update();
         getSubjectDirectoryAttributes().update();
 
+
+        //Validate SAN Emails
+        List<String> sanEmails = DnComponents.getEmailFromDN(getSubjectAlternativeName().value);
+        for (String email : sanEmails) {
+            if (!StringTools.isValidEmail(email)) {
+                raLocaleBean.addMessageError(ENROLL_SAN_EMAIL_INVALID, email);
+                return new byte[0];
+            }
+        }
+
         // Workaround.
         // Corrections for SAN rfc822name and UPN (which might be a valid e-mail)
         for (EndEntityProfile.FieldInstance field : getSubjectAlternativeName().getOptionalFieldInstances()) {
@@ -1319,7 +1349,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
         // Fill end-entity information (Username and Password)
         final byte[] randomData = new byte[16];
-        final Random random = new SecureRandom();
+        final Random random = RandomHelper.getInstance(CesecoreConfiguration.getCaSerialNumberAlgorithm());
         random.nextBytes(randomData);
         if (StringUtils.isBlank(endEntityInformation.getUsername())) {
             String autousername = new String(Hex.encode(randomData));
@@ -1490,6 +1520,21 @@ public class EnrollMakeNewRequestBean implements Serializable {
      * @param exception  Exception
      */
     private void reportGenericError(final String messageKey, final String logMessage, final ErrorCode errorCode, final Exception exception) {
+        
+        // Show Validator exception
+        // EjbcaException -> CertificateCreateException -> ValidationException
+        if (exception.getCause()!=null && 
+                exception.getCause().getClass().equals(CertificateCreateException.class) &&
+                exception.getCause().getCause()!=null && 
+                exception.getCause().getCause().getClass().equals(
+                            org.cesecore.keys.validation.ValidationException.class)) {
+            String validationErrorOutMessage = exception.getCause().getCause().getMessage();
+            String[] validationErrorOutLines = validationErrorOutMessage.split("ERROUT:");
+            raLocaleBean.addMessageError(messageKey, getEndEntityInformation().getUsername(), 
+                    Arrays.asList(validationErrorOutLines));
+            return;
+        }
+        
         if (errorCode != null) {
             raLocaleBean.addMessageError(messageKey, getEndEntityInformation().getUsername(), raLocaleBean.getErrorCodeMessage(errorCode));
         } else {
@@ -2498,6 +2543,23 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public boolean isIssuanceRevocationReasonModifable() {
         return getEndEntityProfile().isIssuanceRevocationReasonModifiable();
     }
+    
+    public int getSelectedNumberOfRequests() {
+            return getEndEntityProfile().getAllowedRequests();
+    }
+
+    public void setSelectedNumberOfRequests(final int selectedNumberOfRequests) {
+        this.selectedNumberOfRequests = selectedNumberOfRequests;
+    }
+
+    public List<SelectItem> getAllowedRequests() {
+        final int allowedRequests = getEndEntityProfile().getAllowedRequests() + 1;
+        List<SelectItem> allowedRequestsList = new ArrayList<>();
+        for (int j = 1; j < allowedRequests; j++) {
+            allowedRequestsList.add(new SelectItem(String.valueOf(j), String.valueOf(j)));
+        }
+        return allowedRequestsList;
+    }    
 
     /**
      * @return validation regex for the CA/B Forum Organization Identifier field
@@ -3382,7 +3444,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         String password = getEndEntityInformation().getPassword();
         if (StringUtils.isEmpty(password)) {
             final byte[] randomData = new byte[16];
-            final Random random = new SecureRandom();
+            final Random random = RandomHelper.getInstance(CesecoreConfiguration.getCaSerialNumberAlgorithm());
             random.nextBytes(randomData);
             password = new String(Hex.encode(CertTools.generateSHA256Fingerprint(randomData)));
         }

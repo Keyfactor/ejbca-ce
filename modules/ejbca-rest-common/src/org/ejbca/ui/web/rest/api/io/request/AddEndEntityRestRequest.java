@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
+import java.math.BigInteger;
 import java.util.Date;
 import java.util.List;
 
@@ -58,6 +59,20 @@ public class AddEndEntityRestRequest {
     private String accountBindingId;
     @Schema(description = "Key recoverable or not", example = "false", required=false)
     private Boolean keyRecoverable;
+    @Schema(description = "End entity status property", required=false, example = "NEW",
+            allowableValues = "NEW, FAILED, INITIALIZED, INPROCESS, GENERATED, REVOKED, HISTORICAL, KEYRECOVERY, WAITINGFORADDAPPROVAL"
+    )
+    private String status;
+    @Schema(description = "Send notification or not", example = "false", required=false)
+    private Boolean sendNotification;
+    @Schema(description = "Valid start time", example = "ISO 8601 Date string, eg. '2023-06-15 14:07:09'", required=false)
+    private String startTime;
+    @Schema(description = "Valid end time", example = "ISO 8601 Date string, eg. '2023-06-15 14:07:09'", required=false)
+    private String endTime;
+    @Schema(description = "Certificate Serial Number", example = "1234567890", required=false)
+    private BigInteger certificateSerialNumber;
+    @Schema(description = "Card Number", example = "1234567890", required=false)
+    private String cardNumber;
     
     /** default constructor needed for serialization */
     public AddEndEntityRestRequest() {}
@@ -76,6 +91,12 @@ public class AddEndEntityRestRequest {
         private String token;
         private String accountBindingId;
         private Boolean keyRecoverable;
+        private String status;
+        private Boolean sendNotification;
+        private String startTime;
+        private String endTime;
+        private BigInteger certificateSerialNumber;
+        private String cardNumber;
 
         
         public Builder certificateProfileName(final String certificateProfileName) {
@@ -144,6 +165,37 @@ public class AddEndEntityRestRequest {
             return this;
         }
 
+        public Builder status(String status) {
+            this.status = status;
+            return this;
+        }
+
+        public Builder sendNotification(Boolean sendNotification) {
+            this.sendNotification = sendNotification;
+            return this;
+        }
+
+        public Builder startTime(String startTime) {
+            this.startTime = startTime;
+            return this;
+        }
+
+        public Builder endTime(String endTime) {
+            this.endTime = endTime;
+            return this;
+        }
+
+        public Builder certificateSerialNumber(BigInteger certificateSerialNumber) {
+            this.certificateSerialNumber = certificateSerialNumber;
+            return this;
+        }
+
+        public Builder cardNumber(String cardNumber) {
+            this.cardNumber = cardNumber;
+            return this;
+        }
+
+
         public AddEndEntityRestRequest build() {
             return new AddEndEntityRestRequest(this);
         }
@@ -163,6 +215,12 @@ public class AddEndEntityRestRequest {
         this.token = builder.token;
         this.accountBindingId = builder.accountBindingId;
         this.keyRecoverable = builder.keyRecoverable;
+        this.status = builder.status;
+        this.sendNotification = builder.sendNotification;
+        this.startTime = builder.startTime;
+        this.endTime = builder.endTime;
+        this.certificateSerialNumber = builder.certificateSerialNumber;
+        this.cardNumber = builder.cardNumber;
     }
 
     /**
@@ -201,7 +259,16 @@ public class AddEndEntityRestRequest {
             extendedInfo.setCustomData(ExtendedInformation.CA_NAME, addEndEntityRestRequest.getCaName());
             extendedInfo.setCustomData(ExtendedInformation.CERTIFICATE_PROFILE_NAME, addEndEntityRestRequest.getCertificateProfileName());
             extendedInfo.setCustomData(ExtendedInformation.END_ENTITY_PROFILE_NAME, addEndEntityRestRequest.getEndEntityProfileName());
-            
+            if (addEndEntityRestRequest.getStartTime() != null) {
+                extendedInfo.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, addEndEntityRestRequest.getStartTime());
+            }
+            if (addEndEntityRestRequest.getEndTime() != null) {
+                extendedInfo.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, addEndEntityRestRequest.getEndTime());
+            }
+            if (addEndEntityRestRequest.getCertificateSerialNumber() != null) {
+                extendedInfo.setCertificateSerialNumber(addEndEntityRestRequest.getCertificateSerialNumber());
+            }
+
             final Date now = new Date();
             final int tokenType = TokenType.resolveEndEntityTokenByName(addEndEntityRestRequest.getToken()).getTokenValue();
             final EndEntityInformation eeInformation = new EndEntityInformation(
@@ -219,6 +286,12 @@ public class AddEndEntityRestRequest {
                     tokenType,
                     extendedInfo);
             eeInformation.setPassword(addEndEntityRestRequest.getPassword());
+            if (addEndEntityRestRequest.getCardNumber() != null) {
+                eeInformation.setCardNumber(addEndEntityRestRequest.getCardNumber());
+            }
+            if (addEndEntityRestRequest.getSendNotification() != null) {
+                eeInformation.setSendNotification(addEndEntityRestRequest.getSendNotification());
+            }
             if (addEndEntityRestRequest.getKeyRecoverable() != null) {
                 eeInformation.setKeyRecoverable(addEndEntityRestRequest.getKeyRecoverable());
             }
@@ -328,79 +401,54 @@ public class AddEndEntityRestRequest {
 
     public void setKeyRecoverable(boolean keyRecoverable) {
         this.keyRecoverable = keyRecoverable;
-    }   
-
-	public enum EndEntityStatus {
-    	NEW(EndEntityConstants.STATUS_NEW),
-    	FAILED(EndEntityConstants.STATUS_FAILED),
-    	INITIALIZED(EndEntityConstants.STATUS_INITIALIZED),
-    	INPROCESS(EndEntityConstants.STATUS_INPROCESS),
-    	GENERATED(EndEntityConstants.STATUS_GENERATED),
-    	REVOKED(EndEntityConstants.STATUS_REVOKED),
-    	HISTORICAL(EndEntityConstants.STATUS_HISTORICAL),
-    	KEYRECOVERY(EndEntityConstants.STATUS_KEYRECOVERY),
-    	WAITINGFORADDAPPROVAL(EndEntityConstants.STATUS_WAITINGFORADDAPPROVAL);
-
-        private final int statusValue;
-
-        EndEntityStatus(final int statusValue) {
-            this.statusValue = statusValue;
-        }
-
-        public int getStatusValue() {
-            return statusValue;
-        }
-
-        /**
-         * Resolves the EndEntityStatus using its name or returns null.
-         *
-         * @param name status name.
-         *
-         * @return EndEntityStatus using its name or null.
-         */
-        public static EndEntityStatus resolveEndEntityStatusByName(final String name) {
-            for (EndEntityStatus endEntityStatus : values()) {
-                if (endEntityStatus.name().equalsIgnoreCase(name)) {
-                    return endEntityStatus;
-                }
-            }
-            return null;
-        }
-
     }
-	
-	public enum TokenType {
-    	USERGENERATED(EndEntityConstants.TOKEN_USERGEN),
-    	P12(EndEntityConstants.TOKEN_SOFT_P12),
-    	JKS(EndEntityConstants.TOKEN_SOFT_JKS),
-    	PEM(EndEntityConstants.TOKEN_SOFT_PEM);
 
-        private final int tokenValue;
+    public String getStatus() {
+        return status;
+    }
 
-        TokenType(final int tokenValue) {
-            this.tokenValue = tokenValue;
-        }
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
-        public int getTokenValue() {
-            return tokenValue;
-        }
+    public Boolean getSendNotification() {
+        return sendNotification;
+    }
 
-        /**
-         * Resolves the TokenType using its name or returns null.
-         *
-         * @param name status name.
-         *
-         * @return TokenType using its name or null.
-         */
-        public static TokenType resolveEndEntityTokenByName(final String name) {
-            for (TokenType tokenType : values()) {
-                if (tokenType.name().equalsIgnoreCase(name)) {
-                    return tokenType;
-                }
-            }
-            return null;
-        }
+    public void setSendNotification(boolean sendNotification) {
+        this.sendNotification = sendNotification;
+    }
 
+    public String getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(String startTime) {
+        this.startTime = startTime;
+    }
+
+    public String getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(String endTime) {
+        this.endTime = endTime;
+    }
+
+    public BigInteger getCertificateSerialNumber() {
+        return certificateSerialNumber;
+    }
+
+    public void setCertificateSerialNumber(BigInteger certificateSerialNumber) {
+        this.certificateSerialNumber = certificateSerialNumber;
+    }
+
+    public String getCardNumber() {
+        return cardNumber;
+    }
+
+    public void setCardNumber(String cardNumber) {
+        this.cardNumber = cardNumber;
     }
 
 }
