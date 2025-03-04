@@ -120,7 +120,7 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 					getPrintStream().println("Generating a new request with base filename: "+basefilename);
 					// Generate keys for the request
 					String keytype = "RSA";
-					if (signatureAlg.contains("ECDSA")) {
+					if (signatureAlg.contains("EC")) {
 						keytype = "ECDSA";
 					}
 					KeyPair keyPair = KeyTools.genKeys(keySpec, keytype);

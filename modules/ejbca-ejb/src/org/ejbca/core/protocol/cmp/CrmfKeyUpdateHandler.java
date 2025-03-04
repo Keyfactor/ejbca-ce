@@ -169,7 +169,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                                     "' was verified successfully");
                         }
                     }
-                    oldCert = certStoreSession.findLatestX509CertificateBySubject(crmfreq.getSubjectDN());
+                    oldCert = certStoreSession.findLatestX509CertificateBySubjectforEndEntity(crmfreq.getSubjectDN());
                     
                     CertReqMessages kur = (CertReqMessages) crmfreq.getPKIMessage().getBody().getContent();
                     CertReqMsg certmsg;
