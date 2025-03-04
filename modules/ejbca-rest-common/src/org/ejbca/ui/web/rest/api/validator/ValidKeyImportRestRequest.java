@@ -24,12 +24,12 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import com.keyfactor.util.Base64;
 
 @Target({TYPE, FIELD, PARAMETER})
 @Retention(RUNTIME)
@@ -89,8 +89,9 @@ public @interface ValidKeyImportRestRequest {
                     return false;
                 }
 
-                final Pattern pattern = Pattern.compile("^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$");
-                if (!pattern.matcher(keystore.getKeystore()).matches()) {
+                try {
+                    Base64.decode(keystore.getKeystore().getBytes());
+                } catch (Exception e) {
                     ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidKeyImportRestRequest.invalid.keystore.keystore.invalid}");
                     return false;
                 }
