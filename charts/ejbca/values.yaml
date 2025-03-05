@@ -120,8 +120,8 @@ hsm:
   luna:
     enabled: false
     server_name: "192.168.0.200"
-    CKLOG2_ENABLED: 0
-    PROTECTED_AUTHENTICATION_PATH_FLAG_STATUS: 0
+    CKLOG2_ENABLED: "0"
+    PROTECTED_AUTHENTICATION_PATH_FLAG_STATUS: "0"
     credentials:
       certificates:
         configMap: "hsm-luna-configmap"

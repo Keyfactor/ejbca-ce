@@ -56,9 +56,9 @@ Enable individual sidecars and volumes: Luna
     - name: SERVER_NAME
       value: {{ .Values.hsm.luna.server_name }}
     - name: CKLOG2_ENABLED
-      value: {{ .Values.hsm.luna.CKLOG2_ENABLED }}
+      value: {{ quote .Values.hsm.luna.CKLOG2_ENABLED }}
     - name: PROTECTED_AUTHENTICATION_PATH_FLAG_STATUS
-      value: {{ .Values.hsm.luna.PROTECTED_AUTHENTICATION_PATH_FLAG_STATUS }}
+      value: {{ quote .Values.hsm.luna.PROTECTED_AUTHENTICATION_PATH_FLAG_STATUS }}
   volumeMounts:
     - name: hsm-luna-configmap-servercert
       mountPath: /opt/luna/certs-server/server.pem
