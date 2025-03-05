@@ -145,6 +145,11 @@ hsm:
     # RFS_IP='192.168.34.101'
     # RFS_PORT='9005'
     # RFS_MODE='readonly'
+  awsCloudHsm:
+    enabled: false
+    hsmIpAddress: 
+    logLevel: "INFO"
+    customerCACrtConfigMap:
 
 replicaCount: 1
 # https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy

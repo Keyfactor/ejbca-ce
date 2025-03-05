@@ -313,6 +313,9 @@ spec:
         {{- if .Values.hsm.nshield.enabled }}
           {{ include "ejbca.hsm.sidecar.nshield" . | nindent 8 }}
         {{- end }}
+        {{- if .Values.hsm.awsCloudHsm.enabled }}
+          {{ include "ejbca.hsm.sidecar.awsCloudHsm" . | nindent 8 }}
+        {{- end }}
         {{- if .Values.ejbca.sidecarContainers }}
           {{- toYaml .Values.ejbca.sidecarContainers | nindent 8 }}
         {{- end }}
@@ -410,6 +413,9 @@ spec:
         {{- end }}
         {{- if .Values.hsm.utimaco.enabled }}
           {{ include "ejbca.hsm.volume.utimaco" . | nindent 8 }}
+        {{- end }}
+        {{- if .Values.hsm.awsCloudHsm.enabled }}
+          {{ include "ejbca.hsm.volume.awsCloudHsm" . | nindent 8 }}
         {{- end }}
         {{- if .Values.ejbca.volumes }}
           {{- toYaml .Values.ejbca.volumes | nindent 8 }}

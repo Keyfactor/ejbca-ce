@@ -12,6 +12,8 @@ Define HSM container image with versions
 {{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-utimaco/images/hsm-driver-utimaco:0.3.0" }}
 {{- else if .Values.hsm.nshield.enabled }}
 {{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-nshield/images/hsm-driver-nshield:0.4.0" }}
+{{- else if .Values.hsm.awsCloudHsm.enabled }}
+{{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-cloudhsm5/images/hsm-driver-cloudhsm5:0.2.0" }}
 {{- end }}
 {{- end -}}
 
@@ -124,4 +126,33 @@ Enable individual sidecars and volumes: Nshield
     - secretRef:
         name: nshield-secret
 {{- end }}
+{{- end -}}
+
+{{/*
+Enable individual sidecars and volumes: AWS CloudHSM
+*/}}
+{{- define "ejbca.hsm.sidecar.awsCloudHsm" -}}
+{{- if .Values.hsm.awsCloudHsm.enabled }}
+- name: hsm
+  image: {{ include "ejbca.hsmImage" . }}
+  imagePullPolicy: {{ .Values.hsm.imagePullPolicy }}
+  env:
+    - name: CLOUDHSM_IP_ADDRESS
+      value: {{ .Values.hsm.awsCloudHsm.hsmIpAddress }}
+    - name: CLOUDHSM_LOG_LEVEL
+      value: {{ .Values.hsm.awsCloudHsm.logLevel }}
+  volumeMounts:
+    - name: customerCACrt
+      mountPath: "/opt/configmap/customerCA.crt"
+      subPath: "customerCA.crt"
+{{- end }}
+{{- end -}}
+
+{{- define "ejbca.hsm.volume.awsCloudHsm" -}}
+- name: customerCACrt
+  configMap:
+    name: {{ .Values.hsm.awsCloudHsm.customerCACrtConfigMap }}
+    items:
+      - key: "customerCA.crt"
+        path: "customerCA.crt"
 {{- end -}}
