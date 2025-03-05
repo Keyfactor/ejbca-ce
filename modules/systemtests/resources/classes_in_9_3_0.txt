@@ -342,7 +342,6 @@ modules/cesecore-common/src/org/cesecore/keybind/impl/OcspKeyBinding.java
 modules/cesecore-common/src/org/cesecore/keys/keyimport/KeyImportFailure.java
 modules/cesecore-common/src/org/cesecore/keys/keyimport/KeyImportKeystoreData.java
 modules/cesecore-common/src/org/cesecore/keys/keyimport/KeyImportRequestData.java
-modules/cesecore-common/src/org/cesecore/keys/keyimport/KeyImportResponseData.java
 modules/cesecore-common/src/org/cesecore/keys/token/CryptoTokenClassNotFoundException.java
 modules/cesecore-common/src/org/cesecore/keys/token/CryptoTokenIdInUseException.java
 modules/cesecore-common/src/org/cesecore/keys/token/CryptoTokenInfo.java
@@ -1068,7 +1067,6 @@ modules/ejbca-ejb-interface/src/org/ejbca/core/model/era/RaEndEntitySearchReques
 modules/ejbca-ejb-interface/src/org/ejbca/core/model/era/RaEndEntitySearchRequestV2.java
 modules/ejbca-ejb-interface/src/org/ejbca/core/model/era/RaEndEntitySearchResponse.java
 modules/ejbca-ejb-interface/src/org/ejbca/core/model/era/RaEndEntitySearchResponseV2.java
-modules/ejbca-ejb-interface/src/org/ejbca/core/model/era/RaKeyImportResponseV2.java
 modules/ejbca-ejb-interface/src/org/ejbca/core/model/era/RaMasterApi.java
 modules/ejbca-ejb-interface/src/org/ejbca/core/model/era/RaMasterApiProxyBeanLocal.java
 modules/ejbca-ejb-interface/src/org/ejbca/core/model/era/RaMasterApiSessionLocal.java

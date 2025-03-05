@@ -47,6 +47,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.keyimport.KeyImportException;
 
+import java.io.IOException;
 import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.PrivateKey;
@@ -145,8 +146,17 @@ public class ProcessKeystoreSessionBean implements ProcessKeystoreSessionLocal, 
 
                 persistKeyRecoveryData(authenticationToken, userInfo, caInfo, userCertificate, p12PrivateKey, caCert);
             }
+        } catch (IOException e) {
+            if (log.isDebugEnabled()){
+                log.error(e);
+            }
+            throw new KeyImportException("Invalid keystore file.");
         } catch (Exception e) {
-            throw new KeyImportException(e.getMessage());
+            final String message = StringUtils.isBlank(e.getMessage()) ? "Unexpected key import error." : e.getMessage();
+            if (log.isDebugEnabled()){
+                log.error(e);
+            }
+            throw new KeyImportException(message);
         }
     }
 
@@ -166,7 +176,7 @@ public class ProcessKeystoreSessionBean implements ProcessKeystoreSessionLocal, 
                     CertificateConstants.CERTTYPE_ENDENTITY, certificateProfileId, endEntityProfileId, crlPartitionIndex, CERTIFICATE_TAG,
                     new Date().getTime(), null, issuerDn);
         } else {
-            throw new KeyImportException("Certificate can't be added since it already exists in the database");
+            throw new KeyImportException("Key import failed because the certificate already exists in the database.");
         }
     }
 

@@ -87,6 +87,7 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.keys.keyimport.KeyImportFailure;
 import org.cesecore.keys.keyimport.KeyImportRequestData;
 import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.Role;
@@ -4062,8 +4063,8 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public RaKeyImportResponseV2 keyImportV2(final AuthenticationToken authenticationToken, final KeyImportRequestData keyImportRequestData)
-            throws AuthorizationDeniedException, EjbcaException, CADoesntExistsException {
+    public List<KeyImportFailure> keyImportV2(final AuthenticationToken authenticationToken, final KeyImportRequestData keyImportRequestData)
+            throws AuthorizationDeniedException, EjbcaException, CADoesntExistsException, CertificateProfileDoesNotExistException {
         for (RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 20) {
                 try {
