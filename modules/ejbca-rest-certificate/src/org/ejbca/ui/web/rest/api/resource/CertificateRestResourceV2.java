@@ -15,6 +15,7 @@ package org.ejbca.ui.web.rest.api.resource;
 import java.math.BigInteger;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
+import java.util.List;
 import java.util.Map;
 
 import jakarta.ejb.EJB;
@@ -30,6 +31,8 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
+import org.cesecore.keys.keyimport.KeyImportFailure;
 import org.cesecore.keys.keyimport.KeyImportRequestData;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
@@ -37,8 +40,9 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.era.RaCertificateProfileResponseV2;
 import org.ejbca.core.model.era.RaCertificateSearchRequestV2;
 import org.ejbca.core.model.era.RaCertificateSearchResponseV2;
-import org.ejbca.core.model.era.RaKeyImportResponseV2;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.core.model.ra.NotFoundException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.request.KeyImportRestRequestV2;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequestV2;
@@ -183,18 +187,31 @@ public class CertificateRestResourceV2 extends BaseRestResource {
      * @return
      * @throws AuthorizationDeniedException
      * @throws RestException
-     * @throws EjbcaException
-     * @throws CADoesntExistsException
      */
     public Response importKeystores(final HttpServletRequest requestContext, final String issuerDN, @Valid final KeyImportRestRequestV2 request)
-            throws AuthorizationDeniedException, RestException, EjbcaException, CADoesntExistsException {
+            throws AuthorizationDeniedException, RestException {
+        if(request == null) {
+            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Key import request cannot be null.");
+        }
 
         final AuthenticationToken authenticationToken = getAdmin(requestContext, true);
         KeyImportRequestData requestData = KeyImportRestRequestV2.converter().toRequestData(request, issuerDN);
-        RaKeyImportResponseV2 raResponse = raMasterApi.keyImportV2(authenticationToken, requestData);
-        final KeyImportRestResponseV2 response = new KeyImportRestResponseV2().convert().toKeyImportRestResponse(raResponse);
 
-        return Response.ok(response).build();
+        try {
+            final List<KeyImportFailure> importFailures = raMasterApi.keyImportV2(authenticationToken, requestData);
+            final KeyImportRestResponseV2 response = new KeyImportRestResponseV2().convert().toKeyImportRestResponse(importFailures);
+
+            // 207: Multi-status, partial success response when one or more import failures happen.
+            final int status = importFailures.isEmpty() ? Response.Status.OK.getStatusCode() : 207;
+
+            return Response.status(status).entity(response).build();
+        } catch (CADoesntExistsException | CertificateProfileDoesNotExistException | EndEntityProfileNotFoundException | NotFoundException e) {
+            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), e.getMessage());
+        } catch (EjbcaException e) {
+            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage());
+        } catch (Exception e) {
+            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "An unexpected error happened: " + e.getMessage());
+        }
     }
     
     /**

@@ -45,6 +45,7 @@ import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.configuration.ConfigurationBase;
+import org.cesecore.keys.keyimport.KeyImportFailure;
 import org.cesecore.keys.keyimport.KeyImportRequestData;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
@@ -1754,12 +1755,12 @@ public interface RaMasterApi {
             throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException;
 
     /**
-     * @param authenticationToken The authentication token
+     * @param authenticationToken  The authentication token
      * @param keyImportRequestData All data required to perform key import of all the supplied keys
-     * @return A response consisting of all the failed imports along with failure reasons
+     * @return A list of all the failed imports along with failure reasons
      */
-    RaKeyImportResponseV2 keyImportV2(AuthenticationToken authenticationToken, KeyImportRequestData keyImportRequestData)
-            throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException;
+    List<KeyImportFailure> keyImportV2(AuthenticationToken authenticationToken, KeyImportRequestData keyImportRequestData)
+            throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException, CertificateProfileDoesNotExistException;
 
     /**
      * Return total count of certificates in database
