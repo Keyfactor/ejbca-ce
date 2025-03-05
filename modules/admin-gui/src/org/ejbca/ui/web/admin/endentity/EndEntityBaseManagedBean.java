@@ -46,6 +46,8 @@ public class EndEntityBaseManagedBean extends BaseManagedBean {
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public void setExtensionData(final String extensionData) {
+        System.out.println("*** in setExtensionData");
+      
         Properties properties = new Properties();
         try {
             properties.load(new StringReader(extensionData));
@@ -80,6 +82,7 @@ public class EndEntityBaseManagedBean extends BaseManagedBean {
 
         // Updated ExtendedInformation to use the new data
         this.userData.getExtendedInformation().loadData(data);
+        System.out.println("*** leaving setExtensionData");
     }
 
     /**
@@ -87,6 +90,8 @@ public class EndEntityBaseManagedBean extends BaseManagedBean {
      * formatted as in a Properties file.
      */
     public String getExtensionData() {
+        System.out.println("*** in getExtensionData");
+
         final String result;
         if (this.userData.getExtendedInformation() == null) {
             result = "";
@@ -121,6 +126,7 @@ public class EndEntityBaseManagedBean extends BaseManagedBean {
 
             result = firstLineSeparator >= 0 ? buff.substring(firstLineSeparator + lineSeparator.length()) : buff.toString();
         }
+        System.out.println("*** leaving getExtensionData");
         return result;
     }
 }
