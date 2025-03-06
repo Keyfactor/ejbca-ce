@@ -131,7 +131,7 @@ hsm:
         # mandatory key for file mount: "dockerlunaclientKey.pem"      
   utimaco:
     enabled: false
-    hsmConfigurationSecret: ejbca-utimaco-configmap
+    hsmConfigurationConfigMap: ejbca-utimaco-configmap
       # mandatory keys for file mount: "cs_pkcs11_R3.cfg"
   nshield:
     enabled: false
