@@ -30,7 +30,6 @@ import org.cesecore.internal.InternalResources;
  * If fetched the resource files from the src/intresources directory and is
  * included in the file ejbca-properties.jar
  * 
- * @version $Id$
  */
 public class InternalEjbcaResources extends InternalResources {
 
@@ -47,13 +46,9 @@ public class InternalEjbcaResources extends InternalResources {
      */
     private static final long serialVersionUID = -1001L;
 
-    public static final String PREFEREDINTERNALRESOURCES = CesecoreConfiguration.getInternalResourcesPreferredLanguage();
-    public static final String SECONDARYINTERNALRESOURCES = CesecoreConfiguration.getInternalResourcesSecondaryLanguage();
-
     protected static InternalEjbcaResources instance = null;
 
     protected Properties primaryEjbcaResource = new Properties();
-    protected Properties secondaryEjbcaResource = new Properties();
 
     private static final String RESOURCE_PATH = "/intresources";
     private static final String RESOURCE_NAME = "/ejbcaresources.";
@@ -78,11 +73,9 @@ public class InternalEjbcaResources extends InternalResources {
     }
 
     private void setupResources(String resLocation) {
-        final String primaryLanguage = PREFEREDINTERNALRESOURCES.toLowerCase(Locale.ENGLISH);
-        final String secondaryLanguage = SECONDARYINTERNALRESOURCES.toLowerCase(Locale.ENGLISH);
+        final String primaryLanguage = "en";
         // The test flag is defined when called from test code (junit)
         InputStream primaryStream = null;
-        InputStream secondaryStream = null;
         try {
         	// We first check for presence of the file in the classpath, if it does not exist we also allow to have the
         	// the file in the filesystem
@@ -94,25 +87,13 @@ public class InternalEjbcaResources extends InternalResources {
                     log.error("Localization files not found in InternalEjbcaResources: " +e.getMessage());
                 }
             }
-            secondaryStream = InternalEjbcaResources.class.getResourceAsStream(resLocation + secondaryLanguage + ".properties");
-            if (secondaryStream == null) {
-            	try {
-            		secondaryStream = new FileInputStream(resLocation + secondaryLanguage + ".properties");
-                } catch (FileNotFoundException e) {
-                    log.error("Localization files not found in InternalEjbcaResources: " +  e.getMessage());
-                }
-            }
+            
 
             try {
                 if (primaryStream != null) {
                     primaryEjbcaResource.load(primaryStream);
                 } else {
                     log.error("primaryResourse == null");
-                }
-                if (secondaryStream != null) {
-                    secondaryEjbcaResource.load(secondaryStream);
-                } else {
-                    log.error("secondaryResource == null");
                 }
             } catch (IOException e) {
                 log.error("Error reading internal resourcefile", e);
@@ -121,9 +102,6 @@ public class InternalEjbcaResources extends InternalResources {
             try {
                 if (primaryStream != null) {
                     primaryStream.close();
-                }
-                if (secondaryStream != null) {
-                    secondaryStream.close();
                 }
             } catch (IOException e) {
                 log.error("Error closing internal resources language streams: ", e);
@@ -149,9 +127,7 @@ public class InternalEjbcaResources extends InternalResources {
         final StringBuilder sb = new StringBuilder();
         if (primaryEjbcaResource.containsKey(key)) {
             sb.append(primaryEjbcaResource.getProperty(key));
-        } else if (secondaryEjbcaResource.containsKey(key)) {
-            sb.append(secondaryEjbcaResource.getProperty(key));
-        }
+        } 
         return getLocalizedMessageInternal(sb, key, params);
     }
 }
