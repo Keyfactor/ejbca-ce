@@ -13,7 +13,11 @@
 
 package org.ejbca.ui.web;
 
-import jakarta.servlet.*;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
 import jakarta.servlet.annotation.WebFilter;
 
 import java.io.IOException;
@@ -22,8 +26,8 @@ import java.io.IOException;
 public class CharEncodingFilter implements Filter {
 
 	@Override
-	public void doFilter(ServletRequest request, ServletResponse response,
-			FilterChain chain) throws ServletException, IOException {
+	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+			throws ServletException, IOException {
 		request.setCharacterEncoding("UTF-8");
 		chain.doFilter(request, response);
 	}
