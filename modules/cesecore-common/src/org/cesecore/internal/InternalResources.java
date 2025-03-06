@@ -18,21 +18,18 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.util.Locale;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
-import org.cesecore.config.CesecoreConfiguration;
 
 /**
- * Class managing internal localization of texts such as notification messages
- * and log comments.
+ * Class managing retrieving 
  * 
  * If fetched the resource files from the src/intresources directory and is
  * included in the file cesecore-ejb.jar
  * 
- * @version $Id$
  */
+
 public class InternalResources implements Serializable {
 
     private static final Logger log = Logger.getLogger(InternalResources.class);
@@ -51,11 +48,10 @@ public class InternalResources implements Serializable {
     protected static InternalResources instance = null;
 
     protected Properties primaryResource = new Properties();
-    protected Properties secondaryResource = new Properties();
     private static String[] placeHolders = null;
 
     private static final String RESOURCE_PATH = "/intresources";
-    private static final String RESOURCE_NAME = "/intresources.";
+    private static final String RESOURCE_NAME = "/intresources.en.properties";
     private static final String RESOURCE_LOCATION = RESOURCE_PATH+RESOURCE_NAME;
 
     /**
@@ -70,40 +66,25 @@ public class InternalResources implements Serializable {
     }
 
     private void setupResources(String resLocation) {
-        final String primaryLanguage = CesecoreConfiguration.getInternalResourcesPreferredLanguage().toLowerCase(Locale.ENGLISH);
-        final String secondaryLanguage = CesecoreConfiguration.getInternalResourcesSecondaryLanguage().toLowerCase(Locale.ENGLISH);
         // The test flag is defined when called from test code (junit)
         InputStream primaryStream = null;
-        InputStream secondaryStream = null;
         try {
 
-            primaryStream = InternalResources.class.getResourceAsStream(resLocation + primaryLanguage + ".properties");
+            primaryStream = InternalResources.class.getResourceAsStream(resLocation + RESOURCE_NAME);
             if (primaryStream == null) {
             	try {
-            		primaryStream = new FileInputStream(resLocation + primaryLanguage + ".properties");
+            		primaryStream = new FileInputStream(resLocation + RESOURCE_NAME);
                 } catch (FileNotFoundException e) {
                     log.error("Localization files not found: "+e.getMessage());
                 }
             }
-            secondaryStream = InternalResources.class.getResourceAsStream(resLocation + secondaryLanguage + ".properties");
-            if (secondaryStream == null) {
-            	try {
-            		secondaryStream = new FileInputStream(resLocation + secondaryLanguage + ".properties");
-                } catch (FileNotFoundException e) {
-                    log.error("Localization files not found: "+e.getMessage());
-                }
-            }
+           
 
             try {
                 if (primaryStream != null) {
                     primaryResource.load(primaryStream);
                 } else {
                     log.warn("primaryResourse == null");
-                }
-                if (secondaryStream != null) {
-                    secondaryResource.load(secondaryStream);
-                } else {
-                    log.warn("secondaryResource == null");
                 }
             } catch (IOException e) {
                 log.error("Error reading internal resourcefile", e);
@@ -112,9 +93,6 @@ public class InternalResources implements Serializable {
             try {
                 if (primaryStream != null) {
                     primaryStream.close();
-                }
-                if (secondaryStream != null) {
-                    secondaryStream.close();
                 }
             } catch (IOException e) {
                 log.error("Error closing internal resources language streams: ", e);
@@ -185,8 +163,6 @@ public class InternalResources implements Serializable {
         if (sb.length()==0) {
             if (primaryResource.containsKey(key)) {
                 sb.append(primaryResource.getProperty(key));
-            } else if (secondaryResource.containsKey(key)) {
-                sb.append(secondaryResource.getProperty(key));
             } else {
                 sb.append(key);
             }

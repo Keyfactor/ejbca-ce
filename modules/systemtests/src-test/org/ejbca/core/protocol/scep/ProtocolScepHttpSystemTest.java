@@ -1040,21 +1040,13 @@ public class ProtocolScepHttpSystemTest extends ScepTestBase {
         }
 
         private void setupResources() {
-            String primaryLanguage = PREFEREDINTERNALRESOURCES.toLowerCase();
-            String secondaryLanguage = SECONDARYINTERNALRESOURCES.toLowerCase();
 
             InputStream primaryStream = null;
-            InputStream secondaryStream = null;
-
-            primaryLanguage = "en";
-            secondaryLanguage = "se";
             try {
-                primaryStream = new FileInputStream("src/intresources/intresources." + primaryLanguage + ".properties");
-                secondaryStream = new FileInputStream("src/intresources/intresources." + secondaryLanguage + ".properties");
+                primaryStream = new FileInputStream("src/intresources/intresources.en.properties");
 
                 try {
                     primaryEjbcaResource.load(primaryStream);
-                    secondaryEjbcaResource.load(secondaryStream);
                 } catch (IOException e) {
                     log.error("Error reading internal resourcefile", e);
                 }
@@ -1066,9 +1058,6 @@ public class ProtocolScepHttpSystemTest extends ScepTestBase {
                 try {
                     if (primaryStream != null) {
                         primaryStream.close();
-                    }
-                    if (secondaryStream != null) {
-                        secondaryStream.close();
                     }
                 } catch (IOException e) {
                     log.error("Error closing internal resources language streams: ", e);
