@@ -30,7 +30,7 @@
     <p:tabView id="tabs" dynamic="true" activeIndex="#{ocspResponderMBean.lastActiveTab}">
         <p:ajax event="tabChange" listener="#{ocspResponderMBean.onTabChange}"/>
 
-        <p:tab title="OCSP Responders" >
+        <p:tab title="#{web.text.INTERNALKEYBINDING_TYPE_OCSP_RESPONDERS}" >
 
 		<h:outputText value="" rendered="#{ocspResponderMBean.pageLoadResetTrigger}"/>
 		<h1>
@@ -143,7 +143,7 @@
 			</h:panelGrid>
 		</h:form>
 		</p:tab>
-		<p:tab title="OCSP Configuration" >
+		<p:tab title="#{web.text.INTERNALKEYBINDING_TYPE_OCSP_CONFIGURATION}" >
 		
 		<h:form id="defaultResponder">
 			<h3>
