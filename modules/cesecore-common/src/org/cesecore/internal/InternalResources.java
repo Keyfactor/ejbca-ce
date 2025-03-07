@@ -23,13 +23,14 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 
 /**
- * Class managing retrieving 
+ * Class managing internal localization of texts such as notification messages
+ * and log comments.
  * 
  * If fetched the resource files from the src/intresources directory and is
  * included in the file cesecore-ejb.jar
  * 
+ * @version $Id$
  */
-
 public class InternalResources implements Serializable {
 
     private static final Logger log = Logger.getLogger(InternalResources.class);
@@ -48,10 +49,11 @@ public class InternalResources implements Serializable {
     protected static InternalResources instance = null;
 
     protected Properties primaryResource = new Properties();
+    protected Properties secondaryResource = new Properties();
     private static String[] placeHolders = null;
 
     private static final String RESOURCE_PATH = "/intresources";
-    private static final String RESOURCE_NAME = "/intresources.en.properties";
+    private static final String RESOURCE_NAME = "/intresources.";
     private static final String RESOURCE_LOCATION = RESOURCE_PATH+RESOURCE_NAME;
 
     /**
@@ -66,19 +68,19 @@ public class InternalResources implements Serializable {
     }
 
     private void setupResources(String resLocation) {
+        final String primaryLanguage = "en";
         // The test flag is defined when called from test code (junit)
         InputStream primaryStream = null;
         try {
 
-            primaryStream = InternalResources.class.getResourceAsStream(resLocation + RESOURCE_NAME);
+            primaryStream = InternalResources.class.getResourceAsStream(resLocation + primaryLanguage + ".properties");
             if (primaryStream == null) {
             	try {
-            		primaryStream = new FileInputStream(resLocation + RESOURCE_NAME);
+            		primaryStream = new FileInputStream(resLocation + primaryLanguage + ".properties");
                 } catch (FileNotFoundException e) {
                     log.error("Localization files not found: "+e.getMessage());
                 }
             }
-           
 
             try {
                 if (primaryStream != null) {
@@ -163,6 +165,8 @@ public class InternalResources implements Serializable {
         if (sb.length()==0) {
             if (primaryResource.containsKey(key)) {
                 sb.append(primaryResource.getProperty(key));
+            } else if (secondaryResource.containsKey(key)) {
+                sb.append(secondaryResource.getProperty(key));
             } else {
                 sb.append(key);
             }
