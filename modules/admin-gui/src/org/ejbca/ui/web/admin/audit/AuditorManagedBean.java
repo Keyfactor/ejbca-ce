@@ -98,7 +98,7 @@ public class AuditorManagedBean extends BaseManagedBean implements Serializable 
 	private final List<SelectItem> columns = new ArrayList<>();
 	private final List<SelectItem> sortOrders = new ArrayList<>();
 	private List<? extends AuditLogEntry> results;
-	private Map<Object, String> caIdToNameMap;
+	private Map<String, String> caIdToNameMap;
 
 	private Map<String, String> columnNameMap = new HashMap<>();
 	private final List<SelectItem> eventStatusOptions = new ArrayList<>();
@@ -314,7 +314,7 @@ public class AuditorManagedBean extends BaseManagedBean implements Serializable 
 			setConditionToAdd(new AuditSearchCondition(conditionColumn, conditionsOptions, null, Condition.EQUALS, ""));
 		} else if (AuditLogEntry.FIELD_CUSTOM_ID.equals(conditionColumn)) {
 			List<SelectItem> caIds = new ArrayList<>();
-			for (Entry<Object,String> entry : caIdToNameMap.entrySet()) {
+			for (Entry<String,String> entry : caIdToNameMap.entrySet()) {
 				caIds.add(new SelectItem(entry.getKey(), entry.getValue()));
 			}
 			setConditionToAdd(new AuditSearchCondition(conditionColumn, conditionsOptionsExact, caIds));
@@ -462,13 +462,13 @@ public class AuditorManagedBean extends BaseManagedBean implements Serializable 
         return new EjbLocalHelper().getEjbcaAuditorSession().selectAuditLog(token, device, firstResult, maxResults, whereClause.toString(), orderClause, parameters);
     }
 	
-	public Map<Object, String> getCaIdToName() {
+	public Map<String, String> getCaIdToName() {
 		return caIdToNameMap;
 	}
 
 	private void updateCaIdToNameMap() {
 		final Map<Integer, String> map = getCaSession().getCAIdToNameMap();
-		final Map<Object, String> ret = new HashMap<>();
+		final Map<String, String> ret = new HashMap<>();
 		final AuthenticationToken authenticationToken = EjbcaJSFHelper.getBean().getEjbcaWebBean().getAdminObject();
 		for (final Entry<Integer,String> entry : map.entrySet()) {
             if (getCaSession().authorizedToCANoLogging(authenticationToken, entry.getKey())) {

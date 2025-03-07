@@ -57,6 +57,13 @@ public abstract class BaseManagedBean implements Serializable {
     final String[] accessRulesConstantString;
 
     /**
+     * No args ctor to adhere to HA class rules.  Should not be called directly.
+     */
+    public BaseManagedBean() {
+        accessRulesConstantString = new String[0];
+    }
+    
+    /**
      * Initializes authorization assuming authorization required to following resources.
      * @param resources Reference to AccessRulesConstants.* and StandardRules.*
      */
