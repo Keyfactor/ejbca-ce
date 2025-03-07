@@ -142,14 +142,14 @@ Enable individual sidecars and volumes: AWS CloudHSM
     - name: CLOUDHSM_LOG_LEVEL
       value: {{ .Values.hsm.awsCloudHsm.logLevel }}
   volumeMounts:
-    - name: customerCACrt
+    - name: customercacrt
       mountPath: "/opt/configmap/customerCA.crt"
       subPath: "customerCA.crt"
 {{- end }}
 {{- end -}}
 
 {{- define "ejbca.hsm.volume.awsCloudHsm" -}}
-- name: customerCACrt
+- name: customercacrt
   configMap:
     name: {{ .Values.hsm.awsCloudHsm.customerCACrtConfigMap }}
     items:
