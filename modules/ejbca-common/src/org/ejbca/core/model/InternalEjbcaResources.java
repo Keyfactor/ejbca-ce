@@ -20,7 +20,6 @@ import java.util.Locale;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
-import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 
 /**
@@ -45,6 +44,8 @@ public class InternalEjbcaResources extends InternalResources {
      * 
      */
     private static final long serialVersionUID = -1001L;
+
+    public static final String PREFEREDINTERNALRESOURCES = "en";
 
     protected static InternalEjbcaResources instance = null;
 
@@ -73,7 +74,7 @@ public class InternalEjbcaResources extends InternalResources {
     }
 
     private void setupResources(String resLocation) {
-        final String primaryLanguage = "en";
+        final String primaryLanguage = PREFEREDINTERNALRESOURCES.toLowerCase(Locale.ENGLISH);
         // The test flag is defined when called from test code (junit)
         InputStream primaryStream = null;
         try {
@@ -95,6 +96,7 @@ public class InternalEjbcaResources extends InternalResources {
                 } else {
                     log.error("primaryResourse == null");
                 }
+                
             } catch (IOException e) {
                 log.error("Error reading internal resourcefile", e);
             }
