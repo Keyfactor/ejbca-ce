@@ -30,6 +30,7 @@ import java.util.Set;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.faces.application.FacesMessage;
+import jakarta.faces.component.UIComponent;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.model.ListDataModel;
 import jakarta.faces.model.SelectItem;
@@ -72,6 +73,9 @@ import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionLocal;
+import org.primefaces.component.tabview.Tab;
+import org.primefaces.component.tabview.TabView;
+import org.primefaces.event.TabChangeEvent;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.SHA1DigestCalculator;
@@ -122,6 +126,8 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
     private Integer currentCertificateAuthorityOcspRespToSign = null;
     private String currentTrustEntryDescriptionOcspRespToSign = null;
 
+    private int lastActiveTab = 0;
+    
     @EJB
     private CaSessionLocal caSession;
     @EJB
@@ -180,6 +186,36 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
             useIssuerNotBeforeAsArchiveCutoff = null;
             currentTrustEntryDescriptionOcspRespToSign = null;
         }
+    }
+    
+    public int getLastActiveTab() {
+        return lastActiveTab;
+    }
+
+    public void setLastActiveTab(final int lastActiveTab) {
+        this.lastActiveTab = lastActiveTab;
+    }
+
+    public void onTabChange(final TabChangeEvent<?> event) {
+        final Tab activeTab = event.getTab();
+        if (activeTab == null) {
+            return;
+        }
+        final TabView tabView = (TabView) activeTab.getParent();
+        // There is tabView.getTabIndex(), but it just calls
+        // SystemConfigMBean.getLastActiveTab(), so it can't be used.
+        int tabIndex = 0;
+        for (final UIComponent tab : tabView.getChildren()) {
+            if (!tab.isRendered()) {
+                continue;
+            }
+            if (tab == activeTab) {
+                setLastActiveTab(tabIndex);
+                break;
+            }
+            tabIndex++;
+        }
+        flushCurrentCache();
     }
 
     public void saveDefaultResponder() {

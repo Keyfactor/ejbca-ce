@@ -27,6 +27,11 @@
 	<ui:param name="resourceBean" value="#{ocspResponderMBean}" />
 	<ui:define name="content">
 
+    <p:tabView id="tabs" dynamic="true" activeIndex="#{ocspResponderMBean.lastActiveTab}">
+        <p:ajax event="tabChange" listener="#{ocspResponderMBean.onTabChange}"/>
+
+        <p:tab title="OCSP Responders" >
+
 		<h:outputText value="" rendered="#{ocspResponderMBean.pageLoadResetTrigger}"/>
 		<h1>
 			<h:outputText value="#{web.text.INTERNALKEYBINDING_TYPE_OCSP_RESPONDERS}"/>
@@ -137,6 +142,9 @@
 				<h:commandButton action="#{ocspResponderMBean.uploadToTarget}" value="#{web.text.INTERNALKEYBINDING_UPLOAD}"/>
 			</h:panelGrid>
 		</h:form>
+		</p:tab>
+		<p:tab title="OCSP Configuration" >
+		
 		<h:form id="defaultResponder">
 			<h3>
 				<h:outputText value="#{web.text.INTERNALKEYBINDING_DEFAULTRESPONDER}" rendered="#{ocspResponderMBean.forbiddenToEdit}"/>
@@ -362,7 +370,8 @@
 			</h:panelGrid>
 			<h:commandButton value="#{web.text.OCSP_LOGGING_SAVE}" action="#{ocspResponderMBean.saveOcspLoggingConfiguration}"/>
 		</h:form>
-
+        </p:tab>
+        </p:tabView>
 	</ui:define>
 </ui:composition>
 </html>
