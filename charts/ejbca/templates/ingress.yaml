@@ -26,6 +26,11 @@ metadata:
     {{- include "ejbca.labels" . | nindent 4 }}
   annotations:
     nginx.ingress.kubernetes.io/proxy-body-size: 32m
+    {{- if .Values.ingress.sslBackend}}
+    nginx.ingress.kubernetes.io/backend-protocol: HTTPS
+    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    {{- else }}
     {{- if or (.Values.services.proxyAJP.enabled) (.Values.httpd.enabled) }}
     nginx.ingress.kubernetes.io/backend-protocol: "AJP"
     {{- else }}
@@ -34,6 +39,7 @@ metadata:
     nginx.ingress.kubernetes.io/configuration-snippet: |
       proxy_set_header SSL_CLIENT_CERT $ssl_client_cert;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    {{- end }}
     {{- if ne (int .Values.replicaCount) 1 }}
     nginx.ingress.kubernetes.io/affinity: "cookie"
     nginx.ingress.kubernetes.io/session-cookie-name: "ejbcaCOOKIE"
@@ -68,7 +74,11 @@ spec:
             backend:
               {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
               service:
+                {{- if .Values.ingress.sslBackend}}
+                name: {{ include "ejbca.fullname" . }}-nginx-config
+                {{- else }}
                 name: {{ $fullName }}
+                {{- end }}
                 port:
                   number: {{ $svcPort }}
               {{- else }}
