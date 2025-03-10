@@ -12,7 +12,6 @@
  *************************************************************************/ 
 package org.cesecore.certificates.ca.internal;
 
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
 import org.apache.log4j.Logger;

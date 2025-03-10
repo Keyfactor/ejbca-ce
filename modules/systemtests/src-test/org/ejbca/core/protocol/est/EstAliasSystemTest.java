@@ -14,7 +14,6 @@
 package org.ejbca.core.protocol.est;
 
 import java.net.URL;
-import java.security.SecureRandom;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
