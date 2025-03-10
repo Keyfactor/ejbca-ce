@@ -60,8 +60,9 @@ public class UserDataVOUnitTest {
             encoder.writeObject(userDataVO);
         }
         log.info(new String(baos.toByteArray()));
-        final SecureXMLDecoder decoder = new SecureXMLDecoder(new ByteArrayInputStream(baos.toByteArray()));
-        decoder.readObject();
+        try (SecureXMLDecoder decoder = new SecureXMLDecoder(new ByteArrayInputStream(baos.toByteArray()))) {
+            decoder.readObject();
+        }
     }
 
     @Test
@@ -82,12 +83,13 @@ public class UserDataVOUnitTest {
             encoder.writeObject(userDataVO);
         }
         log.info(new String(baos.toByteArray()));
-        final SecureXMLDecoder decoder = new SecureXMLDecoder(new ByteArrayInputStream(baos.toByteArray()));
-        final UserDataVO userDataVO = (UserDataVO) decoder.readObject();
-        assertEquals(new BigInteger("123"), new BigInteger(Base64.decode(userDataVO.getExtendedinformation().
-                getMapData("CERTIFICATESERIALNUMBER").getBytes(StandardCharsets.US_ASCII))));
-        assertEquals(date, userDataVO.getTimeCreated());
-        assertTrue(userDataVO.getKeyRecoverable());
+        try (SecureXMLDecoder decoder = new SecureXMLDecoder(new ByteArrayInputStream(baos.toByteArray()))) {
+            final UserDataVO userDataVO = (UserDataVO) decoder.readObject();
+            assertEquals(new BigInteger("123"), new BigInteger(Base64.decode(userDataVO.getExtendedinformation().
+                    getMapData("CERTIFICATESERIALNUMBER").getBytes(StandardCharsets.US_ASCII))));
+            assertEquals(date, userDataVO.getTimeCreated());
+            assertTrue(userDataVO.getKeyRecoverable());
+        }
     }
 
     @Test
@@ -104,10 +106,11 @@ public class UserDataVOUnitTest {
             encoder.writeObject(userDataVO);
         }
         log.info(new String(baos.toByteArray()));
-        final SecureXMLDecoder decoder = new SecureXMLDecoder(new ByteArrayInputStream(baos.toByteArray()));
-        final UserDataVO userDataVO = (UserDataVO) decoder.readObject();
-        final PSD2RoleOfPSPStatement psd2RoleOfPSPStatement = (PSD2RoleOfPSPStatement) userDataVO.getExtendedinformation().getRawData().get("psd");
-        assertEquals("foo", psd2RoleOfPSPStatement.getName());
-        assertEquals("1.2.3.4", psd2RoleOfPSPStatement.getOid());
+        try (SecureXMLDecoder decoder = new SecureXMLDecoder(new ByteArrayInputStream(baos.toByteArray()))) {
+            final UserDataVO userDataVO = (UserDataVO) decoder.readObject();
+            final PSD2RoleOfPSPStatement psd2RoleOfPSPStatement = (PSD2RoleOfPSPStatement) userDataVO.getExtendedinformation().getRawData().get("psd");
+            assertEquals("foo", psd2RoleOfPSPStatement.getName());
+            assertEquals("1.2.3.4", psd2RoleOfPSPStatement.getOid());
+        }
     }
 }
