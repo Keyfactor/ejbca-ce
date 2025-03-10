@@ -20,7 +20,6 @@
 package org.ejbca.core.model.authorization;
 
 import java.io.Serializable;
-import java.security.SecureRandom;
 import java.security.cert.Certificate;
 import java.util.Random;
 

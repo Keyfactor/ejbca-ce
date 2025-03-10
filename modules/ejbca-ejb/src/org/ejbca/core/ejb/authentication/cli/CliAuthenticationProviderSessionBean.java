@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.authentication.cli;
 
-import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 import java.security.SecureRandom;
 import java.util.AbstractMap;
