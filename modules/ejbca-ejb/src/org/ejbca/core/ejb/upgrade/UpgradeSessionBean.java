@@ -128,7 +128,6 @@ import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.config.GlobalUpgradeConfiguration;
 import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
-import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalPartition;
@@ -224,8 +223,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private RoleSessionLocal roleSession;
     @EJB
     private SecurityEventsLoggerSessionLocal securityEventsLogger;
-    @EJB
-    private UserDataSourceSessionLocal userDataSourceSession;
     @EJB
     private UpgradeStatusSingletonLocal upgradeStatusSingleton;
 
