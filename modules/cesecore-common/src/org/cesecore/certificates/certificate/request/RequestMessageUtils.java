@@ -309,6 +309,9 @@ public abstract class RequestMessageUtils {
                 }
             }
             final PublicKey pubKey = KeyTools.getPublicKeyFromBytes(request);
+            if (pubKey == null) {
+                throw new IOException("Failed to parse public key");
+            }
             ret = new SimpleRequestMessage(pubKey, username, password);
         } else if (reqType == CertificateConstants.CERT_REQ_TYPE_CVC) {
             try {
