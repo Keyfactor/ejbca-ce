@@ -784,7 +784,7 @@ public interface RaMasterApi {
      * @throws ApprovalException if an approval is already pending to recover this certificate
      */
     public byte[] createCertificateWithEntity(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, String req, int reqType, int responseType)
-            throws EjbcaException, AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException, ApprovalException, CADoesntExistsException;
+            throws EjbcaException, AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException, ApprovalException;
 
         /**
          * Generates a certificate. This variant is used from the REST Service interface.
