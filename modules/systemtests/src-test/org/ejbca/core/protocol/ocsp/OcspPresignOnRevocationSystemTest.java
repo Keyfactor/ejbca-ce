@@ -84,6 +84,7 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.TraceLogMethodsRule;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.ejbca.core.ejb.db.DatabaseContentRule;
 import org.ejbca.core.ejb.ocsp.OcspDataSessionRemote;
 import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionRemote;
 import org.ejbca.core.ejb.ocsp.PresignResponseValidity;
@@ -99,6 +100,7 @@ import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -123,6 +125,9 @@ public class OcspPresignOnRevocationSystemTest {
     public static Collection<CryptoTokenRunner> runners() {
         return Arrays.asList(new PKCS12TestRunner());
     }
+
+    @ClassRule
+    public static DatabaseContentRule databaseContentRule = new DatabaseContentRule();
 
     @Rule
     public TestName testName = new TestName();

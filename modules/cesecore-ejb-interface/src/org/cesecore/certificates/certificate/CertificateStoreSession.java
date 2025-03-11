@@ -239,6 +239,15 @@ public interface CertificateStoreSession {
     X509Certificate findLatestX509CertificateBySubject(String subjectDN);
     
     /**
+     * Find the latest X509Certificate matching the given subject DN for an End Entity.
+     * It uses notBefore to find the latest certificate from database.
+     * 
+     * @param subjectDN The subject DN to match.
+     * @return the sought result, or null if none exists.
+     */
+    X509Certificate findLatestX509CertificateBySubjectforEndEntity(String subjectDN);
+    
+    /**
      * Find the latest published X509Certificate matching the given subject DN.
      * This method can search for normal or rollover certificates.
      * 

@@ -14,7 +14,15 @@
  
 package org.ejbca.core.ejb.ws;
 
+import static org.junit.Assert.assertNotNull;
+
+import java.security.KeyPair;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.Date;
+
 import org.apache.log4j.Logger;
+import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -32,18 +40,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
-
-import java.security.KeyPair;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.Date;
-
-import static org.junit.Assert.assertNotNull;
 
 public class EjbcaWSHelperSessionBeanSystemTest {
     private final EjbcaWSHelperProxySessionRemote ejbcaWSHelperProxySessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(EjbcaWSHelperProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
@@ -84,10 +85,18 @@ public class EjbcaWSHelperSessionBeanSystemTest {
     }
 
     @Test
-    public void getAdmin_certificateTokenIsCreated() throws IllegalStateException, OperatorCreationException, CertificateException, AuthorizationDeniedException  {
+    public void getAdmin_certificateTokenIsCreated() throws IllegalStateException, OperatorCreationException, CertificateException, AuthorizationDeniedException, CertIOException  {
         log.trace(">getAdmin_certificateTokenIsCreated");
-        X509Certificate certificate = CertTools.genSelfCert("CN=Foo", 1, null, keys.getPrivate(), keys.getPublic(),
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
+        X509Certificate certificate = SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn("CN=Foo")
+                .setIssuerDn("CN=Foo")
+                .setValidityDays(1)
+                .setIssuerPrivKey(keys.getPrivate())
+                .setEntityPubKey(keys.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setLdapOrder(true)
+                .generateCertificate();
+
         try {
             certificateStoreSession.storeCertificateRemote(internalToken, EJBTools.wrap(certificate), "foo", "1234",
                     CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION,

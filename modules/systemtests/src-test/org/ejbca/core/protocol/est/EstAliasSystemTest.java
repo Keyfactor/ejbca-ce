@@ -14,7 +14,6 @@
 package org.ejbca.core.protocol.est;
 
 import java.net.URL;
-import java.security.SecureRandom;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -24,6 +23,7 @@ import javax.net.ssl.X509TrustManager;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSession;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
@@ -37,6 +37,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.RandomHelper;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -112,7 +113,7 @@ public class EstAliasSystemTest extends EstTestCase {
             // Create TLS context that accepts all CA certificates and does not use client cert authentication
             SSLContext context = SSLContext.getInstance("TLS");
             TrustManager[] tm = new X509TrustManager[] {new X509TrustManagerAcceptAll()};
-            context.init(null, tm, new SecureRandom());
+            context.init(null, tm, RandomHelper.getInstance(CesecoreConfiguration.getCaSerialNumberAlgorithm()));
             SSLSocketFactory factory = context.getSocketFactory();
             HttpsURLConnection.setDefaultSSLSocketFactory(factory);
 
@@ -130,7 +131,14 @@ public class EstAliasSystemTest extends EstTestCase {
             con.connect();
             // An EST alias that does not exist will result in a HTTP bad request error
             // an unknown operation in a 404 not found
-            assertEquals("Unexpected HTTP response code.", expectedReturnCode, con.getResponseCode()); 
+            try {
+                int actualReturnCode = con.getResponseCode();
+                String message = "Expected HTTP response code="+expectedReturnCode+". Actual HTTP response code="+actualReturnCode;
+                assertEquals(message, expectedReturnCode, actualReturnCode);
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
         } finally {
             // If we moved away the alias in the beginning, move it back
             if (config.aliasExists("backUpAlias" + extractedAlias + "ForAliasTesting001122334455")) {

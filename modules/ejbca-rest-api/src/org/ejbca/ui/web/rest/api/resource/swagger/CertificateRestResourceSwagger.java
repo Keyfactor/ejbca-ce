@@ -130,7 +130,7 @@ public class CertificateRestResourceSwagger extends CertificateRestResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Enrollment with client generated keys for an existing End Entity",
-            description = "Enroll for a certificate given a PEM encoded PKCS#10 CSR.",
+            description = "Enroll for a certificate given a PEM encoded  PUBLICKEY, PKCS10, CRMF, SPKAC, or CVC.",
             responses = {
                     @ApiResponse(
                             responseCode = "200",
@@ -140,7 +140,7 @@ public class CertificateRestResourceSwagger extends CertificateRestResource {
             })
     public Response certificateRequest(@Context HttpServletRequest requestContext,
                                        final CertificateRequestRestRequest certificateRequestRestRequest)
-            throws RestException, AuthorizationDeniedException, CesecoreException, IOException,
+            throws RestException, AuthorizationDeniedException, CesecoreException,
             SignatureException, NoSuchFieldException {
         return super.certificateRequest(requestContext, certificateRequestRestRequest);
     }

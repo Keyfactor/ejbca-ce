@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.certificates.pinning.TrustEntry;
 import org.cesecore.certificates.pinning.TrustedChain;
@@ -37,6 +38,7 @@ import org.junit.runner.Description;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -69,10 +71,28 @@ public class ClientX509TrustManagerUnitTest {
     }
 
     @Test
-    public void testFirstEncounteredServerCertificate() throws InvalidAlgorithmParameterException, OperatorCreationException, CertificateException {
+    public void testFirstEncounteredServerCertificate() throws InvalidAlgorithmParameterException, OperatorCreationException, CertificateException, CertIOException {
         final KeyPair keyPair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        final X509Certificate x509Certificate1 = CertTools.genSelfCert("CN=ClientX509TrustManagerUnitTest1", 365, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false);
-        final X509Certificate x509Certificate2 = CertTools.genSelfCert("CN=ClientX509TrustManagerUnitTest2", 365, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false);
+        final X509Certificate x509Certificate1 = SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn("CN=ClientX509TrustManagerUnitTest1")
+                .setIssuerDn("CN=ClientX509TrustManagerUnitTest1")
+                .setValidityDays(365)
+                .setIssuerPrivKey(keyPair.getPrivate())
+                .setEntityPubKey(keyPair.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setLdapOrder(true)
+                .generateCertificate();
+                
+        final X509Certificate x509Certificate2 = SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn("CN=ClientX509TrustManagerUnitTest2")
+                .setIssuerDn("CN=ClientX509TrustManagerUnitTest2")
+                .setValidityDays(365)
+                .setIssuerPrivKey(keyPair.getPrivate())
+                .setEntityPubKey(keyPair.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setLdapOrder(true)
+                .generateCertificate();
+                
         final List<X509Certificate> trust1 = Arrays.asList(x509Certificate1);
         final List<TrustEntry> trustedChains = new ArrayList<>();
         trustedChains.add(new TrustedChain(trust1));

@@ -14,7 +14,13 @@ dependencies {
     compileOnly(project(":modules:edition-specific:interface"))
     compileOnly(project(":modules:systemtests:interface"))
     compileOnly(project(":modules:systemtests:common"))
-    compileOnly(project(":modules:peerconnector:common"))
+    if (project.extra["edition"] == "ee") {
+        compileOnly(project(":modules:peerconnector:common"))
+    }
+    compileOnly(libs.commons.lang)
+    compileOnly(libs.log4j.v12.api)
+    compileOnly(libs.x509.common.util)
+    compileOnly(libs.bundles.cryptotokens)
     implementation(libs.bcpkix)
     implementation(libs.bcprov)
     implementation(libs.bctls)
@@ -22,10 +28,6 @@ dependencies {
     implementation(libs.jakartaee.api)
     implementation(libs.json.simple)
     implementation(libs.junit)
-    compileOnly(libs.commons.lang)
-    compileOnly(libs.log4j.v12.api)
-    compileOnly(libs.x509.common.util)
-    compileOnly(libs.bundles.cryptotokens)
 }
 
 sourceSets {

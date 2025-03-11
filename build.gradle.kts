@@ -1,18 +1,8 @@
-import java.util.Properties
+import java.net.Socket
 
-val props: Properties = Properties().apply {
-    val propertiesFilePath = "conf/ejbca.properties"
-    if (file(propertiesFilePath).exists()) {
-        load(file(propertiesFilePath).inputStream())
-    } else {
-        load(file("$propertiesFilePath.sample").inputStream())
-    }
-}
-
-// Specify what edition you want to build by passing -Pedition=ee or =ce (default: ee)
-val editionProp = providers.gradleProperty("edition").getOrElse("ee")
-val eeModuleExists = file("modules/edition-specific-ee").exists()
-val edition = if (editionProp == "ce" || !eeModuleExists) "ce" else "ee"
+val edition: String by extra
+val appServerHome: String? by extra
+val isProductionMode: Boolean by extra
 
 allprojects {
     repositories {
@@ -30,9 +20,31 @@ allprojects {
             dirs(rootProject.projectDir.resolve("lib/ct"))
             dirs(rootProject.projectDir.resolve("lib/ext/test"))
             dirs(rootProject.projectDir.resolve("lib/ext/resteasy-jaxrs-lib"))
+            dirs(rootProject.projectDir.resolve("lib/ext/wsgen"))
         }
     }
-    extra["edition"] = edition
+}
+
+// add the directory containing 'jboss-client.jar' to the list of library repositories
+if (!isProductionMode) {
+    if (appServerHome == null) {
+        throw GradleException(
+            """
+                📣 To build EJBCA in non-production mode ('ejbca.productionmode=false'), 
+                you must first configure the application server's home directory.
+                
+                You can do this by either setting an 'APPSRV_HOME' environment variable 
+                or by configuring the 'appserver.home' property in the 'conf/ejbca.properties' file.
+            """.trimIndent()
+        )
+    }
+    allprojects {
+        repositories {
+            flatDir {
+                dirs(file("$appServerHome/bin/client"))
+            }
+        }
+    }
 }
 
 plugins {
@@ -59,6 +71,8 @@ dependencies {
     deploy(project(path = ":modules:crlstore", configuration = "archives"))
     deploy(project(path = ":modules:ra-gui", configuration = "archives"))
     deploy(project(path = ":modules:ejbca-rest-api", configuration = "archives"))
+
+
     if (edition == "ee") {
         "earlibanddeploy"(project(path = ":modules:edition-specific-ee", configuration = "archives"))
         deploy(project(path = ":modules:statedump:ejb", configuration = "archives"))
@@ -83,7 +97,7 @@ dependencies {
         // When edition is CE we use :modules:edition-specific:ejb as a replacement for :modules:edition-specific-ee
         "earlibanddeploy"(project(path = ":modules:edition-specific:ejb", configuration = "archives"))
     }
-    if (!props.getProperty("ejbca.productionmode", "true").toBoolean()) {
+    if (!isProductionMode) {
         deploy(":swagger-ui@war")
         deploy(project(":modules:systemtests:ejb"))
     }
@@ -170,9 +184,12 @@ dependencies {
         earlib(project(path = ":modules:cits:common", configuration = "archives"))
         earlib(project(path = ":modules:proxy-ca", configuration = "archives"))
         earlib(project(path = ":modules:caa", configuration = "archives"))
+        earlib(project(path = ":modules:mpic", configuration = "archives"))
         earlib(project(path = ":modules:ct", configuration = "archives"))
+        earlib(project(path = ":modules:iodef", configuration = "archives"))
+        earlib(project(path = ":modules:mpic", configuration = "archives"))
     }
-    if (!props.getProperty("ejbca.productionmode", "true").toBoolean()) {
+    if (!isProductionMode) {
         "earlibanddeploy"(project(":modules:systemtests:common"))
         earlib(project(":modules:systemtests:interface"))
     }
@@ -241,7 +258,7 @@ tasks.ear {
                     )
             }
         }
-        if (!props.getProperty("ejbca.productionmode", "true").toBoolean()) {
+        if (!isProductionMode) {
             filter { line: String ->
                 line.replace("<!--@ejbca-systemtest-ejb.jar@-->", "<module><ejb>systemtests-ejb.jar</ejb></module>")
                     .replace(
@@ -264,10 +281,14 @@ tasks.ear {
 
 task<Copy>("deployear") {
     dependsOn("ear")
-    val appServerHome = System.getenv("APPSRV_HOME")
     doFirst {
         if (appServerHome == null) {
-            throw GradleException("APPSRV_HOME environment variable is not set.")
+            throw GradleException(
+                """
+                    📣 Unknown application server's home directory. Please set an 'APPSRV_HOME' environment variable 
+                    or configure the 'appserver.home' property in the 'conf/ejbca.properties' file.
+                """.trimIndent()
+            )
         }
     }
     from(layout.buildDirectory.file("libs/ejbca.ear"))
@@ -309,6 +330,10 @@ subprojects {
             tasks.register<Test>("systemTest") {
                 description = "Runs system tests."
                 group = "verification"
+                forkEvery = 1
+                maxParallelForks = 1
+
+                dependsOn(":checkIfAppServerIsRunning")
                 shouldRunAfter("test")
 
                 filter {
@@ -321,13 +346,27 @@ subprojects {
                 // we can reuse the source configuration of the "test" task.
                 testClassesDirs = sourceSets["test"].output.classesDirs
                 classpath = sourceSets["test"].runtimeClasspath
+
+                onlyIf {
+                    if (isProductionMode) {
+                        logger.lifecycle("You can't run system tests in production mode.")
+                    }
+                    !isProductionMode
+                }
             }
 
-            // // Add the "systemTest" task to Gradle's "check" task dependencies
-            // // so that it would be triggered alongside the unit "test" task.
-            // tasks.named("check") {
-            //     dependsOn(tasks.named("systemTest"))
-            // }
+            // Add common system test dependencies.
+            dependencies {
+                val testRuntimeOnly by configurations
+                testRuntimeOnly(rootProject.libs.jboss.logging)
+
+                if (!isProductionMode) {
+                    // `:jboss:client` is used instead of `rootProject.libs.jboss.client`
+                    // to prevent Gradle from prematurely resolving the non-existent library
+                    // when `isProductionMode` is set to true
+                    testRuntimeOnly(":jboss:client")
+                }
+            }
         }
 
         // Add common dependencies used by most tests.
@@ -341,13 +380,41 @@ subprojects {
         tasks.withType(Test::class) {
             doLast {
                 // print module's report location
-                val reportDir = reports.html.outputLocation.get().asFile.absolutePath;
-                val separator = File.separator;
+                val reportDir = reports.html.outputLocation.get().asFile.absolutePath
+                val separator = File.separator
                 logger.lifecycle("'${project.name}' test report: file:${separator}${separator}$reportDir${separator}index.html")
             }
             // print a summary derived from all test reports
             finalizedBy(":summarizeTestResults")
         }
+    }
+}
+
+// If system tests in certain modules are executed before others, they cause test failures in unrelated modules.
+// This should be fixed, but for now, we can work around the issue by enforcing the same order as used in Ant.
+val systemTestTasksOrder = listOfNotNull(
+    project.findProject(":modules:systemtests")?.tasks?.named("systemTest"),
+    project.findProject(":modules:ejbca-ws")?.tasks?.named("systemTest"),
+    project.findProject(":modules:statedump")?.tasks?.named("systemTest"),
+    project.findProject(":modules:peerconnector")?.tasks?.named("systemTest"),
+    project.findProject(":modules:plugins")?.tasks?.named("systemTest"),
+    project.findProject(":modules:plugins-ee")?.tasks?.named("systemTest"),
+    project.findProject(":modules:acme")?.tasks?.named("systemTest"),
+    project.findProject(":modules:ejbca-rest-api")?.tasks?.named("systemTest"),
+    project.findProject(":modules:caa")?.tasks?.named("systemTest"),
+    project.findProject(":modules:mpic")?.tasks?.named("systemTest"),
+    project.findProject(":modules:ssh")?.tasks?.named("systemTest"),
+    project.findProject(":modules:cits")?.tasks?.named("systemTest"),
+    project.findProject(":modules:ejbca-entity")?.tasks?.named("systemTest")
+)
+
+// Add mustRunAfter dependencies to systemTest tasks to enforce the "correct order".
+for (i in 1 until systemTestTasksOrder.size) {
+    val previousTasks = systemTestTasksOrder.subList(0, i)
+    val currentTask = systemTestTasksOrder[i]
+
+    currentTask.configure {
+        mustRunAfter(previousTasks)
     }
 }
 
@@ -392,5 +459,24 @@ tasks.register("summarizeTestResults") {
         }
 
         logger.lifecycle("Test summary: $totalExecuted executed, $totalPassed passed, $totalFailed failed, $totalSkipped skipped.")
+    }
+}
+
+tasks.register("checkIfAppServerIsRunning") {
+    description = "Checks whether an application server is running. Used to determine if system tests can be executed."
+    group = "verification"
+    doLast {
+        val host = findProperty("target.hostname") as String? ?: "localhost"
+        val port = findProperty("target.port.https") as String? ?: "8443"
+        try {
+            Socket(host, port.toInt()).use { true }
+        } catch (e: Exception) {
+            throw GradleException(
+                """
+                    📣 The application server does not appear to be running on '$host' port '$port'.
+                    Please start it to run system tests.
+                """.trimIndent()
+            )
+        }
     }
 }

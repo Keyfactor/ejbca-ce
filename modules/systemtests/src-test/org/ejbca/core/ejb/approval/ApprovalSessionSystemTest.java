@@ -35,6 +35,8 @@ import java.util.List;
 import java.util.Set;
 
 import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
+
 import org.apache.log4j.Logger;
 import org.cesecore.audit.AuditLogEntry;
 import org.cesecore.audit.impl.integrityprotected.IntegrityProtectedDevice;
@@ -68,6 +70,7 @@ import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderSessionRemote;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationToken;
 import org.ejbca.core.ejb.ca.CaTestCase;
+import org.ejbca.core.ejb.db.DatabaseContentRule;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -89,6 +92,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 
 import com.keyfactor.util.CertTools;
@@ -171,9 +175,18 @@ public class ApprovalSessionSystemTest extends CaTestCase {
     private static String REDACTED_END_ENTITY_PROFILE_NAME = "redacted_ee_profile";
     private static int redactedEndEntityProfileId;
 
+    @ClassRule
+    public static DatabaseContentRule databaseContentRule = new DatabaseContentRule();
+
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProviderIfNotAvailable();
+        try {
+            afterClass();
+        }
+        catch (Exception e) {
+            // Ignore
+        }
 
         createTestCA();
 
@@ -233,6 +246,12 @@ public class ApprovalSessionSystemTest extends CaTestCase {
 
     @Before
     public void createTestCAWithEndEntity() throws Exception {
+        try {
+            tearDown();
+        }
+        catch (Exception e) {
+            // Ignore
+        }
         EndEntityInformation userdata = new EndEntityInformation(adminusername1, "CN=" + adminusername1, caid, null, null, new EndEntityType(
                 EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                 SecConst.TOKEN_SOFT_P12, null);
@@ -257,8 +276,15 @@ public class ApprovalSessionSystemTest extends CaTestCase {
         reqUserData.setPassword("foo123");
         endEntityManagementSession.addUser(intadmin, reqUserData, true);
 
-        externalcert = CertTools.genSelfCert("CN=externalCert,C=SE", 30, null, externalAdminRsaKey.getPrivate(), externalAdminRsaKey.getPublic(),
-                AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false);
+        externalcert = SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn("CN=externalCert,C=SE")
+                .setIssuerDn("CN=externalCert,C=SE")
+                .setValidityDays(30)
+                .setIssuerPrivKey(externalAdminRsaKey.getPrivate())
+                .setEntityPubKey(externalAdminRsaKey.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .generateCertificate();  
+        
         externaladmin = simpleAuthenticationProvider.authenticate(makeAuthenticationSubject(externalcert));
 
         fileHandles.addAll(BatchCreateTool.createAllNew(intadmin, new File(P12_FOLDER_NAME)));

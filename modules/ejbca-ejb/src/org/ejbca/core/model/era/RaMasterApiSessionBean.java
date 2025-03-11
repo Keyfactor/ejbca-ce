@@ -91,6 +91,7 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificate.CertificateData;
+import org.cesecore.certificates.certificate.CertificateDataSessionLocal;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStatus;
@@ -129,7 +130,6 @@ import org.cesecore.config.RaStyleInfo;
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.validation.CaaIdentitiesValidator;
-import org.cesecore.keys.validation.DnsNameValidator;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.keys.validation.Validator;
 import org.cesecore.roles.Role;
@@ -291,6 +291,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @EJB
     private CertificateCreateSessionLocal certificateCreateSession;
     @EJB
+    private CertificateDataSessionLocal certificateDataSession;
+    @EJB
     private CmpMessageDispatcherSessionLocal cmpMessageDispatcherSession;
     @EJB
     private EjbcaWSHelperSessionLocal ejbcaWSHelperSession;
@@ -372,9 +374,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
      * <tr><th>16<td>=<td>8.1.0
      * <tr><th>17<td>=<td>8.2.0
      * <tr><th>18<td>=<td>8.3.0
+     * <tr><th>19<td>=<td>9.2.0
      * </table>
      */
-    private static final int RA_MASTER_API_VERSION = 18;
+    private static final int RA_MASTER_API_VERSION = 19;
 
     /**
      * Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time
@@ -3497,7 +3500,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 }
                 continue;
             }
-            if (validator.getValidatorTypeIdentifier().equals(DnsNameValidator.CAA_TYPE_IDENTIFIER)) {
+            if (validator instanceof CaaIdentitiesValidator) {
                 caaIdentities.addAll(((CaaIdentitiesValidator) validator).getIssuers());
             }
         }
@@ -3887,5 +3890,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public String findUsernameByIssuerDnAndSerialNumber(String issuerDn, String serialNumber) {
         return certificateStoreSession.findUsernameByIssuerDnAndSerialNumber(issuerDn, serialNumber);
+    }
+
+    @Override
+    public Long getCertificateCount(AuthenticationToken authenticationToken, Boolean isActive) throws AuthorizationDeniedException {
+        return certificateDataSession.getCertificateCount(authenticationToken, isActive);
     }
 }

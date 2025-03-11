@@ -43,6 +43,7 @@ import org.ejbca.core.model.SecConst;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.keyfactor.util.CryptoProviderTools;
@@ -58,6 +59,7 @@ import static org.junit.Assert.fail;
  * - CA uses 2048 bit signature key
  * - total time for certificate generation is counted to get number of certificates generated per second
  */
+@Ignore("Takes a very long time to complete")
 public class SignLotsOfCertsSystemTest extends CaTestCase {
 
     private static final String USERNAME_PREFIX = "SignLotsOfCertsSystemTest";

@@ -13,12 +13,12 @@
 
 package org.ejbca.core.ejb.config;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Properties;
 
 import org.cesecore.config.ConfigurationHolder;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.EjbcaConfigurationHolder;
-import org.ejbca.peerconnector.client.PeerConnectorPool;
 
 import jakarta.ejb.EJBException;
 import jakarta.ejb.Stateless;
@@ -103,8 +103,17 @@ public class ConfigurationSessionBean implements ConfigurationSessionRemote {
 
     @Override
     public void setPeerConnectorPoolTimeout(int timeout) {
-        PeerConnectorPool.INSTANCE.setSocketTimeout(timeout);
-
-
+        try {
+            // This class is not available in EJBCA Community edition, so we need to use reflection to set the timeout.
+            final Class<?> poolClass = Class.forName("org.ejbca.peerconnector.client.PeerConnectorPool");
+            final Object poolInstance = poolClass.getEnumConstants()[0]; // "INSTANCE" enum value
+            poolClass.getMethod("setSocketTimeout", int.class)
+                    .invoke(poolInstance, timeout);
+        } catch (ClassNotFoundException e) {
+            // This would happen if called in Community Edition (which it shouldn't be)
+        } catch (IllegalAccessException | NoSuchMethodException |
+                 InvocationTargetException e) {
+            throw new IllegalStateException("Reflection operation failed: " + e.getMessage(), e);
+        }
     }
 }

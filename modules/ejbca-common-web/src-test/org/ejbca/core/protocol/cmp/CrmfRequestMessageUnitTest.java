@@ -13,6 +13,13 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -35,11 +42,6 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.keys.KeyTools;
 
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
@@ -94,12 +96,10 @@ import org.ejbca.core.model.ra.UsernameGeneratorParams;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
+import com.keyfactor.util.keys.KeyTools;
 
 /**
  * Test to verify that CrmfRequestMessage can be properly Serialized.
@@ -294,7 +294,16 @@ public class CrmfRequestMessageUnitTest {
                 ASN1Primitive derObject = in.readObject();
                 PKIMessage myPKIMessage = PKIMessage.getInstance(derObject);
                 KeyPair keys = KeyTools.genKeys("512", "RSA");
-                X509Certificate signCert = CertTools.genSelfCert("CN=CMP Sign Test", 3650, null, keys.getPrivate(), keys.getPublic(), sigAlg, false);
+                X509Certificate signCert = SimpleCertGenerator.forTESTLeafCert()
+                        .setSubjectDn("CN=CMP Sign Test")
+                        .setIssuerDn("CN=CMP Sign Test")
+                        .setValidityDays(3650)
+                        .setIssuerPrivKey(keys.getPrivate())
+                        .setEntityPubKey(keys.getPublic())
+                        .setSignatureAlgorithm(sigAlg)
+                        .setLdapOrder(true)
+                        .generateCertificate();
+                        
                 // Re-sign the message
                 Collection<Certificate> signCertChain = new ArrayList<>();
                 signCertChain.add(signCert);

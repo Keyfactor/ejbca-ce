@@ -43,6 +43,7 @@ import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.CertificateImplementationRegistry;
 import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.certificate.x509.X509CertificateUtility;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
@@ -1369,7 +1370,15 @@ public class CAsSystemTest extends CaTestCase {
         try {
             final KeyPair keyPair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
             final String subjectDn = "CN="+TEST_NAME;
-            final X509Certificate nonCaCertificate = CertTools.genSelfCert(subjectDn, 365, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false);
+            final X509Certificate nonCaCertificate = SimpleCertGenerator.forTESTLeafCert()
+                    .setSubjectDn(subjectDn)
+                    .setIssuerDn(subjectDn)
+                    .setValidityDays(365)
+                    .setIssuerPrivKey(keyPair.getPrivate())
+                    .setEntityPubKey(keyPair.getPublic())
+                    .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                    .generateCertificate();
+                    
             try {
                 caAdminSession.importCACertificate(admin, TEST_NAME, EJBTools.wrapCertCollection(Arrays.asList(new Certificate[] {nonCaCertificate})));
                 fail("Import of non-CA certificate should not be allowed using this method.");
@@ -1377,7 +1386,15 @@ public class CAsSystemTest extends CaTestCase {
                 // Expected
             }
             final long beforeFirstCACert = System.currentTimeMillis();
-            final X509Certificate oldCaCertificate = CertTools.genSelfCert(subjectDn, 365, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
+            final X509Certificate oldCaCertificate = SimpleCertGenerator.forTESTCaCert()
+                    .setSubjectDn(subjectDn)
+                    .setIssuerDn(subjectDn)
+                    .setValidityDays(365)
+                    .setIssuerPrivKey(keyPair.getPrivate())
+                    .setEntityPubKey(keyPair.getPublic())
+                    .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                    .generateCertificate();
+                                        
             try {
                 caAdminSession.importCACertificate(admin, "", EJBTools.wrapCertCollection(Arrays.asList(new Certificate[] {oldCaCertificate})));
                 fail("Import of CA with empty string as caName should fail.");
@@ -1412,7 +1429,15 @@ public class CAsSystemTest extends CaTestCase {
             } catch (CertificateImportException e) {
                 // Expected
             }
-            final X509Certificate newDnCaCertificate = CertTools.genSelfCert(subjectDn+"x", 365, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
+            final X509Certificate newDnCaCertificate = SimpleCertGenerator.forTESTCaCert()
+                    .setSubjectDn(subjectDn+"x")
+                    .setIssuerDn(subjectDn+"x")
+                    .setValidityDays(365)
+                    .setIssuerPrivKey(keyPair.getPrivate())
+                    .setEntityPubKey(keyPair.getPublic())
+                    .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                    .generateCertificate();
+                    
             try {
                 caAdminSession.updateCACertificate(admin, caId, EJBTools.wrapCertCollection(Arrays.asList(new Certificate[] {newDnCaCertificate})));
                 fail("Should not be allowed to update existing CA with a different subject DN.");
@@ -1423,7 +1448,14 @@ public class CAsSystemTest extends CaTestCase {
             final long waitTime = Math.max(0, 1001L-(System.currentTimeMillis()-beforeFirstCACert));
             log.debug("Sleeping " + waitTime + " ms before new CA certificate is generated. oldNotBefore:" + oldCaCertificate.getNotBefore());
             Thread.sleep(waitTime);
-            final X509Certificate newCaCertificate = CertTools.genSelfCert(subjectDn, 365, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
+            final X509Certificate newCaCertificate = SimpleCertGenerator.forTESTCaCert()
+                    .setSubjectDn(subjectDn)
+                    .setIssuerDn(subjectDn)
+                    .setValidityDays(365)
+                    .setIssuerPrivKey(keyPair.getPrivate())
+                    .setEntityPubKey(keyPair.getPublic())
+                    .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                    .generateCertificate();                    
             log.debug("new notBefore:" + newCaCertificate.getNotBefore());
             caAdminSession.updateCACertificate(admin, caId, EJBTools.wrapCertCollection(Arrays.asList(new Certificate[] {newCaCertificate})));
             final CAInfo newCaInfo = caSession.getCAInfo(admin, TEST_NAME);
@@ -1438,7 +1470,14 @@ public class CAsSystemTest extends CaTestCase {
             } catch (CertificateImportException e) {
                 // Expected
             }
-            final X509Certificate nonCaCertificate2 = CertTools.genSelfCert(subjectDn, 365, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false);
+            final X509Certificate nonCaCertificate2 = SimpleCertGenerator.forTESTLeafCert()
+                    .setSubjectDn(subjectDn)
+                    .setIssuerDn(subjectDn)
+                    .setValidityDays(365)
+                    .setIssuerPrivKey(keyPair.getPrivate())
+                    .setEntityPubKey(keyPair.getPublic())
+                    .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                    .generateCertificate();                    
             try {
                 caAdminSession.updateCACertificate(admin, caId, EJBTools.wrapCertCollection(Arrays.asList(new Certificate[] {nonCaCertificate2})));
                 fail("Import of non-CA certificate should not be allowed using this method.");

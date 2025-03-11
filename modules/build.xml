@@ -57,7 +57,7 @@
         edition-specific-clean, edition-specific-ee-clean, peerconnectorclean, acmeclean, caaclean,
         estclean, ejbca-rest-api-clean, ejbca-rest-common-clean, ejbca-rest-certificate-clean, ejbca-rest-coap-clean, ejbca-rest-configdump-clean,
         ejbca-rest-ca-clean, ejbca-rest-cryptotoken-clean, ejbca-rest-camanagement-clean, ejbca-rest-endentity-clean, ejbca-rest-system-clean, ejbca-rest-ssh-clean, plugins-clean, plugins-ee-clean,
-        cesecore-x509ca-clean, cesecore-cvcca-clean, va-clean, ra-gui-clean, p11ng-cliclean, ssh-clean, msae-clean, cits-clean, proxy-ca-clean"/>
+        cesecore-x509ca-clean, cesecore-cvcca-clean, va-clean, ra-gui-clean, p11ng-cliclean, ssh-clean, iodef-clean, mpic-clean, msae-clean, cits-clean, proxy-ca-clean"/>
 
 	<target name="cesecore-x509ca-clean" if="${mod.cesecore-x509ca.exists}">
 		<echo message="Cleaning cesecore-x509ca"/>
@@ -137,7 +137,12 @@
 	<target name="p11ng-clean" if="${mod.p11ng.exists}">
 	    <ant antfile="${mod.p11ng.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 	</target>
-	
+    <target name="iodef-clean" if="${mod.iodef.exists}">
+        <ant antfile="${mod.iodef.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+    </target>
+    <target name="mpic-clean" if="${mod.mpic.exists}">
+        <ant antfile="${mod.mpic.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+    </target>
 	<target name="msae-clean" if="${mod.msae.exists}">
 	    <ant antfile="${mod.msae.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 	</target>
@@ -453,7 +458,7 @@
 	<target name="ejbca.ear.module-dependencies" depends="cesecore-ejb, scep-war, webdist-war, cmp-war, healthcheck-ejbca-war, clearcache-ejbca-war,
 						ejbca-ejb, ejbca-properties, edition-specific-interface, peerconnector, eedition-ejb, acme, admin-gui, ra-gui, ejbca-ws, ejbca.clients,
 						systemtests.build.libs, ct, va-ejbca-war, certstore-war, crlstore-war, caa, est-war, unidfnr, ejbca-rest-common, ejbca-rest-certificate, ejbca-rest-coap, ejbca-rest-configdump,
-						ejbca-rest-ca,ejbca-rest-cryptotoken, ejbca-rest-camanagement, ejbca-rest-endentity, ejbca-rest-ssh, ejbca-rest-system, ejbca-rest-api, cesecore-cvcca, cesecore-x509ca, ssh, msae, cits">
+						ejbca-rest-ca,ejbca-rest-cryptotoken, ejbca-rest-camanagement, ejbca-rest-endentity, ejbca-rest-ssh, ejbca-rest-system, ejbca-rest-api, cesecore-cvcca, cesecore-x509ca, ssh, iodef, mpic, msae, cits">
 		</target>
 
 	<target name="ct" depends="ejbca-ejb-interface" if="mod.ct.exists">
@@ -464,11 +469,11 @@
 	  <ant antfile="${mod.unidfnr.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
-	<target name="caa" if="mod.caa.exists" depends="ejbca-common-web, cesecore-common">
+	<target name="caa" if="mod.caa.exists" depends="ejbca-common-web, cesecore-common, iodef">
 		<ant antfile="${mod.caa.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
 	</target>
 	
-	<target name="ejbca-caa-cli" if="mod.caa.exists" depends="caa" description="Creates a CLI jar for CAA lookups">
+	<target name="ejbca-caa-cli" if="mod.caa.exists" depends="caa, edition-specific-interface" description="Creates a CLI jar for CAA lookups">
 		<ant antfile="${mod.caa.path}/build.xml" target="build-cli" inheritall="true" inheritrefs="true"/>
 	</target>
 	
@@ -478,6 +483,13 @@
 	
 	<target name="eedition-ejb" depends="edition-specific-interface, peerconnector, acme, cits, proxy-ca" if="${mod.edition-specific-ee.exists}">
 		<ant antfile="${mod.edition-specific-ee-ejb.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
+	</target>
+
+	<target name="iodef" if="mod.iodef.exists" depends="ejbca-common-web, cesecore-common">
+		<ant antfile="${mod.iodef.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
+	</target>
+	<target name="mpic" if="mod.mpic.exists" depends="ejbca-common-web, cesecore-common, iodef">
+		<ant antfile="${mod.mpic.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
 	</target>
 
 	<target name="plugins" description="Builds the common plugin JAR" depends="ejbca-ejb-interface, ejbca-common" if="${mod.plugins.exists}">
@@ -497,12 +509,12 @@
         <ant antfile="${mod.statedump.path}/build.xml" target="build-ejb" inheritall="true" inheritrefs="true"/>
     </target>
 	
-	<target name="configdump" depends="ejbca-ejb-interface, ejbca-ejb-cli, plugins, plugins-ee, peerconnector, caa">
+	<target name="configdump" depends="ejbca-ejb-interface, ejbca-ejb-cli, plugins, plugins-ee, peerconnector, caa, mpic">
 		<fail message="Configdump tool is not distributed with this version of EJBCA" unless="${mod.configdump.exists}"/>
 		<ant antfile="${mod.configdump.path}/build.xml" target="build-cli" inheritall="true" inheritrefs="true"/>
 	</target>
 	
-    <target name="configdump-ejb" depends="ejbca-ejb-cli, plugins, plugins-ee, peerconnector, caa" if="${mod.configdump.exists}">
+    <target name="configdump-ejb" depends="ejbca-ejb-cli, plugins, plugins-ee, peerconnector, caa, mpic" if="${mod.configdump.exists}">
         <ant antfile="${mod.configdump.path}/build.xml" target="build-ejb" inheritall="true" inheritrefs="true"/>
     </target>
 	

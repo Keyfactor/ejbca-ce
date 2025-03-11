@@ -110,6 +110,7 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.cert.SubjectDirAttrExtension;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenInfo;
@@ -208,6 +209,8 @@ import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import com.keyfactor.util.keys.token.KeyGenParams;
+import com.keyfactor.util.RandomHelper;
+
 
 /**
  * System tests for the EjbcaWS API. This test uses remote EJB calls to setup the environment.
@@ -288,11 +291,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
     private final static SecureRandom secureRandom;
 
     static {
-        try {
-            secureRandom = SecureRandom.getInstance("SHA1PRNG");
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException(e);
-        }
+        secureRandom = RandomHelper.getInstance(CesecoreConfiguration.getCaSerialNumberAlgorithm());
     }
 
     private static List<File> fileHandles = new ArrayList<>();
@@ -346,7 +345,6 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
             globalConfigurationSession.saveConfiguration(intAdmin, originalGlobalConfiguration);
         }
     }
-
 
     /** This test is not a WebService test, but for simplicity it re-uses the created administrator certificate in order to connect to the
      * EJBCA Admin Web and verify returned security headers.
@@ -2414,7 +2412,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
      */
     @Test
     public void test48CertificateRequestWithCardNumber() throws Exception {
-        String userName = "wsRequestCardNumber" + new SecureRandom().nextLong();
+        String userName = "wsRequestCardNumber" + RandomHelper.getInstance(CesecoreConfiguration.getCaSerialNumberAlgorithm()).nextLong();
 
         // Generate a CSR
         KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
@@ -3036,7 +3034,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
      */
     @Test
     public void test75CertificateRequestWithOnlyAltNames() throws Exception {
-        final String username = "wsRequestOnlyAltNames" + new SecureRandom().nextLong();
+        final String username = "wsRequestOnlyAltNames" + RandomHelper.getInstance(CesecoreConfiguration.getCaSerialNumberAlgorithm()).nextLong();
         final String eeProfileName = username;
         // Generate a CSR
         final KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
@@ -3596,7 +3594,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
 
     /** Reads a PEM file by the class path. */
     private String readPemFile(final String filename) throws IOException {
-        final InputStream stream = getClass().getResourceAsStream(filename);
+        final InputStream stream = getClass().getClassLoader().getResourceAsStream(filename);
         final StringWriter writer = new StringWriter();
         IOUtils.copy(stream, writer, StandardCharsets.UTF_8);
         IOUtils.closeQuietly(stream);
@@ -3605,7 +3603,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
 
     /** Reads a DER file by the class path. */
     private byte[] readDerFile(final String filename) throws IOException {
-        final InputStream stream = getClass().getResourceAsStream(filename);
+        final InputStream stream = getClass().getClassLoader().getResourceAsStream(filename);
         final byte[] data = new byte[stream.available()];
         stream.read(data);
         IOUtils.closeQuietly(stream);
