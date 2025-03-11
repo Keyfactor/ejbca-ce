@@ -14,8 +14,6 @@ package org.ejbca.core.ejb.ra;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.keys.keyimport.KeyImportFailure;
 import org.cesecore.keys.keyimport.KeyImportRequestData;
 import org.ejbca.core.EjbcaException;
@@ -35,5 +33,5 @@ public interface KeyImportSession {
      * @return the list of failed key imports
      */
     List<KeyImportFailure> importKeys(AuthenticationToken authenticationToken, KeyImportRequestData keyImportRequestData)
-            throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException, CertificateProfileDoesNotExistException;
+            throws AuthorizationDeniedException, EjbcaException;
 }

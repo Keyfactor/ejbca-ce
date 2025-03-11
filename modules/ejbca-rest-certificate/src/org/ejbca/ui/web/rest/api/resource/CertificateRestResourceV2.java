@@ -18,6 +18,7 @@ import java.security.cert.CertificateParsingException;
 import java.util.List;
 import java.util.Map;
 
+import com.keyfactor.ErrorCode;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
@@ -31,7 +32,6 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.keys.keyimport.KeyImportFailure;
 import org.cesecore.keys.keyimport.KeyImportRequestData;
 import org.ejbca.config.GlobalConfiguration;
@@ -41,8 +41,7 @@ import org.ejbca.core.model.era.RaCertificateProfileResponseV2;
 import org.ejbca.core.model.era.RaCertificateSearchRequestV2;
 import org.ejbca.core.model.era.RaCertificateSearchResponseV2;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
-import org.ejbca.core.model.ra.NotFoundException;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
+import org.ejbca.core.model.keyimport.KeyImportException;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.request.KeyImportRestRequestV2;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequestV2;
@@ -191,7 +190,7 @@ public class CertificateRestResourceV2 extends BaseRestResource {
     public Response importKeystores(final HttpServletRequest requestContext, final String issuerDN, @Valid final KeyImportRestRequestV2 request)
             throws AuthorizationDeniedException, RestException {
         if(request == null) {
-            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Key import request cannot be null.");
+            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Key import request cannot be empty.");
         }
 
         final AuthenticationToken authenticationToken = getAdmin(requestContext, true);
@@ -205,12 +204,12 @@ public class CertificateRestResourceV2 extends BaseRestResource {
             final int status = importFailures.isEmpty() ? Response.Status.OK.getStatusCode() : 207;
 
             return Response.status(status).entity(response).build();
-        } catch (CADoesntExistsException | CertificateProfileDoesNotExistException | EndEntityProfileNotFoundException | NotFoundException e) {
+        } catch (KeyImportException e) {
             throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), e.getMessage());
-        } catch (EjbcaException e) {
-            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage());
-        } catch (Exception e) {
-            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "An unexpected error happened: " + e.getMessage());
+        }
+        catch (Exception e) {
+            final String message = StringUtils.isBlank(e.getMessage()) ? "An unexpected error happened. " : e.getMessage();
+            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), message);
         }
     }
     

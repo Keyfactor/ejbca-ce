@@ -24,12 +24,10 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAData;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
-import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.keyimport.KeyImportFailure;
@@ -40,7 +38,8 @@ import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.keyimport.KeyImportException;
-import org.ejbca.core.model.ra.NotFoundException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,7 +67,7 @@ public class KeyImportSessionBean implements KeyImportSessionLocal, KeyImportSes
     private ProcessKeystoreSessionLocal processKeystoreSession;
 
     @Override
-    public List<KeyImportFailure> importKeys(final AuthenticationToken authenticationToken, final KeyImportRequestData keyImportRequestData) throws CADoesntExistsException, AuthorizationDeniedException, CertificateProfileDoesNotExistException, EjbcaException {
+    public List<KeyImportFailure> importKeys(final AuthenticationToken authenticationToken, final KeyImportRequestData keyImportRequestData) throws AuthorizationDeniedException, EjbcaException {
         List<KeyImportFailure> keyImportFailures = new ArrayList<>();
 
         GlobalConfiguration globalConfig = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
@@ -83,28 +82,23 @@ public class KeyImportSessionBean implements KeyImportSessionLocal, KeyImportSes
         final String certificateProfileName = keyImportRequestData.getCertificateProfileName();
         final int certificateProfileId = certificateProfileSession.getCertificateProfileId(certificateProfileName);
         if (certificateProfileId == 0) {
-            final String certificateProfileErrorMessage = "Certificate profile does not exist: " + certificateProfileName;
-
-            log.error(certificateProfileErrorMessage);
-            throw new CertificateProfileDoesNotExistException(certificateProfileErrorMessage);
+            throw new KeyImportException("Certificate profile does not exist: " + certificateProfileName);
         }
 
-        // Key migration is not supported when approvals are enabled.
+        // Key migration is not supported when approvals are enabled in CA or CP.
         final CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(certificateProfileId);
-        if (isApprovalsEnabled(certificateProfile.getApprovals())) {
-            final String approvalsErrorMessage = "Certificate profile '" + certificateProfileName + "' has approvals enabled for end entity operation and/or key recovery. Cannot be used for key import.";
-
-            log.error(approvalsErrorMessage);
-            throw new EjbcaException(approvalsErrorMessage);
+        if (isApprovalsEnabled(certificateProfile.getApprovals(), caInfo.getApprovals())) {
+            throw new EjbcaException("Certificate profile or CA has approvals enabled for end entity operations and/or key recovery. Cannot be used for key import.");
         }
 
         String endEntityProfileName = keyImportRequestData.getEndEntityProfileName();
-        int endEntityProfileId = endEntityProfileSession.getEndEntityProfileId(endEntityProfileName);
+        final int endEntityProfileId = verifyEndEntityProfile(endEntityProfileName);
+
+        verifyProfiles(caInfo.getCAId(), certificateProfileId, certificateProfile, endEntityProfileSession.getEndEntityProfile(endEntityProfileId));
 
         List<KeyImportKeystoreData> keystores = keyImportRequestData.getKeystores();
         if (CollectionUtils.isEmpty(keystores)) {
-            log.error("No keystores found for key import request: " + keyImportRequestData);
-            throw new NotFoundException("No keystores found in the key import request");
+            throw new KeyImportException("No keystores found in the key import request");
         }
 
         for (KeyImportKeystoreData keystore : keystores) {
@@ -112,6 +106,9 @@ public class KeyImportSessionBean implements KeyImportSessionLocal, KeyImportSes
             try {
                 processKeystoreSession.processKeyStore(authenticationToken, keystore, caInfo, caData, certificateProfileId, endEntityProfileId);
             } catch (KeyImportException e) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Key import has failed for username: " + keystore.getUsername());
+                }
                 keyImportFailures.add(new KeyImportFailure(keystore.getUsername(), e.getMessage()));
             }
         }
@@ -119,23 +116,30 @@ public class KeyImportSessionBean implements KeyImportSessionLocal, KeyImportSes
         return keyImportFailures;
     }
 
-    private CAInfo verifyCertificateAuthority(AuthenticationToken authenticationToken, CAData caData, String caDn) throws CADoesntExistsException, EjbcaException, AuthorizationDeniedException {
-        if (caData == null) {
-            final String caErrorMessage = "CA does not exist. CA DN: " + caDn;
+    private int verifyEndEntityProfile(final String endEntityProfileName) throws KeyImportException {
+        try {
+            return endEntityProfileSession.getEndEntityProfileId(endEntityProfileName);
+        } catch (EndEntityProfileNotFoundException e) {
+            throw new KeyImportException("End Entity Profile doesn't exist: " + endEntityProfileName);
+        }
+    }
 
-            log.error(caErrorMessage);
-            throw new CADoesntExistsException(caErrorMessage);
+    private CAInfo verifyCertificateAuthority(final AuthenticationToken authenticationToken, final CAData caData, final String caDn) throws EjbcaException, AuthorizationDeniedException {
+        if (caData == null) {
+            throw new KeyImportException("CA does not exist. CA DN: " + caDn);
         }
 
         final CAInfo caInfo = caSession.getCAInfo(authenticationToken, caData.getCaId());
-
         if (caInfo == null || StringUtils.isEmpty(caInfo.getSubjectDN())) {
-            throw new CADoesntExistsException("CAInfo is empty, looks like CA does not exist. CA id: " + caData.getCaId());
+            if (log.isDebugEnabled()) {
+                log.debug("CAInfo is empty, looks like CA does not exist. CA Id: " + caData.getCaId());
+            }
+            throw new KeyImportException("CA does not exist. CA DN: " + caDn);
         }
 
         if (caInfo.getStatus() == CAConstants.CA_OFFLINE ||
             caInfo.getStatus() == CAConstants.CA_UNINITIALIZED) {
-            throw new EjbcaException("CA is not active");
+            throw new EjbcaException("CA is not active.");
         }
 
         if (caInfo.getCAType() != CAInfo.CATYPE_X509) {
@@ -145,11 +149,33 @@ public class KeyImportSessionBean implements KeyImportSessionLocal, KeyImportSes
         return caInfo;
     }
 
-    private boolean isApprovalsEnabled( Map<ApprovalRequestType, Integer> approvals) {
-        final Integer approvalForAddingEE = approvals.get(ApprovalRequestType.ADDEDITENDENTITY);
-        final Integer approvalForKeyRecovery = approvals.get(ApprovalRequestType.KEYRECOVER);
+    private void verifyProfiles(final int caId, final int certificateProfileId, final CertificateProfile certificateProfile, final EndEntityProfile endEntityProfile) throws EjbcaException {
+        // CP uses -1 for "Any CA" and EEP uses 1
+        final boolean caExistsInCP = certificateProfile.getAvailableCAs().contains(caId) || certificateProfile.getAvailableCAs().contains(CertificateProfile.ANYCA);
+        final boolean caExistsInEEP = endEntityProfile.getAvailableCAs().contains(caId) || endEntityProfile.getAvailableCAs().contains(CAConstants.ALLCAS);
 
-        return (approvalForAddingEE != null && approvalForAddingEE != ApprovalProfile.NO_PROFILE_ID) ||
-               (approvalForKeyRecovery != null && approvalForKeyRecovery != ApprovalProfile.NO_PROFILE_ID);
+        final boolean cpExistsInEEP = endEntityProfile.getAvailableCertificateProfileIds().contains(certificateProfileId);
+
+        if (!(caExistsInCP && caExistsInEEP)) {
+            throw new EjbcaException("CA is not selected as available in Certificate Profile or End Entity Profile");
+        }
+
+        if (!cpExistsInEEP) {
+            throw new EjbcaException("Certificate Profile is not selected as available in the End Entity Profile");
+        }
+    }
+
+    private boolean isApprovalsEnabled(final Map<ApprovalRequestType, Integer> certificateProfileApprovals, final Map<ApprovalRequestType, Integer> certificateAuthorityApprovals) {
+        final Integer caEndEntityApprovals = certificateAuthorityApprovals.get(ApprovalRequestType.ADDEDITENDENTITY);
+        final Integer caKeyRecoverApprovals = certificateAuthorityApprovals.get(ApprovalRequestType.KEYRECOVER);
+
+        final Integer cpEndEntityApprovals = certificateProfileApprovals.get(ApprovalRequestType.ADDEDITENDENTITY);
+        final Integer cpKeyRecoverApprovals = certificateProfileApprovals.get(ApprovalRequestType.KEYRECOVER);
+
+
+        return (cpEndEntityApprovals != null && cpEndEntityApprovals != ApprovalProfile.NO_PROFILE_ID) ||
+               (cpKeyRecoverApprovals != null && cpKeyRecoverApprovals != ApprovalProfile.NO_PROFILE_ID) ||
+               (caEndEntityApprovals != null && caEndEntityApprovals != ApprovalProfile.NO_PROFILE_ID) ||
+               (caKeyRecoverApprovals != null && caKeyRecoverApprovals != ApprovalProfile.NO_PROFILE_ID);
     }
 }

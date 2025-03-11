@@ -3456,7 +3456,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     @Override
     public List<KeyImportFailure> keyImportV2(final AuthenticationToken authenticationToken, final KeyImportRequestData keyImportRequestData)
-            throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException, CertificateProfileDoesNotExistException {
+            throws AuthorizationDeniedException, EjbcaException, CADoesntExistsException {
         return keyImportSession.importKeys(authenticationToken, keyImportRequestData);
     }
 
