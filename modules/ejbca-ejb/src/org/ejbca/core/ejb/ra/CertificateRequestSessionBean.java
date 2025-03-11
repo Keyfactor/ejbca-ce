@@ -98,6 +98,7 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceRe
 import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.ssh.SshRequestMessage;
 import org.ejbca.cvc.exception.ConstructionException;
@@ -177,7 +178,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
         if (cainfo.isUseUserStorage() && username != null) {
             endEntityManagementSession.initializeEndEntityTransaction(username);
         }
-        if(cainfo.getCAType() == CAInfo.CATYPE_X509) {
+        if (cainfo.getCAType() == CAInfo.CATYPE_X509) {
             String preProcessorClass = ((X509CAInfo) cainfo).getRequestPreProcessor();
             if (!StringUtils.isEmpty(preProcessorClass)) {
                 try {
@@ -186,13 +187,16 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
                     userdata.setDN(requestMessage.getRequestX500Name().toString());
                 } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | IllegalArgumentException
                         | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-                    throw new IllegalStateException("Request Preprocessor implementation " + preProcessorClass + " could not be instansiated.");
+                    throw new IllegalStateException("Request Preprocessor implementation " + preProcessorClass + " could not be instantiated.");
                 }
 
             }
         }
         
         EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(userdata.getEndEntityProfileId());
+        if (profile == null) {
+            throw new EndEntityProfileNotFoundException("End Entity Profile with id " + userdata.getEndEntityProfileId() + " does not exist.");
+        }
         boolean isClearPwd = profile.isClearTextPasswordUsed() && profile.isClearTextPasswordDefault();
 
         // This is the secret sauce, do the end entity handling automagically here before we get the cert
