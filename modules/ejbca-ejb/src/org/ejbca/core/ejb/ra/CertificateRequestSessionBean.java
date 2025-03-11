@@ -171,6 +171,9 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             throw new EjbcaException(ErrorCode.FIELD_VALUE_NOT_VALID, LogRedactionUtils.getRedactedException(e));
         }
         CAInfo cainfo = caSession.getCAInfoInternal(userdata.getCAId());
+        if (cainfo == null) {
+            throw new CADoesntExistsException("CA with id " + userdata.getCAId() + " does not exist.");
+        }
         if (cainfo.isUseUserStorage() && username != null) {
             endEntityManagementSession.initializeEndEntityTransaction(username);
         }
