@@ -15,10 +15,7 @@ package org.ejbca.core.ejb.rest;
 
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
@@ -171,8 +168,33 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
         extendedInformation.setSubjectDirectoryAttributes(getSubjectDirectoryAttribute(pkcs10CertificateRequest));
         extendedInformation.setAccountBindingId(enrollcertificateRequest.getAccountBindingId());
 
-        String subjectDn = getSubjectDn(pkcs10CertificateRequest);
-        endEntityInformation.setDN(subjectDn);
+        List<Map.Entry<String, String>> extensions = enrollcertificateRequest.getExtendedData();
+        if (extensions != null && !extensions.isEmpty()) {
+            extensions.forEach(entry -> {extendedInformation.setExtensionData(entry.getKey(), entry.getValue());});
+        }
+
+        List<Map.Entry<String, String>> customData = enrollcertificateRequest.getCustomData();
+        if (customData != null && !customData.isEmpty()) {
+            customData.forEach(entry -> {extendedInformation.setStringKeyData(entry.getKey(), entry.getValue());});
+        }
+
+        String startTime = enrollcertificateRequest.getStartTime();
+        if (StringUtils.isNotBlank(startTime)) {
+            extendedInformation.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, startTime);
+        }
+
+        String endTime = enrollcertificateRequest.getEndTime();
+        if (StringUtils.isNotBlank(endTime)) {
+            extendedInformation.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, endTime);
+        }
+
+        String overwriteSubjectDn = enrollcertificateRequest.getSubjectDn();
+        if (StringUtils.isNotBlank(overwriteSubjectDn)) {
+            endEntityInformation.setDN(overwriteSubjectDn);
+        } else {
+            String csrSubjectDn = getSubjectDn(pkcs10CertificateRequest);
+            endEntityInformation.setDN(csrSubjectDn);
+        }
 
         endEntityInformation.setCardNumber("");
         endEntityInformation.setStatus(EndEntityConstants.STATUS_NEW);
