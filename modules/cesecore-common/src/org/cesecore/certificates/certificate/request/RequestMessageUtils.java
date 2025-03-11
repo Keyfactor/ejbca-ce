@@ -215,7 +215,7 @@ public abstract class RequestMessageUtils {
                     PublicKey pubKey = nscr.getPublicKey();
                     ret = new SimpleRequestMessage(pubKey, username, password);
                 } catch (DecoderException de) {
-                    throw new IOException("Base64 decode fails, message not base64 encoded: " + de.getMessage());
+                    throw new IOException("Base64 decode fails for SPKAC, message not base64 encoded: " + de.getMessage());
                 }
             }
         } else if (reqType == CertificateConstants.CERT_REQ_TYPE_CRMF) {
@@ -291,7 +291,7 @@ public abstract class RequestMessageUtils {
             } catch (CRMFException | OperatorCreationException e) {
                 throw new SignRequestSignatureException("CRMF POP verification failed.", e);
             } catch (DecoderException de) {
-                throw new IOException("Base64 decode fails, message not base64 encoded: " + de.getMessage());
+                throw new IOException("Base64 decode fails for SPKAC, message not base64 encoded: " + de.getMessage());
             }
         } else if (reqType == CertificateConstants.CERT_REQ_TYPE_PUBLICKEY) {
             byte[] request;
@@ -302,10 +302,10 @@ public abstract class RequestMessageUtils {
                 try {
                     request = Base64.decode(req.getBytes());
                     if (request == null) {
-                        throw new IOException("Base64 decode of buffer returns null");
+                        throw new IOException("PUBLICKEY Base64 decode of buffer returns null");
                     }
                 } catch (DecoderException de) {
-                    throw new IOException("Base64 decode fails, message not base64 encoded: " + de.getMessage());
+                    throw new IOException("Base64 decode fails for PUBLICKEY, message not base64 encoded: " + de.getMessage());
                 }
             }
             final PublicKey pubKey = KeyTools.getPublicKeyFromBytes(request);
@@ -341,7 +341,7 @@ public abstract class RequestMessageUtils {
                 }
                 ret = reqmsg;
             } catch (DecoderException de) {
-                throw new IOException("Base64 decode fails, message not base64 encoded: " + de.getMessage());
+                throw new IOException("Base64 decode fails for CVC, message not base64 encoded: " + de.getMessage());
             }
         }
         return ret;
