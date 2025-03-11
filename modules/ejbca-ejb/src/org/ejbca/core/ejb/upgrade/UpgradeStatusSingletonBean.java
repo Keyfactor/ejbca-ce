@@ -33,7 +33,6 @@ import org.apache.log4j.spi.LoggingEvent;
 /**
  * Singleton responsible for keep track of a node-local post upgrade.
  * 
- * @version $Id$
  */
 @Singleton
 @ConcurrencyManagement(ConcurrencyManagementType.BEAN)
