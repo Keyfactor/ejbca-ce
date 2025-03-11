@@ -4064,7 +4064,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
 
     @Override
     public List<KeyImportFailure> keyImportV2(final AuthenticationToken authenticationToken, final KeyImportRequestData keyImportRequestData)
-            throws AuthorizationDeniedException, EjbcaException, CADoesntExistsException, CertificateProfileDoesNotExistException {
+            throws AuthorizationDeniedException, EjbcaException, CADoesntExistsException {
         for (RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 20) {
                 try {
