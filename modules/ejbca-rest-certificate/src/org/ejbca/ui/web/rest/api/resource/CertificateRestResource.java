@@ -252,12 +252,6 @@ public class CertificateRestResource extends BaseRestResource {
             CertificateRestResponse enrollCertificateRestResponse = getCertificateRestResponse(responseFormat, certificateBytes, includeChain, certificateChain, certificate);
             return Response.status(Status.CREATED).entity(enrollCertificateRestResponse).build();
 
-        } catch (RestException|  CADoesntExistsException | EndEntityProfileValidationException
-                 | CertificateEncodingException | AuthorizationDeniedException
-                 | WaitingForApprovalException e) {
-            log.info("Exception during enrollCertificate: ", LogRedactionUtils.getRedactedThrowable(e));
-            log.info("KOOOT Exception during enrollCertificate: " + e.getClass().getName() + " " + e.getMessage());
-            throw e;
         }
         catch (EjbcaException | CertificateParsingException | CMSException e) {
             log.info("Exception during enrollCertificate: ", LogRedactionUtils.getRedactedThrowable(e));
