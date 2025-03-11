@@ -37,6 +37,9 @@ public interface CertificateDataSessionLocal extends CertificateDataSession {
     
     /** @return return the query results as a List. */
     List<CertificateData> findBySubjectDN(String subjectDN);
+    
+    /** @return return only the latest certificate issued. */
+    CertificateData findLatestBySubjectDN(String subjectDN);
 
     /** @return return the query results as a List. */
     List<Certificate> findActiveBySubjectDnAndType(final String subjectDN, final Collection<Integer> certificateTypes);

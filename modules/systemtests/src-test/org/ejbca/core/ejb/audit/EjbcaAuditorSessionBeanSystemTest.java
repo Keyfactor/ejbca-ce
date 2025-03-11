@@ -13,6 +13,8 @@
 package org.ejbca.core.ejb.audit;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
@@ -34,8 +36,10 @@ import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.db.DatabaseContentRule;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
 
 /**
@@ -53,9 +57,18 @@ public class EjbcaAuditorSessionBeanSystemTest extends RoleUsingTestCase {
     private RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
     
     private final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EjbcaAuditorSessionBeanSystemTest"));
-    
+
+    @ClassRule
+    public static DatabaseContentRule databaseContentRule = new DatabaseContentRule();
+
     @Before
     public void setup() throws RoleExistsException, RoleNotFoundException {
+        try {
+            tearDown();
+        }
+        catch (Exception e) {
+            // Ignore
+        }
         super.setUpAuthTokenAndRole(null, ROLE_NAME, Arrays.asList(AuditLogRules.VIEW.resource()), null);
     }
 
@@ -107,9 +120,11 @@ public class EjbcaAuditorSessionBeanSystemTest extends RoleUsingTestCase {
         params.add(EventTypes.ACCESS_CONTROL.toString());
         List<? extends AuditLogEntry> entries = 
                 ejbcaAuditorSession.selectAuditLog(roleMgmgToken, DEVICE_NAME, 0, 1, "a.eventType != ?1", "a.timeStamp DESC", params);
-        
+
+        assertNotNull(entries);
+        assertFalse("No audit log entries where received", entries.isEmpty());
         assertEquals("Authtoken was not trimmed where subject is too big.", 
-                entries.get(0).getAuthToken(), "[trimmed] " + upn.substring(0, 235));
+                "[trimmed] " + upn.substring(0, 235), entries.get(0).getAuthToken());
         assertEquals("Authtoken is not part of additional details when subject is too big.", 
                                    entries.get(0).getMapAdditionalDetails().get("authToken"), upn);
         

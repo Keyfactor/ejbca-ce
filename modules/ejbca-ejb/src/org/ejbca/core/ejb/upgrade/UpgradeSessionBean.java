@@ -79,7 +79,9 @@ import org.cesecore.certificates.ocsp.logging.PatternLogger;
 import org.cesecore.certificates.ocsp.logging.TransactionLogger;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.ConfigurationHolder;
+import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.config.OcspConfiguration;
@@ -636,6 +638,13 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         if (isLesserThan(oldVersion, "8.3.0")) {
             try {
                 upgradeSession.migrateDatabase830();
+            } catch (UpgradeFailedException e) {
+                return false;
+            }
+        }        
+        if (isLesserThan(oldVersion, "9.2.0")) {
+            try {
+                upgradeSession.migrateDatabase920();
             } catch (UpgradeFailedException e) {
                 return false;
             }
@@ -2610,6 +2619,34 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);
         } catch (AuthorizationDeniedException e) {
             log.error("Always allow token was denied authoriation to global configuration table.", e);
+        }
+    }
+    
+    @SuppressWarnings("deprecation")
+    @Override
+    public void migrateDatabase920() throws UpgradeFailedException{
+        //Shift various CT-related values from cesecore.properties into Global Configuration
+        {
+            final GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession
+                    .getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+            boolean ctCacheEnabled = CesecoreConfiguration.getCTCacheEnabled();
+            globalCesecoreConfiguration.setCtCacheEnabled(ctCacheEnabled);
+            long ctCacheSize = CesecoreConfiguration.getCTCacheMaxEntries();
+            globalCesecoreConfiguration.setCtCacheSize(ctCacheSize);
+            long ctCacheCleanupInterval = CesecoreConfiguration.getCTCacheCleanupInterval();
+            globalCesecoreConfiguration.setCtCacheCleanupInterval(ctCacheCleanupInterval);
+            boolean ctCacheFastFailEnabled = CesecoreConfiguration.getCTFastFailEnabled();
+            globalCesecoreConfiguration.setCtCacheFastFailEnabled(ctCacheFastFailEnabled);
+            long ctCacheFastFailBackoff = CesecoreConfiguration.getCTFastFailBackOff();
+            globalCesecoreConfiguration.setCtCacheFastFailBackoff(ctCacheFastFailBackoff);
+            
+            try {
+                globalConfigurationSession.saveConfiguration(authenticationToken, globalCesecoreConfiguration);
+            } catch (AuthorizationDeniedException e) {
+                String msg = "Always allow token was denied authoriation to global configuration table.";
+                log.error(msg, e);
+                throw new UpgradeFailedException(msg, e);
+            }
         }
     }
     

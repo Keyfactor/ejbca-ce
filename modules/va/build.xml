@@ -53,9 +53,7 @@
     	<delete file="${mod.va.war}" />
     </target>
 	
-	<condition property="ocsp.enabled.if.defined"><istrue value="${ocsp.enabled}"/></condition>
-    
-	<target name="ejbca-build" description="Build this module" depends="ejbca-status.war"/>
+    <target name="ejbca-build" description="Build this module" depends="ejbca-status.war"/>
 	<target name="ejbca-status.war" depends="ejbca-status-compile" if="${status.war.enabled}">
 		<war destfile="${mod.status.war}" webxml="${va.resources.dir}/WEB-INF/web-status-ejbca.xml" basedir="${va.build-status.dir}"/>
 	</target>
@@ -78,7 +76,7 @@
 		</jar>
 	</target>
 			
-	<target name="ejbca-status-compile" depends="use-ocsp-extensionclass" if="ocsp.enabled.if.defined">
+	<target name="ejbca-status-compile" depends="use-ocsp-extensionclass">
     	<mkdir dir="${va.build-status.dir}/WEB-INF/classes" />
         <javac destdir="${va.build-status.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
 			classpathref="compile-ejbca.classpath">

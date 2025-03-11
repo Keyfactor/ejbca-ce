@@ -20,9 +20,12 @@
 package org.ejbca.core.model.authorization;
 
 import java.io.Serializable;
-import java.security.SecureRandom;
 import java.security.cert.Certificate;
 import java.util.Random;
+
+import org.cesecore.config.CesecoreConfiguration;
+
+import com.keyfactor.util.RandomHelper;
 
 /**
  * A class used to send user information to the authorization tree. It can contain types of information, a X509Certificate or a
@@ -65,7 +68,7 @@ public class AdminInformation implements Serializable {
 	public static final byte[] createRandomToken() {
     	byte[] token = new byte[32];
         Random randomSource;
-        randomSource = new SecureRandom();
+        randomSource = RandomHelper.getInstance(CesecoreConfiguration.getCaSerialNumberAlgorithm());
         randomSource.nextBytes(token);
     	return token;
 	}

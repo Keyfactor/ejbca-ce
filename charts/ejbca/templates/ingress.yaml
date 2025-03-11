@@ -1,10 +1,11 @@
 {{- if .Values.ingress.enabled -}}
 {{- $fullName := include "ejbca.fullname" . -}}
-{{- $svcPort := .Values.services.directHttp.httpPort -}}
-{{- if .Values.services.proxyAJP.enabled }}
+{{- $svcPort := .Values.services.proxyHttp.httpsPort -}}
+{{- if or (.Values.services.proxyAJP.enabled) (.Values.httpd.enabled) }}
 {{- $svcPort = .Values.services.proxyAJP.port -}}
-{{- else if .Values.services.proxyHttp.enabled }}
-{{- $svcPort = .Values.services.proxyHttp.httpsPort -}}
+{{- end }}
+{{- if .Values.services.directHttp.enabled }}
+{{- $svcPort = .Values.services.directHttp.httpPort -}}
 {{- end }}
 {{- if and .Values.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
   {{- if not (hasKey .Values.ingress.annotations "kubernetes.io/ingress.class") }}
@@ -25,14 +26,14 @@ metadata:
     {{- include "ejbca.labels" . | nindent 4 }}
   annotations:
     nginx.ingress.kubernetes.io/proxy-body-size: 32m
-    {{- if .Values.services.proxyAJP.enabled  }}
+    {{- if or (.Values.services.proxyAJP.enabled) (.Values.httpd.enabled) }}
     nginx.ingress.kubernetes.io/backend-protocol: "AJP"
-    {{- else if .Values.services.proxyHttp.enabled  }}
+    {{- else }}
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    {{- end }}
     nginx.ingress.kubernetes.io/configuration-snippet: |
       proxy_set_header SSL_CLIENT_CERT $ssl_client_cert;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    {{- end }}
     {{- if ne (int .Values.replicaCount) 1 }}
     nginx.ingress.kubernetes.io/affinity: "cookie"
     nginx.ingress.kubernetes.io/session-cookie-name: "ejbcaCOOKIE"

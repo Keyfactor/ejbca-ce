@@ -27,7 +27,7 @@ public class Log4jLogRedactionRedactHandler extends Handler {
     }
 
     @Override
-    public void publish(LogRecord logRecord) {        
+    public void publish(LogRecord logRecord) {   
         // skip messages from INFO or DEBUG i.e. most server logs
         // @see org.ejbca.util.Log4jHandler
         if ( logRecord.getLevel().intValue() >= Level.FINE.intValue() // DEBUG

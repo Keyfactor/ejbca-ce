@@ -21,6 +21,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.security.KeyPair;
@@ -83,6 +84,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.FileUtil;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
@@ -96,6 +98,7 @@ import org.junit.Test;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -383,9 +386,15 @@ public class KeyValidatorSessionSystemTest extends RoleUsingTestCase {
         
         // Check validation of an external call with x.509 RSA public key during the phase specified as an argument.
         KeyPair keyPair = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
-        X509Certificate certificate = CertTools.genSelfCert(
-                "C=Test,O=Test,OU=Test,CN=testValidateCertificteWithExternalCommand", 365, null,
-                keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
+        X509Certificate certificate = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn("C=Test,O=Test,OU=Test,CN=testValidateCertificteWithExternalCommand")
+                .setIssuerDn("C=Test,O=Test,OU=Test,CN=testValidateCertificteWithExternalCommand")
+                .setValidityDays(365)
+                .setIssuerPrivKey(keyPair.getPrivate())
+                .setEntityPubKey(keyPair.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setLdapOrder(true)
+                .generateCertificate();
         ExternalCommandCertificateValidator validator = (ExternalCommandCertificateValidator) createCertificateValidator(ExternalCommandCertificateValidator.class, "§", null, null, -1, null, -1,
                 KeyValidationFailedActions.ABORT_CERTIFICATE_ISSUANCE.getIndex(), certificateProfileSession.getCertificateProfileId(TEST_CP_NAME));
         validator.setFailedAction(KeyValidationFailedActions.ABORT_CERTIFICATE_ISSUANCE.getIndex());
@@ -806,8 +815,15 @@ public class KeyValidatorSessionSystemTest extends RoleUsingTestCase {
         log.trace(">testAuthorization()");
         // AuthenticationToken that does not have privileges to edit a Validator
         KeyPair keys = KeyTools.genKeys("1024",  "RSA");
-        X509Certificate certificate = CertTools.genSelfCert("C=SE,O=Test,CN=Test KeyValidatorSessionSystemTest", 365, null, keys.getPrivate(),
-                keys.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
+        X509Certificate certificate = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn("C=SE,O=Test,CN=Test KeyValidatorSessionSystemTest")
+                .setIssuerDn("C=SE,O=Test,CN=Test KeyValidatorSessionSystemTest")
+                .setValidityDays(365)
+                .setIssuerPrivKey(keys.getPrivate())
+                .setEntityPubKey(keys.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setLdapOrder(true)
+                .generateCertificate();
         AuthenticationToken adminTokenNoAuth = new X509CertificateAuthenticationToken(certificate);
 
         final String name = "testKeyValidatorAuthorization";
@@ -1122,11 +1138,11 @@ public class KeyValidatorSessionSystemTest extends RoleUsingTestCase {
      * @throws IllegalArgumentException 
      */
     // Code duplication: Re-factor.
-    private static CertificateValidator createCertificateValidator(Class<? extends CertificateValidator> type, final String name, final String description, final Date notBefore,
+    private static ExternalScriptCertificateValidator createCertificateValidator(Class<? extends ExternalScriptCertificateValidator> type, final String name, final String description, final Date notBefore,
             final int notBeforeCondition, final Date notAfter, final int notAfterCondition, final int failedAction,
             final Integer... certificateProfileIds) throws InstantiationException, IllegalAccessException, IllegalArgumentException,
             InvocationTargetException, NoSuchMethodException, SecurityException {
-        CertificateValidator result = type.getDeclaredConstructor().newInstance();
+        ExternalScriptCertificateValidator result = type.getDeclaredConstructor().newInstance();
         result.setProfileName(name);
         if (null != description) {
             result.setDescription(description);
@@ -1158,14 +1174,10 @@ public class KeyValidatorSessionSystemTest extends RoleUsingTestCase {
      * @param classpath the class path (or filename -> put inside resources directory).
      * @return the full path.
      */
-    private String getFilePathFromClasspath(final String classpath) {
+    private String getFilePathFromClasspath(final String classpath) throws IOException {
         final String fileSuffix = SystemUtils.IS_OS_WINDOWS ? ".bat" : ".sh";
         final String subFolder = SystemUtils.IS_OS_WINDOWS ? "windows" : "unix";
-        final String path = "resources/platform/" + subFolder + "/" + classpath + fileSuffix;
-        final String result = KeyValidatorSessionSystemTest.class.getClassLoader().getResource(path).getPath();
-        if (log.isDebugEnabled()) {
-            log.debug("Get file path by class path: " + classpath + " - " + result);
-        }
-        return SystemUtils.IS_OS_WINDOWS ? result.replaceFirst("/", StringUtils.EMPTY) : result;
+        final String path = "platform/" + subFolder + "/" + classpath + fileSuffix;
+        return FileUtil.getResourceAsFile(path).getAbsolutePath();
     }
 }
