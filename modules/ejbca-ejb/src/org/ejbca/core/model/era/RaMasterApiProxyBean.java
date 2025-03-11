@@ -1924,8 +1924,8 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
 
     @Override
     public byte[] createCertificateWithEntity(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, String req, int reqType, int responseType)
-            throws EjbcaException, AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException, ApprovalException, CADoesntExistsException {
-        CADoesntExistsException caDoesntExistException = null;
+            throws EjbcaException, AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException, ApprovalException {
+        EjbcaException ejbcaException = null;
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 20) {
                 if (log.isDebugEnabled()) {
@@ -1933,15 +1933,15 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                 }
                 try {
                     return raMasterApi.createCertificateWithEntity(authenticationToken, endEntityInformation, req, reqType, responseType);
-                } catch (CADoesntExistsException e) {
-                    caDoesntExistException = e;
+                } catch (EjbcaException e) {
+                    ejbcaException = e;
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
             }
         }
-        if (caDoesntExistException != null) {
-            throw caDoesntExistException;
+        if (ejbcaException != null) {
+            throw ejbcaException;
         }
         return null;
     }
