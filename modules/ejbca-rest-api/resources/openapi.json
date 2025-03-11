@@ -968,6 +968,15 @@
             }
           },
           {
+            "name": "exportCasForPeerImport",
+            "in": "query",
+            "description": "Export an CA to be imported in a Peer as configdump",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
             "description": "Names of items/types to include in the export. The syntax is identical to that of exclude. For items of types that aren't listed, everything is included.",
             "explode": true,
             "in": "query",
@@ -1086,6 +1095,15 @@
             "schema": {
               "default": false,
               "type": "boolean"
+            }
+          },
+          {
+            "name": "exportCasForPeerImport",
+            "in": "query",
+            "description": "Export an CA to be imported in a Peer as configdump",
+            "schema": {
+              "type": "boolean",
+              "default": false
             }
           },
           {
