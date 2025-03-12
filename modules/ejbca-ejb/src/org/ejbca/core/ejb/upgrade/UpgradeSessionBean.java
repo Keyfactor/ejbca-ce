@@ -10,9 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.ejbca.core.ejb.upgrade;
-
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -172,7 +170,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private static final int PARTITIONED_CRLS_NORMALIZE_BATCH_SIZE = 1000;
     private static final String MSSQL = "mssql";
 
-    private static final Logger log = Logger.getLogger(UpgradeSessionBean.class);
+    private final AppendingLogger log = new AppendingLogger(Logger.getLogger(UpgradeSessionBean.class));
 
     private static final AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken("Internal upgrade");
     
@@ -424,7 +422,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         boolean ret = false;
         if (setPostUpgradeStartedInternal(System.currentTimeMillis())) {
             try {
-                upgradeStatusSingleton.logAppenderAttach(log);
                 if (upgradeStatusSingleton.setPostUpgradeInProgressIfDifferent(true)) {
                     try {
                         final String dbType = DatabaseConfiguration.getDatabaseName();
@@ -448,7 +445,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 log.error("Unexpected error from post-upgrade: " + e.getMessage(), e);
             } finally {
                 setPostUpgradeStartedInternal(0L);
-                upgradeStatusSingleton.logAppenderDetach(log);
             }
         } else {
             log.info("Preventing start of post-upgrade background tasks since it has already been started by a cluster node.");
@@ -2690,5 +2686,59 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @Override
     public boolean isLesserThan(final String first, final String second) {
         return StringTools.isLesserThan(first, second);
+    }
+
+    private class AppendingLogger {
+
+        private final Logger log;
+
+        public AppendingLogger(final Logger log) {
+            this.log = log;
+        }
+
+        public void trace(final Object msg) {
+            log.trace(msg);
+            upgradeStatusSingleton.trace(msg);
+        }
+
+        public void debug(final Object msg) {
+            log.debug(msg);
+            upgradeStatusSingleton.debug(msg);
+        }
+
+        public void debug(final Object msg, final Throwable throwable) {
+            log.debug(msg, throwable);
+            upgradeStatusSingleton.debug(msg);
+        }
+
+        public void info(final Object msg) {
+            log.info(msg);
+            upgradeStatusSingleton.info(msg);
+        }
+
+        public void warn(final Object msg) {
+            log.warn(msg);
+            upgradeStatusSingleton.warn(msg);
+        }
+
+        public void error(final Object msg) {
+            log.error(msg);
+            upgradeStatusSingleton.error(msg);
+        }
+
+        public void error(final Object msg, final Throwable throwable) {
+            log.error(msg, throwable);
+            upgradeStatusSingleton.error(msg);
+        }
+
+        public void fatal(final Object msg) {
+            log.fatal(msg);
+            upgradeStatusSingleton.fatal(msg);
+        }
+
+        public boolean isDebugEnabled() {
+            return log.isDebugEnabled();
+        }
+
     }
 }
