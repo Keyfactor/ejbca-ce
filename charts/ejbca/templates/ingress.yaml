@@ -4,6 +4,9 @@
 {{- if or (.Values.services.proxyAJP.enabled) (.Values.httpd.enabled) }}
 {{- $svcPort = .Values.services.proxyAJP.port -}}
 {{- end }}
+{{- if .Values.ingress.sslBackend}}
+{{- $svcPort := 443 -}}
+{{- end }}
 {{- if .Values.services.directHttp.enabled }}
 {{- $svcPort = .Values.services.directHttp.httpPort -}}
 {{- end }}
