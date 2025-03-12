@@ -43,7 +43,6 @@
 
   <fail message="The property &quot;ca.serialnumberoctetsize&quot; has been moved from &quot;ejbca.properties&quot; to &quot;cesecore.properties&quot;." if="ejbca-properties-file.ca.serialnumberoctetsize" />
   <fail message="The property &quot;ca.rngalgorithm&quot; has been moved from &quot;ejbca.properties&quot; to &quot;cesecore.properties&quot;." if="ejbca-properties-file.ca.rngalgorithm" />
-  <fail message="The property &quot;ca.doPermitExtractablePrivateKeys&quot; has been moved from &quot;ejbca.properties&quot; to &quot;cesecore.properties&quot;." if="ejbca-properties-file.ca.doPermitExtractablePrivateKeys" />
   <fail message="The property &quot;intresources.preferredlanguage&quot; has been moved from &quot;ejbca.properties&quot; to &quot;cesecore.properties&quot;." if="ejbca-properties-file.intresources.preferredlanguage" />
   <fail message="The property &quot;intresources.secondarylanguage&quot; has been moved from &quot;ejbca.properties&quot; to &quot;cesecore.properties&quot;." if="ejbca-properties-file.intresources.secondarylanguage" />
     
