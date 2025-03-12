@@ -19,6 +19,7 @@ import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -70,31 +71,28 @@ public class KeyImportSessionBean implements KeyImportSessionLocal, KeyImportSes
     public List<KeyImportFailure> importKeys(final AuthenticationToken authenticationToken, final KeyImportRequestData keyImportRequestData) throws AuthorizationDeniedException, EjbcaException {
         List<KeyImportFailure> keyImportFailures = new ArrayList<>();
 
+        // Key migration is not supported with local key generation.
         GlobalConfiguration globalConfig = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         if (globalConfig.getEnableKeyRecovery() && globalConfig.getLocalKeyRecovery()) {
             throw new EjbcaException("Local Key Generation is not supported for Key Import.");
         }
 
-        final String caDn = keyImportRequestData.getIssuerDn();
-        final CAData caData = caSession.findBySubjectDN(caDn);
-        final CAInfo caInfo = verifyCertificateAuthority(authenticationToken, caData, caDn);
+        final String caSubjectDN = keyImportRequestData.getIssuerDn();
+        final ImmutablePair<CAData, CAInfo> caDataAndInfo = verifyCertificateAuthority(authenticationToken, caSubjectDN);
 
         final String certificateProfileName = keyImportRequestData.getCertificateProfileName();
-        final int certificateProfileId = certificateProfileSession.getCertificateProfileId(certificateProfileName);
-        if (certificateProfileId == 0) {
-            throw new KeyImportException("Certificate profile does not exist: " + certificateProfileName);
-        }
+        final ImmutablePair<Integer, CertificateProfile> certificateProfileIdAndData = verifyCertificateProfile(certificateProfileName);
 
         // Key migration is not supported when approvals are enabled in CA or CP.
-        final CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(certificateProfileId);
-        if (isApprovalsEnabled(certificateProfile.getApprovals(), caInfo.getApprovals())) {
-            throw new EjbcaException("Certificate profile or CA has approvals enabled for end entity operations and/or key recovery. Cannot be used for key import.");
+        if (isApprovalsEnabled(certificateProfileIdAndData.getRight().getApprovals(), caDataAndInfo.getRight().getApprovals())) {
+            throw new EjbcaException("Certificate profile or CA has approvals enabled for end entity operations. Cannot be used for key import.");
         }
 
         String endEntityProfileName = keyImportRequestData.getEndEntityProfileName();
-        final int endEntityProfileId = verifyEndEntityProfile(endEntityProfileName);
+        final ImmutablePair<Integer, EndEntityProfile> endEntityProfileIdAndData = verifyEndEntityProfile(endEntityProfileName);
 
-        verifyProfiles(caInfo.getCAId(), certificateProfileId, certificateProfile, endEntityProfileSession.getEndEntityProfile(endEntityProfileId));
+        verifyAvailabilities(caDataAndInfo.getRight().getCAId(), certificateProfileIdAndData.getLeft(),
+                             certificateProfileIdAndData.getRight(), endEntityProfileIdAndData.getRight());
 
         List<KeyImportKeystoreData> keystores = keyImportRequestData.getKeystores();
         if (CollectionUtils.isEmpty(keystores)) {
@@ -104,7 +102,9 @@ public class KeyImportSessionBean implements KeyImportSessionLocal, KeyImportSes
         for (KeyImportKeystoreData keystore : keystores) {
             // Process the keystore and if it fails record the failure reason. Either way, continue with the next keystore without interrupting
             try {
-                processKeystoreSession.processKeyStore(authenticationToken, keystore, caInfo, caData, certificateProfileId, endEntityProfileId);
+                processKeystoreSession.processKeyStore(authenticationToken, keystore,
+                                                       caDataAndInfo.getRight(), caDataAndInfo.getLeft(),
+                                                       certificateProfileIdAndData.getLeft(), endEntityProfileIdAndData.getLeft());
             } catch (KeyImportException e) {
                 if (log.isDebugEnabled()) {
                     log.debug("Key import has failed for username: " + keystore.getUsername());
@@ -116,17 +116,57 @@ public class KeyImportSessionBean implements KeyImportSessionLocal, KeyImportSes
         return keyImportFailures;
     }
 
-    private int verifyEndEntityProfile(final String endEntityProfileName) throws KeyImportException {
+    /**
+     * Verify that the request has valid Certificate Profile name and return relevant data.
+     *
+     * @param certificateProfileName        Certificate Profile name
+     * @return                              Pair of: Profile Id and Profile Data
+     *
+     * @throws KeyImportException
+     */
+    private ImmutablePair<Integer, CertificateProfile> verifyCertificateProfile(final String certificateProfileName) throws KeyImportException {
+        final int certificateProfileId = certificateProfileSession.getCertificateProfileId(certificateProfileName);
+        if (certificateProfileId == 0) {
+            throw new KeyImportException("Certificate profile does not exist: " + certificateProfileName);
+        }
+
+        final CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(certificateProfileId);
+        return ImmutablePair.of(certificateProfileId, certificateProfile);
+    }
+
+    /**
+     * Verify that the request has valid End Entity Profile name and return relevant data.
+     *
+     * @param endEntityProfileName      EEP name
+     * @return                          Pair of ID and EEP Data
+     *
+     * @throws KeyImportException
+     */
+    private ImmutablePair<Integer, EndEntityProfile> verifyEndEntityProfile(final String endEntityProfileName) throws KeyImportException {
         try {
-            return endEntityProfileSession.getEndEntityProfileId(endEntityProfileName);
+            final int eepId = endEntityProfileSession.getEndEntityProfileId(endEntityProfileName);
+            final EndEntityProfile eep = endEntityProfileSession.getEndEntityProfile(eepId);
+
+            return ImmutablePair.of(eepId, eep);
         } catch (EndEntityProfileNotFoundException e) {
             throw new KeyImportException("End Entity Profile doesn't exist: " + endEntityProfileName);
         }
     }
 
-    private CAInfo verifyCertificateAuthority(final AuthenticationToken authenticationToken, final CAData caData, final String caDn) throws EjbcaException, AuthorizationDeniedException {
+    /**
+     * Verify that the request has valid Certificate Authority name and return relevant data.
+     *
+     * @param authenticationToken       Auth token
+     * @param caSubjectDn               CA subject DN
+     * @return                          Pair of CAData and CAInfo
+     *
+     * @throws EjbcaException
+     * @throws AuthorizationDeniedException
+     */
+    private ImmutablePair<CAData, CAInfo> verifyCertificateAuthority(final AuthenticationToken authenticationToken, final String caSubjectDn) throws EjbcaException, AuthorizationDeniedException {
+        final CAData caData = caSession.findBySubjectDN(caSubjectDn);
         if (caData == null) {
-            throw new KeyImportException("CA does not exist. CA DN: " + caDn);
+            throw new KeyImportException("CA does not exist. CA DN: " + caSubjectDn);
         }
 
         final CAInfo caInfo = caSession.getCAInfo(authenticationToken, caData.getCaId());
@@ -134,7 +174,7 @@ public class KeyImportSessionBean implements KeyImportSessionLocal, KeyImportSes
             if (log.isDebugEnabled()) {
                 log.debug("CAInfo is empty, looks like CA does not exist. CA Id: " + caData.getCaId());
             }
-            throw new KeyImportException("CA does not exist. CA DN: " + caDn);
+            throw new KeyImportException("CA does not exist. CA DN: " + caSubjectDn);
         }
 
         if (caInfo.getStatus() == CAConstants.CA_OFFLINE ||
@@ -146,10 +186,20 @@ public class KeyImportSessionBean implements KeyImportSessionLocal, KeyImportSes
             throw new EjbcaException("Key import is only available for X509 CAs.");
         }
 
-        return caInfo;
+        return ImmutablePair.of(caData, caInfo);
     }
 
-    private void verifyProfiles(final int caId, final int certificateProfileId, final CertificateProfile certificateProfile, final EndEntityProfile endEntityProfile) throws EjbcaException {
+    /**
+     * Verify CA exists in available CAs in profiles, and CP is set as available in EEP
+     *
+     * @param caId                      CA Id
+     * @param certificateProfileId      CP Id
+     * @param certificateProfile        Certificate Profile
+     * @param endEntityProfile          End Entity Profile
+     *
+     * @throws EjbcaException
+     */
+    private void verifyAvailabilities(final int caId, final int certificateProfileId, final CertificateProfile certificateProfile, final EndEntityProfile endEntityProfile) throws EjbcaException {
         // CP uses -1 for "Any CA" and EEP uses 1
         final boolean caExistsInCP = certificateProfile.getAvailableCAs().contains(caId) || certificateProfile.getAvailableCAs().contains(CertificateProfile.ANYCA);
         final boolean caExistsInEEP = endEntityProfile.getAvailableCAs().contains(caId) || endEntityProfile.getAvailableCAs().contains(CAConstants.ALLCAS);
@@ -165,17 +215,19 @@ public class KeyImportSessionBean implements KeyImportSessionLocal, KeyImportSes
         }
     }
 
+    /**
+     * Verify whether add/edit EE Approvals are set in CA or CP, since they are not supported with key import.
+     *
+     * @param certificateProfileApprovals       Approvals from Certificate Profile
+     * @param certificateAuthorityApprovals     Approvals from Certificate Authority
+     * @return
+     */
     private boolean isApprovalsEnabled(final Map<ApprovalRequestType, Integer> certificateProfileApprovals, final Map<ApprovalRequestType, Integer> certificateAuthorityApprovals) {
         final Integer caEndEntityApprovals = certificateAuthorityApprovals.get(ApprovalRequestType.ADDEDITENDENTITY);
-        final Integer caKeyRecoverApprovals = certificateAuthorityApprovals.get(ApprovalRequestType.KEYRECOVER);
-
         final Integer cpEndEntityApprovals = certificateProfileApprovals.get(ApprovalRequestType.ADDEDITENDENTITY);
-        final Integer cpKeyRecoverApprovals = certificateProfileApprovals.get(ApprovalRequestType.KEYRECOVER);
 
 
         return (cpEndEntityApprovals != null && cpEndEntityApprovals != ApprovalProfile.NO_PROFILE_ID) ||
-               (cpKeyRecoverApprovals != null && cpKeyRecoverApprovals != ApprovalProfile.NO_PROFILE_ID) ||
-               (caEndEntityApprovals != null && caEndEntityApprovals != ApprovalProfile.NO_PROFILE_ID) ||
-               (caKeyRecoverApprovals != null && caKeyRecoverApprovals != ApprovalProfile.NO_PROFILE_ID);
+               (caEndEntityApprovals != null && caEndEntityApprovals != ApprovalProfile.NO_PROFILE_ID);
     }
 }
