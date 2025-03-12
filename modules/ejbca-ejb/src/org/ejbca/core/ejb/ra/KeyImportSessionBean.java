@@ -57,8 +57,6 @@ public class KeyImportSessionBean implements KeyImportSessionLocal, KeyImportSes
     private static final Logger log = Logger.getLogger(KeyImportSessionBean.class);
 
     @EJB
-    private GlobalConfigurationSessionLocal globalConfigurationSession;
-    @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
     @EJB
     private CertificateProfileSessionLocal certificateProfileSession;
@@ -70,12 +68,6 @@ public class KeyImportSessionBean implements KeyImportSessionLocal, KeyImportSes
     @Override
     public List<KeyImportFailure> importKeys(final AuthenticationToken authenticationToken, final KeyImportRequestData keyImportRequestData) throws AuthorizationDeniedException, EjbcaException {
         List<KeyImportFailure> keyImportFailures = new ArrayList<>();
-
-        // Key migration is not supported with local key generation.
-        GlobalConfiguration globalConfig = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        if (globalConfig.getEnableKeyRecovery() && globalConfig.getLocalKeyRecovery()) {
-            throw new EjbcaException("Local Key Generation is not supported for Key Import.");
-        }
 
         final String caSubjectDN = keyImportRequestData.getIssuerDn();
         final ImmutablePair<CAData, CAInfo> caDataAndInfo = verifyCertificateAuthority(authenticationToken, caSubjectDN);
