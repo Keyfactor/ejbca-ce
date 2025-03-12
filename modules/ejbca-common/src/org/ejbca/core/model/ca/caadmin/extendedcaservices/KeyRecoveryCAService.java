@@ -185,7 +185,8 @@ public class KeyRecoveryCAService extends ExtendedCAService implements Serializa
 				}
 				final PrivateKey decryptionKey = cryptoToken.getPrivateKey(keyAlias);
 				final MsKeyArchivalRequestMessage msKeyArchivalRequestMessage = serviceReq.getMsKeyArchivalRequestMessage();
-				msKeyArchivalRequestMessage.decryptPrivateKey("BC", decryptionKey);
+				// Here we need to pass the corresponding encryption provider name instead of simply BC, cause the private key might be from real hardware HSM. See ECA-13119 for more info 
+				msKeyArchivalRequestMessage.decryptPrivateKey(cryptoToken.getEncProviderName(), decryptionKey);
 				returnval = new KeyRecoveryCAServiceResponse(KeyRecoveryCAServiceResponse.TYPE_DECRYPTKEYSRESPONSE,
 						msKeyArchivalRequestMessage.getKeyPairToArchive(), cryptoToken.getId(), keyAlias, null);
 			} catch (CryptoTokenOfflineException | CertificateCreateException e) {
