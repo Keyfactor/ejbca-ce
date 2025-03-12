@@ -16,73 +16,32 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.log4j.Level;
+
 import jakarta.ejb.ConcurrencyManagement;
 import jakarta.ejb.ConcurrencyManagementType;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.TransactionManagement;
 import jakarta.ejb.TransactionManagementType;
 
-import org.apache.log4j.Appender;
-import org.apache.log4j.Layout;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.spi.ErrorHandler;
-import org.apache.log4j.spi.Filter;
-import org.apache.log4j.spi.LoggingEvent;
-
 /**
  * Singleton responsible for keep track of a node-local post upgrade.
  * 
- * @version $Id$
  */
 @Singleton
 @ConcurrencyManagement(ConcurrencyManagementType.BEAN)
 @TransactionManagement(TransactionManagementType.BEAN)
 public class UpgradeStatusSingletonBean implements UpgradeStatusSingletonLocal {
 
-    /** Custom appender so that we can capture and display the log from the upgrade process. */
-    private final Appender appender = new Appender() {
-        @Override
-        public void addFilter(Filter filter) {}
-        @Override
-        public void clearFilters() {}
-        @Override
-        public void close() {}
-        @Override
-        public ErrorHandler getErrorHandler() { return null; }
-        @Override
-        public Filter getFilter() { return null; }
-        @Override
-        public Layout getLayout() { return null; }
-        @Override
-        public boolean requiresLayout() { return false; }
-        @Override
-        public void setErrorHandler(final ErrorHandler errorHandler) {}
-        @Override
-        public void setLayout(final Layout layout) {}
-        @Override
-        public void setName(final String name) {}
-
-        @Override
-        public String getName() {
-            return UpgradeStatusSingletonBean.class.getSimpleName();
-        }
-
-        @Override
-        public void doAppend(final LoggingEvent loggingEvent) {
-            logged.add(loggingEvent);
-        }
-    };
-
     private AtomicBoolean postUpgradeInProgress = new AtomicBoolean(false);
-
+    
     /** Fixed size list (dropping oldest additions when running out of space) to prevent all memory from being consumed if attached process never detaches. */
-    private List<LoggingEvent> logged = new LinkedList<LoggingEvent>() {
+    private List<UpgradeLogEvent> logged = new LinkedList<UpgradeLogEvent>() {
         private static final long serialVersionUID = 1L;
         private static final int MAX_ENTRIES_IN_LIST = 10000;
 
         @Override
-        public boolean add(final LoggingEvent loggingEvent) {
+        public boolean add(final UpgradeLogEvent loggingEvent) {
             // Hard code a filter so we only keep DEBUG and above here in the in-memory buffer
             if (!loggingEvent.getLevel().isGreaterOrEqual(Level.DEBUG)) {
                 return false;
@@ -112,18 +71,55 @@ public class UpgradeStatusSingletonBean implements UpgradeStatusSingletonLocal {
     }
     
     @Override
-    public List<LoggingEvent> getLogged() {
+    public List<UpgradeLogEvent> getLogged() {
         return logged;
     }
     
     @Override
-    public void logAppenderAttach(final Logger log) {
-        log.addAppender(appender);
+    public void trace(final Object msg) {
+        logged.add(new UpgradeLogEvent(msg.toString(), Level.TRACE));
+       
     }
-
+    
     @Override
-    public void logAppenderDetach(final Logger log) {
-        log.removeAppender(appender);
+    public void debug(final Object msg) {
+        logged.add(new UpgradeLogEvent(msg.toString(), Level.DEBUG));
         
     }
+    
+    @Override
+    public void debug(final Object msg, final Throwable throwable) {
+        logged.add(new UpgradeLogEvent(msg.toString(), Level.DEBUG, throwable));
+        
+    }
+    
+    @Override
+    public void info(final Object msg) {
+        logged.add(new UpgradeLogEvent(msg.toString(), Level.INFO));
+        
+    }
+    
+    @Override
+    public void warn(final Object msg) {
+        logged.add(new UpgradeLogEvent(msg.toString(), Level.WARN));
+        
+    }
+     
+    @Override
+    public void error(final Object msg) {
+        logged.add(new UpgradeLogEvent(msg.toString(), Level.ERROR));
+        
+    }
+    
+    @Override
+    public void error(final Object msg, final Throwable throwable) {
+        logged.add(new UpgradeLogEvent(msg.toString(), Level.ERROR, throwable));
+        
+    }
+    
+    @Override
+    public void fatal(final Object msg) {
+        logged.add(new UpgradeLogEvent(msg.toString(), Level.FATAL));  
+    }
+    
 }
