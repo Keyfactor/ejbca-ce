@@ -18,7 +18,6 @@ import java.security.cert.CertificateParsingException;
 import java.util.List;
 import java.util.Map;
 
-import com.keyfactor.ErrorCode;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
@@ -32,6 +31,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.keyimport.KeyImportFailure;
 import org.cesecore.keys.keyimport.KeyImportRequestData;
 import org.ejbca.config.GlobalConfiguration;
@@ -63,6 +63,9 @@ public class CertificateRestResourceV2 extends BaseRestResource {
 
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApi;
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
+
     private static final Logger log = Logger.getLogger(CertificateRestResourceV2.class);
 
     @Override
@@ -191,6 +194,13 @@ public class CertificateRestResourceV2 extends BaseRestResource {
             throws AuthorizationDeniedException, RestException {
         if(request == null) {
             throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Key import request cannot be empty.");
+        }
+
+        // Key migration is not supported with "Local Key Generation".
+        // Since "Local Key Generation" is configured on the RA side, we need to check this here locally.
+        GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        if (globalConfiguration.getEnableKeyRecovery() && globalConfiguration.getLocalKeyRecovery()) {
+            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Local Key Generation is not supported for Key Import.");
         }
 
         final AuthenticationToken authenticationToken = getAdmin(requestContext, true);
