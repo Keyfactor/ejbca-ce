@@ -68,7 +68,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final String DEFAULT_DELTA_CRL_DIST_URI_PATH  = "publicweb/webdist/certdist?cmd=deltacrl&issuer=";
 
     // Path added to baseurl used as default value in CRLDistributionPointURI field in Certificate Profile definitions.
-    public static final String DEFAULT_CRL_DISTRIBUTION  = "CN=TestCA,O=AnaTom,C=SE";
+    public static final String DEFAULT_CRL_DIST_URI_PATH_DN = "CN=TestCA,O=AnaTom,C=SE";
 
     // Path added to baseurl used as default value in OCSP Service Locator URI field in Certificate Profile definitions.
 	private static final  String DEFAULT_OCSP_SERVICE_LOCATOR_URI_PATH = "publicweb/status/ocsp";
@@ -260,7 +260,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     }
 
     public String getStandardCRLDistributionPointURI(){
-        return getStandardCRLDistributionPointURINoDN() + DEFAULT_CRL_DISTRIBUTION;
+        return getStandardCRLDistributionPointURINoDN() + DEFAULT_CRL_DIST_URI;
     }
 
     public String getStandardCRLDistributionPointURINoDN(){
@@ -268,7 +268,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     }
 
     public String getStandardDeltaCRLDistributionPointURI(){
-    	return getStandardDeltaCRLDistributionPointURINoDN() + DEFAULT_CRL_DISTRIBUTION;
+    	return getStandardDeltaCRLDistributionPointURINoDN() + DEFAULT_CRL_DIST_URI;
     }
 
     public String getStandardDeltaCRLDistributionPointURINoDN(){
