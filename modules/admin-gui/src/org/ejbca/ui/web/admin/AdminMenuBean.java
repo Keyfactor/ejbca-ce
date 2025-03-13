@@ -257,7 +257,7 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
      * @return the URL to EJBCA Admin UI, i.e. https://hostname:8443/ejbca/adminweb/, always ends with a '/'
      */
     public String getAdminWebUrl() {
-        String url = getEjbcaWebBean().getBaseUrl() + getGlobalConfiguration().getAdminWebPath();
+        String url = getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH;
         // This most likely always ends with a / but make damn sure
         if (!StringUtils.endsWith(url, "/")) {
             url += "/";

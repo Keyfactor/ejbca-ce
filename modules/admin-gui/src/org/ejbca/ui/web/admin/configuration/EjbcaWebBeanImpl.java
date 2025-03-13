@@ -553,14 +553,14 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     /** Return the admins selected theme including its trailing '.css' */
     @Override
     public String getCssFile() {
-        return globalconfiguration == null ? null : globalconfiguration.getAdminWebPath() + globalconfiguration.getThemePath() + "/" + currentAdminPreference.getTheme() + ".css";
+        return globalconfiguration == null ? null : GlobalConfiguration.ADMIN_WEB_PATH + "themes/" + currentAdminPreference.getTheme() + ".css";
     }
 
     /** Return the IE fixes CSS of the admins selected theme including it's trailing '.css' */
     @Override
     public String getIeFixesCssFile() {
-        return globalconfiguration == null ? null : globalconfiguration.getAdminWebPath() + globalconfiguration.getThemePath() + "/" + currentAdminPreference.getTheme()
-                + globalconfiguration.getIeCssFilenamePostfix() + ".css";
+        return globalconfiguration == null ? null : GlobalConfiguration.ADMIN_WEB_PATH + "themes/" + currentAdminPreference.getTheme()
+                + "_ie-fixes.css";
     }
 
     /** Returns a version string for JavaScript and CSS file cache control */
@@ -739,12 +739,12 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
 
     @Override
     public String getAdminWebBaseUrl() {
-        return globalconfiguration == null ? null : globalconfiguration.getRelativeUri() + globalconfiguration.getAdminWebPath();
+        return globalconfiguration == null ? null : globalconfiguration.getRelativeUri() + GlobalConfiguration.ADMIN_WEB_PATH;
     }
 
     @Override
     public String getReportsPath() {
-        return globalconfiguration == null ? null : globalconfiguration.getReportsPath();
+        return globalconfiguration == null ? null : GlobalConfiguration.ADMIN_WEB_PATH + "reports";
     }
 
     /* Returns the global configuration */
@@ -783,19 +783,21 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         final String theme = currentAdminPreference.getTheme().toLowerCase();
         final String postfix = imagefilename.substring(imagefilename.lastIndexOf('.') + 1);
 
+        final String imagePath = "images";
+        
         final String[] filepaths = new String[] {
-                "/" + globalconfiguration.getImagesPath() + "/" + imagefile + "." + theme + "." + prefered + "." + postfix,
-                "/" + globalconfiguration.getImagesPath() + "/" + imagefile + "." + theme + "." + secondary + "." + postfix,
-                "/" + globalconfiguration.getImagesPath() + "/" + imagefile + "." + theme + "." + postfix,
-                "/" + globalconfiguration.getImagesPath() + "/" + imagefile + "." + prefered + "." + postfix,
-                "/" + globalconfiguration.getImagesPath() + "/" + imagefile + "." + secondary + "." + postfix,
+                "/" + imagePath + "/" + imagefile + "." + theme + "." + prefered + "." + postfix,
+                "/" + imagePath + "/" + imagefile + "." + theme + "." + secondary + "." + postfix,
+                "/" + imagePath + "/" + imagefile + "." + theme + "." + postfix,
+                "/" + imagePath + "/" + imagefile + "." + prefered + "." + postfix,
+                "/" + imagePath + "/" + imagefile + "." + secondary + "." + postfix,
         };
         for (final String filepath : filepaths) {
             if (this.getClass().getResourceAsStream(filepath) != null) {
                 return filepath;
             }
         }
-        return "/" + globalconfiguration.getImagesPath() + "/" + imagefile + "." + postfix;
+        return "/" + imagePath + "/" + imagefile + "." + postfix;
     }
 
     @Deprecated

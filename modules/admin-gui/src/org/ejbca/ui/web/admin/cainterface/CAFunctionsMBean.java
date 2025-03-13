@@ -85,7 +85,6 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
     @EJB
     private PublishingCrlSessionLocal publishingCrlSession;
 
-    private final GlobalConfiguration globalConfiguration;
     private List<CAGuiInfo> caGuiInfos = null;
     private transient Part uploadFile;
     private final List<String> extCaNameList;
@@ -93,7 +92,6 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
 
     public CAFunctionsMBean() {
         super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
-        globalConfiguration = getEjbcaWebBean().getGlobalConfiguration();
         final TreeMap<String, Integer> externalCANames = getEjbcaWebBean().getExternalCANames();
         extCaNameList = new ArrayList<>(externalCANames.keySet());
     }
@@ -383,15 +381,15 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
     }
 
     public String getCertificatePopupLink(final int caid) {
-        return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getAdminWebPath() + "viewcertificate.xhtml?caid=" + caid;
+        return getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH + "viewcertificate.xhtml?caid=" + caid;
     }
 
     public String openCertificateInfoPopup(final int caid) {
-        return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getCaPath() + "/viewcainfo.xhtml?caid=" + caid;
+        return getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.CA_PATH + "/viewcainfo.xhtml?caid=" + caid;
     }
 
     public String getDownloadCertificateLink() {
-        return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getCaPath() + "/cacert";
+        return getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.CA_PATH + "/cacert";
     }
 
     public String getSshPublicKeyLink() {
@@ -399,7 +397,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
     }
 
     public String getDownloadCrlLink() {
-        return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getCaPath() + "/getcrl/getcrl";
+        return getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.CA_PATH + "/getcrl/getcrl";
     }
 
     public void showJksDownloadForm(final CAGuiInfo caGuiInfo, final int index) {

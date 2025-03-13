@@ -159,7 +159,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                 final GlobalConfiguration globalConfiguration = getEjbcaWebBean().getGlobalConfiguration();
                 if (StringUtils.isBlank(this.certificateProfile.getCRLDistributionPointURI())) {
                     this.certificateProfile.setCRLDistributionPointURI(globalConfiguration.getStandardCRLDistributionPointURI());
-                    this.certificateProfile.setCRLIssuer(globalConfiguration.getStandardCRLIssuer());
+                    this.certificateProfile.setCRLIssuer(GlobalConfiguration.DEFAULT_CRL_DISTRIBUTION);
                 }
                 if (StringUtils.isBlank(this.certificateProfile.getFreshestCRLURI())) {
                     this.certificateProfile.setFreshestCRLURI(globalConfiguration.getStandardDeltaCRLDistributionPointURI());

@@ -20,6 +20,7 @@ import jakarta.ejb.EJBException;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
@@ -48,7 +49,6 @@ public class ApprovalView {
 	}
 	
 	public String getApprovalAdmin(){
-		//return approval.getAdmin().getUsername();
 		return approval.getAdmin().toString();
 	}
 	
@@ -70,7 +70,7 @@ public class ApprovalView {
 				final X509Certificate adminCertificate = xtok.getCertificate();
 				final String certificateSerialNumber = CertTools.getSerialNumberAsString(adminCertificate);
 				final String adminIssuerDN = CertTools.getIssuerDN(adminCertificate);
-				link = EjbcaJSFHelper.getBean().getEjbcaWebBean().getBaseUrl() + EjbcaJSFHelper.getBean().getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath()
+				link = EjbcaJSFHelper.getBean().getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH
 				            + "viewcertificate.xhtml?certsernoparameter=" + java.net.URLEncoder.encode(certificateSerialNumber + "," + adminIssuerDN,"UTF-8");				
 			}
 			return "window.open('" + link + "', 'ViewApproverCertAction', 'width=800,height=800,scrollbars=yes,toolbar=no,resizable=yes').focus()";

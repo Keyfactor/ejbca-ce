@@ -356,7 +356,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         final Map<String, Object> requestMap = FacesContext.getCurrentInstance().getExternalContext().getRequestMap();
         initPageVariables(requestMap);
 
-        viewCertLink = getEjbcaWebBean().getBaseUrl() + globalconfiguration.getAdminWebPath() + "viewcertificate.xhtml";
+        viewCertLink = getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH + "viewcertificate.xhtml";
 
         try {
             cainfo = caBean.getCAInfo(caid).getCAInfo();
@@ -364,7 +364,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             log.error("Error while trying to get the ca info!", e);
         }
 
-        CRYPTO_TOKEN_LINK = getEjbcaWebBean().getBaseUrl() + globalconfiguration.getAdminWebPath()
+        CRYPTO_TOKEN_LINK = getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH
         + "cryptotoken/cryptotoken.jsf?cryptoTokenId=";
 
         // Init include health check
@@ -1385,19 +1385,15 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         } else {
             String certProfileId = caInfoDto.getCurrentCertProfile();
             if (Objects.nonNull(certProfileId)) {
-                if (Objects.nonNull(certProfileId)) {
-                    CertificateProfile cp = certificateProfileSession.getCertificateProfile(Integer.valueOf(certProfileId));
-                    if (Objects.nonNull(cp)) {
-                        return !cp.getUseNameConstraints();
-                    } else {
-                        return true;
-                    }
+                CertificateProfile cp = certificateProfileSession.getCertificateProfile(Integer.valueOf(certProfileId));
+                if (Objects.nonNull(cp)) {
+                    return !cp.getUseNameConstraints();
                 } else {
                     return true;
                 }
             } else {
                 return true;
-            }
+            }     
         }
     }
 
@@ -1858,7 +1854,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public String getDownloadCertLink(){
-        return getEjbcaWebBean().getBaseUrl() + getEjbcaWebBean().getGlobalConfiguration().getCaPath() + "/cacert";
+        return getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.CA_PATH + "/cacert";
     }
 
     /**

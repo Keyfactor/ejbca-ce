@@ -23,6 +23,7 @@ import jakarta.faces.context.FacesContext;
 import jakarta.faces.model.SelectItem;
 import jakarta.inject.Named;
 
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.ui.web.admin.BaseManagedBean;
@@ -75,8 +76,7 @@ public class MyPreferencesMBean extends BaseManagedBean implements Serializable 
 
     private void initPossibleEntriesPerPage() {
         possibleEntriesPerPage = new ArrayList<>();
-        final String[] possibleEntiresPerPage = getEjbcaWebBean().getGlobalConfiguration().getPossibleEntiresPerPage();
-        for (final String value : possibleEntiresPerPage) {
+        for (final String value : GlobalConfiguration.DEFAULT_POSSIBLE_ENTRIES_PER_PAGE) {
             final SelectItem possibleEntryValue = new SelectItem(Integer.parseInt(value));
             possibleEntriesPerPage.add(possibleEntryValue);
         }

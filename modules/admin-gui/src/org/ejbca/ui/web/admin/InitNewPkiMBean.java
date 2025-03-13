@@ -78,6 +78,7 @@ import org.cesecore.keys.token.KeyPairInfo;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.ValidityDate;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.authorization.AuthorizationSystemSession;
 import org.ejbca.core.ejb.authorization.AuthorizationSystemSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
@@ -403,7 +404,7 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
     }
     
     public String getCaCertificateDownloadLink() {
-        return getEjbcaWebBean().getBaseUrl() + getEjbcaWebBean().getGlobalConfiguration().getCaPath() + "/cafunctions.xhtml";
+        return getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.CA_PATH + "/cafunctions.xhtml";
     }
     
     public void install() {

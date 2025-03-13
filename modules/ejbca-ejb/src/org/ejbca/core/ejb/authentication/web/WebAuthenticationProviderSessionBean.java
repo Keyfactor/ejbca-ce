@@ -608,7 +608,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 "https",
                 WebConfiguration.getHostName(),
                 WebConfiguration.getPublicHttpsPort()
-        ) + globalConfiguration.getAdminWebPath();
+        ) + GlobalConfiguration.ADMIN_WEB_PATH;
     }
 
     public boolean isAllowBlankAudience() {

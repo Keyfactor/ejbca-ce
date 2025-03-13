@@ -70,9 +70,7 @@ public class WebLanguagesImpl implements Serializable, WebLanguages {
             languages = new LanguageProperties[AVAILABLE_LANGUAGES.length];
             for(int i = 0; i < AVAILABLE_LANGUAGES.length; i++){
                 languages[i] = new LanguageProperties();
-                final String propsfile = "/" + globalconfiguration.getLanguagePath() + "/"
-                + globalconfiguration.getLanguageFilename() + "."
-                + AVAILABLE_LANGUAGES[i] +".properties";
+                final String propsfile = "/languages/languagefile." + AVAILABLE_LANGUAGES[i] + ".properties";
 
                 InputStream is = null;
                 try {

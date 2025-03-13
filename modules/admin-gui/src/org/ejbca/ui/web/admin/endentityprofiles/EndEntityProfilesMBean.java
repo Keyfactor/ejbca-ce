@@ -50,6 +50,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleDataSessionLocal;
 import org.cesecore.util.SecureXMLDecoder;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
@@ -335,7 +336,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     public void actionExportProfile() {
         clearMessages();
         if (getSelectedEndEntityProfileId() != null) {
-            redirect(getEjbcaWebBean().getBaseUrl() + getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath() + "/profilesexport", "profileType",
+            redirect(getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH + "/profilesexport", "profileType",
                     "eep", "profileId", getSelectedEndEntityProfileId().toString());
         } else {
             addErrorMessage(PROFILE_NOT_SELECTED);
@@ -345,7 +346,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
 
     public void actionExportProfiles() {
         clearMessages();
-        redirect(getEjbcaWebBean().getBaseUrl() + getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath() + "/profilesexport", "profileType",
+        redirect(getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH + "/profilesexport", "profileType",
                 "eep");
     }
 
