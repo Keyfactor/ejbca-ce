@@ -84,16 +84,16 @@ public interface CaSession {
     void editCA(final AuthenticationToken admin, final CAInfo cainfo) throws CADoesntExistsException, AuthorizationDeniedException, InternalKeyBindingNonceConflictException, CaMsCompatibilityIrreversibleException;
 
     /**
-     * Method returning id's of all CA's in system.
+     * Method returning id's of all CAs in system.
      * 
-     * @return a List (Integer) of CA id's
+     * @return a List (Integer) of CA ids
      */
     List<Integer> getAllCaIds();
 
     /**
-     * Method returning id's of all CA's in system after refreshing cache.
+     * Method returning id's of all CAs in system after refreshing cache.
      *
-     * @return a List (Integer) of CA id's
+     * @return a List (Integer) of CA ids
      */
     List<Integer> getAllCaIdsWithoutCache();
 
