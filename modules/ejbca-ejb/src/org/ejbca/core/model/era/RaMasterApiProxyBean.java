@@ -190,7 +190,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
      * For example certificate issuance you want to always happen as far in as possible (the CA), while
      * key recovery you want as far out as possible (i.e. customer have a satellite RA to do local escrow/key recovery if possible)
      * 
-     * Wether a node (raMasterApi implementation) is usable or not is determined by calling isBackendAvailable() on the api implementation
+     * Whether a node (raMasterApi implementation) is usable or not is determined by calling isBackendAvailable() on the api implementation
      * being tried. In RaMasterAPISessionBean, isBackendAvailable() is implemented so that a node is available for API processing if there 
      * is any _active_ CA available locally. Normally this is only available farthest in, on the CA.
      * But for the local key recovery use case the customer will add a local CA (with keys and signing cert) on the satellite RA 
@@ -1926,7 +1926,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     public byte[] createCertificateWithEntity(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, String req, int reqType, int responseType)
             throws EjbcaException, AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException, ApprovalException {
         EjbcaException ejbcaException = null;
-        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+        for (final RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 20) {
                 if (log.isDebugEnabled()) {
                     log.debug("raMasterApi calling createCertificateWithEntity: " + raMasterApi.getApiVersion() + ", " + raMasterApi.isBackendAvailable() + ", " + raMasterApi.getClass());
