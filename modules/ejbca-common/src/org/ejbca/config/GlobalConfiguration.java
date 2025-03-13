@@ -260,7 +260,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     }
 
     public String getStandardCRLDistributionPointURI(){
-        return getStandardCRLDistributionPointURINoDN() + DEFAULT_CRL_DIST_URI;
+        return getStandardCRLDistributionPointURINoDN() + DEFAULT_CRL_DIST_URI_PATH_DN;
     }
 
     public String getStandardCRLDistributionPointURINoDN(){
@@ -268,7 +268,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     }
 
     public String getStandardDeltaCRLDistributionPointURI(){
-    	return getStandardDeltaCRLDistributionPointURINoDN() + DEFAULT_CRL_DIST_URI;
+    	return getStandardDeltaCRLDistributionPointURINoDN() + DEFAULT_CRL_DIST_URI_PATH_DN;
     }
 
     public String getStandardDeltaCRLDistributionPointURINoDN(){
