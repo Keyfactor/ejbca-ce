@@ -370,7 +370,7 @@ public class OcspJunitHelper {
 				*/
         final URI uriWithParam = new URI(
                 this.baseURI.getScheme(), this.baseURI.getUserInfo(), "127.0.0.1",
-                8080, this.baseURI.getPath(), param, this.baseURI.getFragment());
+                this.baseURI.getPort(), this.baseURI.getPath(), param, this.baseURI.getFragment());
 		final URL url = uriWithParam.toURL();
 		final HttpURLConnection con = (HttpURLConnection)url.openConnection();
 		log.debug("Connection to " + url.toExternalForm() + " resulted in HTTP " + con.getResponseCode());
