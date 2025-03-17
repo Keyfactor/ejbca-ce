@@ -84,11 +84,18 @@ public interface CaSession {
     void editCA(final AuthenticationToken admin, final CAInfo cainfo) throws CADoesntExistsException, AuthorizationDeniedException, InternalKeyBindingNonceConflictException, CaMsCompatibilityIrreversibleException;
 
     /**
-     * Method returning id's of all CA's in system.
+     * Method returning id's of all CAs in system.
      * 
-     * @return a List (Integer) of CA id's
+     * @return a List (Integer) of CA ids
      */
     List<Integer> getAllCaIds();
+
+    /**
+     * Method returning id's of all CAs in system after refreshing cache.
+     *
+     * @return a List (Integer) of CA ids
+     */
+    List<Integer> getAllCaIdsWithoutCache();
 
     /**
      * Method returning id's of all CA's available to the system that the
@@ -121,6 +128,14 @@ public interface CaSession {
       * @see #getAuthorizedCaNames
       */
      TreeMap<String,Integer> getAuthorizedCaNamesToIds(AuthenticationToken admin);
+
+    /**
+     * Like {@link #getAuthorizedCaNames(AuthenticationToken)}, but returns a TreeMap which includes the CA Id as well and forces the cache to be updated.
+     * @param admin AuthenticationToken of admin
+     * @return a Collection<String> of available CA names
+     * @see #getAuthorizedCaNames
+     */
+    TreeMap<String,Integer> getAuthorizedCaNamesToIdsWithoutCache(AuthenticationToken admin);
 
      /**
       * Like {@link #getAuthorizedCaIds(AuthenticationToken)}, but returns a TreeMap which includes the CA Name as well.

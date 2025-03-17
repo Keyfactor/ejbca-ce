@@ -300,7 +300,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
 
     private void refreshCaGuiInfos() {
         caGuiInfos = new ArrayList<>();
-        final TreeMap<String, Integer> caNames = caSession.getAuthorizedCaNamesToIds(getAdmin());
+        final TreeMap<String, Integer> caNames = caSession.getAuthorizedCaNamesToIdsWithoutCache(getAdmin());
         final List<String> caNameList = new ArrayList<>(caNames.keySet());
         caNameList.sort(String::compareToIgnoreCase);
         for (final String caName : caNameList) {
