@@ -900,6 +900,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         return data.remove(CUSTOM_SSH_DATA + key);
     }
     
+    @SuppressWarnings("unchecked")
     public Map<String, String> getSshCriticalOptions() {
         Object entry = data.get(CUSTOM_SSH_DATA + SSH_CERTIFICATE_CRITICAL_OPTIONS);
         if(entry!=null) {
@@ -913,6 +914,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         setSshCustomData(SSH_CERTIFICATE_CRITICAL_OPTIONS, criticalOptions);
     }
     
+    @SuppressWarnings("unchecked")
     public Map<String, byte[]>  getSshExtensions() {
         Object extensions = data.get(CUSTOM_SSH_DATA + SSH_CERTIFICATE_EXTENSIONS);
         if(extensions!=null) {
@@ -936,6 +938,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         }
     }
     
+    @SuppressWarnings("unchecked")
     public List<String> getSshPrincipalsIpv6() {
         Object entry = data.get(CUSTOM_SSH_DATA + SSH_PRINCIPALS_IPV6);
         if(entry!=null) {

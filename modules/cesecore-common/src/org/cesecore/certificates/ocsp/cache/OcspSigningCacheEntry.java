@@ -33,11 +33,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * Hold information needed for creating an OCSP response without database lookups.
  * 
- * @version $Id$
  */
 public class OcspSigningCacheEntry {
 
@@ -61,6 +61,11 @@ public class OcspSigningCacheEntry {
     private final X509Certificate[] responseCertChain;
     private final boolean signingCertificateForOcspSigning;
     
+    // This holds information for a generational signer. The generational signer (if set as true in the OCSP Responder) will, for a certificate from
+    // an expired CA, use the last issued CA signer and the appropriate chain for that CA. The OCSP signing certificate will be prepended to the beginning of 
+    // the chain, and the key value will be the notAfter date of the issuing CA. 
+    private final TreeMap<Long, List<X509Certificate>> generationalSignerAndChain;
+    
     // only relevant if CA itself signs the OCSP response
     private String crlSigningAlgorithm;
     
@@ -80,7 +85,7 @@ public class OcspSigningCacheEntry {
 
     public OcspSigningCacheEntry(X509Certificate issuerCaCertificate, CertificateStatus issuerCaCertificateStatus,
             List<X509Certificate> signingCaCertificateChain, X509Certificate ocspSigningCertificate, PrivateKey privateKey,
-            String signatureProviderName, OcspKeyBinding ocspKeyBinding, OcspKeyBinding.ResponderIdType responderIdType) {
+            String signatureProviderName, OcspKeyBinding ocspKeyBinding, OcspKeyBinding.ResponderIdType responderIdType, TreeMap<Long, List<X509Certificate>> generationalSignerAndChain) {
         this.caCertificateChain = signingCaCertificateChain;
         this.ocspSigningCertificate = ocspSigningCertificate;
         if (ocspSigningCertificate == null) {
@@ -144,6 +149,8 @@ public class OcspSigningCacheEntry {
         signedBehalfOfCaStatus = new HashMap<>();
         
         issuerNameToCertIdMap = new HashMap<>();
+        
+        this.generationalSignerAndChain = generationalSignerAndChain;
     }
 
     /** @return certificate of the CA that we want to respond for */
@@ -293,6 +300,10 @@ public class OcspSigningCacheEntry {
 
     public void setCrlSigningAlgorithm(String crlSigningAlgorithm) {
         this.crlSigningAlgorithm = crlSigningAlgorithm;
+    }
+
+    public TreeMap<Long, List<X509Certificate>> getGenerationalSignerAndChain() {
+        return generationalSignerAndChain;
     }
 
 }
