@@ -2728,7 +2728,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
         public void error(final Object msg, final Throwable throwable) {
             log.error(msg, throwable);
-            upgradeStatusSingleton.error(msg);
+            upgradeStatusSingleton.error(msg, throwable);
         }
 
         public void fatal(final Object msg) {
