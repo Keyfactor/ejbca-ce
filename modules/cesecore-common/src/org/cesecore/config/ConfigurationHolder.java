@@ -508,7 +508,6 @@ public final class ConfigurationHolder {
      * CryptoProviderConfigurationCache:
      * - pkcs11.disableHashingSignMechanisms
      * - cryptotoken.keystorecache
-     * - ca.doPermitExtractablePrivateKeys
      * 
      * @param properties the reloaded properties.
      */
@@ -538,10 +537,7 @@ public final class ConfigurationHolder {
             } else if ("cryptotoken.keystorecache".equals(key) && !Boolean.valueOf(value).equals(CryptoProviderConfigurationCache.INSTANCE.isKeystoreCacheEnabled())) {
                 CryptoProviderConfigurationCache.INSTANCE.setKeystoreCacheEnabled(Boolean.parseBoolean(value));
                 updated.add(key);
-            } else if ("ca.doPermitExtractablePrivateKeys".equals(key) && !Boolean.valueOf(value).equals(CryptoProviderConfigurationCache.INSTANCE.isPermitExtractablePrivateKeys())) {
-                CryptoProviderConfigurationCache.INSTANCE.setPermitExtractablePrivateKeys(Boolean.parseBoolean(value));
-                updated.add(key);
-            }
+            } 
         }
         
         if (log.isTraceEnabled() && updated.size() > 0) {

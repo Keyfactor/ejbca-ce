@@ -3107,6 +3107,33 @@
             "type": "string",
             "description": "Response Format (DER format is default)",
             "example": "DER"
+          },
+          "subject_dn": {
+            "type": "string",
+            "description": "Overwrite Subject Distinguished Name",
+            "example": "CN=John Doe,SURNAME=Doe,GIVENNAME=John,C=SE"
+          },
+          "extension_data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExtendedInformationRestRequestComponent"
+            }
+          },
+          "custom_data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExtendedInformationRestRequestComponent"
+            }
+          },
+          "start_time": {
+            "type": "string",
+            "description": "Valid start time",
+            "example": "ISO 8601 Date string, eg. '2023-06-15 14:07:09'"
+          },
+          "end_time": {
+            "type": "string",
+            "description": "Valid end time",
+            "example": "ISO 8601 Date string, eg. '2023-06-15 14:07:09'"
           }
         }
       },
