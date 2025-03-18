@@ -14,6 +14,7 @@ package org.ejbca.ui.web.rest.api.io.response;
 
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 
 /**
  * A container for response end entity extended information
@@ -37,6 +38,10 @@ public class ExtendedInformationRestResponseComponent {
 	public String getValue() {
 		return value;
 	}
+
+    public boolean isInternalName() {
+        return name.contains(ExtendedInformation.INTERNAL_KEY_PREFIX);
+    }
 
     public static ExtendedInformationRestResponseComponentBuilder builder() {
         return new ExtendedInformationRestResponseComponentBuilder();
