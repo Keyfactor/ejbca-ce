@@ -1760,7 +1760,7 @@ public interface RaMasterApi {
      * @return A list of all the failed imports along with failure reasons
      */
     List<KeyImportFailure> keyImportV2(AuthenticationToken authenticationToken, KeyImportRequestData keyImportRequestData)
-            throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException, CertificateProfileDoesNotExistException;
+            throws AuthorizationDeniedException, EjbcaException, CADoesntExistsException;
 
     /**
      * Return total count of certificates in database

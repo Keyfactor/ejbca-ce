@@ -26,11 +26,9 @@ import java.util.List;
 import com.keyfactor.util.certificate.CertificateWrapper;
 import com.keyfactor.util.certificate.DnComponents;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
-import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -40,8 +38,8 @@ import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
 import org.ejbca.core.ejb.ra.KeyImportSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.keyimport.KeyImportException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 
 import com.keyfactor.util.CryptoProviderTools;
 
@@ -100,7 +98,7 @@ public class KeyImportSystemTest extends CaTestCase {
         authenticationToken = new TestAlwaysAllowLocalAuthenticationToken("KeyImportSystemTest");
 
         CertificateProfile certProfile = new CertificateProfile();
-        certProfile.setAvailableCAs(List.of(SecConst.ALLCAS));
+        certProfile.setAvailableCAs(List.of(CertificateProfile.ANYCA));
         certificateProfileSession.addCertificateProfile(authenticationToken, TEST_CP_NAME, certProfile);
 
         EndEntityProfile eeProfile = new EndEntityProfile();
@@ -251,7 +249,7 @@ public class KeyImportSystemTest extends CaTestCase {
         requestData.setEndEntityProfileName(TEST_EEP_NAME);
         requestData.setKeystores(Collections.emptyList()); // intentionally empty to cause an error
 
-        Exception exception = assertThrows(CADoesntExistsException.class,
+        Exception exception = assertThrows(KeyImportException.class,
                                            () -> keyImportSession.importKeys(authenticationToken, requestData));
         assertEquals("CA does not exist. CA DN: This CA Does Not Exist", exception.getMessage());
     }
@@ -264,7 +262,7 @@ public class KeyImportSystemTest extends CaTestCase {
         requestData.setEndEntityProfileName(TEST_EEP_NAME);
         requestData.setKeystores(Collections.emptyList()); // intentionally empty to cause an error
 
-        Exception exception = assertThrows(CertificateProfileDoesNotExistException.class,
+        Exception exception = assertThrows(KeyImportException.class,
                                            () -> keyImportSession.importKeys(authenticationToken, requestData));
         assertEquals("Certificate profile does not exist: SomeNonExistentProfile", exception.getMessage());
     }
@@ -277,9 +275,9 @@ public class KeyImportSystemTest extends CaTestCase {
         requestData.setEndEntityProfileName("NonExistingEndEntityProfile");
         requestData.setKeystores(Collections.emptyList()); // intentionally empty to cause an error
 
-        Exception exception = assertThrows(EndEntityProfileNotFoundException.class,
+        Exception exception = assertThrows(KeyImportException.class,
                                            () -> keyImportSession.importKeys(authenticationToken, requestData));
-        assertEquals("End Entity Profile of name \"NonExistingEndEntityProfile\" was not found", exception.getMessage());
+        assertEquals("End Entity Profile doesn't exist: NonExistingEndEntityProfile", exception.getMessage());
     }
 
     @Override
