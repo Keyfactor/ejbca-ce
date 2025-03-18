@@ -15,6 +15,7 @@ package org.ejbca.core.ejb.ra;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -101,6 +102,7 @@ import org.cesecore.keys.validation.IssuancePhase;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.keys.validation.ValidationException;
 import org.cesecore.keys.validation.ValidationResult;
+import org.cesecore.keys.validation.Validator;
 import org.cesecore.roles.member.RoleMemberData;
 import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.PrintableStringNameStyle;
@@ -120,6 +122,8 @@ import org.ejbca.core.ejb.ca.publisher.PublisherQueueData;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertReqHistoryData;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
+import org.ejbca.core.ejb.ca.validation.BlacklistExistsException;
+import org.ejbca.core.ejb.ca.validation.BlacklistSessionLocal;
 import org.ejbca.core.ejb.config.GlobalUpgradeConfiguration;
 import org.ejbca.core.ejb.dto.CertRevocationDto;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoveryData;
@@ -149,6 +153,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.model.ra.raadmin.ICustomNotificationRecipient;
 import org.ejbca.core.model.ra.raadmin.UserNotification;
+import org.ejbca.core.model.validation.PublicKeyBlacklistEntry;
 import org.ejbca.util.dn.DistinguishedName;
 import org.ejbca.util.mail.MailException;
 import org.ejbca.util.mail.MailSender;
@@ -211,6 +216,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     private EndEntityAuthenticationSessionLocal endEntityAuthenticationSession;
     @EJB
     private EndEntityManagementSessionLocal endEntityManagementSession;
+    
+    @EJB
+    private BlacklistSessionLocal blacklistSession;
 
     private enum UserDataChangeMode {
         IGNORE,
@@ -2183,6 +2191,35 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             log.info(msg);
             throw new NoSuchEndEntityException(msg);
         }
+
+        Collection<Integer> validatorIds = null;
+
+        if (cainfo != null) {
+            validatorIds = cainfo.getValidators();
+        }
+        String validatorType = null;
+        if (validatorIds != null) {
+            for (Integer id : validatorIds) {
+                final Validator validator = keyValidatorSession.getValidator(id);
+                validatorType = validator.getValidatorTypeIdentifier();
+            }
+        }
+        PublicKey publickey = null;
+        if (cdw.getCertificate() != null) {
+            publickey = cdw.getCertificate().getPublicKey();
+        }
+        if (publickey != null && validatorType != null && reason == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE
+                && validatorType.contains("BLACKLIST_KEY_VALIDATOR")) {
+            try {
+                final AlwaysAllowLocalAuthenticationToken alwaysAllowAuthToken = new AlwaysAllowLocalAuthenticationToken(
+                        new UsernamePrincipal("Key Compromise Blocklist Update"));
+                addPublicKeyToBlacklist(alwaysAllowAuthToken, publickey);
+            } catch (Exception e) {
+                log.info("Update public key block list failed: " + e.getMessage(), e);
+                throw new IllegalStateException(e);
+            }
+        }
+        
         // In the case where this is an individual certificate revocation request, we still send a STATUS_REVOKED notification (since user state wont change)
         if (endEntityProfileId != EndEntityConstants.NO_END_ENTITY_PROFILE && endEntityInformationParam==null) {
             sendNotification(authenticationToken, endEntityInformation, EndEntityConstants.STATUS_REVOKED, 0, lastApprovingAdmin, cdw);
@@ -2192,6 +2229,47 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
     }
 
+    /**
+     * Removes a public key from the public key blacklist.
+     * 
+     * @param publicKey the public key to remove.
+     * @return {@link #STATUS_GENERALIMPORTERROR} if error, {@link #STATUS_CONSTRAINTVIOLATION} if already existing or {@link #STATUS_OK} if added.
+     * @throws Exception any exception.
+     */
+    private void addPublicKeyToBlacklist(final AlwaysAllowLocalAuthenticationToken authenticationToken, final PublicKey publicKey) throws Exception {
+        log.trace(">addPublicKeyToBlacklist()");
+        final PublicKeyBlacklistEntry entry = new PublicKeyBlacklistEntry();
+        entry.setFingerprint(publicKey);
+        log.info("Try to add public key into public key blacklist (fingerprint=" + entry.getFingerprint() + ").");
+        addToBlacklist(authenticationToken, entry);
+        log.trace("<addPublicKeyToBlacklist()");
+    }
+
+    /**
+     * Adds a public key to the public key blacklist if a public key with that fingerprint does not exists already.
+     * 
+     * @param entry the public key blacklist entry.
+     * @return {@link #STATUS_GENERALIMPORTERROR} if error, {@link #STATUS_CONSTRAINTVIOLATION} if already existing or {@link #STATUS_OK} if added.
+     * @throws Exception any exception.
+     */
+    private void addToBlacklist(final AlwaysAllowLocalAuthenticationToken authenticationToken, final PublicKeyBlacklistEntry entry) throws Exception {
+        log.trace(">addToBlacklist()");
+     //   final BlacklistSessionRemote blacklistSession = EjbRemoteHelper.INSTANCE.getRemoteSession(BlacklistSessionRemote.class);
+        try {
+            blacklistSession.addBlacklistEntry(authenticationToken, entry);
+            log.info("Status ok");
+        } catch (BlacklistExistsException e) {
+            log.info("Public key block list entry with public key fingerprint " + entry.getFingerprint() + " already exists.");
+            throw e;
+        } catch (AuthorizationDeniedException e) {
+            log.info("Authorization denied to add public key to block list.");
+            throw e;
+        } catch (Exception e) {
+            log.info("Error while adding public key to block list: " + e.getMessage());
+            throw e;
+        }
+        log.trace("<addToBlacklist()");
+    }
     private void validateCertificateProfileExists(Integer certificateProfileIdParam) throws CertificateProfileDoesNotExistException {
         assert(certificateProfileIdParam != null);
         CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(certificateProfileIdParam);
