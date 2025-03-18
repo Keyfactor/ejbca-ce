@@ -36,7 +36,7 @@ public class UpgradeStatusSingletonBean implements UpgradeStatusSingletonLocal {
     private AtomicBoolean postUpgradeInProgress = new AtomicBoolean(false);
     
     /** Fixed size list (dropping oldest additions when running out of space) to prevent all memory from being consumed if attached process never detaches. */
-    private List<UpgradeLogEvent> logged = new LinkedList<UpgradeLogEvent>() {
+    private List<UpgradeLogEvent> logged = new LinkedList<>() {
         private static final long serialVersionUID = 1L;
         private static final int MAX_ENTRIES_IN_LIST = 10000;
 
