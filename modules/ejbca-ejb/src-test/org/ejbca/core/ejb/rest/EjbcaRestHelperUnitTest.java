@@ -19,8 +19,11 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
@@ -46,6 +49,7 @@ import org.cesecore.certificates.certificate.certextensions.standard.SubjectDire
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.easymock.EasyMock;
 import org.easymock.EasyMockRunner;
 import org.easymock.Mock;
@@ -335,15 +339,41 @@ public class EjbcaRestHelperUnitTest {
     
     @Test
     public void shouldConvertToCorrectEndEntityInformationWithoutEmail() throws Exception {
-        shouldConvertToCorrectEndEntityInformation(null);
+        shouldConvertToCorrectEndEntityInformation(null, false, false);
     }
     
     @Test
     public void shouldConvertToCorrectEndEntityInformationWithEmail() throws Exception {
-        shouldConvertToCorrectEndEntityInformation("random@random.rand");
+        shouldConvertToCorrectEndEntityInformation("random@random.rand", false, false);
     }
 
-    public void shouldConvertToCorrectEndEntityInformation(String email) throws Exception {
+    @Test
+    public void shouldEndEntityConversionOverwriteSubjectDnAndStartDateAndEndDate() throws Exception {
+        shouldConvertToCorrectEndEntityInformation(null, true, false);
+    }
+
+    @Test
+    public void shouldEndEntityConversionCarryExtensionDataAndCustomData() throws Exception {
+        shouldConvertToCorrectEndEntityInformation(null, false, true);
+    }
+
+    @Test
+    public void shouldParseCorrectDn() {
+        PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(csr);
+        String actualResult = testClass.getSubjectDn(pkcs10CertificateRequest);
+        String expectedResult = "C=EE,ST=Alabama,L=tallinn,O=naabrivalve,CN=hello123server6";
+        assertEquals("End entiy DN got incorrectly parsed from pkcs10 certificate request", expectedResult, actualResult);
+    }
+
+    @Test
+    public void shouldParseCorrectAn() {
+        PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(csr);
+        String actualResult = testClass.getSubjectAltName(pkcs10CertificateRequest);
+        String expectedResult = DnComponents.DNS + "=somedns.com, " + DnComponents.IPADDR + "=192.168.1.7, " + DnComponents.DNS+ "=some.other.dns.com, " + DnComponents.DIRECTORYNAME + "=CN=Test\\,L=XX";
+        assertEquals("Subject AN got incorrectly parsed from pkcs10 certificate request", expectedResult, actualResult);
+    }
+
+    public void shouldConvertToCorrectEndEntityInformation(String email, Boolean testOverwrite, Boolean testExtension) throws Exception {
         // given
         String endEntityProfileName = "eep1";
         int endEntityProfileId = 7;
@@ -352,11 +382,17 @@ public class EjbcaRestHelperUnitTest {
         String certificateProfileName = "CP1";
         String username = "testuser";
         int certificateProfileId = 9;
-        String subjectDn = DnComponents.stringToBCDNString("CN=mydn"); 
+        String subjectDn = DnComponents.stringToBCDNString("CN=mydn");
+        String overwriteDn = DnComponents.stringToBCDNString("CN=overwrite");
         String name = "test123";
         int status = 20;
         String encodedValidity = "";
         int signedby = 1;
+        String startTime = "2025-04-15 14:30:45";
+        String endTime = "2025-08-15 14:30:45";
+        Map.Entry extension = new AbstractMap.SimpleEntry("1.1.1.1", "10101010");
+        String customDataKey = "2.2.2.2";
+        Map.Entry customData = new AbstractMap.SimpleEntry(ExtendedInformation.CUSTOMDATA + customDataKey, "01010101");
 
         X509Certificate mockX509Cert = EasyMock.mock(X509Certificate.class);
 
@@ -383,7 +419,7 @@ public class EjbcaRestHelperUnitTest {
         replay(certificateProfileSessionBean);
         replay(endEntityProfileSessionBean);
         replay(endEntityProfile);
-        
+
         EnrollPkcs10CertificateRequest.Builder builder = new EnrollPkcs10CertificateRequest.Builder()
                 .certificateRequest(csr)
                 .certificateProfileName(certificateProfileName)
@@ -394,8 +430,20 @@ public class EjbcaRestHelperUnitTest {
         if(email!=null) {
             builder.email(email);
         }
-        
+
+        if(testOverwrite) {
+            builder.subjectDn(overwriteDn)
+                    .startTime(startTime)
+                    .endTime(endTime);
+        }
+
+        if (testExtension) {
+            builder.extendedData(List.of(extension));
+            builder.customData(List.of(customData));
+        }
+
         EnrollPkcs10CertificateRequest request = builder.build();
+
 
         // when
         EndEntityInformation endEntityInformation = testClass.convertToEndEntityInformation(authenticationToken, request);
@@ -407,27 +455,34 @@ public class EjbcaRestHelperUnitTest {
         assertEquals("The injected certificate profile id in 'given' section didnt get converted into result properly",
                 certificateProfileId, endEntityInformation.getCertificateProfileId());
 
-        assertEquals("End entiy DN got incorrectly parsed pkcs10 certificate request",
-                "C=EE,ST=Alabama,L=tallinn,O=naabrivalve,CN=hello123server6", endEntityInformation.getDN());
-        
+        if (testOverwrite) {
+            assertEquals("SubjectDn is not overwritten ", overwriteDn, endEntityInformation.getDN());
+            ExtendedInformation extendedInformation = endEntityInformation.getExtendedInformation();
+            String actualStartTime = extendedInformation.getCustomData(ExtendedInformation.CUSTOM_STARTTIME);
+            String actualEndTime = extendedInformation.getCustomData(ExtendedInformation.CUSTOM_ENDTIME);
+            assertEquals("Validity end time is wrong ", startTime, actualStartTime);
+            assertEquals("Validity end time is wrong ", endTime, actualEndTime);
+        } else {
+            assertEquals("End entiy DN got incorrectly parsed pkcs10 certificate request",
+                    "C=EE,ST=Alabama,L=tallinn,O=naabrivalve,CN=hello123server6", endEntityInformation.getDN());
+        }
+
+        if (testExtension) {
+            assertEquals(
+                    "Extension data missing.",
+                    extension.getValue(),
+                    endEntityInformation.getExtendedInformation().getExtensionData((String)extension.getKey())
+            );
+
+            assertEquals(
+                    "Custom data missing.",
+                    customData.getValue(),
+                    endEntityInformation.getExtendedInformation().getCustomData(customDataKey)
+            );
+        }
+
         assertEquals("Email was not set during conversion.", email,endEntityInformation.getEmail());
 
         EasyMock.verify();
-    }
-
-    @Test
-    public void shouldParseCorrectDn() {
-        PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(csr);
-        String actualResult = testClass.getSubjectDn(pkcs10CertificateRequest);
-        String expectedResult = "C=EE,ST=Alabama,L=tallinn,O=naabrivalve,CN=hello123server6";
-        assertEquals("End entiy DN got incorrectly parsed from pkcs10 certificate request", expectedResult, actualResult);
-    }
-
-    @Test
-    public void shouldParseCorrectAn() {
-        PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(csr);
-        String actualResult = testClass.getSubjectAltName(pkcs10CertificateRequest);
-        String expectedResult = DnComponents.DNS + "=somedns.com, " + DnComponents.IPADDR + "=192.168.1.7, " + DnComponents.DNS+ "=some.other.dns.com, " + DnComponents.DIRECTORYNAME + "=CN=Test\\,L=XX";
-        assertEquals("Subject AN got incorrectly parsed from pkcs10 certificate request", expectedResult, actualResult);
     }
 }
