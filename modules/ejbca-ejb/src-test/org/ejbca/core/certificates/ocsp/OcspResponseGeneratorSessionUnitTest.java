@@ -688,7 +688,7 @@ public class OcspResponseGeneratorSessionUnitTest {
         ocspKeyBinding.setUntilNextUpdate(3600);
         ocspKeyBinding.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
         OcspSigningCache.INSTANCE.addSingleEntry(new OcspSigningCacheEntry(issuerCert, CertificateStatus.OK, Collections.singletonList(issuerCert), issuerCert,
-                getIssuerPrivKey(), BouncyCastleProvider.PROVIDER_NAME, ocspKeyBinding, ResponderIdType.KEYHASH));
+                getIssuerPrivKey(), BouncyCastleProvider.PROVIDER_NAME, ocspKeyBinding, ResponderIdType.KEYHASH, null));
     }
 
     private byte[] makeOcspRequest(final X509Certificate issuerCert, final BigInteger serialNumber, final ASN1ObjectIdentifier digestAlgo, byte[] nonce) {

@@ -108,7 +108,8 @@ public enum OcspSigningCache {
                     entry = new OcspSigningCacheEntry(entry.getIssuerCaCertificate(), entry.getIssuerCaCertificateStatus(),
                             stagedDefaultResponder.getCaCertificateChain(), stagedDefaultResponder.getOcspSigningCertificate(),
                             stagedDefaultResponder.getPrivateKey(), stagedDefaultResponder.getSignatureProviderName(),
-                            stagedDefaultResponder.getOcspKeyBinding(), stagedDefaultResponder.getResponderIdType());
+                            stagedDefaultResponder.getOcspKeyBinding(), stagedDefaultResponder.getResponderIdType(), 
+                            stagedDefaultResponder.getGenerationalSignerAndChain());
                     entry.setCrlSigningAlgorithm(stagedDefaultResponder.getCrlSigningAlgorithm());
                     modifiedEntries.put(key, entry);
                 } else {
