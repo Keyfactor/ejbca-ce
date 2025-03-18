@@ -48,7 +48,9 @@ public class EndEntityRestResponse {
         this.email = email;
         this.status = status;
         this.token = token;
-        this.extensionData = extensionData.stream()
+        this.extensionData = extensionData == null ?
+                null :
+                extensionData.stream()
                 .filter(component->!component.isInternalName())
                 .collect(Collectors.toUnmodifiableList());
     }
