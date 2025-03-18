@@ -40,7 +40,7 @@ public class ExtendedInformationRestResponseComponent {
 	}
 
     public boolean isInternalName() {
-        return name.contains(ExtendedInformation.INTERNAL_KEY_PREFIX);
+        return name != null && name.contains(ExtendedInformation.INTERNAL_KEY_PREFIX);
     }
 
     public static ExtendedInformationRestResponseComponentBuilder builder() {
