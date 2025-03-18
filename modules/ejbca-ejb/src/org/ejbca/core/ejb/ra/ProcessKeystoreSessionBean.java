@@ -147,10 +147,11 @@ public class ProcessKeystoreSessionBean implements ProcessKeystoreSessionLocal, 
                 persistKeyRecoveryData(authenticationToken, userInfo, caInfo, userCertificate, p12PrivateKey, caCert);
             }
         } catch (IOException e) {
+            final String message = StringUtils.isBlank(e.getMessage()) ? "Invalid keystore file." : e.getMessage();
             if (log.isDebugEnabled()){
                 log.error(e);
             }
-            throw new KeyImportException("Invalid keystore file.");
+            throw new KeyImportException(message);
         } catch (Exception e) {
             final String message = StringUtils.isBlank(e.getMessage()) ? "Unexpected key import error." : e.getMessage();
             if (log.isDebugEnabled()){
