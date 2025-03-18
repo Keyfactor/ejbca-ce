@@ -19,7 +19,6 @@ import jakarta.ejb.Local;
 /**
  * Local interface for UpgradeStatusSingletonBean.
  * 
- * @version $Id$
  */
 @Local
 public interface UpgradeStatusSingletonLocal {
@@ -28,18 +27,21 @@ public interface UpgradeStatusSingletonLocal {
     boolean isPostUpgradeInProgress();
 
     /** @return Log4J logging events from UpgradeSessionBean while post-upgrade background task is running */
-    List<org.apache.log4j.spi.LoggingEvent> getLogged();
+    List<UpgradeLogEvent> getLogged();
 
     /** @return true if successfully claimed the node-local post-upgrade lock */
     boolean setPostUpgradeInProgressIfDifferent(boolean newValue);
 
     /** Reset the node-local post-upgrade lock */
     void resetPostUpgradeInProgress();
-
-    /** Start listen to Log4J log events */
-    void logAppenderAttach(org.apache.log4j.Logger log);
-
-    /** Stop listen to Log4J log events */
-    void logAppenderDetach(org.apache.log4j.Logger log);
+    
+    void trace(final Object msg);    
+    void debug(final Object msg);
+    void debug(final Object msg, final Throwable throwable);
+    void info(final Object msg);
+    void warn(final Object msg);
+    void error(final Object msg);
+    void error(final Object msg, final Throwable throwable);
+    void fatal(final Object msg);
 
 }

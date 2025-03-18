@@ -17,16 +17,12 @@ import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import jakarta.ejb.EJB;
-import jakarta.ejb.Stateless;
-import jakarta.ejb.TransactionAttribute;
-import jakarta.ejb.TransactionAttributeType;
-
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
@@ -66,12 +62,16 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.RandomHelper;
 import com.keyfactor.util.certificate.DnComponents;
 
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+
 
 @Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, EjbcaRestHelperSessionRemote {
 
-    private static final Logger log = Logger.getLogger(EjbcaRestHelperSessionBean.class);
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     @EJB
@@ -171,8 +171,33 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
         extendedInformation.setSubjectDirectoryAttributes(getSubjectDirectoryAttribute(pkcs10CertificateRequest));
         extendedInformation.setAccountBindingId(enrollcertificateRequest.getAccountBindingId());
 
-        String subjectDn = getSubjectDn(pkcs10CertificateRequest);
-        endEntityInformation.setDN(subjectDn);
+        List<Map.Entry<String, String>> extensions = enrollcertificateRequest.getExtendedData();
+        if (extensions != null && !extensions.isEmpty()) {
+            extensions.forEach(entry -> {extendedInformation.setExtensionData(entry.getKey(), entry.getValue());});
+        }
+
+        List<Map.Entry<String, String>> customData = enrollcertificateRequest.getCustomData();
+        if (customData != null && !customData.isEmpty()) {
+            customData.forEach(entry -> {extendedInformation.setStringKeyData(entry.getKey(), entry.getValue());});
+        }
+
+        String startTime = enrollcertificateRequest.getStartTime();
+        if (StringUtils.isNotBlank(startTime)) {
+            extendedInformation.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, startTime);
+        }
+
+        String endTime = enrollcertificateRequest.getEndTime();
+        if (StringUtils.isNotBlank(endTime)) {
+            extendedInformation.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, endTime);
+        }
+
+        String overwriteSubjectDn = enrollcertificateRequest.getSubjectDn();
+        if (StringUtils.isNotBlank(overwriteSubjectDn)) {
+            endEntityInformation.setDN(overwriteSubjectDn);
+        } else {
+            String csrSubjectDn = getSubjectDn(pkcs10CertificateRequest);
+            endEntityInformation.setDN(csrSubjectDn);
+        }
 
         endEntityInformation.setCardNumber("");
         endEntityInformation.setStatus(EndEntityConstants.STATUS_NEW);
