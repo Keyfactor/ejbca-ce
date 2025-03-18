@@ -119,39 +119,7 @@ public class UserDataVO implements Serializable {
         setExtendedinformation(extendedinfo);
         setCardNumber(null);
     }
-    
-    /**
-     * Creates new UserDataVO. This constructor should only be used from UserDataSource 
-     * implementations. Status and dates aren't used in these cases.
-     * 
-     * @param user 
-     * @param dn 
-     * @param caid CA id of the CA that the user is registered with
-     * @param subjectaltname 
-     * @param email 
-     * @param type one of SecConst.ENDUSER || ...
-     * @param endentityprofileid 
-     * @param certificateprofileid 
-     * @param tokentype 
-     * @param extendedinfo
-     */
-    public UserDataVO(String user, String dn, int caid, String subjectaltname, String email,  EndEntityType type, int endentityprofileid, int certificateprofileid,
-                          int tokentype, ExtendedInformation extendedinfo) {
-        setUsername(user);
-        setPassword(null);
-        setDN(dn);
-        setCAId(caid);
-        setSubjectAltName(subjectaltname);
-        setEmail(email);        
-        setType(type);
-        setEndEntityProfileId(endentityprofileid);
-        setCertificateProfileId(certificateprofileid);
-        setTokenType(tokentype);
-        setExtendedinformation(extendedinfo);
-        setCardNumber(null);
-    }
-    
-    
+        
     public void setUsername(String user) { this.username=StringTools.putBase64String(StringTools.stripUsername(user));}
     public String getUsername() {return StringTools.getBase64String(username);}
     public void setDN(String dn) {

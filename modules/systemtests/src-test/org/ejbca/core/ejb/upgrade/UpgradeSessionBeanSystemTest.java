@@ -1187,7 +1187,7 @@ public class UpgradeSessionBeanSystemTest {
             globalConfigSession.saveConfiguration(alwaysAllowtoken, globalUpgradeConfiguration);
             upgradeSession.upgrade(/* database */ null, /* upgrade from */ "7.2.0", /* post upgrade? */ false);
             final Role roleAfterUpgrade = roleSession.getRole(alwaysAllowtoken, persistedRole.getRoleId());
-            Assert.assertTrue("Stale access rule was not removed.",
+            assertTrue("Stale access rule was not removed.",
                     !roleAfterUpgrade.getAccessRules().containsKey(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_KEYRECOVERY)));
         } finally {
             if (persistedRole != null) {
@@ -1546,6 +1546,51 @@ public class UpgradeSessionBeanSystemTest {
             globalCesecoreConfiguration.setCtCacheFastFailEnabled(oldFastFail);
             globalCesecoreConfiguration.setCtCacheFastFailBackoff(oldBackoff);
             globalConfigSession.saveConfiguration(alwaysAllowtoken, globalCesecoreConfiguration);
+        }
+    }
+    
+    @Test
+    public void testRemoveUserDataSourceAccessRulesPost930() throws AuthorizationDeniedException, RoleExistsException {
+        final String rolename = "testRemoveUserDataSourceAccessRulesPost930";
+        try {
+            //Set up EJBCA in a pre-upgrade state
+            final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            guc.setUpgradedToVersion("9.2.0");
+            guc.setPostUpgradedToVersion("9.2.0");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+            //Set up a role which uses the user data source rules
+           
+            
+            LinkedHashMap<String, Boolean> rules = new LinkedHashMap<>();
+            rules.put(AccessRulesConstants.REGULAR_EDITUSERDATASOURCES, Role.STATE_ALLOW);
+            final String userDataSourceRule = AccessRulesConstants.USERDATASOURCEPREFIX + "123" + AccessRulesConstants.UDS_FETCH_RIGHTS;
+            rules.put(userDataSourceRule, Role.STATE_ALLOW);
+            Role role = new Role(null, rolename, rules);
+            Role persistedRole = roleSession.persistRole(alwaysAllowtoken, role);
+            //Verify that the rules exist
+            LinkedHashMap<String, Boolean> persistedRules = persistedRole.getAccessRules();
+            //Adding a slash here, since it seems to get added automatically. Upgradessessionbean uses startsWith anyway, so doesn't affect functionality. 
+            if(!persistedRules.containsKey(AccessRulesConstants.REGULAR_EDITUSERDATASOURCES + "/")) {
+                throw new IllegalStateException("User data source rules not persisted, test cannot continue.");
+            }
+            
+            upgradeSession.upgrade(/* database */ null, /* upgrade from */ "9.2.0", /* post upgrade? */ true);
+            
+            Role upgradedRole = roleSession.getRole(alwaysAllowtoken, persistedRole.getRoleId());
+            LinkedHashMap<String, Boolean> upgradedRules = upgradedRole.getAccessRules();
+            assertFalse("User data source access rule was not automagically removed.", upgradedRules.containsKey(AccessRulesConstants.REGULAR_EDITUSERDATASOURCES + "/"));
+            assertFalse("User data source access rule was not automagically removed.", upgradedRules.containsKey(userDataSourceRule));
+            
+            
+        } finally {
+            roleSession.deleteRoleIdempotent(alwaysAllowtoken, null, rolename);
+            
+            
+            final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            guc.setUpgradedToVersion("9.3.0");
+            guc.setPostUpgradedToVersion("9.3.0");
         }
     }
 

@@ -177,7 +177,6 @@ import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
-import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -195,7 +194,6 @@ import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
-import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
 import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.util.CAIdTools;
@@ -286,8 +284,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     private SecurityEventsLoggerSessionLocal auditSession;
     @EJB
     private ServiceSessionLocal serviceSession;
-    @EJB
-    private UserDataSourceSessionLocal userDataSourceSession;
 
     @Resource
     private SessionContext sessionContext;
@@ -461,19 +457,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 endEntityManagementSession.updateCAId(authenticationToken, endEntityInfo.getUsername(), toId);
             } catch (NoSuchEndEntityException e) {
                 log.error("End entity " + endEntityInfo.getUsername() + " could no longer be found", e);
-            }
-        }
-
-        // Update Data Sources
-        final Map<Integer, String> dataSources = userDataSourceSession.getUserDataSourceIdToNameMap(authenticationToken);
-        for (Integer dataSourceId : dataSources.keySet()) {
-            final BaseUserDataSource dataSource = userDataSourceSession.getUserDataSource(authenticationToken, dataSourceId);
-            if (CAIdTools.updateCAIds(dataSource, fromId, toId, toDN)) {
-                String name = dataSources.get(dataSourceId);
-                if (log.isDebugEnabled()) {
-                    log.debug("Changing CA Ids in User Data Source " + name);
-                }
-                userDataSourceSession.changeUserDataSource(authenticationToken, name, dataSource);
             }
         }
 

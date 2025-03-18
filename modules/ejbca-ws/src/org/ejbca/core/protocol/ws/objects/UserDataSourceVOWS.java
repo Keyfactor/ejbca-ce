@@ -31,6 +31,7 @@ import jakarta.xml.bind.annotation.XmlType;
         "isModifyable",
         "userDataVOWS"
 })
+@Deprecated(since = "9.3")
 public class UserDataSourceVOWS implements Serializable{
 
 	private static final long serialVersionUID = 4582471233805101416L;
