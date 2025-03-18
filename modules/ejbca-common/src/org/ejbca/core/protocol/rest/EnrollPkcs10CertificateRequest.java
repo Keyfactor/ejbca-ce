@@ -13,6 +13,10 @@
 package org.ejbca.core.protocol.rest;
 
 import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
+
+import org.cesecore.certificates.certificate.CertificateConstants;
 
 /**
  * A DTO class representing the input for certificate enrollment.
@@ -34,6 +38,12 @@ public class EnrollPkcs10CertificateRequest implements Serializable {
     private final String responseFormat;
 
     private final int requestType;
+
+    private String subjectDn;
+    private List<Map.Entry<String, String>> extendedData;
+    private List<Map.Entry<String, String>> customData;
+    private String startTime;
+    private String endTime;
 
     public String getCertificateRequest() {
         return certificateRequest;
@@ -77,6 +87,26 @@ public class EnrollPkcs10CertificateRequest implements Serializable {
         return requestType;
     }
 
+    public String getSubjectDn() {
+        return subjectDn;
+    }
+
+    public List<Map.Entry<String, String>> getExtendedData() {
+        return extendedData;
+    }
+
+    public List<Map.Entry<String, String>> getCustomData() {
+        return customData;
+    }
+
+    public String getStartTime() {
+        return startTime;
+    }
+
+    public String getEndTime() {
+        return endTime;
+    }
+
     public static class Builder {
         private String certificateRequest;
         private String certificateProfileName;
@@ -89,6 +119,11 @@ public class EnrollPkcs10CertificateRequest implements Serializable {
         private String email;
         private String responseFormat;
         private int requestType;
+        private String subjectDn;
+        private List<Map.Entry<String, String>> extendedData;
+        private List<Map.Entry<String, String>> customData;
+        private String startTime;
+        private String endTime;
 
         public Builder certificateRequest(final String certificateRequest) {
             this.certificateRequest = certificateRequest;
@@ -130,10 +165,6 @@ public class EnrollPkcs10CertificateRequest implements Serializable {
             this.includeChain = includeChain;
             return this;
         }
-
-        public EnrollPkcs10CertificateRequest build() {
-            return new EnrollPkcs10CertificateRequest(this);
-        }
         
         public Builder email(final String email) {
             this.email = email;
@@ -149,6 +180,35 @@ public class EnrollPkcs10CertificateRequest implements Serializable {
             this.requestType = requestType;
             return this;
         }
+
+        public Builder subjectDn(final String subjectDn) {
+            this.subjectDn = subjectDn;
+            return this;
+        }
+
+        public Builder extendedData(final List<Map.Entry<String, String>> extendedData) {
+            this.extendedData = extendedData;
+            return this;
+        }
+
+        public Builder customData(final List<Map.Entry<String, String>> customData) {
+            this.customData = customData;
+            return this;
+        }
+
+        public Builder startTime(final String startTime) {
+            this.startTime = startTime;
+            return this;
+        }
+
+        public Builder endTime(final String endTime) {
+            this.endTime = endTime;
+            return this;
+        }
+
+        public EnrollPkcs10CertificateRequest build() {
+            return new EnrollPkcs10CertificateRequest(this);
+        }
     }
     
     private EnrollPkcs10CertificateRequest(final Builder builder) {
@@ -163,5 +223,10 @@ public class EnrollPkcs10CertificateRequest implements Serializable {
         this.email = builder.email;
         this.responseFormat = builder.responseFormat;
         this.requestType = builder.requestType;
+        this.subjectDn = builder.subjectDn;
+        this.extendedData = builder.extendedData;
+        this.customData = builder.customData;
+        this.startTime = builder.startTime;
+        this.endTime = builder.endTime;
     }
 }

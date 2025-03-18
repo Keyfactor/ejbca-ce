@@ -25,6 +25,7 @@ import java.security.cert.X509CRL;
 import java.security.cert.X509CRLEntry;
 import java.security.cert.X509Certificate;
 import java.text.MessageFormat;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -33,6 +34,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 import java.util.TimeZone;
@@ -47,7 +49,15 @@ import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
+import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1Primitive;
+import org.bouncycastle.asn1.DERSequence;
+import org.bouncycastle.asn1.DERSet;
+import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.IETFUtils;
 import org.bouncycastle.jce.X509KeyUsage;
@@ -61,6 +71,7 @@ import org.cesecore.certificates.ca.CvcCA;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateData;
+import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
@@ -71,6 +82,7 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.cert.CrlExtensions;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
@@ -92,6 +104,8 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 import org.ejbca.ui.web.rest.api.io.request.AddEndEntityRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.EnrollCertificateWithEntityRestRequest;
+import org.ejbca.ui.web.rest.api.io.request.EnrollCertificateRestRequest;
+import org.ejbca.ui.web.rest.api.io.request.ExtendedInformationRestRequestComponent;
 import org.ejbca.ui.web.rest.api.io.request.FinalizeRestRequest;
 import org.ejbca.ui.web.rest.api.resource.util.CertificateRestResourceSystemTestUtil;
 import org.ejbca.ui.web.rest.api.resource.util.TestEndEntityParamHolder;
@@ -115,6 +129,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.xml.bind.DatatypeConverter;
 
+import static java.lang.Thread.sleep;
 import static org.cesecore.certificates.crl.RevocationReasons.AACOMPROMISE;
 import static org.cesecore.certificates.crl.RevocationReasons.AFFILIATIONCHANGED;
 import static org.cesecore.certificates.crl.RevocationReasons.CACOMPROMISE;
@@ -125,6 +140,7 @@ import static org.cesecore.certificates.crl.RevocationReasons.NOT_REVOKED;
 import static org.cesecore.certificates.crl.RevocationReasons.PRIVILEGESWITHDRAWN;
 import static org.cesecore.certificates.crl.RevocationReasons.SUPERSEDED;
 import static org.cesecore.certificates.crl.RevocationReasons.UNSPECIFIED;
+import static org.cesecore.util.ValidityDate.TIMEZONE_UTC;
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertJsonContentType;
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertProperJsonExceptionErrorResponse;
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertProperJsonStatusResponse;
@@ -158,6 +174,10 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     private static final UnidfnrProxySessionRemote unidfnrProxySessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(UnidfnrProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private static final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private static final EnterpriseEditionEjbBridgeProxySessionRemote enterpriseEjbBridgeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EnterpriseEditionEjbBridgeProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private static final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+
+    private static AvailableCustomCertificateExtensionsConfiguration cceConfigBackup;
+    private static final String EXTENSTION_TO_OVERWRITE = "1.2.3.4.5.6.7.1234";
 
     private static final Random RANDOM = new Random();
     private X509CA x509TestCa;
@@ -172,6 +192,16 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     private CvcCA cvcTestCa = null; // Don't create this for every test
     private String testCaNameCVC = "TESTCVC";
     private String testCVCIssuerDn = "C=SE,CN=CAREF001";
+    private final String oid = "2.5.29.36";
+    private String overwriteSdn = "CN=pkcs10enrollOveriteSystemTest";
+    // right now + 3 days
+    Instant start = Instant.now().plusSeconds(60 * 60 * 24*3);
+    private String validityStart = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss", TIMEZONE_UTC)
+            .format(Date.from(start));
+    // right now + 5 days
+    Instant end = Instant.now().plusSeconds(60 * 60 * 24*7);
+    private String validityEnd = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss", TIMEZONE_UTC)
+            .format(Date.from(end));
 
     public static final String BEGIN_CSR = "-----BEGIN CERTIFICATE REQUEST-----";
     public static final String END_CSR = "-----END CERTIFICATE REQUEST-----";
@@ -297,12 +327,17 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
 
     @BeforeClass
     public static void beforeClass() throws Exception {
+        cceConfigBackup = (AvailableCustomCertificateExtensionsConfiguration) globalConfigurationSession.
+                getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
         RestResourceSystemTestBase.beforeClass();
     }
 
     @AfterClass
     public static void afterClass() throws Exception {
         RestResourceSystemTestBase.afterClass();
+        if (cceConfigBackup != null) {
+            globalConfigurationSession.saveConfiguration(INTERNAL_ADMIN_TOKEN, cceConfigBackup);
+        }
     }
 
     @Before
@@ -877,7 +912,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         // when
         JSONObject initialRevocationResponse = revokeCertificate(testIssuerDn, serialNumber, initialRevocationReason, null);
         final String initialRevocationDate = initialRevocationResponse.get("revocation_date").toString();
-        Thread.sleep(1000);
+        sleep(1000);
         final JSONObject revocationReasonChangeResponse = revokeCertificate(testIssuerDn, serialNumber, updatedRevocationReason, null);
         // then
         assertEquals("Changing revocation reson should have preserved the initial revocation date",
@@ -1054,7 +1089,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         // when
         final JSONObject revocationResponse = revokeCertificate(testIssuerDn, serialNumber, revocationReason, null);
         final Date preActivationSystemDate = new Date();
-        Thread.sleep(1000);
+        sleep(1000);
         final JSONObject reactivationResponse = revokeCertificate(testIssuerDn, serialNumber, reactivationReason, null);
         final CertificateData certificateData = internalCertificateStoreSession.getCertificateData(fingerprint);
         // then
@@ -1120,7 +1155,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         final String updatedRevocationReason = KEYCOMPROMISE.getStringValue();
         // when
         revokeCertificate(testIssuerDn, serialNumber, initialRevocationReason, null);
-        Thread.sleep(1000);
+        sleep(1000);
         revokeCertificate(testIssuerDn, serialNumber, updatedRevocationReason, null);
         createCrl(false);
         final X509CRL deltaCrl = createCrl(true);
@@ -1138,11 +1173,11 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         final String serialNumber = generateTestSerialNumber();
         final String revocationReason = KEYCOMPROMISE.getStringValue();
         // when
-        Thread.sleep(1000);
+        sleep(1000);
         final String backdatedRevocationDate = getRevocationRequestDate();
         final long backdatedRevocationTime = DatatypeConverter.parseDateTime(backdatedRevocationDate).getTime().getTime();
         revokeCertificate(testIssuerDn, serialNumber, revocationReason, null); // revoke using sysdate
-        Thread.sleep(1000);
+        sleep(1000);
         revokeCertificate(testIssuerDn, serialNumber, revocationReason, backdatedRevocationDate); // backdate
         createCrl(false);
         final X509CRL deltaCrl = createCrl(true);
@@ -1274,7 +1309,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
 
     @Test
     public void enrollPkcs10ExpectResponseFormatPKCS7() throws Exception {
-        enrollPkcs10("ENDUSER", "EMPTY", "PKCS7", CSR_WITHOUT_HEADERS, 201, null);
+        enrollPkcs10("ENDUSER", "EMPTY", "PKCS7", CSR_WITHOUT_HEADERS, 201, null, false);
     }
 
     @Test
@@ -1289,7 +1324,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
 
         // when
         X509Certificate certificate = (X509Certificate) enrollPkcs10("ENDUSER", testEeProfileNameWithSan, "PKCS7", CSR_WITH_SAN_WITHOUT_HEADERS,
-                400, "Wrong number of RFC822NAME fields in Subject Alternative Name.");
+                400, "Wrong number of RFC822NAME fields in Subject Alternative Name.", false);
         // then
         assertNull("No certificate must habe been generated after an end entity profile exception.", certificate);
 
@@ -1307,19 +1342,137 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         eep.addField(DnComponents.RFC822NAME);
         endEntityProfileSession.changeEndEntityProfile(INTERNAL_ADMIN_TOKEN, testEeProfileNameWithSan, eep);
 
-        certificate = (X509Certificate) enrollPkcs10("ENDUSER", testEeProfileNameWithSan, "PKCS7", CSR_WITH_SAN_WITHOUT_HEADERS, 201, null);
+        certificate = (X509Certificate) enrollPkcs10("ENDUSER", testEeProfileNameWithSan, "PKCS7", CSR_WITH_SAN_WITHOUT_HEADERS, 201, null, false);
         assertNotNull("The certificate generated must not be null.", certificate);
         assertSansPkcs10Enroll(certificate);
     }
 
-    private Certificate enrollPkcs10(final String cpName, final String eepName, final String responseFormat, final String pemCsrWithoutHeaders, final int responseStatus, final String error) throws Exception {
-        final EnrollPkcs10CertificateRequest pkcs10req = new EnrollPkcs10CertificateRequest.Builder().
-                certificateAuthorityName(testCaName).
-                certificateProfileName(cpName).
-                endEntityProfileName(eepName).
-                username(testUsername).
-                password("foo123").includeChain(false).responseFormat(responseFormat).
-                certificateRequest(pemCsrWithoutHeaders).build();
+    @Test
+    public void enrollPkcs10Overwrite() throws Exception {
+
+        AvailableCustomCertificateExtensionsConfiguration cceConfig = new AvailableCustomCertificateExtensionsConfiguration();
+        Properties props = new Properties();
+        props.put("critical", "false");
+        props.put("dynamic", "true");
+        props.put("encoding", "DEROCTETSTRING");
+        cceConfig.addCustomCertExtension(1, EXTENSTION_TO_OVERWRITE, "SingleExtension",
+                "org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension", false, true, props);
+        globalConfigurationSession.saveConfiguration(INTERNAL_ADMIN_TOKEN, cceConfig);
+
+        final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+
+        final List<Integer> availableCas = new ArrayList<>();
+        availableCas.add(x509TestCa.getCAId());
+        certificateProfile.setAvailableCAs(availableCas);
+
+        final int[] availableBitLengths = { 2048 };
+        certificateProfile.setAvailableBitLengths(availableBitLengths);
+
+        final String[] availableAlgorithms = { "RSA" };
+        certificateProfile.setAvailableKeyAlgorithms(availableAlgorithms);
+
+        certificateProfile.setUseAlternativeSignature(true);
+        certificateProfile.setAlternativeAvailableKeyAlgorithms(new String[0]);
+
+        certificateProfile.setAllowValidityOverride(true);
+        certificateProfile.setAllowExpiredValidityEndDate(true);
+        certificateProfile.setAllowExtensionOverride(true);
+        certificateProfile.setOverridableExtensionOIDs(Set.of(oid));
+        certificateProfile.setUsedCertificateExtensions(List.of(1));
+
+        final int certProfileId = certificateProfileSession.addCertificateProfile(
+                INTERNAL_ADMIN_TOKEN,
+                testCertProfileName,
+                certificateProfile
+        );
+
+        final EndEntityProfile eep = new EndEntityProfile(false);
+        eep.setDefaultCertificateProfile(certProfileId);
+        eep.setAvailableCertificateProfileIds(List.of(certProfileId));
+        eep.setDefaultCA(x509TestCa.getCAId());
+        eep.setAvailableCAs(List.of(x509TestCa.getCAId()));
+        eep.setEmailUsed(false);
+        eep.addField(DnComponents.DNSNAME);
+        endEntityProfileSession.addEndEntityProfile(INTERNAL_ADMIN_TOKEN, testEeProfileName, eep);
+
+        // Add a challenge password as well
+        ASN1EncodableVector pwdattr = new ASN1EncodableVector();
+        pwdattr.add(new ASN1ObjectIdentifier(EXTENSTION_TO_OVERWRITE));
+        ASN1EncodableVector pwdvalues = new ASN1EncodableVector();
+        pwdvalues.add(new DERUTF8String("30080102030405060708"));
+        pwdattr.add(new DERSet(pwdvalues));
+
+        // Complete the Attribute section of the request, the set (Attributes)
+        // contains one sequence (Attribute)
+        ASN1EncodableVector v = new ASN1EncodableVector();
+        v.add(new DERSequence(pwdattr));
+        DERSet attributes = new DERSet(v);
+
+        final KeyPair keys = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
+        final PKCS10CertificationRequest pkcs10 = CertTools.genPKCS10CertificationRequest("SHA256WithRSA",
+                DnComponents.stringToBcX500Name("CN="+testUsername), keys.getPublic(),
+                attributes, keys.getPrivate(), null);
+
+        X509Certificate certificate = (X509Certificate) enrollPkcs10(
+                testCertProfileName,
+                testEeProfileName,
+                "PKCS7",
+                new String(Base64.encode(pkcs10.getEncoded())),
+                201,
+                null,
+                true
+        );
+
+        assertEquals("Wrong subjectDn", overwriteSdn, certificate.getSubjectDN().getName());
+        String actualValidityStart = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss", TIMEZONE_UTC)
+                .format(certificate.getNotBefore());
+        assertEquals("Wrong validity start time.", validityStart, actualValidityStart);
+        String actualValidityEnd = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss", TIMEZONE_UTC)
+                .format(certificate.getNotAfter());
+        assertEquals("Wrong validity end time.", validityEnd , actualValidityEnd);
+
+
+        byte[] value = certificate.getExtensionValue(EXTENSTION_TO_OVERWRITE);
+        ASN1InputStream asn1InputStream = new ASN1InputStream(value);
+        ASN1Primitive obj = asn1InputStream.readObject();
+        asn1InputStream.close();
+
+        assertEquals("Extension overwrite value is wrong", obj.toString(), "#040a30080101010104040404");
+
+    }
+
+    private Certificate enrollPkcs10(
+            final String cpName,
+            final String eepName,
+            final String responseFormat,
+            final String pemCsrWithoutHeaders,
+            final int responseStatus,
+            final String error,
+            final boolean overwrite
+    ) throws Exception {
+
+        final EnrollCertificateRestRequest pkcs10req = new EnrollCertificateRestRequest();
+        pkcs10req.setCertificateAuthorityName(testCaName);
+        pkcs10req.setCertificateProfileName(cpName);
+        pkcs10req.setEndEntityProfileName(eepName);
+        pkcs10req.setUsername(testUsername);
+        pkcs10req.setPassword("foo123");
+        pkcs10req.setIncludeChain(false);
+        pkcs10req.setResponseFormat(responseFormat);
+        pkcs10req.setCertificateRequest(pemCsrWithoutHeaders);
+
+        ExtendedInformationRestRequestComponent extension;
+
+        if (overwrite) {
+            pkcs10req.setSubjectDn(overwriteSdn);
+            pkcs10req.setStartTime(validityStart);
+            pkcs10req.setEndTime(validityEnd);
+            extension = ExtendedInformationRestRequestComponent.builder()
+                    .setName(EXTENSTION_TO_OVERWRITE)
+                    .setValue("30080101010104040404")
+                    .build();
+            pkcs10req.setExtensionData(List.of(extension));
+        }
 
         // Construct POST request
         final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
@@ -1559,7 +1712,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
                 assertJsonContentType(actualResponse);
                 final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
                 assertEquals("The response error message does not match.",
-                        "Error Certificate profile KotCp does not exist.", actualJsonObject.get("error_message"));
+                        "No Certificate profile found by name of KotCp", actualJsonObject.get("error_message"));
         } catch (Exception e) {
             log.error("Exception while testing certificate creation from public key: ", e);
             fail("Exception while testing certificate creation from public key");
