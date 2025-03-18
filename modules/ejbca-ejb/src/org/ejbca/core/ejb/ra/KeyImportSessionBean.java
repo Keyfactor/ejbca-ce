@@ -99,7 +99,7 @@ public class KeyImportSessionBean implements KeyImportSessionLocal, KeyImportSes
                                                        certificateProfileIdAndData.getLeft(), endEntityProfileIdAndData.getLeft());
             } catch (KeyImportException e) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Key import has failed for username: " + keystore.getUsername());
+                    log.debug("Key import has failed for username: " + keystore.getUsername() + " - " + e.getMessage());
                 }
                 keyImportFailures.add(new KeyImportFailure(keystore.getUsername(), e.getMessage()));
             }
