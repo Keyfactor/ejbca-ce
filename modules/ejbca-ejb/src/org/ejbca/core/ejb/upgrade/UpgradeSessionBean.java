@@ -126,7 +126,6 @@ import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.config.GlobalUpgradeConfiguration;
 import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
-import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalPartition;
@@ -222,8 +221,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private RoleSessionLocal roleSession;
     @EJB
     private SecurityEventsLoggerSessionLocal securityEventsLogger;
-    @EJB
-    private UserDataSourceSessionLocal userDataSourceSession;
     @EJB
     private UpgradeStatusSingletonLocal upgradeStatusSingleton;
 
@@ -364,7 +361,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 setCustomCertificateValidityWithSecondsGranularity(true);
                 // Since we know that this is a brand new installation, no upgrade should be needed
                 setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
-                setLastPostUpgradedToVersion("7.11.0");
+                setLastPostUpgradedToVersion("9.3.0");
             } else {
                 // Ensure that we save currently known oldest installation version before any upgrade is invoked
                 if(getLastUpgradedToVersion() != null) {
@@ -717,6 +714,13 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             setLastPostUpgradedToVersion("8.3.0");
         }
         
+        if (isLesserThan(oldVersion, "9.3.0")) {
+            if (!postMigrateDatabase930()) {
+                return false;
+            }
+            setLastPostUpgradedToVersion("9.3.0");
+        }
+        
         // NOTE: If you add additional post upgrade tasks here, also modify isPostUpgradeNeeded() and performPreUpgrade()
         //setLastPostUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
@@ -774,6 +778,39 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
         
         log.info("Post upgrade to 8.3.0 complete.");
+        return true;
+    }
+    
+    /**
+     * Remove the Configuration Checker fom database
+     *
+     * Runs in a new transaction because {@link upgradeIndex} depends on the changes.
+     */
+    @SuppressWarnings("deprecation")
+    private boolean postMigrateDatabase930() {
+        log.info("Starting post upgrade to 9.3.0");
+        //Remove, from all roles, all user data source related rules. 
+        for(Role role : roleSession.getAuthorizedRoles(authenticationToken)) {
+            LinkedHashMap<String, Boolean> accessRules = role.getAccessRules();
+            List<String> ruleNames = new ArrayList<>(accessRules.keySet());
+            for(String rule :  ruleNames) {
+                if(rule.startsWith(AccessRulesConstants.USERDATASOURCEBASE) || rule.startsWith(AccessRulesConstants.REGULAR_EDITUSERDATASOURCES)) {
+                    accessRules.remove(rule);
+                }
+            }
+            role.setAccessRules(accessRules);
+            try {
+                roleSession.persistRole(authenticationToken, role);
+            } catch (RoleExistsException e) {
+                log.error("Role seems to have changed ID while retaining name/namespace or vice versa.");
+                return false;
+            } catch (AuthorizationDeniedException e) {
+                log.error("Administrator was not authorized to perform post-upgrade, lacks access to Configuration Checker configuration");
+                return false;
+            }
+        }       
+        accessTreeUpdateSession.signalForAccessTreeUpdate();
+        log.info("Post upgrade to 9.3.0 complete.");
         return true;
     }
     
@@ -931,7 +968,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public boolean isPostUpgradeNeeded() {
-        return isLesserThan(getLastPostUpgradedToVersion(), "7.11.0");
+        return isLesserThan(getLastPostUpgradedToVersion(), "9.3.0");
     }
 
     /**
