@@ -604,7 +604,6 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
                     // Not part of basic mode
                     //new SelectItem(AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES, super.getEjbcaWebBean().getText("EDITENDENTITYPROFILES")),
                     //new SelectItem(AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES, super.getEjbcaWebBean().getText("VIEWENDENTITYPROFILES")),
-                    //new SelectItem(AccessRulesConstants.REGULAR_EDITUSERDATASOURCES, super.getEjbcaWebBean().getText("EDITUSERDATASOURCES")),
                     new SelectItem(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_APPROVEENDENTITY), super.getEjbcaWebBean().getText("APPROVEENDENTITYRULE")),
                     new SelectItem(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_REVOKEENDENTITY), super.getEjbcaWebBean().getText("REVOKEENDENTITYRULE")),
                     new SelectItem(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_VIEWENDENTITY), super.getEjbcaWebBean().getText("VIEWENDENTITYRULE")),
@@ -871,7 +870,6 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
                     accessRuleItem.setState(AccessRuleState.toAccessRuleState(rolesAccesssRules.get(accessRuleItem.getResource())).name());
                 } else {
                     // Note that for EEPs you are only "really" authorized to it if you also are authorized to all the CAs in it
-                    // Similar goes for UserDataSources which is super-inefficient to check..
                     // BUT if the current admin is authorized to a rule he is also authorized to give the same access to others
                     allAccessRuleItems.remove(accessRuleItem);
                 }
