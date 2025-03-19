@@ -872,14 +872,14 @@
                                rendered="#{cc.attrs.raEndEntityDetails.keyRecoverableUsed}"/>
                 <h:panelGroup
                         styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-						rendered="#{cc.attrs.raEndEntityDetails.keyRecoverableUsed and not cc.attrs.approvalRequestMode}">
+						rendered="#{cc.attrs.raEndEntityDetails.keyRecoverableUsed}">
                     <h:selectBooleanCheckbox id="eeKeyRecoverable"
-                                             rendered="#{cc.attrs.editMode}"
+                                             rendered="#{cc.attrs.editMode or not cc.attrs.approvalRequestMode}"
                                              value="#{cc.attrs.raEndEntityBean.keyRecoverable}"/>
                     <h:outputText
                             styleClass="#{cc.attrs.styleInfo} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
                             value="#{cc.attrs.raEndEntityDetails.keyRecoverable ? msg.component_eedetails_field_keyrecoverable_yes : msg.component_eedetails_field_keyrecoverable_no }"
-                            rendered="#{not cc.attrs.editMode}"/>
+                            rendered="#{cc.attrs.approvalRequestMode or not cc.attrs.editMode}"/>
                 </h:panelGroup>
 
                 <h:outputLabel for="editCertificateExtensionDataField" value="#{msg.enroll_cert_extension_data}"
