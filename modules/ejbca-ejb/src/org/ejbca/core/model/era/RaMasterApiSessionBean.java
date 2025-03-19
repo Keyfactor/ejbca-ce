@@ -2569,7 +2569,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         } catch (InvalidKeySpecException | IllegalKeyException e) {
             log.debug("EJBCA REST exception", e);
             throw new EjbcaException(ErrorCode.ILLEGAL_KEY, e.getMessage());
-        } catch (SignRequestSignatureException e) {
+        } catch (SignRequestSignatureException | CertificateCreateException e) {
             log.debug("EJBCA REST exception", e);
             throw new EjbcaException(e.getMessage());
         } catch (CesecoreException e) {
@@ -2583,9 +2583,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         } catch (SignatureException e) {
             log.debug("EJBCA REST exception", e);
             throw new EjbcaException(ErrorCode.SIGNATURE_ERROR, e.getMessage());
-        } catch (NotFoundException e) {
-            log.debug("EJBCA REST exception", e);
-            throw e; // NFE extends EjbcaException
         }  catch (AuthStatusException e) {
             log.debug("EJBCA REST exception", e);
             throw new EjbcaException(ErrorCode.USER_WRONG_STATUS, e.getMessage());
