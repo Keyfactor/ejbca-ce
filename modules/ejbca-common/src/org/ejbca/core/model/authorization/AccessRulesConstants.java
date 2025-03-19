@@ -39,14 +39,14 @@ public abstract class AccessRulesConstants {
     public static final String ENDENTITYPROFILEPREFIX                     = "/endentityprofilesrules/";
     
     // Name of end entity profile prefix directory in authorization module.
+    @Deprecated(since = "9.3")
     public static final String USERDATASOURCEBASE                         = "/userdatasourcesrules";
+    @Deprecated(since = "9.3")
     public static final String USERDATASOURCEPREFIX                       = "/userdatasourcesrules/";
-    
+    @Deprecated(since = "9.3")
     public static final String UDS_FETCH_RIGHTS                           = "/fetch_userdata";
+    @Deprecated(since = "9.3")
     public static final String UDS_REMOVE_RIGHTS                          = "/remove_userdata";
-    
-    // Endings used in profile authorization.
-    public static final String[]  USERDATASOURCE_ENDINGS = {UDS_FETCH_RIGHTS,UDS_REMOVE_RIGHTS};
 
     // CA access rules are managed in CESecore, see StandardRules
 
@@ -66,7 +66,10 @@ public abstract class AccessRulesConstants {
     public static final String REGULAR_RAFUNCTIONALITY                    = "/ra_functionality";
     public static final String REGULAR_EDITENDENTITYPROFILES              = REGULAR_RAFUNCTIONALITY+"/edit_end_entity_profiles";
     public static final String REGULAR_VIEWENDENTITYPROFILES              = REGULAR_RAFUNCTIONALITY+"/view_end_entity_profiles";
+    
+    @Deprecated(since = "9.3")
     public static final String REGULAR_EDITUSERDATASOURCES                = REGULAR_RAFUNCTIONALITY + "/edit_user_data_sources";
+    
     public static final String REGULAR_APPROVEENDENTITY                   = REGULAR_RAFUNCTIONALITY + APPROVE_END_ENTITY;
     // REGULAR_REVOKEENDENTITY is used when revoking the certificate of a user
     public static final String REGULAR_REVOKEENDENTITY                    = REGULAR_RAFUNCTIONALITY+REVOKE_END_ENTITY;    
@@ -131,7 +134,6 @@ public abstract class AccessRulesConstants {
                                                            REGULAR_RAFUNCTIONALITY, 
                                                            REGULAR_EDITENDENTITYPROFILES,
                                                            REGULAR_VIEWENDENTITYPROFILES,
-                                                           REGULAR_EDITUSERDATASOURCES,                                                           
                                                            REGULAR_VIEWENDENTITY,
                                                            REGULAR_CREATEENDENTITY, 
                                                            REGULAR_EDITENDENTITY, 
