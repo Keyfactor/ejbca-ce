@@ -16,6 +16,8 @@ package org.ejbca.ui.web.rest.api.io.response;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 
+import java.util.Objects;
+
 /**
  * A container for response end entity extended information
  */
@@ -41,6 +43,25 @@ public class ExtendedInformationRestResponseComponent {
 
     public boolean isInternalName() {
         return name != null && name.contains(ExtendedInformation.INTERNAL_KEY_PREFIX);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ExtendedInformationRestResponseComponent that = (ExtendedInformationRestResponseComponent) o;
+        return Objects.equals(name, that.name) && Objects.equals(value, that.value);
+    }
+
+    @Override
+    public String toString() {
+        return "name=" + name + ", value=" + value;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, value);
     }
 
     public static ExtendedInformationRestResponseComponentBuilder builder() {
