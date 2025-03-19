@@ -2566,9 +2566,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         } catch (InvalidKeyException e) {
             log.debug("EJBCA REST exception", e);
             throw new EjbcaException(ErrorCode.INVALID_KEY, e.getMessage());
-        } catch (InvalidKeySpecException e) {
+        } catch (InvalidKeySpecException | IllegalKeyException e) {
             log.debug("EJBCA REST exception", e);
             throw new EjbcaException(ErrorCode.ILLEGAL_KEY, e.getMessage());
+        } catch (SignRequestSignatureException e) {
+            log.debug("EJBCA REST exception", e);
+            throw new EjbcaException(e.getMessage());
         } catch (CesecoreException e) {
             log.debug("EJBCA REST exception", e);
             // Will convert the CESecore exception to an EJBCA exception with the same error code
@@ -2580,6 +2583,15 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         } catch (SignatureException e) {
             log.debug("EJBCA REST exception", e);
             throw new EjbcaException(ErrorCode.SIGNATURE_ERROR, e.getMessage());
+        } catch (NotFoundException e) {
+            log.debug("EJBCA REST exception", e);
+            throw e; // NFE extends EjbcaException
+        }  catch (AuthStatusException e) {
+            log.debug("EJBCA REST exception", e);
+            throw new EjbcaException(ErrorCode.USER_WRONG_STATUS, e.getMessage());
+        } catch (AuthLoginException e) {
+            log.debug("EJBCA REST exception", e);
+            throw new EjbcaException(ErrorCode.LOGIN_ERROR, e.getMessage());
         }
     }
 
