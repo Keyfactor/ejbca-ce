@@ -78,7 +78,7 @@ spec:
               {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
               service:
                 {{- if .Values.ingress.sslBackend}}
-                name: {{ include "ejbca.fullname" . }}-nginx-config
+                name: {{ include "ejbca.fullname" . }}-nginx
                 {{- else }}
                 name: {{ $fullName }}
                 {{- end }}
