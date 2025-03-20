@@ -226,6 +226,10 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager implemen
 
         public void setClient(String client) {
             this.client = client;
+            if (isTypeAuth0()) {
+                // Auth0 audience is the client ID
+                setAudience(client);
+            }
         }
 
         public String getClientSecret() {
