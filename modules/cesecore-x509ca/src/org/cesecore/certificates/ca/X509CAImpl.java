@@ -31,6 +31,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -212,6 +213,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     protected static final String SUSPENDEDCRLPARTITIONS = "suspendedcrlpartitions";
     protected static final String REQUESTPREPROCESSOR = "requestpreprocessor";
     protected static final String ALTERNATECHAINS = "alternatechains";
+    protected static final String KEEPEXPIREDCERTSONCRLDATE = "keepExpiredCertsOnCrlDate";
 
     private static final CertificateTransparency ct = CertificateTransparencyFactory.getInstance();
 
@@ -252,6 +254,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         setUseCrlDistributionPointOnCrl(cainfo.getUseCrlDistributionPointOnCrl());
         setCrlDistributionPointOnCrlCritical(cainfo.getCrlDistributionPointOnCrlCritical());
         setKeepExpiredCertsOnCRL(cainfo.getKeepExpiredCertsOnCRL());
+        setKeepExpiredCertsOnCRLDate(cainfo.getKeepExpiredCertsOnCRLDate());
         setCmpRaAuthSecret(cainfo.getCmpRaAuthSecret());
         // CA Issuer URI to put in CRLs (RFC5280 section 5.2.7, not the URI to put in certs
         setAuthorityInformationAccess(cainfo.getAuthorityInformationAccess());
@@ -352,6 +355,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 .setAcceptRevocationNonExistingEntry(isAcceptRevocationNonExistingEntry())
                 .setCmpRaAuthSecret(getCmpRaAuthSecret())
                 .setKeepExpiredCertsOnCRL(getKeepExpiredCertsOnCRL())
+                .setKeepExpiredCertsOnCrlDate(getKeepExpiredCertsOnCRLDate())
                 .setUsePartitionedCrl(getUsePartitionedCrl())
                 .setCrlPartitions(getCrlPartitions())
                 .setSuspendedCrlPartitions(getSuspendedCrlPartitions())
@@ -582,6 +586,20 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         } else {
             data.put(DEFAULTOCSPSERVICELOCATOR, defaultocsplocator);
         }
+    }
+    
+    @Override
+    public long getKeepExpiredCertsOnCRLDate() {
+        if(data.get(KEEPEXPIREDCERTSONCRLDATE) == null) {
+            setKeepExpiredCertsOnCRLDate(0);
+        }
+        
+        return (Long) data.get(KEEPEXPIREDCERTSONCRLDATE);
+    }
+
+    @Override
+    public void setKeepExpiredCertsOnCRLDate(long keepexpiredcertsoncrl) {
+        data.put(KEEPEXPIREDCERTSONCRLDATE, keepexpiredcertsoncrl);
     }
 
     /* (non-Javadoc)
@@ -879,6 +897,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         setSuspendedCrlPartitions(info.getSuspendedCrlPartitions());
         setRequestPreProcessor(info.getRequestPreProcessor());
         setAlternateCertificateChains(info.getAlternateCertificateChains());
+        setKeepExpiredCertsOnCRLDate(info.getKeepExpiredCertsOnCRLDate());
     }
 
     /* (non-Javadoc)
@@ -2360,11 +2379,15 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         // that expire at or after the date contained in the ExpiredCertsOnCRL extension).
         final ASN1ObjectIdentifier ExpiredCertsOnCRL = new ASN1ObjectIdentifier("2.5.29.60");
         boolean keepexpiredcertsoncrl = getKeepExpiredCertsOnCRL();
-        if(keepexpiredcertsoncrl) {
+        if(keepexpiredcertsoncrl) {       
             // For now force parameter with date equals NotBefore of CA certificate, or now
             final DERGeneralizedTime keepDate;
             if (cacert != null) {
-                keepDate = new DERGeneralizedTime(cacert.getNotBefore());
+                if(getKeepExpiredCertsOnCRLDate() == 0) {
+                    keepDate = new DERGeneralizedTime(cacert.getNotBefore());
+                } else {
+                    keepDate = new DERGeneralizedTime(Date.from(Instant.ofEpochMilli(getKeepExpiredCertsOnCRLDate())));
+                }           
             } else {
                 // Copied from org.bouncycastle.asn1.x509.Time to get right format of GeneralizedTime (no fractional seconds)
                 SimpleDateFormat dateF = new SimpleDateFormat("yyyyMMddHHmmss");

@@ -65,6 +65,32 @@ import com.keyfactor.util.certificate.DnComponents;
  */
 public class X509CAInfo extends CAInfo {
 
+    public enum KeepExpiredOnCrlFormat {
+        CA_DATE(0), CHOSEN_DATE(1);
+        
+        private final int intFormat;
+        
+        private KeepExpiredOnCrlFormat(final int intFormat) {
+            this.intFormat = intFormat;
+        }
+        
+        public int intFormat() {
+            return intFormat;
+        }
+        
+        public static KeepExpiredOnCrlFormat fromIntFormat(final int intFormat) {
+            switch (intFormat) {
+            case 0:
+                return CA_DATE;
+            case 1:
+                return CHOSEN_DATE;
+            default:
+                throw new IllegalStateException("Unknown int format passed: " + intFormat);
+
+            }
+        }
+    }
+    
     private static final Logger log = Logger.getLogger(X509CAInfo.class);
 
 	private static final long serialVersionUID = 2L;
@@ -99,6 +125,7 @@ public class X509CAInfo extends CAInfo {
 	private int crlPartitions;
 	private int suspendedCrlPartitions;
 	private String requestPreProcessor;
+	private long keepExpiredOnCrlDate;
 
 	// Key: Root CA subjectDn, Value: fingerprint in reverse order, root CA at end
 	private Map<String, List<String>> alternateCertificateChains;
@@ -529,12 +556,21 @@ public class X509CAInfo extends CAInfo {
     public String getExternalCdp() {
         return externalCdp;
     }
+    
+    public void setKeepExpiredCertsOnCRLDate(final long keepExpiredOnCrlDate) {
+        this.keepExpiredOnCrlDate = keepExpiredOnCrlDate;
+    }
+    
+    public long getKeepExpiredCertsOnCRLDate() {
+        return this.keepExpiredOnCrlDate;
+    }
+
 
     /** Set what should be a String formatted URL pointing to an external CA's CDP. */
     public void setExternalCdp(final String externalCdp) {
         this.externalCdp = externalCdp;
     }
-
+   
     /** @return true if CA has undergone through name change at some renewal process, otherwise false. */
     public boolean getNameChanged() {
         return nameChanged;
@@ -716,6 +752,7 @@ public class X509CAInfo extends CAInfo {
         private boolean acceptRevocationNonExistingEntry = false;
         private String cmpRaAuthSecret = null;
         private boolean keepExpiredCertsOnCRL = false;
+        private long keepExpiredCertsOnCrlDate = 0;
         private boolean usePartitionedCrl = false;
         private int crlPartitions;
         private int suspendedCrlPartitions;
@@ -1131,6 +1168,11 @@ public class X509CAInfo extends CAInfo {
             this.keepExpiredCertsOnCRL = keepExpiredCertsOnCRL;
             return this;
         }
+        
+        public X509CAInfoBuilder setKeepExpiredCertsOnCrlDate(long keepExpiredCertsOnCrlDate) {
+            this.keepExpiredCertsOnCrlDate = keepExpiredCertsOnCrlDate;
+            return this;
+        }
 
         /**
          * @param caSerialNumberOctetSize serial number octet size for this CA
@@ -1198,6 +1240,7 @@ public class X509CAInfo extends CAInfo {
             caInfo.setExpireTime(expireTime);
             caInfo.setCAType(caType);
             caInfo.setSignedBy(signedBy);
+            caInfo.setKeepExpiredCertsOnCRLDate(keepExpiredCertsOnCrlDate);
             // Due to a bug in Glassfish v1 (fixed in v2), we used to have to make sure all certificates in this
             // Array were of Oracle's own provider, using CertTools.SYSTEM_SECURITY_PROVIDER.
             // As of EJBCA 3.9.3 we decided that we don't have to support Glassfish v1 anymore.
@@ -1232,10 +1275,15 @@ public class X509CAInfo extends CAInfo {
             caInfo.setCAId(caId);
             caInfo.setPolicies(policies);
             caInfo.setSubjectAltName(subjectAltName);
+            caInfo.setKeepExpiredCertsOnCRLDate(keepExpiredCertsOnCrlDate);
             return caInfo;
         }
 
         public X509CAInfo buildDefault () { return null;}
+
+        public long getKeepExpiredCertsOnCrlDate() {
+            return keepExpiredCertsOnCrlDate;
+        }
     }
 
     public static boolean isCertListValidAndIssuedByCA(List<X509Certificate> certs, Collection<Certificate> trustedCertificates) throws InvalidAlgorithmParameterException,

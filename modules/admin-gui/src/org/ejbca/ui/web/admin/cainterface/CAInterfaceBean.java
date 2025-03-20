@@ -68,6 +68,7 @@ import org.cesecore.certificates.ca.CvcCABase;
 import org.cesecore.certificates.ca.CvcPlugin;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.ca.X509CAInfo.KeepExpiredOnCrlFormat;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
@@ -529,6 +530,13 @@ public class CAInterfaceBean implements Serializable {
                         Integer.parseInt(caInfoDto.getCaSerialNumberOctetSize()) : CesecoreConfiguration.getSerialNumberOctetSizeForNewCa();
                 List<ExtendedCAServiceInfo> extendedCaServiceInfos = makeExtendedServicesInfos();
 	            if (caInfoDto.getCrlPeriod() != 0 && !illegaldnoraltname) {
+	                final long keepExpiredCertsOnCrlDate;
+	                if(caInfoDto.getExpiredOnCrlFormat() == KeepExpiredOnCrlFormat.CA_DATE.intFormat()) {
+	                    keepExpiredCertsOnCrlDate = 0L;
+	                } else {
+	                    keepExpiredCertsOnCrlDate = caInfoDto.getKeepExpiredOnCrlDateLong();
+	                }
+	                
                     X509CAInfo.X509CAInfoBuilder x509CAInfoBuilder = new X509CAInfo.X509CAInfoBuilder()
                             .setSubjectDn(caInfoDto.getCaSubjectDN())
                             .setName(caInfoDto.getCaName())
@@ -585,6 +593,7 @@ public class CAInterfaceBean implements Serializable {
 							.setDoPreProduceIndividualOcspResponses(caInfoDto.isDoPreProduceOcspResponseUponIssuanceAndRevocation())
                             .setAcceptRevocationNonExistingEntry(caInfoDto.isAcceptRevocationsNonExistingEntry())
                             .setKeepExpiredCertsOnCRL(caInfoDto.isKeepExpiredOnCrl())
+                            .setKeepExpiredCertsOnCrlDate(keepExpiredCertsOnCrlDate)
                             .setUsePartitionedCrl(caInfoDto.isUsePartitionedCrl())
                             .setCrlPartitions(caInfoDto.getCrlPartitions())
                             .setSuspendedCrlPartitions(caInfoDto.getSuspendedCrlPartitions())
@@ -973,6 +982,14 @@ public class CAInterfaceBean implements Serializable {
                        throw new ParameterException(ejbcawebbean.getText("INVALIDPOLICYOID"));
                    }
                }
+               
+               final long keepExpiredCertsOnCrlDate;
+               if(caInfoDto.getExpiredOnCrlFormat() == KeepExpiredOnCrlFormat.CA_DATE.intFormat()) {
+                   keepExpiredCertsOnCrlDate = 0L;
+               } else {
+                   keepExpiredCertsOnCrlDate = caInfoDto.getKeepExpiredOnCrlDateLong();
+               }
+               
                // No need to add the Keyrecovery extended service here, because it is only "updated" in EditCA, and there
                // is not need to update it.
                X509CAInfo.X509CAInfoBuilder x509CAInfoBuilder = new X509CAInfo.X509CAInfoBuilder()
@@ -1026,6 +1043,7 @@ public class CAInterfaceBean implements Serializable {
                        .setAcceptRevocationNonExistingEntry(caInfoDto.isAcceptRevocationsNonExistingEntry())
                        .setCmpRaAuthSecret(caInfoDto.getSharedCmpRaSecret())
                        .setKeepExpiredCertsOnCRL(caInfoDto.isKeepExpiredOnCrl())
+                       .setKeepExpiredCertsOnCrlDate(keepExpiredCertsOnCrlDate)
                        .setDefaultCertProfileId(caInfoDto.getDefaultCertProfileId())
                        .setUseNoConflictCertificateData(caInfoDto.isUseNoConflictCertificateData())
                        .setUsePartitionedCrl(caInfoDto.isUsePartitionedCrl())
