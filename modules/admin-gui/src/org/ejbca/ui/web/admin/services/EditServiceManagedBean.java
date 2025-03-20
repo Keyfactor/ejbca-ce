@@ -89,7 +89,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
     private static final Logger log = Logger.getLogger(EditServiceManagedBean.class);
 
     private ServiceConfigurationView serviceConfigurationView;
-    private String serviceName = "";
+    private String serviceName = StringUtils.EMPTY;
     
     private transient EjbLocalHelper ejb = new EjbLocalHelper();
 
@@ -137,8 +137,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
     public static EditServiceManagedBean getBean() {
         FacesContext context = FacesContext.getCurrentInstance();
         Application app = context.getApplication();
-        EditServiceManagedBean value = app.evaluateExpressionGet(context, "#{editService}", EditServiceManagedBean.class);
-        return value;
+        return app.evaluateExpressionGet(context, "#{editService}", EditServiceManagedBean.class);
     }
 
     /** @return the serviceName */
@@ -164,7 +163,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
         ArrayList<String> errorMessages = new ArrayList<>();
         try {
             serviceConfigurationView.getServiceConfiguration(errorMessages);
-            if (errorMessages.size() == 0) {
+            if (errorMessages.isEmpty()) {
                 getEjb().getServiceSession().changeService(getAdmin(), serviceName, serviceConfigurationView.getServiceConfiguration(errorMessages),
                         false);
                 getEjb().getServiceSession().activateServiceTimer(getAdmin(), serviceName);
@@ -174,11 +173,11 @@ public class EditServiceManagedBean extends BaseManagedBean {
                 while (iter.hasNext()) {
                     addErrorMessage(iter.next());
                 }
-                return "";
+                return StringUtils.EMPTY;
             }
         } catch (IOException e) {
             addNonTranslatedErrorMessage(EjbcaJSFHelper.getBean().getText().get("ERROREDITINGSERVICE") + " " + e.getMessage());
-            return "";
+            return StringUtils.EMPTY;
         }
     }
 
@@ -362,13 +361,9 @@ public class EditServiceManagedBean extends BaseManagedBean {
                 availableCANames.add(new SelectItem(caid.toString(), getEjb().getCaSession().getCAInfoInternal(caid).getName()));
             
         }
-        availableCANames.sort(new Comparator<SelectItem>() {
-            @Override
-            public int compare(SelectItem first, SelectItem second) {
-                return first.getLabel().compareToIgnoreCase(second.getLabel());
-            }
-        });
-
+        
+        availableCANames.sort(Comparator.comparing(SelectItem::getLabel, String.CASE_INSENSITIVE_ORDER));
+        
         return availableCANames;
     }
 
@@ -399,12 +394,9 @@ public class EditServiceManagedBean extends BaseManagedBean {
                 log.debug("Not authorized to CA: " + caid);
             }
         }
-        availableCANames.sort(new Comparator<SelectItem>() {
-            @Override
-            public int compare(SelectItem first, SelectItem second) {
-                return first.getLabel().compareToIgnoreCase(second.getLabel());
-            }
-        });
+        
+        availableCANames.sort(Comparator.comparing(SelectItem::getLabel, String.CASE_INSENSITIVE_ORDER));
+
         // Add Any CA first in the list
         final String caname = EjbcaJSFHelper.getBean().getText().get("ANYCA");
         availableCANames.add(0, new SelectItem(String.valueOf(SecConst.ALLCAS), caname));
@@ -446,12 +438,9 @@ public class EditServiceManagedBean extends BaseManagedBean {
             // Display it in the list as "PublisherName (publisherId)" with publisherId as the value sent
             availablePublisherNames.add(new SelectItem(String.valueOf(next), getEjb().getPublisherSession().getPublisherName(next) + " (" + next + ")"));
         }
-        availablePublisherNames.sort(new Comparator<SelectItem>() {
-            @Override
-            public int compare(SelectItem first, SelectItem second) {
-                return first.getLabel().compareToIgnoreCase(second.getLabel());
-            }
-        });
+        
+        availablePublisherNames.sort(Comparator.comparing(SelectItem::getLabel, String.CASE_INSENSITIVE_ORDER));
+
         return availablePublisherNames;
     }
 
