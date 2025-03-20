@@ -613,13 +613,13 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager implemen
                 oauthKeyEditor.setTokenUrl((String) json.get("token_endpoint"));
                 oauthKeyEditor.setUserInfoUrl((String) json.get("userinfo_endpoint"));
                 oauthKeyEditor.setLogoutUrl((String) json.get("end_session_endpoint"));
-                oauthKeyEditor.setFetchUserInfo(true);
-                oauthKeyEditor.setScope("openid");
+                // The information we need is sent with the access token
+                oauthKeyEditor.setFetchUserInfo(false);
+                // Returns claims that represent basic profile information, including name, family_name, given_name,
+                // middle_name, nickname, picture, and updated_at.
+                oauthKeyEditor.setScope("profile");
                 oauthKeyEditor.setPublicKeyUrl((String) json.get("jwks_uri"));
                 addOauthPublicKeyFromUrl();
-                // Audience
-                // Client Name
-                // Client Secret
             }
         } catch (final IOException e) {
             log.error(String.format("An IO error occurred when loading the OIDC configuration for the Auth0 tenant from " +
