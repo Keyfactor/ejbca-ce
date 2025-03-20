@@ -2187,11 +2187,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
 
         boolean isClearPwd = endEntityProfile.isClearTextPasswordUsed() && endEntityProfile.isClearTextPasswordDefault();
-
-        endEntity.getExtendedInformation().getRawData().remove(ExtendedInformation.CUSTOMDATA + ExtendedInformation.MARKER_FROM_REST_RESOURCE);
-        endEntity.getExtendedInformation().getRawData().remove(ExtendedInformation.CUSTOMDATA + ExtendedInformation.CA_NAME);
-        endEntity.getExtendedInformation().getRawData().remove(ExtendedInformation.CUSTOMDATA + ExtendedInformation.CERTIFICATE_PROFILE_NAME);
-        endEntity.getExtendedInformation().getRawData().remove(ExtendedInformation.CUSTOMDATA + ExtendedInformation.END_ENTITY_PROFILE_NAME);
+        endEntity.getExtendedInformation().removeInternalKeys();
 
         return isClearPwd;
     }
@@ -2930,8 +2926,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 EndEntityProfile endEntityProfile =
                         endEntityProfileSession.getEndEntityProfileNoClone(endEntityInformation.getEndEntityProfileId());
                 isClearPwd = endEntityProfile.isClearTextPasswordUsed() && endEntityProfile.isClearTextPasswordDefault();
-                endEntityInformation.getExtendedInformation().getRawData().remove(
-                        ExtendedInformation.CUSTOMDATA + ExtendedInformation.MARKER_FROM_REST_RESOURCE);
+                endEntityInformation.getExtendedInformation().removeInternalKeys();
             }
             if (newUsername == null)
                 endEntityManagementSession.changeUser(authenticationToken, endEntityInformation, isClearPwd);

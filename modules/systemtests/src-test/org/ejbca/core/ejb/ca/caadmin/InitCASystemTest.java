@@ -62,10 +62,8 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionRemote;
 import org.ejbca.core.ejb.services.ServiceSessionRemote;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.core.model.ra.userdatasource.CustomUserDataSourceContainer;
 import org.ejbca.core.model.services.IWorker;
 import org.ejbca.core.model.services.ServiceConfiguration;
 import org.junit.Test;
@@ -98,12 +96,10 @@ public class InitCASystemTest extends CaTestCase {
     private final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
     private final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
     private final ServiceSessionRemote serviceSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ServiceSessionRemote.class);
-    private final UserDataSourceSessionRemote userDataSourceSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserDataSourceSessionRemote.class);
 
     private static final String RENAME_CA = "testInitializeCaAndChangeSubjectDn";
     private static final String CERT_PROFILE_NAME = "TestChangeSubjectDN_CP";
     private static final String ENDENTITY_PROFILE_NAME = "TestChangeSubjectDN_EEP";
-    private static final String DATASOURCE_NAME = "TestChangeSubjectDN_UDS";
     private static final String SERVICE_NAME = "TestChangeSubjectDN_Service";
     private static final String KEYBINDING_NAME = "TestChangeSubjectDN_IKB";
     private static final String ROLE_NAME = "TestChangeSubjectDN_Role";
@@ -175,12 +171,6 @@ public class InitCASystemTest extends CaTestCase {
             eeProf.setDefaultCA(origCaId);
             endEntityProfileSession.addEndEntityProfile(admin, ENDENTITY_PROFILE_NAME, eeProf);
 
-            CustomUserDataSourceContainer userdatasource = new CustomUserDataSourceContainer();
-            userdatasource.setClassPath("org.ejbca.core.model.ra.userdatasource.DummyCustomUserDataSource");
-            userdatasource.setDescription("Used in Junit Test, Remove this one");
-            userdatasource.setApplicableCAs(new ArrayList<>(Collections.singletonList(origCaId)));
-            userDataSourceSession.addUserDataSource(admin, DATASOURCE_NAME, userdatasource);
-
             ServiceConfiguration sc = new ServiceConfiguration();
             Properties workerProperties = new Properties();
             workerProperties.put(IWorker.PROP_CAIDSTOCHECK, "1234;"+origCaId);
@@ -227,9 +217,6 @@ public class InitCASystemTest extends CaTestCase {
             eeProf = endEntityProfileSession.getEndEntityProfile(ENDENTITY_PROFILE_NAME);
             assertEquals("CAId was not updated in end-entity profile.", Integer.valueOf(newCaId), eeProf.getAvailableCAs().get(0));
             assertEquals("CAId was not updated in end-entity profile.", newCaId, eeProf.getDefaultCA());
-
-            userdatasource = (CustomUserDataSourceContainer)userDataSourceSession.getUserDataSource(admin, DATASOURCE_NAME);
-            assertEquals("CAId was not updated in user data source.", newCaId, (int)userdatasource.getApplicableCAs().iterator().next());
 
             // Unfortunately, CA Id replacement inside services does not work on all app servers
             /*final int serviceId = serviceSession.getServiceId(SERVICE_NAME);
@@ -298,7 +285,6 @@ public class InitCASystemTest extends CaTestCase {
         removeOldCa(RENAME_CA);
         certificateProfileSession.removeCertificateProfile(admin, CERT_PROFILE_NAME);
         endEntityProfileSession.removeEndEntityProfile(admin, ENDENTITY_PROFILE_NAME);
-        userDataSourceSession.removeUserDataSource(admin, DATASOURCE_NAME);
         serviceSession.removeService(admin, SERVICE_NAME);
         final Integer keybindIdToDelete = keyBindMgmtSession.getIdFromName(KEYBINDING_NAME);
         if (keybindIdToDelete != null) {
