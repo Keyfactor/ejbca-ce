@@ -216,6 +216,7 @@ public class ConfigdumpSetting implements Serializable {
     private boolean initializeCas;
     private boolean exportDefaults;
     private boolean exportExternalCas = true; // needs to be true in import mode, or overwrite detection will not work
+    private boolean exportCasForPeerImport;
     private ConfigdumpType configdumpType = ConfigdumpType.FILESYSTEM;
     private byte[] importData;  // will be null if configdumpType == FILESYSTEM
 
@@ -433,5 +434,13 @@ public class ConfigdumpSetting implements Serializable {
 
     public void setImportData(byte[] importData) {
         this.importData = importData;
+    }
+
+    public boolean isExportCasForPeerImport() {
+        return exportCasForPeerImport;
+    }
+
+    public void setExportCasForPeerImport(boolean exportCasForPeerImport) {
+        this.exportCasForPeerImport = exportCasForPeerImport;
     }
 }
