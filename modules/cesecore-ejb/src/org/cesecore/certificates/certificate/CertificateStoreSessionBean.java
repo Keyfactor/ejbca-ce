@@ -162,6 +162,18 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     	return storeCertificateNoAuth(admin, incert, username, cafp, null, status, type, certificateProfileId, endEntityProfileId,
                 crlPartitionIndex, tag, updateTime, accountBindingId);
     }
+
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public CertificateDataWrapper storeCertificate(AuthenticationToken admin, final Certificate incert, final String username, final String cafp, final int status,
+            final int type, final int certificateProfileId, final int endEntityProfileId, final int crlPartitionIndex, final String tag,
+            final long updateTime, String accountBindingId, final String issuerDn) throws AuthorizationDeniedException {
+        // Check that user is authorized to the CA that issued this certificate
+        final int caid = CertTools.getIssuerDN(incert).hashCode();
+        authorizedToCA(admin, caid);
+        return storeCertificateNoAuth(admin, incert, username, cafp, null, status, type, certificateProfileId, endEntityProfileId,
+                crlPartitionIndex, tag, updateTime, accountBindingId, issuerDn);
+    }
     
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
@@ -191,6 +203,24 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         }
         final CertificateDataWrapper ret = storeCertificateNoAuthInternal(adminForLogging, incert, username, cafp, certificateRequest, status, type, certificateProfileId, 
                 endEntityProfileId, crlPartitionIndex, tag, updateTime, true, accountBindingId, RevocationReasons.NOT_REVOKED, null);
+        if (log.isTraceEnabled()) {
+            log.trace("<storeCertificateNoAuth()");
+        }
+        return ret;
+    }
+
+    /** Local interface only */
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public CertificateDataWrapper storeCertificateNoAuth(AuthenticationToken adminForLogging, final Certificate incert, final String username, final String cafp,
+            final String certificateRequest, final int status, final int type, final int certificateProfileId, final int endEntityProfileId,
+            final int crlPartitionIndex, final String tag, final long updateTime, final String accountBindingId, final String issuerDn) {
+        if (log.isTraceEnabled()) {
+            log.trace(">storeCertificateNoAuth(" + username + ", " + cafp + ", " + status + ", " + type + ")");
+        }
+        final CertificateDataWrapper ret = storeCertificateNoAuthInternal(adminForLogging, incert, username, cafp,
+                certificateRequest, status, type, certificateProfileId, endEntityProfileId, crlPartitionIndex, tag, updateTime, true,
+                accountBindingId, RevocationReasons.NOT_REVOKED, null, issuerDn);
         if (log.isTraceEnabled()) {
             log.trace("<storeCertificateNoAuth()");
         }
@@ -227,9 +257,8 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         }
         return ret;
     }
-    
-    /** same as storeCertificateNoAuth but with a flag to not audit log certificate storage.
-     * The only reason to not audit log is when called from checkForUniqueCertificateSerialNumberIndexInTransaction
+
+    /** The same as storeCertificateNoAuth but with a flag to not audit log certificate storage.
      *
      * @param adminForLogging the AuthenticationToken that will be used for audit logging of the event
      * @param incert The certificate to be stored.
@@ -249,9 +278,39 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
      * @param revocationDate Revocation date, or null for not revoked
      * must only be used when storing special internal certificates, such as the test certificates for checking unique database index.
      */
+    private CertificateDataWrapper storeCertificateNoAuthInternal(AuthenticationToken adminForLogging, final Certificate incert, final String username, final String cafp,
+            final String certificateRequest, final int status, final int type, final int certificateProfileId, final int endEntityProfileId, final int crlPartitionIndex,
+            final String tag, final long updateTime, final boolean doAuditLog, final String accountBindingId, final RevocationReasons revocationReason,
+            final Date revocationDate) {
+        return storeCertificateNoAuthInternal(adminForLogging, incert, username, cafp, certificateRequest, status, type, certificateProfileId, endEntityProfileId,
+                crlPartitionIndex, tag, updateTime, doAuditLog, accountBindingId, revocationReason, revocationDate, null);
+    }
+
+    /** The same as storeCertificateNoAuth but with a flag to not audit log certificate storage.
+     * The only reason to not audit log is when called from checkForUniqueCertificateSerialNumberIndexInTransaction
+     *
+     * @param adminForLogging the AuthenticationToken that will be used for audit logging of the event
+     * @param incert The certificate to be stored.
+     * @param username username of end entity owning the certificate.
+     * @param cafp Fingerprint (hex) of the CAs certificate.
+     * @param certificateRequest the certificate request used to issue this certificate, or null, as Base64 encoded string, with line breaks, like com.keyfactor.util.Base64.encode(csr.getEncoded()), StandardCharsets.UTF_8)
+     * @param status the status from the CertificateConstants.CERT_ constants
+     * @param type Type of certificate (CERTTYPE_ENDENTITY etc from CertificateConstants).
+     * @param certificateProfileId the certificate profile id this cert was issued under
+     * @param endEntityProfileId the end entity profile id this cert was issued under
+     * @param crlPartitionIndex the CRL partition that the certificate belongs to, or CertificateConstants.NO_CRL_PARTITION if partitioning is not used.
+     * @param tag a custom string tagging this certificate for some purpose
+     * @param updateTime epoch millis to use as last update time of the stored object
+     * @param doAuditLog determines if a security audit log event shall be written or not with, EventTypes.CERT_STORED, ModuleTypes.CERTIFICATE,
+     * @param accountBindingId External Account Binding ID
+     * @param revocationReason Revocation reason, or RevocationReasons.NOT_REVOKED for not revoked
+     * @param revocationDate Revocation date, or null for not revoked
+     * @param issuerDn Issuer DN to be written into the database. Can be different from the certificate's actual issuer DN. Needed for key import.
+     * must only be used when storing special internal certificates, such as the test certificates for checking unique database index.
+     */
     private CertificateDataWrapper storeCertificateNoAuthInternal(AuthenticationToken adminForLogging, Certificate incert, String username, String cafp, String certificateRequest,
             int status, int type, int certificateProfileId, final int endEntityProfileId, final int crlPartitionIndex, String tag, long updateTime, boolean doAuditLog, String accountBindingId,
-            final RevocationReasons revocationReason, final Date revocationDate) {
+            final RevocationReasons revocationReason, final Date revocationDate, final String issuerDn) {
         final PublicKey pubk = enrichEcPublicKey(incert.getPublicKey(), cafp);
         // Create the certificate in one go with all parameters at once. This used to be important in EJB2.1 so the persistence layer only creates
         // *one* single
@@ -269,6 +328,9 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         final boolean storeSubjectAlternativeName = certificateProfile==null || certificateProfile.getStoreSubjectAlternativeName();
         final CertificateData certificateData = new CertificateData(incert, pubk, username, cafp, certificateRequest, status, type, certificateProfileId, endEntityProfileId,
                 crlPartitionIndex, tag, updateTime, !useBase64CertTable && storeCertificateData, storeSubjectAlternativeName, accountBindingId);
+        if (!StringUtils.isEmpty(issuerDn)) {
+            certificateData.setIssuerDN(issuerDn);
+        }
         if (revocationReason != RevocationReasons.NOT_REVOKED) {
             certificateData.setRevocationDate(revocationDate);
             certificateData.setRevocationReason(revocationReason.getDatabaseValue());
