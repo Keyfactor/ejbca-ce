@@ -13,11 +13,13 @@
 package org.cesecore.authentication.tokens;
 
 import java.security.Principal;
-import java.security.SecureRandom;
 import java.util.Set;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.config.CesecoreConfiguration;
+
+import com.keyfactor.util.RandomHelper;
 
 /**
  * Common base class for tokens that are only valid in the JVM they are created and could
@@ -59,7 +61,7 @@ public abstract class LocalJvmOnlyAuthenticationToken extends AuthenticationToke
 	
 	private static byte[] createRandomToken() {
     	final byte[] token = new byte[32];
-        new SecureRandom().nextBytes(token);
+    	RandomHelper.getInstance(CesecoreConfiguration.getCaSerialNumberAlgorithm()).nextBytes(token);
     	return token;
 	}
 }

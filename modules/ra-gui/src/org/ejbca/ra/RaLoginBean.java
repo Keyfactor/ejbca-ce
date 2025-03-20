@@ -14,7 +14,6 @@ package org.ejbca.ra;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
@@ -35,6 +34,7 @@ import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.oauth.OauthRequestHelper;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
@@ -46,6 +46,7 @@ import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.util.HttpTools;
 
+import com.keyfactor.util.RandomHelper;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
@@ -113,7 +114,7 @@ public class RaLoginBean implements Serializable {
         } else {
             log.debug("Generating randomized 'state' string.");
             final byte[] stateBytes = new byte[32];
-            new SecureRandom().nextBytes(stateBytes);
+            RandomHelper.getInstance(CesecoreConfiguration.getCaSerialNumberAlgorithm()).nextBytes(stateBytes);
             stateInSession = Base64.encodeBase64URLSafeString(stateBytes);
             initOauthKeys();
         }
@@ -136,7 +137,7 @@ public class RaLoginBean implements Serializable {
                     servletRequest.getSession(true).setAttribute("ejbca.id.token", token.getIdToken());
                     servletRequest.getSession(true).setAttribute("ejbca.refresh.token", token.getRefreshToken());
                     raAuthenticationBean.resetAuthentication();
-                    HttpTools.sendRedirect(FacesContext.getCurrentInstance(), "/index.html");
+                    HttpTools.sendRedirect(FacesContext.getCurrentInstance(), "/index.xhtml");
                 } else {
                     log.info("Received OAuth token of unsupported type '" + token.getTokenType() + "'");
                 }

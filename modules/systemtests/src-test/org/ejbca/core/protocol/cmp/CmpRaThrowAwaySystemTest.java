@@ -21,9 +21,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyPair;
-import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Random;
@@ -61,6 +62,7 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSession;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
@@ -70,13 +72,16 @@ import org.ejbca.core.ejb.ca.store.CertReqHistoryProxySessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.RandomHelper;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
@@ -86,10 +91,16 @@ import com.keyfactor.util.string.StringConfigurationCache;
  * Verify that CMP functionality works in RA mode, when any combination of - useCertReqHistory (Store copy of UserData at the time of certificate
  * issuance.) - useUserStorage (Store current UserData.) - useCertificateStorage (Store issued certificates and related information.) are used.
  */
+@RunWith(Parameterized.class)
 public class CmpRaThrowAwaySystemTest extends CmpTestCase {
 
     private static final Logger LOG = Logger.getLogger(CmpRaThrowAwaySystemTest.class);
-    private static final Random RND = new SecureRandom();
+    private static final Random RND = RandomHelper.getInstance(CesecoreConfiguration.getCaSerialNumberAlgorithm());
+    
+    @Parameters(name = "{0}")
+    public static Collection<Boolean> ldapDnOrderSettings(){
+        return Arrays.asList(true, false);
+    }
 
     private static final String TESTCA_NAME = "CmpRaThrowAwayTestCA";
     private static final String CERTPROFILE_NAME = "CmpRaThrowAwayTest";
@@ -106,28 +117,28 @@ public class CmpRaThrowAwaySystemTest extends CmpTestCase {
     
     private CmpConfiguration cmpConfiguration;
     private final static String configAlias = "CmpRaThrowAwayTestCmpConfigAlias";
+    
+    private final boolean useLdapDnOrder;
+    
+    public CmpRaThrowAwaySystemTest(boolean useLdapDnOrder) {
+        this.useLdapDnOrder = useLdapDnOrder;
+    }
 
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProviderIfNotAvailable();
-        StringConfigurationCache.INSTANCE.setEncryptionKey("qhrnf.f8743;12%#75".toCharArray());
-        createTestCA(TESTCA_NAME); // Create test CA
-        
-    }
-
-    @AfterClass
-    public static void afterClass() {
-        try {
-            removeTestCA(TESTCA_NAME);
-        } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
-        }
+        StringConfigurationCache.INSTANCE.setEncryptionKey("qhrnf.f8743;12%#75".toCharArray());        
     }
 
     /** Create CA and change configuration for the following tests. */
     @Override
     @Before
     public void setUp() throws Exception {
+        if (useLdapDnOrder) {
+            createTestCAWithLdapDnOrder(TESTCA_NAME, 2048, "CN=" + TESTCA_NAME + ",OU=someorg", CAInfo.SELFSIGNED, null, true);
+        } else {
+            createTestCAWithLdapDnOrder(TESTCA_NAME, 2048, "OU=someorg,CN=" + TESTCA_NAME, CAInfo.SELFSIGNED, null, false);
+        }
         super.setUp();
         LOG.trace(">test000Setup");
         final CAInfo caInfo = caSession.getCAInfo(ADMIN, getTestCAId(TESTCA_NAME));
@@ -190,6 +201,11 @@ public class CmpRaThrowAwaySystemTest extends CmpTestCase {
             LOG.error(e.getMessage(), e);
         }
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
+        try {
+            removeTestCA(TESTCA_NAME);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+        }
         LOG.trace("<testZZZTearDown");
     }
 
@@ -242,7 +258,7 @@ public class CmpRaThrowAwaySystemTest extends CmpTestCase {
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         String username = "cmpRaThrowAwayTestUser" + RND.nextLong(); // This is what we expect from the CMP configuration
         final X500Name subjectDN = new X500Name("CN=" + username);
-        PKIMessage one = genCertReq(CertTools.getSubjectDN(this.caCertificate), subjectDN, keys, this.caCertificate, nonce, transid, true, null, notBefore,
+        PKIMessage one = genCertReq(this.caCertificate.getIssuerDN().toString(), subjectDN, keys, this.caCertificate, nonce, transid, true, null, notBefore,
                 notAfter, null, null, null);
         PKIMessage req;
         if (usePbmac1) {
@@ -256,7 +272,7 @@ public class CmpRaThrowAwaySystemTest extends CmpTestCase {
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
         ASN1OutputStream.create(bao, ASN1Encoding.DER).writeObject(req);
         byte[] resp = sendCmpHttp(bao.toByteArray(), 200, configAlias);
-        checkCmpResponseGeneral(resp, CertTools.getSubjectDN(this.caCertificate), subjectDN, this.caCertificate, nonce, transid, false, PBE_SECRET,
+        checkCmpResponseGeneral(resp, this.caCertificate.getIssuerDN().toString(), subjectDN, this.caCertificate, nonce, transid, false, PBE_SECRET,
                 PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), usePbmac1);
         X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, configAlias, subjectDN, this.caCertificate, resp, reqId);
         assertEquals("Certificate history data was or wasn't stored: ", useCertReqHistory, (this.csrHistorySession.retrieveCertReqHistory(CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert)) != null));
@@ -276,7 +292,7 @@ public class CmpRaThrowAwaySystemTest extends CmpTestCase {
         bao = new ByteArrayOutputStream();
         ASN1OutputStream.create(bao, ASN1Encoding.DER).writeObject(req1);
         resp = sendCmpHttp(bao.toByteArray(), 200, configAlias);
-        checkCmpResponseGeneral(resp, CertTools.getSubjectDN(this.caCertificate), subjectDN, this.caCertificate, nonce, transid, false,
+        checkCmpResponseGeneral(resp, this.caCertificate.getIssuerDN().toString(), subjectDN, this.caCertificate, nonce, transid, false,
                 PBE_SECRET, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), usePbmac1);
         checkCmpPKIConfirmMessage(subjectDN, this.caCertificate, resp);
 
@@ -284,7 +300,7 @@ public class CmpRaThrowAwaySystemTest extends CmpTestCase {
         // TODO: ECA-1916 should remove dependency on useUserStorage
         if (useCertificateStorage && useUserStorage) {
             // Now revoke the bastard using the CMPv1 reason code!
-            PKIMessage rev = genRevReq(CertTools.getSubjectDN(this.caCertificate), subjectDN, cert.getSerialNumber(), this.caCertificate, nonce, transid, false, null, null);
+            PKIMessage rev = genRevReq(this.caCertificate.getIssuerDN().toString(), subjectDN, cert.getSerialNumber(), this.caCertificate, nonce, transid, false, null, null);
             PKIMessage revReq;
             if (usePbmac1) {
                 revReq = protectPKIMessageWithPbmac1(rev, false, PBE_SECRET, "unusedKeyId", 567);
@@ -295,9 +311,9 @@ public class CmpRaThrowAwaySystemTest extends CmpTestCase {
             bao = new ByteArrayOutputStream();
             ASN1OutputStream.create(bao, ASN1Encoding.DER).writeObject(revReq);
             resp = sendCmpHttp(bao.toByteArray(), 200, configAlias);
-            checkCmpResponseGeneral(resp, CertTools.getSubjectDN(this.caCertificate), subjectDN, this.caCertificate, nonce, transid, false,
+            checkCmpResponseGeneral(resp, this.caCertificate.getIssuerDN().toString(), subjectDN, this.caCertificate, nonce, transid, false,
                     PBE_SECRET, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), usePbmac1);
-            checkCmpRevokeConfirmMessage(CertTools.getSubjectDN(this.caCertificate), subjectDN, cert.getSerialNumber(), this.caCertificate, resp, true);
+            checkCmpRevokeConfirmMessage(this.caCertificate.getIssuerDN().toString(), subjectDN, cert.getSerialNumber(), this.caCertificate, resp, true);
             int reason = this.certificateStoreSession.getStatus(CertTools.getSubjectDN(this.caCertificate), cert.getSerialNumber()).revocationReason;
             assertEquals("Certificate was not revoked with the right reason.", RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, reason);
         }

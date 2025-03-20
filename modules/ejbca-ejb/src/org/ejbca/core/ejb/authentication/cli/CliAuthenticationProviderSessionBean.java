@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.authentication.cli;
 
-import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 import java.security.SecureRandom;
 import java.util.AbstractMap;
@@ -34,6 +33,7 @@ import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
@@ -44,6 +44,8 @@ import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.util.crypto.BCrypt;
 import org.ejbca.util.crypto.SupportedPasswordHashAlgorithm;
+import com.keyfactor.util.RandomHelper;
+
 
 /**
  * This session bean provides authentication for CLI users. Notable features are that it interfaces against the
@@ -75,8 +77,9 @@ public class CliAuthenticationProviderSessionBean implements CliAuthenticationPr
     @PostConstruct
     public void initialize() throws RuntimeException {
         try {
-            randomGenerator = SecureRandom.getInstance("SHA1PRNG");
-        } catch (NoSuchAlgorithmException e) {
+            String algorithm = CesecoreConfiguration.getCaSerialNumberAlgorithm();
+            randomGenerator = RandomHelper.getInstance(algorithm);
+        } catch (IllegalStateException e) {
             throw new RuntimeException(e);
         }
     }
