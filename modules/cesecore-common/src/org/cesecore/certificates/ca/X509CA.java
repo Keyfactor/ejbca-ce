@@ -154,6 +154,10 @@ public interface X509CA extends CA, HybridCa {
     int getSuspendedCrlPartitions();
 
     void setSuspendedCrlPartitions(int suspendedCrlPartitions);
+    
+    long getKeepExpiredCertsOnCRLDate();
+    
+    void setKeepExpiredCertsOnCRLDate(long keepExpiredCertsOnCRLDate);
 
     /**
      * Constructs the SubjectAlternativeName extension that will end up on the generated certificate.

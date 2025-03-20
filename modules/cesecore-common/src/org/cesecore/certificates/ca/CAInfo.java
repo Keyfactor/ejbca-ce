@@ -39,7 +39,7 @@ import com.keyfactor.util.certificate.DnComponents;
  * Holds non sensitive information about a CA.
  */
 public abstract class CAInfo implements Serializable {
-
+    
     private static final long serialVersionUID = 2L;
     public static final int CATYPE_X509 = 1;
     public static final int CATYPE_CVC = 2;

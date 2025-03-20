@@ -80,6 +80,7 @@ import org.cesecore.certificates.ca.ExtendedUserDataHandler;
 import org.cesecore.certificates.ca.ExtendedUserDataHandlerFactory;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.ca.X509CAInfo.KeepExpiredOnCrlFormat;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
@@ -790,6 +791,12 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         final UIInput checkbox = (UIInput) FacesContext.getCurrentInstance().getViewRoot().findComponent(":editcapage:checkboxusecrlpartitions");
         final Boolean submittedValue = (Boolean) checkbox.getSubmittedValue(); // check if there is a changed value (which might not have passed validation)
         return submittedValue != null ? submittedValue : caInfoDto.isUsePartitionedCrl();
+    }
+    
+    public boolean isKeepExpiredOnCrlChecked() {
+        final UIInput checkbox = (UIInput) FacesContext.getCurrentInstance().getViewRoot().findComponent(":editcapage:checkboxkeepexpiredoncrl");
+        final Boolean submittedValue = (Boolean) checkbox.getSubmittedValue(); // check if there is a changed value (which might not have passed validation)
+        return submittedValue != null ? submittedValue : caInfoDto.isKeepExpiredOnCrl();
     }
 
     public List<SelectItem> getAvailableCrlPublishers() {
@@ -2456,6 +2463,13 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             caInfoDto.setAuthorityInformationAccess(null != urisAuthorityInformationAccess ? StringUtils.join(urisAuthorityInformationAccess, ";") : "");
             caInfoDto.setCertificateAiaDefaultCaIssuerUri(null != urisCertificateAiaDefaultCaIssuerUri ? StringUtils.join(urisCertificateAiaDefaultCaIssuerUri, ";") : "");
             caInfoDto.setKeepExpiredOnCrl(x509cainfo.getKeepExpiredCertsOnCRL());
+            if(x509cainfo.getKeepExpiredCertsOnCRLDate() == 0) {
+                caInfoDto.setExpiredOnCrlFormat(KeepExpiredOnCrlFormat.CA_DATE.intFormat());
+            } else {
+                caInfoDto.setExpiredOnCrlFormat(KeepExpiredOnCrlFormat.CHOSEN_DATE.intFormat());
+                caInfoDto.setKeepExpiredOnCrlDate(x509cainfo.getKeepExpiredCertsOnCRLDate());
+            }           
+            
             caInfoDto.setUsePartitionedCrl(x509cainfo.getUsePartitionedCrl());
             caInfoDto.setCrlPartitions(x509cainfo.getCrlPartitions());
             caInfoDto.setSuspendedCrlPartitions(x509cainfo.getSuspendedCrlPartitions());
