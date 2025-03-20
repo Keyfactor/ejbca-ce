@@ -150,6 +150,12 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager implemen
         }
 
         public String getAuth0Tenant() {
+            if (StringUtils.isEmpty(auth0Tenant) && !StringUtils.isEmpty(url)) {
+                final String[] parts = StringUtils.stripStart(url, "https://").split("/");
+                if (parts.length > 0) {
+                    setAuth0Tenant(parts[0]);
+                }
+            }
             return auth0Tenant;
         }
 
