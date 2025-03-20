@@ -57,14 +57,6 @@ import org.ejbca.util.oauth.OAuthTools;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.security.cert.CertificateParsingException;
-import java.text.ParseException;
-import java.util.*;
-
 /**
  * This class is used to manage OAuth Keys in EJBCA's system configuration. It adds some additional
  * functionality to the OAuthKeyManager, such as loading and saving state from the database and editing of
@@ -151,7 +143,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager implemen
 
         public String getAuth0Tenant() {
             if (StringUtils.isEmpty(auth0Tenant) && !StringUtils.isEmpty(url)) {
-                final String[] parts = StringUtils.stripStart(url, "https://").split("/");
+                final String[] parts = url.substring(8).split("/");
                 if (parts.length > 0) {
                     setAuth0Tenant(parts[0]);
                 }
