@@ -91,7 +91,6 @@ import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.config.AvailableProtocolsConfiguration;
 import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
 import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.config.WebServiceConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.EnterpriseEditionWSBridgeSessionLocal;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
@@ -105,7 +104,6 @@ import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
-import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.ejb.ws.EjbcaWSHelperSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -130,9 +128,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
-import org.ejbca.core.model.ra.userdatasource.MultipleMatchException;
-import org.ejbca.core.model.ra.userdatasource.UserDataSourceException;
-import org.ejbca.core.model.ra.userdatasource.UserDataSourceVO;
 import org.ejbca.core.protocol.ssh.SshRequestMessage;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.core.protocol.ws.common.IEjbcaWS;
@@ -202,8 +197,6 @@ public class EjbcaWS implements IEjbcaWS {
     private PublishingCrlSessionLocal publishingCrlSession;
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
-    @EJB
-    private UserDataSourceSessionLocal userDataSourceSession;
     @EJB
     private EnterpriseEditionWSBridgeSessionLocal enterpriseWSBridgeSession;
 
@@ -1895,6 +1888,8 @@ public class EjbcaWS implements IEjbcaWS {
      * </pre>
      *
      * If not turned of in jaxws.properties then only a valid certificate required
+     * 
+     * @deprecated Support for user data sources was dropped in version 9.3
      *
      *
      * @param userDataSourceNames a List of User Data Source Names
@@ -1906,45 +1901,9 @@ public class EjbcaWS implements IEjbcaWS {
      */
     @WebMethod
     @Action(input="http://ws.protocol.core.ejbca.org/fetchUserData")
+    @Deprecated(since = "9.3")
 	public List<UserDataSourceVOWS> fetchUserData(List<String> userDataSourceNames, String searchString) throws EjbcaException, AuthorizationDeniedException{
-        try (final RequestId requestId = new RequestId()) {
-            final AuthenticationToken admin;
-            if (WebServiceConfiguration.getNoAuthorizationOnFetchUserData()) {
-                final AuthenticationToken tmp = getAdmin(true);
-                // We know client certificate is needed, so no other authentication tokens can exist
-                X509Certificate adminCert = ((X509CertificateAuthenticationToken) tmp).getCertificate();
-                admin = new AlwaysAllowLocalAuthenticationToken(adminCert.getSubjectX500Principal().getName());
-            } else {
-                admin = getAdmin();
-            }
-
-            final ArrayList<UserDataSourceVOWS> returnValues = new ArrayList<>();
-
-            final IPatternLogger logger = TransactionLogger.getPatternLogger();
-            logAdminName(admin, logger);
-            try {
-                final ArrayList<Integer> userDataSourceIds = new ArrayList<>();
-                for (String name : userDataSourceNames) {
-                    final int id = userDataSourceSession.getUserDataSourceId(admin, name);
-                    if (id != 0) {
-                        userDataSourceIds.add(id);
-                    } else {
-                        log.error("Error User Data Source with name : " + name + " doesn't exist.");
-                    }
-                }
-                for (UserDataSourceVO next : userDataSourceSession.fetch(admin, userDataSourceIds, searchString)) {
-                    returnValues.add(new UserDataSourceVOWS(ejbcaWSHelperSession.convertEndEntityInformation(next.getEndEntityInformation()), next.getIsFieldModifyableSet()));
-                }
-            } catch (CADoesntExistsException e) {    // EJBException, ClassCastException, ...
-                throw getEjbcaExceptionUnredacted(e, logger, ErrorCode.CA_NOT_EXISTS, Level.INFO);
-            } catch (RuntimeException e) {    // EJBException, ClassCastException, ...
-                throw getEjbcaException(e, logger);
-            } finally {
-                logger.writeln();
-                logger.flush();
-            }
-            return returnValues;
-        }
+        throw new UnsupportedOperationException("User data sources were dropped in EJBCA 9.3");
 	}
 
     /**
@@ -2057,6 +2016,8 @@ public class EjbcaWS implements IEjbcaWS {
      * - /userdatasourcesrules/&lt;user data source&gt;/remove_userdata (for all the given user data sources)
      * - /ca/&lt;all cas defined in all the user data sources&gt;
      * </pre>
+     * 
+     * @deprecated Support for user data sources was dropped in version 9.3
      *
      * @param userDataSourceNames the names of the userdata source to remove from
      * @param searchString the search string to search for
@@ -2069,30 +2030,9 @@ public class EjbcaWS implements IEjbcaWS {
      */
     @WebMethod
     @Action(input="http://ws.protocol.core.ejbca.org/deleteUserDataFromSource")
+    @Deprecated(since = "9.3")
 	public boolean deleteUserDataFromSource(List<String> userDataSourceNames, String searchString, boolean removeMultipleMatch) throws AuthorizationDeniedException, EjbcaException {
-        try (final RequestId requestId = new RequestId()) {
-            boolean returnValue;
-            final IPatternLogger logger = TransactionLogger.getPatternLogger();
-            try {
-                AuthenticationToken admin = getAdmin();
-                logAdminName(admin, logger);
-                ArrayList<Integer> userDataSourceIds = new ArrayList<>();
-                for (String nextName : userDataSourceNames) {
-                    int id = userDataSourceSession.getUserDataSourceId(admin, nextName);
-                    if (id == 0) {
-                        throw new UserDataSourceException("Error: User Data Source with name : " + nextName + " couldn't be found, aborting operation.");
-                    }
-                    userDataSourceIds.add(id);
-                }
-                returnValue = userDataSourceSession.removeUserData(admin, userDataSourceIds, searchString, removeMultipleMatch);
-            } catch (RuntimeException e) {    // EJBException, ClassCastException, ...
-                throw getEjbcaExceptionUnredacted(e, logger);
-            } finally {
-                logger.writeln();
-                logger.flush();
-            }
-            return returnValue;
-        }
+        throw new UnsupportedOperationException("Support for user data sources was dropped in EJBCA 9.3");
 	}
 
     /**
