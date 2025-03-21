@@ -3,7 +3,7 @@ Define HSM container image with versions
 */}}
 {{- define "ejbca.hsmImage" -}}
 {{- if .Values.hsm.image  }}
-{{- printf .Values.hsm.image }}
+{{- .Values.hsm.image }}
 {{- else if .Values.hsm.softhsm.enabled }}
 {{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-softhsm/images/hsm-driver-softhsm:1.1.0" }}
 {{- else if .Values.hsm.luna.enabled }}
