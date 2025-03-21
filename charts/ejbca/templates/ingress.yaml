@@ -5,7 +5,7 @@
 {{- $svcPort = .Values.services.proxyAJP.port -}}
 {{- end }}
 {{- if .Values.ingress.sslBackend}}
-{{- $svcPort := 443 -}}
+{{- $svcPort = 443 -}}
 {{- end }}
 {{- if .Values.services.directHttp.enabled }}
 {{- $svcPort = .Values.services.directHttp.httpPort -}}
@@ -77,8 +77,8 @@ spec:
             backend:
               {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
               service:
-                {{- if .Values.ingress.sslBackend}}
-                name: {{ include "ejbca.fullname" . }}-nginx
+                {{- if $.Values.ingress.sslBackend}}
+                name: {{ $fullName }}-nginx
                 {{- else }}
                 name: {{ $fullName }}
                 {{- end }}
