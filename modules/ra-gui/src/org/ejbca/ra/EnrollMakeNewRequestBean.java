@@ -833,6 +833,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
         sendNotification = endEntityProfile != null && endEntityProfile.isSendNotificationDefault();
         certValidityStartTime = endEntityProfile != null ? endEntityProfile.getValidityStartTime() : null;
         certValidityEndTime = endEntityProfile != null ? endEntityProfile.getValidityEndTime() : null;
+        
+        if (endEntityProfile != null && getEndEntityInformation() != null) {
+            getEndEntityInformation().setInputUsernameValue(endEntityProfile.getUsernameDefault());
+        }
     }
 
     //-----------------------------------------------------------------------------------------------
