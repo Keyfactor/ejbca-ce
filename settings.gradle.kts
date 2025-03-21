@@ -345,6 +345,7 @@ include(
     "modules:systemtests:interface",
     "modules:systemtests:common",
     "modules:systemtests:ejb",
+    "modules:clientToolBox",
 )
 
 fun loadPropertiesFromFiles(vararg filePaths: String): Properties {
