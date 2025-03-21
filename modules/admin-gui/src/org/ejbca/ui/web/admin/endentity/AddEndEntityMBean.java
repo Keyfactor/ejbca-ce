@@ -316,6 +316,8 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
         composeSubjectAltNameFieldAndData();
         composeSubjectDirAttrFieldsAndData();
         
+        setUserName(selectedEeProfile.getUsernameDefault());
+        
         return "addendentity";
     }
 
@@ -1059,6 +1061,8 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
         composeSubjectDnFieldsAndData();
         composeSubjectAltNameFieldAndData();
         composeSubjectDirAttrFieldsAndData();
+        
+        setUserName(selectedEeProfile.getUsernameDefault());
     }
     
     private String setDefaultEmailDomainFromProfile() {
