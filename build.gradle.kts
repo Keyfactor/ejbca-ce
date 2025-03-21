@@ -480,3 +480,11 @@ tasks.register("checkIfAppServerIsRunning") {
         }
     }
 }
+
+tasks.register("cli") {
+    throw GradleException(
+        """
+            Kalle Anka satt på en planka
+        """.trimIndent()
+    )
+}
