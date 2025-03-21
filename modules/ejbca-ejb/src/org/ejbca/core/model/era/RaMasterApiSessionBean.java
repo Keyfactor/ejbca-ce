@@ -2556,7 +2556,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     @Override
     public byte[] createCertificateWithEntity(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, String requestData, int requestType, int responseType)
-            throws EjbcaException, AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException{
+            throws EjbcaException, AuthorizationDeniedException, EndEntityProfileValidationException{
         try {
             return certificateRequestSession.processCertReq(authenticationToken, endEntityInformation, requestData, requestType, responseType);
         } catch (InvalidKeyException e) {
@@ -2573,18 +2573,15 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             // Will convert the CESecore exception to an EJBCA exception with the same error code
             throw new EjbcaException(e.getErrorCode(), LogRedactionUtils.getRedactedException(e));
         } catch (CertificateExtensionException | NoSuchAlgorithmException | NoSuchProviderException |
-                CertificateException | IOException e) {
+                 CertificateException | IOException e) {
             log.debug("EJBCA REST exception", LogRedactionUtils.getRedactedException(e));
             throw new EjbcaException(ErrorCode.INTERNAL_ERROR, LogRedactionUtils.getRedactedMessage(e.getMessage()));
         } catch (SignatureException e) {
             log.debug("EJBCA REST exception", e);
             throw new EjbcaException(ErrorCode.SIGNATURE_ERROR, e.getMessage());
-        }  catch (AuthStatusException e) {
-            log.debug("EJBCA REST exception", e);
-            throw new EjbcaException(ErrorCode.USER_WRONG_STATUS, e.getMessage());
-        } catch (AuthLoginException e) {
-            log.debug("EJBCA REST exception", e);
-            throw new EjbcaException(ErrorCode.LOGIN_ERROR, e.getMessage());
+        } catch (EndEntityProfileValidationException e) {
+            log.debug("EJBCA REST exception", LogRedactionUtils.getRedactedException(e));
+            throw new EndEntityProfileValidationException(LogRedactionUtils.getRedactedMessage(e.getMessage()));
         }
     }
 
