@@ -1934,7 +1934,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                 try {
                     return raMasterApi.createCertificateWithEntity(authenticationToken, endEntityInformation, req, reqType, responseType);
                 } catch (ApprovalException e) {
-                    // we want to catch other EjbcaEceptions and try on another ejbca instance, but approval exception should be thrown
+                    // we want to catch other EjbcaExceptions and try on another ejbca instance, but approval exception should be thrown
                     throw e;
                 }
                 catch (EjbcaException e) {
