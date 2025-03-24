@@ -74,6 +74,11 @@ public interface Validator extends PhasedValidator, CertificateProfileAwareValid
     void setNotApplicableAction(int index);
 
     /**
+     * @return true if this Validator can be applied to all possible inputs. E.g. and RSAKeyValidator can't take an EC key. A certificate validator can take any x509 cert. 
+     */
+    boolean isValidatorAlwaysApplicable();
+    
+    /**
      * Gets a list of applicable CA types (X509 or CVC see {@link CAInfo.CATYPE_X509 or CAInfo.CATYPE_CVC}).
      * @return the list of class names of the allowed CA types.
      */
