@@ -110,7 +110,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     @EJB
     private CryptoTokenManagementSessionLocal cryptoToken;
 
-    private LoadingCache<CertificateStatusCacheKey, Integer> cache;
+    private transient LoadingCache<CertificateStatusCacheKey, Integer> cache;
 
     private boolean allowBlankAudience = false;
 
@@ -128,7 +128,6 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     @PostConstruct
     public void initialize() {
         initializeAudienceCheck();
-        initializeCache();
     }
 
     /**
@@ -591,7 +590,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     }
 
     private int getCachedStatus(X509Certificate certificate) {
-        return cache.get(new CertificateStatusCacheKey(CertTools.getIssuerDN(certificate),
+        return getCache().get(new CertificateStatusCacheKey(CertTools.getIssuerDN(certificate),
                 CertTools.getSerialNumber(certificate)));
     }
 
@@ -613,6 +612,13 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
 
     public boolean isAllowBlankAudience() {
         return allowBlankAudience;
+    }
+
+    public LoadingCache<CertificateStatusCacheKey, Integer> getCache() {
+        if (cache == null) {
+            initializeCache();
+        }
+        return cache;
     }
 
     private static class CertificateStatusCacheKey {
