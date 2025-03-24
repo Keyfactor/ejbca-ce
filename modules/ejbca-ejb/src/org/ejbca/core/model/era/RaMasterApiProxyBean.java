@@ -1938,7 +1938,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     throw e;
                 }
                 catch (EjbcaException e) {
-                    ejbcaException = ejbcaException == null ? e : ejbcaException;
+                    ejbcaException =  e;
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
