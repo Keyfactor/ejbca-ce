@@ -1910,6 +1910,10 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     throw new IllegalStateException("This should not happen since there is no back dating.",e);
                 } catch (CertificateProfileDoesNotExistException e) {
                     throw new IllegalStateException("This should not happen since this method overload does not support certificateProfileId input parameter.",e);
+                } catch (NoSuchAlgorithmException e) {
+                    throw new IllegalStateException("Unable to create SHA-256 fingerprint. Is the algorithm supported on this system?",e);
+                } catch (BlacklistExistsException e) {
+                    throw new IllegalStateException("Public key block list entry with public key fingerprint already exists.",e);
                 }
             } catch (AlreadyRevokedException e) {
                 if (log.isDebugEnabled()) {
@@ -1976,6 +1980,10 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             throw new IllegalStateException("Back dating is not allowed in Certificate Profile",e);
         } catch (CertificateProfileDoesNotExistException e) {
             throw new IllegalStateException("This should not happen since this method overload does not support certificateProfileId input parameter.",e);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("Unable to create SHA-256 fingerprint. Is the algorithm supported on this system?",e);
+        } catch (BlacklistExistsException e) {
+            throw new IllegalStateException("Public key block list entry with public key fingerprint already exists.",e);
         }
     }
 
@@ -1989,6 +1997,10 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             revokeCert(authenticationToken, certSerNo, revocationDate, invalidityDate, issuerDn, reason, checkDate, null, 0, null, null);
         } catch (CertificateProfileDoesNotExistException e) {
             throw new IllegalStateException("This should not happen since this method overload does not support certificateProfileId input parameter.",e);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("Unable to create SHA-256 fingerprint. Is the algorithm supported on this system?",e);
+        } catch (BlacklistExistsException e) {
+            throw new IllegalStateException("Public key block list entry with public key fingerprint already exists.",e);
         }
     }
 
@@ -2001,9 +2013,33 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         // Cvc Stress Test generated certificate serial number length is 5
         BigInteger certificateSn = serialNo.length() == 5 ? new BigInteger(serialNo) : new BigInteger(serialNo, 16);
         
-        revokeCert(authenticationToken, certificateSn, certRevocationDto.getRevocationDate(), certRevocationDto.getInvalidityDate(), 
-                certRevocationDto.getIssuerDN(), certRevocationDto.getReason(), certRevocationDto.isCheckDate(), null, 0, null, 
-                certRevocationDto.getCertificateProfileId());
+        try {
+            revokeCert(authenticationToken, certificateSn, certRevocationDto.getRevocationDate(), certRevocationDto.getInvalidityDate(), 
+                        certRevocationDto.getIssuerDN(), certRevocationDto.getReason(), certRevocationDto.isCheckDate(), null, 0, null, 
+                        certRevocationDto.getCertificateProfileId());
+        } catch (NoSuchEndEntityException e) {
+            throw new IllegalStateException("End entity does not exist.",e);
+        } catch (ApprovalException e) {
+            throw new ApprovalException(ErrorCode.VALIDATION_FAILED, e.getMessage(), e);
+        } catch (RevokeBackDateNotAllowedForProfileException e) {
+            throw new RevokeBackDateNotAllowedForProfileException(e.getMessage());
+        } catch (AlreadyRevokedException e) {
+            throw new AlreadyRevokedException(e.getMessage());
+        } catch (CertificateProfileDoesNotExistException e) {
+            throw new CertificateProfileDoesNotExistException(e.getMessage());
+        } catch (AuthorizationDeniedException e) {
+            log.info("Authorization denied to add public key to block list.");
+            throw new IllegalStateException(e);
+        } catch (WaitingForApprovalException e) {
+            log.error("ApprovalException: ", e);
+            throw new EJBException(e);
+        } catch (NoSuchAlgorithmException e) {
+            log.info("Unable to create SHA-256 fingerprint. Is the algorithm supported on this system?");
+            throw new IllegalStateException(e);
+        } catch (BlacklistExistsException e) {
+            log.info("Public key block list entry with public key fingerprint already exists.");
+            throw new IllegalStateException(e);
+        }
     }
 
     private void revokeCert(
@@ -2011,7 +2047,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             int reason, boolean checkDate, final EndEntityInformation endEntityInformationParam, final int approvalRequestID,
             final AuthenticationToken lastApprovingAdmin, final Integer certificateProfileIdParam
     ) throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
-            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CertificateProfileDoesNotExistException {
+            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CertificateProfileDoesNotExistException, BlacklistExistsException,
+            NoSuchAlgorithmException {
         if (log.isTraceEnabled()) {
             log.trace(">revokeCert(" + certSerNo.toString(16) + ", IssuerDN: " + issuerDn + ")");
         }
@@ -2214,8 +2251,14 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 final AlwaysAllowLocalAuthenticationToken alwaysAllowAuthToken = new AlwaysAllowLocalAuthenticationToken(
                         new UsernamePrincipal("Key Compromise Blocklist Update"));
                 addPublicKeyToBlacklist(alwaysAllowAuthToken, publickey);
-            } catch (Exception e) {
-                log.info("Update public key block list failed: " + e.getMessage(), e);
+            } catch (BlacklistExistsException e) {
+                log.info("Public key block list entry with public key fingerprint already exists.");
+                throw e;
+            } catch (AuthorizationDeniedException e) {
+                log.info("Authorization denied to add public key to block list.");
+                throw e;
+            } catch (NoSuchAlgorithmException e) {
+                log.info("Unable to create SHA-256 fingerprint. Is the algorithm supported on this system?");
                 throw new IllegalStateException(e);
             }
         }
@@ -2230,13 +2273,14 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     }
 
     /**
-     * Removes a public key from the public key blacklist.
+     * Adds a public key to the public key blacklist.
      * 
-     * @param publicKey the public key to remove.
-     * @return {@link #STATUS_GENERALIMPORTERROR} if error, {@link #STATUS_CONSTRAINTVIOLATION} if already existing or {@link #STATUS_OK} if added.
-     * @throws Exception any exception.
+     * @param publicKey the public key to add.
+     * @throws NoSuchAlgorithmException if unable to create SHA-256 fingerprint.
+     * @throws BlacklistExistsException, AuthorizationDeniedException if fail to add PublicKeyBlackListEntry.
      */
-    private void addPublicKeyToBlacklist(final AlwaysAllowLocalAuthenticationToken authenticationToken, final PublicKey publicKey) throws Exception {
+    private void addPublicKeyToBlacklist(final AlwaysAllowLocalAuthenticationToken authenticationToken, final PublicKey publicKey)
+            throws NoSuchAlgorithmException, BlacklistExistsException, AuthorizationDeniedException {
         log.trace(">addPublicKeyToBlacklist()");
         final PublicKeyBlacklistEntry entry = new PublicKeyBlacklistEntry();
         entry.setFingerprint(publicKey);
@@ -2249,12 +2293,11 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
      * Adds a public key to the public key blacklist if a public key with that fingerprint does not exists already.
      * 
      * @param entry the public key blacklist entry.
-     * @return {@link #STATUS_GENERALIMPORTERROR} if error, {@link #STATUS_CONSTRAINTVIOLATION} if already existing or {@link #STATUS_OK} if added.
-     * @throws Exception any exception.
+     * @throws AuthorizationDeniedException, BlacklistExistsException.
      */
-    private void addToBlacklist(final AlwaysAllowLocalAuthenticationToken authenticationToken, final PublicKeyBlacklistEntry entry) throws Exception {
+    private void addToBlacklist(final AlwaysAllowLocalAuthenticationToken authenticationToken, final PublicKeyBlacklistEntry entry)
+            throws AuthorizationDeniedException, BlacklistExistsException {
         log.trace(">addToBlacklist()");
-     //   final BlacklistSessionRemote blacklistSession = EjbRemoteHelper.INSTANCE.getRemoteSession(BlacklistSessionRemote.class);
         try {
             blacklistSession.addBlacklistEntry(authenticationToken, entry);
             log.info("Status ok");
@@ -2263,9 +2306,6 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             throw e;
         } catch (AuthorizationDeniedException e) {
             log.info("Authorization denied to add public key to block list.");
-            throw e;
-        } catch (Exception e) {
-            log.info("Error while adding public key to block list: " + e.getMessage());
             throw e;
         }
         log.trace("<addToBlacklist()");
