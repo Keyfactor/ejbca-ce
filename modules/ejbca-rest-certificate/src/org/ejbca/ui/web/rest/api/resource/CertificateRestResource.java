@@ -254,9 +254,13 @@ public class CertificateRestResource extends BaseRestResource {
 
         } catch (WaitingForApprovalException | ApprovalException e) {
             // Throw a REST Exception on order to produce a good error for the client
+            String message = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
+            if (StringUtils.isEmpty(message)) {
+                message = "Waiting for approval";
+            }
             throw new RestException(
                     Response.Status.ACCEPTED.getStatusCode(),
-                    e.getCause() != null ? e.getCause().getMessage() : e.getMessage()
+                    message
             );
         }
         catch (EjbcaException | CertificateParsingException | CMSException e) {
