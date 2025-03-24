@@ -175,7 +175,8 @@ public abstract class RequestMessageUtils {
                 pkcs10RequestMessage.setPassword(password);
                 ret = pkcs10RequestMessage;
             } catch (IOException e ){
-                throw new IOException("Fails to parse PKCS10 message: " + e.getMessage());
+                log.info("Failed to parse PKCS10 message: " + e.getMessage());
+                throw new IOException("Failed to parse PKCS10 message");
             }
         } else if (reqType == CertificateConstants.CERT_REQ_TYPE_MS_KEY_ARCHIVAL) {
             byte[] buffer = Base64.decode(req.getBytes());
@@ -219,9 +220,11 @@ public abstract class RequestMessageUtils {
                     PublicKey pubKey = nscr.getPublicKey();
                     ret = new SimpleRequestMessage(pubKey, username, password);
                 } catch (DecoderException de) {
-                    throw new IOException("Base64 decode fails for SPKAC, message not base64 encoded: " + de.getMessage());
+                    log.info("Base64 decode fails for SPKAC, message not base64 encoded: " + de.getMessage());
+                    throw new IOException("Base64 decode fails for SPKAC, message not base64 encoded");
                 } catch (RuntimeException e ){
-                    throw new IOException("Fails to parse SPKAC message: " + e.getMessage());
+                    log.info("Fails to parse SPKAC message: " + e.getMessage());
+                    throw new IOException("Fails to parse SPKAC message");
                 }
             }
         } else if (reqType == CertificateConstants.CERT_REQ_TYPE_CRMF) {
@@ -297,9 +300,11 @@ public abstract class RequestMessageUtils {
             } catch (CRMFException | OperatorCreationException e) {
                 throw new SignRequestSignatureException("CRMF POP verification failed.", e);
             } catch (DecoderException de) {
-                throw new IOException("Base64 decode fails for CRMF, message not base64 encoded: " + de.getMessage());
+                log.info("Base64 decode fails for CRMF, message not base64 encoded: " + de.getMessage());
+                throw new IOException("Base64 decode fails for CRMF, message not base64 encoded");
             } catch (RuntimeException e ){
-                throw new IOException("Fails to parse CRMF message " + e.getMessage());
+                log.info("Fails to parse CRMF message " + e.getMessage());
+                throw new IOException("Fails to parse CRMF message");
             }
         } else if (reqType == CertificateConstants.CERT_REQ_TYPE_PUBLICKEY) {
             byte[] request;
@@ -313,7 +318,8 @@ public abstract class RequestMessageUtils {
                         throw new IOException("PUBLICKEY Base64 decode of buffer returns null");
                     }
                 } catch (DecoderException de) {
-                    throw new IOException("Base64 decode fails for PUBLICKEY, message not base64 encoded: " + de.getMessage());
+                    log.info("Base64 decode fails for PUBLICKEY, message not base64 encoded: " + de.getMessage());
+                    throw new IOException("Base64 decode fails for PUBLICKEY, message not base64 encoded");
                 }
             }
             final PublicKey pubKey = KeyTools.getPublicKeyFromBytes(request);
@@ -349,7 +355,8 @@ public abstract class RequestMessageUtils {
                 }
                 ret = reqmsg;
             } catch (DecoderException de) {
-                throw new IOException("Base64 decode fails for CVC, message not base64 encoded: " + de.getMessage());
+                log.info("Base64 decode fails for CVC, message not base64 encoded: " + de.getMessage());
+                throw new IOException("Base64 decode fails for CVC, message not base64 encoded");
             }
         }
         return ret;
