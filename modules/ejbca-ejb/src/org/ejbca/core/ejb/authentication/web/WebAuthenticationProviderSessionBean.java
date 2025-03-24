@@ -83,7 +83,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  *
@@ -142,15 +144,6 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
         if (isAllowBlankAudience() && LOG.isDebugEnabled()) {
             LOG.debug("Database not post-upgraded to 7.8.0 yet.  Allowing OAuth logins without checking 'aud' claim.");
         }
-    }
-
-    private void initializeCache() {
-        cache = Caffeine.newBuilder()
-                .maximumSize(10_000)
-                .refreshAfterWrite(12, TimeUnit.SECONDS)
-                .expireAfterAccess(60, TimeUnit.SECONDS)
-                .build(key -> certificateStoreSession.getFirstStatusByIssuerAndSerno(
-                        key.getSubjectDn(), key.getSerialNumber()));
     }
 
     @Override
@@ -616,7 +609,21 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
 
     public LoadingCache<CertificateStatusCacheKey, Integer> getCache() {
         if (cache == null) {
-            initializeCache();
+            // We need to use a custom execuror service - the default executor will
+            // not work with the app server's Security Manager.
+            var threadNumber = new AtomicInteger();
+            var executor = Executors.newCachedThreadPool(r -> {
+                var t = new Thread(r);
+                t.setDaemon(true);
+                t.setName("certificate-status-cache-" + threadNumber.incrementAndGet());
+                return t;
+            });
+            cache = Caffeine.newBuilder()
+                    .executor(executor)
+                    .maximumSize(10_000)
+                    .refreshAfterWrite(12, TimeUnit.SECONDS)
+                    .expireAfterAccess(60, TimeUnit.SECONDS)
+                    .build(key -> certificateStoreSession.getFirstStatusByIssuerAndSerno(key.getSubjectDn(), key.getSerialNumber()));
         }
         return cache;
     }
