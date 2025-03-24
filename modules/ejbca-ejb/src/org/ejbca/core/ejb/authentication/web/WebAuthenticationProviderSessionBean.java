@@ -608,6 +608,8 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     }
 
     public LoadingCache<CertificateStatusCacheKey, Integer> getCache() {
+        // the cache is transient - lazily construct it
+        
         if (cache == null) {
             // We need to use a custom execuror service - the default executor will
             // not work with the app server's Security Manager.
