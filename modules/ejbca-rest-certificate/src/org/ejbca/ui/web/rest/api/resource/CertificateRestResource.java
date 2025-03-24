@@ -265,8 +265,12 @@ public class CertificateRestResource extends BaseRestResource {
         }
         catch (EjbcaException | CertificateParsingException | CMSException e) {
             log.info("Exception during enrollCertificate: ", LogRedactionUtils.getRedactedThrowable(e));
+            String message = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
+            if (StringUtils.isEmpty(message)) {
+                message = "Failed to process request";
+            }
             throw new RestException(Status.BAD_REQUEST.getStatusCode(),
-                    e.getCause() != null ? e.getCause().getMessage() : e.getMessage());
+                    message);
         }
     }
 
