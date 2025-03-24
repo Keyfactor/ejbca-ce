@@ -252,6 +252,12 @@ public class CertificateRestResource extends BaseRestResource {
             CertificateRestResponse enrollCertificateRestResponse = getCertificateRestResponse(responseFormat, certificateBytes, includeChain, certificateChain, certificate);
             return Response.status(Status.CREATED).entity(enrollCertificateRestResponse).build();
 
+        } catch (WaitingForApprovalException | ApprovalException e) {
+            // Throw a REST Exception on order to produce a good error for the client
+            throw new RestException(
+                    Response.Status.ACCEPTED.getStatusCode(),
+                    e.getCause() != null ? e.getCause().getMessage() : e.getMessage()
+            );
         }
         catch (EjbcaException | CertificateParsingException | CMSException e) {
             log.info("Exception during enrollCertificate: ", LogRedactionUtils.getRedactedThrowable(e));
