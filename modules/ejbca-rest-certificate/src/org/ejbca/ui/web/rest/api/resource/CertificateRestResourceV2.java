@@ -15,6 +15,7 @@ package org.ejbca.ui.web.rest.api.resource;
 import java.math.BigInteger;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
+import java.util.List;
 import java.util.Map;
 
 import jakarta.ejb.EJB;
@@ -30,6 +31,9 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.keys.keyimport.KeyImportFailure;
+import org.cesecore.keys.keyimport.KeyImportRequestData;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -37,10 +41,13 @@ import org.ejbca.core.model.era.RaCertificateProfileResponseV2;
 import org.ejbca.core.model.era.RaCertificateSearchRequestV2;
 import org.ejbca.core.model.era.RaCertificateSearchResponseV2;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.core.model.keyimport.KeyImportException;
 import org.ejbca.ui.web.rest.api.exception.RestException;
+import org.ejbca.ui.web.rest.api.io.request.KeyImportRestRequestV2;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequestV2;
 import org.ejbca.ui.web.rest.api.io.response.CertificateCountResponse;
 import org.ejbca.ui.web.rest.api.io.response.CertificateProfileInfoRestResponseV2;
+import org.ejbca.ui.web.rest.api.io.response.KeyImportRestResponseV2;
 import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.SearchCertificatesRestResponseV2;
 
@@ -56,8 +63,11 @@ public class CertificateRestResourceV2 extends BaseRestResource {
 
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApi;
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
+
     private static final Logger log = Logger.getLogger(CertificateRestResourceV2.class);
-    
+
     @Override
     public Response status() {
         return Response.ok(RestResourceStatusRestResponse.builder()
@@ -168,6 +178,49 @@ public class CertificateRestResourceV2 extends BaseRestResource {
         raMasterApi.keyRecoverWS(authenticationToken, userName, certificateSerialNumber, issuerDN);
 
         return Response.ok().build();
+    }
+
+    /**
+     * Import keystores into a CA for key management takeover
+     *
+     * @param requestContext the request context
+     * @param issuerDN       the DN of the CA which will be used to wrap the imported keys
+     * @param request        the request itself
+     * @return
+     * @throws AuthorizationDeniedException
+     * @throws RestException
+     */
+    public Response importKeystores(final HttpServletRequest requestContext, final String issuerDN, @Valid final KeyImportRestRequestV2 request)
+            throws AuthorizationDeniedException, RestException {
+        if(request == null) {
+            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Key import request cannot be empty.");
+        }
+
+        // Key migration is not supported with "Local Key Generation".
+        // Since "Local Key Generation" is configured on the RA side, we need to check this here locally.
+        GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        if (globalConfiguration.getEnableKeyRecovery() && globalConfiguration.getLocalKeyRecovery()) {
+            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Local Key Generation is not supported for Key Import.");
+        }
+
+        final AuthenticationToken authenticationToken = getAdmin(requestContext, true);
+        KeyImportRequestData requestData = KeyImportRestRequestV2.converter().toRequestData(request, issuerDN);
+
+        try {
+            final List<KeyImportFailure> importFailures = raMasterApi.keyImportV2(authenticationToken, requestData);
+            final KeyImportRestResponseV2 response = new KeyImportRestResponseV2().convert().toKeyImportRestResponse(importFailures);
+
+            // 207: Multi-status, partial success response when one or more import failures happen.
+            final int status = importFailures.isEmpty() ? Response.Status.OK.getStatusCode() : 207;
+
+            return Response.status(status).entity(response).build();
+        } catch (KeyImportException e) {
+            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), e.getMessage());
+        }
+        catch (Exception e) {
+            final String message = StringUtils.isBlank(e.getMessage()) ? "An unexpected error happened. " : e.getMessage();
+            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), message);
+        }
     }
     
     /**
