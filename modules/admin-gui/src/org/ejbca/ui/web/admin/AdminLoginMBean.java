@@ -99,7 +99,7 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
      */
     @PostConstruct
     public void setRequestHelper() {
-        oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder(internalKeyBindings, certificateStoreLocal, cryptoToken));
+        oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder());
     }
     
     /**

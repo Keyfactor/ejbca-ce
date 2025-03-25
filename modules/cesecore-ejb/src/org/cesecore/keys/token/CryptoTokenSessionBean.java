@@ -113,7 +113,7 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
                         if (AzureCryptoToken.class.getName().equals(inClassname)) {
                             // Key Vault may need to find a key pair for authentication
                             cryptoToken = CryptoTokenFactory.createCryptoToken(inClassname, properties, data, cryptoTokenId, tokenName, true,
-                                    new KeyBindingFinder(internalKeyBindingSession, certificateStoreSession, cryptoTokenManagementSession));
+                                    new KeyBindingFinder());
                         } else {
                             cryptoToken = CryptoTokenFactory.createCryptoToken(inClassname, properties, data, cryptoTokenId, tokenName, true);
                         }
