@@ -13,13 +13,10 @@
 package org.cesecore.authentication.oauth;
 
 import java.io.IOException;
-import java.security.PrivateKey;
-import java.security.cert.X509Certificate;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.cesecore.authentication.oauth.OAuthKeyInfo.OAuthProviderType;
-import org.cesecore.keybind.KeyBindingFinder;
 import org.cesecore.keybind.KeyBindingNotFoundException;
+import org.cesecore.keys.token.KeyAndCertFinder;
 import org.cesecore.keys.token.KeyAndCertificateInfo;
 
 import com.google.common.base.Preconditions;
@@ -30,9 +27,9 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
  */
 public class OauthRequestHelper {
     
-    private KeyBindingFinder keyBindingFinder;
+    private KeyAndCertFinder keyBindingFinder;
 
-    public OauthRequestHelper(KeyBindingFinder keyBindingFinder) {
+    public OauthRequestHelper(KeyAndCertFinder keyBindingFinder) {
         this.keyBindingFinder = keyBindingFinder;
     }
 

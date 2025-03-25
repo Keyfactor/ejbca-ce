@@ -23,11 +23,11 @@ import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+
 import org.cesecore.keybind.impl.AuthenticationKeyBinding;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.KeyAndCertFinder;
 import org.cesecore.keys.token.KeyAndCertificateInfo;
-import org.ejbca.core.model.util.EjbLocalHelper;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.keys.token.CryptoToken;
@@ -43,12 +43,12 @@ public class KeyBindingFinder implements KeyAndCertFinder {
     private final CryptoTokenManagementSessionLocal cryptoTokenSession;
     private final CaSessionLocal caSession;
 
-    public KeyBindingFinder() {
-        this.internalKeyBindings = new EjbLocalHelper().getInternalKeyBindingMgmtSession();
-        this.certificateStoreSession = new EjbLocalHelper().getCertificateStoreSession();
-        this.cryptoTokenSession = new EjbLocalHelper().getCryptoTokenManagementSession();
-        this.caSession = new EjbLocalHelper().getCaSession();
-        
+    public KeyBindingFinder(final InternalKeyBindingMgmtSessionLocal internalKeyBindingSession, final CertificateStoreSessionLocal certificateStoreSession,
+            final CryptoTokenManagementSessionLocal cryptoTokenSession, final CaSessionLocal caSession) {
+        this.internalKeyBindings = internalKeyBindingSession;
+        this.certificateStoreSession = certificateStoreSession;
+        this.cryptoTokenSession = cryptoTokenSession;
+        this.caSession = caSession;
     }
 
     public Optional<KeyAndCertificateInfo> find(final int keyBindingId) throws CryptoTokenOfflineException {
