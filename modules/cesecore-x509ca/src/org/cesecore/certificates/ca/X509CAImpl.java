@@ -2377,7 +2377,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         // been already expired. When used, the ExpiredCertsOnCRL contains the date on which the CRL starts to keep revocation
         // status information for expired certificates (i.e. revocation entries are not removed from the CRL for any certificates
         // that expire at or after the date contained in the ExpiredCertsOnCRL extension).
-        final ASN1ObjectIdentifier ExpiredCertsOnCRL = new ASN1ObjectIdentifier("2.5.29.60");
+        final ASN1ObjectIdentifier expiredCertsOnCRL = new ASN1ObjectIdentifier("2.5.29.60");
         boolean keepexpiredcertsoncrl = getKeepExpiredCertsOnCRL();
         if(keepexpiredcertsoncrl) {       
             // For now force parameter with date equals NotBefore of CA certificate, or now
@@ -2395,7 +2395,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 String d = dateF.format(new Date()) + "Z";
                 keepDate = new DERGeneralizedTime(d);
             }
-            crlgen.addExtension(ExpiredCertsOnCRL, false, keepDate);
+            crlgen.addExtension(expiredCertsOnCRL, false, keepDate);
             if (log.isDebugEnabled()) {
                 log.debug("ExpiredCertsOnCRL extension added to CRL. Keep date: " + keepDate.getTime());
             }
