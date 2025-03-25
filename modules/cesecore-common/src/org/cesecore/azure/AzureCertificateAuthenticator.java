@@ -159,8 +159,11 @@ public class AzureCertificateAuthenticator extends AzureAuthenticator {
                 .subject(clientId).build();
 
         JWSHeader.Builder builder = new Builder(JWSAlgorithm.RS256);
-        List<Base64> certs = new ArrayList<com.nimbusds.jose.util.Base64>();
-        certs.add(new com.nimbusds.jose.util.Base64(java.util.Base64.getEncoder().encodeToString(certificate.getEncoded())));
+        List<Base64> certs = new ArrayList<>();
+        certs.add(new Base64(java.util.Base64.getEncoder().encodeToString(certificate.getEncoded())));
+        for(X509Certificate chainCertificate : chain) {
+            certs.add(new Base64(java.util.Base64.getEncoder().encodeToString(chainCertificate.getEncoded())));
+        }
         builder.x509CertChain(certs);
         String certHash = java.util.Base64.getEncoder().encodeToString(MessageDigest.getInstance("SHA-1").digest(certificate.getEncoded()));
         builder.x509CertThumbprint(new Base64URL(certHash));

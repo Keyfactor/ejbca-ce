@@ -263,8 +263,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
 
     private JWTClaimsSet fetchUserInfoAndAddToClaims(final String encodedOauthBearerToken, final OAuthKeyInfo keyInfoFromToken, final JWTClaimsSet tokenClaims,
             final String keyId, final String oauthIdToken) throws ParseException, JOSEException {
-        OauthRequestHelper oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder(
-                internalKeyBindings, certificateStoreSession, cryptoToken));
+        OauthRequestHelper oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder());
         OAuthUserInfoResponse userInfoResponse;
         try {
             userInfoResponse = oauthRequestHelper.sendUserInfoRequest(keyInfoFromToken, encodedOauthBearerToken);
@@ -507,8 +506,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 return null;
             }
             String redirectUrl = getBaseUrl();
-            OauthRequestHelper oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder(
-                    internalKeyBindings, certificateStoreSession, cryptoToken));
+            OauthRequestHelper oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder());
             oAuthGrantResponseInfo = oauthRequestHelper.sendRefreshTokenRequest(refreshToken, keyInfo, redirectUrl);
         } catch (ParseException e) {
             LOG.info("Failed to parse OAuth2 JWT: " + e.getMessage(), e);

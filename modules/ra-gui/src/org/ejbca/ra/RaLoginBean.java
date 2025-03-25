@@ -129,8 +129,7 @@ public class RaLoginBean implements Serializable {
         OAuthKeyInfo oAuthKeyInfo = oAuthConfiguration.getOauthKeyByLabel(oauthClicked);
         if (oAuthKeyInfo != null) {
             try {
-                OauthRequestHelper oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder(
-                        internalKeyBindings, certificateStoreLocal, cryptoToken));
+                OauthRequestHelper oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder());
                 OAuthGrantResponseInfo token = oauthRequestHelper.sendTokenRequest(oAuthKeyInfo, authCode, getRedirectUri());
                 if (token.compareTokenType(HttpTools.AUTHORIZATION_SCHEME_BEARER)) {
                     servletRequest.getSession(true).setAttribute("ejbca.bearer.token", token.getAccessToken());

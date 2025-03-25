@@ -247,7 +247,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         CryptoToken cryptoToken;
         if (className.equals(AzureCryptoToken.class.getName())) {
             cryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, null, -1, tokenName, false,
-                    new KeyBindingFinder(internalKeyBindingSession, certificateStoreSession, cryptoTokenManagementSession));
+                    new KeyBindingFinder());
         } else {
             cryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, null, -1, tokenName, false);
         }
@@ -397,7 +397,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         // special case - azure crypto token can do public key authentication
         if (className.equals(AzureCryptoToken.class.getName())) {
             cryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, data, cryptoTokenId.intValue(), tokenName, false,
-                    new KeyBindingFinder(internalKeyBindingSession, certificateStoreSession, this));
+                    new KeyBindingFinder());
         }
 
         // Standard crypto token initialization
@@ -516,7 +516,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
             if (className.equals(AzureCryptoToken.class.getName())) {
                 // special case - pass in an object that can find the authentication key binding
                 newCryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, tokendata, cryptoTokenId, tokenName, 
-                        new KeyBindingFinder(internalKeyBindingSession, certificateStoreSession, this));
+                        new KeyBindingFinder());
             } else {
                 newCryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, tokendata, cryptoTokenId, tokenName);
             }

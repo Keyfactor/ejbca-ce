@@ -11,41 +11,47 @@
  *                                                                       *
  *************************************************************************/
  
- 
 package org.cesecore.keybind;
 
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.keybind.impl.AuthenticationKeyBinding;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.KeyAndCertFinder;
+import org.cesecore.keys.token.KeyAndCertificateInfo;
+import org.ejbca.core.model.util.EjbLocalHelper;
 
+import com.keyfactor.util.CertTools;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
- * I implement a way to find keys and certs given a binding ID using EJBs.
+ * Gives a way to find keys and certs given a binding ID using EJBs.
  */
 public class KeyBindingFinder implements KeyAndCertFinder {
     private static final Logger log = Logger.getLogger(KeyAndCertFinder.class);
-    private InternalKeyBindingMgmtSessionLocal internalKeyBindings;
-    private CertificateStoreSessionLocal certificateStoreSession;
-    private CryptoTokenManagementSessionLocal cryptoToken;
+    private final InternalKeyBindingMgmtSessionLocal internalKeyBindings;
+    private final CertificateStoreSessionLocal certificateStoreSession;
+    private final CryptoTokenManagementSessionLocal cryptoTokenSession;
+    private final CaSessionLocal caSession;
 
-    public KeyBindingFinder(final InternalKeyBindingMgmtSessionLocal internalKeyBindings, final CertificateStoreSessionLocal certificateStoreSession,
-            final CryptoTokenManagementSessionLocal cryptoToken) {
-        this.internalKeyBindings = internalKeyBindings;
-        this.certificateStoreSession = certificateStoreSession;
-        this.cryptoToken = cryptoToken;
+    public KeyBindingFinder() {
+        this.internalKeyBindings = new EjbLocalHelper().getInternalKeyBindingMgmtSession();
+        this.certificateStoreSession = new EjbLocalHelper().getCertificateStoreSession();
+        this.cryptoTokenSession = new EjbLocalHelper().getCryptoTokenManagementSession();
+        this.caSession = new EjbLocalHelper().getCaSession();
+        
     }
 
-    @Override
-    public Optional<Pair<X509Certificate, PrivateKey>> find(final int keyBindingId) throws CryptoTokenOfflineException {
+    public Optional<KeyAndCertificateInfo> find(final int keyBindingId) throws CryptoTokenOfflineException {
         log.debug("Searching for internal key binding " + keyBindingId);
         if (log.isDebugEnabled()) {
             internalKeyBindings.getAllInternalKeyBindingInfos(AuthenticationKeyBinding.IMPLEMENTATION_ALIAS).forEach(b -> {
@@ -61,9 +67,13 @@ public class KeyBindingFinder implements KeyAndCertFinder {
 
         final X509Certificate certificate = (X509Certificate) certificateStoreSession
                 .findCertificateByFingerprint(keyBindingInfo.get().getCertificateId());
-        final CryptoToken token = cryptoToken.getCryptoToken(keyBindingInfo.get().getCryptoTokenId());
+        final CryptoToken token = cryptoTokenSession.getCryptoToken(keyBindingInfo.get().getCryptoTokenId());
         final PrivateKey privateKey = token.getPrivateKey(keyBindingInfo.get().getKeyPairAlias());
+        
+        final CAInfo caInfo = caSession.getCAInfoInternal(CertTools.getIssuerDN(certificate).hashCode());
+        final List<X509Certificate> chain = caInfo.getCertificateChain().stream().map(element -> (X509Certificate) element)
+                .collect(Collectors.toList());
 
-        return Optional.of(Pair.of(certificate, privateKey));
+        return Optional.of(new KeyAndCertificateInfo(privateKey, certificate, chain));
     }
 }
