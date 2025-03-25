@@ -56,7 +56,6 @@
         <class>org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData</class>
         <class>org.cesecore.profiles.ProfileData</class>
         <class>org.cesecore.configuration.GlobalConfigurationData</class>
-        <class>org.ejbca.core.ejb.ra.userdatasource.UserDataSourceData</class>
         <class>org.ejbca.core.ejb.services.ServiceData</class>
         <class>org.ejbca.acme.AcmeNonceData</class>
         <class>org.ejbca.acme.AcmeAccountData</class>
@@ -104,7 +103,6 @@
         <class>org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData</class>
         <class>org.cesecore.profiles.ProfileData</class>
         <class>org.cesecore.configuration.GlobalConfigurationData</class>
-        <class>org.ejbca.core.ejb.ra.userdatasource.UserDataSourceData</class>
         <class>org.ejbca.core.ejb.services.ServiceData</class>    
         <class>org.ejbca.acme.AcmeNonceData</class>
         <class>org.ejbca.acme.AcmeAccountData</class>  

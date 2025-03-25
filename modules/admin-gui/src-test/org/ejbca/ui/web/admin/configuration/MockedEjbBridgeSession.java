@@ -62,7 +62,6 @@ import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
-import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.ejb.upgrade.UpgradeSessionLocal;
@@ -172,7 +171,6 @@ echo "    }"
     private ServiceSessionLocal serviceSession;
     private SignSessionLocal signSession;
     private UpgradeSessionLocal upgradeSession;
-    private UserDataSourceSessionLocal userDataSourceSession;
     private WebAuthenticationProviderSessionLocal webAuthenticationProviderSession;
     private SctDataSessionLocal sctDataSession;
     private OcspDataSessionLocal ocspDataSession;
@@ -362,10 +360,6 @@ echo "    }"
         if (upgradeSession == null) { upgradeSession = EasyMock.createStrictMock(UpgradeSessionLocal.class); }
         return upgradeSession;
     }
-    @Override public synchronized UserDataSourceSessionLocal getUserDataSourceSession() {
-        if (userDataSourceSession == null) { userDataSourceSession = EasyMock.createStrictMock(UserDataSourceSessionLocal.class); }
-        return userDataSourceSession;
-    }
     @Override public synchronized WebAuthenticationProviderSessionLocal getWebAuthenticationProviderSession() {
         if (webAuthenticationProviderSession == null) { webAuthenticationProviderSession = EasyMock.createStrictMock(WebAuthenticationProviderSessionLocal.class); }
         return webAuthenticationProviderSession;
@@ -431,7 +425,6 @@ echo "    }"
         list.add(serviceSession);
         list.add(signSession);
         list.add(upgradeSession);
-        list.add(userDataSourceSession);
         list.add(webAuthenticationProviderSession);
         list.add(sctDataSession);
         list.add(ocspDataSession);

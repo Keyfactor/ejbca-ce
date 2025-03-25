@@ -87,6 +87,8 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.keys.keyimport.KeyImportFailure;
+import org.cesecore.keys.keyimport.KeyImportRequestData;
 import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
@@ -4057,6 +4059,46 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         if (caDoesntExistException != null) {
             throw caDoesntExistException;
         }
+        return null;
+    }
+
+    @Override
+    public List<KeyImportFailure> keyImportV2(final AuthenticationToken authenticationToken, final KeyImportRequestData keyImportRequestData)
+            throws AuthorizationDeniedException, EjbcaException, CADoesntExistsException {
+        CADoesntExistsException caDoesntExistException = null;
+        EjbcaException ejbcaException = null;
+
+        for (RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 20) {
+                if (log.isDebugEnabled()) {
+                    log.debug("raMasterApi calling keyImportV2: " + raMasterApi.getApiVersion() + ", " + raMasterApi.isBackendAvailable() + ", " + raMasterApi.getClass());
+                }
+                try {
+                    return raMasterApi.keyImportV2(authenticationToken, keyImportRequestData);
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                } catch (CADoesntExistsException e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("CA for proxied request could not be found: " + e.getMessage());
+                    }
+                    caDoesntExistException = e;
+                } catch (EjbcaException e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Error during Key Import: " + e.getMessage());
+                    }
+                    ejbcaException = e;
+                }
+            }
+        }
+
+        if (caDoesntExistException != null) {
+            throw caDoesntExistException;
+        }
+
+        if (ejbcaException != null) {
+            throw ejbcaException;
+        }
+
         return null;
     }
 

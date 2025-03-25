@@ -105,17 +105,13 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
     public boolean isAuthorizedToViewEndEntity() {
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_VIEWENDENTITY);
     }
-    
-    public boolean isAuthorizedToEditUserDataSources() {
-        return authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_EDITUSERDATASOURCES);
-    }
+ 
     
     public boolean isAuthorizedToViewRAHeader() {
         return getEjbcaErrorWebBean().isRunningBuildWithCA()
                 && (isAuthorizedToCreateEndEntity()
                 || isAuthorizedToViewEndEntityProfiles()
-                || isAuthorizedToViewEndEntity()
-                || isAuthorizedToEditUserDataSources());
+                || isAuthorizedToViewEndEntity());
     }
 
     public boolean isAuthorizedToViewVAHeader() {
