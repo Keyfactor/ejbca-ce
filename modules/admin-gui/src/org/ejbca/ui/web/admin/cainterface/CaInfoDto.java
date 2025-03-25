@@ -549,7 +549,7 @@ public class CaInfoDto implements Serializable {
     }
     
     public LocalDateTime getKeepExpiredOnCrlDate() {
-        return LocalDateTime.ofInstant(Instant.ofEpochMilli(keepExpiredOnCrlDate), ZoneId.systemDefault());
+        return LocalDateTime.ofInstant(Instant.ofEpochMilli(keepExpiredOnCrlDate), ZoneId.of("UTC"));
     }
     
     public long getKeepExpiredOnCrlDateLong() {
@@ -557,7 +557,7 @@ public class CaInfoDto implements Serializable {
     }
 
     public void setKeepExpiredOnCrlDate(final LocalDateTime keepExpiredOnCrlDate) {
-        this.keepExpiredOnCrlDate = keepExpiredOnCrlDate.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        this.keepExpiredOnCrlDate = keepExpiredOnCrlDate.atZone(ZoneId.of("UTC")).toInstant().toEpochMilli();
     }
     
     public void setKeepExpiredOnCrlDate(final long keepExpiredOnCrlDate) {
