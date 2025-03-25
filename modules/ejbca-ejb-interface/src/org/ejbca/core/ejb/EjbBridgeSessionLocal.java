@@ -59,7 +59,6 @@ import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
-import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.ejb.upgrade.UpgradeSessionLocal;
@@ -127,7 +126,6 @@ public interface EjbBridgeSessionLocal {
     ServiceSessionLocal getServiceSession();
     SignSessionLocal getSignSession();
     UpgradeSessionLocal getUpgradeSession();
-    UserDataSourceSessionLocal getUserDataSourceSession();
     WebAuthenticationProviderSessionLocal getWebAuthenticationProviderSession();
 	SctDataSessionLocal getSctDataSession();
 	OcspDataSessionLocal getOcspDataSession();

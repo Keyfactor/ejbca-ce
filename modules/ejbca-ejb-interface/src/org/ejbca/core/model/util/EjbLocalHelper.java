@@ -65,7 +65,6 @@ import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
-import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.ejb.unidfnr.UnidfnrSession;
@@ -173,7 +172,6 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
 	@Override public ServiceSessionLocal getServiceSession() { return getEjbLocal().getServiceSession(); }
 	@Override public SignSessionLocal getSignSession() { return getEjbLocal().getSignSession(); }
 	@Override public UpgradeSessionLocal getUpgradeSession() {return getEjbLocal().getUpgradeSession(); }
-	@Override public UserDataSourceSessionLocal getUserDataSourceSession() { return getEjbLocal().getUserDataSourceSession(); }
 	@Override public WebAuthenticationProviderSessionLocal getWebAuthenticationProviderSession() { return getEjbLocal().getWebAuthenticationProviderSession(); }
 	@Override public CryptoTokenManagementSessionLocal getCryptoTokenManagementSession() { return getEjbLocal().getCryptoTokenManagementSession(); }
 	@Override public CryptoTokenSessionLocal getCryptoTokenSession() { return getEjbLocal().getCryptoTokenSession(); }

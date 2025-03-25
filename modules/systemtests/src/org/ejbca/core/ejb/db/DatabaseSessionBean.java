@@ -51,7 +51,6 @@ import org.ejbca.core.ejb.keyrecovery.KeyRecoveryData;
 import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData;
-import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceData;
 import org.ejbca.core.ejb.services.ServiceData;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.peerconnector.PeerData;
@@ -88,6 +87,7 @@ public class DatabaseSessionBean implements DatabaseSessionRemote {
 
     @Override
     public DatabaseContent clearTables(boolean clearProtectedTables) {
+        @SuppressWarnings("deprecation")
         var databaseContent = new DatabaseContent(
                 clearTable(AccessRuleData.class, true),
                 clearTable(AccessTreeUpdateData.class, true),
@@ -122,8 +122,7 @@ public class DatabaseSessionBean implements DatabaseSessionRemote {
                 clearTable(RoleMemberData.class, clearProtectedTables),
                 clearTable(SctData.class, true),
                 clearTable(ServiceData.class, true),
-                clearTable(UserData.class, clearProtectedTables),
-                clearTable(UserDataSourceData.class, true)
+                clearTable(UserData.class, clearProtectedTables)
         );
         entityManager.flush();
         getClearCacheSessionLocal().clearCaches(false);
@@ -166,7 +165,6 @@ public class DatabaseSessionBean implements DatabaseSessionRemote {
         databaseContent.sctData().forEach(entityManager::persist);
         databaseContent.serviceData().forEach(entityManager::persist);
         databaseContent.userData().forEach(entityManager::persist);
-        databaseContent.userDataSourceData().forEach(entityManager::persist);
         getClearCacheSessionLocal().clearCaches(false);
         entityManager.flush();
     }

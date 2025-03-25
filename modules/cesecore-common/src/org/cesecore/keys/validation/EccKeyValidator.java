@@ -332,4 +332,9 @@ public class EccKeyValidator extends KeyValidatorBase {
     protected Class<? extends Profile> getImplementationClass() {
         return EccKeyValidator.class;
     }
+
+    @Override
+    public boolean isValidatorAlwaysApplicable() {
+        return false;
+    }
 }

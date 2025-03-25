@@ -10,38 +10,14 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
-package org.ejbca.core.model.ra.userdatasource;
+package org.ejbca.core.ejb.ra;
 
-import jakarta.xml.ws.WebFault;
-
-import org.ejbca.core.EjbcaException;
-
+import jakarta.ejb.Remote;
 
 /**
- * Is thrown when error occurred when searching or retrieving userdata 
- *
- * @version $Id$
+ * @see ProcessKeystoreSession
  */
-@WebFault
-public class UserDataSourceException extends EjbcaException {
-    
-    private static final long serialVersionUID = -7910687478479123115L;
+@Remote
+public interface ProcessKeystoreSessionRemote extends ProcessKeystoreSession {
 
-
-    /**
-     * Creates a new instance without detail message.
-     */
-    public UserDataSourceException() {
-        super();
-    }
-    
-    
-    /**
-     * Constructs an instance with the specified detail message.
-     * @param msg the detail message.
-     */
-    public UserDataSourceException(String msg) {
-        super(msg);
-    }
 }
