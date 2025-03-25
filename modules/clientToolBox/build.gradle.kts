@@ -72,15 +72,15 @@ tasks.jar {
                 into(libDir)
             }
         }
-    }
-    val targetDir = File("${project.rootDir}/dist/clientToolBox/")
-    targetDir.mkdirs()
-    copy {
-        from(File("${project.rootDir}/modules/clientToolBox/build/libs/"))
-        from(File("${project.rootDir}/modules/clientToolBox/resources/ejbcaClientToolBox.bat"))
-        from(File("${project.rootDir}/modules/clientToolBox/resources/ejbcaClientToolBox.sh"))
-        from(File("${project.rootDir}/modules/ejbca-ws-cli/resources/ejbcawsracli.properties"))
-        into(targetDir)
+        val targetDir = File("${project.rootDir}/dist/clientToolBox/")
+        targetDir.mkdirs()
+        copy {
+            from(File("${project.rootDir}/modules/clientToolBox/build/libs/"))
+            from(File("${project.rootDir}/modules/clientToolBox/resources/ejbcaClientToolBox.bat"))
+            from(File("${project.rootDir}/modules/clientToolBox/resources/ejbcaClientToolBox.sh"))
+            from(File("${project.rootDir}/modules/ejbca-ws-cli/resources/ejbcawsracli.properties"))
+            into(targetDir)
+        }
     }
 }
 
@@ -89,6 +89,10 @@ gradle.beforeProject {
         val distDir = file("${project.rootProject.rootDir}/dist")
         if (distDir.exists()) {
             distDir.deleteRecursively()
+        }
+        val buildDir = file("${project.rootProject.rootDir}/modules/clientToolBox/build")
+        if (buildDir.exists()) {
+            buildDir.deleteRecursively()
         }
     }
 }
