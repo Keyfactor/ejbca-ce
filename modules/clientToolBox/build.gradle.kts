@@ -73,11 +73,13 @@ tasks.jar {
             }
         }
     }
-    var sourceDir = File("${project.rootDir}/modules/clientToolBox/build/libs/")
     val targetDir = File("${project.rootDir}/dist/clientToolBox/")
     targetDir.mkdirs()
     copy {
-        from(sourceDir)
+        from(File("${project.rootDir}/modules/clientToolBox/build/libs/"))
+        from(File("${project.rootDir}/modules/clientToolBox/resources/ejbcaClientToolBox.bat"))
+        from(File("${project.rootDir}/modules/clientToolBox/resources/ejbcaClientToolBox.sh"))
+        from(File("${project.rootDir}/modules/ejbca-ws-cli/resources/ejbcawsracli.properties"))
         into(targetDir)
     }
 }
