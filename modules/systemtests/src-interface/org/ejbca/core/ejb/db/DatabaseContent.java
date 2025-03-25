@@ -44,13 +44,13 @@ import org.ejbca.core.ejb.keyrecovery.KeyRecoveryData;
 import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData;
-import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceData;
 import org.ejbca.core.ejb.services.ServiceData;
 import org.ejbca.peerconnector.PeerData;
 
 import java.io.Serializable;
 import java.util.List;
 
+@SuppressWarnings("deprecation")
 public record DatabaseContent(
         List<AccessRuleData> accessRuleData,
         List<AccessTreeUpdateData> accessTreeUpdateData,
@@ -85,6 +85,5 @@ public record DatabaseContent(
         List<RoleMemberData> roleMemberData,
         List<SctData> sctData,
         List<ServiceData> serviceData,
-        List<UserData> userData,
-        List<UserDataSourceData> userDataSourceData) implements Serializable {
+        List<UserData> userData) implements Serializable {
 }

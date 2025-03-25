@@ -1685,6 +1685,15 @@
             }
           },
           {
+            "name": "exportCasForPeerImport",
+            "in": "query",
+            "description": "Export an CA to be imported in a Peer as configdump",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
             "name": "include",
             "in": "query",
             "description": "Names of items/types to include in the export. The syntax is identical to that of exclude. For items of types that aren't listed, everything is included.",
@@ -1972,6 +1981,15 @@
             "name": "externalcas",
             "in": "query",
             "description": "Enables export of external CAs (i.e. CAs where there's only a certificate and nothing else)",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "exportCasForPeerImport",
+            "in": "query",
+            "description": "Export an CA to be imported in a Peer as configdump",
             "schema": {
               "type": "boolean",
               "default": false
@@ -3107,6 +3125,33 @@
             "type": "string",
             "description": "Response Format (DER format is default)",
             "example": "DER"
+          },
+          "subject_dn": {
+            "type": "string",
+            "description": "Overwrite Subject Distinguished Name",
+            "example": "CN=John Doe,SURNAME=Doe,GIVENNAME=John,C=SE"
+          },
+          "extension_data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExtendedInformationRestRequestComponent"
+            }
+          },
+          "custom_data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExtendedInformationRestRequestComponent"
+            }
+          },
+          "start_time": {
+            "type": "string",
+            "description": "Valid start time",
+            "example": "ISO 8601 Date string, eg. '2023-06-15 14:07:09'"
+          },
+          "end_time": {
+            "type": "string",
+            "description": "Valid end time",
+            "example": "ISO 8601 Date string, eg. '2023-06-15 14:07:09'"
           }
         }
       },
