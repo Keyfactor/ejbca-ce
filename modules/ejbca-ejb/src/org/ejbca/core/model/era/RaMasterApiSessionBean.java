@@ -2582,9 +2582,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         } catch (EndEntityProfileValidationException e) {
             log.debug("EJBCA REST exception", LogRedactionUtils.getRedactedException(e));
             throw new EndEntityProfileValidationException(LogRedactionUtils.getRedactedMessage(e.getMessage()));
-        } catch (Exception e) {
-            log.info("EJBCA REST exception", LogRedactionUtils.getRedactedException(e));
-            throw e;
         }
     }
 
