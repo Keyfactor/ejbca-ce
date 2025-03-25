@@ -83,3 +83,12 @@ tasks.jar {
         into(targetDir)
     }
 }
+
+gradle.beforeProject {
+    if (gradle.startParameter.taskNames.contains("clean")) {
+        val distDir = file("${project.rootProject.rootDir}/dist")
+        if (distDir.exists()) {
+            distDir.deleteRecursively()
+        }
+    }
+}
