@@ -48,6 +48,7 @@ import org.cesecore.authentication.tokens.OAuth2Principal;
 import org.cesecore.authentication.tokens.OAuth2Principal.Builder;
 import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.config.OAuthConfiguration;
@@ -100,15 +101,19 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     @EJB
+    private CaSessionLocal caSession;
+    @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
+    @EJB
+    private CryptoTokenManagementSessionLocal cryptoTokenSession;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
+    private InternalKeyBindingMgmtSessionLocal internalKeyBindingSession;
+    @EJB
     private SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
-    @EJB
-    private InternalKeyBindingMgmtSessionLocal internalKeyBindings;
-    @EJB
-    private CryptoTokenManagementSessionLocal cryptoToken;
+
+
 
     private LoadingCache<CertificateStatusCacheKey, Integer> cache;
 
@@ -263,7 +268,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
 
     private JWTClaimsSet fetchUserInfoAndAddToClaims(final String encodedOauthBearerToken, final OAuthKeyInfo keyInfoFromToken, final JWTClaimsSet tokenClaims,
             final String keyId, final String oauthIdToken) throws ParseException, JOSEException {
-        OauthRequestHelper oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder());
+        OauthRequestHelper oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder(internalKeyBindingSession, certificateStoreSession, cryptoTokenSession, caSession));
         OAuthUserInfoResponse userInfoResponse;
         try {
             userInfoResponse = oauthRequestHelper.sendUserInfoRequest(keyInfoFromToken, encodedOauthBearerToken);
@@ -506,7 +511,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 return null;
             }
             String redirectUrl = getBaseUrl();
-            OauthRequestHelper oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder());
+            OauthRequestHelper oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder(internalKeyBindingSession, certificateStoreSession, cryptoTokenSession, caSession));
             oAuthGrantResponseInfo = oauthRequestHelper.sendRefreshTokenRequest(refreshToken, keyInfo, redirectUrl);
         } catch (ParseException e) {
             LOG.info("Failed to parse OAuth2 JWT: " + e.getMessage(), e);

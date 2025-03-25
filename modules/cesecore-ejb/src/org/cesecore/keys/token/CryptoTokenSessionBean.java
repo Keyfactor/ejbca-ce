@@ -17,18 +17,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.ejb.EJB;
-import jakarta.ejb.Stateless;
-import jakarta.ejb.TransactionAttribute;
-import jakarta.ejb.TransactionAttributeType;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.Query;
-
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
@@ -39,12 +31,23 @@ import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
+
 /**
  * Basic CRUD and activation caching of CryptoTokens is provided through this local access SSB.
  * 
  */
 @Stateless
 public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTokenSessionRemote {
+    @EJB
+    private CaSessionLocal caSession;
     @EJB
     private InternalKeyBindingMgmtSessionLocal internalKeyBindingSession;
     @EJB
@@ -113,7 +116,7 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
                         if (AzureCryptoToken.class.getName().equals(inClassname)) {
                             // Key Vault may need to find a key pair for authentication
                             cryptoToken = CryptoTokenFactory.createCryptoToken(inClassname, properties, data, cryptoTokenId, tokenName, true,
-                                    new KeyBindingFinder());
+                                    new KeyBindingFinder(internalKeyBindingSession, certificateStoreSession, cryptoTokenManagementSession, caSession));
                         } else {
                             cryptoToken = CryptoTokenFactory.createCryptoToken(inClassname, properties, data, cryptoTokenId, tokenName, true);
                         }
