@@ -118,7 +118,8 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     private transient HtmlPanelGrid dataGrid;
     
     /** Test file */
-    private transient UploadedFile testFile;   
+    private transient UploadedFile testFile;
+    private byte[] testFileBytes;
     private String testResults = "";
 
     public ValidatorBean() {
@@ -761,14 +762,12 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
      */
     public void testValidator() {
         if(stagedValidator instanceof TestableValidator) {
-            if(testFile == null) {
+            if(testFileBytes == null) {
                 FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Failure.", "No file has been uploaded.");
                 FacesContext.getCurrentInstance().addMessage(null, message);
             } else {
-                byte[] fileBytes;
                 try {
-                    fileBytes = IOUtils.toByteArray(testFile.getInputStream());
-                    X509Certificate testCertificate = CertTools.getCertfromByteArray(fileBytes, X509Certificate.class);
+                    X509Certificate testCertificate = CertTools.getCertfromByteArray(testFileBytes, X509Certificate.class);
                     List<String> result = ((TestableValidator) stagedValidator).test(testCertificate);
                     if (result.isEmpty()) {
                         testResults = "Test certificate was validated without error.";
@@ -778,12 +777,6 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
                             stringBuilder.append(errorMessage + "\n");
                         }
                         testResults = "Validation failure(s):\n\n" + stringBuilder.toString();
-                    }
-                } catch (IOException e) {
-                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Failure.", "Could not parse uploaded file: " + e.getMessage());
-                    FacesContext.getCurrentInstance().addMessage(null, message);
-                    if (log.isDebugEnabled()) {
-                        log.debug("Could not parse uploaded file: " + e.getMessage(), e);
                     }
                 } catch (CertificateParsingException e) {
                     FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Failure.", "Could not parse file as an X509 Certificate: " + e.getMessage());
@@ -796,22 +789,37 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
         }
     }
 
-    public UploadedFile getTestFile() {        
+    public UploadedFile getTestFile() {
         return testFile;
     }
 
-    public void setTestFile(UploadedFile testFile) {
-        if (testFile != null) {
-            this.testFile = testFile;
+    public void setTestFile(UploadedFile testFile) throws IOException {
+        try {
+            if (testFileBytes != null) {
+                this.testFileBytes = IOUtils.toByteArray(testFile.getInputStream());
+            }
+        } catch (IOException e) {
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Failure.", "Could not parse uploaded file: " + e.getMessage());
+            FacesContext.getCurrentInstance().addMessage(null, message);
+            if (log.isDebugEnabled()) {
+                log.debug("Could not parse uploaded file: " + e.getMessage(), e);
+            }
         }
-
     }
     
-    public void handleFileUpload(FileUploadEvent event) {
-        if(stagedValidator instanceof TestableValidator) {            
-            this.testFile = event.getFile();
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Success!", event.getFile().getFileName() + " is uploaded.");
-            FacesContext.getCurrentInstance().addMessage(null, message);
+    public void handleFileUpload(FileUploadEvent event) throws IOException {
+        if (stagedValidator instanceof TestableValidator) {
+            try {
+                this.testFileBytes = IOUtils.toByteArray(event.getFile().getInputStream());
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Success!", event.getFile().getFileName() + " is uploaded.");
+                FacesContext.getCurrentInstance().addMessage(null, message);
+            } catch (IOException e) {
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Failure.", "Could not parse uploaded file: " + e.getMessage());
+                FacesContext.getCurrentInstance().addMessage(null, message);
+                if (log.isDebugEnabled()) {
+                    log.debug("Could not parse uploaded file: " + e.getMessage(), e);
+                }
+            }
         }   
     }
     
