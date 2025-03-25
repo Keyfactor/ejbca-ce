@@ -10,32 +10,16 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
-package org.ejbca.core.model.ra.userdatasource;
 
-/**
- * An exception thrown when someone tries to add a User Data Source that already exits
- *
- * @version $Id$
- */
-public class UserDataSourceExistsException extends java.lang.Exception {
-    
-    private static final long serialVersionUID = 6503674547430557485L;
+package org.ejbca.core.model.keyimport;
 
+import org.ejbca.core.EjbcaException;
+import jakarta.ejb.ApplicationException;
 
-    /**
-     * Creates a new instance of <code>PublisherExistsException</code> without detail message.
-     */
-    public UserDataSourceExistsException() {
-        super();
-    }
-    
-    
-    /**
-     * Constructs an instance of <code>PublisherExistsException</code> with the specified detail message.
-     * @param msg the detail message.
-     */
-    public UserDataSourceExistsException(String msg) {
-        super(msg);
+@ApplicationException(rollback=true)
+public class KeyImportException extends EjbcaException {
+
+    public KeyImportException(String message) {
+        super(message);
     }
 }

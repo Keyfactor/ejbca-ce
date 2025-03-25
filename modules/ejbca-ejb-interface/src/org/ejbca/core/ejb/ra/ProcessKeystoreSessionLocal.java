@@ -10,18 +10,14 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.ra.userdatasource;
-
-import java.util.Map;
+package org.ejbca.core.ejb.ra;
 
 import jakarta.ejb.Local;
 
 /**
- * Local interface for UserDataSourceSession.
+ * @see ProcessKeystoreSession
  */
 @Local
-public interface UserDataSourceSessionLocal extends UserDataSourceSession {
+public interface ProcessKeystoreSessionLocal extends ProcessKeystoreSession {
 
-    /** @return the ID to name map */
-    Map<Integer,String> getUserDataSourceIdToNameMap();
 }

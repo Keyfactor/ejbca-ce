@@ -10,38 +10,28 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
-/*
- * PublisherDoesntExistsException.java
- *
- * Created on 20 januari 2003, 21:29
- */
+package org.ejbca.core.ejb.ra;
 
-package org.ejbca.core.model.ra.userdatasource;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.keys.keyimport.KeyImportFailure;
+import org.cesecore.keys.keyimport.KeyImportRequestData;
+import org.ejbca.core.EjbcaException;
+
+import java.util.List;
 
 /**
- * An exception thrown when someone tries to remove or change a userdata source that doesn't exits
  *
- * @version $Id$
  */
-public class UserDataSourceDoesntExistsException extends Exception {
-    
-    private static final long serialVersionUID = 8654136983737750543L;
-
+public interface KeyImportSession {
 
     /**
-     * Creates a new instance of <code>UserDataSourceDoesntExistsException</code> without detail message.
+     * Imports keys to EJBCA.
+     *
+     * @param authenticationToken  authentication token
+     * @param keyImportRequestData data required to perform the key imports
+     * @return the list of failed key imports
      */
-    public UserDataSourceDoesntExistsException() {
-        super();
-    }
-    
-    
-    /**
-     * Constructs an instance of <code>UserDataSourceDoesntExistsException</code> with the specified detail message.
-     * @param msg the detail message.
-     */
-    public UserDataSourceDoesntExistsException(String msg) {
-        super(msg);
-    }
+    List<KeyImportFailure> importKeys(AuthenticationToken authenticationToken, KeyImportRequestData keyImportRequestData)
+            throws AuthorizationDeniedException, EjbcaException;
 }

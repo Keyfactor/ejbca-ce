@@ -10,14 +10,14 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.ra.userdatasource;
+package org.ejbca.core.ejb.ra;
 
 import jakarta.ejb.Remote;
 
 /**
- * Remote interface for UserDataSourceSession.
+ * @see KeyImportSession
  */
 @Remote
-public interface UserDataSourceSessionRemote extends UserDataSourceSession {
-   
+public interface KeyImportSessionRemote extends KeyImportSession {
+
 }
