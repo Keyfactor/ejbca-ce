@@ -521,10 +521,14 @@ public class PublishingCrlSessionSystemTest extends RoleUsingTestCase {
         cdpDER = x509crl.getExtensionValue(Extension.issuingDistributionPoint.getId());
         assertNotNull("CRL has no distribution points", cdpDER);
 
-        ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(cdpDER));
-        final ASN1OctetString octs = ASN1OctetString.getInstance(aIn.readObject());
-        aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
-        final IssuingDistributionPoint cdp = IssuingDistributionPoint.getInstance(aIn.readObject());
+        final ASN1OctetString octs;
+        try (ASN1InputStream cdpInputSteam = new ASN1InputStream(new ByteArrayInputStream(cdpDER))) {
+            octs = ASN1OctetString.getInstance(cdpInputSteam.readObject());
+        }
+        final IssuingDistributionPoint cdp;
+        try (ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()))) {
+            cdp = IssuingDistributionPoint.getInstance(aIn.readObject());
+        }
         final DistributionPointName distpoint = cdp.getDistributionPoint();
 
         assertEquals("CRL distribution point is different", cdpURL,
@@ -558,10 +562,14 @@ public class PublishingCrlSessionSystemTest extends RoleUsingTestCase {
         cFreshestDpDER = x509crl.getExtensionValue(Extension.freshestCRL.getId());
         assertNotNull("CRL has no Freshest Distribution Point", cFreshestDpDER);
 
-        ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(cFreshestDpDER));
-        ASN1OctetString octs = ASN1OctetString.getInstance(aIn.readObject());
-        aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
-        CRLDistPoint cdp = CRLDistPoint.getInstance(aIn.readObject());
+        ASN1OctetString octs;
+        try (ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(cFreshestDpDER))) {
+            octs = ASN1OctetString.getInstance(aIn.readObject());
+        }
+        CRLDistPoint cdp;
+        try (ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()))) {
+            cdp = CRLDistPoint.getInstance(aIn.readObject());
+        }
         DistributionPoint[] distpoints = cdp.getDistributionPoints();
 
         assertEquals("More CRL Freshest distributions points than expected", 1, distpoints.length);
