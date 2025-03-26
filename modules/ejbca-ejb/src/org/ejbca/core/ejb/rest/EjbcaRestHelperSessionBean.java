@@ -15,15 +15,14 @@ package org.ejbca.core.ejb.rest;
 
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
-import java.util.*;
-
-import jakarta.ejb.EJB;
-import jakarta.ejb.Stateless;
-import jakarta.ejb.TransactionAttribute;
-import jakarta.ejb.TransactionAttributeType;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
@@ -63,12 +62,16 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.RandomHelper;
 import com.keyfactor.util.certificate.DnComponents;
 
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+
 
 @Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, EjbcaRestHelperSessionRemote {
 
-    private static final Logger log = Logger.getLogger(EjbcaRestHelperSessionBean.class);
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     @EJB
