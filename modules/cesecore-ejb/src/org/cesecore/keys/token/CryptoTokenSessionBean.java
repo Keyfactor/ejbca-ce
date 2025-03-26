@@ -34,7 +34,6 @@ import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.KeyBindingFinder;
 import org.cesecore.util.QueryResultWrapper;
-
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
@@ -50,7 +49,7 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
-    private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
+    private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;    
 
     private static final Logger log = Logger.getLogger(CryptoTokenSessionBean.class);
 
@@ -80,6 +79,25 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
         }
     }
 
+    private boolean isMigrateP11Tokens() {
+        final String migratePkcs11CryptoTokensKey = "USE_P11NG_AS_P11";
+        final String migratePkcs11CryptoTokensValue = System.getenv(migratePkcs11CryptoTokensKey);
+        if (migratePkcs11CryptoTokensValue != null) {
+            boolean isRunningEnterpriseEdition = true;
+            try {
+                //We can't access EnterpriseEditionEjbBridgeSessionLocal from cesecore. This might be ugly... but it works.
+                Class.forName("org.cesecore.dbprotection.ProtectedDataIntegrityImpl");
+            } catch (ClassNotFoundException e) {
+                isRunningEnterpriseEdition = false;
+            }
+            if ((migratePkcs11CryptoTokensValue.equals("true") && isRunningEnterpriseEdition)) {
+                log.info("System configured to migrate PKCS11CryptoTokens to Pkcs11NgCryptoTokens in cache.");
+                return true;
+            }
+        }
+        return false;
+    }
+            
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public CryptoToken getCryptoToken(final int cryptoTokenId) {
@@ -115,6 +133,12 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
                             cryptoToken = CryptoTokenFactory.createCryptoToken(inClassname, properties, data, cryptoTokenId, tokenName, true,
                                     new KeyBindingFinder(internalKeyBindingSession, certificateStoreSession, cryptoTokenManagementSession));
                         } else {
+                            if (inClassname.equals("org.cesecore.keys.token.PKCS11CryptoToken")){
+                                if (isMigrateP11Tokens()) { // Running on enterprise edition and migrate crypto tokens environment variable is set?
+                                    log.info("Migrating PKCS11CryptoToken " + tokenName + " to Pkcs11NgCryptoToken in cache.");
+                                    inClassname = "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken";
+                                }
+                            }
                             cryptoToken = CryptoTokenFactory.createCryptoToken(inClassname, properties, data, cryptoTokenId, tokenName, true);
                         }
                     } catch (NoSuchSlotException e) {
@@ -185,6 +209,13 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
                     && ArrayUtils.isEmpty(tokenDataAsBytes) && ArrayUtils.isEmpty(cryptoTokenData.getTokenDataAsBytes())) {
                 doMerge = false;
             } else {
+                // In case we have migrated any crypto tokens from PKCS11CryptoTokens to Pkcs11NgCryptoTokens, we safe-guard against changing token type in database
+                // By misstake, hopefully making the migration configuration decision reversible. 
+                final CryptoTokenData cryptoTokenDataFromDB = readCryptoTokenData(cryptoTokenId);
+                if (tokenType.equals("Pkcs11NgCryptoToken") && cryptoTokenDataFromDB.getTokenType().equals("PKCS11CryptoToken")) {
+                    tokenType = "PKCS11CryptoToken";
+                    log.debug("Prevented migrated crypto token " + tokenName + " from changing token type from PKCS11CryptoToken to Pkcs11NgCryptoToken in database.");
+                }                
                 cryptoTokenData.setTokenName(tokenName);
                 cryptoTokenData.setTokenType(tokenType);
                 cryptoTokenData.setLastUpdate(lastUpdate);
