@@ -29,11 +29,13 @@ import jakarta.persistence.Query;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.KeyBindingFinder;
 import org.cesecore.util.QueryResultWrapper;
+
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
@@ -49,7 +51,7 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
-    private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;    
+    private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
 
     private static final Logger log = Logger.getLogger(CryptoTokenSessionBean.class);
 
