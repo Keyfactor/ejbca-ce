@@ -62,7 +62,6 @@ import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
-import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.ejb.upgrade.UpgradeSessionLocal;
@@ -131,7 +130,6 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@EJB ServiceSessionLocal serviceSession;
 	@EJB SignSessionLocal signSession;
 	@EJB UpgradeSessionLocal upgradeSession;
-	@EJB UserDataSourceSessionLocal userDataSourceSession;
 	@EJB WebAuthenticationProviderSessionLocal webAuthenticationProviderSession;
 	@EJB SctDataSessionLocal sctDataSession;
 	@EJB OcspDataSessionLocal ocspDataSession;
@@ -183,7 +181,6 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
     @Override public ServiceSessionLocal getServiceSession() { return serviceSession; }
     @Override public SignSessionLocal getSignSession() { return signSession; }
     @Override public UpgradeSessionLocal getUpgradeSession() { return upgradeSession; }
-    @Override public UserDataSourceSessionLocal getUserDataSourceSession() { return userDataSourceSession; }
     @Override public WebAuthenticationProviderSessionLocal getWebAuthenticationProviderSession() { return webAuthenticationProviderSession; }
     @Override public OcspResponseCleanupSessionLocal getOcspResponseCleanupSession() { return ocspResponseCleanupSession; }
     @Override public SctDataSessionLocal getSctDataSession() { return sctDataSession; }

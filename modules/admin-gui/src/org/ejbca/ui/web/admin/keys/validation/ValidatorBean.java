@@ -713,6 +713,13 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     }
 
     /**
+     * @return true if "Not applicable" 
+     */
+    public boolean shouldRenderNotApplicable() {
+        return !stagedValidator.isValidatorAlwaysApplicable();
+    }
+    
+    /**
      * 
      * @return true of validator defines it own UI
      */
