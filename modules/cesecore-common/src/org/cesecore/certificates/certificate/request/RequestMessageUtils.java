@@ -176,7 +176,7 @@ public abstract class RequestMessageUtils {
                 ret = pkcs10RequestMessage;
             } catch (IOException e ){
                 log.info("Failed to parse PKCS10 message: " + e.getMessage());
-                throw new IOException("Failed to parse PKCS10 message");
+                throw new IOException("Failed to parse PKCS10 message: " + e.getMessage());
             }
         } else if (reqType == CertificateConstants.CERT_REQ_TYPE_MS_KEY_ARCHIVAL) {
             byte[] buffer = Base64.decode(req.getBytes());
