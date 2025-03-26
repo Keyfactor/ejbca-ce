@@ -1136,7 +1136,7 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
 
     /**
      * Updates the current operational status of the current key binding.
-     * @param current
+     * @param keyBinding
      * @param cryptoTokenInfo
      * @return path to corresponding icon based on the followings:
      *
@@ -1144,16 +1144,16 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
      * Pending if keybinding is enabled, crypto token is active, but cache hasn't been refreshed yet (keybinding is not in cache)
      * Offline if keybinding is disabled, unknown or offline
      */
-    private String updateOperationalStatus(final InternalKeyBindingData current, final CryptoTokenInfo cryptoTokenInfo) {
+    private String updateOperationalStatus(final InternalKeyBindingData keyBinding, final CryptoTokenInfo cryptoTokenInfo) {
         if (cryptoTokenInfo == null) {
             return getEjbcaWebBean().getImagePath("status-ca-offline.png");
         }
-        switch (InternalKeyBindingStatus.valueOf(current.getStatus())) {
+        switch (InternalKeyBindingStatus.valueOf(keyBinding.getStatus())) {
         case ACTIVE:
-            if (current.getKeyBindingType().equals(OcspKeyBinding.IMPLEMENTATION_ALIAS)) {
-                return updateKeyBindingStatus(current, cryptoTokenInfo);
+            if (keyBinding.getKeyBindingType().equals(OcspKeyBinding.IMPLEMENTATION_ALIAS)) {
+                return updateKeyBindingStatus(keyBinding, cryptoTokenInfo);
             }
-            return updateGenericKeyBindingStatus(current, cryptoTokenInfo);
+            return updateGenericKeyBindingStatus(keyBinding, cryptoTokenInfo);
         default:
             return getEjbcaWebBean().getImagePath("status-ca-offline.png");
         }
@@ -1161,11 +1161,11 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
 
     /**
      * Just check crypto token status for keybindings other than ocsp
-     * @param current
+     * @param keyBinding
      * @param cryptoTokenInfo
      * @return active logo if crypto token is active, offline logo otherwise.
      */
-    private String updateGenericKeyBindingStatus(final InternalKeyBindingData current, final CryptoTokenInfo cryptoTokenInfo) {
+    private String updateGenericKeyBindingStatus(final InternalKeyBindingData keyBinding, final CryptoTokenInfo cryptoTokenInfo) {
         if (cryptoTokenInfo.isActive()) {
             return getEjbcaWebBean().getImagePath("status-ca-active.png");
         }
@@ -1174,15 +1174,15 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
 
     /**
      *
-     * @param current
+     * @param keyBinding
      * @param cryptoTokenInfo
      * @return active if crypto token active and keybinding exists in cache.
      *         pending if crypto token is active but keybidning not present in cache.
      *         offline otherwise.
      */
-    private String updateKeyBindingStatus(final InternalKeyBindingData current, final CryptoTokenInfo cryptoTokenInfo) {
+    private String updateKeyBindingStatus(final InternalKeyBindingData keyBinding, final CryptoTokenInfo cryptoTokenInfo) {
         if (cryptoTokenInfo.isActive()) {
-            if (hasOcspCacheEntry(current.getId())) {
+            if (hasOcspCacheEntry(keyBinding.getId())) {
                 return getEjbcaWebBean().getImagePath("status-ca-active.png");
             }
             return getEjbcaWebBean().getImagePath("status-ca-pending.png");
