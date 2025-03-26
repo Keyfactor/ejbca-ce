@@ -117,8 +117,9 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     /** Dynamic UI PSM component. */
     private transient HtmlPanelGrid dataGrid;
     
-    /** Test file */
+    /** UploadedFile for handling the upload process */
     private transient UploadedFile testFile;
+    /** This holds the actual byte data of the uploaded file. This is here to make the upload play nicer with high availability. */
     private byte[] testFileBytes;
     private String testResults = "";
 
@@ -795,7 +796,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
 
     public void setTestFile(UploadedFile testFile) throws IOException {
         try {
-            if (testFileBytes != null) {
+            if (testFile != null) {
                 this.testFileBytes = IOUtils.toByteArray(testFile.getInputStream());
             }
         } catch (IOException e) {
