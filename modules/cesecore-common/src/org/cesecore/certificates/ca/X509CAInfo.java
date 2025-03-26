@@ -125,7 +125,7 @@ public class X509CAInfo extends CAInfo {
 	private int crlPartitions;
 	private int suspendedCrlPartitions;
 	private String requestPreProcessor;
-	private long keepExpiredOnCrlDate;
+	private long keepExpiredCertsOnCRLDate;
 
 	// Key: Root CA subjectDn, Value: fingerprint in reverse order, root CA at end
 	private Map<String, List<String>> alternateCertificateChains;
@@ -557,12 +557,12 @@ public class X509CAInfo extends CAInfo {
         return externalCdp;
     }
     
-    public void setKeepExpiredCertsOnCRLDate(final long keepExpiredOnCrlDate) {
-        this.keepExpiredOnCrlDate = keepExpiredOnCrlDate;
+    public void setKeepExpiredCertsOnCRLDate(final long keepExpiredCertsOnCRLDate) {
+        this.keepExpiredCertsOnCRLDate = keepExpiredCertsOnCRLDate;
     }
     
     public long getKeepExpiredCertsOnCRLDate() {
-        return this.keepExpiredOnCrlDate;
+        return this.keepExpiredCertsOnCRLDate;
     }
 
 
