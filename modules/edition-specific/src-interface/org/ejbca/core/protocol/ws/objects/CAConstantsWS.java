@@ -93,6 +93,9 @@ public class CAConstantsWS {
     public static final String DO_PRE_PRODUCE_OCSP_RESPONSES = CAConstants.DO_PRE_PRODUCE_OCSP_RESPONSES;
 
     /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String ADD_COMPROMISED_KEYS_TO_BLOCK_LIST = CAConstants.ADD_COMPROMISED_KEYS_TO_BLOCK_LIST ;
+    
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
     public static final String CA_SERIAL_NUMBER_OCTET_SIZE = CAConstants.CA_SERIAL_NUMBER_OCTET_SIZE;
 
     /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */

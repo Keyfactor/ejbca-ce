@@ -886,6 +886,23 @@
                     <h:outputLabel for="checkboxpreproduceocspresponses"
                                    value="#{editCAsMBean.checkboxUseCollapsedText}"/>
                 </h:panelGroup>
+				
+				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.caTypeX509 and editCAsMBean.addCompromisedKeysToBlockList}">
+				    <h:outputLabel for="checkboxaddCompromisedKeysToBlockList"
+				                   value="#{web.text.ADDCOMPROMISEDKEYSTOBLOCKLIST}"/>
+				    <h:outputText
+				            value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Pre_Produce_Ocsp_Responses')}"
+				            escape="false" styleClass="helpReference"/>
+				</h:panelGroup>
+
+				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.caTypeX509 and editCAsMBean.addCompromisedKeysToBlockList}">
+				    <h:selectBooleanCheckbox id="checkboxaddCompromisedKeysToBlockList"
+				                             value="#{editCAsMBean.caInfoDto.addCompromisedKeysToBlockList}"
+				                             disabled="#{not editCAsMBean.hasEditRight}">
+					</h:selectBooleanCheckbox>
+				    <h:outputLabel for="checkboxpreproduceocspresponses"
+				                   value="#{editCAsMBean.checkboxUseCollapsedText}"/>
+				</h:panelGroup>
 
             </h:panelGrid>
 

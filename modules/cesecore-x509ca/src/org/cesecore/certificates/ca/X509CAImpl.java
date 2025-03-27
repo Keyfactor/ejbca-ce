@@ -260,6 +260,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         setNameConstraintsExcluded(cainfo.getNameConstraintsExcluded());
         setCaSerialNumberOctetSize(cainfo.getCaSerialNumberOctetSize());
         setDoPreProduceOcspResponses(cainfo.isDoPreProduceOcspResponses());
+        setAddCompromisedKeysToBlockList(cainfo.isAddCompromisedKeysToBlockList());
         setDoStoreOcspResponsesOnDemand(cainfo.isDoStoreOcspResponsesOnDemand());
         setDoPreProduceOcspResponseUponIssuanceAndRevocation(cainfo.isDoPreProduceOcspResponseUponIssuanceAndRevocation());
         setUsePartitionedCrl(cainfo.getUsePartitionedCrl());
@@ -796,6 +797,23 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     /* (non-Javadoc)
      * @see org.cesecore.certificates.ca.X509CA#setDoPreProduceOcspResponses(boolean)
      */
+    @Override
+    public void setAddCompromisedKeysToBlockList(boolean addCompromisedKeysToBlockList) {
+        data.put(ADD_PUBLIC_KEY_TO_BLOCKLIST, addCompromisedKeysToBlockList);
+    }
+
+    @Override
+    public boolean isAddCompromisedKeysToBlockList() {
+        final Boolean addCompromisedKeysToBlockList = (Boolean) data.get(ADD_PUBLIC_KEY_TO_BLOCKLIST);
+        // Make false the default option
+        if (addCompromisedKeysToBlockList == null) {
+            data.put(ADD_PUBLIC_KEY_TO_BLOCKLIST, false);
+            return false;
+        }
+        return addCompromisedKeysToBlockList;
+
+    }
+    
     @Override
     public void setDoPreProduceOcspResponses(boolean doPreProduceOcspResponses) {
         data.put(DO_PRE_PRODUCE_OCSP_RESPONSES, doPreProduceOcspResponses);
