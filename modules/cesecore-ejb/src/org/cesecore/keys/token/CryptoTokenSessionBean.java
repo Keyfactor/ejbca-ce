@@ -135,7 +135,7 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
                             cryptoToken = CryptoTokenFactory.createCryptoToken(inClassname, properties, data, cryptoTokenId, tokenName, true,
                                     new KeyBindingFinder(internalKeyBindingSession, certificateStoreSession, cryptoTokenManagementSession));
                         } else {
-                            if (inClassname.equals("org.cesecore.keys.token.PKCS11CryptoToken")){
+                            if (inClassname != null && inClassname.equals("org.cesecore.keys.token.PKCS11CryptoToken")){
                                 if (isMigrateP11Tokens()) { // Running on enterprise edition and migrate crypto tokens environment variable is set?
                                     log.info("Migrating PKCS11CryptoToken " + tokenName + " to Pkcs11NgCryptoToken in cache.");
                                     inClassname = "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken";
@@ -211,10 +211,10 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
                     && ArrayUtils.isEmpty(tokenDataAsBytes) && ArrayUtils.isEmpty(cryptoTokenData.getTokenDataAsBytes())) {
                 doMerge = false;
             } else {
-                // In case we have migrated any crypto tokens from PKCS11CryptoTokens to Pkcs11NgCryptoTokens, we safe-guard against changing token type in database
-                // By misstake, hopefully making the migration configuration decision reversible. 
-                final CryptoTokenData cryptoTokenDataFromDB = readCryptoTokenData(cryptoTokenId);
-                if (tokenType.equals("Pkcs11NgCryptoToken") && cryptoTokenDataFromDB.getTokenType().equals("PKCS11CryptoToken")) {
+                // In case we have migrated any crypto tokens from PKCS11CryptoToken to Pkcs11NgCryptoToken, we safe-guard against changing token type in database
+                // by mistake, hopefully making the migration reversible. 
+                final CryptoTokenData cryptoTokenDataFromDatabase = readCryptoTokenData(cryptoTokenId);
+                if (tokenType.equals("Pkcs11NgCryptoToken") && cryptoTokenDataFromDatabase.getTokenType().equals("PKCS11CryptoToken")) {
                     tokenType = "PKCS11CryptoToken";
                     log.debug("Prevented migrated crypto token " + tokenName + " from changing token type from PKCS11CryptoToken to Pkcs11NgCryptoToken in database.");
                 }                
