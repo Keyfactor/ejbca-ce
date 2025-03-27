@@ -132,6 +132,10 @@ public interface X509CA extends CA, HybridCa {
 
     void setDoPreProduceOcspResponses(boolean doPreProduceOcspResponses);
     
+    boolean isAddCompromisedKeysToBlockList();
+    
+    void setAddCompromisedKeysToBlockList(boolean addCompromisedKeysToBlockList);
+    
     boolean isDoStoreOcspResponsesOnDemand();
     
     void setDoStoreOcspResponsesOnDemand(boolean doStoreOcspResponsesOnDemand);

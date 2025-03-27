@@ -581,6 +581,7 @@ public class CAInterfaceBean implements Serializable {
                             .setUseUserStorage(caInfoDto.isUseUserStorage())
                             .setUseCertificateStorage(caInfoDto.isUseCertificateStorage())
                             .setDoPreProduceOcspResponses(caInfoDto.isDoPreProduceOcspResponses())
+                            .setAddCompromisedKeysToBlockList(caInfoDto.isAddCompromisedKeysToBlockList())
                             .setDoStoreOcspResponsesOnDemand(caInfoDto.isDoStoreOcspResponsesOnDemand())
 							.setDoPreProduceIndividualOcspResponses(caInfoDto.isDoPreProduceOcspResponseUponIssuanceAndRevocation())
                             .setAcceptRevocationNonExistingEntry(caInfoDto.isAcceptRevocationsNonExistingEntry())

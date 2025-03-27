@@ -1914,7 +1914,11 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     throw new IllegalStateException("Unable to create SHA-256 fingerprint. Is the algorithm supported on this system?",e);
                 } catch (BlacklistExistsException e) {
                     throw new IllegalStateException("Public key block list entry with public key fingerprint already exists.",e);
+                } catch (AuthorizationDeniedException e) {
+                    log.info("Authorization denied to add compromised key to block list.");
+                    throw new IllegalStateException(e);
                 }
+                
             } catch (AlreadyRevokedException e) {
                 if (log.isDebugEnabled()) {
                     log.debug("Certificate from issuer '" + cdw.getCertificateData().getIssuerDN() + "' with serial " + cdw.getCertificateData().getSerialNumber()
@@ -1984,6 +1988,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             throw new IllegalStateException("Unable to create SHA-256 fingerprint. Is the algorithm supported on this system?",e);
         } catch (BlacklistExistsException e) {
             throw new IllegalStateException("Public key block list entry with public key fingerprint already exists.",e);
+        } catch (AuthorizationDeniedException e) {
+            log.info("Authorization denied to add compromised key to block list.");
+            throw new IllegalStateException(e);
         }
     }
 
@@ -2001,6 +2008,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             throw new IllegalStateException("Unable to create SHA-256 fingerprint. Is the algorithm supported on this system?",e);
         } catch (BlacklistExistsException e) {
             throw new IllegalStateException("Public key block list entry with public key fingerprint already exists.",e);
+        }  catch (AuthorizationDeniedException e) {
+            log.info("Authorization denied to add compromised key to block list.");
+            throw new IllegalStateException(e);
         }
     }
 
@@ -2032,7 +2042,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             throw new IllegalStateException(e);
         } catch (WaitingForApprovalException e) {
             log.error("ApprovalException: ", e);
-            throw new EJBException(e);
+            throw new WaitingForApprovalException("Waiting For Approval"+ e.getLocalizedMessage(), e.getRequestId());
         } catch (NoSuchAlgorithmException e) {
             log.info("Unable to create SHA-256 fingerprint. Is the algorithm supported on this system?");
             throw new IllegalStateException(e);
@@ -2229,24 +2239,14 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             throw new NoSuchEndEntityException(msg);
         }
 
-        Collection<Integer> validatorIds = null;
-
-        if (cainfo != null) {
-            validatorIds = cainfo.getValidators();
-        }
-        String validatorType = null;
-        if (validatorIds != null) {
-            for (Integer id : validatorIds) {
-                final Validator validator = keyValidatorSession.getValidator(id);
-                validatorType = validator.getValidatorTypeIdentifier();
-            }
-        }
         PublicKey publickey = null;
         if (cdw.getCertificate() != null) {
             publickey = cdw.getCertificate().getPublicKey();
         }
-        if (publickey != null && validatorType != null && reason == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE
-                && validatorType.contains("BLACKLIST_KEY_VALIDATOR")) {
+        
+        Boolean addCompromisedKeysToBlockList = ((X509CAInfo) cainfo).isAddCompromisedKeysToBlockList();
+        
+        if (publickey != null && reason == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE && addCompromisedKeysToBlockList==true) {
             try {
                 final AlwaysAllowLocalAuthenticationToken alwaysAllowAuthToken = new AlwaysAllowLocalAuthenticationToken(
                         new UsernamePrincipal("Key Compromise Blocklist Update"));

@@ -1408,6 +1408,10 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     public boolean isRenderOcspPreProduction() {
         return getEjbcaWebBean().isRunningEnterprise();
     }
+    
+    public boolean isAddCompromisedKeysToBlockList() {
+        return caInfoDto.isAddCompromisedKeysToBlockList();
+    }
 
     public String getCaCertLink() {
         return viewCertLink + "?caid=" + caid;
