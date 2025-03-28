@@ -15,16 +15,17 @@ package org.ejbca.util.mail;
 
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Executors;
 
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Multipart;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Multipart;
+import jakarta.mail.Session;
+import jakarta.mail.Transport;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMultipart;
 
 import org.apache.log4j.Logger;
 import org.ejbca.config.MailConfiguration;
@@ -39,6 +40,8 @@ import org.ejbca.core.ejb.ServiceLocatorException;
 public class MailSender {
 	
 	private static final Logger log = Logger.getLogger(MailSender.class);
+
+	private static final int TIMEOUT_PERIOD = 15000;
 	
 	// Some constants to make it easier to read the client code
 	public final static List<String> NO_TO = null;	//List<String>
@@ -114,6 +117,10 @@ public class MailSender {
         // mail.smtp.timeout
         // mail.smtp.connectiontimeout
         // mail.smtp.writetimeout
+		mailSession.getProperties().put("mail.smtp.timeout", TIMEOUT_PERIOD);
+		mailSession.getProperties().put("mail.smtps.timeout", TIMEOUT_PERIOD);
+		mailSession.getProperties().put("mail.smtp.connectiontimeout", TIMEOUT_PERIOD);
+		mailSession.getProperties().put("mail.smtps.connectiontimeout", TIMEOUT_PERIOD);
         Message msg = new MimeMessage(mailSession);
         try {
         	if (log.isDebugEnabled()) {
@@ -124,7 +131,7 @@ public class MailSender {
 			if (toList != null) {
 				for (int i=0; i<toList.size(); i++) {
 					String to = toList.get(i);
-					msg.addRecipients(javax.mail.Message.RecipientType.TO, InternetAddress.parse(to, false));
+					msg.addRecipients(jakarta.mail.Message.RecipientType.TO, InternetAddress.parse(to, false));
 		        	if (log.isDebugEnabled()) {
 		        		log.debug("to: " + to);
 		        	}
@@ -134,7 +141,7 @@ public class MailSender {
 			if (ccList != null) {
 				for (int i=0; i<ccList.size(); i++) {
 					String cc = ccList.get(i);
-					msg.addRecipients(javax.mail.Message.RecipientType.CC, InternetAddress.parse(cc, false));
+					msg.addRecipients(jakarta.mail.Message.RecipientType.CC, InternetAddress.parse(cc, false));
 		        	if (log.isDebugEnabled()) {
 		        		log.debug("cc: " + cc);
 		        	}
@@ -171,7 +178,15 @@ public class MailSender {
 	        }
 	        msg.setHeader("X-Mailer", "JavaMailer");
 	        msg.setSentDate(new Date());
-	        Transport.send(msg);
+			Executors.newSingleThreadExecutor().submit(() -> {
+				try {
+					Transport.send(msg);
+					log.info("Sending email is successful. Recipients: TO: " + toList + ", CC: " + ccList);
+				} catch (MessagingException e) {
+					log.error("Unable to send email: ", e);
+				}
+			});
+
 		} catch (MessagingException e) {
 			log.error("Unable to send email: ", e);
 			return false;
