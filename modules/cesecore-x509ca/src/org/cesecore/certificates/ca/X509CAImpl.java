@@ -795,7 +795,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     }
 
     /* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.X509CA#setDoPreProduceOcspResponses(boolean)
+     * @see org.cesecore.certificates.ca.X509CA#setAddCompromisedKeysToBlockList(boolean)
      */
     @Override
     public void setAddCompromisedKeysToBlockList(boolean addCompromisedKeysToBlockList) {

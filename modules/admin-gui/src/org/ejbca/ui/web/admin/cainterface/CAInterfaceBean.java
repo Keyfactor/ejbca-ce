@@ -374,6 +374,7 @@ public class CAInterfaceBean implements Serializable {
                     .build();
                 proxyCaInfo.setSubjectDN(caInfoDto.getCaSubjectDN());
                 proxyCaInfo.setEncodedValidity("99y");
+                proxyCaInfo.setAddCompromisedKeysToBlockList(caInfoDto.isAddCompromisedKeysToBlockList());
                 final int caid = DnComponents.stringToBCDNString(proxyCaInfo.getSubjectDN()).hashCode();
                 proxyCaInfo.setCAId(caid);
 
@@ -1022,6 +1023,7 @@ public class CAInterfaceBean implements Serializable {
                        .setUseUserStorage(caInfoDto.isUseUserStorage())
                        .setUseCertificateStorage(caInfoDto.isUseCertificateStorage())
                        .setDoPreProduceOcspResponses(caInfoDto.isDoPreProduceOcspResponses())
+                       .setAddCompromisedKeysToBlockList(caInfoDto.isAddCompromisedKeysToBlockList())
                        .setDoStoreOcspResponsesOnDemand(caInfoDto.isDoStoreOcspResponsesOnDemand())
 					   .setDoPreProduceIndividualOcspResponses(caInfoDto.isDoPreProduceOcspResponseUponIssuanceAndRevocation())
                        .setAcceptRevocationNonExistingEntry(caInfoDto.isAcceptRevocationsNonExistingEntry())
