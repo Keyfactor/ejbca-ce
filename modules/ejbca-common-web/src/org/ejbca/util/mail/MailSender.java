@@ -181,7 +181,7 @@ public class MailSender {
 			Executors.newSingleThreadExecutor().submit(() -> {
 				try {
 					Transport.send(msg);
-					log.info("Sending email is successful.");
+					log.info("Sending email is successful. Recipients: TO: " + toList + ", CC: " + ccList);
 				} catch (MessagingException e) {
 					log.error("Unable to send email: ", e);
 				}
