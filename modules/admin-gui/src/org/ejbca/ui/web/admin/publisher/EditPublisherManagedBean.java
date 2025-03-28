@@ -71,7 +71,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     private static final Logger log = Logger.getLogger(EditPublisherManagedBean.class);
 
     private static final Map<Integer, String> AVAILABLE_PUBLISHERS;
-    private final Map<Class <? extends BasePublisher>, Runnable> publisherInitMap = new HashMap<>();
+    private transient Map<Class <? extends BasePublisher>, Runnable> publisherInitMap = null;
     private List<CustomPublisherProperty> availableCustomPublisherPropertyList;
 
     static {
@@ -598,14 +598,13 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     
     private void initializePage() {
         initCommonParts();
-        publisherInitMap.get(publisher.getClass()).run();
+        getPublisherInitMap().get(publisher.getClass()).run();
     }
 
     private void initCommonParts() {
         if (publisher == null) { // Loading from database
             publisher = publisherSession.getPublisher(listPublishers.getSelectedPublisherName());
             publisherId = publisher.getPublisherId();
-            fillPublisherInitMapAndInitPublisherData();
         }
 
         selectedPublisherType = getSelectedPublisherValue();
@@ -618,12 +617,16 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         useQueueForOcspResponses = publisher.getUseQueueForOcspResponses();
     }
 
-    private void fillPublisherInitMapAndInitPublisherData() {
-        publisherInitMap.put(ActiveDirectoryPublisher.class, () -> initActiveDirectoryPublisher());
-        publisherInitMap.put(LdapSearchPublisher.class, () -> initLdapSearchPublisher());
-        publisherInitMap.put(LdapPublisher.class, () -> initLdapPublisher()); 
-        publisherInitMap.put(CustomPublisherContainer.class, () -> initCustomPublisher());
-        publisherInitMap.put(MultiGroupPublisher.class, () -> initMultiGroupPublisher());
+    public Map<Class <? extends BasePublisher>, Runnable> getPublisherInitMap() {
+        if (publisherInitMap == null) {
+            publisherInitMap = new HashMap<>();
+            publisherInitMap.put(ActiveDirectoryPublisher.class, () -> initActiveDirectoryPublisher());
+            publisherInitMap.put(LdapSearchPublisher.class, () -> initLdapSearchPublisher());
+            publisherInitMap.put(LdapPublisher.class, () -> initLdapPublisher()); 
+            publisherInitMap.put(CustomPublisherContainer.class, () -> initCustomPublisher());
+            publisherInitMap.put(MultiGroupPublisher.class, () -> initMultiGroupPublisher());
+        }
+        return publisherInitMap;
     }
     
 }

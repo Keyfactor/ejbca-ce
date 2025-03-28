@@ -15,6 +15,7 @@ package org.ejbca.ui.web.admin.ca;
 
 import static java.util.stream.Collectors.toSet;
 
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -104,7 +105,7 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
     /**
      * A publisher queue item, displayed as a row in the GUI.
      */
-    public final class PublisherQueueItem {
+    public final class PublisherQueueItem implements Serializable {
         private final PublisherQueueData publisherQueueData;
 
         private boolean selected;

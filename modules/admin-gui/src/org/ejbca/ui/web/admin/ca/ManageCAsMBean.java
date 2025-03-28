@@ -260,6 +260,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
             String statusText = getEjbcaWebBean().getText(CAConstants.getStatusText(caStatus));
 
             String nameAndStatus = caName + " (" + statusText + ")";
+            caSession.flushCACache();
             if (caSession.authorizedToCANoLogging(getAdmin(), caId)) {
                 caMap.put(caId, nameAndStatus);
             }
@@ -550,8 +551,10 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     public Map<Integer, String> getCaIdToNameMap() {
-        if (caIdToNameMap == null)
+        if (caIdToNameMap == null) {
+            caSession.flushCACache();
             caIdToNameMap = caSession.getCAIdToNameMap();
+        }
         return caIdToNameMap;
     }
 }
