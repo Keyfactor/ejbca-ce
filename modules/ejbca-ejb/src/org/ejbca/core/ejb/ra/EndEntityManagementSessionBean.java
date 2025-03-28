@@ -2244,7 +2244,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             publickey = cdw.getCertificate().getPublicKey();
         }
         
-        Boolean addCompromisedKeysToBlockList = ((X509CAInfo) cainfo).isAddCompromisedKeysToBlockList();
+        Boolean addCompromisedKeysToBlockList = cainfo.isAddCompromisedKeysToBlockList();
         
         if (publickey != null && reason == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE && addCompromisedKeysToBlockList==true) {
             try {

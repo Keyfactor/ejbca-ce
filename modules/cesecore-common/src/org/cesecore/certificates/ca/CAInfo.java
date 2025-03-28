@@ -135,6 +135,7 @@ public abstract class CAInfo implements Serializable {
     protected boolean useUserStorage;
     protected boolean useCertificateStorage;
     protected boolean acceptRevocationNonExistingEntry;
+    protected boolean addCompromisedKeysToBlockList;
 
     /**
      * Returns true if the expiration time is inclusive. If true, certificates are still valid at
@@ -567,6 +568,14 @@ public abstract class CAInfo implements Serializable {
     /** @param useCertificateStorage true means that the issued certificate should be kept in the database. */
     public void setUseCertificateStorage(boolean useCertificateStorage) {
         this.useCertificateStorage = useCertificateStorage;
+    }
+    
+    public void setAddCompromisedKeysToBlockList(boolean addCompromisedKeysToBlockList) {
+        this.addCompromisedKeysToBlockList = addCompromisedKeysToBlockList;
+    }
+
+    public boolean isAddCompromisedKeysToBlockList() {
+        return addCompromisedKeysToBlockList;
     }
 
     /** @return true if revocation for non existing entries is accepted */
