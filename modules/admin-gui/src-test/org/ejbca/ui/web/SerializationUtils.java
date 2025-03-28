@@ -15,6 +15,8 @@ package org.ejbca.ui.web;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Optional;
 
 import com.google.common.reflect.ClassPath.ClassInfo;
@@ -41,9 +43,23 @@ public class SerializationUtils {
     
             // for collection types, check their contained type
             Class<?> type = field.getType();
-            if (java.util.Map.class.isAssignableFrom(type) || java.util.Set.class.isAssignableFrom(type)
-                    || java.util.List.class.isAssignableFrom(type) || java.util.Collection.class.isAssignableFrom(type)) {
-                type = field.getGenericType().getClass();
+            if (java.util.Map.class.isAssignableFrom(type) 
+                    || java.util.Set.class.isAssignableFrom(type)
+                    || java.util.List.class.isAssignableFrom(type) 
+                    || java.util.Collection.class.isAssignableFrom(type)) {
+                var innerParamaterizedTypes = field.getGenericType();
+                if (innerParamaterizedTypes instanceof ParameterizedType) {
+                    for (Type typeArgument : ((ParameterizedType) innerParamaterizedTypes).getActualTypeArguments()) {
+                        
+                        // This won't catch parameterized types that contain other parameterized types
+                        // e.g. List<List<String>>.  
+                        if (!(typeArgument instanceof Class))
+                            continue;
+                        
+                        if (!SerializationUtils.isSerializable((Class<?>) typeArgument))
+                            return Optional.of(Pair.of(field, (Class<?>) typeArgument));
+                    }
+                }
                 continue;
             }
     

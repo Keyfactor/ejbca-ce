@@ -242,4 +242,9 @@ public class PublicKeyBlacklistKeyValidator extends KeyValidatorBase {
     protected Class<? extends Profile> getImplementationClass() {
         return PublicKeyBlacklistKeyValidator.class;
     }
+    
+    @Override
+    public boolean isValidatorAlwaysApplicable() {
+        return true;
+    }
 }
