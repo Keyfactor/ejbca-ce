@@ -87,9 +87,9 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
         if (migratePkcs11CryptoTokensValue != null) {
             boolean isRunningEnterpriseEdition = true;
             try {
-                //We can't access EnterpriseEditionEjbBridgeSessionLocal from cesecore. This might be ugly... but it works.
+                //We can't access EnterpriseEditionEjbBridgeSessionLocal.isRunningEnterprise() from cesecore. This might be ugly... but it works.
                 Class.forName("org.cesecore.dbprotection.ProtectedDataIntegrityImpl");
-            } catch (ClassNotFoundException e) {
+            } catch (ClassNotFoundException e) {// Exception thrown if running CE since class ProtectedDataIntegrityImpl can only be found on EE...  
                 isRunningEnterpriseEdition = false;
             }
             if ((migratePkcs11CryptoTokensValue.equals("true") && isRunningEnterpriseEdition)) {
