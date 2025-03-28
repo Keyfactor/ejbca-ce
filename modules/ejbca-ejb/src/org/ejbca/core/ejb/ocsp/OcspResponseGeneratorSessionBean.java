@@ -54,7 +54,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
-import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -439,7 +438,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         }                        
                         //Add an entry with just a chain and nothing else
                         OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificateChain.get(0), caCertificateStatus, null, null,
-                                null, null, null, ocspConfiguration.getOcspResponderIdType(), null));
+                                null, null, null, ocspConfiguration.getOcspResponderIdType()));
                         OcspDataConfigCache.INSTANCE.stagingAdd(new OcspDataConfigCacheEntry(caCertificateChain.get(0), caId, preProduceOcspResponse,
                                 storeOcspResponseOnDemand, isMsCaCompatible));
                     } else if (caInfo.getStatus() == CAConstants.CA_EXPIRED && preProduceOcspResponse) {
@@ -655,21 +654,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             respIdType = OcspKeyBinding.ResponderIdType.KEYHASH;
         }
         
-        // This feature is used of generational OCSP is enabled. This means that:
-        // 
-        // for an expired certificate
-        //      if that certificate is expired AND was expired before the notBefore date of the current issuing CA
-        //          then respond using the last issued signing certificate from the expired CA, and the associated chain. 
-        final TreeMap<Long, List<X509Certificate>> generationalSignerAndChain;
-        if(ocspKeyBinding.isGenerationalOcsp()) {
-            
-        } else {
-            generationalSignerAndChain = null;
-        }
-        
-        
         return new OcspSigningCacheEntry(caCertificateChain.get(0), certificateStatus, caCertificateChain, ocspSigningCertificate, privateKey,
-                signatureProviderName, ocspKeyBinding, respIdType, generationalSignerAndChain);
+                signatureProviderName, ocspKeyBinding, respIdType);
     }
     
     /** 
