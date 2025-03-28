@@ -213,8 +213,7 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
             } else {
                 // In case we have migrated any crypto tokens from PKCS11CryptoToken to Pkcs11NgCryptoToken, we safe-guard against changing token type in database
                 // by mistake, hopefully making the migration reversible. 
-                final CryptoTokenData cryptoTokenDataFromDatabase = readCryptoTokenData(cryptoTokenId);
-                if (tokenType.equals("Pkcs11NgCryptoToken") && cryptoTokenDataFromDatabase.getTokenType().equals("PKCS11CryptoToken")) {
+                if (isMigrateP11Tokens() && tokenType.equals("Pkcs11NgCryptoToken") && cryptoTokenData.getTokenType().equals("PKCS11CryptoToken")) {
                     tokenType = "PKCS11CryptoToken";
                     log.debug("Prevented migrated crypto token " + tokenName + " from changing token type from PKCS11CryptoToken to Pkcs11NgCryptoToken in database.");
                 }                
