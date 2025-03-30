@@ -800,15 +800,15 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
      */
     @Override
     public void setAddCompromisedKeysToBlockList(boolean addCompromisedKeysToBlockList) {
-        data.put(ADD_PUBLIC_KEY_TO_BLOCKLIST, addCompromisedKeysToBlockList);
+        data.put(ADD_COMPROMISED_KEYS_TO_BLOCK_LIST, addCompromisedKeysToBlockList);
     }
 
     @Override
     public boolean isAddCompromisedKeysToBlockList() {
-        final Boolean addCompromisedKeysToBlockList = (Boolean) data.get(ADD_PUBLIC_KEY_TO_BLOCKLIST);
+        final Boolean addCompromisedKeysToBlockList = (Boolean) data.get(ADD_COMPROMISED_KEYS_TO_BLOCK_LIST);
         // Make false the default option
         if (addCompromisedKeysToBlockList == null) {
-            data.put(ADD_PUBLIC_KEY_TO_BLOCKLIST, false);
+            data.put(ADD_COMPROMISED_KEYS_TO_BLOCK_LIST, false);
             return false;
         }
         return addCompromisedKeysToBlockList;

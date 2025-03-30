@@ -245,12 +245,12 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
     }
     
     public void setAddCompromisedKeysToBlockList(boolean addCompromisedKeysBlockList) {
-        data.put(ADD_PUBLIC_KEY_TO_BLOCKLIST, addCompromisedKeysBlockList);
+        data.put(ADD_COMPROMISED_KEYS_TO_BLOCK_LIST, addCompromisedKeysBlockList);
     }
 
     @Override
     public boolean isAddCompromisedKeysToBlockList() {
-        return getBoolean(ADD_PUBLIC_KEY_TO_BLOCKLIST, false);
+        return getBoolean(ADD_COMPROMISED_KEYS_TO_BLOCK_LIST, false);
     }
     
     @Override
