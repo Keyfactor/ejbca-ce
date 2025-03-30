@@ -2418,7 +2418,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             caInfoDto.setCaDefinedFreshestCRL(x509cainfo.getCADefinedFreshestCRL());
             caInfoDto.setDefaultOCSPServiceLocator(x509cainfo.getDefaultOCSPServiceLocator());
             caInfoDto.setCaSerialNumberOctetSize(String.valueOf(x509cainfo.getCaSerialNumberOctetSize()));
-            caInfoDto.setAddCompromisedKeysToBlockList(x509cainfo.isAddCompromisedKeysToBlockList());
             caInfoDto.setDoPreProduceOcspResponses(x509cainfo.isDoPreProduceOcspResponses());
             caInfoDto.setDoPreProduceOcspResponseUponIssuanceAndRevocation(x509cainfo.isDoPreProduceOcspResponseUponIssuanceAndRevocation());
             caInfoDto.setDoStoreOcspResponsesOnDemand(x509cainfo.isDoStoreOcspResponsesOnDemand());
