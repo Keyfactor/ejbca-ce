@@ -93,7 +93,6 @@ public class X509CAInfo extends CAInfo {
 	private boolean nameChanged;
 	private int caSerialNumberOctetSize;
 	private boolean doPreProduceOcspResponses;
-	private boolean addCompromisedKeysToBlockList;
 	private boolean doStoreOcspResponsesOnDemand;
     private boolean doPreProduceOcspResponseUponIssuanceAndRevocation;
 	private boolean usePartitionedCrl;
@@ -204,7 +203,7 @@ public class X509CAInfo extends CAInfo {
                       final boolean useCrlDistributionPointOnCrl, final boolean crlDistributionPointOnCrlCritical, final boolean includeInHealthCheck,
                       final boolean doEnforceUniquePublicKeys, final boolean doEnforceKeyRenewal, final boolean doEnforceUniqueDistinguishedName,
                       final boolean doEnforceUniqueSubjectDNSerialnumber, final boolean useCertReqHistory, final boolean useUserStorage,
-                      final boolean useCertificateStorage, final boolean doPreProduceOcspResponses, final boolean addCompromisedKeysToBlockList, final boolean doStoreOcspResponsesOnDemand,
+                      final boolean useCertificateStorage, final boolean addCompromisedKeysToBlockList, final boolean doPreProduceOcspResponses, final boolean doStoreOcspResponsesOnDemand,
                       final boolean doPreProduceOcspResponseUponIssuanceAndRevocation, final boolean acceptRevocationNonExistingEntry,
                       final String cmpRaAuthSecret, final boolean keepExpiredCertsOnCRL, final int defaultCertprofileId,
                       final boolean useNoConflictCertificateData, final boolean usePartitionedCrl, final int crlPartitions, final int suspendedCrlPartitions,
@@ -564,16 +563,6 @@ public class X509CAInfo extends CAInfo {
     /** Set whether the CA should pre-produce OCSP responses. */
     public void setDoPreProduceOcspResponses(boolean doPreProduceOcspResponses) {
         this.doPreProduceOcspResponses = doPreProduceOcspResponses;
-    }
-    
-    /** @return true if needs to add Compromised Keys to BlockList, otherwise false. */
-    public boolean isAddCompromisedKeysToBlockList() {
-        return addCompromisedKeysToBlockList;
-    }
-
-    /** Set addAddCompromisedKeysToBlockList value upon request. */
-    public void setAddCompromisedKeysToBlockList(boolean addCompromisedKeysToBlockList) {
-        this.addCompromisedKeysToBlockList = addCompromisedKeysToBlockList;
     }
 
     /** @return true if OCSP responses be stored upon request */
@@ -1206,7 +1195,7 @@ public class X509CAInfo extends CAInfo {
                                                useAuthorityKeyIdentifier, authorityKeyIdentifierCritical, useCrlNumber, crlNumberCritical, defaultCrlDistPoint, defaultCrlIssuer, defaultOcspCerviceLocator, authorityInformationAccess,
                                                certificateAiaDefaultCaIssuerUri, nameConstraintsPermitted, nameConstraintsExcluded, caDefinedFreshestCrl, finishUser, extendedCaServiceInfos, useUtf8PolicyText, approvals,
                                                usePrintableStringSubjectDN, useLdapDnOrder, useCrlDistributionPointOnCrl, crlDistributionPointOnCrlCritical, includeInHealthCheck, doEnforceUniquePublicKeys, doEnforceKeyRenewal,
-                                               doEnforceUniqueDistinguishedName, doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage, doPreProduceOcspResponses, addCompromisedKeysToBlockList, doStoreOcspResponsesOnDemand,
+                                               doEnforceUniqueDistinguishedName, doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage, addCompromisedKeysToBlockList, doPreProduceOcspResponses, doStoreOcspResponsesOnDemand,
                                                doPreProduceIndividualOcspResponse, acceptRevocationNonExistingEntry, cmpRaAuthSecret, keepExpiredCertsOnCRL, defaultCertProfileId, useNoConflictCertificateData, usePartitionedCrl, crlPartitions, suspendedCrlPartitions,
                                                requestPreProcessor, msCaCompatible, alternateCertificateChains, externalCrlDistPoint);
             caInfo.setSubjectDN(subjectDn);
@@ -1245,8 +1234,8 @@ public class X509CAInfo extends CAInfo {
                                                useAuthorityKeyIdentifier, authorityKeyIdentifierCritical, useCrlNumber, crlNumberCritical, defaultCrlDistPoint, defaultCrlIssuer, defaultOcspCerviceLocator, authorityInformationAccess,
                                                certificateAiaDefaultCaIssuerUri, nameConstraintsPermitted, nameConstraintsExcluded, caDefinedFreshestCrl, finishUser, extendedCaServiceInfos, useUtf8PolicyText, approvals,
                                                usePrintableStringSubjectDN, useLdapDnOrder, useCrlDistributionPointOnCrl, crlDistributionPointOnCrlCritical, includeInHealthCheck, doEnforceUniquePublicKeys, doEnforceKeyRenewal,
-                                               doEnforceUniqueDistinguishedName, doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage, doPreProduceOcspResponses, doStoreOcspResponsesOnDemand,
-                                               doPreProduceIndividualOcspResponse, acceptRevocationNonExistingEntry, addCompromisedKeysToBlockList, cmpRaAuthSecret, keepExpiredCertsOnCRL, defaultCertProfileId, useNoConflictCertificateData, usePartitionedCrl, crlPartitions, suspendedCrlPartitions,
+                                               doEnforceUniqueDistinguishedName, doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage, addCompromisedKeysToBlockList, doPreProduceOcspResponses, doStoreOcspResponsesOnDemand,
+                                               doPreProduceIndividualOcspResponse, acceptRevocationNonExistingEntry , cmpRaAuthSecret, keepExpiredCertsOnCRL, defaultCertProfileId, useNoConflictCertificateData, usePartitionedCrl, crlPartitions, suspendedCrlPartitions,
                                                requestPreProcessor, msCaCompatible, alternateCertificateChains, externalCrlDistPoint);
             caInfo.setCAId(caId);
             caInfo.setPolicies(policies);

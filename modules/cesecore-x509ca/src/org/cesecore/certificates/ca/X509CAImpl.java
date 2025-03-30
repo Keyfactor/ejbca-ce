@@ -349,6 +349,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 .setDoEnforceUniqueSubjectDNSerialnumber(isDoEnforceUniqueSubjectDNSerialnumber())
                 .setUseCertReqHistory(isUseCertReqHistory())
                 .setUseUserStorage(isUseUserStorage())
+                .setAddCompromisedKeysToBlockList(isAddCompromisedKeysToBlockList()) 
                 .setUseCertificateStorage(isUseCertificateStorage())
                 .setAcceptRevocationNonExistingEntry(isAcceptRevocationNonExistingEntry())
                 .setCmpRaAuthSecret(getCmpRaAuthSecret())

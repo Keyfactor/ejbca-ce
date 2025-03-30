@@ -128,7 +128,8 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         setGenerateCrlUponRevocation(cainfo.isGenerateCrlUponRevocation());
         setAllowChangingRevocationReason(cainfo.isAllowChangingRevocationReason());
         setAllowInvalidityDate(cainfo.isAllowInvalidityDate());
-
+        setAddCompromisedKeysToBlockList(cainfo.isAddCompromisedKeysToBlockList());
+        
         List<Integer> extendedservicetypes = new ArrayList<>();
         if (cainfo.getExtendedCAServiceInfos() != null) {
             for(ExtendedCAServiceInfo next : cainfo.getExtendedCAServiceInfos()) {
@@ -176,6 +177,7 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         setUseUserStorage(cainfo.isUseUserStorage());
         setUseCertificateStorage(cainfo.isUseCertificateStorage());
         setAcceptRevocationNonExistingEntry(cainfo.isAcceptRevocationNonExistingEntry());
+        setAddCompromisedKeysToBlockList(cainfo.isAddCompromisedKeysToBlockList());
         // Update or create extended CA services
         final Collection<ExtendedCAServiceInfo> infos = cainfo.getExtendedCAServiceInfos();
         if (infos != null) {
@@ -241,7 +243,16 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
     public void setGenerateCrlUponRevocation(boolean generate) {
         data.put(GENERATECRLUPONREVOCATION, generate);
     }
+    
+    public void setAddCompromisedKeysToBlockList(boolean addCompromisedKeysBlockList) {
+        data.put(ADD_PUBLIC_KEY_TO_BLOCKLIST, addCompromisedKeysBlockList);
+    }
 
+    @Override
+    public boolean isAddCompromisedKeysToBlockList() {
+        return getBoolean(ADD_PUBLIC_KEY_TO_BLOCKLIST, false);
+    }
+    
     @Override
     public boolean getAllowChangingRevocationReason() {
         return getBoolean(ALLOWCHANGINGREVOCATIONREASON, false);
