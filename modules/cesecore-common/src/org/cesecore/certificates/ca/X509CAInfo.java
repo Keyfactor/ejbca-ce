@@ -66,11 +66,6 @@ import com.keyfactor.util.certificate.DnComponents;
  */
 public class X509CAInfo extends CAInfo {
 
-    public enum KeepExpiredOnCrlFormat {
-        CA_DATE,
-        CHOSEN_DATE;
-    }
-    
     private static final Logger log = Logger.getLogger(X509CAInfo.class);
 
 	private static final long serialVersionUID = 2L;
@@ -982,13 +977,14 @@ public class X509CAInfo extends CAInfo {
             return this;
         }
 
-        /**
-         * @param defaultCrlDistPoint the URI of the default CRL distribution point
-         */
         public X509CAInfoBuilder setExternalCrlDistPoint(String externalCrlDistPoint) {
             this.externalCrlDistPoint = externalCrlDistPoint;
             return this;
         }
+
+        /**
+         * @param defaultCrlDistPoint the URI of the default CRL distribution point
+         */
         public X509CAInfoBuilder setDefaultCrlDistPoint(String defaultCrlDistPoint) {
             this.defaultCrlDistPoint = defaultCrlDistPoint;
             return this;
