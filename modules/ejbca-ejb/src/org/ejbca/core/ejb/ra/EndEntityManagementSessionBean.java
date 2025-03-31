@@ -2244,9 +2244,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             publickey = cdw.getCertificate().getPublicKey();
         }
         
-        Boolean addCompromisedKeysToBlockList = cainfo.isAddCompromisedKeysToBlockList();
-        
-        if (publickey != null && reason == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE && addCompromisedKeysToBlockList==true) {
+        if (publickey != null && reason == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE && cainfo != null && cainfo.isAddCompromisedKeysToBlockList()==true) {
             try {
                 final AlwaysAllowLocalAuthenticationToken alwaysAllowAuthToken = new AlwaysAllowLocalAuthenticationToken(
                         new UsernamePrincipal("Key Compromise Blocklist Update"));

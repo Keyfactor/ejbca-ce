@@ -887,7 +887,7 @@
                                    value="#{editCAsMBean.checkboxUseCollapsedText}"/>
                 </h:panelGroup>
 				
-				<h:panelGroup>
+				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.caTypeX509 or editCAsMBean.caInfoDto.caTypeCVC}">
 				    <h:outputLabel for="checkboxaddCompromisedKeysToBlockList"
 				                   value="#{web.text.ADDCOMPROMISEDKEYSTOBLOCKLIST}"/>
 				    <h:outputText
@@ -895,7 +895,7 @@
 				            escape="false" styleClass="helpReference"/>
 				</h:panelGroup>
 
-				<h:panelGroup>
+				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.caTypeX509 or editCAsMBean.caInfoDto.caTypeCVC}">
 				    <h:selectBooleanCheckbox id="checkboxaddCompromisedKeysToBlockList"
 				                             value="#{editCAsMBean.caInfoDto.addCompromisedKeysToBlockList}"
 				                             disabled="#{not editCAsMBean.hasEditRight}">
