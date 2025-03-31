@@ -32,6 +32,8 @@ import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -589,17 +591,21 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     }
     
     @Override
-    public long getKeepExpiredCertsOnCRLDate() {
+    public ZonedDateTime getKeepExpiredCertsOnCRLDate() {
         if(data.get(KEEPEXPIREDCERTSONCRLDATE) == null) {
-            setKeepExpiredCertsOnCRLDate(0);
+            return null;
         }
-        
-        return (Long) data.get(KEEPEXPIREDCERTSONCRLDATE);
+        else {
+            return (ZonedDateTime) data.get(KEEPEXPIREDCERTSONCRLDATE);
+        }
     }
 
     @Override
-    public void setKeepExpiredCertsOnCRLDate(long keepexpiredcertsoncrl) {
-        data.put(KEEPEXPIREDCERTSONCRLDATE, keepexpiredcertsoncrl);
+    public void setKeepExpiredCertsOnCRLDate(final ZonedDateTime keepexpiredcertsoncrl) {
+        final var zonedDateTime = keepexpiredcertsoncrl == null ?
+                null :
+                keepexpiredcertsoncrl.withZoneSameInstant(ZoneId.of("UTC"));
+        data.put(KEEPEXPIREDCERTSONCRLDATE, zonedDateTime);
     }
 
     /* (non-Javadoc)
@@ -2383,11 +2389,12 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             // For now force parameter with date equals NotBefore of CA certificate, or now
             final DERGeneralizedTime keepDate;
             if (cacert != null) {
-                if(getKeepExpiredCertsOnCRLDate() == 0) {
+                final ZonedDateTime zonedDateTime = getKeepExpiredCertsOnCRLDate();
+                if(zonedDateTime == null) {
                     keepDate = new DERGeneralizedTime(cacert.getNotBefore());
                 } else {
-                    keepDate = new DERGeneralizedTime(Date.from(Instant.ofEpochMilli(getKeepExpiredCertsOnCRLDate())));
-                }           
+                    keepDate = new DERGeneralizedTime(Date.from(zonedDateTime.toInstant()));
+                }
             } else {
                 // Copied from org.bouncycastle.asn1.x509.Time to get right format of GeneralizedTime (no fractional seconds)
                 SimpleDateFormat dateF = new SimpleDateFormat("yyyyMMddHHmmss");
