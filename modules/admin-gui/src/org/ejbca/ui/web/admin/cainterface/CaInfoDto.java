@@ -13,9 +13,6 @@
 package org.ejbca.ui.web.admin.cainterface;
 
 import java.io.Serializable;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +23,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.MutableTriple;
 import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.ca.X509CAInfo.KeepExpiredOnCrlFormat;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.kfenroll.ProxyCaInfo;
 import org.cesecore.util.SimpleTime;
@@ -85,8 +81,7 @@ public class CaInfoDto implements Serializable {
     private boolean includeInHealthCheck;
     private String sharedCmpRaSecret = StringUtils.EMPTY;
     private boolean keepExpiredOnCrl;
-    private KeepExpiredOnCrlFormat expiredOnCrlFormat = KeepExpiredOnCrlFormat.CA_DATE;
-    private ZonedDateTime keepExpiredOnCrlDate = null; //0 denotes that it should be the same as the ca date
+    private ZonedDateTime keepExpiredOnCrlDate = null; // null denotes that it should be the same as the ca date
     private boolean usePartitionedCrl;
     private int crlPartitions;
     private int suspendedCrlPartitions;
@@ -536,19 +531,7 @@ public class CaInfoDto implements Serializable {
     public void setKeepExpiredOnCrl(boolean keepExpiredOnCrl) {
         this.keepExpiredOnCrl = keepExpiredOnCrl;
     }
-    
-    public KeepExpiredOnCrlFormat getExpiredOnCrlFormat() {
-        return expiredOnCrlFormat;
-    }
-    
-    public void setExpiredOnCrlFormat(KeepExpiredOnCrlFormat expiredOnCrlFormat) {
-        this.expiredOnCrlFormat = expiredOnCrlFormat;
-        if(this.expiredOnCrlFormat.equals(KeepExpiredOnCrlFormat.CA_DATE)) {
-            //0 means that we're using the CA's notBefore
-            keepExpiredOnCrlDate = null;
-        }
-    }
-    
+
     public ZonedDateTime getKeepExpiredOnCrlDate() {
         return keepExpiredOnCrlDate;
     }

@@ -80,7 +80,6 @@ import org.cesecore.certificates.ca.ExtendedUserDataHandler;
 import org.cesecore.certificates.ca.ExtendedUserDataHandlerFactory;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.X509CAInfo;
-import org.cesecore.certificates.ca.X509CAInfo.KeepExpiredOnCrlFormat;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
@@ -2463,13 +2462,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             caInfoDto.setAuthorityInformationAccess(null != urisAuthorityInformationAccess ? StringUtils.join(urisAuthorityInformationAccess, ";") : "");
             caInfoDto.setCertificateAiaDefaultCaIssuerUri(null != urisCertificateAiaDefaultCaIssuerUri ? StringUtils.join(urisCertificateAiaDefaultCaIssuerUri, ";") : "");
             caInfoDto.setKeepExpiredOnCrl(x509cainfo.getKeepExpiredCertsOnCRL());
-            if(x509cainfo.getKeepExpiredCertsOnCRLDate() == null) {
-                caInfoDto.setExpiredOnCrlFormat(KeepExpiredOnCrlFormat.CA_DATE);
-            } else {
-                caInfoDto.setExpiredOnCrlFormat(KeepExpiredOnCrlFormat.CHOSEN_DATE);
-                caInfoDto.setKeepExpiredOnCrlDate(x509cainfo.getKeepExpiredCertsOnCRLDate());
-            }           
-            
+            caInfoDto.setKeepExpiredOnCrlDate(x509cainfo.getKeepExpiredCertsOnCRLDate());
+
             caInfoDto.setUsePartitionedCrl(x509cainfo.getUsePartitionedCrl());
             caInfoDto.setCrlPartitions(x509cainfo.getCrlPartitions());
             caInfoDto.setSuspendedCrlPartitions(x509cainfo.getSuspendedCrlPartitions());
