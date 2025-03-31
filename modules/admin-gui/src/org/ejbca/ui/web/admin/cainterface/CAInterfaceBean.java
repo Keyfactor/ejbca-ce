@@ -17,6 +17,7 @@ import java.io.Serializable;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.text.ParseException;
+import java.time.ZonedDateTime;
 import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
@@ -530,11 +531,11 @@ public class CAInterfaceBean implements Serializable {
                         Integer.parseInt(caInfoDto.getCaSerialNumberOctetSize()) : CesecoreConfiguration.getSerialNumberOctetSizeForNewCa();
                 List<ExtendedCAServiceInfo> extendedCaServiceInfos = makeExtendedServicesInfos();
 	            if (caInfoDto.getCrlPeriod() != 0 && !illegaldnoraltname) {
-	                final long keepExpiredCertsOnCrlDate;
+	                final ZonedDateTime keepExpiredCertsOnCrlDate;
 	                if(caInfoDto.getExpiredOnCrlFormat() == KeepExpiredOnCrlFormat.CA_DATE) {
-	                    keepExpiredCertsOnCrlDate = 0L;
+	                    keepExpiredCertsOnCrlDate = null;
 	                } else {
-	                    keepExpiredCertsOnCrlDate = caInfoDto.getKeepExpiredOnCrlDateLong();
+	                    keepExpiredCertsOnCrlDate = caInfoDto.getKeepExpiredOnCrlDate();
 	                }
 	                
                     X509CAInfo.X509CAInfoBuilder x509CAInfoBuilder = new X509CAInfo.X509CAInfoBuilder()
@@ -983,11 +984,11 @@ public class CAInterfaceBean implements Serializable {
                    }
                }
                
-               final long keepExpiredCertsOnCrlDate;
+               final ZonedDateTime keepExpiredCertsOnCrlDate;
                if(caInfoDto.getExpiredOnCrlFormat() == KeepExpiredOnCrlFormat.CA_DATE) {
-                   keepExpiredCertsOnCrlDate = 0L;
+                   keepExpiredCertsOnCrlDate = null;
                } else {
-                   keepExpiredCertsOnCrlDate = caInfoDto.getKeepExpiredOnCrlDateLong();
+                   keepExpiredCertsOnCrlDate = caInfoDto.getKeepExpiredOnCrlDate();
                }
                
                // No need to add the Keyrecovery extended service here, because it is only "updated" in EditCA, and there

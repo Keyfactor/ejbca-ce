@@ -16,6 +16,7 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -85,7 +86,7 @@ public class CaInfoDto implements Serializable {
     private String sharedCmpRaSecret = StringUtils.EMPTY;
     private boolean keepExpiredOnCrl;
     private KeepExpiredOnCrlFormat expiredOnCrlFormat = KeepExpiredOnCrlFormat.CA_DATE;
-    private long keepExpiredOnCrlDate = 0; //0 denotes that it should be the same as the ca date
+    private ZonedDateTime keepExpiredOnCrlDate = null; //0 denotes that it should be the same as the ca date
     private boolean usePartitionedCrl;
     private int crlPartitions;
     private int suspendedCrlPartitions;
@@ -544,23 +545,15 @@ public class CaInfoDto implements Serializable {
         this.expiredOnCrlFormat = expiredOnCrlFormat;
         if(this.expiredOnCrlFormat.equals(KeepExpiredOnCrlFormat.CA_DATE)) {
             //0 means that we're using the CA's notBefore
-            keepExpiredOnCrlDate = 0;
+            keepExpiredOnCrlDate = null;
         }
     }
     
-    public LocalDateTime getKeepExpiredOnCrlDate() {
-        return LocalDateTime.ofInstant(Instant.ofEpochMilli(keepExpiredOnCrlDate), ZoneId.of("UTC"));
-    }
-    
-    public long getKeepExpiredOnCrlDateLong() {
+    public ZonedDateTime getKeepExpiredOnCrlDate() {
         return keepExpiredOnCrlDate;
     }
 
-    public void setKeepExpiredOnCrlDate(final LocalDateTime keepExpiredOnCrlDate) {
-        this.keepExpiredOnCrlDate = keepExpiredOnCrlDate.atZone(ZoneId.of("UTC")).toInstant().toEpochMilli();
-    }
-    
-    public void setKeepExpiredOnCrlDate(final long keepExpiredOnCrlDate) {
+    public void setKeepExpiredOnCrlDate(final ZonedDateTime keepExpiredOnCrlDate) {
         this.keepExpiredOnCrlDate = keepExpiredOnCrlDate;
     }
 

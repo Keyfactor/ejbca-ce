@@ -32,6 +32,7 @@ import java.security.cert.TrustAnchor;
 import java.security.cert.X509CRL;
 import java.security.cert.X509CertSelector;
 import java.security.cert.X509Certificate;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -104,7 +105,7 @@ public class X509CAInfo extends CAInfo {
 	private int crlPartitions;
 	private int suspendedCrlPartitions;
 	private String requestPreProcessor;
-	private long keepExpiredCertsOnCRLDate;
+	private ZonedDateTime keepExpiredCertsOnCRLDate;
 
 	// Key: Root CA subjectDn, Value: fingerprint in reverse order, root CA at end
 	private Map<String, List<String>> alternateCertificateChains;
@@ -536,11 +537,11 @@ public class X509CAInfo extends CAInfo {
         return externalCdp;
     }
     
-    public void setKeepExpiredCertsOnCRLDate(final long keepExpiredCertsOnCRLDate) {
+    public void setKeepExpiredCertsOnCRLDate(final ZonedDateTime keepExpiredCertsOnCRLDate) {
         this.keepExpiredCertsOnCRLDate = keepExpiredCertsOnCRLDate;
     }
     
-    public long getKeepExpiredCertsOnCRLDate() {
+    public ZonedDateTime getKeepExpiredCertsOnCRLDate() {
         return this.keepExpiredCertsOnCRLDate;
     }
 
@@ -731,7 +732,7 @@ public class X509CAInfo extends CAInfo {
         private boolean acceptRevocationNonExistingEntry = false;
         private String cmpRaAuthSecret = null;
         private boolean keepExpiredCertsOnCRL = false;
-        private long keepExpiredCertsOnCrlDate = 0;
+        private ZonedDateTime keepExpiredCertsOnCrlDate = null;
         private boolean usePartitionedCrl = false;
         private int crlPartitions;
         private int suspendedCrlPartitions;
@@ -1148,7 +1149,7 @@ public class X509CAInfo extends CAInfo {
             return this;
         }
         
-        public X509CAInfoBuilder setKeepExpiredCertsOnCrlDate(long keepExpiredCertsOnCrlDate) {
+        public X509CAInfoBuilder setKeepExpiredCertsOnCrlDate(ZonedDateTime keepExpiredCertsOnCrlDate) {
             this.keepExpiredCertsOnCrlDate = keepExpiredCertsOnCrlDate;
             return this;
         }
@@ -1260,7 +1261,7 @@ public class X509CAInfo extends CAInfo {
 
         public X509CAInfo buildDefault () { return null;}
 
-        public long getKeepExpiredCertsOnCrlDate() {
+        public ZonedDateTime getKeepExpiredCertsOnCrlDate() {
             return keepExpiredCertsOnCrlDate;
         }
     }
