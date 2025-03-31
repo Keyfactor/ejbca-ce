@@ -536,12 +536,12 @@ public class CaInfoDto implements Serializable {
         this.keepExpiredOnCrl = keepExpiredOnCrl;
     }
     
-    public int getExpiredOnCrlFormat() {
-        return expiredOnCrlFormat.intFormat();
+    public KeepExpiredOnCrlFormat getExpiredOnCrlFormat() {
+        return expiredOnCrlFormat;
     }
     
-    public void setExpiredOnCrlFormat(int expiredOnCrlFormat) {
-        this.expiredOnCrlFormat = KeepExpiredOnCrlFormat.fromIntFormat(expiredOnCrlFormat);
+    public void setExpiredOnCrlFormat(KeepExpiredOnCrlFormat expiredOnCrlFormat) {
+        this.expiredOnCrlFormat = expiredOnCrlFormat;
         if(this.expiredOnCrlFormat.equals(KeepExpiredOnCrlFormat.CA_DATE)) {
             //0 means that we're using the CA's notBefore
             keepExpiredOnCrlDate = 0;

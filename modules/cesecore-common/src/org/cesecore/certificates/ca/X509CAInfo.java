@@ -66,29 +66,8 @@ import com.keyfactor.util.certificate.DnComponents;
 public class X509CAInfo extends CAInfo {
 
     public enum KeepExpiredOnCrlFormat {
-        CA_DATE(0), CHOSEN_DATE(1);
-        
-        private final int intFormat;
-        
-        private KeepExpiredOnCrlFormat(final int intFormat) {
-            this.intFormat = intFormat;
-        }
-        
-        public int intFormat() {
-            return intFormat;
-        }
-        
-        public static KeepExpiredOnCrlFormat fromIntFormat(final int intFormat) {
-            switch (intFormat) {
-            case 0:
-                return CA_DATE;
-            case 1:
-                return CHOSEN_DATE;
-            default:
-                throw new IllegalStateException("Unknown int format passed: " + intFormat);
-
-            }
-        }
+        CA_DATE,
+        CHOSEN_DATE;
     }
     
     private static final Logger log = Logger.getLogger(X509CAInfo.class);

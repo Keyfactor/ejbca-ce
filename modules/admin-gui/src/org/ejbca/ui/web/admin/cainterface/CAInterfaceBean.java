@@ -531,7 +531,7 @@ public class CAInterfaceBean implements Serializable {
                 List<ExtendedCAServiceInfo> extendedCaServiceInfos = makeExtendedServicesInfos();
 	            if (caInfoDto.getCrlPeriod() != 0 && !illegaldnoraltname) {
 	                final long keepExpiredCertsOnCrlDate;
-	                if(caInfoDto.getExpiredOnCrlFormat() == KeepExpiredOnCrlFormat.CA_DATE.intFormat()) {
+	                if(caInfoDto.getExpiredOnCrlFormat() == KeepExpiredOnCrlFormat.CA_DATE) {
 	                    keepExpiredCertsOnCrlDate = 0L;
 	                } else {
 	                    keepExpiredCertsOnCrlDate = caInfoDto.getKeepExpiredOnCrlDateLong();
@@ -984,7 +984,7 @@ public class CAInterfaceBean implements Serializable {
                }
                
                final long keepExpiredCertsOnCrlDate;
-               if(caInfoDto.getExpiredOnCrlFormat() == KeepExpiredOnCrlFormat.CA_DATE.intFormat()) {
+               if(caInfoDto.getExpiredOnCrlFormat() == KeepExpiredOnCrlFormat.CA_DATE) {
                    keepExpiredCertsOnCrlDate = 0L;
                } else {
                    keepExpiredCertsOnCrlDate = caInfoDto.getKeepExpiredOnCrlDateLong();
