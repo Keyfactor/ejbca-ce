@@ -17,20 +17,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TimeZone;
 
+import org.apache.log4j.Level;
+import org.cesecore.authorization.AuthorizationSessionLocal;
+import org.cesecore.util.ValidityDate;
+import org.ejbca.core.ejb.upgrade.UpgradeLogEvent;
+import org.ejbca.core.ejb.upgrade.UpgradeSessionLocal;
+import org.ejbca.core.ejb.upgrade.UpgradeStatusSingletonLocal;
+import org.ejbca.ui.web.admin.BaseManagedBean;
+
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.faces.event.AjaxBehaviorEvent;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
-
-import org.apache.log4j.Level;
-import org.apache.log4j.spi.LoggingEvent;
-import org.apache.log4j.spi.ThrowableInformation;
-import org.cesecore.authorization.AuthorizationSessionLocal;
-import org.cesecore.util.ValidityDate;
-import org.ejbca.core.ejb.upgrade.UpgradeSessionLocal;
-import org.ejbca.core.ejb.upgrade.UpgradeStatusSingletonLocal;
-import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
  * JSF Managed Bean for the post upgrade page.
@@ -42,8 +41,8 @@ public class UpgradeBean extends BaseManagedBean implements Serializable {
 
 	/** Wrapper of Log4J LoggingEvents for use in the GUI */
     public static class LogEvent {
-        final LoggingEvent loggingEvent;
-        public LogEvent(final LoggingEvent loggingEvent) {
+        final UpgradeLogEvent loggingEvent;
+        public LogEvent(final UpgradeLogEvent loggingEvent) {
             this.loggingEvent = loggingEvent;
         }
 
@@ -54,18 +53,16 @@ public class UpgradeBean extends BaseManagedBean implements Serializable {
 
         public String getLevel() { return loggingEvent.getLevel().toString(); }
 
-        public String getTime() { return ValidityDate.formatAsISO8601ServerTZ(loggingEvent.getTimeStamp(), TimeZone.getDefault()); }
+        public String getTime() { return ValidityDate.formatAsISO8601ServerTZ(loggingEvent.getTimestamp(), TimeZone.getDefault()); }
 
         public String getMessage() {
-            final StringBuilder sb = new StringBuilder(loggingEvent.getRenderedMessage());
-            final ThrowableInformation throwableInformation = loggingEvent.getThrowableInformation();
-            if (throwableInformation!=null) {
-                Throwable throwable = throwableInformation.getThrowable();
-                while (throwable!=null) {
-                    sb.append(" <- " + throwable.getMessage());
-                    throwable = throwable.getCause();
-                }
+            final StringBuilder sb = new StringBuilder(loggingEvent.getMessage());
+            Throwable throwable = loggingEvent.getThrowable();
+            while (throwable != null) {
+                sb.append(" <- " + throwable.getMessage());
+                throwable = throwable.getCause();
             }
+
             return sb.toString();
         }
     }
@@ -142,7 +139,7 @@ public class UpgradeBean extends BaseManagedBean implements Serializable {
     /** @return info logged by the upgrade code */
     public List<LogEvent> getLogged() {
         final List<LogEvent> ret = new ArrayList<>();
-        for (final LoggingEvent loggingEvent: new ArrayList<>(upgradeStatusSingleton.getLogged())) {
+        for (final UpgradeLogEvent loggingEvent: new ArrayList<>(upgradeStatusSingleton.getLogged())) {
             if (loggingEvent.getLevel().isGreaterOrEqual(Level.INFO)) {
                 ret.add(new LogEvent(loggingEvent));
             }

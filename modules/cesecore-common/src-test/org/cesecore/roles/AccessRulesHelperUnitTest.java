@@ -167,6 +167,44 @@ public class AccessRulesHelperUnitTest {
         assertEquals("/abc/d/", iterator.next().getKey());
     }
 
+    @Test
+    public void testMinimizeAccessRules() {
+        final HashMap<String, Boolean> accessRules = new HashMap<>();
+        accessRules.put("/", Role.STATE_DENY);
+        accessRules.put("/a/", Role.STATE_ALLOW);
+        accessRules.put("/a/b/", Role.STATE_ALLOW);
+        accessRules.put("/a/c/", Role.STATE_DENY);
+        accessRules.put("/b/", Role.STATE_DENY);
+        accessRules.put("/b/a/", Role.STATE_ALLOW);
+
+        AccessRulesHelper.minimizeAccessRules(accessRules);
+
+        // Check that redundant rules are removed
+        assertFalse("Root deny rule should be removed.", accessRules.containsKey("/"));
+        assertTrue("Non-redundant allow rule should remain.", accessRules.containsKey("/a/"));
+        assertFalse("Redundant allow rule should be removed.", accessRules.containsKey("/a/b/"));
+        assertTrue("Non-redundant deny rule should remain.", accessRules.containsKey("/a/c/"));
+        assertFalse("Redundant deny rule should be removed.", accessRules.containsKey("/b/"));
+        assertTrue("Non-redundant allow rule should remain.", accessRules.containsKey("/b/a/"));
+
+        // Check the final state of rules
+        assertEquals("Unexpected number of rules after minimization.", 3, accessRules.size());
+        assertTrue("Expected allow rule is missing.", accessRules.get("/a/"));
+        assertFalse("Expected deny rule is missing.", accessRules.get("/a/c/"));
+        assertTrue("Expected allow rule is missing.", accessRules.get("/b/a/"));
+    }
+
+    @Test
+    public void testNormalizeResource() {
+        // Positive path: resource without trailing slash
+        String input = "/a/b/c";
+        assertEquals("/a/b/c/", AccessRulesHelper.normalizeResource(input));
+
+        // Negative path: resource already with trailing slash
+        input = "/x/y/z/";
+        assertEquals(input, AccessRulesHelper.normalizeResource(input));
+    }
+
     private void debugLogAccessRules(final HashMap<String, Boolean> accessRules) {
         final List<Entry<String, Boolean>> accessRulesList = AccessRulesHelper.getAsListSortedByKey(accessRules);
         for (final Entry<String,Boolean> entry : accessRulesList) {

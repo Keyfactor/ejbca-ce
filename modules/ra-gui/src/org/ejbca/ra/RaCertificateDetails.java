@@ -182,6 +182,7 @@ public class RaCertificateDetails implements Serializable {
     private String password;
     private String confirmPassword;
     private int requestId;
+    private String tag;
 
     private String sshKeyId = "";
     private String principals = "";
@@ -268,6 +269,7 @@ public class RaCertificateDetails implements Serializable {
 
         this.username = certificateData.getUsername() == null ? "" : certificateData.getUsername();
         this.subjectDn = certificateData.getSubjectDnNeverNull();
+        this.tag = certificateData.getTag();
         final Certificate certificate = cdw.getCertificate();
         byte[] certificateEncoded = null;
         if (certificate != null) {
@@ -1112,6 +1114,14 @@ public class RaCertificateDetails implements Serializable {
 
     public void setRequestId(int requestId) {
         this.requestId = requestId;
+    }
+
+    public String getTag() {
+        return tag;
+    }
+
+    public void setTag(String tag) {
+        this.tag = tag;
     }
 
     public boolean isKeyRecoveryPossible() {

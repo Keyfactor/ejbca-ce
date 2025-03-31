@@ -19,6 +19,7 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -32,6 +33,8 @@ import org.junit.Test;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 
 /**
@@ -309,6 +312,192 @@ public class ExtendedInformationUnitTest {
         public EndEntityInformation getEndEntityInformation() {
             return null;
         }
+    }
+
+    @Test
+    public void testGetInternalKeys_noKeysAddedAtAll() {
+        // Given
+        final ExtendedInformation extendedInformation = new ExtendedInformation();
+
+        // When
+        final var actual = extendedInformation.getInternalKeys();
+
+        // Then
+        assertTrue("There are no internal keys added. It is expected to be empty.", actual.isEmpty());
+    }
+
+    @Test
+    public void testGetInternalKeys_noInternalKeyAdded() {
+        // Given
+        final ExtendedInformation extendedInformation = new ExtendedInformation();
+        extendedInformation.setQCEtsiPSD2NcaId("NcaId-123");
+        extendedInformation.setAddEndEntityApprovalRequestId(123);
+
+        // When
+        final var actual = extendedInformation.getInternalKeys();
+
+        // Then
+        assertTrue("There are no internal keys added. It is expected to be empty.", actual.isEmpty());
+    }
+
+    protected static void assertContainsAllSubKeys(Collection<Object> collection, String... subKeys) {
+        StringBuilder sb = new StringBuilder();
+        boolean success = true;
+        for (String subKey : subKeys) {
+            if (collection.stream()
+                    .map(Object::toString)
+                    .noneMatch(s->s.contains(subKey))) {
+                success = false;
+                sb.append("\"").append(subKey).append("\" is missing.\n");
+            }
+        }
+        if (!success) {
+            fail(sb.toString());
+        }
+    }
+
+    protected static void assertContainsNoSubKey(Collection<Object> collection, String... subKeys) {
+        StringBuilder sb = new StringBuilder();
+        final boolean success[] = { true };
+        for (String subKey : subKeys) {
+            collection.stream()
+                    .filter(key -> key.toString().contains(subKey))
+                    .forEach(key -> {
+                        success[0] = false;
+                        sb.append("\"").append(key).append("\" is not expected.\n.");
+                    });
+        }
+        if (!success[0]) {
+            fail(sb.toString());
+        }
+    }
+
+    @Test
+    public void testGetInternalKeys_onlyInternalKeysAdded() {
+        // Given
+        final ExtendedInformation extendedInformation = new ExtendedInformation();
+        extendedInformation.setCustomData(ExtendedInformation.MARKER_FROM_REST_RESOURCE, "dummy");
+        extendedInformation.setCustomData(ExtendedInformation.CA_NAME, "some ca name");
+        extendedInformation.setCustomData(ExtendedInformation.CERTIFICATE_PROFILE_NAME, "some certificate profile name");
+        extendedInformation.setCustomData(ExtendedInformation.END_ENTITY_PROFILE_NAME, "some end entity profile name");
+
+        // When
+        final var actual = extendedInformation.getInternalKeys();
+
+        // Then
+        assertContainsAllSubKeys(actual,
+                ExtendedInformation.MARKER_FROM_REST_RESOURCE,
+                ExtendedInformation.CA_NAME,
+                ExtendedInformation.CERTIFICATE_PROFILE_NAME,
+                ExtendedInformation.END_ENTITY_PROFILE_NAME);
+    }
+
+    @Test
+    public void testGetInternalKeys_internalAndExternalKeysAdded() {
+        // Given
+        final ExtendedInformation extendedInformation = new ExtendedInformation();
+        extendedInformation.setCustomData(ExtendedInformation.MARKER_FROM_REST_RESOURCE, "dummy");
+        extendedInformation.setCustomData(ExtendedInformation.CA_NAME, "some ca name");
+        extendedInformation.setCustomData(ExtendedInformation.CERTIFICATE_PROFILE_NAME, "some certificate profile name");
+        extendedInformation.setCustomData(ExtendedInformation.END_ENTITY_PROFILE_NAME, "some end entity profile name");
+        extendedInformation.setQCEtsiPSD2NcaId("NcaId-123");
+        extendedInformation.setAddEndEntityApprovalRequestId(123);
+
+        // When
+        final var actual = extendedInformation.getInternalKeys();
+
+        // Then
+        assertContainsAllSubKeys(actual,
+                ExtendedInformation.MARKER_FROM_REST_RESOURCE,
+                ExtendedInformation.CA_NAME,
+                ExtendedInformation.CERTIFICATE_PROFILE_NAME,
+                ExtendedInformation.END_ENTITY_PROFILE_NAME);
+    }
+
+    @Test
+    public void testRemoveInternalKeys_noKeysAddedAtAll() {
+        // Given
+        final ExtendedInformation extendedInformation = new ExtendedInformation();
+
+        // When
+        final var actual = extendedInformation.removeInternalKeys();
+
+        // Then
+        assertTrue(actual.isEmpty());
+    }
+
+    @Test
+    public void testRemoveInternalKeys_noInternalKeyAdded() {
+        // Given
+        final ExtendedInformation extendedInformation = new ExtendedInformation();
+        extendedInformation.setQCEtsiPSD2NcaId("NcaId-123");
+        extendedInformation.setAddEndEntityApprovalRequestId(123);
+
+        // When
+        final var actual = extendedInformation.removeInternalKeys();
+
+        // Then
+        assertTrue("There are no internal keys added. It is expected to be empty.", actual.isEmpty());
+    }
+
+    @Test
+    public void testRemoveInternalKeys_onlyInternalKeysAdded() {
+        // Given
+        final ExtendedInformation extendedInformation = new ExtendedInformation();
+        final int originalSize = extendedInformation.getRawData().size();
+        extendedInformation.setCustomData(ExtendedInformation.MARKER_FROM_REST_RESOURCE, "dummy");
+        extendedInformation.setCustomData(ExtendedInformation.CA_NAME, "some ca name");
+        extendedInformation.setCustomData(ExtendedInformation.CERTIFICATE_PROFILE_NAME, "some certificate profile name");
+        extendedInformation.setCustomData(ExtendedInformation.END_ENTITY_PROFILE_NAME, "some end entity profile name");
+
+        // When
+        assertEquals(originalSize+4, extendedInformation.getRawData().size());
+        final var removedInternalKeys = extendedInformation.removeInternalKeys();
+        final var keysLeft = extendedInformation.getRawData().keySet();
+
+        // Then
+        assertContainsAllSubKeys(removedInternalKeys,
+                ExtendedInformation.MARKER_FROM_REST_RESOURCE,
+                ExtendedInformation.CA_NAME,
+                ExtendedInformation.CERTIFICATE_PROFILE_NAME,
+                ExtendedInformation.END_ENTITY_PROFILE_NAME);
+        assertContainsNoSubKey(keysLeft,
+                ExtendedInformation.MARKER_FROM_REST_RESOURCE,
+                ExtendedInformation.CA_NAME,
+                ExtendedInformation.CERTIFICATE_PROFILE_NAME,
+                ExtendedInformation.END_ENTITY_PROFILE_NAME);
+        assertEquals(originalSize, extendedInformation.getRawData().size());
+    }
+
+    @Test
+    public void testRemoveInternalKeys_internalAndExternalKeysAdded() {
+        // Given
+        final ExtendedInformation extendedInformation = new ExtendedInformation();
+        final int originalSize = extendedInformation.getRawData().size();
+        extendedInformation.setCustomData(ExtendedInformation.MARKER_FROM_REST_RESOURCE, "dummy");
+        extendedInformation.setCustomData(ExtendedInformation.CA_NAME, "some ca name");
+        extendedInformation.setCustomData(ExtendedInformation.CERTIFICATE_PROFILE_NAME, "some certificate profile name");
+        extendedInformation.setCustomData(ExtendedInformation.END_ENTITY_PROFILE_NAME, "some end entity profile name");
+        extendedInformation.setQCEtsiPSD2NcaId("NcaId-123");
+        extendedInformation.setAddEndEntityApprovalRequestId(123);
+
+        // When
+        assertEquals(originalSize+6, extendedInformation.getRawData().size());
+        final var removedInternalKeys = extendedInformation.removeInternalKeys();
+        final var keysLeft = extendedInformation.getRawData().keySet();
+
+        // Then
+        assertContainsAllSubKeys(removedInternalKeys,
+                ExtendedInformation.MARKER_FROM_REST_RESOURCE,
+                ExtendedInformation.CA_NAME,
+                ExtendedInformation.CERTIFICATE_PROFILE_NAME,
+                ExtendedInformation.END_ENTITY_PROFILE_NAME);
+        assertContainsNoSubKey(keysLeft,
+                ExtendedInformation.MARKER_FROM_REST_RESOURCE,
+                ExtendedInformation.CA_NAME,
+                ExtendedInformation.CERTIFICATE_PROFILE_NAME,
+                ExtendedInformation.END_ENTITY_PROFILE_NAME);
+        assertEquals(originalSize+2, extendedInformation.getRawData().size());
     }
 
 }

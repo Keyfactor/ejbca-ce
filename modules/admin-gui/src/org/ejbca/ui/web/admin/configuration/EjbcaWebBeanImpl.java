@@ -1046,7 +1046,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     @Override
     @Deprecated
     public TreeMap<String,Integer> getCANames() {
-        return caSession.getAuthorizedCaNamesToIds(authState.administrator);
+        return caSession.getAuthorizedCaNamesToIdsWithoutCache(authState.administrator);
     }
 
     @Override

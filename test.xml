@@ -184,6 +184,7 @@
 					<include name="modules/acme/src-test/**/${test.runone}.java" />
 					<include name="modules/acme/src-common-test/**/${test.runone}.java" />
 					<include name="modules/caa/src-test/**/${test.runone}.java" />
+					<include name="modules/iodef/src-test/**/${test.runone}.java" />
 					<include name="modules/mpic/src-test/**/${test.runone}.java" />
 					<include name="modules/ejbca-ws-cli/src-test/**/${test.runone}.java" />
 					<include name="modules/ejbca-rest-api/src-test/**/${test.runone}.java" />
@@ -264,6 +265,9 @@
     	</condition>
         <condition property="module" value="modules/caa">
             <matches string="${test-fullname}" pattern="^modules/caa/.*$"/>
+        </condition>
+        <condition property="module" value="modules/iodef">
+            <matches string="${test-fullname}" pattern="^modules/iodef/.*$"/>
         </condition>
         <condition property="module" value="modules/mpic">
             <matches string="${test-fullname}" pattern="^modules/mpic/.*$"/>
@@ -594,6 +598,8 @@
                                                  --sourcefiles ./modules/ejbca-ws-cli/src
                                                  --sourcefiles ./modules/est/src
                                                  --sourcefiles ./modules/healthcheck-war/src
+                                                 --sourcefiles ./modules/iodef/src
+                                                 --sourcefiles ./modules/mpic/src
                                                  --sourcefiles ./modules/msae/src
                                                  --sourcefiles ./modules/plugins/src
                                                  --sourcefiles ./modules/plugins-ee/src
@@ -652,6 +658,8 @@
                                                  --classfiles ./modules/ejbca-ws-cli/build
                                                  --classfiles ./modules/est/build-war
                                                  --classfiles ./modules/healthcheck-war/build
+                                                 --classfiles ./modules/iodef/build
+                                                 --classfiles ./modules/mpic/build
                                                  --classfiles ./modules/msae/build
                                                  --classfiles ./modules/plugins/build-plugins
                                                  --classfiles ./modules/plugins-ee/build-plugins-ee

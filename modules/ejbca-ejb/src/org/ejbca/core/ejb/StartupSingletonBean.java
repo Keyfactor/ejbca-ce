@@ -82,6 +82,7 @@ import org.ejbca.util.JDBCUtil;
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.RandomHelper;
 import com.keyfactor.util.crypto.provider.CryptoProviderConfigurationCache;
 import com.keyfactor.util.string.StringConfigurationCache;
 
@@ -239,14 +240,9 @@ public class StartupSingletonBean {
 
         CryptoProviderConfigurationCache.INSTANCE.setKeystoreCacheEnabled(Boolean.parseBoolean(ConfigurationHolder.getString("cryptotoken.keystorecache")));
 
-
-        final String doPermitExtractablePrivateKeys = ConfigurationHolder.getString("ca.doPermitExtractablePrivateKeys");
-        CryptoProviderConfigurationCache.INSTANCE.setPermitExtractablePrivateKeys(
-                doPermitExtractablePrivateKeys != null && doPermitExtractablePrivateKeys.trim().equalsIgnoreCase(Boolean.TRUE.toString()));
-
         // Run java seed collector, that can take a little time the first time it is run
         log.debug(">startup initializing random seed, can take a little time...");
-        SecureRandom rand = new SecureRandom();
+        SecureRandom rand = RandomHelper.getInstance(CesecoreConfiguration.getCaSerialNumberAlgorithm());
         rand.nextInt();
         log.debug(">startup finished initializing random seed");
 

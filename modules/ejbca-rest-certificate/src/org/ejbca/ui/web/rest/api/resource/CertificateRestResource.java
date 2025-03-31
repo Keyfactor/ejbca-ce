@@ -251,6 +251,13 @@ public class CertificateRestResource extends BaseRestResource {
 
     private RestException makeCertificateCreationException(CertificateCreateException exception) {
         ErrorCode errorCode = exception.getErrorCode();
+        
+        if (exception.getCause()!=null && exception.getCause().getClass().equals(
+                            org.cesecore.keys.validation.ValidationException.class)) {
+            return new RestException(Status.BAD_REQUEST.getStatusCode(), 
+                    "Failed to generate certificate due to validator failure: " + exception.getCause().getMessage());
+        }
+        
         if (CUSTOM_CERTIFICATE_EXTENSION_ERROR.equals(errorCode)) {
             return new RestException(Status.BAD_REQUEST.getStatusCode(), "Failed to generate certificate due to an issue with certificate extensions.");
         } else {

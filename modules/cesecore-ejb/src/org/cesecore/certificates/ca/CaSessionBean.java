@@ -193,6 +193,14 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         }
     }
 
+    /** @return return the query results as a List of CA ids. */
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public List<Integer> getAllCaIdsWithoutCache() {
+        final TypedQuery<Integer> query = entityManager.createQuery("SELECT a.caId FROM CAData a", Integer.class);
+        return query.getResultList();
+    }
+
     @Override
     public void addCA(final AuthenticationToken admin, final CACommon ca) throws CAExistsException, AuthorizationDeniedException {
         if (ca != null) {
@@ -667,6 +675,17 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     @Override
     public TreeMap<String,Integer> getAuthorizedCaNamesToIds(final AuthenticationToken admin) {
         final Collection<Integer> availableCaIds = getAllCaIds();
+        return getNamesFromIds(admin, availableCaIds);
+    }
+
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public TreeMap<String,Integer> getAuthorizedCaNamesToIdsWithoutCache(final AuthenticationToken admin) {
+        final Collection<Integer> availableCaIds = getAllCaIdsWithoutCache();
+        return getNamesFromIds(admin, availableCaIds);
+    }
+
+    private TreeMap<String, Integer> getNamesFromIds(AuthenticationToken admin, Collection<Integer> availableCaIds) {
         final TreeMap<String,Integer> names = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         for (Integer caid : availableCaIds) {
             if (authorizedToCANoLogging(admin, caid)) {

@@ -51,7 +51,6 @@ import org.ejbca.core.ejb.keyrecovery.KeyRecoveryDataPK;
 import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData;
-import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceData;
 import org.ejbca.core.ejb.services.ServiceData;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -517,21 +516,6 @@ public class DatabaseSchemaSystemTest {
         entity.setRowVersion(0);
         storeAndRemoveEntity(entity);
         LOG.trace("<testGlobalConfigurationData");
-    }
-
-    @Test
-    public void testUserDataSourceData() {
-        LOG.trace(">testUserDataSourceData");
-        logMemStats();
-        UserDataSourceData entity = new UserDataSourceData();
-        entity.setData(CLOB_100KiB);
-        entity.setId(BOGUS_INTEGER);
-        entity.setName(VARCHAR_250B);
-        entity.setRowProtection(CLOB_10KiB);
-        entity.setRowVersion(0);
-        entity.setUpdateCounter(0);
-        storeAndRemoveEntity(entity);
-        LOG.trace("<testUserDataSourceData");
     }
 
     @Test

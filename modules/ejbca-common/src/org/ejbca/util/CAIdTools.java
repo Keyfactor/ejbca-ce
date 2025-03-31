@@ -36,7 +36,6 @@ import org.cesecore.roles.member.RoleMember;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.EstConfiguration;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
 import org.ejbca.core.model.services.IWorker;
 import org.ejbca.core.model.services.ServiceConfiguration;
 
@@ -122,31 +121,6 @@ public final class CAIdTools {
         return changed;
     }
     
-    /**
-     * Updates any references to a CA's CAId and Subject DN.
-     * @param dataSource Data source object to modify.
-     * @param fromId Old CA Id to replace.
-     * @param toId New CA Id to replace with.
-     * @param toSubjectDN New CA Subject DN.
-     * @return True if the data source was changed. If so it should be persisted to the database.
-     */
-    public static boolean updateCAIds(final BaseUserDataSource dataSource, final int fromId, final int toId, final String toSubjectDN) {
-        boolean changed = false;
-        final List<Integer> applicableCAs = new ArrayList<>(dataSource.getApplicableCAs());
-        // The list is modified so we can't use an iterator
-        for (int i = 0; i < applicableCAs.size(); i++) {
-            int value = applicableCAs.get(i);
-            if (value == fromId) {
-                applicableCAs.set(i, toId);
-                changed = true;
-            }
-        }
-        if (changed) {
-            dataSource.setApplicableCAs(applicableCAs);
-        }
-        return changed;
-    }
-
     /**
      * Updates any references to a CA's CAId and Subject DN.
      * @param serviceConf Service object to modify.
