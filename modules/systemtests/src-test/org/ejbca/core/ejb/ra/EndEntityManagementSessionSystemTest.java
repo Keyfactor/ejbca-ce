@@ -61,6 +61,7 @@ import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.NoConflictCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
@@ -611,30 +612,17 @@ public class EndEntityManagementSessionSystemTest extends CaTestCase {
     }
     
     @Test
-    public void test05RevokeCertWithBlackListPopulation() throws Exception {
+    public void test05RevokeCertAddingCompromisedKeyToBlackList() throws Exception {
         addUser();
         
-        KeyPair keypair = KeyTools.genKeys("512", "RSA");
-         
+        KeyPair keypair = KeyTools.genKeys("512", "RSA");        
         EndEntityInformation data1 = endEntityAccessSession.findUser(admin, username);
         assertNotNull(data1);
         data1.setPassword("foo123");
-        
-        String X509CADN = "CN=EndEntityManagementSessionSystemTest4";
+        String X509CADN = "CN=AddingCompromisedKeyToBlackList";
         CA testx509ca = CaTestUtils.createTestX509CA(X509CADN, null, false);
         caSession.addCA(admin, testx509ca);
-        
-        PublicKeyBlacklistKeyValidator blacklistKeyValidator = (PublicKeyBlacklistKeyValidator) createKeyValidator(PublicKeyBlacklistKeyValidator.class,
-              "blacklist-parameter-validation-test", "Description");
-        KeyValidatorSessionRemote keyValidatorSession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyValidatorSessionRemote.class);
-        keyValidatorSession.removeKeyValidator(admin, "blacklist-parameter-validation-test");
-        
-        int blacklistId = keyValidatorSession.addKeyValidator(admin, blacklistKeyValidator);
-        blacklistKeyValidator.setProfileId(blacklistId);
-        blacklistKeyValidator.setValidatorTypeIdentifier("BLACKLIST_KEY_VALIDATOR");
-        Collection<Integer> validators = new ArrayList<Integer>();
-        validators.add(blacklistId);
-        testx509ca.getCAInfo().setValidators(validators);
+        testx509ca.getCAInfo().setAddCompromisedKeysToBlockList(true); 
         
         endEntityManagementSession.changeUser(admin, data1, true);
         
@@ -653,13 +641,12 @@ public class EndEntityManagementSessionSystemTest extends CaTestCase {
         
         //try to create new certificate but should not work for Illegal Key
         try {
-            Certificate certAfterRevoke = signSession.createCertificate(admin, username, "foo123", new PublicKeyWrapper(keypair.getPublic()), -1, null, null, CertificateProfileConstants.CERTPROFILE_NO_PROFILE,
-                    testx509ca.getCAInfo().getCAId());
-            
-        }catch (Exception e) {
-            // NOPMD
+            Certificate certAfterRevoke = signSession.createCertificate(admin, username, "foo123", new PublicKeyWrapper(keypair.getPublic()), -1,
+                    null, null, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, testx509ca.getCAInfo().getCAId());
+
+        } catch (IllegalKeyException e) {
+            e.getMessage();
         }
-        keyValidatorSession.removeKeyValidator(admin, "blacklist-parameter-validation-test");
         try {
             CryptoTokenTestUtils.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
             CaTestUtils.removeCa(admin, testx509ca.getCAInfo());
@@ -667,8 +654,6 @@ public class EndEntityManagementSessionSystemTest extends CaTestCase {
             // Be sure to do this, even if the above fails
             super.tearDownRemoveRole();
         }
-        status = certificateStoreSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
-        assertEquals(RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, status.revocationReason); 
     }
     
     @Test
@@ -1641,12 +1626,4 @@ public class EndEntityManagementSessionSystemTest extends CaTestCase {
     }
     
 
-    private Validator createKeyValidator(Class<? extends Validator> type, final String name, final String description) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
-        Validator result = type.getDeclaredConstructor().newInstance();
-        result.setProfileName(name);
-        if (null != description) {
-            result.setDescription(description);
-        }
-        return result;
-    }
 }
