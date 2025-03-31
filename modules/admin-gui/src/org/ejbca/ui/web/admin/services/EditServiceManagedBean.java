@@ -357,6 +357,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
      */
     public List<SelectItem> getAvailableCAs() {
         List<SelectItem> availableCANames = new ArrayList<>();
+        getEjb().getCaSession().flushCACache(); // Flushing CA cache to improve HA behavior
         for (Integer caid : getEjb().getCaSession().getAuthorizedCaIds(getAdmin())) {
                 availableCANames.add(new SelectItem(caid.toString(), getEjb().getCaSession().getCAInfoInternal(caid).getName()));
             
@@ -385,6 +386,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
      */
     public List<SelectItem> getAvailableExternalX509CAsWithAnyOption() {
         final List<SelectItem> availableCANames = new ArrayList<>();
+        getEjb().getCaSession().flushCACache(); // Flushing CA cache to improve HA behavior
         for (final Integer caid : getEjb().getCaSession().getAuthorizedCaIds(getAdmin())) {
             try {
                 CAInfo caInfo = getEjb().getCaSession().getCAInfo(getAdmin(), caid);
