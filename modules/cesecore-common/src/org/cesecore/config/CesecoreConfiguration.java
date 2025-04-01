@@ -14,8 +14,6 @@ package org.cesecore.config;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
@@ -85,13 +83,6 @@ public final class CesecoreConfiguration {
      */
     public static String getCaSerialNumberAlgorithm() {
         return ConfigurationHolder.getString("ca.rngalgorithm");
-    }
-
-    /**
-     * The date and time from which an expire date of a certificate is to be considered to be too far in the future.
-     */
-    public static String getCaTooLateExpireDate() {
-        return ConfigurationHolder.getExpandedString("ca.toolateexpiredate");
     }
 
     /**
@@ -210,16 +201,6 @@ public final class CesecoreConfiguration {
     }
 
     /**
-     * Option if we should keep internal CA keystores in the CAData table to be compatible with CeSecore 1.1/EJBCA 5.0.
-     * Default to true. Set to false when all nodes in a cluster have been upgraded to CeSecore 1.2/EJBCA 5.1 or later,
-     * then internal keystore in CAData will be replaced with a foreign key in to the migrated entry in CryptotokenData.
-     */
-    public static boolean isKeepInternalCAKeystores() {
-        final String value = ConfigurationHolder.getString("db.keepinternalcakeystores");
-        return value == null || !value.trim().equalsIgnoreCase("false");
-    }
-
-    /**
      * When we run in a cluster, each node should have it's own identifier. By default we use the DNS name.
      */
     public static String getNodeIdentifier() {
@@ -237,40 +218,6 @@ public final class CesecoreConfiguration {
             ConfigurationHolder.updateConfigurationWithoutBackup(PROPERTY_NAME, value);
         }
         return value;
-    }
-
-    /** Returns "subalgorithms", e.g. different keylengths or curves */
-    public static List<String> getExtraAlgSubAlgs(String algName) {
-        return ConfigurationHolder.getPrefixedPropertyNames("extraalgs." + algName + ".subalgs");
-    }
-
-    public static String getExtraAlgSubAlgTitle(String algName, String subAlg) {
-        String name = ConfigurationHolder.getString("extraalgs." + algName + ".subalgs." + subAlg + ".title");
-        if (name == null) {
-            // Show the algorithm name, if it has one
-            String end = ConfigurationHolder.getString("extraalgs." + algName + ".subalgs." + subAlg + ".name");
-            // Otherwise, show the key name in the configuration
-            if (end == null) { end = subAlg; }
-            name = ConfigurationHolder.getString("extraalgs." + algName + ".title") + " " + end;
-        }
-        return name;
-    }
-
-    public static String getExtraAlgSubAlgName(String algName, String subAlg) {
-        String name = ConfigurationHolder.getString("extraalgs." + algName + ".subalgs." + subAlg + ".name");
-        if (name == null) {
-            // Not a named algorithm
-            name = getExtraAlgSubAlgOid(algName, subAlg);
-        }
-        return name;
-    }
-
-    public static String getExtraAlgSubAlgOid(String algName, String subAlg) {
-        final String oidTree = ConfigurationHolder.getString("extraalgs." + algName + ".oidtree");
-        final String oidEnd = ConfigurationHolder.getString("extraalgs." + algName + ".subalgs." + subAlg + ".oid");
-
-        if (oidEnd != null && oidTree != null) { return oidTree + "." + oidEnd; }
-        return oidEnd;
     }
 
     /**
@@ -303,10 +250,6 @@ public final class CesecoreConfiguration {
         return Boolean.TRUE.toString().equalsIgnoreCase(ConfigurationHolder.getString("databaseprotection.enableverify"));
     }
 
-    public static boolean getCaKeepOcspExtendedService() {
-        return Boolean.parseBoolean(ConfigurationHolder.getString("ca.keepocspextendedservice").toLowerCase());
-    }
-
     /** @return the number of rows that should be fetched at the time when creating CRLs. */
     public static int getDatabaseRevokedCertInfoFetchSize() {
         return (int) getLongValue("database.crlgenfetchsize", 500000L, "rows");
@@ -318,30 +261,6 @@ public final class CesecoreConfiguration {
      */
     public static boolean getDatabaseRevokedCertInfoFetchOrdered() {
         return Boolean.TRUE.toString().equalsIgnoreCase(ConfigurationHolder.getString("database.crlgenfetchordered"));
-    }
-
-    /** @return a list of enabled TLS protocol versions and cipher suites */
-    /*
-     * Java 6: http://docs.oracle.com/javase/6/docs/technotes/guides/security/SunProviders.html#SunJSSEProvider
-     *  TLS versions: SSLv3, TLSv1, SSLv2Hello
-     * Java 7: http://docs.oracle.com/javase/7/docs/technotes/guides/security/SunProviders.html#SunJSSEProvider
-     *  TLS versions: SSLv3, TLSv1, TLSv1.1, TLSv1.2
-     *  Cipher suites with SHA384 and SHA256 are available only for TLS 1.2 or later.
-     * Java 8: http://docs.oracle.com/javase/8/docs/technotes/guides/security/SunProviders.html#SunJSSEProvider
-     *  TLS versions: SSLv3, TLSv1, TLSv1.1, TLSv1.2
-     *  Cipher suites with SHA384 and SHA256 are available only for TLS 1.2 or later.
-     */
-    public static String[] getAvailableCipherSuites() {
-        final List<String> availableCipherSuites = new ArrayList<>();
-        for (int i=0; i<255; i++) {
-            final String key = "authkeybind.ciphersuite." + i;
-            final String value = ConfigurationHolder.getString(key);
-            if (value==null || !value.contains(AVAILABLE_CIPHER_SUITES_SPLIT_CHAR)) {
-                continue;
-            }
-            availableCipherSuites.add(value);
-        }
-        return availableCipherSuites.toArray(new String[0]);
     }
 
     /**

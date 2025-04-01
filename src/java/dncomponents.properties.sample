@@ -1,6 +1,5 @@
 #
-# Sample file specifying the order of DN components.
-# The sample order below is the same that EJBCA uses by default (see com.keyfactor.util.certificate.DnComponents#dNObjectsForward).
+# Sample file specifying the order of DN components. 
 # Can be copied to dncomponents.properties to control order of you own private DN components.
 # Normal DN order is best controlled through "Custom Subject DN Order" in Certificate Profiles.
 #
@@ -14,6 +13,7 @@ jurisdictionCountry=1.3.6.1.4.1.311.60.2.1.3
 jurisdictionState=1.3.6.1.4.1.311.60.2.1.2
 jurisdictionLocality=1.3.6.1.4.1.311.60.2.1.1
 role=2.5.4.72
+name=2.5.4.41
 street=2.5.4.9
 pseudonym=2.5.4.65
 telephonenumber=2.5.4.20
@@ -44,6 +44,12 @@ pid=1.3.6.1.4.1.37244.2.2
 vid=1.3.6.1.4.1.37244.2.1
 cn=2.5.4.3
 name=2.5.4.41
+rcacid=1.3.6.1.4.1.37244.1.4
+icacid=1.3.6.1.4.1.37244.1.3
+nodeid=1.3.6.1.4.1.37244.1.1
+fabricid=1.3.6.1.4.1.37244.1.5
+noccat=1.3.6.1.4.1.37244.1.6
+fwsigningid=1.3.6.1.4.1.37244.1.2
 sn=2.5.4.5
 serialnumber=2.5.4.5
 gn=2.5.4.42

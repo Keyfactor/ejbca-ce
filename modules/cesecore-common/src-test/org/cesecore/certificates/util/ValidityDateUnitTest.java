@@ -20,7 +20,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
-import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.cesecore.util.ValidityDate;
 import org.junit.Assert;
@@ -172,34 +171,6 @@ public class ValidityDateUnitTest {
         assertEquals("", ValidityDate.parseAsIso8601("2012-02-29"), ValidityDate.parseAsIso8601(ValidityDate.getStringBeforeVersion661(ValidityDate.encodeBeforeVersion661("2012-02-29"))));
         assertEquals("", ValidityDate.parseAsIso8601("2012-02-29").getTime(), ValidityDate.encodeBeforeVersion661("2012-02-29 00:00:00+00:00"));
         LOG.trace("<testEncodeGetBeforeVersion661");
-    }
-
-    /** Test the Date the feature was designed for (http://en.wikipedia.org/wiki/Year_2038_problem) */
-    @Test
-    public void testParseCaLatestValidDateTime() {
-        LOG.trace(">testParseCaLatestValidDateTime");
-        final String bug2038Hex = "80000000";
-        LOG.info("bug2038Hex: " + bug2038Hex);
-        final String bug2038Iso = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ssZZ", TimeZone.getTimeZone("UTC")).format(Long.parseLong("80000000", 16)*1000);
-        LOG.info("bug2038Iso: " + bug2038Iso);
-        final Date bug2038HexDate = ValidityDate.parseCaLatestValidDateTime(bug2038Hex);
-        LOG.info("bug2038HexDate: " + bug2038HexDate);
-        final Date bug2038IsoDate = ValidityDate.parseCaLatestValidDateTime(bug2038Iso);
-        LOG.info("bug2038IsoDate: " + bug2038IsoDate);
-        assertEquals("The two date formats should yield the same Date!", bug2038HexDate, bug2038IsoDate);
-        // Test now also
-        final Date now = new Date();
-        LOG.info("now:        " + now);
-        final String nowIso = FastDateFormat.getInstance(ValidityDate.ISO8601_DATE_FORMAT, TimeZone.getTimeZone("UTC")).format(now);
-        LOG.info("nowIso:     " + nowIso);
-        final Date nowIsoDate = ValidityDate.parseCaLatestValidDateTime(nowIso);
-        LOG.info("nowIsoDate: " + nowIsoDate);
-        // Compare as strings since we will loose milliseconds in the conversion to ISO8601 format
-        assertEquals("Unable to parse current time correctly!", now.toString(), nowIsoDate.toString());
-        // Test unhappy path (return of default value)
-        final Date defaultIsoDate = ValidityDate.parseCaLatestValidDateTime("COFFEE");
-        assertEquals("Default value not returned when invalid date-time specified!", new Date(Long.MAX_VALUE).toString(), defaultIsoDate.toString());
-        LOG.trace("<testParseCaLatestValidDateTime");
     }
 
     /** Tests stripSecondsFromIso8601UtcDate with relative and absolute dates */

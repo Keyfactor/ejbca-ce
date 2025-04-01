@@ -9,7 +9,7 @@
  *                                                                       *
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
- *************************************************************************/ 
+ *************************************************************************/
 
 package org.cesecore.certificates.certificate.request;
 
@@ -19,9 +19,9 @@ import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Random;
 
-import org.apache.log4j.Logger;
-
 import com.keyfactor.util.Base64;
+
+import org.apache.log4j.Logger;
 
 /**
  * Response message utilities.
@@ -29,7 +29,7 @@ import com.keyfactor.util.Base64;
 public abstract class ResponseMessageUtils {
 
     private static final Logger log = Logger.getLogger(ResponseMessageUtils.class);
-    
+
     public static CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass, RequestMessage req,
             Collection<Certificate> certs, PrivateKey signPriv, String sigAlg, String provider) {
         CertificateResponseMessage ret = null;
@@ -40,7 +40,7 @@ public abstract class ResponseMessageUtils {
             //TODO : do something with these exceptions
             log.error("Error creating response message", e);
             return null;
-        } 
+        }
         if (ret.requireSignKeyInfo()) {
             ret.setSignKeyInfo(certs, signPriv, sigAlg, provider);
         }

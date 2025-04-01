@@ -19,6 +19,7 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CA;
+import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -90,7 +91,9 @@ public class CmpTestCommandSystemTest {
         x509ca = CaTestUtils.createTestX509CA(DEFAULT_CA_DN, "foo123".toCharArray(), false);
         caSession.addCA(authToken, x509ca);
         Certificate caCertificate = x509ca.getCACertificate();
-        CAInfo cainfo = caSession.getCAInfo(authToken, x509ca.getCAId());
+        X509CAInfo cainfo = (X509CAInfo) caSession.getCAInfo(authToken, x509ca.getCAId());
+        cainfo.setDescription("CmpTestCommandSystemTest CA");
+        cainfo.setCmpRaAuthSecret("password");
         cainfo.setDoEnforceUniquePublicKeys(false);
         caSession.editCA(authToken, cainfo);
         caCertificateFile = File.createTempFile("tmp", ".pem");

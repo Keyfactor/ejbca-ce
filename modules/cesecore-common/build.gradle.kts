@@ -32,8 +32,7 @@ dependencies {
     compileOnly(libs.nimbus.jose.jwt)
     compileOnly(libs.xmlpull)
     compileOnly(libs.x509.common.util)
-    compileOnly(libs.cryptotokens.api)
-    compileOnly(libs.cryptotokens.impl) 
+    compileOnly(libs.bundles.cryptotokens)
     // hibernate
     compileOnly(libs.antlr4.runtime)
     compileOnly(libs.byte.buddy)
@@ -51,16 +50,47 @@ dependencies {
     compileOnly(libs.jboss.transaction.api.v12.spec)
     compileOnly(libs.stax.ex)
     compileOnly(libs.txw2)
+
+    testImplementation(project(":modules:cesecore-entity"))
+    testImplementation(project(":modules:cesecore-x509ca"))
+    testRuntimeOnly(libs.xpp3.min)
+
+    if (project.extra["edition"] == "ee") {
+        testRuntimeOnly(project(":modules:cesecore-cvcca"))
+    }
 }
 
 sourceSets {
-    val main by getting {
+    main {
         java {
             setSrcDirs(
                 listOf("src")
             )
+            resources {
+                srcDirs("resources")
+            }
         }
     }
+    test {
+        resources {
+            srcDirs("resources-test")
+        }
+    }
+}
+
+tasks.processTestResources {
+    from("${rootProject.projectDir}/src/intresources") {
+        into("intresources")
+    }
+    from("${rootProject.projectDir}/src/java")
+    {
+        include("defaultvalues.properties")
+        include("dncomponents.properties")
+        include("profilemappings.properties")
+        include("profilemappings_enterprise.properties")
+        include("certextensions.properties")
+    }
+    into("build/resources/test/")
 }
 
 tasks.jar {
@@ -74,8 +104,5 @@ tasks.jar {
     }
     from("${rootProject.projectDir}/src/intresources") {
         into("intresources")
-    }
-    from("resources/META-INF/services") {
-        into("META-INF/services")
     }
 }

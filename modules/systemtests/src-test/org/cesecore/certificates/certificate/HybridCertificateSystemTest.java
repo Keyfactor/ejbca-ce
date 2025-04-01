@@ -12,9 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -28,6 +25,13 @@ import java.security.cert.X509Certificate;
 import java.security.spec.ECGenParameterSpec;
 import java.util.Properties;
 
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.KeyGenParams;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -35,6 +39,7 @@ import org.bouncycastle.asn1.x509.SubjectAltPublicKeyInfo;
 import org.bouncycastle.cert.CertException;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
+import org.bouncycastle.jcajce.spec.MLDSAParameterSpec;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -43,8 +48,6 @@ import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.PKCSException;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder;
-import org.bouncycastle.pqc.jcajce.provider.BouncyCastlePQCProvider;
-import org.bouncycastle.pqc.jcajce.spec.DilithiumParameterSpec;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -94,12 +97,8 @@ import org.junit.rules.TestName;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-import com.keyfactor.util.keys.token.KeyGenParams;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * System tests focusing on the creation of Hybrid X509 Certificates
@@ -162,7 +161,7 @@ public class HybridCertificateSystemTest {
         cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS,
                 KeyGenParams.builder("secp256r1").build());
         cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, CAToken.ALTERNATE_SOFT_PRIVATE_SIGNKEY_ALIAS,
-                KeyGenParams.builder(AlgorithmConstants.KEYALGORITHM_DILITHIUM2).build());
+                KeyGenParams.builder(AlgorithmConstants.KEYALGORITHM_MLDSA44).build());
 
         final String caDn = "CN=" + testName.getMethodName() + "_CA";
 
@@ -174,7 +173,7 @@ public class HybridCertificateSystemTest {
         caToken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
         caToken.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
         caToken.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
-        caToken.setAlternativeSignatureAlgorithm(AlgorithmConstants.SIGALG_DILITHIUM2);
+        caToken.setAlternativeSignatureAlgorithm(AlgorithmConstants.SIGALG_MLDSA44);
 
         hybridRoot = X509CAInfo.getDefaultX509CAInfo(caDn, "testHybridRootCa", CAConstants.CA_ACTIVE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "3650d", CAInfo.SELFSIGNED, null, caToken);
@@ -184,7 +183,7 @@ public class HybridCertificateSystemTest {
 
     @After
     public void tearDown() throws Exception {
-        //Delete the end entity 
+        //Delete the end entity
         if (endEntityManagementSession.existsUser(username)) {
             endEntityManagementSession.deleteUser(alwaysAllowToken, username);
         }
@@ -212,7 +211,7 @@ public class HybridCertificateSystemTest {
     }
 
     /**
-     * Try enrolling a hybrid X509 certificate 
+     * Try enrolling a hybrid X509 certificate
      *
      */
     @Test
@@ -234,15 +233,15 @@ public class HybridCertificateSystemTest {
             keyPairGenerator.initialize(new ECGenParameterSpec("P-256"));
             KeyPair keyPair = keyPairGenerator.generateKeyPair();
 
-            KeyPairGenerator alternativeKeyPairGenerator = KeyPairGenerator.getInstance(AlgorithmConstants.KEYALGORITHM_DILITHIUM,
+            KeyPairGenerator alternativeKeyPairGenerator = KeyPairGenerator.getInstance(AlgorithmConstants.KEYALGORITHM_MLDSA,
                     BouncyCastleProvider.PROVIDER_NAME);
-            alternativeKeyPairGenerator.initialize(DilithiumParameterSpec.dilithium2);
+            alternativeKeyPairGenerator.initialize(MLDSAParameterSpec.ml_dsa_44);
             KeyPair alternativeKeyPair = alternativeKeyPairGenerator.generateKeyPair();
 
             JcaPKCS10CertificationRequestBuilder jcaPKCS10CertificationRequestBuilder = new JcaPKCS10CertificationRequestBuilder(
                     new X500Name(subjectDn), keyPair.getPublic());
 
-            ContentSigner altSigner = new JcaContentSignerBuilder(AlgorithmConstants.SIGALG_DILITHIUM2)
+            ContentSigner altSigner = new JcaContentSignerBuilder(AlgorithmConstants.SIGALG_MLDSA44)
                     .setProvider(BouncyCastleProvider.PROVIDER_NAME).build(alternativeKeyPair.getPrivate());
 
             PKCS10CertificationRequest pkcs10CertificationRequest = jcaPKCS10CertificationRequestBuilder
@@ -268,7 +267,7 @@ public class HybridCertificateSystemTest {
 
             PublicKey caAlternativePublicKey = cryptoTokenManagementSession.getPublicKey(alwaysAllowToken, cryptoTokenId, CAToken.ALTERNATE_SOFT_PRIVATE_SIGNKEY_ALIAS).getPublicKey();
             assertTrue("Alternative signature does not verify", certHolder.isAlternativeSignatureValid(
-                    new JcaContentVerifierProviderBuilder().setProvider(BouncyCastlePQCProvider.PROVIDER_NAME).build(caAlternativePublicKey)));
+                    new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caAlternativePublicKey)));
         } finally {
             try {
                 endEntityManagementSession.deleteUser(alwaysAllowToken, username);

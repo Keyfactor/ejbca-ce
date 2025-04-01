@@ -381,7 +381,7 @@ public abstract class EstTestCase extends CaTestCase {
     }
 
     protected PKCS10CertificationRequest generateCertReq(String dn, String challengePassword, String changeToSubjectDN, String changeToSubjectAltName, 
-            Extensions exts, final KeyPair keys) throws OperatorCreationException {
+            Extensions exts, final KeyPair keys, String signatureAlgorithm) throws OperatorCreationException {
         // Generate keys
 
         // Create challenge password attribute for PKCS10
@@ -450,7 +450,7 @@ public abstract class EstTestCase extends CaTestCase {
         // Complete the Attribute section of the request, the set (Attributes) contains two sequences (Attribute)
         DERSet attributes = new DERSet(attributesVec);
         // Create PKCS#10 certificate request
-        final PKCS10CertificationRequest p10request = CertTools.genPKCS10CertificationRequest("SHA256WithECDSA",
+        final PKCS10CertificationRequest p10request = CertTools.genPKCS10CertificationRequest(signatureAlgorithm,
                 DnComponents.stringToBcX500Name(dn), keys.getPublic(), attributes, keys.getPrivate(), null);
         return p10request;
     }

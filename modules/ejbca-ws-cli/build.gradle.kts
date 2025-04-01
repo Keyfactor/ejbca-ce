@@ -15,8 +15,7 @@ dependencies {
     implementation(libs.ejbca.ws.client.gen)
     implementation(libs.commons.lang)
     implementation(libs.x509.common.util)
-    implementation(libs.cryptotokens.api)
-    implementation(libs.cryptotokens.impl)
+    implementation(libs.bundles.cryptotokens)
     implementation(libs.istack.commons.runtime)
     implementation(libs.jakarta.xml.bind.api)
     implementation(libs.saaj.impl)
@@ -26,7 +25,7 @@ dependencies {
 }
 
 sourceSets {
-    val main by getting {
+    main {
         java {
             setSrcDirs(listOf("src"))
         }
@@ -36,4 +35,11 @@ sourceSets {
 tasks.jar {
     from(sourceSets["main"].output)
     archiveBaseName.set("ejbca-ws-client")
+}
+
+tasks.processTestResources {
+    from("resources"){
+        include("ejbcawsracli.properties")
+    }
+    into("build/resources/test/")
 }
