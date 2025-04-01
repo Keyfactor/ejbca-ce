@@ -277,4 +277,9 @@ public class GoogleSafeBrowsingValidator extends ValidatorBase implements DnsNam
         }
         return domainName + " is not a threat.";
     }
+    
+    @Override
+    public boolean isValidatorAlwaysApplicable() {
+        return true;
+    }
 }

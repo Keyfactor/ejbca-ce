@@ -13,7 +13,6 @@
 package org.cesecore.junit.util;
 
 import java.security.InvalidKeyException;
-import java.security.cert.Certificate;
 import java.security.cert.CertificateParsingException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,6 +21,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
 
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.CaTestUtils;
@@ -50,14 +57,6 @@ import org.cesecore.util.SimpleTime;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
 
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
-
 
 /**
  * Base class for crypto token variations of the test runner.
@@ -65,12 +64,12 @@ import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
 public abstract class CryptoTokenRunner {
 
     public static final List<CryptoTokenRunner> defaultRunners =  Arrays.asList(new PKCS12TestRunner(), new PKCS11TestRunner(), new P11NGTestRunner());
-    
+
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
 
     private final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CryptoTokenManagementSessionRemote.class);
-    
+
     private final CryptoTokenSessionRemote cryptoTokenSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenSessionRemote.class);
 
     private Map<Integer, X509CAInfo> casToRemove = new HashMap<>();
@@ -79,19 +78,19 @@ public abstract class CryptoTokenRunner {
     private final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
             CryptoTokenRunner.class.getSimpleName()));
 
-    
+
     public void setCryptoTokenForRemoval(int cryptoTokenId) {
         cryptoTokenstoRemove.add(cryptoTokenId);
     }
-    
+
     public void setCaForRemoval(int caId, X509CAInfo x509caInfo) {
         casToRemove.put(caId, x509caInfo);
     }
-    
+
     public CryptoTokenRunner() {
         CryptoProviderTools.installBCProviderIfNotAvailable();
     }
-    
+
     public void tearDownAllCas() {
         List<X509CAInfo> defensiveCopy = new ArrayList<>(casToRemove.values());
         for(X509CAInfo ca : defensiveCopy) {
@@ -101,7 +100,7 @@ public abstract class CryptoTokenRunner {
 
     public void teardownCryptoToken() {
         try {
-            for (int cryptoTokenId : cryptoTokenstoRemove) {                
+            for (int cryptoTokenId : cryptoTokenstoRemove) {
                 if (cryptoTokenManagementSession.isCryptoTokenPresent(alwaysAllowToken, cryptoTokenId)) {
                     try {
                         for (KeyPairInfo keyPairInfo : cryptoTokenManagementSession.getKeyPairInfos(alwaysAllowToken, cryptoTokenId)) {
@@ -111,7 +110,7 @@ public abstract class CryptoTokenRunner {
                         throw new IllegalStateException(e);
                     }
                 }
-                
+
                 cryptoTokenManagementSession.deleteCryptoToken(alwaysAllowToken, cryptoTokenId);
             }
         } catch (AuthorizationDeniedException e) {
@@ -121,9 +120,9 @@ public abstract class CryptoTokenRunner {
 
     public abstract String getSimpleName();
 
-    
+
     public abstract X509CAInfo createX509Ca(String subjectDn, String caName) throws Exception;
-        
+
     public abstract X509CAInfo createX509Ca(String subjectDn, String issuerDn, String caName, String validity) throws Exception;
 
     public abstract X509CAInfo createX509Ca(String subjectDn, String issuerDn, String caName, String validity, String keySpec, String signingAlgorithm) throws Exception;
@@ -131,7 +130,7 @@ public abstract class CryptoTokenRunner {
     public void tearDownCa(X509CAInfo ca) {
         final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
                 InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-        
+
         int cryptoTokenId = ca.getCAToken().getCryptoTokenId();
 
         try {
@@ -145,16 +144,16 @@ public abstract class CryptoTokenRunner {
                     throw new IllegalStateException(e);
                 }
             }
-            
-            
+
+
             cryptoTokenManagementSession.deleteCryptoToken(alwaysAllowToken, cryptoTokenId);
             if (ca != null) {
                 caSession.removeCA(alwaysAllowToken, ca.getCAId());
             }
-            Certificate caCertificate = ca.getCertificateChain().get(0);
-            if (caCertificate != null) {
-                internalCertificateStoreSession.removeCertificate(caCertificate);
-            }
+            // Delete certs and CRLs issued by the CA
+            internalCertificateStoreSession.removeCertificatesByIssuer(ca.getSubjectDN());
+            internalCertificateStoreSession.removeCertificatesBySubject(ca.getSubjectDN());
+            internalCertificateStoreSession.removeCRLs(alwaysAllowToken, ca.getSubjectDN());
         } catch (AuthorizationDeniedException e) {
             throw new IllegalStateException(e);
         }
@@ -162,15 +161,15 @@ public abstract class CryptoTokenRunner {
     }
 
     /**
-     * @return a string differentiatior for the class inheriting this baseclass, mostly used for naming reasons. 
+     * @return a string differentiatior for the class inheriting this baseclass, mostly used for naming reasons.
      */
     public abstract String getNamingSuffix();
-    
+
     /**
-     * Will create a crypto token, as defined by the implementing subclass. 
-     * 
+     * Will create a crypto token, as defined by the implementing subclass.
+     *
      * @param tokenName the name of the token
-     * 
+     *
      * @return the crypto token ID, never null.
      * @throws NoSuchSlotException if the defined slot could not be found
      * @throws CryptoTokenNameInUseException if a crypto token with the predefined name already exists
@@ -179,23 +178,23 @@ public abstract class CryptoTokenRunner {
      */
     public abstract Integer createCryptoToken(final String tokenName) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
             CryptoTokenNameInUseException, NoSuchSlotException;
-    
+
     /**
-     * 
-     * @return true if this runner can be run in the current environment. 
+     *
+     * @return true if this runner can be run in the current environment.
      */
     public abstract boolean canRun();
-    
+
     public void cleanUp() {
         teardownCryptoToken();
         tearDownAllCas();
     }
-    
+
     protected X509CAInfo createTestX509Ca(final String caName, String cadn, char[] tokenpin, boolean genKeys, String cryptoTokenImplementation, int signedBy, final String keyspec,
             String validity) throws CryptoTokenOfflineException, CertificateParsingException, OperatorCreationException {
         return createTestX509Ca(caName, cadn, tokenpin, genKeys, cryptoTokenImplementation, signedBy, keyspec, validity, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
     }
-    
+
     protected X509CAInfo createTestX509Ca(final String caName, String cadn, char[] tokenpin, boolean genKeys, String cryptoTokenImplementation, int signedBy, final String keyspec,
             String validity, String signingAlgorithm) throws CryptoTokenOfflineException, CertificateParsingException, OperatorCreationException {
         return createTestX509Ca(caName, cadn, tokenpin, genKeys, cryptoTokenImplementation, signedBy, keyspec,
@@ -209,10 +208,10 @@ public abstract class CryptoTokenRunner {
         CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
         CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession = EjbRemoteHelper.INSTANCE
                 .getRemoteSession(CryptoTokenManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-        
+
         final String signingKeyName = caName + "_" + CAToken.SOFTPRIVATESIGNKEYALIAS;
         final String encryptionKeyName = caName + "_" + CAToken.SOFTPRIVATEDECKEYALIAS;
-        
+
         cryptoTokenManagementProxySession.flushCache();
         int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(alwaysAllowToken, tokenpin, genKeys, cryptoTokenImplementation, cadn, keyspec, "1024", signingKeyName, encryptionKeyName);
         cryptoTokenstoRemove.add(cryptoTokenId);
@@ -221,7 +220,7 @@ public abstract class CryptoTokenRunner {
         } catch (CryptoTokenOfflineException | CryptoTokenAuthenticationFailedException | AuthorizationDeniedException e) {
             throw new IllegalStateException("Could not activate crypto token", e);
         }
-        final CAToken catoken = 
+        final CAToken catoken =
                 CaTestUtils.createCaToken(cryptoTokenId, signingAlgorithm, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, signingKeyName, encryptionKeyName);
         final List<ExtendedCAServiceInfo> extendedCaServices = new ArrayList<>(2);
         extendedCaServices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
@@ -239,7 +238,7 @@ public abstract class CryptoTokenRunner {
         cainfo.setMsCaCompatible(isMsCompatible);
         cainfo.setCrlDistributionPointOnCrlCritical(isMsCompatible);
         cryptoTokenManagementProxySession.flushCache();
-        
+
         final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
         try {
             caAdminSession.createCA(alwaysAllowToken, cainfo);
@@ -253,12 +252,12 @@ public abstract class CryptoTokenRunner {
             throw new IllegalStateException(e);
         }
     }
-    
+
     protected int createCryptoToken(final char[] pin, final String cryptTokenImplementation, final String tokenName) {
         CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
         CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession = EjbRemoteHelper.INSTANCE
                 .getRemoteSession(CryptoTokenManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-        
+
         int cryptoTokenId = CryptoTokenTestUtils.createCryptoToken(pin, cryptTokenImplementation, tokenName);
         cryptoTokenstoRemove.add(cryptoTokenId);
         try {
@@ -269,8 +268,8 @@ public abstract class CryptoTokenRunner {
         cryptoTokenManagementProxySession.flushCache();
         return cryptoTokenId;
     }
-    
-    
+
+
     protected abstract String getTokenImplementation();
 
     public abstract X509CAInfo createX509CaMsCompatible(String subjectDn, String caName) throws Exception;

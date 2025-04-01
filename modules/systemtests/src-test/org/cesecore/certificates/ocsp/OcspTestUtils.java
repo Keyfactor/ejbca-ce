@@ -12,8 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.HttpURLConnection;
@@ -31,10 +29,19 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.keyfactor.CesecoreException;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.KeyGenParams;
+
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -82,13 +89,7 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.junit.Assert;
 
-import com.keyfactor.CesecoreException;
-import com.keyfactor.util.EJBTools;
-import com.keyfactor.util.certificate.SimpleCertGenerator;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.keys.KeyTools;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-import com.keyfactor.util.keys.token.KeyGenParams;
+import static org.junit.Assert.assertEquals;
 
 public final class OcspTestUtils {
 
@@ -107,7 +108,7 @@ public final class OcspTestUtils {
             deleteCa(authenticationToken, (X509CAInfo) x509ca.getCAInfo());
         }
     }
-    
+
     public static void deleteCa(AuthenticationToken authenticationToken, X509CAInfo x509ca) throws AuthorizationDeniedException {
         if (x509ca != null) {
             CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
@@ -128,13 +129,13 @@ public final class OcspTestUtils {
      * @param keyspec keyspec for new key binding crypto token, i. "RSA2048", "secp256r1"
      * @param signAlg  is the signature algorithm that this InternalKeyBinding will use for signatures (if applicable), i.e. AlgorithmConstants.SIGALG_SHA1_WITH_RSA
      * @return internalKeyBindingId
-     * @throws AuthorizationDeniedException 
-     * @throws InvalidAlgorithmParameterException 
-     * @throws CryptoTokenOfflineException 
-     * @throws InvalidKeyException 
-     * @throws InternalKeyBindingNonceConflictException 
-     * @throws InvalidAlgorithmException 
-     * @throws InternalKeyBindingNameInUseException 
+     * @throws AuthorizationDeniedException
+     * @throws InvalidAlgorithmParameterException
+     * @throws CryptoTokenOfflineException
+     * @throws InvalidKeyException
+     * @throws InternalKeyBindingNonceConflictException
+     * @throws InvalidAlgorithmException
+     * @throws InternalKeyBindingNameInUseException
      */
     public static int createInternalKeyBinding(AuthenticationToken authenticationToken, int cryptoTokenId, String type, String testName,
             String keyspec, String signAlg)
@@ -170,8 +171,8 @@ public final class OcspTestUtils {
         internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, internalKeyBinding);
     }
 
-    /** Adds signOnBehalfEntries to a previously created OCSP key binding 
-     * @throws AuthorizationDeniedException 
+    /** Adds signOnBehalfEntries to a previously created OCSP key binding
+     * @throws AuthorizationDeniedException
      * @throws InternalKeyBindingNameInUseException */
     public static void addSignOnBehalfEntries(AuthenticationToken authenticationToken, int internalKeyBindinId,
             List<InternalKeyBindingTrustEntry> signOcspResponseOnBehalf) throws AuthorizationDeniedException, InternalKeyBindingNameInUseException {
@@ -355,15 +356,17 @@ public final class OcspTestUtils {
     }
 
     public static void clearOcspSigningCache() {
+        final String urlString = "http://localhost:" + SystemTestsConfiguration.getRemotePortHttp("8080") +
+                "/ejbca/clearcache?command=clearcaches&excludeactivects=true";
         try {
-            final URL url = new URL("http://localhost:8080/ejbca/clearcache?command=clearcaches&excludeactivects=true");
+            final URL url = new URL(urlString);
             final HttpURLConnection con = (HttpURLConnection) url.openConnection();
             if (con.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                Assert.fail("Failed to clear caches using URL: http://localhost:8080/ejbca/clearcache?command=clearcaches&excludeactivects=true"
+                Assert.fail("Failed to clear caches using URL: " + urlString
                         + ". The response code was: " + con.getResponseCode());
             }
         } catch (IOException e) {
-            Assert.fail("Failed to clear caches using URL: http://localhost:8080/ejbca/clearcache?command=clearcaches&excludeactivects=true"
+            Assert.fail("Failed to clear caches using URL: " + urlString
                     + ". The error was: " + e.getMessage());
         }
     }
@@ -382,7 +385,7 @@ public final class OcspTestUtils {
                 .setEntityPubKey(caKeyPair.getPublic())
                 .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
                 .setProvider(BouncyCastleProvider.PROVIDER_NAME)
-                .generateCertificate();           
+                .generateCertificate();
 
         List<Certificate> certs = new ArrayList<>();
         certs.add(cert);
@@ -393,7 +396,7 @@ public final class OcspTestUtils {
 
     public static Certificate createCertByExternalCa(final KeyPair caKeyPair, String userDn, int validity)
             throws InvalidAlgorithmParameterException, OperatorCreationException, CertificateException, CertIOException {
-        KeyPair userKeyPair = KeyTools.genKeys("2048", "RSA");        
+        KeyPair userKeyPair = KeyTools.genKeys("2048", "RSA");
         // The Issuer DN (which is set to an incorrect value here) is not used because there's SKID and AKID in the cert.
         return SimpleCertGenerator.forTESTLeafCert()
                 .setSubjectDn(userDn)
@@ -404,7 +407,7 @@ public final class OcspTestUtils {
                 .setEntityPubKey(userKeyPair.getPublic())
                 .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
                 .setProvider(BouncyCastleProvider.PROVIDER_NAME)
-                .generateCertificate();  
+                .generateCertificate();
     }
 
 }
