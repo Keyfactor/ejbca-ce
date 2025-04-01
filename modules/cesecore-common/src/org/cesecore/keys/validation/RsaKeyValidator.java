@@ -831,4 +831,9 @@ public class RsaKeyValidator extends KeyValidatorBase {
     protected Class<? extends Profile> getImplementationClass() {
         return RsaKeyValidator.class;
     }
+
+    @Override
+    public boolean isValidatorAlwaysApplicable() {
+        return false;
+    }
 }
