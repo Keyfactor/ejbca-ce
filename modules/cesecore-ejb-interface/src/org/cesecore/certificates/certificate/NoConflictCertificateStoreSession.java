@@ -13,6 +13,7 @@
 package org.cesecore.certificates.certificate;
 
 import java.math.BigInteger;
+import java.time.LocalDateTime;
 import java.util.Collection;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -51,7 +52,7 @@ public interface NoConflictCertificateStoreSession  {
     String generateDummyFingerprint(String issuerdn, BigInteger certserno);
 
     /** @see CertificateStoreSession#listRevokedCertInfo */
-    Collection<RevokedCertInfo> listRevokedCertInfo(String issuerDN, boolean deltaCrl, int crlPartitionIndex, long lastBaseCrlDate, boolean keepExpiredCertsOnCrl, 
+    Collection<RevokedCertInfo> listRevokedCertInfo(String issuerDN, boolean deltaCrl, int crlPartitionIndex, long lastBaseCrlDate, boolean keepExpiredCertsOnCrl, LocalDateTime keepExpiredCertsOnCrlDate,
             boolean allowInvalidityDate);
     
     /** @see CertificateStoreSession#setStatus */

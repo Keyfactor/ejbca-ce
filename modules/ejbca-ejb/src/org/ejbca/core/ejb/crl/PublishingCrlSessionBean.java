@@ -18,6 +18,7 @@ import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
 import java.security.cert.X509CRLEntry;
 import java.text.ParseException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -493,9 +494,10 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
             final String caCertSubjectDN = cacert == null ? null : CertTools.getSubjectDN(cacert);
             final Date now = new Date();
             final Date lastBaseCrlCreationDate = lastBaseCrlInfo == null ? new Date(-1) : lastBaseCrlInfo.getCreateDate();
-            final boolean keepExpiredCertsOnCrl = ca.getCAType() == CAInfo.CATYPE_X509 && cainfo.getKeepExpiredCertsOnCRL();
+            final boolean keepExpiredCertsOnCrl = ca.getCAType() == CAInfo.CATYPE_X509 && cainfo.getKeepExpiredCertsOnCrl();
+            final LocalDateTime keepExpiredCertsOnDate = ca.getKeepExpiredCertsOnCrlDate();
             if (keepExpiredCertsOnCrl) {
-                log.info("KeepExpiredCertsOnCRL is enabled, we will not archive expired certificates, but will keep them on the CRL (for ever growing): " + keepExpiredCertsOnCrl);
+                log.info("KeepExpiredCertsOnCrl is enabled, we will not archive expired certificates, but will keep them on the CRL (for ever growing): " + keepExpiredCertsOnCrl);
             }
             // We can not create a CRL for a CA that is waiting for certificate response
             if ( caCertSubjectDN!=null && cainfo.getStatus()==CAConstants.CA_ACTIVE )  {
@@ -505,7 +507,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                     log.debug("Listing revoked certificates. Free memory=" + freeMemory);
                 }
                 revokedCertificates = noConflictCertificateStoreSession.listRevokedCertInfo(caCertSubjectDN, false,
-                        crlPartitionIndex, lastBaseCrlCreationDate.getTime(), keepExpiredCertsOnCrl, getAllowInvalidityDate(cainfo));
+                        crlPartitionIndex, lastBaseCrlCreationDate.getTime(), keepExpiredCertsOnCrl, keepExpiredCertsOnDate, getAllowInvalidityDate(cainfo));
 
                 //if X509 CA is marked as it has gone through Name Change add certificates revoked with old names
                 if(ca.getCAType()==CAInfo.CATYPE_X509 && ((X509CA)ca).getNameChanged()){
@@ -521,7 +523,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                                 log.info("Collecting revocation information for " + LogRedactionUtils.getSubjectDnLogSafe(renewedCertificateSubjectDN) + " and merging them with ones for " + caCertSubjectDN);
                                 differentSubjectDNs.add(renewedCertificateSubjectDN);
                                 Collection<RevokedCertInfo> revokedCertInfo = noConflictCertificateStoreSession.listRevokedCertInfo(renewedCertificateSubjectDN,
-                                        false, crlPartitionIndex, lastBaseCrlCreationDate.getTime(), keepExpiredCertsOnCrl, getAllowInvalidityDate(cainfo));
+                                        false, crlPartitionIndex, lastBaseCrlCreationDate.getTime(), keepExpiredCertsOnCrl, keepExpiredCertsOnDate, getAllowInvalidityDate(cainfo));
                                 
                                 for (RevokedCertInfo tmp : revokedCertInfo) { //for loop is necessary because revokedCertInfo.toArray is not supported...
                                     revokedCertificatesBeforeLastCANameChange.add(tmp);
@@ -669,7 +671,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
             if ( caCertSubjectDN!=null && cainfo.getStatus()==CAConstants.CA_ACTIVE ) {
                 // Find all revoked certificates
                 revcertinfos = noConflictCertificateStoreSession.listRevokedCertInfo(caCertSubjectDN, true, crlPartitionIndex, lastBaseCrlInfo.getCreateDate().getTime(), 
-                        true, getAllowInvalidityDate(cainfo));
+                        true, cainfo.getKeepExpiredCertsOnCrlDate(), getAllowInvalidityDate(cainfo));
 
                 // If invalidity date is considered when generating delta CRL then additional filtering must be applied to the collection of RevokedCertInfos
                 if (getAllowInvalidityDate(cainfo)) {
@@ -725,7 +727,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                                 }
                                 differentSubjectDNs.add(renewedCertificateSubjectDN);
                                 Collection<RevokedCertInfo> revokedCertInfo = noConflictCertificateStoreSession.listRevokedCertInfo(renewedCertificateSubjectDN, false, 
-                                        crlPartitionIndex, -1, true, getAllowInvalidityDate(cainfo));
+                                        crlPartitionIndex, -1, true, cainfo.getKeepExpiredCertsOnCrlDate(), getAllowInvalidityDate(cainfo));
                                 
                                 for (RevokedCertInfo tmp : revokedCertInfo) { //for loop is necessary because revokedCertInfo.toArray is not supported...
                                     revokedCertificatesBeforeLastCANameChange.add(tmp);

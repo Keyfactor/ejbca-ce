@@ -17,6 +17,7 @@ import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -80,9 +81,13 @@ public interface CA extends CACommon {
 
     void setCRLOverlapTime(long crlOverlapTime);
 
-    boolean getKeepExpiredCertsOnCRL();
+    boolean getKeepExpiredCertsOnCrl();
 
-    void setKeepExpiredCertsOnCRL(boolean keepexpiredcertsoncrl);
+    void setKeepExpiredCertsOnCrl(boolean keepexpiredcertsoncrl);
+
+    LocalDateTime getKeepExpiredCertsOnCrlDate();
+
+    void setKeepExpiredCertsOnCrlDate(LocalDateTime keepExpiredCertsOnCrlDate);
 
     int getDefaultCertificateProfileId();
     

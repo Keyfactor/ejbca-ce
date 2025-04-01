@@ -32,7 +32,7 @@ import java.security.cert.TrustAnchor;
 import java.security.cert.X509CRL;
 import java.security.cert.X509CertSelector;
 import java.security.cert.X509Certificate;
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -100,7 +100,7 @@ public class X509CAInfo extends CAInfo {
 	private int crlPartitions;
 	private int suspendedCrlPartitions;
 	private String requestPreProcessor;
-	private ZonedDateTime keepExpiredCertsOnCRLDate;
+	private LocalDateTime keepExpiredCertsOnCrlDate;
 
 	// Key: Root CA subjectDn, Value: fingerprint in reverse order, root CA at end
 	private Map<String, List<String>> alternateCertificateChains;
@@ -181,7 +181,7 @@ public class X509CAInfo extends CAInfo {
                 .setDoPreProduceIndividualOcspResponses(false)
                 .setAcceptRevocationNonExistingEntry(false)
                 .setCmpRaAuthSecret(null)
-                .setKeepExpiredCertsOnCRL(false)
+                .setKeepExpiredCertsOnCrl(false)
                 .setUsePartitionedCrl(false)
                 .setCrlPartitions(0)
                 .setSuspendedCrlPartitions(0)
@@ -206,7 +206,7 @@ public class X509CAInfo extends CAInfo {
                       final boolean doEnforceUniqueSubjectDNSerialnumber, final boolean useCertReqHistory, final boolean useUserStorage,
                       final boolean useCertificateStorage, final boolean doPreProduceOcspResponses, final boolean doStoreOcspResponsesOnDemand,
                       final boolean doPreProduceOcspResponseUponIssuanceAndRevocation, final boolean acceptRevocationNonExistingEntry,
-                      final String cmpRaAuthSecret, final boolean keepExpiredCertsOnCRL, final int defaultCertprofileId,
+                      final String cmpRaAuthSecret, final boolean keepExpiredCertsOnCrl, final LocalDateTime keepExpiredCertsOnCrlDate, final int defaultCertprofileId,
                       final boolean useNoConflictCertificateData, final boolean usePartitionedCrl, final int crlPartitions, final int suspendedCrlPartitions,
                       final String requestPreProcessor, final boolean msCaCompatible, final Map<String, List<String>> alternateCertificateChains,
                       final String externalCDP) {
@@ -254,7 +254,8 @@ public class X509CAInfo extends CAInfo {
         this.doPreProduceOcspResponseUponIssuanceAndRevocation = doPreProduceOcspResponseUponIssuanceAndRevocation;
         this.acceptRevocationNonExistingEntry = acceptRevocationNonExistingEntry;
         setCmpRaAuthSecret(cmpRaAuthSecret);
-        this.keepExpiredCertsOnCRL = keepExpiredCertsOnCRL;
+        this.keepExpiredCertsOnCrl = keepExpiredCertsOnCrl;
+        this.keepExpiredCertsOnCrlDate = keepExpiredCertsOnCrlDate;
         this.authorityInformationAccess = crlAuthorityInformationAccess;
         this.certificateAiaDefaultCaIssuerUri = certificateAiaDefaultCaIssuerUri;
         this.nameConstraintsPermitted = nameConstraintsPermitted;
@@ -531,15 +532,14 @@ public class X509CAInfo extends CAInfo {
     public String getExternalCdp() {
         return externalCdp;
     }
-    
-    public void setKeepExpiredCertsOnCRLDate(final ZonedDateTime keepExpiredCertsOnCRLDate) {
-        this.keepExpiredCertsOnCRLDate = keepExpiredCertsOnCRLDate;
-    }
-    
-    public ZonedDateTime getKeepExpiredCertsOnCRLDate() {
-        return this.keepExpiredCertsOnCRLDate;
+
+    public LocalDateTime getKeepExpiredCertsOnCrlDate() {
+        return this.keepExpiredCertsOnCrlDate;
     }
 
+    public void setKeepExpiredCertsOnCrlDate(final LocalDateTime keepExpiredCertsOnCrlDate) {
+        this.keepExpiredCertsOnCrlDate = keepExpiredCertsOnCrlDate;
+    }
 
     /** Set what should be a String formatted URL pointing to an external CA's CDP. */
     public void setExternalCdp(final String externalCdp) {
@@ -726,8 +726,8 @@ public class X509CAInfo extends CAInfo {
         private boolean doPreProduceIndividualOcspResponse = false;
         private boolean acceptRevocationNonExistingEntry = false;
         private String cmpRaAuthSecret = null;
-        private boolean keepExpiredCertsOnCRL = false;
-        private ZonedDateTime keepExpiredCertsOnCrlDate = null;
+        private boolean keepExpiredCertsOnCrl = false;
+        private LocalDateTime keepExpiredCertsOnCrlDate = null;
         private boolean usePartitionedCrl = false;
         private int crlPartitions;
         private int suspendedCrlPartitions;
@@ -1140,12 +1140,12 @@ public class X509CAInfo extends CAInfo {
             return this;
         }
 
-        public X509CAInfoBuilder setKeepExpiredCertsOnCRL(boolean keepExpiredCertsOnCRL) {
-            this.keepExpiredCertsOnCRL = keepExpiredCertsOnCRL;
+        public X509CAInfoBuilder setKeepExpiredCertsOnCrl(boolean keepExpiredCertsOnCrl) {
+            this.keepExpiredCertsOnCrl = keepExpiredCertsOnCrl;
             return this;
         }
-        
-        public X509CAInfoBuilder setKeepExpiredCertsOnCrlDate(ZonedDateTime keepExpiredCertsOnCrlDate) {
+
+        public X509CAInfoBuilder setKeepExpiredCertsOnCrlDate(LocalDateTime keepExpiredCertsOnCrlDate) {
             this.keepExpiredCertsOnCrlDate = keepExpiredCertsOnCrlDate;
             return this;
         }
@@ -1206,7 +1206,7 @@ public class X509CAInfo extends CAInfo {
                                                certificateAiaDefaultCaIssuerUri, nameConstraintsPermitted, nameConstraintsExcluded, caDefinedFreshestCrl, finishUser, extendedCaServiceInfos, useUtf8PolicyText, approvals,
                                                usePrintableStringSubjectDN, useLdapDnOrder, useCrlDistributionPointOnCrl, crlDistributionPointOnCrlCritical, includeInHealthCheck, doEnforceUniquePublicKeys, doEnforceKeyRenewal,
                                                doEnforceUniqueDistinguishedName, doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage, doPreProduceOcspResponses, doStoreOcspResponsesOnDemand,
-                                               doPreProduceIndividualOcspResponse, acceptRevocationNonExistingEntry, cmpRaAuthSecret, keepExpiredCertsOnCRL, defaultCertProfileId, useNoConflictCertificateData, usePartitionedCrl, crlPartitions, suspendedCrlPartitions,
+                                               doPreProduceIndividualOcspResponse, acceptRevocationNonExistingEntry, cmpRaAuthSecret, keepExpiredCertsOnCrl, keepExpiredCertsOnCrlDate, defaultCertProfileId, useNoConflictCertificateData, usePartitionedCrl, crlPartitions, suspendedCrlPartitions,
                                                requestPreProcessor, msCaCompatible, alternateCertificateChains, externalCrlDistPoint);
             caInfo.setSubjectDN(subjectDn);
             caInfo.setCAId(DnComponents.stringToBCDNString(caInfo.getSubjectDN()).hashCode());
@@ -1216,7 +1216,7 @@ public class X509CAInfo extends CAInfo {
             caInfo.setExpireTime(expireTime);
             caInfo.setCAType(caType);
             caInfo.setSignedBy(signedBy);
-            caInfo.setKeepExpiredCertsOnCRLDate(keepExpiredCertsOnCrlDate);
+            caInfo.setKeepExpiredCertsOnCrlDate(keepExpiredCertsOnCrlDate);
             // Due to a bug in Glassfish v1 (fixed in v2), we used to have to make sure all certificates in this
             // Array were of Oracle's own provider, using CertTools.SYSTEM_SECURITY_PROVIDER.
             // As of EJBCA 3.9.3 we decided that we don't have to support Glassfish v1 anymore.
@@ -1246,18 +1246,20 @@ public class X509CAInfo extends CAInfo {
                                                certificateAiaDefaultCaIssuerUri, nameConstraintsPermitted, nameConstraintsExcluded, caDefinedFreshestCrl, finishUser, extendedCaServiceInfos, useUtf8PolicyText, approvals,
                                                usePrintableStringSubjectDN, useLdapDnOrder, useCrlDistributionPointOnCrl, crlDistributionPointOnCrlCritical, includeInHealthCheck, doEnforceUniquePublicKeys, doEnforceKeyRenewal,
                                                doEnforceUniqueDistinguishedName, doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage, doPreProduceOcspResponses, doStoreOcspResponsesOnDemand,
-                                               doPreProduceIndividualOcspResponse, acceptRevocationNonExistingEntry, cmpRaAuthSecret, keepExpiredCertsOnCRL, defaultCertProfileId, useNoConflictCertificateData, usePartitionedCrl, crlPartitions, suspendedCrlPartitions,
+                                               doPreProduceIndividualOcspResponse, acceptRevocationNonExistingEntry, cmpRaAuthSecret, keepExpiredCertsOnCrl, keepExpiredCertsOnCrlDate, defaultCertProfileId, useNoConflictCertificateData, usePartitionedCrl, crlPartitions, suspendedCrlPartitions,
                                                requestPreProcessor, msCaCompatible, alternateCertificateChains, externalCrlDistPoint);
             caInfo.setCAId(caId);
             caInfo.setPolicies(policies);
             caInfo.setSubjectAltName(subjectAltName);
-            caInfo.setKeepExpiredCertsOnCRLDate(keepExpiredCertsOnCrlDate);
+            caInfo.setKeepExpiredCertsOnCrlDate(keepExpiredCertsOnCrlDate);
             return caInfo;
         }
 
         public X509CAInfo buildDefault () { return null;}
 
-        public ZonedDateTime getKeepExpiredCertsOnCrlDate() {
+
+
+        public LocalDateTime getKeepExpiredCertsOnCrlDate() {
             return keepExpiredCertsOnCrlDate;
         }
     }

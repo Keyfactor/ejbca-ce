@@ -91,7 +91,7 @@ public class CrlExtensionSystemTest {
     
     
     /**
-     * The ExpiredCertsOnCRL extension adds an extension (OID 2.5.29.60) which states the first date for which
+     * The ExpiredCertsOnCrl extension adds an extension (OID 2.5.29.60) which states the first date for which
      * the CRL will have an expired certificate declared on it. 
      * 
      * Default behavior in EJBCA is to use the CA's notBefore date
@@ -102,9 +102,9 @@ public class CrlExtensionSystemTest {
             CaMsCompatibilityIrreversibleException, CryptoTokenOfflineException, CAOfflineException, CRLException, IOException {
         //Retrieve the CA and activate the extension.
         X509CAInfo x509caInfo = (X509CAInfo) caSession.getCAInfo(alwaysAllowToken, testName.getMethodName());
-        x509caInfo.setKeepExpiredCertsOnCRL(true);
+        x509caInfo.setKeepExpiredCertsOnCrl(true);
         // date = 0 means to use the CA's notBefore date
-        x509caInfo.setKeepExpiredCertsOnCRLDate(null);
+        x509caInfo.setKeepExpiredCertsOnCrlDate(null);
         caSession.editCA(alwaysAllowToken, x509caInfo);
         try {
         //Force a CRL 
@@ -122,7 +122,7 @@ public class CrlExtensionSystemTest {
     }
     
     /**
-     * The ExpiredCertsOnCRL extension adds an extension (OID 2.5.29.60) which states the first date for which
+     * The ExpiredCertsOnCrl extension adds an extension (OID 2.5.29.60) which states the first date for which
      * the CRL will have an expired certificate declared on it. 
      * 
      * This test will try setting the date explicitely
@@ -133,10 +133,10 @@ public class CrlExtensionSystemTest {
             CaMsCompatibilityIrreversibleException, CryptoTokenOfflineException, CAOfflineException, CRLException, IOException {
         //Retrieve the CA and activate the extension.
         X509CAInfo x509caInfo = (X509CAInfo) caSession.getCAInfo(alwaysAllowToken, testName.getMethodName());
-        x509caInfo.setKeepExpiredCertsOnCRL(true);
+        x509caInfo.setKeepExpiredCertsOnCrl(true);
         // Use an arbitrary date
         LocalDateTime localDateTime = LocalDateTime.of(2001, 2, 3, 11, 22);
-        x509caInfo.setKeepExpiredCertsOnCRLDate(ZonedDateTime.of(localDateTime, ZoneId.of("UTC")));
+        x509caInfo.setKeepExpiredCertsOnCrlDate(localDateTime);
         caSession.editCA(alwaysAllowToken, x509caInfo);
         try {
             //Force a CRL
