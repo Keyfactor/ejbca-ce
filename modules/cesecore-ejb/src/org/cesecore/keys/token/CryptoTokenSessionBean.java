@@ -93,7 +93,9 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
                 isRunningEnterpriseEdition = false;
             }
             if ((migratePkcs11CryptoTokensValue.equals("true") && isRunningEnterpriseEdition)) {
-                log.debug("System configured to migrate PKCS11CryptoTokens to Pkcs11NgCryptoTokens in cache.");
+                if (log.isDebugEnabled()) {
+                    log.debug("System configured to migrate PKCS11CryptoTokens to Pkcs11NgCryptoTokens in cache.");
+                }
                 return true;
             }
         }
@@ -215,8 +217,10 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
                 // by mistake, hopefully making the migration reversible. 
                 if (isMigrateP11Tokens() && tokenType.equals("Pkcs11NgCryptoToken") && cryptoTokenData.getTokenType().equals("PKCS11CryptoToken")) {
                     tokenType = cryptoTokenData.getTokenType();
-                    log.debug("Prevented migrated crypto token " + tokenName + " from changing token type from PKCS11CryptoToken to Pkcs11NgCryptoToken in database"
-                            + " during crypto token merge operation.");
+                    if (log.isDebugEnabled()) {
+                        log.debug("Prevented migrated crypto token " + tokenName + " from changing token type from PKCS11CryptoToken to Pkcs11NgCryptoToken in database"
+                                + " during crypto token merge operation.");
+                    }
                 }                
                 cryptoTokenData.setTokenName(tokenName);
                 cryptoTokenData.setTokenType(tokenType);
