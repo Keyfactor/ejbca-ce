@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.TimeZone;
@@ -86,8 +87,8 @@ public class NoConflictCertificateDataSessionBean extends BaseCertificateDataSes
     }
     
     @Override
-    public Collection<RevokedCertInfo> getRevokedCertInfosWithDuplicates(final String issuerDN, final boolean deltaCrl, final int crlPartitionIndex, final long lastBaseCrlDate, 
-            final boolean keepExpiredCertsOnCrl, final boolean allowInvalidityDate) {
+    public Collection<RevokedCertInfo> getRevokedCertInfosWithDuplicates(final String issuerDN, final boolean deltaCrl, final int crlPartitionIndex, final long lastBaseCrlDate,
+                                                                         final boolean keepExpiredCertsOnCrl, LocalDateTime keepExpiredCertsOnCrlDate, final boolean allowInvalidityDate) {
         if (log.isDebugEnabled()) {
             log.debug("Querying for revoked certificates in append-only table. IssuerDN: '" + issuerDN + "'" +
                     ", Delta CRL: " + deltaCrl +

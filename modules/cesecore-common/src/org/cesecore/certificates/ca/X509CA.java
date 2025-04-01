@@ -14,7 +14,7 @@ package org.cesecore.certificates.ca;
 
 import java.io.IOException;
 import java.security.cert.Certificate;
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -155,10 +155,10 @@ public interface X509CA extends CA, HybridCa {
     int getSuspendedCrlPartitions();
 
     void setSuspendedCrlPartitions(int suspendedCrlPartitions);
+
+    LocalDateTime getKeepExpiredCertsOnCrlDate();
     
-    ZonedDateTime getKeepExpiredCertsOnCRLDate();
-    
-    void setKeepExpiredCertsOnCRLDate(ZonedDateTime keepExpiredCertsOnCRLDate);
+    void setKeepExpiredCertsOnCrlDate(LocalDateTime keepExpiredCertsOnCrlDate);
 
     /**
      * Constructs the SubjectAlternativeName extension that will end up on the generated certificate.

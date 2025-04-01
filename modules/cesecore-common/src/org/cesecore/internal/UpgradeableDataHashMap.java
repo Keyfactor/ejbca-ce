@@ -14,6 +14,7 @@
 package org.cesecore.internal;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -228,6 +229,20 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
             return defaultValue;
         }
         return (Boolean) object;
+    }
+
+    protected <T> T getObject(final String key, final T defaultValue) {
+        final Object object = data.get(key);
+        try {
+            return (T)object;
+        }
+        catch (Exception e) {
+            return defaultValue;
+        }
+    }
+
+    protected LocalDateTime getLocalDateTime(final String key, final LocalDateTime defaultValue) {
+        return getObject(key, defaultValue);
     }
 
     /**

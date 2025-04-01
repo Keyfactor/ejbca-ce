@@ -13,7 +13,7 @@
 package org.ejbca.ui.web.admin.cainterface;
 
 import java.io.Serializable;
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +35,7 @@ import com.keyfactor.util.StringTools;
 public class CaInfoDto implements Serializable {
 
     private static final long serialVersionUID = 8205287605160605300L;
-    
+
     private String caName;
     private String signatureAlgorithmParam = StringUtils.EMPTY;
     private String alternativeSignatureAlgorithmParam = StringUtils.EMPTY;
@@ -80,8 +80,8 @@ public class CaInfoDto implements Serializable {
     private boolean crlDistributionPointOnCrlCritical;
     private boolean includeInHealthCheck;
     private String sharedCmpRaSecret = StringUtils.EMPTY;
-    private boolean keepExpiredOnCrl;
-    private ZonedDateTime keepExpiredOnCrlDate = null; // null denotes that it should be the same as the ca date
+    private boolean keepExpiredCertsOnCrl = false;
+    private LocalDateTime keepExpiredCertsOnCrlDate = null; // null denotes that it should be the same as the ca date
     private boolean usePartitionedCrl;
     private int crlPartitions;
     private int suspendedCrlPartitions;
@@ -524,20 +524,20 @@ public class CaInfoDto implements Serializable {
         this.sharedCmpRaSecret = sharedCmpRaSecret;
     }
 
-    public boolean isKeepExpiredOnCrl() {
-        return keepExpiredOnCrl;
+    public boolean isKeepExpiredCertsOnCrl() {
+        return keepExpiredCertsOnCrl;
     }
 
-    public void setKeepExpiredOnCrl(boolean keepExpiredOnCrl) {
-        this.keepExpiredOnCrl = keepExpiredOnCrl;
+    public void setKeepExpiredCertsOnCrl(boolean keepExpiredCertsOnCrl) {
+        this.keepExpiredCertsOnCrl = keepExpiredCertsOnCrl;
     }
 
-    public ZonedDateTime getKeepExpiredOnCrlDate() {
-        return keepExpiredOnCrlDate;
+    public LocalDateTime getKeepExpiredCertsOnCrlDate() {
+        return keepExpiredCertsOnCrlDate;
     }
 
-    public void setKeepExpiredOnCrlDate(final ZonedDateTime keepExpiredOnCrlDate) {
-        this.keepExpiredOnCrlDate = keepExpiredOnCrlDate;
+    public void setKeepExpiredCertsOnCrlDate(LocalDateTime keepExpiredCertsOnCrlDate) {
+        this.keepExpiredCertsOnCrlDate = keepExpiredCertsOnCrlDate;
     }
 
     public boolean isUsePartitionedCrl() {
