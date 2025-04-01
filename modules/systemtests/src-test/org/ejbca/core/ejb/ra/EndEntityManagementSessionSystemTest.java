@@ -20,7 +20,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.Principal;
@@ -28,7 +27,6 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -80,8 +78,6 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.PublicKeyWrapper;
-import org.cesecore.keys.validation.KeyValidatorSessionRemote;
-import org.cesecore.keys.validation.Validator;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
@@ -608,48 +604,6 @@ public class EndEntityManagementSessionSystemTest extends CaTestCase {
         }
         status = certificateStoreSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
         assertEquals(RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE, status.revocationReason);
-    }
-    
-    @Test
-    public void testAddCompromisedKeysToBlockList() throws Exception {
-        addUser();
-
-        KeyPair keypair = KeyTools.genKeys("512", "RSA");
-        EndEntityInformation data1 = endEntityAccessSession.findUser(admin, username);
-        assertNotNull(data1);
-        data1.setPassword("foo123");
-        String X509CADN = "CN=AddCompromisedKeysToBlockList";
-        CA testx509ca = CaTestUtils.createTestX509CA(X509CADN, null, false);
-        caSession.addCA(admin, testx509ca);
-        testx509ca.getCAInfo().setAddCompromisedKeysToBlockList(true);
-
-        endEntityManagementSession.changeUser(admin, data1, true);
-
-        Certificate cert = (X509Certificate) signSession.createCertificate(admin, username, "foo123", new PublicKeyWrapper(keypair.getPublic()), -1,
-                null, null, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, testx509ca.getCAInfo().getCAId());
-
-        CertificateStatus status = certificateStoreSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
-        assertEquals(RevokedCertInfo.NOT_REVOKED, status.revocationReason);
-        endEntityManagementSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert),
-                RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
-        status = certificateStoreSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
-        assertEquals(RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, status.revocationReason);
-
-        //try to create new certificate but should not work for Illegal Key
-        try {
-            Certificate certAfterRevoke = signSession.createCertificate(admin, username, "foo123", new PublicKeyWrapper(keypair.getPublic()), -1,
-                    null, null, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, testx509ca.getCAInfo().getCAId());
-
-        } catch (IllegalKeyException e) {
-        }
-        try {
-            CryptoTokenTestUtils.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
-            CaTestUtils.removeCa(admin, testx509ca.getCAInfo());
-
-        } finally {
-            // Be sure to do this, even if the above fails
-            super.tearDownRemoveRole();
-        }
     }
     
     @Test
@@ -1534,6 +1488,53 @@ public class EndEntityManagementSessionSystemTest extends CaTestCase {
                 "UNIFORMRESOURCEID=asdf.poi,UPN=USER_CN@abcd.com,DNSNAME=USER_CN,DNSNAME=abcd.pqrs.wxyz,RFC822NAME=USER_EMAIL",
                 "UNIFORMRESOURCEID=asdf.poi,UPN=USER_CN@abcd.com,DNSNAME=USER_CN,DNSNAME=abcd.pqrs.wxyz,RFC822NAME=USER_EMAIL", null, null);
         
+    }
+    
+    @Test
+    public void testAddCompromisedKeysToBlockList() throws Exception {
+        addUser();
+
+        KeyPair keypair = KeyTools.genKeys("512", "RSA");
+        EndEntityInformation data1 = endEntityAccessSession.findUser(admin, username);
+        assertNotNull(data1);
+        data1.setPassword("foo123");
+        String X509CADN = "CN=AddCompromisedKeysToBlockList";
+        CA testx509ca = CaTestUtils.createTestX509CA(X509CADN, null, false);
+        caSession.addCA(admin, testx509ca);
+        testx509ca.getCAInfo().setAddCompromisedKeysToBlockList(true);
+
+        endEntityManagementSession.changeUser(admin, data1, true);
+
+        Certificate cert = (X509Certificate) signSession.createCertificate(admin, username, "foo123", new PublicKeyWrapper(keypair.getPublic()), -1,
+                null, null, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, testx509ca.getCAInfo().getCAId());
+
+        CertificateStatus status = certificateStoreSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
+        assertEquals(RevokedCertInfo.NOT_REVOKED, status.revocationReason);
+        endEntityManagementSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert),
+                RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+        status = certificateStoreSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
+
+        assertEquals(RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, status.revocationReason);
+
+        data1.setStatus(EndEntityConstants.STATUS_NEW);
+        endEntityManagementSession.changeUser(admin, data1, true);
+        //try to create new certificate with compromised key but should not work for Illegal Key
+        try {
+            Certificate certAfterRevoke = signSession.createCertificate(admin, username, "foo123", new PublicKeyWrapper(keypair.getPublic()), -1,
+                    null, null, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, testx509ca.getCAInfo().getCAId());
+
+        } catch (IllegalKeyException e) {
+            //Ignore, this is fine .
+        }
+
+        try {
+            CryptoTokenTestUtils.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
+            CaTestUtils.removeCa(admin, testx509ca.getCAInfo());
+
+        } finally {
+            // Be sure to do this, even if the above fails
+            super.tearDownRemoveRole();
+        }
     }
     
     private String prepareAltNamesFromTemplate(String tempate, String cn, String email) {
