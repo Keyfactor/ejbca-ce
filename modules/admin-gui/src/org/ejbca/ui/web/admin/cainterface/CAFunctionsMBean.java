@@ -12,37 +12,21 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.cainterface;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.security.cert.CRLException;
-import java.security.cert.Certificate;
-import java.security.cert.X509CRL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import jakarta.ejb.EJB;
 import jakarta.faces.model.SelectItem;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
 import jakarta.servlet.http.Part;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAConstants;
+import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
@@ -61,9 +45,26 @@ import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import java.io.IOException;
+import java.io.Serializable;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.security.cert.CRLException;
+import java.security.cert.Certificate;
+import java.security.cert.X509CRL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * JSF Managed Bean or the ca functions page in the CA UI.
@@ -298,6 +299,9 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
         return caGuiInfos;
     }
 
+    /** Record for caching CRL entries **/
+    record CRLKey(String subject, int partitionIndex) {}
+
     private void refreshCaGuiInfos() {
         caGuiInfos = new ArrayList<>();
         final TreeMap<String, Integer> caNames = caSession.getAuthorizedCaNamesToIds(getAdmin());
@@ -311,9 +315,13 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             }
 
             final List<CRLGuiInfo> crlInfos = new ArrayList<>();
+
+            /** Maps for caching repeating database reads **/
+            final HashMap<String, CRLInfo> deltaCRLInfo = new HashMap<>();
+            final HashMap<String, CAData> caBySubject = new HashMap<>();
             if (cainfo instanceof X509CAInfo) {
                 final int numberOfPartitions = cainfo.getAllCrlPartitionIndexes() == null
-                        ? 1
+                        ? 0
                         : cainfo.getAllCrlPartitionIndexes().getMaximumInteger();
                 for (int currentPartitionIndex = 0; currentPartitionIndex <= numberOfPartitions; currentPartitionIndex++) {
                     final CRLInfo currentCrlInfo = crlStoreSession.getLastCRLInfoLightWeight(cainfo.getLatestSubjectDN(), currentPartitionIndex, false);
@@ -328,11 +336,12 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
                 }
             }
 
-            final CRLInfo deltacrlinfo = crlStoreSession.getLastCRLInfoLightWeight(cainfo.getLatestSubjectDN(), CertificateConstants.NO_CRL_PARTITION, true);
+            final CRLInfo deltacrlinfo = deltaCRLInfo.computeIfAbsent(cainfo.getLatestSubjectDN(),
+                    s -> crlStoreSession.getLastCRLInfoLightWeight(s, CertificateConstants.NO_CRL_PARTITION, true));
 
             final CAGuiInfo caGuiInfo = new CAGuiInfo(caName, caid, cainfo.getSubjectDN(),
                     cainfo.getCAType() != CAInfo.CATYPE_PROXY
-                            ? getCertificateChain(cainfo.getCertificateChain())
+                            ? getCertificateChain(cainfo.getCertificateChain(), caBySubject)
                             : null,
                     crlInfos, deltacrlinfo, cainfo.getDeltaCRLPeriod() > 0,
                     cainfo.getStatus() == CAConstants.CA_ACTIVE, cainfo.getCaTypeAsString());
@@ -340,13 +349,14 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
         }
     }
 
-    private List<CertificateChainElement> getCertificateChain(final List<Certificate> originalChain) {
+    private List<CertificateChainElement> getCertificateChain(final List<Certificate> originalChain, final Map<String, CAData> caBySubject) {
         final Set<Certificate> missingChainCerts = new HashSet<>();
         final Set<Certificate> certificates = new HashSet<>(originalChain);
 
         certificates.stream()
                 .filter(Objects::nonNull)
-                .map(cert -> caSession.findBySubjectDN(CertTools.getIssuerDN(cert)))
+                .map(cert -> caBySubject.computeIfAbsent(CertTools.getIssuerDN(cert),
+                        issuerDN -> caSession.findBySubjectDN(issuerDN)))
                 .filter(Objects::nonNull)
                 .forEach(caData ->
                         missingChainCerts.add(caData.getCA().getCACertificate())
