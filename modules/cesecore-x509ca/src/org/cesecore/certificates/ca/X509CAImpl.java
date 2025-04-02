@@ -216,7 +216,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     protected static final String SUSPENDEDCRLPARTITIONS = "suspendedcrlpartitions";
     protected static final String REQUESTPREPROCESSOR = "requestpreprocessor";
     protected static final String ALTERNATECHAINS = "alternatechains";
-    protected static final String KEEPEXPIREDCERTSONCRLDATE = "keepExpiredCertsOnCrlDate";
+    //protected static final String KEEPEXPIREDCERTSONCRLDATE = "keepExpiredCertsOnCrlDate";
 
     private static final CertificateTransparency ct = CertificateTransparencyFactory.getInstance();
 
@@ -589,21 +589,6 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         } else {
             data.put(DEFAULTOCSPSERVICELOCATOR, defaultocsplocator);
         }
-    }
-
-    @Override
-    public LocalDateTime getKeepExpiredCertsOnCrlDate() {
-        if(data.get(KEEPEXPIREDCERTSONCRLDATE) == null) {
-            return null;
-        }
-        else {
-            return ConverterUtils.parseLocalDateTime((String) data.get(KEEPEXPIREDCERTSONCRLDATE));
-        }
-    }
-
-    @Override
-    public void setKeepExpiredCertsOnCrlDate(final LocalDateTime keepExpiredCertsOnCrlDate) {
-        data.put(KEEPEXPIREDCERTSONCRLDATE, ConverterUtils.localDateTimeToString(keepExpiredCertsOnCrlDate));
     }
 
     /* (non-Javadoc)

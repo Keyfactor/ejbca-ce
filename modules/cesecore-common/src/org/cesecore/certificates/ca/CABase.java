@@ -89,7 +89,7 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
     private static final String USE_CERTREQ_HISTORY = "useCertreqHistory";
     private static final String USE_CERTIFICATE_STORAGE = "useCertificateStorage";
     private static final String ACCEPT_REVOCATION_NONEXISTING_ENTRY = "acceptRevocationNonExistingEntry";
-    private static final String KEEP_EXPIRED_CERTS_ON_CRL = "keepExpiredCertsOnCrl";
+    private static final String KEEP_EXPIRED_CERTS_ON_CRL = "keepExpiredCertsOnCRL"; // Keep the CRL in uppercase for backward compatibility
     private static final String KEEP_EXPIRED_CERTS_ON_CRL_DATE = "keepExpiredCertsOnCrlDate";
 
     protected static final String INCLUDEINHEALTHCHECK = "includeinhealthcheck";
