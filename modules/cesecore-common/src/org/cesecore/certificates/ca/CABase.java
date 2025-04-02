@@ -448,12 +448,12 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
 
     @Override
     public LocalDateTime getKeepExpiredCertsOnCrlDate() {
-        return getLocalDateTime(KEEP_EXPIRED_CERTS_ON_CRL_DATE, null);
+        return getLocalDateTime(KEEP_EXPIRED_CERTS_ON_CRL_DATE);
     }
 
     @Override
     public void setKeepExpiredCertsOnCrlDate(LocalDateTime keepExpiredCertsOnCrlDate) {
-        data.put(KEEP_EXPIRED_CERTS_ON_CRL_DATE, keepExpiredCertsOnCrlDate);
+        putLocalDateTime(KEEP_EXPIRED_CERTS_ON_CRL_DATE, keepExpiredCertsOnCrlDate);
     }
 
     /** whether users should be stored or not, default true as was the case before 3.10.x */
