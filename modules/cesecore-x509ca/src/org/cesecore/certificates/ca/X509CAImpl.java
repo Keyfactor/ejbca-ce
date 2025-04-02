@@ -173,6 +173,7 @@ import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.keys.token.NullCryptoToken;
 import org.cesecore.keys.validation.IssuancePhase;
 import org.cesecore.keys.validation.ValidationException;
+import org.cesecore.util.ConverterUtils;
 import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.PrintableStringNameStyle;
 import org.cesecore.util.SimpleTime;
@@ -596,13 +597,13 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             return null;
         }
         else {
-            return (LocalDateTime) data.get(KEEPEXPIREDCERTSONCRLDATE);
+            return ConverterUtils.parseLocalDateTime((String) data.get(KEEPEXPIREDCERTSONCRLDATE));
         }
     }
 
     @Override
-    public void setKeepExpiredCertsOnCrlDate(final LocalDateTime keepexpiredcertsoncrl) {
-        data.put(KEEPEXPIREDCERTSONCRLDATE, keepexpiredcertsoncrl);
+    public void setKeepExpiredCertsOnCrlDate(final LocalDateTime keepExpiredCertsOnCrlDate) {
+        data.put(KEEPEXPIREDCERTSONCRLDATE, ConverterUtils.localDateTimeToString(keepExpiredCertsOnCrlDate));
     }
 
     /* (non-Javadoc)

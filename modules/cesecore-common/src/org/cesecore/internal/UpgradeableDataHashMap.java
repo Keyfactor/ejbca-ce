@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.cesecore.util.Base64GetHashMap;
-
+import org.cesecore.util.ConverterUtils;
 
 
 /**
@@ -50,7 +50,7 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
     public static final String VERSION = "version";
 
     protected static final float MAP_LOAD_FACTOR = 0.75f; // expected initial capacity/loadFactor, avoiding the unnecessary resize while copy
-    
+
 	/**
      * Creates a new UpgradeableDataHashMap object.
      */
@@ -241,8 +241,18 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
         }
     }
 
-    protected LocalDateTime getLocalDateTime(final String key, final LocalDateTime defaultValue) {
-        return getObject(key, defaultValue);
+    protected LocalDateTime getLocalDateTime(final String key) {
+        final Object value = data.get(key);
+        if (value == null || !(value instanceof String)) {
+            return null;
+        }
+        else {
+            return ConverterUtils.parseLocalDateTime((String) value);
+        }
+    }
+
+    protected void putLocalDateTime(final String key, final LocalDateTime localDateTime) {
+        data.put(key, ConverterUtils.localDateTimeToString(localDateTime));
     }
 
     /**
