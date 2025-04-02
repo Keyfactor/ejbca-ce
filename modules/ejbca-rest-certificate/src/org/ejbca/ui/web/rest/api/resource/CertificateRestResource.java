@@ -256,10 +256,10 @@ public class CertificateRestResource extends BaseRestResource {
             // Throw a REST Exception on order to produce a good error for the client
             String message = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
             if (StringUtils.isEmpty(message)) {
-                message = "Waiting for approval";
+                message = "Certificate Profile or Certificate Authority requires approval. Approvals are not supported by this rest endpoint.";
             }
             throw new RestException(
-                    Response.Status.ACCEPTED.getStatusCode(),
+                    Response.Status.BAD_REQUEST.getStatusCode(),
                     message
             );
         }
