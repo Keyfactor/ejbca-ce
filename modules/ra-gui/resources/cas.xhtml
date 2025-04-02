@@ -25,9 +25,11 @@
         	<h:panelGroup layout="block" class="header" id="title">
 				<h1><h:outputText value="#{msg.cas_page_title}"/></h1>
 			</h:panelGroup>	       
-        	<h:panelGroup layout="block" class="content-body" id="content-body">	 
-	            <h:outputText rendered="#{!raAccessBean.authorizedToCas or empty raCasPageBean.casAndCrlItems}" value="#{msg.cas_page_info_nocas}"/>
-	            <h:dataTable id="caCertificateTable" rendered="#{raAccessBean.authorizedToCas and not empty raCasPageBean.casAndCrlItems}" value="#{raCasPageBean.casAndCrlItems}" var="caAndCrls" styleClass="pure-table"
+        	<h:panelGroup layout="block" class="content-body" id="content-body">
+				<ui:param name="casAndCrlItems" value="#{raCasPageBean.casAndCrlItems}" />
+				<ui:param name="shouldRenderCasAndCrls" value="#{raCasPageBean.authorized and not empty casAndCrlItems}" />
+	            <h:outputText rendered="#{!shouldRenderCasAndCrls}" value="#{msg.cas_page_info_nocas}"/>
+	            <h:dataTable id="caCertificateTable" rendered="#{shouldRenderCasAndCrls}" value="#{casAndCrlItems}" var="caAndCrls" styleClass="pure-table"
 	                rowClasses=",pure-table-odd">
 	                <h:column>
 	                    <f:facet name="header"><h:outputText value="#{msg.cas_page_colhead_cas}"/></f:facet>
@@ -115,18 +117,18 @@
 	                    </h:panelGrid>
 	                </h:column>
 	            </h:dataTable>
-	            <h:outputText styleClass="bodyText" value="¹ #{msg.cas_page_link_download_cachain_jks_hint}" rendered="#{raAccessBean.authorizedToCas and not empty raCasPageBean.casAndCrlItems}"/>	            
+	            <h:outputText styleClass="bodyText" value="¹ #{msg.cas_page_link_download_cachain_jks_hint}" rendered="#{shouldRenderCasAndCrls}"/>
    			</h:panelGroup>
    			<div>
    			    <h:outputLink value="cert">
    			        <f:param name="fpsheet" value="yaml" />
    			        <h:commandButton id="downloadFingerprints" value="#{msg.cas_page_download_fingerprints}" 
-                        rendered="#{raAccessBean.authorizedToCas and not empty raCasPageBean.casAndCrlItems}" styleClass="pure-button ra-button"/>
+                        rendered="#{shouldRenderCasAndCrls}" styleClass="pure-button ra-button"/>
                 </h:outputLink>
                 <h:outputLink value="cert">
                     <f:param name="certbundle" value="zip" />
                     <h:commandButton id="downloadCertificateBundle" value="#{msg.cas_page_download_certificate_bundle}" 
-                        rendered="#{raAccessBean.authorizedToCas and not empty raCasPageBean.casAndCrlItems}" styleClass="pure-button ra-button"/>
+                        rendered="#{shouldRenderCasAndCrls}" styleClass="pure-button ra-button"/>
                 </h:outputLink>
    			</div>	                
         </ui:define>
