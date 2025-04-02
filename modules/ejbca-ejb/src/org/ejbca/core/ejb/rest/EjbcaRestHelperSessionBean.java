@@ -17,8 +17,7 @@ import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.LinkedHashMap;
 import java.util.Random;
 import java.util.Set;
 
@@ -171,14 +170,14 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
         extendedInformation.setSubjectDirectoryAttributes(getSubjectDirectoryAttribute(pkcs10CertificateRequest));
         extendedInformation.setAccountBindingId(enrollcertificateRequest.getAccountBindingId());
 
-        List<Map.Entry<String, String>> extensions = enrollcertificateRequest.getExtendedData();
+        LinkedHashMap<String, String> extensions = enrollcertificateRequest.getExtendedData();
         if (extensions != null && !extensions.isEmpty()) {
-            extensions.forEach(entry -> {extendedInformation.setExtensionData(entry.getKey(), entry.getValue());});
+            extensions.forEach((key, value) -> {extendedInformation.setExtensionData(key, value);});
         }
 
-        List<Map.Entry<String, String>> customData = enrollcertificateRequest.getCustomData();
+        LinkedHashMap<String, String> customData = enrollcertificateRequest.getCustomData();
         if (customData != null && !customData.isEmpty()) {
-            customData.forEach(entry -> {extendedInformation.setStringKeyData(entry.getKey(), entry.getValue());});
+            customData.forEach((key, value) -> {extendedInformation.setStringKeyData(key, value);});
         }
 
         String startTime = enrollcertificateRequest.getStartTime();
