@@ -328,7 +328,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         certificateProfileSession.removeCertificateProfile(INTERNAL_ADMIN_TOKEN, testCertProfileNameWithSan);
     }
 
-    //@Test
+    @Test
     public void shouldReturnStatusInformation() throws Exception {
         // given
         final String expectedStatus = "OK";
@@ -343,7 +343,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertProperJsonStatusResponse(expectedStatus, expectedVersion, expectedRevision, actualJsonString);
     }
 
-    //@Test
+    @Test
     public void shouldReturnCertificateProfileInfo() throws Exception {
         // Given
         final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
@@ -392,7 +392,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertJsonContentType(actualResponse);
     }
 
-    //@Test
+    @Test
     @SuppressWarnings("unused")
     public void shouldNotReturnAltKeysIfNotUsed() throws Exception {
         // Given
@@ -426,7 +426,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertNull("No alternative key algorithms should have been returned", jsonArrayAlternativeAlgorithms);
     }
 
-    //@Test
+    @Test
     @SuppressWarnings("unused")
     public void shouldReturnEmptyAltKeysListIfNoneSelected() throws Exception {
         // Given
@@ -459,19 +459,19 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertEquals("Alternative key algorithms list should be empty", 0, jsonArrayAlternativeAlgorithms.size());
     }
 
-    //@Test
+    @Test
     public void shouldRevokeCertificateWithRsaKey() throws Exception {
         createTestEndEntity();
         revokeCertificate(createKeystore("1024", AlgorithmConstants.KEYALGORITHM_RSA));
     }
 
-    //@Test
+    @Test
     public void shouldRevokeCertificateMLDSA44() throws Exception {
         createTestEndEntity();
         revokeCertificate(createKeystore(AlgorithmConstants.SIGALG_MLDSA44, AlgorithmConstants.KEYALGORITHM_MLDSA44));
     }
 
-    //@Test
+    @Test
     public void shouldRevokeCertificateFalcon512() throws Exception {
         createTestEndEntity();
         revokeCertificate(createKeystore(AlgorithmConstants.SIGALG_FALCON512, AlgorithmConstants.KEYALGORITHM_FALCON512));
@@ -503,7 +503,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertEquals("KEY_COMPROMISE", databaseReason);
     }
 
-    //@Test
+    @Test
     public void shouldRevokeCertificateWithInvalidityDate() throws Exception {
         // given
         enableInvalidityDate();
@@ -538,7 +538,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertEquals(invalidityDatelong, databaseInvalidityDate);
     }
 
-    //@Test
+    @Test
     public void shouldAddInvalidityDateToRevokedCertificate() throws Exception {
         // given
         enableInvalidityDate();
@@ -576,7 +576,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertEquals(invalidityDatelong, databaseInvalidityDate);
     }
 
-    //@Test
+    @Test
     public void shouldAllowInvalidityDateChange() throws Exception {
         // given
         enableInvalidityDate();
@@ -622,7 +622,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertEquals(invalidityDateUpdateString, responseInvalidityDateUpdate);
     }
 
-    //@Test
+    @Test
     public void shouldPreventRevocationWithAFutureInvalidityDate() throws Exception {
         // given
         final String serialNumber = generateTestSerialNumber();
@@ -635,7 +635,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertProperJsonExceptionErrorResponse(expectedErrorCode, expectedErrorMessage, response.readEntity(String.class));
     }
 
-    //@Test
+    @Test
     public void shouldPreventRevocationWithInvalidityDateIfDisabledOnCaLevel() throws Exception {
         // given
         disableInvalidityDate();
@@ -652,7 +652,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertProperJsonExceptionErrorResponse(expectedErrorCode, expectedErrorMessage, response.readEntity(String.class));
     }
 
-    //@Test
+    @Test
     public void shouldPreserveInvalidityDateWhenOnlyRevocationReasonIsChanged() throws Exception {
         // given
         enableInvalidityDate();
@@ -695,7 +695,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertEquals(dataBaseInvalidityDate, dataBaseInvalidityDateAfterRevocationReasonChange);
     }
 
-    //@Test
+    @Test
     public void shouldPreventAnyInvalidityDateChangeWhenRevocationReasonChangeFails() throws Exception {
         // given
         enableInvalidityDate();
@@ -742,7 +742,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertEquals(true, responseStatus);
     }
 
-    //@Test
+    @Test
     public void shouldAllowRevocationReasonChange() throws Exception {
         enableRevocationReasonChange();
         // User and certificate generation
@@ -797,7 +797,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertEquals("KEY_COMPROMISE", databaseReason);
     }
 
-    //@Test
+    @Test
     public void shouldPreventRevocationWithInvalidReason() throws Exception {
         // given
         final String serialNumber = generateTestSerialNumber();
@@ -810,7 +810,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertProperJsonExceptionErrorResponse(expectedErrorCode, expectedErrorMessage, response.toJSONString());
     }
 
-    //@Test
+    @Test
     public void shouldPreventRevocationWithAFutureDate() throws Exception {
         // given
         final String serialNumber = generateTestSerialNumber();
@@ -823,7 +823,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertProperJsonExceptionErrorResponse(expectedErrorCode, expectedErrorMessage, response.toJSONString());
     }
 
-    //@Test
+    @Test
     public void shouldPreventRevocationReasonChangeIfDisabledOnCaLevel() throws Exception {
         // given
         disableRevocationReasonChange();
@@ -840,7 +840,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertProperJsonExceptionErrorResponse(expectedErrorCode, expectedErrorMessage, response.toJSONString());
     }
 
-    //@Test
+    @Test
     public void shouldPreventBackdatingRevocationIfDisabledInCertificateProfile() throws Exception {
         // given
         disableRevocationBackdating();
@@ -856,7 +856,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertProperJsonExceptionErrorResponse(expectedErrorCode, expectedErrorMessage, response.toJSONString());
     }
 
-    //@Test
+    @Test
     public void shouldPreserveRevocationDateWhenOnlyReasonIsChanged() throws Exception {
         // given
         enableRevocationReasonChange();
@@ -873,7 +873,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
                 initialRevocationDate, revocationReasonChangeResponse.get("revocation_date"));
     }
 
-    //@Test
+    @Test
     public void shouldAllowBackdatingRevocation() throws Exception {
         // given
         enableRevocationBackdating();
@@ -886,7 +886,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertEquals("Revocation date does not match with request", revocationDate, response.get("revocation_date"));
     }
 
-    //@Test
+    @Test
     public void shouldAllowBackdatingRevocationDuringReasonChange() throws Exception {
         // given
         enableRevocationReasonChange();
@@ -903,7 +903,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertEquals("Revocation date had to be backdated", newRevocationDate, revocationReasonChangeResponse.get("revocation_date"));
     }
 
-    //@Test
+    @Test
     public void shouldAllowBackdatingRevokedCertificateWithReasonKeyCompromise() throws Exception {
         // given
         enableRevocationReasonChange();
@@ -920,7 +920,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertEquals("Revocation date had to be backdated", newRevocationDate, revocationReasonChangeResponse.get("revocation_date"));
     }
 
-    //@Test
+    @Test
     public void shouldAllowRevocationReasonChangeFromUnspecifiedToKeyCompromise() throws Exception {
         // given
         enableRevocationReasonChange();
@@ -935,7 +935,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertEquals(updatedRevocationReason, updatedRevocationResponse.get("revocation_reason"));
     }
 
-    //@Test
+    @Test
     public void shouldAllowRevocationReasonChangeFromPrivilegesWithdrawnToKeyCompromise() throws Exception {
         // given
         enableRevocationReasonChange();
@@ -950,7 +950,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertEquals(updatedRevocationReason, updatedRevocationResponse.get("revocation_reason"));
     }
 
-    //@Test
+    @Test
     public void shouldAllowRevocationReasonChangeFromCessationOfOperationToKeyCompromise() throws Exception {
         // given
         enableRevocationReasonChange();
@@ -965,7 +965,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertEquals(updatedRevocationReason, updatedRevocationResponse.get("revocation_reason"));
     }
 
-    //@Test
+    @Test
     public void shouldAllowRevocationReasonChangeFromAffiliationChangedToKeyCompromise() throws Exception {
         // given
         enableRevocationReasonChange();
@@ -980,7 +980,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertEquals(updatedRevocationReason, updatedRevocationResponse.get("revocation_reason"));
     }
 
-    //@Test
+    @Test
     public void shouldAllowRevocationReasonChangeFromSupersededToKeyCompromise() throws Exception {
         // given
         enableRevocationReasonChange();
@@ -995,7 +995,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertEquals(updatedRevocationReason, updatedRevocationResponse.get("revocation_reason"));
     }
 
-    //@Test
+    @Test
     public void shouldPreventRevocationReasonChangeFromCaCompromiseToAnother() throws Exception {
         // given
         enableRevocationReasonChange();
@@ -1013,7 +1013,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertProperJsonExceptionErrorResponse(expectedErrorCode, expectedErrorMessage, response.toJSONString());
     }
 
-    //@Test
+    @Test
     public void shouldPreventRevocationReasonChangeFromAACompromiseToAnother() throws Exception {
         // given
         enableRevocationReasonChange();
@@ -1031,7 +1031,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertProperJsonExceptionErrorResponse(expectedErrorCode, expectedErrorMessage, response.toJSONString());
     }
 
-    //@Test
+    @Test
     public void shouldAllowReactivatingACertificateOnHold() throws Exception {
         // given
         createTestEndEntity();
@@ -1058,7 +1058,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertTrue(certificateData.getRevocationDate() > preActivationSystemDate.getTime());
     }
 
-    //@Test
+    @Test
     public void shouldContainUpdatedRevocationReasonInBaseCrl() throws Exception {
         assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
         // given
@@ -1076,7 +1076,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertEquals("Revocation reasons should match", updatedRevocationReason, getRevocationReason(updatedCrl, serialNumber));
     }
 
-    //@Test
+    @Test
     public void shouldContainBackdatedRevocationDateInBaseCrl() throws Exception {
         assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
         // given
@@ -1099,7 +1099,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertEquals("Revocation dates should match", updatedRevocationTime, getRevocationTime(updatedCrl, serialNumber));
     }
 
-    //@Test
+    @Test
     public void shouldContainUpdatedRevocationReasonInDeltaCrl() throws Exception {
         assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
         // given
@@ -1117,7 +1117,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertEquals("Wrong revocation reason in Delta CRL", updatedRevocationReason, getRevocationReason(deltaCrl, serialNumber));
     }
 
-    //@Test
+    @Test
     public void shouldContainBackdatedRevocationDateInDeltaCrl() throws Exception {
         assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
         // Scenario: initial revocation > revocation backdating with a date after last base CRL > base CRL > delta CRL
@@ -1140,7 +1140,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertEquals("Revocation dates should match", backdatedRevocationTime, getRevocationTime(deltaCrl, serialNumber));
     }
 
-    //@Test
+    @Test
     public void shouldGenerateCrlUponRevocationReasonChange() throws Exception {
         assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
         // given
@@ -1161,7 +1161,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertEquals("Revocation reasons should match", updatedRevocationReason, getRevocationReason(lastCrl, serialNumber));
     }
 
-    //@Test
+    @Test
     public void shouldChangeRevocationReasonUponCrlImport() throws Exception {
         assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
         // given
@@ -1181,29 +1181,29 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertEquals("Revocation reason did not change after CRL import", newRevocationReasonInCrl.getDatabaseValue(), certificateData.getRevocationReason());
     }
 
-    //@Test
+    @Test
     public void enrollPkcs10ExpectCertificateResponseWithRequestedSubjectDnAndIssuerWithoutEmail() throws Exception {
         enrollPkcs10ExpectCertificateResponseWithRequestedSubjectDnAndIssuer(null, false, true);
     }
 
-    //@Test
+    @Test
     public void enrollPkcs10ExpectCertificateResponseWithRequestedSubjectDnAndIssuerWithoutHeaders() throws Exception {
         enrollPkcs10ExpectCertificateResponseWithRequestedSubjectDnAndIssuer("random@samp.de", false, false);
     }
 
-    //@Test
+    @Test
     public void enrollPkcs10ExpectCertificateResponseWithRequestedSubjectDnAndIssuerWithEmail() throws Exception {
         enrollPkcs10ExpectCertificateResponseWithRequestedSubjectDnAndIssuer("random@samp.de", false, true);
     }
 
-    //@Test
+    @Test
     public void enrollPkcs10ExpectCertificateResponseWithCVC() throws Exception {
         assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
         cvcTestCa = CryptoTokenTestUtils.createTestCVCAWithSoftCryptoToken(INTERNAL_ADMIN_TOKEN, testCVCIssuerDn);
         enrollPkcs10ExpectCertificateResponseWithRequestedSubjectDnAndIssuer(null, true, true);
     }
 
-    //@Test
+    @Test
     public void enrollPkcs10ExpectCertificateResponseWithoutHeadersWithCVC() throws Exception {
         assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
         cvcTestCa = CryptoTokenTestUtils.createTestCVCAWithSoftCryptoToken(INTERNAL_ADMIN_TOKEN, testCVCIssuerDn);
@@ -1261,12 +1261,12 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertEquals("Created user does not have expected email.", email, userData.getEmail());
     }
 
-    //@Test
+    @Test
     public void enrollPkcs10ExpectResponseFormatPKCS7() throws Exception {
         enrollPkcs10("ENDUSER", "EMPTY", "PKCS7", CSR_WITHOUT_HEADERS, 201, null, false);
     }
 
-    //@Test
+    @Test
     public void enrollPkcs10WithSan() throws Exception {
     	// given
         final EndEntityProfile eep = new EndEntityProfile(false);
@@ -1469,12 +1469,12 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         return cert;
     }
 
-    //@Test
+    @Test
     public void certificateRequestExpectCsrSubjectIgnoredWithoutHeaders() throws Exception {
         certificateRequestExpectCsrSubjectIgnored(false);
     }
 
-    //@Test
+    @Test
     public void certificateRequestExpectCsrSubjectIgnoredWithHeaders() throws Exception {
         certificateRequestExpectCsrSubjectIgnored(true);
     }
@@ -1516,7 +1516,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         return cert;
     }
 
-    //@Test
+    @Test
     public void testGetCertificateAboutToExpireSmoke() throws Exception {
         final Response actualResponse = newRequest("/v1/certificate/expire?days=1").request().get();
         final String actualJsonString = actualResponse.readEntity(String.class);
@@ -1526,7 +1526,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertNotNull(certificatesToExpire);
     }
 
-    //@Test
+    @Test
     public void testGetCertificateAboutToExpireDetailedSearch() throws Exception {
 
         final String issuerDN = "CN=CaSigningForVariedValidity";
@@ -1697,7 +1697,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         return;
     }
 
-    //@Test
+    @Test
     public void testCreateCertificateNonExistingCa() throws Exception {
 
         final KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
@@ -1725,7 +1725,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertTrue(responseBody.contains("CA with name " + caName + " doesn't exist."));
     }
 
-    //@Test
+    @Test
     public void testCreateCertificateRequestWithSan() throws Exception {
         // given
         // TODO: The UNIFORMRESOURCEIDENTIFIER does not get into the certificate.
@@ -1930,7 +1930,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         return userName;
     }
 
-    //@Test
+    @Test
     public void enrollPkcs10WithUnidFnr() throws Exception {
         final String username = "enrollPkcs10WithUnidFnr";
         final String password = "foo123";
@@ -2003,7 +2003,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         }
     }
 
-    //@Test
+    @Test
     public void finalizeKeyStoreExpectPkcs12Response() throws Exception {
         // Create an add end entity approval request
         final AuthenticationToken approvalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EjbcaRestApiApprovalTestAdmin"));
@@ -2087,7 +2087,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
      *
      * @throws Exception
      */
-    //@Test
+    @Test
     public void shouldRestrictAccessToRestResourceIfProtocolDisabled() throws Exception {
         // given
         disableRestProtocolConfiguration();
