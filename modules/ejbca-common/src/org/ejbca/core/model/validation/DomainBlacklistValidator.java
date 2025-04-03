@@ -302,7 +302,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
             labels.put(name, displayName);
         }
         MapTools.sortLinkedHashMap(labels, String.CASE_INSENSITIVE_ORDER);
-        final DynamicUiProperty<String> uiProperty = new DynamicUiProperty<>(String.class, dataMapKey, defaultValue, labels.keySet());
+        final DynamicUiProperty<String> uiProperty = new DynamicUiProperty<>(String.class, dataMapKey, defaultValue, labels.keySet().stream().toList());
         uiProperty.setRenderingHint(DynamicUiProperty.RENDER_SELECT_MANY);
         uiProperty.setLabels(labels);
         uiProperty.setHasMultipleValues(true);
