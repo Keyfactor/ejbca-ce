@@ -18,23 +18,23 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-import jakarta.ejb.Remote;
-
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.util.DatabaseIndexUtil.DatabaseIndex;
+
+import jakarta.ejb.Remote;
 
 /**
  * This session bean should under no circumstances be included in the release version of CESeCore.
  * It allows removal of certificates, and may be used only for functional tests to clean up after
  * themselves.
- * 
+ *
  */
 @Remote
 public interface InternalCertificateStoreSessionRemote {
     /**
      * This method removes the given certificate(s) by serial number.
-     * 
+     *
      * @param serno Serial number of the certificate(s) to remove.
      */
     void removeCertificate(BigInteger serno);
@@ -42,7 +42,7 @@ public interface InternalCertificateStoreSessionRemote {
     /**
      * This method removes the given certificate(s) by fingerprint (primary key).
      * @see com.keyfactor.util.CertTools#getFingerprintAsString
-     * 
+     *
      * @param fingerprint fingerprint of the certificate(s) to remove.
      * @return number of rows (certificates) removed from the Base64CertTable
      */
@@ -50,28 +50,30 @@ public interface InternalCertificateStoreSessionRemote {
 
     /**
      * Removes the given {@link Certificate} by its fingerprint.
-     * 
+     *
      * @param certificate The Certificate whose corresponding CertificateData is to be removed.
      * @return number of rows (certificates) removed from the Base64CertTable.
      */
     int removeCertificate(Certificate certificate);
-    
-    /** Removes all certificates issued to the given subject DN
-     * 
+
+    /** Removes all certificates issued to the given subject DN.
+     * If subjectDN does not exist, nothing happens.
+     *
      * @param subjectDN the subject DN of the certificates that should be removed
      */
     void removeCertificatesBySubject(final String subjectDN);
-    
+
     /**
-     * Removed all certificates belonging to a certain username
-     * 
+     * Removed all certificates belonging to a certain username.
+     * If username does not exist, nothing happens.
+     *
      * @param username a username
      */
     void removeCertificatesByUsername(final String username);
 
     /** To allow testing of Local-only method */
     List<Object[]> findExpirationInfo(Collection<String> cas, long activeNotifiedExpireDateMin, long activeNotifiedExpireDateMax, long activeExpireDateMin);
-     
+
     Collection<Certificate> findCertificatesByIssuer(String issuerDN);
 
 	/**
@@ -79,11 +81,11 @@ public interface InternalCertificateStoreSessionRemote {
 	 *
 	 * @param admin Administrator performing the operation
 	 * @param fingerprint the fingerprint of the CRL to remove
-	 * 
+	 *
      * @throws AuthorizationDeniedException (rollback) if admin was not authorized to remove CRL
 	 */
 	void removeCRL(final AuthenticationToken admin, final String fingerprint) throws AuthorizationDeniedException;
-	
+
 	 /**
      * Update the status of a cert in the database. Whatever status you want...
      * @param fingerprint
@@ -91,7 +93,7 @@ public interface InternalCertificateStoreSessionRemote {
      * @return true if the status was updated, false if not, for example if the certificate did not exist
      */
     boolean setStatus(AuthenticationToken admin, String fingerprint, int status) throws AuthorizationDeniedException;
-    
+
     /**
      * Set the status of certificate with given serno to revoked, or unrevoked (re-activation).
      *
@@ -101,12 +103,12 @@ public interface InternalCertificateStoreSessionRemote {
      * @param revokedDate    when it was revoked
      * @param invalidityDate the date when certificate became invalid
      * @param reason         the reason of the revocation. (One of the RevokedCertInfo.REVOCATION_REASON constants.)
-     * @return true if status was changed in the database, false if not, for example if the certificate was already revoked 
+     * @return true if status was changed in the database, false if not, for example if the certificate was already revoked
      * @throws CertificateRevokeException (rollback) if certificate does not exist
      * @throws AuthorizationDeniedException (rollback)
      */
     boolean setRevokeStatus(AuthenticationToken admin, String issuerdn, BigInteger serno, Date revokedDate, Date invalidityDate, int reason) throws CertificateRevokeException, AuthorizationDeniedException;
-    
+
     /**
      * Set the status of certificate with given serno to revoked, or unrevoked (re-activation).
      *
@@ -115,13 +117,13 @@ public interface InternalCertificateStoreSessionRemote {
      * @param revokedDate    when it was revoked
      * @param invalidityDate the date when certificate became invalid
      * @param reason         the reason of the revocation. (One of the RevokedCertInfo.REVOCATION_REASON constants.)
-     * @return true if status was changed in the database, false if not, for example if the certificate was already revoked 
+     * @return true if status was changed in the database, false if not, for example if the certificate was already revoked
      * @throws CertificateRevokeException (rollback) if certificate does not exist
      * @throws AuthorizationDeniedException (rollback)
      */
     boolean setRevokeStatus(AuthenticationToken admin, Certificate certificate, Date revokedDate, Date invalidityDate, int reason)
         throws CertificateRevokeException, AuthorizationDeniedException;
-    
+
     /** Setting unique serno check to OK, i.e. force EJBCA to believe we have a unique issuerDN/SerialNo index in the database
      */
     void setUniqueSernoIndexTrue();
@@ -146,7 +148,7 @@ public interface InternalCertificateStoreSessionRemote {
      * @see org.cesecore.certificates.certificate.CertificateStoreSessionLocal#updateLimitedCertificateDataStatus(AuthenticationToken, int, String, BigInteger, Date, int, String)
      */
     void updateLimitedCertificateDataStatus(AuthenticationToken admin, int caId, String issuerDn, BigInteger serialNumber, Date revocationDate, int reasonCode, String caFingerprint) throws AuthorizationDeniedException;
-    
+
     void updateLimitedCertificateDataStatus(AuthenticationToken admin, int caId, String issuerDn, String subjectDn, String username,
             BigInteger serialNumber, int status, Date revocationDate, int reasonCode, String caFingerprint)  throws AuthorizationDeniedException;
 
@@ -171,7 +173,7 @@ public interface InternalCertificateStoreSessionRemote {
     /** Removes all limited certificates (without certificates and certificate details) that matches the given issuer. */
     void removeLimitedCertificatesByIssuer(String issuerDN);
 
-    /** Removes all that matches the given issuer. */
+    /** Removes all that matches the given issuer. If the issuer does not exist, nothing happens. */
     void removeCertificatesByIssuer(String issuerDN);
 
     /** Removes a certificate from IncompleteIssuanceJournalData */

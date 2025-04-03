@@ -799,30 +799,73 @@
 								</h:inputText>
 								<h:message for="cabfOrganizationIdentifier" id="cabfOrganizationIdentifierMessage" styleClass="validationErrorMessage showErrorMessage"/>
 							</h:panelGroup>
-							<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollMakeNewRequestBean.renderIssuanceRevocationReason}">
-								<h:outputLabel for="issuanceRevocationReason" value="#{msg.enroll_issuance_revocation_reason}"/>
-								<h:selectOneMenu id="issuanceRevocationReason" value="#{enrollMakeNewRequestBean.selectedIssuanceRevocationReason}"
-									disabled="#{!enrollMakeNewRequestBean.issuanceRevocationReasonModifable}">
-									<f:selectItems value="#{enrollMakeNewRequestBean.availableRevocationReasons}"/>
-								</h:selectOneMenu>
-							</h:panelGroup>
 							</h:panelGroup>
 						</h:panelGroup>
-						<h:panelGroup id="otherDataSection" layout="block" styleClass="internal-frame" rendered="#{enrollMakeNewRequestBean.renderOtherData}">
+
+						<h:panelGroup id="otherDataSection" layout="block"
+							styleClass="internal-frame"
+							rendered="#{enrollMakeNewRequestBean.renderOtherData}">
 							<h3>
 								<h:outputText value="#{msg.enroll_other_data}" />
 							</h3>
-							<h:panelGroup layout="block" styleClass="internal-frame-with-left-margin">
-							<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollMakeNewRequestBean.useKeyRecoverable}">
-								<h:outputLabel for="keyRecoveryCheckbox" value="#{msg.component_eedetails_field_keyrecoverable}"/>
-								<h:selectBooleanCheckbox id="keyRecoveryCheckbox" value="#{enrollMakeNewRequestBean.keyRecoverableUse}" 
-										rendered="#{enrollMakeNewRequestBean.useKeyRecoverable}" disabled="#{enrollMakeNewRequestBean.keyRecoveryRequired}">
-                            	    <f:ajax execute="@this" render=":requestInfoForm:requestPreviewOuterPanel" />
-                            	</h:selectBooleanCheckbox>
-						    </h:panelGroup>
-						    </h:panelGroup>
+							<h:panelGroup layout="block"
+								styleClass="internal-frame-with-left-margin"
+								rendered="#{enrollMakeNewRequestBean.renderNumberOfAllowedRequests}">
+								<h:panelGroup layout="block" styleClass="pure-control-group">
+									<h:outputLabel for="numberOfAllowedRequests"
+										value="Allowed number of requests" />
+									<h:selectOneMenu id="numberOfAllowedRequests"
+										value="#{enrollMakeNewRequestBean.selectedNumberOfRequests}">
+										<f:selectItems
+											value="#{enrollMakeNewRequestBean.allowedRequests}" />
+									</h:selectOneMenu>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block"
+								styleClass="internal-frame-with-left-margin"
+								rendered="#{enrollMakeNewRequestBean.useKeyRecoverable}">
+								<h:panelGroup layout="block" styleClass="pure-control-group">
+									<h:outputLabel for="keyRecoveryCheckbox"
+										value="#{msg.component_eedetails_field_keyrecoverable}" />
+									<h:selectBooleanCheckbox id="keyRecoveryCheckbox"
+										value="#{enrollMakeNewRequestBean.keyRecoverableUse}"
+										rendered="#{enrollMakeNewRequestBean.useKeyRecoverable}"
+										disabled="#{enrollMakeNewRequestBean.keyRecoveryRequired}">
+										<f:ajax execute="@this"
+											render=":requestInfoForm:requestPreviewOuterPanel" />
+									</h:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block"
+								styleClass="internal-frame-with-left-margin"
+								rendered="#{enrollMakeNewRequestBean.renderIssuanceRevocationReason}">
+								<h:panelGroup layout="block" styleClass="pure-control-group">
+									<h:outputLabel for="issuanceRevocationReason"
+										value="#{msg.enroll_issuance_revocation_reason}" />
+									<h:selectOneMenu id="issuanceRevocationReason"
+										value="#{enrollMakeNewRequestBean.selectedIssuanceRevocationReason}"
+										disabled="#{!enrollMakeNewRequestBean.issuanceRevocationReasonModifable}">
+										<f:selectItems
+											value="#{enrollMakeNewRequestBean.availableRevocationReasons}" />
+									</h:selectOneMenu>
+								</h:panelGroup>
+							</h:panelGroup>
+							<h:panelGroup layout="block"
+								styleClass="internal-frame-with-left-margin"
+								rendered="#{enrollMakeNewRequestBean.sendNotificationRendered}">
+								<h:panelGroup layout="block" styleClass="pure-control-group">
+									<h:outputLabel for="sendNotification"
+										value="#{msg.enroll_notification}" />
+									<h:selectBooleanCheckbox id="sendNotification"
+										disabled="#{enrollMakeNewRequestBean.sendNotificationDisabled}"
+										value="#{enrollMakeNewRequestBean.sendNotification}">
+										<f:ajax event="change" render="emailBlock"></f:ajax>
+									</h:selectBooleanCheckbox>
+								</h:panelGroup>
+							</h:panelGroup>
 						</h:panelGroup>
-                        <fieldset>
+
+						<fieldset>
     						<h:commandButton id="updateRequestPreview"
     							value="#{msg.enroll_update_request_preview}"
     							action="#{enrollMakeNewRequestBean.updateRequestPreview}"
@@ -984,23 +1027,6 @@
 					
 				</h:panelGroup>
 				
-				<h:panelGroup layout="block" id="otherBlock" 
-					rendered="#{enrollMakeNewRequestBean.otherDataRendered}">
-					<h2>
-						<h:outputText value="#{msg.enroll_other_data}" />
-					</h2>
-					<h:panelGroup layout="block" styleClass="internal-frame">
-						<h:panelGroup layout="block" styleClass="internal-frame-with-left-margin">
-						<h:panelGroup layout="block" styleClass="pure-control-group" id="otherDataGroup">
-							<h:outputLabel for="sendNotification" value="#{msg.enroll_notification}" />
-							<h:selectBooleanCheckbox id="sendNotification" disabled="#{enrollMakeNewRequestBean.sendNotificationDisabled}"
-													 value="#{enrollMakeNewRequestBean.sendNotification}" >
-								<f:ajax event="change" render="emailBlock"></f:ajax>
-							</h:selectBooleanCheckbox>
-						</h:panelGroup>
-						</h:panelGroup>
-					</h:panelGroup>
-				</h:panelGroup>
 				
 				<h:panelGroup layout="block" id="userCredentialsOuterPanel" rendered="#{enrollMakeNewRequestBean.provideUserCredentialsRendered}">
 					<h2>

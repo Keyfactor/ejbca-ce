@@ -87,6 +87,8 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.keys.keyimport.KeyImportFailure;
+import org.cesecore.keys.keyimport.KeyImportRequestData;
 import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
@@ -190,7 +192,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
      * For example certificate issuance you want to always happen as far in as possible (the CA), while
      * key recovery you want as far out as possible (i.e. customer have a satellite RA to do local escrow/key recovery if possible)
      * 
-     * Wether a node (raMasterApi implementation) is usable or not is determined by calling isBackendAvailable() on the api implementation
+     * Whether a node (raMasterApi implementation) is usable or not is determined by calling isBackendAvailable() on the api implementation
      * being tried. In RaMasterAPISessionBean, isBackendAvailable() is implemented so that a node is available for API processing if there 
      * is any _active_ CA available locally. Normally this is only available farthest in, on the CA.
      * But for the local key recovery use case the customer will add a local CA (with keys and signing cert) on the satellite RA 
@@ -1925,17 +1927,27 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     @Override
     public byte[] createCertificateWithEntity(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, String req, int reqType, int responseType)
             throws EjbcaException, AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException, ApprovalException {
-        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+        EjbcaException ejbcaException = null;
+        for (final RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 20) {
                 if (log.isDebugEnabled()) {
                     log.debug("raMasterApi calling createCertificateWithEntity: " + raMasterApi.getApiVersion() + ", " + raMasterApi.isBackendAvailable() + ", " + raMasterApi.getClass());
                 }
                 try {
                     return raMasterApi.createCertificateWithEntity(authenticationToken, endEntityInformation, req, reqType, responseType);
+                } catch (ApprovalException e) {
+                    // we want to catch other EjbcaExceptions and try on another ejbca instance, but approval exception should be thrown
+                    throw e;
+                }
+                catch (EjbcaException e) {
+                    ejbcaException =  e;
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
             }
+        }
+        if (ejbcaException != null) {
+            throw ejbcaException;
         }
         return null;
     }
@@ -4075,6 +4087,46 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         if (caDoesntExistException != null) {
             throw caDoesntExistException;
         }
+        return null;
+    }
+
+    @Override
+    public List<KeyImportFailure> keyImportV2(final AuthenticationToken authenticationToken, final KeyImportRequestData keyImportRequestData)
+            throws AuthorizationDeniedException, EjbcaException, CADoesntExistsException {
+        CADoesntExistsException caDoesntExistException = null;
+        EjbcaException ejbcaException = null;
+
+        for (RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 20) {
+                if (log.isDebugEnabled()) {
+                    log.debug("raMasterApi calling keyImportV2: " + raMasterApi.getApiVersion() + ", " + raMasterApi.isBackendAvailable() + ", " + raMasterApi.getClass());
+                }
+                try {
+                    return raMasterApi.keyImportV2(authenticationToken, keyImportRequestData);
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                } catch (CADoesntExistsException e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("CA for proxied request could not be found: " + e.getMessage());
+                    }
+                    caDoesntExistException = e;
+                } catch (EjbcaException e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Error during Key Import: " + e.getMessage());
+                    }
+                    ejbcaException = e;
+                }
+            }
+        }
+
+        if (caDoesntExistException != null) {
+            throw caDoesntExistException;
+        }
+
+        if (ejbcaException != null) {
+            throw ejbcaException;
+        }
+
         return null;
     }
 
