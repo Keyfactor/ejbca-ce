@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.math.NumberUtils;
@@ -50,6 +51,8 @@ import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingBase;
 import org.cesecore.keybind.InternalKeyBindingCache;
+import org.cesecore.keybind.InternalKeyBindingData;
+import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingNameInUseException;
@@ -72,6 +75,7 @@ import com.keyfactor.util.StringTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
+import jakarta.ejb.EJB;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.model.ListDataModel;
@@ -93,7 +97,7 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
         super(AccessRulesConstants.ROLE_ADMINISTRATOR, InternalKeyBindingRules.VIEW.resource());
     }
     
-    public final class GuiInfo implements Serializable {
+    public final static class GuiInfo implements Serializable {
         public static final String TEXTKEY_PREFIX = "INTERNALKEYBINDING_STATUS_";
         private final int internalKeyBindingId;
         private final String name;
@@ -227,6 +231,35 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
         public String getCertificateSubjectDn() {
             return certificateSubjectDn;
         }
+
+        @Override
+        public String toString() {
+            return "GuiInfo [internalKeyBindingId=" + internalKeyBindingId + "\n name=" + name + "\n cryptoTokenId=" + cryptoTokenId
+                    + "\n cryptoTokenName=" + cryptoTokenName + "\n authorizedToCryptotoken=" + authorizedToCryptotoken + "\n authorizedToGenerateKeys="
+                    + authorizedToGenerateKeys + "\n cryptoTokenActive=" + cryptoTokenActive + "\n keyPairAlias=" + keyPairAlias + "\n nextKeyPairAlias="
+                    + nextKeyPairAlias + "\n status=" + status + "\n operationalStatus=" + operationalStatus + "\n certificateId=" + certificateId
+                    + "\n certificateIssuerDn=" + certificateIssuerDn + "\n certificateSerialNumber=" + certificateSerialNumber
+                    + "\n caCertificateIssuerDn=" + caCertificateIssuerDn + "\n caCertificateSerialNumber=" + caCertificateSerialNumber
+                    + "\n certificateInternalCaName=" + certificateInternalCaName + "\n certificateInternalCaId=" + certificateInternalCaId
+                    + "\n certificateSubjectDn=" + certificateSubjectDn + "]";
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(internalKeyBindingId);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            GuiInfo other = (GuiInfo) obj;
+            return internalKeyBindingId == other.internalKeyBindingId;
+        }
     }
 
     private static final long serialVersionUID = 3L;
@@ -242,14 +275,15 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
     ////
     //// Below is code related to viewing and/or interacting with the list of InternalKeyBindings
     ////
+    @EJB
+    private InternalKeyBindingDataSessionLocal internalKeyBindingDataSession;
     private String currentInternalKeyBindingId = null;
     private String currentName = null;
-    private transient ListDataModel<GuiInfo> internalKeyBindingGuiList = null;
     private List<GuiInfo> internalKeyBindingList = null;
+    private transient ListDataModel<GuiInfo> internalKeyBindingListDataModel;
 
     private Integer uploadTarget = null;
     private transient Part uploadToTargetFile;
-    private transient ListDataModel<InternalKeyBindingTrustEntry> trustedCertificates = null;
     private List<InternalKeyBindingTrustEntry> trustedCertificateList = null;
     private String currentCertificateSerialNumber = null;
     private String currentTrustEntryDescription = null;
@@ -277,8 +311,7 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
         return false;
     }
 
-    private void flushListCaches() {
-        internalKeyBindingGuiList = null;
+    protected void flushListCaches() {
         internalKeyBindingList = null;
     }
 
@@ -334,15 +367,16 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
 
     /** @return list of gui representations for all the InternalKeyBindings of the current type*/
     public ListDataModel<GuiInfo> getInternalKeyBindingGuiList() {
-        if (internalKeyBindingGuiList == null) {
-            
-            // create the key binding list
+        if (internalKeyBindingList == null || internalKeyBindingListDataModel == null) {
             if (internalKeyBindingList == null) {
                 // Get the current type of tokens we operate on
                 final String internalKeyBindingType = getSelectedInternalKeyBindingType();
                 internalKeyBindingList = new LinkedList<>();
-                for (InternalKeyBindingInfo current : getInternalKeyBindingSession().getInternalKeyBindingInfos(getAuthenticationToken(),
-                        internalKeyBindingType)) {
+                for (Integer internalKeyBindingId : getInternalKeyBindingSession().getInternalKeyBindingIds(getAuthenticationToken(), internalKeyBindingType)) {
+                    InternalKeyBindingData current = internalKeyBindingDataSession.readData(internalKeyBindingId);
+                    if (current == null) {
+                        log.error("No object found for internal key binding with id = " + internalKeyBindingId);
+                    }
                     final int cryptoTokenId = current.getCryptoTokenId();
                     final CryptoTokenInfo cryptoTokenInfo = getCryptoTokenManagementSession().getCryptoTokenInfo(cryptoTokenId);
                     final String cryptoTokenName;
@@ -369,7 +403,7 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
                     String caCertificateSerialNumber = "";
                     String certificateInternalCaName = null;
                     int certificateInternalCaId = 0;
-                    String status = current.getStatus().name();
+                    String status = current.getStatus();
                     if (certificate != null) {
                         certificateSubjectDn = CertTools.getSubjectDN(certificate);
                         certificateIssuerDn = CertTools.getIssuerDN(certificate);
@@ -403,7 +437,7 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
                             }
                         }
                         // Check for additional informative UI states
-                        if (InternalKeyBindingStatus.ACTIVE.equals(current.getStatus()) && certificate instanceof X509Certificate) {
+                        if (InternalKeyBindingStatus.ACTIVE.equals(current.getStatusEnum()) && certificate instanceof X509Certificate) {
                             // Check if certificate is expired
                             final X509Certificate x509Certificate = (X509Certificate) certificate;
                             try {
@@ -425,18 +459,15 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
                             certificateIssuerDn, certificateSubjectDn, certificateInternalCaName, certificateInternalCaId, certificateSerialNumber,
                             caCertificateIssuerDn, caCertificateSerialNumber));
                     internalKeyBindingList.sort((guiInfo1, guiInfo2) -> guiInfo1.getName().compareToIgnoreCase(guiInfo2.getName()));
-
                 }
-
             }
-            
-            // return a wrapped key binding list
-            internalKeyBindingGuiList = new ListDataModel<>(internalKeyBindingList);
-        }
-        
+            internalKeyBindingListDataModel = new ListDataModel<>(internalKeyBindingList);
+        }        
+
         // View the list will purge the view cache
         flushSingleViewCache();
-        return internalKeyBindingGuiList;
+
+        return internalKeyBindingListDataModel;
     }
 
     /** Invoked when the user wants to renew a the InternalKeyBinding certificates issued by a instance local CA */
@@ -579,10 +610,10 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
     private String currentKeyPairAlias = null;
     private String currentSignatureAlgorithm = null;
     private String currentNextKeyPairAlias = null;
-    private transient ListDataModel<DynamicUiProperty<? extends Serializable>> internalKeyBindingPropertyList = null;
     private ArrayList<DynamicUiProperty<? extends Serializable>> internalKeyBindingProperties;
     private boolean inEditMode = false;
     private Integer currentCertificateAuthority = null;
+
 
 
 
@@ -607,10 +638,8 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
         currentKeyPairAlias = null;
         currentSignatureAlgorithm = null;
         currentNextKeyPairAlias = null;
-        internalKeyBindingPropertyList = null;
         internalKeyBindingProperties = null;
         inEditMode = false;
-        trustedCertificates = null;
         trustedCertificateList = null;
     }
 
@@ -681,7 +710,6 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
             currentSignatureAlgorithm = internalKeyBinding.getSignatureAlgorithm();
             currentNextKeyPairAlias = internalKeyBinding.getNextKeyPairAlias();
             internalKeyBindingProperties = new ArrayList<>(internalKeyBinding.getCopyOfProperties().values());
-            trustedCertificates = null;
             trustedCertificateList = null;
         }
     }
@@ -1033,29 +1061,25 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
 
     /** @return a list of all currently trusted certificates references as pairs of [CAId,CertificateSerialNumber] */
     public ListDataModel<InternalKeyBindingTrustEntry> getTrustedCertificates() {
-        if (trustedCertificates == null) {
-            if (trustedCertificateList == null) {
-                final int internalKeyBindingId = Integer.parseInt(currentInternalKeyBindingId);
-                if (internalKeyBindingId == 0) {
-                    trustedCertificateList = new ArrayList<>();
-                } else {
-                    try {
-                        final InternalKeyBinding internalKeyBinding = getInternalKeyBindingSession()
-                                .getInternalKeyBindingReference(getAuthenticationToken(), internalKeyBindingId);
-                        trustedCertificateList = internalKeyBinding.getTrustedCertificateReferences();
-                    } catch (AuthorizationDeniedException e) {
-                        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(e.getMessage()));
-                    }
+        if (trustedCertificateList == null) {
+            final int internalKeyBindingId = Integer.parseInt(currentInternalKeyBindingId);
+            if (internalKeyBindingId == 0) {
+                trustedCertificateList = new ArrayList<>();
+            } else {
+                try {
+                    final InternalKeyBinding internalKeyBinding = getInternalKeyBindingSession()
+                            .getInternalKeyBindingReference(getAuthenticationToken(), internalKeyBindingId);
+                    trustedCertificateList = internalKeyBinding.getTrustedCertificateReferences();
+                } catch (AuthorizationDeniedException e) {
+                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(e.getMessage()));
                 }
             }
-
-            trustedCertificates = new ListDataModel<>(trustedCertificateList);
         }
-        return trustedCertificates;
+
+        return new ListDataModel<>(trustedCertificateList);
     }
 
     /** Invoked when the user wants to a new entry to the list of trusted certificate references */
-    @SuppressWarnings("unchecked")
     public void addTrust() {
         final String currentCertSerialNumber = getCurrentCertificateSerialNumber();
         if (currentCertSerialNumber == null || currentCertSerialNumber.trim().length() == 0) {
@@ -1067,7 +1091,6 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
     }
 
     /** Invoked when the user wants to remove an entry to the list of trusted certificate references */
-    @SuppressWarnings("unchecked")
     public void removeTrust() {
         final InternalKeyBindingTrustEntry trustEntry = (getTrustedCertificates().getRowData());
         trustedCertificateList.remove(trustEntry);
@@ -1076,10 +1099,7 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
 
     /** @return a list of the current InteralKeyBinding's properties */
     public ListDataModel<DynamicUiProperty<? extends Serializable>> getInternalKeyBindingPropertyList() {
-        if (internalKeyBindingPropertyList == null) {
-            internalKeyBindingPropertyList = new ListDataModel<>(internalKeyBindingProperties);
-        }
-        return internalKeyBindingPropertyList;
+        return new ListDataModel<>(internalKeyBindingProperties);
     }
 
     /** @return the lookup result of message key "INTERNALKEYBINDING_<type>_<property-name>" or property-name if no key exists. */
@@ -1116,7 +1136,7 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
 
     /**
      * Updates the current operational status of the current key binding.
-     * @param currentKeyBindingInfo
+     * @param keyBinding
      * @param cryptoTokenInfo
      * @return path to corresponding icon based on the followings:
      *
@@ -1124,16 +1144,16 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
      * Pending if keybinding is enabled, crypto token is active, but cache hasn't been refreshed yet (keybinding is not in cache)
      * Offline if keybinding is disabled, unknown or offline
      */
-    private String updateOperationalStatus(final InternalKeyBindingInfo currentKeyBindingInfo, final CryptoTokenInfo cryptoTokenInfo) {
+    private String updateOperationalStatus(final InternalKeyBindingData keyBinding, final CryptoTokenInfo cryptoTokenInfo) {
         if (cryptoTokenInfo == null) {
             return getEjbcaWebBean().getImagePath("status-ca-offline.png");
         }
-        switch (currentKeyBindingInfo.getStatus()) {
+        switch (InternalKeyBindingStatus.valueOf(keyBinding.getStatus())) {
         case ACTIVE:
-            if (currentKeyBindingInfo.getImplementationAlias().equals(OcspKeyBinding.IMPLEMENTATION_ALIAS)) {
-                return updateKeyBindingStatus(currentKeyBindingInfo, cryptoTokenInfo);
+            if (keyBinding.getKeyBindingType().equals(OcspKeyBinding.IMPLEMENTATION_ALIAS)) {
+                return updateKeyBindingStatus(keyBinding, cryptoTokenInfo);
             }
-            return updateGenericKeyBindingStatus(currentKeyBindingInfo, cryptoTokenInfo);
+            return updateGenericKeyBindingStatus(keyBinding, cryptoTokenInfo);
         default:
             return getEjbcaWebBean().getImagePath("status-ca-offline.png");
         }
@@ -1141,11 +1161,11 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
 
     /**
      * Just check crypto token status for keybindings other than ocsp
-     * @param currentKeyBindingInfo
+     * @param keyBinding
      * @param cryptoTokenInfo
      * @return active logo if crypto token is active, offline logo otherwise.
      */
-    private String updateGenericKeyBindingStatus(final InternalKeyBindingInfo currentKeyBindingInfo, final CryptoTokenInfo cryptoTokenInfo) {
+    private String updateGenericKeyBindingStatus(final InternalKeyBindingData keyBinding, final CryptoTokenInfo cryptoTokenInfo) {
         if (cryptoTokenInfo.isActive()) {
             return getEjbcaWebBean().getImagePath("status-ca-active.png");
         }
@@ -1154,15 +1174,15 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
 
     /**
      *
-     * @param currentKeyBindingInfo
+     * @param keyBinding
      * @param cryptoTokenInfo
      * @return active if crypto token active and keybinding exists in cache.
      *         pending if crypto token is active but keybidning not present in cache.
      *         offline otherwise.
      */
-    private String updateKeyBindingStatus(final InternalKeyBindingInfo currentKeyBindingInfo, final CryptoTokenInfo cryptoTokenInfo) {
+    private String updateKeyBindingStatus(final InternalKeyBindingData keyBinding, final CryptoTokenInfo cryptoTokenInfo) {
         if (cryptoTokenInfo.isActive()) {
-            if (hasOcspCacheEntry(currentKeyBindingInfo.getId())) {
+            if (hasOcspCacheEntry(keyBinding.getId())) {
                 return getEjbcaWebBean().getImagePath("status-ca-active.png");
             }
             return getEjbcaWebBean().getImagePath("status-ca-pending.png");

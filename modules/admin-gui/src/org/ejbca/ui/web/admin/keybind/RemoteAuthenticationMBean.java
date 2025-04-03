@@ -119,6 +119,9 @@ public class RemoteAuthenticationMBean extends InternalKeyBindingMBeanBase {
                 FacesContext.getCurrentInstance().addMessage(null,
                         new FacesMessage(getCurrentName() + " created with ID " + getCurrentInternalKeyBindingId()));
                 setInEditMode(false);
+                flushCurrentCache();
+                
+                flushListCaches();
             } catch (AuthorizationDeniedException | InternalKeyBindingNameInUseException | CryptoTokenOfflineException | InvalidAlgorithmException 
                     | InternalKeyBindingNonceConflictException e) {
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
@@ -158,6 +161,10 @@ public class RemoteAuthenticationMBean extends InternalKeyBindingMBeanBase {
             setCurrentInternalKeybindingId(
                     String.valueOf(internalKeyBindingSession.persistInternalKeyBinding(getAuthenticationToken(), internalKeyBinding)));
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(getCurrentName() + " saved"));
+            flushCurrentCache();
+            
+            // this may change the contents of the binding list, so flush that too
+            flushListCaches();
         } catch (AuthorizationDeniedException | InternalKeyBindingNameInUseException | IllegalArgumentException e) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
         }
