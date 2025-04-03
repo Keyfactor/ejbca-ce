@@ -100,7 +100,7 @@ dependencyResolutionManagement {
             library("kerb-crypto", ":kerb-crypto:2.0.3")
             library("kerby-asn1", ":kerby-asn1:2.0.3")
             library("keyfactor-commons-cli", ":keyfactor-commons-cli:2.0.0")
-            library("jsch", ":jsch:0.2.11")
+            library("jsch", ":jsch:0.2.24")
             library("xstream", ":xstream:1.4.21")
             library("xpp3_min", ":xpp3_min:1.1.4c")
             library("istack-commons-runtime", ":istack-commons-runtime:3.0.11")
