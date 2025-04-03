@@ -545,9 +545,11 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
         // b may be 0 for success,
         // 1 for error,
         // 2 for fatal error,
-        // -1
-        if (b <= 0) {
+        // -1 for end of stream
+        if (b == 0) {
             return;
+        } else if (b == -1) {
+            throw new IOException("Lost connection during SCP operation");
         }
         StringBuffer sb = new StringBuffer();
         int c;
