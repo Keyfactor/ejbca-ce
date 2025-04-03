@@ -13,7 +13,6 @@
 package org.cesecore.authentication.tokens;
 
 import java.security.Principal;
-import java.security.SecureRandom;
 import java.util.Set;
 
 import org.apache.commons.lang.ArrayUtils;

@@ -351,7 +351,7 @@
 		<ant antfile="${mod.acme.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
-    <target name="ejbca-rest-common" if="${mod.ejbca-rest-common.exists}" description="Build EJBCA rest common">
+    <target name="ejbca-rest-common" if="${mod.ejbca-rest-common.exists}" depends="cesecore-common" description="Build EJBCA rest common">
         <ant antfile="${mod.ejbca-rest-common.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
     </target>
 	
@@ -473,7 +473,7 @@
 		<ant antfile="${mod.caa.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
 	</target>
 	
-	<target name="ejbca-caa-cli" if="mod.caa.exists" depends="caa" description="Creates a CLI jar for CAA lookups">
+	<target name="ejbca-caa-cli" if="mod.caa.exists" depends="caa, edition-specific-interface" description="Creates a CLI jar for CAA lookups">
 		<ant antfile="${mod.caa.path}/build.xml" target="build-cli" inheritall="true" inheritrefs="true"/>
 	</target>
 	

@@ -129,6 +129,8 @@ import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.keys.keyimport.KeyImportFailure;
+import org.cesecore.keys.keyimport.KeyImportRequestData;
 import org.cesecore.keys.validation.CaaIdentitiesValidator;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.keys.validation.Validator;
@@ -169,6 +171,7 @@ import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
+import org.ejbca.core.ejb.ra.KeyImportSessionLocal;
 import org.ejbca.core.ejb.ra.KeyStoreCreateSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.UserData;
@@ -346,6 +349,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     private AcmeChallengeDataSessionLocal acmeChallengeDataSession;
     @EJB
     private EtsiEcaOperationsSessionLocal ecaOperationsSession;
+    @EJB
+    private KeyImportSessionLocal keyImportSession;
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
@@ -2187,11 +2192,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
 
         boolean isClearPwd = endEntityProfile.isClearTextPasswordUsed() && endEntityProfile.isClearTextPasswordDefault();
-
-        endEntity.getExtendedInformation().getRawData().remove(ExtendedInformation.CUSTOMDATA + ExtendedInformation.MARKER_FROM_REST_RESOURCE);
-        endEntity.getExtendedInformation().getRawData().remove(ExtendedInformation.CUSTOMDATA + ExtendedInformation.CA_NAME);
-        endEntity.getExtendedInformation().getRawData().remove(ExtendedInformation.CUSTOMDATA + ExtendedInformation.CERTIFICATE_PROFILE_NAME);
-        endEntity.getExtendedInformation().getRawData().remove(ExtendedInformation.CUSTOMDATA + ExtendedInformation.END_ENTITY_PROFILE_NAME);
+        endEntity.getExtendedInformation().removeInternalKeys();
 
         return isClearPwd;
     }
@@ -2559,26 +2560,33 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
 
     @Override
-    public byte[] createCertificateWithEntity(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, String requestData, int requestType, int responseType) throws EjbcaException, AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException{
+    public byte[] createCertificateWithEntity(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, String requestData, int requestType, int responseType)
+            throws EjbcaException, AuthorizationDeniedException, EndEntityProfileValidationException{
         try {
             return certificateRequestSession.processCertReq(authenticationToken, endEntityInformation, requestData, requestType, responseType);
         } catch (InvalidKeyException e) {
             log.debug("EJBCA REST exception", e);
             throw new EjbcaException(ErrorCode.INVALID_KEY, e.getMessage());
-        } catch (InvalidKeySpecException e) {
+        } catch (InvalidKeySpecException | IllegalKeyException e) {
             log.debug("EJBCA REST exception", e);
             throw new EjbcaException(ErrorCode.ILLEGAL_KEY, e.getMessage());
+        } catch (SignRequestSignatureException | CertificateCreateException | IOException e) {
+            log.debug("EJBCA REST exception", e);
+            throw new EjbcaException(e.getMessage());
         } catch (CesecoreException e) {
             log.debug("EJBCA REST exception", e);
             // Will convert the CESecore exception to an EJBCA exception with the same error code
             throw new EjbcaException(e.getErrorCode(), LogRedactionUtils.getRedactedException(e));
         } catch (CertificateExtensionException | NoSuchAlgorithmException | NoSuchProviderException |
-                CertificateException | IOException e) {
+                 CertificateException e) {
             log.debug("EJBCA REST exception", LogRedactionUtils.getRedactedException(e));
             throw new EjbcaException(ErrorCode.INTERNAL_ERROR, LogRedactionUtils.getRedactedMessage(e.getMessage()));
         } catch (SignatureException e) {
             log.debug("EJBCA REST exception", e);
             throw new EjbcaException(ErrorCode.SIGNATURE_ERROR, e.getMessage());
+        } catch (EndEntityProfileValidationException e) {
+            log.debug("EJBCA REST exception", LogRedactionUtils.getRedactedException(e));
+            throw new EndEntityProfileValidationException(LogRedactionUtils.getRedactedMessage(e.getMessage()));
         }
     }
 
@@ -2920,8 +2928,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 EndEntityProfile endEntityProfile =
                         endEntityProfileSession.getEndEntityProfileNoClone(endEntityInformation.getEndEntityProfileId());
                 isClearPwd = endEntityProfile.isClearTextPasswordUsed() && endEntityProfile.isClearTextPasswordDefault();
-                endEntityInformation.getExtendedInformation().getRawData().remove(
-                        ExtendedInformation.CUSTOMDATA + ExtendedInformation.MARKER_FROM_REST_RESOURCE);
+                endEntityInformation.getExtendedInformation().removeInternalKeys();
             }
             if (newUsername == null)
                 endEntityManagementSession.changeUser(authenticationToken, endEntityInformation, isClearPwd);
@@ -3018,6 +3025,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public boolean keyRecoveryPossible(final AuthenticationToken authenticationToken, Certificate cert, String username) {
         boolean returnValue = isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_KEYRECOVERY);
+        if (!((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableKeyRecovery()) {
+            return false;
+        }
         if (((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableEndEntityProfileLimitations()) {
             try {
                 EndEntityInformation data = endEntityAccessSession.findUser(authenticationToken, username);
@@ -3468,6 +3478,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
         return keyStoreCreateSessionLocal.generateOrKeyRecoverTokenAsByteArray(authenticationToken, request.getUsername(), request.getPassword(),
                 request.getKeySpecification(), request.getKeyAlgorithm(), request.getAltKeySpecification(), request.getAltKeyAlgorithm());
+    }
+
+    @Override
+    public List<KeyImportFailure> keyImportV2(final AuthenticationToken authenticationToken, final KeyImportRequestData keyImportRequestData)
+            throws AuthorizationDeniedException, EjbcaException, CADoesntExistsException {
+        return keyImportSession.importKeys(authenticationToken, keyImportRequestData);
     }
 
     @Override

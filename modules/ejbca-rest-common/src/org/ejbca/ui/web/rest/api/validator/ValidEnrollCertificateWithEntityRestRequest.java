@@ -48,6 +48,16 @@ public @interface ValidEnrollCertificateWithEntityRestRequest {
                 return false;
             }
 
+            if (enrollCertificateWithEntityRestRequest.getEndEntity() == null) {
+                ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidEnrollCertificateWithEntityRestRequest.invalid.endEntity.null}");
+                return false;
+            }
+
+            if (StringUtils.isEmpty(enrollCertificateWithEntityRestRequest.getCertificateRequest())) {
+                ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidEnrollCertificateWithEntityRestRequest.invalid.request.null}");
+                return false;
+            }
+
             final String requestTypeValue = enrollCertificateWithEntityRestRequest.getCertificateRequestType();
             if (StringUtils.isEmpty(requestTypeValue)) {
                 ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidEnrollCertificateWithEntityRestRequest.invalid.requestType.nullOrEmpty}");

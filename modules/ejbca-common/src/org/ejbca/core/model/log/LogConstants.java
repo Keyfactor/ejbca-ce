@@ -50,7 +50,9 @@ public interface LogConstants {
     public static final int EVENT_INFO_CAEDITED = 31;
     public static final int EVENT_INFO_CAREVOKED = 32;
     public static final int EVENT_INFO_PUBLISHERDATA = 34;
+    @Deprecated(since = "9.3")
     public static final int EVENT_INFO_USERDATASOURCEDATA = 35;
+    @Deprecated(since = "9.3")
     public static final int EVENT_INFO_USERDATAFETCHED = 36;
     public static final int EVENT_INFO_UNREVOKEDCERT = 37;
     public static final int EVENT_INFO_APPROVALREQUESTED = 38;
@@ -97,6 +99,7 @@ public interface LogConstants {
     public static final int EVENT_ERROR_CAEDITED = 1031;
     public static final int EVENT_ERROR_CAREVOKED = 1032;
     public static final int EVENT_ERROR_PUBLISHERDATA = 1034;
+    @Deprecated(since = "9.3")
     public static final int EVENT_ERROR_USERDATASOURCEDATA = 1035;
     public static final int EVENT_ERROR_USERDATAFETCHED = 1036;
     public static final int EVENT_ERROR_UNREVOKEDCERT = 1037;
