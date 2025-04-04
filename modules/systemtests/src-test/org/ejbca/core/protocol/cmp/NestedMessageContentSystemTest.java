@@ -98,16 +98,25 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.CertificateCreateException;
+import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
+import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
+import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
@@ -164,11 +173,12 @@ public class NestedMessageContentSystemTest extends CmpTestCase {
     private final EndEntityProfileSession eeProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
     private final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
     private final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
+    private final CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
 
-    private final int caid;
-    private final X509Certificate cacert;
-    private final CA testx509ca;
-    private static final X500Name SUBJECT_DN= DnComponents.stringToBcX500Name("O=  Nested Inc., CN= nestedCMPTest, O=SE");
+    private int caid;
+    private X509Certificate cacert;
+    private CA testx509ca;
+    private static final X500Name SUBJECT_DN= DnComponents.stringToBcX500Name("O=  Nested Inc., CN= nestedCMPTest, C=SE");
     private final String issuerDN;
     private final CmpConfiguration cmpConfiguration;
     private static final String cmpAlias = "NestedMessageContentTstConfAlias";
@@ -209,11 +219,6 @@ public class NestedMessageContentSystemTest extends CmpTestCase {
         this.cmpConfiguration = (CmpConfiguration) this.globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
 
         this.issuerDN = "CN=TestCA";
-
-        int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
-        this.testx509ca = CaTestUtils.createTestX509CA(this.issuerDN, null, false, keyusage);
-        this.caid = this.testx509ca.getCAId();
-        this.cacert = (X509Certificate) this.testx509ca.getCACertificate();
     }
 
     @Override
@@ -221,6 +226,10 @@ public class NestedMessageContentSystemTest extends CmpTestCase {
     public void setUp() throws Exception {
         super.setUp();
 
+        int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
+        this.testx509ca = CaTestUtils.createTestX509CA(this.issuerDN, null, false, keyusage);
+        this.caid = this.testx509ca.getCAId();
+        this.cacert = (X509Certificate) this.testx509ca.getCACertificate();
         this.caSession.addCA(this.admin, this.testx509ca);
 
         // Create a temporary directory to store ra certificates, use JUnits TemporaryFolder that is deleted on exit
@@ -416,7 +425,21 @@ public class NestedMessageContentSystemTest extends CmpTestCase {
             CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException,
             InvalidAlgorithmException, CustomCertificateSerialNumberException, EndEntityProfileValidationException, CouldNotRemoveEndEntityException,
             WaitingForApprovalException, NoSuchEndEntityException, ObjectNotFoundException, jakarta.ejb.ObjectNotFoundException,
-            InvalidCmpProtectionException, CMPException {
+            InvalidCmpProtectionException, CMPException, SignRequestSignatureException, CertificateExtensionException {
+        // Create a certificate that we can revoke later
+        EndEntityInformation user = new EndEntityInformation("NestedMessageContentSystemTest.test03RevReq", SUBJECT_DN.toString(), testx509ca.getCAId(), null,
+                "foo@example.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, certificateProfileSession.getCertificateProfileId(CMPTESTPROFILE),
+                EndEntityConstants.TOKEN_USERGEN, null);
+        user.setStatus(EndEntityConstants.STATUS_NEW);
+        user.setPassword("foo123");
+        KeyPair keys = KeyTools.genKeys("P-256", AlgorithmConstants.KEYALGORITHM_ECDSA);
+        SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), user.getUsername(), user.getPassword());
+        X509ResponseMessage userresp = (X509ResponseMessage) certificateCreateSession.createCertificate(roleMgmgToken, user, req,
+                org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
+        Certificate usercert = userresp.getCertificate();
+        assertNotNull("Failed to create certificate", usercert);
+
+        // Find it and revoke it
         Collection<Certificate> certs = this.certificateStoreSession.findCertificatesBySubjectAndIssuer(SUBJECT_DN.toString(), this.issuerDN);
         log.debug("Found " + certs.size() + " certificates for userDN \"" + SUBJECT_DN + "\"");
         Certificate cert = null;
@@ -813,7 +836,7 @@ public class NestedMessageContentSystemTest extends CmpTestCase {
                 .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA)
                 .setLdapOrder(true)
                 .generateCertificate();
-                
+
         CMPCertificate[] cmpcert = getCMPCert(nonAdminCert);
         crmfMsg = CmpMessageHelper.buildCertBasedPKIProtection(crmfMsg, cmpcert, nonAdminKeys.getPrivate(),
                 AlgorithmTools.getAlgorithmNameFromOID(pAlg.getAlgorithm()), BouncyCastleProvider.PROVIDER_NAME);
