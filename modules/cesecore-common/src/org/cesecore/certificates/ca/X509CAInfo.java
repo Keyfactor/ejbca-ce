@@ -100,8 +100,10 @@ public class X509CAInfo extends CAInfo {
 	private int crlPartitions;
 	private int suspendedCrlPartitions;
 	private String requestPreProcessor;
+    private int keepExpiredCertsOnCrlFormat = KeepExpiredCertsOnCrlFormat.CA_DATE.getValue();
+    private long keepExpiredCertsOnCrlDate = 0L;
 
-	// Key: Root CA subjectDn, Value: fingerprint in reverse order, root CA at end
+    // Key: Root CA subjectDn, Value: fingerprint in reverse order, root CA at end
 	private Map<String, List<String>> alternateCertificateChains;
 
     /**
@@ -645,6 +647,22 @@ public class X509CAInfo extends CAInfo {
 
     public void setRequestPreProcessor(String requestPreProcessor) {
         this.requestPreProcessor = requestPreProcessor;
+    }
+
+    public int getKeepExpiredCertsOnCrlFormat() {
+        return this.keepExpiredCertsOnCrlFormat;
+    }
+
+    public void setKeepExpiredCertsOnCrlFormat(final int keepExpiredCertsOnCrlFormat) {
+        this.keepExpiredCertsOnCrlFormat = keepExpiredCertsOnCrlFormat;
+    }
+
+    public long getKeepExpiredCertsOnCrlDate() {
+        return this.keepExpiredCertsOnCrlDate;
+    }
+
+    public void setKeepExpiredCertsOnCrlDate(final long keepExpiredCertsOnCrlDate) {
+        this.keepExpiredCertsOnCrlDate = keepExpiredCertsOnCrlDate;
     }
 
     public Map<String, List<String>> getAlternateCertificateChains() {

@@ -216,7 +216,8 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     protected static final String SUSPENDEDCRLPARTITIONS = "suspendedcrlpartitions";
     protected static final String REQUESTPREPROCESSOR = "requestpreprocessor";
     protected static final String ALTERNATECHAINS = "alternatechains";
-    //protected static final String KEEPEXPIREDCERTSONCRLDATE = "keepExpiredCertsOnCrlDate";
+    protected static final String KEEP_EXPIRED_CERTS_ON_CRL_FORMAT = "keepExpiredCertsOnCRLFormat";
+    protected static final String KEEP_EXPIRED_CERTS_ON_CRL_DATE = "keepExpiredCertsOnCRLDate";
 
     private static final CertificateTransparency ct = CertificateTransparencyFactory.getInstance();
 
@@ -848,6 +849,26 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     @Override
     public void setAlternateCertificateChains(Map<String, List<String>> alternateCertificateChains) {
         data.put(ALTERNATECHAINS, alternateCertificateChains);
+    }
+
+    @Override
+    public int getKeepExpiredCertsOnCrlFormat() {
+        return getInt(KEEP_EXPIRED_CERTS_ON_CRL_FORMAT, KeepExpiredCertsOnCrlFormat.CA_DATE.getValue());
+    }
+
+    @Override
+    public void setKeepExpiredCertsOnCrlFormat(int keepExpiredCertsOnCrlFormat) {
+        data.put(KEEP_EXPIRED_CERTS_ON_CRL_FORMAT, keepExpiredCertsOnCrlFormat);
+    }
+
+    @Override
+    public long getKeepExpiredCertsOnCrlDate() {
+        return getLong(KEEP_EXPIRED_CERTS_ON_CRL_DATE, 0L);
+    }
+
+    @Override
+    public void setKeepExpiredCertsOnCrlDate(long keepExpiredCertsOnCrlDate) {
+        data.put(KEEP_EXPIRED_CERTS_ON_CRL_DATE, keepExpiredCertsOnCrlDate);
     }
 
     /* (non-Javadoc)

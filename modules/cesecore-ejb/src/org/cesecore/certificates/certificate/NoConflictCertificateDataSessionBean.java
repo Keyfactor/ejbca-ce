@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate;
 
-import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.TimeZone;
@@ -27,7 +26,6 @@ import jakarta.persistence.TypedQuery;
 
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
-import org.cesecore.certificates.ca.KeepExpiredCertsOnCrlFormat;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.util.ValidityDate;
@@ -89,7 +87,7 @@ public class NoConflictCertificateDataSessionBean extends BaseCertificateDataSes
     
     @Override
     public Collection<RevokedCertInfo> getRevokedCertInfosWithDuplicates(final String issuerDN, final boolean deltaCrl, final int crlPartitionIndex, final long lastBaseCrlDate,
-                                                                         final boolean keepExpiredCertsOnCrl, int keepExpiredCertsOnCrlFormat, long keepExpiredCertsOnCrlDate, final boolean allowInvalidityDate) {
+                                                                         final boolean keepExpiredCertsOnCrl, final boolean allowInvalidityDate) {
         if (log.isDebugEnabled()) {
             log.debug("Querying for revoked certificates in append-only table. IssuerDN: '" + issuerDN + "'" +
                     ", Delta CRL: " + deltaCrl +
