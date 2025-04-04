@@ -55,7 +55,7 @@ tasks.jar {
 
     from(sourceSets["main"].output)
     from("resources") {
-        include("orm-ejbca-mysql.xml")
+        include("orm-ejbca-$databaseName.xml")
         into("META-INF")
     }
     from("resources") {
