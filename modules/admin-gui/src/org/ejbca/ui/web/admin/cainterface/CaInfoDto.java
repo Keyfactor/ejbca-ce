@@ -30,6 +30,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.KeepExpiredCertsOnCrlFormat;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.kfenroll.ProxyCaInfo;
+import org.cesecore.util.ConverterUtils;
 import org.cesecore.util.SimpleTime;
 
 import com.keyfactor.util.StringTools;
@@ -546,20 +547,16 @@ public class CaInfoDto implements Serializable {
         this.keepExpiredCertsOnCrlFormat = KeepExpiredCertsOnCrlFormat.fromValue(keepExpiredCertsOnCrlFormat).ordinal();
     }
 
+    public String getCurrentTimezone() {
+        return ZoneId.systemDefault().toString();
+    }
+
     public LocalDateTime getKeepExpiredCertsOnCrlDateAsLocalDateTime() {
-        return Instant.ofEpochMilli(keepExpiredCertsOnCrlDate)
-                .atOffset(ZoneOffset.UTC)
-                .toLocalDateTime();
+        return ConverterUtils.epochUtcToLocalDateTime(keepExpiredCertsOnCrlDate);
     }
 
     public void setKeepExpiredCertsOnCrlDateAsLocalDateTime(LocalDateTime keepExpiredCertsOnCrlDate) {
-        if (keepExpiredCertsOnCrlDate == null) {
-            this.keepExpiredCertsOnCrlFormat = KeepExpiredCertsOnCrlFormat.CA_DATE.getValue();
-        }
-        else {
-            ZonedDateTime zonedDateTime = keepExpiredCertsOnCrlDate.atZone(ZoneId.systemDefault());
-            this.keepExpiredCertsOnCrlDate = zonedDateTime.toInstant().toEpochMilli();
-        }
+        this.keepExpiredCertsOnCrlDate = ConverterUtils.localDateTimeToEpochUtc(keepExpiredCertsOnCrlDate);
     }
 
     public long getKeepExpiredCertsOnCrlDate() {

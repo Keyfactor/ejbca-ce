@@ -18,33 +18,31 @@ import org.junit.Test;
 
 import java.time.LocalDateTime;
 import java.time.Month;
+import java.time.ZoneId;
 
 public class ConverterUtilUnitTest {
 
     @Test
-    public void testLocalDateTimeToString() {
+    public void testConvertLocalDateTimeToEpochUtcAndBack() {
         // Given
         final var localDateTime = LocalDateTime.of(2025, Month.APRIL, 1, 14, 15, 31);
-        final var expected = "2025-04-01T14:15:31";
 
         // When
-        final var actual = ConverterUtils.localDateTimeToString(localDateTime);
+        final var epochUtc = ConverterUtils.localDateTimeToEpochUtc(localDateTime);
 
         // Then
-        Assert.assertEquals(expected, actual);
+        Assert.assertTrue(epochUtc > 0L);
+
+        // When
+        final var actual = ConverterUtils.epochUtcToLocalDateTime(epochUtc);
+
+        // Then
+        Assert.assertEquals(localDateTime, actual);
     }
 
     @Test
-    public void testStringToLocalDateTime() {
-        // Given
-        final var localDateTimeAsString = "2025-04-01T14:15:31";
-        final var expected = LocalDateTime.of(2025, Month.APRIL, 1, 14, 15, 31);
-
-        // When
-        final var actual = ConverterUtils.parseLocalDateTime(localDateTimeAsString);
-
-        // Then
-        Assert.assertEquals(expected, actual);
+    public void showTimezone() {
+        System.out.println(ZoneId.systemDefault());
     }
 
 }
