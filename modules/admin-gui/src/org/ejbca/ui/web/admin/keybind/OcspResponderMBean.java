@@ -17,7 +17,11 @@ import java.security.KeyPair;
 import java.security.KeyStoreException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -121,6 +125,9 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
 
     private Integer currentCertificateAuthorityOcspRespToSign = null;
     private String currentTrustEntryDescriptionOcspRespToSign = null;
+    
+    //Serial number of the CA generation to use
+    private String getCurrentCaGeneration = null;
 
     @EJB
     private CaSessionLocal caSession;
@@ -589,6 +596,14 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
     public void setCurrentCertificateAuthorityOcspRespToSign(Integer currentCertificateAuthorityOcspRespToSign) {
         this.currentCertificateAuthorityOcspRespToSign = currentCertificateAuthorityOcspRespToSign;
     }
+    
+    public String getCurrentCaGeneration() {
+        return getCurrentCaGeneration;
+    }
+    
+    public void setCurrentCaGeneration(final String getCurrentCaGeneration) {
+        this.getCurrentCaGeneration = getCurrentCaGeneration;
+    }
 
     public String getCurrentOcspExtension() {
         return currentOcspExtension;
@@ -650,6 +665,32 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
         }
         availableCertificateAuthorities.sort((o1, o2) -> o1.getLabel().compareToIgnoreCase(o2.getLabel()));
         return availableCertificateAuthorities;
+    }
+    
+    public List<SelectItem> getAvailableCertificateChains() {
+        List<SelectItem> result = new ArrayList<>();
+        if(isBoundToCertificate()) {
+            try {
+                final DateFormat dateFormatIso8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
+                //Retrieve all known CA certificates of the chosen issuer 
+                List<Certificate> caCertificates = certificateStoreSession
+                        .findCertificatesBySubject(caSession.getCAInfo(getAdmin(), getCurrentCertificateAuthority()).getSubjectDN());
+                Collections.sort(caCertificates, new Comparator<Certificate>() {
+                    //Sort them by notAfter
+                    @Override
+                    public int compare(Certificate o1, Certificate o2) {
+                        return CertTools.getNotAfter(o1).compareTo(CertTools.getNotAfter(o2));
+                    }
+                });
+                for(int i = 0; i < caCertificates.size(); ++i) {
+                    Certificate caCertificate = caCertificates.get(i);
+                    result.add(new SelectItem(CertTools.getSerialNumberAsString(caCertificate), "Generation " + i + ", Expired at: " + dateFormatIso8601.format(CertTools.getNotAfter(caCertificate))));
+                }
+            } catch (AuthorizationDeniedException e) {
+                addNonTranslatedErrorMessage(e);
+            }
+        }
+        return result;
     }
 
     public List<SelectItem> getAvailableOcspExtensions() {

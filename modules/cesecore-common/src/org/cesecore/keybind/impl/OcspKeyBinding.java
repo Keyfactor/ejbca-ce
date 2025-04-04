@@ -111,7 +111,7 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     public static final String PROPERTY_OMIT_REASON_CODE_WHEN_REVOCATION_REASON_UNSPECIFIED = "omitreasoncodewhenrevocationreasonunspecified"; 
     public static final String PROPERTY_USE_ISSUER_NOTBEFORE_AS_ARCHIVE_CUTOFF = "useIssuerNotBeforeAsArchiveCutoff";
     public static final String PROPERTY_RETENTION_PERIOD = "retentionPeriod";
-    public static final String PROPERTY_GENERATIONAL_OCSP = "generational";
+    public static final String PROPERTY_CERTCHAIN_GENERATION = "certChainGeneration";
     
     {
         addProperty(new DynamicUiProperty<>(PROPERTY_NON_EXISTING_GOOD, Boolean.FALSE));
@@ -126,7 +126,6 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
         addProperty(new DynamicUiProperty<>(PROPERTY_MAX_AGE, 0L));
         addProperty(new DynamicUiProperty<>(PROPERTY_ENABLE_NONCE, Boolean.TRUE));
         addProperty(new DynamicUiProperty<>(PROPERTY_OMIT_REASON_CODE_WHEN_REVOCATION_REASON_UNSPECIFIED, Boolean.TRUE));
-        addProperty(new DynamicUiProperty<>(PROPERTY_GENERATIONAL_OCSP, Boolean.FALSE));
 
     }
 
@@ -237,17 +236,6 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
 
     public void setOmitReasonCodeEnabled(boolean enabled) {
         setProperty(PROPERTY_OMIT_REASON_CODE_WHEN_REVOCATION_REASON_UNSPECIFIED, enabled);
-    }
-    
-    public boolean isGenerationalOcsp() {
-        if(getProperty(PROPERTY_GENERATIONAL_OCSP) == null) {
-            setGenerationalOcsp(false);
-        }
-        return (Boolean) getProperty(PROPERTY_GENERATIONAL_OCSP).getValue();
-    }
-    
-    public void setGenerationalOcsp(boolean enabled) {
-        setProperty(PROPERTY_GENERATIONAL_OCSP, enabled);
     }
     
     /** Helper method to check if the OCSP Archive CutOff extension is enabled. Used by Configdump */
