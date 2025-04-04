@@ -20,11 +20,14 @@ import java.security.InvalidKeyException;
 import java.security.cert.CRLException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509CRL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 
 import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -37,6 +40,7 @@ import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaMsCompatibilityIrreversibleException;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.certificates.ca.KeepExpiredCertsOnCrlFormat;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
@@ -103,8 +107,8 @@ public class CrlExtensionSystemTest {
         //Retrieve the CA and activate the extension.
         X509CAInfo x509caInfo = (X509CAInfo) caSession.getCAInfo(alwaysAllowToken, testName.getMethodName());
         x509caInfo.setKeepExpiredCertsOnCrl(true);
-        // date = 0 means to use the CA's notBefore date
-        x509caInfo.setKeepExpiredCertsOnCrlDate(null);
+        x509caInfo.setKeepExpiredCertsOnCrlFormat(KeepExpiredCertsOnCrlFormat.CA_DATE.ordinal());
+        x509caInfo.setKeepExpiredCertsOnCrlDate(0L);
         caSession.editCA(alwaysAllowToken, x509caInfo);
         try {
         //Force a CRL 
@@ -130,13 +134,18 @@ public class CrlExtensionSystemTest {
     @Test
     public void testKeepExpiredCertificatesOnCrlArbitraryDate()
             throws AuthorizationDeniedException, CADoesntExistsException, InternalKeyBindingNonceConflictException,
-            CaMsCompatibilityIrreversibleException, CryptoTokenOfflineException, CAOfflineException, CRLException, IOException {
+            CaMsCompatibilityIrreversibleException, CryptoTokenOfflineException, CAOfflineException, CRLException, ParseException {
         //Retrieve the CA and activate the extension.
         X509CAInfo x509caInfo = (X509CAInfo) caSession.getCAInfo(alwaysAllowToken, testName.getMethodName());
         x509caInfo.setKeepExpiredCertsOnCrl(true);
         // Use an arbitrary date
-        LocalDateTime localDateTime = LocalDateTime.of(2001, 2, 3, 11, 22);
-        x509caInfo.setKeepExpiredCertsOnCrlDate(localDateTime);
+
+        String dateString = "2001-02-03, 11:22:16";
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd, HH:mm:ss");
+        Date date = simpleDateFormat.parse(dateString);
+        long milliseconds = date.getTime();
+        x509caInfo.setKeepExpiredCertsOnCrlFormat(KeepExpiredCertsOnCrlFormat.ARBITRARY_DATE.ordinal());
+        x509caInfo.setKeepExpiredCertsOnCrlDate(milliseconds);
         caSession.editCA(alwaysAllowToken, x509caInfo);
         try {
             //Force a CRL
@@ -146,7 +155,8 @@ public class CrlExtensionSystemTest {
             X509CRL x509crl = CertTools.getCRLfromByteArray(crlBytes);
             byte[] extensionValue = x509crl.getExtensionValue(EXPIRED_CERT_ON_CRL_OID);
             //Substring, because the first four bytes from the extension contains something weird
-            assertEquals("Time was not correctly declared.", localDateTime.format(DateTimeFormatter.ofPattern("yyyyMMddhhmmss"))+"Z", (new String(extensionValue)).substring(4));
+            String expectedDateString = new SimpleDateFormat("yyyyMMddHHmmss").format(date)+"Z";
+            assertEquals("Time was not correctly declared.", expectedDateString, (new String(extensionValue)).substring(4));
         } finally {
             crlStoreSession.removeByIssuerDN(x509caInfo.getSubjectDN());
         }

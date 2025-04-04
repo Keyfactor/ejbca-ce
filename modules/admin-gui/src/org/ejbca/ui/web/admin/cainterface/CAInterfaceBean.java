@@ -585,6 +585,7 @@ public class CAInterfaceBean implements Serializable {
 							.setDoPreProduceIndividualOcspResponses(caInfoDto.isDoPreProduceOcspResponseUponIssuanceAndRevocation())
                             .setAcceptRevocationNonExistingEntry(caInfoDto.isAcceptRevocationsNonExistingEntry())
                             .setKeepExpiredCertsOnCrl(caInfoDto.isKeepExpiredCertsOnCrl())
+                            .setKeepExpiredCertsOnCrlFormat(caInfoDto.getKeepExpiredCertsOnCrlFormat())
                             .setKeepExpiredCertsOnCrlDate(caInfoDto.getKeepExpiredCertsOnCrlDate())
                             .setUsePartitionedCrl(caInfoDto.isUsePartitionedCrl())
                             .setCrlPartitions(caInfoDto.getCrlPartitions())
@@ -974,7 +975,14 @@ public class CAInterfaceBean implements Serializable {
                        throw new ParameterException(ejbcawebbean.getText("INVALIDPOLICYOID"));
                    }
                }
-
+               
+               final long keepExpiredCertsOnCrlDate;
+               if(caInfoDto.getKeepExpiredCertsOnCrlFormat() == 0) {
+                   keepExpiredCertsOnCrlDate = 0L;
+               } else {
+                   keepExpiredCertsOnCrlDate = caInfoDto.getKeepExpiredCertsOnCrlDate();
+               }
+               
                // No need to add the Keyrecovery extended service here, because it is only "updated" in EditCA, and there
                // is not need to update it.
                X509CAInfo.X509CAInfoBuilder x509CAInfoBuilder = new X509CAInfo.X509CAInfoBuilder()
@@ -1028,6 +1036,7 @@ public class CAInterfaceBean implements Serializable {
                        .setAcceptRevocationNonExistingEntry(caInfoDto.isAcceptRevocationsNonExistingEntry())
                        .setCmpRaAuthSecret(caInfoDto.getSharedCmpRaSecret())
                        .setKeepExpiredCertsOnCrl(caInfoDto.isKeepExpiredCertsOnCrl())
+                       .setKeepExpiredCertsOnCrlFormat(caInfoDto.getKeepExpiredCertsOnCrlFormat())
                        .setKeepExpiredCertsOnCrlDate(caInfoDto.getKeepExpiredCertsOnCrlDate())
                        .setDefaultCertProfileId(caInfoDto.getDefaultCertProfileId())
                        .setUseNoConflictCertificateData(caInfoDto.isUseNoConflictCertificateData())

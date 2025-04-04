@@ -1561,9 +1561,11 @@
                 </h:panelGroup>
                 <h:panelGroup rendered="#{not editCAsMBean.caExternal}" >
                     <h:panelGroup id="keepExpiredCrlFormatInput" styleClass="keepExpiredCellContents">
-                        <h:outputText value="#{web.text.KEEPEXPIREDONCRL_LABEL}" />
-                        <br/>
-                        <p:datePicker id="arbitraryDate" value="#{editCAsMBean.caInfoDto.keepExpiredCertsOnCrlDate}" showIcon="true" showTime="true" showButtonBar="true"
+                        <h:selectOneRadio id="expiredCrlFormat" value="#{editCAsMBean.caInfoDto.keepExpiredCertsOnCrlFormat}" layout="pageDirection" disabled="#{not editCAsMBean.hasEditRight}">
+                            <f:selectItem itemLabel="#{web.text.KEEPEXPIREDONCRL_CA_DATE}" itemValue="0"/>
+                            <f:selectItem itemLabel="#{web.text.KEEPEXPIREDONCRL_ARBITRARY_DATE}" itemValue="1"/>
+                        </h:selectOneRadio>
+                        <p:datePicker id="arbitraryDate" value="#{editCAsMBean.caInfoDto.keepExpiredCertsOnCrlDateAsLocalDateTime}" showIcon="true" showTime="true" showButtonBar="true"
 			             pattern="yyyy-MM-dd, HH:mm:ss" mask="true" showOnFocus="false" disabled="#{not editCAsMBean.hasEditRight}" utc="false"/>
 		           </h:panelGroup>
                 </h:panelGroup>

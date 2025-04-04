@@ -90,7 +90,8 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
     private static final String USE_CERTIFICATE_STORAGE = "useCertificateStorage";
     private static final String ACCEPT_REVOCATION_NONEXISTING_ENTRY = "acceptRevocationNonExistingEntry";
     private static final String KEEP_EXPIRED_CERTS_ON_CRL = "keepExpiredCertsOnCRL"; // Keep the CRL in uppercase for backward compatibility
-    private static final String KEEP_EXPIRED_CERTS_ON_CRL_DATE = "keepExpiredCertsOnCrlDate";
+    private static final String KEEP_EXPIRED_CERTS_ON_CRL_FORMAT = "keepExpiredCertsOnCRLFormat";
+    private static final String KEEP_EXPIRED_CERTS_ON_CRL_DATE = "keepExpiredCertsOnCRLDate";
 
     protected static final String INCLUDEINHEALTHCHECK = "includeinhealthcheck";
     private static final String USE_USER_STORAGE = "useUserStorage";
@@ -123,6 +124,8 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         setUseCertificateStorage(cainfo.isUseCertificateStorage());
         setAcceptRevocationNonExistingEntry(cainfo.isAcceptRevocationNonExistingEntry());
         setKeepExpiredCertsOnCrl(cainfo.getKeepExpiredCertsOnCrl());
+        setKeepExpiredCertsOnCrlFormat(cainfo.getKeepExpiredCertsOnCrlFormat());
+        setKeepExpiredCertsOnCrlDate(cainfo.getKeepExpiredCertsOnCrlDate());
         setCRLPeriod(cainfo.getCRLPeriod());
         setCRLIssueInterval(cainfo.getCRLIssueInterval());
         setCRLOverlapTime(cainfo.getCRLOverlapTime());
@@ -447,13 +450,23 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
     }
 
     @Override
-    public LocalDateTime getKeepExpiredCertsOnCrlDate() {
-        return getLocalDateTime(KEEP_EXPIRED_CERTS_ON_CRL_DATE);
+    public int getKeepExpiredCertsOnCrlFormat() {
+        return getInt(KEEP_EXPIRED_CERTS_ON_CRL_FORMAT, KeepExpiredCertsOnCrlFormat.CA_DATE.ordinal());
     }
 
     @Override
-    public void setKeepExpiredCertsOnCrlDate(LocalDateTime keepExpiredCertsOnCrlDate) {
-        putLocalDateTime(KEEP_EXPIRED_CERTS_ON_CRL_DATE, keepExpiredCertsOnCrlDate);
+    public void setKeepExpiredCertsOnCrlFormat(int keepExpiredCertsOnCrlFormat) {
+        data.put(KEEP_EXPIRED_CERTS_ON_CRL_FORMAT, keepExpiredCertsOnCrlFormat);
+    }
+
+    @Override
+    public long getKeepExpiredCertsOnCrlDate() {
+        return getLong(KEEP_EXPIRED_CERTS_ON_CRL_DATE, 0L);
+    }
+
+    @Override
+    public void setKeepExpiredCertsOnCrlDate(long keepExpiredCertsOnCrlDate) {
+        data.put(KEEP_EXPIRED_CERTS_ON_CRL_DATE, keepExpiredCertsOnCrlDate);
     }
 
     /** whether users should be stored or not, default true as was the case before 3.10.x */

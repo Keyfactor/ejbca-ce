@@ -231,28 +231,20 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
         return (Boolean) object;
     }
 
-    protected <T> T getObject(final String key, final T defaultValue) {
+    protected long getLong(final String key, final long defaultValue) {
         final Object object = data.get(key);
-        try {
-            return (T)object;
-        }
-        catch (Exception e) {
+        if (!(object instanceof Long)) {
             return defaultValue;
         }
+        return (Long) object;
     }
 
-    protected LocalDateTime getLocalDateTime(final String key) {
-        final Object value = data.get(key);
-        if (value == null || !(value instanceof String)) {
-            return null;
+    protected int getInt(final String key, final int defaultValue) {
+        final Object object = data.get(key);
+        if (!(object instanceof Integer)) {
+            return defaultValue;
         }
-        else {
-            return ConverterUtils.parseLocalDateTime((String) value);
-        }
-    }
-
-    protected void putLocalDateTime(final String key, final LocalDateTime localDateTime) {
-        data.put(key, ConverterUtils.localDateTimeToString(localDateTime));
+        return (Integer) object;
     }
 
     /**

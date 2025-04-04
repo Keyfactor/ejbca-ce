@@ -2462,6 +2462,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             caInfoDto.setAuthorityInformationAccess(null != urisAuthorityInformationAccess ? StringUtils.join(urisAuthorityInformationAccess, ";") : "");
             caInfoDto.setCertificateAiaDefaultCaIssuerUri(null != urisCertificateAiaDefaultCaIssuerUri ? StringUtils.join(urisCertificateAiaDefaultCaIssuerUri, ";") : "");
             caInfoDto.setKeepExpiredCertsOnCrl(x509cainfo.getKeepExpiredCertsOnCrl());
+            caInfoDto.setKeepExpiredCertsOnCrlFormat(x509cainfo.getKeepExpiredCertsOnCrlFormat());
             caInfoDto.setKeepExpiredCertsOnCrlDate(x509cainfo.getKeepExpiredCertsOnCrlDate());
 
             caInfoDto.setUsePartitionedCrl(x509cainfo.getUsePartitionedCrl());
