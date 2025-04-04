@@ -21,31 +21,31 @@ import static org.junit.Assert.assertEquals;
 
 public class KeepExpiredCertsOnCrlFormatUnitTest {
 
-    private void doTestFromOrdinal(final KeepExpiredCertsOnCrlFormat expected) {
+    private void doTestFromValue(final KeepExpiredCertsOnCrlFormat expected) {
         // When
-        final var actual = KeepExpiredCertsOnCrlFormat.fromOrdinal(expected.ordinal());
+        final var actual = KeepExpiredCertsOnCrlFormat.fromValue(expected.getValue());
 
         // Then
         assertEquals(expected, actual);
     }
 
     @Test
-    public void testFromOrdinal_CA_DATE() {
-        doTestFromOrdinal(KeepExpiredCertsOnCrlFormat.CA_DATE);
+    public void testFromValue_CA_DATE() {
+        doTestFromValue(KeepExpiredCertsOnCrlFormat.CA_DATE);
     }
 
     @Test
-    public void testFromOrdinal_ARBITRARY_DATE() {
-        doTestFromOrdinal(KeepExpiredCertsOnCrlFormat.ARBITRARY_DATE);
+    public void testFromValue_ARBITRARY_DATE() {
+        doTestFromValue(KeepExpiredCertsOnCrlFormat.ARBITRARY_DATE);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testFromOrdinal_invalidValue() {
+    public void testFromValue_invalidValue() {
         int max = Stream.of(KeepExpiredCertsOnCrlFormat.values())
-                .map(KeepExpiredCertsOnCrlFormat::ordinal)
+                .map(KeepExpiredCertsOnCrlFormat::getValue)
                 .max(Integer::compareTo)
                 .orElse(0);
-        KeepExpiredCertsOnCrlFormat.fromOrdinal(max+1);
+        KeepExpiredCertsOnCrlFormat.fromValue(max+1);
     }
 
 }

@@ -17,12 +17,28 @@ import java.io.Serializable;
 
 public enum KeepExpiredCertsOnCrlFormat implements Serializable {
 
-    CA_DATE,
-    ARBITRARY_DATE;
+    /*
+     * Warning!
+     * It is important to NOT change the values. These are the values stored in the databases.
+     * If you do change them, then there will be a mismatch with the database content.
+     */
 
-    public static KeepExpiredCertsOnCrlFormat fromOrdinal(int value) {
+    CA_DATE(0),
+    ARBITRARY_DATE(1);
+
+    private final int value;
+
+    KeepExpiredCertsOnCrlFormat(final int value) {
+        this.value = value;
+    }
+
+    public int getValue() {
+        return value;
+    }
+
+    public static KeepExpiredCertsOnCrlFormat fromValue(int value) {
         for (var keepExpiredCertsOnCrlFormat : KeepExpiredCertsOnCrlFormat.values()) {
-            if (keepExpiredCertsOnCrlFormat.ordinal() == value) {
+            if (keepExpiredCertsOnCrlFormat.getValue() == value) {
                 return keepExpiredCertsOnCrlFormat;
             }
         }

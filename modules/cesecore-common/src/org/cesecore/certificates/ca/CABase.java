@@ -451,7 +451,7 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
 
     @Override
     public int getKeepExpiredCertsOnCrlFormat() {
-        return getInt(KEEP_EXPIRED_CERTS_ON_CRL_FORMAT, KeepExpiredCertsOnCrlFormat.CA_DATE.ordinal());
+        return getInt(KEEP_EXPIRED_CERTS_ON_CRL_FORMAT, KeepExpiredCertsOnCrlFormat.CA_DATE.getValue());
     }
 
     @Override

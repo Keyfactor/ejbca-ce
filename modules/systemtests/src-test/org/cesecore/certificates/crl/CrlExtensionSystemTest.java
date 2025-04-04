@@ -107,7 +107,7 @@ public class CrlExtensionSystemTest {
         //Retrieve the CA and activate the extension.
         X509CAInfo x509caInfo = (X509CAInfo) caSession.getCAInfo(alwaysAllowToken, testName.getMethodName());
         x509caInfo.setKeepExpiredCertsOnCrl(true);
-        x509caInfo.setKeepExpiredCertsOnCrlFormat(KeepExpiredCertsOnCrlFormat.CA_DATE.ordinal());
+        x509caInfo.setKeepExpiredCertsOnCrlFormat(KeepExpiredCertsOnCrlFormat.CA_DATE.getValue());
         x509caInfo.setKeepExpiredCertsOnCrlDate(0L);
         caSession.editCA(alwaysAllowToken, x509caInfo);
         try {
