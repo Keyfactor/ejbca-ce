@@ -1568,6 +1568,8 @@
                         </h:selectOneRadio>
                         <p:datePicker id="arbitraryDate" value="#{editCAsMBean.caInfoDto.keepExpiredCertsOnCrlDateAsLocalDateTime}" showIcon="true" showTime="true" showButtonBar="true"
 			             pattern="yyyy-MM-dd, HH:mm:ss" mask="true" showOnFocus="false" disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caInfoDto.keepExpiredCertsOnCrlFormat==0}" utc="false"/>
+                        <br/>
+                        #{editCAsMBean.caInfoDto.currentTimezone}
 		           </h:panelGroup>
                 </h:panelGroup>
 
