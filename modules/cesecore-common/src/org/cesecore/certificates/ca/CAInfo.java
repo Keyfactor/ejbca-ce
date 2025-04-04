@@ -102,8 +102,6 @@ public abstract class CAInfo implements Serializable {
     protected Collection<Integer> crlpublishers;
     protected Collection<Integer> validators;
     protected boolean keepExpiredCertsOnCrl = false;
-    protected int keepExpiredCertsOnCrlFormat = KeepExpiredCertsOnCrlFormat.CA_DATE.getValue();
-    protected long keepExpiredCertsOnCrlDate = 0L;
     protected boolean finishuser;
     protected Collection<ExtendedCAServiceInfo> extendedcaserviceinfos;
     protected boolean useNoConflictCertificateData = false; // By Default we use normal certificate data table.
@@ -430,25 +428,11 @@ public abstract class CAInfo implements Serializable {
     }
 
     public boolean getKeepExpiredCertsOnCrl() {
-        return this.keepExpiredCertsOnCrl;
+        return keepExpiredCertsOnCrl;
     }
+
     public void setKeepExpiredCertsOnCrl(boolean keepExpiredCertsOnCrl) {
         this.keepExpiredCertsOnCrl = keepExpiredCertsOnCrl;
-    }
-
-    public int getKeepExpiredCertsOnCrlFormat() {
-        return this.keepExpiredCertsOnCrlFormat;
-    }
-    public void setKeepExpiredCertsOnCrlFormat(int keepExpiredCertsOnCrlFormat) {
-        this.keepExpiredCertsOnCrlFormat = keepExpiredCertsOnCrlFormat;
-    }
-
-    public long getKeepExpiredCertsOnCrlDate() {
-        return this.keepExpiredCertsOnCrlDate;
-    }
-
-    public void setKeepExpiredCertsOnCrlDate(long keepExpiredCertsOnCrlDate) {
-        this.keepExpiredCertsOnCrlDate = keepExpiredCertsOnCrlDate;
     }
 
     public boolean getFinishUser() {

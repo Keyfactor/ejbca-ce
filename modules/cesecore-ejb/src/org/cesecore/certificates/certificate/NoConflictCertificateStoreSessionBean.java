@@ -204,15 +204,14 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
     }
     
     @Override
-    public Collection<RevokedCertInfo> listRevokedCertInfo(String issuerDN, boolean deltaCrl, int crlPartitionIndex, long lastBaseCrlDate, boolean keepExpiredCertsOnCrl, int keepExpiredCertsOnCrlFormat, long keepExpiredCertsOnCrlDate,
-                                                           boolean allowInvalidityDate) {
+    public Collection<RevokedCertInfo> listRevokedCertInfo(String issuerDN, boolean deltaCrl, int crlPartitionIndex, long lastBaseCrlDate, boolean keepExpiredCertsOnCrl, boolean allowInvalidityDate) {
         if (log.isTraceEnabled()) {
             log.trace(">listRevokedCertInfo('" + issuerDN + "', " + deltaCrl + ", " + crlPartitionIndex + ", " + lastBaseCrlDate + ", " + keepExpiredCertsOnCrl + ", "
                     + allowInvalidityDate + ")");
         }
         final Collection<RevokedCertInfo> revokedInCertData = certificateStoreSession.listRevokedCertInfo(issuerDN, deltaCrl, crlPartitionIndex, lastBaseCrlDate, allowInvalidityDate);
         final Collection<RevokedCertInfo> revokedInNoConflictData = noConflictCertificateDataSession.getRevokedCertInfosWithDuplicates(issuerDN, deltaCrl, crlPartitionIndex, 
-                lastBaseCrlDate, keepExpiredCertsOnCrl, keepExpiredCertsOnCrlFormat, keepExpiredCertsOnCrlDate, allowInvalidityDate);
+                lastBaseCrlDate, keepExpiredCertsOnCrl, allowInvalidityDate);
         if (log.isDebugEnabled()) {
             log.debug("listRevokedCertInfo: Got " + revokedInCertData.size() + " entries from CertificateData and " + revokedInNoConflictData.size() + " entries from NoConflictCertificateData");
         }

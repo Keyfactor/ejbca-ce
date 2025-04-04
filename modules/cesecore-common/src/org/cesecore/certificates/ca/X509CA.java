@@ -160,6 +160,10 @@ public interface X509CA extends CA, HybridCa {
     
     void setKeepExpiredCertsOnCrlDate(long keepExpiredCertsOnCrlDate);
 
+    int getKeepExpiredCertsOnCrlFormat();
+
+    void setKeepExpiredCertsOnCrlFormat(int keepExpiredCertsOnCrlFormat);
+
     /**
      * Constructs the SubjectAlternativeName extension that will end up on the generated certificate.
      *

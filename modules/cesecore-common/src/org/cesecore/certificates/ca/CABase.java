@@ -90,8 +90,6 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
     private static final String USE_CERTIFICATE_STORAGE = "useCertificateStorage";
     private static final String ACCEPT_REVOCATION_NONEXISTING_ENTRY = "acceptRevocationNonExistingEntry";
     private static final String KEEP_EXPIRED_CERTS_ON_CRL = "keepExpiredCertsOnCRL"; // Keep the CRL in uppercase for backward compatibility
-    private static final String KEEP_EXPIRED_CERTS_ON_CRL_FORMAT = "keepExpiredCertsOnCRLFormat";
-    private static final String KEEP_EXPIRED_CERTS_ON_CRL_DATE = "keepExpiredCertsOnCRLDate";
 
     protected static final String INCLUDEINHEALTHCHECK = "includeinhealthcheck";
     private static final String USE_USER_STORAGE = "useUserStorage";
@@ -123,9 +121,6 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         setUseUserStorage(cainfo.isUseUserStorage());
         setUseCertificateStorage(cainfo.isUseCertificateStorage());
         setAcceptRevocationNonExistingEntry(cainfo.isAcceptRevocationNonExistingEntry());
-        setKeepExpiredCertsOnCrl(cainfo.getKeepExpiredCertsOnCrl());
-        setKeepExpiredCertsOnCrlFormat(cainfo.getKeepExpiredCertsOnCrlFormat());
-        setKeepExpiredCertsOnCrlDate(cainfo.getKeepExpiredCertsOnCrlDate());
         setCRLPeriod(cainfo.getCRLPeriod());
         setCRLIssueInterval(cainfo.getCRLIssueInterval());
         setCRLOverlapTime(cainfo.getCRLOverlapTime());
@@ -170,7 +165,6 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         if (cainfo.getDefaultCertificateProfileId() > 0 && !cainfo.isUseCertificateStorage()) {
             data.put(DEFAULTCERTIFICATEPROFILEID, cainfo.getDefaultCertificateProfileId());
         }
-        setKeepExpiredCertsOnCrl(cainfo.getKeepExpiredCertsOnCrl());
         setFinishUser(cainfo.getFinishUser());
         setIncludeInHealthCheck(cainfo.getIncludeInHealthCheck());
         setDoEnforceUniquePublicKeys(cainfo.isDoEnforceUniquePublicKeys());
@@ -295,7 +289,17 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         }
         return 0;
     }
-    
+
+    @Override
+    public boolean getKeepExpiredCertsOnCrl() {
+        return getBoolean(KEEP_EXPIRED_CERTS_ON_CRL, false);
+    }
+
+    @Override
+    public void setKeepExpiredCertsOnCrl(boolean keepExpiredCertsOnCrl) {
+        data.put(KEEP_EXPIRED_CERTS_ON_CRL, keepExpiredCertsOnCrl);
+    }
+
     private void createExtendedCAService(ExtendedCAServiceInfo info) {
         // Create implementation using reflection
         try {
@@ -439,42 +443,11 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         return getBoolean(ACCEPT_REVOCATION_NONEXISTING_ENTRY, false);
     }
 
-    @Override
-    public boolean getKeepExpiredCertsOnCrl() {
-        return getBoolean(KEEP_EXPIRED_CERTS_ON_CRL, false);
-    }
-
-    @Override
-    public void setKeepExpiredCertsOnCrl(boolean keepExpiredCertsOnCrl) {
-        data.put(KEEP_EXPIRED_CERTS_ON_CRL, keepExpiredCertsOnCrl);
-    }
-
-    @Override
-    public int getKeepExpiredCertsOnCrlFormat() {
-        return getInt(KEEP_EXPIRED_CERTS_ON_CRL_FORMAT, KeepExpiredCertsOnCrlFormat.CA_DATE.getValue());
-    }
-
-    @Override
-    public void setKeepExpiredCertsOnCrlFormat(int keepExpiredCertsOnCrlFormat) {
-        data.put(KEEP_EXPIRED_CERTS_ON_CRL_FORMAT, keepExpiredCertsOnCrlFormat);
-    }
-
-    @Override
-    public long getKeepExpiredCertsOnCrlDate() {
-        return getLong(KEEP_EXPIRED_CERTS_ON_CRL_DATE, 0L);
-    }
-
-    @Override
-    public void setKeepExpiredCertsOnCrlDate(long keepExpiredCertsOnCrlDate) {
-        data.put(KEEP_EXPIRED_CERTS_ON_CRL_DATE, keepExpiredCertsOnCrlDate);
-    }
-
     /** whether users should be stored or not, default true as was the case before 3.10.x */
     @Override
     public boolean isUseUserStorage() {
         return getBoolean(USE_USER_STORAGE, true);
     }
-
 
     /**
      *

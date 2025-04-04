@@ -81,20 +81,12 @@ public interface CA extends CACommon {
 
     void setCRLOverlapTime(long crlOverlapTime);
 
+    int getDefaultCertificateProfileId();
+
     boolean getKeepExpiredCertsOnCrl();
 
-    void setKeepExpiredCertsOnCrl(boolean keepexpiredcertsoncrl);
+    void setKeepExpiredCertsOnCrl(boolean keepExpiredCertsOnCrl);
 
-    int getKeepExpiredCertsOnCrlFormat();
-
-    void setKeepExpiredCertsOnCrlFormat(int keepExpiredCertsOnCrlFormat);
-
-    long getKeepExpiredCertsOnCrlDate();
-
-    void setKeepExpiredCertsOnCrlDate(long keepExpiredCertsOnCrlDate);
-
-    int getDefaultCertificateProfileId();
-    
     boolean isDoEnforceUniquePublicKeys();
     boolean isDoEnforceKeyRenewal();
 
