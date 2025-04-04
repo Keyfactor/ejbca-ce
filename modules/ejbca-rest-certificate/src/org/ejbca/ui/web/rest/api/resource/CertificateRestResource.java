@@ -209,7 +209,8 @@ public class CertificateRestResource extends BaseRestResource {
             // local call as the CA should normally be present as external CA in RA
             String caName = requestData.getCertificateAuthorityName();
             // seems to be only way to read from cache without instantiating the CA related objects
-            if (!caSessionLocal.getCAIdToNameMap().containsValue(caName)) {
+            Map<Integer, String> authorizedCAs = CertificateRestResourceUtil.loadAuthorizedCAs(authenticationToken, raMasterApi);
+            if (!authorizedCAs.containsValue(caName)) {
                 throw new RestException(Status.BAD_REQUEST.getStatusCode(), "CA with name " + caName + " doesn't exist.");
             }
             
