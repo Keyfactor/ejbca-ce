@@ -257,6 +257,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         setUseCrlDistributionPointOnCrl(cainfo.getUseCrlDistributionPointOnCrl());
         setCrlDistributionPointOnCrlCritical(cainfo.getCrlDistributionPointOnCrlCritical());
         setKeepExpiredCertsOnCrl(cainfo.getKeepExpiredCertsOnCrl());
+        setKeepExpiredCertsOnCrlFormat(cainfo.getKeepExpiredCertsOnCrlFormat());
         setKeepExpiredCertsOnCrlDate(cainfo.getKeepExpiredCertsOnCrlDate());
         setCmpRaAuthSecret(cainfo.getCmpRaAuthSecret());
         // CA Issuer URI to put in CRLs (RFC5280 section 5.2.7, not the URI to put in certs
@@ -358,6 +359,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 .setAcceptRevocationNonExistingEntry(isAcceptRevocationNonExistingEntry())
                 .setCmpRaAuthSecret(getCmpRaAuthSecret())
                 .setKeepExpiredCertsOnCrl(getKeepExpiredCertsOnCrl())
+                .setKeepExpiredCertsOnCrlFormat(getKeepExpiredCertsOnCrlFormat())
                 .setKeepExpiredCertsOnCrlDate(getKeepExpiredCertsOnCrlDate())
                 .setUsePartitionedCrl(getUsePartitionedCrl())
                 .setCrlPartitions(getCrlPartitions())
@@ -886,6 +888,8 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         setSuspendedCrlPartitions(info.getSuspendedCrlPartitions());
         setRequestPreProcessor(info.getRequestPreProcessor());
         setAlternateCertificateChains(info.getAlternateCertificateChains());
+        setKeepExpiredCertsOnCrl(info.getKeepExpiredCertsOnCrl());
+        setKeepExpiredCertsOnCrlFormat(info.getKeepExpiredCertsOnCrlFormat());
         setKeepExpiredCertsOnCrlDate(info.getKeepExpiredCertsOnCrlDate());
     }
 
@@ -2372,13 +2376,11 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             // For now force parameter with date equals NotBefore of CA certificate, or now
             final DERGeneralizedTime keepDate;
             if (cacert != null) {
-                final LocalDateTime localDateTime = getKeepExpiredCertsOnCrlDate();
-                if(localDateTime == null) {
+                if (getKeepExpiredCertsOnCrlFormat() == KeepExpiredCertsOnCrlFormat.CA_DATE.ordinal()) {
                     keepDate = new DERGeneralizedTime(cacert.getNotBefore());
-                } else {
-                    Instant instant = localDateTime.atZone(ZoneId.systemDefault()).toInstant();
-                    Date date = Date.from(instant);
-                    keepDate = new DERGeneralizedTime(date);
+                }
+                else {
+                    keepDate = new DERGeneralizedTime(new Date(getKeepExpiredCertsOnCrlDate()));
                 }
             } else {
                 // Copied from org.bouncycastle.asn1.x509.Time to get right format of GeneralizedTime (no fractional seconds)

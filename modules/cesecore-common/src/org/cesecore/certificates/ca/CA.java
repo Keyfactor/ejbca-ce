@@ -85,9 +85,13 @@ public interface CA extends CACommon {
 
     void setKeepExpiredCertsOnCrl(boolean keepexpiredcertsoncrl);
 
-    LocalDateTime getKeepExpiredCertsOnCrlDate();
+    int getKeepExpiredCertsOnCrlFormat();
 
-    void setKeepExpiredCertsOnCrlDate(LocalDateTime keepExpiredCertsOnCrlDate);
+    void setKeepExpiredCertsOnCrlFormat(int keepExpiredCertsOnCrlFormat);
+
+    long getKeepExpiredCertsOnCrlDate();
+
+    void setKeepExpiredCertsOnCrlDate(long keepExpiredCertsOnCrlDate);
 
     int getDefaultCertificateProfileId();
     

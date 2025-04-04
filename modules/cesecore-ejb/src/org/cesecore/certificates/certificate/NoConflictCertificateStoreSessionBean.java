@@ -44,6 +44,7 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.KeepExpiredCertsOnCrlFormat;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.RevocationReasons;
@@ -203,15 +204,15 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
     }
     
     @Override
-    public Collection<RevokedCertInfo> listRevokedCertInfo(String issuerDN, boolean deltaCrl, int crlPartitionIndex, long lastBaseCrlDate, boolean keepExpiredCertsOnCrl, LocalDateTime keepExpiredCertsOnCrlDate,
-            boolean allowInvalidityDate) {
+    public Collection<RevokedCertInfo> listRevokedCertInfo(String issuerDN, boolean deltaCrl, int crlPartitionIndex, long lastBaseCrlDate, boolean keepExpiredCertsOnCrl, int keepExpiredCertsOnCrlFormat, long keepExpiredCertsOnCrlDate,
+                                                           boolean allowInvalidityDate) {
         if (log.isTraceEnabled()) {
             log.trace(">listRevokedCertInfo('" + issuerDN + "', " + deltaCrl + ", " + crlPartitionIndex + ", " + lastBaseCrlDate + ", " + keepExpiredCertsOnCrl + ", "
                     + allowInvalidityDate + ")");
         }
         final Collection<RevokedCertInfo> revokedInCertData = certificateStoreSession.listRevokedCertInfo(issuerDN, deltaCrl, crlPartitionIndex, lastBaseCrlDate, allowInvalidityDate);
         final Collection<RevokedCertInfo> revokedInNoConflictData = noConflictCertificateDataSession.getRevokedCertInfosWithDuplicates(issuerDN, deltaCrl, crlPartitionIndex, 
-                lastBaseCrlDate, keepExpiredCertsOnCrl, keepExpiredCertsOnCrlDate, allowInvalidityDate);
+                lastBaseCrlDate, keepExpiredCertsOnCrl, keepExpiredCertsOnCrlFormat, keepExpiredCertsOnCrlDate, allowInvalidityDate);
         if (log.isDebugEnabled()) {
             log.debug("listRevokedCertInfo: Got " + revokedInCertData.size() + " entries from CertificateData and " + revokedInNoConflictData.size() + " entries from NoConflictCertificateData");
         }

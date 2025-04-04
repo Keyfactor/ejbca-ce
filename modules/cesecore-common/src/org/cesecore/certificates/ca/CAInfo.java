@@ -102,7 +102,8 @@ public abstract class CAInfo implements Serializable {
     protected Collection<Integer> crlpublishers;
     protected Collection<Integer> validators;
     protected boolean keepExpiredCertsOnCrl = false;
-    protected LocalDateTime keepExpiredCertsOnCrlDate = null;
+    protected int keepExpiredCertsOnCrlFormat = KeepExpiredCertsOnCrlFormat.CA_DATE.ordinal();
+    protected long keepExpiredCertsOnCrlDate = 0L;
     protected boolean finishuser;
     protected Collection<ExtendedCAServiceInfo> extendedcaserviceinfos;
     protected boolean useNoConflictCertificateData = false; // By Default we use normal certificate data table.
@@ -435,10 +436,18 @@ public abstract class CAInfo implements Serializable {
         this.keepExpiredCertsOnCrl = keepExpiredCertsOnCrl;
     }
 
-    public LocalDateTime getKeepExpiredCertsOnCrlDate() {
+    public int getKeepExpiredCertsOnCrlFormat() {
+        return this.keepExpiredCertsOnCrlFormat;
+    }
+    public void setKeepExpiredCertsOnCrlFormat(int keepExpiredCertsOnCrlFormat) {
+        this.keepExpiredCertsOnCrlFormat = keepExpiredCertsOnCrlFormat;
+    }
+
+    public long getKeepExpiredCertsOnCrlDate() {
         return this.keepExpiredCertsOnCrlDate;
     }
-    public void setKeepExpiredCertsOnCrlDate(LocalDateTime keepExpiredCertsOnCrlDate) {
+
+    public void setKeepExpiredCertsOnCrlDate(long keepExpiredCertsOnCrlDate) {
         this.keepExpiredCertsOnCrlDate = keepExpiredCertsOnCrlDate;
     }
 
