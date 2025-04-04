@@ -181,7 +181,7 @@ public class X509CAInfo extends CAInfo {
                 .setAcceptRevocationNonExistingEntry(false)
                 .setCmpRaAuthSecret(null)
                 .setKeepExpiredCertsOnCrl(false)
-                .setKeepExpiredCertsOnCrlFormat(KeepExpiredCertsOnCrlFormat.CA_DATE.ordinal())
+                .setKeepExpiredCertsOnCrlFormat(KeepExpiredCertsOnCrlFormat.CA_DATE.getValue())
                 .setKeepExpiredCertsOnCrlDate(0L)
                 .setUsePartitionedCrl(false)
                 .setCrlPartitions(0)
@@ -721,7 +721,7 @@ public class X509CAInfo extends CAInfo {
         private boolean acceptRevocationNonExistingEntry = false;
         private String cmpRaAuthSecret = null;
         private boolean keepExpiredCertsOnCrl = false;
-        private int keepExpiredCertsOnCrlFormat = KeepExpiredCertsOnCrlFormat.CA_DATE.ordinal();
+        private int keepExpiredCertsOnCrlFormat = KeepExpiredCertsOnCrlFormat.CA_DATE.getValue();
         private long keepExpiredCertsOnCrlDate = 0L;
         private boolean usePartitionedCrl = false;
         private int crlPartitions;

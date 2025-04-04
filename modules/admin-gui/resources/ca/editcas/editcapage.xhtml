@@ -1564,9 +1564,10 @@
                         <h:selectOneRadio id="expiredCrlFormat" value="#{editCAsMBean.caInfoDto.keepExpiredCertsOnCrlFormat}" layout="pageDirection" disabled="#{not editCAsMBean.hasEditRight}">
                             <f:selectItem itemLabel="#{web.text.KEEPEXPIREDONCRL_CA_DATE}" itemValue="0"/>
                             <f:selectItem itemLabel="#{web.text.KEEPEXPIREDONCRL_ARBITRARY_DATE}" itemValue="1"/>
+                            <f:ajax event="change" render="arbitraryDate" />
                         </h:selectOneRadio>
                         <p:datePicker id="arbitraryDate" value="#{editCAsMBean.caInfoDto.keepExpiredCertsOnCrlDateAsLocalDateTime}" showIcon="true" showTime="true" showButtonBar="true"
-			             pattern="yyyy-MM-dd, HH:mm:ss" mask="true" showOnFocus="false" disabled="#{not editCAsMBean.hasEditRight}" utc="false"/>
+			             pattern="yyyy-MM-dd, HH:mm:ss" mask="true" showOnFocus="false" disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caInfoDto.keepExpiredCertsOnCrlFormat==0}" utc="false"/>
 		           </h:panelGroup>
                 </h:panelGroup>
 

@@ -102,7 +102,7 @@ public abstract class CAInfo implements Serializable {
     protected Collection<Integer> crlpublishers;
     protected Collection<Integer> validators;
     protected boolean keepExpiredCertsOnCrl = false;
-    protected int keepExpiredCertsOnCrlFormat = KeepExpiredCertsOnCrlFormat.CA_DATE.ordinal();
+    protected int keepExpiredCertsOnCrlFormat = KeepExpiredCertsOnCrlFormat.CA_DATE.getValue();
     protected long keepExpiredCertsOnCrlDate = 0L;
     protected boolean finishuser;
     protected Collection<ExtendedCAServiceInfo> extendedcaserviceinfos;

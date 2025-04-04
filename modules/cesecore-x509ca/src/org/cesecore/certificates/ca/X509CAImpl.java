@@ -2376,7 +2376,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             // For now force parameter with date equals NotBefore of CA certificate, or now
             final DERGeneralizedTime keepDate;
             if (cacert != null) {
-                if (getKeepExpiredCertsOnCrlFormat() == KeepExpiredCertsOnCrlFormat.CA_DATE.ordinal()) {
+                if (getKeepExpiredCertsOnCrlFormat() == KeepExpiredCertsOnCrlFormat.CA_DATE.getValue()) {
                     keepDate = new DERGeneralizedTime(cacert.getNotBefore());
                 }
                 else {

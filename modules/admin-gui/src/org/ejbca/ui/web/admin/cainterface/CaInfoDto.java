@@ -86,7 +86,7 @@ public class CaInfoDto implements Serializable {
     private boolean includeInHealthCheck;
     private String sharedCmpRaSecret = StringUtils.EMPTY;
     private boolean keepExpiredCertsOnCrl = false;
-    private int keepExpiredCertsOnCrlFormat = KeepExpiredCertsOnCrlFormat.CA_DATE.ordinal();
+    private int keepExpiredCertsOnCrlFormat = KeepExpiredCertsOnCrlFormat.CA_DATE.getValue();
     private long keepExpiredCertsOnCrlDate = 0L;
     private boolean usePartitionedCrl;
     private int crlPartitions;
@@ -543,8 +543,7 @@ public class CaInfoDto implements Serializable {
     }
     
     public void setKeepExpiredCertsOnCrlFormat(int keepExpiredCertsOnCrlFormat) {
-
-        this.keepExpiredCertsOnCrlFormat = KeepExpiredCertsOnCrlFormat.fromOrdinal(keepExpiredCertsOnCrlFormat).ordinal();
+        this.keepExpiredCertsOnCrlFormat = KeepExpiredCertsOnCrlFormat.fromValue(keepExpiredCertsOnCrlFormat).ordinal();
     }
 
     public LocalDateTime getKeepExpiredCertsOnCrlDateAsLocalDateTime() {
@@ -554,8 +553,13 @@ public class CaInfoDto implements Serializable {
     }
 
     public void setKeepExpiredCertsOnCrlDateAsLocalDateTime(LocalDateTime keepExpiredCertsOnCrlDate) {
-        ZonedDateTime zonedDateTime = keepExpiredCertsOnCrlDate.atZone(ZoneId.systemDefault());
-        this.keepExpiredCertsOnCrlDate = zonedDateTime.toInstant().toEpochMilli();
+        if (keepExpiredCertsOnCrlDate == null) {
+            this.keepExpiredCertsOnCrlFormat = KeepExpiredCertsOnCrlFormat.CA_DATE.getValue();
+        }
+        else {
+            ZonedDateTime zonedDateTime = keepExpiredCertsOnCrlDate.atZone(ZoneId.systemDefault());
+            this.keepExpiredCertsOnCrlDate = zonedDateTime.toInstant().toEpochMilli();
+        }
     }
 
     public long getKeepExpiredCertsOnCrlDate() {
