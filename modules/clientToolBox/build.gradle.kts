@@ -83,16 +83,3 @@ tasks.jar {
         }
     }
 }
-
-gradle.beforeProject {
-    if (gradle.startParameter.taskNames.contains("clean")) {
-        val distDir = file("${project.rootProject.rootDir}/dist")
-        if (distDir.exists()) {
-            distDir.deleteRecursively()
-        }
-        val buildDir = file("${project.rootProject.rootDir}/modules/clientToolBox/build")
-        if (buildDir.exists()) {
-            buildDir.deleteRecursively()
-        }
-    }
-}
