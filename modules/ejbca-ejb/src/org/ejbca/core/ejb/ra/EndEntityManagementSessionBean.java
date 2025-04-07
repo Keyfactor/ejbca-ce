@@ -421,6 +421,19 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 endEntity.setUsername(autousername);
             }
         }
+        
+        if (profile.isIssuanceRevocationReasonUsed() && profile.isIssuanceRevocationReasonModifiable() &&
+                profile.getIssuanceRevocationReason().getDatabaseValue()!=RevokedCertInfo.NOT_REVOKED &&
+                (endEntity.getExtendedInformation()==null 
+                    || endEntity.getExtendedInformation().getCustomData(
+                            ExtendedInformation.CUSTOM_REVOCATIONREASON)==null)) {
+            if (endEntity.getExtendedInformation()==null) {
+                endEntity.setExtendedInformation(new ExtendedInformation());
+            }
+            endEntity.getExtendedInformation().setIssuanceRevocationReason(
+                                    profile.getIssuanceRevocationReason().getDatabaseValue());
+        }
+        
         // Trim
         endEntity.setUsername(StringTools.trim(endEntity.getUsername()));
         final String username = endEntity.getUsername();
@@ -959,6 +972,17 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
 
         if (!isUsernameValid(trimmedNewUsername)) {
             throw new IllegalNameException(INVALID_SYMBOLS_INUSERNAME);
+        }
+        if (profile.isIssuanceRevocationReasonUsed() && profile.isIssuanceRevocationReasonModifiable() &&
+                profile.getIssuanceRevocationReason().getDatabaseValue()!=RevokedCertInfo.NOT_REVOKED &&
+                (endEntityInformation.getExtendedInformation()==null 
+                    || endEntityInformation.getExtendedInformation().getCustomData(
+                            ExtendedInformation.CUSTOM_REVOCATIONREASON)==null)) {
+            if (endEntityInformation.getExtendedInformation()==null) {
+                endEntityInformation.setExtendedInformation(new ExtendedInformation());
+            }
+            endEntityInformation.getExtendedInformation().setIssuanceRevocationReason(
+                                    profile.getIssuanceRevocationReason().getDatabaseValue());
         }
         // Check if user fulfills it's profile.
         if (globalConfiguration.getEnableEndEntityProfileLimitations()) {
