@@ -13,7 +13,6 @@ jurisdictionCountry=1.3.6.1.4.1.311.60.2.1.3
 jurisdictionState=1.3.6.1.4.1.311.60.2.1.2
 jurisdictionLocality=1.3.6.1.4.1.311.60.2.1.1
 role=2.5.4.72
-name=2.5.4.41
 street=2.5.4.9
 pseudonym=2.5.4.65
 telephonenumber=2.5.4.20
