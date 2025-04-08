@@ -28,6 +28,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.TimeZone;
 
 import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -103,7 +104,7 @@ public class CrlExtensionSystemTest {
     @Test
     public void testKeepExpiredCertificatesOnCrlCaDate()
             throws AuthorizationDeniedException, CADoesntExistsException, InternalKeyBindingNonceConflictException,
-            CaMsCompatibilityIrreversibleException, CryptoTokenOfflineException, CAOfflineException, CRLException, IOException {
+            CaMsCompatibilityIrreversibleException, CryptoTokenOfflineException, CAOfflineException, CRLException {
         //Retrieve the CA and activate the extension.
         X509CAInfo x509caInfo = (X509CAInfo) caSession.getCAInfo(alwaysAllowToken, testName.getMethodName());
         x509caInfo.setKeepExpiredCertsOnCrl(true);
@@ -124,7 +125,13 @@ public class CrlExtensionSystemTest {
             crlStoreSession.removeByIssuerDN(x509caInfo.getSubjectDN());
         }
     }
-    
+
+    SimpleDateFormat getSimpleDateFormat(String format) {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(format);
+        simpleDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        return simpleDateFormat;
+    }
+
     /**
      * The ExpiredCertsOnCrl extension adds an extension (OID 2.5.29.60) which states the first date for which
      * the CRL will have an expired certificate declared on it. 
@@ -141,11 +148,12 @@ public class CrlExtensionSystemTest {
         // Use an arbitrary date
 
         String dateString = "2001-02-03, 11:22:16";
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd, HH:mm:ss");
+        SimpleDateFormat simpleDateFormat = getSimpleDateFormat("yyyy-MM-dd, HH:mm:ss");
         Date date = simpleDateFormat.parse(dateString);
         long milliseconds = date.getTime();
         x509caInfo.setKeepExpiredCertsOnCrlFormat(KeepExpiredCertsOnCrlFormat.ARBITRARY_DATE.ordinal());
         x509caInfo.setKeepExpiredCertsOnCrlDate(milliseconds);
+        System.out.println("milliseconds = " + milliseconds);
         caSession.editCA(alwaysAllowToken, x509caInfo);
         try {
             //Force a CRL
@@ -155,7 +163,8 @@ public class CrlExtensionSystemTest {
             X509CRL x509crl = CertTools.getCRLfromByteArray(crlBytes);
             byte[] extensionValue = x509crl.getExtensionValue(EXPIRED_CERT_ON_CRL_OID);
             //Substring, because the first four bytes from the extension contains something weird
-            String expectedDateString = new SimpleDateFormat("yyyyMMddHHmmss").format(date)+"Z";
+            SimpleDateFormat expectedSimpleDateFormat = getSimpleDateFormat("yyyyMMddHHmmss");
+            String expectedDateString = expectedSimpleDateFormat.format(date)+"Z";
             assertEquals("Time was not correctly declared.", expectedDateString, (new String(extensionValue)).substring(4));
         } finally {
             crlStoreSession.removeByIssuerDN(x509caInfo.getSubjectDN());
