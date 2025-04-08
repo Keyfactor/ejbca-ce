@@ -153,7 +153,9 @@
                         	<f:selectItems value="#{editCmpConfigMBean.extUsernameComponentSelectItems}"/>
                 	</h:selectOneMenu>
                 	</h:panelGroup>
-                 
+
+                 <!-- This part of the code needs to be kept for the backward compatibility and due to the customer's requirements. See https://keyfactor.atlassian.net/browse/ECA-13253
+                 for more info -->
                  <h:panelGroup>
                         <h:outputText value="#{web.text.CMPRANAMEGENERATIONPREFIX}" styleClass="titles"/>
                         <br/>
