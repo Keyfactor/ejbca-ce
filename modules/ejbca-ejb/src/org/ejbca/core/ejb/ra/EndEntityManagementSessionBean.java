@@ -425,6 +425,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         endEntity.setUsername(StringTools.trim(endEntity.getUsername()));
         final String username = endEntity.getUsername();
         unCanonicalized.setUsername(username);
+        
+        setDefaultIssuanceRevocationReason(profile, endEntity);
+
         if (globalConfiguration.getEnableEndEntityProfileLimitations()) {
             // Check if user fulfills it's profile.
             final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(endEntity.getCertificateProfileId());
@@ -841,6 +844,19 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             WaitingForApprovalException {
         changeUser(admin, endEntityInformation, clearPwd, 0, null, null, true);
     }
+    
+    private void setDefaultIssuanceRevocationReason(EndEntityProfile profile, EndEntityInformation endEntityInformation) {
+        if (profile.isIssuanceRevocationReasonUsed() && profile.isIssuanceRevocationReasonDefault() &&
+                (endEntityInformation.getExtendedInformation()==null 
+                    || endEntityInformation.getExtendedInformation().getCustomData(
+                            ExtendedInformation.CUSTOM_REVOCATIONREASON)==null)) {
+            if (endEntityInformation.getExtendedInformation()==null) {
+                endEntityInformation.setExtendedInformation(new ExtendedInformation());
+            }
+            endEntityInformation.getExtendedInformation().setIssuanceRevocationReason(
+                                    profile.getIssuanceRevocationReason().getDatabaseValue());
+         }
+    }
 
     /**
      * Change user information
@@ -960,6 +976,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         if (!isUsernameValid(trimmedNewUsername)) {
             throw new IllegalNameException(INVALID_SYMBOLS_INUSERNAME);
         }
+        
+        setDefaultIssuanceRevocationReason(profile, endEntityInformation);
+        
         // Check if user fulfills it's profile.
         if (globalConfiguration.getEnableEndEntityProfileLimitations()) {
             final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(endEntityInformation.getCertificateProfileId());

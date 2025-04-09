@@ -316,7 +316,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         // For standard Java 8, this is similar to overriding system properties like and we don't need to set these properties...unless Apache CFX is used (when on the classpath)
         HttpsURLConnection.setDefaultSSLSocketFactory(getSSLFactory(TEST_ADMIN_FILE, PASSWORD.toCharArray())); 
         
-        createEjbcaWSPort("https://" + hostname + ":" + httpsPort + "/ejbca/ejbcaws/ejbcaws?wsdl");
+        createEjbcaWSPort("https://" + "127.0.0.1" + ":" + httpsPort + "/ejbca/ejbcaws/ejbcaws?wsdl");
     }
 
     private void createEjbcaWSPort(final String url) throws MalformedURLException {
