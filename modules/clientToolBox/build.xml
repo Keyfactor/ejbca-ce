@@ -137,7 +137,6 @@
 		<!-- Copy scripts etc to mod.clientToolBox.dist -->
 		<copy todir="${mod.clientToolBox.dist}">
 			<fileset file="${mod.ejbca-ws-cli.path}/resources/ejbcawsracli.properties"/>
-			<fileset file="${mod.ejbca-ws-cli.path}/resources/java-util-logging.properties"/>
 			<fileset dir="${clientToolBox.dir}/resources">
 				<include name="ejbcaClientToolBox.bat"/>
 				<include name="ejbcaClientToolBox.sh"/>
