@@ -1185,6 +1185,14 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     public void setRevocationReasonModifiable(boolean modifiable) {
         profiledata.setIssuanceRevocationReasonModifiable(modifiable);
     }
+    
+    public boolean isRevocationReasonDefault() {
+        return profiledata.isIssuanceRevocationReasonDefault();
+    }
+
+    public void setRevocationReasonDefault(boolean defaultValue) {
+        profiledata.setIssuanceRevocationReasonDefault(defaultValue);
+    }
 
     public boolean getUseSendNotification() {
         return profiledata.isSendNotificationUsed();
