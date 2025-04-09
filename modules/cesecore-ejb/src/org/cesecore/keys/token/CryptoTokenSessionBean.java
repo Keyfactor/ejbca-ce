@@ -82,8 +82,7 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
     }
 
     private boolean isMigrateP11Tokens() {
-        final String migratePkcs11CryptoTokensKey = "USE_P11NG_AS_P11";
-        final String migratePkcs11CryptoTokensValue = System.getenv(migratePkcs11CryptoTokensKey);
+        final String migratePkcs11CryptoTokensValue = System.getenv("USE_P11NG_AS_P11");
         if (migratePkcs11CryptoTokensValue != null) {
             boolean isRunningEnterpriseEdition = true;
             try {
