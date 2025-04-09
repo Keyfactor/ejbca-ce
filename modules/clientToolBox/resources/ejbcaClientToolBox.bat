@@ -19,9 +19,4 @@ if exist "%TOOLBOX_HOME%clientToolBox.jar" goto exists
 rem @echo on
 rem expects java to be on the path of the machine, which is the standard on a windows installation
 
-# Temporary file to disable logging to  java.util.logging
-echo "handlers=" > java-util-logging.properties
-
-java %JAVA_OPT% --add-exports=jdk.crypto.cryptoki/sun.security.pkcs11.wrapper=ALL-UNNAMED -Dlog4j1.compatibility=true -Djava.util.logging.config.file=java-util-logging.properties -cp "%TOOLBOX_HOME%clientToolBox.jar;%TOOLBOX_HOME%endorsed/*" org.ejbca.ui.cli.ClientToolBox %args%
-
-del java-util-logging.properties
+java %JAVA_OPT% --add-exports=jdk.crypto.cryptoki/sun.security.pkcs11.wrapper=ALL-UNNAMED -Dlog4j1.compatibility=true -cp "%TOOLBOX_HOME%clientToolBox.jar;%TOOLBOX_HOME%endorsed/*" org.ejbca.ui.cli.ClientToolBox %args%
