@@ -149,7 +149,6 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     // Authentication check and audit log page access request
     @PostConstruct
     public void initialize() {
-        System.out.println("initialize ---- in");
         if (!getEjbcaWebBean().isAuthorizedNoLogSilent(AccessRulesConstants.ROLE_ADMINISTRATOR)) {
             // PostConstruct methods can't throw checked exceptions
             throw new IllegalStateException("You are not authorized to view this page.");
@@ -178,7 +177,6 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
                 }
             }
         }
-        System.out.println("initialize ---- out");
     }
 
     public String getSelectedSubjectAltName() {
@@ -222,11 +220,6 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     }
 
     public List<SelectItem> getAvailableEndEntityProfiles() throws EndEntityProfileNotFoundException {
-//        System.out.println("************ START " + profileNames.length + " profiles" );
-//        for (String name : profileNames) {
-//            System.out.println("** " + name);
-//        }
-//        System.out.println("************ END   " + profileNames.length + " profiles" );
         final List<SelectItem> ret = new ArrayList<>();
         for(int i = 0; i < profileNames.length; i++) {
             int pId = getRaBean().getEndEntityProfileId(profileNames[i]);
@@ -290,9 +283,7 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
         
         this.useClearTextPasswordStorage = selectedEeProfile.getValue(EndEntityProfile.CLEARTEXTPASSWORD,0).equals(EndEntityProfile.TRUE);
         this.emailDomains = selectedEeProfile.getValue(EndEntityProfile.EMAIL, 0).split(EndEntityProfile.SPLITCHAR);
-        System.out.println("emailDomains + " + emailDomains.getClass());
         this.profileEmail = selectedEeProfile.getValue(EndEntityProfile.EMAIL,0);
-        System.out.println("profileNames + " + profileNames.getClass());
         this.emailDomain = setDefaultEmailDomainFromProfile();
         this.cabfOrganizationIdentifier = selectedEeProfile.getCabfOrganizationIdentifier();
         this.numberOfRequests = selectedEeProfile.getAllowedRequests();
@@ -322,10 +313,6 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
             setUserName(selectedEeProfile.getUsernameDefault());
         }
         
-        System.out.println("subjectDnFieldDatas " + subjectDnFieldDatas.getClass());
-        System.out.println("subjectAltNameFieldDatas " + subjectAltNameFieldDatas.getClass());
-        System.out.println("subjectDirAttrFieldDatas " + subjectDirAttrFieldDatas.getClass());
-
         return "addendentity";
     }
 
@@ -839,7 +826,6 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     public void addUser()
             throws ParseException, ParameterException, EndEntityExistsException, CADoesntExistsException, CertificateSerialNumberException,
             AuthorizationDeniedException, EndEntityProfileValidationException, IllegalNameException, CertificateExtensionException {
-        System.out.println("*** in addUser");
         if (!doesPasswordAndConfirmationMatch()) {
             addNonTranslatedErrorMessage(getEjbcaWebBean().getText("PASSWORDSDOESNTMATCH"));
             return;
@@ -881,7 +867,6 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
         newUserView = checkAndSetNameConstraints(newUserView);
 
         finallyCreateUser(newUserView);
-        System.out.println("*** leaving addUser");
     }
     
     public String getCustomSerialNumber() {
@@ -1184,8 +1169,6 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     }
 
     private void composeSubjectDnFieldsAndData() {
-        System.out.println("composeSubjectDnFieldsAndData ---- in");
-
         this.subjectDnFieldDatas = new ArrayList<>();
 
         int numberOfSubjectDnFields = selectedEeProfile.getSubjectDNFieldOrderLength();
@@ -1221,8 +1204,6 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
             this.subjectDnFieldDatas.add(subjectDnFieldData);
         }
         
-        System.out.println("composeSubjectDnFieldsAndData ---- ou");
-
     }
     
     private void composeSubjectDirAttrFieldsAndData() {
