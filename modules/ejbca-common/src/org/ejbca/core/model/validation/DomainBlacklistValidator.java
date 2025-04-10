@@ -541,4 +541,9 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
         clone.cache = cache; // cache is not modified, so it can be referenced.
         return clone;
     }
+    
+    @Override
+    public boolean isValidatorAlwaysApplicable() {
+        return true;
+    }
 }

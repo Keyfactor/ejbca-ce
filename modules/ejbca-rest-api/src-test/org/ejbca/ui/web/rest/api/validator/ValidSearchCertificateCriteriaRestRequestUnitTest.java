@@ -36,7 +36,7 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
     @Test
     public void validationShouldFailOnNullProperty() {
         // given
-        final String expectedMessage = "Invalid search criteria content, property cannot be null or empty.";
+        final String expectedMessage = "Invalid search criteria content, property can not be null or empty.";
         final SearchCertificateCriteriaRestRequest testClass = SearchCertificateCriteriaRestRequest.builder()
                 .property(null)
                 .value("A")
@@ -52,7 +52,7 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
     @Test
     public void validationShouldFailOnEmptyProperty() {
         // given
-        final String expectedMessage = "Invalid search criteria content, property cannot be null or empty.";
+        final String expectedMessage = "Invalid search criteria content, property can not be null or empty.";
         final SearchCertificateCriteriaRestRequest testClass = SearchCertificateCriteriaRestRequest.builder()
                 .property("")
                 .value("A")
@@ -68,7 +68,7 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
     @Test
     public void validationShouldFailOnNullValue() {
         // given
-        final String expectedMessage = "Invalid search criteria content, value cannot be null or empty.";
+        final String expectedMessage = "Invalid search criteria content, value can not be null or empty.";
         final SearchCertificateCriteriaRestRequest testClass = SearchCertificateCriteriaRestRequest.builder()
                 .property("CA")
                 .value(null)
@@ -84,7 +84,7 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
     @Test
     public void validationShouldFailOnEmptyValue() {
         // given
-        final String expectedMessage = "Invalid search criteria content, value cannot be null or empty.";
+        final String expectedMessage = "Invalid search criteria content, value can not be null or empty.";
         final SearchCertificateCriteriaRestRequest testClass = SearchCertificateCriteriaRestRequest.builder()
                 .property("CA")
                 .value("")
@@ -100,7 +100,7 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
     @Test
     public void validationShouldFailOnNullOperation() {
         // given
-        final String expectedMessage = "Invalid search criteria content, operation cannot be null or empty.";
+        final String expectedMessage = "Invalid search criteria content, operation can not be null or empty.";
         final SearchCertificateCriteriaRestRequest testClass = SearchCertificateCriteriaRestRequest.builder()
                 .property("CA")
                 .value("A")
@@ -116,7 +116,7 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
     @Test
     public void validationShouldFailOnEmptyOperation() {
         // given
-        final String expectedMessage = "Invalid search criteria content, operation cannot be null or empty.";
+        final String expectedMessage = "Invalid search criteria content, operation can not be null or empty.";
         final SearchCertificateCriteriaRestRequest testClass = SearchCertificateCriteriaRestRequest.builder()
                 .property("CA")
                 .value("A")

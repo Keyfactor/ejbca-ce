@@ -45,7 +45,6 @@ import com.keyfactor.util.CertTools;
 /**
  * External command certificate validator for multiple platforms.
  *
- * @version $Id$
  */
 public class ExternalCommandCertificateValidator extends CertificateValidatorBase implements DynamicUiModelAware, ExternalScriptCertificateValidator {
 
@@ -547,6 +546,11 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
     @Override
     public Class<? extends Validator> getValidatorSubType() {
         return ExternalScriptCertificateValidator.class;
+    }
+
+    @Override
+    public boolean isValidatorAlwaysApplicable() {
+        return false;
     }
 
 }

@@ -302,6 +302,9 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
             } catch (GeneralSecurityException | IOException | JSchException e) {
                 String msg = e.getMessage();
                 log.error(msg);
+                if (log.isDebugEnabled()) {
+                    log.debug(msg + ". Stack trace:", e);
+                }
                 throw new PublisherException(msg, e);
             }
         }
@@ -350,15 +353,15 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
                 jsch.addIdentity(scpPrivateKey);
             }
         } catch (JSchException e) {
-            final String msg = "Could not access private key. ";
-            log.info(msg + e.getMessage());
+            final String msg = "Could not access private key. " + e.getMessage();
+            log.info(msg, e);
             throw new PublisherConnectionException(msg, e);
         }
         try {
             jsch.setKnownHosts(scpKnownHosts);
         } catch (JSchException e) {
-            final String msg = "Could not access known_hosts file. ";
-            log.info(msg + e.getMessage());
+            final String msg = "Could not access known_hosts file. " + e.getMessage();
+            log.info(msg, e);
             throw new PublisherConnectionException(msg, e);
         }
 
@@ -372,11 +375,15 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
                     : jsch.getSession(sshUsername, destination.host);
                 session.connect();
             } catch (JSchException e) {
-                String msg = "Could not connect to certificate destination.";
-                if(e.getMessage().contains("USERAUTH fail")) {
+                String msg = "Could not connect to certificate destination. ";
+                if (e.getMessage().contains("USERAUTH fail")) {
                     msg += "Private key file could not be accessed.";
+                } else {
+                    // Include exception message in GUI. Otherwise it will be really hard for the admin to diagnose the error.
+                    // Usually, it is quite user friendly, e.g. "Auth fail for methods 'publickey'"
+                    msg += e.getMessage();
                 }
-                log.info(msg + e.getMessage());
+                log.info(msg, e);
                 caughtExceptions.add(new PublisherConnectionException(msg, e));
             } catch (PublisherException e) {
                 caughtExceptions.add(new PublisherConnectionException(e.getMessage(), e.getCause()));
@@ -396,10 +403,14 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
                 session.connect();
             } catch (JSchException e) {
                 String msg = "Could not connect to CRL destination. ";
-                if(e.getMessage().contains("USERAUTH fail")) {
+                if (e.getMessage().contains("USERAUTH fail")) {
                     msg += "Private key file could not be accessed.";
-                } 
-                log.info(msg + e.getMessage());
+                } else {
+                    // Include exception message in GUI. Otherwise it will be really hard for the admin to diagnose the error.
+                    // Usually, it is quite user friendly, e.g. "Auth fail for methods 'publickey'"
+                    msg += e.getMessage();
+                }
+                log.info(msg, e);
                 caughtExceptions.add(new PublisherConnectionException(msg, e));
             } catch (PublisherException e) {
                 caughtExceptions.add(new PublisherConnectionException(e.getMessage(), e.getCause()));
@@ -545,9 +556,11 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
         // b may be 0 for success,
         // 1 for error,
         // 2 for fatal error,
-        // -1
-        if (b <= 0) {
+        // -1 for end of stream
+        if (b == 0) {
             return;
+        } else if (b == -1) {
+            throw new IOException("Lost connection during SCP operation");
         }
         StringBuffer sb = new StringBuffer();
         int c;
