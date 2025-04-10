@@ -31,7 +31,7 @@ public class ValidEndEntityStatusRestRequestUnitTest {
     @Test
     public void errorToken() {
         // given
-        final String expectedMessage = "Invalid SetEndEntityStatusRestRequest content, token cannot be null or empty.";
+        final String expectedMessage = "Invalid SetEndEntityStatusRestRequest content, token can not be null or empty.";
         final SetEndEntityStatusRestRequest testClass = new SetEndEntityStatusRestRequest();
         // when
         final Set<ConstraintViolation<Object>> constraintViolations = validator.validate(testClass);
@@ -56,7 +56,7 @@ public class ValidEndEntityStatusRestRequestUnitTest {
     @Test
     public void errorStatus() {
         // given
-        final String expectedMessage = "Invalid SetEndEntityStatusRestRequest content, status cannot be null or empty.";
+        final String expectedMessage = "Invalid SetEndEntityStatusRestRequest content, status can not be null or empty.";
         final SetEndEntityStatusRestRequest testClass = new SetEndEntityStatusRestRequest();
         testClass.setToken("P12");
         // when

@@ -12,9 +12,6 @@
  *************************************************************************/
 package org.cesecore;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -35,6 +32,16 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.KeyGenParams;
+import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -82,15 +89,8 @@ import org.ejbca.cvc.CertificateGenerator;
 import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.cvc.exception.ConstructionException;
 
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.certificate.SimpleCertGenerator;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-import com.keyfactor.util.keys.token.KeyGenParams;
-import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Common class for test classes which need to create a CA.
@@ -223,7 +223,7 @@ public abstract class CaTestUtils {
     }
 
     /**
-     * Removes a CA, and it's associated certificate and Crypto Token.
+     * Removes a CA, it's associated CA certificate, it's Crypto Token and all certificates it issued.
      * See {@link #removeCa(AuthenticationToken, String, String)}, which is more robust, in case the test got aborted for some reason.
      */
     public static void removeCa(AuthenticationToken authenticationToken, CAInfo caInfo) throws AuthorizationDeniedException {
@@ -237,6 +237,7 @@ public abstract class CaTestUtils {
             if (caInfo.getCAToken() != null) {
                 cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, caInfo.getCAToken().getCryptoTokenId());
             }
+            internalCertificateStoreSession.removeCertificatesByIssuer(caInfo.getSubjectDN());
             internalCertificateStoreSession.removeCertificatesBySubject(caInfo.getSubjectDN());
             internalCertificateStoreSession.removeCRLs(authenticationToken, caInfo.getSubjectDN());
         }
@@ -276,7 +277,7 @@ public abstract class CaTestUtils {
             int keyusage) throws CryptoTokenOfflineException, CertificateParsingException, OperatorCreationException, CertIOException {
         return createTestX509CAOptionalGenKeys(cadn, tokenpin, genKeys, cryptoTokenImplementation, CAInfo.SELFSIGNED, keyspec, keyusage, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
     }
-    
+
     /** Creates a CA object, but does not actually add the CA to EJBCA. */
     public static X509CA createTestX509CAOptionalGenKeys(String cadn, char[] tokenpin, boolean genKeys, String cryptoTokenImplementation, int signedBy, final String keyspec,
             int keyusage, String caSignatureAlg) throws CryptoTokenOfflineException, CertificateParsingException, OperatorCreationException, CertIOException {
@@ -324,7 +325,7 @@ public abstract class CaTestUtils {
                             .setSignatureAlgorithm(caSignatureAlg)
                             .setProvider(cryptoTokenManagementProxySession.getSignProviderName(cryptoTokenId))
                             .setLdapOrder(ldapOrder)
-                            .generateCertificate();                        
+                            .generateCertificate();
             } else {
                 cacert = SimpleCertGenerator.forTESTCaCert()
                             .setSubjectDn(cadn)
@@ -336,7 +337,7 @@ public abstract class CaTestUtils {
                             .setSignatureAlgorithm(caSignatureAlg)
                             .setKeyUsage(keyusage)
                             .setLdapOrder(ldapOrder)
-                            .generateCertificate();      
+                            .generateCertificate();
             }
             cachain.add(cacert);
         }
@@ -540,8 +541,8 @@ public abstract class CaTestUtils {
                 .setIssuerPrivKey(cryptoToken.getPrivateKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)))
                 .setEntityPubKey(cryptoToken.getPublicKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)))
                 .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
-                .generateCertificate();  
-                
+                .generateCertificate();
+
         assertNotNull(cacert);
         List<Certificate> cachain = new ArrayList<>();
         cachain.add(cacert);
