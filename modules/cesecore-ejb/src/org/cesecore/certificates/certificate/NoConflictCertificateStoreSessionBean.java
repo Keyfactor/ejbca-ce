@@ -14,6 +14,7 @@ package org.cesecore.certificates.certificate;
 
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -43,6 +44,7 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.KeepExpiredCertsOnCrlFormat;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.RevocationReasons;
@@ -202,8 +204,7 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
     }
     
     @Override
-    public Collection<RevokedCertInfo> listRevokedCertInfo(String issuerDN, boolean deltaCrl, int crlPartitionIndex, long lastBaseCrlDate, boolean keepExpiredCertsOnCrl, 
-            boolean allowInvalidityDate) {
+    public Collection<RevokedCertInfo> listRevokedCertInfo(String issuerDN, boolean deltaCrl, int crlPartitionIndex, long lastBaseCrlDate, boolean keepExpiredCertsOnCrl, boolean allowInvalidityDate) {
         if (log.isTraceEnabled()) {
             log.trace(">listRevokedCertInfo('" + issuerDN + "', " + deltaCrl + ", " + crlPartitionIndex + ", " + lastBaseCrlDate + ", " + keepExpiredCertsOnCrl + ", "
                     + allowInvalidityDate + ")");

@@ -54,7 +54,7 @@ public class X509CACrlUnitTest extends X509CAUnitTestBase {
      * Tests the extension CRL Distribution Point on CRLs
      */
     @Test
-    public void testCRLDistPointOnCRL() throws Exception {
+    public void testCRLDistPointOnCrl() throws Exception {
         final CryptoToken cryptoToken = getNewCryptoToken();
         final X509CA ca = createTestCA(cryptoToken, CADN);
 
@@ -152,7 +152,7 @@ public class X509CACrlUnitTest extends X509CAUnitTestBase {
      * Tests the extension CRL Distribution Point on a partitioned CRL
      */
     @Test
-    public void testPartitionedCRLDistPointOnCRL() throws Exception {
+    public void testPartitionedCRLDistPointOnCrl() throws Exception {
         final CryptoToken cryptoToken = getNewCryptoToken();
         final X509CA ca = createTestCA(cryptoToken, CADN);
 

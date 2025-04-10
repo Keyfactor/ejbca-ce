@@ -13,6 +13,11 @@
 package org.ejbca.ui.web.admin.cainterface;
 
 import java.io.Serializable;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -22,8 +27,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.MutableTriple;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.KeepExpiredCertsOnCrlFormat;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.kfenroll.ProxyCaInfo;
+import org.cesecore.util.ConverterUtils;
 import org.cesecore.util.SimpleTime;
 
 import com.keyfactor.util.StringTools;
@@ -79,7 +86,9 @@ public class CaInfoDto implements Serializable {
     private boolean crlDistributionPointOnCrlCritical;
     private boolean includeInHealthCheck;
     private String sharedCmpRaSecret = StringUtils.EMPTY;
-    private boolean keepExpiredOnCrl;
+    private boolean keepExpiredCertsOnCrl = false;
+    private int keepExpiredCertsOnCrlFormat = KeepExpiredCertsOnCrlFormat.CA_DATE.getValue();
+    private long keepExpiredCertsOnCrlDate = 0L;
     private boolean usePartitionedCrl;
     private int crlPartitions;
     private int suspendedCrlPartitions;
@@ -522,12 +531,40 @@ public class CaInfoDto implements Serializable {
         this.sharedCmpRaSecret = sharedCmpRaSecret;
     }
 
-    public boolean isKeepExpiredOnCrl() {
-        return keepExpiredOnCrl;
+    public boolean isKeepExpiredCertsOnCrl() {
+        return keepExpiredCertsOnCrl;
     }
 
-    public void setKeepExpiredOnCrl(boolean keepExpiredOnCrl) {
-        this.keepExpiredOnCrl = keepExpiredOnCrl;
+    public void setKeepExpiredCertsOnCrl(boolean keepExpiredCertsOnCrl) {
+        this.keepExpiredCertsOnCrl = keepExpiredCertsOnCrl;
+    }
+    
+    public int getKeepExpiredCertsOnCrlFormat() {
+        return keepExpiredCertsOnCrlFormat;
+    }
+    
+    public void setKeepExpiredCertsOnCrlFormat(int keepExpiredCertsOnCrlFormat) {
+        this.keepExpiredCertsOnCrlFormat = KeepExpiredCertsOnCrlFormat.fromValue(keepExpiredCertsOnCrlFormat).ordinal();
+    }
+
+    public String getCurrentTimezone() {
+        return ZoneId.systemDefault().toString();
+    }
+
+    public LocalDateTime getKeepExpiredCertsOnCrlDateAsLocalDateTime() {
+        return ConverterUtils.epochUtcToLocalDateTime(keepExpiredCertsOnCrlDate);
+    }
+
+    public void setKeepExpiredCertsOnCrlDateAsLocalDateTime(LocalDateTime keepExpiredCertsOnCrlDate) {
+        this.keepExpiredCertsOnCrlDate = ConverterUtils.localDateTimeToEpochUtc(keepExpiredCertsOnCrlDate);
+    }
+
+    public long getKeepExpiredCertsOnCrlDate() {
+        return keepExpiredCertsOnCrlDate;
+    }
+
+    public void setKeepExpiredCertsOnCrlDate(long keepExpiredCertsOnCrlDate) {
+        this.keepExpiredCertsOnCrlDate = keepExpiredCertsOnCrlDate;
     }
 
     public boolean isUsePartitionedCrl() {
@@ -802,5 +839,7 @@ public class CaInfoDto implements Serializable {
 
         return proxyCaInfo;
     }
+
+
 }
 
