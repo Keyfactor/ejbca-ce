@@ -740,6 +740,15 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         return (X509Certificate) issuer;
     }
 
+    /**
+     * Derive the certificate chain. This method has two modes – if caCertificateSerialNumber is null then the chain is derived by directly
+     * following the leaf certificate. If it's set to a specific serial number, then someone for some ungodly reason wants to return an earlier 
+     * chain than the current one. For the latter functionality, the CA must not have been re-keyed. 
+     * 
+     * @param leafCertificate the OCSP signing certificate
+     * @param caCertificateSerialNumber the serial number of the first issuer cert to follow, or null to simply used the latest one. 
+     * @return the signing certificate's chain
+     */
     private List<X509Certificate> getCaCertificateChain(final X509Certificate leafCertificate, final String caCertificateSerialNumber) {
         final List<X509Certificate> caCertificateChain = new ArrayList<>();
         X509Certificate currentLevelCertificate = leafCertificate;
