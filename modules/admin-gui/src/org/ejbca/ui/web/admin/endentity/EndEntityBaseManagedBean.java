@@ -13,7 +13,6 @@
 package org.ejbca.ui.web.admin.endentity;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Iterator;
@@ -32,8 +31,6 @@ import org.ejbca.ui.web.admin.rainterface.UserView;
  *
  */
 public class EndEntityBaseManagedBean extends BaseManagedBean {
-    private ExtendedInformation extendedInformation;
-
     private static final long serialVersionUID = 1L;
 
     protected UserView userData = null;
@@ -46,7 +43,6 @@ public class EndEntityBaseManagedBean extends BaseManagedBean {
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public void setExtensionData(final String extensionData) {
-        System.out.println("*** in setExtensionData");
       
         Properties properties = new Properties();
         try {
@@ -82,7 +78,6 @@ public class EndEntityBaseManagedBean extends BaseManagedBean {
 
         // Updated ExtendedInformation to use the new data
         this.userData.getExtendedInformation().loadData(data);
-        System.out.println("*** leaving setExtensionData");
     }
 
     /**
@@ -90,8 +85,6 @@ public class EndEntityBaseManagedBean extends BaseManagedBean {
      * formatted as in a Properties file.
      */
     public String getExtensionData() {
-        System.out.println("*** in getExtensionData");
-
         final String result;
         if (this.userData.getExtendedInformation() == null) {
             result = "";
@@ -126,7 +119,6 @@ public class EndEntityBaseManagedBean extends BaseManagedBean {
 
             result = firstLineSeparator >= 0 ? buff.substring(firstLineSeparator + lineSeparator.length()) : buff.toString();
         }
-        System.out.println("*** leaving getExtensionData");
         return result;
     }
 }
