@@ -29,6 +29,7 @@ import jakarta.persistence.Query;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
@@ -80,6 +81,26 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
         }
     }
 
+    private boolean isMigrateP11Tokens() {
+        final String migratePkcs11CryptoTokensValue = System.getenv("USE_P11NG_AS_P11");
+        if (migratePkcs11CryptoTokensValue != null) {
+            boolean isRunningEnterpriseEdition = true;
+            try {
+                //We can't access EnterpriseEditionEjbBridgeSessionLocal.isRunningEnterprise() from cesecore. This might be ugly... but it works.
+                Class.forName("org.cesecore.dbprotection.ProtectedDataIntegrityImpl");
+            } catch (ClassNotFoundException e) {// Exception thrown if running CE since class ProtectedDataIntegrityImpl can only be found on EE...  
+                isRunningEnterpriseEdition = false;
+            }
+            if ((migratePkcs11CryptoTokensValue.equals("true") && isRunningEnterpriseEdition)) {
+                if (log.isDebugEnabled()) {
+                    log.debug("System configured to migrate PKCS11CryptoTokens to Pkcs11NgCryptoTokens in cache.");
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+            
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public CryptoToken getCryptoToken(final int cryptoTokenId) {
@@ -115,6 +136,12 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
                             cryptoToken = CryptoTokenFactory.createCryptoToken(inClassname, properties, data, cryptoTokenId, tokenName, true,
                                     new KeyBindingFinder(internalKeyBindingSession, certificateStoreSession, cryptoTokenManagementSession));
                         } else {
+                            if (inClassname != null && inClassname.equals("org.cesecore.keys.token.PKCS11CryptoToken")){
+                                if (isMigrateP11Tokens()) { // Running on enterprise edition and migrate crypto tokens environment variable is set?
+                                    log.info("Migrating PKCS11CryptoToken " + tokenName + " to Pkcs11NgCryptoToken in cache.");
+                                    inClassname = "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken";
+                                }
+                            }
                             cryptoToken = CryptoTokenFactory.createCryptoToken(inClassname, properties, data, cryptoTokenId, tokenName, true);
                         }
                     } catch (NoSuchSlotException e) {
@@ -185,6 +212,15 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
                     && ArrayUtils.isEmpty(tokenDataAsBytes) && ArrayUtils.isEmpty(cryptoTokenData.getTokenDataAsBytes())) {
                 doMerge = false;
             } else {
+                // In case we have migrated any crypto tokens from PKCS11CryptoToken to Pkcs11NgCryptoToken, we safe-guard against changing token type in database
+                // by mistake, hopefully making the migration reversible. 
+                if (isMigrateP11Tokens() && tokenType.equals("Pkcs11NgCryptoToken") && cryptoTokenData.getTokenType().equals("PKCS11CryptoToken")) {
+                    tokenType = cryptoTokenData.getTokenType();
+                    if (log.isDebugEnabled()) {
+                        log.debug("Prevented migrated crypto token " + tokenName + " from changing token type from PKCS11CryptoToken to Pkcs11NgCryptoToken in database"
+                                + " during crypto token merge operation.");
+                    }
+                }                
                 cryptoTokenData.setTokenName(tokenName);
                 cryptoTokenData.setTokenType(tokenType);
                 cryptoTokenData.setLastUpdate(lastUpdate);
