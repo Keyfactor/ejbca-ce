@@ -145,18 +145,23 @@ public class CrmfRequestSystemTest extends CmpTestCase {
     private final static String ISSUER_DN_SHA256 = "CN=TestCA";
     private final static String ISSUER_DN_SHA384 = "CN=TestCA SHA384";
     private final static String ISSUER_DN_MLDSA = "CN=TestCA ML-DSA-44";
+    private final static String ISSUER_DN_SLHDSA = "CN=TestCA SLH-DSA";
     private final KeyPair keys;
     private final KeyPair keysMldsa;
+    private final KeyPair keysSlhdsa;
     private final KeyPair keysMlkem512;
     private final int caIdSha256;
     private final int caIdSha384;
     private final int caIdMldsa44;
+    private final int caIdSlhdsa;
     private final X509Certificate cacertSha256;
     private final X509Certificate cacertSha384;
     private final X509Certificate cacertMldsa;
+    private final X509Certificate cacertSlhdsa;
     private final CA testx509caSHA256;
     private final CA testx509caSHA384;
     private final CA testx509caMldsa;
+    private final CA testx509caSlhdsa;
     private final CmpConfiguration cmpConfiguration;
     private final static String cmpAlias = "CrmfRequestTestCmpConfigAlias";
 
@@ -182,10 +187,14 @@ public class CrmfRequestSystemTest extends CmpTestCase {
         this.testx509caMldsa = CaTestUtils.createTestX509CA(ISSUER_DN_MLDSA, null, false, keyusage, AlgorithmConstants.KEYALGORITHM_MLDSA44);
         this.caIdMldsa44 = this.testx509caMldsa.getCAId();
         this.cacertMldsa = (X509Certificate) this.testx509caMldsa.getCACertificate();
+        this.testx509caSlhdsa = CaTestUtils.createTestX509CA(ISSUER_DN_SLHDSA, null, false, keyusage, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F);
+        this.caIdSlhdsa = this.testx509caSlhdsa.getCAId();
+        this.cacertSlhdsa = (X509Certificate) this.testx509caSlhdsa.getCACertificate();
 
         // Client keys
         this.keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         this.keysMldsa = KeyTools.genKeys(AlgorithmConstants.KEYALGORITHM_MLDSA44, AlgorithmConstants.KEYALGORITHM_MLDSA44);
+        this.keysSlhdsa = KeyTools.genKeys(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F);
         this.keysMlkem512 = KeyTools.genKeys(AlgorithmConstants.KEYALGORITHM_MLKEM512, AlgorithmConstants.KEYALGORITHM_MLKEM512);
     }
     @Override
@@ -201,6 +210,9 @@ public class CrmfRequestSystemTest extends CmpTestCase {
         this.caSession.addCA(ADMIN, this.testx509caMldsa);
         log.debug("ISSUER_DN_MLDSA: " + ISSUER_DN_MLDSA);
         log.debug("caIdMldsa: " + this.caIdMldsa44);
+        this.caSession.addCA(ADMIN, this.testx509caSlhdsa);
+        log.debug("ISSUER_DN_SLHDSA: " + ISSUER_DN_SLHDSA);
+        log.debug("caIdSlhdsa: " + this.cacertSlhdsa);
 
         // Set default encryption key so we can pass test from Eclipse
         StringConfigurationCache.INSTANCE.setEncryptionKey("qhrnf.f8743;12%#75".toCharArray());
@@ -223,6 +235,7 @@ public class CrmfRequestSystemTest extends CmpTestCase {
         CaTestUtils.removeCa(ADMIN, testx509caSHA256.getCAInfo());
         CaTestUtils.removeCa(ADMIN, testx509caSHA384.getCAInfo());
         CaTestUtils.removeCa(ADMIN, testx509caMldsa.getCAInfo());
+        CaTestUtils.removeCa(ADMIN, testx509caSlhdsa.getCAInfo());
         try {
             this.endEntityManagementSession.deleteUser(ADMIN, "cmptest");
         } catch (NoSuchEndEntityException e) {
@@ -1258,6 +1271,66 @@ public class CrmfRequestSystemTest extends CmpTestCase {
             this.certProfileSession.changeCertificateProfile(ADMIN, CP_DN_OVERRIDE_NAME, backup);
         }
         log.trace("<test12ServerGeneratedKeys");
+    }
+
+    @Test
+    public void test13CrmfHttpOkUserSlhdsa() throws Exception {
+        log.trace(">test13CrmfHttpOkUserSlhdsa");
+        // Create a new good USER
+        X500Name userDN = createCmpUser("cmptest", "foo123", "C=SE,O=PrimeKey,CN=cmptest", true, this.caIdSlhdsa, -1, -1);
+
+        byte[] nonce = CmpMessageHelper.createSenderNonce();
+        byte[] transid = CmpMessageHelper.createSenderNonce();
+
+        PKIMessage req = genCertReq(ISSUER_DN_SLHDSA, userDN, this.keysSlhdsa, this.cacertSlhdsa, nonce, transid, false, null, null, null, null, null, null);
+        assertNotNull(req);
+        CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
+        int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+        byte[] ba = CmpMessageHelper.pkiMessageToByteArray(req);
+        // Send request and receive response
+        byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
+        checkCmpResponseGeneral(resp, ISSUER_DN_SLHDSA, userDN, this.cacertSlhdsa, nonce, transid, true, null, NISTObjectIdentifiers.id_slh_dsa_sha2_128f.getId(), false);
+        X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, userDN, this.cacertSlhdsa, resp, reqId);
+        String altNames = DnComponents.getSubjectAlternativeName(cert);
+        assertNull("AltNames was not null (" + altNames + ").", altNames);
+
+        // Send a confirm message to the CA
+        String hash = "foo123";
+        PKIMessage confirm = genCertConfirm(userDN, this.cacertSlhdsa, nonce, transid, hash, reqId, null);
+        ba = CmpMessageHelper.pkiMessageToByteArray(confirm);
+        // Send request and receive response
+        resp = sendCmpHttp(ba, 200, cmpAlias);
+        checkCmpResponseGeneral(resp, ISSUER_DN_SLHDSA, userDN, this.cacertSlhdsa, nonce, transid, false, null, NISTObjectIdentifiers.id_slh_dsa_sha2_128f.getId(), false);
+        checkCmpPKIConfirmMessage(userDN, this.cacertSlhdsa, resp);
+
+        // Now revoke the bastard!
+        PKIMessage rev = genRevReq(ISSUER_DN_SLHDSA, userDN, cert.getSerialNumber(), this.cacertSlhdsa, nonce, transid, true, null, null);
+        byte[] barev = CmpMessageHelper.pkiMessageToByteArray(rev);
+        // Send request and receive response
+        resp = sendCmpHttp(barev, 200, cmpAlias);
+        checkCmpResponseGeneral(resp, ISSUER_DN_SLHDSA, userDN, this.cacertSlhdsa, nonce, transid, false, null, NISTObjectIdentifiers.id_slh_dsa_sha2_128f.getId(), false);
+        checkCmpFailMessage(resp, "PKI Message is not authenticated properly. No HMAC protection was found.", PKIBody.TYPE_ERROR, reqId,
+                PKIFailureInfo.badRequest);
+
+        //
+        // Try again, this time setting implicitConfirm in the header, expecting the server to reply with implicitConfirm as well
+        userDN = createCmpUser("cmptest", "foo123", "C=SE,O=PrimeKey,CN=cmptest", true, this.caIdSlhdsa, -1, -1);
+        nonce = CmpMessageHelper.createSenderNonce();
+        transid = CmpMessageHelper.createSenderNonce();
+        DEROctetString keyId = new DEROctetString("primekey".getBytes());
+        req = genCertReq(ISSUER_DN_SLHDSA, userDN, this.keysSlhdsa, this.cacertSlhdsa, nonce, transid, false, null, null, null, null, null, keyId, true);
+        assertNotNull(req);
+        ir = (CertReqMessages) req.getBody().getContent();
+        reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+        ba = CmpMessageHelper.pkiMessageToByteArray(req);
+        // Send request and receive response
+        resp = sendCmpHttp(ba, 200, cmpAlias);
+        checkCmpResponseGeneral(resp, ISSUER_DN_SLHDSA, userDN, this.cacertSlhdsa, nonce, transid, true, null, NISTObjectIdentifiers.id_slh_dsa_sha2_128f.getId(), true, "primekey", false);
+        cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, userDN, this.cacertSlhdsa, resp, reqId);
+        altNames = DnComponents.getSubjectAlternativeName(cert);
+        assertNull("AltNames was not null (" + altNames + ").", altNames);
+
+        log.trace("<test03CrmfHttpOkUserSlhdsa");
     }
 
     /** Extract an encrypted private key from a PKIMessage
