@@ -78,8 +78,16 @@ tasks.jar {
             from(File("${project.rootDir}/modules/clientToolBox/build/libs/"))
             from(File("${project.rootDir}/modules/clientToolBox/resources/ejbcaClientToolBox.bat"))
             from(File("${project.rootDir}/modules/clientToolBox/resources/ejbcaClientToolBox.sh"))
+            from(File("${project.rootDir}/modules/clientToolBox/resources/README"))
             from(File("${project.rootDir}/modules/ejbca-ws-cli/resources/ejbcawsracli.properties"))
             into(targetDir)
+        }
+        val propertiesDir = File("${project.rootDir}/dist/clientToolBox/properties/")
+        targetDir.mkdirs()
+        copy {
+            from(File("${project.rootDir}/src/internal.properties"))
+            from(File("${project.rootDir}/modules/clientToolBox/resources/properties"))
+            into(propertiesDir)
         }
     }
 }
