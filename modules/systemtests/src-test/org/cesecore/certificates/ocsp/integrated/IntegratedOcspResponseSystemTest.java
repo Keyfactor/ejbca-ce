@@ -304,6 +304,22 @@ public class IntegratedOcspResponseSystemTest {
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
         createUserAndGetEndEntityResponse(caCert, caCert, AlgorithmConstants.SIGALG_MLDSA44);
 
+        // SLH-DSA
+        caName = caNamePrefix+"Slhdsa";
+        testCa = cryptoTokenRunner.createX509Ca("CN="+caName, "CN="+caName, caNamePrefix + caName, "7300d",
+                "SLH-DSA-SHA2-256F", AlgorithmConstants.SIGALG_SLHDSA_SHA2_256F);
+        caCert = (X509Certificate) testCa.getCertificateChain().get(0);
+        ocspResponseGeneratorTestSession.reloadOcspSigningCache();
+        createUserAndGetEndEntityResponse(caCert, caCert, AlgorithmConstants.SIGALG_SLHDSA_SHA2_256F);
+
+        rootCaName = caName;
+        caName = caNamePrefix+"SlhdsaSubca";
+        testCa = cryptoTokenRunner.createX509Ca("CN="+caName, "CN="+rootCaName, caNamePrefix + caName, "3600d",
+                "SLH-DSA-SHA2-128F", AlgorithmConstants.SIGALG_SLHDSA_SHA2_128F);
+        caCert = (X509Certificate) testCa.getCertificateChain().get(0);
+        ocspResponseGeneratorTestSession.reloadOcspSigningCache();
+        createUserAndGetEndEntityResponse(caCert, caCert, AlgorithmConstants.SIGALG_SLHDSA_SHA2_128F);
+
         // CAs created with cryptoTokenRunner.createX509Ca are removed automatically by cryptoTokenRunner.cleanUp()
     }
 

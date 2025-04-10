@@ -82,7 +82,37 @@ public class RequestAndPublicKeySelectorUnitTest {
         RequestAndPublicKeySelector requestAndPublicKeySelector = new RequestAndPublicKeySelector(request, null, null, null);
 
         assertEquals("Alterative public key was not correctly extracted from request.", alternativeKeyPair.getPublic(), requestAndPublicKeySelector.getAlternativePublicKey());
-
     }
+
+    @Test
+    public void testExtractAlternativeKeySLHDSA()
+            throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, OperatorCreationException, IOException {
+        final String subjectDn = "CN=" + testName.getMethodName();
+        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(AlgorithmConstants.KEYALGORITHM_EC, BouncyCastleProvider.PROVIDER_NAME);
+        keyPairGenerator.initialize(new ECGenParameterSpec("P-256"));
+        KeyPair keyPair = keyPairGenerator.generateKeyPair();
+
+        KeyPairGenerator alternativeKeyPairGenerator = KeyPairGenerator.getInstance(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F,
+                BouncyCastleProvider.PROVIDER_NAME);
+        KeyPair alternativeKeyPair = alternativeKeyPairGenerator.generateKeyPair();
+
+        ContentSigner altSigner = new JcaContentSignerBuilder(AlgorithmConstants.SIGALG_SLHDSA_SHA2_128F).setProvider(BouncyCastleProvider.PROVIDER_NAME)
+                .build(alternativeKeyPair.getPrivate());
+
+        JcaPKCS10CertificationRequestBuilder jcaPKCS10CertificationRequestBuilder = new JcaPKCS10CertificationRequestBuilder(new X500Name(subjectDn),
+                keyPair.getPublic());
+
+        PKCS10CertificationRequest pkcs10CertificationRequest = jcaPKCS10CertificationRequestBuilder
+                .build(new JcaContentSignerBuilder(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA).setProvider(BouncyCastleProvider.PROVIDER_NAME)
+                        .build(keyPair.getPrivate()), alternativeKeyPair.getPublic(), altSigner);
+
+        assertTrue("No alternative key was included in request", pkcs10CertificationRequest.hasAltPublicKey());
+        PKCS10RequestMessage request = new PKCS10RequestMessage(pkcs10CertificationRequest.toASN1Structure().getEncoded());
+
+        RequestAndPublicKeySelector requestAndPublicKeySelector = new RequestAndPublicKeySelector(request, null, null, null);
+
+        assertEquals("Alterative public key was not correctly extracted from request.", alternativeKeyPair.getPublic(), requestAndPublicKeySelector.getAlternativePublicKey());
+    }
+
 
 }
