@@ -50,6 +50,7 @@ dependencyResolutionManagement {
             library("commons-configuration2", ":commons-configuration2:2.11.0")
             library("commons-collections4", ":commons-collections4:4.4")
             library("nimbus-jose-jwt", ":nimbus-jose-jwt:9.37.3")
+            library("x509-common-util", ":x509-common-util:5.3.1")
             library("x509-common-util", ":x509-common-util:5.3.0")
             library("cryptotokens-api", ":cryptotokens-api:3.0.0")
             library("cryptotokens-impl", ":cryptotokens-impl:3.0.0")
