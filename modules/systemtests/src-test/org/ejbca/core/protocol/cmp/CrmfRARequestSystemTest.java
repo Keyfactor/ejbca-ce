@@ -801,8 +801,8 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
             } finally {
                 try {
                     this.endEntityManagementSession.deleteUser(ADMIN, userName1);
-                } catch (NoSuchEndEntityException e) {// Do nothing
-                }
+                    internalCertStoreSession.removeCertificatesByUsername(userName1);
+                } catch (NoSuchEndEntityException e) {}// Do nothing
             }
         } finally {
             // Reset this test class as it was before this test

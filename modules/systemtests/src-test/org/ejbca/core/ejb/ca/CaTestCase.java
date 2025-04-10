@@ -164,8 +164,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         log.trace(">CaTestCase.setUp()");
         CryptoProviderTools.installBCProviderIfNotAvailable();
         super.setUpAuthTokenAndRole(getRoleName()+"Base");
-        removeTestCA(); // We can't be sure this CA was not left over from
-        createTestCA();
+        createTestCA(); // Create also removes any old left over CA
         addDefaultRole();
     }
 
@@ -207,7 +206,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
      */
     public static boolean createTestCA() throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException,
             CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
-        removeTestCA(); // We cant be sure this CA was not left over from
+        removeTestCA(); // We can't be sure this CA was not left over from
         return createTestCA(getTestCAName(), 1024);
     }
 
@@ -288,7 +287,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                         : CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, null, null, false, false, null);
         return result != CA_CREATION_FAIL;
     }
-    
+
     public static boolean createTestCAWithLdapDnOrder(
             String caName, int keyStrength, String dn, int signedBy, Collection<Certificate> certificateChain, boolean useLdapDnOrder)
             throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException,
@@ -346,7 +345,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                 certificateProfileId, nameConstraintPermitted, nameConstraintExcluded,
                 relaxUniquenessSubjectDN, relaxUniquenessPublicKey, validators, null, true);
     }
-    
+
     public static int createTestCA(String caName, int keyStrength, String dn, int signedBy, Collection<Certificate> certificateChain,
             int certificateProfileId, List<String> nameConstraintPermitted, List<String> nameConstraintExcluded,
             boolean relaxUniquenessSubjectDN, boolean relaxUniquenessPublicKey, List<Integer> validators, String subjectAltName)
