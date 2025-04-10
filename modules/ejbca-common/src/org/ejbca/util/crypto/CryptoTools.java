@@ -337,6 +337,8 @@ public class CryptoTools {
                 // Add PQC classes.
                 keypairclasses.add(org.bouncycastle.jcajce.interfaces.MLDSAPrivateKey.class);
                 keypairclasses.add(org.bouncycastle.jcajce.interfaces.MLDSAPublicKey.class);
+                keypairclasses.add(org.bouncycastle.jcajce.interfaces.SLHDSAPrivateKey.class);
+                keypairclasses.add(org.bouncycastle.jcajce.interfaces.SLHDSAPublicKey.class);
                 keypairclasses.add(org.bouncycastle.jcajce.interfaces.MLKEMPrivateKey.class);
                 keypairclasses.add(org.bouncycastle.jcajce.interfaces.MLKEMPublicKey.class);
                 keypairclasses.add(org.bouncycastle.pqc.jcajce.interfaces.FalconPrivateKey.class);

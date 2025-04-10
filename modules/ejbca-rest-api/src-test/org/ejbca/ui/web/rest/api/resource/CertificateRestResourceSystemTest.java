@@ -518,6 +518,12 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+    public void shouldRevokeCertificateSLHDSA() throws Exception {
+        createTestEndEntity();
+        revokeCertificate(createKeystore(AlgorithmConstants.SIGALG_SLHDSA_SHA2_128F, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F));
+    }
+
+    @Test
     public void shouldRevokeCertificateFalcon512() throws Exception {
         createTestEndEntity();
         revokeCertificate(createKeystore(AlgorithmConstants.SIGALG_FALCON512, AlgorithmConstants.KEYALGORITHM_FALCON512));

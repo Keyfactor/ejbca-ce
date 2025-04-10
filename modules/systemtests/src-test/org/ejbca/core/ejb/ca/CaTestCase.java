@@ -120,6 +120,18 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     public static final String TEST_MLDSA44_CA_NAME = "TESTMLDSA44";
     public static final String TEST_MLDSA65_CA_NAME = "TESTMLDSA65";
     public static final String TEST_MLDSA87_CA_NAME = "TESTMLDSA87";
+    public static final String TEST_SLHDSASHA2_128S_CA_NAME = "TESTSLHDSASHA2_128S";
+    public static final String TEST_SLHDSASHAKE_128S_CA_NAME = "TESTSLHDSASHAKE_128S";
+    public static final String TEST_SLHDSASHA2_128F_CA_NAME = "TESTSLHDSASHA2_128F";
+    public static final String TEST_SLHDSASHAKE_128F_CA_NAME = "TESTSLHDSASHAKE_128F";
+    public static final String TEST_SLHDSASHA2_192S_CA_NAME = "TESTSLHDSASHA2_192S";
+    public static final String TEST_SLHDSASHAKE_192S_CA_NAME = "TESTSLHDSASHAKE_192S";
+    public static final String TEST_SLHDSASHA2_192F_CA_NAME = "TESTSLHDSASHA2_192F";
+    public static final String TEST_SLHDSASHAKE_192F_CA_NAME = "TESTSLHDSASHAKE_192F";
+    public static final String TEST_SLHDSASHA2_256S_CA_NAME = "TESTSLHDSASHA2_256S";
+    public static final String TEST_SLHDSASHAKE_256S_CA_NAME = "TESTSLHDSASHAKE_256S";
+    public static final String TEST_SLHDSASHA2_256F_CA_NAME = "TESTSLHDSASHA2_256F";
+    public static final String TEST_SLHDSASHAKE_256F_CA_NAME = "TESTSLHDSASHAKE_256F";
     public static final String TEST_SHA256_WITH_MFG1_CA_NAME = "TESTSha256WithMGF1";
     public static final String TEST_SHA256_WITH_MFG1_CA_DN = "CN="+TEST_SHA256_WITH_MFG1_CA_NAME;
     public static final String TEST_RSA_REVSERSE_CA_DN = DnComponents.stringToBCDNString("CN=TESTRSAReverse,O=FooBar,OU=BarFoo,C=SE");

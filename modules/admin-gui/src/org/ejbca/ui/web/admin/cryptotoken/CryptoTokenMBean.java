@@ -1731,6 +1731,18 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_MLDSA44, AlgorithmConstants.KEYALGORITHM_MLDSA44));
             availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_MLDSA65, AlgorithmConstants.KEYALGORITHM_MLDSA65));
             availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_MLDSA87, AlgorithmConstants.KEYALGORITHM_MLDSA87));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_128F, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_128F));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128S, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128S));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_128S, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_128S));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_192F, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_192F));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_192F, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_192F));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_192S, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_192S));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_192S, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_192S));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_256F, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_256F));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_256F, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_256F));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_256S, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_256S));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_256S, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_256S));
         }
         return availableKeySpecs;
     }
