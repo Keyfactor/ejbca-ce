@@ -102,6 +102,7 @@ public abstract class CaTestUtils {
     private static final String RSA_1024 = "RSA1024";
     private static final String EC_256 = "prime256v1";
     private static final String ML_DSA_44 = AlgorithmConstants.KEYALGORITHM_MLDSA44;
+    private static final String SLHDSA_SHA2_128F = AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F;
     private static final String FALCON_512 = AlgorithmConstants.KEYALGORITHM_FALCON512;
 
 
@@ -469,6 +470,8 @@ public abstract class CaTestUtils {
             keyspec = EC_256;
         } else if (StringUtils.containsIgnoreCase(caSignAlg, "ML-DSA-44")) {
             keyspec = ML_DSA_44;
+        } else if (StringUtils.containsIgnoreCase(caSignAlg, "SLH-DSA-SHA2-128F")) {
+            keyspec = SLHDSA_SHA2_128F;
         } else if (StringUtils.containsIgnoreCase(caSignAlg, "FALCON-512")) {
             keyspec = FALCON_512;
         } else {

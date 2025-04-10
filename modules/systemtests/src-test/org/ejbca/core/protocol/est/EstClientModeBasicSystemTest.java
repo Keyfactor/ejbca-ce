@@ -73,7 +73,8 @@ public class EstClientModeBasicSystemTest extends EstTestCase {
     private static final String CN = "EstClientModeTestUser";
     private static KeyPair ec256;
     private static KeyPair mldsa44;
-    private static boolean isESTEnabled = false; // if EST was enabled or not before running test 
+    private static KeyPair slhdsa;
+    private static boolean isESTEnabled = false; // if EST was enabled or not before running test
     
     private static final GlobalConfigurationSession globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private static final EnterpriseEditionEjbBridgeProxySessionRemote enterpriseEjbBridgeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EnterpriseEditionEjbBridgeProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
@@ -96,7 +97,8 @@ public class EstClientModeBasicSystemTest extends EstTestCase {
         }
         ec256 = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_EC);
         mldsa44 = KeyTools.genKeys("ML-DSA-44", AlgorithmConstants.KEYALGORITHM_MLDSA44);
-        
+        slhdsa = KeyTools.genKeys("SLH-DSA-SHA2-128F", AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F);
+
     }
 
     @AfterClass
@@ -652,6 +654,75 @@ public class EstClientModeBasicSystemTest extends EstTestCase {
             } catch (NoSuchEndEntityException e) {} // NOPMD
         }
         log.trace("<testSimpleEnrollWithChallengePwdAndUsernameInDnUsingMlDSA44()");
+    }
+
+    @Test
+    public void testSimpleEnrollWithChallengePwdAndUsernameInDnUsingSlhDSA() throws Exception {
+        log.trace(">testSimpleEnrollWithChallengePwdAndUsernameInDnUsingSlhDSA()");
+        final String alias = "testEnrollWithdUsernameInDn";
+        final String username = "EstClientTestUsername";
+
+
+        EstConfiguration config = (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
+        try {
+            // Create alias
+            config.addAlias(alias);
+            config.setOperationMode(alias, EstConfiguration.OPERATION_MODE_CLIENT); // client mode
+            config.setAuthenticationModule(alias, EstConfiguration.CONFIG_AUTHMODULE_CHALLENGE_PWD);
+            config.setExtractUsernameComponent(alias, "UID");
+            config.setServerKeyGenerationEnabled(alias, true);
+            globalConfigurationSession.saveConfiguration(ADMIN, config);
+
+            // Create EE
+            EndEntityInformation endEntityInfo = new EndEntityInformation();
+            endEntityInfo.setUsername(username);
+            endEntityInfo.setPassword("bar123");
+            endEntityInfo.setEndEntityProfileId(EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
+            endEntityInfo.setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+            endEntityInfo.setCAId(getTestCAId(TESTCA_NAME));
+            endEntityInfo.setDN("CN=" + CN + ",O=EJBCA,C=SE");
+            endEntityInfo.setTokenType(EndEntityConstants.TOKEN_USERGEN);
+            endEntityInfo.setType(EndEntityTypes.ENDUSER.toEndEntityType());
+            endEntityInfo.setStatus(EndEntityConstants.STATUS_NEW);
+            endEntityManagementSession.addUser(ADMIN, endEntityInfo, false);
+
+
+            // Make request with username in DN
+            final String dn = "CN=" + CN + ",O=EJBCA,C=SE";
+            final String requestDN = "UID=" + username + "," + dn;
+            PKCS10CertificationRequest p10 = generateCertReq(requestDN, "bar123", null, null, null, slhdsa, "SLH-DSA-SHA2-128F");
+            byte[] reqmsg = Base64.encode(p10.getEncoded());
+            byte[] resp = sendEstRequest(alias, "simpleenroll", reqmsg, 200, null);
+            assertNotNull("There must be response data to simpleenroll request", resp);
+            final CMSSignedData respmsg = new CMSSignedData(Base64.decode(resp));
+            final Store<X509CertificateHolder> certstore = respmsg.getCertificates();
+            final Collection<X509CertificateHolder> certs = certstore.getMatches(null);
+            assertEquals("EST simpleenroll should return a single certificate", 1, certs.size());
+            final X509Certificate testcacert = (X509Certificate)getTestCACert(TESTCA_NAME);
+            final X509CertificateHolder certHolder = certs.iterator().next();
+            final X509Certificate cert = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
+            assertEquals("simpleenroll response issuerDN must be our EST test CAs subjectDN", CertTools.getSubjectDN(testcacert), CertTools.getIssuerDN(cert));
+            try {
+                cert.verify(testcacert.getPublicKey());
+            } catch (SignatureException e) {
+                fail("simpleenroll response certifciate must verify with CA certificate");
+            }
+            assertEquals("simpleenroll response subjectDN must be the same DN as the PKCS#10 request DN",dn, CertTools.getSubjectDN(cert));
+            assertEquals("simpleenroll response public key must be the same as the PKCS#10 request", Base64.toBase64String(slhdsa.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));
+
+            testServerKeyGen(alias, reqmsg, testcacert, endEntityInfo);
+        } finally {
+            // Remove the certificates
+            internalCertStoreSession.removeCertificatesByUsername(username);
+            // Remove EST alias
+            config.removeAlias(alias);
+            globalConfigurationSession.saveConfiguration(ADMIN, config);
+            // Remove end entity
+            try {
+                endEntityManagementSession.deleteUser(ADMIN, username);
+            } catch (NoSuchEndEntityException e) {} // NOPMD
+        }
+        log.trace("<testSimpleEnrollWithChallengePwdAndUsernameInDnUsingSlhDSA()");
     }
     
 }
