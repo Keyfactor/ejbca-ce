@@ -40,8 +40,8 @@ import jakarta.faces.model.SelectItem;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.math.NumberUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.cert.ocsp.OCSPReqBuilder;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
@@ -127,7 +127,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
     private String currentTrustEntryDescriptionOcspRespToSign = null;
     
     //Serial number of the CA generation to use
-    private String getCurrentCaGeneration = null;
+    private String currentCaGeneration = null;
 
     @EJB
     private CaSessionLocal caSession;
@@ -181,7 +181,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
     @Override
     protected void flushCurrentCache() {
         super.flushCurrentCache();
-        if (NumberUtils.isNumber(getCurrentInternalKeyBindingId()) && !("0".equals(getCurrentInternalKeyBindingId()))) {     
+        if (NumberUtils.isCreatable(getCurrentInternalKeyBindingId()) && !("0".equals(getCurrentInternalKeyBindingId()))) {     
             signOcspResponseForCas = null;
             retentionPeriod = null;
             useIssuerNotBeforeAsArchiveCutoff = null;
@@ -598,11 +598,40 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
     }
     
     public String getCurrentCaGeneration() {
-        return getCurrentCaGeneration;
+        if (currentCaGeneration == null) {
+            try {
+                final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingSession.getInternalKeyBinding(authenticationToken,
+                        Integer.parseInt(getCurrentInternalKeyBindingId()));
+                if (ocspKeyBinding != null) {
+                    currentCaGeneration = ocspKeyBinding.getCaGeneration();
+                    if (currentCaGeneration == null) {
+                        if (!getAvailableCertificateChains().isEmpty()) {
+                            currentCaGeneration = (String) getAvailableCertificateChains().get(0).getValue();
+                        }
+                    }
+                }
+            } catch (NumberFormatException | AuthorizationDeniedException e) {
+                addNonTranslatedErrorMessage(e);
+                return null;
+            }
+        }
+        
+        return currentCaGeneration;
     }
     
-    public void setCurrentCaGeneration(final String getCurrentCaGeneration) {
-        this.getCurrentCaGeneration = getCurrentCaGeneration;
+    public boolean isReturnCaChain() {
+        try {
+            final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingSession.getInternalKeyBinding(authenticationToken,
+                    Integer.parseInt(getCurrentInternalKeyBindingId()));
+            return ocspKeyBinding.getIncludeCertChain();
+        } catch (NumberFormatException | AuthorizationDeniedException e) {
+            addNonTranslatedErrorMessage(e);
+            return false;
+        }
+    }
+    
+    public void setCurrentCaGeneration(final String currentCaGeneration) {
+        this.currentCaGeneration = currentCaGeneration;
     }
 
     public String getCurrentOcspExtension() {
@@ -669,22 +698,31 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
     
     public List<SelectItem> getAvailableCertificateChains() {
         List<SelectItem> result = new ArrayList<>();
+        result.add(new SelectItem(null, "-- Always return latest chain --"));
         if(isBoundToCertificate()) {
             try {
+                
+                final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingSession.getInternalKeyBinding(authenticationToken,
+                        Integer.parseInt(getCurrentInternalKeyBindingId()));
+                
                 final DateFormat dateFormatIso8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
                 //Retrieve all known CA certificates of the chosen issuer 
-                List<Certificate> caCertificates = certificateStoreSession
-                        .findCertificatesBySubject(caSession.getCAInfo(getAdmin(), getCurrentCertificateAuthority()).getSubjectDN());
-                Collections.sort(caCertificates, new Comparator<Certificate>() {
-                    //Sort them by notAfter
-                    @Override
-                    public int compare(Certificate o1, Certificate o2) {
-                        return CertTools.getNotAfter(o1).compareTo(CertTools.getNotAfter(o2));
+                final X509Certificate ocspSigningCertificate = (X509Certificate) certificateStoreSession
+                        .findCertificateByFingerprint(ocspKeyBinding.getCertificateId());
+                if(ocspSigningCertificate != null) {
+                    List<Certificate> caCertificates = certificateStoreSession.findCertificatesBySubject(CertTools.getIssuerDN(ocspSigningCertificate));
+                    Collections.sort(caCertificates, new Comparator<Certificate>() {
+                        //Sort them by notAfter
+                        @Override
+                        public int compare(Certificate o1, Certificate o2) {
+                            return CertTools.getNotAfter(o1).compareTo(CertTools.getNotAfter(o2));
+                        }
+                    });
+                    for (int i = 0; i < caCertificates.size(); ++i) {
+                        Certificate caCertificate = caCertificates.get(i);
+                        result.add(new SelectItem(CertTools.getSerialNumberAsString(caCertificate),
+                                "Generation " + i + ", Expiration: " + dateFormatIso8601.format(CertTools.getNotAfter(caCertificate))));
                     }
-                });
-                for(int i = 0; i < caCertificates.size(); ++i) {
-                    Certificate caCertificate = caCertificates.get(i);
-                    result.add(new SelectItem(CertTools.getSerialNumberAsString(caCertificate), "Generation " + i + ", Expired at: " + dateFormatIso8601.format(CertTools.getNotAfter(caCertificate))));
                 }
             } catch (AuthorizationDeniedException e) {
                 addNonTranslatedErrorMessage(e);
@@ -924,6 +962,9 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
                     signOcspResponseForCas = new ArrayList<>();
                 }
                 ocspKeyBinding.setSignOcspResponseOnBehalf(signOcspResponseForCas);
+                if(ocspKeyBinding.getIncludeCertChain()) {
+                    ocspKeyBinding.setCaGeneration(currentCaGeneration);
+                }
             
             final List<DynamicUiProperty<? extends Serializable>> internalKeyBindingProperties = (List<DynamicUiProperty<? extends Serializable>>) getInternalKeyBindingPropertyList()
                     .getWrappedData();
@@ -957,6 +998,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
 
                 internalKeyBinding.setProperty(property.getName(), property.getValue());
             }
+            
             setCurrentInternalKeybindingId(
                     String.valueOf(internalKeyBindingSession.persistInternalKeyBinding(authenticationToken, internalKeyBinding)));
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(getCurrentName() + " saved"));
