@@ -2298,7 +2298,6 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         log.trace(">addToBlacklist()");
         try {
             blacklistSession.addBlacklistEntry(authenticationToken, entry);
-            log.info("Status ok");
         } catch (BlacklistExistsException e) {
             log.info("Public key block list entry with public key fingerprint " + entry.getFingerprint() + " already exists.");
             throw e;

@@ -374,7 +374,6 @@ public class CAInterfaceBean implements Serializable {
                     .build();
                 proxyCaInfo.setSubjectDN(caInfoDto.getCaSubjectDN());
                 proxyCaInfo.setEncodedValidity("99y");
-                proxyCaInfo.setAddCompromisedKeysToBlockList(caInfoDto.isAddCompromisedKeysToBlockList());
                 final int caid = DnComponents.stringToBCDNString(proxyCaInfo.getSubjectDN()).hashCode();
                 proxyCaInfo.setCAId(caid);
 

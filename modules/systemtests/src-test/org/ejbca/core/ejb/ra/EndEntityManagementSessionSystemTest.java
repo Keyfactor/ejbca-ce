@@ -20,6 +20,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.Principal;
@@ -27,6 +28,7 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -55,11 +57,11 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
-import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.NoConflictCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
@@ -107,6 +109,7 @@ import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.model.services.workers.PublishQueueProcessWorker;
+import org.ejbca.core.model.validation.PublicKeyBlacklistKeyValidator;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -122,6 +125,8 @@ import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
+import org.cesecore.keys.validation.Validator;
+import org.cesecore.keys.validation.KeyValidatorSessionRemote;
 
 /**
  * Tests the EndEntityInformation entity bean and some parts of EndEntityManagementSession.
@@ -1496,12 +1501,27 @@ public class EndEntityManagementSessionSystemTest extends CaTestCase {
 
         KeyPair keypair = KeyTools.genKeys("512", "RSA");
         EndEntityInformation data1 = endEntityAccessSession.findUser(admin, username);
-        assertNotNull(data1);
         data1.setPassword("foo123");
         String X509CADN = "CN=AddCompromisedKeysToBlockList";
         CA testx509ca = CaTestUtils.createTestX509CA(X509CADN, null, false);
         caSession.addCA(admin, testx509ca);
-        testx509ca.getCAInfo().setAddCompromisedKeysToBlockList(true);
+        CAInfo cainfo = caSession.getCAInfo(admin, testx509ca.getCAId());
+        
+        PublicKeyBlacklistKeyValidator blacklistKeyValidator = (PublicKeyBlacklistKeyValidator) createKeyValidator(PublicKeyBlacklistKeyValidator.class,
+                "blacklist-parameter-validation-test", "Description");
+          KeyValidatorSessionRemote keyValidatorSession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyValidatorSessionRemote.class);
+          keyValidatorSession.removeKeyValidator(admin, "blacklist-parameter-validation-test");
+          
+          int blacklistId = keyValidatorSession.addKeyValidator(admin, blacklistKeyValidator);
+          blacklistKeyValidator.setProfileId(blacklistId);
+          blacklistKeyValidator.setValidatorTypeIdentifier("BLACKLIST_KEY_VALIDATOR");
+          Collection<Integer> validators = new ArrayList<Integer>();
+          validators.add(blacklistId);
+          
+          cainfo.setValidators(validators);
+          cainfo.setAddCompromisedKeysToBlockList(true);
+          caAdminSession.editCA(admin, cainfo);
+        
 
         endEntityManagementSession.changeUser(admin, data1, true);
 
@@ -1519,14 +1539,17 @@ public class EndEntityManagementSessionSystemTest extends CaTestCase {
         data1.setStatus(EndEntityConstants.STATUS_NEW);
         endEntityManagementSession.changeUser(admin, data1, true);
         //try to create new certificate with compromised key but should not work for Illegal Key
+        Certificate certAfterRevoke = null;
+        boolean thrown = false;
         try {
-            Certificate certAfterRevoke = signSession.createCertificate(admin, username, "foo123", new PublicKeyWrapper(keypair.getPublic()), -1,
-                    null, null, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, testx509ca.getCAInfo().getCAId());
-
-        } catch (IllegalKeyException e) {
-            //Ignore, this is fine .
+            certAfterRevoke = signSession.createCertificate(admin, username, "foo123", new PublicKeyWrapper(keypair.getPublic()), -1, null, null,
+                    CertificateProfileConstants.CERTPROFILE_NO_PROFILE, testx509ca.getCAInfo().getCAId());
+        } catch(CertificateCreateException e) {
+            thrown = true;
+            assertTrue(e.getMessage().contains("found in public key block list."));
         }
-
+        assertTrue(thrown);
+        
         try {
             CryptoTokenTestUtils.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
             CaTestUtils.removeCa(admin, testx509ca.getCAInfo());
@@ -1622,5 +1645,13 @@ public class EndEntityManagementSessionSystemTest extends CaTestCase {
         super.cleanUpThrowAwayPublishingTest(caId, THROWAWAY_CERT_PROFILE, THROWAWAY_PUBLISHER, THROWAWAY_CERT_SERIAL);
     }
     
+    private Validator createKeyValidator(Class<? extends Validator> type, final String name, final String description) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
+        Validator result = type.getDeclaredConstructor().newInstance();
+        result.setProfileName(name);
+        if (null != description) {
+            result.setDescription(description);
+        }
+        return result;
+    }
 
 }
