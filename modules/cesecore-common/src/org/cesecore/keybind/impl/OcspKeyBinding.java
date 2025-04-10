@@ -111,7 +111,7 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     public static final String PROPERTY_OMIT_REASON_CODE_WHEN_REVOCATION_REASON_UNSPECIFIED = "omitreasoncodewhenrevocationreasonunspecified"; 
     public static final String PROPERTY_USE_ISSUER_NOTBEFORE_AS_ARCHIVE_CUTOFF = "useIssuerNotBeforeAsArchiveCutoff";
     public static final String PROPERTY_RETENTION_PERIOD = "retentionPeriod";
-    public static final String PROPERTY_CERTCHAIN_GENERATION = "certChainGeneration";
+    public static final String PROPERTY_CA_GENERATION = "certChainGeneration";
     
     {
         addProperty(new DynamicUiProperty<>(PROPERTY_NON_EXISTING_GOOD, Boolean.FALSE));
@@ -341,6 +341,14 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
         } catch (CertificateParsingException e) {
             throw new CertificateImportException(e.getMessage(), e);
         }
+    }
+    
+    public String getCaGeneration() {
+        return getData(PROPERTY_CA_GENERATION, null);
+    }
+    
+    public void setCaGeneration(final String generation) {
+        putData(PROPERTY_CA_GENERATION, generation);
     }
 
     @Override

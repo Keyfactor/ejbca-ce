@@ -251,15 +251,13 @@
 				<div><h:outputText value="#{web.text.INTERNALKEYBINDING_NOPROPERTIES}"/></div>
 			</h:panelGroup>
 			<h:panelGrid columns="3">    
-			    <h:outputLabel for="chainGeneration" value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_CERTCHAIN_GENERATION}"/>
+			    <h:outputLabel for="chainGeneration" value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_CERTCHAIN_GENERATION}" />
                 <h:panelGroup id="chainGeneration">
-                    <h:panelGroup rendered="#{ocspResponderMBean.inEditMode and ocspResponderMBean.cryptoTokenActive}">
-                        <p:selectOneMenu value="#{ocspResponderMBean.currentCaGeneration}">
+                    <h:panelGroup disabled="#{!ocspResponderMBean.inEditMode or !ocspResponderMBean.boundToCertificate}">
+                        <p:selectOneMenu value="#{ocspResponderMBean.currentCaGeneration}" disabled="#{!ocspResponderMBean.inEditMode}">
                             <f:selectItems value="#{ocspResponderMBean.availableCertificateChains}"/>
                         </p:selectOneMenu>
                     </h:panelGroup>
-                   <h:outputText rendered="#{!ocspResponderMBean.inEditMode or !ocspResponderMBean.cryptoTokenActive || ocspResponderMBean.boundToCertificate}"
-                                  value="#{ocspResponderMBean.currentCaGeneration}"/>
                 </h:panelGroup>
                 <h:message for="chainGeneration"/>
 			</h:panelGrid>

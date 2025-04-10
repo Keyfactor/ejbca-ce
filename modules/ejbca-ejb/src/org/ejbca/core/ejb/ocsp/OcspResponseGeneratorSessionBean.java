@@ -740,7 +740,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         return (X509Certificate) issuer;
     }
 
-    private List<X509Certificate> getCaCertificateChain(final X509Certificate leafCertificate) {
+    private List<X509Certificate> getCaCertificateChain(final X509Certificate leafCertificate, final String caCertificateSerialNumber) {
         final List<X509Certificate> caCertificateChain = new ArrayList<>();
         X509Certificate currentLevelCertificate = leafCertificate;
         final Set<String> includedFingerprint = new HashSet<>();
