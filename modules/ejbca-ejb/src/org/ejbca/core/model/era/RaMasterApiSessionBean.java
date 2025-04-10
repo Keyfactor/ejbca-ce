@@ -2560,6 +2560,37 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
 
     @Override
+    public byte[] createCertificateWithEntity(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, String requestData, int requestType, int responseType)
+            throws EjbcaException, AuthorizationDeniedException, EndEntityProfileValidationException{
+        try {
+            return certificateRequestSession.processCertReq(authenticationToken, endEntityInformation, requestData, requestType, responseType);
+        } catch (InvalidKeyException e) {
+            log.debug("EJBCA REST exception", e);
+            throw new EjbcaException(ErrorCode.INVALID_KEY, e.getMessage());
+        } catch (InvalidKeySpecException | IllegalKeyException e) {
+            log.debug("EJBCA REST exception", e);
+            throw new EjbcaException(ErrorCode.ILLEGAL_KEY, e.getMessage());
+        } catch (SignRequestSignatureException | CertificateCreateException | IOException e) {
+            log.debug("EJBCA REST exception", e);
+            throw new EjbcaException(e.getMessage());
+        } catch (CesecoreException e) {
+            log.debug("EJBCA REST exception", e);
+            // Will convert the CESecore exception to an EJBCA exception with the same error code
+            throw new EjbcaException(e.getErrorCode(), LogRedactionUtils.getRedactedException(e));
+        } catch (CertificateExtensionException | NoSuchAlgorithmException | NoSuchProviderException |
+                 CertificateException e) {
+            log.debug("EJBCA REST exception", LogRedactionUtils.getRedactedException(e));
+            throw new EjbcaException(ErrorCode.INTERNAL_ERROR, LogRedactionUtils.getRedactedMessage(e.getMessage()));
+        } catch (SignatureException e) {
+            log.debug("EJBCA REST exception", e);
+            throw new EjbcaException(ErrorCode.SIGNATURE_ERROR, e.getMessage());
+        } catch (EndEntityProfileValidationException e) {
+            log.debug("EJBCA REST exception", LogRedactionUtils.getRedactedException(e));
+            throw new EndEntityProfileValidationException(LogRedactionUtils.getRedactedMessage(e.getMessage()));
+        }
+    }
+
+    @Override
     public byte[] createCertificateRest(final AuthenticationToken authenticationToken, EnrollPkcs10CertificateRequest enrollCertificateRequest)
             throws CertificateProfileDoesNotExistException, CADoesntExistsException, AuthorizationDeniedException,
             EjbcaException, EndEntityProfileValidationException {

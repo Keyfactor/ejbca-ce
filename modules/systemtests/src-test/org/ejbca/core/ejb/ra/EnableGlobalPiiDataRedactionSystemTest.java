@@ -70,7 +70,7 @@ public class EnableGlobalPiiDataRedactionSystemTest {
     private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken("EnableGlobalPiiDataRedactionSystemTest");
     private final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     
-    private final static String DEVICE_NAME = IntegrityProtectedDevice.class.getSimpleName();
+    private static final String DEVICE_NAME = IntegrityProtectedDevice.class.getSimpleName();
     private static final EjbcaAuditorTestSessionRemote ejbcaAuditorSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EjbcaAuditorTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     
     private static final String CUSTOM_LOG_MESSAGE = "EnableGlobalPiiDataRedactionSystemTest_CustomLogMessage";
@@ -79,8 +79,8 @@ public class EnableGlobalPiiDataRedactionSystemTest {
         
     @BeforeClass
     public static void isEnabledAuditLogRedactionTest() {
-        assertEquals("New cesecore audit event may need to tested for PII redaction.", EventTypes.values().length, 71);
-        assertEquals("New ejbca audit event may need to tested for PII redaction.", EjbcaEventTypes.values().length, 65);
+        assertEquals("New cesecore audit event may need to tested for PII redaction.", 71, EventTypes.values().length);
+        assertEquals("New ejbca audit event may need to tested for PII redaction.", 65, EjbcaEventTypes.values().length);
     }
 
     @Before
@@ -118,7 +118,7 @@ public class EnableGlobalPiiDataRedactionSystemTest {
     public void testAuditLogPiiDataWithCompulsoryRedaction() throws Exception {
         
         String[] patternsToMatch = new String[] { LogRedactionUtils.getSubjectDnRedactionPattern().replace("|(c=)", ""),
-                LogRedactionUtils.getSubjectAltNameRedactionPattern(), ServerLogCheckUtil.BASE64_LOGGINGS_PATTERN};
+                LogRedactionUtils.getSubjectAltNameRedactionPattern()};
 //        matches all -> ".*MI[EIM]{1}[a-zA-Z0-9]{12}.*" for wildfly filter
 //        finds all -> "MI[EIM]{1}[a-zA-Z0-9]{12}" without .* at both end
 //        examples returning true:        
@@ -132,8 +132,8 @@ public class EnableGlobalPiiDataRedactionSystemTest {
         List<Pattern> compiledPatterns =  new ArrayList<>();
         for (String p: patternsToMatch) {
             compiledPatterns.add(Pattern.compile(p, Pattern.CASE_INSENSITIVE));
+            compiledPatterns.add(Pattern.compile(ServerLogCheckUtil.BASE64_LOGGINGS_PATTERN));
         }
-        
         final List<Object> startMarkerParams = new ArrayList<>();
         startMarkerParams.add("CUSTOMLOG_INFO");
         startMarkerParams.add("%" + CUSTOM_LOG_MESSAGE + "%");
