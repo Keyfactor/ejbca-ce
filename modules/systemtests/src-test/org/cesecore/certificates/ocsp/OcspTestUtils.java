@@ -33,6 +33,7 @@ import java.util.Map;
 
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -353,7 +354,8 @@ public final class OcspTestUtils {
 
     public static void clearOcspSigningCache() {
         try {
-            final URL url = new URL("http://localhost:8080/ejbca/clearcache?command=clearcaches&excludeactivects=true");
+            final String httpPort = SystemTestsConfiguration.getRemotePortHttp("8080");
+            final URL url = new URL("http://localhost:"+httpPort+"/ejbca/clearcache?command=clearcaches&excludeactivects=true");
             final HttpURLConnection con = (HttpURLConnection) url.openConnection();
             if (con.getResponseCode() != HttpURLConnection.HTTP_OK) {
                 Assert.fail("Failed to clear caches using URL: http://localhost:8080/ejbca/clearcache?command=clearcaches&excludeactivects=true"

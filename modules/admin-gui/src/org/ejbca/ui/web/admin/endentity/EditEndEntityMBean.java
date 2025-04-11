@@ -1592,8 +1592,6 @@ public class EditEndEntityMBean extends EndEntityBaseManagedBean implements Seri
 
         if (regeneratePassword) {
             newUserView.setPassword("NEWPASSWORD");
-        } else {
-            newUserView.setPassword(null);
         }
 
         if (selectedPassword != null &&  (!selectedPassword.equals(""))) {

@@ -537,11 +537,31 @@ public class OcspResponseGeneratorSessionUnitTest {
         assertGoodResponse(respInfo);
         log.trace("<uncachedIkbRequestWithSameSubjectDn");
     }
-    
+
+    /**
+     * RFC-9654 allows nonces as small as 1 byte.
+     * However, at least 32 bytes are recommended, and nonces that are >= 16 bytes MUST be accepted (if they're not too large).
+     */
+    @Test
+    public void nonceOkSmall() throws Exception {
+        log.trace(">nonceOkSmall");
+        byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, OIWObjectIdentifiers.idSHA1, new DEROctetString(new byte[1]).getEncoded());
+        expectLoggerChecks();
+        expectOcspConfigRead();
+        expect(certificateStoreSessionMock.getStatus(ISSUER_CERT_DN, REQUEST_SERIAL)).andReturn(status).once();
+        replay(auditLogger, transactionLogger, caSessionMock, certificateStoreSessionMock, cryptoTokenSessionMock,
+                internalKeyBindingDataSessionMock, globalConfigurationSessionMock, timerServiceMock);
+        prepareOcspCache();
+        final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, PresignResponseValidity.CONFIGURATION_BASED, false);
+        assertGoodResponse(respInfo);
+        log.trace("<nonceOkSmall");
+    }
+
+    /** RFC-9654 allows nonces up to 128 bytes bytes */
     @Test
     public void nonceOk() throws Exception {
         log.trace(">nonceOk");
-        byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, OIWObjectIdentifiers.idSHA1, new DEROctetString(new byte[32]).getEncoded());
+        byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, OIWObjectIdentifiers.idSHA1, new DEROctetString(new byte[128]).getEncoded());
         expectLoggerChecks();
         expectOcspConfigRead();
         expect(certificateStoreSessionMock.getStatus(ISSUER_CERT_DN, REQUEST_SERIAL)).andReturn(status).once();
@@ -556,7 +576,7 @@ public class OcspResponseGeneratorSessionUnitTest {
     @Test
     public void tooLargeNonce() throws Exception {
         log.trace(">tooLargeNonce");
-        byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, OIWObjectIdentifiers.idSHA1, new DEROctetString(new byte[33]).getEncoded());
+        byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, OIWObjectIdentifiers.idSHA1, new DEROctetString(new byte[129]).getEncoded());
         expectLoggerChecks();
         expectOcspConfigRead();
         expect(certificateStoreSessionMock.getStatus(ISSUER_CERT_DN, REQUEST_SERIAL)).andReturn(status).once();
@@ -572,7 +592,7 @@ public class OcspResponseGeneratorSessionUnitTest {
     public void badNonceEncodingOk() throws Exception {
         log.trace(">badNonceEncodingOk");
         // A Nonce extension that is not an OctetString 
-        byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, OIWObjectIdentifiers.idSHA1, new byte[32]);
+        byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, OIWObjectIdentifiers.idSHA1, new byte[128]);
         expectLoggerChecks();
         expectOcspConfigRead();
         expect(certificateStoreSessionMock.getStatus(ISSUER_CERT_DN, REQUEST_SERIAL)).andReturn(status).once();
@@ -588,7 +608,7 @@ public class OcspResponseGeneratorSessionUnitTest {
     public void badNonceEncodingTooLarge() throws Exception {
         log.trace(">badNonceEncodingTooLarge");
         // A Nonce extension that is not an OctetString 
-        byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, OIWObjectIdentifiers.idSHA1, new byte[33]);
+        byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, OIWObjectIdentifiers.idSHA1, new byte[129]);
         expectLoggerChecks();
         expectOcspConfigRead();
         expect(certificateStoreSessionMock.getStatus(ISSUER_CERT_DN, REQUEST_SERIAL)).andReturn(status).once();
@@ -680,7 +700,7 @@ public class OcspResponseGeneratorSessionUnitTest {
             gen.addRequest(certId).build();
             if (nonce != null) {
                 Extension[] extensions = new Extension[1];
-                // Max size of nonce is 32 bytes
+                // Max size of nonce is 128 bytes
                 extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, nonce);
                 gen.setRequestExtensions(new Extensions(extensions));
             }

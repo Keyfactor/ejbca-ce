@@ -27,13 +27,19 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-import jakarta.ejb.EJBException;
-import jakarta.faces.application.FacesMessage;
-import jakarta.faces.context.FacesContext;
-import jakarta.faces.model.ListDataModel;
-import jakarta.faces.model.SelectItem;
-import jakarta.faces.view.ViewScoped;
-import jakarta.inject.Named;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.BaseCryptoToken;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.KeyGenParams;
+import com.keyfactor.util.keys.token.KeyGenParams.KeyGenParamsBuilder;
+import com.keyfactor.util.keys.token.KeyGenParams.KeyPairTemplate;
+import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabel;
+import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
 
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -45,7 +51,6 @@ import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
-import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
@@ -72,20 +77,13 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import org.ejbca.util.SlotList;
 
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.KeyTools;
-import com.keyfactor.util.keys.token.BaseCryptoToken;
-import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-import com.keyfactor.util.keys.token.KeyGenParams;
-import com.keyfactor.util.keys.token.KeyGenParams.KeyGenParamsBuilder;
-import com.keyfactor.util.keys.token.KeyGenParams.KeyPairTemplate;
-import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabel;
-import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
+import jakarta.ejb.EJBException;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.model.ListDataModel;
+import jakarta.faces.model.SelectItem;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Named;
 
 /**
  * JavaServer Faces Managed Bean for managing CryptoTokens.
@@ -201,6 +199,34 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             return cryptoTokenInfo.getKeyVaultClientID();
         }
 
+        public String getSecurosysRestApiName() {
+            return cryptoTokenInfo.getSecurosysRestApiName();
+        }
+
+        public String getSecurosysAuthType() {
+            return cryptoTokenInfo.getSecurosysAuthType();
+        }
+
+        public String getSecurosysAuthCert() {
+            return cryptoTokenInfo.getSecurosysAuthCert();
+        }
+
+        public String getSecurosysManagementKey() {
+            return cryptoTokenInfo.getSecurosysManagementKey();
+        }
+
+        public String getSecurosysOperationKey() {
+            return cryptoTokenInfo.getSecurosysOperationKey();
+        }
+
+        public String getSecurosysServiceKey() {
+            return cryptoTokenInfo.getSecurosysServiceKey();
+        }
+
+        public String getSecurosysApprovalTimeout() {
+            return cryptoTokenInfo.getSecurosysApprovalTimeout();
+        }
+
         public String getAuthenticationCode() {
             if (!requiresSecretToActivate) {
                 return AzureCryptoToken.DUMMY_ACTIVATION_CODE;
@@ -235,6 +261,10 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
 
         public boolean isAzureType() {
             return AzureCryptoToken.class.getSimpleName().equals(cryptoTokenInfo.getType());
+        }
+
+        public boolean isSecurosysType() {
+            return CryptoTokenFactory.SECUROSYS_SIMPLE_NAME.equals(cryptoTokenInfo.getType());
         }
 
         public boolean isFortanixType() {
@@ -296,6 +326,72 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         private String awsKMSAccessKeyID = ""; // default value
         private AzureAuthenticationType azureAuthenticationType = AzureAuthenticationType.APP_ID_AND_SECRET;
         private AwsKmsAuthenticationType awsKmsAuthenticationType = AwsKmsAuthenticationType.KEY_ID_AND_SECRET;
+
+
+        private String securosysRestApi = "https://primusdev.cloudshsm.com";
+        private String securosysAuthenticationType = "TOKEN";
+        private String securosysAuthCert = "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----";
+        private String securosysManagementKey = "";
+        private String securosysOperationKey = "";
+        private String securosysServiceKey = "";
+        private String securosysApprovalTimeout = "";
+
+
+        public String getSecurosysRestApi() {
+            return securosysRestApi;
+        }
+
+        public void setSecurosysRestApi(String securosysRestApi) {
+            this.securosysRestApi = securosysRestApi;
+        }
+
+        public String getSecurosysAuthenticationType() {
+            return securosysAuthenticationType;
+        }
+
+        public void setSecurosysAuthenticationType(String securosysAuthenticationType) {
+            this.securosysAuthenticationType = securosysAuthenticationType;
+        }
+
+        public String getSecurosysAuthCert() {
+            return securosysAuthCert;
+        }
+
+        public void setSecurosysAuthCert(String securosysAuthCert) {
+            this.securosysAuthCert = securosysAuthCert;
+        }
+
+        public String getSecurosysManagementKey() {
+            return securosysManagementKey;
+        }
+
+        public void setSecurosysManagementKey(String securosysManagementKey) {
+            this.securosysManagementKey = securosysManagementKey;
+        }
+
+        public String getSecurosysOperationKey() {
+            return securosysOperationKey;
+        }
+
+        public void setSecurosysOperationKey(String securosysOperationKey) {
+            this.securosysOperationKey = securosysOperationKey;
+        }
+
+        public String getSecurosysServiceKey() {
+            return securosysServiceKey;
+        }
+
+        public void setSecurosysServiceKey(String securosysServiceKey) {
+            this.securosysServiceKey = securosysServiceKey;
+        }
+
+        public String getSecurosysApprovalTimeout() {
+            return securosysApprovalTimeout;
+        }
+
+        public void setSecurosysApprovalTimeout(String securosysApprovalTimeout) {
+            this.securosysApprovalTimeout = securosysApprovalTimeout;
+        }
 
         private CurrentCryptoTokenGuiInfo() {
         }
@@ -518,6 +614,38 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             return CryptoTokenFactory.FORTANIX_SIMPLE_NAME.equals(getType());
         }
 
+        public boolean isShowSecurosysCryptoToken() {
+            return CryptoTokenFactory.SECUROSYS_SIMPLE_NAME.equals(getType());
+        }
+
+        public boolean getShowBearerToken() {
+            return type.equals(CryptoTokenFactory.SECUROSYS_SIMPLE_NAME) && !securosysAuthenticationType.equals("CERT");
+        }
+
+        public boolean getShowCert() {
+            return type.equals(CryptoTokenFactory.SECUROSYS_SIMPLE_NAME) && !securosysAuthenticationType.equals("TOKEN");
+        }
+
+        public boolean getShowKey() {
+            return type.equals(CryptoTokenFactory.SECUROSYS_SIMPLE_NAME) && !securosysAuthenticationType.equals("TOKEN");
+        }
+
+        public boolean getShowManagementKey() {
+            return type.equals(CryptoTokenFactory.SECUROSYS_SIMPLE_NAME);
+        }
+
+        public boolean getShowOperationKey() {
+            return type.equals(CryptoTokenFactory.SECUROSYS_SIMPLE_NAME);
+        }
+
+        public boolean getShowServiceKey() {
+            return type.equals(CryptoTokenFactory.SECUROSYS_SIMPLE_NAME);
+        }
+
+        public boolean getShowApprovalTimeout() {
+            return type.equals(CryptoTokenFactory.SECUROSYS_SIMPLE_NAME);
+        }
+
         public boolean isSlotOfTokenLabelType() {
             return p11SlotLabelType.equals(Pkcs11SlotLabelType.SLOT_LABEL);
         }
@@ -569,12 +697,13 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
 
         public boolean getRequiresSecret() {
             // true for crypto tokens that require some kind of activation code.  Azure and AWS may not
-            if (type.equals(AzureCryptoToken.class.getSimpleName()) && azureAuthenticationType != AzureAuthenticationType.APP_ID_AND_SECRET)
+            if (type.equals(AzureCryptoToken.class.getSimpleName()) && azureAuthenticationType != AzureAuthenticationType.APP_ID_AND_SECRET) {
                 return false;
-            else if (type.equals(CryptoTokenFactory.AWSKMS_SIMPLE_NAME) && awsKmsAuthenticationType != AwsKmsAuthenticationType.KEY_ID_AND_SECRET)
+            } else if (type.equals(CryptoTokenFactory.AWSKMS_SIMPLE_NAME) && awsKmsAuthenticationType != AwsKmsAuthenticationType.KEY_ID_AND_SECRET) {
                 return false;
-            else
+            } else {
                 return true;
+            }
         }
 
         public boolean getShowKeyBinding() {
@@ -1067,8 +1196,8 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 addNonTranslatedErrorMessage("Error: Crypto Token name may not be blank.");
                 return;
             }
-            
-            
+
+
             final Properties properties = new Properties();
             String className = null;
             if (PKCS11CryptoToken.class.getSimpleName().equals(getCurrentCryptoToken().getType()) ||
@@ -1190,6 +1319,22 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 className = CryptoTokenFactory.FORTANIX_NAME;
                 final String fortanixBaseAddress = getCurrentCryptoToken().getFortanixBaseAddress().trim();
                 properties.setProperty(CryptoTokenConstants.FORTANIX_BASE_ADDRESS, fortanixBaseAddress);
+            } else if (CryptoTokenFactory.SECUROSYS_SIMPLE_NAME.equals(getCurrentCryptoToken().getType())) {
+                className = CryptoTokenFactory.SECUROSYS_NAME;
+                final String securosysRestApi = getCurrentCryptoToken().getSecurosysRestApi().trim();
+                final String securosysAuthenticationType = getCurrentCryptoToken().getSecurosysAuthenticationType().toUpperCase();
+                final String securosysAuthCert = getCurrentCryptoToken().getSecurosysAuthCert().trim();
+                final String securosysManagementKey = getCurrentCryptoToken().getSecurosysManagementKey().trim();
+                final String securosysOperationKey = getCurrentCryptoToken().getSecurosysOperationKey().trim();
+                final String securosysServiceKey = getCurrentCryptoToken().getSecurosysServiceKey().trim();
+                final String securosysApprovalTimeout = getCurrentCryptoToken().getSecurosysApprovalTimeout().trim();
+                properties.setProperty(CryptoTokenConstants.SECUROSYS_REST_API, securosysRestApi);
+                properties.setProperty(CryptoTokenConstants.SECUROSYS_AUTHENTICATION_TYPE, securosysAuthenticationType);
+                properties.setProperty(CryptoTokenConstants.SECUROSYS_AUTH_CERT, securosysAuthCert);
+                properties.setProperty(CryptoTokenConstants.SECUROSYS_MANAGEMENT_KEY, securosysManagementKey);
+                properties.setProperty(CryptoTokenConstants.SECUROSYS_OPERATION_KEY, securosysOperationKey);
+                properties.setProperty(CryptoTokenConstants.SECUROSYS_SERVICE_KEY, securosysServiceKey);
+                properties.setProperty(CryptoTokenConstants.SECUROSYS_APPROVAL_TIMEOUT, securosysApprovalTimeout);
             }
             if (getCurrentCryptoToken().isAllowExportPrivateKey()) {
                 properties.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, String.valueOf(getCurrentCryptoToken().isAllowExportPrivateKey()));
@@ -1411,6 +1556,16 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                     continue;
                 }
             }
+            if (availableCryptoToken.getClassPath().equals(CryptoTokenFactory.SECUROSYS_NAME)) {
+                // Never expose the SecurosysCryptoToken when creating new tokens if it is not enabled in web.properties
+                if (!WebConfiguration.isSecurosysPrimusHsmEnabled()) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Securosys Primus HSM Crypto Token support is not enabled in GUI. See web.properties for enabling Securosys Primus HSM.");
+                    }
+                    continue;
+                }
+            }
+
             // Use one the class's simpleName
             final String fullClassName = availableCryptoToken.getClassPath();
             ret.add(new SelectItem(fullClassName.substring(fullClassName.lastIndexOf('.') + 1), availableCryptoToken.getName()));
@@ -1502,6 +1657,15 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 if (cryptoTokenInfo.getType().equals(CryptoTokenFactory.FORTANIX_SIMPLE_NAME)) {
                     currentCryptoToken.setFortanixBaseAddress(cryptoTokenInfo.getFortanixBaseAddress());
                 }
+                if (cryptoTokenInfo.getType().equals(CryptoTokenFactory.SECUROSYS_SIMPLE_NAME)) {
+                    currentCryptoToken.setSecurosysRestApi(cryptoTokenInfo.getSecurosysRestApiName());
+                    currentCryptoToken.setSecurosysAuthenticationType(cryptoTokenInfo.getSecurosysAuthType());
+                    currentCryptoToken.setSecurosysAuthCert(cryptoTokenInfo.getSecurosysAuthCert());
+                    currentCryptoToken.setSecurosysManagementKey(cryptoTokenInfo.getSecurosysManagementKey());
+                    currentCryptoToken.setSecurosysOperationKey(cryptoTokenInfo.getSecurosysOperationKey());
+                    currentCryptoToken.setSecurosysServiceKey(cryptoTokenInfo.getSecurosysServiceKey());
+                    currentCryptoToken.setSecurosysApprovalTimeout(cryptoTokenInfo.getSecurosysApprovalTimeout());
+                }
                 currentCryptoToken.setActive(cryptoTokenInfo.isActive());
                 currentCryptoToken.setReferenced(getReferencedCryptoTokenIds().contains(cryptoTokenId));
             }
@@ -1563,16 +1727,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         if (WebConfiguration.isPQCEnabled()) {
             availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_FALCON512, AlgorithmConstants.KEYALGORITHM_FALCON512));
             availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_FALCON1024, AlgorithmConstants.KEYALGORITHM_FALCON1024));
-            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_DILITHIUM2, AlgorithmConstants.KEYALGORITHM_DILITHIUM2));
-            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_DILITHIUM3, AlgorithmConstants.KEYALGORITHM_DILITHIUM3));
-            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_DILITHIUM5, AlgorithmConstants.KEYALGORITHM_DILITHIUM5));
-        }
-        for (String alg : AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithms()) {
-            for (String subalg : CesecoreConfiguration.getExtraAlgSubAlgs(alg)) {
-                final String title = CesecoreConfiguration.getExtraAlgSubAlgTitle(alg, subalg);
-                final String name = CesecoreConfiguration.getExtraAlgSubAlgName(alg, subalg);
-                availableKeySpecs.add(new SelectItem(name, title));
-            }
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_MLDSA44, AlgorithmConstants.KEYALGORITHM_MLDSA44));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_MLDSA65, AlgorithmConstants.KEYALGORITHM_MLDSA65));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_MLDSA87, AlgorithmConstants.KEYALGORITHM_MLDSA87));
         }
         return availableKeySpecs;
     }
@@ -1825,9 +1982,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             addNonTranslatedErrorMessage(e);
         }
     }
-    
+
     /**
-     * Provides additional GUI message info for testKeyPair() 
+     * Provides additional GUI message info for testKeyPair()
      * @param keyUsage the key usage fetched from KeyPairGuiInfo
      * @param keyAlias the name/alias of the key (pair)
      * @return user friendly String with key usage for a key pair.

@@ -25,19 +25,7 @@ import java.security.cert.X509Certificate;
 import java.util.LinkedList;
 import java.util.List;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.ejb.EJB;
-import jakarta.faces.application.FacesMessage;
-import jakarta.faces.component.UIComponent;
-import jakarta.faces.context.FacesContext;
-import jakarta.faces.model.SelectItem;
-import jakarta.faces.validator.ValidatorException;
-import jakarta.faces.view.ViewScoped;
-import jakarta.inject.Inject;
-import jakarta.inject.Named;
-import jakarta.servlet.http.HttpServletRequest;
-
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.cms.CMSException;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
@@ -79,6 +67,18 @@ import com.keyfactor.ErrorCode;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJB;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.model.SelectItem;
+import jakarta.faces.validator.ValidatorException;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Managed bean that backs up the enrollwithrequestid.xhtml page
@@ -606,7 +606,18 @@ public class EnrollWithRequestIdBean implements Serializable {
         // Download the token
         String fileName = DnComponents.getPartFromDN(endEntityInformation.getDN(), "CN");
         if(fileName == null){
-            fileName = "certificatetoken";
+            //If there was no Common Name, see if there's a dnsName
+            String subjectAltName = endEntityInformation.getSubjectAltName();
+            if(StringUtils.isNotEmpty(subjectAltName)) {
+                final List<String> dnsNames = DnComponents.getPartsFromDN(subjectAltName, "dNSName");
+                if(!dnsNames.isEmpty()) {
+                    fileName = dnsNames.get(0);   
+                }
+            }
+            if(fileName == null){
+                //Otherwise default to "certificatetoken"
+                fileName = "certificatetoken";
+            }       
         }
         try {
             DownloadHelper.sendFile(token, responseContentType, fileName + fileExtension);
