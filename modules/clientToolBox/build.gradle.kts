@@ -94,3 +94,9 @@ tasks.jar {
         }
     }
 }
+
+// Disabled for now, as these require additional setup.
+// We don't want CLI tests to run by default alongside all system tests in the CI pipeline.
+tasks.named("systemTest") {
+    enabled = false
+}
