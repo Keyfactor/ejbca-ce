@@ -251,18 +251,24 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             expectedDigest = NISTObjectIdentifiers.id_shake256.getId();
             break;
         case AlgorithmConstants.SIGALG_SLHDSA_SHA2_128S:
-        case AlgorithmConstants.SIGALG_SLHDSA_SHAKE_128S:
         case AlgorithmConstants.SIGALG_SLHDSA_SHA2_128F:
-        case AlgorithmConstants.SIGALG_SLHDSA_SHAKE_128F:
-        case AlgorithmConstants.SIGALG_SLHDSA_SHA2_192S:
-        case AlgorithmConstants.SIGALG_SLHDSA_SHAKE_192S:
-        case AlgorithmConstants.SIGALG_SLHDSA_SHA2_192F:
-        case AlgorithmConstants.SIGALG_SLHDSA_SHAKE_192F:
-        case AlgorithmConstants.SIGALG_SLHDSA_SHA2_256S:
-        case AlgorithmConstants.SIGALG_SLHDSA_SHAKE_256S:
-        case AlgorithmConstants.SIGALG_SLHDSA_SHA2_256F:
-        case AlgorithmConstants.SIGALG_SLHDSA_SHAKE_256F:
             expectedDigest = NISTObjectIdentifiers.id_sha256.getId();
+            break;
+        case AlgorithmConstants.SIGALG_SLHDSA_SHA2_192S:
+        case AlgorithmConstants.SIGALG_SLHDSA_SHA2_192F:
+        case AlgorithmConstants.SIGALG_SLHDSA_SHA2_256S:
+        case AlgorithmConstants.SIGALG_SLHDSA_SHA2_256F:
+            expectedDigest = NISTObjectIdentifiers.id_sha512.getId();
+            break;
+        case AlgorithmConstants.SIGALG_SLHDSA_SHAKE_128S:
+        case AlgorithmConstants.SIGALG_SLHDSA_SHAKE_128F:
+            expectedDigest = NISTObjectIdentifiers.id_shake128.getId();
+            break;
+        case AlgorithmConstants.SIGALG_SLHDSA_SHAKE_192S:
+        case AlgorithmConstants.SIGALG_SLHDSA_SHAKE_192F:
+        case AlgorithmConstants.SIGALG_SLHDSA_SHAKE_256S:
+        case AlgorithmConstants.SIGALG_SLHDSA_SHAKE_256F:
+            expectedDigest = NISTObjectIdentifiers.id_shake256.getId();
             break;
         default:
             expectedDigest = CMSSignedGenerator.DIGEST_SHA256;
