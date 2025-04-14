@@ -1101,7 +1101,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     
     public List<SelectItem> getAvailableSigningAlgListNoneOption() {
         final List<SelectItem> resultList = getAvailableSigningAlgList();
-        resultList.add(0, new SelectItem(null, "Select an algorithm to activate hybrid certificates."));
+        resultList.add(0, new SelectItem(null, getEjbcaWebBean().getText("SIGNINGALGORITHM_ALTERNATIVE_SELECT")));
         return resultList;
     }
 
