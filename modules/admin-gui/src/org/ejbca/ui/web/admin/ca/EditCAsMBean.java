@@ -649,6 +649,10 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     public String getCheckboxUseCollapsedText() {
         return getEjbcaWebBean().getText("USE") + "...";
     }
+    
+    public String getCheckboxUseOnlyCollapsedText() {
+        return getEjbcaWebBean().getText("USE") + "";
+    }
 
     public String getCaIssuerDN() {
         return issuerDn;
