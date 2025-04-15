@@ -5,7 +5,8 @@
       xmlns:fn="jakarta.tags.functions"
       xmlns:h="jakarta.faces.html"
       xmlns:ui="jakarta.faces.facelets"
-      xmlns:c="jakarta.tags.core">
+      xmlns:c="jakarta.tags.core"
+      xmlns:p="http://primefaces.org/ui">
 <ui:remove>
     <!--
     /*************************************************************************
@@ -1550,12 +1551,45 @@
                             value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Keep_Expired_Certificates_on_CRL')}"
                             escape="false" styleClass="helpReference"/>
                 </h:panelGroup>
-                <h:panelGroup rendered="#{not editCAsMBean.caExternal}">
+                <h:panelGroup rendered="#{not editCAsMBean.caExternal}">                   
                     <h:selectBooleanCheckbox id="checkboxkeepexpiredoncrl"
-                                             value="#{editCAsMBean.caInfoDto.keepExpiredOnCrl}"
-                                             disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}"/>
+                                             value="#{editCAsMBean.caInfoDto.keepExpiredCertsOnCrl}"
+                                             disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}" >
+                        <f:ajax render=":editcapage:keepExpiredCrlFormatPanel :editcapage:keepExpiredCrlFormatInput :editcapage:keepExpiredCrlFormatLabel :editcapage:expiredCrlFormat"
+                                onevent="function (ev) { if (ev.status == 'success') { ejbca.adminweb.hideShowCellsByClass('keepExpiredCellContents', ev.source.checked) } }" />
+                    </h:selectBooleanCheckbox>
                     <h:outputLabel for="checkboxkeepexpiredoncrl"
                                    value="#{web.text.USE}"/>
+                    <h:outputScript rendered="${not editCAsMBean.keepExpiredCertsOnCrlChecked}">
+                        if (document.readyState != 'complete') {
+                            document.addEventListener('DOMContentLoaded', function () {
+                                ejbca.adminweb.hideShowCellsByClass('keepExpiredCellContents', false);
+                            });
+                        } else {
+                            ejbca.adminweb.hideShowCellsByClass('keepExpiredCellContents', false);
+                        }
+                    </h:outputScript>
+                </h:panelGroup>
+                <!-- Keep Expired CRL date format -->
+                <h:panelGroup rendered="#{not editCAsMBean.caExternal}" >
+                    <h:panelGroup id="keepExpiredCrlFormatPanel" styleClass="keepExpiredCellContents">
+                        <h:outputText id="keepExpiredCrlFormatLabel" value="#{web.text.KEEPEXPIREDONCRL_FORMAT}"/>
+                    </h:panelGroup>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{not editCAsMBean.caExternal}" >
+                    <h:panelGroup id="keepExpiredCrlFormatInput" styleClass="keepExpiredCellContents">
+                        <h:selectOneRadio id="expiredCrlFormat" value="#{editCAsMBean.caInfoDto.keepExpiredCertsOnCrlFormat}" layout="pageDirection" disabled="#{not editCAsMBean.hasEditRight}">
+                            <f:selectItem itemLabel="#{web.text.KEEPEXPIREDONCRL_CA_DATE}" itemValue="0"/>
+                            <f:selectItem itemLabel="#{web.text.KEEPEXPIREDONCRL_ARBITRARY_DATE}" itemValue="1"/>
+                            <f:ajax event="change" render="arbitraryDate" />
+                        </h:selectOneRadio>
+                        <p:datePicker id="arbitraryDate" value="#{editCAsMBean.caInfoDto.keepExpiredCertsOnCrlDateAsLocalDateTime}" showIcon="true" showTime="true" showButtonBar="true"
+			             pattern="yyyy-MM-dd, HH:mm:ss" mask="true" showOnFocus="false" disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caInfoDto.keepExpiredCertsOnCrlFormat==0}" utc="false"/>
+                        <br/>
+                        #{web.text.KEEPEXPIREDONCRL_ARBITRARY_DATE_HELP_TEXT}
+                        <br/>
+                        #{web.text.KEEPEXPIREDONCRL_ARBITRARY_DATE_TIMEZONE} #{editCAsMBean.caInfoDto.currentTimezone}.
+		           </h:panelGroup>
                 </h:panelGroup>
 
                 <!-- Use CRL Partitions -->

@@ -31,6 +31,9 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -170,6 +173,7 @@ import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.keys.token.NullCryptoToken;
 import org.cesecore.keys.validation.IssuancePhase;
 import org.cesecore.keys.validation.ValidationException;
+import org.cesecore.util.ConverterUtils;
 import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.PrintableStringNameStyle;
 import org.cesecore.util.SimpleTime;
@@ -212,6 +216,8 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     protected static final String SUSPENDEDCRLPARTITIONS = "suspendedcrlpartitions";
     protected static final String REQUESTPREPROCESSOR = "requestpreprocessor";
     protected static final String ALTERNATECHAINS = "alternatechains";
+    protected static final String KEEP_EXPIRED_CERTS_ON_CRL_FORMAT = "keepExpiredCertsOnCRLFormat";
+    protected static final String KEEP_EXPIRED_CERTS_ON_CRL_DATE = "keepExpiredCertsOnCRLDate";
 
     private static final CertificateTransparency ct = CertificateTransparencyFactory.getInstance();
 
@@ -251,7 +257,9 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         setUseLdapDNOrder(cainfo.getUseLdapDnOrder());
         setUseCrlDistributionPointOnCrl(cainfo.getUseCrlDistributionPointOnCrl());
         setCrlDistributionPointOnCrlCritical(cainfo.getCrlDistributionPointOnCrlCritical());
-        setKeepExpiredCertsOnCRL(cainfo.getKeepExpiredCertsOnCRL());
+        setKeepExpiredCertsOnCrl(cainfo.getKeepExpiredCertsOnCrl());
+        setKeepExpiredCertsOnCrlFormat(cainfo.getKeepExpiredCertsOnCrlFormat());
+        setKeepExpiredCertsOnCrlDate(cainfo.getKeepExpiredCertsOnCrlDate());
         setCmpRaAuthSecret(cainfo.getCmpRaAuthSecret());
         // CA Issuer URI to put in CRLs (RFC5280 section 5.2.7, not the URI to put in certs
         setAuthorityInformationAccess(cainfo.getAuthorityInformationAccess());
@@ -353,7 +361,9 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 .setUseCertificateStorage(isUseCertificateStorage())
                 .setAcceptRevocationNonExistingEntry(isAcceptRevocationNonExistingEntry())
                 .setCmpRaAuthSecret(getCmpRaAuthSecret())
-                .setKeepExpiredCertsOnCRL(getKeepExpiredCertsOnCRL())
+                .setKeepExpiredCertsOnCrl(getKeepExpiredCertsOnCrl())
+                .setKeepExpiredCertsOnCrlFormat(getKeepExpiredCertsOnCrlFormat())
+                .setKeepExpiredCertsOnCrlDate(getKeepExpiredCertsOnCrlDate())
                 .setUsePartitionedCrl(getUsePartitionedCrl())
                 .setCrlPartitions(getCrlPartitions())
                 .setSuspendedCrlPartitions(getSuspendedCrlPartitions())
@@ -860,6 +870,26 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         data.put(ALTERNATECHAINS, alternateCertificateChains);
     }
 
+    @Override
+    public int getKeepExpiredCertsOnCrlFormat() {
+        return getInt(KEEP_EXPIRED_CERTS_ON_CRL_FORMAT, KeepExpiredCertsOnCrlFormat.CA_DATE.getValue());
+    }
+
+    @Override
+    public void setKeepExpiredCertsOnCrlFormat(int keepExpiredCertsOnCrlFormat) {
+        data.put(KEEP_EXPIRED_CERTS_ON_CRL_FORMAT, keepExpiredCertsOnCrlFormat);
+    }
+
+    @Override
+    public long getKeepExpiredCertsOnCrlDate() {
+        return getLong(KEEP_EXPIRED_CERTS_ON_CRL_DATE, 0L);
+    }
+
+    @Override
+    public void setKeepExpiredCertsOnCrlDate(long keepExpiredCertsOnCrlDate) {
+        data.put(KEEP_EXPIRED_CERTS_ON_CRL_DATE, keepExpiredCertsOnCrlDate);
+    }
+
     /* (non-Javadoc)
      * @see org.cesecore.certificates.ca.X509CA#updateCA(com.keyfactor.util.keys.token.CryptoToken, org.cesecore.certificates.ca.CAInfo, org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration)
      */
@@ -898,6 +928,9 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         setSuspendedCrlPartitions(info.getSuspendedCrlPartitions());
         setRequestPreProcessor(info.getRequestPreProcessor());
         setAlternateCertificateChains(info.getAlternateCertificateChains());
+        setKeepExpiredCertsOnCrl(info.getKeepExpiredCertsOnCrl());
+        setKeepExpiredCertsOnCrlFormat(info.getKeepExpiredCertsOnCrlFormat());
+        setKeepExpiredCertsOnCrlDate(info.getKeepExpiredCertsOnCrlDate());
     }
 
     /* (non-Javadoc)
@@ -2363,27 +2396,32 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             crlgen.addExtension(Extension.cRLNumber, this.getCRLNumberCritical(), crlnum);
         }
 
-        // ExpiredCertsOnCRL extension (is always specified as not critical)
+        // ExpiredCertsOnCrl extension (is always specified as not critical)
         // Date format to be used is: yyyyMMddHHmmss
         // https://www.itu.int/ITU-T/formal-language/itu-t/x/x509/2005/CertificateExtensions.html
         //
-        // expiredCertsOnCRL EXTENSION ::= {
-        //   SYNTAX         ExpiredCertsOnCRL
-        //   IDENTIFIED BY  id-ce-expiredCertsOnCRL
+        // expiredCertsOnCrl EXTENSION ::= {
+        //   SYNTAX         ExpiredCertsOnCrl
+        //   IDENTIFIED BY  id-ce-expiredCertsOnCrl
         // }
-        // ExpiredCertsOnCRL ::= GeneralizedTime
-        // The ExpiredCertsOnCRL CRL extension is not specified by IETF-PKIX. It is defined by the ITU-T Recommendation X.509 and
+        // ExpiredCertsOnCrl ::= GeneralizedTime
+        // The ExpiredCertsOnCrl CRL extension is not specified by IETF-PKIX. It is defined by the ITU-T Recommendation X.509 and
         // indicates that a CRL containing this extension will include revocation status information for certificates that have
-        // been already expired. When used, the ExpiredCertsOnCRL contains the date on which the CRL starts to keep revocation
+        // been already expired. When used, the ExpiredCertsOnCrl contains the date on which the CRL starts to keep revocation
         // status information for expired certificates (i.e. revocation entries are not removed from the CRL for any certificates
-        // that expire at or after the date contained in the ExpiredCertsOnCRL extension).
-        final ASN1ObjectIdentifier ExpiredCertsOnCRL = new ASN1ObjectIdentifier("2.5.29.60");
-        boolean keepexpiredcertsoncrl = getKeepExpiredCertsOnCRL();
-        if(keepexpiredcertsoncrl) {
+        // that expire at or after the date contained in the ExpiredCertsOnCrl extension).
+        final ASN1ObjectIdentifier expiredCertsOnCrl = new ASN1ObjectIdentifier("2.5.29.60");
+        boolean keepExpiredCertsOnCrl = getKeepExpiredCertsOnCrl();
+        if(keepExpiredCertsOnCrl) {
             // For now force parameter with date equals NotBefore of CA certificate, or now
             final DERGeneralizedTime keepDate;
             if (cacert != null) {
-                keepDate = new DERGeneralizedTime(cacert.getNotBefore());
+                if (getKeepExpiredCertsOnCrlFormat() == KeepExpiredCertsOnCrlFormat.CA_DATE.getValue()) {
+                    keepDate = new DERGeneralizedTime(cacert.getNotBefore());
+                }
+                else {
+                    keepDate = new DERGeneralizedTime(new Date(getKeepExpiredCertsOnCrlDate()));
+                }
             } else {
                 // Copied from org.bouncycastle.asn1.x509.Time to get right format of GeneralizedTime (no fractional seconds)
                 SimpleDateFormat dateF = new SimpleDateFormat("yyyyMMddHHmmss");
@@ -2391,9 +2429,9 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 String d = dateF.format(new Date()) + "Z";
                 keepDate = new DERGeneralizedTime(d);
             }
-            crlgen.addExtension(ExpiredCertsOnCRL, false, keepDate);
+            crlgen.addExtension(expiredCertsOnCrl, false, keepDate);
             if (log.isDebugEnabled()) {
-                log.debug("ExpiredCertsOnCRL extension added to CRL. Keep date: " + keepDate.getTime());
+                log.debug("ExpiredCertsOnCrl extension added to CRL. Keep date: " + keepDate.getTime());
             }
         }
 

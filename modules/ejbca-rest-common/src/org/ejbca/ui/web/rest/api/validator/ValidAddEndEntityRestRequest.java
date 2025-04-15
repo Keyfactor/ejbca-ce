@@ -103,11 +103,6 @@ public @interface ValidAddEndEntityRestRequest {
                 ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidAddEndEntityRestRequest.invalid.null}");
                 return false;
             }
-            final String username = addEndEntityRestRequest.getUsername();
-            if (StringUtils.isEmpty(username)) {
-                ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidAddEndEntityRestRequest.invalid.username.nullOrEmpty}");
-                return false;
-            }
             final String subjectDn = addEndEntityRestRequest.getSubjectDn();
             if (StringUtils.isEmpty(subjectDn)) {
                 ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidAddEndEntityRestRequest.invalid.subjectDn.nullOrEmpty}");

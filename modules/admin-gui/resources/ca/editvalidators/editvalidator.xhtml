@@ -95,8 +95,9 @@
 					<f:ajax event="change" render="validators" />
 					<f:selectItems value="#{validatorBean.availableFailedActions}"/>
 				</h:selectOneMenu>	
-				<h:outputLabel for="selectnotapplicableaction" value="#{web.text.VALIDATORNOTAPPLICABLEACTION}"/>
-				<h:selectOneMenu id="selectnotapplicableaction" value="#{validatorBean.notApplicableAction}" validator="#{validatorBean.validateFailedAction}" disabled="#{validatorsBean.viewOnly}">
+				<h:outputLabel for="selectnotapplicableaction" value="#{web.text.VALIDATORNOTAPPLICABLEACTION}" rendered="#{validatorBean.shouldRenderNotApplicable()}"/>
+				<h:selectOneMenu id="selectnotapplicableaction" value="#{validatorBean.notApplicableAction}" validator="#{validatorBean.validateFailedAction}" disabled="#{validatorsBean.viewOnly}"
+				    rendered="#{validatorBean.shouldRenderNotApplicable()}">
 					<f:ajax event="change" render="validators" />
 					<f:selectItems value="#{validatorBean.availableFailedActions}"/>
 				</h:selectOneMenu>

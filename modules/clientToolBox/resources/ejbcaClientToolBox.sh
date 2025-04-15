@@ -4,8 +4,10 @@
 # Toolbox for EJBCA clients # 
 #
 
+export CURRENT_DIR=$(dirname $(realpath ${0}))
+
 if [ -z ${TOOLBOX_HOME} ] ; then
-	TOOLBOX_HOME=`echo $(dirname ${0})`
+	TOOLBOX_HOME=$CURRENT_DIR
 fi
 
 if [ -z ${JAVA_HOME} ]; then
@@ -14,7 +16,6 @@ else
 	javaCmd=${JAVA_HOME}/bin/java
 fi
 
-
 # Finally run java
 #set -x
-${javaCmd} ${JAVA_OPT} --add-exports=jdk.crypto.cryptoki/sun.security.pkcs11.wrapper=ALL-UNNAMED -Dlog4j1.compatibility=true -cp "$TOOLBOX_HOME/clientToolBox.jar:${TOOLBOX_HOME}/ext/*" org.ejbca.ui.cli.ClientToolBox "${@}"
+${javaCmd} ${JAVA_OPT} --add-exports=jdk.crypto.cryptoki/sun.security.pkcs11.wrapper=ALL-UNNAMED -Dlog4j1.compatibility=true -Djava.util.logging.config.file="$CURRENT_DIR/java-util-logging.properties" -cp "$TOOLBOX_HOME/clientToolBox.jar:${TOOLBOX_HOME}/ext/*" org.ejbca.ui.cli.ClientToolBox "${@}"

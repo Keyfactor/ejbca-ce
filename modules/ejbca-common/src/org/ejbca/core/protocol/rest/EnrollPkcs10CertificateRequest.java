@@ -13,6 +13,9 @@
 package org.ejbca.core.protocol.rest;
 
 import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
+
 import org.cesecore.certificates.certificate.CertificateConstants;
 
 /**
@@ -22,19 +25,25 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 public class EnrollPkcs10CertificateRequest implements Serializable {
     private static final long serialVersionUID = 1L;
     
-    private String certificateRequest;
-    private String certificateProfileName;
-    private String endEntityProfileName;
-    private String certificateAuthorityName;
-    private String username;
-    private String password;
-    private String accountBindingId;
-    private boolean includeChain;
+    private final String certificateRequest;
+    private final String certificateProfileName;
+    private final String endEntityProfileName;
+    private final String certificateAuthorityName;
+    private final String username;
+    private final String password;
+    private final String accountBindingId;
+    private final boolean includeChain;
     
-    private String email;
-    private String responseFormat;
+    private final String email;
+    private final String responseFormat;
 
-    private int requestType;
+    private final int requestType;
+
+    private String subjectDn;
+    private List<Map.Entry<String, String>> extendedData;
+    private List<Map.Entry<String, String>> customData;
+    private String startTime;
+    private String endTime;
 
     public String getCertificateRequest() {
         return certificateRequest;
@@ -78,6 +87,26 @@ public class EnrollPkcs10CertificateRequest implements Serializable {
         return requestType;
     }
 
+    public String getSubjectDn() {
+        return subjectDn;
+    }
+
+    public List<Map.Entry<String, String>> getExtendedData() {
+        return extendedData;
+    }
+
+    public List<Map.Entry<String, String>> getCustomData() {
+        return customData;
+    }
+
+    public String getStartTime() {
+        return startTime;
+    }
+
+    public String getEndTime() {
+        return endTime;
+    }
+
     public static class Builder {
         private String certificateRequest;
         private String certificateProfileName;
@@ -90,6 +119,11 @@ public class EnrollPkcs10CertificateRequest implements Serializable {
         private String email;
         private String responseFormat;
         private int requestType;
+        private String subjectDn;
+        private List<Map.Entry<String, String>> extendedData;
+        private List<Map.Entry<String, String>> customData;
+        private String startTime;
+        private String endTime;
 
         public Builder certificateRequest(final String certificateRequest) {
             this.certificateRequest = certificateRequest;
@@ -131,10 +165,6 @@ public class EnrollPkcs10CertificateRequest implements Serializable {
             this.includeChain = includeChain;
             return this;
         }
-
-        public EnrollPkcs10CertificateRequest build() {
-            return new EnrollPkcs10CertificateRequest(this);
-        }
         
         public Builder email(final String email) {
             this.email = email;
@@ -146,30 +176,38 @@ public class EnrollPkcs10CertificateRequest implements Serializable {
             return this;
         }
 
-        public Builder requestType(String requestType) {
-            if (requestType == null) {
-                this.requestType = CertificateConstants.CERT_REQ_TYPE_PKCS10;
-                return this;
-            }
-            switch (requestType) {
-                case "PUBLICKEY":
-                    this.requestType = CertificateConstants.CERT_REQ_TYPE_PUBLICKEY;
-                    break;
-                case "CRMF":
-                    this.requestType = CertificateConstants.CERT_REQ_TYPE_CRMF;
-                    break;
-                case "SPKAC":
-                    this.requestType = CertificateConstants.CERT_REQ_TYPE_SPKAC;
-                    break;
-                case "CVC":
-                    this.requestType = CertificateConstants.CERT_REQ_TYPE_CVC;
-                    break;
-                case "PKCS10":
-                default:
-                    this.requestType = CertificateConstants.CERT_REQ_TYPE_PKCS10;
-                    break;
-            }
+        public Builder requestType(int requestType) {
+            this.requestType = requestType;
             return this;
+        }
+
+        public Builder subjectDn(final String subjectDn) {
+            this.subjectDn = subjectDn;
+            return this;
+        }
+
+        public Builder extendedData(final List<Map.Entry<String, String>> extendedData) {
+            this.extendedData = extendedData;
+            return this;
+        }
+
+        public Builder customData(final List<Map.Entry<String, String>> customData) {
+            this.customData = customData;
+            return this;
+        }
+
+        public Builder startTime(final String startTime) {
+            this.startTime = startTime;
+            return this;
+        }
+
+        public Builder endTime(final String endTime) {
+            this.endTime = endTime;
+            return this;
+        }
+
+        public EnrollPkcs10CertificateRequest build() {
+            return new EnrollPkcs10CertificateRequest(this);
         }
     }
     
@@ -185,5 +223,10 @@ public class EnrollPkcs10CertificateRequest implements Serializable {
         this.email = builder.email;
         this.responseFormat = builder.responseFormat;
         this.requestType = builder.requestType;
+        this.subjectDn = builder.subjectDn;
+        this.extendedData = builder.extendedData;
+        this.customData = builder.customData;
+        this.startTime = builder.startTime;
+        this.endTime = builder.endTime;
     }
 }

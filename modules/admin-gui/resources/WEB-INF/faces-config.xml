@@ -418,23 +418,6 @@
     </navigation-rule>
 
     <navigation-rule>
-        <from-view-id>/ra/edituserdatasources/userdatasourcespage.xhtml</from-view-id>
-        <navigation-case>
-            <from-action>#{userDatasoucesMBean.actionEdit}</from-action>
-            <from-outcome>edit</from-outcome>
-            <to-view-id>/ra/edituserdatasources/edituserdatasource.xhtml</to-view-id>
-            <redirect include-view-params="true"></redirect>
-        </navigation-case>
-    </navigation-rule>
-    <navigation-rule>
-        <from-view-id>/ra/edituserdatasources/edituserdatasource.xhtml</from-view-id>
-        <navigation-case>
-            <from-outcome>done</from-outcome>
-            <to-view-id>/ra/edituserdatasources/userdatasourcespage.xhtml</to-view-id>
-        </navigation-case>
-    </navigation-rule>
-
-    <navigation-rule>
         <from-view-id>/sysconfig/systemconfiguration.xhtml</from-view-id>
         <navigation-case>
             <from-outcome>edit</from-outcome>
