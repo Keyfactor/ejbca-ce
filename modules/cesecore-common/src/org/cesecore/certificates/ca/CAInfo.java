@@ -15,6 +15,7 @@ package org.cesecore.certificates.ca;
 import java.io.Serializable;
 import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -39,7 +40,7 @@ import com.keyfactor.util.certificate.DnComponents;
  * Holds non sensitive information about a CA.
  */
 public abstract class CAInfo implements Serializable {
-
+    
     private static final long serialVersionUID = 2L;
     public static final int CATYPE_X509 = 1;
     public static final int CATYPE_CVC = 2;
@@ -100,7 +101,7 @@ public abstract class CAInfo implements Serializable {
     protected boolean allowInvalidityDate = false;
     protected Collection<Integer> crlpublishers;
     protected Collection<Integer> validators;
-    protected boolean keepExpiredCertsOnCRL = false;
+    protected boolean keepExpiredCertsOnCrl = false;
     protected boolean finishuser;
     protected Collection<ExtendedCAServiceInfo> extendedcaserviceinfos;
     protected boolean useNoConflictCertificateData = false; // By Default we use normal certificate data table.
@@ -426,11 +427,12 @@ public abstract class CAInfo implements Serializable {
         this.validators = validators;
     }
 
-    public boolean getKeepExpiredCertsOnCRL() {
-        return this.keepExpiredCertsOnCRL;
+    public boolean getKeepExpiredCertsOnCrl() {
+        return keepExpiredCertsOnCrl;
     }
-    public void setKeepExpiredCertsOnCRL(boolean keepExpiredCertsOnCRL) {
-        this.keepExpiredCertsOnCRL = keepExpiredCertsOnCRL;
+
+    public void setKeepExpiredCertsOnCrl(boolean keepExpiredCertsOnCrl) {
+        this.keepExpiredCertsOnCrl = keepExpiredCertsOnCrl;
     }
 
     public boolean getFinishUser() {

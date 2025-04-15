@@ -34,6 +34,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
@@ -111,6 +112,7 @@ import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.era.ScepResponseInfo;
 import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
+import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.ui.web.protocol.CertificateRenewalException;
 
@@ -817,7 +819,10 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 log.debug("Authenticating to Intune using token " + token.getTokenName());
                 try {
                     PrivateKey privateKey = token.getPrivateKey(keyBindingInfo.getKeyPairAlias());
-                    builder = builder.withClientCertificate((X509Certificate) certificate);
+                    final CAInfo caInfo = new EjbLocalHelper().getCaSession().getCAInfoInternal(CertTools.getIssuerDN(certificate).hashCode());
+                    final List<X509Certificate> chain = caInfo.getCertificateChain().stream().map(element -> (X509Certificate) element)
+                            .collect(Collectors.toList());
+                    builder = builder.withClientCertificate((X509Certificate) certificate, chain);
                     builder = builder.withClientKey(privateKey);
                 } catch (CryptoTokenOfflineException e) {
                     log.debug("Crypto token " + token.getTokenName() + " offline.", e);

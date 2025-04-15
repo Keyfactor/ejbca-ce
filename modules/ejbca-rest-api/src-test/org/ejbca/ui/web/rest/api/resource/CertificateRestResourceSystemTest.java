@@ -26,7 +26,18 @@ import java.security.cert.X509CRLEntry;
 import java.security.cert.X509Certificate;
 import java.text.MessageFormat;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Properties;
+import java.util.Random;
+import java.util.Set;
+import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -91,6 +102,8 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
+import org.ejbca.ui.web.rest.api.io.request.AddEndEntityRestRequest;
+import org.ejbca.ui.web.rest.api.io.request.EnrollCertificateWithEntityRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.EnrollCertificateRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.ExtendedInformationRestRequestComponent;
 import org.ejbca.ui.web.rest.api.io.request.FinalizeRestRequest;
@@ -165,7 +178,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
 
     private static AvailableCustomCertificateExtensionsConfiguration cceConfigBackup;
     private static final String EXTENSTION_TO_OVERWRITE = "1.2.3.4.5.6.7.1234";
-    
+
     private static final Random RANDOM = new Random();
     private X509CA x509TestCa;
     private String testCaName = "CertificateRestSystemTestCa";
@@ -243,6 +256,21 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
                     + "\n"
                     + END_CSR;
 
+    private static final String CSR_REQUEST = "-----BEGIN CERTIFICATE-----\n"
+            + "fyGCAjl/ToIBL18pAQB/SYIBFQYKBAB/AAcCAgIBAoGCAQDCj4J5sbxkpjIQdT2X\n"
+            + "Ig4TMjW40aPKF8nGEJExAOpsxTUZXrbWLclEMLk3/7Br/CSAtqen/r/qpcL6MXT7\n"
+            + "Ujbp6THxuj+xDzIGB+ZWySzkayItNauCjr/fv/4TCFD45j4aRAxUpbpOif7vTU1r\n"
+            + "XccnuGpUL+8eG8od46/mX3krW7TmXoD5bDfCgRQTkui9D/47CVqijILXdTFy3mXy\n"
+            + "KqcuE7QXPYZUvybhFxljBOgp3tOm+BOM8wBlcAgoL33gnskmI4EbTYJhxXOUAM5m\n"
+            + "Ru7CFjdb6pOVjBl+EuyERbyfwgxQ/UZjQuNAfKAKvnl6I/D86L3nDH4kbafFd8ZB\n"
+            + "wyDBggMBAAFfIA5VU3Bvcm9zamE1MzU0MF83ggEAd8aFHIG3/z2U3U6YrOw7+0YM\n"
+            + "GtJjPm/1IQwgygIj+Iju023RdHDutOwSdAmCNUSjf8tLq9+ASf70wPnQ+jG+g7dr\n"
+            + "+l701RI5yvNYG0pluOXPeM30Gis9rNwejCIrTlIWtmIvGEXMWiA4trrL4VytrMXh\n"
+            + "YEDojNOAopycWNxVkwLAHwjbjE6YQuGB6soBgrwugUZjWHFYOIbVgF3QV7oKAAER\n"
+            + "9/7FdUpyVRyAJge6zCRJayzLkkpfUM0awldc79TsSjMrIL6TrslorsKbl4XgZWB7\n"
+            + "L9zjo6gZqhAd79XEsIH4kTHV1TA022zzs/b04rvuJ+RDI6uWtrUyvCGmf7abQg==\n"
+            + "-----END CERTIFICATE-----";
+
     // A CSR with secp256r1 keys and several subject alternative names
     //
     // DNS Name
@@ -278,6 +306,24 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             + "4dSrgvWbMXRr6N3ppNDI/nIPhwBTKf5e0bfFisXAxd07nIpRdWrxfpE45sUj67YG"
             + "hKyNv2RBgfyehJioap8wLA0dCe1oJIz9Jy4WNGTNSXSB/Okj/3dZhDjB+qfnXe/k"
             + "GesEGlVKuoZFbjVE06+a0ja/0QlDjSW6xBdrtECWhD7rHZvPid1OdA==";
+
+    private static final String PUBLIC_KEY = "-----BEGIN PUBLIC KEY-----\n" +
+            "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArbwiELd8/j5IzAfW/uye\n" +
+            "jAuhovv2hVDcWCG9+/3438jgQRotGWlnD7+uSzrfpdsiYYcskbm04bT/52/UyDaS\n" +
+            "MvefhvtGJBqqKkisEc/4F+Zu0MdQHjMvs4A/0rbN1cOpj6lA9N8yfMUGN+9KK4wW\n" +
+            "xByX/1a1TJ0PRdBgLHoAFhx427WU/BOmre6b4jJtyQJihckFUN3DjwplKEc+VnEG\n" +
+            "sB6OxsEzErVk5FE80lrNWIUEVbE1pvqcFOgswy+dG5Y0tVgA227oBpw1qBClpmOv\n" +
+            "r43r+V1EJJ19cHReRBpl8hO/9+u/k+tk669AAIwd0b41hxl+5OL4bLoRWqdMY/1H\n" +
+            "SQIDAQAB\n" +
+            "-----END PUBLIC KEY-----";
+
+    private static final String CRMF = "MIIBdjCCAXIwgdkCBQCghr4dMIHPgAECpRYwFDESMBAGA1UEAxMJdW5kZWZpbmVk"
+            + "poGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCi6+Bmo+0I/ye8k6B6BkhXgv03" + "1jEeD3mEuvjIEZUmmdt2RBvW2qfJzqXV8dsI1HZT4fZqo8SBsrYls4AC7HooWI6g"
+            + "DjSyd3kFcb5HP+qnNlz6De/Ab+qAF1rLJhfb2cXib4C7+bap2lwA56jTjY0qWRYb" + "v3IIfxEEKozVlbg0LQIDAQABqRAwDgYDVR0PAQH/BAQDAgXgoYGTMA0GCSqGSIb3"
+            + "DQEBBQUAA4GBAJEhlvfoWNIAOSvFnLpg59vOj5jG0Urfv4w+hQmtCdK7MD0nyGKU" + "cP5CWCau0vK9/gikPoA49n0PK81SPQt9w2i/A81OJ3eSLIxTqi8MJS1+/VuEmvRf"
+            + "XvedU84iIqnjDq92dTs6v01oRyPCdcjX8fpHuLk1VA96hgYai3l/D8lg";
+
+    private static final String SPKAC = "SPKAC=MIICQDCCASgwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDRVi9bazH+kA8n41AZh5JI87OttAV65OFsZlMZLmrvKfsikbV0AQD4XMKeW5mhXzfsWyB8fCThVhp4Tk/hXmQ5qH8L5jMgYC+l9+GAxKqVdJIqCUu6luyDS3Xz0/+lUmxnDW6uCGEEpXcWvNe/lFPEy04xVW37ZfI1w9Ch5O0x2p0+hFXDzKWEuInWXdDuezndsvPXZQzFH7LkghlTF+/LiiSHO4KyeCE5NJY4TEsbB24TLKYMkY8Cw3DpfIbohiYP0vaCv3KHkXnyOX/fb89V0NM7EN6WL3bwltSvb7JrrtxPlpglGW2orFajA+WSeoFsWyH0dC6g5Ee/lcdvlkEbAgMBAAEWADANBgkqhkiG9w0BAQQFAAOCAQEAIvESyMXHHLPljbuyLv53WjDxSCn5o13WzxQ+54yz1qPzp6vF+KU/TvQ8KB/XcQnoWkQItVY+TUTcm/p2ti7nHM3k8dfAFNQy7znT9CJXjUhG5wAh79B4EVzbon3Rg0cs5lAO4l1QUpk9X0+TwagA9/AXn/nkGEo/rd33i6w81YEN/8PEmmXg2fBRp5qE224xkiexZeupV6qDeaV53i/U1neGuwwQN1kt3pPC6HOd2d5wjg/Q7tPUaudqm93Xq6cuD104ZXC0eDS3Sp+IhLEBe0Psn2EP6Q7AMSjO+tIRr32bzb/g64/sLKdB2dtKi529Dg0FE8gDZPFhU2U0A7f4Rw==\n";
 
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -469,6 +515,12 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     public void shouldRevokeCertificateMLDSA44() throws Exception {
         createTestEndEntity();
         revokeCertificate(createKeystore(AlgorithmConstants.SIGALG_MLDSA44, AlgorithmConstants.KEYALGORITHM_MLDSA44));
+    }
+
+    @Test
+    public void shouldRevokeCertificateSLHDSA() throws Exception {
+        createTestEndEntity();
+        revokeCertificate(createKeystore(AlgorithmConstants.SIGALG_SLHDSA_SHA2_128F, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F));
     }
 
     @Test
@@ -1303,13 +1355,13 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
 
     @Test
     public void enrollPkcs10Overwrite() throws Exception {
-        
+
         AvailableCustomCertificateExtensionsConfiguration cceConfig = new AvailableCustomCertificateExtensionsConfiguration();
         Properties props = new Properties();
         props.put("critical", "false");
         props.put("dynamic", "true");
         props.put("encoding", "DEROCTETSTRING");
-        cceConfig.addCustomCertExtension(1, EXTENSTION_TO_OVERWRITE, "SingleExtension", 
+        cceConfig.addCustomCertExtension(1, EXTENSTION_TO_OVERWRITE, "SingleExtension",
                 "org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension", false, true, props);
         globalConfigurationSession.saveConfiguration(INTERNAL_ADMIN_TOKEN, cceConfig);
 
@@ -1351,7 +1403,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
 
         // Add a challenge password as well
         ASN1EncodableVector pwdattr = new ASN1EncodableVector();
-        pwdattr.add(new ASN1ObjectIdentifier(EXTENSTION_TO_OVERWRITE)); 
+        pwdattr.add(new ASN1ObjectIdentifier(EXTENSTION_TO_OVERWRITE));
         ASN1EncodableVector pwdvalues = new ASN1EncodableVector();
         pwdvalues.add(new DERUTF8String("30080102030405060708"));
         pwdattr.add(new DERSet(pwdvalues));
@@ -1361,12 +1413,12 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         ASN1EncodableVector v = new ASN1EncodableVector();
         v.add(new DERSequence(pwdattr));
         DERSet attributes = new DERSet(v);
-        
+
         final KeyPair keys = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
-        final PKCS10CertificationRequest pkcs10 = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", 
+        final PKCS10CertificationRequest pkcs10 = CertTools.genPKCS10CertificationRequest("SHA256WithRSA",
                 DnComponents.stringToBcX500Name("CN="+testUsername), keys.getPublic(),
                 attributes, keys.getPrivate(), null);
-        
+
         X509Certificate certificate = (X509Certificate) enrollPkcs10(
                 testCertProfileName,
                 testEeProfileName,
@@ -1513,6 +1565,397 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         //getSubjectX500Principal does not deliver the exact same order, so leave this for now
         assertEquals("Returned certificate contained unexpected subject DN", subjectDn, cert.getSubjectDN().getName());
         return cert;
+    }
+
+    @Test
+    public void addEEAndGetCertificateMissingResponseFormat() throws Exception {
+        String newUsername = testUsername + "New";
+        try {
+            EnrollCertificateWithEntityRestRequest request = new EnrollCertificateWithEntityRestRequest();
+            request.setCertificateRequestType("PUBLICKEY");
+            request.setResponseFormat(null);
+            request.setIncludeChain(false);
+            request.setCertificateRequest(PUBLIC_KEY);
+            AddEndEntityRestRequest eeRequest = new AddEndEntityRestRequest.Builder().
+                    caName(testCaName).
+                    certificateProfileName("ENDUSER").
+                    endEntityProfileName("EMPTY").
+                    username(newUsername).
+                    password("foo123").
+                    subjectDn("O=NoResponseFormat,CN=" + newUsername).
+                    subjectAltName("rfc822Name=" + newUsername + "@example.com").
+                    token("USERGENERATED").build();
+            request.setEndEntity(eeRequest);
+
+            // Construct POST  request
+            final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
+            final String requestBody = objectMapper.writeValueAsString(request);
+            final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
+
+            // send request
+            final Response actualResponse = newRequest("/v1/certificate/enroll").request().post(requestEntity);
+            assertEquals("Unexpected HTTP response code.", 400, actualResponse.getStatus());
+                final String actualJsonString = actualResponse.readEntity(String.class);
+                // Verify response
+                assertJsonContentType(actualResponse);
+                final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+                assertEquals("The response error message does not match.", "Invalid input. Incorrect response format", actualJsonObject.get("error_message"));
+        } catch (Exception e) {
+            log.error("Exception while testing certificate creation from public key: ", e);
+            fail("Exception while testing certificate creation from public key");
+        }
+    }
+    @Test
+    public void addEEAndGetCertificateWrongResponseFormat() throws Exception {
+        String newUsername = testUsername + "New";
+        try {
+            EnrollCertificateWithEntityRestRequest request = new EnrollCertificateWithEntityRestRequest();
+            request.setCertificateRequestType("PUBLICKEY");
+            request.setResponseFormat("MJAU");
+            request.setIncludeChain(false);
+            request.setCertificateRequest(PUBLIC_KEY);
+            AddEndEntityRestRequest eeRequest = new AddEndEntityRestRequest.Builder().
+                    caName(testCaName).
+                    certificateProfileName("ENDUSER").
+                    endEntityProfileName("EMPTY").
+                    username(newUsername).
+                    password("foo123").
+                    subjectDn("O=NoResponseFormat,CN=" + newUsername).
+                    subjectAltName("rfc822Name=" + newUsername + "@example.com").
+                    token("USERGENERATED").build();
+            request.setEndEntity(eeRequest);
+
+            // Construct POST  request
+            final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
+            final String requestBody = objectMapper.writeValueAsString(request);
+            final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
+
+            // send request
+            final Response actualResponse = newRequest("/v1/certificate/enroll").request().post(requestEntity);
+            assertEquals("Unexpected HTTP response code.", 400, actualResponse.getStatus());
+                final String actualJsonString = actualResponse.readEntity(String.class);
+                // Verify response
+                assertJsonContentType(actualResponse);
+                final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+                assertEquals("The response error message does not match.",
+                        "Invalid input. Response format can only be DER or PKCS7", actualJsonObject.get("error_message"));
+        } catch (Exception e) {
+            log.error("Exception while testing certificate creation from public key: ", e);
+            fail("Exception while testing certificate creation from public key");
+        }
+    }
+
+    @Test
+    public void addEEAndGetCertificateMissingCa() throws Exception {
+        String newUsername = testUsername + "New";
+        try {
+            EnrollCertificateWithEntityRestRequest request = new EnrollCertificateWithEntityRestRequest();
+            request.setCertificateRequestType("PUBLICKEY");
+            request.setResponseFormat("DER");
+            request.setIncludeChain(false);
+            request.setCertificateRequest(PUBLIC_KEY);
+            AddEndEntityRestRequest eeRequest = new AddEndEntityRestRequest.Builder().
+                    caName("KotCa").
+                    certificateProfileName("ENDUSER").
+                    endEntityProfileName("EMPTY").
+                    username(newUsername).
+                    password("foo123").
+                    subjectDn("O=NoResponseFormat,CN=" + newUsername).
+                    subjectAltName("rfc822Name=" + newUsername + "@example.com").
+                    token("USERGENERATED").build();
+            request.setEndEntity(eeRequest);
+
+            // Construct POST  request
+            final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
+            final String requestBody = objectMapper.writeValueAsString(request);
+            final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
+
+            // send request
+            final Response actualResponse = newRequest("/v1/certificate/enroll").request().post(requestEntity);
+            assertEquals("Unexpected HTTP response code.", 404, actualResponse.getStatus());
+                final String actualJsonString = actualResponse.readEntity(String.class);
+                // Verify response
+                assertJsonContentType(actualResponse);
+                final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+                assertEquals("The response error message does not match.",
+                        "No CA found by name of KotCa", actualJsonObject.get("error_message"));
+        } catch (Exception e) {
+            log.error("Exception while testing certificate creation from public key: ", e);
+            fail("Exception while testing certificate creation from public key");
+        }
+    }
+
+    @Test
+    public void addEEAndGetCertificateMissingCP() throws Exception {
+        String newUsername = testUsername + "New";
+        try {
+            EnrollCertificateWithEntityRestRequest request = new EnrollCertificateWithEntityRestRequest();
+            request.setCertificateRequestType("PUBLICKEY");
+            request.setResponseFormat("DER");
+            request.setIncludeChain(false);
+            request.setCertificateRequest(PUBLIC_KEY);
+            AddEndEntityRestRequest eeRequest = new AddEndEntityRestRequest.Builder().
+                    caName(testCaName).
+                    certificateProfileName("KotCp").
+                    endEntityProfileName("EMPTY").
+                    username(newUsername).
+                    password("foo123").
+                    subjectDn("O=NoResponseFormat,CN=" + newUsername).
+                    subjectAltName("rfc822Name=" + newUsername + "@example.com").
+                    token("USERGENERATED").build();
+            request.setEndEntity(eeRequest);
+
+            // Construct POST  request
+            final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
+            final String requestBody = objectMapper.writeValueAsString(request);
+            final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
+
+            // send request
+            final Response actualResponse = newRequest("/v1/certificate/enroll").request().post(requestEntity);
+            assertEquals("Unexpected HTTP response code.", 404, actualResponse.getStatus());
+                final String actualJsonString = actualResponse.readEntity(String.class);
+                // Verify response
+                assertJsonContentType(actualResponse);
+                final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+                assertEquals("The response error message does not match.",
+                        "No Certificate profile found by name of KotCp", actualJsonObject.get("error_message"));
+        } catch (Exception e) {
+            log.error("Exception while testing certificate creation from public key: ", e);
+            fail("Exception while testing certificate creation from public key");
+        }
+    }
+
+
+    @Test
+    public void addEEAndGetCertificateMissingUsername() throws Exception {
+        String newUsername = testUsername + "New";
+        try {
+            EnrollCertificateWithEntityRestRequest request = new EnrollCertificateWithEntityRestRequest();
+            request.setCertificateRequestType("PUBLICKEY");
+            request.setResponseFormat("DER");
+            request.setIncludeChain(false);
+            request.setCertificateRequest(PUBLIC_KEY);
+            AddEndEntityRestRequest eeRequest = new AddEndEntityRestRequest.Builder().
+                    caName(testCaName).
+                    certificateProfileName("ENDUSER").
+                    endEntityProfileName("EMPTY").
+                    password("foo123").
+                    subjectDn("O=NoResponseFormat,CN=" + newUsername).
+                    subjectAltName("rfc822Name=" + newUsername + "@example.com").
+                    token("USERGENERATED").build();
+            request.setEndEntity(eeRequest);
+
+            // Construct POST  request
+            final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
+            final String requestBody = objectMapper.writeValueAsString(request);
+            final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
+
+            // send request
+            final Response actualResponse = newRequest("/v1/certificate/enroll").request().post(requestEntity);
+            assertEquals("Unexpected HTTP response code.", 422, actualResponse.getStatus());
+                final String actualJsonString = actualResponse.readEntity(String.class);
+                // Verify response
+                assertJsonContentType(actualResponse);
+                final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+                assertEquals("The response error message does not match.",
+                        "Username cannot be empty or null.", actualJsonObject.get("error_message"));
+        } catch (Exception e) {
+            log.error("Exception while testing certificate creation from public key: ", e);
+            fail("Exception while testing certificate creation from public key");
+        }
+    }
+
+    @Test
+    public void addEEAndGetCertificateFromPublicKey() throws Exception {
+        String newUsername = testUsername + "New";
+        try {
+            EnrollCertificateWithEntityRestRequest request = new EnrollCertificateWithEntityRestRequest();
+            request.setCertificateRequestType("PUBLICKEY");
+            request.setIncludeChain(false);
+            request.setResponseFormat("PKCS7");
+            request.setCertificateRequest(PUBLIC_KEY);
+            AddEndEntityRestRequest eeRequest = new AddEndEntityRestRequest.Builder().
+                    caName(testCaName).
+                    certificateProfileName("ENDUSER").
+                    endEntityProfileName("EMPTY").
+                    username(newUsername).
+                    password("foo123").
+                    subjectDn("O=PrimeKey,CN=" + newUsername).
+                    subjectAltName("rfc822Name=" + newUsername + "@example.com").
+                    token("USERGENERATED").build();
+            request.setEndEntity(eeRequest);
+
+            // Construct POST  request
+            final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
+            final String requestBody = objectMapper.writeValueAsString(request);
+            final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
+
+            // send request
+            final Response actualResponse = newRequest("/v1/certificate/enroll").request().post(requestEntity);
+            verifyCertificateRequestResponse(actualResponse, "O=PrimeKey,CN=" + newUsername);
+        } catch (Exception e) {
+            log.error("Exception while testing certificate creation from public key: ", e);
+            fail("Exception while testing certificate creation from public key");
+        } finally {
+            endEntityManagementSession.revokeAndDeleteUser(INTERNAL_ADMIN_TOKEN, newUsername, 0);
+            internalCertificateStoreSession.removeCertificatesByUsername(newUsername);
+        }
+    }
+
+    @Test
+    public void editEEAndGetCertificateFromCSR() throws Exception {
+        try {
+            EnrollCertificateWithEntityRestRequest request = new EnrollCertificateWithEntityRestRequest();
+            request.setCertificateRequestType("PKCS10");
+            request.setIncludeChain(true);
+            request.setResponseFormat("PKCS7");
+            request.setCertificateRequest(CSR_WITH_SAN_WITHOUT_HEADERS);
+            AddEndEntityRestRequest eeRequest = new AddEndEntityRestRequest.Builder().
+                    caName(testCaName).
+                    certificateProfileName("ENDUSER").
+                    endEntityProfileName("EMPTY").
+                    username(testUsername).
+                    password("foo123").
+                    subjectDn("C=EE,O=PrimeKey,CN=" + testUsername).
+                    subjectAltName("rfc822Name=" + testUsername + "@example.com").
+                    token("USERGENERATED").build();
+            request.setEndEntity(eeRequest);
+
+
+            // Construct POST  request
+            final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
+            final String requestBody = objectMapper.writeValueAsString(request);
+            final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
+
+            // Send request
+            final Response actualResponse = newRequest("/v1/certificate/enroll").request().post(requestEntity);
+            verifyCertificateRequestResponse(actualResponse, "C=EE,O=PrimeKey,CN=" + testUsername );
+        } catch (Exception e) {
+            log.error("Exception while testing certificate creation from public key: ", e);
+            fail("Exception while testing certificate creation from public key");
+        }
+
+    }
+
+    @Test
+    public void editEEAndGetCertificateFromCvc() throws Exception {
+        try {
+            assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
+            cvcTestCa = CryptoTokenTestUtils.createTestCVCAWithSoftCryptoToken(INTERNAL_ADMIN_TOKEN, testCVCIssuerDn);
+            EnrollCertificateWithEntityRestRequest request = new EnrollCertificateWithEntityRestRequest();
+            request.setCertificateRequestType("CVC");
+            request.setIncludeChain(false);
+            request.setResponseFormat("DER");
+            request.setCertificateRequest(CSR_REQUEST);
+            AddEndEntityRestRequest eeRequest = new AddEndEntityRestRequest.Builder().
+                    caName(testCaNameCVC).
+                    certificateProfileName("ENDUSER").
+                    endEntityProfileName("EMPTY").
+                    username(testUsername).
+                    password("foo123").
+                    subjectDn("C=EE,O=PrimeKey,CN=Mnemonic" ).
+                    subjectAltName("rfc822Name=" + testUsername + "@example.com").
+                    token("USERGENERATED").build();
+            request.setEndEntity(eeRequest);
+
+
+            // Construct POST  request
+            final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
+            final String requestBody = objectMapper.writeValueAsString(request);
+            final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
+
+            // Send request
+            final Response actualResponse = newRequest("/v1/certificate/enroll").request().post(requestEntity);
+            final String actualJsonString = actualResponse.readEntity(String.class);
+            // Verify response
+            assertJsonContentType(actualResponse);
+            final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+            final String base64cert = (String) actualJsonObject.get("certificate");
+            assertNotNull(base64cert);
+            byte[] certBytes = Base64.decode(base64cert.getBytes());
+            Certificate cert = CertTools.getCertfromByteArray(certBytes, Certificate.class);
+            assertEquals("Cert type should be CVC", "CVC", cert.getType());
+
+            final String issuer =  "CN=CAREF001,C=SE";
+            assertEquals("Returned certificate contained unexpected issuer", issuer, CertTools.getIssuerDN(cert));
+            final String subject = "CN=Mnemonic,C=EE";
+            assertEquals("Returned certificate contained unexpected subject DN", subject, CertTools.getSubjectDN(cert));
+
+        } catch (Exception e) {
+            log.error("Exception while testing certificate creation from public key: ", e);
+            fail("Exception while testing certificate creation from public key");
+        }
+
+    }
+
+    @Test
+    public void editEEAndGetCertificateFromCRMF() throws Exception {
+        try {
+            EnrollCertificateWithEntityRestRequest request = new EnrollCertificateWithEntityRestRequest();
+            request.setCertificateRequestType("CRMF");
+            request.setIncludeChain(false);
+            request.setResponseFormat("DER");
+            request.setCertificateRequest(CRMF);
+            AddEndEntityRestRequest eeRequest = new AddEndEntityRestRequest.Builder().
+                    caName(testCaName).
+                    certificateProfileName("ENDUSER").
+                    endEntityProfileName("EMPTY").
+                    username(testUsername).
+                    password("foo123").
+                    subjectDn("C=EE,O=PrimeKey,CN=" + testUsername).
+                    subjectAltName("rfc822Name=" + testUsername + "@example.com").
+                    token("USERGENERATED").build();
+            request.setEndEntity(eeRequest);
+
+
+            // Construct POST  request
+            final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
+            final String requestBody = objectMapper.writeValueAsString(request);
+            final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
+
+            // Send request
+            final Response actualResponse = newRequest("/v1/certificate/enroll").request().post(requestEntity);
+            verifyCertificateRequestResponse(actualResponse, "C=EE,O=PrimeKey,CN=" + testUsername );
+        } catch (Exception e) {
+            log.error("Exception while testing certificate creation from public key: ", e);
+            fail("Exception while testing certificate creation from public key");
+        }
+
+    }
+
+    @Test
+    public void editEEAndGetCertificateFromSPKAC() throws Exception {
+        try {
+            EnrollCertificateWithEntityRestRequest request = new EnrollCertificateWithEntityRestRequest();
+            request.setCertificateRequestType("SPKAC");
+            request.setIncludeChain(false);
+            request.setResponseFormat("DER");
+            request.setCertificateRequest(SPKAC);
+            AddEndEntityRestRequest eeRequest = new AddEndEntityRestRequest.Builder().
+                    caName(testCaName).
+                    certificateProfileName("ENDUSER").
+                    endEntityProfileName("EMPTY").
+                    username(testUsername).
+                    password("foo123").
+                    subjectDn("C=EE,O=PrimeKey,CN=" + testUsername).
+                    subjectAltName("rfc822Name=" + testUsername + "@example.com").
+                    token("USERGENERATED").build();
+            request.setEndEntity(eeRequest);
+
+
+            // Construct POST  request
+            final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
+            final String requestBody = objectMapper.writeValueAsString(request);
+            final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
+
+            // Send request
+            final Response actualResponse = newRequest("/v1/certificate/enroll").request().post(requestEntity);
+            verifyCertificateRequestResponse(actualResponse, "C=EE,O=PrimeKey,CN=" + testUsername );
+        } catch (Exception e) {
+            log.error("Exception while testing certificate creation from public key: ", e);
+            fail("Exception while testing certificate creation from public key");
+        }
+
     }
 
     @Test

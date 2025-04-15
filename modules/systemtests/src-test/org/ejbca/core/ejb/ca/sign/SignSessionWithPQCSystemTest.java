@@ -30,7 +30,9 @@ import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1OutputStream;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.jcajce.interfaces.MLDSAPublicKey;
+import org.bouncycastle.jcajce.interfaces.SLHDSAPublicKey;
 import org.bouncycastle.jcajce.spec.MLDSAParameterSpec;
+import org.bouncycastle.jcajce.spec.SLHDSAParameterSpec;
 import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pqc.jcajce.interfaces.FalconPublicKey;
@@ -66,6 +68,18 @@ import static org.junit.Assert.fail;
  * ML-DSA-44
  * ML-DSA-65
  * ML-DSA-87
+ * SLH-DSA-SHA2-128S
+ * SLH-DSA-SHAKE-128S
+ * SLH-DSA-SHA2-128F
+ * SLH-DSA-SHAKE-128F
+ * SLH-DSA-SHA2-192S
+ * SLH-DSA-SHAKE-192S
+ * SLH-DSA-SHA2-192F
+ * SLH-DSA-SHAKE-192F
+ * SLH-DSA-SHA2-256S
+ * SLH-DSA-SHAKE-256S
+ * SLH-DSA-SHA2-256F
+ * SLH-DSA-SHAKE-256F
  */
 public class SignSessionWithPQCSystemTest extends SignSessionCommon {
 
@@ -84,11 +98,24 @@ public class SignSessionWithPQCSystemTest extends SignSessionCommon {
     private static final String MLDSA44_USERNAME = "MLDSA44User";
     private static final String MLDSA65_USERNAME = "MLDSA65User";
     private static final String MLDSA87_USERNAME = "MLDSA87User";
+    private static final String SLH_DSA_SHA2_128S_USERNAME = "SLHDSASHA2128SUser";
+    private static final String SLH_DSA_SHAKE_128S_USERNAME = "SLHDSASHAKE128SUser";
+    private static final String SLH_DSA_SHA2_128F_USERNAME = "SLHDSASHA2128FUser";
+    private static final String SLH_DSA_SHAKE_128F_USERNAME = "SLHDSASHAKE128FUser";
+    private static final String SLH_DSA_SHA2_192S_USERNAME = "SLHDSASHA2192SUser";
+    private static final String SLH_DSA_SHAKE_192S_USERNAME = "SLHDSASHAKE192SUser";
+    private static final String SLH_DSA_SHA2_192F_USERNAME = "SLHDSASHA2192FUser";
+    private static final String SLH_DSA_SHAKE_192F_USERNAME = "SLHDSASHAKE192FUser";
+    private static final String SLH_DSA_SHA2_256S_USERNAME = "SLHDSASHA2256SUser";
+    private static final String SLH_DSA_SHAKE_256S_USERNAME = "SLHDSASHAKE256SUser";
+    private static final String SLH_DSA_SHA2_256F_USERNAME = "SLHDSASHA2256FUser";
+    private static final String SLH_DSA_SHAKE_256F_USERNAME = "SLHDSASHAKE256FUser";
     private static final String DEFAULT_EE_PROFILE = "PQCEEPROFILE";
     private static final String DEFAULT_CERTIFICATE_PROFILE = "PQCCERTPROFILE";
 
     private static KeyPair falcon512keys;
     private static KeyPair mldsa44keys;
+    private static KeyPair slhdsakeys;
 
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -102,6 +129,18 @@ public class SignSessionWithPQCSystemTest extends SignSessionCommon {
         createPQCCa(TEST_MLDSA44_CA_NAME, AlgorithmConstants.KEYALGORITHM_MLDSA44, AlgorithmConstants.SIGALG_MLDSA44);
         createPQCCa(TEST_MLDSA65_CA_NAME, AlgorithmConstants.KEYALGORITHM_MLDSA65, AlgorithmConstants.SIGALG_MLDSA65);
         createPQCCa(TEST_MLDSA87_CA_NAME, AlgorithmConstants.KEYALGORITHM_MLDSA87, AlgorithmConstants.SIGALG_MLDSA87);
+        createPQCCa(TEST_SLHDSASHA2_128S_CA_NAME, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F, AlgorithmConstants.SIGALG_SLHDSA_SHA2_128S);
+        createPQCCa(TEST_SLHDSASHAKE_128S_CA_NAME, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F, AlgorithmConstants.SIGALG_SLHDSA_SHAKE_128S);
+        createPQCCa(TEST_SLHDSASHA2_128F_CA_NAME, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F, AlgorithmConstants.SIGALG_SLHDSA_SHA2_128F);
+        createPQCCa(TEST_SLHDSASHAKE_128F_CA_NAME, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F, AlgorithmConstants.SIGALG_SLHDSA_SHAKE_128F);
+        createPQCCa(TEST_SLHDSASHA2_192S_CA_NAME, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F, AlgorithmConstants.SIGALG_SLHDSA_SHA2_192S);
+        createPQCCa(TEST_SLHDSASHAKE_192S_CA_NAME, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F, AlgorithmConstants.SIGALG_SLHDSA_SHAKE_192S);
+        createPQCCa(TEST_SLHDSASHA2_192F_CA_NAME, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F, AlgorithmConstants.SIGALG_SLHDSA_SHA2_192F);
+        createPQCCa(TEST_SLHDSASHAKE_192F_CA_NAME, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F, AlgorithmConstants.SIGALG_SLHDSA_SHAKE_192F);
+        createPQCCa(TEST_SLHDSASHA2_256S_CA_NAME, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F, AlgorithmConstants.SIGALG_SLHDSA_SHA2_256S);
+        createPQCCa(TEST_SLHDSASHAKE_256S_CA_NAME, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F, AlgorithmConstants.SIGALG_SLHDSA_SHAKE_256S);
+        createPQCCa(TEST_SLHDSASHA2_256F_CA_NAME, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F, AlgorithmConstants.SIGALG_SLHDSA_SHA2_256F);
+        createPQCCa(TEST_SLHDSASHAKE_256F_CA_NAME, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F, AlgorithmConstants.SIGALG_SLHDSA_SHAKE_256F);
         int rsacaid = caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId();
         createEndEntity(RSA_USERNAME, DEFAULT_EE_PROFILE, DEFAULT_CERTIFICATE_PROFILE, rsacaid);
         createEndEntity(TEST_FALCON512_CA_NAME, FALCON512_USERNAME);
@@ -109,9 +148,22 @@ public class SignSessionWithPQCSystemTest extends SignSessionCommon {
         createEndEntity(TEST_MLDSA44_CA_NAME, MLDSA44_USERNAME);
         createEndEntity(TEST_MLDSA65_CA_NAME, MLDSA65_USERNAME);
         createEndEntity(TEST_MLDSA87_CA_NAME, MLDSA87_USERNAME);
+        createEndEntity(TEST_SLHDSASHA2_128S_CA_NAME, SLH_DSA_SHA2_128S_USERNAME);
+        createEndEntity(TEST_SLHDSASHAKE_128S_CA_NAME, SLH_DSA_SHAKE_128S_USERNAME);
+        createEndEntity(TEST_SLHDSASHA2_128F_CA_NAME, SLH_DSA_SHA2_128F_USERNAME);
+        createEndEntity(TEST_SLHDSASHAKE_128F_CA_NAME, SLH_DSA_SHAKE_128F_USERNAME);
+        createEndEntity(TEST_SLHDSASHA2_192S_CA_NAME, SLH_DSA_SHA2_192S_USERNAME);
+        createEndEntity(TEST_SLHDSASHAKE_192S_CA_NAME, SLH_DSA_SHAKE_192S_USERNAME);
+        createEndEntity(TEST_SLHDSASHA2_192F_CA_NAME, SLH_DSA_SHA2_192F_USERNAME);
+        createEndEntity(TEST_SLHDSASHAKE_192F_CA_NAME, SLH_DSA_SHAKE_192F_USERNAME);
+        createEndEntity(TEST_SLHDSASHA2_256S_CA_NAME, SLH_DSA_SHA2_256S_USERNAME);
+        createEndEntity(TEST_SLHDSASHAKE_256S_CA_NAME, SLH_DSA_SHAKE_256S_USERNAME);
+        createEndEntity(TEST_SLHDSASHA2_256F_CA_NAME, SLH_DSA_SHA2_256F_USERNAME);
+        createEndEntity(TEST_SLHDSASHAKE_256F_CA_NAME, SLH_DSA_SHAKE_256F_USERNAME);
         // Only use one set of client keys, we test with so many keys in CSRs so it is expected to work
         falcon512keys = KeyTools.genKeys(AlgorithmConstants.KEYALGORITHM_FALCON512, AlgorithmConstants.KEYALGORITHM_FALCON512);
         mldsa44keys = KeyTools.genKeys(AlgorithmConstants.KEYALGORITHM_MLDSA44, AlgorithmConstants.KEYALGORITHM_MLDSA44);
+        slhdsakeys = KeyTools.genKeys(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F);
     }
 
     @AfterClass
@@ -128,6 +180,18 @@ public class SignSessionWithPQCSystemTest extends SignSessionCommon {
         removeTestCA(TEST_MLDSA44_CA_NAME);
         removeTestCA(TEST_MLDSA65_CA_NAME);
         removeTestCA(TEST_MLDSA87_CA_NAME);
+        removeTestCA(TEST_SLHDSASHA2_128S_CA_NAME);
+        removeTestCA(TEST_SLHDSASHAKE_128S_CA_NAME);
+        removeTestCA(TEST_SLHDSASHA2_128F_CA_NAME);
+        removeTestCA(TEST_SLHDSASHAKE_128F_CA_NAME);
+        removeTestCA(TEST_SLHDSASHA2_192S_CA_NAME);
+        removeTestCA(TEST_SLHDSASHAKE_192S_CA_NAME);
+        removeTestCA(TEST_SLHDSASHA2_192F_CA_NAME);
+        removeTestCA(TEST_SLHDSASHAKE_192F_CA_NAME);
+        removeTestCA(TEST_SLHDSASHA2_256S_CA_NAME);
+        removeTestCA(TEST_SLHDSASHAKE_256S_CA_NAME);
+        removeTestCA(TEST_SLHDSASHA2_256F_CA_NAME);
+        removeTestCA(TEST_SLHDSASHAKE_256F_CA_NAME);
     }
 
     @Rule
@@ -190,6 +254,34 @@ public class SignSessionWithPQCSystemTest extends SignSessionCommon {
     }
 
     @Test
+    public void testSignSessionSLHDSAWithRSACA() throws Exception {
+        endEntityManagementSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW);
+        log.debug("Reset status of " + RSA_USERNAME + " to NEW");
+        // user that we know exists...
+        X509Certificate selfcert = SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn("CN=selfsigned")
+                .setIssuerDn("CN=selfsigned")
+                .setValidityDays(1)
+                .setIssuerPrivKey(slhdsakeys.getPrivate())
+                .setEntityPubKey(slhdsakeys.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SLHDSA_SHA2_128F)
+                .generateCertificate();
+        X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", selfcert);
+        assertNotNull("Failed to create certificate", cert);
+        log.debug("Cert=" + cert.toString());
+        // We need to convert to BC to support Falcon
+        X509Certificate bccert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
+        PublicKey pk = bccert.getPublicKey();
+        checkPQCKey(pk);
+        try {
+            X509Certificate rsacacert = (X509Certificate) caSession.getCAInfo(internalAdmin, getTestCAName()).getCertificateChain().toArray()[0];
+            cert.verify(rsacacert.getPublicKey());
+        } catch (Exception e) {
+            assertTrue("Verify failed: " + e.getMessage(), false);
+        }
+    }
+
+    @Test
     public void testSignSessionFalconWithFalcon512CA() throws Exception {
         testSignSessionPQCWithPQCCA(FALCON512_USERNAME, TEST_FALCON512_CA_NAME, falcon512keys, AlgorithmConstants.SIGALG_FALCON512);
     }
@@ -212,6 +304,66 @@ public class SignSessionWithPQCSystemTest extends SignSessionCommon {
     @Test
     public void testSignSessionMLDSAWithMLDSA87CA() throws Exception {
         testSignSessionPQCWithPQCCA(MLDSA87_USERNAME, TEST_MLDSA87_CA_NAME, mldsa44keys, AlgorithmConstants.SIGALG_MLDSA44);
+    }
+
+    @Test
+    public void testSignSessionSLHDSAWithSHA2_128SCA() throws Exception {
+        testSignSessionPQCWithPQCCA(SLH_DSA_SHA2_128S_USERNAME, TEST_SLHDSASHA2_128S_CA_NAME, slhdsakeys, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F);
+    }
+
+    @Test
+    public void testSignSessionSLHDSAWithSHAKE_128SCA() throws Exception {
+        testSignSessionPQCWithPQCCA(SLH_DSA_SHAKE_128S_USERNAME, TEST_SLHDSASHAKE_128S_CA_NAME, slhdsakeys, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F);
+    }
+
+    @Test
+    public void testSignSessionSLHDSAWithSHA2_128FCA() throws Exception {
+        testSignSessionPQCWithPQCCA(SLH_DSA_SHA2_128F_USERNAME, TEST_SLHDSASHA2_128F_CA_NAME, slhdsakeys, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F);
+    }
+
+    @Test
+    public void testSignSessionSLHDSAWithSHAKE_128FCA() throws Exception {
+        testSignSessionPQCWithPQCCA(SLH_DSA_SHAKE_128F_USERNAME, TEST_SLHDSASHAKE_128F_CA_NAME, slhdsakeys, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F);
+    }
+
+    @Test
+    public void testSignSessionSLHDSAWithSHA2_192SCA() throws Exception {
+        testSignSessionPQCWithPQCCA(SLH_DSA_SHA2_192S_USERNAME, TEST_SLHDSASHA2_192S_CA_NAME, slhdsakeys, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F);
+    }
+
+    @Test
+    public void testSignSessionSLHDSAWithSHAKE_192SCA() throws Exception {
+        testSignSessionPQCWithPQCCA(SLH_DSA_SHAKE_192S_USERNAME, TEST_SLHDSASHAKE_192S_CA_NAME, slhdsakeys, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F);
+    }
+
+    @Test
+    public void testSignSessionSLHDSAWithSHA2_192FCA() throws Exception {
+        testSignSessionPQCWithPQCCA(SLH_DSA_SHA2_192F_USERNAME, TEST_SLHDSASHA2_192F_CA_NAME, slhdsakeys, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F);
+    }
+
+    @Test
+    public void testSignSessionSLHDSAWithSHAKE_192FCA() throws Exception {
+        testSignSessionPQCWithPQCCA(SLH_DSA_SHAKE_192F_USERNAME, TEST_SLHDSASHAKE_192F_CA_NAME, slhdsakeys, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F);
+    }
+
+    @Test
+    public void testSignSessionSLHDSAWithSHA2_256SCA() throws Exception {
+        testSignSessionPQCWithPQCCA(SLH_DSA_SHA2_256S_USERNAME, TEST_SLHDSASHA2_256S_CA_NAME, slhdsakeys, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F);
+    }
+
+    @Test
+    public void testSignSessionSLHDSAWithSHAKE_256SCA() throws Exception {
+        testSignSessionPQCWithPQCCA(SLH_DSA_SHAKE_256S_USERNAME, TEST_SLHDSASHAKE_256S_CA_NAME, slhdsakeys, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F);
+    }
+
+    @Test
+    public void testSignSessionSLHDSAWithSHA2_256FCA() throws Exception {
+        testSignSessionPQCWithPQCCA(SLH_DSA_SHA2_256F_USERNAME, TEST_SLHDSASHA2_256F_CA_NAME, slhdsakeys, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F);
+    }
+
+    @Test
+    public void testSignSessionSLHDSAWithSHAKE_256FCA() throws Exception {
+        testSignSessionPQCWithPQCCA(SLH_DSA_SHAKE_256F_USERNAME, TEST_SLHDSASHAKE_256F_CA_NAME, slhdsakeys, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F);
     }
 
     private void testSignSessionPQCWithPQCCA(final String username, final String caname, KeyPair keys, String sigAlg) throws Exception {
@@ -312,6 +464,12 @@ public class SignSessionWithPQCSystemTest extends SignSessionCommon {
             MLDSAParameterSpec paramspec = pub.getParameterSpec();
             assertNotNull("MLDSA spec can not have null spec", paramspec);
             assertEquals("Spec was not MLDSA-44", MLDSAParameterSpec.ml_dsa_44, paramspec);
+        } else if (pk instanceof SLHDSAPublicKey) {
+            SLHDSAPublicKey pub = (SLHDSAPublicKey) pk;
+            assertEquals(pub.getAlgorithm(), AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F);
+            SLHDSAParameterSpec paramspec = pub.getParameterSpec();
+            assertNotNull("SLHDSA spec can not have null spec", paramspec);
+            assertEquals("Spec was not SLH-DSA", SLHDSAParameterSpec.slh_dsa_sha2_128f, paramspec);
         } else {
             assertTrue("Public key is not Falcon or MLDSA: " + pk.getClass().getName(), false);
         }

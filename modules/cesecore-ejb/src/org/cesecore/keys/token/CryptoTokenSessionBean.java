@@ -17,18 +17,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.ejb.EJB;
-import jakarta.ejb.Stateless;
-import jakarta.ejb.TransactionAttribute;
-import jakarta.ejb.TransactionAttributeType;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.Query;
-
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
@@ -39,12 +31,23 @@ import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
+
 /**
  * Basic CRUD and activation caching of CryptoTokens is provided through this local access SSB.
  * 
  */
 @Stateless
 public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTokenSessionRemote {
+    @EJB
+    private CaSessionLocal caSession;
     @EJB
     private InternalKeyBindingMgmtSessionLocal internalKeyBindingSession;
     @EJB
@@ -80,6 +83,26 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
         }
     }
 
+    private boolean isMigrateP11Tokens() {
+        final String migratePkcs11CryptoTokensValue = System.getenv("USE_P11NG_AS_P11");
+        if (migratePkcs11CryptoTokensValue != null) {
+            boolean isRunningEnterpriseEdition = true;
+            try {
+                //We can't access EnterpriseEditionEjbBridgeSessionLocal.isRunningEnterprise() from cesecore. This might be ugly... but it works.
+                Class.forName("org.cesecore.dbprotection.ProtectedDataIntegrityImpl");
+            } catch (ClassNotFoundException e) {// Exception thrown if running CE since class ProtectedDataIntegrityImpl can only be found on EE...  
+                isRunningEnterpriseEdition = false;
+            }
+            if ((migratePkcs11CryptoTokensValue.equals("true") && isRunningEnterpriseEdition)) {
+                if (log.isDebugEnabled()) {
+                    log.debug("System configured to migrate PKCS11CryptoTokens to Pkcs11NgCryptoTokens in cache.");
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+            
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public CryptoToken getCryptoToken(final int cryptoTokenId) {
@@ -113,8 +136,14 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
                         if (AzureCryptoToken.class.getName().equals(inClassname)) {
                             // Key Vault may need to find a key pair for authentication
                             cryptoToken = CryptoTokenFactory.createCryptoToken(inClassname, properties, data, cryptoTokenId, tokenName, true,
-                                    new KeyBindingFinder(internalKeyBindingSession, certificateStoreSession, cryptoTokenManagementSession));
+                                    new KeyBindingFinder(internalKeyBindingSession, certificateStoreSession, cryptoTokenManagementSession, caSession));
                         } else {
+                            if (inClassname != null && inClassname.equals("org.cesecore.keys.token.PKCS11CryptoToken")){
+                                if (isMigrateP11Tokens()) { // Running on enterprise edition and migrate crypto tokens environment variable is set?
+                                    log.info("Migrating PKCS11CryptoToken " + tokenName + " to Pkcs11NgCryptoToken in cache.");
+                                    inClassname = "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken";
+                                }
+                            }
                             cryptoToken = CryptoTokenFactory.createCryptoToken(inClassname, properties, data, cryptoTokenId, tokenName, true);
                         }
                     } catch (NoSuchSlotException e) {
@@ -185,6 +214,15 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
                     && ArrayUtils.isEmpty(tokenDataAsBytes) && ArrayUtils.isEmpty(cryptoTokenData.getTokenDataAsBytes())) {
                 doMerge = false;
             } else {
+                // In case we have migrated any crypto tokens from PKCS11CryptoToken to Pkcs11NgCryptoToken, we safe-guard against changing token type in database
+                // by mistake, hopefully making the migration reversible. 
+                if (isMigrateP11Tokens() && tokenType.equals("Pkcs11NgCryptoToken") && cryptoTokenData.getTokenType().equals("PKCS11CryptoToken")) {
+                    tokenType = cryptoTokenData.getTokenType();
+                    if (log.isDebugEnabled()) {
+                        log.debug("Prevented migrated crypto token " + tokenName + " from changing token type from PKCS11CryptoToken to Pkcs11NgCryptoToken in database"
+                                + " during crypto token merge operation.");
+                    }
+                }                
                 cryptoTokenData.setTokenName(tokenName);
                 cryptoTokenData.setTokenType(tokenType);
                 cryptoTokenData.setLastUpdate(lastUpdate);
