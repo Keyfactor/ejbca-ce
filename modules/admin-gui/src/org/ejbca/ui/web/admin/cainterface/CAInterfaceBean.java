@@ -584,7 +584,9 @@ public class CAInterfaceBean implements Serializable {
                             .setDoStoreOcspResponsesOnDemand(caInfoDto.isDoStoreOcspResponsesOnDemand())
 							.setDoPreProduceIndividualOcspResponses(caInfoDto.isDoPreProduceOcspResponseUponIssuanceAndRevocation())
                             .setAcceptRevocationNonExistingEntry(caInfoDto.isAcceptRevocationsNonExistingEntry())
-                            .setKeepExpiredCertsOnCRL(caInfoDto.isKeepExpiredOnCrl())
+                            .setKeepExpiredCertsOnCrl(caInfoDto.isKeepExpiredCertsOnCrl())
+                            .setKeepExpiredCertsOnCrlFormat(caInfoDto.getKeepExpiredCertsOnCrlFormat())
+                            .setKeepExpiredCertsOnCrlDate(caInfoDto.getKeepExpiredCertsOnCrlDate())
                             .setUsePartitionedCrl(caInfoDto.isUsePartitionedCrl())
                             .setCrlPartitions(caInfoDto.getCrlPartitions())
                             .setSuspendedCrlPartitions(caInfoDto.getSuspendedCrlPartitions())
@@ -973,6 +975,14 @@ public class CAInterfaceBean implements Serializable {
                        throw new ParameterException(ejbcawebbean.getText("INVALIDPOLICYOID"));
                    }
                }
+               
+               final long keepExpiredCertsOnCrlDate;
+               if(caInfoDto.getKeepExpiredCertsOnCrlFormat() == 0) {
+                   keepExpiredCertsOnCrlDate = 0L;
+               } else {
+                   keepExpiredCertsOnCrlDate = caInfoDto.getKeepExpiredCertsOnCrlDate();
+               }
+               
                // No need to add the Keyrecovery extended service here, because it is only "updated" in EditCA, and there
                // is not need to update it.
                X509CAInfo.X509CAInfoBuilder x509CAInfoBuilder = new X509CAInfo.X509CAInfoBuilder()
@@ -1025,7 +1035,9 @@ public class CAInterfaceBean implements Serializable {
 					   .setDoPreProduceIndividualOcspResponses(caInfoDto.isDoPreProduceOcspResponseUponIssuanceAndRevocation())
                        .setAcceptRevocationNonExistingEntry(caInfoDto.isAcceptRevocationsNonExistingEntry())
                        .setCmpRaAuthSecret(caInfoDto.getSharedCmpRaSecret())
-                       .setKeepExpiredCertsOnCRL(caInfoDto.isKeepExpiredOnCrl())
+                       .setKeepExpiredCertsOnCrl(caInfoDto.isKeepExpiredCertsOnCrl())
+                       .setKeepExpiredCertsOnCrlFormat(caInfoDto.getKeepExpiredCertsOnCrlFormat())
+                       .setKeepExpiredCertsOnCrlDate(caInfoDto.getKeepExpiredCertsOnCrlDate())
                        .setDefaultCertProfileId(caInfoDto.getDefaultCertProfileId())
                        .setUseNoConflictCertificateData(caInfoDto.isUseNoConflictCertificateData())
                        .setUsePartitionedCrl(caInfoDto.isUsePartitionedCrl())
@@ -1250,7 +1262,7 @@ public class CAInterfaceBean implements Serializable {
                 //Or in case of RSA
                 aliases.add(cryptoTokenKeyPairInfo.getAlias());
             }
-            // ML-DSA and Falcon can only sign, so skip the PQ algorithms
+            // ML-DSA, SLH-DSA and Falcon can only sign, so skip the PQ algorithms
         }
 
         return aliases;

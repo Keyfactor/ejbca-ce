@@ -18,6 +18,7 @@ import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
 import java.security.cert.X509CRLEntry;
 import java.text.ParseException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -57,6 +58,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.KeepExpiredCertsOnCrlFormat;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -493,9 +495,11 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
             final String caCertSubjectDN = cacert == null ? null : CertTools.getSubjectDN(cacert);
             final Date now = new Date();
             final Date lastBaseCrlCreationDate = lastBaseCrlInfo == null ? new Date(-1) : lastBaseCrlInfo.getCreateDate();
-            final boolean keepExpiredCertsOnCrl = ca.getCAType() == CAInfo.CATYPE_X509 && cainfo.getKeepExpiredCertsOnCRL();
+            final boolean keepExpiredCertsOnCrl = ca.getCAType() == CAInfo.CATYPE_X509 && cainfo.getKeepExpiredCertsOnCrl();
+            //final int keepExpiredCertsOnCrlFormat = ((X509CA)ca).getKeepExpiredCertsOnCrlFormat();
+            //final long keepExpiredCertsOnDate = ((X509CA)ca).getKeepExpiredCertsOnCrlDate();
             if (keepExpiredCertsOnCrl) {
-                log.info("KeepExpiredCertsOnCRL is enabled, we will not archive expired certificates, but will keep them on the CRL (for ever growing): " + keepExpiredCertsOnCrl);
+                log.info("KeepExpiredCertsOnCrl is enabled, we will not archive expired certificates, but will keep them on the CRL (for ever growing): " + keepExpiredCertsOnCrl);
             }
             // We can not create a CRL for a CA that is waiting for certificate response
             if ( caCertSubjectDN!=null && cainfo.getStatus()==CAConstants.CA_ACTIVE )  {

@@ -32,6 +32,16 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyStoreCipher;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -72,16 +82,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ui.cli.batch.BatchToolProperties;
 import org.ejbca.util.keystore.P12toPEM;
 
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.EJBTools;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.certificate.SimpleCertGenerator;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.keys.KeyStoreCipher;
-import com.keyfactor.util.keys.KeyTools;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-
 import jakarta.ejb.FinderException;
 import jakarta.ejb.ObjectNotFoundException;
 
@@ -101,7 +101,7 @@ public abstract class BatchCreateTool {
     /**
      * Creates keystore-files for all users with status NEW in the local
      * database.
-     * 
+     *
      * @throws Exception
      *             if something goes wrong...
      */
@@ -113,12 +113,12 @@ public abstract class BatchCreateTool {
         log.trace("<createAllNew");
         return result;
     }
-    
+
     /**
      * Creates P12-files for all users with status in the local database.
-     * 
-     * Since authentication tokens from the CLI are single use only, this method will take multiple (until a better design is reached). 
-     * 
+     *
+     * Since authentication tokens from the CLI are single use only, this method will take multiple (until a better design is reached).
+     *
      * @param status
      * @throws Exception
      *             if something goes wrong...
@@ -128,10 +128,10 @@ public abstract class BatchCreateTool {
             log.trace(">createAllWithStatus: " + status);
         }
         CryptoProviderTools.installBCProviderIfNotAvailable(); // If this is invoked directly
-        ArrayList<EndEntityInformation> result = new ArrayList<EndEntityInformation>();
+        ArrayList<EndEntityInformation> result = new ArrayList<>();
 
         boolean stopnow = false;
-        List<File> resultList = new ArrayList<File>();
+        List<File> resultList = new ArrayList<>();
         do {
             for (EndEntityInformation data : EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class)
                     .findAllBatchUsersByStatusWithLimit(status)) {
@@ -211,43 +211,43 @@ public abstract class BatchCreateTool {
         }
         return resultList;
     }
-    
+
     /**
      * Creates P12-files for one end entity in the local database.
-     * 
+     *
      * @param username
      *            username
      * @return a file handle to the P12
-     *            
-     * @throws AuthorizationDeniedException 
+     *
+     * @throws AuthorizationDeniedException
      * @throws WaitingForApprovalException The request ID will be included as a field in this exception.
-     * @throws FinderException 
-     * @throws ApprovalException 
-     * @throws IOException 
-     * @throws InvalidKeySpecException 
-     * @throws NoSuchAlgorithmException 
-     * @throws NoSuchProviderException 
-     * @throws KeyStoreException 
-     * @throws CustomCertificateSerialNumberException 
-     * @throws InvalidAlgorithmException 
-     * @throws CAOfflineException 
-     * @throws IllegalValidityException 
-     * @throws CryptoTokenOfflineException 
-     * @throws CertificateSerialNumberException 
-     * @throws CertificateRevokeException 
-     * @throws IllegalNameException 
-     * @throws CertificateCreateException 
-     * @throws IllegalKeyException 
-     * @throws AuthLoginException 
-     * @throws AuthStatusException 
-     * @throws SignRequestSignatureException 
-     * @throws CertificateException 
-     * @throws OperatorCreationException 
-     * @throws CADoesntExistsException 
-     * @throws InvalidAlgorithmParameterException 
-     * @throws UnrecoverableKeyException 
-     * @throws NoSuchEndEntityException 
-     * @throws FileNotFoundException 
+     * @throws FinderException
+     * @throws ApprovalException
+     * @throws IOException
+     * @throws InvalidKeySpecException
+     * @throws NoSuchAlgorithmException
+     * @throws NoSuchProviderException
+     * @throws KeyStoreException
+     * @throws CustomCertificateSerialNumberException
+     * @throws InvalidAlgorithmException
+     * @throws CAOfflineException
+     * @throws IllegalValidityException
+     * @throws CryptoTokenOfflineException
+     * @throws CertificateSerialNumberException
+     * @throws CertificateRevokeException
+     * @throws IllegalNameException
+     * @throws CertificateCreateException
+     * @throws IllegalKeyException
+     * @throws AuthLoginException
+     * @throws AuthStatusException
+     * @throws SignRequestSignatureException
+     * @throws CertificateException
+     * @throws OperatorCreationException
+     * @throws CADoesntExistsException
+     * @throws InvalidAlgorithmParameterException
+     * @throws UnrecoverableKeyException
+     * @throws NoSuchEndEntityException
+     * @throws FileNotFoundException
      * @throws CertIOException if the self signed certificate could not be generated
      */
     public static File createUser(AuthenticationToken authenticationToken, File mainStoreDir, String username) throws AuthorizationDeniedException,
@@ -335,7 +335,7 @@ public abstract class BatchCreateTool {
 
     /**
      * Recovers or generates new keys for the user and generates keystore
-     * 
+     *
      * @param data
      *            user data for user
      * @param createJKS
@@ -344,30 +344,30 @@ public abstract class BatchCreateTool {
      *            if pem files should be created
      * @param keyrecoverflag
      *            if we should try to recover already existing keys
-     * @throws AuthorizationDeniedException 
-     * @throws InvalidAlgorithmParameterException 
-     * @throws FileNotFoundException 
-     * @throws KeyStoreException 
-     * @throws InvalidKeySpecException 
-     * @throws NoSuchAlgorithmException 
-     * @throws CustomCertificateSerialNumberException 
-     * @throws InvalidAlgorithmException 
-     * @throws CAOfflineException 
-     * @throws IllegalValidityException 
-     * @throws CryptoTokenOfflineException 
-     * @throws CertificateSerialNumberException 
-     * @throws CertificateRevokeException 
-     * @throws IllegalNameException 
-     * @throws CertificateCreateException 
-     * @throws IllegalKeyException 
-     * @throws AuthLoginException 
-     * @throws AuthStatusException 
-     * @throws SignRequestSignatureException 
-     * @throws CertificateException 
-     * @throws OperatorCreationException 
-     * @throws NoSuchEndEntityException 
-     * @throws CADoesntExistsException 
-     * @throws UnrecoverableKeyException 
+     * @throws AuthorizationDeniedException
+     * @throws InvalidAlgorithmParameterException
+     * @throws FileNotFoundException
+     * @throws KeyStoreException
+     * @throws InvalidKeySpecException
+     * @throws NoSuchAlgorithmException
+     * @throws CustomCertificateSerialNumberException
+     * @throws InvalidAlgorithmException
+     * @throws CAOfflineException
+     * @throws IllegalValidityException
+     * @throws CryptoTokenOfflineException
+     * @throws CertificateSerialNumberException
+     * @throws CertificateRevokeException
+     * @throws IllegalNameException
+     * @throws CertificateCreateException
+     * @throws IllegalKeyException
+     * @throws AuthLoginException
+     * @throws AuthStatusException
+     * @throws SignRequestSignatureException
+     * @throws CertificateException
+     * @throws OperatorCreationException
+     * @throws NoSuchEndEntityException
+     * @throws CADoesntExistsException
+     * @throws UnrecoverableKeyException
      * @throws CertIOException if the self signed certificate could not be generated
      */
     private static File processUser(AuthenticationToken authenticationToken, File mainStoreDir, EndEntityInformation data, boolean createJKS,
@@ -404,13 +404,13 @@ public abstract class BatchCreateTool {
         // Get certificate for user and create keystore
         return createUser(authenticationToken, mainStoreDir, data.getUsername(), data.getPassword(), data.getCAId(), rsaKeys, createJKS, createPEM,
                 !keyrecoverflag && data.getKeyRecoverable(), orgCert);
-        
+
     }
 
     /**
      * Creates files for a user, sends request to CA, receives reply and creates
      * P12.
-     * 
+     *
      * @param username
      *            username
      * @param password
@@ -428,32 +428,32 @@ public abstract class BatchCreateTool {
      * @param orgCert
      *            if an original key recovered cert should be reused, null
      *            indicates generate new cert.
-     *            
+     *
      * @return a file handle to the created keystore file
-     * @throws AuthorizationDeniedException 
-     * @throws CADoesntExistsException 
-     * @throws NoSuchEndEntityException 
-     * @throws ObjectNotFoundException 
-     * @throws CustomCertificateSerialNumberException 
-     * @throws InvalidAlgorithmException 
-     * @throws CAOfflineException 
-     * @throws IllegalValidityException 
-     * @throws CryptoTokenOfflineException 
-     * @throws CertificateSerialNumberException 
-     * @throws CertificateRevokeException 
-     * @throws IllegalNameException 
-     * @throws CertificateCreateException 
-     * @throws IllegalKeyException 
-     * @throws AuthLoginException 
-     * @throws AuthStatusException 
-     * @throws SignRequestSignatureException 
-     * @throws CertificateException 
-     * @throws OperatorCreationException 
-     * @throws KeyStoreException 
-     * @throws NoSuchAlgorithmException 
-     * @throws UnrecoverableKeyException 
-     * @throws InvalidKeySpecException 
-     * @throws FileNotFoundException 
+     * @throws AuthorizationDeniedException
+     * @throws CADoesntExistsException
+     * @throws NoSuchEndEntityException
+     * @throws ObjectNotFoundException
+     * @throws CustomCertificateSerialNumberException
+     * @throws InvalidAlgorithmException
+     * @throws CAOfflineException
+     * @throws IllegalValidityException
+     * @throws CryptoTokenOfflineException
+     * @throws CertificateSerialNumberException
+     * @throws CertificateRevokeException
+     * @throws IllegalNameException
+     * @throws CertificateCreateException
+     * @throws IllegalKeyException
+     * @throws AuthLoginException
+     * @throws AuthStatusException
+     * @throws SignRequestSignatureException
+     * @throws CertificateException
+     * @throws OperatorCreationException
+     * @throws KeyStoreException
+     * @throws NoSuchAlgorithmException
+     * @throws UnrecoverableKeyException
+     * @throws InvalidKeySpecException
+     * @throws FileNotFoundException
      * @throws CertIOException if generating the self signed certificate failed
      */
 
@@ -495,18 +495,18 @@ public abstract class BatchCreateTool {
                     .setIssuerPrivKey(rsaKeys.getPrivate())
                     .setEntityPubKey(rsaKeys.getPublic())
                     .setSignatureAlgorithm(sigAlg)
-                    .generateCertificate();  
+                    .generateCertificate();
 
-                    
+
             cert = (X509Certificate) EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class).createCertificate(authenticationToken,
                     username, password, selfcert);
         }
 
         // Make a certificate chain from the certificate and the CA-certificate
-        X509Certificate[] cachain = (X509Certificate[]) EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class)
+        X509Certificate[] cachain = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class)
                 .getCertificateChain(caid).toArray(new X509Certificate[0]);
         // Verify CA-certificate
-        if (CertTools.isSelfSigned((X509Certificate) cachain[cachain.length - 1])) {
+        if (CertTools.isSelfSigned(cachain[cachain.length - 1])) {
 
                 // Make sure we have BC certs, otherwise SHA256WithRSAAndMGF1
                 // will not verify (at least not as of jdk6)
@@ -573,17 +573,17 @@ public abstract class BatchCreateTool {
 
     /**
      * Stores keystore.
-     * 
+     *
      * @param ks a KeyStore
      * @param username username, the owner of the keystore
      * @param kspassword the password used to protect the peystore
-     * @param createJKS true if a jks should be created, otherwise a .p12 will be created. 
+     * @param createJKS true if a jks should be created, otherwise a .p12 will be created.
      * @param createPEM true if pem files should be created instead of a p12 or jks
-     * @throws KeyStoreException if the keystore was not initialised 
+     * @throws KeyStoreException if the keystore was not initialised
      * @throws CertificateException if any of the certificates included in the keystore data couldn't be stored
      * @throws NoSuchAlgorithmException if the keystore's algorithm couldn't be found
      * @throws FileNotFoundException if the file couldn't be written
-     * @throws UnrecoverableKeyException 
+     * @throws UnrecoverableKeyException
      */
     private static File storeKeyStore(File mainStoreDir, KeyStore ks, String username, String kspassword, boolean createJKS, boolean createPEM)
             throws UnrecoverableKeyException, FileNotFoundException, NoSuchAlgorithmException, CertificateException, KeyStoreException {
@@ -603,7 +603,7 @@ public abstract class BatchCreateTool {
             keyStoreFilename += ".p12";
         }
         File keyStoreFile;
-        
+
         // If we should also create PEM-files, do that
         if (createPEM) {
             String PEMfilename = mainStoreDir + "/pem";

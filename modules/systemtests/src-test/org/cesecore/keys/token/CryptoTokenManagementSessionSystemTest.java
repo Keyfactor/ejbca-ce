@@ -130,6 +130,18 @@ public class CryptoTokenManagementSessionSystemTest extends RoleUsingTestCase {
         }
     }
 
+
+    @Test
+    public void basicCryptoTokenForCAWithSLHDSA() throws Exception {
+        int cryptoTokenId = 0;
+        try {
+            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "testCaDSLHDSA", "SLH-DSA-SHA2-128F", "RSA1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
+            subTest(cryptoTokenId, "SLH-DSA-SHA2-128F");
+        } finally {
+            CryptoTokenTestUtils.removeCryptoToken(roleMgmgToken, cryptoTokenId);
+        }
+    }
+
     private void subTest(final int cryptoTokenId, final String keySpec) throws Exception {
         // Test additional key creation and information retrieval
         final String KEYALIAS1 = "newAlias1";

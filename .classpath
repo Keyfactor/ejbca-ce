@@ -156,7 +156,7 @@
 	<classpathentry kind="lib" path="lib/kerb-core-2.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/kerby-asn1-2.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/kerb-crypto-2.0.3.jar"/>
-	<classpathentry kind="lib" path="lib/jsch-0.2.11.jar"/>
+	<classpathentry kind="lib" path="lib/jsch-0.2.24.jar"/>
 	<classpathentry kind="lib" path="lib/dnsjava-3.6.1.jar"/>
 	<classpathentry kind="lib" path="lib/keyfactor-commons-cli-2.0.0.jar" sourcepath="/keyfactor-commons-cli"/>
 	<classpathentry kind="lib" path="lib/hibernate/jakarta.activation-api-2.1.0.jar"/>
@@ -173,10 +173,10 @@
 	<classpathentry kind="lib" path="lib/jee/soapclient/saaj-impl-3.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/gmbal-api-only-4.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/ejbca-ws-client-gen.jar"/>
-	<classpathentry kind="lib" path="lib/x509-common-util-5.3.0.jar" sourcepath="/x509-common-util"/>
-	<classpathentry kind="lib" path="lib/cryptotokens-api-2.4.3.jar"/>
-	<classpathentry kind="lib" path="lib/cryptotokens-impl-2.4.3.jar"/>
-	<classpathentry kind="lib" path="lib/cryptotokens-impl-ee-2.4.3.jar"/>
+	<classpathentry kind="lib" path="lib/x509-common-util-5.3.1.jar" sourcepath="/x509-common-util"/>
+	<classpathentry kind="lib" path="lib/cryptotokens-api-3.0.0.jar"/>
+	<classpathentry kind="lib" path="lib/cryptotokens-impl-3.0.0.jar"/>
+	<classpathentry kind="lib" path="lib/cryptotokens-impl-ee-3.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/primefaces/primefaces-15.0.3-jakarta.jar"/>
 	<classpathentry kind="lib" path="lib/p11ng-0.25.7.jar" sourcepath="/p11ng"/>
 	<classpathentry kind="var" path="APPSRV_HOME/bin/client/jboss-client.jar"/>

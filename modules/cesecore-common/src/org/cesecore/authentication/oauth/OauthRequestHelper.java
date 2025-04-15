@@ -13,16 +13,14 @@
 package org.cesecore.authentication.oauth;
 
 import java.io.IOException;
-import java.security.PrivateKey;
-import java.security.cert.X509Certificate;
 
-import com.google.common.base.Preconditions;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-
-import org.apache.commons.lang3.tuple.Pair;
 import org.cesecore.authentication.oauth.OAuthKeyInfo.OAuthProviderType;
 import org.cesecore.keybind.KeyBindingNotFoundException;
 import org.cesecore.keys.token.KeyAndCertFinder;
+import org.cesecore.keys.token.KeyAndCertificateInfo;
+
+import com.google.common.base.Preconditions;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Helper, sends requests to oauth providers to exchange code to token, to refresh token or to fetch userinfo
@@ -82,11 +80,11 @@ public class OauthRequestHelper {
         request.setClientId(oAuthKeyInfo.getClient());
         if (oAuthKeyInfo.getKeyBinding() != null) {
             Preconditions.checkState(oAuthKeyInfo.getType() == OAuthProviderType.TYPE_AZURE, "OAuth cert authentication only supported for Azure");
-            Pair<X509Certificate, PrivateKey> certificateAndKey = keyBindingFinder.find(oAuthKeyInfo.getKeyBinding())
+            KeyAndCertificateInfo certificateAndKey = keyBindingFinder.find(oAuthKeyInfo.getKeyBinding())
                     .orElseThrow(() -> new KeyBindingNotFoundException(oAuthKeyInfo.getKeyBinding().toString()));
             request.setClientAssertionAudience(oAuthKeyInfo.getLoginServerUrl());
-            request.setKey(certificateAndKey.getRight());
-            request.setCertificate(certificateAndKey.getLeft());
+            request.setKey(certificateAndKey.getPrivateKey());
+            request.setCertificate(certificateAndKey.getX509Certificate());
         } else {
             request.setClientSecret(oAuthKeyInfo.getClientSecretAndDecrypt());
         }

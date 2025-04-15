@@ -3327,7 +3327,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             }
         }
         if (AlgorithmTools.isPQC(keyAlgorithm)) {
-            //We implicitly allow a specific key length when configuring FALCON, ML-DSA, LMS algorithms,
+            //We implicitly allow a specific key length when configuring FALCON, ML-DSA, SLH-DSA, LMS algorithms,
             //hence we don't need to check for key length compliancy with the certificate profile.
             return;
          }

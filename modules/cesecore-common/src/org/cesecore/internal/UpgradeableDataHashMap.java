@@ -14,6 +14,7 @@
 package org.cesecore.internal;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -21,7 +22,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.cesecore.util.Base64GetHashMap;
-
+import org.cesecore.util.ConverterUtils;
 
 
 /**
@@ -49,7 +50,7 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
     public static final String VERSION = "version";
 
     protected static final float MAP_LOAD_FACTOR = 0.75f; // expected initial capacity/loadFactor, avoiding the unnecessary resize while copy
-    
+
 	/**
      * Creates a new UpgradeableDataHashMap object.
      */
@@ -228,6 +229,22 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
             return defaultValue;
         }
         return (Boolean) object;
+    }
+
+    protected long getLong(final String key, final long defaultValue) {
+        final Object object = data.get(key);
+        if (!(object instanceof Long)) {
+            return defaultValue;
+        }
+        return (Long) object;
+    }
+
+    protected int getInt(final String key, final int defaultValue) {
+        final Object object = data.get(key);
+        if (!(object instanceof Integer)) {
+            return defaultValue;
+        }
+        return (Integer) object;
     }
 
     /**
