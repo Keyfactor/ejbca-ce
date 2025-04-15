@@ -457,6 +457,42 @@ public class CreateCsrCommand extends EjbcaCommandBase {
         case "ML-DSA-87":
             keyAlgorithm = AlgorithmConstants.KEYALGORITHM_MLDSA87;
             break;
+        case "SLH-DSA-SHA2-128S":
+            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128S;
+            break;
+        case "SLH-DSA-SHAKE-128S":
+            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_128S;
+            break;
+        case "SLH-DSA-SHA2-128F":
+            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F;
+            break;
+        case "SLH-DSA-SHAKE-128F":
+            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_128F;
+            break;
+        case "SLH-DSA-SHA2-192S":
+            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_192S;
+            break;
+        case "SLH-DSA-SHAKE-192S":
+            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_192S;
+            break;
+        case "SLH-DSA-SHA2-192F":
+            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_192F;
+            break;
+        case "SLH-DSA-SHAKE-192F":
+            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_192F;
+            break;
+        case "SLH-DSA-SHA2-256S":
+            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_256S;
+            break;
+        case "SLH-DSA-SHAKE-256S":
+            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_256S;
+            break;
+        case "SLH-DSA-SHA2-256F":
+            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_256F;
+            break;
+        case "SLH-DSA-SHAKE-256F":
+            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_256F;
+            break;
         case "FALCON-512":
             keyAlgorithm = AlgorithmConstants.KEYALGORITHM_FALCON512;
             break;
