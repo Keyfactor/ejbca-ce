@@ -7,13 +7,16 @@ if "%JAVA_HOME%" == "" (
     goto end
 )
 
-set EJBCA_HOME=%~dp0
-rem It must work to call both as bin\ejbca.cmd or from within bin
-if not exist ejbca.cmd set EJBCA_HOME=.
+rem Find the absolute path of the project
+pushd %~dp0
+pushd ..
+set EJBCA_HOME=%CD%
+popd
+popd
 
 rem check that we have built the JAR
-if not exist "%EJBCA_HOME%\ejbca-ejb-cli.jar" (
-    echo You must build EJBCA before using the cli, use 'ant'.
+if not exist "%EJBCA_HOME%\dist\ejbca-ejb-cli\ejbca-ejb-cli.jar" (
+    echo You must build EJBCA before using the cli, use 'ant build'.
     goto end
 )
 
@@ -28,6 +31,6 @@ FOR %%A IN (%*) DO (
 )
 rem echo %args%
 
-"%JAVA_HOME%\bin\java" -Dlog4j.configuration="%EJBCA_HOME%\log4j-cli.properties" -Dlog4j1.compatibility=true -jar "%EJBCA_HOME%\ejbca-ejb-cli.jar" %args%
+"%JAVA_HOME%\bin\java" -Dlog4j.configuration="%EJBCA_HOME%\bin\log4j-cli.properties" -Dlog4j1.compatibility=true -jar "%EJBCA_HOME%\dist\ejbca-ejb-cli\ejbca-ejb-cli.jar" %args%
 
 :end

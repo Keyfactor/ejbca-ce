@@ -791,6 +791,12 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         final Boolean submittedValue = (Boolean) checkbox.getSubmittedValue(); // check if there is a changed value (which might not have passed validation)
         return submittedValue != null ? submittedValue : caInfoDto.isUsePartitionedCrl();
     }
+    
+    public boolean isKeepExpiredCertsOnCrlChecked() {
+        final UIInput checkbox = (UIInput) FacesContext.getCurrentInstance().getViewRoot().findComponent(":editcapage:checkboxkeepexpiredoncrl");
+        final Boolean submittedValue = (Boolean) checkbox.getSubmittedValue(); // check if there is a changed value (which might not have passed validation)
+        return submittedValue != null ? submittedValue : caInfoDto.isKeepExpiredCertsOnCrl();
+    }
 
     public List<SelectItem> getAvailableCrlPublishers() {
         final List<SelectItem> ret = new ArrayList<>();
@@ -2462,7 +2468,10 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             final List<String> urisCertificateAiaDefaultCaIssuerUri = x509cainfo.getCertificateAiaDefaultCaIssuerUri();
             caInfoDto.setAuthorityInformationAccess(null != urisAuthorityInformationAccess ? StringUtils.join(urisAuthorityInformationAccess, ";") : "");
             caInfoDto.setCertificateAiaDefaultCaIssuerUri(null != urisCertificateAiaDefaultCaIssuerUri ? StringUtils.join(urisCertificateAiaDefaultCaIssuerUri, ";") : "");
-            caInfoDto.setKeepExpiredOnCrl(x509cainfo.getKeepExpiredCertsOnCRL());
+            caInfoDto.setKeepExpiredCertsOnCrl(x509cainfo.getKeepExpiredCertsOnCrl());
+            caInfoDto.setKeepExpiredCertsOnCrlFormat(x509cainfo.getKeepExpiredCertsOnCrlFormat());
+            caInfoDto.setKeepExpiredCertsOnCrlDate(x509cainfo.getKeepExpiredCertsOnCrlDate());
+
             caInfoDto.setUsePartitionedCrl(x509cainfo.getUsePartitionedCrl());
             caInfoDto.setCrlPartitions(x509cainfo.getCrlPartitions());
             caInfoDto.setSuspendedCrlPartitions(x509cainfo.getSuspendedCrlPartitions());

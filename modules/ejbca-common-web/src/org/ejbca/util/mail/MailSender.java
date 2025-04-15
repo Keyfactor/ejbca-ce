@@ -13,6 +13,15 @@
 
 package org.ejbca.util.mail;
 
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.Executors;
+
+import org.apache.log4j.Logger;
+import org.ejbca.config.MailConfiguration;
+import org.ejbca.core.ejb.ServiceLocator;
+import org.ejbca.core.ejb.ServiceLocatorException;
+
 import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
 import jakarta.mail.Multipart;
@@ -22,31 +31,21 @@ import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
-import org.apache.log4j.Logger;
-import org.ejbca.config.MailConfiguration;
-import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ServiceLocatorException;
-
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.Executors;
 
 /**
  * Simple wrapper for JavaMail.
- * 
- * @version $Id$
  */
 public class MailSender {
-	
+
 	private static final Logger log = Logger.getLogger(MailSender.class);
 
 	private static final int TIMEOUT_PERIOD = 15000;
-	
+
 	// Some constants to make it easier to read the client code
 	public final static List<String> NO_TO = null;	//List<String>
 	public final static List<String> NO_CC = null;	//List<String>
 	public final static List<MailAttachment> NO_ATTACHMENTS = null;	//List<MailAttachment>
-	
+
 	/**
 	 * Returns true if mail is configured and available in the application server.
 	 */
@@ -64,7 +63,7 @@ public class MailSender {
 
 	/**
 	 * Helper method for sending mail using the mail service configured in mail.properties.
-	 * 
+	 *
 	 * @param fromAddress The "From" address
 	 * @param toList List<String> of addresses that will end up in the "To"-field or null to disable
 	 * @param ccList List<String> of addresses that will end up in the "Cc"-field or null to disable
@@ -92,7 +91,7 @@ public class MailSender {
 
 	/**
 	 * Helper method for sending mail using the mail service configured in mail.properties.
-	 * 
+	 *
 	 * @param fromAddress The "From" address
 	 * @param toList List<String> of addresses that will end up in the "To"-field or null to disable
 	 * @param ccList List<String> of addresses that will end up in the "Cc"-field or null to disable
@@ -180,7 +179,7 @@ public class MailSender {
 			Executors.newSingleThreadExecutor().submit(() -> {
 				try {
 					Transport.send(msg);
-					log.info("Sending email is successful.");
+					log.info("Sending email is successful. Recipients: TO: " + toList + ", CC: " + ccList);
 				} catch (MessagingException e) {
 					log.error("Unable to send email: ", e);
 				}

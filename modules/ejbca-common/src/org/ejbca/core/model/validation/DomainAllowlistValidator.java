@@ -360,4 +360,9 @@ public class DomainAllowlistValidator extends ValidatorBase implements DnsNameVa
         putData(WHITELIST_SHA256_KEY, sha256);
     }
 
+    @Override
+    public boolean isValidatorAlwaysApplicable() {
+        return true;
+    }
+    
 }
