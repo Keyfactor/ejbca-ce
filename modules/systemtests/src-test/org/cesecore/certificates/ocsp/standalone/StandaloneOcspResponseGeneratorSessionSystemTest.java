@@ -1810,7 +1810,7 @@ public class StandaloneOcspResponseGeneratorSessionSystemTest {
         final String ocspSigningCertificateFingerprint = internalKeyBindingMgmtSession.updateCertificateForInternalKeyBinding(authenticationToken,
                 internalKeyBindingId);
         if (!CertTools.getFingerprintAsString(ocspSigningCertificate).equals(ocspSigningCertificateFingerprint)) {
-            throw new Error("Wrong certificate was found for InternalKeyBinding");
+            throw new IllegalStateException("Wrong certificate was found for InternalKeyBinding");
         }
         OcspTestUtils.setInternalKeyBindingStatus(authenticationToken, internalKeyBindingId, InternalKeyBindingStatus.ACTIVE);
     }
