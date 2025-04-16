@@ -62,6 +62,7 @@ public class CaInfoDto implements Serializable {
     private boolean useCertificateStorage = true;
     private boolean acceptRevocationsNonExistingEntry;
     private boolean doPreProduceOcspResponses = false;
+    private boolean addCompromisedKeysToBlockList = false;
     private boolean doPreProduceOcspResponseUponIssuanceAndRevocation = false;
     private boolean doStoreOcspResponsesOnDemand = false;
     private String caSubjectAltName;
@@ -332,6 +333,14 @@ public class CaInfoDto implements Serializable {
     
     public void setDoPreProduceOcspResponses(boolean preProduceOcspResponses) {
         this.doPreProduceOcspResponses = preProduceOcspResponses;
+    }
+    
+    public boolean isAddCompromisedKeysToBlockList() {
+        return addCompromisedKeysToBlockList;
+    }
+    
+    public void setAddCompromisedKeysToBlockList(boolean addCompromisedKeysToBlockList) {
+        this.addCompromisedKeysToBlockList = addCompromisedKeysToBlockList;
     }
 
     public boolean isDoPreProduceOcspResponseUponIssuanceAndRevocation() {

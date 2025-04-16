@@ -108,6 +108,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
     protected static final String USENOCONFLICTCERTIFICATEDATA = "usenoconflictcertificatedata";
     protected static final String SERIALNUMBEROCTETSIZE = "serialnumberoctetsize";
     protected static final String DO_PRE_PRODUCE_OCSP_RESPONSES = "dopreproduceocspresponses";
+    protected static final String ADD_COMPROMISED_KEYS_TO_BLOCK_LIST = "addCompromisedKeysToBlockList";
     protected static final String DO_STORE_OCSP_ON_DEMAND = "dostoreocspondemand";
     protected static final String DO_PRE_PRODUCE_INDIVIDUAL_OCSP_RESPONSES = "dopreproduceocspresponsesuponissuanceandrevocation";
     private static final String LATESTLINKCERTIFICATE = "latestLinkCertificate";

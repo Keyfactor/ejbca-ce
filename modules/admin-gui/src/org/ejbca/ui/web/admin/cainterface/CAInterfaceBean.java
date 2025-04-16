@@ -581,6 +581,7 @@ public class CAInterfaceBean implements Serializable {
                             .setUseUserStorage(caInfoDto.isUseUserStorage())
                             .setUseCertificateStorage(caInfoDto.isUseCertificateStorage())
                             .setDoPreProduceOcspResponses(caInfoDto.isDoPreProduceOcspResponses())
+                            .setAddCompromisedKeysToBlockList(caInfoDto.isAddCompromisedKeysToBlockList())
                             .setDoStoreOcspResponsesOnDemand(caInfoDto.isDoStoreOcspResponsesOnDemand())
 							.setDoPreProduceIndividualOcspResponses(caInfoDto.isDoPreProduceOcspResponseUponIssuanceAndRevocation())
                             .setAcceptRevocationNonExistingEntry(caInfoDto.isAcceptRevocationsNonExistingEntry())
@@ -648,7 +649,8 @@ public class CAInterfaceBean implements Serializable {
                             caInfoDto.isUseCertReqHistory(),
                             caInfoDto.isUseUserStorage(),
                             caInfoDto.isUseCertificateStorage(),
-                            caInfoDto.isAcceptRevocationsNonExistingEntry());
+                            caInfoDto.isAddCompromisedKeysToBlockList(),
+                            caInfoDto.isAcceptRevocationsNonExistingEntry());                  
 	                if (buttonCreateCa) {
 	                    caadminsession.createCA(authenticationToken, cvccainfo);
 	                } else if (buttonMakeRequest) {
@@ -1031,6 +1033,7 @@ public class CAInterfaceBean implements Serializable {
                        .setUseUserStorage(caInfoDto.isUseUserStorage())
                        .setUseCertificateStorage(caInfoDto.isUseCertificateStorage())
                        .setDoPreProduceOcspResponses(caInfoDto.isDoPreProduceOcspResponses())
+                       .setAddCompromisedKeysToBlockList(caInfoDto.isAddCompromisedKeysToBlockList())
                        .setDoStoreOcspResponsesOnDemand(caInfoDto.isDoStoreOcspResponsesOnDemand())
 					   .setDoPreProduceIndividualOcspResponses(caInfoDto.isDoPreProduceOcspResponseUponIssuanceAndRevocation())
                        .setAcceptRevocationNonExistingEntry(caInfoDto.isAcceptRevocationsNonExistingEntry())
@@ -1069,7 +1072,9 @@ public class CAInterfaceBean implements Serializable {
                        caInfoDto.isUseCertReqHistory(),
                        caInfoDto.isUseUserStorage(),
                        caInfoDto.isUseCertificateStorage(),
-                       caInfoDto.isAcceptRevocationsNonExistingEntry(), caInfoDto.getDefaultCertProfileId());
+                       caInfoDto.isAddCompromisedKeysToBlockList(),
+                       caInfoDto.isAcceptRevocationsNonExistingEntry(), 
+                       caInfoDto.getDefaultCertProfileId());
             } else if (caInfoDto.getCaType() == CAInfo.CATYPE_SSH) {
                 final int caSerialNumberOctetSize = (caInfoDto.getCaSerialNumberOctetSize() != null)
                         ? Integer.parseInt(caInfoDto.getCaSerialNumberOctetSize())
