@@ -128,18 +128,6 @@ certificate.validityoffset=-10m
 # Default: off (false)
 #database.crlgenfetchordered=true
 
-
-# ------------- Core language configuration -------------
-# The language that should be used internally for logging, exceptions and approval notifications.
-# The languagefile is stored in 'src/intresources/ejbcaresources.xx.properties' and 'intresources.xx.properties'.
-# Should be one of: en, fr, ja, pt, sv, vi.
-# Default: en
-#intresources.preferredlanguage=en
-
-# The language used internally if a resource not found in the preferred language.
-# Default: en
-#intresources.secondarylanguage=en
-
 # ------------ Audit log configuration ---------------------
 # I you want to use integrity protection of the audit log (in the IntegrityProtectedDevice) you
 # must also configure integrity protection in conf/databaseprotection.properties

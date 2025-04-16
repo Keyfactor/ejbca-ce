@@ -23,7 +23,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * @version $Id$
  */
 public class InternalResourcesUnitTest {
 
@@ -35,7 +34,6 @@ public class InternalResourcesUnitTest {
     @Before
     public void before() {
         ConfigurationHolder.backupConfiguration();
-        ConfigurationHolder.updateConfiguration("intresources.secondarylanguage", "sv");
     }
     @After
     public void after() {
@@ -48,10 +46,6 @@ public class InternalResourcesUnitTest {
         String res = intres.getLocalizedMessage("raadmin.testmsg");
         assertEquals("Test en-US                        ", res);
         assertEquals("Test en-US                        ", intres.getLocalizedMessageCs("raadmin.testmsg").toString());
-        // This message will only exist in the secondary language file
-        res = intres.getLocalizedMessage("raadmin.testmsgsv");
-        assertEquals("Test sv-SE", res);
-        assertEquals("Test sv-SE", intres.getLocalizedMessageCs("raadmin.testmsgsv").toString());
     }
 
     @Test
