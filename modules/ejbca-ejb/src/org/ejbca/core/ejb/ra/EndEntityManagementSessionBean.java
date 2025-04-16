@@ -2240,7 +2240,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         log.trace(">addToBlacklist()");
         try {
             final AlwaysAllowLocalAuthenticationToken alwaysAllowAuthToken = new AlwaysAllowLocalAuthenticationToken(
-                    new UsernamePrincipal("Key Compromise Blocklist Update"));
+                    new UsernamePrincipal("Key Compromise Blocklist Addition"));
             blacklistSession.addBlacklistEntry(alwaysAllowAuthToken, entry);
         } catch (BlacklistExistsException e) {
             log.info("Public key block list entry with public key fingerprint " + entry.getFingerprint() + " already exists.");
