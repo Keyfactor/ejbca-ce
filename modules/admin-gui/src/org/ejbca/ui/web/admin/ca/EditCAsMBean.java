@@ -1414,6 +1414,10 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     public boolean isRenderOcspPreProduction() {
         return getEjbcaWebBean().isRunningEnterprise();
     }
+    
+    public boolean isAddCompromisedKeysToBlockList() {
+        return caInfoDto.isAddCompromisedKeysToBlockList();
+    }
 
     public String getCaCertLink() {
         return viewCertLink + "?caid=" + caid;
@@ -1732,6 +1736,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             x509caInfo.setExternalCdp(crlCaCRLDPExternal.trim());
             x509caInfo.setAllowInvalidityDate(caInfoDto.isAllowInvalidityDate());
             x509caInfo.setDoPreProduceOcspResponses(caInfoDto.isDoPreProduceOcspResponses());
+            x509caInfo.setAddCompromisedKeysToBlockList(caInfoDto.isAddCompromisedKeysToBlockList());
             x509caInfo.setDoStoreOcspResponsesOnDemand(caInfoDto.isDoStoreOcspResponsesOnDemand());
             x509caInfo.setDoPreProduceOcspResponseUponIssuanceAndRevocation(caInfoDto.isDoPreProduceOcspResponseUponIssuanceAndRevocation());
             return saveCaInternal(x509caInfo);
@@ -1754,6 +1759,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             cainfo.setCertificateProfileId(certprofileid);
             cainfo.setDefaultCertificateProfileId(caInfoDto.getDefaultCertProfileId());
             cainfo.setUseNoConflictCertificateData(caInfoDto.isUseNoConflictCertificateData());
+            cainfo.setAddCompromisedKeysToBlockList(caInfoDto.isAddCompromisedKeysToBlockList());
             CAInfo oldinfo = caSession.getCAInfo(getAdmin(), cainfo.getCAId());
             cainfo.setName(oldinfo.getName());
             caAdminSession.initializeCa(getAdmin(), cainfo);
@@ -2350,6 +2356,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         caInfoDto.setKeySequenceFormat(cainfo.getCAToken().getKeySequenceFormat());
         caInfoDto.setDescription(cainfo.getDescription());
         caInfoDto.setDoEnforceUniquePublickeys(cainfo.isDoEnforceUniquePublicKeys());
+        caInfoDto.setAddCompromisedKeysToBlockList(cainfo.isAddCompromisedKeysToBlockList());
         caInfoDto.setDoEnforceKeyRenewal(cainfo.isDoEnforceKeyRenewal());
         caInfoDto.setDoEnforceUniqueDN(cainfo.isDoEnforceUniqueDistinguishedName());
         caInfoDto.setDoEnforceUniqueSubjectDNSerialnumber(cainfo.isDoEnforceUniqueSubjectDNSerialnumber());

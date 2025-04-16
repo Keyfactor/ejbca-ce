@@ -108,6 +108,9 @@ public interface CA extends CACommon {
     /** whether issued certificates should be stored or not, default true as was the case before 3.10.x */
     boolean isUseCertificateStorage();
 
+    /** whether compromised keys should be added or not, by default false */
+    boolean isAddCompromisedKeysToBlockList();
+    
     /** whether revocations for non existing entry accepted */
     boolean isAcceptRevocationNonExistingEntry();
     
