@@ -49,7 +49,6 @@ public class InternalResources implements Serializable {
     protected static InternalResources instance = null;
 
     protected Properties primaryResource = new Properties();
-    protected Properties secondaryResource = new Properties();
     private static String[] placeHolders = null;
 
     private static final String RESOURCE_PATH = "/intresources";
@@ -112,9 +111,8 @@ public class InternalResources implements Serializable {
 
     /**
      * Method returning the localized message for the given resource key.
-     * 
-     * It first looks up in the primary language then in the secondary If not
-     * found in any of the resource file "no text" is returned.
+     *
+     * If not found in any of the resource files, "no text" is returned.
      * <br/><br/>
      * NOTE: String is immutable and you will get a copy of the String instead
      * of a reference to it. This is more memory consuming than using
@@ -140,8 +138,7 @@ public class InternalResources implements Serializable {
     /**
      * Method returning the localized message for the given resource key.
      * 
-     * It first looks up in the primary language then in the secondary If not
-     * found in any of the resource file "no text" is returned.
+     * If not found in any of the resource files, "no text" is returned.
      * 
      * @param key
      *            is the key searched for in the resource files
@@ -165,8 +162,6 @@ public class InternalResources implements Serializable {
         if (sb.length()==0) {
             if (primaryResource.containsKey(key)) {
                 sb.append(primaryResource.getProperty(key));
-            } else if (secondaryResource.containsKey(key)) {
-                sb.append(secondaryResource.getProperty(key));
             } else {
                 sb.append(key);
             }
