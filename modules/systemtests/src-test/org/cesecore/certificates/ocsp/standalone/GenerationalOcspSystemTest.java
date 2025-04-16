@@ -124,13 +124,17 @@ public class GenerationalOcspSystemTest {
      */
     @Test
     public void testGenerationalOcsp() throws Exception {
-        final String methodName = testName.getMethodName();
-        //Create a CA
-        X509CAInfo x509ca = cryptoTokenRunner.createX509Ca("CN=" + methodName, methodName);
-        X509Certificate gen0CaCertificate = (X509Certificate) x509ca.getCertificateChain().get(0);
+        final String issuingCaName = testName.getMethodName();
+        final String rootCaName = issuingCaName + "Root";
+        final String rootSubjectDn = "CN=" + rootCaName;
+        //Create a root CA  - returned chains don't contain the root, so we need a structure to be able to analyze the chain
+        X509CAInfo rootX509Ca = cryptoTokenRunner.createX509Ca(rootSubjectDn, rootCaName);
+        //Create an issuing CA
+        X509CAInfo issuingX509Ca = cryptoTokenRunner.createX509Ca("CN=" + issuingCaName, rootSubjectDn, issuingCaName, "1y");
+        X509Certificate gen0CaCertificate = (X509Certificate) issuingX509Ca.getCertificateChain().get(0);
         //Renew this CA
-        caAdminSession.renewCA(authenticationToken, x509ca.getCAId(), false, null, false);
-        X509Certificate gen1CaCertificate = (X509Certificate) caSession.getCaChain(authenticationToken, methodName).get(0).getCertificate();
+        caAdminSession.renewCA(authenticationToken, issuingX509Ca.getCAId(), false, null, false);
+        X509Certificate gen1CaCertificate = (X509Certificate) caSession.getCaChain(authenticationToken, issuingCaName).get(0).getCertificate();
         //Create an ocsp responder that uses this CA – verify that the current chain is included
         int cryptoTokenId = cryptoTokenRunner.createCryptoToken(testName.getMethodName());
         X509Certificate ocspSigningCertificate = null;
@@ -141,12 +145,16 @@ public class GenerationalOcspSystemTest {
         ocspResponder.setIncludeCertChain(true);
         ocspResponder.setIncludeSignCert(true);
         internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, ocspResponder);
-        ocspResponseGeneratorSession.reloadOcspSigningCache();
+        
         
         String signerDN = "CN=" + testName.getMethodName() + "Signer";
         ocspSigningCertificate = OcspTestUtils.createOcspSigningCertificate(authenticationToken,  testName.getMethodName() + "Signer",
-                signerDN, internalKeyBindingId, x509ca.getCAId());
+                signerDN, internalKeyBindingId, issuingX509Ca.getCAId());
         activateKeyBinding(internalKeyBindingId, ocspSigningCertificate);
+        //Now delete the original CA, making this test completely standalone.
+        OcspTestUtils.deleteCa(authenticationToken, rootX509Ca);
+        OcspTestUtils.deleteCa(authenticationToken, issuingX509Ca);
+        ocspResponseGeneratorSession.reloadOcspSigningCache();
         try {
    
             final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
@@ -168,7 +176,7 @@ public class GenerationalOcspSystemTest {
                 BasicOCSPResp sanityBasicOcspResponse = (BasicOCSPResp) sanityResponse.getResponseObject();
                 List<X509Certificate> sanitySigningChain = CertTools.convertToX509CertificateList(Arrays.asList(sanityBasicOcspResponse.getCerts()));
                 //Verify that the current chain is in use      
-                if (!CertTools.getSerialNumber(sanitySigningChain.get(0)).equals(CertTools.getSerialNumber(gen1CaCertificate))) {
+                if (!CertTools.getSerialNumber(sanitySigningChain.get(1)).equals(CertTools.getSerialNumber(gen1CaCertificate))) {
                     throw new IllegalStateException("Latest signing chain is not in use, sanity not verified. Test cannot continue.");
                 }
             }
@@ -191,8 +199,8 @@ public class GenerationalOcspSystemTest {
                 assertEquals("Response status not zero (ok).", OCSPRespBuilder.SUCCESSFUL, generationalResponse.getStatus());
                 BasicOCSPResp generationalBasicOcspResponse = (BasicOCSPResp) generationalResponse.getResponseObject();
                 List<X509Certificate> generationalSigningChain = CertTools.convertToX509CertificateList(Arrays.asList(generationalBasicOcspResponse.getCerts()));
-                //Verify that the current chain is in use      
-                assertEquals("Previous CA chain was not used.", CertTools.getSerialNumber(gen0CaCertificate), CertTools.getSerialNumber(generationalSigningChain.get(0)));
+                //Verify that the current chain is in use    
+                assertEquals("Previous CA chain was not used.", CertTools.getSerialNumber(gen0CaCertificate), CertTools.getSerialNumber(generationalSigningChain.get(1)));
       
             }
 
