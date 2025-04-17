@@ -75,7 +75,6 @@ import org.cesecore.certificates.ca.kfenroll.ProxyCaInfo;
 import org.cesecore.certificates.ca.ssh.SshCaInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
-import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
@@ -83,7 +82,6 @@ import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
-import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.config.CesecoreConfiguration;
@@ -98,7 +96,6 @@ import org.cesecore.util.SimpleTime;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
-import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
 import org.ejbca.core.model.ca.store.CertReqHistory;
@@ -106,7 +103,6 @@ import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.CertificateView;
 import org.ejbca.ui.web.ParameterException;
 import org.ejbca.ui.web.RequestHelper;
-import org.ejbca.ui.web.RevokedInfoView;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.cert.OID;
 
@@ -133,7 +129,6 @@ public class CAInterfaceBean implements Serializable {
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
     private PublisherSessionLocal publishersession;
     private KeyValidatorSessionLocal keyValidatorSession;
-    private SignSession signsession;
 
     private boolean initialized;
     private AuthenticationToken authenticationToken;
@@ -163,26 +158,12 @@ public class CAInterfaceBean implements Serializable {
         caadminsession = ejbLocalHelper.getCaAdminSession();
         casession = ejbLocalHelper.getCaSession();
         authorizationSession = ejbLocalHelper.getAuthorizationSession();
-        signsession = ejbLocalHelper.getSignSession();
         publishersession = ejbLocalHelper.getPublisherSession();
         certificateProfileSession = ejbLocalHelper.getCertificateProfileSession();
         keyValidatorSession = ejbLocalHelper.getKeyValidatorSession();
         authenticationToken = ejbcawebbean.getAdminObject();
         this.ejbcawebbean = ejbcawebbean;
         initialized = true;
-    }
-
-    public CertificateView[] getCACertificates(int caid) {
-        final List<CertificateView> ret = new ArrayList<>();
-        for (final Certificate certificate : signsession.getCertificateChain(caid)) {
-            RevokedInfoView revokedinfo = null;
-            CertificateStatus revinfo = certificatesession.getStatus(CertTools.getIssuerDN(certificate), CertTools.getSerialNumber(certificate));
-            if (revinfo != null && revinfo.revocationReason != RevokedCertInfo.NOT_REVOKED) {
-                revokedinfo = new RevokedInfoView(revinfo, CertTools.getSerialNumber(certificate));
-            }
-            ret.add(new CertificateView(certificate, revokedinfo));
-        }
-        return ret.toArray(new CertificateView[0]);
     }
 
     /**

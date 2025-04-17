@@ -31,9 +31,6 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -173,7 +170,6 @@ import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.keys.token.NullCryptoToken;
 import org.cesecore.keys.validation.IssuancePhase;
 import org.cesecore.keys.validation.ValidationException;
-import org.cesecore.util.ConverterUtils;
 import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.PrintableStringNameStyle;
 import org.cesecore.util.SimpleTime;
@@ -944,9 +940,6 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         data.put(POLICIES, info.getPolicies());
     }
 
-    /* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.X509CA#createPKCS7(om.keyfactor.util.keys.token.CryptoToken, java.security.cert.X509Certificate, boolean)
-     */
     @Override
     public byte[] createPKCS7(CryptoToken cryptoToken, X509Certificate cert, boolean includeChain) throws SignRequestSignatureException {
         // First verify that we signed this certificate

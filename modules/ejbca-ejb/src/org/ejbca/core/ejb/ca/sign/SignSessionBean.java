@@ -274,29 +274,26 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         }
     }
 
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    @Override
-    public Collection<Certificate> getCertificateChain(int caid) {
-        final CAInfo cainfo = caSession.getCAInfoInternal(caid);
-        if (cainfo != null) {
-            return cainfo.getCertificateChain();
-        } else {
-            return new ArrayList<>();
-        }
-    }
-
     @Override
     public byte[] createPKCS7(AuthenticationToken admin, X509Certificate cert, boolean includeChain)
-            throws CADoesntExistsException, SignRequestSignatureException, AuthorizationDeniedException {
+            throws CADoesntExistsException, AuthorizationDeniedException {
         Integer caid = Integer.valueOf(CertTools.getIssuerDN(cert).hashCode());
-        return createPKCS7(admin, caid.intValue(), cert, includeChain, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
+        try {
+            return createPKCS7(admin, caid.intValue(), cert, includeChain, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
+        } catch (SignRequestSignatureException e) {
+            throw new IllegalStateException("This state should not happen. The CA that issued the certificate was not found, but that should have been thrown as a CADoesntExistsException.");
+        } 
     }
 
     @Override
     public byte[] createPKCS7(AuthenticationToken admin, X509Certificate cert, boolean includeChain, final int eepId)
-            throws CADoesntExistsException, SignRequestSignatureException, AuthorizationDeniedException {
+            throws CADoesntExistsException, AuthorizationDeniedException {
         Integer caid = Integer.valueOf(CertTools.getIssuerDN(cert).hashCode());
-        return createPKCS7(admin, caid.intValue(), cert, includeChain, eepId);
+        try {
+            return createPKCS7(admin, caid.intValue(), cert, includeChain, eepId);
+        } catch (SignRequestSignatureException e) {
+            throw new IllegalStateException("This state should not happen. The CA that issued the certificate was not found, but that should have been thrown as a CADoesntExistsException.");
+        } 
     }
 
     @Override
@@ -330,6 +327,10 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             log.trace(">createPKCS7(" + caId + ", " + CertTools.getIssuerDN(cert) + ")");
         }
         final CA ca = (CA) caSession.getCA(admin, caId);
+        if(ca == null) {
+            throw new CADoesntExistsException("CA with id " + caId + " doesn't exit.");
+        }
+        
         final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
         final byte[] returnval = ca.createPKCS7(cryptoToken, cert, includeChain);
         if (returnval != null) {
@@ -904,7 +905,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             if (user != null) {
                 final int caid = user.getCAId();
                 caSession.verifyExistenceOfCA(caid);
-                result.addAll(getCertificateChain(caid));
+                result.addAll(caSession.getCertificateChain(caid));
             }
             log.trace("<cvcRequest");
             return EJBTools.wrapCertCollection(result);

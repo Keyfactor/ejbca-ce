@@ -17,7 +17,6 @@ import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -240,12 +239,12 @@ public interface CA extends CACommon {
    /**
     * Create a signed PKCS#7 / CMS message.
     *
-    * @param cryptoToken
-    * @param cert
-    * @param includeChain
+    * @param cryptoToken the crypto token to use
+    * @param cert the certificate to be included in the CMS
+    * @param includeChain true to include the chain
     * @return A DER-encoded PKCS#7
     * @throws SignRequestSignatureException if the certificate doesn't seem to be signed by this CA
-    * @see CertTools#createCertsOnlyCMS(List) for how to craete a certs-only PKCS7/CMS
+    * @see CertTools#createCertsOnlyCMS(List) for how to create a certs-only PKCS7/CMS
     */
    byte[] createPKCS7(CryptoToken cryptoToken, X509Certificate cert, boolean includeChain) throws SignRequestSignatureException;
 

@@ -65,49 +65,37 @@ import com.keyfactor.util.certificate.CertificateWrapper;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
- * @version $Id$
  */
 public interface SignSession {
 
     /**
-     * Retrieves the certificate chain for the signer. The returned certificate chain MUST have the
-     * RootCA certificate in the last position.
-     *
-     * @param caid  is the issuerdn.hashCode()
-     * @return Collection of Certificate, the certificate chain, never null.
-     */
-    Collection<Certificate> getCertificateChain(int caid);
-
-    /**
      * Creates a signed PKCS7 message containing the whole certificate chain, including the
      * provided client certificate.
      *
      * @param admin Information about the administrator or admin performing the event.
-     * @param cert  client certificate which we want encapsulated in a PKCS7 together with
-     *              certificate chain.
+     * @param cert  client certificate which we want encapsulated in a PKCS7 together with the certificate chain.
+     * @param includeChain set to true to include the chain
      * @return The DER-encoded PKCS7 message.
      * @throws CADoesntExistsException       if the CA does not exist or is expired, or has an invalid cert
-     * @throws SignRequestSignatureException if the certificate is not signed by the CA
      * @throws AuthorizationDeniedException
      */
     byte[] createPKCS7(AuthenticationToken admin, X509Certificate cert, boolean includeChain) throws CADoesntExistsException,
-            SignRequestSignatureException, AuthorizationDeniedException;
+            AuthorizationDeniedException;
 
     /**
      * Creates a signed PKCS7 message containing the whole certificate chain, including the
      * provided client certificate.
      *
      * @param admin Information about the administrator or admin performing the event.
-     * @param cert  client certificate which we want encapsulated in a PKCS7 together with
-     *              certificate chain.
+     * @param cert  client certificate which we want encapsulated in a PKCS7 together with the certificate chain.
+     * @param includeChain set to true to include the chain
      * @param eepId End Entity Profile ID to provide accurate log redaction
      * @return The DER-encoded PKCS7 message.
      * @throws CADoesntExistsException       if the CA does not exist or is expired, or has an invalid cert
-     * @throws SignRequestSignatureException if the certificate is not signed by the CA
      * @throws AuthorizationDeniedException
      */
     byte[] createPKCS7(AuthenticationToken admin, X509Certificate cert, boolean includeChain, int eepId) throws CADoesntExistsException,
-            SignRequestSignatureException, AuthorizationDeniedException;
+            AuthorizationDeniedException;
 
     /**
      * Creates a signed PKCS7 message containing the whole certificate chain of the specified CA.
@@ -369,6 +357,7 @@ public interface SignSession {
       * @throws CertificateExpiredException if the users old certificate has expired.
       * @throws CesecoreException any CesecoreException.
       */
+     @SuppressWarnings("deprecation")
      Collection<CertificateWrapper> createCardVerifiableCertificateWS(AuthenticationToken authenticationToken, String username, String password, String cvcreq) throws 
             AuthorizationDeniedException, CADoesntExistsException, UserDoesntFullfillEndEntityProfile, NotFoundException,
             ApprovalException, EjbcaException, WaitingForApprovalException, SignRequestException, CertificateExpiredException, CesecoreException;
