@@ -18,10 +18,8 @@ import com.keyfactor.util.CertTools;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 
-import java.util.AbstractMap;
-import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * A class representing the input for certificate enrollment REST method.
@@ -199,19 +197,19 @@ public class EnrollCertificateRestRequest {
          * @return EnrollPkcs10CertificateRequest instance.
          */
         public EnrollPkcs10CertificateRequest toEnrollPkcs10CertificateRequest(final EnrollCertificateRestRequest enrollCertificateRestRequest) {
-            final List<Map.Entry<String, String>> extendedData = new ArrayList<>();
+            final LinkedHashMap<String, String> extendedData = new LinkedHashMap<>();
             List<ExtendedInformationRestRequestComponent> extensions = enrollCertificateRestRequest.getExtensionData();
             if (extensions != null && !extensions.isEmpty()) {
                 extensions.forEach(extension -> {
-                    extendedData.add(new AbstractMap.SimpleEntry<>(extension.getName(),extension.getValue()));
+                    extendedData.put(extension.getName(),extension.getValue());
                 });
             }
 
-            final List<Map.Entry<String, String>> customData = new ArrayList<>();
+            final LinkedHashMap<String, String> customData = new LinkedHashMap<>();
             List<ExtendedInformationRestRequestComponent> components = enrollCertificateRestRequest.getCustomData();
             if (components != null && !components.isEmpty()) {
                 components.forEach(component -> {
-                    customData.add(new AbstractMap.SimpleEntry<>(component.getName(),component.getValue()));
+                    customData.put(component.getName(),component.getValue());
                 });
             }
 
