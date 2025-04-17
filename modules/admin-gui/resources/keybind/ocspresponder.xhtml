@@ -36,9 +36,9 @@
 					<h:outputText value="#{ocspResponderMBean.backLinkTranslatedText}"/>
 				</h:outputLink>
 				<h:form rendered="#{ocspResponderMBean.switchToEditAllowed or ocspResponderMBean.switchToViewAllowed}">
-					<p:commandButton rendered="#{ocspResponderMBean.switchToEditAllowed}" action="#{ocspResponderMBean.switchToEdit}"
+					<h:commandButton rendered="#{ocspResponderMBean.switchToEditAllowed}" action="#{ocspResponderMBean.switchToEdit}"
 									 value="#{web.text.EDIT}" title="#{web.text.SWITCHTOEDITMODE}" update="@all" immediate="true"/>
-					<p:commandButton rendered="#{ocspResponderMBean.switchToViewAllowed}" action="#{ocspResponderMBean.switchToView}"
+					<h:commandButton rendered="#{ocspResponderMBean.switchToViewAllowed}" action="#{ocspResponderMBean.switchToView}"
 									 value="#{web.text.VIEW}" title="#{web.text.SWITCHTOVIEWMODE}" update="@all" immediate="true"/>
 				</h:form>
 			</h:panelGrid>
@@ -60,11 +60,11 @@
 				<h:outputLabel for="cryptoToken" value="#{web.text.INTERNALKEYBINDING_FIELD_CRYPTOTOKEN}"/>
 				<h:panelGroup id="cryptoToken">
 					<h:panelGroup rendered="#{ocspResponderMBean.inEditMode and ocspResponderMBean.cryptoTokenActive}">
-						<p:selectOneMenu value="#{ocspResponderMBean.currentCryptoToken}"
+						<h:selectOneMenu value="#{ocspResponderMBean.currentCryptoToken}"
 										 onchange="document.getElementById('internalkeybinding:reloadCryptoToken').click();">
 							<f:selectItems value="#{ocspResponderMBean.availableCryptoTokens}"/>
-						</p:selectOneMenu>
-						<p:commandButton id="reloadCryptoToken" value="#{web.text.INTERNALKEYBINDING_CRYPTOTOKEN_UPDATENEXT}" action="#{ocspResponderMBean.reloadCryptoToken}"/>
+						</h:selectOneMenu>
+						<h:commandButton id="reloadCryptoToken" value="#{web.text.INTERNALKEYBINDING_CRYPTOTOKEN_UPDATENEXT}" action="#{ocspResponderMBean.reloadCryptoToken}"/>
 						<script>document.getElementById('internalkeybinding:reloadCryptoToken').style.display = 'none';</script>
 					</h:panelGroup>
 					<h:outputText rendered="#{ocspResponderMBean.inEditMode and !ocspResponderMBean.cryptoTokenActive and ocspResponderMBean.currentCryptoTokenName != null}"
@@ -76,11 +76,11 @@
 				<h:outputLabel for="keyPairAlias" value="#{web.text.INTERNALKEYBINDING_FIELD_KEYPAIRALIAS}"/>
 				<h:panelGroup id="keyPairAlias">
 					<h:panelGroup rendered="#{ocspResponderMBean.inEditMode and ocspResponderMBean.cryptoTokenActive and !ocspResponderMBean.boundToCertificate}">
-						<p:selectOneMenu value="#{ocspResponderMBean.currentKeyPairAlias}"
+						<h:selectOneMenu value="#{ocspResponderMBean.currentKeyPairAlias}"
 										 onchange="document.getElementById('internalkeybinding:reloadKeyPairAlias').click();">
 							<f:selectItems value="#{ocspResponderMBean.availableKeyPairAliases}"/>
-						</p:selectOneMenu>
-						<p:commandButton id="reloadKeyPairAlias" value="#{web.text.INTERNALKEYBINDING_KEYPAIRALIAS_UPDATE}" action="#{ocspResponderMBean.reloadKeyPairAlias}"/>
+						</h:selectOneMenu>
+						<h:commandButton id="reloadKeyPairAlias" value="#{web.text.INTERNALKEYBINDING_KEYPAIRALIAS_UPDATE}" action="#{ocspResponderMBean.reloadKeyPairAlias}"/>
 						<script>document.getElementById('internalkeybinding:reloadKeyPairAlias').style.display = 'none';</script>
 					</h:panelGroup>
 					<h:outputText rendered="#{!ocspResponderMBean.inEditMode or !ocspResponderMBean.cryptoTokenActive || ocspResponderMBean.boundToCertificate}"
@@ -89,10 +89,10 @@
 				<h:message for="keyPairAlias"/>
 				<h:outputLabel for="signatureAlgorithm" value="#{web.text.INTERNALKEYBINDING_FIELD_SIGALG}"/>
 				<h:panelGroup id="signatureAlgorithm">
-					<p:selectOneMenu rendered="#{ocspResponderMBean.inEditMode and ocspResponderMBean.cryptoTokenActive}"
+					<h:selectOneMenu rendered="#{ocspResponderMBean.inEditMode and ocspResponderMBean.cryptoTokenActive}"
 									 value="#{ocspResponderMBean.currentSignatureAlgorithm}">
 						<f:selectItems value="#{ocspResponderMBean.availableSignatureAlgorithms}"/>
-					</p:selectOneMenu>
+					</h:selectOneMenu>
 					<h:panelGroup rendered="#{!ocspResponderMBean.inEditMode or !ocspResponderMBean.cryptoTokenActive}">
 						<h:outputText rendered="#{ocspResponderMBean.currentSignatureAlgorithm != null}"
 									  value="#{ocspResponderMBean.currentSignatureAlgorithm}"/>
@@ -105,10 +105,10 @@
 							   rendered="#{ocspResponderMBean.currentInternalKeyBindingId ne '0'}"/>
 				<h:panelGroup id="nextKeyPairAlias" rendered="#{ocspResponderMBean.currentInternalKeyBindingId ne '0'}">
 					<h:panelGroup rendered="#{ocspResponderMBean.inEditMode and ocspResponderMBean.cryptoTokenActive}">
-						<p:selectOneMenu value="#{ocspResponderMBean.currentNextKeyPairAlias}">
+						<h:selectOneMenu value="#{ocspResponderMBean.currentNextKeyPairAlias}">
 							<f:selectItem itemValue="" itemLabel="#{web.text.INTERNALKEYBINDING_FIELD_NONE}"/>
 							<f:selectItems value="#{ocspResponderMBean.availableKeyPairAliases}"/>
-						</p:selectOneMenu>
+						</h:selectOneMenu>
 					</h:panelGroup>
 					<h:panelGroup rendered="#{!ocspResponderMBean.inEditMode or !ocspResponderMBean.cryptoTokenActive}">
 						<h:outputText rendered="#{ocspResponderMBean.currentNextKeyPairAlias != null}"
@@ -144,10 +144,10 @@
 					<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_CA}"/></f:facet>
 					<h:outputText value="#{ocspResponderMBean.trustedCertificatesCaName}" title="#{trustEntry.caId}"/>
 					<f:facet name="footer">
-						<p:selectOneMenu rendered="#{ocspResponderMBean.inEditMode}"
+						<h:selectOneMenu rendered="#{ocspResponderMBean.inEditMode}"
 										 value="#{ocspResponderMBean.currentCertificateAuthority}">
 							<f:selectItems value="#{ocspResponderMBean.availableCertificateAuthorities}"/>
-						</p:selectOneMenu>
+						</h:selectOneMenu>
 					</f:facet>
 				</h:column>
 				<h:column>
@@ -178,9 +178,9 @@
 				</h:column>
 				<h:column>
 					<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_ACTIONS}"/></f:facet>
-					<p:commandButton value="#{web.text.REMOVE}" action="#{ocspResponderMBean.removeTrust}" rendered="#{ocspResponderMBean.inEditMode}"/>
+					<h:commandButton value="#{web.text.REMOVE}" action="#{ocspResponderMBean.removeTrust}" rendered="#{ocspResponderMBean.inEditMode}"/>
 					<f:facet name="footer">
-						<p:commandButton  rendered="#{ocspResponderMBean.inEditMode}" action="#{ocspResponderMBean.addTrust}"
+						<h:commandButton  rendered="#{ocspResponderMBean.inEditMode}" action="#{ocspResponderMBean.addTrust}"
 										  value="#{web.text.ADD}"/>
 					</f:facet>
 				</h:column>
@@ -200,10 +200,10 @@
 					<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_CA}"/></f:facet>
 					<h:outputText value="#{ocspResponderMBean.signOcspResponseForCasCaName}" title="#{otherCa.caId}"/>
 					<f:facet name="footer">
-						<p:selectOneMenu rendered="#{ocspResponderMBean.inEditMode}"
+						<h:selectOneMenu rendered="#{ocspResponderMBean.inEditMode}"
 										 value="#{ocspResponderMBean.currentCertificateAuthorityOcspRespToSign}">
 							<f:selectItems value="#{ocspResponderMBean.availableCertificateAuthoritiesForOcspSign}"/>
-						</p:selectOneMenu>
+						</h:selectOneMenu>
 					</f:facet>
 				</h:column>
 				<h:column>
@@ -220,9 +220,9 @@
 				</h:column>
 				<h:column>
 					<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_ACTIONS}"/></f:facet>
-					<p:commandButton value="#{web.text.REMOVE}" action="#{ocspResponderMBean.removeCaToSignOcspResponse}" rendered="#{ocspResponderMBean.inEditMode}"/>
+					<h:commandButton value="#{web.text.REMOVE}" action="#{ocspResponderMBean.removeCaToSignOcspResponse}" rendered="#{ocspResponderMBean.inEditMode}"/>
 					<f:facet name="footer">
-						<p:commandButton  rendered="#{ocspResponderMBean.inEditMode}" action="#{ocspResponderMBean.addCaToSignOcspResponse}"
+						<h:commandButton  rendered="#{ocspResponderMBean.inEditMode}" action="#{ocspResponderMBean.addCaToSignOcspResponse}"
 										  value="#{web.text.ADD}"/>
 					</f:facet>
 				</h:column>
@@ -240,11 +240,11 @@
 						<h:inputText disabled="#{!ocspResponderMBean.inEditMode}" rendered="#{property.type.simpleName eq 'Long'}" value="#{property.value}">
 							<f:converter converterId="jakarta.faces.Long"/>
 						</h:inputText>
-						<p:selectBooleanCheckbox disabled="#{!ocspResponderMBean.inEditMode}" rendered="#{property.type.simpleName eq 'Boolean'}" value="#{property.value}"/>
+						<h:selectBooleanCheckbox disabled="#{!ocspResponderMBean.inEditMode}" rendered="#{property.type.simpleName eq 'Boolean'}" value="#{property.value}"/>
 					</h:panelGroup>
-					<p:selectOneMenu disabled="#{!ocspResponderMBean.inEditMode}" rendered="#{property.multiValued}" value="#{property.encodedValue}">
+					<h:selectOneMenu disabled="#{!ocspResponderMBean.inEditMode}" rendered="#{property.multiValued}" value="#{property.encodedValue}">
 						<f:selectItems value="#{ocspResponderMBean.propertyPossibleValues}"/>
-					</p:selectOneMenu>
+					</h:selectOneMenu>
 				</h:column>
 			</h:dataTable>
 			<h:panelGroup rendered="#{ocspResponderMBean.internalKeyBindingPropertyList.rowCount == 0}">
@@ -254,9 +254,9 @@
 			    <h:outputLabel for="chainGeneration" value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_CERTCHAIN_GENERATION}" />
                 <h:panelGroup id="chainGeneration">
                     <h:panelGroup disabled="#{!ocspResponderMBean.inEditMode or !ocspResponderMBean.boundToCertificate}">
-                        <p:selectOneMenu value="#{ocspResponderMBean.currentCaGeneration}" disabled="#{!ocspResponderMBean.inEditMode}">
+                        <h:selectOneMenu value="#{ocspResponderMBean.currentCaGeneration}" disabled="#{!ocspResponderMBean.inEditMode}">
                             <f:selectItems value="#{ocspResponderMBean.availableCertificateChains}"/>
-                        </p:selectOneMenu>
+                        </h:selectOneMenu>
                     </h:panelGroup>
                 </h:panelGroup>
                 <h:message for="chainGeneration"/>
@@ -268,10 +268,10 @@
 					<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_OCSPEXTENSION_NAME}"/></f:facet>
 					<h:outputText value="#{ocspResponderMBean.ocspExtensionDisplayName}"/>
 					<f:facet name="footer">
-						<p:selectOneMenu rendered="#{ocspResponderMBean.inEditMode}"
+						<h:selectOneMenu rendered="#{ocspResponderMBean.inEditMode}"
 										 value="#{ocspResponderMBean.currentOcspExtension}">
 							<f:selectItems value="#{ocspResponderMBean.availableOcspExtensions}"/>
-						</p:selectOneMenu>
+						</h:selectOneMenu>
 					</f:facet>
 				</h:column>
 				<h:column>
@@ -280,9 +280,9 @@
 				</h:column>
 				<h:column>
 					<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_ACTIONS}"/></f:facet>
-					<p:commandButton value="#{web.text.REMOVE}" action="#{ocspResponderMBean.removeOcspExtension}" rendered="#{ocspResponderMBean.inEditMode}"/>
+					<h:commandButton value="#{web.text.REMOVE}" action="#{ocspResponderMBean.removeOcspExtension}" rendered="#{ocspResponderMBean.inEditMode}"/>
 					<f:facet name="footer">
-						<p:commandButton  rendered="#{ocspResponderMBean.inEditMode}" action="#{ocspResponderMBean.addOcspExtension}"
+						<h:commandButton  rendered="#{ocspResponderMBean.inEditMode}" action="#{ocspResponderMBean.addOcspExtension}"
 										  value="#{web.text.ADD}"/>
 					</f:facet>
 				</h:column>
@@ -296,9 +296,9 @@
 			<h:panelGrid id="retentionPeriodSettings" columns="2" rendered="#{ocspResponderMBean.ocspArchiveCutoffExtensionEnabled}">
 				<h:outputLabel value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_USEISSUERNOTBEFOREASARCHIVECUTOFF}" for="useIssuerNotBeforeAsArchiveCutoff" />
 				<h:panelGroup>
-					<p:selectBooleanCheckbox id="useIssuerNotBeforeAsArchiveCutoff" disabled="#{not ocspResponderMBean.inEditMode}" value="#{ocspResponderMBean.useIssuerNotBeforeAsArchiveCutoff}">
+					<h:selectBooleanCheckbox id="useIssuerNotBeforeAsArchiveCutoff" disabled="#{not ocspResponderMBean.inEditMode}" value="#{ocspResponderMBean.useIssuerNotBeforeAsArchiveCutoff}">
 						<f:ajax render="retentionPeriodSettings"/>
-					</p:selectBooleanCheckbox>
+					</h:selectBooleanCheckbox>
 					<h:panelGroup styleClass="help">
 						&nbsp;
 						<h:outputText value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_USEISSUERNOTBEFOREASARCHIVECUTOFF_HELP}"/>
@@ -319,8 +319,8 @@
 			</h:panelGrid>
 
 			<div>
-				<p:commandButton value="#{web.text.CREATE}" action="#{ocspResponderMBean.createNew}" rendered="#{ocspResponderMBean.inEditMode and ocspResponderMBean.creatingNew}"/>
-				<p:commandButton value="#{web.text.SAVE}" action="#{ocspResponderMBean.saveCurrent}" rendered="#{ocspResponderMBean.inEditMode and !ocspResponderMBean.creatingNew}"/>
+				<h:commandButton value="#{web.text.CREATE}" action="#{ocspResponderMBean.createNew}" rendered="#{ocspResponderMBean.inEditMode and ocspResponderMBean.creatingNew}"/>
+				<h:commandButton value="#{web.text.SAVE}" action="#{ocspResponderMBean.saveCurrent}" rendered="#{ocspResponderMBean.inEditMode and !ocspResponderMBean.creatingNew}"/>
 			</div>
 		</h:form>
 
