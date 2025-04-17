@@ -418,7 +418,21 @@
                             <f:selectItems value="#{editCAsMBean.getKeyAliasesListWithDefault('testKey')}"/>
                         </h:selectOneMenu>
                     </h:panelGroup>
-
+                    <h:panelGroup
+                            rendered="#{not editCAsMBean.editCA or editCAsMBean.currentCaCryptoTokenPresent and not editCAsMBean.renderCvcAvailable}">
+                        <h:outputLabel for="keyEncryptionPaddingAlgorithm" value="#{web.text.KEY_ENCRYPTION_PADDING_ALGORITHM}"/>
+                        <h:outputText
+                                value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Key_Encryption_Padding_Algorithm')}"
+                                escape="false" styleClass="helpReference"/>
+                    </h:panelGroup>
+                    <h:panelGroup
+                            rendered="#{not editCAsMBean.editCA or editCAsMBean.currentCaCryptoTokenPresent and not editCAsMBean.renderCvcAvailable}">
+                        <h:selectOneMenu id="keyEncryptionPaddingAlgorithm"
+                                         value="#{editCAsMBean.caInfoDto.keyEncryptionPaddingAlgorithm}"
+                                         disabled="#{not editCAsMBean.hasEditRight}">
+                            <f:selectItems value="#{editCAsMBean.keyEncryptionPaddingAlgorithmList}"/>
+                        </h:selectOneMenu>
+                    </h:panelGroup>
                     <h:panelGroup
                             rendered="#{not editCAsMBean.editCA or editCAsMBean.currentCaCryptoTokenPresent and not editCAsMBean.renderCvcAvailable}">
                         <h:outputLabel for="keysequenceformat"
@@ -435,7 +449,6 @@
                             <f:selectItems value="#{editCAsMBean.keySequenceFormatList}"/>
                         </h:selectOneMenu>
                     </h:panelGroup>
-
                     <h:panelGroup
                             rendered="#{not editCAsMBean.editCA or editCAsMBean.currentCaCryptoTokenPresent and not editCAsMBean.renderCvcAvailable}">
                         <h:outputLabel for="keysequence" value="#{web.text.KEYSEQUENCE}"/>

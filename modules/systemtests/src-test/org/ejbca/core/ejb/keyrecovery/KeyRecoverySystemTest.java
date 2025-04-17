@@ -43,6 +43,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
+import org.cesecore.certificates.KeyEncryptionPaddingAlgorithm;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -257,6 +258,75 @@ public class KeyRecoverySystemTest extends CaTestCase {
             endEntityManagementSession.deleteUser(internalAdmin, userrsa);
         }
         log.trace("<testAddAndRemoveKeyPairRSA()");
+    }
+
+
+    /**
+     * Tests adding a RSA OAEP keypair and checks if it can be read again.
+     */
+    @Test
+    public void testAddAndRemoveKeyPairRSAwithOAEP() throws Exception {
+        //Create a new CA with a EC crypto token
+        final String caName = TEST_CA_NAME_PREFIX + "RSA_OAEP";
+        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, "foo123".toCharArray(), true, false, caName, "RSA1024", "RSA1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
+        
+        CAToken caToken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
+        X509CAInfo caInfo = X509CAInfo.getDefaultX509CAInfo("CN="+caName, caName, CAConstants.CA_ACTIVE, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "3650d",
+                CAInfo.SELFSIGNED, null, caToken);
+        caInfo.setKeyEncryptionPaddingAlgorithm(KeyEncryptionPaddingAlgorithm.RSA_OAEP);
+        final List<ExtendedCAServiceInfo> extendedCaServices = new ArrayList<>(2);
+        extendedCaServices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+        caInfo.setExtendedCAServiceInfos(extendedCaServices);
+        final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+        try {
+            caAdminSession.createCA(internalAdmin, caInfo);
+        } catch (InvalidAlgorithmException e) {
+            throw new IllegalArgumentException("Could not create CA.", e);
+        }
+        X509Certificate endEntityCertificate = null;
+        String certificateFingerprint = null;
+        final String username = "testAddAndRemoveKeyPairRSAwithOAEP";
+        try {
+            KeyPair endEntityKeypair = null;
+            try {
+                if (!endEntityManagementSession.existsUser(username)) {
+                    endEntityKeypair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+                    final EndEntityInformation ee = new EndEntityInformation(username, "CN="+username, caInfo.getCAId(),
+                            "rfc822name=" + TEST_EMAIL, TEST_EMAIL, EndEntityTypes.ENDUSER.toEndEntityType(),
+                            EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                            SecConst.TOKEN_SOFT_P12, null);
+                    ee.setPassword("foo123");
+                    endEntityManagementSession.addUser(internalAdmin, ee, false);
+                    endEntityCertificate = (X509Certificate) signSession.createCertificate(internalAdmin, username, "foo123",
+                            new PublicKeyWrapper(endEntityKeypair.getPublic()));
+                    certificateFingerprint = CertTools.getFingerprintAsString(endEntityCertificate);
+                }
+            } catch (Exception e) {
+                log.error("Exception generating keys/cert: ", e);
+                fail("Exception generating keys/cert");
+            }
+            // Save the keys as key recovery data in the database
+            assertTrue("Key recovery data could not be added to database.",
+                    keyRecoverySession.addKeyRecoveryData(internalAdmin, EJBTools.wrap(endEntityCertificate), username, EJBTools.wrap(endEntityKeypair)));
+            assertTrue("Couldn't save keys in database", keyRecoverySession.existsKeys(EJBTools.wrap(endEntityCertificate)));
+            assertFalse("User should not be marked for recovery in database", keyRecoverySession.isUserMarked(username));
+            //Perform the decryption operation through the ssb
+            endEntityManagementSession.prepareForKeyRecovery(internalAdmin, username, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, endEntityCertificate);
+            assertTrue("Couldn't mark user for recovery in database", keyRecoverySession.isUserMarked(username));
+            KeyRecoveryInformation data = keyRecoverySession.recoverKeys(internalAdmin, username, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
+            assertNotNull("Couldn't recover keys from database", data);
+            assertTrue("Couldn't recover keys from database",
+                    Arrays.equals(data.getKeyPair().getPrivate().getEncoded(), endEntityKeypair.getPrivate().getEncoded()));
+        } finally {
+            // Only clean up left.
+            if (endEntityCertificate != null) {
+                keyRecoverySession.removeKeyRecoveryData(internalAdmin, EJBTools.wrap(endEntityCertificate));
+                assertTrue("Couldn't remove keys from database", !keyRecoverySession.existsKeys(EJBTools.wrap(endEntityCertificate)));
+            }
+            internalCertStoreSession.removeCertificate(certificateFingerprint);
+            endEntityManagementSession.deleteUser(internalAdmin, username);
+            CaTestUtils.removeCa(internalAdmin, caName, caName);
+        }
     }
 
     /**
