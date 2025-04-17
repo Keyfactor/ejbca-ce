@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.MutableTriple;
+import org.cesecore.certificates.KeyEncryptionPaddingAlgorithm;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.KeepExpiredCertsOnCrlFormat;
 import org.cesecore.certificates.ca.catoken.CAToken;
@@ -46,6 +47,7 @@ public class CaInfoDto implements Serializable {
     private String signatureAlgorithmParam = StringUtils.EMPTY;
     private String alternativeSignatureAlgorithmParam = StringUtils.EMPTY;
     private int keySequenceFormat = StringTools.KEY_SEQUENCE_FORMAT_NUMERIC;
+    private KeyEncryptionPaddingAlgorithm keyEncryptionPaddingAlgorithm = KeyEncryptionPaddingAlgorithm.PKCS_1_5;
     private String keySequence = CAToken.DEFAULT_KEYSEQUENCE;
     private int caType = CAInfo.CATYPE_X509;
     private String caSubjectDN;
@@ -197,6 +199,14 @@ public class CaInfoDto implements Serializable {
 
     public void setAlternativeSignatureAlgorithmParam(final String alternativeSignatureAlgorithmParam) {
         this.alternativeSignatureAlgorithmParam = alternativeSignatureAlgorithmParam;
+    }
+
+    public KeyEncryptionPaddingAlgorithm getKeyEncryptionPaddingAlgorithm() {
+        return keyEncryptionPaddingAlgorithm;
+    }
+
+    public void setKeyEncryptionPaddingAlgorithm(KeyEncryptionPaddingAlgorithm keyEncryptionPaddingAlgorithm) {
+        this.keyEncryptionPaddingAlgorithm = keyEncryptionPaddingAlgorithm;
     }
 
     public int getKeySequenceFormat() {

@@ -970,10 +970,13 @@ public final class CAConstants {
 
     /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
     public static final String DO_PRE_PRODUCE_OCSP_RESPONSES = "doPreProduceOcspResponses";
-    
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String KEYENCRYPTIONPADDINGALGORITHM = "keyEncryptionPaddingAlgorithm";
+
     /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
     public static final String ADD_COMPROMISED_KEYS_TO_BLOCK_LIST = "addCompromisedKeysToBlockList";
-    
+
     /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
     public static final String CA_SERIAL_NUMBER_OCTET_SIZE = "caSerialNumberOctetSize";
 

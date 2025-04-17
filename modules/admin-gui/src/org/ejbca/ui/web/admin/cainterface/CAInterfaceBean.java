@@ -592,6 +592,7 @@ public class CAInterfaceBean implements Serializable {
                             .setCrlPartitions(caInfoDto.getCrlPartitions())
                             .setSuspendedCrlPartitions(caInfoDto.getSuspendedCrlPartitions())
                             .setMsCaCompatible(caInfoDto.isMsCaCompatible())
+                            .setKeyEncryptionPaddingAlgorithm(caInfoDto.getKeyEncryptionPaddingAlgorithm())
                             .setRequestPreProcessor(caInfoDto.getRequestPreProcessor());
                     if (buttonCreateCa) {
                         X509CAInfo x509cainfo =  x509CAInfoBuilder
@@ -1048,6 +1049,7 @@ public class CAInterfaceBean implements Serializable {
                        .setMsCaCompatible(caInfoDto.isMsCaCompatible())
                        .setSuspendedCrlPartitions(caInfoDto.getSuspendedCrlPartitions())
                        .setRequestPreProcessor(caInfoDto.getRequestPreProcessor())
+                       .setKeyEncryptionPaddingAlgorithm(caInfoDto.getKeyEncryptionPaddingAlgorithm())
                        .setAlternateCertificateChains(caInfoDto.getAlternateCertificateChains());
                cainfo = x509CAInfoBuilder.buildForUpdate();
             } else if (caInfoDto.getCaType() == CAInfo.CATYPE_CVC) {

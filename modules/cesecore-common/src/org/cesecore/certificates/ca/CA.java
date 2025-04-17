@@ -28,6 +28,7 @@ import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.cesecore.certificates.KeyEncryptionPaddingAlgorithm;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAService;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceNotActiveException;
@@ -113,6 +114,9 @@ public interface CA extends CACommon {
     
     /** whether revocations for non existing entry accepted */
     boolean isAcceptRevocationNonExistingEntry();
+    
+    /**whether users choose RSA-OAEP or PKCS1.5 */
+    KeyEncryptionPaddingAlgorithm getKeyEncryptionPaddingAlgorithm();
     
     // Methods used with extended services
 
