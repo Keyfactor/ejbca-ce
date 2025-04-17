@@ -35,7 +35,7 @@ class ParseUserData {
     static final String qcEtsiPSD2Ncaname = "QCETSIPSD2NCANAME";
     static final String qcEtsiPSD2Ncaid = "QCETSIPSD2NCAID";
     static final String CABFORGANIZATIONIDENTIFIER = "cabforganizationidentifier";
-    static final String ISSUANCEREVOCATIONREASON = "REVOCATIONREASON";
+    static final String ISSUANCE_REVOCATION_REASON = "REVOCATIONREASON";
 	
 	private static final String hexPrefix = "0x";
 
@@ -78,7 +78,7 @@ class ParseUserData {
                 lei.add(new ExtendedInformationWS(key.toLowerCase(), value));
 			} else if ( key.equalsIgnoreCase(CABFORGANIZATIONIDENTIFIER) ) {
 			    lei.add(new ExtendedInformationWS(key.toLowerCase(), value));
-			} else if ( key.equalsIgnoreCase(ISSUANCEREVOCATIONREASON) ) {
+			} else if ( key.equalsIgnoreCase(ISSUANCE_REVOCATION_REASON) ) {
                 lei.add(new ExtendedInformationWS(
                         ExtendedInformation.CUSTOMDATA + ExtendedInformation.CUSTOM_REVOCATIONREASON, value));
             }
