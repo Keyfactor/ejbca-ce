@@ -44,6 +44,7 @@ import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.PKIXNameConstraintValidator;
 import org.bouncycastle.jce.provider.PKIXNameConstraintValidatorException;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.cesecore.certificates.KeyEncryptionPaddingAlgorithm;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAService;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceNotActiveException;
@@ -128,8 +129,9 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         setGenerateCrlUponRevocation(cainfo.isGenerateCrlUponRevocation());
         setAllowChangingRevocationReason(cainfo.isAllowChangingRevocationReason());
         setAllowInvalidityDate(cainfo.isAllowInvalidityDate());
+        setKeyEncryptionPaddingAlgorithm(cainfo.getKeyEncryptionPaddingAlgorithm());
         setAddCompromisedKeysToBlockList(cainfo.isAddCompromisedKeysToBlockList());
-        
+
         List<Integer> extendedservicetypes = new ArrayList<>();
         if (cainfo.getExtendedCAServiceInfos() != null) {
             for(ExtendedCAServiceInfo next : cainfo.getExtendedCAServiceInfos()) {
@@ -177,6 +179,7 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         setUseCertificateStorage(cainfo.isUseCertificateStorage());
         setAcceptRevocationNonExistingEntry(cainfo.isAcceptRevocationNonExistingEntry());
         setAddCompromisedKeysToBlockList(cainfo.isAddCompromisedKeysToBlockList());
+        setKeyEncryptionPaddingAlgorithm(cainfo.getKeyEncryptionPaddingAlgorithm());
         // Update or create extended CA services
         final Collection<ExtendedCAServiceInfo> infos = cainfo.getExtendedCAServiceInfos();
         if (infos != null) {
@@ -208,6 +211,25 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
             cainfo.setExtendedCAServiceInfos(newInfos);
             data.put(EXTENDEDCASERVICES, extendedservicetypes);
         }
+    }
+
+    /** Sets the Key Encryption Padding Algorithm
+     * @param keyEncryptionPaddingAlgorithm one of CAInfo.KEY_ENCRYPT_ALGORITHM_RSA_PKCS_1_5, etc
+     */
+    public void setKeyEncryptionPaddingAlgorithm(KeyEncryptionPaddingAlgorithm keyEncryptionPaddingAlgorithm) {
+        data.put(KEY_ENCRYPTION_PADDING_ALGORITHM, keyEncryptionPaddingAlgorithm);
+    }
+
+    /** Returns the Key Encryption Padding Algorithm
+     * @return one of CAInfo.KEY_ENCRYPT_ALGORITHM_RSA_PKCS_1_5, etc
+     */
+    @Override
+    public KeyEncryptionPaddingAlgorithm getKeyEncryptionPaddingAlgorithm() {
+        Object algorithm = data.get(KEY_ENCRYPTION_PADDING_ALGORITHM);
+        if (algorithm == null) {
+            algorithm = KeyEncryptionPaddingAlgorithm.PKCS_1_5;
+        }
+        return (KeyEncryptionPaddingAlgorithm) algorithm;
     }
 
     @Override
@@ -242,7 +264,7 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
     public void setGenerateCrlUponRevocation(boolean generate) {
         data.put(GENERATECRLUPONREVOCATION, generate);
     }
-    
+
     public void setAddCompromisedKeysToBlockList(boolean addCompromisedKeysBlockList) {
         data.put(ADD_COMPROMISED_KEYS_TO_BLOCK_LIST, addCompromisedKeysBlockList);
     }
@@ -251,7 +273,7 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
     public boolean isAddCompromisedKeysToBlockList() {
         return getBoolean(ADD_COMPROMISED_KEYS_TO_BLOCK_LIST, false);
     }
-    
+
     @Override
     public boolean getAllowChangingRevocationReason() {
         return getBoolean(ALLOWCHANGINGREVOCATIONREASON, false);

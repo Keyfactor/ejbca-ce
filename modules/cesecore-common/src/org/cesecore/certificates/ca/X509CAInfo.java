@@ -48,6 +48,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.IntRange;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.cesecore.certificates.KeyEncryptionPaddingAlgorithm;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -190,6 +191,7 @@ public class X509CAInfo extends CAInfo {
                 .setCrlPartitions(0)
                 .setSuspendedCrlPartitions(0)
                 .setRequestPreProcessor(null)
+                .setKeyEncryptionPaddingAlgorithm(KeyEncryptionPaddingAlgorithm.PKCS_1_5)
                 .setExternalCrlDistPoint(null);
          return caInfoBuilder.build();
     }
@@ -213,7 +215,7 @@ public class X509CAInfo extends CAInfo {
                       final String cmpRaAuthSecret, final boolean keepExpiredCertsOnCrl, final int keepExpiredCertsOnCrlFormat, final long keepExpiredCertsOnCrlDate, final int defaultCertprofileId,
                       final boolean useNoConflictCertificateData, final boolean usePartitionedCrl, final int crlPartitions, final int suspendedCrlPartitions,
                       final String requestPreProcessor, final boolean msCaCompatible, final Map<String, List<String>> alternateCertificateChains,
-                      final String externalCDP) {
+                      final String externalCDP, final KeyEncryptionPaddingAlgorithm keyEncryptionPaddingAlgorithm) {
         this.encodedValidity = encodedValidity;
         this.catoken = catoken;
         this.description = description;
@@ -272,6 +274,7 @@ public class X509CAInfo extends CAInfo {
         this.crlPartitions = crlPartitions;
         this.suspendedCrlPartitions = suspendedCrlPartitions;
         this.alternateCertificateChains = alternateCertificateChains;
+        this.keyEncryptionPaddingAlgorithm = keyEncryptionPaddingAlgorithm;
         setRequestPreProcessor(requestPreProcessor);
     }
 
@@ -543,7 +546,7 @@ public class X509CAInfo extends CAInfo {
     public void setExternalCdp(final String externalCdp) {
         this.externalCdp = externalCdp;
     }
-   
+
     /** @return true if CA has undergone through name change at some renewal process, otherwise false. */
     public boolean getNameChanged() {
         return nameChanged;
@@ -748,6 +751,7 @@ public class X509CAInfo extends CAInfo {
         private int crlPartitions;
         private int suspendedCrlPartitions;
         private String requestPreProcessor;
+        private KeyEncryptionPaddingAlgorithm keyEncryptionPaddingAlgorithm = KeyEncryptionPaddingAlgorithm.PKCS_1_5;
         private Map<String, List<String>> alternateCertificateChains;
 
         public X509CAInfoBuilder  setCaId(int caId) {
@@ -1135,12 +1139,12 @@ public class X509CAInfo extends CAInfo {
             this.doPreProduceOcspResponses = doPreProduceOcspResponses;
             return this;
         }
-        
+
         public X509CAInfoBuilder setAddCompromisedKeysToBlockList(boolean addCompromisedKeysToBlockList) {
             this.addCompromisedKeysToBlockList = addCompromisedKeysToBlockList;
             return this;
         }
-        
+
         public X509CAInfoBuilder setDoPreProduceIndividualOcspResponses(boolean doPreProduceIndividualOcspResponse) {
             this.doPreProduceIndividualOcspResponse = doPreProduceIndividualOcspResponse;
             return this;
@@ -1181,6 +1185,11 @@ public class X509CAInfo extends CAInfo {
          */
         public X509CAInfoBuilder setCaSerialNumberOctetSize(int caSerialNumberOctetSize) {
             this.caSerialNumberOctetSize = caSerialNumberOctetSize;
+            return this;
+        }
+
+        public X509CAInfoBuilder setKeyEncryptionPaddingAlgorithm(KeyEncryptionPaddingAlgorithm keyEncryptionPaddingAlgorithm) {
+            this.keyEncryptionPaddingAlgorithm = keyEncryptionPaddingAlgorithm;
             return this;
         }
 
@@ -1233,7 +1242,7 @@ public class X509CAInfo extends CAInfo {
                                                usePrintableStringSubjectDN, useLdapDnOrder, useCrlDistributionPointOnCrl, crlDistributionPointOnCrlCritical, includeInHealthCheck, doEnforceUniquePublicKeys, doEnforceKeyRenewal,
                                                doEnforceUniqueDistinguishedName, doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage, addCompromisedKeysToBlockList, doPreProduceOcspResponses, doStoreOcspResponsesOnDemand,
                                                doPreProduceIndividualOcspResponse, acceptRevocationNonExistingEntry, cmpRaAuthSecret, keepExpiredCertsOnCrl, keepExpiredCertsOnCrlFormat, keepExpiredCertsOnCrlDate, defaultCertProfileId, useNoConflictCertificateData, usePartitionedCrl, crlPartitions, suspendedCrlPartitions,
-                                               requestPreProcessor, msCaCompatible, alternateCertificateChains, externalCrlDistPoint);
+                                               requestPreProcessor, msCaCompatible, alternateCertificateChains, externalCrlDistPoint, keyEncryptionPaddingAlgorithm);
             caInfo.setSubjectDN(subjectDn);
             caInfo.setCAId(DnComponents.stringToBCDNString(caInfo.getSubjectDN()).hashCode());
             caInfo.setName(name);
@@ -1275,7 +1284,7 @@ public class X509CAInfo extends CAInfo {
                                                usePrintableStringSubjectDN, useLdapDnOrder, useCrlDistributionPointOnCrl, crlDistributionPointOnCrlCritical, includeInHealthCheck, doEnforceUniquePublicKeys, doEnforceKeyRenewal,
                                                doEnforceUniqueDistinguishedName, doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage, addCompromisedKeysToBlockList, doPreProduceOcspResponses, doStoreOcspResponsesOnDemand,
                                                doPreProduceIndividualOcspResponse, acceptRevocationNonExistingEntry, cmpRaAuthSecret, keepExpiredCertsOnCrl, keepExpiredCertsOnCrlFormat, keepExpiredCertsOnCrlDate, defaultCertProfileId, useNoConflictCertificateData, usePartitionedCrl, crlPartitions, suspendedCrlPartitions,
-                                               requestPreProcessor, msCaCompatible, alternateCertificateChains, externalCrlDistPoint);
+                                               requestPreProcessor, msCaCompatible, alternateCertificateChains, externalCrlDistPoint, keyEncryptionPaddingAlgorithm);
             caInfo.setCAId(caId);
             caInfo.setPolicies(policies);
             caInfo.setSubjectAltName(subjectAltName);
