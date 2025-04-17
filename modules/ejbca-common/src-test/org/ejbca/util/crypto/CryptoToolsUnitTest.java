@@ -36,6 +36,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.cesecore.certificates.KeyEncryptionPaddingAlgorithm;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.junit.BeforeClass;
@@ -132,7 +133,51 @@ public class CryptoToolsUnitTest {
                 .generateCertificate();
 
         final KeyPair keypair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        byte[] encryptedBytes = CryptoTools.encryptKeys(caCertificate, cryptoToken, alias, keypair);
+        byte[] encryptedBytes = CryptoTools.encryptKeys(caCertificate, cryptoToken, alias, keypair, KeyEncryptionPaddingAlgorithm.PKCS_1_5);
+        assertNotNull("Encrypted key pair should not be null", encryptedBytes);
+        final KeyPair keys = CryptoTools.decryptKeys(cryptoToken.getEncProviderName(), caCertificate, cryptoToken.getPrivateKey(alias), encryptedBytes);
+        assertNotNull("Decrypted key pair should not be null", keys);
+        // Throws exception is testing does not work
+        KeyTools.testKey(keys.getPrivate(), keys.getPublic(), BouncyCastleProvider.PROVIDER_NAME);
+
+        byte[] encodedPublicKey = keys.getPublic().getEncoded();
+        assertEquals("org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPublicKey", keys.getPublic().getClass().getName());
+        assertEquals("X.509", keys.getPublic().getFormat());
+        assertEquals("RSA", keys.getPublic().getAlgorithm());
+        assertNotNull("Encoded public key should not be null", encodedPublicKey);
+        byte[] encodedPrivateKey = keys.getPrivate().getEncoded();
+        assertEquals("org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey", keys.getPrivate().getClass().getName());
+        assertEquals("PKCS#8", keys.getPrivate().getFormat());
+        assertNotNull("Encoded private key should not be null", encodedPrivateKey);
+
+    }
+    
+    /** Test that we can encrypt and decrypt an RSA KeyPair For User Approval
+     * @throws CryptoTokenAuthenticationFailedException 
+     * 
+     */
+    @Test
+    public void testEncryptDecryptRsaKeyPairForUserApproval() throws NoSuchSlotException, InvalidAlgorithmParameterException, CryptoTokenOfflineException,
+            IOException, InvalidKeyException, OperatorCreationException, CertificateException, NoSuchProviderException, CryptoTokenAuthenticationFailedException {
+        CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(SoftCryptoToken.class.getName(), new Properties(), null, 111,
+                "Soft CryptoToken");
+        cryptoToken.activate("foo123".toCharArray());
+        final String alias = "alias";
+        // key pair to encrypt decrypt keys
+        cryptoToken.generateKeyPair(KeyGenParams.builder("1024").build(), alias);
+        final X509Certificate caCertificate = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn("CN=CryptoToolsUnitTest")
+                .setIssuerDn("CN=CryptoToolsUnitTest")
+                .setValidityDays(1)
+                .setPolicyId("1.1")
+                .setIssuerPrivKey(cryptoToken.getPrivateKey(alias))
+                .setEntityPubKey(cryptoToken.getPublicKey(alias))
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setLdapOrder(true)
+                .generateCertificate();
+
+        final KeyPair keypair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+        byte[] encryptedBytes = CryptoTools.encryptKeys(caCertificate, cryptoToken, alias, keypair, KeyEncryptionPaddingAlgorithm.PKCS_1_5);
         assertNotNull("Encrypted key pair should not be null", encryptedBytes);
         final KeyPair keys = CryptoTools.decryptKeys(cryptoToken.getEncProviderName(), caCertificate, cryptoToken.getPrivateKey(alias), encryptedBytes);
         assertNotNull("Decrypted key pair should not be null", keys);
@@ -175,7 +220,7 @@ public class CryptoToolsUnitTest {
                 .generateCertificate();
 
         final KeyPair keypair = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_EC);
-        byte[] encryptedBytes = CryptoTools.encryptKeys(caCertificate, cryptoToken, alias, keypair);
+        byte[] encryptedBytes = CryptoTools.encryptKeys(caCertificate, cryptoToken, alias, keypair, KeyEncryptionPaddingAlgorithm.PKCS_1_5);
         assertNotNull("Encrypted key pair should not be null", encryptedBytes);
         final KeyPair keys = CryptoTools.decryptKeys(cryptoToken.getEncProviderName(), caCertificate, cryptoToken.getPrivateKey(alias), encryptedBytes);
         assertNotNull("Decrypted key pair should not be null", keys);
@@ -221,7 +266,7 @@ public class CryptoToolsUnitTest {
                 .generateCertificate();
                 
         final KeyPair endEntityKeypair = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_EC);
-        byte[] encryptedBytes = CryptoTools.encryptKeys(caCertificate, cryptoToken, encAlias, endEntityKeypair);
+        byte[] encryptedBytes = CryptoTools.encryptKeys(caCertificate, cryptoToken, encAlias, endEntityKeypair, KeyEncryptionPaddingAlgorithm.PKCS_1_5);
         assertNotNull("Encrypted key pair should not be null", encryptedBytes);
         final KeyPair keys = CryptoTools.decryptKeys(cryptoToken.getEncProviderName(), caCertificate, cryptoToken.getPrivateKey(encAlias),
                 encryptedBytes);
@@ -271,7 +316,7 @@ public class CryptoToolsUnitTest {
                 .generateCertificate();
                 
         final KeyPair endEntityKeypair = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_EC);
-        byte[] encryptedBytes = CryptoTools.encryptKeys(caCertificate, cryptoToken, encAlias, endEntityKeypair);
+        byte[] encryptedBytes = CryptoTools.encryptKeys(caCertificate, cryptoToken, encAlias, endEntityKeypair, KeyEncryptionPaddingAlgorithm.PKCS_1_5);
         assertNotNull("Encrypted key pair should not be null", encryptedBytes);
         final KeyPair keys = CryptoTools.decryptKeys(cryptoToken.getEncProviderName(), caCertificate, cryptoToken.getPrivateKey(encAlias),
                 encryptedBytes);
@@ -330,7 +375,7 @@ public class CryptoToolsUnitTest {
                 .generateCertificate();
 
         final KeyPair keypair = KeyTools.genKeys("Ed25519", AlgorithmConstants.KEYALGORITHM_ED25519);
-        byte[] encryptedBytes = CryptoTools.encryptKeys(caCertificate, cryptoToken, alias, keypair);
+        byte[] encryptedBytes = CryptoTools.encryptKeys(caCertificate, cryptoToken, alias, keypair, KeyEncryptionPaddingAlgorithm.PKCS_1_5);
         assertNotNull("Encrypted key pair should not be null", encryptedBytes);
         final KeyPair keys = CryptoTools.decryptKeys(cryptoToken.getEncProviderName(), caCertificate, cryptoToken.getPrivateKey(alias), encryptedBytes);
         assertNotNull("Decrypted key pair should not be null", keys);
@@ -384,7 +429,7 @@ public class CryptoToolsUnitTest {
                 .generateCertificate();
 
         final KeyPair keypair = KeyTools.genKeys("Ed448", AlgorithmConstants.KEYALGORITHM_ED448);
-        byte[] encryptedBytes = CryptoTools.encryptKeys(caCertificate, cryptoToken, alias, keypair);
+        byte[] encryptedBytes = CryptoTools.encryptKeys(caCertificate, cryptoToken, alias, keypair, KeyEncryptionPaddingAlgorithm.PKCS_1_5);
         assertNotNull("Encrypted key pair should not be null", encryptedBytes);
         final KeyPair keys = CryptoTools.decryptKeys(cryptoToken.getEncProviderName(), caCertificate, cryptoToken.getPrivateKey(alias), encryptedBytes);
         assertNotNull("Decrypted key pair should not be null", keys);

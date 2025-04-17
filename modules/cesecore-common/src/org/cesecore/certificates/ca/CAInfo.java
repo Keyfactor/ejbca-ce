@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.math.IntRange;
+import org.cesecore.certificates.KeyEncryptionPaddingAlgorithm;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.ca.ssh.SshCa;
@@ -40,7 +41,7 @@ import com.keyfactor.util.certificate.DnComponents;
  * Holds non sensitive information about a CA.
  */
 public abstract class CAInfo implements Serializable {
-    
+
     private static final long serialVersionUID = 2L;
     public static final int CATYPE_X509 = 1;
     public static final int CATYPE_CVC = 2;
@@ -136,6 +137,7 @@ public abstract class CAInfo implements Serializable {
     protected boolean useUserStorage;
     protected boolean useCertificateStorage;
     protected boolean acceptRevocationNonExistingEntry;
+    protected KeyEncryptionPaddingAlgorithm keyEncryptionPaddingAlgorithm;
     protected boolean addCompromisedKeysToBlockList;
 
     /**
@@ -367,7 +369,7 @@ public abstract class CAInfo implements Serializable {
     public void setDeltaCRLPeriod(long deltacrlperiod) {
         this.deltacrlperiod = deltacrlperiod;
     }
-    
+
     public boolean isGenerateCrlUponRevocation() {
         return generateCrlUponRevocation;
     }
@@ -571,7 +573,7 @@ public abstract class CAInfo implements Serializable {
     public void setUseCertificateStorage(boolean useCertificateStorage) {
         this.useCertificateStorage = useCertificateStorage;
     }
-    
+
     public void setAddCompromisedKeysToBlockList(boolean addCompromisedKeysToBlockList) {
         this.addCompromisedKeysToBlockList = addCompromisedKeysToBlockList;
     }
@@ -666,5 +668,13 @@ public abstract class CAInfo implements Serializable {
      */
     public IntRange getAllCrlPartitionIndexes() {
         return null;
+    }
+
+    public KeyEncryptionPaddingAlgorithm getKeyEncryptionPaddingAlgorithm() {
+        return keyEncryptionPaddingAlgorithm;
+    }
+
+    public void setKeyEncryptionPaddingAlgorithm(KeyEncryptionPaddingAlgorithm keyEncryptionPaddingAlgorithm) {
+        this.keyEncryptionPaddingAlgorithm = keyEncryptionPaddingAlgorithm;
     }
 }
