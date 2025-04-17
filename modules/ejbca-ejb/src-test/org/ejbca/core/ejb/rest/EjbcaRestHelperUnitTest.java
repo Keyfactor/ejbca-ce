@@ -19,11 +19,9 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.LinkedHashMap;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
@@ -390,9 +388,11 @@ public class EjbcaRestHelperUnitTest {
         int signedby = 1;
         String startTime = "2025-04-15 14:30:45";
         String endTime = "2025-08-15 14:30:45";
-        Map.Entry extension = new AbstractMap.SimpleEntry("1.1.1.1", "10101010");
-        String customDataKey = "2.2.2.2";
-        Map.Entry customData = new AbstractMap.SimpleEntry(ExtendedInformation.CUSTOMDATA + customDataKey, "01010101");
+        LinkedHashMap<String, String> extension = new LinkedHashMap<>();
+        extension.put("1.1.1.1", "10101010");
+        String customDataKey = ExtendedInformation.CUSTOMDATA  + "2.2.2.2";
+        LinkedHashMap<String, String> customData = new LinkedHashMap<>(); 
+        customData.put(customDataKey, "01010101");
 
         X509Certificate mockX509Cert = EasyMock.mock(X509Certificate.class);
 
@@ -438,8 +438,8 @@ public class EjbcaRestHelperUnitTest {
         }
 
         if (testExtension) {
-            builder.extendedData(List.of(extension));
-            builder.customData(List.of(customData));
+            builder.extendedData(extension);
+            builder.customData(customData);
         }
 
         EnrollPkcs10CertificateRequest request = builder.build();
@@ -470,14 +470,14 @@ public class EjbcaRestHelperUnitTest {
         if (testExtension) {
             assertEquals(
                     "Extension data missing.",
-                    extension.getValue(),
-                    endEntityInformation.getExtendedInformation().getExtensionData((String)extension.getKey())
+                    extension.get("1.1.1.1"),
+                    endEntityInformation.getExtendedInformation().getExtensionData("1.1.1.1")
             );
 
             assertEquals(
                     "Custom data missing.",
-                    customData.getValue(),
-                    endEntityInformation.getExtendedInformation().getCustomData(customDataKey)
+                    customData.get(customDataKey),
+                    endEntityInformation.getExtendedInformation().getCustomData("2.2.2.2")
             );
         }
 

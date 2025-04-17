@@ -1483,6 +1483,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         // Construct POST request
         final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
         final String requestBody = objectMapper.writeValueAsString(pkcs10req);
+        log.error("requestBody: " + requestBody);
         final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
         // Send request
         final Response actualResponse = newRequest("/v1/certificate/pkcs10enroll").request().post(requestEntity);
