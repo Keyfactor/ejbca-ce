@@ -419,28 +419,6 @@ public interface SignSession {
             FailInfo failInfo, String failText) throws CADoesntExistsException, CryptoTokenOfflineException, AuthorizationDeniedException;
 
     /**
-     * Method that just decrypts and verifies a request and should be used in those cases
-     * a when encrypted information needs to be extracted and presented to an RA for approval.
-     *
-     * @param admin         Information about the administrator or admin performing the event.
-     * @param req           a Certification Request message, containing the public key to be put in the
-     *                      created certificate. Currently no additional parameters in requests are considered!
-     *
-     * @return A decrypted and verified RequestMessage message
-     * 
-     * @throws CADoesntExistsException       if the targeted CA does not exist
-     * @throws SignRequestSignatureException if the the request couldn't be verified.
-     * @throws CryptoTokenOfflineException
-     * @throws AuthorizationDeniedException
-     * 
-     * @see org.cesecore.certificates.certificate.request.RequestMessage
-     * @see org.cesecore.certificates.certificate.request.ResponseMessage
-     * @see org.cesecore.certificates.certificate.request.X509ResponseMessage
-     */
-    RequestMessage decryptAndVerifyRequest(AuthenticationToken admin, RequestMessage req)
-            throws CADoesntExistsException, SignRequestSignatureException, CryptoTokenOfflineException, AuthorizationDeniedException;
-
-    /**
      *
      * @param admin         Information about the administrator or admin performing the event.
      * @param req           a CRL Request message
