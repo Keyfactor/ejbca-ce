@@ -432,35 +432,11 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         try {
             bccert = CertTools.getCertfromByteArray(incert.getEncoded(), Certificate.class);
             bccert.verify(incert.getPublicKey());
-        } catch (CertificateParsingException e) {
+        } catch (InvalidKeyException | CertificateException | NoSuchAlgorithmException | NoSuchProviderException | SignatureException e) {
             log.debug("CertificateParsingException verify POPO: ", e);
             final String msg = intres.getLocalizedMessage("createcert.popverificationfailed");
             throw new SignRequestSignatureException(msg, e);
-        } catch (CertificateEncodingException e) {
-            log.debug("CertificateEncodingException verify POPO: ", e);
-            final String msg = intres.getLocalizedMessage("createcert.popverificationfailed");
-            throw new SignRequestSignatureException(msg);
-        } catch (InvalidKeyException e) {
-            log.debug("InvalidKeyException verify POPO: ", e);
-            final String msg = intres.getLocalizedMessage("createcert.popverificationfailed");
-            throw new SignRequestSignatureException(msg, e);
-        } catch (CertificateException e) {
-            log.debug("CertificateException verify POPO: ", e);
-            final String msg = intres.getLocalizedMessage("createcert.popverificationfailed");
-            throw new SignRequestSignatureException(msg, e);
-        } catch (NoSuchAlgorithmException e) {
-            log.debug("NoSuchAlgorithmException verify POPO: ", e);
-            final String msg = intres.getLocalizedMessage("createcert.popverificationfailed");
-            throw new SignRequestSignatureException(msg, e);
-        } catch (NoSuchProviderException e) {
-            log.debug("NoSuchProviderException verify POPO: ", e);
-            final String msg = intres.getLocalizedMessage("createcert.popverificationfailed");
-            throw new SignRequestSignatureException(msg, e);
-        } catch (SignatureException e) {
-            log.debug("SignatureException verify POPO: ", e);
-            final String msg = intres.getLocalizedMessage("createcert.popverificationfailed");
-            throw new SignRequestSignatureException(msg, e);
-        }
+        }  
 
         return createCertificate(admin, username, password, incert.getPublicKey(),
                 CertTools.sunKeyUsageToBC(((X509Certificate) incert).getKeyUsage()), null, null);
