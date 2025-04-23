@@ -66,6 +66,7 @@ public class CVCCAInfo extends CAInfo {
                 false, // useCertReqHistory
                 true, // useUserStorage
                 true, // useCertificateStorage
+                false,   // addCompromisedKeysToBlockList
 				false // acceptRevocationNonExistingEntry
             );
     }
@@ -83,7 +84,8 @@ public class CVCCAInfo extends CAInfo {
 			Map<ApprovalRequestType, Integer> approvals,
 			boolean includeInHealthCheck, boolean doEnforceUniquePublicKeys, boolean doEnforceKeyRenewal,
 			boolean doEnforceUniqueDistinguishedName, boolean doEnforceUniqueSubjectDNSerialnumber,
-			boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, boolean acceptRevocationNonExistingEntry) {
+            boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, boolean addCompromisedKeysToBlockList,
+            boolean acceptRevocationNonExistingEntry) {
 		this.subjectdn = DnComponents.stringToBCDNString(StringTools.strip(subjectDn));
 		this.caid = DnComponents.stringToBCDNString(this.subjectdn).hashCode();
 		this.name = name;
@@ -117,6 +119,7 @@ public class CVCCAInfo extends CAInfo {
 		this.useCertReqHistory = useCertReqHistory;
         this.useUserStorage = useUserStorage;
         this.useCertificateStorage = useCertificateStorage;
+        this.addCompromisedKeysToBlockList = addCompromisedKeysToBlockList ;
         this.acceptRevocationNonExistingEntry = acceptRevocationNonExistingEntry;
 	}
 
@@ -131,8 +134,8 @@ public class CVCCAInfo extends CAInfo {
 			Map<ApprovalRequestType, Integer> approvals,
 			boolean includeInHealthCheck, boolean doEnforceUniquePublicKeys, boolean doEnforceKeyRenewal,
 			boolean doEnforceUniqueDistinguishedName, boolean doEnforceUniqueSubjectDNSerialnumber,
-			boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, boolean acceptRevocationNonExistingEntry,
-			int defaultCertprofileId) {
+            boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, boolean addCompromisedKeysToBlockList,
+            boolean acceptRevocationNonExistingEntry, int defaultCertprofileId) {
 		this.caid = caid;
 		setEncodedValidity(encodedValidity);
 		this.catoken = catoken;
@@ -155,6 +158,7 @@ public class CVCCAInfo extends CAInfo {
 		this.useCertReqHistory = useCertReqHistory;
         this.useUserStorage = useUserStorage;
         this.useCertificateStorage = useCertificateStorage;
+        this.addCompromisedKeysToBlockList = addCompromisedKeysToBlockList ;
         this.acceptRevocationNonExistingEntry = acceptRevocationNonExistingEntry;
         this.defaultCertificateProfileId = defaultCertprofileId;
 	}

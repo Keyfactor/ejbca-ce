@@ -253,6 +253,7 @@ httpd:
 # Requires services.proxyAJP or services.proxyHttp to be enabled for adminweb access
 ingress:
   enabled: false
+  sslBackend: false
   className: "nginx"
   annotations:
     ## Do not redirect HTTP to HTTPS

@@ -145,6 +145,19 @@ public class X509CAUnitTestBase {
             algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_MLDSA87) ||
             algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_LMS)) {
             return algName;
+        } else if(  algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_SLHDSA_SHA2_128S)  ||
+                    algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_SLHDSA_SHAKE_128S) ||
+                    algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_SLHDSA_SHA2_128F)  ||
+                    algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_SLHDSA_SHAKE_128F) ||
+                    algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_SLHDSA_SHA2_192S)  ||
+                    algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_SLHDSA_SHAKE_192S) ||
+                    algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_SLHDSA_SHA2_192F)  ||
+                    algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_SLHDSA_SHAKE_192F) ||
+                    algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_SLHDSA_SHA2_256S)  ||
+                    algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_SLHDSA_SHAKE_256S) ||
+                    algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_SLHDSA_SHA2_256F)  ||
+                    algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_SLHDSA_SHAKE_256F)) {
+            return "SLH-DSA";
         } else {
             return "SHA256withRSA";
         }
@@ -169,6 +182,30 @@ public class X509CAUnitTestBase {
             return AlgorithmConstants.KEYALGORITHM_MLDSA65;
         } else if (algName.equals(AlgorithmConstants.SIGALG_MLDSA87)) {
             return AlgorithmConstants.KEYALGORITHM_MLDSA87;
+        } else if (algName.equals(AlgorithmConstants.SIGALG_SLHDSA_SHA2_128S)) {
+            return AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128S;
+        } else if (algName.equals(AlgorithmConstants.SIGALG_SLHDSA_SHAKE_128S)) {
+            return AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_128S;
+        } else if (algName.equals(AlgorithmConstants.SIGALG_SLHDSA_SHA2_128F)) {
+            return AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F;
+        } else if (algName.equals(AlgorithmConstants.SIGALG_SLHDSA_SHAKE_128F)) {
+            return AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_128F;
+        } else if (algName.equals(AlgorithmConstants.SIGALG_SLHDSA_SHA2_192S)) {
+            return AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_192S;
+        } else if (algName.equals(AlgorithmConstants.SIGALG_SLHDSA_SHAKE_192S)) {
+            return AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_192S;
+        } else if (algName.equals(AlgorithmConstants.SIGALG_SLHDSA_SHA2_192F)) {
+            return AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_192F;
+        } else if (algName.equals(AlgorithmConstants.SIGALG_SLHDSA_SHAKE_192F)) {
+            return AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_192F;
+        } else if (algName.equals(AlgorithmConstants.SIGALG_SLHDSA_SHA2_256S)) {
+            return AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_256S;
+        } else if (algName.equals(AlgorithmConstants.SIGALG_SLHDSA_SHAKE_256S)) {
+            return AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_256S;
+        } else if (algName.equals(AlgorithmConstants.SIGALG_SLHDSA_SHA2_256F)) {
+            return AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_256F;
+        } else if (algName.equals(AlgorithmConstants.SIGALG_SLHDSA_SHAKE_256F)) {
+            return AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_256F;
         } else if (algName.equals(AlgorithmConstants.SIGALG_FALCON512)) {
             return AlgorithmConstants.KEYALGORITHM_FALCON512;
         } else if (algName.equals(AlgorithmConstants.SIGALG_LMS)) {

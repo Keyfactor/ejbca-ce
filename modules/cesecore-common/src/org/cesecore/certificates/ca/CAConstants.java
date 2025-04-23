@@ -715,6 +715,126 @@ public final class CAConstants {
             "ME4wDQYLKoZIhvcNAQkQAxEDPQAAAAABAAAABQAAAAQmE6AxY8A0Om6URejetF5w\n"
             + "GqweLzBXfcf6PMg91Fi59A2qjYuds8cIha7mYD3OHGk=\n";
 
+    public static final String PRESIGN_VALIDATION_KEY_SLH_DSA_SHA2_128S_PRIV =
+            """
+			-----BEGIN PRIVATE KEY-----
+			MHUCAQEwCwYJYIZIAWUDBAMUBECOZo3gebaS9wChYcC6LC4DQMUJrc4eBkcsMcuV
+			9vi5e4XWa1RaV5dwDLngnYgYMknLS6YFf7e2Y54UVYbl44wWgSEAhdZrVFpXl3AM
+			ueCdiBgySctLpgV/t7ZjnhRVhuXjjBY=
+			-----END PRIVATE KEY-----
+			""";
+
+    public static final String PRESIGN_VALIDATION_KEY_SLH_DSA_SHAKE_128S_PRIV =
+            """
+			-----BEGIN PRIVATE KEY-----
+			MHUCAQEwCwYJYIZIAWUDBAMaBEDuxujtGsFKn20v+5tiIbtNIekBOKi56pI09zsH
+			PFSLqf2ka0e3uKimYxBNyTdi7a859f9Td+35GFbykwNjw98bgSEA/aRrR7e4qKZj
+			EE3JN2Ltrzn1/1N37fkYVvKTA2PD3xs=
+			-----END PRIVATE KEY-----
+			""";
+
+    public static final String PRESIGN_VALIDATION_KEY_SLH_DSA_SHA2_128F_PRIV =
+            """
+			-----BEGIN PRIVATE KEY-----
+			MHUCAQEwCwYJYIZIAWUDBAMVBED6md/3oGVg+u/RlbZPCRB0z9NdYJ3V/Bd6XblY
+			VwmN3KTYncBAHW8rj+ol08Nqzdfa7l/2hSoVFUOzDzTnnj9QgSEApNidwEAdbyuP
+			6iXTw2rN19ruX/aFKhUVQ7MPNOeeP1A=
+			-----END PRIVATE KEY-----
+			""";
+
+    public static final String PRESIGN_VALIDATION_KEY_SLH_DSA_SHAKE_128F_PRIV =
+            """
+			-----BEGIN PRIVATE KEY-----
+			MHUCAQEwCwYJYIZIAWUDBAMbBEDkgIeGbLM4mT8JDkpICOpb7p9WHuhNIbnudLpV
+			dYuF9oStQfAlIfUEqk3VrS3ZrTLFvq5TVAvweIYaXEQhbZsmgSEAhK1B8CUh9QSq
+			TdWtLdmtMsW+rlNUC/B4hhpcRCFtmyY=
+			-----END PRIVATE KEY-----
+			""";
+
+    public static final String PRESIGN_VALIDATION_KEY_SLH_DSA_SHA2_192S_PRIV =
+            """
+			-----BEGIN PRIVATE KEY-----
+			MIGlAgEBMAsGCWCGSAFlAwQDFgRgguijCjb4zJNNlTYFMi7yXWs7BexU/rtbDNP4
+			svVStcchh6Ko53CBAaXwrnGTLYcGC+ng8iZOcUrrxWYrEV67dN0aOlCfViiQqJ3D
+			0nLHyqzR5M0ovFMhd8IkM3HKDFxFgTEAC+ng8iZOcUrrxWYrEV67dN0aOlCfViiQ
+			qJ3D0nLHyqzR5M0ovFMhd8IkM3HKDFxF
+			-----END PRIVATE KEY-----
+			""";
+
+    public static final String PRESIGN_VALIDATION_KEY_SLH_DSA_SHAKE_192S_PRIV =
+            """
+			-----BEGIN PRIVATE KEY-----
+			MIGlAgEBMAsGCWCGSAFlAwQDHARgV23jnp/bjpwb2ABE89A5UM4yS5LsETL4mxxv
+			UyW4iQOrCI96jJyBihwugu23dkysF0yATbrKk7euVMbWL/aAVZXIXlTlZ3dPiRGl
+			ikZruKETRqCakOrjdMcBgo661iPBgTEAF0yATbrKk7euVMbWL/aAVZXIXlTlZ3dP
+			iRGlikZruKETRqCakOrjdMcBgo661iPB
+			-----END PRIVATE KEY-----
+			""";
+
+    public static final String PRESIGN_VALIDATION_KEY_SLH_DSA_SHA2_192F_PRIV =
+            """
+			-----BEGIN PRIVATE KEY-----
+			MIGlAgEBMAsGCWCGSAFlAwQDFwRg9Bz+WFDwXR+ukznLN82bfDmA6l6cEiKcQQqQ
+			tLq7hHvxnauHbGpORLn7lPF+BFVyxS+mQYbT0qVbKLoR6VMz9RtGJs/cMJ8PEx0M
+			tHCEgqidLJoF42AZtPTV8ftvj9EkgTEAxS+mQYbT0qVbKLoR6VMz9RtGJs/cMJ8P
+			Ex0MtHCEgqidLJoF42AZtPTV8ftvj9Ek
+			-----END PRIVATE KEY-----
+			""";
+
+    public static final String PRESIGN_VALIDATION_KEY_SLH_DSA_SHAKE_192F_PRIV =
+            """
+			-----BEGIN PRIVATE KEY-----
+			MIGlAgEBMAsGCWCGSAFlAwQDHQRg+SOm6YOXwDZPcpabAnUt6VpfnPKQGYQ7/yu4
+			rU8s8p3k95uRfLi1pa3v485iFQrAvdgPNXOClDK10HAKcoLKTRL2dFFJZJdehXYo
+			OruTpOz9C6vi2o4PAXNHYwmr3iNLgTEAvdgPNXOClDK10HAKcoLKTRL2dFFJZJde
+			hXYoOruTpOz9C6vi2o4PAXNHYwmr3iNL
+			-----END PRIVATE KEY-----
+			""";
+
+    public static final String PRESIGN_VALIDATION_KEY_SLH_DSA_SHA2_256S_PRIV =
+            """
+			-----BEGIN PRIVATE KEY-----
+			MIHWAgEBMAsGCWCGSAFlAwQDGASBgD/3Gwr9XEfo7jd8fzPeUu6K4cpiSsLPV1PF
+			WqHfOKsbtdMOzFbayGJj6KNZ69FVl3maEQcGcU5i3QzNo9YjKv9lhy5+OrJ9NmTc
+			PnhuEhECtudBEQ6o3gERtLO9+IJgZBI+wlPjkGjXGWJl09Y32pDOj3nvwxlo1KHE
+			bAEfDViCgUEAZYcufjqyfTZk3D54bhIRArbnQREOqN4BEbSzvfiCYGQSPsJT45Bo
+			1xliZdPWN9qQzo9578MZaNShxGwBHw1Ygg==
+			-----END PRIVATE KEY-----
+			""";
+
+    public static final String PRESIGN_VALIDATION_KEY_SLH_DSA_SHAKE_256S_PRIV =
+            """
+			-----BEGIN PRIVATE KEY-----
+			MIHWAgEBMAsGCWCGSAFlAwQDHgSBgN23L3PerpAUWBjOTpunnriNQsvM66UZyrkd
+			BSngifOwmyvI8d4clYT/JK+zbWT6HtXGivN41t+ZrupwaIVNC6/G4bmWIOEmgvvR
+			1DcOZyMsVlbpH42i96NzjH4wTiL1iJmyseOBJ4VlJquxwOyNSIR3CInjpTyYahSE
+			BLGXLrlEgUEAxuG5liDhJoL70dQ3DmcjLFZW6R+Novejc4x+ME4i9YiZsrHjgSeF
+			ZSarscDsjUiEdwiJ46U8mGoUhASxly65RA==
+			-----END PRIVATE KEY-----
+			""";
+
+    public static final String PRESIGN_VALIDATION_KEY_SLH_DSA_SHA2_256F_PRIV =
+            """
+			-----BEGIN PRIVATE KEY-----
+			MIHWAgEBMAsGCWCGSAFlAwQDGQSBgEv1R+JoYTpDYbvYfz1LwjK/8JKZvIMf+jSc
+			X/YrcABZCl8f7ntLxY3QtdMC/xSTsi9aB37pqebxac7sDhcnCLLCYoSBH+bWzHP7
+			dWndlGvuGjcBGzrZSZQfUzFbE3XEKqFGsntcOQ/HY+xRx8FSDLLKgj7HT/3G2Jc8
+			/YRU6c1FgUEAwmKEgR/m1sxz+3Vp3ZRr7ho3ARs62UmUH1MxWxN1xCqhRrJ7XDkP
+			x2PsUcfBUgyyyoI+x0/9xtiXPP2EVOnNRQ==
+			-----END PRIVATE KEY-----
+			""";
+
+    public static final String PRESIGN_VALIDATION_KEY_SLH_DSA_SHAKE_256F_PRIV =
+            """
+			-----BEGIN PRIVATE KEY-----
+			MIHWAgEBMAsGCWCGSAFlAwQDHwSBgHcGA1LP3ckULDyENwe5q1cygbyMzAH64GI8
+			cY9/sQ3HNf1mv3SS2NUe3uNFWeHMjqrZOw08g30bF8Jk3M53sO8KDy1m4ggZOTXv
+			9T60i6uYvQi0Xa6fVXkZCTpGmHQf5tFX9IMb+CHQmuYOiivSCHVIehS2V8zq6rxz
+			c5aTywj8gUEACg8tZuIIGTk17/U+tIurmL0ItF2un1V5GQk6Rph0H+bRV/SDG/gh
+			0JrmDoor0gh1SHoUtlfM6uq8c3OWk8sI/A==
+			-----END PRIVATE KEY-----
+			""";
+
     public static final String KEY_EXCHANGE_CERTIFICATE_SDN_ENDING = "-Xchg";
 
     /** Return a hard coded private key that can be used for signing
@@ -768,6 +888,30 @@ public final class CAConstants {
                 final PublicKey pub = KeyTools.getPublicKeyFromBytes(Base64.decode(PRESIGN_VALIDATION_KEY_LMS_PUB));
                 final PrivateKey priv = CAConstants.getPrivateKeyFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_LMS_PRIV);
                 return new KeyPair(pub, priv);
+            case AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128S:
+                return KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_SLH_DSA_SHA2_128S_PRIV);
+            case AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_128S:
+                return KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_SLH_DSA_SHAKE_128S_PRIV);
+            case AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F:
+                return KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_SLH_DSA_SHA2_128F_PRIV);
+            case AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_128F:
+                return KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_SLH_DSA_SHAKE_128F_PRIV);
+            case AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_192S:
+                return KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_SLH_DSA_SHA2_192S_PRIV);
+            case AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_192S:
+                return KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_SLH_DSA_SHAKE_192S_PRIV);
+            case AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_192F:
+                return KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_SLH_DSA_SHA2_192F_PRIV);
+            case AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_192F:
+                return KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_SLH_DSA_SHAKE_192F_PRIV);
+            case AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_256S:
+                return KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_SLH_DSA_SHA2_256S_PRIV);
+            case AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_256S:
+                return KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_SLH_DSA_SHAKE_256S_PRIV);
+            case AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_256F:
+                return KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_SLH_DSA_SHA2_256F_PRIV);
+            case AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_256F:
+                return KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_SLH_DSA_SHAKE_256F_PRIV);
             default:
                 return null;
         }
@@ -826,6 +970,12 @@ public final class CAConstants {
 
     /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
     public static final String DO_PRE_PRODUCE_OCSP_RESPONSES = "doPreProduceOcspResponses";
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String KEYENCRYPTIONPADDINGALGORITHM = "keyEncryptionPaddingAlgorithm";
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String ADD_COMPROMISED_KEYS_TO_BLOCK_LIST = "addCompromisedKeysToBlockList";
 
     /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
     public static final String CA_SERIAL_NUMBER_OCTET_SIZE = "caSerialNumberOctetSize";

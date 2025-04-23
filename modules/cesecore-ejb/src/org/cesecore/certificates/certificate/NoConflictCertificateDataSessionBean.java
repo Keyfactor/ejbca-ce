@@ -86,8 +86,8 @@ public class NoConflictCertificateDataSessionBean extends BaseCertificateDataSes
     }
     
     @Override
-    public Collection<RevokedCertInfo> getRevokedCertInfosWithDuplicates(final String issuerDN, final boolean deltaCrl, final int crlPartitionIndex, final long lastBaseCrlDate, 
-            final boolean keepExpiredCertsOnCrl, final boolean allowInvalidityDate) {
+    public Collection<RevokedCertInfo> getRevokedCertInfosWithDuplicates(final String issuerDN, final boolean deltaCrl, final int crlPartitionIndex, final long lastBaseCrlDate,
+                                                                         final boolean keepExpiredCertsOnCrl, final boolean allowInvalidityDate) {
         if (log.isDebugEnabled()) {
             log.debug("Querying for revoked certificates in append-only table. IssuerDN: '" + issuerDN + "'" +
                     ", Delta CRL: " + deltaCrl +

@@ -34,9 +34,14 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.DERNull;
+import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.crmf.EncKeyWithID;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
+import org.bouncycastle.asn1.pkcs.RSAESOAEPparams;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.cert.crmf.CRMFException;
 import org.bouncycastle.cert.crmf.PKIArchiveControl;
 import org.bouncycastle.cert.crmf.jcajce.JcaPKIArchiveControlBuilder;
@@ -60,6 +65,7 @@ import org.bouncycastle.jce.spec.ECParameterSpec;
 import org.bouncycastle.jce.spec.ECPublicKeySpec;
 import org.bouncycastle.math.ec.ECPoint;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.certificates.KeyEncryptionPaddingAlgorithm;
 import org.cesecore.util.LookAheadObjectInputStream;
 import org.ejbca.config.EjbcaConfiguration;
 
@@ -133,16 +139,16 @@ public class CryptoTools {
      *
      * @param cryptoToken the crypto token where the encryption key is
      * @param alias the alias of the key on the crypto token to use for encryption
-     * @param keypair the data to encrypt
+     * @param endEntityKeyPair the data to encrypt
      * @return encrypted data
      * @throws CryptoTokenOfflineException If crypto token is off-line so encryption key can not be used.
      */
     public static byte[] encryptKeys(final X509Certificate caCertificate, final CryptoToken cryptoToken, final String alias,
-            final KeyPair endEntityKeyPair) throws CryptoTokenOfflineException {
-        byte[] result = null;
+            final KeyPair endEntityKeyPair, final KeyEncryptionPaddingAlgorithm keyEncryptionPaddingAlgorithm) throws CryptoTokenOfflineException {
+        byte[] result;
         switch (cryptoToken.getPublicKey(alias).getAlgorithm()) {
         case AlgorithmConstants.KEYALGORITHM_RSA:
-            result = encryptKeysWithRsa(cryptoToken.getPublicKey(alias), endEntityKeyPair);
+            result = encryptKeysWithRsa(cryptoToken.getPublicKey(alias), endEntityKeyPair, keyEncryptionPaddingAlgorithm);
             break;
         case AlgorithmConstants.KEYALGORITHM_EC:
         case AlgorithmConstants.KEYALGORITHM_ECDSA:
@@ -156,15 +162,24 @@ public class CryptoTools {
         return result;
     }
     
-    private static final byte[] encryptKeysWithRsa(final PublicKey encryptionKey, final KeyPair endEntityKeyPair)
-            throws CryptoTokenOfflineException {
+    private static byte[] encryptKeysWithRsa(final PublicKey encryptionKey, final KeyPair endEntityKeyPair, final KeyEncryptionPaddingAlgorithm keyEncryptionPaddingAlgorithm) {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ObjectOutputStream os = new ObjectOutputStream(baos);
             os.writeObject(endEntityKeyPair);
             CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
             byte[] keyId = KeyTools.createSubjectKeyId(encryptionKey).getKeyIdentifier();
-            edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(keyId, encryptionKey));
+            if (KeyEncryptionPaddingAlgorithm.RSA_OAEP.equals(keyEncryptionPaddingAlgorithm)) {
+                final RSAESOAEPparams paramsSHA256 = new RSAESOAEPparams(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256, DERNull.INSTANCE),
+                        new AlgorithmIdentifier(PKCSObjectIdentifiers.id_mgf1,
+                                new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256, DERNull.INSTANCE)),
+                        new AlgorithmIdentifier(PKCSObjectIdentifiers.id_pSpecified, new DEROctetString(new byte[0])));
+
+                edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(keyId,
+                        new AlgorithmIdentifier(PKCSObjectIdentifiers.id_RSAES_OAEP, paramsSHA256), encryptionKey));
+            } else {
+                edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(keyId, encryptionKey));
+            }
             //We can use BC for the symmetric key since this doesn't happen in the HSM 
             JceCMSContentEncryptorBuilder jceCMSContentEncryptorBuilder = new JceCMSContentEncryptorBuilder(NISTObjectIdentifiers.id_aes256_CBC)
                     .setProvider(BouncyCastleProvider.PROVIDER_NAME);
@@ -314,7 +329,7 @@ public class CryptoTools {
             // even though we set content provider to BC. Symm decryption in HSM varies between different HSMs and at least for this case is known
             // to not work in SafeNet Luna (JDK behavior changed in JDK 7_75 where they introduced imho a buggy behavior)
             rec.setMustProduceEncodableUnwrappedKey(true);
-            byte[] recdata = recipient.getContent(rec);
+            byte[] recdata = recipient.getContent(rec);        
             try (LookAheadObjectInputStream ois = new LookAheadObjectInputStream(new ByteArrayInputStream(recdata))) {
                 // we have things like:
                 // org.bouncycastle.jcajce.provider.asymmetric.edec.BCEdDSAPrivateKey implements [interface org.bouncycastle.jcajce.interfaces.EdDSAPrivateKey] 
@@ -337,6 +352,8 @@ public class CryptoTools {
                 // Add PQC classes.
                 keypairclasses.add(org.bouncycastle.jcajce.interfaces.MLDSAPrivateKey.class);
                 keypairclasses.add(org.bouncycastle.jcajce.interfaces.MLDSAPublicKey.class);
+                keypairclasses.add(org.bouncycastle.jcajce.interfaces.SLHDSAPrivateKey.class);
+                keypairclasses.add(org.bouncycastle.jcajce.interfaces.SLHDSAPublicKey.class);
                 keypairclasses.add(org.bouncycastle.jcajce.interfaces.MLKEMPrivateKey.class);
                 keypairclasses.add(org.bouncycastle.jcajce.interfaces.MLKEMPublicKey.class);
                 keypairclasses.add(org.bouncycastle.pqc.jcajce.interfaces.FalconPrivateKey.class);

@@ -106,11 +106,16 @@ public class JdbcTool extends ClientToolBox {
         handleUnusedPotentialValue(potentialValue);
         // Run command instance
         int errorCode = 0;
-        if (jdbcUrl!=null && username!=null && password!=null && !linesInFile.isEmpty()) {
+        if (jdbcUrl != null && username != null && password != null && !linesInFile.isEmpty()) {
             errorCode = new JdbcTool().run(jdbcUrl, username, password, linesInFile);
             log.info("Done.");
+        }
+        // passwordless connections
+        else if (username == null && password == null && jdbcUrl != null && !linesInFile.isEmpty()) {
+            errorCode = new JdbcTool().run(jdbcUrl, linesInFile);
+            log.info("Done.");
         } else {
-            log.info("Usage: " + args[0] + " --url <jdbcUrl> --username <username> [--password <password> | --password-prompt] [--file <sqlFile> | --execute \"<SQL-statement>\"]");
+            log.info("Usage: " + args[0] + " --url <jdbcUrl> [--username <username>] [--password <password> | --password-prompt] [--file <sqlFile> | --execute \"<SQL-statement>\"]");
             log.info("You need to ensure that a suitable JDBC 4.0+ driver is available in the path of ClientToolBox by linking it from the 'ext/' directory.");
             errorCode = 1;
         }
@@ -123,8 +128,21 @@ public class JdbcTool extends ClientToolBox {
         }
     }
 
+    @FunctionalInterface
+    private interface ConnectionSupplier {
+        Connection get() throws SQLException;
+    }
+
     private int run(final String jdbcUrl, final String username, final String password, final List<String> linesInFile) {
-        try (final Connection connection = DriverManager.getConnection(jdbcUrl, username, password);) {
+        return runWithConnection(() -> DriverManager.getConnection(jdbcUrl, username, password), linesInFile);
+    }
+
+    private int run(final String jdbcUrl, final List<String> linesInFile) {
+        return runWithConnection(() -> DriverManager.getConnection(jdbcUrl), linesInFile);
+    }
+
+    private int runWithConnection(ConnectionSupplier connectionSupplier, final List<String> linesInFile) {
+        try (final Connection connection = connectionSupplier.get()) {
             connection.setAutoCommit(true);
             log.info("Connected.");
             final StringBuilder sb = new StringBuilder();
@@ -143,10 +161,10 @@ public class JdbcTool extends ClientToolBox {
                 // Remove the statement ending character ';'
                 sb.deleteCharAt(sb.length()-1);
                 try {
-                    try (final Statement statement = connection.createStatement();) {
+                    try (final Statement statement = connection.createStatement()) {
                         final String sqlStatement = sb.toString();
                         if (sqlStatement.toUpperCase().startsWith("SELECT")) {
-                            try (final ResultSet resultSet = statement.executeQuery(sb.toString());) {
+                            try (final ResultSet resultSet = statement.executeQuery(sb.toString())) {
                                 final boolean hasResult = resultSet!=null && resultSet.next();
                                 log.info("'" + sqlStatement + "' -> " + (hasResult ? "hit" : "miss"));
                                 if (linesInFile.size()==1 && !hasResult) {

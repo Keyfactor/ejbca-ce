@@ -594,6 +594,7 @@ public class IntuneRestApi {
         private String azureLoginUrl = AzureAuthenticator.DEFAULT_AZURE_LOGIN_URL;
         private PrivateKey clientKey = null;
         private X509Certificate clientCertificate = null;
+        private List<X509Certificate> chain = null;
         private String graphResourceUrl = DEFAULT_GRAPH_URL;
         private String graphResourceVersion = DEFAULT_GRAPH_VERSION;
         private String intuneResourceUrl = DEFAULT_INTUNE_URL;
@@ -637,7 +638,7 @@ public class IntuneRestApi {
             } else {
                 Preconditions.checkNotNull(clientCertificate);
                 Preconditions.checkNotNull(clientKey);
-                credentials = new AzureCertificateAuthenticator(azureLoginUrl, tenantId, clientId, clientCertificate, clientKey, client);
+                credentials = new AzureCertificateAuthenticator(azureLoginUrl, tenantId, clientId, clientCertificate, chain, clientKey, client);
             }
 
             return new IntuneRestApi(credentials, clientIdAndVersion, client, graphResourceUrl, graphResourceVersion, intuneResourceUrl);
@@ -688,8 +689,9 @@ public class IntuneRestApi {
             return this;
         }
 
-        public Builder withClientCertificate(X509Certificate clientCertificate) {
+        public Builder withClientCertificate(final X509Certificate clientCertificate, final List<X509Certificate> chain) {
             this.clientCertificate = clientCertificate;
+            this.chain = chain;
             return this;
         }
 

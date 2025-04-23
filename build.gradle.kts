@@ -480,3 +480,16 @@ tasks.register("checkIfAppServerIsRunning") {
         }
     }
 }
+
+tasks.register<Delete>("cleanDist") {
+    description = "Deletes the dist directory."
+    group = "build"
+    var distDir = file("${rootProject.rootDir}/dist")
+    if (distDir.exists()) {
+        distDir.deleteRecursively()
+    }
+}
+
+tasks.named("clean") {
+    dependsOn("cleanDist")
+}

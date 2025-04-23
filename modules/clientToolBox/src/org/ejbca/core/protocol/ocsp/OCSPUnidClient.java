@@ -399,10 +399,14 @@ public class OCSPUnidClient {
         if (fnrrep == null) {
             return null;            
         }
-        ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(fnrrep.getExtnValue().getEncoded()));
-        final ASN1OctetString octs = ASN1OctetString.getInstance(aIn.readObject());
-        aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
-        final FnrFromUnidExtension fnrobj = FnrFromUnidExtension.getInstance(aIn.readObject());
+        final ASN1OctetString octs;
+        try(ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(fnrrep.getExtnValue().getEncoded()))) {
+            octs = ASN1OctetString.getInstance(aIn.readObject());
+        }
+        final FnrFromUnidExtension fnrobj;
+        try(ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()))) {
+            fnrobj = FnrFromUnidExtension.getInstance(aIn.readObject());
+        }
         return fnrobj.getFnr();
     }
 

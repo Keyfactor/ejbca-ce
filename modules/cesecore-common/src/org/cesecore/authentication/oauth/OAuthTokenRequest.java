@@ -257,6 +257,7 @@ public class OAuthTokenRequest {
      * @throws JOSEException
      *             Error formatting JWT
      */
+    @SuppressWarnings("deprecation")
     private static String getJwtString(String jwtAudience, String clientId, int tokenLifetimeMilliseconds, PrivateKey key, X509Certificate certificate)
             throws IOException {
         final long time = System.currentTimeMillis();

@@ -60,6 +60,7 @@ import org.bouncycastle.cms.SignerInformationStore;
 import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoVerifierBuilder;
 import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient;
 import org.bouncycastle.jcajce.provider.asymmetric.util.KeyUtil;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
@@ -131,7 +132,7 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
             }
             
             CMSSignedDataParser signedDataParser = new CMSSignedDataParser(
-                    new JcaDigestCalculatorProviderBuilder().setProvider("BC").build(), message);
+                    new JcaDigestCalculatorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(), message);
             signedDataParser.getSignedContent().drain();
             
             SignerInformationStore signers = signedDataParser.getSignerInfos();
@@ -145,7 +146,7 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
             SignerInformation signer = signers.getSigners().iterator().next();
             // verifies the outer request, with public key from CSR
             if(!signer.verify(
-                    new JcaSimpleSignerInfoVerifierBuilder().setProvider("BC")
+                    new JcaSimpleSignerInfoVerifierBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME)
                     .build(pkcs10.getPublicKey()))){
                 log.debug("MS Key archival request outer signed data verification failed.");
                 return false;
@@ -229,7 +230,7 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
 
             RecipientInformation recipient = recipients.getRecipients().iterator().next();
             CMSTypedStream recData = recipient.getContentStream(
-                    new JceKeyTransEnvelopedRecipient(caEncryptionKey).setProvider(provider));
+                    new JceKeyTransEnvelopedRecipient(caEncryptionKey).setProvider(provider).setContentProvider(BouncyCastleProvider.PROVIDER_NAME));
             byte[] encodedPrivateKey = recData.getContentStream().readAllBytes();
             
             PrivateKey requestPrivateKey =  parsePrivateKeyBlob(encodedPrivateKey);

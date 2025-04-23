@@ -581,14 +581,18 @@ public class CAInterfaceBean implements Serializable {
                             .setUseUserStorage(caInfoDto.isUseUserStorage())
                             .setUseCertificateStorage(caInfoDto.isUseCertificateStorage())
                             .setDoPreProduceOcspResponses(caInfoDto.isDoPreProduceOcspResponses())
+                            .setAddCompromisedKeysToBlockList(caInfoDto.isAddCompromisedKeysToBlockList())
                             .setDoStoreOcspResponsesOnDemand(caInfoDto.isDoStoreOcspResponsesOnDemand())
 							.setDoPreProduceIndividualOcspResponses(caInfoDto.isDoPreProduceOcspResponseUponIssuanceAndRevocation())
                             .setAcceptRevocationNonExistingEntry(caInfoDto.isAcceptRevocationsNonExistingEntry())
-                            .setKeepExpiredCertsOnCRL(caInfoDto.isKeepExpiredOnCrl())
+                            .setKeepExpiredCertsOnCrl(caInfoDto.isKeepExpiredCertsOnCrl())
+                            .setKeepExpiredCertsOnCrlFormat(caInfoDto.getKeepExpiredCertsOnCrlFormat())
+                            .setKeepExpiredCertsOnCrlDate(caInfoDto.getKeepExpiredCertsOnCrlDate())
                             .setUsePartitionedCrl(caInfoDto.isUsePartitionedCrl())
                             .setCrlPartitions(caInfoDto.getCrlPartitions())
                             .setSuspendedCrlPartitions(caInfoDto.getSuspendedCrlPartitions())
                             .setMsCaCompatible(caInfoDto.isMsCaCompatible())
+                            .setKeyEncryptionPaddingAlgorithm(caInfoDto.getKeyEncryptionPaddingAlgorithm())
                             .setRequestPreProcessor(caInfoDto.getRequestPreProcessor());
                     if (buttonCreateCa) {
                         X509CAInfo x509cainfo =  x509CAInfoBuilder
@@ -646,7 +650,8 @@ public class CAInterfaceBean implements Serializable {
                             caInfoDto.isUseCertReqHistory(),
                             caInfoDto.isUseUserStorage(),
                             caInfoDto.isUseCertificateStorage(),
-                            caInfoDto.isAcceptRevocationsNonExistingEntry());
+                            caInfoDto.isAddCompromisedKeysToBlockList(),
+                            caInfoDto.isAcceptRevocationsNonExistingEntry());                  
 	                if (buttonCreateCa) {
 	                    caadminsession.createCA(authenticationToken, cvccainfo);
 	                } else if (buttonMakeRequest) {
@@ -973,6 +978,14 @@ public class CAInterfaceBean implements Serializable {
                        throw new ParameterException(ejbcawebbean.getText("INVALIDPOLICYOID"));
                    }
                }
+               
+               final long keepExpiredCertsOnCrlDate;
+               if(caInfoDto.getKeepExpiredCertsOnCrlFormat() == 0) {
+                   keepExpiredCertsOnCrlDate = 0L;
+               } else {
+                   keepExpiredCertsOnCrlDate = caInfoDto.getKeepExpiredCertsOnCrlDate();
+               }
+               
                // No need to add the Keyrecovery extended service here, because it is only "updated" in EditCA, and there
                // is not need to update it.
                X509CAInfo.X509CAInfoBuilder x509CAInfoBuilder = new X509CAInfo.X509CAInfoBuilder()
@@ -1021,11 +1034,14 @@ public class CAInterfaceBean implements Serializable {
                        .setUseUserStorage(caInfoDto.isUseUserStorage())
                        .setUseCertificateStorage(caInfoDto.isUseCertificateStorage())
                        .setDoPreProduceOcspResponses(caInfoDto.isDoPreProduceOcspResponses())
+                       .setAddCompromisedKeysToBlockList(caInfoDto.isAddCompromisedKeysToBlockList())
                        .setDoStoreOcspResponsesOnDemand(caInfoDto.isDoStoreOcspResponsesOnDemand())
 					   .setDoPreProduceIndividualOcspResponses(caInfoDto.isDoPreProduceOcspResponseUponIssuanceAndRevocation())
                        .setAcceptRevocationNonExistingEntry(caInfoDto.isAcceptRevocationsNonExistingEntry())
                        .setCmpRaAuthSecret(caInfoDto.getSharedCmpRaSecret())
-                       .setKeepExpiredCertsOnCRL(caInfoDto.isKeepExpiredOnCrl())
+                       .setKeepExpiredCertsOnCrl(caInfoDto.isKeepExpiredCertsOnCrl())
+                       .setKeepExpiredCertsOnCrlFormat(caInfoDto.getKeepExpiredCertsOnCrlFormat())
+                       .setKeepExpiredCertsOnCrlDate(caInfoDto.getKeepExpiredCertsOnCrlDate())
                        .setDefaultCertProfileId(caInfoDto.getDefaultCertProfileId())
                        .setUseNoConflictCertificateData(caInfoDto.isUseNoConflictCertificateData())
                        .setUsePartitionedCrl(caInfoDto.isUsePartitionedCrl())
@@ -1033,6 +1049,7 @@ public class CAInterfaceBean implements Serializable {
                        .setMsCaCompatible(caInfoDto.isMsCaCompatible())
                        .setSuspendedCrlPartitions(caInfoDto.getSuspendedCrlPartitions())
                        .setRequestPreProcessor(caInfoDto.getRequestPreProcessor())
+                       .setKeyEncryptionPaddingAlgorithm(caInfoDto.getKeyEncryptionPaddingAlgorithm())
                        .setAlternateCertificateChains(caInfoDto.getAlternateCertificateChains());
                cainfo = x509CAInfoBuilder.buildForUpdate();
             } else if (caInfoDto.getCaType() == CAInfo.CATYPE_CVC) {
@@ -1057,7 +1074,9 @@ public class CAInterfaceBean implements Serializable {
                        caInfoDto.isUseCertReqHistory(),
                        caInfoDto.isUseUserStorage(),
                        caInfoDto.isUseCertificateStorage(),
-                       caInfoDto.isAcceptRevocationsNonExistingEntry(), caInfoDto.getDefaultCertProfileId());
+                       caInfoDto.isAddCompromisedKeysToBlockList(),
+                       caInfoDto.isAcceptRevocationsNonExistingEntry(), 
+                       caInfoDto.getDefaultCertProfileId());
             } else if (caInfoDto.getCaType() == CAInfo.CATYPE_SSH) {
                 final int caSerialNumberOctetSize = (caInfoDto.getCaSerialNumberOctetSize() != null)
                         ? Integer.parseInt(caInfoDto.getCaSerialNumberOctetSize())
@@ -1250,7 +1269,7 @@ public class CAInterfaceBean implements Serializable {
                 //Or in case of RSA
                 aliases.add(cryptoTokenKeyPairInfo.getAlias());
             }
-            // ML-DSA and Falcon can only sign, so skip the PQ algorithms
+            // ML-DSA, SLH-DSA and Falcon can only sign, so skip the PQ algorithms
         }
 
         return aliases;
