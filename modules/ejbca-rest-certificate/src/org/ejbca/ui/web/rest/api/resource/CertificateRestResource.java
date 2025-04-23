@@ -27,7 +27,7 @@ import org.bouncycastle.cms.CMSException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateStatus;
@@ -129,9 +129,6 @@ public class CertificateRestResource extends BaseRestResource {
      */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
     private static final Logger log = Logger.getLogger(CertificateRestResource.class);
-
-    @EJB
-    private CaSessionLocal caSessionLocal;
 
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApi;
@@ -413,7 +410,13 @@ public class CertificateRestResource extends BaseRestResource {
             throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Unsupported token type. Must be one of 'PKCS12', 'BCFKS' or 'JKS'.");
         }
         final byte[] keyStoreBytes = raMasterApi.generateKeyStore(admin, endEntityInformation);
-        String caName = caSessionLocal.getCAIdToNameMap().get(endEntityInformation.getCAId());
+
+        final CAInfo caInfo = raMasterApi.getAuthorizedCAInfos(admin).getValue(endEntityInformation.getCAId());
+        if (caInfo == null) {
+            throw new RestException(Status.NOT_FOUND.getStatusCode(), "CA does not exist");
+        }
+
+        String caName = caInfo.getName();
         if (caName == null) {
             throw new RestException(Status.NOT_FOUND.getStatusCode(), "CA does not exist");
         }
