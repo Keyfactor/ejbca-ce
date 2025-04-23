@@ -32,6 +32,7 @@ import java.security.cert.TrustAnchor;
 import java.security.cert.X509CRL;
 import java.security.cert.X509CertSelector;
 import java.security.cert.X509Certificate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -47,6 +48,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.IntRange;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.cesecore.certificates.KeyEncryptionPaddingAlgorithm;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -99,8 +101,10 @@ public class X509CAInfo extends CAInfo {
 	private int crlPartitions;
 	private int suspendedCrlPartitions;
 	private String requestPreProcessor;
+    private int keepExpiredCertsOnCrlFormat = KeepExpiredCertsOnCrlFormat.CA_DATE.getValue();
+    private long keepExpiredCertsOnCrlDate = 0L;
 
-	// Key: Root CA subjectDn, Value: fingerprint in reverse order, root CA at end
+    // Key: Root CA subjectDn, Value: fingerprint in reverse order, root CA at end
 	private Map<String, List<String>> alternateCertificateChains;
 
     /**
@@ -175,15 +179,19 @@ public class X509CAInfo extends CAInfo {
                 .setUseUserStorage(true)
                 .setUseCertificateStorage(true)
                 .setDoPreProduceOcspResponses(false)
+                .setAddCompromisedKeysToBlockList(false)
                 .setDoStoreOcspResponsesOnDemand(false)
                 .setDoPreProduceIndividualOcspResponses(false)
                 .setAcceptRevocationNonExistingEntry(false)
                 .setCmpRaAuthSecret(null)
-                .setKeepExpiredCertsOnCRL(false)
+                .setKeepExpiredCertsOnCrl(false)
+                .setKeepExpiredCertsOnCrlFormat(KeepExpiredCertsOnCrlFormat.CA_DATE.getValue())
+                .setKeepExpiredCertsOnCrlDate(0L)
                 .setUsePartitionedCrl(false)
                 .setCrlPartitions(0)
                 .setSuspendedCrlPartitions(0)
                 .setRequestPreProcessor(null)
+                .setKeyEncryptionPaddingAlgorithm(KeyEncryptionPaddingAlgorithm.PKCS_1_5)
                 .setExternalCrlDistPoint(null);
          return caInfoBuilder.build();
     }
@@ -202,12 +210,12 @@ public class X509CAInfo extends CAInfo {
                       final boolean useCrlDistributionPointOnCrl, final boolean crlDistributionPointOnCrlCritical, final boolean includeInHealthCheck,
                       final boolean doEnforceUniquePublicKeys, final boolean doEnforceKeyRenewal, final boolean doEnforceUniqueDistinguishedName,
                       final boolean doEnforceUniqueSubjectDNSerialnumber, final boolean useCertReqHistory, final boolean useUserStorage,
-                      final boolean useCertificateStorage, final boolean doPreProduceOcspResponses, final boolean doStoreOcspResponsesOnDemand,
+                      final boolean useCertificateStorage, final boolean addCompromisedKeysToBlockList, final boolean doPreProduceOcspResponses, final boolean doStoreOcspResponsesOnDemand,
                       final boolean doPreProduceOcspResponseUponIssuanceAndRevocation, final boolean acceptRevocationNonExistingEntry,
-                      final String cmpRaAuthSecret, final boolean keepExpiredCertsOnCRL, final int defaultCertprofileId,
+                      final String cmpRaAuthSecret, final boolean keepExpiredCertsOnCrl, final int keepExpiredCertsOnCrlFormat, final long keepExpiredCertsOnCrlDate, final int defaultCertprofileId,
                       final boolean useNoConflictCertificateData, final boolean usePartitionedCrl, final int crlPartitions, final int suspendedCrlPartitions,
                       final String requestPreProcessor, final boolean msCaCompatible, final Map<String, List<String>> alternateCertificateChains,
-                      final String externalCDP) {
+                      final String externalCDP, final KeyEncryptionPaddingAlgorithm keyEncryptionPaddingAlgorithm) {
         this.encodedValidity = encodedValidity;
         this.catoken = catoken;
         this.description = description;
@@ -248,11 +256,14 @@ public class X509CAInfo extends CAInfo {
         this.useUserStorage = useUserStorage;
         this.useCertificateStorage = useCertificateStorage;
         this.doPreProduceOcspResponses = doPreProduceOcspResponses;
+        this.addCompromisedKeysToBlockList = addCompromisedKeysToBlockList;
         this.doStoreOcspResponsesOnDemand = doStoreOcspResponsesOnDemand;
         this.doPreProduceOcspResponseUponIssuanceAndRevocation = doPreProduceOcspResponseUponIssuanceAndRevocation;
         this.acceptRevocationNonExistingEntry = acceptRevocationNonExistingEntry;
         setCmpRaAuthSecret(cmpRaAuthSecret);
-        this.keepExpiredCertsOnCRL = keepExpiredCertsOnCRL;
+        this.keepExpiredCertsOnCrl = keepExpiredCertsOnCrl;
+        this.keepExpiredCertsOnCrlFormat = keepExpiredCertsOnCrlFormat;
+        this.keepExpiredCertsOnCrlDate = keepExpiredCertsOnCrlDate;
         this.authorityInformationAccess = crlAuthorityInformationAccess;
         this.certificateAiaDefaultCaIssuerUri = certificateAiaDefaultCaIssuerUri;
         this.nameConstraintsPermitted = nameConstraintsPermitted;
@@ -263,6 +274,7 @@ public class X509CAInfo extends CAInfo {
         this.crlPartitions = crlPartitions;
         this.suspendedCrlPartitions = suspendedCrlPartitions;
         this.alternateCertificateChains = alternateCertificateChains;
+        this.keyEncryptionPaddingAlgorithm = keyEncryptionPaddingAlgorithm;
         setRequestPreProcessor(requestPreProcessor);
     }
 
@@ -642,6 +654,22 @@ public class X509CAInfo extends CAInfo {
         this.requestPreProcessor = requestPreProcessor;
     }
 
+    public int getKeepExpiredCertsOnCrlFormat() {
+        return this.keepExpiredCertsOnCrlFormat;
+    }
+
+    public void setKeepExpiredCertsOnCrlFormat(final int keepExpiredCertsOnCrlFormat) {
+        this.keepExpiredCertsOnCrlFormat = keepExpiredCertsOnCrlFormat;
+    }
+
+    public long getKeepExpiredCertsOnCrlDate() {
+        return this.keepExpiredCertsOnCrlDate;
+    }
+
+    public void setKeepExpiredCertsOnCrlDate(final long keepExpiredCertsOnCrlDate) {
+        this.keepExpiredCertsOnCrlDate = keepExpiredCertsOnCrlDate;
+    }
+
     public Map<String, List<String>> getAlternateCertificateChains() {
         return alternateCertificateChains;
     }
@@ -711,15 +739,19 @@ public class X509CAInfo extends CAInfo {
         private boolean useUserStorage = true;
         private boolean useCertificateStorage = true;
         private boolean doPreProduceOcspResponses = false;
+        private boolean addCompromisedKeysToBlockList = false;
         private boolean doStoreOcspResponsesOnDemand = false;
         private boolean doPreProduceIndividualOcspResponse = false;
         private boolean acceptRevocationNonExistingEntry = false;
         private String cmpRaAuthSecret = null;
-        private boolean keepExpiredCertsOnCRL = false;
+        private boolean keepExpiredCertsOnCrl = false;
+        private int keepExpiredCertsOnCrlFormat = KeepExpiredCertsOnCrlFormat.CA_DATE.getValue();
+        private long keepExpiredCertsOnCrlDate = 0L;
         private boolean usePartitionedCrl = false;
         private int crlPartitions;
         private int suspendedCrlPartitions;
         private String requestPreProcessor;
+        private KeyEncryptionPaddingAlgorithm keyEncryptionPaddingAlgorithm = KeyEncryptionPaddingAlgorithm.PKCS_1_5;
         private Map<String, List<String>> alternateCertificateChains;
 
         public X509CAInfoBuilder  setCaId(int caId) {
@@ -965,13 +997,14 @@ public class X509CAInfo extends CAInfo {
             return this;
         }
 
-        /**
-         * @param defaultCrlDistPoint the URI of the default CRL distribution point
-         */
         public X509CAInfoBuilder setExternalCrlDistPoint(String externalCrlDistPoint) {
             this.externalCrlDistPoint = externalCrlDistPoint;
             return this;
         }
+
+        /**
+         * @param defaultCrlDistPoint the URI of the default CRL distribution point
+         */
         public X509CAInfoBuilder setDefaultCrlDistPoint(String defaultCrlDistPoint) {
             this.defaultCrlDistPoint = defaultCrlDistPoint;
             return this;
@@ -1107,6 +1140,11 @@ public class X509CAInfo extends CAInfo {
             return this;
         }
 
+        public X509CAInfoBuilder setAddCompromisedKeysToBlockList(boolean addCompromisedKeysToBlockList) {
+            this.addCompromisedKeysToBlockList = addCompromisedKeysToBlockList;
+            return this;
+        }
+
         public X509CAInfoBuilder setDoPreProduceIndividualOcspResponses(boolean doPreProduceIndividualOcspResponse) {
             this.doPreProduceIndividualOcspResponse = doPreProduceIndividualOcspResponse;
             return this;
@@ -1127,8 +1165,18 @@ public class X509CAInfo extends CAInfo {
             return this;
         }
 
-        public X509CAInfoBuilder setKeepExpiredCertsOnCRL(boolean keepExpiredCertsOnCRL) {
-            this.keepExpiredCertsOnCRL = keepExpiredCertsOnCRL;
+        public X509CAInfoBuilder setKeepExpiredCertsOnCrl(boolean keepExpiredCertsOnCrl) {
+            this.keepExpiredCertsOnCrl = keepExpiredCertsOnCrl;
+            return this;
+        }
+
+        public X509CAInfoBuilder setKeepExpiredCertsOnCrlFormat(int keepExpiredCertsOnCrlFormat) {
+            this.keepExpiredCertsOnCrlFormat = keepExpiredCertsOnCrlFormat;
+            return this;
+        }
+
+        public X509CAInfoBuilder setKeepExpiredCertsOnCrlDate(long keepExpiredCertsOnCrlDate) {
+            this.keepExpiredCertsOnCrlDate = keepExpiredCertsOnCrlDate;
             return this;
         }
 
@@ -1137,6 +1185,11 @@ public class X509CAInfo extends CAInfo {
          */
         public X509CAInfoBuilder setCaSerialNumberOctetSize(int caSerialNumberOctetSize) {
             this.caSerialNumberOctetSize = caSerialNumberOctetSize;
+            return this;
+        }
+
+        public X509CAInfoBuilder setKeyEncryptionPaddingAlgorithm(KeyEncryptionPaddingAlgorithm keyEncryptionPaddingAlgorithm) {
+            this.keyEncryptionPaddingAlgorithm = keyEncryptionPaddingAlgorithm;
             return this;
         }
 
@@ -1187,9 +1240,9 @@ public class X509CAInfo extends CAInfo {
                                                useAuthorityKeyIdentifier, authorityKeyIdentifierCritical, useCrlNumber, crlNumberCritical, defaultCrlDistPoint, defaultCrlIssuer, defaultOcspCerviceLocator, authorityInformationAccess,
                                                certificateAiaDefaultCaIssuerUri, nameConstraintsPermitted, nameConstraintsExcluded, caDefinedFreshestCrl, finishUser, extendedCaServiceInfos, useUtf8PolicyText, approvals,
                                                usePrintableStringSubjectDN, useLdapDnOrder, useCrlDistributionPointOnCrl, crlDistributionPointOnCrlCritical, includeInHealthCheck, doEnforceUniquePublicKeys, doEnforceKeyRenewal,
-                                               doEnforceUniqueDistinguishedName, doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage, doPreProduceOcspResponses, doStoreOcspResponsesOnDemand,
-                                               doPreProduceIndividualOcspResponse, acceptRevocationNonExistingEntry, cmpRaAuthSecret, keepExpiredCertsOnCRL, defaultCertProfileId, useNoConflictCertificateData, usePartitionedCrl, crlPartitions, suspendedCrlPartitions,
-                                               requestPreProcessor, msCaCompatible, alternateCertificateChains, externalCrlDistPoint);
+                                               doEnforceUniqueDistinguishedName, doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage, addCompromisedKeysToBlockList, doPreProduceOcspResponses, doStoreOcspResponsesOnDemand,
+                                               doPreProduceIndividualOcspResponse, acceptRevocationNonExistingEntry, cmpRaAuthSecret, keepExpiredCertsOnCrl, keepExpiredCertsOnCrlFormat, keepExpiredCertsOnCrlDate, defaultCertProfileId, useNoConflictCertificateData, usePartitionedCrl, crlPartitions, suspendedCrlPartitions,
+                                               requestPreProcessor, msCaCompatible, alternateCertificateChains, externalCrlDistPoint, keyEncryptionPaddingAlgorithm);
             caInfo.setSubjectDN(subjectDn);
             caInfo.setCAId(DnComponents.stringToBCDNString(caInfo.getSubjectDN()).hashCode());
             caInfo.setName(name);
@@ -1198,6 +1251,9 @@ public class X509CAInfo extends CAInfo {
             caInfo.setExpireTime(expireTime);
             caInfo.setCAType(caType);
             caInfo.setSignedBy(signedBy);
+            caInfo.setKeepExpiredCertsOnCrl(keepExpiredCertsOnCrl);
+            caInfo.setKeepExpiredCertsOnCrlFormat(keepExpiredCertsOnCrlFormat);
+            caInfo.setKeepExpiredCertsOnCrlDate(keepExpiredCertsOnCrlDate);
             // Due to a bug in Glassfish v1 (fixed in v2), we used to have to make sure all certificates in this
             // Array were of Oracle's own provider, using CertTools.SYSTEM_SECURITY_PROVIDER.
             // As of EJBCA 3.9.3 we decided that we don't have to support Glassfish v1 anymore.
@@ -1226,16 +1282,25 @@ public class X509CAInfo extends CAInfo {
                                                useAuthorityKeyIdentifier, authorityKeyIdentifierCritical, useCrlNumber, crlNumberCritical, defaultCrlDistPoint, defaultCrlIssuer, defaultOcspCerviceLocator, authorityInformationAccess,
                                                certificateAiaDefaultCaIssuerUri, nameConstraintsPermitted, nameConstraintsExcluded, caDefinedFreshestCrl, finishUser, extendedCaServiceInfos, useUtf8PolicyText, approvals,
                                                usePrintableStringSubjectDN, useLdapDnOrder, useCrlDistributionPointOnCrl, crlDistributionPointOnCrlCritical, includeInHealthCheck, doEnforceUniquePublicKeys, doEnforceKeyRenewal,
-                                               doEnforceUniqueDistinguishedName, doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage, doPreProduceOcspResponses, doStoreOcspResponsesOnDemand,
-                                               doPreProduceIndividualOcspResponse, acceptRevocationNonExistingEntry, cmpRaAuthSecret, keepExpiredCertsOnCRL, defaultCertProfileId, useNoConflictCertificateData, usePartitionedCrl, crlPartitions, suspendedCrlPartitions,
-                                               requestPreProcessor, msCaCompatible, alternateCertificateChains, externalCrlDistPoint);
+                                               doEnforceUniqueDistinguishedName, doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage, addCompromisedKeysToBlockList, doPreProduceOcspResponses, doStoreOcspResponsesOnDemand,
+                                               doPreProduceIndividualOcspResponse, acceptRevocationNonExistingEntry, cmpRaAuthSecret, keepExpiredCertsOnCrl, keepExpiredCertsOnCrlFormat, keepExpiredCertsOnCrlDate, defaultCertProfileId, useNoConflictCertificateData, usePartitionedCrl, crlPartitions, suspendedCrlPartitions,
+                                               requestPreProcessor, msCaCompatible, alternateCertificateChains, externalCrlDistPoint, keyEncryptionPaddingAlgorithm);
             caInfo.setCAId(caId);
             caInfo.setPolicies(policies);
             caInfo.setSubjectAltName(subjectAltName);
+            caInfo.setKeepExpiredCertsOnCrl(keepExpiredCertsOnCrl);
+            caInfo.setKeepExpiredCertsOnCrlFormat(keepExpiredCertsOnCrlFormat);
+            caInfo.setKeepExpiredCertsOnCrlDate(keepExpiredCertsOnCrlDate);
             return caInfo;
         }
 
         public X509CAInfo buildDefault () { return null;}
+
+
+
+        public long getKeepExpiredCertsOnCrlDate() {
+            return keepExpiredCertsOnCrlDate;
+        }
     }
 
     public static boolean isCertListValidAndIssuedByCA(List<X509Certificate> certs, Collection<Certificate> trustedCertificates) throws InvalidAlgorithmParameterException,

@@ -30,7 +30,6 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * @see InternalKeyBindingMgmtSession
- * @version $Id$
  */
 @Local
 public interface InternalKeyBindingMgmtSessionLocal extends InternalKeyBindingMgmtSession {

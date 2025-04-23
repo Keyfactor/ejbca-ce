@@ -19,6 +19,7 @@ import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.CertificateParsingException;
 import java.util.Date;
 
+import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.cvc.AlgorithmUtil;
@@ -44,6 +45,8 @@ import com.keyfactor.util.certificate.DnComponents;
 public class CvCertificateUtility implements CertificateImplementation {
 
     private static final Logger log = Logger.getLogger(CvCertificateUtility.class);
+
+    private static final Pattern ESCAPE_FIELD_REGEX = Pattern.compile("(?<!\\\\)([=+])");
 
     /**
      * 
@@ -87,7 +90,7 @@ public class CvCertificateUtility implements CertificateImplementation {
                     if (StringUtils.isNotEmpty(dn)) {
                         dn += ", ";
                     }
-                    dn += "CN=" + rf.getMnemonic();
+                    dn += "CN=" + escapeMnemonic(rf.getMnemonic());
                 }
                 if (rf.getCountry() != null) {
                     if (StringUtils.isNotEmpty(dn)) {
@@ -257,6 +260,15 @@ public class CvCertificateUtility implements CertificateImplementation {
         final CardVerifiableCertificate cvccert = (CardVerifiableCertificate) certificate;
         final CVCObject obj = cvccert.getCVCertificate();
         return obj.getAsText("");
+    }
+
+    protected static String escapeMnemonic(final String value) {
+        if (value == null) {
+            return null;
+        } else {
+            return ESCAPE_FIELD_REGEX.matcher(value).replaceAll("\\\\$1");
+
+        }
     }
 
 }

@@ -15,6 +15,7 @@ package org.cesecore.certificates.ca;
 import java.io.Serializable;
 import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -23,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.math.IntRange;
+import org.cesecore.certificates.KeyEncryptionPaddingAlgorithm;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.ca.ssh.SshCa;
@@ -100,7 +102,7 @@ public abstract class CAInfo implements Serializable {
     protected boolean allowInvalidityDate = false;
     protected Collection<Integer> crlpublishers;
     protected Collection<Integer> validators;
-    protected boolean keepExpiredCertsOnCRL = false;
+    protected boolean keepExpiredCertsOnCrl = false;
     protected boolean finishuser;
     protected Collection<ExtendedCAServiceInfo> extendedcaserviceinfos;
     protected boolean useNoConflictCertificateData = false; // By Default we use normal certificate data table.
@@ -135,6 +137,8 @@ public abstract class CAInfo implements Serializable {
     protected boolean useUserStorage;
     protected boolean useCertificateStorage;
     protected boolean acceptRevocationNonExistingEntry;
+    protected KeyEncryptionPaddingAlgorithm keyEncryptionPaddingAlgorithm;
+    protected boolean addCompromisedKeysToBlockList;
 
     /**
      * Returns true if the expiration time is inclusive. If true, certificates are still valid at
@@ -365,7 +369,7 @@ public abstract class CAInfo implements Serializable {
     public void setDeltaCRLPeriod(long deltacrlperiod) {
         this.deltacrlperiod = deltacrlperiod;
     }
-    
+
     public boolean isGenerateCrlUponRevocation() {
         return generateCrlUponRevocation;
     }
@@ -426,11 +430,12 @@ public abstract class CAInfo implements Serializable {
         this.validators = validators;
     }
 
-    public boolean getKeepExpiredCertsOnCRL() {
-        return this.keepExpiredCertsOnCRL;
+    public boolean getKeepExpiredCertsOnCrl() {
+        return keepExpiredCertsOnCrl;
     }
-    public void setKeepExpiredCertsOnCRL(boolean keepExpiredCertsOnCRL) {
-        this.keepExpiredCertsOnCRL = keepExpiredCertsOnCRL;
+
+    public void setKeepExpiredCertsOnCrl(boolean keepExpiredCertsOnCrl) {
+        this.keepExpiredCertsOnCrl = keepExpiredCertsOnCrl;
     }
 
     public boolean getFinishUser() {
@@ -569,6 +574,14 @@ public abstract class CAInfo implements Serializable {
         this.useCertificateStorage = useCertificateStorage;
     }
 
+    public void setAddCompromisedKeysToBlockList(boolean addCompromisedKeysToBlockList) {
+        this.addCompromisedKeysToBlockList = addCompromisedKeysToBlockList;
+    }
+
+    public boolean isAddCompromisedKeysToBlockList() {
+        return addCompromisedKeysToBlockList;
+    }
+
     /** @return true if revocation for non existing entries is accepted */
     public boolean isAcceptRevocationNonExistingEntry() {
         return acceptRevocationNonExistingEntry;
@@ -655,5 +668,13 @@ public abstract class CAInfo implements Serializable {
      */
     public IntRange getAllCrlPartitionIndexes() {
         return null;
+    }
+
+    public KeyEncryptionPaddingAlgorithm getKeyEncryptionPaddingAlgorithm() {
+        return keyEncryptionPaddingAlgorithm;
+    }
+
+    public void setKeyEncryptionPaddingAlgorithm(KeyEncryptionPaddingAlgorithm keyEncryptionPaddingAlgorithm) {
+        this.keyEncryptionPaddingAlgorithm = keyEncryptionPaddingAlgorithm;
     }
 }

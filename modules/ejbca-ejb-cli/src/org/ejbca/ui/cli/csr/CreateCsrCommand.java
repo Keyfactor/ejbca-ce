@@ -134,8 +134,15 @@ public class CreateCsrCommand extends EjbcaCommandBase {
                 "Cipher must be one of [ " + AlgorithmConstants.KEYALGORITHM_RSA + ", " + AlgorithmConstants.KEYALGORITHM_EC + ", "
                         + AlgorithmConstants.KEYALGORITHM_ED25519 + ", " + AlgorithmConstants.KEYALGORITHM_ED448 + ", "
                         + AlgorithmConstants.KEYALGORITHM_MLDSA44 + ", " + AlgorithmConstants.KEYALGORITHM_MLDSA65 + ", "
-                        + AlgorithmConstants.KEYALGORITHM_MLDSA87 + ", " + AlgorithmConstants.KEYALGORITHM_FALCON512 + ", "
-                        + AlgorithmConstants.KEYALGORITHM_FALCON1024 + "].  Omit if using existing keys."));
+                        + AlgorithmConstants.KEYALGORITHM_MLDSA87 + ", "
+                        + AlgorithmConstants.KEYALGORITHM_FALCON512 + ", " + AlgorithmConstants.KEYALGORITHM_FALCON1024 + ", "
+                        + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128S + ", " + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_128S + ", "
+                        + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F + ", " + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_128F + ", "
+                        + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_192S + ", " + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_192S + ", "
+                        + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_192F + ", " + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_192F + ", "
+                        + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_256S + ", " + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_256S + ", "
+                        + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_256F + ", " + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_256F
+                         + "].  Omit if using existing keys."));
 
         StringBuilder ecCurvesFormatted = new StringBuilder();
         ecCurvesFormatted.append("[");
@@ -153,7 +160,14 @@ public class CreateCsrCommand extends EjbcaCommandBase {
                         + AlgorithmConstants.KEYALGORITHM_ED25519 + ", " + AlgorithmConstants.KEYALGORITHM_ED448 + ", "
                         + AlgorithmConstants.KEYALGORITHM_MLDSA44 + ", " + AlgorithmConstants.KEYALGORITHM_MLDSA65 + ", "
                         + AlgorithmConstants.KEYALGORITHM_MLDSA87 + ", " + AlgorithmConstants.KEYALGORITHM_FALCON512 + ", "
-                        + AlgorithmConstants.KEYALGORITHM_FALCON1024 + "].  Omit if using existing keys."));
+                        + AlgorithmConstants.KEYALGORITHM_FALCON1024 + ", "
+                        + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128S + ", " + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_128S + ", "
+                        + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F + ", " + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_128F + ", "
+                        + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_192S + ", " + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_192S + ", "
+                        + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_192F + ", " + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_192F + ", "
+                        + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_256S + ", " + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_256S + ", "
+                        + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_256F + ", " + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_256F
+                        + "].  Omit if using existing keys."));
 
         registerParameter(new Parameter(ALT_KEYSPEC_ARG, "Key Specification", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "Key Specification.\n If cipher was RSA, must be one of [ 1024, 1536, 2048, 3072, 4096, 6144, 8192 ].\n If cipher was EC, must be one of "
@@ -442,6 +456,42 @@ public class CreateCsrCommand extends EjbcaCommandBase {
             break;
         case "ML-DSA-87":
             keyAlgorithm = AlgorithmConstants.KEYALGORITHM_MLDSA87;
+            break;
+        case "SLH-DSA-SHA2-128S":
+            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128S;
+            break;
+        case "SLH-DSA-SHAKE-128S":
+            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_128S;
+            break;
+        case "SLH-DSA-SHA2-128F":
+            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F;
+            break;
+        case "SLH-DSA-SHAKE-128F":
+            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_128F;
+            break;
+        case "SLH-DSA-SHA2-192S":
+            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_192S;
+            break;
+        case "SLH-DSA-SHAKE-192S":
+            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_192S;
+            break;
+        case "SLH-DSA-SHA2-192F":
+            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_192F;
+            break;
+        case "SLH-DSA-SHAKE-192F":
+            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_192F;
+            break;
+        case "SLH-DSA-SHA2-256S":
+            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_256S;
+            break;
+        case "SLH-DSA-SHAKE-256S":
+            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_256S;
+            break;
+        case "SLH-DSA-SHA2-256F":
+            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_256F;
+            break;
+        case "SLH-DSA-SHAKE-256F":
+            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_256F;
             break;
         case "FALCON-512":
             keyAlgorithm = AlgorithmConstants.KEYALGORITHM_FALCON512;

@@ -17,6 +17,7 @@ import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -27,6 +28,7 @@ import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.cesecore.certificates.KeyEncryptionPaddingAlgorithm;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAService;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceNotActiveException;
@@ -80,12 +82,12 @@ public interface CA extends CACommon {
 
     void setCRLOverlapTime(long crlOverlapTime);
 
-    boolean getKeepExpiredCertsOnCRL();
-
-    void setKeepExpiredCertsOnCRL(boolean keepexpiredcertsoncrl);
-
     int getDefaultCertificateProfileId();
-    
+
+    boolean getKeepExpiredCertsOnCrl();
+
+    void setKeepExpiredCertsOnCrl(boolean keepExpiredCertsOnCrl);
+
     boolean isDoEnforceUniquePublicKeys();
     boolean isDoEnforceKeyRenewal();
 
@@ -107,8 +109,14 @@ public interface CA extends CACommon {
     /** whether issued certificates should be stored or not, default true as was the case before 3.10.x */
     boolean isUseCertificateStorage();
 
+    /** whether compromised keys should be added or not, by default false */
+    boolean isAddCompromisedKeysToBlockList();
+    
     /** whether revocations for non existing entry accepted */
     boolean isAcceptRevocationNonExistingEntry();
+    
+    /**whether users choose RSA-OAEP or PKCS1.5 */
+    KeyEncryptionPaddingAlgorithm getKeyEncryptionPaddingAlgorithm();
     
     // Methods used with extended services
 
