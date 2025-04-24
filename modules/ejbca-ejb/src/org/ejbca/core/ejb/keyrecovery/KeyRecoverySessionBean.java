@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import jakarta.ejb.EJB;
 import jakarta.ejb.FinderException;
@@ -39,6 +40,7 @@ import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
+import org.cesecore.certificates.KeyEncryptionPaddingAlgorithm;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -229,6 +231,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
         final KeyPair keypair = EJBTools.unwrap(keyPairWrapper);
         final String certSerialNumber = CertTools.getSerialNumberAsString(certificate);
         boolean returnval = false;
+        final int caid = CertTools.getIssuerDN(certificate).hashCode();
         try {
             String issuerDnToPersist = issuerDn;
             if (issuerDnToPersist == null) {
@@ -236,7 +239,11 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
             }
             final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
             final String publicKeyId = getPublicKeyIdFromKey(cryptoToken, keyAlias);
-            final byte[] encryptedKeyData = CryptoTools.encryptKeys(caCertificate, cryptoToken, keyAlias, keypair);
+            final Optional<CAInfo> caInfo = Optional.ofNullable(caSession.getCAInfo(admin, caid));
+            final KeyEncryptionPaddingAlgorithm keyEncryptionPaddingAlgorithm =  caInfo.isPresent() ?
+                    caInfo.get().getKeyEncryptionPaddingAlgorithm() :
+                    KeyEncryptionPaddingAlgorithm.PKCS_1_5;
+            final byte[] encryptedKeyData = CryptoTools.encryptKeys(caCertificate, cryptoToken, keyAlias, keypair, keyEncryptionPaddingAlgorithm);
             entityManager.persist(new org.ejbca.core.ejb.keyrecovery.KeyRecoveryData(CertTools.getSerialNumber(certificate), issuerDnToPersist, username, encryptedKeyData,
                     cryptoTokenId, keyAlias, publicKeyId));
             // same method to make hex serno as in KeyRecoveryDataBean

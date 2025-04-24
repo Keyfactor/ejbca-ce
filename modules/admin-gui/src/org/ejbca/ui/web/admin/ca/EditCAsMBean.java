@@ -67,6 +67,7 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificate.ca.its.ECA;
 import org.cesecore.certificate.ca.its.region.ItsGeographicElement;
 import org.cesecore.certificate.ca.its.region.ItsGeographicRegion;
+import org.cesecore.certificates.KeyEncryptionPaddingAlgorithm;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -635,12 +636,24 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return resultList;
     }
 
+    public List<SelectItem> getKeyEncryptionPaddingAlgorithmList() {
+        final List<SelectItem> resultList = new ArrayList<>();
+        resultList.add(new SelectItem(KeyEncryptionPaddingAlgorithm.PKCS_1_5, KeyEncryptionPaddingAlgorithm.PKCS_1_5.name));
+        resultList.add(new SelectItem(KeyEncryptionPaddingAlgorithm.RSA_OAEP, KeyEncryptionPaddingAlgorithm.RSA_OAEP.name));
+        return resultList;
+    }
+
+    public KeyEncryptionPaddingAlgorithm getKeyEncryptionPaddingAlgorithm() {
+        return caInfoDto.getKeyEncryptionPaddingAlgorithm();
+    }
+
     public String getKeySequence() {
         if (catoken != null) {
             caInfoDto.setKeySequence(catoken.getKeySequence());
         }
         return caInfoDto.getKeySequence();
     }
+
 
     public void setKeySequence(final String keySequenceValue) {
         caInfoDto.setKeySequence(keySequenceValue);
@@ -791,7 +804,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         final Boolean submittedValue = (Boolean) checkbox.getSubmittedValue(); // check if there is a changed value (which might not have passed validation)
         return submittedValue != null ? submittedValue : caInfoDto.isUsePartitionedCrl();
     }
-    
+
     public boolean isKeepExpiredCertsOnCrlChecked() {
         final UIInput checkbox = (UIInput) FacesContext.getCurrentInstance().getViewRoot().findComponent(":editcapage:checkboxkeepexpiredoncrl");
         final Boolean submittedValue = (Boolean) checkbox.getSubmittedValue(); // check if there is a changed value (which might not have passed validation)
@@ -1414,7 +1427,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     public boolean isRenderOcspPreProduction() {
         return getEjbcaWebBean().isRunningEnterprise();
     }
-    
+
     public boolean isAddCompromisedKeysToBlockList() {
         return caInfoDto.isAddCompromisedKeysToBlockList();
     }
@@ -1738,6 +1751,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             x509caInfo.setDoPreProduceOcspResponses(caInfoDto.isDoPreProduceOcspResponses());
             x509caInfo.setAddCompromisedKeysToBlockList(caInfoDto.isAddCompromisedKeysToBlockList());
             x509caInfo.setDoStoreOcspResponsesOnDemand(caInfoDto.isDoStoreOcspResponsesOnDemand());
+            x509caInfo.setKeyEncryptionPaddingAlgorithm(caInfoDto.getKeyEncryptionPaddingAlgorithm());
             x509caInfo.setDoPreProduceOcspResponseUponIssuanceAndRevocation(caInfoDto.isDoPreProduceOcspResponseUponIssuanceAndRevocation());
             return saveCaInternal(x509caInfo);
         } else if (caInfoDto.getCaType()==CAInfo.CATYPE_PROXY) {
@@ -1759,6 +1773,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             cainfo.setCertificateProfileId(certprofileid);
             cainfo.setDefaultCertificateProfileId(caInfoDto.getDefaultCertProfileId());
             cainfo.setUseNoConflictCertificateData(caInfoDto.isUseNoConflictCertificateData());
+            cainfo.setKeyEncryptionPaddingAlgorithm(caInfoDto.getKeyEncryptionPaddingAlgorithm());
             cainfo.setAddCompromisedKeysToBlockList(caInfoDto.isAddCompromisedKeysToBlockList());
             CAInfo oldinfo = caSession.getCAInfo(getAdmin(), cainfo.getCAId());
             cainfo.setName(oldinfo.getName());
@@ -2361,6 +2376,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         caInfoDto.setDoEnforceUniqueDN(cainfo.isDoEnforceUniqueDistinguishedName());
         caInfoDto.setDoEnforceUniqueSubjectDNSerialnumber(cainfo.isDoEnforceUniqueSubjectDNSerialnumber());
         caInfoDto.setUseCertificateStorage(cainfo.isUseCertificateStorage());
+        caInfoDto.setKeyEncryptionPaddingAlgorithm(cainfo.getKeyEncryptionPaddingAlgorithm());
         caInfoDto.setAcceptRevocationsNonExistingEntry(cainfo.isAcceptRevocationNonExistingEntry());
         caInfoDto.setDefaultCertificateProfile(String.valueOf(cainfo.getDefaultCertificateProfileId()));
         caInfoDto.setUseNoConflictCertificateData(cainfo.isUseNoConflictCertificateData());

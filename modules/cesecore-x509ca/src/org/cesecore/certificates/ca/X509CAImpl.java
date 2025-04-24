@@ -271,6 +271,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         setCrlPartitions(cainfo.getCrlPartitions());
         setSuspendedCrlPartitions(cainfo.getSuspendedCrlPartitions());
         setRequestPreProcessor(cainfo.getRequestPreProcessor());
+        setKeyEncryptionPaddingAlgorithm(cainfo.getKeyEncryptionPaddingAlgorithm());
     }
 
     /**
@@ -366,6 +367,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 .setRequestPreProcessor(getRequestPreProcessor())
                 .setMsCaCompatible(isMsCaCompatible())
                 .setAlternateCertificateChains(getAlternateCertificateChains())
+                .setKeyEncryptionPaddingAlgorithm(getKeyEncryptionPaddingAlgorithm())
                 .build();
         info.setExternalCdp(getExternalCdp());
         info.setNameChanged(getNameChanged());
