@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.ocsp.BasicOCSPResp;
@@ -180,7 +181,7 @@ public class OcspRequestCommand extends EjbcaCliUserCommandBase {
                 } else {
                     status = "Unknown";
                 }
-                log.info("Status of certificate with SN " + response.getCertID().getSerialNumber().toString(16) + ": " + status);
+                log.info("Status of certificate with SN " + StringUtils.toRootUpperCase(response.getCertID().getSerialNumber().toString(16)) + ": " + status);
                 
             }
         } catch (OperatorCreationException | CertificateException | IOException | OCSPException e) {
