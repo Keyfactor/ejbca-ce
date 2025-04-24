@@ -430,7 +430,6 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             bccert = CertTools.getCertfromByteArray(incert.getEncoded(), Certificate.class);
             bccert.verify(incert.getPublicKey());
         } catch (InvalidKeyException | CertificateException | NoSuchAlgorithmException | NoSuchProviderException | SignatureException e) {
-            log.debug("CertificateParsingException verify POPO: ", e);
             final String msg = intres.getLocalizedMessage("createcert.popverificationfailed");
             throw new SignRequestSignatureException(msg, e);
         }  
