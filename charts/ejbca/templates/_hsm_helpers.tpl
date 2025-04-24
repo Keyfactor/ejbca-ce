@@ -7,7 +7,7 @@ Define HSM container image with versions
 {{- else if .Values.hsm.softhsm.enabled }}
 {{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-softhsm/images/hsm-driver-softhsm:1.1.0" }}
 {{- else if .Values.hsm.luna.enabled }}
-{{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-luna7/images/hsm-driver-luna7:0.3.0" }}
+{{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-luna7/images/hsm-driver-luna7:0.4.0" }}
 {{- else if .Values.hsm.utimaco.enabled }}
 {{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-utimaco/images/hsm-driver-utimaco:0.3.0" }}
 {{- else if .Values.hsm.nshield.enabled }}
