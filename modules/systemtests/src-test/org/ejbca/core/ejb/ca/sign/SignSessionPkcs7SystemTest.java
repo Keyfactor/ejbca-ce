@@ -94,7 +94,7 @@ public class SignSessionPkcs7SystemTest {
     @Rule
     public TestName testName = new TestName();
     
-    private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("RsaSignSessionTest"));
+    private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SignSessionPkcs7SystemTest"));
     
     private final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private final InternalCertificateStoreSessionRemote internalCertificateStoreSessionRemote = EjbRemoteHelper.INSTANCE
