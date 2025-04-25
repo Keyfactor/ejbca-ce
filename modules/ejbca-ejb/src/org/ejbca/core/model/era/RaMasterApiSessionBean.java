@@ -2599,7 +2599,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
         int responseType;
         try {
-            if (enrollCertificateRequest.getResponseFormat().equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7)) {
+            // For backward compatibility in peers with versions before 8.3.0, where default responseFormat was added
+            // for the EnrollPkcs10CertificateRequest and pkcs10enroll endpoint
+            final String requestResponseFormat = StringUtils.isBlank(enrollCertificateRequest.getResponseFormat()) ? "DER" : enrollCertificateRequest.getResponseFormat();
+            if (requestResponseFormat.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7)) {
                     responseType = CertificateConstants.CERT_RES_TYPE_PKCS7;
             } else {
                 responseType = CertificateConstants.CERT_RES_TYPE_CERTIFICATE;
