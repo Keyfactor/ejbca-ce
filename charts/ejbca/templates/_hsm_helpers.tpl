@@ -107,8 +107,8 @@ Enable individual sidecars and volumes: Utimaco
 
 {{- define "ejbca.hsm.volume.utimaco" -}}
 - name: cs-pkcs11-r3-cfg
-  secret:
-    name: {{ .Values.hsm.utimaco.hsmConfigurationSecret }}
+  configMap:
+    name: {{ .Values.hsm.utimaco.hsmConfigurationConfigMap }}
     items:
       - key: "cs_pkcs11_R3.cfg"
         path: "cs_pkcs11_R3.cfg"
