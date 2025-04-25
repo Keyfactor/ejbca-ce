@@ -37,7 +37,6 @@ import java.util.Set;
 /**
  * Hold information needed for creating an OCSP response without database lookups.
  * 
- * @version $Id$
  */
 public class OcspSigningCacheEntry {
 
@@ -143,7 +142,7 @@ public class OcspSigningCacheEntry {
         signedBehalfOfCaCerticates = new HashMap<>();
         signedBehalfOfCaStatus = new HashMap<>();
         
-        issuerNameToCertIdMap = new HashMap<>();
+        issuerNameToCertIdMap = new HashMap<>();        
     }
 
     /** @return certificate of the CA that we want to respond for */

@@ -111,6 +111,8 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     public static final String PROPERTY_OMIT_REASON_CODE_WHEN_REVOCATION_REASON_UNSPECIFIED = "omitreasoncodewhenrevocationreasonunspecified"; 
     public static final String PROPERTY_USE_ISSUER_NOTBEFORE_AS_ARCHIVE_CUTOFF = "useIssuerNotBeforeAsArchiveCutoff";
     public static final String PROPERTY_RETENTION_PERIOD = "retentionPeriod";
+    //this property denotes if a previous cert chain is to be returned instead of the current one, identified by its serial number. if null, the current chain should be used. 
+    public static final String PROPERTY_CA_GENERATION = "certChainGeneration";
     
     {
         addProperty(new DynamicUiProperty<>(PROPERTY_NON_EXISTING_GOOD, Boolean.FALSE));
@@ -228,7 +230,7 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     /** @return true if the revocation reason to be omitted if specified */
     public boolean isOmitReasonCodeEnabled() {
         if(getProperty(PROPERTY_OMIT_REASON_CODE_WHEN_REVOCATION_REASON_UNSPECIFIED) == null) {
-            setNonceEnabled(true);
+            setOmitReasonCodeEnabled(true);
         }
         return (Boolean) getProperty(PROPERTY_OMIT_REASON_CODE_WHEN_REVOCATION_REASON_UNSPECIFIED).getValue();
     }
@@ -340,6 +342,19 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
         } catch (CertificateParsingException e) {
             throw new CertificateImportException(e.getMessage(), e);
         }
+    }
+    
+    /**
+     * Used if and when an older chain than the current one should be used
+     * 
+     * @return the issuing CA's serial number, or null if the current chain should be used
+     */
+    public String getCaGeneration() {
+        return getData(PROPERTY_CA_GENERATION, null);
+    }
+    
+    public void setCaGeneration(final String issuerSerialNumber) {
+        putData(PROPERTY_CA_GENERATION, issuerSerialNumber);
     }
 
     @Override
