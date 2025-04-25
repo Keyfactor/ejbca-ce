@@ -14,13 +14,19 @@ package org.cesecore.certificates.ca;
 
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.security.cert.Certificate;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
+import java.util.List;
 
+import org.bouncycastle.cert.CertIOException;
+import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.CaTestUtils;
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -33,13 +39,17 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 
+import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.certificate.CertificateImplementationRegistry;
 import com.keyfactor.util.certificate.CertificateWrapper;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.certificate.x509.X509CertificateUtility;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Tests the CA session bean using soft CA tokens.
@@ -55,6 +65,10 @@ public class CaSessionSystemTest extends RoleUsingTestCase {
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     
     private static final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken("CaSessionSystemTest");
+    
+
+    @Rule
+    public TestName testName = new TestName();
     
     @BeforeClass
     public static void setUpProviderAndCreateCA() throws Exception {
@@ -182,5 +196,39 @@ public class CaSessionSystemTest extends RoleUsingTestCase {
                 CaTestUtils.removeCa(alwaysAllowToken, caInfo);
             }
         }
+    }
+    
+    /**
+     * Retrieves a CA's chain using its id
+     * 
+     */
+    @Test
+    public void testGetCaChainWithId() throws CertificateParsingException, CryptoTokenOfflineException, OperatorCreationException, CertIOException,
+            CAExistsException, AuthorizationDeniedException {
+        final String subjectDn = "CN=" + testName.getMethodName();
+        final String caName = testName.getMethodName();
+        final X509CA ca = CaTestUtils.createTestX509CAOptionalGenKeys(subjectDn, "foo123".toCharArray(), true, false);
+        ca.setStatus(CAConstants.CA_ACTIVE);
+        caSession.addCA(alwaysAllowToken, ca);
+        X509CAInfo caInfo = null;
+        try {
+            caInfo = (X509CAInfo) caSession.getCAInfo(alwaysAllowToken, caName);
+            List<Certificate> chain = caSession.getCertificateChain(caInfo.getCAId());
+            assertFalse("Empty chain was returned for existing CA.", chain.isEmpty());
+            assertEquals("Incorrect chain was returned.", CertTools.getSerialNumber(caInfo.getCertificateChain().get(0)), CertTools.getSerialNumber(chain.get(0)));
+        } finally {
+            if (caInfo != null) {
+                CaTestUtils.removeCa(alwaysAllowToken, caInfo);
+            }
+        }
+    }
+    
+    /**
+     * Regression test that verifies that a non-existent CA ID returns an empty list
+     */
+    @Test
+    public void testGetCaChainWithNonExistentId() {
+        List<Certificate> chain = caSession.getCertificateChain(1234);
+        assertTrue(chain.isEmpty());
     }
 }

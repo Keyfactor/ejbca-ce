@@ -59,6 +59,8 @@ signature
  */
 public interface CaSession {
 
+    
+    
     /** Adds a CA to the database 
      * 
      * @param admin AuthenticationToken of admin
@@ -214,6 +216,14 @@ public interface CaSession {
      */
     List<CertificateWrapper> getCaChain(AuthenticationToken authenticationToken, String caName)
             throws AuthorizationDeniedException, CADoesntExistsException;
+    
+    /**
+     * Retrieves a certificate chain. 
+     *
+     * @param caid  is the issuerdn.hashCode()
+     * @return Collection of Certificate, the certificate chain, never null.
+     */
+    List<Certificate> getCertificateChain(int caid);
     
     /**
      * Method used to remove a CA from the system. You should first check that

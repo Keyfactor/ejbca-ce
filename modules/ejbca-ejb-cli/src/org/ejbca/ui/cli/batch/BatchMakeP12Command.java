@@ -328,7 +328,7 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
         }
 
         // Make a certificate chain from the certificate and the CA-certificate
-        X509Certificate[] cachain = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class).getCertificateChain(caId).toArray(new X509Certificate[0]);
+        X509Certificate[] cachain = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCertificateChain(caId).toArray(new X509Certificate[0]);
         // Verify CA-certificate
         if (CertTools.isSelfSigned(cachain[cachain.length - 1])) {
             try {

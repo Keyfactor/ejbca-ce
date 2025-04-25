@@ -48,6 +48,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.PublicWebPrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStatus;
@@ -121,6 +122,8 @@ public class CertDistServlet extends HttpServlet {
 
     private static final String INSTALLTOBROWSER_PROPERTY = "installtobrowser";
 
+    @EJB
+    private CaSessionLocal caSession;
     @EJB
     private CertificateStoreSessionLocal storesession;
     @EJB
@@ -597,7 +600,7 @@ public class CertDistServlet extends HttpServlet {
     /** @return the full leaf certificate chain of a certificate given that the IssuerDN hashCode fo the leaf will map to an existing CA Id. */
     private List<Certificate> getFullChainOfCertificate(final Certificate certificate) {
         final int caId = CertTools.getIssuerDN(certificate).hashCode();
-        final LinkedList<Certificate> certificateChain = new LinkedList<>(signSession.getCertificateChain(caId));
+        final LinkedList<Certificate> certificateChain = new LinkedList<>(caSession.getCertificateChain(caId));
         certificateChain.addFirst(certificate);
         return certificateChain;
     }
@@ -605,9 +608,9 @@ public class CertDistServlet extends HttpServlet {
 	private Certificate[] getCertificateChain(final int caId, final String issuerDn) {
 		final Certificate[] chain;
 		if (caId != 0) {
-		    chain = signSession.getCertificateChain(caId).toArray(new Certificate[0]);
+		    chain = caSession.getCertificateChain(caId).toArray(new Certificate[0]);
 		} else {
-		    chain = signSession.getCertificateChain(issuerDn.hashCode()).toArray(new Certificate[0]);
+		    chain = caSession.getCertificateChain(issuerDn.hashCode()).toArray(new Certificate[0]);
 		}
 		return chain;
 	}
