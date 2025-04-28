@@ -242,7 +242,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
             final Optional<CAInfo> caInfo = Optional.ofNullable(caSession.getCAInfo(admin, caid));
             final KeyEncryptionPaddingAlgorithm keyEncryptionPaddingAlgorithm =  caInfo.isPresent() ?
                     caInfo.get().getKeyEncryptionPaddingAlgorithm() :
-                    KeyEncryptionPaddingAlgorithm.PKCS_1_5;
+                    KeyEncryptionPaddingAlgorithm.RSA_OAEP;
             final byte[] encryptedKeyData = CryptoTools.encryptKeys(caCertificate, cryptoToken, keyAlias, keypair, keyEncryptionPaddingAlgorithm);
             entityManager.persist(new org.ejbca.core.ejb.keyrecovery.KeyRecoveryData(CertTools.getSerialNumber(certificate), issuerDnToPersist, username, encryptedKeyData,
                     cryptoTokenId, keyAlias, publicKeyId));

@@ -47,7 +47,7 @@ public class CaInfoDto implements Serializable {
     private String signatureAlgorithmParam = StringUtils.EMPTY;
     private String alternativeSignatureAlgorithmParam = StringUtils.EMPTY;
     private int keySequenceFormat = StringTools.KEY_SEQUENCE_FORMAT_NUMERIC;
-    private KeyEncryptionPaddingAlgorithm keyEncryptionPaddingAlgorithm = KeyEncryptionPaddingAlgorithm.PKCS_1_5;
+    private KeyEncryptionPaddingAlgorithm keyEncryptionPaddingAlgorithm = KeyEncryptionPaddingAlgorithm.RSA_OAEP;
     private String keySequence = CAToken.DEFAULT_KEYSEQUENCE;
     private int caType = CAInfo.CATYPE_X509;
     private String caSubjectDN;
