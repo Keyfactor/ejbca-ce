@@ -13,10 +13,12 @@
 package org.ejbca.core.model.services.workers;
 
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.util.KeyedLock;
 import org.cesecore.util.PropertyTools;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
@@ -47,7 +49,7 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
      * This must be decided by serviceName, since we can configure one of these
      * services for every publisher.
      */
-    private static final KeyedLock<String> lock = new KeyedLock<>();
+    private static final ConcurrentMap<String, AtomicBoolean> runningServices = new ConcurrentHashMap<>();
 
 
     @Override
@@ -73,7 +75,51 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
             }
         }
     }
-    
+
+    protected ServiceExecutionResult getServiceExecutionResult(Map<Class<?>, Object> ejbs) {
+        final PublisherSessionLocal publisherSession = ((PublisherSessionLocal)ejbs.get(PublisherSessionLocal.class));
+        final PublisherQueueSessionLocal publisherQueueSession = ((PublisherQueueSessionLocal)ejbs.get(PublisherQueueSessionLocal.class));
+        final PublishingResult publishingResult = new PublishingResult();
+        Object publiserIdsObject = properties.get(PROP_PUBLISHER_IDS);
+        if (publiserIdsObject == null) {
+            log.debug("No publisher IDs configured for worker.");
+        }
+        else {
+            final long maxNumberOfEntriesToCheck = PropertyTools.get(properties, PROP_MAX_WORKER_JOBS, DEFAULT_QUEUE_WORKER_JOBS);
+            String publisherIdsString = (String) publiserIdsObject;
+            if (log.isDebugEnabled()) {
+                log.debug("Publisher IDs: " + publisherIdsString);
+            }
+            // Loop through all handled publisher ids and process
+            // anything in the queue
+            String[] publisherIds = StringUtils.split(publisherIdsString, ';');
+            if(publisherIds.length == 0) {
+                return new ServiceExecutionResult(Result.NO_ACTION, "Publishing Queue Service " + serviceName + " ran with no active publishers.");
+            }
+            for (int i = 0; i < publisherIds.length; i++) {
+                int publisherId = Integer.valueOf(publisherIds[i]);
+                // Get everything from the queue for this publisher id
+                BasePublisher publisher = publisherSession.getPublisher(publisherId);
+                publishingResult.append(publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(getAdmin(), publisher, maxNumberOfEntriesToCheck));
+            }
+        }
+        if (publishingResult.getSuccesses() == 0 && publishingResult.getFailures() == 0) {
+            return new ServiceExecutionResult(Result.NO_ACTION,
+                    "Publishing Queue Service " + serviceName + " ran, but the publishing queue was either empty or the publisher(s) could not connect.");
+        }
+        else {
+            if (publishingResult.getFailures() != 0) {
+                return new ServiceExecutionResult(Result.FAILURE,
+                        "Publishing Queue Service " + serviceName + " ran with " + publishingResult.getFailures() + " failed publishing operations"
+                                + (publishingResult.getSuccesses() == 0 ? "."
+                                : " and " + publishingResult.getSuccesses() + " successful publishing operations."));
+            } else {
+                return new ServiceExecutionResult(Result.SUCCESS, "Publishing Queue Service " + serviceName + " ran with "
+                        + publishingResult.getSuccesses() + " successful publishing operations.");
+            }
+        }
+    }
+
     /**
      * Checks if there are any publishing jobs in the publisher queue that should be
      * published.
@@ -82,58 +128,25 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
      */
     @Override
     public ServiceExecutionResult work(Map<Class<?>, Object> ejbs) {
-        log.trace(">work");
-        final PublisherSessionLocal publisherSession = ((PublisherSessionLocal)ejbs.get(PublisherSessionLocal.class));
-        final PublisherQueueSessionLocal publisherQueueSession = ((PublisherQueueSessionLocal)ejbs.get(PublisherQueueSessionLocal.class));
-        final PublishingResult publishingResult = new PublishingResult();
+        if (log.isTraceEnabled()) {
+            log.trace(">work");
+        }
         final ServiceExecutionResult ret;
-        if (lock.tryLock(serviceName)) {
+        final AtomicBoolean isServiceRunning = runningServices.computeIfAbsent(serviceName, k -> new AtomicBoolean(false));
+        if (isServiceRunning.compareAndSet(false, true)) {
             try {
-                Object o = properties.get(PROP_PUBLISHER_IDS);
-                if (o != null) {
-                    final long maxNumberOfEntriesToCheck = PropertyTools.get(properties, PROP_MAX_WORKER_JOBS, DEFAULT_QUEUE_WORKER_JOBS);
-                    String idstr = (String) o;
-                    if (log.isDebugEnabled()) {
-                        log.debug("Publisher IDs: " + idstr);
-                    }
-                    // Loop through all handled publisher ids and process
-                    // anything in the queue
-                    String[] ids = StringUtils.split(idstr, ';');
-                    if(ids.length == 0) {
-                        return new ServiceExecutionResult(Result.NO_ACTION, "Publishing Queue Service " + serviceName + " ran with no active publishers.");
-                    }
-                    for (int i = 0; i < ids.length; i++) {
-                        int publisherId = Integer.valueOf(ids[i]);
-                        // Get everything from the queue for this publisher id
-                        BasePublisher publisher = publisherSession.getPublisher(publisherId);
-                        publishingResult.append(publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(getAdmin(), publisher, maxNumberOfEntriesToCheck));
-                    }
-                } else {
-                    log.debug("No publisher IDs configured for worker.");
-                }
+                ret = getServiceExecutionResult(ejbs);
             } finally {
-                lock.release(serviceName);
-            }
-            if (publishingResult.getSuccesses() == 0 && publishingResult.getFailures() == 0) {
-                ret = new ServiceExecutionResult(Result.NO_ACTION,
-                        "Publishing Queue Service " + serviceName + " ran, but the publishing queue was either empty or the publisher(s) could not connect.");
-            } else {
-                if (publishingResult.getFailures() != 0) {
-                    ret = new ServiceExecutionResult(Result.FAILURE,
-                            "Publishing Queue Service " + serviceName + " ran with " + publishingResult.getFailures() + " failed publishing operations"
-                                    + (publishingResult.getSuccesses() == 0 ? "."
-                                            : " and " + publishingResult.getSuccesses() + " successful publishing operations."));
-                } else {
-                    ret = new ServiceExecutionResult(Result.SUCCESS, "Publishing Queue Service " + serviceName + " ran with "
-                            + publishingResult.getSuccesses() + " successful publishing operations.");
-                }
+                isServiceRunning.set(false);
             }
         } else {
             final String msg = "Service " + PublishQueueProcessWorker.class.getName() + " is already running in this VM! Not starting work.";
             log.info(msg);
             ret = new ServiceExecutionResult(Result.NO_ACTION, msg);
         }
-        log.trace("<work");
+        if (log.isTraceEnabled()) {
+            log.trace("<work");
+        }
         return ret;
     }
 
