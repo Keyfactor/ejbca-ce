@@ -134,8 +134,11 @@ public class AuthenticationSessionSystemTest extends CaTestCase {
         username1 = genRandomUserName(); 
         pwd1 = genRandomPwd();
         String email = username1 + "@anatom.se";
-        endEntityManagementSession.addUser(internalAdmin, username1, pwd1, "C=SE, O=AnaTom, CN=" + username1, "rfc822name=" + email, email, false,
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, caid);
+        EndEntityInformation endEntityInformation = new EndEntityInformation(username1, "C=SE, O=AnaTom, CN=" + username1, caid, "rfc822name=" + email, email, EndEntityTypes.ENDUSER.toEndEntityType(),
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, null);
+        endEntityInformation.setPassword(pwd1);
+        endEntityManagementSession.addUser(internalAdmin, endEntityInformation, false);
+        
         log.debug("created user: " + username1 + ", " + pwd1 + ", C=SE, O=AnaTom, CN=" + username1);
 
         // Make another user that we know later...

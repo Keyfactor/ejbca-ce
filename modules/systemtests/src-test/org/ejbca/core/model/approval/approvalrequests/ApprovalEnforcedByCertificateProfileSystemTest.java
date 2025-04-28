@@ -419,10 +419,13 @@ public class ApprovalEnforcedByCertificateProfileSystemTest extends CaTestCase {
         String username1 = genRandomUserName("test04_1");
         try {           
             String email = "test@example.com";
-            KeyPair keypair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-            endEntityManagementSession.addUser(admin1, username1, "foo123", "CN=TESTKEYREC1" + username1, 
-            		null, email, false, endEntityProfileId,
-                    certProfileIdNoApprovals, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, approvalCAID);
+            KeyPair keypair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);            
+            EndEntityInformation endEntityInformation = new EndEntityInformation(username1, "CN=TESTKEYREC1" + username1, approvalCAID, null, email, EndEntityTypes.ENDUSER.toEndEntityType(),
+                    endEntityProfileId, certProfileIdNoApprovals, SecConst.TOKEN_SOFT_P12, null);
+            endEntityInformation.setPassword("foo123");
+            endEntityManagementSession.addUser(admin1, endEntityInformation, false);
+            
+            
             X509Certificate cert = (X509Certificate) signSession.createCertificate(admin1, username1, "foo123", new PublicKeyWrapper(keypair.getPublic()));
             assertNotNull("Cert should have been created.", cert);
             keyRecoverySession.addKeyRecoveryData(admin1, EJBTools.wrap(cert), username1, EJBTools.wrap(keypair));
@@ -438,14 +441,17 @@ public class ApprovalEnforcedByCertificateProfileSystemTest extends CaTestCase {
             endEntityManagementSession.deleteUser(admin1, username1);
         }
 
-        // Create user with a profile that does require approvals for key
-        // recovery
+        // Create user with a profile that does require approvals for key recovery
         String username2 = genRandomUserName("test04_2");
         try {
             String email = "test@example.com";
             KeyPair keypair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-            endEntityManagementSession.addUser(admin1, username2, "foo123", "CN=TESTKEYREC2" + username2, null, email, false, endEntityProfileId,
-                    certProfileIdKeyRecoveryApprovals, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, approvalCAID);
+           
+            EndEntityInformation endEntityInformation = new EndEntityInformation(username2, "CN=TESTKEYREC1" + username2, approvalCAID, null, email, EndEntityTypes.ENDUSER.toEndEntityType(),
+                    endEntityProfileId, certProfileIdKeyRecoveryApprovals, SecConst.TOKEN_SOFT_P12, null);
+            endEntityInformation.setPassword("foo123");
+            endEntityManagementSession.addUser(admin1, endEntityInformation, false);
+            
             X509Certificate cert = (X509Certificate) signSession.createCertificate(admin1, username2, "foo123", new PublicKeyWrapper(keypair.getPublic()));
             keyRecoverySession.addKeyRecoveryData(admin1, EJBTools.wrap(cert), username2, EJBTools.wrap(keypair));
 
