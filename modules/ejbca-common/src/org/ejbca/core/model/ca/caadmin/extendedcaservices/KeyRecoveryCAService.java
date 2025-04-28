@@ -128,7 +128,7 @@ public class KeyRecoveryCAService extends ExtendedCAService implements Serializa
 	            }
 				final KeyEncryptionPaddingAlgorithm keyEncryptionPaddingAlgorithm =
 						Optional.ofNullable(getCa().getKeyEncryptionPaddingAlgorithm())
-								.orElse(KeyEncryptionPaddingAlgorithm.RSA_OAEP);
+								.orElse(KeyEncryptionPaddingAlgorithm.PKCS_1_5);
 				returnval = new KeyRecoveryCAServiceResponse(KeyRecoveryCAServiceResponse.TYPE_ENCRYPTKEYSRESPONSE, 
                         CryptoTools.encryptKeys((X509Certificate) getCa().getCACertificate(), cryptoToken, keyAlias, serviceReq.getKeyPair(), keyEncryptionPaddingAlgorithm),
                         cryptoToken.getId(), keyAlias, keyId);
