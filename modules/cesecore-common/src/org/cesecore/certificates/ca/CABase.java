@@ -214,20 +214,20 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
     }
 
     /** Sets the Key Encryption Padding Algorithm
-     * @param keyEncryptionPaddingAlgorithm one of CAInfo.KEY_ENCRYPT_ALGORITHM_RSA_PKCS_1_5, etc
+     * @param keyEncryptionPaddingAlgorithm one of CAInfo.KEY_ENCRYPT_ALGORITHM_RSA_OAEP, etc
      */
     public void setKeyEncryptionPaddingAlgorithm(KeyEncryptionPaddingAlgorithm keyEncryptionPaddingAlgorithm) {
         data.put(KEY_ENCRYPTION_PADDING_ALGORITHM, keyEncryptionPaddingAlgorithm);
     }
 
     /** Returns the Key Encryption Padding Algorithm
-     * @return one of CAInfo.KEY_ENCRYPT_ALGORITHM_RSA_PKCS_1_5, etc
+     * @return one of CAInfo.KEY_ENCRYPT_ALGORITHM_RSA_OAEP, etc
      */
     @Override
     public KeyEncryptionPaddingAlgorithm getKeyEncryptionPaddingAlgorithm() {
         Object algorithm = data.get(KEY_ENCRYPTION_PADDING_ALGORITHM);
         if (algorithm == null) {
-            algorithm = KeyEncryptionPaddingAlgorithm.PKCS_1_5;
+            algorithm = KeyEncryptionPaddingAlgorithm.RSA_OAEP;
         }
         return (KeyEncryptionPaddingAlgorithm) algorithm;
     }
