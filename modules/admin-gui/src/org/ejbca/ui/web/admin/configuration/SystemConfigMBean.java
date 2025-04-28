@@ -63,6 +63,7 @@ import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
+import org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
@@ -402,16 +403,19 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private boolean preCertificateMaintenanceServiceAvailable;
     private int lastActiveTab = 0;
 
+    private StatedumpSessionLocal statedumpSession;
+    private ServiceSessionLocal serviceSession;
+
     private final CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
     private final CertificateProfileSessionLocal certificateProfileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
     private final CryptoTokenManagementSessionLocal cryptoTokenManagementSession = getEjbcaWebBean().getEjb().getCryptoTokenManagementSession();
     private final AuthorizationSessionLocal authorizationSession = getEjbcaWebBean().getEjb().getAuthorizationSession();
     /** Session bean for importing statedump. Will be null if statedump isn't available */
-    private final StatedumpSessionLocal statedumpSession = new EjbLocalHelper().getStatedumpSession();
+//    private final StatedumpSessionLocal statedumpSession = new EjbLocalHelper().getStatedumpSession();
     private final RoleDataSessionLocal roleSession = getEjbcaWebBean().getEjb().getRoleDataSession();
     private final OcspResponseCleanupSessionLocal ocspCleanupSession = getEjbcaWebBean().getEjb().getOcspResponseCleanupSession();
     private final InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession = getEjbcaWebBean().getEjb().getInternalKeyBindingMgmtSession();
-    private final ServiceSessionLocal serviceSession = new EjbLocalHelper().getServiceSession();
+//    private final ServiceSessionLocal serviceSession = new EjbLocalHelper().getServiceSession();
 
     private boolean enableCustomHeaderRest;
     private String customHeaderRestName;
@@ -422,6 +426,20 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
     public void setLastActiveTab(final int lastActiveTab) {
         this.lastActiveTab = lastActiveTab;
+    }
+
+    public StatedumpSessionLocal getStatedumpSession() {
+        if (statedumpSession == null) {
+            statedumpSession = new EjbLocalHelper().getStatedumpSession();
+        }
+        return statedumpSession;
+    }
+
+    public ServiceSessionLocal getServiceSession() {
+        if (serviceSession == null) {
+            serviceSession = new EjbLocalHelper().getServiceSession();
+        }
+        return serviceSession;
     }
 
     public void onTabChange(final TabChangeEvent<?> event) {
@@ -653,10 +671,10 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     public boolean isPreCertificateMaintenanceServiceAvailable() {
         if (!preCertificateMaintenanceServiceCheckDone) {
             preCertificateMaintenanceServiceCheckDone = true;
-            final HashMap<Integer,String> services = serviceSession.getServiceIdToNameMap();
+            final HashMap<Integer,String> services = getServiceSession().getServiceIdToNameMap();
             preCertificateMaintenanceServiceAvailable = false;
             for (final int serviceId : services.keySet()) {
-                final ServiceConfiguration service = serviceSession.getServiceConfiguration(serviceId);
+                final ServiceConfiguration service = getServiceSession().getServiceConfiguration(serviceId);
                 if (PreCertificateMaintenanceWorkerConstants.WORKER_CLASS.equals(service.getWorkerClassPath())) {
                     preCertificateMaintenanceServiceAvailable = true;
                 }
@@ -684,7 +702,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         serviceConf.setPinToNodes(new String[0]);
         try {
             final String serviceName = "Pre-Certificate Maintenance Service";
-            serviceSession.addService(getAdmin(), serviceName, serviceConf);
+            getServiceSession().addService(getAdmin(), serviceName, serviceConf);
             addInfoMessage("CTLOGCONFIGURATION_SERVICEADDED", serviceName);
         } catch (ServiceExistsException e) {
             final String msg = "Service already exists.";
@@ -824,13 +842,13 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
     /** Returns true if EJBCA was built with Statedump (from EJBCA 6.5.0 or later) and it hasn't been locked down in the user interface. */
     public boolean isStatedumpAvailable() {
-        return statedumpSession != null && !getGlobalConfiguration().getStatedumpLockedDown();
+        return getStatedumpSession() != null && !getGlobalConfiguration().getStatedumpLockedDown();
     }
 
     public List<SelectItem> getStatedumpAvailableTemplates() {
         final List<SelectItem> templates = new ArrayList<>();
         try {
-            for (Map.Entry<String,String> entry : statedumpSession.getAvailableTemplates(getAdmin()).entrySet()) {
+            for (Map.Entry<String,String> entry : getStatedumpSession().getAvailableTemplates(getAdmin()).entrySet()) {
                 final String description = getEjbcaWebBean().getText(entry.getValue());
                 templates.add(new SelectItem(entry.getKey(), description));
             }
@@ -844,7 +862,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
     public boolean isStatedumpTemplatesVisible() {
         try {
-            final String basedir = statedumpSession.getTemplatesBasedir(getAdmin());
+            final String basedir = getStatedumpSession().getTemplatesBasedir(getAdmin());
             return basedir != null && !basedir.isEmpty() && new File(basedir).isDirectory();
         } catch (AuthorizationDeniedException e) {
             return false;
@@ -858,7 +876,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         options.setOverridesFile(new File(path, "overrides.properties"));
         options.setMergeCryptoTokens(true);
 
-        StatedumpImportResult result = statedumpSession.performDryRun(getAdmin(), options);
+        StatedumpImportResult result = getStatedumpSession().performDryRun(getAdmin(), options);
         for (final StatedumpObjectKey key : result.getConflicts()) {
             log.info("Will overwrite "+key);
             options.addConflictResolution(key, StatedumpResolution.OVERWRITE);
@@ -869,7 +887,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
 
         log.info("Performing statedump import");
-        result = statedumpSession.performImport(getAdmin(), options);
+        result = getStatedumpSession().performImport(getAdmin(), options);
         log.info("Statedump was successfully imported.");
 
         // Lock down after import
@@ -991,7 +1009,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
         try {
             if (importFromDir) {
-                final File basedir = new File(statedumpSession.getTemplatesBasedir(getAdmin()));
+                final File basedir = new File(getStatedumpSession().getTemplatesBasedir(getAdmin()));
                 importStatedump(new File(basedir, statedumpDir), statedumpLockdownAfterImport);
                 super.addNonTranslatedErrorMessage("Statedump imported successfully.");
             } else {
@@ -1991,6 +2009,16 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             return;
         }
 
+        if (!isOidUnique(cceConfig)) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "CustomCertificateExtension OID '" + newOID + "' already exist in database.", null));
+            return;
+        }
+
+        if (!isDisplayNameUnique(cceConfig)) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "CustomCertificateExtension Label '" + getNewDisplayName() + "' already exist in database.", null));
+            return;
+        }
+
         try {
             cceConfig.addCustomCertExtension(newID, newOID, getNewDisplayName(), DEFAULT_EXTENSION_CLASSPATH, false, true, new Properties());
             getEjbcaWebBean().saveAvailableCustomCertExtensionsConfiguration(cceConfig);
@@ -2034,6 +2062,20 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             i++;
         }
         return i;
+    }
+
+    protected boolean isOidUnique(final AvailableCustomCertificateExtensionsConfiguration cceConfig) {
+        final String newOid = getNewOID();
+
+        return cceConfig.getAllAvailableCustomCertificateExtensions().stream()
+                .noneMatch(ce -> ce.getOID().equals(newOid));
+    }
+
+    protected boolean isDisplayNameUnique(final AvailableCustomCertificateExtensionsConfiguration cceConfig) {
+        final String newDisplayName = getNewDisplayName();
+
+        return cceConfig.getAllAvailableCustomCertificateExtensions().stream()
+                .noneMatch(ce -> ce.getDisplayName().equals(newDisplayName));
     }
 
     private boolean isExtensionUsedInCertProfiles(final int id, final Map<Integer, CertificateProfile> allCertProfiles) {
