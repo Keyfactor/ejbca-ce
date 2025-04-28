@@ -106,7 +106,6 @@ ejbca:
   volumes: []
   # Extra volume mounts to be added to the deployment
   volumeMounts: []
-
 hsm:
   # provide HSM container image here when keyfactor repository is not used i.e. 
   # company internal artifactory is used
@@ -116,7 +115,7 @@ hsm:
   softhsm:
     enabled: false
     logLevel: "INFO"
-    tokenPersistentVolumeClaim: 
+    tokenPersistentVolumeClaim:
   luna:
     enabled: false
     server_name: "192.168.0.200"
@@ -132,7 +131,7 @@ hsm:
   utimaco:
     enabled: false
     hsmConfigurationConfigMap: ejbca-utimaco-configmap
-      # mandatory keys for file mount: "cs_pkcs11_R3.cfg"
+    # mandatory keys for file mount: "cs_pkcs11_R3.cfg"
   nshield:
     enabled: false
     # configuration parameters provided as secret
@@ -147,10 +146,9 @@ hsm:
     # RFS_MODE='readonly'
   awsCloudHsm:
     enabled: false
-    hsmIpAddress: 
+    hsmIpAddress:
     logLevel: "INFO"
     customerCACrtConfigMap:
-
 replicaCount: 1
 # https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy
 updateStrategy: {}
@@ -161,7 +159,7 @@ image:
   # Application variant: not set for full EJBCA, "ra" or "va"
   #variant: ra
   repository: keyfactor/ejbca-ce
-  tag: latest
+  tag: 9.3.0
   pullPolicy: IfNotPresent
 imagePullSecrets: []
 nameOverride: ""

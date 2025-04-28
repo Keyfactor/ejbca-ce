@@ -191,7 +191,7 @@ public class X509CAInfo extends CAInfo {
                 .setCrlPartitions(0)
                 .setSuspendedCrlPartitions(0)
                 .setRequestPreProcessor(null)
-                .setKeyEncryptionPaddingAlgorithm(KeyEncryptionPaddingAlgorithm.PKCS_1_5)
+                .setKeyEncryptionPaddingAlgorithm(KeyEncryptionPaddingAlgorithm.RSA_OAEP)
                 .setExternalCrlDistPoint(null);
          return caInfoBuilder.build();
     }
@@ -751,7 +751,7 @@ public class X509CAInfo extends CAInfo {
         private int crlPartitions;
         private int suspendedCrlPartitions;
         private String requestPreProcessor;
-        private KeyEncryptionPaddingAlgorithm keyEncryptionPaddingAlgorithm = KeyEncryptionPaddingAlgorithm.PKCS_1_5;
+        private KeyEncryptionPaddingAlgorithm keyEncryptionPaddingAlgorithm = KeyEncryptionPaddingAlgorithm.RSA_OAEP;
         private Map<String, List<String>> alternateCertificateChains;
 
         public X509CAInfoBuilder  setCaId(int caId) {
