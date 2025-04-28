@@ -276,7 +276,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
                             if ( sRevCode.equals("CESSATIONOFOPERATION")) sRevCode = "CESSATION_OF_OPERATION";
                             if ( sRevCode.equals("CERTIFICATEHOLD")) sRevCode = "CERTIFICATE_HOLD";
                             if ( sRevCode.equals("PRIVILEGESWITHDRAWN")) sRevCode = "PRIVILEGES_WITHDRAWN";
-                            if ( sRevCode.equals("CERTIFICATEHOLD")) sRevCode = "AA_COMPROMISE";
+                            if ( sRevCode.equals("AACOMPROMISE")) sRevCode = "AA_COMPROMISE";
                                                              
                             revocationReason = RevocationReasons.getFromCliValue(sRevCode.toUpperCase());
                             if(revocationReason == null) {
