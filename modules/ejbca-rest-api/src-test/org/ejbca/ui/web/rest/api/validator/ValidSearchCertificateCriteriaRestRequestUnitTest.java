@@ -146,6 +146,76 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
     }
 
     @Test
+    public void validationShouldPassOnSUBJECT_DNProperty() {
+        // given
+        final SearchCertificateCriteriaRestRequest testClass = SearchCertificateCriteriaRestRequest.builder()
+                .property("SUBJECT_DN")
+                .value("A")
+                .operation("EQUAL")
+                .build();
+        // when
+        final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
+        // then
+        assertEquals("Valid object.",0, constraintViolations.size());
+    }
+    
+    @Test
+    public void validationShouldPassOnSUBJECT_ALT_NAMEProperty() {
+        // given
+        final SearchCertificateCriteriaRestRequest testClass = SearchCertificateCriteriaRestRequest.builder()
+                .property("SUBJECT_ALT_NAME")
+                .value("A")
+                .operation("EQUAL")
+                .build();
+        // when
+        final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
+        // then
+        assertEquals("Valid object.",0, constraintViolations.size());
+    }
+    
+    @Test
+    public void validationShouldPassOnUSERNAMEProperty() {
+        // given
+        final SearchCertificateCriteriaRestRequest testClass = SearchCertificateCriteriaRestRequest.builder()
+                .property("USERNAME")
+                .value("A")
+                .operation("EQUAL")
+                .build();
+        // when
+        final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
+        // then
+        assertEquals("Valid object.",0, constraintViolations.size());
+    }
+    
+    @Test
+    public void validationShouldPassOnEXTERNAL_ACCOUNT_BINDING_IDProperty() {
+        // given
+        final SearchCertificateCriteriaRestRequest testClass = SearchCertificateCriteriaRestRequest.builder()
+                .property("EXTERNAL_ACCOUNT_BINDING_ID")
+                .value("A")
+                .operation("EQUAL")
+                .build();
+        // when
+        final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
+        // then
+        assertEquals("Valid object.",0, constraintViolations.size());
+    }
+    
+    @Test
+    public void validationShouldPassOnSERIAL_NUMBERProperty() {
+        // given
+        final SearchCertificateCriteriaRestRequest testClass = SearchCertificateCriteriaRestRequest.builder()
+                .property("SERIAL_NUMBER")
+                .value("A")
+                .operation("EQUAL")
+                .build();
+        // when
+        final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
+        // then
+        assertEquals("Valid object.",0, constraintViolations.size());
+    }
+    
+    @Test
     public void validationShouldPassOnQUERYProperty() {
         // given
         final SearchCertificateCriteriaRestRequest testClass = SearchCertificateCriteriaRestRequest.builder()
