@@ -299,12 +299,12 @@ public class CustomCertExtensionMBean extends BaseManagedBean implements Seriali
         AvailableCustomCertificateExtensionsConfiguration cceConfig = getAvailableExtensionsConfig();
 
         if (!isOidUnique(cceConfig)) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "CustomCertificateExtension OID '" + currentExtensionGUIInfo.getOid() + "' already exist in database.", null));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "CustomCertificateExtension OID '" + currentExtensionGUIInfo.getOid() + "' already exists in the database.", null));
             return;
         }
 
         if (!isDisplayNameUnique(cceConfig)) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "CustomCertificateExtension Label '" + currentExtensionGUIInfo.getDisplayName()  + "' already exist in database.", null));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "CustomCertificateExtension Label '" + currentExtensionGUIInfo.getDisplayName()  + "' already exists in the database.", null));
             return;
         }
 

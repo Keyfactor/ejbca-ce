@@ -2010,12 +2010,12 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
 
         if (!isOidUnique(cceConfig)) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "CustomCertificateExtension OID '" + newOID + "' already exist in database.", null));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "CustomCertificateExtension OID '" + newOID + "' already exists in the database.", null));
             return;
         }
 
         if (!isDisplayNameUnique(cceConfig)) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "CustomCertificateExtension Label '" + getNewDisplayName() + "' already exist in database.", null));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "CustomCertificateExtension Label '" + getNewDisplayName() + "' already exists in the database.", null));
             return;
         }
 

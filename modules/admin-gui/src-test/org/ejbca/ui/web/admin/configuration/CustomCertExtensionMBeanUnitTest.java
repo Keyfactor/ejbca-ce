@@ -211,7 +211,7 @@ public class CustomCertExtensionMBeanUnitTest {
 
 		// Expect
 		assertEquals(FacesMessage.SEVERITY_ERROR, messageCapture.getValue().getSeverity());
-		assertEquals("CustomCertificateExtension OID '1.2.3.4' already exist in database.", messageCapture.getValue().getSummary());
+		assertEquals("CustomCertificateExtension OID '1.2.3.4' already exists in the database.", messageCapture.getValue().getSummary());
 
 		verify(ejbcaWebBean, facesContext);
 	}
@@ -247,7 +247,7 @@ public class CustomCertExtensionMBeanUnitTest {
 
 		// Expect
 		assertEquals(FacesMessage.SEVERITY_ERROR, messageCapture.getValue().getSeverity());
-		assertEquals("CustomCertificateExtension Label 'TESTEXTENSION1' already exist in database.", messageCapture.getValue().getSummary());
+		assertEquals("CustomCertificateExtension Label 'TESTEXTENSION1' already exists in the database.", messageCapture.getValue().getSummary());
 
 		verify(ejbcaWebBean, facesContext);
 	}
