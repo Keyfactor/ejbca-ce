@@ -83,6 +83,7 @@ import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessageUtils;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
+import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.certificatetransparency.CTAuditLogCallback;
@@ -225,13 +226,22 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 }
             }
             String sequence = null;
-            byte[] ki = requestMessage.getRequestKeyInfo();
-            // CVC sequence is only 5 characters, don't fill with a lot of garbage here, it must be a readable string
-            if ((ki != null) && (ki.length > 0) && (ki.length < 10) ) {
-                final String str = new String(ki);
-                // A cvc sequence must be ascii printable, otherwise it's some binary data
-                if (StringUtils.isAsciiPrintable(str)) {
-                    sequence = new String(ki);                  
+
+            if (CAInfo.CATYPE_CVC == ca.getCAType() &&
+                    endEntityInformation.getExtendedInformation() != null &&
+                    endEntityInformation.getExtendedInformation().certificateSerialNumber() != null &&
+                    requestMessage instanceof SimpleRequestMessage) {
+                sequence = endEntityInformation.getExtendedInformation().certificateSerialNumber().toString();
+                endEntityInformation.getExtendedInformation().setCertificateSerialNumber(null);
+            } else {
+                byte[] ki = requestMessage.getRequestKeyInfo();
+                // CVC sequence is only 5 characters, don't fill with a lot of garbage here, it must be a readable string
+                if ((ki != null) && (ki.length > 0) && (ki.length < 10)) {
+                    final String str = new String(ki);
+                    // A cvc sequence must be ascii printable, otherwise it's some binary data
+                    if (StringUtils.isAsciiPrintable(str)) {
+                        sequence = new String(ki);
+                    }
                 }
             }
             
