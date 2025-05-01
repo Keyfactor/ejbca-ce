@@ -33,6 +33,7 @@ import jakarta.faces.event.AjaxBehaviorEvent;
 import jakarta.faces.model.SelectItem;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
@@ -142,9 +143,9 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
 
     private String[] profileNames = null; 
     
-    private GlobalConfiguration globalConfiguration;
+    private transient GlobalConfiguration globalConfiguration;
     private transient RAInterfaceBean raBean;
-    
+
     // Authentication check and audit log page access request
     @PostConstruct
     public void initialize() {
@@ -156,14 +157,10 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
         final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
 
         try {
-            globalConfiguration = getEjbcaWebBean().initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR,
-                    AccessRulesConstants.REGULAR_CREATEENDENTITY);
-
-            raBean = SessionBeans.getRaBean(request);
-            raBean.initialize(getEjbcaWebBean());
-
             RequestHelper.setDefaultCharacterEncoding(request);
             
+            getRaBean();
+            getGlobalConfiguration();
             initUserData();
         } catch (Exception e) {
             addNonTranslatedErrorMessage(e.getMessage());
@@ -829,7 +826,6 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     public void addUser()
             throws ParseException, ParameterException, EndEntityExistsException, CADoesntExistsException, CertificateSerialNumberException,
             AuthorizationDeniedException, EndEntityProfileValidationException, IllegalNameException, CertificateExtensionException {
-        
         if (!doesPasswordAndConfirmationMatch()) {
             addNonTranslatedErrorMessage(getEjbcaWebBean().getText("PASSWORDSDOESNTMATCH"));
             return;
@@ -1173,7 +1169,6 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     }
 
     private void composeSubjectDnFieldsAndData() {
-
         this.subjectDnFieldDatas = new ArrayList<>();
 
         int numberOfSubjectDnFields = selectedEeProfile.getSubjectDNFieldOrderLength();
@@ -1208,6 +1203,7 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
 
             this.subjectDnFieldDatas.add(subjectDnFieldData);
         }
+        
     }
     
     private void composeSubjectDirAttrFieldsAndData() {
@@ -1760,15 +1756,31 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     }
 
     public GlobalConfiguration getGlobalConfiguration() {
+        if (globalConfiguration == null) {
+            try {
+                final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+                globalConfiguration = getEjbcaWebBean().initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR,
+                        AccessRulesConstants.REGULAR_CREATEENDENTITY);
+            } catch (Exception e) {
+                throw new IllegalStateException(e);
+            }
+        }
+
+
         return globalConfiguration;
     }
 
     public RAInterfaceBean getRaBean() {
-        // if raBean is null we're on a new JVM and the PostConstruct method "initialize"
-        // hasn't been called yet.  Call it on this JVM.
         if (raBean == null) {
-            initialize();
+            try {
+                final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+                raBean = SessionBeans.getRaBean(request);
+                raBean.initialize(getEjbcaWebBean());
+            } catch (ServletException e) {
+                throw new IllegalStateException(e);
+            }
         }
+        
         return raBean;
     }
     

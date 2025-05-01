@@ -13,7 +13,6 @@
 package org.ejbca.ui.web.admin.endentity;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Iterator;
@@ -32,8 +31,6 @@ import org.ejbca.ui.web.admin.rainterface.UserView;
  *
  */
 public class EndEntityBaseManagedBean extends BaseManagedBean {
-    private ExtendedInformation extendedInformation;
-
     private static final long serialVersionUID = 1L;
 
     protected UserView userData = null;
@@ -46,6 +43,7 @@ public class EndEntityBaseManagedBean extends BaseManagedBean {
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public void setExtensionData(final String extensionData) {
+      
         Properties properties = new Properties();
         try {
             properties.load(new StringReader(extensionData));
