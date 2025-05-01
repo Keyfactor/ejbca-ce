@@ -455,8 +455,8 @@ public class CmpResponseMessage implements CertificateResponseMessage {
                 myPKIBody = new PKIBody(23, myErrorContent); // 23 = error
             }
 
-            final boolean pbeProtected = (pbeKeyId != null) && (pbeKey != null) && (pbeDigestAlg != null) && (pbeMacAlg != null);
-            final boolean pbmac1Protected = (pbmac1KeyId != null) && (pbmac1Key != null) && (pbmac1PrfAlg != null) && (pbmac1MacAlg != null);
+            final boolean pbeProtected = (pbeKey != null) && (pbeDigestAlg != null) && (pbeMacAlg != null);
+            final boolean pbmac1Protected = (pbmac1Key != null) && (pbmac1PrfAlg != null) && (pbmac1MacAlg != null);
             if (pbeProtected) {
                 myPKIHeader.setProtectionAlg(new AlgorithmIdentifier(CMPObjectIdentifiers.passwordBasedMac));
                 PKIHeader header = myPKIHeader.build();
