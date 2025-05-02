@@ -176,7 +176,6 @@
             <include name="org/cesecore/certificates/ca/TestExtendedCAServiceInfo.java"/>
             <include name="org/ejbca/core/ejb/ca/caadmin/UnAuthorizedCustomPublisherMock.java"/>			
             <include name="org/ejbca/core/ejb/ca/caadmin/AuthorizedCustomPublisherMock.java"/>	
-			<include name="org/ejbca/core/ejb/unidfnr/UnidFnrHandlerMock.java"/>	
 			<include name="org/ejbca/core/ejb/unidfnr/UnidFnrHandlerMock.java"/>
 			<include name="org/ejbca/ui/web/rest/api/resource/RestResourceSystemTestBase.java"/>
 		<!-- ECA-9129: Not included normally - doing so breaks the build unless this class is enabled in cesecore.properties
@@ -340,7 +339,7 @@
 			<isset property="mysql.lib"/>
 		</condition>
     	<echo message="pkcs11-exclude=${p11exclude}"/>
-		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" fork="yes">
 			<classpath>
 				<path location="${systemtests.build.test.dir}" />
 				<path refid="systemtests.classpath" />

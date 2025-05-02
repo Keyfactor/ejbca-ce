@@ -79,7 +79,8 @@
                             id="catypecvc"
                             styleClass="selectButton largeSelectButton #{editCAsMBean.caTypeCVC?'selected':''}"
                             action="#{editCAsMBean.setCaTypeCVC}"
-                            value="#{editCAsMBean.caTypeCVC?'✓':' '}#{web.text.CVCCA}">
+                            value="#{editCAsMBean.caTypeCVC?'✓':' '}#{web.text.CVCCA}"
+                            rendered="#{editCAsMBean.cvcAvailable}">
                         <f:ajax listener="#{editCAsMBean.resetSignedBy()}" render="@form"/>
                     </h:commandButton>
                     <h:commandButton
@@ -213,7 +214,7 @@
 					<h:panelGroup
 						rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable}">
 						<h:outputLabel for="getAlternativeSigningAlgorithm"
-							value="#{web.text.ALTERNATIVESIGNINGALGORITHM}"
+							value="#{web.text.SIGNINGALGORITHM_ALTERNATIVE}"
 							style="font-weight: bold;" />
 					</h:panelGroup>
 					<h:panelGroup
@@ -225,7 +226,7 @@
 
 					<h:panelGroup
 						rendered="#{not editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable}">
-						<h:outputLabel value="#{web.text.ALTERNATIVESIGNINGALGORITHM}"
+						<h:outputLabel value="#{web.text.SIGNINGALGORITHM_ALTERNATIVE}"
 							style="font-weight: bold;" />
 					</h:panelGroup>
 					<h:panelGroup

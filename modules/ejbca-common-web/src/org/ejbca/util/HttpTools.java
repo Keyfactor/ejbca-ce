@@ -12,11 +12,16 @@
  *************************************************************************/
 package org.ejbca.util;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import jakarta.faces.context.FacesContext;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
 
 import org.apache.commons.io.FilenameUtils;
@@ -178,6 +183,49 @@ public class HttpTools {
     /** Extracts the Bearer authorization from an OAuth Authorization header, or returns null if not matching */
     public static String extractBearerAuthorization(final String authorizationHeader) {
         return extractAuthorizationOfScheme(authorizationHeader, AUTHORIZATION_SCHEME_BEARER);
+    }
+
+    /**
+     * Sends a redirect. Unlike the built-in methods in JEE, this one supports relative URLs,
+     * which avoids reflecting back the <code>Host</code> HTTP header.
+     *
+     * <p>Relative URLs were previously forbidden in the Location header in HTTP (which is used for redirects).
+     * But since RFC-7231 from 2014, it is allowed to have relative URLs in the Location header.
+     * See https://www.rfc-editor.org/rfc/rfc7231#section-7.1.2 and
+     * https://www.rfc-editor.org/rfc/rfc9110#section-10.2.2
+     *
+     * @param fc  JSF context. Usually obtained with <code>FacesContext.getCurrentInstance()</code>
+     * @param url URL that is relative to the request context path. Must start with "/".
+     */
+    public static void sendRedirect(final FacesContext fc, final String url) {
+        if (!url.startsWith("/")) {
+            throw new IllegalArgumentException("url must start with / and must be relative to the request context path");
+        }
+        sendRawRedirect(fc, fc.getExternalContext().getRequestContextPath() + url);
+    }
+
+    /**
+     * Like sendRedirect, but performs no processing or checks on the URL.
+     */
+    public static void sendRawRedirect(final FacesContext fc, final String rawUrl) {
+        try {
+          HttpServletResponse httpResponse = (HttpServletResponse)fc.getExternalContext().getResponse();
+          httpResponse.setHeader("Location", rawUrl);
+          httpResponse.setContentType("text/html");
+          httpResponse.setCharacterEncoding(StandardCharsets.UTF_8.name());
+          httpResponse.setStatus(302);
+          try (Writer writer = httpResponse.getWriter()) {
+              writer.append("<!DOCTYPE html>\n" +
+                  "<html><head><title>Redirect</title><meta charset=\"UTF-8\"></head>\n" +
+                  "<body><p><a href=\"" + HTMLTools.htmlescape(rawUrl) + "\">Follow redirect</a></p></body>\n" +
+                  "</html>\n");
+              writer.flush();
+              fc.responseComplete();
+          }
+      } catch (IOException e) {
+          log.error("Unexpected error when attempting to redirect", e);
+          throw new IllegalStateException("Unexpected error when attempting to redirect", e);
+      }
     }
 
 }

@@ -12,15 +12,14 @@
  *************************************************************************/
 package org.cesecore.keys.token;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.security.InvalidKeyException;
 import java.util.Arrays;
 import java.util.List;
+
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.KeyGenParams;
 
 import org.apache.log4j.Logger;
 import org.cesecore.RoleUsingTestCase;
@@ -34,10 +33,11 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-import com.keyfactor.util.keys.token.KeyGenParams;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Tests CryptoToken management API.
@@ -47,7 +47,7 @@ public class CryptoTokenManagementSessionSystemTest extends RoleUsingTestCase {
     private static final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
     private static final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(CryptoTokenManagementSessionSystemTest.class.getSimpleName());
     private static final Logger log = Logger.getLogger(CryptoTokenManagementSessionSystemTest.class);
-    
+
     @BeforeClass
     public static void setUpProviderAndCreateCA() throws Exception {
         CryptoProviderTools.installBCProvider();
@@ -74,7 +74,7 @@ public class CryptoTokenManagementSessionSystemTest extends RoleUsingTestCase {
             CryptoTokenTestUtils.removeCryptoToken(roleMgmgToken, cryptoTokenId);
         }
     }
-    
+
     @Test
     public void basicCryptoTokenForCAWithExplicitRSA() throws Exception {
         int cryptoTokenId = 0;
@@ -120,11 +120,11 @@ public class CryptoTokenManagementSessionSystemTest extends RoleUsingTestCase {
     }
 
     @Test
-    public void basicCryptoTokenForCAWithDilithium() throws Exception {
+    public void basicCryptoTokenForCAWithMLDSA() throws Exception {
         int cryptoTokenId = 0;
         try {
-            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "testCaDilitium", "DILITHIUM2", "RSA1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
-            subTest(cryptoTokenId, "DILITHIUM2");
+            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "testCaDMLDSA", "ML-DSA-44", "RSA1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
+            subTest(cryptoTokenId, "ML-DSA-44");
         } finally {
             CryptoTokenTestUtils.removeCryptoToken(roleMgmgToken, cryptoTokenId);
         }
@@ -271,11 +271,5 @@ public class CryptoTokenManagementSessionSystemTest extends RoleUsingTestCase {
             CryptoTokenTestUtils.removeCryptoToken(roleMgmgToken, cryptoTokenId);
         }
     }
-    
 
-    
-
-   
-
-   
 }

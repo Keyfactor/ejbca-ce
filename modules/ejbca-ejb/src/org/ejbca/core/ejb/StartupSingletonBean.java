@@ -28,20 +28,9 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.LogManager;
-
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
-import jakarta.ejb.ConcurrencyManagement;
-import jakarta.ejb.ConcurrencyManagementType;
-import jakarta.ejb.EJB;
-import jakarta.ejb.Singleton;
-import jakarta.ejb.Startup;
-import jakarta.ejb.TransactionManagement;
-import jakarta.ejb.TransactionManagementType;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -93,9 +82,18 @@ import org.ejbca.util.JDBCUtil;
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 import com.keyfactor.util.crypto.provider.CryptoProviderConfigurationCache;
 import com.keyfactor.util.string.StringConfigurationCache;
+
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import jakarta.ejb.ConcurrencyManagement;
+import jakarta.ejb.ConcurrencyManagementType;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Startup;
+import jakarta.ejb.TransactionManagement;
+import jakarta.ejb.TransactionManagementType;
 
 /**
  * Singleton used to start services and perform upgrade tasks at startup.
@@ -236,24 +234,15 @@ public class StartupSingletonBean {
         //Register encryption key
         StringConfigurationCache.INSTANCE.setEncryptionKey(ConfigurationHolder.getString("password.encryption.key").toCharArray());
         
-        //Read if GOST3410 or DSTU4145 are defined in cesecore.properties
-        AlgorithmConfigurationCache.INSTANCE.setGost3410Enabled(ConfigurationHolder.getString("extraalgs.gost3410.oidtree") != null);
-        AlgorithmConfigurationCache.INSTANCE.setDstu4145Enabled(ConfigurationHolder.getString("extraalgs.dstu4145.oidtree") != null);
-        //Read and cache all configuration defined algorithms 
-        final List<String> configurationDefinedAlgorithms = ConfigurationHolder.getPrefixedPropertyNames("extraalgs");
-        AlgorithmConfigurationCache.INSTANCE.setConfigurationDefinedAlgorithms(configurationDefinedAlgorithms);
-        for (String algorithm : configurationDefinedAlgorithms) {
-            AlgorithmConfigurationCache.INSTANCE.addConfigurationDefinedAlgorithmTitle(algorithm,
-                    ConfigurationHolder.getString("extraalgs." + algorithm.toLowerCase() + ".title"));
-        }
         //Check if legacy keystore format should be used
-        CryptoProviderConfigurationCache.INSTANCE.setUseLegacyPkcs12Keystore(ConfigurationHolder.getString("ca.use_legacy_pkcs12_keystore") == null ? false
+        CryptoProviderConfigurationCache.INSTANCE.setUseLegacyPkcs12Keystore(ConfigurationHolder.getString("keystore.use_legacy_pkcs12") == null ? false
                 : Boolean.valueOf(ConfigurationHolder.getString("keystore.use_legacy_pkcs12")));
         
         final String disableHashingSignMechanisms = ConfigurationHolder.getString("pkcs11.disableHashingSignMechanisms");
         CryptoProviderConfigurationCache.INSTANCE.setP11disableHashingSignMechanisms(disableHashingSignMechanisms==null || Boolean.parseBoolean(disableHashingSignMechanisms.trim()));
         
         CryptoProviderConfigurationCache.INSTANCE.setKeystoreCacheEnabled(Boolean.parseBoolean(ConfigurationHolder.getString("cryptotoken.keystorecache")));
+
         
         final String doPermitExtractablePrivateKeys = ConfigurationHolder.getString("ca.doPermitExtractablePrivateKeys");
         CryptoProviderConfigurationCache.INSTANCE.setPermitExtractablePrivateKeys(

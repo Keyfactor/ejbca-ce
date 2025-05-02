@@ -51,21 +51,9 @@ import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.Resource;
-import jakarta.ejb.EJB;
-import jakarta.ejb.EJBException;
-import jakarta.ejb.SessionContext;
-import jakarta.ejb.Stateless;
-import jakarta.ejb.TransactionAttribute;
-import jakarta.ejb.TransactionAttributeType;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.xml.bind.DatatypeConverter;
-
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang.math.IntRange;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.its.ITSCertificate;
 import org.bouncycastle.jce.X509KeyUsage;
@@ -174,7 +162,6 @@ import org.cesecore.util.ValidityDate;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.EjbcaConfiguration;
-import org.ejbca.config.EstConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
@@ -222,6 +209,7 @@ import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.CertificateWrapper;
 import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
@@ -230,6 +218,18 @@ import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
+
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.xml.bind.DatatypeConverter;
 
 /**
  * Manages CAs in EJBCA.
@@ -3237,8 +3237,16 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 Certificate[] certificateChainEncryption = new Certificate[1];
                 // certificateChainSignature[0].getSigAlgName(),
                 // generate dummy certificate for encryption key.
-                certificateChainEncryption[0] = CertTools.genSelfCertForPurpose("CN=EncryptionKeyHolder", 36500, null, p12PrivateEncryptionKey,
-                        p12PublicEncryptionKey, thisCAToken.getEncryptionAlgorithm(), true, X509KeyUsage.keyEncipherment, true);
+                certificateChainEncryption[0] = SimpleCertGenerator.forTESTCaCert()
+                        .setSubjectDn("CN=EncryptionKeyHolder")
+                        .setIssuerDn("CN=EncryptionKeyHolder")
+                        .setValidityDays(36500)
+                        .setIssuerPrivKey(p12PrivateEncryptionKey)
+                        .setEntityPubKey(p12PublicEncryptionKey)
+                        .setSignatureAlgorithm(thisCAToken.getEncryptionAlgorithm())
+                        .setKeyUsage(X509KeyUsage.keyEncipherment)
+                        .setLdapOrder(true)
+                        .generateCertificate();
                 log.debug("Exporting with sigAlgorithm " + AlgorithmTools.getSignatureAlgorithm(certificateChainSignature[0]) + "encAlgorithm="
                         + thisCAToken.getEncryptionAlgorithm());
                 if (keystore.isKeyEntry(privateSignatureKeyAlias)) {

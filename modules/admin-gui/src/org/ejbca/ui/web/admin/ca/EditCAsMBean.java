@@ -1081,9 +1081,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         final String cryptoTokenIdParam = caInfoDto.getCryptoTokenIdParam();
 
         for (final String current : AlgorithmConstants.AVAILABLE_SIGALGS) {
-            if (!AlgorithmTools.isSigAlgEnabled(current)) {
-                continue; // e.g. GOST3410 if not configured
-            }
             resultList.add(new SelectItem(current, current, ""));
         }
 
@@ -1104,7 +1101,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     
     public List<SelectItem> getAvailableSigningAlgListNoneOption() {
         final List<SelectItem> resultList = getAvailableSigningAlgList();
-        resultList.add(0, new SelectItem(null, "Select an algorithm to activate hybrid certificates."));
+        resultList.add(0, new SelectItem(null, getEjbcaWebBean().getText("SIGNINGALGORITHM_ALTERNATIVE_SELECT")));
         return resultList;
     }
 

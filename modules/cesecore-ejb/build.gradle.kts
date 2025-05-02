@@ -36,8 +36,7 @@ dependencies {
     compileOnly(libs.nimbus.jose.jwt)
     compileOnly(libs.xmlpull)
     compileOnly(libs.x509.common.util)
-    compileOnly(libs.cryptotokens.api)
-    compileOnly(libs.cryptotokens.impl)
+    compileOnly(libs.bundles.cryptotokens)
     // hibernate
     compileOnly(libs.antlr4.runtime)
     compileOnly(libs.byte.buddy)
@@ -57,7 +56,7 @@ dependencies {
     compileOnly(libs.txw2)
 
     testImplementation(libs.junit)
-    testImplementation(libs.hamcrest)
+    testImplementation(libs.hamcrest.core)
     testImplementation(libs.easymock)
     testImplementation(libs.commons.text)
     testImplementation(libs.commons.beanutils)
@@ -65,7 +64,7 @@ dependencies {
 }
 
 sourceSets {
-    val main by getting {
+    main {
         java {
             setSrcDirs(
                 listOf("src")
@@ -79,4 +78,12 @@ tasks.jar {
     from("src/META-INF/jboss-ejb3.xml") {
         into("META-INF")
     }
+}
+
+tasks.processTestResources {
+    from("${rootProject.projectDir}/modules/common/resources"){
+        include("log4j-test.xml")
+        rename("log4j-test.xml", "log4j.xml")
+    }
+    into("build/resources/test/")
 }

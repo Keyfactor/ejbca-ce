@@ -12,11 +12,11 @@ dependencies {
     compileOnly(project(":modules:edition-specific:interface"))
     compileOnly(libs.jakartaee.api)
     compileOnly(libs.x509.common.util)
-    compileOnly(libs.cryptotokens.impl)
+    compileOnly(libs.bundles.cryptotokens)
 }
 
 sourceSets {
-    val main by getting {
+    main {
         java {
             setSrcDirs(listOf("../src-ejb"))
         }

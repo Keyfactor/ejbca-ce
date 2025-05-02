@@ -311,11 +311,7 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
                 sigAlg = AlgorithmConstants.SIGALG_ED25519;
             } else if (getProps().getKeyAlg().equalsIgnoreCase(AlgorithmConstants.SIGALG_ED448)) {
                 sigAlg = AlgorithmConstants.SIGALG_ED448;
-            } else if (getProps().getKeyAlg().equals(AlgorithmConstants.KEYALGORITHM_ECGOST3410)) {
-                sigAlg = AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410;
-            } else if (getProps().getKeyAlg().equals(AlgorithmConstants.KEYALGORITHM_DSTU4145)) {
-                sigAlg = AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145;
-            }
+            } 
 
             X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, keyPair.getPrivate(), keyPair.getPublic(), sigAlg, false);
             cert = (X509Certificate) EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class).createCertificate(getAuthenticationToken(),
