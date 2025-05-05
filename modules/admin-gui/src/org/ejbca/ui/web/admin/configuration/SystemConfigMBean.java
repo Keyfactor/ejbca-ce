@@ -63,7 +63,6 @@ import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
-import org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
@@ -403,6 +402,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private boolean preCertificateMaintenanceServiceAvailable;
     private int lastActiveTab = 0;
 
+    /** Session bean for importing statedump. Will be null if statedump isn't available */
     private StatedumpSessionLocal statedumpSession;
     private ServiceSessionLocal serviceSession;
 
@@ -410,12 +410,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private final CertificateProfileSessionLocal certificateProfileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
     private final CryptoTokenManagementSessionLocal cryptoTokenManagementSession = getEjbcaWebBean().getEjb().getCryptoTokenManagementSession();
     private final AuthorizationSessionLocal authorizationSession = getEjbcaWebBean().getEjb().getAuthorizationSession();
-    /** Session bean for importing statedump. Will be null if statedump isn't available */
-//    private final StatedumpSessionLocal statedumpSession = new EjbLocalHelper().getStatedumpSession();
     private final RoleDataSessionLocal roleSession = getEjbcaWebBean().getEjb().getRoleDataSession();
     private final OcspResponseCleanupSessionLocal ocspCleanupSession = getEjbcaWebBean().getEjb().getOcspResponseCleanupSession();
     private final InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession = getEjbcaWebBean().getEjb().getInternalKeyBindingMgmtSession();
-//    private final ServiceSessionLocal serviceSession = new EjbLocalHelper().getServiceSession();
 
     private boolean enableCustomHeaderRest;
     private String customHeaderRestName;
