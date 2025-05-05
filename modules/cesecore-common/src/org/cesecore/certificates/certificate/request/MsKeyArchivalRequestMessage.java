@@ -165,9 +165,8 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
                             }
                         }
                     }
-                    break; // break if only one signer match is expected
                 } else {
-                    log.debug("Signer verification failed for signer: " + signer.getSID());
+                    log.debug("Signer verification failed for signer: " + signer.getSID() + " Will try with other available signers from request.");
                 }
             }
 
