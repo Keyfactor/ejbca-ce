@@ -380,19 +380,30 @@ public class X509CACrlUnitTest extends X509CAUnitTestBase {
     public void determineCrlPartitionIndexMultipleCrlDpsQuotedUriWithPartitions() throws Exception {
         log.trace(">determineCrlPartitionIndexMultipleCrlDpsQuotedUriWithPartitions");
         final X509CAInfo caInfo = createTestCaWithPartitionedCrl();
-        caInfo.setDefaultCRLDistPoint("\"http://example.com/CA*.crl\";http://crl.example.net/a;b/CA*.crl");
+        caInfo.setDefaultCRLDistPoint("\"http://example.com/CA*.crl\";http://crl.example.net/CA*.crl");
         assertEquals("Test with multiple CRL DPs with a quoted URI and with CRL partitioning failed.", 5, caInfo.determineCrlPartitionIndex("http://example.com/CA5.crl"));
         log.trace("<determineCrlPartitionIndexMultipleCrlDpsQuotedUriWithPartitions");
     }
 
-    /** Tests the determineCrlPartitionIndex method, with multiple logs, CRL partitions and a semicolon in a URI */
+    /** Tests the determineCrlPartitionIndex method, with multiple logs, CRL partitions and a semicolon in a URI between quotes */
     @Test
-    public void determineCrlPartitionIndexMultipleCrlDpsSemicolonInUriWithPartitions() throws Exception {
-        log.trace(">determineCrlPartitionIndexMultipleCrlDpsSemicolonInUriWithPartitions");
+    public void determineCrlPartitionIndexMultipleCrlDpsQuotedSemicolonInUriWithPartitions() throws Exception {
+        log.trace(">determineCrlPartitionIndexMultipleCrlDpsQuotedSemicolonInUriWithPartitions");
         final X509CAInfo caInfo = createTestCaWithPartitionedCrl();
         caInfo.setDefaultCRLDistPoint(" http://example.com/CA*.crl ;\"http://crl.example.net/a;b/CA*.crl\"");
-        assertEquals("Test with multiple CRL DPs with a semicolon in the URI and with CRL partitioning failed.", 5, caInfo.determineCrlPartitionIndex("http://crl.example.net/a;b/CA5.crl"));
-        log.trace("<determineCrlPartitionIndexMultipleCrlDpsSemicolonInUriWithPartitions");
+        assertEquals("Test with multiple CRL DPs with a quoted semicolon in the URI and with CRL partitioning failed.", 5, caInfo.determineCrlPartitionIndex("http://crl.example.net/a;b/CA5.crl"));
+        log.trace("<determineCrlPartitionIndexMultipleCrlDpsQuotedSemicolonInUriWithPartitions");
+    }
+
+    /** Tests the determineCrlPartitionIndex method, with multiple logs, CRL partitions and a semicolon in a URI which is not between quotes */
+    @Test
+    public void determineCrlPartitionIndexMultipleCrlDpsUnquotedSemicolonInUriWithPartitions() throws Exception {
+        log.trace(">determineCrlPartitionIndexMultipleCrlDpsUnquotedSemicolonInUriWithPartitions");
+        final X509CAInfo caInfo = createTestCaWithPartitionedCrl();
+        caInfo.setDefaultCRLDistPoint(" http://example.com/CA*.crl ;http://crl.example.net/a;b/CA*.crl");
+        assertEquals("Test with multiple CRL DPs with an unquoted semicolon in the URI and with CRL partitioning failed.", CertificateConstants.NO_CRL_PARTITION,
+                caInfo.determineCrlPartitionIndex("http://crl.example.net/a;b/CA5.crl"));
+        log.trace("<determineCrlPartitionIndexMultipleCrlDpsUnquotedSemicolonInUriWithPartitions");
     }
 
     /** Test implementation of Authority Information Access CRL Extension according to RFC 4325 */
