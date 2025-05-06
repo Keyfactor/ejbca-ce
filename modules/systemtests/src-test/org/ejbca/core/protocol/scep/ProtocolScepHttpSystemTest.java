@@ -1094,6 +1094,24 @@ public class ProtocolScepHttpSystemTest extends ScepTestBase {
         return cacert;
     }
     
-   
+
+    @Test
+    public void testIntune() throws Exception {
+        try (IntuneSimulator intune = new IntuneSimulator("localhost", 8000)) {
+            scepConfiguration.setRAMode(scepAlias, true);
+            scepConfiguration.setRADefaultCA(scepAlias, x509ca.getName());
+            scepConfiguration.setUseIntune(scepAlias, true);
+            scepConfiguration.setIntuneAuthority(scepAlias, intune.getLoginUrl());
+            scepConfiguration.setIntuneTenant(scepAlias, "faketenant");
+            scepConfiguration.setIntuneAadAppId(scepAlias, "fakeappid");
+            scepConfiguration.setIntuneAadAppKey(scepAlias, "fakepassword");
+            scepConfiguration.setIntuneGraphResourceUrl(scepAlias, intune.getGraphUrl());
+            globalConfigSession.saveConfiguration(admin, scepConfiguration);
+            byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA256, userDN1, SMIMECapability.dES_CBC);
+            byte[] retMsg = sendScep(false, msgBytes);
+            assertNotNull(retMsg);
+            checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA256, false, SMIMECapability.dES_CBC, key1);
+        }
+    }
 
 }
