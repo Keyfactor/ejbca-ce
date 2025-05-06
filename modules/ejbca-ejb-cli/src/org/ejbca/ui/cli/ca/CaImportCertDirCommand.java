@@ -35,6 +35,7 @@ import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.ui.cli.ca.CertificateImporter.Result;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
@@ -254,6 +255,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
                     final String[] sa = file.getName().split("!");
                     if (sa.length <3) {
                         log.error("ERROR: The revocation details are not found in filename '"+file.getName()+"'. Ignoring this file.");
+                        results.add( Result.GENERAL_IMPORT_ERROR);
                         continue;
                    } else {
                         // Process the REASON from 2nd last string in array
@@ -264,6 +266,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
                             revocationReason = RevocationReasons.getFromDatabaseValue(iRevCode);
                             if(revocationReason == null) {
                                 log.error("ERROR: '" + iRevCode + "' is not a valid revocation reason code. Ignoring this file '"+file.getName()+"'.");
+                                results.add( Result.GENERAL_IMPORT_ERROR);
                                 continue;
                             }
                             
@@ -281,7 +284,8 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
                             revocationReason = RevocationReasons.getFromCliValue(sRevCode.toUpperCase());
                             if(revocationReason == null) {
                                log.error("ERROR: '" + sRevCode + "' is not a valid revocation reason. Ignoring this file '"+file.getName()+"'.");
-                                continue;
+                               results.add( Result.GENERAL_IMPORT_ERROR);
+                               continue;
                             }
                        }
                         
@@ -291,6 +295,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
                             revocationTime = new SimpleDateFormat(DATE_FORMAT_WINSAFE).parse( sRevTime);
                         } catch (ParseException e) {
                             log.error("ERROR: '" + sRevTime + "' was not a valid revocation time. Use this time format '"+DATE_FORMAT_WINSAFE+"'. Ignoring this file '"+file.getName()+"'.");
+                            results.add( Result.GENERAL_IMPORT_ERROR);
                             continue;
                         }
                     }
