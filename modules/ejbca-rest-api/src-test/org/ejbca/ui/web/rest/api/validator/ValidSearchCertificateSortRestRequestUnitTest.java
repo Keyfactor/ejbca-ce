@@ -27,7 +27,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * A unit test class for annotation @ValidSearchCertificateSortRestRequest and its validator.
  *
- * @version $Id: ValidSearchCertificateCriteriaRestRequestUnitTest.java 29504 2018-07-17 17:55:12Z andrey_s_helmes $
+ * @version $Id: ValidSearchCertificateSortRestRequestUnitTest.java 29504 2018-07-17 17:55:12Z andrey_s_helmes $
  */
 public class ValidSearchCertificateSortRestRequestUnitTest {
 
