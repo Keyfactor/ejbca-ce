@@ -18,8 +18,8 @@ OSI Certified is a certification mark of the Open Source Initiative.
 
 In our Community we welcome contributions. The Community software is open source and community supported, there is no support SLA, but a helpful best-effort Community.
 
-* To report a problem or suggest a new feature, use the **[Issues](../../issues)** tab.
-* If you want to contribute actual bug fixes or proposed enhancements, use the **[Pull requests](../../pulls)** tab.
+* To report a problem or suggest a new feature, use the **[Issues](https://github.com/Keyfactor/ejbca-ce/issues)** tab.
+* If you want to contribute actual bug fixes or proposed enhancements, use the **[Pull requests](https://github.com/Keyfactor/ejbca-ce/pulls)** tab.
 * Ask the community for ideas: **[EJBCA Discussions](https://github.com/Keyfactor/ejbca-ce/discussions)**.
 * Read more in our documentation: **[EJBCA Documentation](https://doc.primekey.com/ejbca)**.
 * See release information: **[EJBCA Release information](https://doc.primekey.com/ejbca/ejbca-release-information)**.
@@ -29,7 +29,7 @@ In our Community we welcome contributions. The Community software is open source
 Commercial support is available for **[EJBCA Enterprise](https://www.keyfactor.com/platform/keyfactor-ejbca-enterprise/)**.
 
 ## License
-EJBCA Community is licensed under the LGPL license, please see **[LICENSE](LICENSE)**.
+EJBCA Community is licensed under the LGPL license, please see **[LICENSE](https://github.com/Keyfactor/ejbca-ce/blob/main/LICENSE)**.
 
 
 ## Prerequisites
