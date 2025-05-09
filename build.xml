@@ -980,6 +980,7 @@
 				<exclude name="SEMVER" />
 				<exclude name="VERSION" />
 				<exclude name="TAGS" />
+				<exclude name="src/ci/" />
 				<exclude name="src/package/" />
 				<exclude name="lib/coverage/**" />
                 <!-- Exclude directories from release that are built after "clean" as dependency to documentation -->
@@ -1040,6 +1041,7 @@
 		    <zipfileset dir="." prefix="${basezipfile}" filemode="700" dirmode="700"> 
 		    	<include name="**/*.sh" />
 				<exclude name="bin/backup/**" />
+				<exclude name="src/ci/**" />
 				<exclude name="modules/statedump/**" />
 				<exclude name="container/**" />
 				<exclude name=".jx/**" />
