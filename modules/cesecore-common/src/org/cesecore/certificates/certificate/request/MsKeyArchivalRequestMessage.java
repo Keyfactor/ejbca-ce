@@ -22,6 +22,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.Collection;
 import java.util.Objects;
 import java.util.Random;
 
@@ -137,30 +138,45 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
             
             SignerInformationStore signers = signedDataParser.getSignerInfos();
             
-            if (signers.getSigners().size()!=1) {
-                log.info("Verification failed: MS Key archival request should "
-                        + "only be be signed with end entity(CSR) key.");
-                return false;
-            }
+            boolean verifiedWithCsrKey = false;
             
-            SignerInformation signer = signers.getSigners().iterator().next();
-            // verifies the outer request, with public key from CSR
-            if(!signer.verify(
-                    new JcaSimpleSignerInfoVerifierBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME)
-                    .build(pkcs10.getPublicKey()))){
-                log.debug("MS Key archival request outer signed data verification failed.");
-                return false;
-            }
-                            
-            AttributeTable attrTable = signer.getUnsignedAttributes();
-            for(Attribute attr: attrTable.toASN1Structure().getAttributes()) {
-                if(!attr.getAttrType().equals(szOID_ARCHIVED_KEY_ATTR)) {
-                    continue;
+            
+            Collection<SignerInformation> signerList = signers.getSigners();
+
+            for (SignerInformation signer : signerList) {
+                if (signer.verify(new JcaSimpleSignerInfoVerifierBuilder()
+                        .setProvider(BouncyCastleProvider.PROVIDER_NAME)
+                        .build(pkcs10.getPublicKey()))) {
+                    
+                    verifiedWithCsrKey = true;
+                    log.info("Signature verified with CSR public key.");
+
+                    AttributeTable attrTable = signer.getUnsignedAttributes();
+                    if (attrTable != null) {
+                        for (Attribute attr : attrTable.toASN1Structure().getAttributes()) {
+                            if (attr.getAttrType().equals(szOID_ARCHIVED_KEY_ATTR)) {
+                                ASN1Encodable[] values = attr.getAttributeValues();
+                                if (values != null && values.length > 0) {
+                                    encryptedPrivateKey = values[0].toASN1Primitive().getEncoded();
+                                    log.info("Archived private key attribute extracted.");
+                                } else {
+                                    log.warn("Archived private key attribute is present but has no values.");
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    log.warn("Signer verification failed for signer: " + signer.getSID());
                 }
-                encryptedPrivateKey = attr.getAttributeValues()[0].toASN1Primitive().getEncoded();
+            }
+
+            
+            if (!verifiedWithCsrKey) {
+                log.debug("No signer matched the CSR public key.");
+                return false;
             }
             
-            if (encryptedPrivateKey==null) {
+            if (encryptedPrivateKey == null) {
                 log.debug("MS Key archival request is malformed does not contain the encrpyted private key.");
                 return false;
             }
