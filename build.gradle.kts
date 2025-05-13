@@ -407,7 +407,8 @@ val systemTestTasksOrder = listOfNotNull(
     project.findProject(":modules:mpic")?.tasks?.named("systemTest"),
     project.findProject(":modules:ssh")?.tasks?.named("systemTest"),
     project.findProject(":modules:cits")?.tasks?.named("systemTest"),
-    project.findProject(":modules:ejbca-entity")?.tasks?.named("systemTest")
+    project.findProject(":modules:ejbca-entity")?.tasks?.named("systemTest"),
+    project.findProject(":modules:configdump")?.tasks?.named("systemTest")
 )
 
 // Add mustRunAfter dependencies to systemTest tasks to enforce the "correct order".

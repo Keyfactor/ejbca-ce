@@ -319,6 +319,7 @@ if (edition == "ee") {
         "modules:caa:cli",
         "modules:cits:common",
         "modules:cits",
+        "modules:configdump",
         "modules:configdump:common",
         "modules:configdump:cli",
         "modules:configdump:ejb",
