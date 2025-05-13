@@ -17,6 +17,7 @@ import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
+import com.keyfactor.util.Base64;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
@@ -159,6 +160,18 @@ public @interface ValidAddEndEntityRestRequest {
                 }
             }
 
+            if (addEndEntityRestRequest.getCustomData() != null && !addEndEntityRestRequest.getCustomData().isEmpty()) {
+                try {
+                    addEndEntityRestRequest.getCustomData().forEach((extendedInformation) -> {
+                        if (extendedInformation.getName().equals("CERTIFICATESERIALNUMBER")) {
+                            Base64.decode(extendedInformation.getValue().getBytes());
+                        }
+                    });
+                } catch (Exception e) {
+                    ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidKeyImportRestRequest.invalid.keystore.keystore.invalid}");
+                    return false;
+                }
+            }
             return true;
         }
     }

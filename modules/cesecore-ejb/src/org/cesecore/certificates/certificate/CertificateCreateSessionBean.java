@@ -232,6 +232,9 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                     endEntityInformation.getExtendedInformation().certificateSerialNumber() != null &&
                     requestMessage instanceof SimpleRequestMessage) {
                 sequence = endEntityInformation.getExtendedInformation().certificateSerialNumber().toString();
+                if (sequence.length() > 5) {
+                    throw new CertificateCreateException(ErrorCode.FIELD_VALUE_NOT_VALID, "Certificate serial number is too long for CVC type certificate.");
+                }
                 endEntityInformation.getExtendedInformation().setCertificateSerialNumber(null);
             } else {
                 byte[] ki = requestMessage.getRequestKeyInfo();
