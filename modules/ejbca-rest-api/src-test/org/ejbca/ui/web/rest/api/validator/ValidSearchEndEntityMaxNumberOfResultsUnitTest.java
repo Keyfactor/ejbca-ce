@@ -24,41 +24,30 @@ import static org.easymock.EasyMock.createNiceMock;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.junit.Assert.assertTrue;
+
 import static org.junit.Assert.assertFalse;
 
-/**
- * A unit test class for annotation @ValidSearchCertificateMaxNumberOfResults and its validator.
- * <br/>
- * <b>Note: </b> Due to test compilation issue ECA-7148, we use an original input class SearchCertificatesRestRequest instead of simplified annotated class.
- */
-public class ValidSearchCertificateMaxNumberOfResultsUnitTest {
+public class ValidSearchEndEntityMaxNumberOfResultsUnitTest {
 
     private ConstraintValidatorContext constraintValidatorContextMock;
     private ConstraintValidatorContext.ConstraintViolationBuilder constraintViolationBuilderMock;
-    private ValidSearchCertificateMaxNumberOfResults.Validator validator;
-    GlobalCesecoreConfiguration globalCesecoreConfigurationMock;
+    private ValidSearchEndEntityMaxNumberOfResults.Validator validator;
 
     @Before
     public void setUp() throws Exception {
-        globalCesecoreConfigurationMock = createMock(GlobalCesecoreConfiguration.class);
         constraintValidatorContextMock = createNiceMock(ConstraintValidatorContext.class);
         constraintViolationBuilderMock = createMock(ConstraintValidatorContext.ConstraintViolationBuilder.class);
-        EasyMock.expect(globalCesecoreConfigurationMock
-                        .getMaximumQueryCount())
-                .andReturn(321).anyTimes();
-
         replay();
-        validator = new ValidSearchCertificateMaxNumberOfResults.Validator();
-        validator.globalCesecoreConfiguration = globalCesecoreConfigurationMock;
+        validator = new ValidSearchEndEntityMaxNumberOfResults.Validator();
     }
 
     @Test
     public void validationShouldFailOnNullValue() {
         // given
-        final String expectedMessage = "{ValidSearchCertificateMaxNumberOfResults.invalid.null}";
-        EasyMock.expect(constraintValidatorContextMock.buildConstraintViolationWithTemplate(expectedMessage)).andReturn(constraintViolationBuilderMock).once();
+        final String expectedMessage = "{ValidSearchEndEntityMaxNumberOfResults.invalid.null}";
+        EasyMock.expect(constraintValidatorContextMock.buildConstraintViolationWithTemplate(expectedMessage))
+                .andReturn(constraintViolationBuilderMock).once();
         replay(constraintValidatorContextMock);
-        replay(globalCesecoreConfigurationMock);
         Integer maxNumberOfResults = null;
         // when
         boolean valid = validator.isValid(maxNumberOfResults, constraintValidatorContextMock);
@@ -70,13 +59,13 @@ public class ValidSearchCertificateMaxNumberOfResultsUnitTest {
     @Test
     public void validationShouldFailOnNegativeValue() {
         // given
-        final String expectedMessage = "{ValidSearchCertificateMaxNumberOfResults.invalid.lessThanOrEqualNull}";
-        EasyMock.expect(constraintValidatorContextMock.buildConstraintViolationWithTemplate(expectedMessage)).andReturn(constraintViolationBuilderMock).once();
+        final String expectedMessage = "{ValidSearchEndEntityMaxNumberOfResults.invalid.lessThanOrEqualNull}";
+        EasyMock.expect(constraintValidatorContextMock.buildConstraintViolationWithTemplate(expectedMessage))
+                .andReturn(constraintViolationBuilderMock).once();
         replay(constraintValidatorContextMock);
-        replay(globalCesecoreConfigurationMock);
         Integer maxNumberOfResults = -1;
         // when
-        boolean valid=validator.isValid(maxNumberOfResults, constraintValidatorContextMock);
+        boolean valid = validator.isValid(maxNumberOfResults, constraintValidatorContextMock);
         // then
         assertFalse(valid);
         verify(constraintValidatorContextMock);
@@ -85,13 +74,13 @@ public class ValidSearchCertificateMaxNumberOfResultsUnitTest {
     @Test
     public void validationShouldFailOnZeroValue() {
         // given
-        final String expectedMessage = "{ValidSearchCertificateMaxNumberOfResults.invalid.lessThanOrEqualNull}";
-        EasyMock.expect(constraintValidatorContextMock.buildConstraintViolationWithTemplate(expectedMessage)).andReturn(constraintViolationBuilderMock).once();
+        final String expectedMessage = "{ValidSearchEndEntityMaxNumberOfResults.invalid.lessThanOrEqualNull}";
+        EasyMock.expect(constraintValidatorContextMock.buildConstraintViolationWithTemplate(expectedMessage))
+                .andReturn(constraintViolationBuilderMock).once();
         replay(constraintValidatorContextMock);
-        replay(globalCesecoreConfigurationMock);
         Integer maxNumberOfResults = 0;
         // when
-        boolean valid=validator.isValid(maxNumberOfResults, constraintValidatorContextMock);
+        boolean valid = validator.isValid(maxNumberOfResults, constraintValidatorContextMock);
         // then
         assertFalse(valid);
         verify(constraintValidatorContextMock);
@@ -100,13 +89,13 @@ public class ValidSearchCertificateMaxNumberOfResultsUnitTest {
     @Test
     public void validationShouldFailOnValueAboveMaximum() {
         // given
-        final String expectedMessage = "{ValidSearchCertificateMaxNumberOfResults.invalid.moreThanMaximum}";
-        EasyMock.expect(constraintValidatorContextMock.buildConstraintViolationWithTemplate(expectedMessage)).andReturn(constraintViolationBuilderMock).once();
+        final String expectedMessage = "{ValidSearchEndEntityMaxNumberOfResults.invalid.moreThanMaximum}";
+        EasyMock.expect(constraintValidatorContextMock.buildConstraintViolationWithTemplate(expectedMessage))
+                .andReturn(constraintViolationBuilderMock).once();
         replay(constraintValidatorContextMock);
-        replay(globalCesecoreConfigurationMock);
-        Integer maxNumberOfResults = 401;
+        Integer maxNumberOfResults = 1001;
         // when
-        boolean valid=validator.isValid(maxNumberOfResults, constraintValidatorContextMock);
+        boolean valid = validator.isValid(maxNumberOfResults, constraintValidatorContextMock);
         // then
         assertFalse(valid);
         verify(constraintValidatorContextMock);
@@ -115,7 +104,7 @@ public class ValidSearchCertificateMaxNumberOfResultsUnitTest {
     @Test
     public void validationShouldPassOnNormalValue() {
         // given
-        replay(globalCesecoreConfigurationMock);
+        //      replay(globalCesecoreConfigurationMock);
         Integer maxNumberOfResults = 201;
         // when
         boolean valid = validator.isValid(maxNumberOfResults, constraintValidatorContextMock);
