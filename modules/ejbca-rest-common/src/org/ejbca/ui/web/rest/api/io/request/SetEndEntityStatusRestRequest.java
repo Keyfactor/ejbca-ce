@@ -13,7 +13,6 @@
 package org.ejbca.ui.web.rest.api.io.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.ejbca.ui.web.rest.api.validator.ValidEndEntityStatusRestRequest;
 
 /**

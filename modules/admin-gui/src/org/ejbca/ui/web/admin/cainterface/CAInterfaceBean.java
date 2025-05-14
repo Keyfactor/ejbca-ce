@@ -129,13 +129,14 @@ public class CAInterfaceBean implements Serializable {
     private transient CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
     private transient PublisherSessionLocal publishersession;
     private transient KeyValidatorSessionLocal keyValidatorSession;
-    private transient SignSession signsession;
     private transient AuthenticationToken authenticationToken;
     private transient EjbcaWebBean ejbcawebbean;
     private CAInfo cainfo;
     /** The certification request in binary format */
     private byte[] request;
     private Certificate processedcert;
+    
+    private transient boolean initialized = false;
 
     /** Creates a new instance of CaInterfaceBean */
     public CAInterfaceBean() { }
@@ -162,6 +163,7 @@ public class CAInterfaceBean implements Serializable {
         keyValidatorSession = ejbLocalHelper.getKeyValidatorSession();
         authenticationToken = ejbcawebbean.getAdminObject();
         this.ejbcawebbean = ejbcawebbean;
+        initialized = true;
     }
 
     /**
@@ -961,13 +963,6 @@ public class CAInterfaceBean implements Serializable {
                    }
                }
                
-               final long keepExpiredCertsOnCrlDate;
-               if(caInfoDto.getKeepExpiredCertsOnCrlFormat() == 0) {
-                   keepExpiredCertsOnCrlDate = 0L;
-               } else {
-                   keepExpiredCertsOnCrlDate = caInfoDto.getKeepExpiredCertsOnCrlDate();
-               }
-               
                // No need to add the Keyrecovery extended service here, because it is only "updated" in EditCA, and there
                // is not need to update it.
                X509CAInfo.X509CAInfoBuilder x509CAInfoBuilder = new X509CAInfo.X509CAInfoBuilder()
@@ -1437,13 +1432,6 @@ public class CAInterfaceBean implements Serializable {
             cryptoTokenManagementSession = getEjbLocalHelper().getCryptoTokenManagementSession();
 
         return cryptoTokenManagementSession;
-    }
-
-    public SignSession getSignsession() {
-        if (signsession == null)
-            signsession = getEjbLocalHelper().getSignSession();
-
-        return signsession;
     }
 
     public PublisherSessionLocal getPublishersession() {

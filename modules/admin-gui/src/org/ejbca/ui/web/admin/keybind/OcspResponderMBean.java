@@ -30,17 +30,9 @@ import java.util.Map.Entry;
 import java.util.ServiceLoader;
 import java.util.Set;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.ejb.EJB;
-import jakarta.faces.application.FacesMessage;
-import jakarta.faces.context.FacesContext;
-import jakarta.faces.model.ListDataModel;
-import jakarta.faces.model.SelectItem;
-import jakarta.faces.view.ViewScoped;
-import jakarta.inject.Named;
-
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.SHA1DigestCalculator;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoToken;
@@ -82,13 +74,14 @@ import org.cesecore.util.SimpleTime;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionLocal;
 
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.SHA1DigestCalculator;
-import com.keyfactor.util.certificate.SimpleCertGenerator;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.keys.KeyTools;
-import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJB;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.model.ListDataModel;
+import jakarta.faces.model.SelectItem;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Named;
 
 @Named("ocspResponderMBean")
 @ViewScoped
@@ -607,7 +600,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
     public String getCurrentCaGeneration() {
         if (currentCaGeneration == null) {
             try {
-                final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingSession.getInternalKeyBinding(authenticationToken,
+                final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingSession.getInternalKeyBinding(getAuthenticationToken(),
                         Integer.parseInt(getCurrentInternalKeyBindingId()));
                 if (ocspKeyBinding != null) {
                     currentCaGeneration = ocspKeyBinding.getCaGeneration();
@@ -628,7 +621,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
     
     public boolean isReturnCaChain() {
         try {
-            final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingSession.getInternalKeyBinding(authenticationToken,
+            final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingSession.getInternalKeyBinding(getAuthenticationToken(),
                     Integer.parseInt(getCurrentInternalKeyBindingId()));
             return ocspKeyBinding.getIncludeCertChain();
         } catch (NumberFormatException | AuthorizationDeniedException e) {
@@ -709,7 +702,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
         if(isBoundToCertificate()) {
             try {
                 
-                final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingSession.getInternalKeyBinding(authenticationToken,
+                final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingSession.getInternalKeyBinding(getAuthenticationToken(),
                         Integer.parseInt(getCurrentInternalKeyBindingId()));
                 
                 final DateFormat dateFormatIso8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
@@ -967,7 +960,6 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
             } else {
                 ocspKeyBinding.setSignOcspResponseOnBehalf(new ArrayList<>());
             }
-            ocspKeyBinding.setSignOcspResponseOnBehalf(signOcspResponseForCas);
             if(ocspKeyBinding.getIncludeCertChain()) {
                 ocspKeyBinding.setCaGeneration(currentCaGeneration);
             }

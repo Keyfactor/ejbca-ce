@@ -12,14 +12,12 @@
  *************************************************************************/
 package org.ejbca.ra;
 
-import java.io.Serializable;
 import java.util.List;
 
-import org.bouncycastle.asn1.x500.X500Name;
+import com.keyfactor.util.certificate.DnComponents;
+
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-
-import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Represents two "interfaces": list (needed for JSF) and map interface

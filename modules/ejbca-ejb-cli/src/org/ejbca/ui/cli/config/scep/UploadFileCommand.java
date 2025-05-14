@@ -117,7 +117,6 @@ public class UploadFileCommand extends BaseScepConfigCommand {
         // Reading all relevant configurations from file.
         boolean populated = false;
         Set<String> keys = ScepConfiguration.getAllAliasKeys(alias);
-        @SuppressWarnings("unchecked")
         Iterator<String> itr = config.getKeys();
         while (itr.hasNext()) {
             String key = itr.next();

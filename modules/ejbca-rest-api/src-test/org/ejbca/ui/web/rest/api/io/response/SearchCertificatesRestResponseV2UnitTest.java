@@ -153,7 +153,7 @@ public class SearchCertificatesRestResponseV2UnitTest {
         // then
         final PaginationSummary summary = restResponse.getPaginationSummary();
         Long totalCount = summary.getTotalCerts();
-        List certificates = restResponse.getCertificates();
+        List<?> certificates = restResponse.getCertificates();
         assertNotNull("PaginationSummary must not be null.", summary);
         assertEquals("Total count does not match.", total, totalCount);
         assertNotNull("List of certificates must not be null.", certificates);

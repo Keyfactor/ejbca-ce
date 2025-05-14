@@ -423,20 +423,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         this.lastActiveTab = lastActiveTab;
     }
 
-    public StatedumpSessionLocal getStatedumpSession() {
-        if (statedumpSession == null) {
-            statedumpSession = new EjbLocalHelper().getStatedumpSession();
-        }
-        return statedumpSession;
-    }
-
-    public ServiceSessionLocal getServiceSession() {
-        if (serviceSession == null) {
-            serviceSession = new EjbLocalHelper().getServiceSession();
-        }
-        return serviceSession;
-    }
-
     public void onTabChange(final TabChangeEvent<?> event) {
         final Tab activeTab = event.getTab();
         if (activeTab == null) {

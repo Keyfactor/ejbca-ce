@@ -12,13 +12,11 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate;
 
-import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
 import jakarta.ejb.Local;
 
-import org.cesecore.certificates.ca.KeepExpiredCertsOnCrlFormat;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 
 /**
