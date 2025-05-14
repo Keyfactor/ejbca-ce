@@ -33,6 +33,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.oauth.OauthRequestHelper;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.OAuthConfiguration;
@@ -66,6 +67,8 @@ public class RaLoginBean implements Serializable {
     private String stateInSession = null;
     private String oauthClicked = null;
 
+    @EJB
+    private CaSessionLocal caSession;
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApi;
     @EJB
@@ -129,8 +132,7 @@ public class RaLoginBean implements Serializable {
         OAuthKeyInfo oAuthKeyInfo = oAuthConfiguration.getOauthKeyByLabel(oauthClicked);
         if (oAuthKeyInfo != null) {
             try {
-                OauthRequestHelper oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder(
-                        internalKeyBindings, certificateStoreLocal, cryptoToken));
+                OauthRequestHelper oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder(internalKeyBindings, certificateStoreLocal, cryptoToken, caSession));
                 OAuthGrantResponseInfo token = oauthRequestHelper.sendTokenRequest(oAuthKeyInfo, authCode, getRedirectUri());
                 if (token.compareTokenType(HttpTools.AUTHORIZATION_SCHEME_BEARER)) {
                     servletRequest.getSession(true).setAttribute("ejbca.bearer.token", token.getAccessToken());

@@ -218,6 +218,109 @@ public class CaAdminSessionHybridSystemTest {
             }
         }
     }
+
+    @Test
+    public void testCreateRootCertificateSLHDSA()
+            throws CAExistsException, CryptoTokenOfflineException, InvalidAlgorithmException, AuthorizationDeniedException, InvalidKeyException,
+            InvalidAlgorithmParameterException, CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException, NoSuchSlotException,
+            CADoesntExistsException, CertificateEncodingException, IOException, OperatorCreationException, CertException {
+
+        final String cryptoTokenPin = "foo123";
+        final String cryptoTokenName = testName.getMethodName() + "CryptoToken";
+        final String caName = testName.getMethodName() + "RootCa";
+
+        Integer cryptoTokenId = null;
+        X509CAInfo hybridRoot = null;
+        try {
+            cryptoTokenId = createCryptoTokenAndKeypairs(cryptoTokenName, cryptoTokenPin, "secp256r1", AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F);
+            hybridRoot = constructCa(cryptoTokenId, caName, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, CAInfo.SELFSIGNED, true);
+
+            X509Certificate rootCertificate = (X509Certificate) caSession.getCaChain(alwaysAllowToken, caName).get(0).getCertificate();
+
+            X509CertificateHolder certHolder = new JcaX509CertificateHolder(rootCertificate);
+
+            PublicKey alternativePublicKey = cryptoTokenManagementSession
+                    .getPublicKey(alwaysAllowToken, cryptoTokenId, CAToken.ALTERNATE_SOFT_PRIVATE_SIGNKEY_ALIAS).getPublicKey();
+
+            assertEquals("Incorrect alternative public key", ASN1Primitive.fromByteArray(alternativePublicKey.getEncoded()),
+                    SubjectAltPublicKeyInfo.fromExtensions(certHolder.getExtensions()));
+
+            PublicKey caAlternativePublicKey = cryptoTokenManagementSession
+                    .getPublicKey(alwaysAllowToken, cryptoTokenId, CAToken.ALTERNATE_SOFT_PRIVATE_SIGNKEY_ALIAS).getPublicKey();
+            assertTrue("Alternative signature does not verify", certHolder.isAlternativeSignatureValid(
+                    new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caAlternativePublicKey)));
+        } finally {
+            //Delete the CA
+            deleteCryptoTokenAndKeys(cryptoTokenId);
+
+            if (hybridRoot != null) {
+                CAInfo caInfo = caSession.getCAInfo(alwaysAllowToken, hybridRoot.getCAId());
+                if (caInfo != null) {
+                    internalCertificateStoreSession.removeCertificate(caInfo.getCertificateChain().get(0));
+                }
+                caSession.removeCA(alwaysAllowToken, hybridRoot.getCAId());
+            }
+        }
+    }
+
+    @Test
+    public void testCreateSubCaCertificateSLHDSA()
+            throws AuthorizationDeniedException, InvalidKeyException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
+            CryptoTokenNameInUseException, InvalidAlgorithmParameterException, NoSuchSlotException, CAExistsException, InvalidAlgorithmException,
+            CADoesntExistsException, IOException, CertificateEncodingException, OperatorCreationException, CertException {
+        Integer rootCryptoTokenId = null;
+        Integer subCryptoTokenId = null;
+        final String rootCryptoTokenName = testName.getMethodName() + "CryptoTokenRoot";
+        final String subCryptoTokenName = testName.getMethodName() + "CryptoTokenSub";
+        X509CAInfo hybridRoot = null;
+        X509CAInfo hybridSub = null;
+        final String rootCaName = testName.getMethodName() + "RootCa";
+        final String subCaName = testName.getMethodName() + "SubCa";
+        try {
+            rootCryptoTokenId = createCryptoTokenAndKeypairs(rootCryptoTokenName, "foo123", "secp256r1", AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F);
+
+            subCryptoTokenId = createCryptoTokenAndKeypairs(subCryptoTokenName, "foo123", "secp256r1", AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F);
+
+            hybridRoot = constructCa(rootCryptoTokenId, rootCaName, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, CAInfo.SELFSIGNED, true);
+
+            hybridSub = constructCa(subCryptoTokenId, subCaName, CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, hybridRoot.getCAId(), true);
+
+            X509Certificate subCaCertificate = (X509Certificate) caSession.getCaChain(alwaysAllowToken, subCaName).get(0).getCertificate();
+
+            X509CertificateHolder certHolder = new JcaX509CertificateHolder(subCaCertificate);
+
+            PublicKey alternativePublicKey = cryptoTokenManagementSession
+                    .getPublicKey(alwaysAllowToken, subCryptoTokenId, CAToken.ALTERNATE_SOFT_PRIVATE_SIGNKEY_ALIAS).getPublicKey();
+
+            assertEquals("Incorrect alternative public key", ASN1Primitive.fromByteArray(alternativePublicKey.getEncoded()),
+                    SubjectAltPublicKeyInfo.fromExtensions(certHolder.getExtensions()).toASN1Primitive());
+
+            PublicKey caAlternativePublicKey = cryptoTokenManagementSession
+                    .getPublicKey(alwaysAllowToken, rootCryptoTokenId, CAToken.ALTERNATE_SOFT_PRIVATE_SIGNKEY_ALIAS).getPublicKey();
+            assertTrue("Alternative signature does not verify", certHolder.isAlternativeSignatureValid(
+                    new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caAlternativePublicKey)));
+
+        } finally {
+            deleteCryptoTokenAndKeys(rootCryptoTokenId);
+            deleteCryptoTokenAndKeys(subCryptoTokenId);
+
+            if (hybridRoot != null) {
+                CAInfo caInfo = caSession.getCAInfo(alwaysAllowToken, hybridRoot.getCAId());
+                if (caInfo != null) {
+                    internalCertificateStoreSession.removeCertificate(caInfo.getCertificateChain().get(0));
+                }
+                caSession.removeCA(alwaysAllowToken, hybridRoot.getCAId());
+            }
+
+            if (hybridSub != null) {
+                CAInfo caInfo = caSession.getCAInfo(alwaysAllowToken, hybridSub.getCAId());
+                if (caInfo != null) {
+                    internalCertificateStoreSession.removeCertificate(caInfo.getCertificateChain().get(0));
+                }
+                caSession.removeCA(alwaysAllowToken, hybridSub.getCAId());
+            }
+        }
+    }
     
     @Test
     public void testCreateRootCertificateFalcon512()

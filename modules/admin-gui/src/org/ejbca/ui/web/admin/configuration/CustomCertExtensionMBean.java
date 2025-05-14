@@ -290,13 +290,24 @@ public class CustomCertExtensionMBean extends BaseManagedBean implements Seriali
             .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "No CustomCertificateExtension is set.", null));
             return;
         }
-        
+
         Properties properties = new Properties();
         for(CustomExtensionPropertyGUIInfo extensionProperty :  (List<CustomExtensionPropertyGUIInfo>) getCurrentExtensionProperties().getWrappedData()) {
             properties.put(extensionProperty.getKey(), extensionProperty.getValue());
         }
         
         AvailableCustomCertificateExtensionsConfiguration cceConfig = getAvailableExtensionsConfig();
+
+        if (!isOidUnique(cceConfig)) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "CustomCertificateExtension OID '" + currentExtensionGUIInfo.getOid() + "' already exists in the database.", null));
+            return;
+        }
+
+        if (!isDisplayNameUnique(cceConfig)) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "CustomCertificateExtension Label '" + currentExtensionGUIInfo.getDisplayName()  + "' already exists in the database.", null));
+            return;
+        }
+
         try {
             cceConfig.addCustomCertExtension(currentExtensionGUIInfo.getId(), currentExtensionGUIInfo.getOid(), currentExtensionGUIInfo.getDisplayName(), 
                     currentExtensionGUIInfo.getClassPath(), currentExtensionGUIInfo.isCritical(), currentExtensionGUIInfo.isRequired(), properties);
@@ -307,6 +318,22 @@ public class CustomCertExtensionMBean extends BaseManagedBean implements Seriali
             return;
         }        
         flushCurrentExtension();
+    }
+
+    protected boolean isOidUnique(final AvailableCustomCertificateExtensionsConfiguration cceConfig) {
+        final String newOid = getCurrentExtensionGUIInfo().getOid();
+
+        return cceConfig.getAllAvailableCustomCertificateExtensions().stream()
+                .filter(ce -> ce.getId() != getCurrentExtensionGUIInfo().getId())
+                .noneMatch(ce -> ce.getOID().equals(newOid));
+    }
+
+    protected boolean isDisplayNameUnique(final AvailableCustomCertificateExtensionsConfiguration cceConfig) {
+        final String newDisplayName = getCurrentExtensionGUIInfo().getDisplayName();
+
+        return cceConfig.getAllAvailableCustomCertificateExtensions().stream()
+                .filter(ce -> ce.getId() != getCurrentExtensionGUIInfo().getId())
+                .noneMatch(ce -> ce.getDisplayName().equals(newDisplayName));
     }
 
     // -------------------------------------------------------------

@@ -406,7 +406,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private transient CertificateProfileSessionLocal certificateProfileSession;
     private transient CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
     private transient AuthorizationSessionLocal authorizationSession;
-    /** Session bean for importing statedump. Will be null if statedump isn't available */
     private transient StatedumpSessionLocal statedumpSession;
     private transient RoleDataSessionLocal roleSession;
     private transient OcspResponseCleanupSessionLocal ocspCleanupSession;
@@ -422,6 +421,20 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
     public void setLastActiveTab(final int lastActiveTab) {
         this.lastActiveTab = lastActiveTab;
+    }
+
+    public StatedumpSessionLocal getStatedumpSession() {
+        if (statedumpSession == null) {
+            statedumpSession = new EjbLocalHelper().getStatedumpSession();
+        }
+        return statedumpSession;
+    }
+
+    public ServiceSessionLocal getServiceSession() {
+        if (serviceSession == null) {
+            serviceSession = new EjbLocalHelper().getServiceSession();
+        }
+        return serviceSession;
     }
 
     public void onTabChange(final TabChangeEvent<?> event) {
@@ -1996,6 +2009,16 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             return;
         }
 
+        if (!isOidUnique(cceConfig)) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "CustomCertificateExtension OID '" + newOID + "' already exists in the database.", null));
+            return;
+        }
+
+        if (!isDisplayNameUnique(cceConfig)) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "CustomCertificateExtension Label '" + getNewDisplayName() + "' already exists in the database.", null));
+            return;
+        }
+
         try {
             cceConfig.addCustomCertExtension(newID, newOID, getNewDisplayName(), DEFAULT_EXTENSION_CLASSPATH, false, true, new Properties());
             getEjbcaWebBean().saveAvailableCustomCertExtensionsConfiguration(cceConfig);
@@ -2039,6 +2062,20 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             i++;
         }
         return i;
+    }
+
+    protected boolean isOidUnique(final AvailableCustomCertificateExtensionsConfiguration cceConfig) {
+        final String newOid = getNewOID();
+
+        return cceConfig.getAllAvailableCustomCertificateExtensions().stream()
+                .noneMatch(ce -> ce.getOID().equals(newOid));
+    }
+
+    protected boolean isDisplayNameUnique(final AvailableCustomCertificateExtensionsConfiguration cceConfig) {
+        final String newDisplayName = getNewDisplayName();
+
+        return cceConfig.getAllAvailableCustomCertificateExtensions().stream()
+                .noneMatch(ce -> ce.getDisplayName().equals(newDisplayName));
     }
 
     private boolean isExtensionUsedInCertProfiles(final int id, final Map<Integer, CertificateProfile> allCertProfiles) {

@@ -223,6 +223,25 @@ public class CertificateRestResourceEnrollKeyStoreSystemTest extends RestResourc
         enrollKeyStore(AlgorithmConstants.KEYALGORITHM_MLDSA44, SecConst.TOKEN_SOFT_BCFKS, TEST_EE_PROFILE_NAME);
         enrollKeyStore(AlgorithmConstants.KEYALGORITHM_MLDSA44, SecConst.TOKEN_SOFT_BCFKS, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
     }
+
+    // enroll SLH-DSA- key x 3 types of keystore
+    @Test
+    public void enrollSLHDSAPkcs12() {
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F, SecConst.TOKEN_SOFT_P12, TEST_EE_PROFILE_NAME);
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F, SecConst.TOKEN_SOFT_P12, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
+    }
+
+    @Test
+    public void enrollSLHDSAJks() {
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F, SecConst.TOKEN_SOFT_JKS, TEST_EE_PROFILE_NAME);
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F, SecConst.TOKEN_SOFT_JKS, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
+    }
+
+    @Test
+    public void enrollSLHDSABcfks() {
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F, SecConst.TOKEN_SOFT_BCFKS, TEST_EE_PROFILE_NAME);
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F, SecConst.TOKEN_SOFT_BCFKS, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
+    }
     
     // enroll FALCON-512 key x 3 types of keystore
     @Test

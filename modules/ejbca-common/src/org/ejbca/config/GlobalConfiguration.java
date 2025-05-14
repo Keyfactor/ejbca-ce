@@ -29,7 +29,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.certificatetransparency.GoogleCtPolicy;
-import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.ExternalScriptsConfiguration;
 import org.cesecore.configuration.ConfigurationBase;
 import org.ejbca.util.URIUtil;
@@ -48,9 +47,6 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
 
     public static final String EJBCA_VERSION = InternalConfiguration.getAppVersion();
     public static final String EJBCA_COMMUNITY_VERSION = InternalConfiguration.getCommunityVersion();
-
-    public static final String PREFEREDINTERNALRESOURCES = CesecoreConfiguration.getInternalResourcesPreferredLanguage();
-    public static final String SECONDARYINTERNALRESOURCES = CesecoreConfiguration.getInternalResourcesSecondaryLanguage();;
 
     // Entries to choose from in userpreference part, defines the size of data to be displayed on one page.
     private final  String[] DEFAULTPOSSIBLEENTRIESPERPAGE = {"10" , "25" , "50" , "100"};

@@ -59,6 +59,12 @@ public class SoftCATokenUnitTest extends CATokenTestBase {
         doCaTokenMLDSA("ML-DSA-44", cryptoToken, getCaTokenProperties("ml-dsa-test" + CAToken.DEFAULT_KEYSEQUENCE));
     }
 
+	@Test
+    public void testCATokenSLHDSA() throws Exception {
+        CryptoToken cryptoToken = createSoftToken(true);
+        doCaTokenSLHDSA("SLH-DSA-SHA2-128F", cryptoToken, getCaTokenProperties("slh-dsa-test" + CAToken.DEFAULT_KEYSEQUENCE));
+    }
+
     @Test
     public void testActivateDeactivate() throws Exception {
     	CryptoToken cryptoToken = createSoftToken(true);

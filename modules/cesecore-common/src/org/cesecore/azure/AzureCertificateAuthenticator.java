@@ -34,6 +34,7 @@ import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSHeader.Builder;
 import com.nimbusds.jose.crypto.RSASSASigner;
+import com.nimbusds.jose.util.Base64;
 import com.nimbusds.jose.util.Base64URL;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
@@ -60,17 +61,20 @@ public class AzureCertificateAuthenticator extends AzureAuthenticator {
     private final String tenantID;
     private final String clientID;
     private final X509Certificate clientCertificate;
+    private final List<X509Certificate> chain;
     private final PrivateKey clientKey;
     private final HttpClientWithProxySupport client;
 
-    public AzureCertificateAuthenticator(String azureLoginUrl, String tenantID, String clientID, X509Certificate clientCertificate, PrivateKey clientKey,
-            HttpClientWithProxySupport client) {
+    public AzureCertificateAuthenticator(final String azureLoginUrl, final String tenantID, final String clientID,
+            final X509Certificate clientCertificate, final List<X509Certificate> chain, final PrivateKey clientKey,
+            final HttpClientWithProxySupport client) {
         super(azureLoginUrl);
         this.tenantID = tenantID;
         this.clientID = clientID;
         this.clientCertificate = clientCertificate;
         this.clientKey = clientKey;
         this.client = client;
+        this.chain = chain;
     }
 
     @Override
@@ -87,7 +91,7 @@ public class AzureCertificateAuthenticator extends AzureAuthenticator {
 
         String jwtString;
         try {
-            jwtString = getJwtString(oauthUrl, clientID, 60, clientKey, clientCertificate);
+            jwtString = getJwtString(oauthUrl, clientID, 60, clientKey, clientCertificate, chain);
             if (logger.isDebugEnabled()) {
                 logger.debug("JWT for Intune oauth:" + jwtString);
             }
@@ -137,6 +141,7 @@ public class AzureCertificateAuthenticator extends AzureAuthenticator {
      *            Authentication key
      * @param certificate
      *            Authentication certificate
+     * @param chain the CA's chain
      * @return The JWT encoded as a string
      * @throws CertificateEncodingException
      *             certificate is not formatted correctly
@@ -146,16 +151,19 @@ public class AzureCertificateAuthenticator extends AzureAuthenticator {
      *             Error formatting JWT
      */
     @SuppressWarnings("deprecation")
-    private static String getJwtString(String jwtAudience, String clientId, int tokenLifetimeSeconds, final PrivateKey key,
-            final X509Certificate certificate) throws CertificateEncodingException, NoSuchAlgorithmException, JOSEException {
+    private static String getJwtString(final String jwtAudience, final String clientId, final int tokenLifetimeSeconds, final PrivateKey key,
+            final X509Certificate certificate, final List<X509Certificate> chain) throws CertificateEncodingException, NoSuchAlgorithmException, JOSEException {
         final long time = System.currentTimeMillis();
         final JWTClaimsSet claimsSet = new JWTClaimsSet.Builder().audience(Collections.singletonList(jwtAudience)).issuer(clientId)
                 .jwtID(UUID.randomUUID().toString()).notBeforeTime(new Date(time)).expirationTime(new Date(time + tokenLifetimeSeconds * 1000))
                 .subject(clientId).build();
 
         JWSHeader.Builder builder = new Builder(JWSAlgorithm.RS256);
-        List<com.nimbusds.jose.util.Base64> certs = new ArrayList<com.nimbusds.jose.util.Base64>();
-        certs.add(new com.nimbusds.jose.util.Base64(java.util.Base64.getEncoder().encodeToString(certificate.getEncoded())));
+        List<Base64> certs = new ArrayList<>();
+        certs.add(new Base64(java.util.Base64.getEncoder().encodeToString(certificate.getEncoded())));
+        for(X509Certificate chainCertificate : chain) {
+            certs.add(new Base64(java.util.Base64.getEncoder().encodeToString(chainCertificate.getEncoded())));
+        }
         builder.x509CertChain(certs);
         String certHash = java.util.Base64.getEncoder().encodeToString(MessageDigest.getInstance("SHA-1").digest(certificate.getEncoded()));
         builder.x509CertThumbprint(new Base64URL(certHash));

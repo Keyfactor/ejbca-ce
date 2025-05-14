@@ -518,6 +518,12 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+    public void shouldRevokeCertificateSLHDSA() throws Exception {
+        createTestEndEntity();
+        revokeCertificate(createKeystore(AlgorithmConstants.SIGALG_SLHDSA_SHA2_128F, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F));
+    }
+
+    @Test
     public void shouldRevokeCertificateFalcon512() throws Exception {
         createTestEndEntity();
         revokeCertificate(createKeystore(AlgorithmConstants.SIGALG_FALCON512, AlgorithmConstants.KEYALGORITHM_FALCON512));
@@ -1477,6 +1483,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         // Construct POST request
         final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
         final String requestBody = objectMapper.writeValueAsString(pkcs10req);
+        log.error("requestBody: " + requestBody);
         final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
         // Send request
         final Response actualResponse = newRequest("/v1/certificate/pkcs10enroll").request().post(requestEntity);

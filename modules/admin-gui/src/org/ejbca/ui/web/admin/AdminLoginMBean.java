@@ -35,6 +35,7 @@ import org.cesecore.authentication.AuthenticationNotProvidedException;
 import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.oauth.OauthRequestHelper;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
@@ -65,6 +66,8 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
     private String stateInSession = null;
     private String oauthClicked = null;
 
+    @EJB
+    private CaSessionLocal caSession;
     @EJB
     private CryptoTokenManagementSessionLocal cryptoToken;
     @EJB
@@ -338,7 +341,7 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
 
     public OauthRequestHelper getOauthRequestHelper() {
         if (oauthRequestHelper == null) {
-            oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder(internalKeyBindings, certificateStoreLocal, cryptoToken));
+            oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder(internalKeyBindings, certificateStoreLocal, cryptoToken, caSession));
         }
         return oauthRequestHelper;
     }
