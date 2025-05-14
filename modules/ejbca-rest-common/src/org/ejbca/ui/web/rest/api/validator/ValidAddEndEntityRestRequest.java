@@ -168,7 +168,7 @@ public @interface ValidAddEndEntityRestRequest {
                         }
                     });
                 } catch (Exception e) {
-                    ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidKeyImportRestRequest.invalid.keystore.keystore.invalid}");
+                    ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidEditEndEntityRestRequest.invalid.custom.serialnumber}");
                     return false;
                 }
             }
