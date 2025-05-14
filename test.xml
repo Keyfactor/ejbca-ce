@@ -147,6 +147,10 @@
     <target name="optional-test-mpic-system" if="${mpic.exists}">
         <ant antfile="build.xml" dir="modules/mpic" target="test:system" inheritall="true" inheritrefs="true"/>
     </target>
+    <condition property="iodef.exists"><available file="modules/iodef/build.xml" /></condition>
+    <target name="optional-test-iodef-unit" if="${iodef.exists}">
+        <ant antfile="build.xml" dir="modules/iodef" target="test:unit" inheritall="true" inheritrefs="true"/>
+    </target>
     <condition property="ssh.exists"><available file="modules/ssh/build.xml" /></condition>
     <target name="optional-test-ssh-unit" if="${ssh.exists}">
         <ant antfile="build.xml" dir="modules/ssh" target="test:unit" inheritall="true" inheritrefs="true"/>
