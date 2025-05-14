@@ -79,7 +79,6 @@ import org.bouncycastle.asn1.ocsp.RevokedInfo;
 import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
-import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.CRLReason;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
@@ -352,14 +351,14 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         
                         if (isMsCaCompatible) {
                             OcspDataConfigCache.INSTANCE.setCaModeCompatiblePresent(true);
-                            List<Certificate> activeCaCertificates = certificateStoreSession.findCertificatesBySubjectAndIssuer(caInfo.getSubjectDN(),
-                                    caInfo.getLatestSubjectDN(), true);
+                            List<Certificate> activeCaCertificates = certificateStoreSession.findCertificatesBySubjectAndIssuer(caInfo.getLatestSubjectDN(),
+                                    CertTools.getIssuerDN(caCertificateChain.get(0)), true);
 
                             for (Certificate cert : activeCaCertificates) {
                                 final PrivateKey privateKey;
                                 String signKeyAlias=null;
                                 try {
-                                    signKeyAlias = getSignKeyAliasFromSubjectKeyId(cryptoToken, getAuthorityKeyIdentifier((X509Certificate) cert));
+                                    signKeyAlias = getSignKeyAliasFromSubjectKeyId(cryptoToken, getSubjectKeyIdentifier((X509Certificate) cert));
                                     privateKey = cryptoToken.getPrivateKey(signKeyAlias);
                                     if (privateKey == null) {
                                         log.warn(
@@ -374,7 +373,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
 
                                 // Replace the current leaf certificate in the ca chain with the corresponding one from DB!
                                 caCertificateChain.remove(0);
-                                caCertificateChain.add((X509Certificate) cert);
+                                caCertificateChain.add(0, (X509Certificate) cert);
                                 
                                 final String signatureProviderName = cryptoToken.getSignProviderName();
                                 if (!caCertificateChain.isEmpty()) {
@@ -436,7 +435,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             log.info("External CA with subject DN '" + CertTools.getSubjectDN(caCertificateChain.get(0)) + "' and serial number "
                                     + CertTools.getSerialNumber(caCertificateChain.get(0)) + " has an expired certificate with expiration date "
                                     + CertTools.getNotAfter(caCertificateChain.get(0)) + ".");
-                        }
+                        }                        
                         //Add an entry with just a chain and nothing else
                         OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificateChain.get(0), caCertificateStatus, null, null,
                                 null, null, null, ocspConfiguration.getOcspResponderIdType()));
@@ -554,10 +553,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         }
     }
     
-    private byte[] getAuthorityKeyIdentifier(X509Certificate certificate) {
-        byte[] fullExtValue = certificate.getExtensionValue(Extension.authorityKeyIdentifier.getId());
-        byte[] extValue = ASN1OctetString.getInstance(fullExtValue).getOctets();
-        return AuthorityKeyIdentifier.getInstance(extValue).getKeyIdentifier();
+    // we take the SubjectKeyIdentifier of CA certificate i.e. AuthorityKeyIdentifier of end entity certificates
+    private byte[] getSubjectKeyIdentifier(X509Certificate certificate) {
+        return CertTools.getSubjectKeyId(certificate);
     }
     
     private String getSignKeyAliasFromSubjectKeyId(CryptoToken cryptoToken, byte[] certificateSubjectKeyId) throws CryptoTokenOfflineException {
@@ -622,7 +620,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
      * @return an OcspSigningCacheEntry, or null if any error was encountered.
      */
     private OcspSigningCacheEntry makeOcspSigningCacheEntry(X509Certificate ocspSigningCertificate, OcspKeyBinding ocspKeyBinding) {
-        final List<X509Certificate> caCertificateChain = getCaCertificateChain(ocspSigningCertificate);
+        final List<X509Certificate> caCertificateChain = getCaCertificateChain(ocspSigningCertificate, ocspKeyBinding.getCaGeneration());
         if (caCertificateChain.isEmpty()) {
             log.warn("OcspKeyBinding " + ocspKeyBinding.getName() + " ( " + ocspKeyBinding.getId() + ") has a signing certificate, but no chain and will be ignored.");
             return null;
@@ -655,6 +653,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         } else {
             respIdType = OcspKeyBinding.ResponderIdType.KEYHASH;
         }
+        
         return new OcspSigningCacheEntry(caCertificateChain.get(0), certificateStatus, caCertificateChain, ocspSigningCertificate, privateKey,
                 signatureProviderName, ocspKeyBinding, respIdType);
     }
@@ -722,7 +721,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         return false;
     }
     
-    private X509Certificate findIssuerCa(List<Certificate> certificateList, X509Certificate currentLevelCertificate) {
+    private X509Certificate findIssuerCa(final List<Certificate> certificateList, final X509Certificate currentLevelCertificate) {
         List<Certificate> verifiedIssuers = new ArrayList<>();
         Certificate issuer = null;
         final byte[] aki = CertTools.getAuthorityKeyId(currentLevelCertificate);
@@ -740,8 +739,35 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         }
         return (X509Certificate) issuer;
     }
+    
+    /**
+     * Finds the sought ca certificate from a given list that matches the given serial number
+     * 
+     * @param certificateList a list of certificates
+     * @param caCertificateSerialNumber a certificate serial number in string format
+     * @return the sought certificate, or null if none was found
+     */
+    private X509Certificate findIssuerCa(final List<Certificate> certificateList, final String caCertificateSerialNumber) {
+        X509Certificate issuer = null;
+        for (final Certificate certificate : certificateList) {
+            if(CertTools.getSerialNumberAsString(certificate).equals(caCertificateSerialNumber)) {
+                issuer = (X509Certificate) certificate;
+                break;
+            }
+        }
+        return issuer;
+    }
 
-    private List<X509Certificate> getCaCertificateChain(final X509Certificate leafCertificate) {
+    /**
+     * Derive the certificate chain. This method has two modes – if caCertificateSerialNumber is null then the chain is derived by directly
+     * following the leaf certificate. If it's set to a specific serial number, then someone for some ungodly reason wants to return an earlier 
+     * chain than the current one. For the latter functionality, the CA must not have been re-keyed. 
+     * 
+     * @param leafCertificate the OCSP signing certificate
+     * @param caCertificateSerialNumber the serial number of the first issuer cert to follow, or null to simply used the latest one. 
+     * @return the signing certificate's chain
+     */
+    private List<X509Certificate> getCaCertificateChain(final X509Certificate leafCertificate, String caCertificateSerialNumber) {
         final List<X509Certificate> caCertificateChain = new ArrayList<>();
         X509Certificate currentLevelCertificate = leafCertificate;
         final Set<String> includedFingerprint = new HashSet<>();
@@ -750,7 +776,13 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             final String issuerFingerprint = CertTools.getFingerprintAsString(currentLevelCertificate);
             List<Certificate> resultList = new ArrayList<>();
             resultList = certificateStoreSession.findCertificatesBySubject(issuerDn);
-            currentLevelCertificate = findIssuerCa(resultList, currentLevelCertificate);
+            if(caCertificateSerialNumber == null) {
+                currentLevelCertificate = findIssuerCa(resultList, currentLevelCertificate);
+            } else {
+                currentLevelCertificate = findIssuerCa(resultList, caCertificateSerialNumber);
+                //Only the first time around
+                caCertificateSerialNumber = null;
+            }
             if (currentLevelCertificate == null) {
                 log.warn("Unable to build certificate chain for OCSP signing certificate with Subject DN '" +
                         CertTools.getSubjectDN(leafCertificate) + "'. CA with Subject DN '" + issuerDn + "' is missing in the database.");
@@ -2233,10 +2265,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             List<Certificate> activeCaCertificates = certificateStoreSession.findCertificatesBySubjectAndIssuer(CertTools.getSubjectDN(issuingCertificate),
                                     CertTools.getIssuerDN(issuingCertificate), true);
                             
-                            final byte[] currentIssuingCertSubjectKeyId = getAuthorityKeyIdentifier(issuingCertificate);
+                            final byte[] currentIssuingCertSubjectKeyId = getSubjectKeyIdentifier(issuingCertificate);
 
                             for(Certificate cert : activeCaCertificates) {
-                                final byte[] certificateFromRequestSubjectKeyId = getAuthorityKeyIdentifier((X509Certificate) cert);
+                                final byte[] certificateFromRequestSubjectKeyId = getSubjectKeyIdentifier((X509Certificate) cert);
 
                                 try {
                                     if (StringUtils.equals(new String(Hex.encode(certificateFromRequestSubjectKeyId)),

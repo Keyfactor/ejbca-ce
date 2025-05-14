@@ -76,13 +76,6 @@
 # The offset can be overwritten by the user with it's corresponding value in a certificate profile
 certificate.validityoffset=-10m
 
-# The idea of a HSM to use a HSM is to have the private keys protected. It should not be possible to extract them.
-# To prevent using a key with the private part extractable a test is made before activating a CA.
-# If this test shows that you can read the private part from the key the CA will not be activated unless the key is a SW key.
-# You may (but should not) permit using extractable private keys by setting this property to 'true'.
-# Default: false
-#ca.doPermitExtractablePrivateKeys=true
-
 # Forbidden characters in DB.
 # When one of these characters is found in any string that should be stored in
 # the DB it will be replaced by a forward slash (/). Same replacement will also
@@ -134,18 +127,6 @@ certificate.validityoffset=-10m
 #
 # Default: off (false)
 #database.crlgenfetchordered=true
-
-
-# ------------- Core language configuration -------------
-# The language that should be used internally for logging, exceptions and approval notifications.
-# The languagefile is stored in 'src/intresources/ejbcaresources.xx.properties' and 'intresources.xx.properties'.
-# Should be one of: en, fr, ja, pt, sv, vi.
-# Default: en
-#intresources.preferredlanguage=en
-
-# The language used internally if a resource not found in the preferred language.
-# Default: en
-#intresources.secondarylanguage=en
 
 # ------------ Audit log configuration ---------------------
 # I you want to use integrity protection of the audit log (in the IntegrityProtectedDevice) you

@@ -27,6 +27,7 @@ import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.cesecore.certificates.KeyEncryptionPaddingAlgorithm;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAService;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceNotActiveException;
@@ -80,12 +81,12 @@ public interface CA extends CACommon {
 
     void setCRLOverlapTime(long crlOverlapTime);
 
-    boolean getKeepExpiredCertsOnCRL();
-
-    void setKeepExpiredCertsOnCRL(boolean keepexpiredcertsoncrl);
-
     int getDefaultCertificateProfileId();
-    
+
+    boolean getKeepExpiredCertsOnCrl();
+
+    void setKeepExpiredCertsOnCrl(boolean keepExpiredCertsOnCrl);
+
     boolean isDoEnforceUniquePublicKeys();
     boolean isDoEnforceKeyRenewal();
 
@@ -107,8 +108,14 @@ public interface CA extends CACommon {
     /** whether issued certificates should be stored or not, default true as was the case before 3.10.x */
     boolean isUseCertificateStorage();
 
+    /** whether compromised keys should be added or not, by default false */
+    boolean isAddCompromisedKeysToBlockList();
+    
     /** whether revocations for non existing entry accepted */
     boolean isAcceptRevocationNonExistingEntry();
+    
+    /**whether users choose RSA-OAEP or PKCS1.5 */
+    KeyEncryptionPaddingAlgorithm getKeyEncryptionPaddingAlgorithm();
     
     // Methods used with extended services
 
@@ -236,12 +243,12 @@ public interface CA extends CACommon {
    /**
     * Create a signed PKCS#7 / CMS message.
     *
-    * @param cryptoToken
-    * @param cert
-    * @param includeChain
+    * @param cryptoToken the crypto token to use
+    * @param cert the certificate to be included in the CMS
+    * @param includeChain true to include the chain
     * @return A DER-encoded PKCS#7
     * @throws SignRequestSignatureException if the certificate doesn't seem to be signed by this CA
-    * @see CertTools#createCertsOnlyCMS(List) for how to craete a certs-only PKCS7/CMS
+    * @see CertTools#createCertsOnlyCMS(List) for how to create a certs-only PKCS7/CMS
     */
    byte[] createPKCS7(CryptoToken cryptoToken, X509Certificate cert, boolean includeChain) throws SignRequestSignatureException;
 

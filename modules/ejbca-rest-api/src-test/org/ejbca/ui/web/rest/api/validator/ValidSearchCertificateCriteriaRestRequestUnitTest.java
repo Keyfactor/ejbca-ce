@@ -36,7 +36,7 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
     @Test
     public void validationShouldFailOnNullProperty() {
         // given
-        final String expectedMessage = "Invalid search criteria content, property cannot be null or empty.";
+        final String expectedMessage = "Invalid search criteria content, property can not be null or empty.";
         final SearchCertificateCriteriaRestRequest testClass = SearchCertificateCriteriaRestRequest.builder()
                 .property(null)
                 .value("A")
@@ -52,7 +52,7 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
     @Test
     public void validationShouldFailOnEmptyProperty() {
         // given
-        final String expectedMessage = "Invalid search criteria content, property cannot be null or empty.";
+        final String expectedMessage = "Invalid search criteria content, property can not be null or empty.";
         final SearchCertificateCriteriaRestRequest testClass = SearchCertificateCriteriaRestRequest.builder()
                 .property("")
                 .value("A")
@@ -68,7 +68,7 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
     @Test
     public void validationShouldFailOnNullValue() {
         // given
-        final String expectedMessage = "Invalid search criteria content, value cannot be null or empty.";
+        final String expectedMessage = "Invalid search criteria content, value can not be null or empty.";
         final SearchCertificateCriteriaRestRequest testClass = SearchCertificateCriteriaRestRequest.builder()
                 .property("CA")
                 .value(null)
@@ -84,7 +84,7 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
     @Test
     public void validationShouldFailOnEmptyValue() {
         // given
-        final String expectedMessage = "Invalid search criteria content, value cannot be null or empty.";
+        final String expectedMessage = "Invalid search criteria content, value can not be null or empty.";
         final SearchCertificateCriteriaRestRequest testClass = SearchCertificateCriteriaRestRequest.builder()
                 .property("CA")
                 .value("")
@@ -100,7 +100,7 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
     @Test
     public void validationShouldFailOnNullOperation() {
         // given
-        final String expectedMessage = "Invalid search criteria content, operation cannot be null or empty.";
+        final String expectedMessage = "Invalid search criteria content, operation can not be null or empty.";
         final SearchCertificateCriteriaRestRequest testClass = SearchCertificateCriteriaRestRequest.builder()
                 .property("CA")
                 .value("A")
@@ -116,7 +116,7 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
     @Test
     public void validationShouldFailOnEmptyOperation() {
         // given
-        final String expectedMessage = "Invalid search criteria content, operation cannot be null or empty.";
+        final String expectedMessage = "Invalid search criteria content, operation can not be null or empty.";
         final SearchCertificateCriteriaRestRequest testClass = SearchCertificateCriteriaRestRequest.builder()
                 .property("CA")
                 .value("A")
@@ -145,6 +145,90 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
         assertEquals("Validation message should match.", expectedMessage, constraintViolations.iterator().next().getMessage());
     }
 
+    @Test
+    public void validationShouldPassOnSUBJECT_DNProperty() {
+        // given
+        final SearchCertificateCriteriaRestRequest testClass = SearchCertificateCriteriaRestRequest.builder()
+                .property("SUBJECT_DN")
+                .value("A")
+                .operation("EQUAL")
+                .build();
+        // when
+        final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
+        // then
+        assertEquals("Valid object.",0, constraintViolations.size());
+    }
+    
+    @Test
+    public void validationShouldPassOnSUBJECT_ALT_NAMEProperty() {
+        // given
+        final SearchCertificateCriteriaRestRequest testClass = SearchCertificateCriteriaRestRequest.builder()
+                .property("SUBJECT_ALT_NAME")
+                .value("A")
+                .operation("EQUAL")
+                .build();
+        // when
+        final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
+        // then
+        assertEquals("Valid object.",0, constraintViolations.size());
+    }
+    
+    @Test
+    public void validationShouldPassOnUSERNAMEProperty() {
+        // given
+        final SearchCertificateCriteriaRestRequest testClass = SearchCertificateCriteriaRestRequest.builder()
+                .property("USERNAME")
+                .value("A")
+                .operation("EQUAL")
+                .build();
+        // when
+        final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
+        // then
+        assertEquals("Valid object.",0, constraintViolations.size());
+    }
+    
+    @Test
+    public void validationShouldPassOnEXTERNAL_ACCOUNT_BINDING_IDProperty() {
+        // given
+        final SearchCertificateCriteriaRestRequest testClass = SearchCertificateCriteriaRestRequest.builder()
+                .property("EXTERNAL_ACCOUNT_BINDING_ID")
+                .value("A")
+                .operation("EQUAL")
+                .build();
+        // when
+        final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
+        // then
+        assertEquals("Valid object.",0, constraintViolations.size());
+    }
+    
+    @Test
+    public void validationShouldPassOnValidSERIAL_NUMBERProperty() {
+        // given
+        final SearchCertificateCriteriaRestRequest testClass = SearchCertificateCriteriaRestRequest.builder()
+                .property("SERIAL_NUMBER")
+                .value("11b9354113b18d1496ef61e889b44c400c739411")
+                .operation("EQUAL")
+                .build();
+        // when
+        final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
+        // then
+        assertEquals("Valid object.",0, constraintViolations.size());
+    }
+    
+    @Test
+    public void validationShouldFailOnInvalidSERIAL_NUMBERProperty() {
+        // given
+        final SearchCertificateCriteriaRestRequest testClass = SearchCertificateCriteriaRestRequest.builder()
+                .property("SERIAL_NUMBER")
+                .value("Acftdfg4556cccsdd44444vvvvvv")
+                .operation("EQUAL")
+                .build();
+        // when
+        final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
+        // then
+        assertEquals("Invalid object.",1, constraintViolations.size());
+    }
+    
     @Test
     public void validationShouldPassOnQUERYProperty() {
         // given
@@ -304,7 +388,35 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
         assertEquals("Invalid object.",1, constraintViolations.size());
         assertEquals("Validation message should match.", expectedMessage, constraintViolations.iterator().next().getMessage());
     }
+    
+    @Test
+    public void validationShouldFailOnOperationBEFOREMisuse() {
+        // given
+        final SearchCertificateCriteriaRestRequest testClass = SearchCertificateCriteriaRestRequest.builder()
+                .property("CERTIFICATE_PROFILE")
+                .value("A")
+                .operation("BEFORE")
+                .build();
+        // when
+        final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
+        // then
+        assertEquals("Invalid object.",1, constraintViolations.size());
+    }
 
+    @Test
+    public void validationShouldFailOnOperationAFTERMisuse() {
+        // given
+        final SearchCertificateCriteriaRestRequest testClass = SearchCertificateCriteriaRestRequest.builder()
+                .property("CERTIFICATE_PROFILE")
+                .value("A")
+                .operation("AFTER")
+                .build();
+        // when
+        final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
+        // then
+        assertEquals("Invalid object.",1, constraintViolations.size());
+    }
+    
     @Test
     public void validationShouldFailOnOperationEQUALMisuse() {
         // given

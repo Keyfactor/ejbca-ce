@@ -304,7 +304,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                 log.info(msg);
             }
         } catch (Exception e) {
-            final String msg = "Error removing user data source " + name + ".";
+            final String msg = "Error removing service " + name + ".";
             final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             details.put("error", e.getMessage());

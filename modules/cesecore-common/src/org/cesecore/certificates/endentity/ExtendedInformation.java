@@ -19,12 +19,14 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
@@ -113,11 +115,12 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
 
     /** Default value for how many of the allowed failed login attempts that are remaining = -1 (unlimited) */
     public static final int DEFAULT_REMAININGLOGINATTEMPTS = -1;
-    
-    public static final String MARKER_FROM_REST_RESOURCE = "__zzz_marker_rest_";
-    public static final String CA_NAME = "__zzz_ca_name";
-    public static final String CERTIFICATE_PROFILE_NAME = "__zzz_cp_name";
-    public static final String END_ENTITY_PROFILE_NAME = "__zzz_eep_name";
+
+    public static final String INTERNAL_KEY_PREFIX       = "___zzz_";
+    public static final String MARKER_FROM_REST_RESOURCE = INTERNAL_KEY_PREFIX+"marker_rest_";
+    public static final String CA_NAME                   = INTERNAL_KEY_PREFIX+"ca_name";
+    public static final String CERTIFICATE_PROFILE_NAME  = INTERNAL_KEY_PREFIX+"cp_name";
+    public static final String END_ENTITY_PROFILE_NAME   = INTERNAL_KEY_PREFIX+"eep_name";
     
     /** Map key for certificate serial number */
     private  static final String CERTIFICATESERIALNUMBER = "CERTIFICATESERIALNUMBER";
@@ -702,6 +705,27 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     }
 
     /**
+     * @return All keys that contains the String "___zzz_"
+     */
+    public Set<Object> getInternalKeys() {
+        return data.keySet()
+                .stream()
+                .filter(key->(""+key).contains(INTERNAL_KEY_PREFIX))
+                .collect(Collectors.toSet());
+    }
+
+    /**
+     * Removes all keys that contains the String "___zzz_"
+     * @return All keys that are removed
+     */
+    public Collection<Object> removeInternalKeys() {
+        var internalKeys = getInternalKeys();
+        internalKeys.stream()
+                .forEach(data::remove);
+        return internalKeys;
+    }
+
+    /**
      * Special method used to set string fields directly, should be used with care, use the specific methods for fields in first hand.
      * When retrieving values, the specific methods are used which may convert the string into a BigInteger for example as in 
      * getCertificateSerialNumber, the string data better match that, or there will be trouble
@@ -900,6 +924,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         return data.remove(CUSTOM_SSH_DATA + key);
     }
     
+    @SuppressWarnings("unchecked")
     public Map<String, String> getSshCriticalOptions() {
         Object entry = data.get(CUSTOM_SSH_DATA + SSH_CERTIFICATE_CRITICAL_OPTIONS);
         if(entry!=null) {
@@ -913,6 +938,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         setSshCustomData(SSH_CERTIFICATE_CRITICAL_OPTIONS, criticalOptions);
     }
     
+    @SuppressWarnings("unchecked")
     public Map<String, byte[]>  getSshExtensions() {
         Object extensions = data.get(CUSTOM_SSH_DATA + SSH_CERTIFICATE_EXTENSIONS);
         if(extensions!=null) {
@@ -936,6 +962,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         }
     }
     
+    @SuppressWarnings("unchecked")
     public List<String> getSshPrincipalsIpv6() {
         Object entry = data.get(CUSTOM_SSH_DATA + SSH_PRINCIPALS_IPV6);
         if(entry!=null) {

@@ -133,94 +133,138 @@ public class RaCasPageBean implements Serializable {
 
     @Inject
     private RaAuthenticationBean raAuthenticationBean;
+
+    @Inject
+    private RaAccessBean raAccessBean;
+
     public void setRaAuthenticationBean(final RaAuthenticationBean raAuthenticationBean) { this.raAuthenticationBean = raAuthenticationBean; }
 
+    /** View Scoped variables to load once and use in the UI */
     private List<CaAndCrl> casAndCrlItems = null;
-    private boolean atLeastOneCrlLinkPresent = false;
+    private Boolean atLeastOneCrlLinkPresent = null;
+    private Boolean isAuthorized = null;
 
-    /** @return true if at least one of the CAs available via #getCasAndCrlItems() has CRLs present on this system. */
+    /** @return true if at least one of the CAs available via #loadCasAndCrlItems() has CRLs present on this system. */
     public boolean isAtLeastOneCrlLinkPresent() {
-        getCasAndCrlItems();
+        if (atLeastOneCrlLinkPresent == null) {
+            getCasAndCrlItems();
+        }
         return atLeastOneCrlLinkPresent;
     }
 
-    /** @return a list of all known authorized CAs with links to CRLs (if present) */
-    public List<CaAndCrl> getCasAndCrlItems() {
-        if (casAndCrlItems==null) {
-            final List<CAInfo> caInfos = new ArrayList<>(raMasterApiProxyBean.getAuthorizedCas(raAuthenticationBean.getAuthenticationToken()));
-            // First build a mapping of all subjects and their short names
-            final Map<String,String> caSubjectToNameMap = new HashMap<>();
-            for (final CAInfo caInfo : caInfos) {
-                caSubjectToNameMap.put(caInfo.getSubjectDN(), caInfo.getName());
-            }
-            // Convert all CA's chains into CA objects (use a Set to avoid duplicates)
-            final Set<CaAndCrl> cas = new HashSet<>();
-            for (final CAInfo caInfo : caInfos) {
-                final List<Certificate> chain = new ArrayList<>(caInfo.getCertificateChain());
-                Collections.reverse(chain);
-                final List<String> chainNames = new ArrayList<>();
-                final int caId = caInfo.getCAId();
-                final boolean sshType = caInfo.getCAType() == CAInfo.CATYPE_SSH ? true : false;
-                for (final Certificate caCertificate : chain) {
-                    final String subjectDn = CertTools.getSubjectDN(caCertificate);
-                    String name = caSubjectToNameMap.get(subjectDn);
-                    if (name==null) {
-                        name = subjectDn;
-                    }
-                    chainNames.add(name);
-                    final CaAndCrl caAndCrl = new CaAndCrl(name, subjectDn, chainNames.size()==chain.size()?caId:NO_CAID_AVAILABLE,
-                            chainNames.size()-1, new ArrayList<>(chainNames), sshType);
-                    // Construct links to RFC4387 CRL Download Servlet
-                    if (caCertificate instanceof X509Certificate) {
-                        caAndCrl.x509 = true;
-                        final int numberOfPartitions = caInfo.getAllCrlPartitionIndexes() == null ? 1 : caInfo.getAllCrlPartitionIndexes().getMaximumInteger();
-                        for (int currentPartitionIndex = 0; currentPartitionIndex <= numberOfPartitions; currentPartitionIndex++) {
-                            final CRLInfo currentCrlInfo = crlSession.getLastCRLInfoLightWeight(subjectDn, currentPartitionIndex, false);
-                            if (currentCrlInfo != null) {
-                                atLeastOneCrlLinkPresent = true;
-                                String crlLink = RFC4387_DEFAULT_EJBCA_URL + "?iHash=" + getSubjectPrincipalHashAsUnpaddedBase64(((X509Certificate)caCertificate)); 
-                                if ( numberOfPartitions > 1) {
-                                    crlLink += "&partition=" + currentPartitionIndex;
-                                }
-                                caAndCrl.crlLinks.add(new CrlLinkInfo(crlLink, currentPartitionIndex));
-                            }
-                        }
+    public boolean isAuthorized() {
+        if (isAuthorized == null) {
+            isAuthorized = raAccessBean.isAuthorizedToCas();
+        }
+        return isAuthorized;
+    }
 
-                        final CRLInfo crlInfoDelta = crlSession.getLastCRLInfoLightWeight(subjectDn, CertificateConstants.NO_CRL_PARTITION, true);
-                        if (crlInfoDelta!=null) {
-                            caAndCrl.deltaCrlLink = RFC4387_DEFAULT_EJBCA_URL + "?iHash=" + getSubjectPrincipalHashAsUnpaddedBase64((X509Certificate)caCertificate) + "&delta=";
-                        }
-                    }
-                    // Add missing items and replace items when we know the CAId
-                    if (caAndCrl.getCaId()!=NO_CAID_AVAILABLE) {
-                        cas.remove(caAndCrl);
-                    }
-                    if (!cas.contains(caAndCrl)) {
-                        cas.add(caAndCrl);
-                    }
-                }
-            }
-            casAndCrlItems = new ArrayList<>(cas);
-            // Sort by higher level CAs
-            Collections.sort(casAndCrlItems, new Comparator<CaAndCrl>() {
-                @Override
-                public int compare(final CaAndCrl caAndCrl1, final CaAndCrl caAndCrl) {
-                    final int size1 = caAndCrl1.chainNames.size();
-                    final int size2 = caAndCrl.chainNames.size();
-                    // Avoid checking if chain length is the same
-                    for (int i=0; i<Math.min(size1, size2); i++) {
-                        final String name1 = caAndCrl1.chainNames.get(i);
-                        final String name2 = caAndCrl.chainNames.get(i);
-                        final int compareTo = name1.compareToIgnoreCase(name2);
-                        if (compareTo!=0) {
-                            return compareTo;
-                        }
-                    }
-                    return size1-size2;
-                }
-            });
+    public List<CaAndCrl> getCasAndCrlItems() {
+        if (casAndCrlItems == null) {
+            casAndCrlItems = loadCasAndCrlItems();
         }
         return casAndCrlItems;
+    }
+
+    /** Record for caching CRL entries **/
+    record CRLKey(String subject, int partitionIndex) {}
+
+    /** @return a list of all known authorized CAs with links to CRLs (if present) */
+    public List<CaAndCrl> loadCasAndCrlItems() {
+		final List<CAInfo> caInfos = new ArrayList<>(
+                raMasterApiProxyBean.getAuthorizedCas(raAuthenticationBean.getAuthenticationToken()));
+        // First build a mapping of all subjects and their short names
+        final Map<String, String> caSubjectToNameMap = new HashMap<>();
+        for (final CAInfo caInfo : caInfos) {
+            caSubjectToNameMap.put(caInfo.getSubjectDN(), caInfo.getName());
+        }
+        // Convert all CA's chains into CA objects (use a Set to avoid duplicates)
+        final Set<CaAndCrl> cas = new HashSet<>();
+        final HashMap<Certificate, String> subjects = new HashMap<>();
+        final HashMap<CRLKey, CRLInfo> currentCRLInfo = new HashMap<>();
+        final HashMap<String, CRLInfo> deltaCRLInfo = new HashMap<>();
+
+        for (final CAInfo caInfo : caInfos) {
+            final List<Certificate> chain = new ArrayList<>(caInfo.getCertificateChain());
+            Collections.reverse(chain);
+            final List<String> chainNames = new ArrayList<>();
+            final int caId = caInfo.getCAId();
+            final boolean sshType = caInfo.getCAType() == CAInfo.CATYPE_SSH ? true : false;
+
+
+            for (final Certificate caCertificate : chain) {
+                final String subjectDn = subjects.computeIfAbsent(caCertificate, CertTools::getSubjectDN);
+                String name = caSubjectToNameMap.get(subjectDn);
+                if (name == null) {
+                    name = subjectDn;
+                }
+                chainNames.add(name);
+                final CaAndCrl caAndCrl = new CaAndCrl(name, subjectDn,
+                        chainNames.size() == chain.size() ? caId : NO_CAID_AVAILABLE, chainNames.size() - 1,
+                        new ArrayList<>(chainNames), sshType);
+                // Construct links to RFC4387 CRL Download Servlet
+                if (caCertificate instanceof X509Certificate) {
+                    caAndCrl.x509 = true;
+                    final int numberOfPartitions = caInfo.getAllCrlPartitionIndexes() == null
+                            ? 0
+                            : caInfo.getAllCrlPartitionIndexes().getMaximumInteger();
+                    for (int currentPartitionIndex = 0;
+                            currentPartitionIndex <= numberOfPartitions; currentPartitionIndex++) {
+
+                        final CRLInfo currentCrlInfo = currentCRLInfo.computeIfAbsent(new CRLKey(subjectDn, currentPartitionIndex),
+                                crlKey-> crlSession.getLastCRLInfoLightWeight(crlKey.subject,crlKey.partitionIndex, false));
+                        if (currentCrlInfo != null) {
+                            atLeastOneCrlLinkPresent = true;
+                            String crlLink =
+                                    RFC4387_DEFAULT_EJBCA_URL + "?iHash=" + getSubjectPrincipalHashAsUnpaddedBase64(
+                                            ((X509Certificate) caCertificate));
+                            if (numberOfPartitions > 1) {
+                                crlLink += "&partition=" + currentPartitionIndex;
+                            }
+                            caAndCrl.crlLinks.add(new CrlLinkInfo(crlLink, currentPartitionIndex));
+                        }
+                    }
+
+                    final CRLInfo crlInfoDelta = deltaCRLInfo.computeIfAbsent(subjectDn,
+                            s -> crlSession.getLastCRLInfoLightWeight(s, CertificateConstants.NO_CRL_PARTITION, true));
+
+                    if (crlInfoDelta != null) {
+                        caAndCrl.deltaCrlLink =
+                                RFC4387_DEFAULT_EJBCA_URL + "?iHash=" + getSubjectPrincipalHashAsUnpaddedBase64(
+                                        (X509Certificate) caCertificate) + "&delta=";
+                    }
+                }
+                // Add missing items and replace items when we know the CAId
+                if (caAndCrl.getCaId() != NO_CAID_AVAILABLE) {
+                    cas.remove(caAndCrl);
+                }
+                if (!cas.contains(caAndCrl)) {
+                    cas.add(caAndCrl);
+                }
+            }
+        }
+
+		final List<CaAndCrl> result = new ArrayList<>(cas);
+            // Sort by higher level CAs
+        result.sort(new Comparator<CaAndCrl>() {
+            @Override
+            public int compare(final CaAndCrl caAndCrl1, final CaAndCrl caAndCrl) {
+                final int size1 = caAndCrl1.chainNames.size();
+                final int size2 = caAndCrl.chainNames.size();
+                // Avoid checking if chain length is the same
+                for (int i = 0; i < Math.min(size1, size2); i++) {
+                    final String name1 = caAndCrl1.chainNames.get(i);
+                    final String name2 = caAndCrl.chainNames.get(i);
+                    final int compareTo = name1.compareToIgnoreCase(name2);
+                    if (compareTo != 0) {
+                        return compareTo;
+                    }
+                }
+                return size1 - size2;
+            }
+        });
+
+        return result;
     }
 
     /** @return the issuer hash in base64 encoding without padding which is the way RFC4387 search function expects the iHash parameter. */

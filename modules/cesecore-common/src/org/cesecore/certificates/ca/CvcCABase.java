@@ -116,7 +116,7 @@ public abstract class CvcCABase extends CABase implements Serializable, CvcCA {
 				getCRLPublishers(), getValidators(), getFinishUser(), externalcaserviceinfos, 
 				getApprovals(),
 				getIncludeInHealthCheck(), isDoEnforceUniquePublicKeys(),isDoEnforceKeyRenewal(), isDoEnforceUniqueDistinguishedName(), isDoEnforceUniqueSubjectDNSerialnumber(),
-				isUseCertReqHistory(), isUseUserStorage(), isUseCertificateStorage(), isAcceptRevocationNonExistingEntry());
+				isUseCertReqHistory(), isUseUserStorage(), isUseCertificateStorage(), isAddCompromisedKeysToBlockList(), isAcceptRevocationNonExistingEntry());
         //These to settings were deprecated in 6.8.0, but are still set for upgrade reasons
         info.setApprovalProfile(getApprovalProfile());
         info.setApprovalSettings(getApprovalSettings());

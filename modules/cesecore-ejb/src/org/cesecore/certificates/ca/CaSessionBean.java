@@ -537,6 +537,17 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         }
         return result;
     }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public List<Certificate> getCertificateChain(int caid) {
+        final CAInfo cainfo = getCAInfoInternal(caid);
+        if (cainfo != null) {
+            return cainfo.getCertificateChain();
+        } else {
+            return new ArrayList<>();
+        }
+    }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override

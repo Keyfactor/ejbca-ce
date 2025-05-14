@@ -10,9 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.ejbca.core.ejb.upgrade;
-
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -128,7 +126,6 @@ import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.config.GlobalUpgradeConfiguration;
 import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
-import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalPartition;
@@ -172,7 +169,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private static final int PARTITIONED_CRLS_NORMALIZE_BATCH_SIZE = 1000;
     private static final String MSSQL = "mssql";
 
-    private static final Logger log = Logger.getLogger(UpgradeSessionBean.class);
+    private final AppendingLogger log = new AppendingLogger(Logger.getLogger(UpgradeSessionBean.class));
 
     private static final AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken("Internal upgrade");
     
@@ -224,8 +221,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private RoleSessionLocal roleSession;
     @EJB
     private SecurityEventsLoggerSessionLocal securityEventsLogger;
-    @EJB
-    private UserDataSourceSessionLocal userDataSourceSession;
     @EJB
     private UpgradeStatusSingletonLocal upgradeStatusSingleton;
 
@@ -366,7 +361,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 setCustomCertificateValidityWithSecondsGranularity(true);
                 // Since we know that this is a brand new installation, no upgrade should be needed
                 setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
-                setLastPostUpgradedToVersion("7.11.0");
+                setLastPostUpgradedToVersion("9.3.0");
             } else {
                 // Ensure that we save currently known oldest installation version before any upgrade is invoked
                 if(getLastUpgradedToVersion() != null) {
@@ -424,7 +419,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         boolean ret = false;
         if (setPostUpgradeStartedInternal(System.currentTimeMillis())) {
             try {
-                upgradeStatusSingleton.logAppenderAttach(log);
                 if (upgradeStatusSingleton.setPostUpgradeInProgressIfDifferent(true)) {
                     try {
                         final String dbType = DatabaseConfiguration.getDatabaseName();
@@ -448,7 +442,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 log.error("Unexpected error from post-upgrade: " + e.getMessage(), e);
             } finally {
                 setPostUpgradeStartedInternal(0L);
-                upgradeStatusSingleton.logAppenderDetach(log);
             }
         } else {
             log.info("Preventing start of post-upgrade background tasks since it has already been started by a cluster node.");
@@ -721,6 +714,13 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             setLastPostUpgradedToVersion("8.3.0");
         }
         
+        if (isLesserThan(oldVersion, "9.3.0")) {
+            if (!postMigrateDatabase930()) {
+                return false;
+            }
+            setLastPostUpgradedToVersion("9.3.0");
+        }
+        
         // NOTE: If you add additional post upgrade tasks here, also modify isPostUpgradeNeeded() and performPreUpgrade()
         //setLastPostUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
@@ -778,6 +778,39 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
         
         log.info("Post upgrade to 8.3.0 complete.");
+        return true;
+    }
+    
+    /**
+     * Remove the Configuration Checker fom database
+     *
+     * Runs in a new transaction because {@link upgradeIndex} depends on the changes.
+     */
+    @SuppressWarnings("deprecation")
+    private boolean postMigrateDatabase930() {
+        log.info("Starting post upgrade to 9.3.0");
+        //Remove, from all roles, all user data source related rules. 
+        for(Role role : roleSession.getAuthorizedRoles(authenticationToken)) {
+            LinkedHashMap<String, Boolean> accessRules = role.getAccessRules();
+            List<String> ruleNames = new ArrayList<>(accessRules.keySet());
+            for(String rule :  ruleNames) {
+                if(rule.startsWith(AccessRulesConstants.USERDATASOURCEBASE) || rule.startsWith(AccessRulesConstants.REGULAR_EDITUSERDATASOURCES)) {
+                    accessRules.remove(rule);
+                }
+            }
+            role.setAccessRules(accessRules);
+            try {
+                roleSession.persistRole(authenticationToken, role);
+            } catch (RoleExistsException e) {
+                log.error("Role seems to have changed ID while retaining name/namespace or vice versa.");
+                return false;
+            } catch (AuthorizationDeniedException e) {
+                log.error("Administrator was not authorized to perform post-upgrade, lacks access to Configuration Checker configuration");
+                return false;
+            }
+        }       
+        accessTreeUpdateSession.signalForAccessTreeUpdate();
+        log.info("Post upgrade to 9.3.0 complete.");
         return true;
     }
     
@@ -935,7 +968,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public boolean isPostUpgradeNeeded() {
-        return isLesserThan(getLastPostUpgradedToVersion(), "7.11.0");
+        return isLesserThan(getLastPostUpgradedToVersion(), "9.3.0");
     }
 
     /**
@@ -2690,5 +2723,59 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @Override
     public boolean isLesserThan(final String first, final String second) {
         return StringTools.isLesserThan(first, second);
+    }
+
+    private class AppendingLogger {
+
+        private final Logger log;
+
+        public AppendingLogger(final Logger log) {
+            this.log = log;
+        }
+
+        public void trace(final Object msg) {
+            log.trace(msg);
+            upgradeStatusSingleton.trace(msg);
+        }
+
+        public void debug(final Object msg) {
+            log.debug(msg);
+            upgradeStatusSingleton.debug(msg);
+        }
+
+        public void debug(final Object msg, final Throwable throwable) {
+            log.debug(msg, throwable);
+            upgradeStatusSingleton.debug(msg);
+        }
+
+        public void info(final Object msg) {
+            log.info(msg);
+            upgradeStatusSingleton.info(msg);
+        }
+
+        public void warn(final Object msg) {
+            log.warn(msg);
+            upgradeStatusSingleton.warn(msg);
+        }
+
+        public void error(final Object msg) {
+            log.error(msg);
+            upgradeStatusSingleton.error(msg);
+        }
+
+        public void error(final Object msg, final Throwable throwable) {
+            log.error(msg, throwable);
+            upgradeStatusSingleton.error(msg, throwable);
+        }
+
+        public void fatal(final Object msg) {
+            log.fatal(msg);
+            upgradeStatusSingleton.fatal(msg);
+        }
+
+        public boolean isDebugEnabled() {
+            return log.isDebugEnabled();
+        }
+
     }
 }

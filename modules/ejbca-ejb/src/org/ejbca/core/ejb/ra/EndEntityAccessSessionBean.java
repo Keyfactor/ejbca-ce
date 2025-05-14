@@ -79,7 +79,7 @@ import com.keyfactor.util.certificate.DnComponents;
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, EndEntityAccessSessionRemote {
 
-    private static final String USER_DATA_NATIVE_QUERY = "SELECT username, subjectDN, caId, subjectAltName, cardNumber, subjectEmail, "
+    private static final String USER_DATA_NATIVE_QUERY = "SELECT username, subjectDN, cAId, subjectAltName, cardNumber, subjectEmail, "
             + "status, type, clearPassword, passwordHash, timeCreated, timeModified, endEntityProfileId, certificateProfileId, "
             + "tokenType, extendedInformationData, hardTokenIssuerId, keyStorePassword, rowVersion, rowProtection "
             + "FROM UserData";

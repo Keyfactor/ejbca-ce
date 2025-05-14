@@ -87,6 +87,55 @@ public class CAConstantsUnitTest {
                 CAConstants.getPreSignPublicKey(
                         AlgorithmConstants.KEYALGORITHM_LMS,
                         KeyTools.getPublicKeyFromBytes(Base64.decode(CAConstants.PRESIGN_VALIDATION_KEY_LMS_PUB))));
+        assertNotNull("Should find presign SLH-DSA-SHA2-128S key",
+                CAConstants.getPreSignPublicKey(
+                        AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128S,
+                        KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_SLH_DSA_SHA2_128S_PRIV).getPublic()));
+        assertNotNull("Should find presign SLH-DSA-SHAKE-128S key",
+                CAConstants.getPreSignPublicKey(
+                        AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_128S,
+                        KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_SLH_DSA_SHAKE_128S_PRIV).getPublic()));
+        assertNotNull("Should find presign SLH-DSA-SHA2-128F key",
+                CAConstants.getPreSignPublicKey(
+                        AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F,
+                        KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_SLH_DSA_SHA2_128F_PRIV).getPublic()));
+        assertNotNull("Should find presign SLH-DSA-SHAKE-128F key",
+                CAConstants.getPreSignPublicKey(
+                        AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_128F,
+                        KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_SLH_DSA_SHAKE_128F_PRIV).getPublic()));
+        assertNotNull("Should find presign SLH-DSA-SHA2-192S key",
+                CAConstants.getPreSignPublicKey(
+                        AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_192S,
+                        KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_SLH_DSA_SHA2_192S_PRIV).getPublic()));
+        assertNotNull("Should find presign SLH-DSA-SHAKE-192S key",
+                CAConstants.getPreSignPublicKey(
+                        AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_192S,
+                        KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_SLH_DSA_SHAKE_192S_PRIV).getPublic()));
+        assertNotNull("Should find presign SLH-DSA-SHA2-192F key",
+                CAConstants.getPreSignPublicKey(
+                        AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_192F,
+                        KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_SLH_DSA_SHA2_192F_PRIV).getPublic()));
+        assertNotNull("Should find presign SLH-DSA-SHAKE-192F key",
+                CAConstants.getPreSignPublicKey(
+                        AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_192F,
+                        KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_SLH_DSA_SHAKE_192F_PRIV).getPublic()));
+        assertNotNull("Should find presign SLH-DSA-SHA2-256S key",
+                CAConstants.getPreSignPublicKey(
+                        AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_256S,
+                        KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_SLH_DSA_SHA2_256S_PRIV).getPublic()));
+        assertNotNull("Should find presign SLH-DSA-SHAKE-256S key",
+                CAConstants.getPreSignPublicKey(
+                        AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_256S,
+                        KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_SLH_DSA_SHAKE_256S_PRIV).getPublic()));
+        assertNotNull("Should find presign SLH-DSA-SHA2-256F key",
+                CAConstants.getPreSignPublicKey(
+                        AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_256F,
+                        KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_SLH_DSA_SHA2_256F_PRIV).getPublic()));
+        assertNotNull("Should find presign SLH-DSA-SHAKE-256F key",
+                CAConstants.getPreSignPublicKey(
+                        AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_256F,
+                        KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_SLH_DSA_SHAKE_256F_PRIV).getPublic()));
+
     }
 
     @Test
@@ -127,6 +176,18 @@ public class CAConstantsUnitTest {
         final AlgorithmIdentifier algorithmIdentifier = spki.getAlgorithm();
         log.info("OID: " + algorithmIdentifier.getAlgorithm());
         assertEquals("presign key uses wrong algorithm (expected ML-DSA-44)", NISTObjectIdentifiers.id_ml_dsa_44.getId(), algorithmIdentifier.getAlgorithm().getId());
+    }
+
+    @Test
+    public void testSLHDSAPresign() {
+        final PublicKey preSignKey = CAConstants.getPreSignPublicKey(
+                AlgorithmConstants.SIGALG_SLHDSA_SHA2_128F,
+                KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_SLH_DSA_SHA2_128F_PRIV).getPublic());
+        final byte[] encodedKey = preSignKey.getEncoded();
+        final SubjectPublicKeyInfo spki = SubjectPublicKeyInfo.getInstance(ASN1Sequence.getInstance(encodedKey));
+        final AlgorithmIdentifier algorithmIdentifier = spki.getAlgorithm();
+        log.info("OID: " + algorithmIdentifier.getAlgorithm());
+        assertEquals("presign key uses wrong algorithm (expected SLH-DSA)", NISTObjectIdentifiers.id_slh_dsa_sha2_128f.getId(), algorithmIdentifier.getAlgorithm().getId());
     }
 
     @Test

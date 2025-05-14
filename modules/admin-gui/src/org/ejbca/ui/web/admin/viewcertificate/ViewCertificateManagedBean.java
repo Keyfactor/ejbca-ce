@@ -17,6 +17,7 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,6 +25,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import jakarta.ejb.EJB;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.event.ComponentSystemEvent;
 import jakarta.faces.view.ViewScoped;
@@ -34,18 +36,25 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateStatus;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.CertificateView;
 import org.ejbca.ui.web.RequestHelper;
+import org.ejbca.ui.web.RevokedInfoView;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.bean.SessionBeans;
 import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 import org.ejbca.ui.web.admin.rainterface.RAInterfaceBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * JavaServer Faces Managed Bean for managing viewcertificate popup view.
@@ -76,6 +85,11 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     private static final int RETURN_TO_ROLEMEMBERS = 5;
     
     private static final String HIDDEN_INDEX               = "hiddenindex";
+    
+    @EJB
+    private CaSessionLocal caSession;
+    @EJB
+    private CertificateStoreSessionLocal certificateStoreSession;
     
     private boolean noparameter = true;
     private boolean cacerts = false;
@@ -397,7 +411,19 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
             }
         } else if (request.getParameter(CACERT_PARAMETER) != null) {
             caId = Integer.parseInt(request.getParameter(CACERT_PARAMETER));
-            raBean.loadCACertificates(caBean.getCACertificates(caId));
+            
+            final List<CertificateView> certificates = new ArrayList<>();
+            for (final Certificate certificate : caSession.getCertificateChain(caId)) {
+                RevokedInfoView revokedinfo = null;
+                CertificateStatus revinfo = certificateStoreSession.getStatus(CertTools.getIssuerDN(certificate), CertTools.getSerialNumber(certificate));
+                if (revinfo != null && revinfo.revocationReason != RevokedCertInfo.NOT_REVOKED) {
+                    revokedinfo = new RevokedInfoView(revinfo, CertTools.getSerialNumber(certificate));
+                }
+                certificates.add(new CertificateView(certificate, revokedinfo));
+            }
+            
+            
+            raBean.loadCACertificates(certificates.toArray(new CertificateView[0]));
             numberOfCertificates = raBean.getNumberOfCertificates();
             if (numberOfCertificates > 0) {
                 currentIndex = 0;

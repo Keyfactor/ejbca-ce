@@ -29,7 +29,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.certificatetransparency.GoogleCtPolicy;
-import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.ExternalScriptsConfiguration;
 import org.cesecore.configuration.ConfigurationBase;
 import org.ejbca.util.URIUtil;
@@ -50,9 +49,6 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
 
     public static final String EJBCA_VERSION = InternalConfiguration.getAppVersion();
     public static final String EJBCA_COMMUNITY_VERSION = InternalConfiguration.getCommunityVersion();
-
-    public static final String PREFEREDINTERNALRESOURCES = CesecoreConfiguration.getInternalResourcesPreferredLanguage();
-    public static final String SECONDARYINTERNALRESOURCES = CesecoreConfiguration.getInternalResourcesSecondaryLanguage();;
     
     public static final String ADMIN_WEB_PATH = "adminweb/";
     public static final String CA_PATH = ADMIN_WEB_PATH+"ca";

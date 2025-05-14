@@ -13,8 +13,7 @@
 package org.ejbca.core.protocol.rest;
 
 import java.io.Serializable;
-import java.util.List;
-import java.util.Map;
+import java.util.LinkedHashMap;
 
 import org.cesecore.certificates.certificate.CertificateConstants;
 
@@ -25,23 +24,23 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 public class EnrollPkcs10CertificateRequest implements Serializable {
     private static final long serialVersionUID = 1L;
     
-    private String certificateRequest;
-    private String certificateProfileName;
-    private String endEntityProfileName;
-    private String certificateAuthorityName;
-    private String username;
-    private String password;
-    private String accountBindingId;
-    private boolean includeChain;
+    private final String certificateRequest;
+    private final String certificateProfileName;
+    private final String endEntityProfileName;
+    private final String certificateAuthorityName;
+    private final String username;
+    private final String password;
+    private final String accountBindingId;
+    private final boolean includeChain;
     
-    private String email;
-    private String responseFormat;
+    private final String email;
+    private final String responseFormat;
 
-    private int requestType;
+    private final int requestType;
 
     private String subjectDn;
-    private List<Map.Entry<String, String>> extendedData;
-    private List<Map.Entry<String, String>> customData;
+    private LinkedHashMap<String, String> extendedData;
+    private LinkedHashMap<String, String> customData;
     private String startTime;
     private String endTime;
 
@@ -91,11 +90,11 @@ public class EnrollPkcs10CertificateRequest implements Serializable {
         return subjectDn;
     }
 
-    public List<Map.Entry<String, String>> getExtendedData() {
+    public LinkedHashMap<String, String> getExtendedData() {
         return extendedData;
     }
 
-    public List<Map.Entry<String, String>> getCustomData() {
+    public LinkedHashMap<String, String> getCustomData() {
         return customData;
     }
 
@@ -120,8 +119,8 @@ public class EnrollPkcs10CertificateRequest implements Serializable {
         private String responseFormat;
         private int requestType;
         private String subjectDn;
-        private List<Map.Entry<String, String>> extendedData;
-        private List<Map.Entry<String, String>> customData;
+        private LinkedHashMap<String, String> extendedData;
+        private LinkedHashMap<String, String> customData;
         private String startTime;
         private String endTime;
 
@@ -176,29 +175,8 @@ public class EnrollPkcs10CertificateRequest implements Serializable {
             return this;
         }
 
-        public Builder requestType(String requestType) {
-            if (requestType == null) {
-                this.requestType = CertificateConstants.CERT_REQ_TYPE_PKCS10;
-                return this;
-            }
-            switch (requestType) {
-                case "PUBLICKEY":
-                    this.requestType = CertificateConstants.CERT_REQ_TYPE_PUBLICKEY;
-                    break;
-                case "CRMF":
-                    this.requestType = CertificateConstants.CERT_REQ_TYPE_CRMF;
-                    break;
-                case "SPKAC":
-                    this.requestType = CertificateConstants.CERT_REQ_TYPE_SPKAC;
-                    break;
-                case "CVC":
-                    this.requestType = CertificateConstants.CERT_REQ_TYPE_CVC;
-                    break;
-                case "PKCS10":
-                default:
-                    this.requestType = CertificateConstants.CERT_REQ_TYPE_PKCS10;
-                    break;
-            }
+        public Builder requestType(int requestType) {
+            this.requestType = requestType;
             return this;
         }
 
@@ -207,12 +185,12 @@ public class EnrollPkcs10CertificateRequest implements Serializable {
             return this;
         }
 
-        public Builder extendedData(final List<Map.Entry<String, String>> extendedData) {
+        public Builder extendedData(final LinkedHashMap<String, String> extendedData) {
             this.extendedData = extendedData;
             return this;
         }
 
-        public Builder customData(final List<Map.Entry<String, String>> customData) {
+        public Builder customData(final LinkedHashMap<String, String> customData) {
             this.customData = customData;
             return this;
         }
