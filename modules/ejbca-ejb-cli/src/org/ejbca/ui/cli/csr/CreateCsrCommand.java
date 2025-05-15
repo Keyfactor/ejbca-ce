@@ -309,6 +309,7 @@ public class CreateCsrCommand extends EjbcaCommandBase {
         if (signatureAlgorithm != null) {
             if (!availableSignatureAlgorithms.contains(signatureAlgorithm)) {
                 log.error("Signature algorithm " + signatureAlgorithm + " was unknown, must be one of: " + signatureAlgorithmsFormatted);
+                return CommandResult.CLI_FAILURE;
             }
         } else {
             if (primaryKeyPair.getPublic() instanceof RSAPublicKey) {
