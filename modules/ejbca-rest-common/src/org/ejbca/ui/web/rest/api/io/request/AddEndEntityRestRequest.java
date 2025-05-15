@@ -69,7 +69,7 @@ public class AddEndEntityRestRequest {
     private String startTime;
     @Schema(description = "Valid end time", example = "ISO 8601 Date string, eg. '2023-06-15 14:07:09'", required=false)
     private String endTime;
-    @Schema(description = "Certificate Serial Number", example = "1234567890", required=false)
+    @Schema(description = "Certificate Serial Number. If the serial number is provided both in this field and within the custom data, this field value will take precedence and the custom data value will be ignored.", example = "1234567890", required=false)
     private BigInteger certificateSerialNumber;
     @Schema(description = "Card Number", example = "1234567890", required=false)
     private String cardNumber;
