@@ -38,11 +38,11 @@ import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -85,9 +85,11 @@ public class SignSessionWithMfg1SystemTest extends SignSessionCommon {
 
         EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
         if (!endEntityManagementSession.existsUser("foorsamgf1ca")) {
-            endEntityManagementSession.addUser(internalAdmin, "foorsamgf1ca", "foo123", "C=SE,O=AnaTom,CN=foorsamgf1ca", null, "foo@anatom.se", false,
-                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(),
-                    SecConst.TOKEN_SOFT_PEM, rsamgf1cacaid);
+            EndEntityInformation endEntityInformation = new EndEntityInformation("foorsamgf1ca", "C=SE,O=AnaTom,CN=foorsamgf1ca", rsamgf1cacaid, null,
+                    "foo@anatom.se", EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_PEM, null);
+            endEntityInformation.setPassword("foo123");
+            endEntityManagementSession.addUser(internalAdmin, endEntityInformation, false);
             log.debug("created user: foorsamgf1ca, foo123, C=SE, O=AnaTom, CN=foorsamgf1ca");
         } else {
             log.info("User foorsamgf1ca already exists, resetting status.");

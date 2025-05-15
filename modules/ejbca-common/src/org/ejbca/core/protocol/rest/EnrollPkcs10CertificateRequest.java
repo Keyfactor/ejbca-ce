@@ -15,8 +15,6 @@ package org.ejbca.core.protocol.rest;
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 
-import org.cesecore.certificates.certificate.CertificateConstants;
-
 /**
  * A DTO class representing the input for certificate enrollment.
  *

@@ -55,8 +55,12 @@ public abstract class SignSessionCommon extends CaTestCase{
         EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
         // Make user that we know...
         if (!endEntityManagementSession.existsUser(username)) {
-            endEntityManagementSession.addUser(internalAdmin, username, "foo123", "C=SE,CN="+username, null, username+"@anatom.se", false, endEntityProfileId,
-                    certificateProfileId, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, caId);
+            EndEntityInformation endEntityInformation = new EndEntityInformation(username, "C=SE,CN="+username, caId, null,
+                    username+"@anatom.se", EndEntityTypes.ENDUSER.toEndEntityType(), endEntityProfileId,
+                    certificateProfileId, EndEntityConstants.TOKEN_SOFT_PEM, null);
+            endEntityInformation.setPassword("foo123");
+            endEntityManagementSession.addUser(internalAdmin, endEntityInformation, false);
+            
             if (log.isDebugEnabled()) {
                 log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
             }

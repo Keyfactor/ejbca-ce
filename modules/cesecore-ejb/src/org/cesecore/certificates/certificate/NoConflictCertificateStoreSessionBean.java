@@ -14,20 +14,12 @@ package org.cesecore.certificates.certificate;
 
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import jakarta.ejb.EJB;
-import jakarta.ejb.Stateless;
-import jakarta.ejb.TransactionAttribute;
-import jakarta.ejb.TransactionAttributeType;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.log4j.Logger;
@@ -44,7 +36,6 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
-import org.cesecore.certificates.ca.KeepExpiredCertsOnCrlFormat;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.RevocationReasons;
@@ -57,6 +48,13 @@ import org.cesecore.util.ValidityDate;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.DnComponents;
+
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 /**
  * These methods call CertificateStoreSession for certificates that are plain CertificateData entities.
