@@ -688,6 +688,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 try {
                     // Remember for CVC serialNo can be alphanumeric, so we can't just try to decode that using normal Java means (BigInteger.valueOf)...
                     assertSerialNumberForIssuerOk(ca, CertTools.getSerialNumber(cert));
+                    assertUniqueFingerprint(cert);
                     // Tag is reserved for future use, currently only null
                     String tag = null;
                     
@@ -959,6 +960,14 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 log.info(msg);
                 throw new CertificateSerialNumberException(msg);
             }
+        }
+    }
+
+    private void assertUniqueFingerprint(Certificate cert) throws CertificateCreateException {
+        String fingerprint = CertTools.getFingerprintAsString(cert);
+        CertificateDataWrapper certificateData = certificateStoreSession.getCertificateData(fingerprint);
+        if (certificateData != null) {
+            throw new CertificateCreateException(ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALREADY_EXISTS, "Duplicate certificate");
         }
     }
 
