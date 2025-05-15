@@ -11,8 +11,12 @@ dependencies {
     compileOnly(libs.commons.lang)
     compileOnly(libs.x509.common.util)
 
-    testRuntimeOnly(libs.bundles.xstream)
+    testRuntimeOnly(project(":modules:cesecore-x509ca"))
+    testImplementation(libs.bundles.xstream)
+    testImplementation(libs.bundles.cryptotokens)
     testImplementation(libs.bundles.bouncy.castle)
+    testRuntimeOnly(libs.cert.cvc)
+    testRuntimeOnly(libs.hibernate.core)
 
     if (project.extra["edition"] == "ee") {
         testImplementation(project(":modules:ejbca-entity:cli"))
