@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -35,7 +34,6 @@ import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
-import jakarta.faces.model.SelectItem;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
 import jakarta.servlet.http.Part;
@@ -78,6 +76,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     private static final Logger log = Logger.getLogger(EndEntityProfilesMBean.class);
 
     public static final String PARAMETER_PROFILE_SAVED = "profileSaved";
+    public static final String PARAMETER_PROFILE_CLONE_OR_DELETE = "profileCloneOrDelete";
     private static final String PROFILE_ALREADY_EXISTS = "EEPROFILEALREADYEXISTS";
     private static final String PROFILE_NOT_SELECTED = "EEPROFILENOTSELECTED";
     private static final String YOU_CANT_EDIT_EMPTY_PROFILE = "YOUCANTEDITEMPTYPROFILE";
@@ -117,8 +116,6 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
 
     private EjbcaWebBean ejbcaWebBean = getEjbcaWebBean();
 
-    private boolean deleteInProgress = false;
-    private boolean cloneInProgress = false;
     private String clonedProfileName;
     
     private String endEntityProfileName;
@@ -138,6 +135,11 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
             .getExternalContext()
             .getRequestParameterMap()
             .get(PARAMETER_PROFILE_SAVED);
+        
+        endEntityProfileName = FacesContext.getCurrentInstance()
+                .getExternalContext()
+                .getRequestParameterMap()
+                .get(PARAMETER_PROFILE_CLONE_OR_DELETE);
     }
 
     public void preRenderView() {
@@ -316,9 +318,10 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
         return rolenames;
     }
 
-    public void actionExportProfile(int selectedEndEntityProfileId) {
+    public void actionExportProfile(String selectedEndEntityProfile) {
         clearMessages();
-        if (selectedEndEntityProfileId != 0) {
+        String selectedEndEntityProfileId = endEntityProfileNameToIdMap.get(selectedEndEntityProfile);
+        if (selectedEndEntityProfileId != null) {
             redirect(getEjbcaWebBean().getBaseUrl() + getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath() + "/profilesexport", "profileType",
                     "eep", "profileId",selectedEndEntityProfileId);
         } else {
@@ -334,8 +337,6 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     }
 
     public void reset() {
-        deleteInProgress = false;
-        cloneInProgress = false;
         endEntityProfileNameToIdMap = null;
         endEntityProfileName = null;
         profileSaved = false;
@@ -346,25 +347,6 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
         super.clearMessages();
         profileSaved = false;
     }
-
-    public void actionCancel() {
-        deleteInProgress = false;
-        cloneInProgress = false;
-    }
-
-//    public void actionRename() {
-//        clearMessages();
-//        if (validateRenameOrClone()) {
-//            try {
-//                endEntityProfileSession.renameEndEntityProfile(getAdmin(), getSelectedEndEntityProfileName(), endEntityProfileName);
-//                reset();
-//            } catch (EndEntityProfileExistsException e) {
-//                addErrorMessage(PROFILE_ALREADY_EXISTS);
-//            } catch (AuthorizationDeniedException e) {
-//                addNonTranslatedErrorMessage("Not authorized to rename end entity profile.");
-//            }
-//        }
-//    }
 
     public void actionImportProfiles() throws IOException, AuthorizationDeniedException, EndEntityProfileExistsException {
         clearMessages();
@@ -620,63 +602,61 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
         }
     }
 
-    public String actionClone(String endEntityProfileName) {
+    public void actionClone(String endEntityProfileName) {
         clearMessages();
         setEndEntityProfileName(endEntityProfileName);
         if (endEntityProfileName!=null) {
-            cloneInProgress = true;
-            return "clone";
+            redirect("cloneendentityprofile.xhtml", PARAMETER_PROFILE_CLONE_OR_DELETE, endEntityProfileName);
         }
-        return "";
+        return;
     }
     
-    public boolean isCloneInProgress() {
-        return cloneInProgress;
+    public void actionCloneDeleteCancel() {
+        endEntityProfileName = "";
+        redirect("editendentityprofiles.xhtml");
     }
     
-    public String actionCloneConfirm() {
+    public void actionCloneConfirm() {
         clearMessages();
-        if (validateEndEntityProfileName() && validateEndEntityProfileName(clonedProfileName)) {
+        if (isAuthorizedToEdit() && validateEndEntityProfileName() && validateEndEntityProfileName(clonedProfileName)) {
             try {
                 endEntityProfileSession.cloneEndEntityProfile(getAdmin(), endEntityProfileName, clonedProfileName);
-                reset();
             } catch (EndEntityProfileExistsException e) {
                 addErrorMessage(PROFILE_ALREADY_EXISTS);
+                return;
             } catch (AuthorizationDeniedException e) {
                 addNonTranslatedErrorMessage(e);
+                return;
             }
         }
-        return "done";
+        redirect("editendentityprofiles.xhtml");
     }
     
-    public String actionDelete(String selectedEndEntityProfile) {
+    public void actionDelete(String selectedEndEntityProfile) {
         
         if (selectedEndEntityProfile.equals(EndEntityConstants.EMPTY_ENDENTITYPROFILENAME)) {
             addErrorMessage(YOU_CANT_EDIT_EMPTY_PROFILE);
+            return;
         } else if (!canRemoveEndEntityProfile(endEntityProfileName)) {
             addErrorMessage("COULDNTDELETEEEPROFILE");
+            return;
         } else {
             clearMessages();
             setEndEntityProfileName(endEntityProfileName);
-            deleteInProgress = true;
-            return "delete";
+            redirect("deleteendentityprofile.xhtml", PARAMETER_PROFILE_CLONE_OR_DELETE, endEntityProfileName);
         }
-        return "";
-    }
-
-    public boolean isDeleteInProgress() {
-        return deleteInProgress;
+        return;
     }
     
-    public String actionDeleteConfirm() {
+    public void actionDeleteConfirm() {
         clearMessages();
         try {
             endEntityProfileSession.removeEndEntityProfile(getAdmin(), endEntityProfileName);
             reset();
         } catch (AuthorizationDeniedException e) {
             addNonTranslatedErrorMessage("Not authorized to remove end entity profile.");
+            return;
         }
-        //nonAjaxPostRedirectGet(null);
-        return "done";
+        redirect("editendentityprofiles.xhtml");
     }
 }
