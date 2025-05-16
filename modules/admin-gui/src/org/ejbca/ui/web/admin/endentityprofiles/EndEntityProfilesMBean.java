@@ -637,14 +637,13 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
         if (selectedEndEntityProfile.equals(EndEntityConstants.EMPTY_ENDENTITYPROFILENAME)) {
             addErrorMessage(YOU_CANT_EDIT_EMPTY_PROFILE);
             return;
-        } else if (!canRemoveEndEntityProfile(endEntityProfileName)) {
+        } else if (!canRemoveEndEntityProfile(selectedEndEntityProfile)) {
             addErrorMessage("COULDNTDELETEEEPROFILE");
             return;
-        } else {
-            clearMessages();
-            setEndEntityProfileName(endEntityProfileName);
-            redirect("deleteendentityprofile.xhtml", PARAMETER_PROFILE_CLONE_OR_DELETE, endEntityProfileName);
         }
+        clearMessages();
+        setEndEntityProfileName(selectedEndEntityProfile);
+        redirect("deleteendentityprofile.xhtml", PARAMETER_PROFILE_CLONE_OR_DELETE, selectedEndEntityProfile);
         return;
     }
     

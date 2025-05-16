@@ -1,7 +1,6 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:f="jakarta.faces.core"
       xmlns:h="jakarta.faces.html"
       xmlns:ui="jakarta.faces.facelets">
 <ui:remove>
@@ -30,24 +29,16 @@
         <h:form>
             <h:panelGroup rendered="#{endEntityProfilesMBean.authorizedToEdit}">
                 <h3>
-                    <h:outputText value="#{web.text.CLONE}"/>
+                    <h:outputText value="#{web.text.DELETE}"/>
                 </h3>
                 <h:panelGrid columns="2">
-                    <h:outputLabel for="clonedProfileNameTemplate" value="#{web.text.EE_PROFILE_CLONE_TEMPLATE}"/>
-                    <h:outputText id="clonedProfileName" value="#{endEntityProfilesMBean.endEntityProfileName}"/>
-                    <h:outputLabel for="clonedProfileNewNamePrompt" value="#{web.text.EE_PROFILE_CLONE_NEW_NAME}"/>
-                    <h:inputText id="clonedProfileNewName" name="textfieldalias"
-                                 value="#{endEntityProfilesMBean.clonedProfileName}" size="40"
-                                 title="#{web.text.FORMAT_ID_STR}"
-                                 required="true"
-                                 requiredMessage="#{web.text.YOUAREREQUIRED} #{web.text.EE_PROFILE_CLONE_NEW_NAME_REQUIRRED}">
-                        <f:converter converterId="trimConverter"/>
-                    </h:inputText>
+                    <h:outputLabel for="deletedProfileNameTemplate" value="#{web.text.EE_PROFILE_DELETE_TEMPLATE}"/>
+                    <h:outputText id="deletedProfileName" value="#{endEntityProfilesMBean.endEntityProfileName}"/>
                     <h:panelGroup/>
                     <h:panelGroup>
-                        <h:commandButton id="cloneProfileSaveButton" name="cloneProfileSaveButton"
-                                         action="#{endEntityProfilesMBean.actionCloneConfirm}" value="#{web.text.CLONE_CONFIRM}"/>
-                        <h:commandButton id="cloneProfileCancelbutton" name="cloneProfileCancelbutton"
+                        <h:commandButton id="deleteProfileSaveButton" name="deleteProfileSaveButton"
+                                         action="#{endEntityProfilesMBean.actionDeleteConfirm}" value="#{web.text.CONFIRM}"/>
+                        <h:commandButton id="deleteProfileCancelbutton" name="deleteProfileCancelbutton"
                                          action="cancel" value="#{web.text.CANCEL}" immediate="true"/>
                     </h:panelGroup>
                 </h:panelGrid>
