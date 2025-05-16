@@ -2045,8 +2045,8 @@ public class AuthenticationModulesSystemTest extends CmpTestCase {
         try {
             EndEntityInformation endEntityInformation = new EndEntityInformation(username, subjectDN, _caid, "rfc822name=" + username + "@primekey.se", username
                     + "@primekey.se", EndEntityTypes.ENDUSER.toEndEntityType(),
-                    eepid, cpid, SecConst.TOKEN_SOFT_P12, null);
-            endEntityInformation.setPassword("foo123");
+                    eepid, cpid, SecConst.TOKEN_SOFT_PEM, null);
+            endEntityInformation.setPassword(password);
             endEntityManagementSession.addUser(ADMIN, endEntityInformation, clearpassword);
             
             log.debug("created user: " + username);
