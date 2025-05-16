@@ -65,6 +65,16 @@
                 <h:outputText id="endEntityProfileIdOutputText"
                     value="#{endEntityProfileMBean.endEntityProfileId}" />
                 <h:panelGroup> &nbsp; </h:panelGroup>
+                <h:outputText value="#{web.text.ENDENTITYPROFILENAME}" />
+                <h:panelGroup id="endEntityProfileNameGroup">
+                        <h:inputText id="endEntityProfileName"
+                                     value="#{endEntityProfileMBean.endEntityProfileName}"
+                                     rendered="#{!endEntityProfileMBean.viewOnly}"/>
+                        <h:outputText id="endEntityProfileNameView"
+                                     value="#{endEntityProfileMBean.endEntityProfileName}"
+                                     rendered="#{endEntityProfileMBean.viewOnly}"/>
+                </h:panelGroup>
+                <h:panelGroup> &nbsp; </h:panelGroup>
                 <h:panelGroup rendered="#{endEntityProfileMBean.typeSshAvailable}">
                 	<h:panelGroup> 
                 		<h:outputLabel for="selecttype" value="#{web.text.TYPE}" />

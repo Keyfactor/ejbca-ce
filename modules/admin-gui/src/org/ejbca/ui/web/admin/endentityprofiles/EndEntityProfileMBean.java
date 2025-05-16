@@ -51,6 +51,7 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserNotification;
 import org.ejbca.core.model.ra.raadmin.validators.RegexFieldValidator;
@@ -80,6 +81,8 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     private static final int PASSWORD_LIMIT_MAX = 16;
     private static final int MAX_FAILED_LOGINS_DEFAULT = 3;
     private static final int NUMBER_OF_REQUESTS_MAX = 6;
+    
+    private static final String PROFILE_ALREADY_EXISTS = "EEPROFILEALREADYEXISTS";
 
     @EJB
     private AuthorizationSessionLocal authorizationSession;
@@ -93,6 +96,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     private List<UserNotification> userNotifications;
     private Integer profileId;
     private String profileName;
+    private String currentProfileName;
     private boolean viewOnly;
     private final List<String> editerrors = new ArrayList<>();
     private String validityStartTime;
@@ -313,14 +317,22 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
                 throw new IllegalStateException("Internal error. Missing or invalid " + PARAMETER_PROFILE_ID + " HTTP request parameter.");
             }
             loadProfile(Integer.valueOf(profileIdParam));
-            viewOnly = !authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES);
+            viewOnly = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("viewonly")!=null || 
+                    !authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES);
         }
     }
 
     private void loadProfile(final int id) {
         profileId = id;
-        profileName = endEntityProfileSession.getEndEntityProfileName(id);
-        profiledata = endEntityProfileSession.getEndEntityProfile(id);
+        if(id==0) {
+            profileName = "";
+            profiledata = new EndEntityProfile();
+            profiledata.setAvailableCAs(caSession.getAuthorizedCaIds(getAdmin()));
+        } else {
+            profileName = endEntityProfileSession.getEndEntityProfileName(id);
+            currentProfileName = profileName;
+            profiledata = endEntityProfileSession.getEndEntityProfile(id);
+        }
         validityStartTime = ejbcaWebBean.getISO8601FromImpliedUTCOrRelative(profiledata.getValidityStartTime());
         validityEndTime = ejbcaWebBean.getISO8601FromImpliedUTCOrRelative(profiledata.getValidityEndTime());
         userNotifications = new ArrayList<>(profiledata.getUserNotifications());
@@ -341,9 +353,13 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     public String getEndEntityProfileName() {
         return profileName;
     }
+    
+    public void setEndEntityProfileName(String profileName) {
+        this.profileName = profileName;
+    }
 
-    public int getEndEntityProfileId() {
-        return profileId;
+    public String getEndEntityProfileId() {
+        return profileId!=0 ? "" + profileId : "None";
     }
     
     public boolean isSshProfile() {
@@ -1492,6 +1508,32 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         validateProfile();
         if (editerrors.isEmpty()) {
             cleanUpUnused();
+            if (profileId==0) {
+                try {
+                    endEntityProfileSession.addEndEntityProfile(getAdmin(), profileName, profiledata);
+                } catch (EndEntityProfileExistsException e) {
+                    addErrorMessage(PROFILE_ALREADY_EXISTS);
+                    return;
+                } catch (AuthorizationDeniedException e) {
+                    addNonTranslatedErrorMessage(e);
+                    return;
+                }
+                log.debug("Successfully added End Entity Profile");
+                redirect("editendentityprofiles.xhtml", EndEntityProfilesMBean.PARAMETER_PROFILE_SAVED, profileName);
+                log.trace("<saveProfile: success"); 
+            }
+            if (!profileName.equals(currentProfileName)) {
+                try {
+                    endEntityProfileSession.renameEndEntityProfile(getAdmin(), currentProfileName, profileName);
+                    log.debug("Renamed End Entity Profile");
+                } catch (EndEntityProfileExistsException e) {
+                    addErrorMessage(PROFILE_ALREADY_EXISTS);
+                    return;
+                } catch (AuthorizationDeniedException e) {
+                    addNonTranslatedErrorMessage(e);
+                    return;
+                }
+            }
             endEntityProfileSession.changeEndEntityProfile(getAdmin(), profileName, profiledata);
             log.debug("Successfully edited End Entity Profile");
             redirect("editendentityprofiles.xhtml", EndEntityProfilesMBean.PARAMETER_PROFILE_SAVED, profileName);
