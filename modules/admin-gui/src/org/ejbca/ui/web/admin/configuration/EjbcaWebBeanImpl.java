@@ -129,6 +129,7 @@ import org.ejbca.util.HttpTools;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.keys.KeyTools;
+import org.cesecore.authorization.AuthorizationCache;
 
 import static org.ejbca.core.ejb.authorization.AuthorizationSystemSession.SUPERADMIN_ROLE;
 import static org.primefaces.util.Constants.SEMICOLON;
@@ -195,6 +196,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         AuthenticationToken administrator;
         String requestServerName;
         String currentRemoteIp;
+        int authenticatedAtUpdateNumber;
     }
 
     private AuthState authState = new AuthState();
@@ -285,12 +287,14 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         final String currentTlsSessionId = getTlsSessionId(httpServletRequest);
         final String oauthBearerToken = getBearerToken(httpServletRequest);
         final String oauthIdToken = getOauthIdToken(httpServletRequest);
+        final int lastUpdateNumber = AuthorizationCache.INSTANCE.getLastUpdateNumber();
         // Re-initialize if we are not initialized (new session) or if authentication parameters change within an existing session (TLS session ID or client certificate).
         // If authentication parameters change it can be an indication of session hijacking, which should be denied if we re-auth, or just session re-use in web browser such as what FireFox 57 seems to do even after browser re-start
         if (!authState.initialized || !StringUtils.equals(authState.authenticationTokenTlsSessionId, currentTlsSessionId)
                 || (authState.isAuthenticatedWithToken && !StringUtils.equals(authState.oauthAuthenticationToken, oauthBearerToken))
                 || (authState.isAuthenticatedWithToken && !StringUtils.equals(authState.oauthIdToken, oauthIdToken))
-                || (!authState.isAuthenticatedWithToken && !StringUtils.equals(fingerprint, authState.certificateFingerprint))) {
+                || (!authState.isAuthenticatedWithToken && !StringUtils.equals(fingerprint, authState.certificateFingerprint))
+                || authState.authenticatedAtUpdateNumber != lastUpdateNumber) {
             if (log.isDebugEnabled() && authState.initialized) {
                 // Only log this if we are not initialized, i.e. if we entered here because session authentication parameters changed
                 log.debug("TLS session authentication changed withing the HTTP Session, re-authenticating admin. Old TLS session ID: "+authState.authenticationTokenTlsSessionId+", new TLS session ID: "+currentTlsSessionId+", old cert fp: "+authState.certificateFingerprint+", new cert fp: "+fingerprint);
@@ -397,6 +401,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             stagingState.authenticationTokenTlsSessionId = currentTlsSessionId;
             // Set ServletContext for reading language files from resources
             servletContext = httpServletRequest.getSession(true).getServletContext();
+            stagingState.authenticatedAtUpdateNumber = lastUpdateNumber;
         } else {
             // No need to authenticate again
             stagingState = authState;

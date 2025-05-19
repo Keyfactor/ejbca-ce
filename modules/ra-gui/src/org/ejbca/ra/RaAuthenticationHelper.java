@@ -69,8 +69,9 @@ public class RaAuthenticationHelper implements Serializable {
     /** @return the X509CertificateAuthenticationToken if the client has provided a certificate or a PublicAccessAuthenticationToken otherwise. */
     public AuthenticationToken getAuthenticationToken(final HttpServletRequest httpServletRequest, final HttpServletResponse httpServletResponse) {
         final String currentTlsSessionId = getTlsSessionId(httpServletRequest);
+        final int lastUpdateNumber = AuthorizationCache.INSTANCE.getLastUpdateNumber();
         if (authenticationToken==null || !StringUtils.equals(authenticationTokenTlsSessionId, currentTlsSessionId) ||
-                AuthorizationCache.RAINSTANCE.getLastUpdateNumber() != authenticatedAtUpdateNumber) {
+                authenticatedAtUpdateNumber != lastUpdateNumber) {
             if (log.isTraceEnabled()) {
                 log.trace("New TLS session IDs or authenticationToken: currentClientTlsSessionID: "+currentTlsSessionId+", authenticationTokenTlsSessionId: "+authenticationTokenTlsSessionId);
             }
@@ -144,7 +145,7 @@ public class RaAuthenticationHelper implements Serializable {
             if (authenticationToken == null) {
                 authenticationToken = webAuthenticationProviderSession.authenticateUsingNothing(httpServletRequest.getRemoteAddr(), httpServletRequest.isSecure());
             }
-            authenticatedAtUpdateNumber = AuthorizationCache.RAINSTANCE.getLastUpdateNumber();
+            authenticatedAtUpdateNumber = lastUpdateNumber;
         }
         resetUnwantedHttpHeaders(httpServletRequest, httpServletResponse);
         return authenticationToken;
