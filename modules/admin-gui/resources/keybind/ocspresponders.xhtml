@@ -158,6 +158,20 @@
 				<h:commandButton action="#{ocspResponderMBean.saveDefaultResponder}" rendered="#{ocspResponderMBean.allowedToEdit}" value="#{web.text.INTERNALKEYBINDING_SET}"/>
 			</h:panelGrid>
 		</h:form>
+		<h:form id="includeFromCA" style="display: block;">
+		    <h3>
+                <h:outputText value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_RESPONSE_FORMAT}" />
+                <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/OCSP_Responders.html')}" escape="false"/>
+            </h3>
+            <h:panelGrid columns="2">
+                <h:selectBooleanCheckbox id="globalIncludeSigningCert" disabled="#{ocspResponderMBean.forbiddenToEdit}" value="#{ocspResponderMBean.globalIncludeSigningCertificate}"/>
+                <h:outputLabel for="globalIncludeSigningCert" value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_INCLUDESIGNCER_GLOBAL}"/>
+                <h:selectBooleanCheckbox id="globalIncludeCertificateChain" disabled="#{ocspResponderMBean.forbiddenToEdit}" value="#{ocspResponderMBean.globalIncludeCertificateChain}"/>
+                <h:outputLabel for="globalIncludeCertificateChain" value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_INCLUDECERTCHAIN_GLOBAL}"/>
+                <h:commandButton action="#{ocspResponderMBean.saveGlobalIncludeValues}" rendered="#{ocspResponderMBean.allowedToEdit}" value="#{web.text.INTERNALKEYBINDING_SAVE}"/>
+            </h:panelGrid>
+        </h:form>
+		 
 		<h:form id="enableNonce">
 			<h3>
 				<h:outputText value="#{web.text.INTERNALKEYBINDING_ENABLED_NONCE_CA}" rendered="#{ocspResponderMBean.forbiddenToEdit}"/>
@@ -283,6 +297,8 @@
 			</h:panelGroup>
 			
 		</h:form>
+		
+
 
 		<!-- Settings for OCSP audit and transaction logging -->
 		<h:form id="ocspLoggingSettings">
