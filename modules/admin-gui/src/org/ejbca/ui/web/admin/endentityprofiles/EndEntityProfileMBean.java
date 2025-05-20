@@ -371,11 +371,15 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     }
     
     public void setEndEntityProfileTypeDefault() {
-        profiledata.setProfileType(EndEntityProfile.PROFILE_TYPE_DEFAULT);
+        if (!isViewOnly()) {
+            profiledata.setProfileType(EndEntityProfile.PROFILE_TYPE_DEFAULT);
+        }
     }
     
     public void setEndEntityProfileTypeSsh() {
-        profiledata.setProfileType(EndEntityProfile.PROFILE_TYPE_SSH);
+        if (!isViewOnly()) {
+            profiledata.setProfileType(EndEntityProfile.PROFILE_TYPE_SSH);
+        }
     }
 
     // PASSWORD, USERNAME AND EMAIL

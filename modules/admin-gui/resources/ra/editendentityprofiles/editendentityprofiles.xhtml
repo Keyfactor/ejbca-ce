@@ -52,17 +52,17 @@
                     </h:commandButton>
                     <h:commandButton value="#{web.text.EDIT}"
                                      action="#{endEntityProfilesMBean.actionEdit(endEntityProfile)}"
-                                     disabled="#{!endEntityProfilesMBean.authorizedToEdit}">
+                                     rendered="#{endEntityProfilesMBean.authorizedToEdit}">
                     </h:commandButton>
                     <h:commandButton value="#{web.text.DELETE}"
                                      action="#{endEntityProfilesMBean.actionDelete(endEntityProfile)}"
-                                     disabled="#{!endEntityProfilesMBean.authorizedToEdit}"/>
+                                     rendered="#{endEntityProfilesMBean.authorizedToEdit}"/>
                     <h:commandButton value="#{web.text.CLONE}"
                                      action="#{endEntityProfilesMBean.actionClone(endEntityProfile)}"
-                                     disabled="#{!endEntityProfilesMBean.authorizedToEdit}"/>
+                                     rendered="#{endEntityProfilesMBean.authorizedToEdit}"/>
                     <h:commandButton value="#{web.text.EXPORT}"
                                      action="#{endEntityProfilesMBean.actionExportProfile(endEntityProfile)}"
-                                     disabled="#{!endEntityProfilesMBean.authorizedToEdit}"/>
+                                     rendered="#{endEntityProfilesMBean.authorizedToEdit}"/>
                 </h:column>
             </h:dataTable>
             
@@ -70,7 +70,9 @@
 							id="addButton" 
 							class="buttonstyle" 
 							action="#{endEntityProfilesMBean.actionAdd}" 
-							value="#{web.text.ADDPROFILE}"/>
+							value="#{web.text.ADDPROFILE}"
+							rendered="#{endEntityProfilesMBean.authorizedToEdit}"
+							style="margin-top: 10px"/>
 			  </h:panelGroup>
 			</h:form>
 	    
