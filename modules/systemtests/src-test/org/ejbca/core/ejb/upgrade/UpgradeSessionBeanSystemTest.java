@@ -1593,6 +1593,45 @@ public class UpgradeSessionBeanSystemTest {
             guc.setPostUpgradedToVersion("9.3.0");
         }
     }
+    
+    @Test
+    public void testMigrateOcspOptions9_4_0() throws AuthorizationDeniedException {
+        GlobalOcspConfiguration currentGlobalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        final boolean includeSignerCertCurrent = currentGlobalOcspConfiguration.getIncludeSigningCertificate();
+        final boolean includeCertChainCurrent = currentGlobalOcspConfiguration.getIncludeCertificateChain();
+        
+        try {
+            //Set up EJBCA in a pre-upgrade state
+            final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            guc.setUpgradedToVersion("9.3.0");
+            guc.setPostUpgradedToVersion("9.3.0");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+            //Set the values to non-default. 
+            cesecoreConfigSession.setConfigurationValue("ocsp.includesignercert", "false");
+            cesecoreConfigSession.setConfigurationValue("ocsp.includecertchain", "false");
+            
+            //Perform upgrade
+            upgradeSession.upgrade(/* database */ null, /* upgrade from */ "9.3.0", /* post upgrade? */ false);
+            //Retrieve config and verify upgrade
+            GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            assertFalse("ocsp.includesignercert wasn't upgraded.", globalOcspConfiguration.getIncludeSigningCertificate());
+            assertFalse("ocsp.includecertchain wasn't upgraded.", globalOcspConfiguration.getIncludeCertificateChain());
+            
+        } finally {
+                       
+            final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            guc.setUpgradedToVersion("9.4.0");
+            guc.setPostUpgradedToVersion("9.4.0");
+            
+            //Set values to current
+            GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            globalOcspConfiguration.setIncludeSigningCertificate(includeSignerCertCurrent);
+            globalOcspConfiguration.setIncludeCertificateChain(includeCertChainCurrent);
+            globalConfigurationProxySession.saveConfiguration(alwaysAllowtoken, globalOcspConfiguration);
+        }
+    }
 
     private EndEntityInformation makeEndEntityInfo(final String username, final String startTime, final String endTime) {
         final ExtendedInformation extInfo = new ExtendedInformation();

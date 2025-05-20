@@ -21,7 +21,7 @@ import org.bouncycastle.cert.ocsp.RespID;
 import org.bouncycastle.cert.ocsp.jcajce.JcaRespID;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.util.cert.CertificateUtils;
-import org.cesecore.config.OcspConfiguration;
+import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 
 import java.security.PrivateKey;
@@ -79,7 +79,8 @@ public class OcspSigningCacheEntry {
 
     public OcspSigningCacheEntry(X509Certificate issuerCaCertificate, CertificateStatus issuerCaCertificateStatus,
             List<X509Certificate> signingCaCertificateChain, X509Certificate ocspSigningCertificate, PrivateKey privateKey,
-            String signatureProviderName, OcspKeyBinding ocspKeyBinding, OcspKeyBinding.ResponderIdType responderIdType) {
+            String signatureProviderName, OcspKeyBinding ocspKeyBinding, OcspKeyBinding.ResponderIdType responderIdType,
+            final GlobalOcspConfiguration globalOcspConfiguration) {
         this.caCertificateChain = signingCaCertificateChain;
         this.ocspSigningCertificate = ocspSigningCertificate;
         if (ocspSigningCertificate == null) {
@@ -134,7 +135,8 @@ public class OcspSigningCacheEntry {
         if (fullCertificateChain==null) {
             responseCertChain = null;
         } else {
-            responseCertChain = getResponseCertChain(fullCertificateChain.toArray(new X509Certificate[0]));
+            responseCertChain = getResponseCertChain(fullCertificateChain.toArray(new X509Certificate[0]),
+                    globalOcspConfiguration.getIncludeSigningCertificate(), globalOcspConfiguration.getIncludeCertificateChain());
         }
         
         // on behalf of CA entries
@@ -220,12 +222,15 @@ public class OcspSigningCacheEntry {
      *   certificate chain  will then be an empty array.
      *   
      * @param certChain
+     * @param globalIncludeSignCert set to indicate that including signing certificate in response is set globally
+     * @param globalIncludeCertificateChain set to indicate that including certificate chain in response is set globally
+     * 
      * @return the certificate chain that will be included in the OCSP response
      */
-    private X509Certificate[] getResponseCertChain(X509Certificate[] certChain) {
+    private X509Certificate[] getResponseCertChain(final X509Certificate[] certChain, final boolean globalIncludeSignCert, final boolean globalIncludeCertificateChain) {
         X509Certificate[] chain;
-        boolean includeSignCert = OcspConfiguration.getIncludeSignCert();
-        boolean includeChain = OcspConfiguration.getIncludeCertChain();
+        boolean includeSignCert = globalIncludeSignCert;
+        boolean includeChain = globalIncludeCertificateChain;
         // If we have an OcspKeyBinding we use this configuration to override the default
         if (isUsingSeparateOcspSigningCertificate()) {
             includeSignCert = getOcspKeyBinding().getIncludeSignCert();

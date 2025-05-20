@@ -438,7 +438,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         }                        
                         //Add an entry with just a chain and nothing else
                         OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificateChain.get(0), caCertificateStatus, null, null,
-                                null, null, null, ocspConfiguration.getOcspResponderIdType()));
+                                null, null, null, ocspConfiguration.getOcspResponderIdType(), ocspConfiguration));
                         OcspDataConfigCache.INSTANCE.stagingAdd(new OcspDataConfigCacheEntry(caCertificateChain.get(0), caId, preProduceOcspResponse,
                                 storeOcspResponseOnDemand, isMsCaCompatible));
                     } else if (caInfo.getStatus() == CAConstants.CA_EXPIRED && preProduceOcspResponse) {
@@ -494,7 +494,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         OcspSigningCache.INSTANCE.stagingAdd(ocspSigningCacheEntry);
                     }
                 }
-                OcspSigningCache.INSTANCE.stagingCommit(ocspConfiguration.getOcspDefaultResponderReference());
+                OcspSigningCache.INSTANCE.stagingCommit(ocspConfiguration);
                 OcspDataConfigCache.INSTANCE.stagingCommit();
             } finally {
                 OcspSigningCache.INSTANCE.stagingRelease();
@@ -581,7 +581,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         final CertificateStatus caCertificateStatus = getRevocationStatusWhenCasPrivateKeyIsCompromised(caCertificate, false);
 
         OcspSigningCacheEntry signingCacheEntry = new OcspSigningCacheEntry(caCertificate, caCertificateStatus, caCertificateChain, null, privateKey,
-                signatureProviderName, null, ocspConfiguration.getOcspResponderIdType());
+                signatureProviderName, null, ocspConfiguration.getOcspResponderIdType(), ocspConfiguration);
         signingCacheEntry.setCrlSigningAlgorithm(caToken.getSignatureAlgorithm());
         
         OcspSigningCache.INSTANCE.stagingAdd(signingCacheEntry);
@@ -654,8 +654,11 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             respIdType = OcspKeyBinding.ResponderIdType.KEYHASH;
         }
         
+        GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        
         return new OcspSigningCacheEntry(caCertificateChain.get(0), certificateStatus, caCertificateChain, ocspSigningCertificate, privateKey,
-                signatureProviderName, ocspKeyBinding, respIdType);
+                signatureProviderName, ocspKeyBinding, respIdType, ocspConfiguration);
     }
     
     /** 

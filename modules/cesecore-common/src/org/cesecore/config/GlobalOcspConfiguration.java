@@ -21,6 +21,10 @@ import org.cesecore.keybind.impl.OcspKeyBinding.ResponderIdType;
 
 import com.keyfactor.util.certificate.DnComponents;
 
+/**
+ * Contains global configuration values for OCSP and OCSP responders
+ */
+
 public class GlobalOcspConfiguration extends ConfigurationBase implements Serializable {
 
     public static final String OCSP_CONFIGURATION_ID = "OCSP";
@@ -42,6 +46,30 @@ public class GlobalOcspConfiguration extends ConfigurationBase implements Serial
     private static final String PROPERTY_OCSP_DEFAULT_RESPONSE_VALIDITY = "ocspDefaultResponseValidity";
     private static final String PROPERTY_OCSP_DEFAULT_RESPONSE_MAX_AGE = "ocspDefaultResponseMaxAge";
     private static final String PROPERTY_OCSP_USE_MAX_AGE_FOR_EXPIRATION = "useMaxValidityForExpiration";
+    private static final String INCLUDE_SIGNING_CERTIFICATE = "includeSigningCertificate";
+    private static final String INCLUDE_CERTIFICATE_CHAIN = "includeCertificateChain";
+    
+    public boolean getIncludeSigningCertificate() {
+        if(data.get(INCLUDE_SIGNING_CERTIFICATE) == null) {
+            setIncludeSigningCertificate(true);
+        }
+        return (boolean) data.get(INCLUDE_SIGNING_CERTIFICATE);
+    }
+    
+    public void setIncludeSigningCertificate(final boolean includeSigningCertificate) {
+        data.put(INCLUDE_SIGNING_CERTIFICATE, includeSigningCertificate);
+    }
+    
+    public boolean getIncludeCertificateChain() {
+        if(data.get(INCLUDE_CERTIFICATE_CHAIN) == null) {
+           setIncludeCertificateChain(true);
+        }
+        return (boolean) data.get(INCLUDE_CERTIFICATE_CHAIN);
+    }
+    
+    public void setIncludeCertificateChain(final boolean includeCertificateChain) {
+        data.put(INCLUDE_CERTIFICATE_CHAIN, includeCertificateChain);
+    }
 
     public boolean getExplicitNoCacheUnauthorizedResponsesEnabled() {
         if (Objects.isNull(data.get(EXPLICIT_NO_CACHE_UNAUTHORIZED_RESPONSES_ENABLED))) {

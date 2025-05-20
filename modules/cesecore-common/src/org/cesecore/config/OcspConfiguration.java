@@ -46,14 +46,16 @@ public class OcspConfiguration {
     public static final String NON_EXISTING_IS_REVOKED_URI = NON_EXISTING_IS_REVOKED+".uri.";
     public static final String NON_EXISTING_IS_UNAUTHORIZED = "ocsp.nonexistingisunauthorized";
 
-    @Deprecated //Only used for upgrades to 8.3.0 and beyond
+    @Deprecated(since = "8.3.0") //Only used for upgrades to 8.3.0 and beyond
     private static final String UNTIL_NEXT_UPDATE = "ocsp.untilNextUpdate";
-    @Deprecated //Only used for upgrades to 8.3.0 and beyond
+    @Deprecated(since = "8.3.0") //Only used for upgrades to 8.3.0 and beyond
     private static final String MAX_AGE = "ocsp.maxAge";
-    @Deprecated //Only used for upgrades to 8.3.0 and beyond
+    @Deprecated(since = "8.3.0") //Only used for upgrades to 8.3.0 and beyond
     private static final String CACHE_HEADER_MAX_AGE = "ocsp.expires.useMaxAge";
 
+    @Deprecated(since = "9.4.0") //only used to allow for upgrades to 9.4.0
     public static final String INCLUDE_SIGNING_CERT = "ocsp.includesignercert";
+    @Deprecated(since = "9.4.0") //only used to allow for upgrades to 9.4.0
     public static final String INCLUDE_CERT_CHAIN = "ocsp.includecertchain";
     
     @Deprecated //Remove this value once upgrading to 6.7.0 has been dropped
@@ -139,6 +141,8 @@ public class OcspConfiguration {
 
     /**
      * If set to true the certificate chain will be returned with the OCSP response.
+     * 
+     * @deprecated only remains for upgrades to 9.4.0 – use value from GlobalOcspConfiguration
      */
     public static boolean getIncludeCertChain() {
         String value = ConfigurationHolder.getString(INCLUDE_CERT_CHAIN);
@@ -147,7 +151,10 @@ public class OcspConfiguration {
     
     /**
      * If set to true the signature certificate will be included the OCSP response.
+     * 
+     * @deprecated only remains for upgrades to 9.4.0 – use value from GlobalOcspConfiguration
      */
+    @Deprecated(since = "9.4.0")
     public static boolean getIncludeSignCert() {
         String value = ConfigurationHolder.getString(INCLUDE_SIGNING_CERT);
         return "true".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value);
