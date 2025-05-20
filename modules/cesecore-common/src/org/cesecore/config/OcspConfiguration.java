@@ -146,6 +146,9 @@ public class OcspConfiguration {
      */
     public static boolean getIncludeCertChain() {
         String value = ConfigurationHolder.getString(INCLUDE_CERT_CHAIN);
+        if(value == null) {
+            return true; //Default value is true
+        }      
         return "true".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value);
     }
     
@@ -157,6 +160,9 @@ public class OcspConfiguration {
     @Deprecated(since = "9.4.0")
     public static boolean getIncludeSignCert() {
         String value = ConfigurationHolder.getString(INCLUDE_SIGNING_CERT);
+        if(value == null) {
+            return true; //Default value is true
+        }
         return "true".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value);
     }
 
