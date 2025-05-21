@@ -1270,11 +1270,22 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     public void setSendNotificationRequired(boolean isRequired) {
         profiledata.setSendNotificationRequired(isRequired);
     }
+    
+    private void validateEndEntityProfileName() {
+        if (StringUtils.isBlank(getEndEntityProfileName())) {
+            editerrors.add(ejbcaWebBean.getText("EEPROFILENAMEREQUIRED"));
+        } else if (!StringTools.checkFieldForLegalChars(getEndEntityProfileName())) {
+            editerrors.add(ejbcaWebBean.getText("ONLYCHARACTERS"));
+        } else if ("EMPTY".equals(getEndEntityProfileName())) {
+            editerrors.add(ejbcaWebBean.getText("EEPROFILENAMEFORBIDDEN"));
+        }
+    }
 
     /**
      * Performs validation for fields that cannot be validated using JSF validators or required attributes.
      */
     private void validateProfile() {
+        validateEndEntityProfileName();
         validateUsernameRegex();
 
         // E-mail
