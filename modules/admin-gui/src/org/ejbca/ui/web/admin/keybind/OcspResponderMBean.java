@@ -960,7 +960,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
             } else {
                 ocspKeyBinding.setSignOcspResponseOnBehalf(new ArrayList<>());
             }
-            if(ocspKeyBinding.getIncludeCertChain()) {
+            if (ocspKeyBinding.getIncludeCertChain()) {
                 ocspKeyBinding.setCaGeneration(currentCaGeneration);
             }
             

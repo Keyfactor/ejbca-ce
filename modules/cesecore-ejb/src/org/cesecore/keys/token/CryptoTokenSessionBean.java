@@ -56,6 +56,8 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
+    @EJB
+    CryptoTokenSessionLocal cryptoTokenSession;
 
     private static final Logger log = Logger.getLogger(CryptoTokenSessionBean.class);
 
@@ -98,7 +100,8 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
      * 
      * @return true if the tokens differ
      */
-    private boolean localAndSharedSemaphoresDiffer(final int cryptoTokenId) {
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public boolean localAndSharedSemaphoresDiffer(final int cryptoTokenId) {
         Long localStamp = localTokenSemaphores.get(cryptoTokenId);
         if (localStamp == null) {
             if (log.isDebugEnabled()) {
@@ -126,7 +129,8 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
      * 
      * @param cryptoTokenId the cryptotoken to mark as dirty.
      */
-    private void updateSemaphore(final int cryptoTokenId) {
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public void updateSemaphore(final int cryptoTokenId) {
         long semaphore = random.nextLong();
         if (log.isDebugEnabled()) {
             log.debug("Cryptotoken " + cryptoTokenId + " state set to " + semaphore);
@@ -142,7 +146,8 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
      * Clear out semaphores for the current crypto token id.
      * @param cryptoTokenId
      */
-    private void removeSemaphore(final int cryptoTokenId) {
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public void removeSemaphore(final int cryptoTokenId) {
         if (log.isDebugEnabled()) {
             log.debug("Cryptotoken " + cryptoTokenId + " state cleared");
         }
@@ -180,7 +185,7 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
     public CryptoToken getCryptoToken(final int cryptoTokenId) {
         // 1. Check (new) CryptoTokenCache if it is time to sync-up with database
         // 1a. Also, check local stamp vs shared stamp to see if it is time to synch-up with database when clustered
-        if (CryptoTokenCache.INSTANCE.shouldCheckForUpdates(cryptoTokenId) || localAndSharedSemaphoresDiffer(cryptoTokenId)) {
+        if (CryptoTokenCache.INSTANCE.shouldCheckForUpdates(cryptoTokenId) || cryptoTokenSession.localAndSharedSemaphoresDiffer(cryptoTokenId)) {
             if (log.isDebugEnabled()) {
                 log.debug("CryptoToken with ID " + cryptoTokenId + " will be checked for updates.");
             }
@@ -224,7 +229,7 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
                         throw new IllegalStateException("Attempted to find a slot for a PKCS#11 crypto token, but it did not exists. Perhaps the token was removed?");
                     }
                     CryptoTokenCache.INSTANCE.updateWith(cryptoTokenId, digest, tokenName, cryptoToken);                    
-                    updateSemaphore(cryptoTokenId);
+                    cryptoTokenSession.updateSemaphore(cryptoTokenId);
                 }
             }
         }
@@ -312,7 +317,7 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
             // Update cache with provided token (it might be active and we like keeping things active)
             // Update local stamp and shared stamp when clustered
             CryptoTokenCache.INSTANCE.updateWith(cryptoTokenId, cryptoTokenData.getProtectString(0).hashCode(), tokenName, cryptoToken);
-            updateSemaphore(cryptoTokenId);
+            cryptoTokenSession.updateSemaphore(cryptoTokenId);
         } else {
             if (log.isDebugEnabled()) {
                 log.debug("Not merging crypto token to database, as there are no changes to existing data: " + tokenName);
@@ -328,7 +333,7 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
     public boolean removeCryptoToken(final int cryptoTokenId) {
         final boolean ret = deleteCryptoTokenData(cryptoTokenId);
         CryptoTokenCache.INSTANCE.updateWith(cryptoTokenId, 0, null, null);
-        removeSemaphore(cryptoTokenId);
+        cryptoTokenSession.removeSemaphore(cryptoTokenId);
         return ret;
     }
     

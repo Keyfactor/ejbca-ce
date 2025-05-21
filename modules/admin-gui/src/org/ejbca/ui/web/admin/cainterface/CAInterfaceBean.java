@@ -136,34 +136,12 @@ public class CAInterfaceBean implements Serializable {
     private byte[] request;
     private Certificate processedcert;
     
-    private transient boolean initialized = false;
-
     /** Creates a new instance of CaInterfaceBean */
     public CAInterfaceBean() { }
 
     // Public methods
     public void initialize(final EjbcaWebBean ejbcawebbean) {
-        if (!initialized) {
-          forceInitialization(ejbcawebbean);
-        } else {
-            log.debug("=initialize(): already initialized");
-        }
-        log.trace("<initialize()");
-    }
-
-    public void forceInitialization(final EjbcaWebBean ejbcawebbean) {
-        certificatesession = ejbLocalHelper.getCertificateStoreSession();
-        certreqhistorysession = ejbLocalHelper.getCertReqHistorySession();
-        cryptoTokenManagementSession = ejbLocalHelper.getCryptoTokenManagementSession();
-        caadminsession = ejbLocalHelper.getCaAdminSession();
-        casession = ejbLocalHelper.getCaSession();
-        authorizationSession = ejbLocalHelper.getAuthorizationSession();
-        publishersession = ejbLocalHelper.getPublisherSession();
-        certificateProfileSession = ejbLocalHelper.getCertificateProfileSession();
-        keyValidatorSession = ejbLocalHelper.getKeyValidatorSession();
-        authenticationToken = ejbcawebbean.getAdminObject();
         this.ejbcawebbean = ejbcawebbean;
-        initialized = true;
     }
 
     /**

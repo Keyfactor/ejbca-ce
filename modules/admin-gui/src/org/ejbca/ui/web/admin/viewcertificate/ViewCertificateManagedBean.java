@@ -413,7 +413,7 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
             }
             
             getRaBean().loadCACertificates(certificates.toArray(new CertificateView[0]));
-            numberOfCertificates = raBean.getNumberOfCertificates();
+            numberOfCertificates = getRaBean().getNumberOfCertificates();
             if (numberOfCertificates > 0) {
                 currentIndex = 0;
             }
