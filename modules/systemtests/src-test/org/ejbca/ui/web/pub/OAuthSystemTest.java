@@ -94,9 +94,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 import static org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols.RA_WEB;
@@ -104,6 +102,7 @@ import static org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocol
 import static org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols.WS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
@@ -179,8 +178,6 @@ public class OAuthSystemTest {
     private static boolean isRaWebEnabled;
     private static boolean isWsEnabled;
 
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
     @ClassRule
     public static final TemporaryFolder folder = new TemporaryFolder();
 
@@ -359,10 +356,12 @@ public class OAuthSystemTest {
 
     @Test
     public void testEjbcaWsWithExpiredToken() throws IOException, EjbcaException_Exception, AuthorizationDeniedException_Exception {
-        exceptionRule.expect(AuthorizationDeniedException_Exception.class);
-        exceptionRule.expectMessage("Authentication failed using OAuth Bearer Token");
         EjbcaWS ejbcaWSPort = getEjbcaWS(expiredToken);
-        ejbcaWSPort.getAvailableCAs();
+        Throwable throwable =  assertThrows(Throwable.class, () -> {
+            ejbcaWSPort.getAvailableCAs();
+        });
+        assertEquals("Incorrect exception was thrown.", AuthorizationDeniedException_Exception.class, throwable.getClass());
+        assertEquals("Incorrect error message in exception.", "Authentication failed using OAuth Bearer Token", throwable.getMessage());  
     }
 
     @Test
