@@ -147,19 +147,6 @@ public class OCSPServlet extends HttpServlet {
                 return;
             }
             final String remoteAddr = request.getRemoteAddr();
-            // Legacy support for activation using ClientToolBox. We will only use this once for upgrading the installation.
-            final String activationPassword = request.getHeader("activate");
-            if ( activationPassword!=null && remoteAddr.equals("127.0.0.1")) {
-                try {
-                    log.warn("'active' will only be used for initial one-time upgrade."+
-                            " Use regular CryptoToken activation in EJB CLI or Admin GUI to active your responder keystores.");
-                    integratedOcspResponseGeneratorSession.adhocUpgradeFromPre60(activationPassword.toCharArray());
-                } catch (Exception e) {
-                    log.error("Problem loading keys.", e);
-                    response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Problem. See ocsp responder server log.");
-                }
-                return;
-            }
             if (contentType != null) {
                 final String sError = "Content-type is not application/ocsp-request. It is \'" + HTMLTools.htmlescape(contentType) + "\'.";
                 log.debug(sError);

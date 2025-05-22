@@ -35,7 +35,6 @@ import org.cesecore.util.Base64PutHashMap;
 import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.SecureXMLDecoder;
 import org.ejbca.core.model.ca.store.CertReqHistory;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.FixEndOfBrokenXML;
 
 import com.keyfactor.util.CertTools;
@@ -55,7 +54,6 @@ import jakarta.persistence.Transient;
  * - list request history for a user
  * - find issuing User DN (EndEntityInformation) when republishing a certificate (in case the userDN for the user changed)
  */ 
-@SuppressWarnings("deprecation")
 @Entity
 @Table(name="CertReqHistoryData")
 public class CertReqHistoryData extends ProtectedData implements Serializable {
@@ -256,11 +254,6 @@ public class CertReqHistoryData extends ProtectedData implements Serializable {
             final Object o = decoder.readObject();
             if (o instanceof EndEntityInformation) {
                 endEntityInformation  = (EndEntityInformation)o;
-            } else if (o instanceof UserDataVO) {
-                // It is probably an older object of type UserDataVO
-                log.debug("Trying to decode old type of CertReqHistoryData with UserDataVO");
-                UserDataVO olddata = (UserDataVO)o;
-                endEntityInformation = olddata.toEndEntityInformation();
             } else if (o instanceof Base64PutHashMap) {
                 // Base64PutHashMap has been seen in some cases (from old EJBCA versions? or a bug?)
                 // This will not be accessible in the GUI, since the end entity profile ID is missing.
