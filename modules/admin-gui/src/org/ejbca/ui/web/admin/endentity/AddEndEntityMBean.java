@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -948,11 +949,11 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     }
 
     public String getViewEndEntityPopupLink(final String username) {
-        return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getAdminWebPath() + "ra/viewendentity.xhtml?username=" + username;
+        return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getAdminWebPath() + "ra/viewendentity.xhtml?username=" + URLEncoder.encode(username, StandardCharsets.UTF_8);
     }
 
     public String getEditEndEntityPopupLink(final String username) {
-        return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getAdminWebPath() + "ra/editendentity.xhtml?username=" + username;
+        return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getAdminWebPath() + "ra/editendentity.xhtml?username=" + URLEncoder.encode(username, StandardCharsets.UTF_8);
     }
 
     public void setConfirmPasswordFieldValue(String confirmPasswordFieldValue) {
