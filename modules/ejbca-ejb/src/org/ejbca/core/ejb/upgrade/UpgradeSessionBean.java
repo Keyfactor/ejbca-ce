@@ -22,9 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -378,29 +376,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     public boolean performUpgrade() {
         final String dbType = DatabaseConfiguration.getDatabaseName();
         final String currentVersion = InternalConfiguration.getAppVersionNumber();
-        String last = getLastUpgradedToVersion();
-        if (last==null) {
-            // Start auto-detection, since no version info was present
-            // This auto-detection was added for EJBCA 6.4.0
-            if (!checkColumnExists500()) {
-                // The CAId column was removed during post upgrade to EJBCA 5.0
-                last = "5.0";
-                if (globalConfigurationSession.findByConfigurationId(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID)!=null) {
-                    last = "6.2.4";
-                }
-                setLastUpgradedToVersion(last);
-                if (!publisherSession.isOldVaPublisherPresent()) {
-                    // For all practical purposes, this version can used as post-upgrade version
-                    setLastPostUpgradedToVersion("6.4.0");
-                }
-            } else {
-                // We are on EJBCA 4.0 or 3.11 or even earlier
-                log.error(
-                        "Upgrade from EJBCA prior to version 5.0.0 is forbidden. It is recommended that you upgrade to the intermediate release"
-                                + " EJBCA 6.3.2.6 first. Read the EJBCA Upgrade Guide for more information.");
-                return false;
-            }
-        }
+        String last = getLastUpgradedToVersion();     
         boolean ret = true;
         if (isLesserThan(last, currentVersion)) {
             log.info("Database content version: " + last + ", current application version: " + currentVersion + " -> Starting upgrade.");
@@ -472,15 +448,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     private boolean upgrade(String dbtype, String oldVersion) {
     	log.debug(">upgrade from version: "+oldVersion+", with dbtype: "+dbtype);
-        if (isLesserThan(oldVersion, "5.0.0")) {
+        if (isLesserThan(oldVersion, "6.0.0")) {
             log.error(
-                    "Upgrading from EJBCA prior to version 5.0.0 is forbidden. You must upgrade to the intermediate release EJBCA 6.3.2.6 first. Read the EJBCA Upgrade Guide for more information.");
+                    "Upgrading from EJBCA prior to version 6.0.0 is forbidden. You must upgrade to the intermediate release EJBCA 6.3.2.6 first. Read the EJBCA Upgrade Guide for more information.");
             return false;
-        }
-        if (isLesserThan(oldVersion, "6.0")) {
-            // Check and upgrade if this is the first time we start an instance that was previously an stand-alone VA
-            ocspResponseGeneratorSession.adhocUpgradeFromPre60(null);
-            setLastUpgradedToVersion("6.0");
         }
         if (isLesserThan(oldVersion, "6.2.4")) {
             try {
@@ -2681,42 +2652,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 throw new UpgradeFailedException(msg, e);
             }
         }
-    }
-    
-    /**
-     * Checks if the column cAId column exists in AdminGroupData
-     *
-     * @return true or false if the column exists or not
-     */
-    @Override
-    public boolean checkColumnExists500() {
-		// Try to find out if caID exists in AdminGroupData, which it did prior to EJBCA 5
-        // If it does exist, a post-upgrade has to be done
-		Connection connection;
-        try {
-            connection = JDBCUtil.getDBConnection();
-        } catch (ServiceLocatorException e) {
-            throw new IllegalStateException("Could not establish connection to database.", e);
-        }
-		boolean exists = false;
-		try {
-			final PreparedStatement stmt = connection.prepareStatement("select cAId from AdminGroupData where pk='0'");
-			stmt.executeQuery();
-			// If it did not throw an exception the column exists and we must run the post upgrade sql
-			exists = true;
-			log.info("cAId column exists in AdminGroupData");
-		} catch (SQLException e) {
-			// Column did not exist, it's good we are running a newer version
-			log.info("cAId column does not exist in AdminGroupData");
-			//log.debug(e.getMessage());
-		} finally {
-			try {
-				connection.close();
-			} catch (SQLException e) {
-				// do nothing
-			}
-		}
-		return exists;
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
