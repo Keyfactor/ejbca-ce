@@ -18,13 +18,13 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -34,7 +34,6 @@ import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
-import jakarta.faces.model.SelectItem;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
 import jakarta.servlet.http.Part;
@@ -77,6 +76,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     private static final Logger log = Logger.getLogger(EndEntityProfilesMBean.class);
 
     public static final String PARAMETER_PROFILE_SAVED = "profileSaved";
+    public static final String PARAMETER_PROFILE_CLONE_OR_DELETE = "profileCloneOrDelete";
     private static final String PROFILE_ALREADY_EXISTS = "EEPROFILEALREADYEXISTS";
     private static final String PROFILE_NOT_SELECTED = "EEPROFILENOTSELECTED";
     private static final String YOU_CANT_EDIT_EMPTY_PROFILE = "YOUCANTEDITEMPTYPROFILE";
@@ -116,13 +116,14 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
 
     private EjbcaWebBean ejbcaWebBean = getEjbcaWebBean();
 
-    private Integer selectedEndEntityProfileId = null;
-    private boolean deleteInProgress = false;
+    private String clonedProfileName;
+    
     private String endEntityProfileName;
     private Part uploadFile;
     private boolean profileSaved;
     private String uploadFilename;
-    private List<SelectItem> endEntityProfileItems = null;
+    private Map<String, String> endEntityProfileNameToIdMap = null;
+    private List<String> endEntityProfiles = null;
 
     public EndEntityProfilesMBean() {
         super(AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES);
@@ -134,6 +135,11 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
             .getExternalContext()
             .getRequestParameterMap()
             .get(PARAMETER_PROFILE_SAVED);
+        
+        endEntityProfileName = FacesContext.getCurrentInstance()
+                .getExternalContext()
+                .getRequestParameterMap()
+                .get(PARAMETER_PROFILE_CLONE_OR_DELETE);
     }
 
     public void preRenderView() {
@@ -153,6 +159,14 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     public void setEndEntityProfileName(final String endEntityProfileName) {
         this.endEntityProfileName = StringUtils.trim(endEntityProfileName);
     }
+    
+    public String getClonedProfileName() {
+        return clonedProfileName;
+    }
+
+    public void setClonedProfileName(final String clonedProfileName) {
+        this.clonedProfileName = StringUtils.trim(clonedProfileName);
+    }
 
     public boolean isAuthorizedToEdit() {
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES);
@@ -161,28 +175,31 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     public boolean isAuthorizedToView() {
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES);
     }
-
-    private boolean isEmptyProfile() {
-        return selectedEndEntityProfileId != null && selectedEndEntityProfileId.equals(EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
-    }
-
-    public List<SelectItem> getEndEntityProfileItems() {
-        if (endEntityProfileItems == null) {
-            endEntityProfileItems = new ArrayList<>();
-            final TreeMap<String, String> profiles = ejbcaWebBean.getAuthorizedEndEntityProfileNames(AccessRulesConstants.VIEW_END_ENTITY);
+    
+    public List<String> getEndEntityProfiles() {
+        if (endEntityProfileNameToIdMap == null) {
+            endEntityProfiles = new ArrayList<>();
+            endEntityProfileNameToIdMap = ejbcaWebBean.getAuthorizedEndEntityProfileNames(AccessRulesConstants.VIEW_END_ENTITY);
             final List<Integer> withMissingCAs = endEntityProfileSession.getAuthorizedEndEntityProfileIdsWithMissingCAs(getAdmin());
-            for (Entry<String, String> entry : profiles.entrySet()) {
+            for (Entry<String, String> entry : endEntityProfileNameToIdMap.entrySet()) {
                 final String profileName = entry.getKey();
                 final Integer profileId = Integer.valueOf(entry.getValue());
                 final boolean missingCa = withMissingCAs.contains(profileId);
                 final String displayName = profileName + (missingCa ? " " + ejbcaWebBean.getText("MISSINGCAIDS") : "");
-                endEntityProfileItems.add(new SelectItem(profileId, displayName));
+                endEntityProfiles.add(displayName);
             }
         }
-        return endEntityProfileItems;
+        Collections.sort(endEntityProfiles, (e1, e2) -> e1.compareToIgnoreCase(e2));
+        endEntityProfiles.remove(EndEntityConstants.EMPTY_ENDENTITYPROFILENAME);
+        endEntityProfiles.add(0, EndEntityConstants.EMPTY_ENDENTITYPROFILENAME);
+        return endEntityProfiles;
+    }
+    
+    private boolean validateEndEntityProfileName() {
+        return validateEndEntityProfileName(endEntityProfileName);
     }
 
-    private boolean validateEndEntityProfileName() {
+    private boolean validateEndEntityProfileName(String endEntityProfileName) {
         if (StringUtils.isBlank(endEntityProfileName)) {
             addErrorMessage("EEPROFILENAMEREQUIRED");
             return false;
@@ -194,70 +211,6 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
             return false;
         }
         return true;
-    }
-
-    public void actionAdd() {
-        clearMessages();
-        if (validateEndEntityProfileName()) {
-            try {
-                final EndEntityProfile endEntityProfile = new EndEntityProfile();
-                endEntityProfile.setAvailableCAs(caSession.getAuthorizedCaIds(getAdmin()));
-                endEntityProfileSession.addEndEntityProfile(getAdmin(), endEntityProfileName, endEntityProfile);
-                endEntityProfileName = null;
-                endEntityProfileItems = null;
-            } catch (EndEntityProfileExistsException e) {
-                addErrorMessage(PROFILE_ALREADY_EXISTS);
-            } catch (AuthorizationDeniedException e) {
-                addNonTranslatedErrorMessage(e);
-            }
-        }
-    }
-
-    public Integer getSelectedEndEntityProfileId() {
-        return selectedEndEntityProfileId;
-    }
-
-    public void setSelectedEndEntityProfileId(final Integer selectedEndEntityProfileId) {
-        this.selectedEndEntityProfileId = selectedEndEntityProfileId;
-    }
-
-    public void actionDelete() {
-        if (!selectedProfileExists()) {
-            addErrorMessage(PROFILE_NOT_SELECTED);
-        } else if (isEmptyProfile()) {
-            addErrorMessage(YOU_CANT_EDIT_EMPTY_PROFILE);
-        } else if (!canRemoveEndEntityProfile(getSelectedEndEntityProfileName())) {
-            addErrorMessage("COULDNTDELETEEEPROFILE");
-        } else {
-            clearMessages();
-            deleteInProgress = true;
-        }
-    }
-
-    public boolean isDeleteInProgress() {
-        return deleteInProgress;
-    }
-
-    private boolean selectedProfileExists() {
-        return selectedEndEntityProfileId != null && endEntityProfileSession.getEndEntityProfile(selectedEndEntityProfileId) != null;
-    }
-
-    public String getSelectedEndEntityProfileName() {
-        if (selectedEndEntityProfileId != null) {
-            return endEntityProfileSession.getEndEntityProfileName(selectedEndEntityProfileId);
-        }
-        return null;
-    }
-
-    public void actionDeleteConfirm() {
-        clearMessages();
-        try {
-            endEntityProfileSession.removeEndEntityProfile(getAdmin(), getSelectedEndEntityProfileName());
-            reset();
-        } catch (AuthorizationDeniedException e) {
-            addNonTranslatedErrorMessage("Not authorized to remove end entity profile.");
-        }
-        nonAjaxPostRedirectGet(null);
     }
 
     /**
@@ -332,11 +285,16 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
         return rolenames;
     }
 
-    public void actionExportProfile() {
+    public void actionExportProfile(String selectedEndEntityProfile) {
         clearMessages();
-        if (getSelectedEndEntityProfileId() != null) {
+        String selectedEndEntityProfileId = endEntityProfileNameToIdMap.get(selectedEndEntityProfile);
+        if (selectedEndEntityProfileId != null) {
+            if (selectedEndEntityProfileId.equals(""+EndEntityConstants.EMPTY_END_ENTITY_PROFILE)) {
+                addErrorMessage(YOU_CANT_EDIT_EMPTY_PROFILE);
+                return;
+            }
             redirect(getEjbcaWebBean().getBaseUrl() + getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath() + "/profilesexport", "profileType",
-                    "eep", "profileId", getSelectedEndEntityProfileId().toString());
+                    "eep", "profileId",selectedEndEntityProfileId);
         } else {
             addErrorMessage(PROFILE_NOT_SELECTED);
         }
@@ -350,9 +308,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     }
 
     public void reset() {
-        deleteInProgress = false;
-        endEntityProfileItems = null;
-        selectedEndEntityProfileId = null;
+        endEntityProfileNameToIdMap = null;
         endEntityProfileName = null;
         profileSaved = false;
     }
@@ -361,37 +317,6 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     public void clearMessages() {
         super.clearMessages();
         profileSaved = false;
-    }
-
-    public void actionCancel() {
-        deleteInProgress = false;
-    }
-
-    public void actionRename() {
-        clearMessages();
-        if (validateRenameOrClone()) {
-            try {
-                endEntityProfileSession.renameEndEntityProfile(getAdmin(), getSelectedEndEntityProfileName(), endEntityProfileName);
-                reset();
-            } catch (EndEntityProfileExistsException e) {
-                addErrorMessage(PROFILE_ALREADY_EXISTS);
-            } catch (AuthorizationDeniedException e) {
-                addNonTranslatedErrorMessage("Not authorized to rename end entity profile.");
-            }
-        }
-    }
-
-    private boolean validateRenameOrClone() {
-        boolean ok = true;
-        if (!selectedProfileExists()) {
-            addErrorMessage(PROFILE_NOT_SELECTED);
-            ok = false;
-        } else if (isEmptyProfile()) {
-            addErrorMessage(YOU_CANT_EDIT_EMPTY_PROFILE);
-            ok = false;
-        }
-        // validateEndEntityProfileName adds error messages
-        return validateEndEntityProfileName() && ok;
     }
 
     public void actionImportProfiles() throws IOException, AuthorizationDeniedException, EndEntityProfileExistsException {
@@ -406,7 +331,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
         }
         final byte[] fileBytes = IOUtils.toByteArray(getUploadFile().getInputStream(), uploadFile.getSize());
         importProfilesFromZip(fileBytes);
-        endEntityProfileItems = null;
+        endEntityProfileNameToIdMap = null;
     }
 
     /** Holds profile information decoded from a filename. Used in this class only, so no getters/setters */
@@ -610,29 +535,97 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     public Part getUploadFile() {
         return uploadFile;
     }
-
-    public void actionEdit() {
+    
+    public void actionAdd() {
         clearMessages();
-        if (!selectedProfileExists()) {
+        endEntityProfileNameToIdMap = null;
+        redirect("endentityprofilepage.xhtml", EndEntityProfileMBean.PARAMETER_PROFILE_ID, EndEntityConstants.NO_END_ENTITY_PROFILE);
+    }
+    
+    public void actionView(String endEntityProfileName) {
+        clearMessages();
+        if (endEntityProfileName==null) {
             addErrorMessage(PROFILE_NOT_SELECTED);
-        } else if (isEmptyProfile()) {
-            addErrorMessage(YOU_CANT_EDIT_EMPTY_PROFILE);
         } else {
-            redirect("endentityprofilepage.xhtml", EndEntityProfileMBean.PARAMETER_PROFILE_ID, selectedEndEntityProfileId);
+            String profileId = endEntityProfileNameToIdMap.get(endEntityProfileName);
+            if (profileId==null) {
+               addErrorMessage(PROFILE_NOT_SELECTED);
+            } else {
+                redirect("endentityprofilepage.xhtml", EndEntityProfileMBean.PARAMETER_PROFILE_ID, profileId, "viewonly", "true");
+            }
         }
     }
 
-    public void actionCloneProfile() {
+
+    public void actionEdit(String endEntityProfileName) {
         clearMessages();
-        if (validateRenameOrClone()) {
+        if (endEntityProfileName==null) {
+            addErrorMessage(PROFILE_NOT_SELECTED);
+        } else if (endEntityProfileName.equals(EndEntityConstants.EMPTY_ENDENTITYPROFILENAME)) {
+            addErrorMessage(YOU_CANT_EDIT_EMPTY_PROFILE);
+        } else {
+            String profileId = endEntityProfileNameToIdMap.get(endEntityProfileName);
+            if (profileId==null) {
+               addErrorMessage(PROFILE_NOT_SELECTED);
+            } else {
+                redirect("endentityprofilepage.xhtml", EndEntityProfileMBean.PARAMETER_PROFILE_ID, profileId);
+            }
+        }
+    }
+
+    public void actionClone(String endEntityProfileName) {
+        clearMessages();
+        setEndEntityProfileName(endEntityProfileName);
+        if (endEntityProfileName!=null) {
+            redirect("cloneendentityprofile.xhtml", PARAMETER_PROFILE_CLONE_OR_DELETE, endEntityProfileName);
+        }
+        return;
+    }
+    
+    public void actionCloneDeleteCancel() {
+        endEntityProfileName = "";
+        redirect("editendentityprofiles.xhtml");
+    }
+    
+    public void actionCloneConfirm() {
+        clearMessages();
+        if (isAuthorizedToEdit() && validateEndEntityProfileName() && validateEndEntityProfileName(clonedProfileName)) {
             try {
-                endEntityProfileSession.cloneEndEntityProfile(getAdmin(), getSelectedEndEntityProfileName(), endEntityProfileName);
-                reset();
+                endEntityProfileSession.cloneEndEntityProfile(getAdmin(), endEntityProfileName, clonedProfileName);
+                redirect("editendentityprofiles.xhtml");
             } catch (EndEntityProfileExistsException e) {
                 addErrorMessage(PROFILE_ALREADY_EXISTS);
             } catch (AuthorizationDeniedException e) {
                 addNonTranslatedErrorMessage(e);
             }
+        } 
+        return;
+    }
+    
+    public void actionDelete(String selectedEndEntityProfile) {
+        
+        if (selectedEndEntityProfile.equals(EndEntityConstants.EMPTY_ENDENTITYPROFILENAME)) {
+            addErrorMessage(YOU_CANT_EDIT_EMPTY_PROFILE);
+            return;
+        } else if (!canRemoveEndEntityProfile(selectedEndEntityProfile)) {
+            addErrorMessage("COULDNTDELETEEEPROFILE");
+            return;
         }
+        clearMessages();
+        setEndEntityProfileName(selectedEndEntityProfile);
+        redirect("deleteendentityprofile.xhtml", PARAMETER_PROFILE_CLONE_OR_DELETE, selectedEndEntityProfile);
+        return;
+    }
+    
+    public void actionDeleteConfirm() {
+        clearMessages();
+        try {
+            endEntityProfileSession.removeEndEntityProfile(getAdmin(), endEntityProfileName);
+            reset();
+        } catch (AuthorizationDeniedException e) {
+            addNonTranslatedErrorMessage("Not authorized to remove end entity profile.");
+            return;
+        }
+        redirect("editendentityprofiles.xhtml");
     }
 }
