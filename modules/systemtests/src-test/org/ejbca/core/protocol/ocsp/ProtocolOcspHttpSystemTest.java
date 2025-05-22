@@ -262,7 +262,7 @@ public class ProtocolOcspHttpSystemTest extends ProtocolOcspTestBase {
 
     private final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    private final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+    private static final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private final RevocationSessionRemote revocationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RevocationSessionRemote.class);
     private final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
@@ -282,9 +282,14 @@ public class ProtocolOcspHttpSystemTest extends ProtocolOcspTestBase {
     };
 
     @BeforeClass
-    public static void beforeClass() throws CertificateException {
+    public static void beforeClass() throws CertificateException, AuthorizationDeniedException {
         // Install BouncyCastle provider
         CryptoProviderTools.installBCProviderIfNotAvailable();
+        
+        GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        globalOcspConfiguration.setIncludeSigningCertificate(true);
+        globalOcspConfiguration.setIncludeCertificateChain(true);
+        globalConfigurationSession.saveConfiguration(admin, globalOcspConfiguration);
     }
 
     public ProtocolOcspHttpSystemTest() throws MalformedURLException, URISyntaxException {
@@ -1561,10 +1566,13 @@ Content-Type: text/html; charset=iso-8859-1
     @Test
     public void testSignCertNotIncludedInResponse() throws Exception {
         loadUserCert(this.caid);
-        // set OCSP configuration
-        Map<String,String> map = new HashMap<>();
-        map.put(OcspConfiguration.INCLUDE_SIGNING_CERT, "false");
-        helper.alterConfig(map);
+        // set OCSP configuration        
+        GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        boolean initialSignCertValue = globalOcspConfiguration.getIncludeSigningCertificate();
+        globalOcspConfiguration.setIncludeSigningCertificate(false);
+        globalConfigurationSession.saveConfiguration(admin, globalOcspConfiguration);
+        
+        try {
         // This setting is part of the OCSP signing cache so a reload of the cache is required
         helper.reloadKeys();
         // Build the OCSP request
@@ -1575,6 +1583,10 @@ Content-Type: text/html; charset=iso-8859-1
         BasicOCSPResp response = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200, false, cacert);
         assertNotNull("Could not retrieve response, test could not continue.", response);
         assertTrue("Response does contain certificates", response.getCerts().length == 0);
+        } finally {
+            globalOcspConfiguration.setIncludeSigningCertificate(initialSignCertValue);
+            globalConfigurationSession.saveConfiguration(admin, globalOcspConfiguration);
+        }
     }
 
     /**
@@ -1594,12 +1606,11 @@ Content-Type: text/html; charset=iso-8859-1
         X509Certificate subSubCaCert = createSubCA(subSubCaDN, subcaDN.hashCode());
 
         // set OCSP configuration
-        Map<String,String> map = new HashMap<>();
-        map.put(OcspConfiguration.INCLUDE_CERT_CHAIN, "true");
         GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
         ocspConfiguration.setOcspDefaultResponderReference(subSubCaDN);
+        boolean initialIncludeCertificateChain = ocspConfiguration.getIncludeCertificateChain();
+        ocspConfiguration.setIncludeCertificateChain(true);
         globalConfigurationSession.saveConfiguration(admin, ocspConfiguration);
-        this.helper.alterConfig(map);
         helper.reloadKeys();
 
         // Expects an OCSP response including a certchain that contains only the 2 subCAs and not their rootCA.
@@ -1619,6 +1630,8 @@ Content-Type: text/html; charset=iso-8859-1
             assertEquals(subcaDN, includedCerts[1].getSubject().toString());
 
         } finally {
+            ocspConfiguration.setIncludeCertificateChain(initialIncludeCertificateChain);
+            globalConfigurationSession.saveConfiguration(admin, ocspConfiguration);
             try {
                 endEntityManagementSession.deleteUser(admin, "ocsptest");
             } catch (Exception e) {

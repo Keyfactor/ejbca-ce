@@ -98,7 +98,7 @@ public class ProtocolOcspHttpStandaloneSystemTest extends ProtocolOcspTestBase {
     private static final String TESTCLASSNAME = ProtocolOcspHttpStandaloneSystemTest.class.getSimpleName();
     private static final String CA_DN = "CN=OcspDefaultTestCA,O=Foo,C=SE";
 
-    private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+    private static GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private OcspResponseGeneratorTestSessionRemote ocspResponseGeneratorTestSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(OcspResponseGeneratorTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
@@ -128,6 +128,11 @@ public class ProtocolOcspHttpStandaloneSystemTest extends ProtocolOcspTestBase {
         OcspTestUtils.setInternalKeyBindingStatus(authenticationToken, internalKeyBindingId, InternalKeyBindingStatus.ACTIVE);
         caCertificate = createCaCertificate(authenticationToken, x509ca.getCACertificate());
         setupTestCertificates(x509ca.getCAId());
+        
+        GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        globalOcspConfiguration.setIncludeSigningCertificate(true);
+        globalOcspConfiguration.setIncludeCertificateChain(true);
+        globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);
     }
     
     @AfterClass
