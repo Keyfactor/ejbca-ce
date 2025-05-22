@@ -592,15 +592,14 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
         if (isAuthorizedToEdit() && validateEndEntityProfileName() && validateEndEntityProfileName(clonedProfileName)) {
             try {
                 endEntityProfileSession.cloneEndEntityProfile(getAdmin(), endEntityProfileName, clonedProfileName);
+                redirect("editendentityprofiles.xhtml");
             } catch (EndEntityProfileExistsException e) {
                 addErrorMessage(PROFILE_ALREADY_EXISTS);
-                return;
             } catch (AuthorizationDeniedException e) {
                 addNonTranslatedErrorMessage(e);
-                return;
             }
-        }
-        redirect("editendentityprofiles.xhtml");
+        } 
+        return;
     }
     
     public void actionDelete(String selectedEndEntityProfile) {

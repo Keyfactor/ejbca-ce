@@ -38,9 +38,7 @@
                     <h:outputLabel for="clonedProfileNewNamePrompt" value="#{web.text.EE_PROFILE_CLONE_NEW_NAME}"/>
                     <h:inputText id="clonedProfileNewName" name="textfieldalias"
                                  value="#{endEntityProfilesMBean.clonedProfileName}" size="40"
-                                 title="#{web.text.FORMAT_ID_STR}"
-                                 required="true"
-                                 requiredMessage="#{web.text.YOUAREREQUIRED} #{web.text.EE_PROFILE_CLONE_NEW_NAME_REQUIRRED}">
+                                 title="#{web.text.FORMAT_ID_STR}">
                         <f:converter converterId="trimConverter"/>
                     </h:inputText>
                     <h:panelGroup/>
