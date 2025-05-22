@@ -12,17 +12,10 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ocsp;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.InvalidParameterException;
-import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -30,7 +23,6 @@ import java.security.Principal;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
-import java.security.UnrecoverableEntryException;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
@@ -51,7 +43,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.UUID;
@@ -146,28 +137,20 @@ import org.cesecore.certificates.ocsp.logging.PatternLogger;
 import org.cesecore.certificates.ocsp.logging.TransactionCounter;
 import org.cesecore.certificates.ocsp.logging.TransactionLogger;
 import org.cesecore.certificates.util.cert.CertificateUtils;
-import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
-import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBindingBase;
 import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
-import org.cesecore.keybind.InternalKeyBindingNameInUseException;
-import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
-import org.cesecore.keybind.impl.AuthenticationKeyBinding;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keybind.impl.OcspKeyBinding.ResponderIdType;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
-import org.cesecore.keys.token.PKCS11CryptoToken;
-import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.oscp.OcspResponseData;
 import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.ValidityDate;
@@ -182,12 +165,9 @@ import com.keyfactor.util.SHA1DigestCalculator;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.CachingKeyStoreWrapper;
 import com.keyfactor.util.keys.KeyTools;
-import com.keyfactor.util.keys.token.BaseCryptoToken;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
@@ -2509,318 +2489,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 .filter(signatureAlgorithm -> AlgorithmTools.isCompatibleSigAlg(pk, signatureAlgorithm)).findFirst();
         log.debug("Using signature algorithm for response: " + sigAlg.get());
         return sigAlg.get();
-    }
-
-    @Override
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    @Deprecated //Remove this method once upgrading from 5-6 is dropped
-    public void adhocUpgradeFromPre60(char[] activationPassword) {
-        AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
-                OcspResponseGeneratorSessionBean.class.getSimpleName() + ".adhocUpgradeFromPre60"));
-        // Check if there are any OcspKeyBindings already, if so return
-        if (!internalKeyBindingDataSession.getIds(OcspKeyBinding.IMPLEMENTATION_ALIAS).isEmpty()) {
-            return;
-        }
-        // If ocsp.activation.doNotStorePasswordsInMemory=true, new Crypto Tokens should not be auto-actived
-        final boolean globalDoNotStorePasswordsInMemory = OcspConfiguration.getDoNotStorePasswordsInMemory();
-        if (globalDoNotStorePasswordsInMemory && activationPassword == null) {
-            log.info("Postponing conversion of ocsp.properties configuration to OcspKeyBindings since password is not yet available.");
-            return;
-        }
-        log.info("No OcspKeyBindings found. Processing ocsp.properties to see if we need to perform conversion.");
-        final List<InternalKeyBindingTrustEntry> trustDefaults = getOcspKeyBindingTrustDefaults();
-        // Create CryptoTokens and AuthenticationKeyBinding from:
-        //  ocsp.rekeying.swKeystorePath = wsKeyStore.jks
-        //  ocsp.rekeying.swKeystorePassword = foo123
-        //  if "ocsp.rekeying.swKeystorePath" isn't set, search the p11 slot later on for an entry with an SSL certificate and use this
-        final String swKeystorePath = ConfigurationHolder.getString("ocsp.rekeying.swKeystorePath");
-        final String swKeystorePassword = ConfigurationHolder.getString("ocsp.rekeying.swKeystorePassword");
-        if (swKeystorePath != null && (swKeystorePassword != null || activationPassword!=null)) {
-            final String password = swKeystorePassword==null ? new String(activationPassword) : swKeystorePassword;
-            processSoftKeystore(authenticationToken, new File(swKeystorePath), password, password, globalDoNotStorePasswordsInMemory, trustDefaults);
-        }
-        if (OcspConfiguration.getP11Password() != null || activationPassword != null) {
-            log.info(" Processing PKCS#11..");
-            final String p11SharedLibrary = OcspConfiguration.getP11SharedLibrary();
-            final String sunP11ConfigurationFile = OcspConfiguration.getSunP11ConfigurationFile();
-            try {
-                final String p11password = OcspConfiguration.getP11Password() == null ? new String(activationPassword) : OcspConfiguration.getP11Password();
-                String cryptoTokenName = null;
-                final Properties cryptoTokenProperties = new Properties();
-                if (p11SharedLibrary != null && p11SharedLibrary.length()!=0) {
-                    log.info(" Processing PKCS#11 with shared library " + p11SharedLibrary);
-                    final String p11slot = OcspConfiguration.getP11SlotIndex();       
-                    cryptoTokenProperties.put(PKCS11CryptoToken.SHLIB_LABEL_KEY, p11SharedLibrary);
-                    cryptoTokenProperties.put(PKCS11CryptoToken.SLOT_LABEL_VALUE, p11slot);
-                    // Guess label type in order index, number or label 
-                    Pkcs11SlotLabelType type;
-                    if(Pkcs11SlotLabelType.SLOT_NUMBER.validate(p11slot)) {
-                        type = Pkcs11SlotLabelType.SLOT_NUMBER;
-                    } else if(Pkcs11SlotLabelType.SLOT_INDEX.validate(p11slot)) {
-                        type = Pkcs11SlotLabelType.SLOT_INDEX;
-                    } else {
-                        type = Pkcs11SlotLabelType.SLOT_LABEL;
-                    }
-                    cryptoTokenProperties.put(PKCS11CryptoToken.SLOT_LABEL_TYPE, type.getKey());
-                    cryptoTokenName = "PKCS11 slot "+p11slot;
-                } else if (sunP11ConfigurationFile != null && sunP11ConfigurationFile.length()!=0) {
-                    log.info(" Processing PKCS#11 with Sun property file " + sunP11ConfigurationFile);
-                    // The following properties are of interest from this file
-                    // We will bravely ignore attributes.. it wouldn't be to hard for the user to change the CryptoToken's attributes file later on
-                    // name=SafeNet
-                    // library=/opt/PTK/lib/libcryptoki.so
-                    // slot=1
-                    // slotListIndex=1
-                    // attributes(...) = {..} 
-                    // ...
-                    final Properties p11ConfigurationFileProperties = new Properties();
-                    p11ConfigurationFileProperties.load(new FileInputStream(sunP11ConfigurationFile));
-                    String p11slot = p11ConfigurationFileProperties.getProperty("slot");
-                    cryptoTokenProperties.put(PKCS11CryptoToken.SLOT_LABEL_VALUE, p11slot);
-                    // Guess label type in order index, number or label 
-                    Pkcs11SlotLabelType type;
-                    if(Pkcs11SlotLabelType.SLOT_NUMBER.validate(p11slot)) {
-                        type = Pkcs11SlotLabelType.SLOT_NUMBER;
-                    } else if(Pkcs11SlotLabelType.SLOT_INDEX.validate(p11slot)) {
-                        type = Pkcs11SlotLabelType.SLOT_INDEX;
-                    } else {
-                        type = Pkcs11SlotLabelType.SLOT_LABEL;
-                    }
-                    cryptoTokenProperties.put(PKCS11CryptoToken.SLOT_LABEL_TYPE, type.getKey());
-                    
-                    cryptoTokenProperties.put(PKCS11CryptoToken.SHLIB_LABEL_KEY, p11ConfigurationFileProperties.getProperty("library"));
-                    //cryptoTokenProperties.put(PKCS11CryptoToken.ATTRIB_LABEL_KEY, null);
-                    log.warn("Any attributes(..) = { ... } will be ignored and system defaults will be used."+
-                            " You should reconfigure the CryptoToken later if this is not sufficient.");
-                    cryptoTokenName = "PKCS11 slot "+p11ConfigurationFileProperties.getProperty("slot", "i" + p11ConfigurationFileProperties.getProperty("slotListIndex"));
-                }
-                if (cryptoTokenName != null && cryptoTokenManagementSession.getIdFromName(cryptoTokenName) == null) {
-                    if (!globalDoNotStorePasswordsInMemory) {
-                        log.info(" Auto-activation will be used.");
-                        BaseCryptoToken.setAutoActivatePin(cryptoTokenProperties, p11password, true);
-                    } else {
-                        log.info(" Auto-activation will not be used.");
-                    }
-                    final int p11CryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, cryptoTokenName,
-                            PKCS11CryptoToken.class.getName(), cryptoTokenProperties, null, p11password.toCharArray());
-                    // Use reflection to dig out the certificate objects for each alias so we can create an internal key binding for it
-                    final Method m = BaseCryptoToken.class.getDeclaredMethod("getKeyStore");
-                    m.setAccessible(true);
-                    final CachingKeyStoreWrapper cachingKeyStoreWrapper = (CachingKeyStoreWrapper) m.invoke(cryptoTokenManagementSession.getCryptoToken(p11CryptoTokenId));
-                    createInternalKeyBindings(authenticationToken, p11CryptoTokenId, cachingKeyStoreWrapper.getKeyStore(), trustDefaults);
-                }
-            } catch (Exception e) {
-                log.error("", LogRedactionUtils.getRedactedException(e));
-            }
-        }
-        if (OcspConfiguration.getSoftKeyDirectoryName() != null && (OcspConfiguration.getStorePassword() != null || activationPassword != null)) {
-            final String softStorePassword = OcspConfiguration.getStorePassword() == null ? new String(activationPassword) : OcspConfiguration.getStorePassword();
-            final String softKeyPassword = OcspConfiguration.getKeyPassword() == null ? new String(activationPassword) : OcspConfiguration.getKeyPassword();
-            final String dirName = OcspConfiguration.getSoftKeyDirectoryName();
-            if (dirName != null) {
-                final File directory = new File(dirName);
-                if (directory.isDirectory()) {
-                    log.info(" Processing Soft KeyStores..");
-                    for (final File file : directory.listFiles()) {
-                        processSoftKeystore(authenticationToken, file, softStorePassword, softKeyPassword, globalDoNotStorePasswordsInMemory, trustDefaults);
-                    }
-                }
-            }
-        }
-    }
-    
-    @Deprecated //Remove this method as soon as upgrading from 5.0->6.x is dropped
-    private void processSoftKeystore(AuthenticationToken authenticationToken, File file, String softStorePassword, String softKeyPassword,
-            boolean doNotStorePasswordsInMemory, List<InternalKeyBindingTrustEntry> trustDefaults) {
-     KeyStore keyStore;
-        final char[] passwordChars = softStorePassword.toCharArray();
-        // Load keystore (JKS or PKCS#12)
-        try {
-            keyStore = KeyStore.getInstance("JKS");
-            keyStore.load(new FileInputStream(file), passwordChars);
-        } catch (Exception e) {
-            try {
-                keyStore = KeyStore.getInstance("PKCS12", "BC");
-                keyStore.load(new FileInputStream(file), passwordChars);
-            } catch (Exception e2) {
-                try {
-                    log.info("Unable to process " + file.getCanonicalPath() + " as a KeyStore.");
-                } catch (IOException e3) {
-                    log.warn(e3.getMessage());
-                }
-                return;
-            }
-        }
-        
-        // Strip issuer certs, etc. and convert to PKCS#12
-        try {
-            keyStore = makeKeysOnlyP12(keyStore, passwordChars);
-        } catch (Exception e) {
-            throw new RuntimeException("failed to convert keystore to P12 during keybindings upgrade", LogRedactionUtils.getRedactedException(e));
-        }
-        
-        final String name = file.getName();
-        if (cryptoTokenManagementSession.getIdFromName(name) != null) {
-            return; // already upgraded
-        }
-        log.info(" Processing Soft KeyStore '" + name + "' of type " + keyStore.getType());
-        try {
-            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            // Save the store using the same password as the keys are protected with (not the store password)
-            // so we don't have to replace the protection for each key
-            keyStore.store(baos, softKeyPassword.toCharArray());
-            final Properties cryptoTokenProperties = new Properties();
-            if (!doNotStorePasswordsInMemory) {
-                log.info(" Auto-activation will be used.");
-                BaseCryptoToken.setAutoActivatePin(cryptoTokenProperties, softKeyPassword, true);
-            } else {
-                log.info(" Auto-activation will not be used.");
-            }
-            final int softCryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, name,
-                    SoftCryptoToken.class.getName(), cryptoTokenProperties, baos.toByteArray(), softKeyPassword.toCharArray());
-            createInternalKeyBindings(authenticationToken, softCryptoTokenId, keyStore, trustDefaults);
-        } catch (Exception e) {
-            log.warn(e.getMessage());
-        }
-    }
-    
-    /** Creates a PKCS#12 KeyStore with keys only from an JKS file (no issuer certs or trusted certs) */
-    @Deprecated  //Remove this method as soon as upgrading from 5->6 is dropped
-    private KeyStore makeKeysOnlyP12(KeyStore keyStore, char[] password) throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException, NoSuchProviderException, CertificateException, IOException {
-        final KeyStore p12 = KeyStore.getInstance("PKCS12", "BC");
-        final KeyStore.ProtectionParameter protParam =
-            (password != null ? new KeyStore.PasswordProtection(password) : null);
-        p12.load(null, password); // initialize
-        
-        final Enumeration<String> en = keyStore.aliases();
-        while (en.hasMoreElements()) {
-            final String alias = en.nextElement();
-            if (!keyStore.isKeyEntry(alias)) continue;
-            try {
-                KeyStore.PrivateKeyEntry entry = (KeyStore.PrivateKeyEntry)keyStore.getEntry(alias, protParam);
-                Certificate[] chain = new Certificate[] { entry.getCertificate() };
-                p12.setKeyEntry(alias, entry.getPrivateKey(), password, chain);
-            } catch (UnsupportedOperationException uoe) {
-                KeyStore.PrivateKeyEntry entry = (KeyStore.PrivateKeyEntry)keyStore.getEntry(alias, null);
-                Certificate[] chain = new Certificate[] { entry.getCertificate() };
-                p12.setKeyEntry(alias, entry.getPrivateKey(), null, chain);
-            }
-        }
-        return p12;
-    }
-    
-    /** Create InternalKeyBindings for Ocsp signing and SSL client authentication certs during ad-hoc upgrades.
-     * 
-     * TODO: Drop when upgrading from EJBCA 5 to 6 is dropped
-     */
-    @Deprecated(forRemoval = true) //Remove this method as soon as upgrading from 5->6 is dropped
-    private void createInternalKeyBindings(AuthenticationToken authenticationToken, int cryptoTokenId, KeyStore keyStore, List<InternalKeyBindingTrustEntry> trustDefaults) throws KeyStoreException, 
-    CryptoTokenOfflineException, InternalKeyBindingNameInUseException, AuthorizationDeniedException, CertificateEncodingException, CertificateImportException, InvalidAlgorithmException, InternalKeyBindingNonceConflictException {
-        final Enumeration<String> aliases = keyStore.aliases();
-        boolean noAliases = true;
-        while (aliases.hasMoreElements()) {
-            final String keyPairAlias = aliases.nextElement();
-            noAliases = false;
-            log.info("Found alias " + keyPairAlias + ", trying to figure out if this is something we should convert into a new KeyBinding...");
-            final Certificate[] chain = keyStore.getCertificateChain(keyPairAlias);
-            if (chain == null || chain.length==0) {
-                log.info("Alias " + keyPairAlias + " does not contain any certificate and will be ignored.");
-                continue;   // Ignore entry
-            }
-            // Extract the default signature algorithm
-            final String signatureAlgorithm = getSigningAlgFromAlgSelection(chain[0].getPublicKey());
-            if (OcspKeyBinding.isOcspSigningCertificate(chain[0], 
-                    (AvailableExtendedKeyUsagesConfiguration) globalConfigurationSession.getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.CONFIGURATION_ID))) {
-                // Create the actual OcspKeyBinding
-                log.info("Alias " + keyPairAlias + " contains an OCSP certificate and will be converted to an OcspKeyBinding.");
-                int internalKeyBindingId = internalKeyBindingMgmtSession.createInternalKeyBinding(authenticationToken, OcspKeyBinding.IMPLEMENTATION_ALIAS,
-                        "OcspKeyBinding for " + keyPairAlias, InternalKeyBindingStatus.DISABLED, null, cryptoTokenId, keyPairAlias, signatureAlgorithm,
-                        getOcspKeyBindingDefaultProperties(), trustDefaults);
-                internalKeyBindingMgmtSession.importCertificateForInternalKeyBinding(authenticationToken, internalKeyBindingId, chain[0].getEncoded());
-                internalKeyBindingMgmtSession.setStatus(authenticationToken, internalKeyBindingId, InternalKeyBindingStatus.ACTIVE);
-            } else if (AuthenticationKeyBinding.isClientSSLCertificate(chain[0], (AvailableExtendedKeyUsagesConfiguration) globalConfigurationSession.getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.CONFIGURATION_ID))) {
-                log.info("Alias " + keyPairAlias + " contains an SSL client certificate and will be converted to an AuthenticationKeyBinding.");
-                // We are looking for an SSL cert, use this to create an AuthenticationKeyBinding
-                int internalKeyBindingId = internalKeyBindingMgmtSession.createInternalKeyBinding(authenticationToken, AuthenticationKeyBinding.IMPLEMENTATION_ALIAS,
-                        "AuthenticationKeyBinding for " + keyPairAlias, InternalKeyBindingStatus.DISABLED, null, cryptoTokenId, keyPairAlias,
-                        signatureAlgorithm, null, null);
-                internalKeyBindingMgmtSession.importCertificateForInternalKeyBinding(authenticationToken, internalKeyBindingId, chain[0].getEncoded());
-                internalKeyBindingMgmtSession.setStatus(authenticationToken, internalKeyBindingId, InternalKeyBindingStatus.ACTIVE);
-            } else {
-                log.info("Alias " + keyPairAlias + " contains certificate of unknown type and will be ignored.");
-            }
-        }
-        if (noAliases) {
-            log.info("No aliases to process were found in the key store.");
-        }
-    }
-
-    /** @return a list of trusted signers or CAs */
-    @Deprecated //This method is only used for upgrading to version 6
-    private List<InternalKeyBindingTrustEntry> getOcspKeyBindingTrustDefaults() {
-        // Import certificates used to verify OCSP request signatures and add these to each OcspKeyBinding's trust-list
-        //  ocsp.signtrustdir=signtrustdir
-        //  ocsp.signtrustvalidtime should be ignored
-        final List<InternalKeyBindingTrustEntry> trustedCertificateReferences = new ArrayList<>();
-        if (OcspConfiguration.getEnforceRequestSigning() && OcspConfiguration.getRestrictSignatures()) {
-            // Import certificates and configure Issuer+serialnumber in trustlist for each
-            final String dirName = OcspConfiguration.getSignTrustDir();
-            if (dirName != null) {
-                final File directory = new File(dirName);
-                if (directory.isDirectory()) {
-                    for (final File file : directory.listFiles()) {
-                        try {
-                            final List<Certificate> chain = CertTools.getCertsFromPEM(new FileInputStream(file));
-                            if (!chain.isEmpty()) {
-                                final String issuerDn = CertTools.getIssuerDN(chain.get(0));
-                                final String subjectDn = CertTools.getSubjectDN(chain.get(0));
-                                if (OcspConfiguration.getRestrictSignaturesByMethod()==OcspConfiguration.RESTRICTONSIGNER) {
-                                    final int caId = issuerDn.hashCode();
-                                    final BigInteger serialNumber = CertTools.getSerialNumber(chain.get(0));
-                                    if(!caSession.existsCa(caId)) { 
-                                        log.warn("Trusted certificate with serialNumber " + serialNumber.toString(16) +
-                                                " is issued by an unknown CA with subject '" + issuerDn +
-                                                "'. You should import this CA certificate as en external CA to make it known to the system.");
-                                    }
-                                    trustedCertificateReferences.add(new InternalKeyBindingTrustEntry(caId, serialNumber));
-                                } else {
-                                    final int caId = subjectDn.hashCode();
-                                    if(!caSession.existsCa(caId)) { 
-                                        log.warn("Trusted CA certificate with with subject '" + subjectDn +
-                                                "' should be imported as en external CA to make it known to the system.");
-                                    }
-                                    trustedCertificateReferences.add(new InternalKeyBindingTrustEntry(caId, null));
-                                }
-                            }
-                        } catch (CertificateException | FileNotFoundException e) {
-                            log.warn(e.getMessage());
-                        }
-                    }
-                }
-            }
-        }
-        return trustedCertificateReferences;
-    }
-    
-    /** @return OcspKeyBinding properties set to the current file-based configuration (per cert profile config is ignored here) */
-    @SuppressWarnings("deprecation")
-    private Map<String, Serializable> getOcspKeyBindingDefaultProperties() {
-        GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
-                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);        
-        // Use global config as defaults for each new OcspKeyBinding
-        final Map<String, Serializable> dataMap = new HashMap<>();
-        dataMap.put(OcspKeyBinding.PROPERTY_INCLUDE_CERT_CHAIN, OcspConfiguration.getIncludeCertChain());
-        if (OcspConfiguration.getResponderIdType()==OcspConfiguration.RESPONDERIDTYPE_NAME) {
-            dataMap.put(OcspKeyBinding.PROPERTY_RESPONDER_ID_TYPE, ResponderIdType.NAME.name());
-        } else {
-            dataMap.put(OcspKeyBinding.PROPERTY_RESPONDER_ID_TYPE, ResponderIdType.KEYHASH.name());
-        }
-        dataMap.put(OcspKeyBinding.PROPERTY_MAX_AGE, ocspConfiguration.getDefaultResponseMaxAge());
-        dataMap.put(OcspKeyBinding.PROPERTY_NON_EXISTING_GOOD, OcspConfiguration.getNonExistingIsGood());
-        dataMap.put(OcspKeyBinding.PROPERTY_NON_EXISTING_REVOKED, OcspConfiguration.getNonExistingIsRevoked());
-        dataMap.put(OcspKeyBinding.PROPERTY_UNTIL_NEXT_UPDATE, ocspConfiguration.getDefaultValidityTime());
-        dataMap.put(OcspKeyBinding.PROPERTY_REQUIRE_TRUSTED_SIGNATURE, OcspConfiguration.getEnforceRequestSigning());
-        return dataMap;
     }
     
     @Override

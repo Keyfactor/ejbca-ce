@@ -25,7 +25,6 @@ import java.util.ServiceLoader;
 import org.apache.log4j.Logger;
 import org.bouncycastle.cert.X509CRLHolder;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
-import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceTypes;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.internal.InternalResources;
 
@@ -100,16 +99,12 @@ public abstract class CvcCABase extends CABase implements Serializable, CvcCA {
 		setExpireTime(expireTime);
 		final List<ExtendedCAServiceInfo> externalcaserviceinfos = new ArrayList<>();
         for (final Integer externalCAServiceType : getExternalCAServiceTypes()) {
-            //Type was removed in 6.0.0. It is removed from the database in the upgrade method in this class, but it needs to be ignored 
-            //for instantiation. 
-            if (externalCAServiceType != ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE) {
-                final ExtendedCAServiceInfo info = this.getExtendedCAServiceInfo(externalCAServiceType);
-                if (info != null) {
-                    externalcaserviceinfos.add(info);
-                }
+            final ExtendedCAServiceInfo info = this.getExtendedCAServiceInfo(externalCAServiceType);
+            if (info != null) {
+                externalcaserviceinfos.add(info);
             }
-		}
-        
+        }
+
 		final CVCCAInfo info = new CVCCAInfo(subjectDN, name, status, updateTime, getCertificateProfileId(), getDefaultCertificateProfileId(),
 		        getEncodedValidity(), getExpireTime(), getCAType(), getSignedBy(), getCertificateChain(),
 				getCAToken(), getDescription(), getRevocationReason(), getRevocationDate(), getCRLPeriod(), getCRLIssueInterval(), getCRLOverlapTime(), getDeltaCRLPeriod(), 

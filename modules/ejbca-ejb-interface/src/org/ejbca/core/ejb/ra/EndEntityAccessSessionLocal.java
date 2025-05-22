@@ -16,15 +16,14 @@ import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.List;
 
-import jakarta.ejb.Local;
-
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.util.crypto.SupportedPasswordHashAlgorithm;
 
+import jakarta.ejb.Local;
+
 /**
- * @version $Id$
  *
  */
 @Local
@@ -36,16 +35,9 @@ public interface EndEntityAccessSessionLocal extends EndEntityAccessSession {
      * @return EndEntityInformation or null if the user is not found.
      */
     EndEntityInformation findUser(String username);
-    
-    /**
-     * Using some heuristics and tarot cards, returns which algorithm and method that's been used to hash this user's password.
-     * 
-     * @param username the user name of the sought user.
-     * @return the password and algorithm for the sought user. If algorithm is hashed, so will the password be, otherwise cleartext. Null if user was not found.
-     * @throws NotFoundException 
-     */
-    AbstractMap.SimpleEntry<String, SupportedPasswordHashAlgorithm> getPasswordAndHashAlgorithmForUser(String username) throws NotFoundException;
-    
+        
+     AbstractMap.SimpleEntry<String, SupportedPasswordHashAlgorithm> getPasswordAndHashAlgorithmForUser(String username) throws NotFoundException;
+     
     /**
      * Method that checks if a user exists in the database having the given
      * CertificateProfile id. This function is mainly for avoiding

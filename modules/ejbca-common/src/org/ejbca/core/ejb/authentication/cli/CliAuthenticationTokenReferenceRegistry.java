@@ -33,7 +33,6 @@ import org.cesecore.authentication.AuthenticationFailedException;
  * not performed until the first authorization act.
  * 
  * 
- * @version $Id$
  * 
  */
 public enum CliAuthenticationTokenReferenceRegistry {
@@ -70,7 +69,7 @@ public enum CliAuthenticationTokenReferenceRegistry {
      */
     public void registerToken(final CliAuthenticationToken token) {
         CliAuthenticationToken safetyCopy = token.clone();
-        safetyCopy.setSha1Hash(token.getSha1Hash());
+        safetyCopy.setHash(token.getSha1Hash());
         tokenRegistry.put(token.getReferenceNumber(), safetyCopy);
         if (log.isTraceEnabled()) {
             log.trace("Registered new CliAuthenticationToken: "+safetyCopy+", with reference number: "+safetyCopy.getReferenceNumber());

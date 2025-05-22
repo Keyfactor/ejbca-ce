@@ -15,7 +15,6 @@ package org.ejbca.core.model.ra.raadmin;
 
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,7 +26,6 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -37,9 +35,7 @@ import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.keys.KeyStoreCipher;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.DateUtils;
-import org.apache.commons.lang.time.FastDateFormat;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields;
@@ -2548,211 +2544,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         log.trace(">upgrade");
     	if (Float.compare(LATEST_VERSION, getVersion()) != 0) {
 			String msg = intres.getLocalizedMessage("ra.eeprofileupgrade", getVersion());
-            log.info(msg);
-            // New version of the class, upgrade
-            if (getVersion() < 1) {
-                @SuppressWarnings("unchecked")
-                ArrayList<Integer> numberArray = (ArrayList<Integer>) data.get(NUMBERARRAY);
-                while (numberArray.size() < 37) {
-                   numberArray.add(0);
-                }
-                data.put(NUMBERARRAY, numberArray);
-            }
-            if (getVersion() < 2) {
-                @SuppressWarnings("unchecked")
-                ArrayList<Integer> numberArray = (ArrayList<Integer>) data.get(NUMBERARRAY);
-                while (numberArray.size() < 39) {
-                   numberArray.add(0);
-                }
-                data.put(NUMBERARRAY, numberArray);
-                addField(AVAILCAS);
-                addField(DEFAULTCA);
-                setRequired(AVAILCAS, 0, true);
-                setRequired(DEFAULTCA, 0, true);
-            }
-            if (getVersion() < 3) {
-            	// These fields have been removed in version 8, no need for this upgrade
-                //setNotificationSubject("");
-                //setNotificationSender("");
-                //setNotificationMessage("");
-            }
-            if (getVersion() < 4) {
-                @SuppressWarnings("unchecked")
-                ArrayList<Integer> numberOfFields = (ArrayList<Integer>) data.get(NUMBERARRAY);
-                for (int i = numberOfFields.size(); i < DATA_CONSTANTS.size(); i++) {
-                  numberOfFields.add(0);
-                }
-                data.put(NUMBERARRAY, numberOfFields);
-            }
-            // Support for DirectoryName altname field in profile version 5
-            if (getVersion() < 5) {
-                addField(DnComponents.DIRECTORYNAME);
-                setValue(DnComponents.DIRECTORYNAME, 0, "");
-                setRequired(DnComponents.DIRECTORYNAME, 0, false);
-                setUse(DnComponents.DIRECTORYNAME,0 , true);
-                setModifyable(DnComponents.DIRECTORYNAME, 0, true);
-            }
-            // Support for Subject Directory Attributes field in profile version 6
-            if (getVersion() < 6) {
-                @SuppressWarnings("unchecked")
-                ArrayList<Integer> numberOfFields = (ArrayList<Integer>) data.get(NUMBERARRAY);
-                for(int i = numberOfFields.size(); i < DATA_CONSTANTS.size(); i++){
-                  numberOfFields.add(0);
-                }
-                data.put(NUMBERARRAY,numberOfFields);
-                data.put(SUBJECTDIRATTRFIELDORDER, new ArrayList<>());
-
-                for (int i = getParameterNumber(DnComponents.DATEOFBIRTH); i <= getParameterNumber(DnComponents.COUNTRYOFRESIDENCE); i++){
-                	addField(getParameter(i));
-                	setValue(getParameter(i), 0, "");
-                	setRequired(getParameter(i), 0, false);
-                	setUse(getParameter(i), 0, false);
-                	setModifyable(getParameter(i), 0, true);
-                }
-            }
-            // Support for Start Time and End Time field in profile version 7
-            if (getVersion() < 7) {
-                @SuppressWarnings("unchecked")
-                ArrayList<Integer> numberOfFields = (ArrayList<Integer>) data.get(NUMBERARRAY);
-                for (int i = numberOfFields.size(); i < DATA_CONSTANTS.size(); i++){
-                	numberOfFields.add(0);
-                }
-                data.put(NUMBERARRAY, numberOfFields);
-                addField(STARTTIME);
-                setValue(STARTTIME, 0, "");
-                setRequired(STARTTIME, 0, false);
-                setUse(STARTTIME, 0, false);
-                setModifyable(STARTTIME, 0, true);
-                addField(ENDTIME);
-                setValue(ENDTIME, 0, "");
-                setRequired(ENDTIME, 0, false);
-                setUse(ENDTIME, 0, false);
-                setModifyable(ENDTIME, 0, true);
-            }
-            // Notifications is now a more general mechanism in version 8
-            if (getVersion() < 8) {
-            	log.debug("Upgrading User Notifications");
-            	if (data.get(UserNotification.NOTIFICATIONSENDER) != null) {
-            		UserNotification not = new UserNotification();
-            		not.setNotificationSender((String)data.get(UserNotification.NOTIFICATIONSENDER));
-            		if (data.get(UserNotification.NOTIFICATIONSUBJECT) != null) {
-                		not.setNotificationSubject((String)data.get(UserNotification.NOTIFICATIONSUBJECT));
-            		}
-            		if (data.get(UserNotification.NOTIFICATIONMESSAGE) != null) {
-                		not.setNotificationMessage((String)data.get(UserNotification.NOTIFICATIONMESSAGE));
-            		}
-            		// Add the statuschanges we used to send notifications about
-            		String events = UserNotification.EVENTS_EDITUSER;
-            		not.setNotificationEvents(events);
-            		// The old recipients where always the user
-            		not.setNotificationRecipient(UserNotification.RCPT_USER);
-            		addUserNotification(not);
-            	}
-            }
-            // Support for allowed requests in profile version 9
-            if (getVersion() < 9) {
-                @SuppressWarnings("unchecked")
-                ArrayList<Integer> numberoffields = (ArrayList<Integer>) data.get(NUMBERARRAY);
-                for (int i = numberoffields.size(); i < DATA_CONSTANTS.size(); i++) {
-                	numberoffields.add(0);
-                }
-                data.put(NUMBERARRAY,numberoffields);
-                addField(ALLOWEDREQUESTS);
-                setValue(ALLOWEDREQUESTS, 0, "");
-                setRequired(ALLOWEDREQUESTS, 0, false);
-                setUse(ALLOWEDREQUESTS, 0, false);
-                setModifyable(ALLOWEDREQUESTS, 0, true);
-            }
-            // Support for merging DN from WS-API with default values in profile, in profile version 10
-            if (getVersion() < 10) {
-                setAllowMergeDn(false);
-            }
-            // Support for issuance revocation status in profile version 11
-            if (getVersion() < 11) {
-                setRequired(ISSUANCEREVOCATIONREASON, 0, false);
-                setUse(ISSUANCEREVOCATIONREASON, 0, false);
-                setModifyable(ISSUANCEREVOCATIONREASON, 0, true);
-                setValue(ISSUANCEREVOCATIONREASON, 0, "" + RevokedCertInfo.NOT_REVOKED);
-                setRequired(CARDNUMBER, 0, false);
-                setUse(CARDNUMBER, 0, false);
-                setModifyable(CARDNUMBER, 0, true);
-            }
-            // Support for maximum number of failed login attempts in profile version 12
-            if (getVersion() < 12) {
-            	setRequired(MAXFAILEDLOGINS, 0, false);
-            	setUse(MAXFAILEDLOGINS, 0, false);
-            	setModifyable(MAXFAILEDLOGINS, 0, true);
-            	setValue(MAXFAILEDLOGINS, 0, Integer.toString(ExtendedInformation.DEFAULT_MAXLOGINATTEMPTS));
-            }
-            /* In EJBCA 4.0.0 we changed the date format to ISO 8601.
-             * In the Admin GUI the example was:
-             *     DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ejbcawebbean.getLocale())
-             * but the only absolute format that could have worked is the same enforced by the
-             * doesUserFulfillEndEntityProfile check and this is what need to upgrade from:
-             * 	   DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US)
-             */
-        	if (getVersion() < 13) {
-        		final DateFormat oldDateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US);
-        		final FastDateFormat newDateFormat = FastDateFormat.getInstance("yyyy-MM-dd HH:mm");
-        		try {
-        			final String oldStartTime = getValue(STARTTIME, 0);
-        			if (!isEmptyOrRelative(oldStartTime)) {
-        				// We use an absolute time format, so we need to upgrade
-            			final String newStartTime = newDateFormat.format(oldDateFormat.parse(oldStartTime));
-    					setValue(STARTTIME, 0, newStartTime);
-    					if (log.isDebugEnabled()) {
-    						log.debug("Upgraded " + STARTTIME + " from \"" + oldStartTime + "\" to \"" + newStartTime + "\" in EndEntityProfile.");
-    					}
-        			}
-				} catch (ParseException e) {
-					log.error("Unable to upgrade " + STARTTIME + " in EndEntityProfile! Manual interaction is required (edit and verify).", e);
-				}
-        		try {
-        			final String oldEndTime = getValue(ENDTIME, 0);
-        			if (!isEmptyOrRelative(oldEndTime)) {
-        				// We use an absolute time format, so we need to upgrade
-            			final String newEndTime = newDateFormat.format(oldDateFormat.parse(oldEndTime));
-    					setValue(ENDTIME, 0, newEndTime);
-    					if (log.isDebugEnabled()) {
-    						log.debug("Upgraded " + ENDTIME + " from \"" + oldEndTime + "\" to \"" + newEndTime + "\" in EndEntityProfile.");
-    					}
-        			}
-				} catch (ParseException e) {
-					log.error("Unable to upgrade " + ENDTIME + " in EndEntityProfile! Manual interaction is required (edit and verify).", e);
-				}
-        	}
-        	/*
-        	 * In version 13 we converted some dates to the "yyyy-MM-dd HH:mm" format using default Locale.
-        	 * These needs to be converted to the same format but should be stored in UTC, so we always know what the times are.
-        	 */
-        	if (getVersion() < 14) {
-        		final String[] timePatterns = {"yyyy-MM-dd HH:mm"};
-    			final String oldStartTime = getValue(STARTTIME, 0);
-    			if (!isEmptyOrRelative(oldStartTime)) {
-            		try {
-            			final String newStartTime = ValidityDate.formatAsUTC(DateUtils.parseDateStrictly(oldStartTime, timePatterns));
-    					setValue(STARTTIME, 0, newStartTime);
-    					if (log.isDebugEnabled()) {
-    						log.debug("Upgraded " + STARTTIME + " from \"" + oldStartTime + "\" to \"" + newStartTime + "\" in EndEntityProfile.");
-    					}
-					} catch (ParseException e) {
-						log.error("Unable to upgrade " + STARTTIME + " to UTC in EndEntityProfile! Manual interaction is required (edit and verify).", e);
-					}
-    			}
-    			final String oldEndTime = getValue(ENDTIME, 0);
-    			if (!isEmptyOrRelative(oldEndTime)) {
-    				// We use an absolute time format, so we need to upgrade
-					try {
-						final String newEndTime = ValidityDate.formatAsUTC(DateUtils.parseDateStrictly(oldEndTime, timePatterns));
-						setValue(ENDTIME, 0, newEndTime);
-						if (log.isDebugEnabled()) {
-							log.debug("Upgraded " + ENDTIME + " from \"" + oldEndTime + "\" to \"" + newEndTime + "\" in EndEntityProfile.");
-						}
-					} catch (ParseException e) {
-						log.error("Unable to upgrade " + ENDTIME + " to UTC in EndEntityProfile! Manual interaction is required (edit and verify).", e);
-					}
-    			}
-        	}
+            log.info(msg);   	
         	// In version 15 (EJBCA 7.0) we included ability for multi-value RDNs
             if (getVersion() < 15) {
                 setAllowMultiValueRDNs(false);
@@ -2778,11 +2570,6 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             data.put(VERSION, LATEST_VERSION);
         }
         log.trace("<upgrade");
-    }
-
-    /** @return true if argument is null, empty or in the relative time format. */
-    private boolean isEmptyOrRelative(final String time) {
-    	return (time == null || time.isEmpty() || time.matches(RELATIVE_TIME_FORMAT));
     }
 
     public static boolean isFieldImplemented(final int field) {

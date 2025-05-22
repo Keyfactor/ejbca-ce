@@ -29,7 +29,6 @@ import org.ejbca.util.crypto.SupportedPasswordHashAlgorithm;
  * This authentication token is used for authentication from the CLI. Its security features are described in CliAuthenticationTokenReferenceRegistry
  * 
  * 
- * @version $Id$
  */
 public class CliAuthenticationToken extends AuthenticationToken {
 
@@ -39,13 +38,15 @@ public class CliAuthenticationToken extends AuthenticationToken {
 
     private final long referenceNumber;
     private final String userName;
-    private final SupportedPasswordHashAlgorithm hashAlgorithm;
     // In case the password was hashed using BCrypt, we need to supply the hash in order to recreate it.
     private String passwordSalt;
-    private final String sha1Salt;
-    private String sha1Hash;
+    private final String salt;
+    private String hash;
 
     private transient boolean isVerified = false;
+    
+    //This value only remains to allow for CLI users back in 5.0
+    private final SupportedPasswordHashAlgorithm hashAlgorithm;
 
     /**
      * 
@@ -53,11 +54,9 @@ public class CliAuthenticationToken extends AuthenticationToken {
      * @param principal a UsernamePrincipal representing a user name.
      * @param passwordHash a hashed password.
      * @param referenceId the reference ID of this token.
-     * @param hashAlgorithm the hash algorithm used to produce the password hash. This will be needed in order to reproduce the sha1Hash on the client
-     *            side.
      */
-    public CliAuthenticationToken(final UsernamePrincipal principal, final String passwordHash, final String sha1Salt, final long referenceId,
-            final SupportedPasswordHashAlgorithm hashAlgorithm) {
+    @SuppressWarnings("deprecation")
+    public CliAuthenticationToken(final UsernamePrincipal principal, final String passwordHash, final String salt, final long referenceId, final SupportedPasswordHashAlgorithm hashAlgorithm) {
         super(new HashSet<Principal>() {
             private static final long serialVersionUID = 5868667272584423392L;
             {
@@ -66,11 +65,10 @@ public class CliAuthenticationToken extends AuthenticationToken {
         }, null);
         this.referenceNumber = referenceId;
         this.userName = principal.getName();
+        this.salt = salt;
         this.hashAlgorithm = hashAlgorithm;
-        this.sha1Salt = sha1Salt;
         if (passwordHash != null) {
-            this.sha1Hash = generateSha1Hash(passwordHash, referenceId);
-
+            this.hash = generateHash(passwordHash, referenceId);
             // The modern BCrypt hash uses a salt, which we have to pass with.
             switch (hashAlgorithm) {
             case SHA1_BCRYPT:
@@ -82,28 +80,24 @@ public class CliAuthenticationToken extends AuthenticationToken {
                 break;
             }
         } else {
-            this.sha1Hash = null;
+            this.hash = null;
             this.passwordSalt = null;
         }
+
 
     }
 
     /**
-     * Construct a SHA1 hash from the concatenated password hash and reference id.
+     * Construct a cryptographic hash from the concatenated password hash and reference id.
      * 
      * @param passwordHash
      * @param referenceId
      * @return
      */
-    private String generateSha1Hash(final String passwordHash, final Long referenceId) {
+    private String generateHash(final String passwordHash, final Long referenceId) {
         String concactenatedInput = passwordHash.concat(referenceId.toString());
-        switch (hashAlgorithm) {
-        case SHA1_BCRYPT:
-            return BCrypt.hashpw(concactenatedInput, sha1Salt);
-        case SHA1_OLD:
-        default:
-            return CryptoTools.makeOldPasswordHash(concactenatedInput);
-        }
+        return BCrypt.hashpw(concactenatedInput, salt);
+
     }
 
     @Override
@@ -111,14 +105,14 @@ public class CliAuthenticationToken extends AuthenticationToken {
         /*
          * We just have to verify once, so that the same token can be used sequentially within EJBCA. 
          */
-        if (sha1Hash == null) {
+        if (hash == null) {
             throw new UninitializedCliAuthenticationTokenException("CliAuthenticationToken was matched without shared secret being set.");
         }
         if (isVerified) {
             return true;
         } else {
             if (matchTokenType(accessUser.getTokenType()) && userName.equals(accessUser.getMatchValue())) {
-                if (!CliAuthenticationTokenReferenceRegistry.INSTANCE.verifySha1Hash(referenceNumber, sha1Hash)) {
+                if (!CliAuthenticationTokenReferenceRegistry.INSTANCE.verifySha1Hash(referenceNumber, hash)) {
                     //This is an authentication error
                     throw new AuthenticationFailedException("Incorrect one-time hash was passed with CLI token, most likely due to an incorrect password.");
                 } else if (!CliAuthenticationTokenReferenceRegistry.INSTANCE.unregisterToken(referenceNumber)) {
@@ -161,11 +155,11 @@ public class CliAuthenticationToken extends AuthenticationToken {
      * @return the sha1Hash
      */
     public String getSha1Hash() {
-        return sha1Hash;
+        return hash;
     }
 
-    public void setSha1HashFromHashedPassword(String hashedPassword) {
-        sha1Hash = generateSha1Hash(hashedPassword, referenceNumber);
+    public void setHashFromHashedPassword(String hashedPassword) {
+        hash = generateHash(hashedPassword, referenceNumber);
     }
 
     /**
@@ -173,25 +167,16 @@ public class CliAuthenticationToken extends AuthenticationToken {
      * 
      * @param cleartextPassword The password in cleartext. It will be hashed within this method.
      */
-    public void setSha1HashFromCleartextPassword(String cleartextPassword) {
-        String hashedPassword;
-        switch (hashAlgorithm) {
-        case SHA1_BCRYPT:
-            hashedPassword = BCrypt.hashpw(cleartextPassword, passwordSalt);
-            break;
-        case SHA1_OLD:
-        default:
-            hashedPassword = CryptoTools.makeOldPasswordHash(cleartextPassword);
-            break;
-        }
-        setSha1HashFromHashedPassword(hashedPassword);
+    public void setHashFromCleartextPassword(String cleartextPassword) {
+        String hashedPassword = BCrypt.hashpw(cleartextPassword, passwordSalt);
+        setHashFromHashedPassword(hashedPassword);
     }
 
     /**
-     * @param sha1Hash the sha1Hash to set
+     * @param hash the hash to set
      */
-    public void setSha1Hash(String sha1Hash) {
-        this.sha1Hash = sha1Hash;
+    public void setHash(String hash) {
+        this.hash = hash;
     }
 
     /**
@@ -199,8 +184,7 @@ public class CliAuthenticationToken extends AuthenticationToken {
      */
     @Override
     public CliAuthenticationToken clone() {
-        CliAuthenticationToken clone = new CliAuthenticationToken(new UsernamePrincipal(userName), null, this.sha1Salt, this.referenceNumber,
-                hashAlgorithm);
+        CliAuthenticationToken clone = new CliAuthenticationToken(new UsernamePrincipal(userName), null, this.salt, this.referenceNumber, this.hashAlgorithm);
         clone.setPasswordSalt(passwordSalt);
         return clone;
     }
@@ -214,7 +198,7 @@ public class CliAuthenticationToken extends AuthenticationToken {
         int result = 1;
         result = prime * result + (isVerified ? 1231 : 1237);
         result = prime * result + (int) (referenceNumber ^ (referenceNumber >>> 32));
-        result = prime * result + ((sha1Hash == null) ? 0 : sha1Hash.hashCode());
+        result = prime * result + ((hash == null) ? 0 : hash.hashCode());
         result = prime * result + ((userName == null) ? 0 : userName.hashCode());
         return result;
     }
@@ -237,11 +221,11 @@ public class CliAuthenticationToken extends AuthenticationToken {
         if (referenceNumber != other.referenceNumber) {
             return false;
         }
-        if (sha1Hash == null) {
-            if (other.sha1Hash != null) {
+        if (hash == null) {
+            if (other.hash != null) {
                 return false;
             }
-        } else if (!sha1Hash.equals(other.sha1Hash)) {
+        } else if (!hash.equals(other.hash)) {
             return false;
         }
         if (userName == null) {
@@ -252,10 +236,6 @@ public class CliAuthenticationToken extends AuthenticationToken {
             return false;
         }
         return true;
-    }
-
-    public SupportedPasswordHashAlgorithm getHashAlgorithm() {
-        return hashAlgorithm;
     }
 
     /**
@@ -274,7 +254,7 @@ public class CliAuthenticationToken extends AuthenticationToken {
 
     @Override
     protected String generateUniqueId() {
-        return generateUniqueId(isVerified, userName, referenceNumber, sha1Hash, sha1Salt, hashAlgorithm);
+        return generateUniqueId(isVerified, userName, referenceNumber, hash, salt);
     }
 
     @Override
