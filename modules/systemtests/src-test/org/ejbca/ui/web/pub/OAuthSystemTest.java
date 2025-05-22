@@ -361,7 +361,7 @@ public class OAuthSystemTest {
             ejbcaWSPort.getAvailableCAs();
         });
         assertEquals("Incorrect exception was thrown.", AuthorizationDeniedException_Exception.class, throwable.getClass());
-        assertEquals("Incorrect error message in exception.", "Authentication failed using OAuth Bearer Token", throwable.getMessage());  
+        assertEquals("Incorrect error message in exception.", "Authentication failed using OAuth Bearer Token.", throwable.getMessage());  
     }
 
     @Test
