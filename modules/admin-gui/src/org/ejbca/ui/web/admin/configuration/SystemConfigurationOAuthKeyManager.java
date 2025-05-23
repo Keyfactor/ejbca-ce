@@ -563,6 +563,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             log.info("Could not load keys using jwks url " + oauthKeyEditor.getPublicKeyUrl());
             if (log.isDebugEnabled()) {
                 log.debug("Could not load keys using jwks url", e);
+
             }
             systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_BADKEYURL", oauthKeyEditor.getPublicKeyUrl());
             return StringUtils.EMPTY;
