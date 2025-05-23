@@ -13,17 +13,18 @@
 
 package org.ejbca.core.ejb.ca.caadmin;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
-
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.token.KeyGenParams;
 
 import org.apache.log4j.Logger;
 import org.cesecore.CaTestUtils;
@@ -35,12 +36,12 @@ import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.config.GlobalCaConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionRemote;
@@ -53,13 +54,12 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import jakarta.ejb.EJBException;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.token.KeyGenParams;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import jakarta.ejb.EJBException;
 
 /**
  * Tests related to renewing CAs
@@ -285,13 +285,13 @@ public class RenewCASystemTest extends CaTestCase {
         final String newSubjectDN = "CN=NewName,o=Test";
         final String newCAName = "NewName";
 
-        final GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigSession
-                .getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        boolean backupEnableIcaoCANameChangeValue = globalConfiguration.getEnableIcaoCANameChange();
+        final GlobalCaConfiguration globalCaConfiguration = (GlobalCaConfiguration) globalConfigSession
+                .getCachedConfiguration(GlobalCaConfiguration.CA_CONFIGURATION_ID);
+        boolean backupEnableIcaoCANameChangeValue = globalCaConfiguration.getEnableIcaoCANameChange();
         try {
             // Ensure the NameChange setting is true
-            globalConfiguration.setEnableIcaoCANameChange(true);
-            globalConfigSession.saveConfiguration(internalAdmin, globalConfiguration);
+            globalCaConfiguration.setEnableIcaoCANameChange(true);
+            globalConfigSession.saveConfiguration(internalAdmin, globalCaConfiguration);
 
             // We are all set and now ready to renew the CA with the name change
             caAdminSession.renewCANewSubjectDn(internalAdmin, info.getCAId(), nextKeyAlias, null, /*CreateLinkCert*/true, newSubjectDN);
@@ -330,8 +330,8 @@ public class RenewCASystemTest extends CaTestCase {
             removeTestCA(newCAName);
             internalCertificateStoreSession.removeCRLs(internalAdmin, newSubjectDN);
             // Ensure the global configuration is reverted.
-            globalConfiguration.setEnableIcaoCANameChange(backupEnableIcaoCANameChangeValue);
-            globalConfigSession.saveConfiguration(internalAdmin, globalConfiguration);
+            globalCaConfiguration.setEnableIcaoCANameChange(backupEnableIcaoCANameChangeValue);
+            globalConfigSession.saveConfiguration(internalAdmin, globalCaConfiguration);
         }
         log.trace("<testRenewCAChangeKeyAlgWithNameChange()");
     }

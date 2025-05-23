@@ -40,17 +40,6 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import jakarta.enterprise.context.SessionScoped;
-import jakarta.faces.application.FacesMessage;
-import jakarta.faces.component.UIComponent;
-import jakarta.faces.context.FacesContext;
-import jakarta.faces.event.ComponentSystemEvent;
-import jakarta.faces.model.ListDataModel;
-import jakarta.faces.model.SelectItem;
-import jakarta.inject.Named;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.Part;
-
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -71,11 +60,13 @@ import org.cesecore.certificates.certificatetransparency.CertificateTransparency
 import org.cesecore.certificates.certificatetransparency.GoogleCtPolicy;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.EABConfiguration;
+import org.cesecore.config.GlobalCaConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.config.InvalidConfigurationException;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.config.RaStyleInfo.RaCssInfo;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingStatus;
@@ -99,7 +90,6 @@ import org.ejbca.core.model.services.ServiceExistsException;
 import org.ejbca.core.model.services.actions.NoAction;
 import org.ejbca.core.model.services.intervals.PeriodicalInterval;
 import org.ejbca.core.model.services.workers.PreCertificateMaintenanceWorkerConstants;
-import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.statedump.ejb.StatedumpImportOptions;
 import org.ejbca.statedump.ejb.StatedumpImportResult;
 import org.ejbca.statedump.ejb.StatedumpObjectKey;
@@ -117,6 +107,18 @@ import com.keyfactor.util.FileTools;
 import com.keyfactor.util.StreamSizeLimitExceededException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
+import jakarta.ejb.EJB;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.event.ComponentSystemEvent;
+import jakarta.faces.model.ListDataModel;
+import jakarta.faces.model.SelectItem;
+import jakarta.inject.Named;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.Part;
+
 /**
  * Backing bean for the various system configuration pages.
  *
@@ -132,7 +134,27 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private static final String[] ALLOWED_HEADER_FILE_EXTENSIONS = {"jpg", "jpeg", "png"};
     
     private transient UploadedFile headerFile;
-
+    
+    private AuthorizationSessionLocal authorizationSession = getEjbcaWebBean().getEjb().getAuthorizationSession();
+    @EJB
+    private CaSessionLocal caSession;
+    @EJB
+    private CertificateProfileSessionLocal certificateProfileSession;
+    @EJB
+    private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
+    @EJB
+    private InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession;
+    @EJB
+    private OcspResponseCleanupSessionLocal ocspCleanupSession;
+    @EJB
+    private RoleDataSessionLocal roleSession;
+    @EJB
+    private ServiceSessionLocal serviceSession;
+    @EJB
+    private StatedumpSessionLocal statedumpSession;
+    
     public UploadedFile getHeaderFile() {
         return headerFile;
     }
@@ -206,11 +228,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         private boolean ctCacheFastFailEnabled;
         private long ctCacheFastFailBackoff;
 
-        private GuiInfo(GlobalConfiguration globalConfig, GlobalCesecoreConfiguration globalCesecoreConfiguration, AdminPreference adminPreference) {
-            if(globalConfig == null) {
-                globalConfig = getEjbcaWebBean().getGlobalConfiguration();
-            }
-
+        private GuiInfo(GlobalConfiguration globalConfig, GlobalCesecoreConfiguration globalCesecoreConfiguration, AdminPreference adminPreference, GlobalCaConfiguration globalCaConfiguration) {
             try {
                 this.title = globalConfig.getEjbcaTitle();
                 this.enableEndEntityProfileLimitations = globalConfig.getEnableEndEntityProfileLimitations();
@@ -225,7 +243,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 this.enableSessionTimeout = globalConfig.getUseSessionTimeout();
                 this.sessionTimeoutTime = globalConfig.getSessionTimeoutTime();
                 this.vaStatusTimeConstraint = globalConfig.getVaStatusTimeConstraint();
-                this.setEnableIcaoCANameChange(globalConfig.getEnableIcaoCANameChange());
+                this.enableIcaoCANameChange =  globalCaConfiguration.getEnableIcaoCANameChange();
                 this.ctLogs = new ArrayList<>(globalConfig.getCTLogs().values());
                 this.ocspCleanupUse = globalConfig.getOcspCleanupUse();
                 this.ocspCleanupSchedule = globalConfig.getOcspCleanupSchedule();
@@ -381,6 +399,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
     private GlobalConfiguration globalConfig = null;
     private GlobalCesecoreConfiguration globalCesecoreConfiguration = null;
+    private GlobalCaConfiguration globalCaConfiguration = null;
     private OAuthConfiguration oAuthConfiguration = null;
     private AdminPreference adminPreference = null;
     private GuiInfo currentConfig = null;
@@ -400,19 +419,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private GoogleCtPolicy googleCtPolicy;
     private boolean preCertificateMaintenanceServiceCheckDone = false;
     private boolean preCertificateMaintenanceServiceAvailable;
-    private int lastActiveTab = 0;
+    private int lastActiveTab = 0;   
 
-    /** Session bean for importing statedump. Will be null if statedump isn't available */
-    private StatedumpSessionLocal statedumpSession;
-    private ServiceSessionLocal serviceSession;
-
-    private final CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
-    private final CertificateProfileSessionLocal certificateProfileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
-    private final CryptoTokenManagementSessionLocal cryptoTokenManagementSession = getEjbcaWebBean().getEjb().getCryptoTokenManagementSession();
-    private final AuthorizationSessionLocal authorizationSession = getEjbcaWebBean().getEjb().getAuthorizationSession();
-    private final RoleDataSessionLocal roleSession = getEjbcaWebBean().getEjb().getRoleDataSession();
-    private final OcspResponseCleanupSessionLocal ocspCleanupSession = getEjbcaWebBean().getEjb().getOcspResponseCleanupSession();
-    private final InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession = getEjbcaWebBean().getEjb().getInternalKeyBindingMgmtSession();
 
     private boolean enableCustomHeaderRest;
     private String customHeaderRestName;
@@ -423,20 +431,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
     public void setLastActiveTab(final int lastActiveTab) {
         this.lastActiveTab = lastActiveTab;
-    }
-
-    public StatedumpSessionLocal getStatedumpSession() {
-        if (statedumpSession == null) {
-            statedumpSession = new EjbLocalHelper().getStatedumpSession();
-        }
-        return statedumpSession;
-    }
-
-    public ServiceSessionLocal getServiceSession() {
-        if (serviceSession == null) {
-            serviceSession = new EjbLocalHelper().getServiceSession();
-        }
-        return serviceSession;
     }
 
     public void onTabChange(final TabChangeEvent<?> event) {
@@ -668,10 +662,10 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     public boolean isPreCertificateMaintenanceServiceAvailable() {
         if (!preCertificateMaintenanceServiceCheckDone) {
             preCertificateMaintenanceServiceCheckDone = true;
-            final HashMap<Integer,String> services = getServiceSession().getServiceIdToNameMap();
+            final HashMap<Integer,String> services = serviceSession.getServiceIdToNameMap();
             preCertificateMaintenanceServiceAvailable = false;
             for (final int serviceId : services.keySet()) {
-                final ServiceConfiguration service = getServiceSession().getServiceConfiguration(serviceId);
+                final ServiceConfiguration service = serviceSession.getServiceConfiguration(serviceId);
                 if (PreCertificateMaintenanceWorkerConstants.WORKER_CLASS.equals(service.getWorkerClassPath())) {
                     preCertificateMaintenanceServiceAvailable = true;
                 }
@@ -699,7 +693,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         serviceConf.setPinToNodes(new String[0]);
         try {
             final String serviceName = "Pre-Certificate Maintenance Service";
-            getServiceSession().addService(getAdmin(), serviceName, serviceConf);
+            serviceSession.addService(getAdmin(), serviceName, serviceConf);
             addInfoMessage("CTLOGCONFIGURATION_SERVICEADDED", serviceName);
         } catch (ServiceExistsException e) {
             final String msg = "Service already exists.";
@@ -731,18 +725,25 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         return oAuthConfiguration;
     }
 
-    public AdminPreference getAdminPreference() throws Exception {
+    public AdminPreference getAdminPreference() {
         if(adminPreference == null) {
             adminPreference = getEjbcaWebBean().getDefaultAdminPreference();
         }
         return adminPreference;
+    }
+    
+    private GlobalCaConfiguration getGlobalCaConfiguration() {
+        if(globalCaConfiguration == null) {
+            globalCaConfiguration = (GlobalCaConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCaConfiguration.CA_CONFIGURATION_ID);
+        }
+        return globalCaConfiguration;
     }
 
     /** @return cached or populate a new system configuration GUI representation for view or edit */
     public GuiInfo getCurrentConfig() {
         if (this.currentConfig == null) {
             try {
-                this.currentConfig = new GuiInfo(getGlobalConfiguration(), getGlobalCesecoreConfiguration(), getAdminPreference());
+                this.currentConfig = new GuiInfo(getGlobalConfiguration(), getGlobalCesecoreConfiguration(), getAdminPreference(), getGlobalCaConfiguration());
             } catch (Exception e) {
                 String msg = "Cannot read Administrator Preferences.";
                 log.info(msg + e.getLocalizedMessage());
@@ -839,13 +840,13 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
     /** Returns true if EJBCA was built with Statedump (from EJBCA 6.5.0 or later) and it hasn't been locked down in the user interface. */
     public boolean isStatedumpAvailable() {
-        return getStatedumpSession() != null && !getGlobalConfiguration().getStatedumpLockedDown();
+        return statedumpSession != null && !getGlobalConfiguration().getStatedumpLockedDown();
     }
 
     public List<SelectItem> getStatedumpAvailableTemplates() {
         final List<SelectItem> templates = new ArrayList<>();
         try {
-            for (Map.Entry<String,String> entry : getStatedumpSession().getAvailableTemplates(getAdmin()).entrySet()) {
+            for (Map.Entry<String,String> entry : statedumpSession.getAvailableTemplates(getAdmin()).entrySet()) {
                 final String description = getEjbcaWebBean().getText(entry.getValue());
                 templates.add(new SelectItem(entry.getKey(), description));
             }
@@ -859,7 +860,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
     public boolean isStatedumpTemplatesVisible() {
         try {
-            final String basedir = getStatedumpSession().getTemplatesBasedir(getAdmin());
+            final String basedir = statedumpSession.getTemplatesBasedir(getAdmin());
             return basedir != null && !basedir.isEmpty() && new File(basedir).isDirectory();
         } catch (AuthorizationDeniedException e) {
             return false;
@@ -873,7 +874,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         options.setOverridesFile(new File(path, "overrides.properties"));
         options.setMergeCryptoTokens(true);
 
-        StatedumpImportResult result = getStatedumpSession().performDryRun(getAdmin(), options);
+        StatedumpImportResult result = statedumpSession.performDryRun(getAdmin(), options);
         for (final StatedumpObjectKey key : result.getConflicts()) {
             log.info("Will overwrite "+key);
             options.addConflictResolution(key, StatedumpResolution.OVERWRITE);
@@ -884,7 +885,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
 
         log.info("Performing statedump import");
-        result = getStatedumpSession().performImport(getAdmin(), options);
+        result = statedumpSession.performImport(getAdmin(), options);
         log.info("Statedump was successfully imported.");
 
         // Lock down after import
@@ -1006,7 +1007,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
         try {
             if (importFromDir) {
-                final File basedir = new File(getStatedumpSession().getTemplatesBasedir(getAdmin()));
+                final File basedir = new File(statedumpSession.getTemplatesBasedir(getAdmin()));
                 importStatedump(new File(basedir, statedumpDir), statedumpLockdownAfterImport);
                 super.addNonTranslatedErrorMessage("Statedump imported successfully.");
             } else {
@@ -1088,7 +1089,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalConfig.setUseSessionTimeout(currentConfig.isEnableSessionTimeout());
                 globalConfig.setSessionTimeoutTime(currentConfig.getSessionTimeoutTime());
                 globalConfig.setVaStatusTimeConstraint(currentConfig.getVaStatusTimeConstraint());
-                globalConfig.setEnableIcaoCANameChange(currentConfig.getEnableIcaoCANameChange());
+                
                 
 
                 if (isValidOcspCleanupSettings()) {
@@ -1140,6 +1141,15 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 }
             } catch (AuthorizationDeniedException | InvalidConfigurationException e) {
                 String msg = "Cannot save System Configuration. " + e.getLocalizedMessage();
+                log.info(msg);
+                super.addNonTranslatedErrorMessage(msg);
+            }
+            
+            globalCaConfiguration.setEnableIcaoCANameChange(currentConfig.getEnableIcaoCANameChange());
+            try {
+                globalConfigurationSession.saveConfiguration(getAdmin(), globalCaConfiguration);
+            } catch (AuthorizationDeniedException e) {
+                String msg = "Cannot save Global CA Configuration. " + e.getLocalizedMessage();
                 log.info(msg);
                 super.addNonTranslatedErrorMessage(msg);
             }
@@ -1229,6 +1239,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         googleCtPolicy = null;
         validatorSettings = null;
         preCertificateMaintenanceServiceCheckDone = false;
+        globalCaConfiguration = null;
         enableCustomHeaderRest = getAvailableProtocolsConfiguration().isCustomHeaderForRestEnabled();
         customHeaderRestName = getAvailableProtocolsConfiguration().getCustomHeaderForRest();
     }

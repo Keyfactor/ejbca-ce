@@ -177,7 +177,6 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
        setEnableEndEntityProfileLimitations(true);  // Still needed for 100% up-time upgrade from before EJBCA 6.3.0
        setEnableAuthenticatedUsersOnly(false);  // Still needed for 100% up-time upgrade from before EJBCA 6.3.0
        setEnableKeyRecovery(false);  // Still needed for 100% up-time upgrade from before EJBCA 6.3.0
-       setEnableIcaoCANameChange(false);
     }
     
     public byte[] initHeadBannerLogo(String path) {
@@ -355,7 +354,15 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     public String getLocalKeyRecoveryKeyAlias() { return (String) data.get(LOCALKEYRECOVERYKEYALIAS); }
     public void setLocalKeyRecoveryKeyAlias(final String value) { data.put(LOCALKEYRECOVERYKEYALIAS, value); }
 
+    /**
+     * @deprecated this value has been shifted to GlobalCaConfiguration in 9.4.0 and only remains for 100% uptime and upgrade
+     */
+    @Deprecated(since = "9.4.0")
     public boolean getEnableIcaoCANameChange() { return getBoolean(ENABLEICAOCANAMECHANGE, false); }
+    /**
+     * @deprecated this value has been shifted to GlobalCaConfiguration in 9.4.0 and only remains for 100% uptime and upgrade
+     */
+    @Deprecated(since = "9.4.0")
     public void setEnableIcaoCANameChange(final boolean value) { putBoolean(ENABLEICAOCANAMECHANGE, value);}
     
     /** @return true of email notification of requested approvals should be sent (default false) */
