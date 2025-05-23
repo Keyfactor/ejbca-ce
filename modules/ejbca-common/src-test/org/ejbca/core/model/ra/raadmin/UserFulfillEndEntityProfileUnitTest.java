@@ -33,11 +33,10 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.config.EABConfiguration;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 
 /**
@@ -1260,23 +1259,15 @@ public class UserFulfillEndEntityProfileUnitTest {
         log.trace("<testProfileWithRfc822name");
     }
 
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
-
     /**
      * Test that if Cab Forum Organization Identifier is set to be Used in CP but not in EEP and it is
      * present in the extended information an end entity profile validation exception must be thrown
      * with the appropriate message.
      *
-     * @throws EndEntityProfileValidationException
      */
     @Test
     public void testCabFOrganizationIdentifierNotSetInEEP() throws EndEntityProfileValidationException {
         log.trace(">testCabFOrganizationIdentifierNotSetInEEP");
-
-        expectedException.expect(EndEntityProfileValidationException.class);
-        expectedException.expectMessage("CA/B Forum Organization Identifier is not set to Use in end entity profile but is present in extended information.");
-
         final EndEntityProfile profile = new EndEntityProfile();
         profile.setCabfOrganizationIdentifierUsed(false);
         profile.setAvailableCAs(Collections.singletonList(TEST_CA_1));
@@ -1286,9 +1277,13 @@ public class UserFulfillEndEntityProfileUnitTest {
 
         final CertificateProfile certProfileEndUserWithCabFOIdUse = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         certProfileEndUserWithCabFOIdUse.setUseCabfOrganizationIdentifier(true);
-        profile.doesUserFulfillEndEntityProfile("username", "password", "CN=John Smith", "", "", "",
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei,
-                certProfileEndUserWithCabFOIdUse, null);
+        Throwable throwable =  assertThrows(Throwable.class, () -> {
+            profile.doesUserFulfillEndEntityProfile("username", "password", "CN=John Smith", "", "", "",
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei,
+                    certProfileEndUserWithCabFOIdUse, null);
+        });
+        assertEquals("Incorrect exception was thrown.", EndEntityProfileValidationException.class, throwable.getClass());
+        assertEquals("Incorrect error message in exception.", "CA/B Forum Organization Identifier is not set to Use in end entity profile but is present in extended information.", throwable.getMessage()); 
         log.trace("<testCabFOrganizationIdentifierNotSetInEEP");
     }
 
@@ -1320,11 +1315,6 @@ public class UserFulfillEndEntityProfileUnitTest {
     @Test
     public void testCabFOrganizationIdentifierSetInEEPButNotInRequest() throws Exception {
         log.trace(">testCabFOrganizationIdentifierSetInEEPButNotInRequest");
-
-        expectedException.expect(EndEntityProfileValidationException.class);
-        expectedException.expectMessage("CA/B Forum Organization Identifier is set to Use in end entity profile but is not present in extended information and no predifined value for it set in end entity profile.");
-
-
         final EndEntityProfile profile = new EndEntityProfile();
         profile.setCabfOrganizationIdentifierUsed(true);
         profile.setCabfOrganizationIdentifierRequired(true);
@@ -1335,9 +1325,13 @@ public class UserFulfillEndEntityProfileUnitTest {
 
         final CertificateProfile certProfileEndUserWithCabFOIdUse = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         certProfileEndUserWithCabFOIdUse.setUseCabfOrganizationIdentifier(true);
-        profile.doesUserFulfillEndEntityProfile("username", "password", "CN=John Smith", "", "", "",
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei,
-                certProfileEndUserWithCabFOIdUse, null);
+        Throwable throwable =  assertThrows(Throwable.class, () -> {
+            profile.doesUserFulfillEndEntityProfile("username", "password", "CN=John Smith", "", "", "",
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei,
+                    certProfileEndUserWithCabFOIdUse, null);
+        });
+        assertEquals("Incorrect exception was thrown.", EndEntityProfileValidationException.class, throwable.getClass());
+        assertEquals("Incorrect error message in exception.", "CA/B Forum Organization Identifier is set to Use in end entity profile but is not present in extended information and no predifined value for it set in end entity profile.", throwable.getMessage()); 
 
         log.trace("<testCabFOrganizationIdentifierSetInEEPButNotInRequest");
 
@@ -1368,20 +1362,21 @@ public class UserFulfillEndEntityProfileUnitTest {
 
     @Test
     public void testInvalidEndEntityUsernameShouldThrowException() throws EndEntityProfileValidationException {
-        expectedException.expect(EndEntityProfileValidationException.class);
-        expectedException.expectMessage("Did not pass validation of field Username. Technical details: Value \"invalid-username\" does not match regex \\d");
-
         final EndEntityProfile profile = new EndEntityProfile();
         profile.setUseValidationForUsername(true);
         profile.setUsernameDefaultValidation("\\d");
 
         final CertificateProfile certProfileEndUserWithCabFOIdUse = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         certProfileEndUserWithCabFOIdUse.setUseCabfOrganizationIdentifier(true);
+        Throwable throwable =  assertThrows(Throwable.class, () -> {
+            profile.doesUserFulfillEndEntityProfile("invalid-username", "password", "CN=John Smith",
+                                                    "", "", "", CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                                                    false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1,
+                                                    new ExtendedInformation(), certProfileEndUserWithCabFOIdUse, null);
+        });
+        assertEquals("Incorrect exception was thrown.", EndEntityProfileValidationException.class, throwable.getClass());
+        assertEquals("Incorrect error message in exception.", "Did not pass validation of field Username. Technical details: Value \"invalid-username\" does not match regex \\d", throwable.getMessage()); 
 
-        profile.doesUserFulfillEndEntityProfile("invalid-username", "password", "CN=John Smith",
-                                                "", "", "", CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                                                false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1,
-                                                new ExtendedInformation(), certProfileEndUserWithCabFOIdUse, null);
     }
 
     @Test
@@ -1421,29 +1416,25 @@ public class UserFulfillEndEntityProfileUnitTest {
     @Test
     public void testEABNotSetInEEDefinedInCP() throws EndEntityProfileValidationException {
         log.trace(">testEABNotSetInEEDefinedInCP");
-
-        expectedException.expect(EndEntityProfileValidationException.class);
-        expectedException.expectMessage("Certificate profile requires an External account ID");
-
         final EndEntityProfile profile = new EndEntityProfile();
         profile.setAvailableCAs(Collections.singletonList(TEST_CA_1));
 
         final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         Set<String> namespaces = new HashSet<>(Collections.singletonList("EABNamespace"));
         certificateProfile.setEabNamespaces(namespaces);
-        profile.doesUserFulfillEndEntityProfile("username", "password", "CN=John Smith", "", "", "",
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1,
-                null, certificateProfile, null);
+        Throwable throwable =  assertThrows(Throwable.class, () -> {
+            profile.doesUserFulfillEndEntityProfile("username", "password", "CN=John Smith", "", "", "",
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1,
+                    null, certificateProfile, null);
+        });
+        assertEquals("Incorrect exception was thrown.", EndEntityProfileValidationException.class, throwable.getClass());
+        assertEquals("Incorrect error message in exception.", "Certificate profile requires an External account ID", throwable.getMessage()); 
         log.trace("<testEABNotSetInEEDefinedInCP");
     }
 
     @Test
     public void testEABInEENamespaceNotInConfigs() throws EndEntityProfileValidationException {
         log.trace(">testEABInEENamespaceNotInConfigs");
-
-        expectedException.expect(EndEntityProfileValidationException.class);
-        expectedException.expectMessage("Account bindings namespace in Certificate profile is outdated (not present in System Configurations)");
-
         final EndEntityProfile profile = new EndEntityProfile();
         profile.setAvailableCAs(Collections.singletonList(TEST_CA_1));
         ExtendedInformation ei = new ExtendedInformation();
@@ -1458,18 +1449,19 @@ public class UserFulfillEndEntityProfileUnitTest {
         final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         Set<String> namespaces = new HashSet<>(Collections.singletonList("EABNamespace"));
         certificateProfile.setEabNamespaces(namespaces);
-        profile.doesUserFulfillEndEntityProfile("username", "password", "CN=John Smith", "", "", "",
+        Throwable throwable =  assertThrows(Throwable.class, () -> {
+            profile.doesUserFulfillEndEntityProfile("username", "password", "CN=John Smith", "", "", "",
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1,
                 ei, certificateProfile, eabConfiguration);
+        });
+        assertEquals("Incorrect exception was thrown.", EndEntityProfileValidationException.class, throwable.getClass());
+        assertEquals("Incorrect error message in exception.", "Account bindings namespace in Certificate profile is outdated (not present in System Configurations)", throwable.getMessage()); 
         log.trace("<testEABInEENamespaceNotInConfigs");
     }
 
     @Test
     public void testEABInEEAccountIdNotInConfigs() throws EndEntityProfileValidationException {
         log.trace(">testEABInEENamespaceNotInConfigs");
-
-        expectedException.expect(EndEntityProfileValidationException.class);
-        expectedException.expectMessage("External account ID is not in the list of allowed account ids");
 
         final EndEntityProfile profile = new EndEntityProfile();
         profile.setAvailableCAs(Collections.singletonList(TEST_CA_1));
@@ -1487,9 +1479,13 @@ public class UserFulfillEndEntityProfileUnitTest {
         final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         Set<String> namespaces = new HashSet<>(Collections.singletonList(eabNamespace));
         certificateProfile.setEabNamespaces(namespaces);
-        profile.doesUserFulfillEndEntityProfile("username", "password", "CN=John Smith", "", "", "",
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1,
-                ei, certificateProfile, eabConfiguration);
+        Throwable throwable =  assertThrows(Throwable.class, () -> {
+            profile.doesUserFulfillEndEntityProfile("username", "password", "CN=John Smith", "", "", "",
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1,
+                    ei, certificateProfile, eabConfiguration);
+        });
+        assertEquals("Incorrect exception was thrown.", EndEntityProfileValidationException.class, throwable.getClass());
+        assertEquals("Incorrect error message in exception.", "External account ID is not in the list of allowed account ids", throwable.getMessage()); 
         log.trace("<testEABInEENamespaceNotInConfigs");
     }
 

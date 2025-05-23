@@ -17,14 +17,7 @@ import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.PostLoad;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
-
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -40,6 +33,13 @@ import org.ejbca.util.crypto.SupportedPasswordHashAlgorithm;
 
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.DnComponents;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.PostLoad;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 /**
  * Representation of an End Entity, called User for legacy reasons an end entity can be a server, device, or a user.
@@ -545,7 +545,10 @@ public class UserData extends ProtectedData implements Serializable {
     /**
      * 
      * @return which hashing algorithm was used for this UserData object
+     * 
+     * @deprecated only used for allowing cli roles created in EJBCA 5.0
      */
+    @Deprecated(since = "9.4")
     public SupportedPasswordHashAlgorithm findHashAlgorithm() {
         final String hash = getPasswordHash();
         if (StringUtils.startsWith(hash, "$2")) {
@@ -569,17 +572,7 @@ public class UserData extends ProtectedData implements Serializable {
                 ret = transientPwd.equals(password);
             } else {
                 final String hash = getPasswordHash();
-                // Check if it is a new or old style hashing
-                switch (findHashAlgorithm()) {
-                case SHA1_BCRYPT:
-                    // new style with good salt
-                    ret = BCrypt.checkpw(password, hash);
-                    break;
-                case SHA1_OLD:
-                default:
-                    ret = CryptoTools.makeOldPasswordHash(password).equals(getPasswordHash());
-                    break;
-                }
+                ret = BCrypt.checkpw(password, hash);
             }
         }
         if (log.isTraceEnabled()) {

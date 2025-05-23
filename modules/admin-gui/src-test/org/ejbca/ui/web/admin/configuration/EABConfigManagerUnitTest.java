@@ -12,22 +12,18 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.configuration;
 
-import org.ejbca.core.EjbcaException;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import org.ejbca.core.EjbcaException;
+import org.junit.Test;
 
 public class EABConfigManagerUnitTest {
-
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
 
     @Test
     public void emptyFile() throws EjbcaException {
@@ -71,39 +67,45 @@ public class EABConfigManagerUnitTest {
     @Test
     public void extraColumns() throws EjbcaException {
 
-        expectedException.expect(EjbcaException.class);
-        expectedException.expectMessage("Wrong file format error in line 2");
-
         final byte[] bytes = ("Flowers, Rose\n" +
                 "Flowers, Lily , Something\n"
         ).getBytes(StandardCharsets.UTF_8);
-        EABConfigManager.parseCsvToMap(bytes, null);
+        Throwable throwable =  assertThrows(Throwable.class, () -> {
+            EABConfigManager.parseCsvToMap(bytes, null);
+        });
+        assertEquals("Incorrect exception was thrown.", EjbcaException.class, throwable.getClass());
+        assertEquals("Incorrect error message in exception.", "Wrong file format error in line 2", throwable.getMessage());   
     }
 
     @Test
     public void oneColumns() throws EjbcaException {
-        expectedException.expect(EjbcaException.class);
-        expectedException.expectMessage("Wrong file format error in line 1");
-
         final byte[] bytes = ("Flowers\n" +
                 "Flowers, Lily \n"
         ).getBytes(StandardCharsets.UTF_8);
-        EABConfigManager.parseCsvToMap(bytes, null);
+        Throwable throwable =  assertThrows(Throwable.class, () -> {
+            EABConfigManager.parseCsvToMap(bytes, null);
+        });
+        assertEquals("Incorrect exception was thrown.", EjbcaException.class, throwable.getClass());
+        assertEquals("Incorrect error message in exception.", "Wrong file format error in line 1", throwable.getMessage());   
     }
 
     @Test
     public void unecpectedCharactersInAccountID() throws EjbcaException {
-        expectedException.expect(EjbcaException.class);
-        expectedException.expectMessage("Namespace or accountId contains characters that are not allowed in line");
         final byte[] bytes = ( "Flowers, Li@ly \n").getBytes(StandardCharsets.UTF_8);
-        EABConfigManager.parseCsvToMap(bytes, null);
+        Throwable throwable =  assertThrows(Throwable.class, () -> {
+            EABConfigManager.parseCsvToMap(bytes, null);
+        });
+        assertEquals("Incorrect exception was thrown.", EjbcaException.class, throwable.getClass());
+        assertEquals("Incorrect error message in exception.", "Namespace or accountId contains characters that are not allowed in line 1", throwable.getMessage());   
     }
 
     @Test
     public void unecpectedCharactersInNamespace() throws EjbcaException {
-        expectedException.expect(EjbcaException.class);
-        expectedException.expectMessage("Namespace or accountId contains characters that are not allowed in line");
         final byte[] bytes = ( "Flowers, Lily \n Flo*wers, Lily \n").getBytes(StandardCharsets.UTF_8);
-        EABConfigManager.parseCsvToMap(bytes, null);
+        Throwable throwable =  assertThrows(Throwable.class, () -> {
+            EABConfigManager.parseCsvToMap(bytes, null);
+        });
+        assertEquals("Incorrect exception was thrown.", EjbcaException.class, throwable.getClass());
+        assertEquals("Incorrect error message in exception.", "Namespace or accountId contains characters that are not allowed in line 2", throwable.getMessage());   
     }
 }

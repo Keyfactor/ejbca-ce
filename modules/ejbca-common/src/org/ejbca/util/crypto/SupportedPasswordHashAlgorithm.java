@@ -1,3 +1,4 @@
+
 /*************************************************************************
  *                                                                       *
  *  EJBCA Community: The OpenSource Certificate Authority                *
@@ -15,11 +16,10 @@ package org.ejbca.util.crypto;
 /**
  * Simple enum to cover the supported password hash algorithms
  * 
- * @version $Id$
- *
+ * Note that only the SHA1 w. BCrypt value should be used in practice, the other value is only for backwards compatability. 
  */
 public enum SupportedPasswordHashAlgorithm {
-    SHA1_OLD("SHA1 without salt"), SHA1_BCRYPT("SHA1 using BCrypt");
+  @Deprecated  SHA1_OLD("SHA1 without salt"), SHA1_BCRYPT("SHA1 using BCrypt");
     
     private String name;
     

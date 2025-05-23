@@ -39,8 +39,6 @@ public class SetUpgradeVersionCommand extends EjbcaCliUserCommandBase {
     private static final String DEPLOYED_VERSION_KEY = "--deployed";
     private static final String POSTUPGRADED_VERSION_KEY = "--post-upgraded";
 
-    private static final String INITIAL_NOTE = "note that versions before 5.0 did not store the initial version";
-
     {
         registerParameter(new Parameter(INITIAL_VERSION_KEY, "Initial version", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW,
                 ParameterMode.ARGUMENT, "Sets the version number of the initial installation."));
@@ -65,11 +63,10 @@ public class SetUpgradeVersionCommand extends EjbcaCliUserCommandBase {
             log.info("Initial installation version: " + upgradeConfig.getUpgradedFromVersion() + " *");
             log.info("Highest deployed version:     " + upgradeConfig.getUpgradedToVersion());
             log.info("Post-upgraded to version:     " + upgradeConfig.getPostUpgradedToVersion());
-            log.info("* " + INITIAL_NOTE);
             return CommandResult.SUCCESS;
         }
         if (parameters.containsKey(INITIAL_VERSION_KEY)) {
-            log.info("Setting initial install version to " + StringUtils.rightPad(parameters.get(INITIAL_VERSION_KEY), 14) + " (was " + upgradeConfig.getUpgradedFromVersion() + ", " + INITIAL_NOTE + ")");
+            log.info("Setting initial install version to " + StringUtils.rightPad(parameters.get(INITIAL_VERSION_KEY), 14) + " (was " + upgradeConfig.getUpgradedFromVersion() + ")");
             upgradeConfig.setUpgradedFromVersion(parameters.get(INITIAL_VERSION_KEY));
         }
         if (parameters.containsKey(DEPLOYED_VERSION_KEY)) {
