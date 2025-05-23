@@ -933,7 +933,7 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     }
     
     public String encodeUserName(final String userName) throws UnsupportedEncodingException {
-        return java.net.URLEncoder.encode(userName, StandardCharsets.UTF_8);
+        return URLEncoder.encode(userName, StandardCharsets.UTF_8);
     }
     
     public String getAddedUserCN(final UserView addedUser) {
