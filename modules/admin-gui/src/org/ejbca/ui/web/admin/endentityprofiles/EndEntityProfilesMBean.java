@@ -589,6 +589,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     
     public void actionCloneConfirm() {
         clearMessages();
+        clonedProfileName = clonedProfileName.trim();
         if (isAuthorizedToEdit() && validateEndEntityProfileName() && validateEndEntityProfileName(clonedProfileName)) {
             try {
                 endEntityProfileSession.cloneEndEntityProfile(getAdmin(), endEntityProfileName, clonedProfileName);
