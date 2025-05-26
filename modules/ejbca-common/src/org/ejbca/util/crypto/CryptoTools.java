@@ -19,7 +19,6 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.security.KeyFactory;
 import java.security.KeyPair;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
@@ -64,7 +63,6 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.spec.ECParameterSpec;
 import org.bouncycastle.jce.spec.ECPublicKeySpec;
 import org.bouncycastle.math.ec.ECPoint;
-import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.KeyEncryptionPaddingAlgorithm;
 import org.cesecore.util.LookAheadObjectInputStream;
 import org.ejbca.config.EjbcaConfiguration;
@@ -94,30 +92,10 @@ public class CryptoTools {
         if (rounds > 0) {
             return BCrypt.hashpw(password, BCrypt.gensalt(rounds));
         } else {
-            return makeOldPasswordHash(password);
+            throw new IllegalStateException("Number of hash rounds can not be set till 0 or less.");
         }
     }
 
-    /**
-     * Creates the hashed password using the old hashing, which is a plain SHA1 password.
-     * 
-     * This was used for password creation until the EJBCA 4.0 release.
-     */
-    public static String makeOldPasswordHash(String password) {
-        if (password == null) {
-            return null;
-        }
-        String ret = null;
-        try {
-            final MessageDigest md = MessageDigest.getInstance("SHA1");
-            final byte[] pwdhash = md.digest(password.trim().getBytes());
-            ret = new String(Hex.encode(pwdhash));
-        } catch (NoSuchAlgorithmException e) {
-            log.error("SHA1 algorithm not supported.", e);
-            throw new Error("SHA1 algorithm not supported.", e);
-        }
-        return ret;
-    }
 
     /**
      * This method takes a BCrypt-generated password hash and extracts the salt element into cleartext.

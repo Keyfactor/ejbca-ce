@@ -13,7 +13,9 @@
 package org.ejbca.core.ejb.rest;
 
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 
 import java.security.KeyPair;
 import java.security.cert.CertificateException;
@@ -35,9 +37,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionBeanSystemTest;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.EJBTools;
@@ -56,9 +56,6 @@ public class EjbcaRestHelperSessionBeanSystemTest {
     private final TestAlwaysAllowLocalAuthenticationToken internalToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
             WebAuthenticationProviderSessionBeanSystemTest.class.getSimpleName()));
 
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProviderIfNotAvailable();
@@ -68,18 +65,22 @@ public class EjbcaRestHelperSessionBeanSystemTest {
     @Test
     public void getAdmin_CertOrOauthTokenRequired() throws AuthorizationDeniedException {
         log.trace(">getAdmin_CertOrOauthTokenRequired");
-        exceptionRule.expect(AuthorizationDeniedException.class);
-        exceptionRule.expectMessage("Authorization failed. No certificates or OAuth token provided.");
-        ejbcaRestHelperProxySessionRemote.getAdmin(false, null, null);
+        Throwable throwable =  assertThrows(Throwable.class, () -> {
+            ejbcaRestHelperProxySessionRemote.getAdmin(false, null, null);
+        });
+        assertEquals("Incorrect exception was thrown.", AuthorizationDeniedException.class, throwable.getClass());
+        assertEquals("Incorrect error message in exception.", "Authorization failed. No certificates or OAuth token provided.", throwable.getMessage());   
         log.trace("<getAdmin_CertOrOauthTokenRequired");
     }
 
     @Test
     public void getAdmin_OauthIsCalled() throws AuthorizationDeniedException {
         log.trace(">getAdmin_OauthIsCalled");
-        exceptionRule.expect(AuthorizationDeniedException.class);
-        exceptionRule.expectMessage("Authentication failed using OAuth Bearer Token");
-        ejbcaRestHelperProxySessionRemote.getAdmin(false, null, "BAD_TOKEN");
+        Throwable throwable =  assertThrows(Throwable.class, () -> {
+            ejbcaRestHelperProxySessionRemote.getAdmin(false, null, "BAD_TOKEN");
+        });
+        assertEquals("Incorrect exception was thrown.", AuthorizationDeniedException.class, throwable.getClass());
+        assertEquals("Incorrect error message in exception.", "Authentication failed using OAuth Bearer Token", throwable.getMessage());   
         log.trace("<getAdmin_OauthIsCalled");
     }
 

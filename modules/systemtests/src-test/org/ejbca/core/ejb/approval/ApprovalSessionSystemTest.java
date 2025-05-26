@@ -1000,7 +1000,7 @@ public class ApprovalSessionSystemTest extends CaTestCase {
         final CliAuthenticationToken authenticationToken = (CliAuthenticationToken) EjbRemoteHelper.INSTANCE.getRemoteSession(
                 CliAuthenticationProviderSessionRemote.class).authenticate(subject);
 
-        authenticationToken.setSha1HashFromCleartextPassword(password);
+        authenticationToken.setHashFromCleartextPassword(password);
         return authenticationToken;
 
     }

@@ -122,9 +122,8 @@ public class CmpConfirmResponseMessage extends BaseCmpMessage implements Respons
 		final PKIBody myPKIBody = new PKIBody(19, DERNull.INSTANCE);
 		PKIMessage myPKIMessage = null;
 
-		final boolean pbeProtected = (getPbeDigestAlg() != null) && (getPbeMacAlg() != null) && (getPbeKeyId() != null) && (getPbeKey() != null) ;
-		final boolean pbmac1Protected = (getPbmac1PrfAlg() != null) && (getPbmac1MacAlg() != null) && (getPbmac1KeyId() != null)
-				&& (getPbmac1Key() != null);
+		final boolean pbeProtected = (getPbeDigestAlg() != null) && (getPbeMacAlg() != null) && (getPbeKey() != null);
+		final boolean pbmac1Protected = (getPbmac1PrfAlg() != null) && (getPbmac1MacAlg() != null) && (getPbmac1Key() != null);
 		if (pbeProtected) {
 		    myPKIHeader.setProtectionAlg(new AlgorithmIdentifier(new ASN1ObjectIdentifier(getPbeDigestAlg())));
 		    myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);

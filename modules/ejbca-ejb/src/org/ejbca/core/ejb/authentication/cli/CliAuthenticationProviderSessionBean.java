@@ -19,12 +19,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.ejb.EJB;
-import jakarta.ejb.Stateless;
-import jakarta.ejb.TransactionAttribute;
-import jakarta.ejb.TransactionAttributeType;
-
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
@@ -44,7 +38,14 @@ import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.util.crypto.BCrypt;
 import org.ejbca.util.crypto.SupportedPasswordHashAlgorithm;
+
 import com.keyfactor.util.RandomHelper;
+
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 
 
 /**
@@ -75,13 +76,10 @@ public class CliAuthenticationProviderSessionBean implements CliAuthenticationPr
     private SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
     
     @PostConstruct
-    public void initialize() throws RuntimeException {
-        try {
-            String algorithm = CesecoreConfiguration.getCaSerialNumberAlgorithm();
-            randomGenerator = RandomHelper.getInstance(algorithm);
-        } catch (IllegalStateException e) {
-            throw new RuntimeException(e);
-        }
+    public void initialize() {
+        final String algorithm = CesecoreConfiguration.getCaSerialNumberAlgorithm();
+        randomGenerator = RandomHelper.getInstance(algorithm);
+
     }
 
     @Override
@@ -114,6 +112,7 @@ public class CliAuthenticationProviderSessionBean implements CliAuthenticationPr
             }
 
             try {               
+                //Supported to allow for CLI users created back in 5.0
                 AbstractMap.SimpleEntry<String, SupportedPasswordHashAlgorithm> passwordAndAlgorithm = endEntityAccessSession
                         .getPasswordAndHashAlgorithmForUser(usernamePrincipal.getName());
                 CliAuthenticationToken result = new CliAuthenticationToken(usernamePrincipal, passwordAndAlgorithm.getKey(),
@@ -123,9 +122,7 @@ public class CliAuthenticationProviderSessionBean implements CliAuthenticationPr
                     log.debug("User " + usernamePrincipal.getName() + " authenticated.");
                 }
                 /*
-                 * It is imperative that a cloned version of the
-                 * CliAuthenticationToken is returned, not containing the SHA1
-                 * hash.
+                 * It is imperative that a cloned version of the CliAuthenticationToken is returned, not containing the SHA1 hash.
                  */
                 return result.clone();
             } catch (NotFoundException e) {         

@@ -1692,7 +1692,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         endEntityAuthenticationSession.assertAuthorizedToCA(authenticationToken, caId);
         try {
             final Date now = new Date();
-            if ((newPasswd == null) && (clearText)) {
+            if ((newPasswd == null) && clearText) {
                 data.setClearPassword("");
                 data.setPasswordHash("");
             } else {

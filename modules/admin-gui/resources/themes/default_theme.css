@@ -1425,7 +1425,7 @@ body.popup {
 }
 
 .mandatory {
-	border:2px solid #FFC300;
+	border:2px solid #FFC300 !important;
 }
 
 .smallHelp {
