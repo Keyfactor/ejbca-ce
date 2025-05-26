@@ -177,9 +177,12 @@ public class ProtocolOcspSignedHttpSystemTest extends CaTestCase {
         // Make user that we know...
         boolean userExists = endEntityManagementSession.existsUser(END_ENTITY_NAME);
         if (!userExists) {
-            endEntityManagementSession.addUser(admin, END_ENTITY_NAME, "foo123", "C=SE,O=AnaTom,CN=OCSPTest", null, "ocsptest@anatom.se", false,
-                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(),
-                    SecConst.TOKEN_SOFT_PEM, caid);
+            EndEntityInformation endEntityInformation = new EndEntityInformation(END_ENTITY_NAME, "C=SE,O=AnaTom,CN=OCSPTest", caid, null,
+                    "ocsptest@anatom.se", EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_PEM, null);
+            endEntityInformation.setPassword("foo123");
+            endEntityManagementSession.addUser(admin, endEntityInformation, false);
+            
             log.debug("created user: ocsptest, foo123, C=SE, O=AnaTom, CN=OCSPTest");
         } else {
             log.debug("User ocsptest already exists.");

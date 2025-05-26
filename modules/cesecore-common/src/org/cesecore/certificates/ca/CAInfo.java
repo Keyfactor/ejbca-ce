@@ -15,7 +15,6 @@ package org.cesecore.certificates.ca;
 import java.io.Serializable;
 import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;

@@ -12,6 +12,11 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra;
 
+import java.math.BigInteger;
+import java.security.cert.Certificate;
+import java.util.Date;
+import java.util.List;
+
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -19,7 +24,6 @@ import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.certificates.endentity.EndEntityType;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.dto.CertRevocationDto;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -29,45 +33,9 @@ import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 
-import java.math.BigInteger;
-import java.security.cert.Certificate;
-import java.util.Date;
-import java.util.List;
-
 /** Session bean handling end entity administration, i.e. adding and editing end entities.
  */
 public interface EndEntityManagementSession {
-    /**
-     * @param admin the administrator performing the action
-     * @param username the unique user name.
-     * @param password the password used for authentication.
-     * @param subjectdn the DN the subject is given in his certificate.
-     * @param subjectaltname the Subject Alternative Name to be used.
-     * @param email the email of the subject or null.
-     * @param clearpwd true if the password will be stored in clear form in the
-     *            db, otherwise it is hashed.
-     * @param endentityprofileid
-     *            the id number of the end entity profile bound to this user.
-     * @param certificateprofileid the id number of the certificate profile
-     *            that should be generated for the user.
-     * @param type of user i.e administrator, keyrecoverable and/or
-     *            sendnotification, from SecConst.USER_XX.
-     * @param tokentype the type of token to be generated, one of
-     *            SecConst.TOKEN constants
-     * @param caid the CA the user should be issued from.
-     * @throws CADoesntExistsException if the caid of the user does not exist
-     * @throws CertificateSerialNumberException if SubjectDN serial number already exists.
-     * @throws ApprovalException if an approval already exists for this request.
-     * @throws IllegalNameException if the Subject DN failed constraints
-     * @throws CustomFieldException if the end entity was not validated by a locally defined field validator
-     * @throws EndEntityExistsException if an end entity by the specified username already exists
-     * @deprecated use {@link #addUser(AuthenticationToken, EndEntityInformation, boolean)} instead.
-     */
-    @Deprecated
-    void addUser(AuthenticationToken admin, String username, String password, String subjectdn, String subjectaltname, String email,
-    		boolean clearpwd, int endentityprofileid, int certificateprofileid, EndEntityType type, int tokentype, int caid)
-    		throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException,
-    		CADoesntExistsException, EndEntityExistsException, CustomFieldException, IllegalNameException, ApprovalException, CertificateSerialNumberException;
 
     /**
      * addUserFromWS is called from EjbcaWS if profile specifies merge data from

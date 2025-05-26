@@ -13,6 +13,9 @@
 
 package org.ejbca.core.model.services;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.Collection;
@@ -38,7 +41,6 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.services.ServiceSession;
 import org.ejbca.core.ejb.services.ServiceSessionRemote;
 import org.ejbca.core.ejb.services.ServiceTestSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.services.actions.NoAction;
 import org.ejbca.core.model.services.intervals.PeriodicalInterval;
 import org.ejbca.core.model.services.workers.EmailSendingWorkerConstants;
@@ -48,9 +50,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Tests parts of the ServiceSession. The tests depends on the UserPasswordExpire functionality to have something to run with.
@@ -298,8 +297,12 @@ public class ServiceServiceSystemTest extends CaTestCase {
     private ServiceConfiguration createAServiceConfig(final String username, final String caName) throws Exception {
         // Create a new user
         final String pwd = genRandomPwd();
-        getEndEntityManagementSession().addUser(admin, username, pwd, "C=SE,O=AnaTom,CN=" + username, null, null, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.INVALID.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, getTestCAId(caName));
+        EndEntityInformation endEntityInformation = new EndEntityInformation(username, "C=SE,O=AnaTom,CN=" + username, getTestCAId(caName), null,
+                null, EndEntityTypes.INVALID.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_P12, null);
+        endEntityInformation.setPassword(pwd);
+        endEntityManagementSession.addUser(admin, endEntityInformation, false);
+        
         log.debug("created user: " + username);
 
         // Create a new UserPasswordExpireService
@@ -332,9 +335,9 @@ public class ServiceServiceSystemTest extends CaTestCase {
         workerprop.setProperty(BaseWorker.PROP_TIMEUNIT, BaseWorker.UNIT_SECONDS);
         config.setWorkerProperties(workerprop);
 
-        getServiceSession().addService(admin, name, config);
-        getServiceSession().activateServiceTimer(admin, name);        
-        return getServiceSession().getServiceId(name);
+        serviceSession.addService(admin, name, config);
+        serviceSession.activateServiceTimer(admin, name);        
+        return serviceSession.getServiceId(name);
 
     }
 
@@ -373,11 +376,4 @@ public class ServiceServiceSystemTest extends CaTestCase {
         return hostnames;
     }
 
-    private EndEntityManagementSession getEndEntityManagementSession() {
-        return endEntityManagementSession;
-    }
-
-    public ServiceSession getServiceSession() {
-        return serviceSession;
-    }
 }
