@@ -638,8 +638,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
     public List<SelectItem> getKeyEncryptionPaddingAlgorithmList() {
         final List<SelectItem> resultList = new ArrayList<>();
-        resultList.add(new SelectItem(KeyEncryptionPaddingAlgorithm.PKCS_1_5, KeyEncryptionPaddingAlgorithm.PKCS_1_5.name));
-        resultList.add(new SelectItem(KeyEncryptionPaddingAlgorithm.RSA_OAEP, KeyEncryptionPaddingAlgorithm.RSA_OAEP.name));
+        resultList.add(new SelectItem(KeyEncryptionPaddingAlgorithm.PKCS_1_5, KeyEncryptionPaddingAlgorithm.PKCS_1_5.getName()));
+        resultList.add(new SelectItem(KeyEncryptionPaddingAlgorithm.RSA_OAEP, KeyEncryptionPaddingAlgorithm.RSA_OAEP.getName()));
         return resultList;
     }
 
