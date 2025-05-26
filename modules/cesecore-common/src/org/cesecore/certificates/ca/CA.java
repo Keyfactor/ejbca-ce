@@ -115,7 +115,10 @@ public interface CA extends CACommon {
     /** whether revocations for non existing entry accepted */
     boolean isAcceptRevocationNonExistingEntry();
     
-    /**whether users choose RSA-OAEP or PKCS1.5 */
+    /** 
+     * @return padding algorithm chosen for PKCS#12 encryption
+     * @since 9.3 
+     */
     KeyEncryptionPaddingAlgorithm getKeyEncryptionPaddingAlgorithm();
     
     // Methods used with extended services

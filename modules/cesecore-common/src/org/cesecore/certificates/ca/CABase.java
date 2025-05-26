@@ -213,23 +213,33 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         }
     }
 
-    /** Sets the Key Encryption Padding Algorithm
+    /** 
+     * Sets the padding algorithm used for PKCS#12 encryption
+     * 
      * @param keyEncryptionPaddingAlgorithm one of CAInfo.KEY_ENCRYPT_ALGORITHM_RSA_PKCS_1_5, etc
      */
-    public void setKeyEncryptionPaddingAlgorithm(KeyEncryptionPaddingAlgorithm keyEncryptionPaddingAlgorithm) {
-        data.put(KEY_ENCRYPTION_PADDING_ALGORITHM, keyEncryptionPaddingAlgorithm);
+    public void setKeyEncryptionPaddingAlgorithm(final KeyEncryptionPaddingAlgorithm keyEncryptionPaddingAlgorithm) {
+        data.put(KEY_ENCRYPTION_PADDING_ALGORITHM, keyEncryptionPaddingAlgorithm.getName());
     }
 
-    /** Returns the Key Encryption Padding Algorithm
-     * @return one of CAInfo.KEY_ENCRYPT_ALGORITHM_RSA_PKCS_1_5, etc
+    /**
+     * @return padding algorithm chosen for PKCS#12 encryption
      */
     @Override
     public KeyEncryptionPaddingAlgorithm getKeyEncryptionPaddingAlgorithm() {
         Object algorithm = data.get(KEY_ENCRYPTION_PADDING_ALGORITHM);
         if (algorithm == null) {
-            algorithm = KeyEncryptionPaddingAlgorithm.PKCS_1_5;
+            return KeyEncryptionPaddingAlgorithm.PKCS_1_5;
+        } else {
+            // For 9.3 the enum object was serialized, but this was changed in 9.3.2 to a string to not cause issues during upgrade.
+            // Thus we have a soft fail here if we encounter the serialized object.
+            if(algorithm instanceof KeyEncryptionPaddingAlgorithm) {
+                return (KeyEncryptionPaddingAlgorithm) algorithm;
+            } else {
+                return KeyEncryptionPaddingAlgorithm.getByName((String) algorithm);
+            }
         }
-        return (KeyEncryptionPaddingAlgorithm) algorithm;
+        
     }
 
     @Override
