@@ -12,20 +12,18 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.validator;
 
-import org.cesecore.config.GlobalCesecoreConfiguration;
+import static org.easymock.EasyMock.createMock;
+import static org.easymock.EasyMock.createNiceMock;
+import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.verify;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.easymock.EasyMock;
 import org.junit.Before;
 import org.junit.Test;
 
 import jakarta.validation.ConstraintValidatorContext;
-
-import static org.easymock.EasyMock.createMock;
-import static org.easymock.EasyMock.createNiceMock;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
-import static org.junit.Assert.assertTrue;
-
-import static org.junit.Assert.assertFalse;
 
 public class ValidSearchEndEntityMaxNumberOfResultsUnitTest {
 

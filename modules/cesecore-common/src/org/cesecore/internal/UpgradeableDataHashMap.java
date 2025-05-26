@@ -14,7 +14,6 @@
 package org.cesecore.internal;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -22,7 +21,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.cesecore.util.Base64GetHashMap;
-import org.cesecore.util.ConverterUtils;
 
 
 /**

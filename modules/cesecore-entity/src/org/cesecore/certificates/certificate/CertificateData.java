@@ -17,15 +17,12 @@ import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.util.Date;
-import java.util.List;
 
 import jakarta.persistence.ColumnResult;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EntityManager;
 import jakarta.persistence.PostLoad;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Query;
 import jakarta.persistence.SqlResultSetMapping;
 import jakarta.persistence.SqlResultSetMappings;
 import jakarta.persistence.Table;
@@ -753,49 +750,6 @@ public class CertificateData extends BaseCertificateData implements Serializable
         return fingerprint.hashCode() * 11;
     }
 
-    //
-    // Search functions (deprecated, use methods in CertificateDataSession instead)
-    //
-
-    /** @deprecated Since 6.13.0. Use method in CertificateDataSession instead */
-    @Deprecated
-    public static CertificateData findByFingerprint(EntityManager entityManager, String fingerprint) {
-        return entityManager.find(CertificateData.class, fingerprint);
-    }
-
-    /**
-     * Get next batchSize row ordered by fingerprint. Used by OcspMonitoringTool.
-     *
-     * @param certificateProfileId
-     * @param currentFingerprint
-     * @param batchSize
-     * @return List of certificates
-     */
-    @SuppressWarnings("unchecked")
-    public static List<CertificateData> getNextBatch(EntityManager entityManager, int certificateProfileId, String currentFingerprint, int batchSize) {
-        final Query query = entityManager
-                .createQuery("SELECT a FROM CertificateData a WHERE a.fingerprint>:currentFingerprint AND a.certificateProfileId=:certificateProfileId ORDER BY a.fingerprint ASC");
-        query.setParameter("certificateProfileId", certificateProfileId);
-        query.setParameter("currentFingerprint", currentFingerprint);
-        query.setMaxResults(batchSize);
-        return query.getResultList();
-    }
-
-    /** Returns the number of entries with the given certificate profile. Used by OcspMonitoringTool. */
-    public static long getCount(EntityManager entityManager, int certificateProfileId) {
-        final Query countQuery = entityManager
-                .createQuery("SELECT COUNT(a) FROM CertificateData a WHERE a.certificateProfileId=:certificateProfileId");
-        countQuery.setParameter("certificateProfileId", certificateProfileId);
-        return ((Long) countQuery.getSingleResult()).longValue(); // Always returns a result
-    }
-
-    /** Returns a list of Certificate Profile IDs that are used in certificates. Used by OcspMonitoringTool. */
-    @SuppressWarnings("unchecked")
-    public static List<Integer> getUsedCertificateProfileIds(EntityManager entityManager) {
-        final Query query = entityManager.createQuery("SELECT DISTINCT a.certificateProfileId FROM CertificateData a ORDER BY a.certificateProfileId");
-        return query.getResultList();
-    } 
-    
     //
     // Start Database integrity protection methods
     //

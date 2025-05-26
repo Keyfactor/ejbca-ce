@@ -1061,8 +1061,11 @@ Content-Type: text/html; charset=iso-8859-1
             final int eepId = eeProfSession.getEndEntityProfileId(eepname);
 
             if (!endEntityManagementSession.existsUser(username)) {
-                endEntityManagementSession.addUser(admin, username, FOO123_PASSWORD, "CN=certUsername", null, "ocsptest@anatom.se", false,
-                        eepId, cpId, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, caid);
+                EndEntityInformation endEntityInformation = new EndEntityInformation(username, "CN=certUsername", caid,
+                        null, "ocsptest@anatom.se", EndEntityTypes.ENDUSER.toEndEntityType(), eepId, cpId,
+                        SecConst.TOKEN_SOFT_P12, null);
+                endEntityInformation.setPassword(FOO123_PASSWORD);
+                endEntityManagementSession.addUser(admin, endEntityInformation, false);
                 log.debug("created user: certUsername, foo123, CN=certUsername");
             } else {
                 log.debug("User certUsername already exists.");
@@ -1099,9 +1102,11 @@ Content-Type: text/html; charset=iso-8859-1
             ocspKeyBindingId = OcspTestUtils.createInternalKeyBinding(admin, cryptoTokenId, OcspKeyBinding.IMPLEMENTATION_ALIAS, TESTCLASS_NAME,
                     "RSA2048", AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
             if (!endEntityManagementSession.existsUser("ocspSigner")) {
-                endEntityManagementSession.addUser(admin, "ocspSigner", FOO123_PASSWORD, "CN=ocspSigner", null, "ocsptest@anatom.se", false, eepId,
-                    cpId, EndEntityTypes.ENDUSER.toEndEntityType(),
-                        EndEntityConstants.TOKEN_USERGEN, caid);
+                EndEntityInformation endEntityInformation = new EndEntityInformation( "ocspSigner", "CN=ocspSigner", caid,
+                        null, "ocsptest@anatom.se", EndEntityTypes.ENDUSER.toEndEntityType(), eepId, cpId,
+                        EndEntityConstants.TOKEN_USERGEN, null);
+                endEntityInformation.setPassword(FOO123_PASSWORD);
+                endEntityManagementSession.addUser(admin, endEntityInformation, false);
             } else {
                 log.debug("User ocspSigner already exists.");
                 EndEntityInformation userData = new EndEntityInformation("ocspSigner", "CN=ocspSigner",
@@ -1198,8 +1203,12 @@ Content-Type: text/html; charset=iso-8859-1
             final int eepId = eeProfSession.getEndEntityProfileId(eepname);
 
             if (!endEntityManagementSession.existsUser(username)) {
-                endEntityManagementSession.addUser(admin, username, FOO123_PASSWORD, "CN=certUsername", null, "ocsptest@anatom.se", false,
-                        eepId, cpId, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, caid);
+                EndEntityInformation endEntityInformation = new EndEntityInformation( username, "CN=certUsername", caid,
+                        null, "ocsptest@anatom.se", EndEntityTypes.ENDUSER.toEndEntityType(), eepId, cpId,
+                        EndEntityConstants.TOKEN_SOFT_PEM, null);
+                endEntityInformation.setPassword(FOO123_PASSWORD);
+                endEntityManagementSession.addUser(admin, endEntityInformation, false);
+               
                 log.debug("created user: certUsername, foo123, CN=certUsername");
             } else {
                 log.debug("User certUsername already exists.");
@@ -1241,9 +1250,12 @@ Content-Type: text/html; charset=iso-8859-1
             ocspKeyBindingId = OcspTestUtils.createInternalKeyBinding(admin, cryptoTokenId, OcspKeyBinding.IMPLEMENTATION_ALIAS, TESTCLASS_NAME,
                     "RSA2048", AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
             if (!endEntityManagementSession.existsUser("ocspSigner")) {
-                endEntityManagementSession.addUser(admin, "ocspSigner", FOO123_PASSWORD, "CN=ocspSigner", null, "ocsptest@anatom.se", false, eepId,
-                    cpId, EndEntityTypes.ENDUSER.toEndEntityType(),
-                        EndEntityConstants.TOKEN_USERGEN, caid);
+               
+                EndEntityInformation endEntityInformation = new EndEntityInformation("ocspSigner", "CN=ocspSigner", caid, null, "ocsptest@anatom.se",
+                        EndEntityTypes.ENDUSER.toEndEntityType(), eepId, cpId, EndEntityConstants.TOKEN_USERGEN, null);
+                endEntityInformation.setPassword(FOO123_PASSWORD);
+                endEntityManagementSession.addUser(admin, endEntityInformation, false);
+                
             } else {
                 log.debug("User ocspSigner already exists.");
                 EndEntityInformation userData = new EndEntityInformation("ocspSigner", "CN=ocspSigner",
@@ -1863,9 +1875,12 @@ Content-Type: text/html; charset=iso-8859-1
             CADoesntExistsException {
         final String USERNAME = "ocsptest";
         if (!endEntityManagementSession.existsUser(USERNAME)) {
-
-            endEntityManagementSession.addUser(admin, USERNAME, FOO123_PASSWORD, "C=SE,O=AnaTom,CN=OCSPTest", null, "ocsptest@anatom.se", false,
-                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, caid);
+            EndEntityInformation endEntityInformation = new EndEntityInformation(USERNAME, "C=SE,O=AnaTom,CN=OCSPTest", caid, null,
+                    "ocsptest@anatom.se", EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_PEM, null);
+            endEntityInformation.setPassword(FOO123_PASSWORD);
+            endEntityManagementSession.addUser(admin, endEntityInformation, false);
+            
             log.debug("created user: ocsptest, foo123, C=SE, O=AnaTom, CN=OCSPTest");
 
         } else {
