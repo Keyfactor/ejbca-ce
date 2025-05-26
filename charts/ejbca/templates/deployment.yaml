@@ -274,8 +274,8 @@ spec:
             - name: ejbca-config-external-cas
               mountPath: /mnt/external/secrets/tls/cas/
             {{- end }}
-            {{- if .Values.ejbca.importExternalCasTruststore }}
-            - name: ejbca-config-external-cas-truststore
+            {{- if .Values.ejbca.importJvmTruststore }}
+            - name: ejbca-config-jvm-truststore
               mountPath: /mnt/external/secrets/ca/ts/
             {{- end }}
             {{- if .Values.ejbca.importAppserverKeystore }}
@@ -358,10 +358,10 @@ spec:
           secret:
             secretName: {{ .Values.ejbca.externalCasSecret }}
         {{- end }}
-        {{- if .Values.ejbca.importExternalCasTruststore }}
-        - name: ejbca-config-external-cas-truststore
+        {{- if .Values.ejbca.importJvmTruststore }}
+        - name: ejbca-config-jvm-truststore
           secret:
-            secretName: {{ .Values.ejbca.externalCasTruststoreSecret }}
+            secretName: {{ .Values.ejbca.jvmTruststoreSecret }}
         {{- end }}
         {{- if .Values.ejbca.importAppserverKeystore }}
         - name: ejbca-config-appserver-keystore

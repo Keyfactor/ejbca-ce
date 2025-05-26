@@ -8,8 +8,8 @@ ejbca:
   ## mainly relevant for EJBCA peers(RA/VA)
   importExternalCas: false
   #externalCasSecret: managementca-secret
-  importExternalCasTruststore: false
-  #importExternalCasTruststore: false
+  importJvmTruststore: false
+  #jvmTruststoreSecret: jvmtruststore-secret
 
   configdumpImport:
     enabled: false
@@ -161,8 +161,8 @@ image:
   # Application variant: not set for full EJBCA, "ra" or "va"
   #variant: ra
   repository: keyfactor/ejbca-ce
-  tag: 9.1.1
-  pullPolicy: Never
+  tag: 9.3.0
+  pullPolicy: IfNotPresent
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
