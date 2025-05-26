@@ -17,17 +17,7 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import jakarta.annotation.PostConstruct;
-import jakarta.faces.context.FacesContext;
-import jakarta.faces.model.SelectItem;
-import jakarta.faces.view.ViewScoped;
-import jakarta.inject.Named;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -43,7 +33,6 @@ import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.ui.web.RequestHelper;
-import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.bean.SessionBeans;
 import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 import org.ejbca.ui.web.admin.rainterface.RAInterfaceBean;
@@ -53,12 +42,20 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.certificate.DnComponents;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.model.SelectItem;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Named;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+
 /**
  * JSF managed bean backing view end entity xhtml page
  */
 @Named
 @ViewScoped
-public class ViewEndEntityMBean extends BaseManagedBean implements Serializable {
+public class ViewEndEntityMBean extends EndEntityBaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -143,6 +140,9 @@ public class ViewEndEntityMBean extends BaseManagedBean implements Serializable 
         parseRequest(request);
         
         checkInitParameters();
+        
+        // Loading the extended information to show in the view later (if any)
+        super.setExtendedInformation(userData.getExtendedInformation());
         
         initSdnFieldsData();
         initSanFieldData();
@@ -399,11 +399,14 @@ public class ViewEndEntityMBean extends BaseManagedBean implements Serializable 
     }
     
     public boolean isRenderOtherCertData() {
-        return eeProfile.isCustomSerialNumberUsed() || 
+        return eeProfile.isCustomSerialNumberUsed() ||
+               eeProfile.getUseExtensiondata() ||
                eeProfile.isValidityStartTimeUsed() || 
                eeProfile.isValidityEndTimeUsed() || 
                eeProfile.isCardNumberUsed() || 
                eeProfile.isPsd2QcStatementUsed() || 
+               eeProfile.isNameConstraintsPermittedUsed() || 
+               eeProfile.isNameConstraintsExcludedUsed() ||
                eeProfile.isCabfOrganizationIdentifierUsed();
     }
     
@@ -475,25 +478,24 @@ public class ViewEndEntityMBean extends BaseManagedBean implements Serializable 
         return userData.getCardNumber();
     }
     
-    public boolean isRenderCertExtensionData() {
-        return eeProfile.getUseExtensiondata() || !getExtensionDataAsMap().isEmpty();
+    public boolean isRenderNameConstraintPermitted() {
+        return eeProfile.isNameConstraintsPermittedUsed();
     }
     
-    public Map<String, String> getExtensionDataAsMap() {
-        final Map<String, String> result = new HashMap<>();
-        ExtendedInformation extendedInformation = userData.getExtendedInformation();
-        if (extendedInformation != null) {
-            @SuppressWarnings("rawtypes")
-            Map data = (Map) extendedInformation.getData();
-            for (Object o : data.keySet()) {
-                String key = (String) o;
-                if (key.startsWith(ExtendedInformation.EXTENSIONDATA)) {
-                    String subKey = key.substring(ExtendedInformation.EXTENSIONDATA.length());
-                    result.put(subKey, (String) data.get(key));
-                }
-            }
-        }
-        return result;
+    public List<String> getNameConstraintPermitted() {
+        return userData.getExtendedInformation().getNameConstraintsPermitted();
+    }
+    
+    public boolean isRenderNameConstraintExcluded() {
+        return eeProfile.isNameConstraintsExcludedUsed();
+    }
+    
+    public List<String> getNameConstraintExcluded() {
+        return userData.getExtendedInformation().getNameConstraintsExcluded();
+    }
+    
+    public boolean isRenderCertExtensionData() {
+        return eeProfile.getUseExtensiondata() || !getExtensionDataAsMap().isEmpty();
     }
     
     public boolean isRenderRawSubjectDn() {
