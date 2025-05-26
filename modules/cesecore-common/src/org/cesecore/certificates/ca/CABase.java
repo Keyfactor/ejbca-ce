@@ -219,7 +219,15 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
      * @param keyEncryptionPaddingAlgorithm one of CAInfo.KEY_ENCRYPT_ALGORITHM_RSA_PKCS_1_5, etc
      */
     public void setKeyEncryptionPaddingAlgorithm(final KeyEncryptionPaddingAlgorithm keyEncryptionPaddingAlgorithm) {
-        data.put(KEY_ENCRYPTION_PADDING_ALGORITHM, keyEncryptionPaddingAlgorithm.getName());
+        //This was originally written as a serialized object (9.3.0) instead of a string (9.3.2), which originally 
+        //cause 100% uptime issues. To not cause further upgrade issues for users upgrading from 9.3.0, we need to
+        //write the same object to the database as is written, while the changeover is handled in post-upgrade
+        Object currentPadding = data.get(KEY_ENCRYPTION_PADDING_ALGORITHM);
+        if(currentPadding instanceof KeyEncryptionPaddingAlgorithm) {
+            data.put(KEY_ENCRYPTION_PADDING_ALGORITHM, keyEncryptionPaddingAlgorithm);
+        } else {
+            data.put(KEY_ENCRYPTION_PADDING_ALGORITHM, keyEncryptionPaddingAlgorithm.getName());
+        }
     }
 
     /**
