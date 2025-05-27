@@ -56,7 +56,7 @@ public class CustomPublisherContainer extends BasePublisher {
     /**
      * This is set to true when custompublisher should be reloaded.
      * Because custompublisher is transient, we can't use its null-ness
-     * as a trigger;
+     * as a trigger.
      */
     private boolean resetCustomPublisher = false;
     private transient ICustomPublisher custompublisher = null; 
@@ -323,6 +323,7 @@ public class CustomPublisherContainer extends BasePublisher {
 	 */
 	public ICustomPublisher getCustomPublisher() {
 		if(resetCustomPublisher || custompublisher == null) {
+		    resetCustomPublisher = false;
 		    final String classPath = getClassPath();
 		    if (classPath==null || classPath.isEmpty()) {
 		        return null;
@@ -332,7 +333,6 @@ public class CustomPublisherContainer extends BasePublisher {
                 Class<? extends ICustomPublisher> implClass = (Class<? extends ICustomPublisher>) Class.forName( classPath );
 				this.custompublisher =  implClass.getDeclaredConstructor().newInstance();
 				this.custompublisher.init(getProperties());				
-				resetCustomPublisher = false;
             } catch (ClassNotFoundException e) {
                 // Probably means that we have not built in our custom publisher here in EJBCA, or it's an Enterprise only 
                 // publisher configured (Peer publisher for example)
