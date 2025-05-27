@@ -247,6 +247,7 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         } else {
             // For 9.3 the enum object was serialized, but this was changed in 9.3.2 to a string to not cause issues during upgrade.
             // Thus we have a soft fail here if we encounter the serialized object.
+            // TODO: Mainly here to not cause issues in dev environments – can be removed later in the 9.4 cycle
             if(algorithm instanceof KeyEncryptionPaddingAlgorithm) {
                 return (KeyEncryptionPaddingAlgorithm) algorithm;
             } else {
