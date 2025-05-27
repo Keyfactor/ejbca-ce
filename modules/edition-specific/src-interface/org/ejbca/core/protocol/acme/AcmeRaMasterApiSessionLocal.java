@@ -57,6 +57,9 @@ public interface AcmeRaMasterApiSessionLocal {
     /** @see org.ejbca.core.model.era.RaMasterApi#searchForCertificate(AuthenticationToken, String) */
     CertificateDataWrapper searchForCertificate(AuthenticationToken authenticationToken, String fingerprint);
 
+    /** @see org.ejbca.core.model.era.RaMasterApi#searchForCertificateByIssuerAndSerial(AuthenticationToken, String, String) */
+    CertificateDataWrapper searchForCertificateByIssuerAndSerial(AuthenticationToken authenticationToken, String issuerDN, String serialNumber);
+
     List<CertificateWrapper> searchForCertificateChain(AuthenticationToken authenticationToken, String fingerprint);
 
     /** @see org.ejbca.core.protocol.acme.AcmeAccountDataSessionBean#getAcmeAccount(String) */

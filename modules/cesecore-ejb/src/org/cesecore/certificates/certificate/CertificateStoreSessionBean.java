@@ -365,6 +365,23 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         return new CertificateDataWrapper(certificateData, base64CertData);
     }
 
+    /** Local interface only */
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public CertificateDataWrapper getCertificateDataBySubjectKeyId(final String subjectKeyId) {
+        final CertificateData certificateData = certificateDataSession.findBySubjectKeyId(subjectKeyId);
+        if (certificateData==null) {
+            return null;
+        }
+        final Base64CertData base64CertData;
+        if (CesecoreConfiguration.useBase64CertTable()) {
+            base64CertData = Base64CertData.findByFingerprint(entityManager, certificateData.getFingerprint());
+        } else {
+            base64CertData = null;
+        }
+        return new CertificateDataWrapper(certificateData, base64CertData);
+    }
+
     /**
      * We need special handling here of CVC certificate with EC keys, because they lack EC parameters in all certs
      * except the Root certificate (CVCA)

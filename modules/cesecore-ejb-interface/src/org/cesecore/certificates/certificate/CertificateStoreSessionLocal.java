@@ -189,6 +189,12 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
     CertificateDataWrapper getCertificateData(final String fingerprint);
 
     /**
+     * Retrieve the full wrapped CertificateData and Base64CertData objects by subjectKeyId.
+     * @return the sought certificate, or null if no data for the specified subjectKeyId exists
+     */
+    CertificateDataWrapper getCertificateDataBySubjectKeyId(final String subjectKeyId);
+
+    /**
      * Update the base64cert column if the database row exists, but the column is empty.
      * @return true if the column was empty and is now populated.
      */
