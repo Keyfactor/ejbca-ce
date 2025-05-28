@@ -135,9 +135,7 @@ public class P12toPEM {
                     byte[] tmpOutput = tmpX509Cert.getEncoded();
                     chainOutputStrean.write(CertTools.BEGIN_CERTIFICATE_WITH_NL.getBytes());
                     byte[] tmpCACertB64 = Base64.encode(tmpOutput);
-
                     chainOutputStrean.write(tmpCACertB64);
-                    chainOutputStrean.write("\n".getBytes());
                     chainOutputStrean.write(CertTools.END_CERTIFICATE_WITH_NL.getBytes());
 
                 }
