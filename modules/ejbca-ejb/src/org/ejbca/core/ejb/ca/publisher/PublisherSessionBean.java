@@ -1085,44 +1085,6 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             throw new AuthorizationDeniedException(msg);
         }
     }
-
-    @SuppressWarnings("deprecation")
-    @Override
-    public int adhocUpgradeTo6_3_1_1() {
-        int numberOfUpgradedPublishers = 0;
-        for (PublisherData publisherData : findAll()) {
-            // Extract the data payload instead of the BasePublisher since the original BasePublisher implementation might no longer
-            // be on the classpath
-            HashMap<?, ?> h = parseDataMapFromPublisher(publisherData);
-            // Handle Base64 encoded string values
-            @SuppressWarnings("unchecked")
-            HashMap<Object, Object> data = new Base64GetHashMap(h);
-            if (PublisherConst.TYPE_VAPUBLISHER == (Integer) data.get(BasePublisher.TYPE)) {
-                numberOfUpgradedPublishers++;
-                publisherData.setPublisher(new LegacyValidationAuthorityPublisher(data));
-                //Purge the entry from the cache
-                PublisherCache.INSTANCE.removeEntry(publisherData.getId());
-            }           
-        }
-        return numberOfUpgradedPublishers;
-    }
-
-    @SuppressWarnings("deprecation")
-    @Override
-    public boolean isOldVaPublisherPresent() {
-        for (PublisherData publisherData : findAll()) {
-            // Extract the data payload instead of the BasePublisher since the original BasePublisher implementation might no longer
-            // be on the classpath
-            HashMap<?, ?> h = parseDataMapFromPublisher(publisherData);
-            // Handle Base64 encoded string values
-            @SuppressWarnings("unchecked")
-            HashMap<Object, Object> data = new Base64GetHashMap(h);
-            if (PublisherConst.TYPE_VAPUBLISHER == (Integer) data.get(BasePublisher.TYPE)) {
-                return true;
-            }           
-        }
-        return false;
-    }
     
     @Override
     public BasePublisher createPublisherObjectFromTypeId(final int typeId) {

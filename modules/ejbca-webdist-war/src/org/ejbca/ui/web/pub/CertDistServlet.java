@@ -114,8 +114,7 @@ public class CertDistServlet extends HttpServlet {
     private static final String ISSUER_PROPERTY = "issuer";
     private static final String SERNO_PROPERTY = "serno";
     private static final String LEVEL_PROPERTY = "level";
-    /* @Deprecated since EJBCA 6.3.0. MOZILLA_PROPERTY can be removed in EJBCA 6.4 or 6.5 */
-    private static final String MOZILLA_PROPERTY = "moz";
+
     private static final String FORMAT_PROPERTY = "format";
     private static final String CRLNUMBER_PROPERTY = "crlnumber";
     private static final String PARTITION_PROPERTY = "partition";
@@ -225,12 +224,9 @@ public class CertDistServlet extends HttpServlet {
                 String dn = CertTools.getIssuerDN(x509crl);
                 // We must remove cache headers for IE
                 ServletUtils.removeCacheHeaders(res);
-                // moz is only kept for backwards compatibility, can be removed in EJBCA 6.4 or 6.5
-                String moz = req.getParameter(MOZILLA_PROPERTY);
+
                 final String filename = getCrlFilename(dn, crlPartitionIndex, command.equalsIgnoreCase(COMMAND_DELTACRL));
-                if ((moz == null) || !moz.equalsIgnoreCase("y")) {
-                    res.setHeader("Content-disposition", "attachment; filename=\"" + StringTools.stripFilename(filename)+"\"");
-                }
+
                 res.setContentType("application/pkix-crl");
                 if (StringUtils.equals(format, "PEM")) {
                     RequestHelper.sendNewB64File(Base64.encode(crl, true), res, filename, RequestHelper.BEGIN_CRL_WITH_NL, RequestHelper.END_CRL_WITH_NL);
