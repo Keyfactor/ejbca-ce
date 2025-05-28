@@ -607,9 +607,7 @@ public abstract class BatchCreateTool {
         // If we should also create PEM-files, do that
         if (createPEM) {
             String PEMfilename = mainStoreDir + "/pem";
-            P12toPEM p12topem = new P12toPEM(ks, kspassword);
-            p12topem.setExportPath(PEMfilename);
-            keyStoreFile = p12topem.createPEM();
+            keyStoreFile = P12toPEM.createPEM(ks, kspassword, PEMfilename);
         } else {
             keyStoreFile = new File(keyStoreFilename);
             FileOutputStream os = new FileOutputStream(keyStoreFile);
