@@ -885,19 +885,11 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         if (preferredSigAlgExtension != null) {
             final ASN1Sequence preferredSignatureAlgorithms = ASN1Sequence.getInstance(preferredSigAlgExtension.getParsedValue());
             for (int i=0; i<preferredSignatureAlgorithms.size(); i++) {
-                final ASN1Encodable asn1Encodable = preferredSignatureAlgorithms.getObjectAt(i);
-                final ASN1ObjectIdentifier algorithmOid;
-                if (asn1Encodable instanceof ASN1ObjectIdentifier) {
-                    // Handle client requests that were adapted to EJBCA 6.1.0's implementation
-                    log.info("OCSP request's PreferredSignatureAlgorithms did not contain an PreferredSignatureAlgorithm, but instead an algorithm OID."
-                            + " This will not be supported in a future versions of EJBCA.");
-                    algorithmOid = (ASN1ObjectIdentifier) asn1Encodable;
-                } else {
-                    // Handle client requests that provide a proper AlgorithmIdentifier as specified in RFC 6960 + RFC 5280
-                    final ASN1Sequence preferredSignatureAlgorithm = ASN1Sequence.getInstance(asn1Encodable);
-                    final AlgorithmIdentifier algorithmIdentifier = AlgorithmIdentifier.getInstance(preferredSignatureAlgorithm.getObjectAt(0));
-                    algorithmOid = algorithmIdentifier.getAlgorithm();
-                }
+                final ASN1Encodable asn1Encodable = preferredSignatureAlgorithms.getObjectAt(i);           
+                // Handle client requests that provide a proper AlgorithmIdentifier as specified in RFC 6960 + RFC 5280
+                final ASN1Sequence preferredSignatureAlgorithm = ASN1Sequence.getInstance(asn1Encodable);
+                final AlgorithmIdentifier algorithmIdentifier = AlgorithmIdentifier.getInstance(preferredSignatureAlgorithm.getObjectAt(0));
+                final ASN1ObjectIdentifier algorithmOid = algorithmIdentifier.getAlgorithm();             
                 if (algorithmOid != null) {
                     sigAlg = AlgorithmTools.getAlgorithmNameFromOID(algorithmOid);
                     if (sigAlg!=null && isAcceptedSignatureAlgorithm(sigAlg) && AlgorithmTools.isCompatibleSigAlg(pk, sigAlg)) {

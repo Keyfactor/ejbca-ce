@@ -448,18 +448,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     private boolean upgrade(String dbtype, String oldVersion) {
     	log.debug(">upgrade from version: "+oldVersion+", with dbtype: "+dbtype);
-        if (isLesserThan(oldVersion, "6.0.0")) {
-            log.error(
-                    "Upgrading from EJBCA prior to version 6.0.0 is forbidden. You must upgrade to the intermediate release EJBCA 6.3.2.6 first. Read the EJBCA Upgrade Guide for more information.");
-            return false;
-        }
         if (isLesserThan(oldVersion, "6.2.4")) {
-            try {
-                upgradeSession.migrateDatabase624();
-            } catch (UpgradeFailedException e) {
-                return false;
-            }
-            setLastUpgradedToVersion("6.2.4");
+            log.error(
+                    "Upgrading from EJBCA prior to version 6.2.4 is forbidden. You must upgrade to the intermediate release EJBCA 6.3.2.6 first. Read the EJBCA Upgrade Guide for more information.");
+            return false;
         }
         if (isLesserThan(oldVersion, "6.3.1")) {
             // Upgrade the old Validation Authority Publisher in Community Edition (leave it be in Enterprise for the sake of 100% uptime)
@@ -1121,29 +1113,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
         }
         return true;
-    }
-
-    /**
-     * EJBCA 6.2.4 introduced default responder configuration in the database.
-     *
-     * @throws UpgradeFailedException if upgrade fails (rolls back)
-     */
-    @SuppressWarnings("deprecation")
-    @Override
-    public void migrateDatabase624() throws UpgradeFailedException {
-        // Check if there the default responder has been set. If not, try setting it using the old value.
-        GlobalOcspConfiguration globalConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
-                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-        if (StringUtils.isEmpty(globalConfiguration.getOcspDefaultResponderReference())) {
-            globalConfiguration.setOcspDefaultResponderReference(OcspConfiguration.getDefaultResponderId());
-            try {
-                globalConfigurationSession.saveConfiguration(authenticationToken, globalConfiguration);
-            } catch (AuthorizationDeniedException e) {
-                throw new UpgradeFailedException(e);
-            }
-            globalConfigurationSession.flushConfigurationCache(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-        }
-        log.error("(This is not an error) Completed upgrade procedure to 6.2.4");
     }
 
     /**
