@@ -21,8 +21,6 @@ import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.ex.ConversionException;
 import org.apache.log4j.Logger;
 
-import com.keyfactor.util.certificate.DnComponents;
-
 /**
  * Parses configuration bundled in conf/ocsp.properties, both for the internal and external OCSP responder.
  * 
@@ -31,8 +29,6 @@ public class OcspConfiguration {
 
     private static final Logger log = Logger.getLogger(OcspConfiguration.class);
 
-    @Deprecated // Deprecated in 6.2.4, remains to allow migration from previous versions
-    public static final String DEFAULT_RESPONDER = "ocsp.defaultresponder";
     public static final String SIGNING_CERTD_VALID_TIME = "ocsp.signingCertsValidTime";
     public static final String REQUEST_SIGNING_CERT_REVOCATION_CACHE_TIME = "ocsp.reqsigncertrevcachetime";
     public static final String SIGNING_TRUSTSTORE_VALID_TIME = "ocsp.signtrustvalidtime";
@@ -59,11 +55,6 @@ public class OcspConfiguration {
     @Deprecated //Remove this value once upgrading to 6.7.0 has been dropped
     public static final String RESPONDER_ID_TYPE = "ocsp.responderidtype";
     
-    @Deprecated //Remove this value once upgrading VAs to EJBCA 6 has been dropped
-    public static final int RESTRICTONISSUER = 0;
-    @Deprecated //Remove this value once upgrading VAs to EJBCA 6 has been dropped
-    public static final int RESTRICTONSIGNER = 1;
-
     @Deprecated //Remove this value once upgrading to 6.7.0 has been dropped
     public static final int RESPONDERIDTYPE_NAME = 1;
     @Deprecated //Remove this value once upgrading to 6.7.0 has been dropped
@@ -212,23 +203,6 @@ public class OcspConfiguration {
      */
     public static String getNonExistingIsRevokedOverideRegex() {
         return getRegex(NON_EXISTING_IS_REVOKED_URI);
-    }
-
-    /**
-     * Specifies the subject of a certificate which is used to identify the responder which will generate responses when no real CA can be found from
-     * the request. This is used to generate 'unknown' responses when a request is received for a certificate that is not signed by any CA on this
-     * server.
-     * @return the name configured in ocsp.defaultresponder, reordered to EJBCA normalized ordering.
-     * 
-     * @deprecated This value is deprecated since 6.2.4, and only remains in order to allow migration. Default responder is now set in global configuration instead. 
-     */
-    @Deprecated
-    public static String getDefaultResponderId() {
-        final String ret = ConfigurationHolder.getExpandedString(DEFAULT_RESPONDER);
-        if (ret != null) {
-            return DnComponents.stringToBCDNString(ret);
-        }
-        return ret;
     }
 
     /**
