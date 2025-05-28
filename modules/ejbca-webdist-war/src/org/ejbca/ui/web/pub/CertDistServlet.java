@@ -226,7 +226,7 @@ public class CertDistServlet extends HttpServlet {
                 ServletUtils.removeCacheHeaders(res);
 
                 final String filename = getCrlFilename(dn, crlPartitionIndex, command.equalsIgnoreCase(COMMAND_DELTACRL));
-
+                res.setHeader("Content-disposition", "attachment; filename=\"" + StringTools.stripFilename(filename) + "\"");                
                 res.setContentType("application/pkix-crl");
                 if (StringUtils.equals(format, "PEM")) {
                     RequestHelper.sendNewB64File(Base64.encode(crl, true), res, filename, RequestHelper.BEGIN_CRL_WITH_NL, RequestHelper.END_CRL_WITH_NL);
