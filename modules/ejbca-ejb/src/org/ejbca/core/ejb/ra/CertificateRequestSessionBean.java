@@ -88,7 +88,6 @@ import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -153,7 +152,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
         byte[] retval = null;
 
         // Check tokentype
-        if (userdata.getTokenType() != SecConst.TOKEN_SOFT_BROWSERGEN) {
+        if (userdata.getTokenType() != EndEntityConstants.TOKEN_USERGEN) {
             throw new WrongTokenTypeException("Error: Wrong Token Type of user, must be 'USERGENERATED' for PKCS10/SPKAC/CRMF/CVC requests");
         }
         
@@ -287,7 +286,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
     public ResponseMessage processCertReq(AuthenticationToken admin, EndEntityInformation userdata, RequestMessage req, Class<? extends CertificateResponseMessage> responseClass)
             throws EndEntityExistsException, AuthorizationDeniedException, EndEntityProfileValidationException, EjbcaException, CesecoreException, CertificateExtensionException {
         // Check tokentype
-        if (userdata.getTokenType() != SecConst.TOKEN_SOFT_BROWSERGEN) {
+        if (userdata.getTokenType() != EndEntityConstants.TOKEN_USERGEN) {
             throw new WrongTokenTypeException("Error: Wrong Token Type of user, must be 'USERGENERATED' for PKCS10/SPKAC/CRMF/CVC requests");
         }
         CAInfo cainfo = caSession.getCAInfoInternal(userdata.getCAId());
@@ -465,7 +464,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             String username = userdata.getUsername();
             int caid = userdata.getCAId();
             KeyStore keyStore = keyStoreCreateSession.generateOrKeyRecoverToken(admin, username, password, caid, keyspec, keyalg, null, null,
-                    createJKS ? SecConst.TOKEN_SOFT_JKS : SecConst.TOKEN_SOFT_P12, loadkeys, savekeys,
+                    createJKS ? EndEntityConstants.TOKEN_SOFT_JKS : EndEntityConstants.TOKEN_SOFT_P12, loadkeys, savekeys,
                     reusecertificate, endEntityProfileId);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             keyStore.store(baos, password.toCharArray());

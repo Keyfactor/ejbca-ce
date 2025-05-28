@@ -63,6 +63,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CaMsCompatibilityIrreversibleException;
 import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAFactory;
 import org.cesecore.certificates.ca.CAInfo;
@@ -89,7 +90,6 @@ import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.junit.After;
 import org.junit.Before;
@@ -568,10 +568,10 @@ public class KeyValidatorSessionSystemTest extends RoleUsingTestCase {
             EndEntityProfile endEntityProfile = new EndEntityProfile();
             endEntityProfile.setAvailableCertificateProfileIds(Arrays.asList(certificateProfileId));
             endEntityProfile.addField(DnComponents.DNSNAME);
-            endEntityProfile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+            endEntityProfile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(CAConstants.ALLCAS));
             int endEntityProfileId = endEntityProfileSession.addEndEntityProfile(internalAdmin, endEntityProfileName, endEntityProfile);
             EndEntityInformation endEntityInformation = new EndEntityInformation(username, "CN=" + username, testCA.getCAId(), eeSan, null,
-                    EndEntityTypes.ENDUSER.toEndEntityType(), endEntityProfileId, certificateProfileId, SecConst.TOKEN_SOFT_P12, null);
+                    EndEntityTypes.ENDUSER.toEndEntityType(), endEntityProfileId, certificateProfileId, EndEntityConstants.TOKEN_SOFT_P12, null);
             endEntityInformation.setPassword("foo123");
             endEntityManagementSessionRemote.addUser(internalAdmin, endEntityInformation, false);
             KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
@@ -641,10 +641,10 @@ public class KeyValidatorSessionSystemTest extends RoleUsingTestCase {
             EndEntityProfile endEntityProfile = new EndEntityProfile();
             endEntityProfile.setAvailableCertificateProfileIds(Arrays.asList(certificateProfileId));
             endEntityProfile.addField(DnComponents.DNSNAME);
-            endEntityProfile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+            endEntityProfile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(CAConstants.ALLCAS));
             int endEntityProfileId = endEntityProfileSession.addEndEntityProfile(internalAdmin, endEntityProfileName, endEntityProfile);
             EndEntityInformation endEntityInformation = new EndEntityInformation(username, "CN=" + username, testCA.getCAId(), eeSan, null,
-                    EndEntityTypes.ENDUSER.toEndEntityType(), endEntityProfileId, certificateProfileId, SecConst.TOKEN_SOFT_P12, null);
+                    EndEntityTypes.ENDUSER.toEndEntityType(), endEntityProfileId, certificateProfileId, EndEntityConstants.TOKEN_SOFT_P12, null);
             endEntityInformation.setPassword("foo123");
             endEntityManagementSessionRemote.addUser(internalAdmin, endEntityInformation, false);
             KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
@@ -713,10 +713,10 @@ public class KeyValidatorSessionSystemTest extends RoleUsingTestCase {
             EndEntityProfile endEntityProfile = new EndEntityProfile();
             endEntityProfile.setAvailableCertificateProfileIds(Arrays.asList(certificateProfileId));
             endEntityProfile.addField(DnComponents.RFC822NAME);
-            endEntityProfile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+            endEntityProfile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(CAConstants.ALLCAS));
             int endEntityProfileId = endEntityProfileSession.addEndEntityProfile(internalAdmin, endEntityProfileName, endEntityProfile);
             EndEntityInformation endEntityInformation = new EndEntityInformation(username, "CN=" + username, testCA.getCAId(), eeSan, null,
-                    EndEntityTypes.ENDUSER.toEndEntityType(), endEntityProfileId, certificateProfileId, SecConst.TOKEN_SOFT_P12, null);
+                    EndEntityTypes.ENDUSER.toEndEntityType(), endEntityProfileId, certificateProfileId, EndEntityConstants.TOKEN_SOFT_P12, null);
             endEntityInformation.setPassword("foo123");
             endEntityManagementSessionRemote.addUser(internalAdmin, endEntityInformation, false);
             KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);

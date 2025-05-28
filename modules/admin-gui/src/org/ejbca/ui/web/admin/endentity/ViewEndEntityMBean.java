@@ -27,7 +27,6 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.endentity.PSD2RoleOfPSPStatement;
 import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
@@ -388,7 +387,7 @@ public class ViewEndEntityMBean extends EndEntityBaseManagedBean implements Seri
 
         for (int i = 0; i < tokenTexts.length; i++) {
             if (tokenIds[i] == userData.getTokenType()) {
-                if (tokenIds[i] > SecConst.TOKEN_SOFT) {
+                if (tokenIds[i] > EndEntityConstants.TOKEN_SOFT) {
                     tokenName = tokenTexts[i];
                 } else {
                     tokenName = ejbcaWebBean.getText(tokenTexts[i]);

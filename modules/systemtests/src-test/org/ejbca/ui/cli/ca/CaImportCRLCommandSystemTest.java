@@ -41,7 +41,6 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -133,7 +132,7 @@ public class CaImportCRLCommandSystemTest {
             assertTrue("Get CRL command failed, no file exists.", f.exists());
             // Now create a certificate that we can play with and run the commands
             EndEntityInformation userdata = new EndEntityInformation(testUsername, "CN=4711CRLUSER", cainfo.getCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, null);
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_PEM, null);
             userdata.setPassword("foo123");
             userdata.setStatus(EndEntityConstants.STATUS_NEW);
             byte[] p12 = certReqSession.processSoftTokenReq(admin, userdata, "512", "RSA", true);

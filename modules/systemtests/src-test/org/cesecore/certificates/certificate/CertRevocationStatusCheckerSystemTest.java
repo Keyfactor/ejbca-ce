@@ -58,7 +58,6 @@ import org.ejbca.core.ejb.db.DatabaseContentRule;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.CustomFieldException;
@@ -710,7 +709,7 @@ public class CertRevocationStatusCheckerSystemTest extends CaTestCase {
             throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException, NoSuchEndEntityException,
             CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException, CustomFieldException {
         final EndEntityInformation user = new EndEntityInformation(username, dn, caid, null, username + "@primekey.se",
-                new EndEntityType(EndEntityTypes.ENDUSER), eepid, cpid, SecConst.TOKEN_SOFT_PEM, null);
+                new EndEntityType(EndEntityTypes.ENDUSER), eepid, cpid, EndEntityConstants.TOKEN_SOFT_PEM, null);
         user.setPassword("foo123");
         log.debug("Trying to add/edit USER: " + user.getUsername() + ", foo123, " + dn);
         try {

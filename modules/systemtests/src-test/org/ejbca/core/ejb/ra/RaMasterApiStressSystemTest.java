@@ -49,7 +49,6 @@ import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberDataProxySessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.era.TestRaMasterApiProxySessionRemote;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
@@ -256,7 +255,7 @@ public class RaMasterApiStressSystemTest extends CaTestCase {
                 String username = theadUsername + "_" + i;
                 usernames[i] = username;
                 EndEntityInformation endEntity = new EndEntityInformation(username, "CN=" + username, getTestCAId(), null, null, EndEntityTypes.ENDUSER.toEndEntityType(), 
-                        EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, null);
+                        EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_PEM, null);
                 endEntity.setPassword(PASSWORD);
                 try {
                     endEntityManagementSession.deleteUser(alwaysAllowToken, username);

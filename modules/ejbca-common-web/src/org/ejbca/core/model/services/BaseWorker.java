@@ -22,7 +22,6 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CaSessionLocal;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.services.intervals.DummyInterval;
 
 /**
@@ -174,7 +173,7 @@ public abstract class BaseWorker implements IWorker {
 	/**
 	 * Get a collection of CA IDS from the property BaseWorker.PROP_CAIDSTOCHECK.
 	 *
-	 * @param includeAllCAsIfNull set to true if the 'catch all' SecConst.ALLCAS should be included in the list if the property
+	 * @param includeAllCAsIfNull set to true if the 'catch all' CAConstants.ALLCAS should be included in the list if the property
 	 * BaseWorker.PROP_CAIDSTOCHECK does not exist. This is due to that the feature of selecting CAs was enabled in EJBCA 3.9.1,
 	 * and we want the service to keep working even after an upgrade from an earlier version.
 	 * @return a collection of integer CA IDs.
@@ -197,7 +196,7 @@ public abstract class BaseWorker implements IWorker {
 					}
 				}				
 			} else if (includeAllCAsIfNull) {
-				cAIdsToCheck.add(SecConst.ALLCAS);
+				cAIdsToCheck.add(CAConstants.ALLCAS);
 			}
 		}
 		return cAIdsToCheck;

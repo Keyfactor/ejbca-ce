@@ -39,7 +39,6 @@ import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
-import org.ejbca.core.model.SecConst;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -128,7 +127,7 @@ public class SignLotsOfCertsSystemTest extends CaTestCase {
         final String username = USERNAME_PREFIX + suffix;
         final String subjectDn = "CN="+username;
         EndEntityInformation endEntityInformation = new EndEntityInformation(username, subjectDn, caid, null, null, EndEntityTypes.ENDUSER.toEndEntityType(), 
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, null);
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_PEM, null);
         endEntityInformation.setPassword("foo123");
         try {
             endEntityManagementSession.addUser(admin, endEntityInformation, true);

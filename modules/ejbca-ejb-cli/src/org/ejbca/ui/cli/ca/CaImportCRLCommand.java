@@ -59,7 +59,6 @@ import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
@@ -188,7 +187,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
                             final EndEntityInformation userdataNew = new EndEntityInformation(missing_user_name, CertTools.getSubjectDN(certificate),
                                     cainfo.getCAId(), null, null, EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER),
                                     EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null,
-                                    SecConst.TOKEN_SOFT_BROWSERGEN, null);
+                                    EndEntityConstants.TOKEN_USERGEN, null);
                             userdataNew.setPassword("foo123");
                             EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).addUser(getAuthenticationToken(),
                                     userdataNew, false);

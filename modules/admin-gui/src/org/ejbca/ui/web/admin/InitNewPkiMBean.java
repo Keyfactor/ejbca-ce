@@ -86,7 +86,6 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.KeyStoreCreateSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.CertificateSignatureException;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.AuthLoginException;
@@ -495,7 +494,7 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
         Date notAfter = ValidityDate.getDate(getAdminValidity(), new Date(), caInfo.isExpirationInclusive());
         KeyStore keyStore = null;
         keyStore = keyStoreCreateSession.generateOrKeyRecoverToken(getAdmin(), "superadmin", getAdminKeyStorePassword(), 
-                caId, "2048", "RSA", new Date(), notAfter, SecConst.TOKEN_SOFT_P12, false, false, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
+                caId, "2048", "RSA", new Date(), notAfter, EndEntityConstants.TOKEN_SOFT_P12, false, false, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
         
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             keyStore.store(outputStream, getAdminKeyStorePassword().toCharArray());

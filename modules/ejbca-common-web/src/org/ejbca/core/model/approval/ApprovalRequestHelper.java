@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.model.approval;
 
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.ejbca.core.model.SecConst;
 
 /**
@@ -23,7 +24,7 @@ public class ApprovalRequestHelper {
 
     public static ApprovalDataText getTokenName(int tokenid) {
         ApprovalDataText retval;
-        if (tokenid <= SecConst.TOKEN_SOFT) {
+        if (tokenid <= EndEntityConstants.TOKEN_SOFT) {
             int tokenindex = 0;
             for (int i = 0; i < SecConst.TOKENIDS.length; i++) {
                 if (SecConst.TOKENIDS[i] == tokenid) {

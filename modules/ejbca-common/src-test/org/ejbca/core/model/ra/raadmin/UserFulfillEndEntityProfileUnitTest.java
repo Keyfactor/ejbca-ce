@@ -27,11 +27,12 @@ import com.keyfactor.util.certificate.DnComponents;
 
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.config.EABConfiguration;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.junit.Test;
 
@@ -119,7 +120,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         try{
           profile.doesUserFulfillEndEntityProfile("username","password","blabla","","","",
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-          		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+          		                                   false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
           fail("Profile does not check DN at all.");
         }catch(EndEntityProfileValidationException e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " " + " = OK");
@@ -128,14 +129,14 @@ public class UserFulfillEndEntityProfileUnitTest {
         // Test correct DN
         profile.doesUserFulfillEndEntityProfile("username","password",STANDARD_DN,"null","","",
                                                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-                                                false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser,null);
+                                                false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser,null);
         log.debug("End Entity Profile Fulfill Test " + (currentSubTest++) + " " + " = OK");
 
         // Test no username even though is required
         try{
           profile.doesUserFulfillEndEntityProfile("","password",STANDARD_DN,"null","","",
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-          		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+          		                                   false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
           fail("UserName is not checked even though it's required");
         }catch(EndEntityProfileValidationException e){
         	log.debug("End Entity Profile Fulfill Test " + (currentSubTest++) + " " + e.getMessage() + " = OK");
@@ -145,7 +146,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         try{
           profile.doesUserFulfillEndEntityProfile("username","",STANDARD_DN,"null","","",
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-          		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+          		                                   false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
           fail("Password is not checked even though it's required");
         }catch(EndEntityProfileValidationException e){
         	log.debug("End Entity Profile Test Fulfill " + (currentSubTest++) + " " + e.getMessage() + " = OK");
@@ -155,7 +156,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         try{
           profile.doesUserFulfillEndEntityProfile("username","password","OU=DEP1_1,OU=DEP2_1,C=SE","null","","",
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-          		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+          		                                   false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
           fail("Error Required CN field wasn't checked");
         }catch(EndEntityProfileValidationException e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " " + e.getMessage() + " = OK");
@@ -165,7 +166,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         try{
           profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith,OU=DEP2_1,C=SE","null","","",
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-          		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+          		                                   false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
           fail("Error Required OU field wasn't checked");
         }catch(EndEntityProfileValidationException e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " " + e.getMessage() + " = OK");
@@ -175,7 +176,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         try{
           profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith,OU=DEP1_1,OU=DEP2_3,C=SE","null","","",
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-          		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+          		                                   false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
           fail("Error value of second OU field wasn't checked");
         }catch(EndEntityProfileValidationException e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " " + e.getMessage()+ " = OK");
@@ -184,14 +185,14 @@ public class UserFulfillEndEntityProfileUnitTest {
         // Test without C (not required)
         profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith,OU=DEP1_1,OU=DEP2_2","null","","",
                                                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-                                                false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+                                                false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
         log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " " + " = OK");
 
         // Test illegal value of  C (SE or DK)
         try{
           profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith,OU=DEP1_1,OU=DEP2_2, C=NO","null","","",
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-          		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+          		                                   false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
           fail("Inproper check of C value.");
         }catch(EndEntityProfileValidationException e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest) + " " + e.getMessage() + " = OK");
@@ -201,7 +202,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         try{
           profile.doesUserFulfillEndEntityProfile("username","password","CN=Matter DAC,VID=FFF1,PID=8000","null","","",
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-                                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+                                                   false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
           fail("Inproper check of VID and PID value.");
         }catch(EndEntityProfileValidationException e){
             log.debug("End Entity Fulfill Profile Test " + (currentSubTest) + " " + e.getMessage() + " = OK");
@@ -212,14 +213,14 @@ public class UserFulfillEndEntityProfileUnitTest {
         // Should pass now
         profile.doesUserFulfillEndEntityProfile("username","password","OU=DEP1_1,OU=DEP2_2,CN=Matter DAC,VID=FFF1,PID=8000","null","","",
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-                false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+                false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
         // Test Matter Node Operational PKI
         try{
           profile.doesUserFulfillEndEntityProfile("username","password",
                   "OU=DEP1_1,OU=DEP2_2,CN=Matter DAC,RCACID=CACACACA00000001,ICACID=CACACACA00000003,NODEID=DEDEDEDE00010001,FABRICID=FAB000000000001D,NOCCAT=00AA33CC",
                   "null","","",
                   CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-                  false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+                  false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
           fail("Inproper check of VID and PID value.");
         }catch(EndEntityProfileValidationException e){
             log.debug("End Entity Fulfill Profile Test " + (currentSubTest) + " " + e.getMessage() + " = OK");
@@ -235,13 +236,13 @@ public class UserFulfillEndEntityProfileUnitTest {
                 "OU=DEP1_1,OU=DEP2_2,CN=Matter DAC,RCACID=CACACACA00000001,ICACID=CACACACA00000003,NODEID=DEDEDEDE00010001,FABRICID=FAB000000000001D,NOCCAT=00AA33CC",
                 "null","","",
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-                false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+                false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
 
         // Test uniqueIdentifier and CertificationID
         try{
           profile.doesUserFulfillEndEntityProfile("username","password","CN=Some Common Name,uniqueIdentifier=N62892,CertificationID=BSI-K-TR-1234-2023","null","","",
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-                                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+                                                   false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
           fail("Inproper check of uniqueIdentifier and CertificationID value.");
         }catch(EndEntityProfileValidationException e){
             log.debug("End Entity Fulfill Profile Test " + (currentSubTest) + " " + e.getMessage() + " = OK");
@@ -252,14 +253,14 @@ public class UserFulfillEndEntityProfileUnitTest {
         // Should pass now
         profile.doesUserFulfillEndEntityProfile("username","password","OU=DEP1_1,OU=DEP2_2,CN=Some Common Name,uniqueIdentifier=N62892,CertificationID=BSI-K-TR-1234-2023","null","","",
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-                false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+                false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
 
         // Test Mark Certificate fields
         final String markCertDn = "CN=Some Common Name,legalEntityIdentifier=1111111111,markType=Registered Mark,trademarkCountryOrRegionName=XL," +
                 "OU=DEP1_1,trademarkOfficeName=Trademarks Authority,trademarkIdentifier=99999999";
         try {
             profile.doesUserFulfillEndEntityProfile("username", "password", markCertDn, "null", "", "",
-                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null,
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null,
                     certProfileEndUser, null);
             fail("Inproper check of uniqueIdentifier and CertificationID value.");
         } catch (EndEntityProfileValidationException e) {
@@ -273,7 +274,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         profile.addField(DnComponents.TRADEMARKIDENTIFIER);
         // Should pass now
         profile.doesUserFulfillEndEntityProfile("username", "password", markCertDn, "null", "", "",
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null,
                 certProfileEndUser, null);
 
         log.trace("<fulfillSubjectDn");
@@ -321,7 +322,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         try{
           profile.doesUserFulfillEndEntityProfile("username","password",STANDARD_DN,"blabla","","test@test.com",
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-          		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+          		                                   false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
           fail("Profile does not check altname at all.");
         }catch(EndEntityProfileValidationException e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " " + " = OK");
@@ -330,14 +331,14 @@ public class UserFulfillEndEntityProfileUnitTest {
         // Test correct Alt Name
         profile.doesUserFulfillEndEntityProfile("username","password",STANDARD_DN,"RFC822NAME=test@test.com, dnsname=test.primekey.se, Upn=test@primekey.se, ipaddress=11.11.1.2","","test@test.com",
                                                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-                                                false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+                                                false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
         log.debug("End Entity Profile Fulfill Test " + (currentSubTest++) + " " + " = OK");
 
         // Test with no RFC822NAME (required)
         try{
           profile.doesUserFulfillEndEntityProfile("username","password",STANDARD_DN,"dnsname=test.primekey.se, Upn=test@primekey.se, ipaddress=11.11.1.2","","test@test.com",
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-          		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+          		                                   false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
           fail("Error Required RFC822NAME field wasn't checked");
         }catch(EndEntityProfileValidationException e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " " + e.getMessage() + " = OK");
@@ -347,7 +348,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         try{
           profile.doesUserFulfillEndEntityProfile("username","password",STANDARD_DN, "rfc822name=test@test.com, rfc822name=test@primekey.se, dnsname=test.primekey.se, Upn=test@primekey.se, ipaddress=11.11.1.2","","test@test.com",
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-          		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+          		                                   false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
           fail("To many RFC822 names fields wasn't checked");
         }catch(EndEntityProfileValidationException e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " " + e.getMessage() + " = OK");
@@ -356,14 +357,14 @@ public class UserFulfillEndEntityProfileUnitTest {
         // Test that only domain is checked for RFC822name and UPN
         profile.doesUserFulfillEndEntityProfile("username","password",STANDARD_DN, "rfc822name=test@test.com, dnsname=test.primekey.se, Upn=test12@primekey.se, ipaddress=11.11.1.2","","test@test.com",
                                                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-                                                false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+                                                false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
         log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + "  = OK");
 
         // Test were DNS have illegal value
         try{
           profile.doesUserFulfillEndEntityProfile("username","password",STANDARD_DN,"rfc822name=test@test.com, dnsname=test2.primekey.se, Upn=test12@primekey.se, ipaddress=11.11.1.2","","test@test.com",
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-          		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+          		                                   false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
           fail("Error value of DNS not checked.");
         }catch(EndEntityProfileValidationException e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " " + e.getMessage()+ " = OK");
@@ -373,7 +374,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         try{
           profile.doesUserFulfillEndEntityProfile("username","password",STANDARD_DN,"rfc822name=test@test.com, dnsname=test.primekey.se, Upn=test12@primekey.se","","",
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-          		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+          		                                   false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
           fail("Error not checking number of IPADDRESS properly.");
         }catch(EndEntityProfileValidationException e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " " + " = OK");
@@ -385,7 +386,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         try{
           profile.doesUserFulfillEndEntityProfile("username","password",STANDARD_DN,"rfc822name=test@test.com, dnsname=test.primekey.se, Upn=test12@primekey.se, ipaddress=11.11.1.1","","",
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-          		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+          		                                   false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
           fail("Inproper check of email field.");
         }catch(EndEntityProfileValidationException e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " " + e.getMessage() + " = OK");
@@ -395,7 +396,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         try{
           profile.doesUserFulfillEndEntityProfile("username","password",STANDARD_DN,"rfc822name=test@test.com, dnsname=test.primekey.se, Upn=test12@primekey.se, ipaddress=11.11.1.1","","null",
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-          		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+          		                                   false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
           fail("Inproper check of email field.");
         }catch(EndEntityProfileValidationException e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " " + e.getMessage() + " = OK");
@@ -405,7 +406,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         try{
           profile.doesUserFulfillEndEntityProfile("username","password",STANDARD_DN,"rfc822name=test@test.com, dnsname=test.primekey.se, Upn=test12@primekey.se,ipaddress=11.11.1.1","",null,
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-          		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+          		                                   false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
           fail("Inproper check of email field.");
         }catch(EndEntityProfileValidationException e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " " + e.getMessage() + " = OK");
@@ -415,7 +416,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         try{
           profile.doesUserFulfillEndEntityProfile("username","password",STANDARD_DN,"rfc822name=test11@test1.com, dnsname=test.primekey.se, Upn=test12@primekey.se,ipaddress=11.11.1.1","","test11@test1.com",
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-          		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+          		                                   false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
           fail("Inproper check of email field values.");
         }catch(EndEntityProfileValidationException e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " " + e.getMessage() + " = OK");
@@ -427,7 +428,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         try{
           profile.doesUserFulfillEndEntityProfile("username","password",STANDARD_DN,"rfc822name=test11@test.com, dnsname=test.primekey.se, Upn=test12@primekey.se,ipaddress=11.11.1.1","","test11@test.com",
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, false,
-          		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileRootCa, null);
+          		                                   false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileRootCa, null);
           fail("Inproper check of certificate profile values.");
         }catch(EndEntityProfileValidationException e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " " + e.getMessage() + " = OK");
@@ -437,7 +438,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         try{
           profile.doesUserFulfillEndEntityProfile("username","password",STANDARD_DN,"rfc822name=test11@test.com, dnsname=test.primekey.se, Upn=test12@primekey.se,ipaddress=11.11.1.1","","test11@test.com",
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, false,
-          		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_2, null, certProfileSubCa, null);
+          		                                   false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_2, null, certProfileSubCa, null);
           fail("Inproper check of available ca's.");
         }catch(EndEntityProfileValidationException e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " " + e.getMessage() + " = OK");
@@ -473,7 +474,7 @@ public class UserFulfillEndEntityProfileUnitTest {
             profile.doesUserFulfillEndEntityProfile("username","password",STANDARD_DN,
             		"rfc822name=test@test.com, rfc822name=test@somefoo.com, "+
             		"dnsname=test.primekey.se, Upn=test12@primekey.se, ipaddress=11.11.1.2","","test@test.com",
-            		CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false,false,SecConst.TOKEN_SOFT_BROWSERGEN,
+            		CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false,false,EndEntityConstants.TOKEN_USERGEN,
             		TEST_CA_1, null, certProfileEndUser, null);
             fail("Did not notice missing RFC822Name.");
         } catch ( EndEntityProfileValidationException e ) {
@@ -484,7 +485,7 @@ public class UserFulfillEndEntityProfileUnitTest {
             profile.doesUserFulfillEndEntityProfile("username","password",STANDARD_DN,
             		"rfc822name=test@nodomain.com, rfc822name=test@anything.com, rfc822name=test@somefoo.com, "+
             		"dnsname=test.primekey.se, Upn=test12@primekey.se, ipaddress=11.11.1.2","","test@test.com",
-            		CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false,false,SecConst.TOKEN_SOFT_BROWSERGEN,
+            		CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false,false,EndEntityConstants.TOKEN_USERGEN,
             		TEST_CA_1, null, certProfileEndUser, null);
             fail("Did not check RFC822Name against e-mail field.");
         } catch ( EndEntityProfileValidationException e ) {
@@ -495,7 +496,7 @@ public class UserFulfillEndEntityProfileUnitTest {
             profile.doesUserFulfillEndEntityProfile("username","password",STANDARD_DN,
             		"rfc822name=test@test.com, rfc822name=test@anything.com, rfc822name=test@somebar.com, "+
             		"dnsname=test.primekey.se, Upn=test12@primekey.se, ipaddress=11.11.1.2","","test@test.com",
-            		CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false,false,SecConst.TOKEN_SOFT_BROWSERGEN,
+            		CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false,false,EndEntityConstants.TOKEN_USERGEN,
             		TEST_CA_1, null, certProfileEndUser, null);
             fail("Did not check RFC822Name against profile.");
         } catch ( EndEntityProfileValidationException e ) {
@@ -505,7 +506,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         profile.doesUserFulfillEndEntityProfile("username","password",STANDARD_DN,
         		"rfc822name=test@test.com, rfc822name=test@anything.com, rfc822name=test@somefoo.com, rfc822name=test@somefoo.com, "+
         		"dnsname=test.primekey.se, Upn=test12@primekey.se, ipaddress=11.11.1.2","","test@test.com",
-        		CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false,false,SecConst.TOKEN_SOFT_BROWSERGEN,
+        		CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false,false,EndEntityConstants.TOKEN_USERGEN,
         		TEST_CA_1, null, certProfileEndUser, null);
         log.debug("End Entity Fulfill Profile Test " + (currentSubTest) + "  = OK");
         log.trace("<fulfillAltNames");
@@ -549,13 +550,13 @@ public class UserFulfillEndEntityProfileUnitTest {
         // Test with two OU  (2 required)
         profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith,OU=,OU=DEP1_1,OU=,OU=DEP2_2,C=SE","null","","",
                                                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-                                                false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+                                                false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
         log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
 
         // Test with tree OU  (2 required)
         profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith,OU=,OU=DEP1_1,OU=,OU=DEP2_2,OU=DEP3_3,C=SE","null","","",
                                                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-                                                false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+                                                false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
         log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
 
         profile.setModifyable(DnComponents.ORGANIZATIONALUNIT,4,false);
@@ -563,14 +564,14 @@ public class UserFulfillEndEntityProfileUnitTest {
         // Test with tree OU  (2 required)
         profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith,OU=,OU=DEP1_1,OU=,OU=DEP2_2,OU=DEP3_1,C=SE","null","","",
                                                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-                                                false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+                                                false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
         log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
 
         // Test with tree OU  (2 required)
         try {
           profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith,OU=,OU=DEP1_1,OU=,OU=DEP2_2,OU=DEP3_3,C=SE","null","","",
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-          		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+          		                                   false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
           fail("Error Required OU fields wasn't checked propertly");
         } catch (EndEntityProfileValidationException e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest) + " = OK");
@@ -591,26 +592,26 @@ public class UserFulfillEndEntityProfileUnitTest {
         // Test with one OU  (1 required)
         profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith,OU=HARD,C=SE","null","","",
                                                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-                                                false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+                                                false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
         log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
 
         // Test with two OU  (1 required)
         profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith,OU=DEP2_1,OU=HARD,C=SE","null","","",
                                                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-                                                false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+                                                false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
         log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
 
         // Test with three OU  (1 required)
         profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith,OU=DEP1_1,OU=DEP2_1,OU=HARD,C=SE","null","","",
                                                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-                                                false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+                                                false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
         log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
 
         // Test with four OU  (3 allowed)
         try{
           profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith,OU=DEP0_1,OU=DEP1_1,OU=DEP2_1,OU=HARD,C=SE","null","","",
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-          		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+          		                                   false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
           fail("Error Reverse OU fields wasn't checked propertly");
         }catch(EndEntityProfileValidationException e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
@@ -622,7 +623,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         try{
           profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith,OU=DEP1_1,OU=DEP2_1,OU=HARD2,C=SE","null","","",
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-          		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+          		                                   false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
           fail("Error Reverse OU fields wasn't checked propertly");
         }catch(EndEntityProfileValidationException e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
@@ -633,7 +634,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         // Test that the right data is checked when a lesser number of field is used
         profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith,OU=HARD,C=SE","null","","",
                                                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-                                                false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+                                                false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
         log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
 
         // Test with wrong data in nonmodifiable field when having only one ou
@@ -641,7 +642,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         try{
           profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith,OU=HARD2,C=SE","null","","",
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-          		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+          		                                   false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
             fail("Error Reverse OU fields wasn't checked propertly");
         }catch(EndEntityProfileValidationException e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
@@ -653,7 +654,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         try{
           profile.doesUserFulfillEndEntityProfile("username","passworCerd","CN=John Smith,C=SE","null","","",
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-          		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+          		                                   false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
             fail("Error Reverse OU fields wasn't checked propertly");
         }catch(EndEntityProfileValidationException e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
@@ -694,26 +695,26 @@ public class UserFulfillEndEntityProfileUnitTest {
         // Test with one IPAddress  (1 required)
         profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith,OU=HARD,C=SE","dnsname=test1.se,ipaddress=10.1.1.1","","",
                                                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-                                                false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+                                                false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
         log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
 
         // Test with two IPAddress  (1 required)
         profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith,OU=DEP2_1,OU=HARD,C=SE","dnsname=test1.se,ipaddress=11.1.1.1,ipaddress=10.1.1.1","","",
                                                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-                                                false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+                                                false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
         log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
 
         // Test with three IPAddress  (1 required)
         profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith,OU=DEP1_1,OU=DEP2_1,OU=HARD,C=SE","dnsname=test1.se,ipaddress=12.1.1.1,ipaddress=11.1.1.1,ipaddress=10.1.1.1","","",
                                                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-                                                false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+                                                false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
         log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
 
         // Test with four IPAddress  (3 allowed)
         try{
           profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith,OU=DEP0_1,OU=DEP1_1,OU=DEP2_1,OU=HARD,C=SE","dnsname=test1.se,ipaddress=12.1.1.1,ipaddress=12.1.1.1,ipaddress=11.1.1.1,ipaddress=10.1.1.1","","",
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-          		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+          		                                   false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
             fail("Error Reverse IPADDRESS fields wasn't checked propertly");
         }catch(EndEntityProfileValidationException e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
@@ -724,7 +725,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         try{
           profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith,OU=DEP1_1,OU=DEP2_1,OU=HARD2,C=SE","dnsname=test1.se,ipaddress=12.1.1.1,ipaddress=11.1.1.1,ipaddress=10.1.1.2","","",
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-          		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+          		                                   false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
             fail("Error Reverse IPADDRESS fields wasn't checked propertly");
         }catch(EndEntityProfileValidationException e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
@@ -734,14 +735,14 @@ public class UserFulfillEndEntityProfileUnitTest {
         // Test that the right data is checked when a lesser number of field is used
         profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith,OU=HARD,C=SE","dnsname=test1.se,ipaddress=10.1.1.1","","",
                                                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-                                                false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+                                                false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
         log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
 
         // Test with wrong data in nonmodifiable field when having only one ou
         try{
           profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith,OU=HARD2,C=SE","dnsname=test1.se,ipaddress=11.1.1.1","","",
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-          		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+          		                                   false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
             fail("Error Reverse IPADDRESS fields wasn't checked propertly");
         }catch(EndEntityProfileValidationException e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
@@ -752,7 +753,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         try{
           profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith,C=SE","dnsname=test1.se","","",
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-          		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+          		                                   false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
             fail("Error Reverse IPADDRESS fields wasn't checked propertly");
         }catch(EndEntityProfileValidationException e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
@@ -801,7 +802,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         try{
         	profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith,OU=HARD,C=SE","dnsname=test1.se,ipaddress=10.1.1.1","CountryOfCitizenship=FOO","",
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-        	                                         false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+        	                                         false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
         	fail("Error CountryOfCitizenship wasn't checked propertly");
         }catch(EndEntityProfileValidationException e){
         	assertEquals("Invalid COUNTRYOFCITIZENSHIP. Must be of length two.", e.getMessage());
@@ -810,7 +811,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         try{
         	profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith,OU=HARD,C=SE","dnsname=test1.se,ipaddress=10.1.1.1","CountryOfCitizenship=SE, CountryOfResidence=Foo","",
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-        	                                         false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+        	                                         false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
         	fail("Error CountryOfCitizenship wasn't checked propertly");
         }catch(EndEntityProfileValidationException e){
         	assertEquals("Invalid COUNTRYOFRESIDENCE. Must be of length two.", e.getMessage());
@@ -819,7 +820,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         try{
         	profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith,OU=HARD,C=SE","dnsname=test1.se,ipaddress=10.1.1.1","CountryOfCitizenship=SE, CountryOfResidence=TR","",
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-        	                                         false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+        	                                         false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
         	fail("Error CountryOfCitizenship wasn't checked propertly");
         }catch(EndEntityProfileValidationException e){
         	assertEquals("Field COUNTRYOFRESIDENCE data didn't match requirement of end entity profile.", e.getMessage());
@@ -827,12 +828,12 @@ public class UserFulfillEndEntityProfileUnitTest {
         }
     	profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith,OU=HARD,C=SE","dnsname=test1.se,ipaddress=10.1.1.1","CountryOfCitizenship=SE, CountryOfResidence=SE, Gender=M, PlaceOfBirth=Stockholm","",
     	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-    	                                         false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+    	                                         false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
     	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         try{
         	profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith,OU=HARD,C=SE","dnsname=test1.se,ipaddress=10.1.1.1","DateOfBirth=189901, CountryOfCitizenship=SE, CountryOfResidence=SE","",
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-        	                                         false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+        	                                         false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
         	fail("Error DateOfBirth wasn't checked propertly");
         }catch(EndEntityProfileValidationException e){
         	assertEquals("Invalid DATEOFBIRTH. Must be of length eight.", e.getMessage());
@@ -841,7 +842,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         try{
         	profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith,OU=HARD,C=SE","dnsname=test1.se,ipaddress=10.1.1.1","DateOfBirth=189901AA, CountryOfCitizenship=SE, CountryOfResidence=SE","",
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-        			false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+        			false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
         	fail("Error DateOfBirth wasn't checked propertly");
         }catch(EndEntityProfileValidationException e){
         	assertEquals("Invalid DATEOFBIRTH. Must be only numbers.", e.getMessage());
@@ -849,7 +850,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         }
     	profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith,OU=HARD,C=SE","dnsname=test1.se,ipaddress=10.1.1.1","DateOfBirth=18990101, CountryOfCitizenship=SE, CountryOfResidence=SE","",
     	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
-    	                                         false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
+    	                                         false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileEndUser, null);
     	log.debug("End Entity Fulfill Profile Test " + (currentSubTest) + " = OK");
     	log.trace("<fulfillSubjectDirAttributesReversedChecks");
     }
@@ -883,7 +884,7 @@ public class UserFulfillEndEntityProfileUnitTest {
     	// Custom starttime can be empty or null
     	profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith", "","","",
     	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-    	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei, certProfileEndUser, null);
+    	                                         false, false, false, EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, ei, certProfileEndUser, null);
     	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         profile.setValidityStartTimeUsed(false);
         profile.setValidityEndTimeUsed(true);
@@ -891,7 +892,7 @@ public class UserFulfillEndEntityProfileUnitTest {
     	// Custom endtime can be empty or null
     	profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith", "","","",
     	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-    	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei, certProfileEndUser, null);
+    	                                         false, false, false, EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, ei, certProfileEndUser, null);
     	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
     	profile.setValidityStartTimeUsed(true);
     	profile.setValidityEndTimeUsed(true);
@@ -899,14 +900,14 @@ public class UserFulfillEndEntityProfileUnitTest {
     	ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, staticEndOfTime);
     	profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith", "","","",
     	        CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-    	        false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei, certProfileEndUser, null);
+    	        false, false, false, EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, ei, certProfileEndUser, null);
     	// Not possible to edit start end time if non-modifiable in profile
     	profile.setValidityStartTimeModifiable(false);
     	ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, "1:00:00" );
     	try {
     	    profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith", "","","",
     	            CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-    	            false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei, certProfileEndUser, null);
+    	            false, false, false, EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, ei, certProfileEndUser, null);
     	    fail("Error: Possible to edit user certificate start time when non modifiable in profile.");
     	} catch (EndEntityProfileValidationException e) {
     	    log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
@@ -916,7 +917,7 @@ public class UserFulfillEndEntityProfileUnitTest {
     	try {
     	    profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith", "","","",
     	            CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-    	            false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei, certProfileEndUser, null);
+    	            false, false, false, EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, ei, certProfileEndUser, null);
     	    fail("Error: Possible to edit user certificate end time when non modifiable in profile.");
     	} catch (EndEntityProfileValidationException e) {
     	    log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
@@ -930,28 +931,28 @@ public class UserFulfillEndEntityProfileUnitTest {
         ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, staticEndOfTime);
     	profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith", "","","",
     	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-    	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei, certProfileEndUser, null);
+    	                                         false, false, false, EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, ei, certProfileEndUser, null);
     	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         // Relative times work?
         ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, relativeNow);
         ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, relativeEndOfTime);
     	profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith", "","","",
     	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-    	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei, certProfileEndUser, null);
+    	                                         false, false, false, EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, ei, certProfileEndUser, null);
     	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         // Static start, rel end work?
         ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, staticNow);
         ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, relativeEndOfTime);
     	profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith", "","","",
     	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-    	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei, certProfileEndUser, null);
+    	                                         false, false, false, EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, ei, certProfileEndUser, null);
     	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         // Rel start, static end work?
         ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, relativeNow);
         ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, staticEndOfTime);
     	profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith", "","","",
     	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-    	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei, certProfileEndUser, null);
+    	                                         false, false, false, EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, ei, certProfileEndUser, null);
     	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         // Negative relative start times work?
         ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, relativeNegative);
@@ -959,7 +960,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         try {
         	profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith", "","","",
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-        	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei, certProfileEndUser, null);
+        	                                         false, false, false, EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, ei, certProfileEndUser, null);
         	fail("Error: Possible to use negative start time.");
         } catch (EndEntityProfileValidationException e) {
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
@@ -970,7 +971,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         try {
         	profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith", "","","",
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-        	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei, certProfileEndUser, null);
+        	                                         false, false, false, EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, ei, certProfileEndUser, null);
         	fail("Error: Possible to use negative end time.");
         } catch (EndEntityProfileValidationException e) {
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
@@ -981,7 +982,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         try {
         	profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith", "","","",
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-        	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei, certProfileEndUser, null);
+        	                                         false, false, false, EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, ei, certProfileEndUser, null);
         	fail("Error: Static end time before static start time allowed.");
         } catch (EndEntityProfileValidationException e) {
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
@@ -992,7 +993,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         try {
         	profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith", "","","",
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-        	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei, certProfileEndUser, null);
+        	                                         false, false, false, EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, ei, certProfileEndUser, null);
         	fail("Error: Relative end time before relative start time allowed.");
         } catch (EndEntityProfileValidationException e) {
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
@@ -1003,7 +1004,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         try {
         	profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith", "","","",
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-        	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei, certProfileEndUser, null);
+        	                                         false, false, false, EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, ei, certProfileEndUser, null);
         	fail("Error: Invalid static start time allowed.");
         } catch (EndEntityProfileValidationException e) {
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
@@ -1014,7 +1015,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         try {
         	profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith", "","","",
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-        	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei, certProfileEndUser, null);
+        	                                         false, false, false, EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, ei, certProfileEndUser, null);
         	fail("Error: Invalid static start time allowed.");
         } catch (EndEntityProfileValidationException e) {
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
@@ -1025,7 +1026,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         try {
         	profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith", "","","",
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-        	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei, certProfileEndUser, null);
+        	                                         false, false, false, EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, ei, certProfileEndUser, null);
         	fail("Error: Invalid relative start time allowed.");
         } catch (EndEntityProfileValidationException e) {
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
@@ -1036,7 +1037,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         try {
         	profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith", "","","",
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-        	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei, certProfileEndUser, null);
+        	                                         false, false, false, EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, ei, certProfileEndUser, null);
         	fail("Error: Invalid relative start time allowed.");
         } catch (EndEntityProfileValidationException e) {
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest) + " = OK");
@@ -1068,13 +1069,13 @@ public class UserFulfillEndEntityProfileUnitTest {
         profile.setAllowedRequestsUsed(false);
     	profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith", "","","",
     	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-    			false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei, certProfileEndUser, null);
+    			false, false, false, EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, ei, certProfileEndUser, null);
     	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, "2");
         try {
         	profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith", "","","",
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-        	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei, certProfileEndUser, null);
+        	                                         false, false, false, EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, ei, certProfileEndUser, null);
         	fail("Error: Allowed requests was not checked correctly, should not be allowed.");
         } catch (EndEntityProfileValidationException e) {
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
@@ -1082,7 +1083,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         profile.setAllowedRequestsUsed(true);
     	profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith", "","","",
     	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-    	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei, certProfileEndUser, null);
+    	                                         false, false, false, EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, ei, certProfileEndUser, null);
     	log.debug("End Entity Fulfill Profile Test " + (currentSubTest) + " = OK");
     	log.trace("<allowMultipleRequests");
     }
@@ -1106,7 +1107,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         	ei.setMaxLoginAttempts(1234);
         	profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith","","","",
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-        	                                         false,false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei, certProfileEndUser, null);
+        	                                         false,false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, ei, certProfileEndUser, null);
         	fail("Error: maxFailedLogins was not checked correctly, should not be allowed.");
         } catch (EndEntityProfileValidationException e) {
         	// OK
@@ -1116,7 +1117,7 @@ public class UserFulfillEndEntityProfileUnitTest {
     	ei.setMaxLoginAttempts(7);
     	profile.doesUserFulfillEndEntityProfile("username","password","CN=John Smith","","","",
     	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-    	                                         false,false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei, certProfileEndUser, null);
+    	                                         false,false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, ei, certProfileEndUser, null);
 
         log.trace("<maxFailedLogins");
     }
@@ -1150,30 +1151,30 @@ public class UserFulfillEndEntityProfileUnitTest {
         // Test right CA
     	profile.doesUserFulfillEndEntityProfile("username","password",STANDARD_DN,null,"","test11@test.com",
     	                                         CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, false,
-    	                                         false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileSubCa, null);
+    	                                         false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileSubCa, null);
 
         // Test Wrong CA
         try{
         	profile.doesUserFulfillEndEntityProfile("username","password",STANDARD_DN,null,"","test11@test.com",
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, false,
-        	                                         false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_2, null, certProfileSubCa, null);
+        	                                         false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_2, null, certProfileSubCa, null);
         	fail("Improper check of available ca's.");
         }catch(EndEntityProfileValidationException e){
         	assertEquals("Couldn't find CA (3) among End Entity Profiles Available CAs.", e.getMessage());
         }
 
         // Set Any CA available
-        profile.setAvailableCAs(Collections.singletonList(SecConst.ALLCAS));
+        profile.setAvailableCAs(Collections.singletonList(CAConstants.ALLCAS));
 
         // Test right CA
     	profile.doesUserFulfillEndEntityProfile("username","password",STANDARD_DN,null,"","test11@test.com",
     	                                         CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, false,
-    	                                         false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileSubCa, null);
+    	                                         false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, null, certProfileSubCa, null);
 
         // Test Wrong CA
     	profile.doesUserFulfillEndEntityProfile("username","password",STANDARD_DN,null,"","test11@test.com",
     	                                         CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, false,
-    	                                         false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_2, null, certProfileSubCa, null);
+    	                                         false,false,EndEntityConstants.TOKEN_USERGEN, TEST_CA_2, null, certProfileSubCa, null);
     	log.trace("<limitedAvailableCAs");
     }
 
@@ -1254,7 +1255,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         profile.doesUserFulfillEndEntityProfile("username","password",STANDARD_DN,
                 "rfc822name=test@test.com, rfc822name=test@anything.com, rfc822name=test@somefoo.com, "+
                 "dnsname=test.primekey.se, Upn=test12@primekey.se, ipaddress=11.11.1.2","","test@test.com",
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false,false,SecConst.TOKEN_SOFT_BROWSERGEN,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false,false,EndEntityConstants.TOKEN_USERGEN,
                 TEST_CA_1, null, certProfileEndUser, null);
         log.trace("<testProfileWithRfc822name");
     }
@@ -1279,7 +1280,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         certProfileEndUserWithCabFOIdUse.setUseCabfOrganizationIdentifier(true);
         Throwable throwable =  assertThrows(Throwable.class, () -> {
             profile.doesUserFulfillEndEntityProfile("username", "password", "CN=John Smith", "", "", "",
-                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei,
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, ei,
                     certProfileEndUserWithCabFOIdUse, null);
         });
         assertEquals("Incorrect exception was thrown.", EndEntityProfileValidationException.class, throwable.getClass());
@@ -1307,7 +1308,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         final CertificateProfile certProfileEndUserWithCabFOIdUse = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         certProfileEndUserWithCabFOIdUse.setUseCabfOrganizationIdentifier(true);
         profile.doesUserFulfillEndEntityProfile("username", "password", "CN=John Smith", "", "", "",
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, ei,
                 certProfileEndUserWithCabFOIdUse, null);
         log.trace("<testCabFOrganizationIdentifierSetInEEP");
     }
@@ -1327,7 +1328,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         certProfileEndUserWithCabFOIdUse.setUseCabfOrganizationIdentifier(true);
         Throwable throwable =  assertThrows(Throwable.class, () -> {
             profile.doesUserFulfillEndEntityProfile("username", "password", "CN=John Smith", "", "", "",
-                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei,
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, ei,
                     certProfileEndUserWithCabFOIdUse, null);
         });
         assertEquals("Incorrect exception was thrown.", EndEntityProfileValidationException.class, throwable.getClass());
@@ -1353,7 +1354,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         final CertificateProfile certProfileEndUserWithCabFOIdUse = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         certProfileEndUserWithCabFOIdUse.setUseCabfOrganizationIdentifier(true);
         profile.doesUserFulfillEndEntityProfile("username", "password", "CN=John Smith", "", "", "",
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, ei,
                 certProfileEndUserWithCabFOIdUse, null);
 
         log.trace("<testCabFOrganizationIdentifierSetInEEPWithPredefinedValueButNotInRequest");
@@ -1371,7 +1372,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         Throwable throwable =  assertThrows(Throwable.class, () -> {
             profile.doesUserFulfillEndEntityProfile("invalid-username", "password", "CN=John Smith",
                                                     "", "", "", CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                                                    false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1,
+                                                    false, false, false, EndEntityConstants.TOKEN_USERGEN, TEST_CA_1,
                                                     new ExtendedInformation(), certProfileEndUserWithCabFOIdUse, null);
         });
         assertEquals("Incorrect exception was thrown.", EndEntityProfileValidationException.class, throwable.getClass());
@@ -1394,7 +1395,7 @@ public class UserFulfillEndEntityProfileUnitTest {
 
         profile.doesUserFulfillEndEntityProfile("username", "password", "CN=John Smith",
                                                 "", "", "", CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                                                false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1,
+                                                false, false, false, EndEntityConstants.TOKEN_USERGEN, TEST_CA_1,
                                                 new ExtendedInformation(), certProfileEndUserWithCabFOIdUse, null);
     }
 
@@ -1408,7 +1409,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         ei.setAccountBindingId("AccountBindingId");
 
         profile.doesUserFulfillEndEntityProfile("username", "password", "CN=John Smith", "", "", "",
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, ei,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, EndEntityConstants.TOKEN_USERGEN, TEST_CA_1, ei,
                 certProfileEndUser, null);
         log.trace("<testEABInEEwithNotDefinedEabInCP");
     }
@@ -1424,7 +1425,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         certificateProfile.setEabNamespaces(namespaces);
         Throwable throwable =  assertThrows(Throwable.class, () -> {
             profile.doesUserFulfillEndEntityProfile("username", "password", "CN=John Smith", "", "", "",
-                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1,
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, EndEntityConstants.TOKEN_USERGEN, TEST_CA_1,
                     null, certificateProfile, null);
         });
         assertEquals("Incorrect exception was thrown.", EndEntityProfileValidationException.class, throwable.getClass());
@@ -1451,7 +1452,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         certificateProfile.setEabNamespaces(namespaces);
         Throwable throwable =  assertThrows(Throwable.class, () -> {
             profile.doesUserFulfillEndEntityProfile("username", "password", "CN=John Smith", "", "", "",
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, EndEntityConstants.TOKEN_USERGEN, TEST_CA_1,
                 ei, certificateProfile, eabConfiguration);
         });
         assertEquals("Incorrect exception was thrown.", EndEntityProfileValidationException.class, throwable.getClass());
@@ -1481,7 +1482,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         certificateProfile.setEabNamespaces(namespaces);
         Throwable throwable =  assertThrows(Throwable.class, () -> {
             profile.doesUserFulfillEndEntityProfile("username", "password", "CN=John Smith", "", "", "",
-                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1,
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, EndEntityConstants.TOKEN_USERGEN, TEST_CA_1,
                     ei, certificateProfile, eabConfiguration);
         });
         assertEquals("Incorrect exception was thrown.", EndEntityProfileValidationException.class, throwable.getClass());
@@ -1512,7 +1513,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         Set<String> namespaces = new HashSet<>(Collections.singletonList(eabNamespace));
         certificateProfile.setEabNamespaces(namespaces);
         profile.doesUserFulfillEndEntityProfile("username", "password", "CN=John Smith", "", "", "",
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, EndEntityConstants.TOKEN_USERGEN, TEST_CA_1,
                 ei, certificateProfile, eabConfiguration);
         log.trace("<testEABInEENamespaceNotInConfigs");
     }

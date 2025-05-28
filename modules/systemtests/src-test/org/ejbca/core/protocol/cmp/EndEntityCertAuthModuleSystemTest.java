@@ -89,7 +89,6 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -1020,7 +1019,7 @@ public class EndEntityCertAuthModuleSystemTest extends CmpTestCase {
             throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException, EjbcaException, Exception {
 
         EndEntityInformation user = new EndEntityInformation(username, subjectDN, _caid, null, username + "@primekey.se", new EndEntityType(
-                EndEntityTypes.ENDUSER), eepid, cpid, SecConst.TOKEN_SOFT_PEM, null);
+                EndEntityTypes.ENDUSER), eepid, cpid, EndEntityConstants.TOKEN_SOFT_PEM, null);
         user.setPassword(password);
         try {
             endEntityManagementSession.addUser(ADMIN, user, clearpassword);

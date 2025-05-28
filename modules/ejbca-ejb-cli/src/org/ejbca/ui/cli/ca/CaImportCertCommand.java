@@ -46,7 +46,6 @@ import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -289,7 +288,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
                 try {
                     EndEntityInformation endEntityInformation = new EndEntityInformation(username, CertTools.getSubjectDN(certificate), cainfo.getCAId(), subjectAltName, email,
                             EndEntityTypes.ENDUSER.toEndEntityType(),
-                            endentityprofileid, certificateprofileid, SecConst.TOKEN_SOFT_BROWSERGEN, null);
+                            endentityprofileid, certificateprofileid, EndEntityConstants.TOKEN_USERGEN, null);
                     endEntityInformation.setPassword(password);
                     endEntityManagementSession.addUser(getAuthenticationToken(), endEntityInformation, false);                  
                 } catch (EndEntityExistsException e) {
@@ -313,7 +312,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
                 EndEntityInformation endEntityInformation = new EndEntityInformation(username, CertTools.getSubjectDN(certificate), cainfo.getCAId(),
                         subjectAltName, email, (status == CertificateConstants.CERT_ACTIVE ? EndEntityConstants.STATUS_GENERATED
                                 : EndEntityConstants.STATUS_REVOKED), endEntityType, endentityprofileid, certificateprofileid, null, null,
-                        SecConst.TOKEN_SOFT_BROWSERGEN, null);
+                        EndEntityConstants.TOKEN_USERGEN, null);
                 endEntityInformation.setPassword(password);
                 try {
                     endEntityManagementSession.changeUser(getAuthenticationToken(), endEntityInformation, false);

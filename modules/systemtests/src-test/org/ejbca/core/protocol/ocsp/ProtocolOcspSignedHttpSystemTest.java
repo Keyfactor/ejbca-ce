@@ -59,7 +59,6 @@ import org.cesecore.util.TraceLogMethodsRule;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -188,7 +187,7 @@ public class ProtocolOcspSignedHttpSystemTest extends CaTestCase {
             log.debug("User ocsptest already exists.");
             EndEntityInformation userData = new EndEntityInformation(END_ENTITY_NAME, "C=SE,O=AnaTom,CN=OCSPTest",
                     caid, null, "ocsptest@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
-                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, null);
+                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, EndEntityConstants.TOKEN_SOFT_PEM, null);
             userData.setPassword("foo123");
             endEntityManagementSession.changeUser(admin, userData, false);
             log.debug("Reset status to NEW");

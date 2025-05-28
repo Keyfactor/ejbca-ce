@@ -29,6 +29,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -531,7 +532,7 @@ public class RAInterfaceBean implements Serializable {
         if (endentityprofile != null) {
             final List<Integer> casDefinedInEndEntityProfile = new ArrayList<>(endentityprofile.getAvailableCAs());
             boolean allCasDefineInEndEntityProfile = false;
-            if (casDefinedInEndEntityProfile.contains(Integer.valueOf(SecConst.ALLCAS))) {
+            if (casDefinedInEndEntityProfile.contains(Integer.valueOf(CAConstants.ALLCAS))) {
                 allCasDefineInEndEntityProfile = true;
             }
             // 3. Next retrieve all certificate profiles defined in the end entity profile

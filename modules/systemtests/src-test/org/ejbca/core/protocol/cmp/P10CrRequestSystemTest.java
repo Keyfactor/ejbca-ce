@@ -61,7 +61,6 @@ import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
 import org.junit.After;
 import org.junit.Before;
@@ -487,7 +486,7 @@ public class P10CrRequestSystemTest extends CmpTestCase {
                     null, "cmptest@primekey.se", new EndEntityType(EndEntityTypes.ENDUSER),
 //                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                     this.eepDnOverrideId, this.cpDnOverrideId,
-                    SecConst.TOKEN_SOFT_PEM, null);
+                    EndEntityConstants.TOKEN_SOFT_PEM, null);
             user.setPassword("foo123");
             try {
                 this.endEntityManagementSession.addUser(ADMIN, user, true);

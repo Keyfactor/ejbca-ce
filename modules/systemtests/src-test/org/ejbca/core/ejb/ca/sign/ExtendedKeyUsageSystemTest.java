@@ -42,7 +42,6 @@ import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
@@ -207,7 +206,7 @@ public class ExtendedKeyUsageSystemTest extends CaTestCase {
         // Make user that we know...
         boolean userExists = false;
         EndEntityInformation user = new EndEntityInformation("extkeyusagefoo", "C=SE,O=AnaTom,CN=extkeyusagefoo", rsacaid, null, "foo@anatom.se",
-                new EndEntityType(EndEntityTypes.ENDUSER), fooEEProfile, fooCertProfile, SecConst.TOKEN_SOFT_BROWSERGEN, null);
+                new EndEntityType(EndEntityTypes.ENDUSER), fooEEProfile, fooCertProfile, EndEntityConstants.TOKEN_USERGEN, null);
         user.setStatus(EndEntityConstants.STATUS_NEW);
         user.setPassword("foo123");
         try {

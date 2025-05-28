@@ -95,8 +95,7 @@ public final class CAConstants {
      */
     public static final int CAID_USEUSERDEFINED = 0;
 
-    /** Used in profiles and service workers to make the catch all every CA instead of listing individual CAs when operating on them
-     * This is duplicated in SecConst */
+    /** Used in profiles and service workers to make the catch all every CA instead of listing individual CAs when operating on them */
     public static final int ALLCAS = 1;
 
     public static String getStatusText(int status) {

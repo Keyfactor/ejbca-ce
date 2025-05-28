@@ -32,7 +32,6 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
-import org.ejbca.core.model.SecConst;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -121,7 +120,7 @@ public class AddLotsOfUsersSystemTest extends CaTestCase {
                 String username = theadUsername + "_" + i;
                 usernames[i] = username;               
                 EndEntityInformation endEntityInformation = new EndEntityInformation(username, "CN=" + username, getTestCAId(), null, null, EndEntityTypes.ENDUSER.toEndEntityType(),
-                        EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, null);
+                        EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_P12, null);
                 endEntityInformation.setPassword("foo123");
                 endEntityManagementSession.addUser(roleMgmgToken, endEntityInformation, false);
             }

@@ -96,7 +96,6 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.KeyStoreCreateSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -239,7 +238,7 @@ public class KeyRecoverySystemTest extends CaTestCase {
                     keypair1 = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
                     final EndEntityInformation ee = new EndEntityInformation(userrsa, "CN=TESTKEYRECRSA" + new Random().nextLong(), getTestCAId(), "rfc822name=" + TEST_EMAIL, TEST_EMAIL,
                             EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, 
-                            SecConst.TOKEN_SOFT_P12, null);
+                            EndEntityConstants.TOKEN_SOFT_P12, null);
                     ee.setPassword("foo123");
                     endEntityManagementSession.addUser(internalAdmin, ee, false);
                     cert1 = (X509Certificate) signSession.createCertificate(internalAdmin, userrsa, "foo123", new PublicKeyWrapper(keypair1.getPublic()));
@@ -304,7 +303,7 @@ public class KeyRecoverySystemTest extends CaTestCase {
                     final EndEntityInformation ee = new EndEntityInformation(username, "CN="+username, caInfo.getCAId(),
                             "rfc822name=" + TEST_EMAIL, TEST_EMAIL, EndEntityTypes.ENDUSER.toEndEntityType(),
                             EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                            SecConst.TOKEN_SOFT_P12, null);
+                            EndEntityConstants.TOKEN_SOFT_P12, null);
                     ee.setPassword("foo123");
                     endEntityManagementSession.addUser(internalAdmin, ee, false);
                     endEntityCertificate = (X509Certificate) signSession.createCertificate(internalAdmin, username, "foo123",
@@ -356,7 +355,7 @@ public class KeyRecoverySystemTest extends CaTestCase {
                     keypair1 = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_EC);
                     final EndEntityInformation ee = new EndEntityInformation(userec, "CN=TESTKEYRECEC" + new Random().nextLong(), getTestCAId(), "rfc822name=" + TEST_EMAIL, TEST_EMAIL,
                             EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, 
-                            SecConst.TOKEN_SOFT_P12, null);
+                            EndEntityConstants.TOKEN_SOFT_P12, null);
                     ee.setPassword("foo123");
                     endEntityManagementSession.addUser(internalAdmin, ee, false);
                     cert1 = (X509Certificate) signSession.createCertificate(internalAdmin, userec, "foo123", new PublicKeyWrapper(keypair1.getPublic()));
@@ -419,7 +418,7 @@ public class KeyRecoverySystemTest extends CaTestCase {
                     final EndEntityInformation ee = new EndEntityInformation(username, "CN="+username, caInfo.getCAId(),
                             "rfc822name=" + TEST_EMAIL, TEST_EMAIL, EndEntityTypes.ENDUSER.toEndEntityType(),
                             EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                            SecConst.TOKEN_SOFT_P12, null);
+                            EndEntityConstants.TOKEN_SOFT_P12, null);
                     ee.setPassword("foo123");
                     endEntityManagementSession.addUser(internalAdmin, ee, false);
                     endEntityCertificate = (X509Certificate) signSession.createCertificate(internalAdmin, username, "foo123",
@@ -478,7 +477,7 @@ public class KeyRecoverySystemTest extends CaTestCase {
                     final EndEntityInformation ee = new EndEntityInformation(username, "CN="+username, caInfo.getCAId(),
                             "rfc822name=" + TEST_EMAIL, TEST_EMAIL, EndEntityTypes.ENDUSER.toEndEntityType(),
                             EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                            SecConst.TOKEN_SOFT_P12, null);
+                            EndEntityConstants.TOKEN_SOFT_P12, null);
                     ee.setPassword("foo123");
                     endEntityManagementSession.addUser(internalAdmin, ee, false);
                     endEntityCertificate = (X509Certificate) signSession.createCertificate(internalAdmin, username, "foo123",
@@ -530,7 +529,7 @@ public class KeyRecoverySystemTest extends CaTestCase {
                     keypair1 = KeyTools.genKeys("Ed25519", AlgorithmConstants.KEYALGORITHM_ED25519);
                     final EndEntityInformation ee = new EndEntityInformation(userec, "CN=TESTKEYRECED25519" + new Random().nextLong(), getTestCAId(), "rfc822name=" + TEST_EMAIL, TEST_EMAIL,
                             EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, 
-                            SecConst.TOKEN_SOFT_P12, null);
+                            EndEntityConstants.TOKEN_SOFT_P12, null);
                     ee.setPassword("foo123");
                     endEntityManagementSession.addUser(internalAdmin, ee, false);
                     cert1 = (X509Certificate) signSession.createCertificate(internalAdmin, userec, "foo123", new PublicKeyWrapper(keypair1.getPublic()));
@@ -579,7 +578,7 @@ public class KeyRecoverySystemTest extends CaTestCase {
                     keypair1 = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
                     final EndEntityInformation ee = new EndEntityInformation(user, "CN=TESTKEYREC" + new Random().nextLong(), getTestCAId(), "rfc822name=" + TEST_EMAIL, TEST_EMAIL,
                             EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, 
-                            SecConst.TOKEN_SOFT_P12, null);
+                            EndEntityConstants.TOKEN_SOFT_P12, null);
                     ee.setPassword("foo123");
                     endEntityManagementSession.addUser(internalAdmin, ee, false);
                     cert1 = (X509Certificate) signSession.createCertificate(internalAdmin, user, "foo123", new PublicKeyWrapper(keypair1.getPublic()));
@@ -697,7 +696,7 @@ public class KeyRecoverySystemTest extends CaTestCase {
                     keypair1 = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_EC);
                     final EndEntityInformation ee = new EndEntityInformation(user, "CN=TESTKEYREC" + new Random().nextLong(), getTestCAId(), "rfc822name=" + TEST_EMAIL, TEST_EMAIL,
                             EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, 
-                            SecConst.TOKEN_SOFT_P12, null);
+                            EndEntityConstants.TOKEN_SOFT_P12, null);
                     ee.setPassword("foo123");
                     endEntityManagementSession.addUser(internalAdmin, ee, false);
                     cert1 = (X509Certificate) signSession.createCertificate(internalAdmin, user, "foo123",
@@ -768,7 +767,7 @@ public class KeyRecoverySystemTest extends CaTestCase {
             EndEntityInformation eeinfo = new EndEntityInformation(testuser, "CN=TEST_KEYREC_CACHANGE" + new Random().nextLong(),
                     caId1, "", null, EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
                     eeProfileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                    new Date(), new Date(), SecConst.TOKEN_SOFT_P12, null);
+                    new Date(), new Date(), EndEntityConstants.TOKEN_SOFT_P12, null);
             eeinfo.setPassword("foo123");
             endEntityManagementSession.addUser(internalAdmin, eeinfo, false);
             endEntityManagementSession.setPassword(internalAdmin, testuser, "foo123");
@@ -777,7 +776,7 @@ public class KeyRecoverySystemTest extends CaTestCase {
             eeinfo = eeAccessSession.findUser(internalAdmin, testuser);
             assertNotNull("Could not find test user", testuser);
             eeinfo.setPassword("foo123");
-            final byte[] ks1 = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, testuser, "foo123", caId1, "1024", AlgorithmConstants.KEYALGORITHM_RSA, SecConst.TOKEN_SOFT_P12, false, true, eeprofile.getReUseKeyRecoveredCertificate(), eeProfileId);
+            final byte[] ks1 = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, testuser, "foo123", caId1, "1024", AlgorithmConstants.KEYALGORITHM_RSA, EndEntityConstants.TOKEN_SOFT_P12, false, true, eeprofile.getReUseKeyRecoveredCertificate(), eeProfileId);
             KeyStore keystore1 = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
             keystore1.load(new ByteArrayInputStream(ks1), "foo123".toCharArray());
             usercert = (X509Certificate) EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(testuser)).get(0);
@@ -793,7 +792,7 @@ public class KeyRecoverySystemTest extends CaTestCase {
             
             // Now try to perform key recovery
             assertTrue("markAsRecoverable failed",endEntityManagementSession.prepareForKeyRecovery(internalAdmin, testuser, eeProfileId, usercert));
-            final byte[] ks2 = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, testuser, "foo123", caId2, "1024", AlgorithmConstants.KEYALGORITHM_RSA, SecConst.TOKEN_SOFT_P12, true, false, eeprofile.getReUseKeyRecoveredCertificate(), eeProfileId);
+            final byte[] ks2 = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, testuser, "foo123", caId2, "1024", AlgorithmConstants.KEYALGORITHM_RSA, EndEntityConstants.TOKEN_SOFT_P12, true, false, eeprofile.getReUseKeyRecoveredCertificate(), eeProfileId);
             KeyStore keystore2 = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
             keystore2.load(new ByteArrayInputStream(ks2), "foo123".toCharArray());
             assertFalse("Users should have been unmarked for key recovery", keyRecoverySession.isUserMarked(testuser));
@@ -839,7 +838,7 @@ public class KeyRecoverySystemTest extends CaTestCase {
         EndEntityInformation eeinfo = new EndEntityInformation(username, "CN=" + username,
                 caId, "", null, EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
                 eeProfileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                new Date(), new Date(), SecConst.TOKEN_SOFT_P12, null);
+                new Date(), new Date(), EndEntityConstants.TOKEN_SOFT_P12, null);
         eeinfo.setPassword(password);
         eeinfo.setKeyRecoverable(true);
         endEntityManagementSession.addUser(internalAdmin, eeinfo, false);

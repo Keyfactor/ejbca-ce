@@ -21,6 +21,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
@@ -30,7 +31,6 @@ import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
@@ -299,7 +299,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     	final HashSet<Integer> authorizedCaIds = new HashSet<>(caSession.getAuthorizedCaIds(admin));
     	final HashSet<Integer> allCaIds = new HashSet<>(caSession.getAllCaIds());
 		// If this is the special value ALLCAs we are authorized
-    	authorizedCaIds.add(SecConst.ALLCAS);
+    	authorizedCaIds.add(CAConstants.ALLCAS);
 
     	final boolean rootAccess = authorizationSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource());
         // We have to manually add the EMPTY end entity profile because it is not included in the profile cache
@@ -319,7 +319,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     public List<Integer> getAuthorizedEndEntityProfileIdsWithMissingCAs(final AuthenticationToken admin) {
         final ArrayList<Integer> returnval = new ArrayList<Integer>();
         final HashSet<Integer> allcaids = new HashSet<Integer>(caSession.getAllCaIds());
-        allcaids.add(SecConst.ALLCAS);
+        allcaids.add(CAConstants.ALLCAS);
         if (!authorizationSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource())) {
             // we can only see profiles with missing CA Ids if we have root rule access
             return returnval;
@@ -352,7 +352,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     public boolean isAuthorizedToView(final AuthenticationToken admin, final int id) {
         final HashSet<Integer> authorizedCaIds = new HashSet<>(caSession.getAuthorizedCaIds(admin));
         final HashSet<Integer> allCaIds = new HashSet<>(caSession.getAllCaIds());
-        authorizedCaIds.add(SecConst.ALLCAS);
+        authorizedCaIds.add(CAConstants.ALLCAS);
         final boolean rootAccess = authorizationSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource());
         final EndEntityProfile profile = getEndEntityProfileNoClone(id);
         return isAuthorizedToProfile(admin, id, profile, rootAccess, authorizedCaIds, allCaIds, AccessRulesConstants.VIEW_END_ENTITY);
@@ -403,7 +403,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
             Collection<Integer> ids = profile.getAvailableCAs();
             final Map<Integer,String> map = caSession.getCAIdToNameMap();
             String name;
-            if (ids.contains(SecConst.ALLCAS)) {
+            if (ids.contains(CAConstants.ALLCAS)) {
                 ids = caSession.getAuthorizedCaIds(admin);
             }
             for (int id : ids) {
@@ -600,7 +600,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
              * If availablecas contains SecConst ALLCAS, change
              * availablecas /to be a list of all CAs
              */
-            if (ArrayUtils.contains(availablecas, String.valueOf(SecConst.ALLCAS))) {
+            if (ArrayUtils.contains(availablecas, String.valueOf(CAConstants.ALLCAS))) {
                 Collection<Integer> allcaids = caSession.getAllCaIds();
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Available CAs in end entity profile contains ALLCAS, lising all CAs in the system instead. There are "

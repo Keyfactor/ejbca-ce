@@ -83,7 +83,6 @@ import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.CustomFieldException;
@@ -242,7 +241,7 @@ public class HybridCertificateSystemTest {
 
         EndEntityInformation endEntityInformation = new EndEntityInformation(username, subjectDn, hybridRoot.getCAId(), null, null,
                 EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, null);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_PEM, null);
         endEntityInformation.setPassword("foo123");
         endEntityManagementSession.addUser(alwaysAllowToken, endEntityInformation, false);
         try {

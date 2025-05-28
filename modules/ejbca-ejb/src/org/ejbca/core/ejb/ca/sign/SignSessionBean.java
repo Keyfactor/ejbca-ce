@@ -985,7 +985,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         final int caId = endEntity.getCAId();
         caSession.verifyExistenceOfCA(caId);
         // Check token type.
-        if (endEntity.getTokenType() != SecConst.TOKEN_SOFT_BROWSERGEN) {
+        if (endEntity.getTokenType() != EndEntityConstants.TOKEN_USERGEN) {
             throw new EjbcaException(ErrorCode.BAD_USER_TOKEN_TYPE,
                     "Error: Wrong Token Type of user, must be 'USERGENERATED' for PKCS10/SPKAC/CRMF/CVC requests");
         }

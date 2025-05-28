@@ -63,7 +63,6 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.SimpleTime;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.validators.RegexFieldValidator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
@@ -346,7 +345,7 @@ public class EndEntityProfileSessionBeanSystemTest extends RoleUsingTestCase {
             assertEquals("CA name and ID must match.", (int) map.get(caName2), caInfo2.getCAId());
             
             // 1.4 Test AnyCa available for this EEP
-            int anyCAId = SecConst.ALLCAS;
+            int anyCAId = CAConstants.ALLCAS;
             eeProfile.setAvailableCAs(Collections.singletonList(anyCAId));
             endEntityProfileSession.changeEndEntityProfile(alwaysAllowToken, eepProfileName, eeProfile);
             map = endEntityProfileSession.getAvailableCasInProfile(alwaysAllowToken, eepId);
@@ -546,7 +545,7 @@ public class EndEntityProfileSessionBeanSystemTest extends RoleUsingTestCase {
     	    EndEntityProfile profile = new EndEntityProfile();
     	    profile.addField(EndEntityProfile.CARDNUMBER);
     	    profile.setRequired(EndEntityProfile.CARDNUMBER, 0, true);
-            profile.setAvailableCAs(Collections.singletonList(SecConst.ALLCAS));
+            profile.setAvailableCAs(Collections.singletonList(CAConstants.ALLCAS));
     	    String cardnumber = "foo123";
     	    boolean ret = false;
     	    try {
@@ -559,7 +558,7 @@ public class EndEntityProfileSessionBeanSystemTest extends RoleUsingTestCase {
 
             EndEntityInformation userdata = new EndEntityInformation("foo", "CN=foo", caid, "", "", new EndEntityType(EndEntityTypes.ENDUSER),
                     endEntityProfileSession.getEndEntityProfileId("TESTCARDNUMBER"), CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                    SecConst.TOKEN_SOFT_PEM, null);
+                    EndEntityConstants.TOKEN_SOFT_PEM, null);
             userdata.setPassword("foo123");
     	    try {
     	        profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);

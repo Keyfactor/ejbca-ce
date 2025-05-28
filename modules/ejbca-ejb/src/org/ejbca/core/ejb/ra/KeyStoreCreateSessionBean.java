@@ -59,7 +59,6 @@ import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.CertificateSignatureException;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryInformation;
@@ -166,7 +165,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
         }
         try {
             final KeyStore keyStore = generateOrKeyRecoverToken(authenticationToken, username, password, caId, keySpecification, keyAlgorithm,  alternativeKeySpecification, alternativeKeyAlgorithm, null,
-                    null, SecConst.TOKEN_SOFT_P12, loadKeys, saveKeys, reuseCertificate, endEntityProfileId);
+                    null, EndEntityConstants.TOKEN_SOFT_P12, loadKeys, saveKeys, reuseCertificate, endEntityProfileId);
             return KeyStoreTools.getAsByteArray(keyStore, password);
         } catch (AuthLoginException | AuthStatusException e) { // Is handled as EjbcaException at caller (EjbcaWS).
             throw e;
@@ -492,12 +491,12 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             if (loadkeys) {
                 Properties.setThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS, true);
             }
-            if (keystoreType == SecConst.TOKEN_SOFT_JKS) {
+            if (keystoreType == EndEntityConstants.TOKEN_SOFT_JKS) {
                 if (log.isDebugEnabled()) {
                     log.debug("Generating JKS for user: " + username);
                 }
                 ks = KeyTools.createJKS(alias, rsaKeys.getPrivate(), password, cert, cachain);
-            } else if (keystoreType == SecConst.TOKEN_SOFT_BCFKS) {
+            } else if (keystoreType == EndEntityConstants.TOKEN_SOFT_BCFKS) {
                 if (log.isDebugEnabled()) {
                     log.debug("Generating FIPS compliant PKCS12 for user: " + username);
                 }

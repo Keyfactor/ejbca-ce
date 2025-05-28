@@ -31,6 +31,7 @@ import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.WebPrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -87,7 +88,7 @@ public class ApprovalDataVOView implements Serializable {
 
     public String getCaName() {
         final EjbcaJSFHelper helpBean = EjbcaJSFHelper.getBean();
-        if (data.getCAId() == ApprovalDataVO.ANY_CA) {
+        if (data.getCAId() == CAConstants.ALLCAS) {
             return helpBean.getEjbcaWebBean().getText("ANYCA", true);
         }
         try {

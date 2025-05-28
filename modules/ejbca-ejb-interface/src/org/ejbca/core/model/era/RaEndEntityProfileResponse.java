@@ -12,8 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.model.era;
 
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.util.DNFieldExtractor;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 import com.keyfactor.util.certificate.DnComponents;
@@ -92,7 +92,7 @@ public class RaEndEntityProfileResponse  implements Serializable {
                 if (name != null) {
                     list.add(name);
                 } else {
-                    if (id == SecConst.ALLCAS) {
+                    if (id == CAConstants.ALLCAS) {
                         list.add("ANY CA");
                     }
                 }

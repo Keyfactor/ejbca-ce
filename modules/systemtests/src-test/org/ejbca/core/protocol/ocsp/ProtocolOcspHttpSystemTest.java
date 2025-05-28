@@ -143,7 +143,6 @@ import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.AuthLoginException;
@@ -1063,7 +1062,7 @@ Content-Type: text/html; charset=iso-8859-1
             if (!endEntityManagementSession.existsUser(username)) {
                 EndEntityInformation endEntityInformation = new EndEntityInformation(username, "CN=certUsername", caid,
                         null, "ocsptest@anatom.se", EndEntityTypes.ENDUSER.toEndEntityType(), eepId, cpId,
-                        SecConst.TOKEN_SOFT_P12, null);
+                        EndEntityConstants.TOKEN_SOFT_P12, null);
                 endEntityInformation.setPassword(FOO123_PASSWORD);
                 endEntityManagementSession.addUser(admin, endEntityInformation, false);
                 log.debug("created user: certUsername, foo123, CN=certUsername");
@@ -1071,7 +1070,7 @@ Content-Type: text/html; charset=iso-8859-1
                 log.debug("User certUsername already exists.");
                 EndEntityInformation userData = new EndEntityInformation(username, "CN=certUsername",
                         caid, null, "ocsptest@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
-                        eepId, cpId, null, null, SecConst.TOKEN_SOFT_PEM, null);
+                        eepId, cpId, null, null, EndEntityConstants.TOKEN_SOFT_PEM, null);
                 userData.setPassword(FOO123_PASSWORD);
                 endEntityManagementSession.changeUser(admin, userData, false);
                 log.debug("Reset status to NEW");
@@ -1214,7 +1213,7 @@ Content-Type: text/html; charset=iso-8859-1
                 log.debug("User certUsername already exists.");
                 EndEntityInformation userData = new EndEntityInformation(username, "CN=certUsername",
                         caid, null, "ocsptest@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
-                        eepId, cpId, null, null, SecConst.TOKEN_SOFT_PEM, null);
+                        eepId, cpId, null, null, EndEntityConstants.TOKEN_SOFT_PEM, null);
                 userData.setPassword(FOO123_PASSWORD);
                 endEntityManagementSession.changeUser(admin, userData, false);
                 log.debug("Reset status to NEW");
@@ -1887,7 +1886,7 @@ Content-Type: text/html; charset=iso-8859-1
             log.debug("User ocsptest already exists.");
             EndEntityInformation userData = new EndEntityInformation(USERNAME, "C=SE,O=AnaTom,CN=OCSPTest",
                     caid, null, "ocsptest@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
-                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, null);
+                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, EndEntityConstants.TOKEN_SOFT_PEM, null);
             userData.setPassword(FOO123_PASSWORD);
             endEntityManagementSession.changeUser(admin, userData, false);
             log.debug("Reset status to NEW");

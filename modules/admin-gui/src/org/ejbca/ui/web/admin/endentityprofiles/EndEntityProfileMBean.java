@@ -39,6 +39,7 @@ import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAFactory;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.ssh.SshCa;
@@ -907,7 +908,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
 
     public List<SelectItem> getAllCasWithAnyCaOption() {
         final List<SelectItem> list = new ArrayList<>();
-        list.add(new SelectItem(SecConst.ALLCAS, ejbcaWebBean.getText("ANYCA")));
+        list.add(new SelectItem(CAConstants.ALLCAS, ejbcaWebBean.getText("ANYCA")));
         list.addAll(getAllCas());
         return list;
     }
@@ -1319,7 +1320,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         }
         // Available CAs
         final List<Integer> availableCas = profiledata.getAvailableCAs();
-        if (!availableCas.contains(SecConst.ALLCAS) && !availableCas.contains(profiledata.getDefaultCA())) {
+        if (!availableCas.contains(CAConstants.ALLCAS) && !availableCas.contains(profiledata.getDefaultCA())) {
             editerrors.add(ejbcaWebBean.getText("DEFAULTAVAILABLECA"));
         }
         // Token types
@@ -1463,8 +1464,8 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     }
 
     public void cleanUpUnused() {
-        if (profiledata.getAvailableCAs().contains(SecConst.ALLCAS)) {
-            profiledata.setAvailableCAs(new ArrayList<>(Collections.singletonList(SecConst.ALLCAS)));
+        if (profiledata.getAvailableCAs().contains(CAConstants.ALLCAS)) {
+            profiledata.setAvailableCAs(new ArrayList<>(Collections.singletonList(CAConstants.ALLCAS)));
         }
         if (!profiledata.isEmailUsed()) {
             profiledata.setEmailRequired(false);

@@ -49,6 +49,7 @@ import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -73,7 +74,6 @@ import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.db.DatabaseContentRule;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -210,7 +210,7 @@ public class ApprovalSessionSystemTest extends CaTestCase {
         profile.addField(DnComponents.ORGANIZATION);
         profile.addField(DnComponents.RFC822NAME);
         profile.setRedactPii(true);
-        profile.setAvailableCAs(Arrays.asList(SecConst.ALLCAS));
+        profile.setAvailableCAs(Arrays.asList(CAConstants.ALLCAS));
         endEntityProfileSession.addEndEntityProfile(intadmin, REDACTED_END_ENTITY_PROFILE_NAME, profile);
         redactedEndEntityProfileId = endEntityProfileSession.getEndEntityProfileId(REDACTED_END_ENTITY_PROFILE_NAME);
     }
@@ -254,25 +254,25 @@ public class ApprovalSessionSystemTest extends CaTestCase {
         }
         EndEntityInformation userdata = new EndEntityInformation(adminusername1, "CN=" + adminusername1, caid, null, null, new EndEntityType(
                 EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                SecConst.TOKEN_SOFT_P12, null);
+                EndEntityConstants.TOKEN_SOFT_P12, null);
         userdata.setPassword("foo123");
         endEntityManagementSession.addUser(intadmin, userdata, true);
 
         EndEntityInformation userdata2 = new EndEntityInformation(adminusername2, "CN=" + adminusername2, caid, null, null, new EndEntityType(
                 EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                SecConst.TOKEN_SOFT_P12, null);
+                EndEntityConstants.TOKEN_SOFT_P12, null);
         userdata2.setPassword("foo123");
         endEntityManagementSession.addUser(intadmin, userdata2, true);
 
         EndEntityInformation userdata3 = new EndEntityInformation(adminusername3, "CN=" + adminusername3, caid, null, null, new EndEntityType(
                 EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                SecConst.TOKEN_SOFT_P12, null);
+                EndEntityConstants.TOKEN_SOFT_P12, null);
         userdata3.setPassword("foo123");
         endEntityManagementSession.addUser(intadmin, userdata3, true);
 
         EndEntityInformation reqUserData = new EndEntityInformation(reqadminusername, "CN=" + reqadminusername, caid, null, null,
                 new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, null);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_P12, null);
         reqUserData.setPassword("foo123");
         endEntityManagementSession.addUser(intadmin, reqUserData, true);
 
@@ -594,7 +594,7 @@ public class ApprovalSessionSystemTest extends CaTestCase {
         removeUserName = username;
         final EndEntityInformation userdata = new EndEntityInformation(username, "C=SE, O=AnaTom, CN=" + username, caid, null, null,
                 EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, null);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), EndEntityConstants.TOKEN_SOFT_P12, null);
         userdata.setPassword("foo123");
         approvalProfileLongExpirationPeriod.setNumberOfApprovalsRequired(1);
         final AddEndEntityApprovalRequest eeApprovalRequest = new AddEndEntityApprovalRequest(userdata, false, cliReqAuthToken, null, caid,

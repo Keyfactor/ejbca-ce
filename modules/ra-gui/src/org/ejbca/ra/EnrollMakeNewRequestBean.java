@@ -60,6 +60,7 @@ import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.ApprovalRequestType;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -90,7 +91,6 @@ import org.cesecore.util.PrintableStringNameStyle;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.TokenDownloadType;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -403,7 +403,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             return false;
         }
         String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
-        return availableKeyStores != null && availableKeyStores.contains(String.valueOf(SecConst.TOKEN_SOFT_JKS))
+        return availableKeyStores != null && availableKeyStores.contains(String.valueOf(EndEntityConstants.TOKEN_SOFT_JKS))
                 && getSelectedKeyPairGenerationEnum() != null && KeyPairGeneration.ON_SERVER.equals(getSelectedKeyPairGenerationEnum())
                 && !isApprovalRequired();
     }
@@ -417,7 +417,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             return false;
         }
         String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
-        return availableKeyStores != null && availableKeyStores.contains(String.valueOf(SecConst.TOKEN_SOFT_P12))
+        return availableKeyStores != null && availableKeyStores.contains(String.valueOf(EndEntityConstants.TOKEN_SOFT_P12))
                 && getSelectedKeyPairGenerationEnum() != null && KeyPairGeneration.ON_SERVER.equals(getSelectedKeyPairGenerationEnum())
                 && !isApprovalRequired();
     }
@@ -431,7 +431,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             return false;
         }
         String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
-        return availableKeyStores != null && availableKeyStores.contains(String.valueOf(SecConst.TOKEN_SOFT_BCFKS))
+        return availableKeyStores != null && availableKeyStores.contains(String.valueOf(EndEntityConstants.TOKEN_SOFT_BCFKS))
                 && getSelectedKeyPairGenerationEnum() != null && KeyPairGeneration.ON_SERVER.equals(getSelectedKeyPairGenerationEnum())
                 && !isApprovalRequired();
     }
@@ -445,7 +445,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             return false;
         }
         String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
-        return availableKeyStores != null && availableKeyStores.contains(String.valueOf(SecConst.TOKEN_SOFT_PEM))
+        return availableKeyStores != null && availableKeyStores.contains(String.valueOf(EndEntityConstants.TOKEN_SOFT_PEM))
                 && getSelectedKeyPairGenerationEnum() != null && KeyPairGeneration.ON_SERVER.equals(getSelectedKeyPairGenerationEnum())
                 && !isApprovalRequired();
     }
@@ -2154,13 +2154,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
             final String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
             if (this.authorizedCertificateProfiles.getValue(Integer.parseInt(getSelectedCertificateProfile()))
                     .getType() != CertificateConstants.CERTTYPE_SSH) {
-                if (availableKeyStores.contains(String.valueOf(SecConst.TOKEN_SOFT_P12))
-                        || availableKeyStores.contains(String.valueOf(SecConst.TOKEN_SOFT_JKS))
-                        || availableKeyStores.contains(String.valueOf(SecConst.TOKEN_SOFT_PEM))) {
+                if (availableKeyStores.contains(String.valueOf(EndEntityConstants.TOKEN_SOFT_P12))
+                        || availableKeyStores.contains(String.valueOf(EndEntityConstants.TOKEN_SOFT_JKS))
+                        || availableKeyStores.contains(String.valueOf(EndEntityConstants.TOKEN_SOFT_PEM))) {
                     ret.add(KeyPairGeneration.ON_SERVER);
                 }
             }
-            if (availableKeyStores.contains(String.valueOf(SecConst.TOKEN_SOFT_BROWSERGEN))) {
+            if (availableKeyStores.contains(String.valueOf(EndEntityConstants.TOKEN_USERGEN))) {
                 ret.add(KeyPairGeneration.PROVIDED_BY_USER);
             }
             ret.add(KeyPairGeneration.POSTPONE);
@@ -2268,7 +2268,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         final EndEntityProfile endEntityProfile = getEndEntityProfile();
         if (endEntityProfile != null) {
             final String[] availableCAsFromEEPArray = endEntityProfile.getValue(EndEntityProfile.AVAILCAS, 0).split(EndEntityProfile.SPLITCHAR);
-            final boolean anyCAAvailableFromEEP = availableCAsFromEEPArray.length == 1 && availableCAsFromEEPArray[0].equalsIgnoreCase(String.valueOf(SecConst.ALLCAS));
+            final boolean anyCAAvailableFromEEP = availableCAsFromEEPArray.length == 1 && availableCAsFromEEPArray[0].equalsIgnoreCase(String.valueOf(CAConstants.ALLCAS));
             // Get all available CAs from the selected CP
             final CertificateProfile certificateProfile = getCertificateProfile();
             if (certificateProfile != null) {
@@ -3463,7 +3463,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         endEntityInformation.setStatus(EndEntityConstants.STATUS_NEW);
         endEntityInformation.setType(new EndEntityType(EndEntityTypes.ENDUSER));
         endEntityInformation.setSshEndEntity(true);
-        endEntityInformation.setTokenType(SecConst.TOKEN_SOFT_BROWSERGEN);
+        endEntityInformation.setTokenType(EndEntityConstants.TOKEN_USERGEN);
         endEntityInformation.setTimeCreated(new Date());
         endEntityInformation.setTimeModified(new Date());
 

@@ -36,7 +36,6 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.util.passgen.IPasswordGenerator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
@@ -208,7 +207,7 @@ class CertificateImporter implements Callable<CertificateImporter.Result> {
             final String email = DnComponents.getEMailAddress(certificate);
             userdata = new EndEntityInformation(username, CertTools.getSubjectDN(certificate), caInfo.getCAId(), subjectAltName, email,
                     EndEntityConstants.STATUS_GENERATED, new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, certificateProfileId, null,
-                    null, SecConst.TOKEN_SOFT_BROWSERGEN, null);
+                    null, EndEntityConstants.TOKEN_USERGEN, null);
             final IPasswordGenerator pwdgen = PasswordGeneratorFactory.getInstance(PasswordGeneratorFactory.PASSWORDTYPE_ALLPRINTABLE);
             userdata.setPassword(pwdgen.getNewPassword(14, 16));
             endEntityManagementSession.addUser(authenticationToken, userdata, false);
