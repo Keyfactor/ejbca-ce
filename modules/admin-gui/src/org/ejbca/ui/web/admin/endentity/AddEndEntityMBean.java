@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.endentity;
 
+import jakarta.ejb.EJBTransactionRolledbackException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -1313,6 +1314,8 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
                 handleEjbcaException(e);
             } catch (IllegalNameException e) {
                 handleIllegalNameException(e);
+            } catch (EJBTransactionRolledbackException e) {
+                addNonTranslatedErrorMessage(getEjbcaWebBean().getText("ENDENTITYSAVEERROR"));
             } catch (EndEntityProfileValidationException | EJBException e) {
                 addNonTranslatedErrorMessage(e.getMessage());
             } 
