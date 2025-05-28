@@ -150,9 +150,9 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     
     // Authentication check and audit log page access request
     @PostConstruct
-    public void initialize() throws AuthorizationDeniedException, EjbcaException {
+    public void initialize() {
         if (!getEjbcaWebBean().isAuthorizedNoLogSilent(AccessRulesConstants.ROLE_ADMINISTRATOR)) {
-            throw new AuthorizationDeniedException("You are not authorized to view this page.");
+            throw new IllegalStateException("You are not authorized to view this page.");
         }
 
         final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
@@ -179,7 +179,7 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
                 try {
                     facesContext.getExternalContext().getRequestMap().put("add.end.entity.error.message", e.getMessage());
                     facesContext.getExternalContext().dispatch("/error-add-ee-page.xhtml");
-                } catch (Exception ex) {
+                } catch (IOException ex) {
                     throw new IllegalStateException("Error while transfering to error page!");
                 }
             }
