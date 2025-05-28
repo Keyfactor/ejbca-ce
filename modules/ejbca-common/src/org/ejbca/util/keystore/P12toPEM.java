@@ -128,16 +128,15 @@ public class P12toPEM {
             log.info(
                 "User certificate is selfsigned, this is a RootCA, no CA certificates written.");
         } else {
-            try (FileOutputStream chainOutputStrean = new FileOutputStream(tmpFile)) {
+            try (FileOutputStream chainOutputStream = new FileOutputStream(tmpFile)) {
 
                 for (int num = 1; num < chain.length; num++) {
                     X509Certificate tmpX509Cert = (X509Certificate) chain[num];
                     byte[] tmpOutput = tmpX509Cert.getEncoded();
-                    chainOutputStrean.write(CertTools.BEGIN_CERTIFICATE_WITH_NL.getBytes());
+                    chainOutputStream.write(CertTools.BEGIN_CERTIFICATE_WITH_NL.getBytes());
                     byte[] tmpCACertB64 = Base64.encode(tmpOutput);
-                    chainOutputStrean.write(tmpCACertB64);
-                    chainOutputStrean.write(CertTools.END_CERTIFICATE_WITH_NL.getBytes());
-
+                    chainOutputStream.write(tmpCACertB64);
+                    chainOutputStream.write(CertTools.END_CERTIFICATE_WITH_NL.getBytes());
                 }
             } catch (IOException e1) {
                 throw new IllegalStateException("Unexpected IOException was thrown", e1);
