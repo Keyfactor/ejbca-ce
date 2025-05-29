@@ -40,6 +40,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -89,6 +90,8 @@ import com.keyfactor.util.certificate.DnComponents;
 public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
+    private static final Logger log = Logger.getLogger(AddEndEntityMBean.class);
 
     @EJB
     private AuthorizationSessionLocal authorizationSession;
@@ -1316,6 +1319,7 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
                 handleIllegalNameException(e);
             } catch (EJBTransactionRolledbackException e) {
                 addNonTranslatedErrorMessage(getEjbcaWebBean().getText("ENDENTITYSAVEERROR"));
+                log.error("Transaction rolled back", e);
             } catch (EndEntityProfileValidationException | EJBException e) {
                 addNonTranslatedErrorMessage(e.getMessage());
             } 
