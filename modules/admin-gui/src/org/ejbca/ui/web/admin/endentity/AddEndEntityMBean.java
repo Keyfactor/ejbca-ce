@@ -38,6 +38,7 @@ import jakarta.inject.Named;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.log4j.Logger;
@@ -1318,8 +1319,7 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
             } catch (IllegalNameException e) {
                 handleIllegalNameException(e);
             } catch (EJBTransactionRolledbackException e) {
-                addNonTranslatedErrorMessage(getEjbcaWebBean().getText("ENDENTITYSAVEERROR"));
-                log.error("Transaction rolled back", e);
+                addNonTranslatedErrorMessage(getEjbcaWebBean().getText("ENDENTITYSAVEERROR") + ExceptionUtils.getRootCauseMessage(e));
             } catch (EndEntityProfileValidationException | EJBException e) {
                 addNonTranslatedErrorMessage(e.getMessage());
             } 
