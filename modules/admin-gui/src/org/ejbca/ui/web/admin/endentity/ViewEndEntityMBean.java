@@ -214,7 +214,7 @@ public class ViewEndEntityMBean extends BaseManagedBean implements Serializable 
         RequestHelper.setDefaultCharacterEncoding(request);
         String action = request.getParameter(ACTION);
         if (action == null && request.getParameter(TIMESTAMP_PARAMETER) != null && request.getParameter(USER_PARAMETER) != null) {
-            userName = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER), StandardCharsets.UTF_8);
+            userName = request.getParameter(USER_PARAMETER);
             Date timestamp = new Date(Long.parseLong(request.getParameter(TIMESTAMP_PARAMETER)));
 
             notAuthorized = !populateUserDatas(userName);
@@ -232,7 +232,7 @@ public class ViewEndEntityMBean extends BaseManagedBean implements Serializable 
             }
         } else {
             if (action == null && request.getParameter(USER_PARAMETER) != null) {
-                userName = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER), StandardCharsets.UTF_8);
+                userName = request.getParameter(USER_PARAMETER);
                 notAuthorized = !populateUserDatas(userName);
                 noUserParameter = false;
                 if ((userDatas != null) && (userDatas.length > 0)) {
