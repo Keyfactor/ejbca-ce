@@ -64,6 +64,7 @@ import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSession;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
+import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.keys.token.KeyPairInfo;
 import org.cesecore.keys.token.NullCryptoToken;
 import org.cesecore.keys.token.PKCS11CryptoToken;
@@ -77,6 +78,7 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import org.ejbca.util.SlotList;
 
+import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
@@ -894,6 +896,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     private String maxOperationCount;
     private KeyPairTemplate keyPairTemplate; // Used for CP5 (same key cannot do encrypt/decrypt and sign/verify)
 
+    @EJB
+    private CryptoTokenSessionLocal cryptoTokenSession;
+    
     private transient CryptoTokenManagementSessionLocal cryptoTokenManagementSession = null;
     private transient AuthorizationSessionLocal authorizationSession = null;
     private transient CaSessionLocal caSession = null;
@@ -910,18 +915,25 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     }
     
     /**
-     * Force reload from underlying (cache) layer
+     * Force reload from underlying layer
      */
     private void flushCaches() {
         cryptoTokenGuiList = null;
         cryptoTokenGuiInfos = null;
-        flushCurrent();
+        flushCurrent(true);
+        cryptoTokenSession.flushCache();
     }
 
-    /**
-     * Force reload from underlying (cache) layer for the current CryptoToken and its list of key pairs
-     */
     private void flushCurrent() {
+        flushCurrent(false);
+    }
+    
+    /**
+     * Force reload from underlying layer for the current CryptoToken and its list of key pairs
+     */
+    private void flushCurrent(boolean alreadyFlushedAll) {
+        if (!alreadyFlushedAll)
+            cryptoTokenSession.flushId(currentCryptoTokenId);
         keyPairGuiList = null;
         keyPairGuiInfos = null;
         currentCryptoToken = null;

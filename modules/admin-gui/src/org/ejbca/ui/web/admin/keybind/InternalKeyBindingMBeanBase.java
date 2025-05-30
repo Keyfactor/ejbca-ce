@@ -611,15 +611,10 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
     private String currentSignatureAlgorithm = null;
     private String currentNextKeyPairAlias = null;
     private ArrayList<DynamicUiProperty<? extends Serializable>> internalKeyBindingProperties;
+    private transient ListDataModel<DynamicUiProperty<? extends Serializable>> internalKeyBindingPropertyList;
     private boolean inEditMode = false;
     private Integer currentCertificateAuthority = null;
 
-
-
-
-    
-   
-   
 
     public Integer getCurrentCertificateAuthority() {
         return currentCertificateAuthority;
@@ -629,8 +624,6 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
         this.currentCertificateAuthority = currentCertificateAuthority;
     }    
 
-
-
     protected void flushSingleViewCache() {
         currentInternalKeyBindingId = null;
         currentName = null;
@@ -639,6 +632,7 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
         currentSignatureAlgorithm = null;
         currentNextKeyPairAlias = null;
         internalKeyBindingProperties = null;
+        internalKeyBindingPropertyList = null;
         inEditMode = false;
         trustedCertificateList = null;
     }
@@ -693,6 +687,7 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
             getAvailableSignatureAlgorithms();
             internalKeyBindingProperties = new ArrayList<>(getInternalKeyBindingSession().getAvailableTypesAndProperties()
                     .get(getSelectedInternalKeyBindingType()).values());
+            internalKeyBindingPropertyList = null;
         } else {
             // Load existing
             final int internalKeyBindingId = Integer.parseInt(currentInternalKeyBindingId);
@@ -710,6 +705,7 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
             currentSignatureAlgorithm = internalKeyBinding.getSignatureAlgorithm();
             currentNextKeyPairAlias = internalKeyBinding.getNextKeyPairAlias();
             internalKeyBindingProperties = new ArrayList<>(internalKeyBinding.getCopyOfProperties().values());
+            internalKeyBindingPropertyList = null;
             trustedCertificateList = null;
         }
     }
@@ -1099,7 +1095,10 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
 
     /** @return a list of the current InteralKeyBinding's properties */
     public ListDataModel<DynamicUiProperty<? extends Serializable>> getInternalKeyBindingPropertyList() {
-        return new ListDataModel<>(internalKeyBindingProperties);
+        if (internalKeyBindingPropertyList == null) {
+            internalKeyBindingPropertyList = new ListDataModel<>(internalKeyBindingProperties);
+        }
+        return internalKeyBindingPropertyList;
     }
 
     /** @return the lookup result of message key "INTERNALKEYBINDING_<type>_<property-name>" or property-name if no key exists. */
