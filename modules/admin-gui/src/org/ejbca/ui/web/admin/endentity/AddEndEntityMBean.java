@@ -1319,7 +1319,8 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
             } catch (IllegalNameException e) {
                 handleIllegalNameException(e);
             } catch (EJBTransactionRolledbackException e) {
-                addNonTranslatedErrorMessage(getEjbcaWebBean().getText("ENDENTITYSAVEERROR") + ExceptionUtils.getRootCauseMessage(e));
+                log.error("EJBTransactionRolledbackException. Root cause is: " + ExceptionUtils.getRootCauseMessage(e));
+                addNonTranslatedErrorMessage(getEjbcaWebBean().getText("ENDENTITYSAVEERROR"));
             } catch (EndEntityProfileValidationException | EJBException e) {
                 addNonTranslatedErrorMessage(e.getMessage());
             } 
