@@ -19,6 +19,8 @@ import jakarta.ejb.ApplicationException;
 @ApplicationException(rollback=true)
 public class KeyImportException extends EjbcaException {
 
+    private static final long serialVersionUID = 1L;
+
     public KeyImportException(String message) {
         super(message);
     }
