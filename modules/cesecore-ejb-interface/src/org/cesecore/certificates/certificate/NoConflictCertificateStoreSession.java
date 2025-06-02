@@ -13,12 +13,10 @@
 package org.cesecore.certificates.certificate;
 
 import java.math.BigInteger;
-import java.time.LocalDateTime;
 import java.util.Collection;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.KeepExpiredCertsOnCrlFormat;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 
 /**

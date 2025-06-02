@@ -14,7 +14,6 @@ package org.cesecore.certificates.ca;
 
 import java.io.IOException;
 import java.security.cert.Certificate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 

@@ -32,6 +32,9 @@ public interface CertificateDataSessionLocal extends CertificateDataSession {
     /** @return the found entity instance or null if the entity does not exist */
     CertificateData findByFingerprint(String fingerprint);
 
+    /** @return the found entity instance or null if the entity does not exist */
+    CertificateData findBySubjectKeyId(String subjectKeyId);
+
     /** @return return the query results as a Set. */
     Set<String> findUsernamesBySubjectDNAndIssuerDN(String subjectDN, String issuerDN);
     

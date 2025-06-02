@@ -247,28 +247,6 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         return existingUser;
     }
 
-    @Override
-    public void addUser(final AuthenticationToken authenticationToken,
-                        final String username,
-                        final String password,
-                        final String subjectDn,
-                        final String subjectAltName,
-                        final String email,
-                        final boolean clearPwd,
-                        final int endEntityProfileId,
-                        final int certificateProfileId,
-                        final EndEntityType type,
-                        final int tokenType,
-                        final int caId)
-            throws EndEntityExistsException, AuthorizationDeniedException, EndEntityProfileValidationException,
-            WaitingForApprovalException, CADoesntExistsException, CustomFieldException, IllegalNameException,
-            ApprovalException, CertificateSerialNumberException {
-        final EndEntityInformation userdata = new EndEntityInformation(username, subjectDn, caId, subjectAltName, email, EndEntityConstants.STATUS_NEW,
-                type, endEntityProfileId, certificateProfileId, null, null, tokenType, null);
-        userdata.setPassword(password);
-        addUser(authenticationToken, userdata, clearPwd);
-    }
-
     private static final ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_ADDUSER = {
             new ApprovalOveradableClassName(
                     org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest.class.getName(),
@@ -293,7 +271,6 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     public EndEntityInformation canonicalizeUser(final EndEntityInformation endEntity) throws CustomFieldException {
         // Make a deep copy
         EndEntityInformation endEntityInformationCopy = new EndEntityInformation(endEntity);
-        final int endEntityProfileId = endEntityInformationCopy.getEndEntityProfileId();
         final String dn = DnComponents.stringToBCDNString(StringTools.strip(endEntityInformationCopy.getDN()));
         endEntityInformationCopy.setDN(dn);
         endEntityInformationCopy.setSubjectAltName(StringTools.strip(endEntityInformationCopy.getSubjectAltName()));

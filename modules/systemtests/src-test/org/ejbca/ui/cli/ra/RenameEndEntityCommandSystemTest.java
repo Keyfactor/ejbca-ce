@@ -12,6 +12,10 @@
  *************************************************************************/
 package org.ejbca.ui.cli.ra;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -33,7 +37,6 @@ import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.CustomFieldException;
@@ -42,10 +45,6 @@ import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 /**
  * System test class for RA renameendentity command
@@ -85,8 +84,12 @@ public class RenameEndEntityCommandSystemTest {
     @Test
     public void testExecuteHappyPath() throws AuthorizationDeniedException, CouldNotRemoveEndEntityException, CADoesntExistsException, EndEntityExistsException,
             EndEntityProfileValidationException, WaitingForApprovalException, IllegalNameException, CertificateSerialNumberException, CustomFieldException, ApprovalException {
-        endEntityManagementSession.addUser(admin, USER_NAME1, "foo123", "CN=" + USER_NAME1, null, null, true, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, testx509ca.getCAId());
+        EndEntityInformation endEntityInformation = new EndEntityInformation(USER_NAME1, "CN="+USER_NAME1, testx509ca.getCAId(), null,
+                null, EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_P12, null);
+        endEntityInformation.setPassword("foo123");
+        endEntityManagementSession.addUser(admin, endEntityInformation, true);
+        
         try {
             assertEquals(CommandResult.SUCCESS, renameEndEntityCommand.execute(HAPPY_PATH_RENAME_ARGS));
             final EndEntityInformation endEntityInformation1 = endEntityAccessSession.findUser(admin, USER_NAME1);
