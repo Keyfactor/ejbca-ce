@@ -53,7 +53,6 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final long serialVersionUID = 1L;
 
     protected static final InternalResources intres = InternalResources.getInstance();
-
     protected static final float LATEST_VERSION = 13;
 
     private static final String KEY_RA_NAMEGENERATIONSCHEME = "ra.namegenerationscheme";
@@ -92,6 +91,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final String DNS_RESOLVER_DEFAULT = "8.8.8.8";
     private static final int DNS_SERVER_PORT_DEFAULT = 53;
     private static final String KEY_RETRY_AFTER = "retryAfter";
+    private static final String KEY_ARI_RETRY_AFTER = "ariRetryAfter";
     private static final String KEY_CHALLENGE_RESPONSE_TIMOUT = "challengeResponseTimout";
     private static final String KEY_AUTHORIZED_REDIRECT_PORTS = "authorizedRedirectPorts";
     private static final String KEY_APPROVAL_FOR_NEW_ACCOUNT_ID = "approvalForNewAccountId";
@@ -727,6 +727,16 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         data.put(KEY_RETRY_AFTER, retryAfter);
     }
 
+    public int getAriRetryAfter() {
+        final Integer ariRetryAfter = (Integer) data.get(KEY_ARI_RETRY_AFTER);
+        return Objects.isNull(ariRetryAfter) ? 0 : ariRetryAfter.intValue();
+    }
+
+    public void setAriRetryAfter(final int ariRetryAfter) {
+        data.put(KEY_ARI_RETRY_AFTER, ariRetryAfter);
+    }
+
+    
     public int getChallengeResponseTimout() {
         final Integer seconds = (Integer) data.get(KEY_CHALLENGE_RESPONSE_TIMOUT);
         return Objects.isNull(seconds) ? DEFAULT_CHALLENGE_RESPONSE_TIMOUT : seconds.intValue();
