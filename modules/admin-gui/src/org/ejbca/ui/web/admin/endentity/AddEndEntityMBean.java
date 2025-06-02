@@ -12,19 +12,8 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.endentity;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.math.BigInteger;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.certificate.DnComponents;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
@@ -35,7 +24,6 @@ import jakarta.faces.model.SelectItem;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
 import jakarta.servlet.http.HttpServletRequest;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.MutablePair;
@@ -75,8 +63,17 @@ import org.ejbca.ui.web.admin.rainterface.UserView;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ietf.ldap.LDAPDN;
 
-import com.keyfactor.ErrorCode;
-import com.keyfactor.util.certificate.DnComponents;
+import java.io.IOException;
+import java.io.Serializable;
+import java.math.BigInteger;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
 *
@@ -930,10 +927,6 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
             }
         }
         return new ImmutablePair<>(addedUsersList, (addedUsers != null && addedUsers.length > 0));
-    }
-    
-    public String encodeUserName(final String userName) throws UnsupportedEncodingException {
-        return URLEncoder.encode(userName, StandardCharsets.UTF_8);
     }
     
     public String getAddedUserCN(final UserView addedUser) {
