@@ -163,11 +163,7 @@
 				</h:column>
 			</h:dataTable>
 			<br />
-			<h:outputLink
-				value="cryptotoken.jsf?cryptoTokenId=0&amp;ref=cryptotokens"
-				rendered="#{cryptoTokenMBean.allowedToModify}">
-				<h:outputText value="#{web.text.CRYPTOTOKEN_CREATENEW}" />
-			</h:outputLink>
+			<h:button value="#{web.text.ADD}" outcome="cryptotoken.jsf?cryptoTokenId=0&amp;ref=cryptotokens" rendered="#{cryptoTokenMBean.allowedToModify}"/>
 		</h:form>
 	</ui:define>
 </ui:composition>
