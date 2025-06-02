@@ -604,6 +604,13 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             } catch (UpgradeFailedException e) {
                 return false;
             }
+        }   
+        if (isLesserThan(oldVersion, "9.4.0")) {
+            try {
+                upgradeSession.migrateDatabase9_4_0();
+            } catch (UpgradeFailedException e) {
+                return false;
+            }
         }        
         setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
@@ -2622,6 +2629,27 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
         }
     }
+
+    @Override
+    public void migrateDatabase9_4_0() throws UpgradeFailedException {
+        //Move ocsp.includecertchain and ocsp.includesignercert from the properties files and into the database configuration
+        migrateOcspOptions_9_4_0();
+    }
+    
+    @SuppressWarnings("deprecation")
+    private void migrateOcspOptions_9_4_0() throws UpgradeFailedException {
+        GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        globalOcspConfiguration.setIncludeSigningCertificate(OcspConfiguration.getIncludeSignCert());
+        globalOcspConfiguration.setIncludeCertificateChain(OcspConfiguration.getIncludeCertChain());
+        
+        try {
+            globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);
+        } catch (AuthorizationDeniedException e) {
+            String msg = "Always allow token was denied authoriation to global configuration table.";
+            log.error(msg, e);
+            throw new UpgradeFailedException(msg, e);
+        }
+    }  
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
