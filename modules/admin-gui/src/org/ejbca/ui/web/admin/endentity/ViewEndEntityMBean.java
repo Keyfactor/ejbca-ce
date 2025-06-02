@@ -12,15 +12,8 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.endentity;
 
-import java.io.Serializable;
-import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 import jakarta.annotation.PostConstruct;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.model.SelectItem;
@@ -28,7 +21,6 @@ import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -50,8 +42,13 @@ import org.ejbca.ui.web.admin.rainterface.RAInterfaceBean;
 import org.ejbca.ui.web.admin.rainterface.UserView;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.certificate.DnComponents;
+import java.io.Serializable;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * JSF managed bean backing view end entity xhtml page
@@ -143,7 +140,7 @@ public class ViewEndEntityMBean extends BaseManagedBean implements Serializable 
         parseRequest(request);
         
         checkInitParameters();
-        
+
         initSdnFieldsData();
         initSanFieldData();
         initSdaFieldData();
@@ -247,7 +244,7 @@ public class ViewEndEntityMBean extends BaseManagedBean implements Serializable 
                 }
             } else {
                 if (action != null && request.getParameter(USER_PARAMETER) != null) {
-                    userName = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER), StandardCharsets.UTF_8);
+                    userName = request.getParameter(USER_PARAMETER);
                     if (request.getParameter(BUTTON_VIEW_NEWER) != null &&  (currentUserIndex > 0)) {
                             currentUserIndex--;
                         
@@ -399,11 +396,11 @@ public class ViewEndEntityMBean extends BaseManagedBean implements Serializable 
     }
     
     public boolean isRenderOtherCertData() {
-        return eeProfile.isCustomSerialNumberUsed() || 
+        return eeProfile.isCustomSerialNumberUsed() ||
                eeProfile.isValidityStartTimeUsed() || 
                eeProfile.isValidityEndTimeUsed() || 
                eeProfile.isCardNumberUsed() || 
-               eeProfile.isPsd2QcStatementUsed() || 
+               eeProfile.isPsd2QcStatementUsed() ||
                eeProfile.isCabfOrganizationIdentifierUsed();
     }
     
@@ -474,7 +471,7 @@ public class ViewEndEntityMBean extends BaseManagedBean implements Serializable 
     public String getCardNumber() {
         return userData.getCardNumber();
     }
-    
+
     public boolean isRenderCertExtensionData() {
         return eeProfile.getUseExtensiondata() || !getExtensionDataAsMap().isEmpty();
     }
@@ -495,7 +492,7 @@ public class ViewEndEntityMBean extends BaseManagedBean implements Serializable 
         }
         return result;
     }
-    
+
     public boolean isRenderRawSubjectDn() {
         return userData.getExtendedInformation() != null && userData.getExtendedInformation().getRawSubjectDn() != null;
     }
