@@ -142,6 +142,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final   String LOCALKEYRECOVERYCRYPTOTOKEN  = "localkeyrecoverycryptotoken";
     private static final   String LOCALKEYRECOVERYKEYALIAS     = "localkeyrecoverykeyalias";
 
+    @Deprecated(since = "9.4.0")
     private static final   String ENABLEICAOCANAMECHANGE       = "enableicaocanamechange";
 
     private static final   String USEAPPROVALNOTIFICATIONS     = "useapprovalnotifications";
