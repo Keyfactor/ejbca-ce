@@ -769,10 +769,6 @@
 				
 				<h:panelGroup />
 				<h:panelGroup styleClass="margin-top">
-					<h:commandButton
-						action="#{cryptoTokenMBean.cancelCurrentCryptoToken}"
-						value="#{web.text.CRYPTOTOKEN_CANCEL}"
-						rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode and cryptoTokenMBean.currentCryptoTokenId != 0}" />
                     <ui:remove>
                     <!-- Three cases of the Save button. 
                     "Save" with slot-check if we are creating a new crypto token, will check if slot is already in use by another crypto token. 
@@ -782,7 +778,7 @@
                     </ui:remove>
 					<h:commandButton
 						action="#{cryptoTokenMBean.saveCurrentCryptoTokenWithCheck}"
-						value="#{web.text.CRYPTOTOKEN_SAVE}"
+						value="#{web.text.SAVE}"
 						rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode and !cryptoTokenMBean.p11SlotUsed and cryptoTokenMBean.currentCryptoTokenId == 0 
                             and cryptoTokenMBean.currentCryptoToken.type != 'Pkcs11NgCryptoToken'}" 
 						onclick="return checkFieldNotEmpty(document.getElementById('currentCryptoTokenForm:currentCryptoTokenNameText'),'The name of crypto token is mandatory!');"/>
@@ -793,10 +789,15 @@
                         onclick="return checkFieldNotEmpty(document.getElementById('currentCryptoTokenForm:currentCryptoTokenNameText'),'The name of crypto token is mandatory!');"/>
                     <h:commandButton
                         action="#{cryptoTokenMBean.saveCurrentCryptoToken}"
-                        value="#{web.text.CRYPTOTOKEN_SAVE}"
+                        value="#{web.text.SAVE}"
                         rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode 
                             and (cryptoTokenMBean.currentCryptoTokenId != 0 or cryptoTokenMBean.currentCryptoToken.type == 'Pkcs11NgCryptoToken')}" 
                         onclick="return checkFieldNotEmpty(document.getElementById('currentCryptoTokenForm:currentCryptoTokenNameText'),'The name of crypto token is mandatory!');"/>
+					<h:commandButton
+							action="#{cryptoTokenMBean.cancelCurrentCryptoToken}"
+							value="#{web.text.CANCEL}"
+							rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode and cryptoTokenMBean.currentCryptoTokenId != 0}" />
+					<h:button value="#{web.text.CANCEL}" outcome="cryptotokens.xhtml?faces-redirect=true" immediate="true" rendered="#{cryptoTokenMBean.paramRef eq 'cryptotokens'}"/>
 				</h:panelGroup>
 			</h:panelGrid>
 		</h:form>

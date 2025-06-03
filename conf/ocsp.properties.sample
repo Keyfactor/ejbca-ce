@@ -8,15 +8,6 @@
 # Default is '/${app.name}/publicweb/status'
 #ocsp.contextroot=/status
 
-# If set to false the OCSP responses will only contain the signature certificate (if ocsp.includesignercertinresponse is set to 'true'), 
-# and not the whole certificate chain of the OCSP responder.
-# Default true.
-#ocsp.includecertchain=true
-
-# If set to false, the  OCSP response will not contain the signing certificate.
-# Default true 
-#ocsp.includesignercert=true
-
 # The interval on which the the OCSP signing certificates are updated in seconds.
 # If set to 0 or negative these certificate are never updated.
 # Default: 300
