@@ -58,7 +58,6 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
-import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
@@ -80,6 +79,8 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.PublicKeyWrapper;
+import org.cesecore.keys.validation.KeyValidatorSessionRemote;
+import org.cesecore.keys.validation.Validator;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
@@ -125,9 +126,6 @@ import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
-import org.cesecore.keys.validation.Validator;
-import org.cesecore.keys.validation.KeyValidatorSessionRemote;
-
 /**
  * Tests the EndEntityInformation entity bean and some parts of EndEntityManagementSession.
  */
@@ -166,7 +164,6 @@ public class EndEntityManagementSessionSystemTest extends CaTestCase {
     private final PublisherSessionRemote publisherSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class);
     private final PublisherTestSessionRemote publisherTestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final PublisherQueueProxySessionRemote publisherQueueSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherQueueProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
     
     @BeforeClass
     public static void beforeClass() {
@@ -1010,10 +1007,18 @@ public class EndEntityManagementSessionSystemTest extends CaTestCase {
         final String username1 = "testRenameEndEntityA";
         final String username2 = "testRenameEndEntityB";
         final String username3 = "testRenameEndEntityC";
-        endEntityManagementSession.addUser(admin, username1, pwd, "C=SE, O=PrimeKey, CN=" + username1, null, null, true,
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, caId);
-        endEntityManagementSession.addUser(admin, username2, pwd, "C=SE, O=PrimeKey, CN=" + username2, null, null, true,
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, caId);
+        EndEntityInformation firstUser = new EndEntityInformation(username1, "C=SE, O=PrimeKey, CN=" + username1, caId,
+                null, null, EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                SecConst.TOKEN_SOFT_P12, null);
+        firstUser.setPassword(pwd);
+        endEntityManagementSession.addUser(admin, firstUser, true);
+        
+        EndEntityInformation secondUser = new EndEntityInformation(username2, "C=SE, O=PrimeKey, CN=" + username2, caId,
+                null, null, EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                SecConst.TOKEN_SOFT_P12, null);
+        secondUser.setPassword(pwd);
+        endEntityManagementSession.addUser(admin, secondUser, true);
+        
         usernames.add(username1);
         usernames.add(username2);
         usernames.add(username3);
@@ -1044,10 +1049,18 @@ public class EndEntityManagementSessionSystemTest extends CaTestCase {
         usernames.add(username2);
         usernames.add(username3);
         // Add users
-        endEntityManagementSession.addUser(admin, username1, pwd, "C=SE, O=PrimeKey, CN=" + username1, null, null, true,
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, caId);
-        endEntityManagementSession.addUser(admin, username2, pwd, "C=SE, O=PrimeKey, CN=" + username2, null, null, true,
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, caId);
+        EndEntityInformation firstUser = new EndEntityInformation(username1, "C=SE, O=PrimeKey, CN=" + username1, caId,
+                null, null, EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                SecConst.TOKEN_SOFT_P12, null);
+        firstUser.setPassword(pwd);
+        endEntityManagementSession.addUser(admin, firstUser, true);
+        
+        EndEntityInformation secondUser = new EndEntityInformation(username2, "C=SE, O=PrimeKey, CN=" + username2, caId,
+                null, null, EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                SecConst.TOKEN_SOFT_P12, null);
+        secondUser.setPassword(pwd);
+        endEntityManagementSession.addUser(admin, secondUser, true);
+        
         // Issue certificates
         final KeyPair keyPair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         String fingerprint = null;
@@ -1095,8 +1108,12 @@ public class EndEntityManagementSessionSystemTest extends CaTestCase {
     public void testRevokeEndEntity() throws Exception {
         final String TEST_NAME = Thread.currentThread().getStackTrace()[1].getMethodName();
         final String USERNAME = TEST_NAME + "A";
-        endEntityManagementSession.addUser(admin, USERNAME, pwd, "C=SE, O=PrimeKey, CN=" + USERNAME, null, null, true,
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, caId);
+        EndEntityInformation endEntityInformation = new EndEntityInformation(USERNAME, "C=SE, O=PrimeKey, CN=" + USERNAME, caId,
+                null, null, EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                SecConst.TOKEN_SOFT_P12, null);
+        endEntityInformation.setPassword(pwd);
+        endEntityManagementSession.addUser(admin, endEntityInformation, true);
+        
         usernames.add(USERNAME);
         final long now = System.currentTimeMillis();
         final Date date10sAgo = new Date(now-10000L);
@@ -1539,16 +1556,13 @@ public class EndEntityManagementSessionSystemTest extends CaTestCase {
         data1.setStatus(EndEntityConstants.STATUS_NEW);
         endEntityManagementSession.changeUser(admin, data1, true);
         //try to create new certificate with compromised key but should not work for Illegal Key
-        Certificate certAfterRevoke = null;
-        boolean thrown = false;
         try {
-            certAfterRevoke = signSession.createCertificate(admin, username, "foo123", new PublicKeyWrapper(keypair.getPublic()), -1, null, null,
+            signSession.createCertificate(admin, username, "foo123", new PublicKeyWrapper(keypair.getPublic()), -1, null, null,
                     CertificateProfileConstants.CERTPROFILE_NO_PROFILE, testx509ca.getCAInfo().getCAId());
+            fail("CertificateCreateException should have been thrown when cert is created for key in block list.");
         } catch(CertificateCreateException e) {
-            thrown = true;
             assertTrue(e.getMessage().contains("found in public key block list."));
         }
-        assertTrue(thrown);
         
         try {
             CryptoTokenTestUtils.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());

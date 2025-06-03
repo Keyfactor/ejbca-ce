@@ -25,6 +25,7 @@ import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
@@ -77,9 +78,12 @@ public class CreateCertCommandSystemTest {
         resultFile = File.createTempFile("test", ".pem");
         ca = CaTestUtils.createTestX509CA(CA_DN, null, false);
         caSession.addCA(authenticationToken, ca);
-        endEntityManagementSession.addUser(authenticationToken, USERNAME, PASSWORD, "CN=" + USERNAME, null, null, false,
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(),
-                SecConst.TOKEN_SOFT_P12, ca.getCAId());
+        EndEntityInformation endEntityInformation = new EndEntityInformation(USERNAME, "CN=" + USERNAME, ca.getCAId(), null, null,
+                EndEntityTypes.ENDUSER.toEndEntityType(),
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, null);
+        endEntityInformation.setPassword(PASSWORD);
+        endEntityManagementSession.addUser(authenticationToken, endEntityInformation, false);       
+        
         byte[] rawPkcs10req = caAdminSession.makeRequest(authenticationToken, ca.getCAId(), ca.getCertificateChain(), ca.getCAToken()
                 .getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
         FileOutputStream fileOutputStream = new FileOutputStream(requestFile);

@@ -28,9 +28,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
 
-import jakarta.ejb.CreateException;
-import jakarta.ejb.EJBTransactionRolledbackException;
-
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -48,6 +45,7 @@ import org.cesecore.certificates.certificate.exception.CertificateSerialNumberEx
 import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.common.exception.ReferencesToItemExistException;
@@ -60,7 +58,6 @@ import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.AuthLoginException;
@@ -82,6 +79,9 @@ import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+
+import jakarta.ejb.CreateException;
+import jakarta.ejb.EJBTransactionRolledbackException;
 
 /**
  * Tests Publisher Queue Data.
@@ -477,10 +477,13 @@ public class PublisherQueueSystemTest {
         Properties properties = new Properties();
         properties.put(MockPublisher.PROPERTYKEY_LIMIT, "1");
         MockPublisher mockPublisher = new MockPublisher(properties);
-        int caId = CaTestCase.getTestCAId(testCaName);     
-        endEntityManagementSession.addUser(authenticationToken, testCertificateUsername, "foo123", "CN="+testCertificateUsername,
-                null, null, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, caId);
+        int caId = CaTestCase.getTestCAId(testCaName);   
+        EndEntityInformation endEntityInformation = new EndEntityInformation(testCertificateUsername, "CN="+testCertificateUsername, caId, null,
+                null, EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_P12, null);
+        endEntityInformation.setPassword("foo123");
+        endEntityManagementSession.addUser(authenticationToken, endEntityInformation, false);
+       
         final KeyPair userkeys = KeyTools.genKeys("1024", "RSA");
         Certificate certificate = signSessionRemote.createCertificate(authenticationToken, testCertificateUsername, "foo123", new PublicKeyWrapper(userkeys.getPublic()));
         String certificateFingerprint = CertTools.getFingerprintAsString(certificate);     
@@ -524,9 +527,13 @@ public class PublisherQueueSystemTest {
         properties.put(MockPublisher.PROPERTYKEY_LIMIT, "0");
         MockPublisher mockPublisher = new MockPublisher(properties);
         int caId = CaTestCase.getTestCAId(testCaName);     
-        endEntityManagementSession.addUser(authenticationToken, testCertificateUsername, "foo123", "CN="+testCertificateUsername,
-                null, null, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, caId);
+        EndEntityInformation endEntityInformation = new EndEntityInformation(testCertificateUsername, "CN="+testCertificateUsername, caId, null,
+                null, EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_P12, null);
+        endEntityInformation.setPassword("foo123");
+        endEntityManagementSession.addUser(authenticationToken, endEntityInformation, false);
+
+       
         final KeyPair userkeys = KeyTools.genKeys("1024", "RSA");
         Certificate certificate = signSessionRemote.createCertificate(authenticationToken, testCertificateUsername, "foo123", new PublicKeyWrapper(userkeys.getPublic()));
         String certificateFingerprint = CertTools.getFingerprintAsString(certificate);     
@@ -570,10 +577,13 @@ public class PublisherQueueSystemTest {
         Properties properties = new Properties();
         properties.put(MockPublisher.PROPERTYKEY_LIMIT, "1");
         MockPublisher mockPublisher = new MockPublisher(properties);
-        int caId = CaTestCase.getTestCAId(testCaName);     
-        endEntityManagementSession.addUser(authenticationToken, testCertificateUsername, "foo123", "CN="+testCertificateUsername,
-                null, null, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, caId);
+        int caId = CaTestCase.getTestCAId(testCaName);   
+        EndEntityInformation endEntityInformation = new EndEntityInformation(testCertificateUsername, "CN="+testCertificateUsername, caId, null,
+                null, EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_P12, null);
+        endEntityInformation.setPassword("foo123");
+        endEntityManagementSession.addUser(authenticationToken, endEntityInformation, false);
+
         final KeyPair userkeys = KeyTools.genKeys("1024", "RSA");
         Certificate certificate = signSessionRemote.createCertificate(authenticationToken, testCertificateUsername, "foo123", new PublicKeyWrapper(userkeys.getPublic()));
         String certificateFingerprint = CertTools.getFingerprintAsString(certificate);     

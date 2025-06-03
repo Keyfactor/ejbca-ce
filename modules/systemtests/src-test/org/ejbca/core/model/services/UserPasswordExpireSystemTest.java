@@ -13,6 +13,9 @@
 
 package org.ejbca.core.model.services;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -28,7 +31,6 @@ import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.services.ServiceSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.services.actions.NoAction;
 import org.ejbca.core.model.services.intervals.PeriodicalInterval;
 import org.ejbca.core.model.services.workers.EmailSendingWorkerConstants;
@@ -36,9 +38,6 @@ import org.ejbca.core.model.services.workers.UserPasswordExpireWorker;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 /**
  * Tests the EndEntityInformation entity bean and some parts of EndEntityManagementSession.
@@ -87,8 +86,12 @@ public class UserPasswordExpireSystemTest extends CaTestCase {
         log.trace(">test01CreateNewUser()");
 
         // Create a new user
-        endEntityManagementSession.addUser(admin, USERNAME, PWD, "C=SE,O=AnaTom,CN=" + USERNAME, null, null, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.INVALID.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, caid);
+        EndEntityInformation endEntityInformation1 = new EndEntityInformation(USERNAME, "C=SE,O=AnaTom,CN=" + USERNAME, caid, null,
+                null, EndEntityTypes.INVALID.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_PEM, null);
+        endEntityInformation1.setPassword(PWD);
+        endEntityManagementSession.addUser(admin, endEntityInformation1, false);
+        
         log.debug("created user: " + USERNAME);
 
         // Create a new UserPasswordExpireService

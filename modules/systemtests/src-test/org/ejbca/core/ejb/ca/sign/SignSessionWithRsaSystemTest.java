@@ -1075,9 +1075,12 @@ public class SignSessionWithRsaSystemTest extends SignSessionCommon {
         int rsacaid = caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId();
         if (!endEntityManagementSession.existsUser(username)) {
             // We use unicode encoding for the three Swedish character åäö
-            endEntityManagementSession.addUser(internalAdmin, username, "foo123", "C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6", null, username
-                    + "@anatom.se", false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                    new EndEntityType(EndEntityTypes.ENDUSER), SecConst.TOKEN_SOFT_PEM, rsacaid);
+            EndEntityInformation endEntityInformation = new EndEntityInformation(username, "C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6", rsacaid, null,
+                    username + "@anatom.se", EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_PEM, null);
+            endEntityInformation.setPassword("foo123");
+            endEntityManagementSession.addUser(internalAdmin, endEntityInformation, false);
+            
             log.debug("created user: " + username + ", foo123, C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6");
         } else {
             log.debug("user " + username + " already exists: " + username + ", foo123, C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6");
@@ -1190,8 +1193,12 @@ public class SignSessionWithRsaSystemTest extends SignSessionCommon {
         caAdminSession.editCA(internalAdmin, cainfo);
         // New random username and create cert
         String username = genRandomUserName();
-        endEntityManagementSession.addUser(internalAdmin, username, "foo123", "C=SE,O=AnaTom,CN=" + username, null, "foo@anatom.se", false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new EndEntityType(EndEntityTypes.ENDUSER), SecConst.TOKEN_SOFT_PEM, rsacaid);
+        EndEntityInformation endEntityInformation1 = new EndEntityInformation(username, "C=SE,O=AnaTom,CN=" + username, rsacaid, null,
+                username + "@anatom.se", EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_PEM, null);
+        endEntityInformation1.setPassword("foo123");
+        endEntityManagementSession.addUser(internalAdmin, endEntityInformation1, false);
+        
         X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, username, "foo123", new PublicKeyWrapper(rsakeys.getPublic()));
         assertNotNull("Failed to create certificate", cert);
         // Check that certreq history was created
@@ -1203,8 +1210,12 @@ public class SignSessionWithRsaSystemTest extends SignSessionCommon {
         caAdminSession.editCA(internalAdmin, cainfo);
         // New random username and create cert
         username = genRandomUserName();
-        endEntityManagementSession.addUser(internalAdmin, username, "foo123", "C=SE,O=AnaTom,CN=" + username, null, "foo@anatom.se", false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new EndEntityType(EndEntityTypes.ENDUSER), SecConst.TOKEN_SOFT_PEM, rsacaid);
+        EndEntityInformation endEntityInformation2 = new EndEntityInformation(username, "C=SE,O=AnaTom,CN=" + username, rsacaid, null,
+                username + "@anatom.se", EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_PEM, null);
+        endEntityInformation2.setPassword("foo123");
+        endEntityManagementSession.addUser(internalAdmin, endEntityInformation2, false);
+
         cert = (X509Certificate) signSession.createCertificate(internalAdmin, username, "foo123", new PublicKeyWrapper(rsakeys.getPublic()));
         assertNotNull("Failed to create certificate", cert);
         // Check that certreq history was not created

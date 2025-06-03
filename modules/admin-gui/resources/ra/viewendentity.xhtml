@@ -294,7 +294,26 @@
     <h:panelGroup rendered="#{viewEndEntityMBean.renderCardNumber}">
      <h:outputLabel value="#{viewEndEntityMBean.cardNumber}" />
     </h:panelGroup>
-
+    
+    
+    <h:panelGroup rendered="#{viewEndEntityMBean.renderNameConstraintPermitted}">
+     <h:outputLabel value="#{web.text.EXT_PKIX_NC_PERMITTED}" />
+    </h:panelGroup>
+	<h:panelGroup rendered="#{viewEndEntityMBean.renderNameConstraintPermitted}">
+    	<ui:repeat value="#{viewEndEntityMBean.nameConstraintPermitted}" var="item">
+        	<h:outputText value="#{item}" /><br />
+    	</ui:repeat>
+	</h:panelGroup>
+    
+    <h:panelGroup rendered="#{viewEndEntityMBean.renderNameConstraintExcluded}">
+     <h:outputLabel value="#{web.text.EXT_PKIX_NC_EXCLUDED}" />
+    </h:panelGroup>
+	<h:panelGroup rendered="#{viewEndEntityMBean.renderNameConstraintExcluded}">
+    	<ui:repeat value="#{viewEndEntityMBean.nameConstraintExcluded}" var="item">
+        	<h:outputText value="#{item}" /><br />
+    	</ui:repeat>
+	</h:panelGroup>
+    
 
     <h:panelGroup
      rendered="#{viewEndEntityMBean.renderCertExtensionData}">

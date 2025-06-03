@@ -58,7 +58,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
-import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
@@ -262,7 +261,7 @@ public class ProtocolOcspHttpSystemTest extends ProtocolOcspTestBase {
 
     private final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    private final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+    private static final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private final RevocationSessionRemote revocationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RevocationSessionRemote.class);
     private final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
@@ -282,9 +281,14 @@ public class ProtocolOcspHttpSystemTest extends ProtocolOcspTestBase {
     };
 
     @BeforeClass
-    public static void beforeClass() throws CertificateException {
+    public static void beforeClass() throws CertificateException, AuthorizationDeniedException {
         // Install BouncyCastle provider
         CryptoProviderTools.installBCProviderIfNotAvailable();
+        
+        GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        globalOcspConfiguration.setIncludeSigningCertificate(true);
+        globalOcspConfiguration.setIncludeCertificateChain(true);
+        globalConfigurationSession.saveConfiguration(admin, globalOcspConfiguration);
     }
 
     public ProtocolOcspHttpSystemTest() throws MalformedURLException, URISyntaxException {
@@ -1061,8 +1065,11 @@ Content-Type: text/html; charset=iso-8859-1
             final int eepId = eeProfSession.getEndEntityProfileId(eepname);
 
             if (!endEntityManagementSession.existsUser(username)) {
-                endEntityManagementSession.addUser(admin, username, FOO123_PASSWORD, "CN=certUsername", null, "ocsptest@anatom.se", false,
-                        eepId, cpId, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, caid);
+                EndEntityInformation endEntityInformation = new EndEntityInformation(username, "CN=certUsername", caid,
+                        null, "ocsptest@anatom.se", EndEntityTypes.ENDUSER.toEndEntityType(), eepId, cpId,
+                        SecConst.TOKEN_SOFT_P12, null);
+                endEntityInformation.setPassword(FOO123_PASSWORD);
+                endEntityManagementSession.addUser(admin, endEntityInformation, false);
                 log.debug("created user: certUsername, foo123, CN=certUsername");
             } else {
                 log.debug("User certUsername already exists.");
@@ -1099,9 +1106,11 @@ Content-Type: text/html; charset=iso-8859-1
             ocspKeyBindingId = OcspTestUtils.createInternalKeyBinding(admin, cryptoTokenId, OcspKeyBinding.IMPLEMENTATION_ALIAS, TESTCLASS_NAME,
                     "RSA2048", AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
             if (!endEntityManagementSession.existsUser("ocspSigner")) {
-                endEntityManagementSession.addUser(admin, "ocspSigner", FOO123_PASSWORD, "CN=ocspSigner", null, "ocsptest@anatom.se", false, eepId,
-                    cpId, EndEntityTypes.ENDUSER.toEndEntityType(),
-                        EndEntityConstants.TOKEN_USERGEN, caid);
+                EndEntityInformation endEntityInformation = new EndEntityInformation( "ocspSigner", "CN=ocspSigner", caid,
+                        null, "ocsptest@anatom.se", EndEntityTypes.ENDUSER.toEndEntityType(), eepId, cpId,
+                        EndEntityConstants.TOKEN_USERGEN, null);
+                endEntityInformation.setPassword(FOO123_PASSWORD);
+                endEntityManagementSession.addUser(admin, endEntityInformation, false);
             } else {
                 log.debug("User ocspSigner already exists.");
                 EndEntityInformation userData = new EndEntityInformation("ocspSigner", "CN=ocspSigner",
@@ -1198,8 +1207,12 @@ Content-Type: text/html; charset=iso-8859-1
             final int eepId = eeProfSession.getEndEntityProfileId(eepname);
 
             if (!endEntityManagementSession.existsUser(username)) {
-                endEntityManagementSession.addUser(admin, username, FOO123_PASSWORD, "CN=certUsername", null, "ocsptest@anatom.se", false,
-                        eepId, cpId, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, caid);
+                EndEntityInformation endEntityInformation = new EndEntityInformation( username, "CN=certUsername", caid,
+                        null, "ocsptest@anatom.se", EndEntityTypes.ENDUSER.toEndEntityType(), eepId, cpId,
+                        EndEntityConstants.TOKEN_SOFT_PEM, null);
+                endEntityInformation.setPassword(FOO123_PASSWORD);
+                endEntityManagementSession.addUser(admin, endEntityInformation, false);
+               
                 log.debug("created user: certUsername, foo123, CN=certUsername");
             } else {
                 log.debug("User certUsername already exists.");
@@ -1241,9 +1254,12 @@ Content-Type: text/html; charset=iso-8859-1
             ocspKeyBindingId = OcspTestUtils.createInternalKeyBinding(admin, cryptoTokenId, OcspKeyBinding.IMPLEMENTATION_ALIAS, TESTCLASS_NAME,
                     "RSA2048", AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
             if (!endEntityManagementSession.existsUser("ocspSigner")) {
-                endEntityManagementSession.addUser(admin, "ocspSigner", FOO123_PASSWORD, "CN=ocspSigner", null, "ocsptest@anatom.se", false, eepId,
-                    cpId, EndEntityTypes.ENDUSER.toEndEntityType(),
-                        EndEntityConstants.TOKEN_USERGEN, caid);
+               
+                EndEntityInformation endEntityInformation = new EndEntityInformation("ocspSigner", "CN=ocspSigner", caid, null, "ocsptest@anatom.se",
+                        EndEntityTypes.ENDUSER.toEndEntityType(), eepId, cpId, EndEntityConstants.TOKEN_USERGEN, null);
+                endEntityInformation.setPassword(FOO123_PASSWORD);
+                endEntityManagementSession.addUser(admin, endEntityInformation, false);
+                
             } else {
                 log.debug("User ocspSigner already exists.");
                 EndEntityInformation userData = new EndEntityInformation("ocspSigner", "CN=ocspSigner",
@@ -1367,68 +1383,6 @@ Content-Type: text/html; charset=iso-8859-1
             globalOcspConfiguration.setDefaultValidityTime(oldConfigurationValue);
             globalConfigurationSession.saveConfiguration(admin, globalOcspConfiguration);
         }
-    }
-
-    /**
-     * This test tests that the OCSP response contains is signed by the preferred signature algorithm specified in the request.
-     *
-     * @throws Exception
-    */
-    @Test
-    @Deprecated // This test verifies legacy behavior from EJBCA 6.1.0 and should be removed when we no longer need to support it
-    public void testSigAlgExtensionLegacy() throws Exception {
-        loadUserCert(this.caid);
-
-        // Try sending a request where the preferred signature algorithm in the extension is expected to be used to sign the response.
-
-        // set ocsp configuration
-        Map<String,String> map = new HashMap<>();
-        map.put("ocsp.signaturealgorithm", AlgorithmConstants.SIGALG_SHA256_WITH_RSA + ";" + AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-        this.helper.alterConfig(map);
-
-
-        ASN1EncodableVector algVec = new ASN1EncodableVector();
-        algVec.add(X9ObjectIdentifiers.ecdsa_with_SHA256);
-        algVec.add(PKCSObjectIdentifiers.sha256WithRSAEncryption);
-        ASN1Sequence algSeq = new DERSequence(algVec);
-        ExtensionsGenerator extgen = new ExtensionsGenerator();
-        // RFC 6960: id-pkix-ocsp-pref-sig-algs   OBJECT IDENTIFIER ::= { id-pkix-ocsp 8 }
-        extgen.addExtension(new ASN1ObjectIdentifier(OCSPObjectIdentifiers.id_pkix_ocsp + ".8"), false, algSeq);
-        Extensions exts = extgen.generate();
-        assertNotNull(exts);
-
-        OCSPReqBuilder gen = new OCSPReqBuilder();
-        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber() ), exts);
-        gen.setRequestExtensions(exts);
-        OCSPReq req = gen.build();
-        assertTrue(req.hasExtensions());
-
-        BasicOCSPResp response = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
-        assertNotNull("Could not retrieve response, test could not continue.", response);
-        assertEquals(PKCSObjectIdentifiers.sha256WithRSAEncryption, response.getSignatureAlgOID());
-
-
-        // Try sending a request where the preferred signature algorithm is not compatible with the signing key, but
-        // the configured algorithm is. Expected a response signed using the first configured algorithm
-
-        algVec = new ASN1EncodableVector();
-        algVec.add(X9ObjectIdentifiers.ecdsa_with_SHA256);
-        algSeq = new DERSequence(algVec);
-
-        extgen = new ExtensionsGenerator();
-        extgen.addExtension(new ASN1ObjectIdentifier(OCSPObjectIdentifiers.id_pkix_ocsp + ".8"), false, algSeq);
-        exts = extgen.generate();
-        assertNotNull(exts);
-
-        gen = new OCSPReqBuilder();
-        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber() ), exts);
-        gen.setRequestExtensions(exts);
-        req = gen.build();
-        assertTrue(req.hasExtensions());
-
-        response = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
-        assertNotNull("Could not retrieve response, test could not continue.", response);
-        assertEquals(PKCSObjectIdentifiers.sha1WithRSAEncryption, response.getSignatureAlgOID());
     }
 
     /** This test tests that the OCSP response contains is signed by the preferred signature algorithm specified in the request. */
@@ -1561,10 +1515,13 @@ Content-Type: text/html; charset=iso-8859-1
     @Test
     public void testSignCertNotIncludedInResponse() throws Exception {
         loadUserCert(this.caid);
-        // set OCSP configuration
-        Map<String,String> map = new HashMap<>();
-        map.put(OcspConfiguration.INCLUDE_SIGNING_CERT, "false");
-        helper.alterConfig(map);
+        // set OCSP configuration        
+        GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        boolean initialSignCertValue = globalOcspConfiguration.getIncludeSigningCertificate();
+        globalOcspConfiguration.setIncludeSigningCertificate(false);
+        globalConfigurationSession.saveConfiguration(admin, globalOcspConfiguration);
+        
+        try {
         // This setting is part of the OCSP signing cache so a reload of the cache is required
         helper.reloadKeys();
         // Build the OCSP request
@@ -1575,6 +1532,10 @@ Content-Type: text/html; charset=iso-8859-1
         BasicOCSPResp response = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200, false, cacert);
         assertNotNull("Could not retrieve response, test could not continue.", response);
         assertTrue("Response does contain certificates", response.getCerts().length == 0);
+        } finally {
+            globalOcspConfiguration.setIncludeSigningCertificate(initialSignCertValue);
+            globalConfigurationSession.saveConfiguration(admin, globalOcspConfiguration);
+        }
     }
 
     /**
@@ -1594,12 +1555,11 @@ Content-Type: text/html; charset=iso-8859-1
         X509Certificate subSubCaCert = createSubCA(subSubCaDN, subcaDN.hashCode());
 
         // set OCSP configuration
-        Map<String,String> map = new HashMap<>();
-        map.put(OcspConfiguration.INCLUDE_CERT_CHAIN, "true");
         GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
         ocspConfiguration.setOcspDefaultResponderReference(subSubCaDN);
+        boolean initialIncludeCertificateChain = ocspConfiguration.getIncludeCertificateChain();
+        ocspConfiguration.setIncludeCertificateChain(true);
         globalConfigurationSession.saveConfiguration(admin, ocspConfiguration);
-        this.helper.alterConfig(map);
         helper.reloadKeys();
 
         // Expects an OCSP response including a certchain that contains only the 2 subCAs and not their rootCA.
@@ -1619,6 +1579,8 @@ Content-Type: text/html; charset=iso-8859-1
             assertEquals(subcaDN, includedCerts[1].getSubject().toString());
 
         } finally {
+            ocspConfiguration.setIncludeCertificateChain(initialIncludeCertificateChain);
+            globalConfigurationSession.saveConfiguration(admin, ocspConfiguration);
             try {
                 endEntityManagementSession.deleteUser(admin, "ocsptest");
             } catch (Exception e) {
@@ -1863,9 +1825,12 @@ Content-Type: text/html; charset=iso-8859-1
             CADoesntExistsException {
         final String USERNAME = "ocsptest";
         if (!endEntityManagementSession.existsUser(USERNAME)) {
-
-            endEntityManagementSession.addUser(admin, USERNAME, FOO123_PASSWORD, "C=SE,O=AnaTom,CN=OCSPTest", null, "ocsptest@anatom.se", false,
-                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, caid);
+            EndEntityInformation endEntityInformation = new EndEntityInformation(USERNAME, "C=SE,O=AnaTom,CN=OCSPTest", caid, null,
+                    "ocsptest@anatom.se", EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_PEM, null);
+            endEntityInformation.setPassword(FOO123_PASSWORD);
+            endEntityManagementSession.addUser(admin, endEntityInformation, false);
+            
             log.debug("created user: ocsptest, foo123, C=SE, O=AnaTom, CN=OCSPTest");
 
         } else {

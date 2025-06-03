@@ -59,12 +59,6 @@ public class WebLanguagesImpl implements Serializable, WebLanguages {
         if(languages == null){
             for(int i=0; i < AVAILABLE_LANGUAGES.length; i++){
                 AVAILABLE_LANGUAGES[i] = AVAILABLE_LANGUAGES[i].trim().toLowerCase();
-                if (AVAILABLE_LANGUAGES[i].equalsIgnoreCase("se")) {  /* For compatibility with EJBCA 6.2.x and before */
-                    AVAILABLE_LANGUAGES[i] = "sv";
-                }
-                if (AVAILABLE_LANGUAGES[i].equalsIgnoreCase("ua")) {  /* For compatibility with EJBCA 6.2.x and before */
-                    AVAILABLE_LANGUAGES[i] = "uk";
-                }
             }
             // Load available languages
             languages = new LanguageProperties[AVAILABLE_LANGUAGES.length];

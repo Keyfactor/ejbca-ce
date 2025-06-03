@@ -207,9 +207,12 @@ public class ProtocolLookupServerHttpSystemTest extends CaTestCase {
         // Make user that we know...
         boolean userExists = false;
         try {
-            endEntityManagementSession.addUser(admin, TEST_USER_NAME, USER_PASS_PHRASE, TEST_USER_SUBJECTDN_GOOD_SERIAL, null,
-                    TEST_USER_EMAIL, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(),
-                    SecConst.TOKEN_SOFT_PEM, caid);
+            EndEntityInformation firstUser = new EndEntityInformation(TEST_USER_NAME, TEST_USER_SUBJECTDN_GOOD_SERIAL, caid,
+                    null, null, EndEntityTypes.INVALID.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                    SecConst.TOKEN_SOFT_PEM, null);
+            firstUser.setPassword(USER_PASS_PHRASE);
+            endEntityManagementSession.addUser(admin, firstUser, false);
+            
             log.debug("created user: unidtest, foo123, C=SE, O=AnaTom,surname=Jansson,serialNumber="+SAMPLE_UNID+", CN=UNIDTest");
         } catch (EndEntityExistsException e) {
             userExists = true;
@@ -504,12 +507,13 @@ public class ProtocolLookupServerHttpSystemTest extends CaTestCase {
         if (fnrrep == null) {
             return null;
         }
-        assertNotNull(fnrrep);
-        ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(fnrrep));
-        final ASN1OctetString octs = ASN1OctetString.getInstance(aIn.readObject());
-        aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
-        final FnrFromUnidExtension fnrobj = FnrFromUnidExtension.getInstance(aIn.readObject());
-        return fnrobj.getFnr();
+        try (ASN1InputStream outerStream = new ASN1InputStream(new ByteArrayInputStream(fnrrep))) {
+            final ASN1OctetString octs = ASN1OctetString.getInstance(outerStream.readObject());
+            try (ASN1InputStream innerStream = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()))) {
+                final FnrFromUnidExtension fnrobj = FnrFromUnidExtension.getInstance(innerStream.readObject());
+                return fnrobj.getFnr();
+            }
+        }
     }
 
     private void getFnrNotGood(BasicOCSPResp basicOCSPResp) {
