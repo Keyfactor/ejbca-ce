@@ -32,11 +32,9 @@
             <h:outputText value="#{editCAsMBean.editCAPageTitle}"/>
         </h2>
         <h3>
-            <h:outputText value="#{web.text.CANAME}"/>
+            <h:outputText value="#{web.text.CANAME} : "/>
             <h:outputText value="#{editCAsMBean.editCaName}"
                           rendered="#{editCAsMBean.editCA}"/>
-            <h:outputText value="#{editCAsMBean.createCaNameTitle}"
-                          rendered="#{not editCAsMBean.editCA}"/>
         </h3>
 
         <h:form id="editcapage" enctype="multipart/form-data">
@@ -50,6 +48,18 @@
                 <h:outputLink value="managecas.xhtml">
                     <h:outputText value="#{web.text.BACKTOCAS}"/>
                 </h:outputLink>
+                
+                <h:panelGroup>
+                    <h:outputLabel for="getcanamegroup" value="#{web.text.CANAME}"/>
+                </h:panelGroup>
+                <h:panelGroup id="getcanamegroup">
+                    <h:outputText id="getcaname" value="#{editCAsMBean.caName}" rendered="#{not editCAsMBean.hasEditRight}"/>
+                    <h:inputText name="setcanameinput" size="45"
+                                 value="#{editCAsMBean.caName}"
+                                 rendered="#{editCAsMBean.hasEditRight}">
+                      <f:ajax event="change" render="@form"/>
+                    </h:inputText>
+                </h:panelGroup>
 
                 <h:panelGroup>
                     <h:outputLabel for="getcaid" value="#{web.text.CAID}"

@@ -3,7 +3,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
 	  xmlns:f="jakarta.faces.core"
 	  xmlns:h="jakarta.faces.html"
-	  xmlns:ui="jakarta.faces.facelets">
+	  xmlns:ui="jakarta.faces.facelets"
+	  xmlns:p="http://primefaces.org/ui">
 <ui:remove>
 	<!--
     /*************************************************************************
@@ -33,92 +34,97 @@
 		</h1>
 
 		<h:form id="managecas" enctype="multipart/form-data">
-			<h:panelGrid styleClass="list">
+			<p:panelGrid styleClass="list" columns="1">
 				<h:panelGroup>
 					<h3>
 						<h:outputText value="#{web.text.LISTOFCAS}" />
 					</h3>
 				</h:panelGroup>
 				<h:panelGroup>
-					<h:selectOneListbox id="selectcas"
-										value="#{manageCAsMBean.selectedCaId}" style="width: 50em" size="15"
-										class="select-list">
-						<f:selectItems value="#{manageCAsMBean.listOfCas.entrySet()}" var="entry" itemValue="#{entry.key}" itemLabel="#{entry.value}"/>
-						<f:ajax render="@form"/>
-					</h:selectOneListbox>
-				</h:panelGroup>
+					
+					<p:dataTable value="#{manageCAsMBean.canames}" var="caname" styleClass="grid" rows="10"
+                         paginator="true" paginatorPosition="bottom"
+                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} aliases"
+                         rowsPerPageTemplate="10,25,50,{ShowAll|'All'}">
+                <p:column style="width: 35%">
+                    <f:facet name="header">
+                        <h:outputText value="#{web.text.NAME}"/>
+                    </f:facet>
+                    <h:outputText value="#{caname}" title="#{caname}" style="font-weight: bold"/>
+                </p:column>
+                <p:column style="width: 15%">
+                    <f:facet name="header">
+                        <h:outputText value="#{web.text.TYPE}"/>
+                    </f:facet>
+                    <h:outputText value="#{manageCAsMBean.getType(caname)}"/>
+                </p:column>
+                <p:column style="width: 15%">
+                    <f:facet name="header">
+                        <h:outputText value="#{web.text.STATUS}"/>
+                    </f:facet>
+                    <h:outputText value="#{manageCAsMBean.getStatus(caname)}"/>
+                </p:column>
+                <p:column style="width: 40%;">
+                    <f:facet name="header">
+                      <div style="display: flex; justify-content: center">
+                          <h:outputText value="#{web.text.ACTIONS}"/>
+                        </div>
+                    </f:facet>
+                    <div style="display: flex; justify-content: space-between">
+                    <p:commandButton id="buttonviewalias"
+                                     value="#{web.text.VIEW}" ajax="false"
+                                     icon="pi pi-search" styleClass="rounded-button"
+                                     action="#{manageCAsMBean.viewCaPage(caname)}">
+                    </p:commandButton>
+                    <p:commandButton value="#{web.text.EDIT}" ajax="false"
+                                     action="#{manageCAsMBean.editCaPage(caname)}"
+                                     icon="pi pi-file-edit" styleClass="rounded-button"
+                                     rendered="#{manageCAsMBean.canEditResource}">
+                    </p:commandButton>
+                    <p:commandButton value="#{web.text.DELETE}" ajax="false"
+                                     action="#{manageCAsMBean.deleteCA(caname)}"
+                                     icon="pi pi-trash" styleClass="rounded-button"
+                                     rendered="#{manageCAsMBean.canRemoveResource}"/>
+                    <p:commandButton value="#{web.text.CREATEAUTHCSR}" ajax="false"
+                                     rendered="#{manageCAsMBean.canRenewResource}"
+                                     icon="pi pi-clone" styleClass="rounded-button"
+							                       action="#{manageCAsMBean.createAuthCertSignRequest(caname)}"/>
+							      </div>
+                </p:column>
+            </p:dataTable>
 
-				<h:panelGroup>
-					<h:panelGrid columns="4" >
-						<h:panelGroup>
-							<h:commandButton
-									id="buttoneditca"
-									value="#{manageCAsMBean.editCAButtonValue}"
-									action="#{manageCAsMBean.editCaPage}"/>
-						</h:panelGroup>
-						<h:panelGroup>
-							<h:commandButton
-									class="buttonstyle"
-									onclick="if (checkSelectionMade('managecas:selectcas')) return confirmcaaction('#{manageCAsMBean.confirmMessage}')"
-									id="buttondeleteca"
-									value="#{web.text.DELETECA}"
-									action="#{manageCAsMBean.deleteCA()}"
-									rendered="#{manageCAsMBean.canRemoveResource}" />
-						</h:panelGroup>
-						<h:panelGroup rendered="#{ejbcawebbean.runningBuildWithCA}">
-							<h:commandButton
-									id="buttonimportca"
-									value="#{manageCAsMBean.importKeystoreText}"
-									rendered="#{manageCAsMBean.canAddResource}"
-									action="importca"/>
-						</h:panelGroup>
-						<h:panelGroup>
-							<h:commandButton
-									id="buttonimportcacert"
-									value="#{manageCAsMBean.importCertificateText}"
-									rendered="#{manageCAsMBean.canAddResource}"
-									action="importcacert"/>
-
-						</h:panelGroup>
-					</h:panelGrid>
 				</h:panelGroup>
-			</h:panelGrid>
+				</p:panelGrid>
 
-			<h:panelGrid class="actions" columns="1">
-				<h:panelGroup rendered="#{ejbcawebbean.runningBuildWithCA}">
-					<h:commandButton
-							id="buttonsignrequest"
-							value="#{web.text.CREATEAUTHCSR}"
-							rendered="#{manageCAsMBean.canRenewResource}"
-							action="#{manageCAsMBean.createAuthCertSignRequest()}" />
-				</h:panelGroup>
+			<p:panelGrid class="actions" columns="1">
 				<h:panelGroup rendered="#{ejbcawebbean.runningBuildWithCA and manageCAsMBean.canAddAndEditResource}">
-					<h3>
-						<h:outputText value="#{web.text.ADDCA}"
-									  rendered="#{manageCAsMBean.canAddOrEditResource}" />
-					</h3>
-				</h:panelGroup>
-				<h:panelGroup rendered="#{ejbcawebbean.runningBuildWithCA and manageCAsMBean.canAddAndEditResource}">
-					<h:inputText
-							id="textfieldcaname" size="40" maxlength="255"
-							title="#{web.text.FORMAT_ID_STR}"
-							value="#{manageCAsMBean.createCaName}"
-							rendered="#{manageCAsMBean.canAddOrEditResource}"
-							style="margin-right:3px;"
-					/>
-					<h:commandButton id="buttoncreateca"
-									 value="#{web.text.CREATE}..."
+					<p:commandButton id="buttoncreateca"
+									 value="#{web.text.ADD}" ajax="false"
 									 rendered="#{manageCAsMBean.canAddResource}"
 									 action="#{manageCAsMBean.createCaPage}"
 									 style="margin-right:3px;"
 					/>
-					<h:commandButton id="buttonrenameca"
-									 value="#{web.text.RENAME_SELECTED}"
-									 rendered="#{manageCAsMBean.canEditResource}"
-									 action="#{manageCAsMBean.renameCA()}"
-									 onclick="return checkfieldforlegalchars(document.getElementById('managecas:textfieldcaname'), '#{web.text.ONLYCHARACTERS}');"
-					/>
 				</h:panelGroup>
+			</p:panelGrid>
+				
+			<p:panelGrid class="actions" columns="2">
+				<h:panelGroup rendered="#{ejbcawebbean.runningBuildWithCA}">
+							<p:commandButton
+									id="buttonimportca" ajax="false"
+									value="#{manageCAsMBean.importKeystoreText}"
+									rendered="#{manageCAsMBean.canAddResource}"
+									action="importca"/>
+				</h:panelGroup>
+				<h:panelGroup>
+							<p:commandButton
+									id="buttonimportcacert" ajax="false"
+									value="#{manageCAsMBean.importCertificateText}"
+									rendered="#{manageCAsMBean.canAddResource}"
+									action="importcacert"/>
+				</h:panelGroup>
+			</p:panelGrid>
+			<p:panelGrid class="actions" columns="1">
 				<h:panelGroup rendered="#{manageCAsMBean.canAddResource}">
 					<h3>
 						<h:outputText value="#{web.text.IMPORT_CERTIFICATE_BUNDLE}"/>
@@ -132,7 +138,8 @@
 						<f:ajax render="@all" listener="#{manageCAsMBean.importCertificateBundle}" />
 					</h:inputFile>
 				</h:panelGroup>
-			</h:panelGrid>
+			</p:panelGrid>
+			
 		</h:form>
 	</ui:define>
 </ui:composition>
