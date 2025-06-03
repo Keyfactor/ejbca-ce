@@ -37,34 +37,35 @@
 					<f:facet name="header"><h:outputText value="#{web.text.CERTIFICATEPROFILENAME}" title="#{certificateProfile.id}"/></f:facet>
 					<h:outputText value="#{certificateProfile.name}"/>
 					<h:outputText rendered="#{certificateProfile.missingCa}" value="#{web.text.MISSINGCAIDS}"/>
-					<f:facet name="footer">
-			  			<h:inputText id="profileNameInputField" value="#{certProfilesBean.certProfileName}" title="#{web.text.FORMAT_ID_STR}" size="45" maxlength="255" disabled="#{certProfilesBean.authorizedToOnlyView}"/>
-					</f:facet>
 				</h:column>
 				<h:column headerClass="gridColumn2">
+					<f:facet name="header"><h:outputText value="Type"/></f:facet>
+					<h:outputText value="#{certificateProfile.type}"/>
+				</h:column>
+				<h:column headerClass="gridColumn3">
 					<f:facet name="header"><h:outputText value="#{web.text.ACTIONS}"/></f:facet>
 					<h:panelGroup styleClass="button-group">
 					<h:commandButton value="#{web.text.VIEW}" action="#{certProfilesBean.actionView}">
                         <f:param name="viewOnly" />
                         <f:param name="id" value="#{certProfilesBean.currentCertificateProfileId}" />  
                     </h:commandButton>
-					<h:commandButton value="#{web.text.EDIT}" action="#{certProfilesBean.actionEdit}" disabled="#{certificateProfile.fixed}" 
+					<h:commandButton value="#{web.text.EDIT}" action="#{certProfilesBean.actionEdit}" disabled="#{certificateProfile.fixed}"
 						rendered="#{certProfilesBean.authorizedToEdit}">
                         <f:param name="id" value="#{certProfilesBean.currentCertificateProfileId}" />        
                     </h:commandButton>
-					<h:commandButton value="#{web.text.DELETE}" action="#{certProfilesBean.actionDelete}" disabled="#{certificateProfile.fixed}" 
+					<h:commandButton value="#{web.text.DELETE}" action="#{certProfilesBean.actionDelete}" disabled="#{certificateProfile.fixed}"
 						rendered="#{certProfilesBean.authorizedToEdit}"/>
-					<h:commandButton value="#{web.text.RENAME}" action="#{certProfilesBean.actionRename}" disabled="#{certificateProfile.fixed}" 
-						rendered="#{certProfilesBean.authorizedToEdit}"/>
-					<h:commandButton value="#{web.text.CLONE}" action="#{certProfilesBean.actionAddFromTemplate}" 
+					<h:commandButton value="#{web.text.CLONE}" action="#{certProfilesBean.actionAddFromTemplate}"
 						rendered="#{certProfilesBean.authorizedToEdit}"/>
 					<h:commandButton value="#{web.text.EXPORT}" action="#{certProfilesBean.actionExportProfile}" disabled="#{certificateProfile.fixed}" />
 					</h:panelGroup>
-					<f:facet name="footer" >
-						<h:commandButton id="addProfileButton" value="#{web.text.ADD}" action="#{certProfilesBean.actionAdd}" disabled="#{certificateProfile.fixed or certProfilesBean.authorizedToOnlyView}"/>
-					</f:facet>
 				</h:column>
 			</h:dataTable>
+			<h:commandButton id="addProfileButton"
+							 value="#{web.text.ADD}"
+							 action="#{certProfilesBean.actionAdd}"
+							 disabled="#{certificateProfile.fixed or certProfilesBean.authorizedToOnlyView}"
+							 style="margin-top: 10px"/>
 			</h:panelGroup>
 	
 			<h:panelGroup rendered="#{certProfilesBean.addFromTemplateInProgress}">
@@ -78,23 +79,6 @@
 					<h:panelGroup>
 						<h:commandButton id="cloneConfirmButton" value="#{web.text.CLONE_CONFIRM}" action="#{certProfilesBean.actionAddFromTemplateConfirm}"/>
 						<h:commandButton id="cloneCancelButton" value="#{web.text.CANCEL}" action="#{certProfilesBean.actionCancel}"/>
-					</h:panelGroup>
-				</h:panelGrid>
-			</h:panelGroup>
-	
-			<h:panelGroup rendered="#{certProfilesBean.renameInProgress}">
-				<h3>
-					<h:outputText value="#{web.text.RENAME}"/>
-				</h3>
-				<h:panelGrid columns="2">
-					<h:outputLabel for="renameProfileOld" value="#{web.text.RENAME_CURRENTNAME}"/>
-					<h:outputText id="renameProfileOld" value="#{certProfilesBean.selectedCertProfileName}"/>
-					<h:outputLabel for="renameProfileNew" value="#{web.text.RENAME_NEWNAME}"/>
-	  				<h:inputText id="renameProfileNew" value="#{certProfilesBean.certProfileName}" title="#{web.text.FORMAT_ID_STR}" size="40" maxlength="255"/>
-	  				<h:panelGroup/>
-					<h:panelGroup>
-						<h:commandButton id="renameConfirmButton" value="#{web.text.RENAME_CONFIRM}" action="#{certProfilesBean.actionRenameConfirm}"/>
-						<h:commandButton id="renameCancelButton" value="#{web.text.CANCEL}" action="#{certProfilesBean.actionCancel}"/>
 					</h:panelGroup>
 				</h:panelGrid>
 			</h:panelGroup>

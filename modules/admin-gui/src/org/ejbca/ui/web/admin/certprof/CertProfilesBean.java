@@ -20,6 +20,7 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -151,13 +152,16 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
             
             final List<Integer> profileIdsWithMissingCA = certificateProfileSession.getAuthorizedCertificateProfileWithMissingCAs(getAdmin());
             final Map<Integer, String> idToNameMap = certificateProfileSession.getCertificateProfileIdToNameMap();
+
             final Set<Integer> existing = new HashSet<>();
             for(Integer profileId : authorizedProfileIds) {
+                CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(profileId);
                 final boolean missingCa = profileIdsWithMissingCA.contains(profileId);
                 final boolean fixed = isCertProfileFixed(profileId);
                 final String name = idToNameMap.get(profileId);
+                final String type = getCertTypesMap().get(certificateProfile.getType());
                 if (existing.add(profileId)) { // Don't add twice!
-                    items.add(new CertificateProfileItem(profileId, name, fixed, missingCa));
+                    items.add(new CertificateProfileItem(profileId, name, fixed, missingCa, type));
                 }
             }
             // Sort list by name
@@ -176,6 +180,17 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
             certificateProfileItems = new ListDataModel<>(items);
         }
         return certificateProfileItems;
+    }
+
+    private Map<Integer,String> getCertTypesMap() {
+        final Map<Integer,String> certTypes = new HashMap<>();
+        certTypes.put(CertificateConstants.CERTTYPE_ENDENTITY, getEjbcaWebBean().getText("ENDENTITY"));
+        certTypes.put(CertificateConstants.CERTTYPE_ROOTCA, getEjbcaWebBean().getText("ROOTCA"));
+        certTypes.put(CertificateConstants.CERTTYPE_SUBCA, getEjbcaWebBean().getText("SUBCA"));
+        certTypes.put(CertificateConstants.CERTTYPE_SSH, getEjbcaWebBean().getText("SSH_TYPE"));
+        certTypes.put(CertificateConstants.CERTTYPE_ITS, getEjbcaWebBean().getText("ITS_TYPE"));
+        certTypes.put(CertificateConstants.CERTTYPE_UNKNOWN, "Unknown");
+        return certTypes;
     }
 
     /** @return true if the specified certificate profile id is fixed */
@@ -241,32 +256,12 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
     }
 
     public boolean isOperationInProgress() {
-        return isRenameInProgress() || isDeleteInProgress() || isAddFromTemplateInProgress();
+        return isDeleteInProgress() || isAddFromTemplateInProgress();
     }
 
     public void actionAdd() {
-        final String certProfileName = getCertProfileName();
-        if (certProfileName.endsWith(LEGACY_FIXED_MARKER)) {
-            addErrorMessage("YOUCANTEDITFIXEDCERTPROFS");
-        } else if (StringUtils.isBlank(certProfileName)) {
-            addNonTranslatedErrorMessage("Error: Certificate profile name cannot be empty.");
-        } else if (certProfileName.length() > 0) {
-            if (!StringTools.checkFieldForLegalChars(certProfileName)) {
-                addErrorMessage("ONLYCHARACTERS");
-            } else {
-                try {
-                    final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-                    certificateProfile.setAvailableCAs(caSession.getAuthorizedCaIds(getAdmin()));
-                    certificateProfileSession.addCertificateProfile(getAdmin(), certProfileName, certificateProfile);
-                    setCertProfileName("");
-                } catch (CertificateProfileExistsException e) {
-                    addErrorMessage("CERTIFICATEPROFILEALREADY");
-                } catch (AuthorizationDeniedException e) {
-                    addNonTranslatedErrorMessage(e.getMessage());
-                }
-            }
-        }
-        certificateProfileItems = null;
+        clearMessages();
+        redirect("editcertificateprofile.xhtml", "id", CertificateProfileConstants.NO_CERTIFICATE_PROFILE);
     }
 
     public boolean isAddFromTemplateInProgress() {
@@ -337,17 +332,6 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
             addErrorMessage("COULDNTDELETECERTPROF");
         }
         actionCancel();
-    }
-
-    public boolean isRenameInProgress() {
-        return renameInProgress;
-    }
-
-    public void actionRename() {
-        selectCurrentRowData();
-        if (selectedProfileExists()) {
-            renameInProgress = true;
-        }
     }
 
     public void actionRenameConfirm() {
@@ -728,12 +712,14 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         private final String name;
         private final boolean fixed;
         private final boolean missingCa;
+        private final String type;
 
-        public CertificateProfileItem(final int id, final String name, final boolean fixed, final boolean missingCa) {
+        public CertificateProfileItem(final int id, final String name, final boolean fixed, final boolean missingCa, final String type) {
             this.id = id;
             this.name = name;
             this.fixed = fixed;
             this.missingCa = missingCa;
+            this.type = type;
         }
 
         public int getId() {
@@ -751,5 +737,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         public boolean isMissingCa() {
             return missingCa;
         }
+
+        public String getType() {return type;}
     }
 }

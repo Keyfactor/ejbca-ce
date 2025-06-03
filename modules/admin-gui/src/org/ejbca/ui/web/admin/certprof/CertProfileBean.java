@@ -36,6 +36,8 @@ import org.cesecore.certificates.certificate.ssh.SshExtension;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.certificateprofile.PKIDisclosureStatement;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
@@ -84,6 +86,8 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(CertProfileBean.class);
 
+    private static final String LEGACY_FIXED_MARKER = "(FIXED)";
+
     private int currentCertProfileId = -1;
     private int certificateProfileId;
     private boolean isViewOnly;
@@ -96,6 +100,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     private String documentTypeListNew = "";
     private ListDataModel<PKIDisclosureStatement> pdsListModel = null;
     private List<ApprovalRequestItem> approvalRequestItems = null;
+    private String profileName = "";
 
     public CertProfileBean( ) {
         super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CERTIFICATEPROFILEVIEW.resource());
@@ -113,6 +118,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         documentTypeListNew = "";
         pdsListModel = null;
         approvalRequestItems = null;
+        profileName = "";
     }
 
     @PostConstruct
@@ -121,6 +127,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
             final Map<String, String> requestParameterMap = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
             certificateProfileId = Integer.parseInt(requestParameterMap.get("id"));
             isViewOnly = requestParameterMap.containsKey("viewOnly");
+            profileName = certificateProfileId == 0 ? "" : getSelectedCertProfileName();
         } catch (final NumberFormatException e) {
             addNonTranslatedErrorMessage("The GET parameter 'id' must contain the ID of the certificate profile to load.");
         }
@@ -144,6 +151,14 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
 
     public String getSelectedCertProfileName() {
         return getEjbcaWebBean().getEjb().getCertificateProfileSession().getCertificateProfileName(getCertificateProfileId());
+    }
+
+    public String getProfileName() {
+        return profileName;
+    }
+
+    public void setProfileName(String profileName) {
+        this.profileName = profileName;
     }
 
     public CertificateProfile getCertificateProfile() {
@@ -180,6 +195,17 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         boolean success = true;
         try {
             // Perform last minute validations before saving
+            if (profileName.endsWith(LEGACY_FIXED_MARKER)) {
+                addErrorMessage("YOUCANTEDITFIXEDCERTPROFS");
+                success = false;
+            } else if (StringUtils.isBlank(profileName)) {
+                addNonTranslatedErrorMessage("Error: Certificate profile name cannot be empty.");
+                success = false;
+            } else if (!StringTools.checkFieldForLegalChars(profileName)) {
+                addErrorMessage("ONLYCHARACTERS");
+                success = false;
+            }
+
             CertificateProfile prof = getCertificateProfile();
             if (prof.getAvailableKeyAlgorithmsAsList().isEmpty()) {
                 addErrorMessage("ONEAVAILABLEKEYALGORITHM");
@@ -299,15 +325,26 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                 certificateProfile.setApprovals(approvals);
 
                 // Modify the profile
-                getEjbcaWebBean().getEjb().getCertificateProfileSession().changeCertificateProfile(getAdmin(), getSelectedCertProfileName(), certificateProfile);
-                addInfoMessage("CERTIFICATEPROFILESAVED", getSelectedCertProfileName());
+                CertificateProfileSessionLocal certificateProfileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
+                if (certificateProfileId == 0) {
+                        certificateProfileSession.addCertificateProfile(getAdmin(), profileName, certificateProfile);
+                } else {
+                    if (!profileName.equals(getSelectedCertProfileName())){
+                        certificateProfileSession.renameCertificateProfile(getAdmin(), getSelectedCertProfileName(), profileName);
+                    }
+
+                    certificateProfileSession.changeCertificateProfile(getAdmin(), getSelectedCertProfileName(), certificateProfile);
+                }
+                addInfoMessage("CERTIFICATEPROFILESAVED", profileName);
                 reset();
                 return "done";  // Outcome defined in faces-config.xml
             }
         } catch (AuthorizationDeniedException e) {
             addNonTranslatedErrorMessage("Not authorized to edit certificate profile.");
-        }
-        return "";
+        } catch (CertificateProfileExistsException e) {
+            addErrorMessage("CERTIFICATEPROFILEALREADY");
+		}
+		return "";
     }
 
     private void applyExpirationRestrictionForValidityWithFixedDate(final CertificateProfile profile) {
