@@ -801,7 +801,7 @@
 
     <p:column headerText="#{web.text.USERNAME_ABBR}">
      <h:outputText
-      value="#{resourceBean.encodeUserName(addedUser.username)}" />
+      value="#{addedUser.username}" />
     </p:column>
     <p:column headerText="#{web.text.DN_ABBR_COMMONNAME}">
      <h:outputText value="#{resourceBean.getAddedUserCN(addedUser)}" />

@@ -240,9 +240,7 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
         // If we should also create PEM-files, do that
         if (keystoreType == SecConst.TOKEN_SOFT_PEM) {
             String PEMfilename = mainStoreDir + "/pem";
-            P12toPEM p12topem = new P12toPEM(ks, kspassword);
-            p12topem.setExportPath(PEMfilename);
-            p12topem.createPEM();
+            P12toPEM.createPEM(ks, kspassword, PEMfilename);
         } else {
             try (final FileOutputStream fileOutputStream = new FileOutputStream(keyStoreFilename);) {
                 ks.store(fileOutputStream, kspassword.toCharArray());
