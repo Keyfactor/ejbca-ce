@@ -503,7 +503,7 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
     private void handleContentOfErrorStream(final InputStream httpErrorStream) {
         if (httpErrorStream != null) {
             try {
-                try (final OutputStream os = new NullOutputStream()) {
+                try (final OutputStream os = NullOutputStream.INSTANCE) {
                     IOUtils.copy(httpErrorStream, os);
                     httpErrorStream.close();
                 }

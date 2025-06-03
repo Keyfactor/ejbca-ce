@@ -50,7 +50,7 @@ public interface EnterpriseEditionWSBridgeSessionLocal {
      * @param tokenType The type of the crypto token. Available types: SoftCryptoToken, PKCS11CryptoToken
      * @param activationPin Pin code for the crypto token
      * @param autoActivate Set to true|false to allow|disallow whether crypto token should be autoactivated or not
-     * @param cryptoTokenProperties The properties of the cryptotoken. See {@link org.ejbca.core.protocol.ws.objects.CryptoTokenConstantsWS}
+     * @param cryptoTokenProperties The properties of the cryptotoken. 
      * 
      * @throws UnsupportedMethodException if trying to access this method in the community version
      * @throws AuthorizationDeniedException if admin lacks access to resource /cryptotoken/modify
