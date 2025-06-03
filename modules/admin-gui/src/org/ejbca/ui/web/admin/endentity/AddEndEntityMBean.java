@@ -12,6 +12,19 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.endentity;
 
+import jakarta.ejb.EJBTransactionRolledbackException;
+import java.io.IOException;
+import java.io.Serializable;
+import java.math.BigInteger;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+
 import com.keyfactor.ErrorCode;
 import com.keyfactor.util.certificate.DnComponents;
 import jakarta.annotation.PostConstruct;
@@ -25,8 +38,10 @@ import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -63,17 +78,6 @@ import org.ejbca.ui.web.admin.rainterface.UserView;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ietf.ldap.LDAPDN;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.math.BigInteger;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 
 /**
 *
@@ -85,6 +89,8 @@ import java.util.Optional;
 public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
+    private static final Logger log = Logger.getLogger(AddEndEntityMBean.class);
 
     @EJB
     private AuthorizationSessionLocal authorizationSession;
@@ -925,7 +931,7 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
         }
         return new ImmutablePair<>(addedUsersList, (addedUsers != null && addedUsers.length > 0));
     }
-    
+
     public String getAddedUserCN(final UserView addedUser) {
         return addedUser.getSubjectDNField(DNFieldExtractor.CN,0);
     }
@@ -1306,6 +1312,9 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
                 handleEjbcaException(e);
             } catch (IllegalNameException e) {
                 handleIllegalNameException(e);
+            } catch (EJBTransactionRolledbackException e) {
+                log.error("EJBTransactionRolledbackException. Root cause is: " + ExceptionUtils.getRootCauseMessage(e));
+                addNonTranslatedErrorMessage(getEjbcaWebBean().getText("ENDENTITYSAVEERROR"));
             } catch (EndEntityProfileValidationException | EJBException e) {
                 addNonTranslatedErrorMessage(e.getMessage());
             } 
