@@ -95,7 +95,7 @@
 				</h:panelGroup>
 				</p:panelGrid>
 
-			<p:panelGrid class="actions" columns="1">
+			<p:panelGrid class="actions" columns="3" style="width: 50%">
 				<h:panelGroup rendered="#{ejbcawebbean.runningBuildWithCA and manageCAsMBean.canAddAndEditResource}">
 					<p:commandButton id="buttoncreateca"
 									 value="#{web.text.ADD}" ajax="false"
@@ -104,9 +104,6 @@
 									 style="margin-right:3px;"
 					/>
 				</h:panelGroup>
-			</p:panelGrid>
-				
-			<p:panelGrid class="actions" columns="2">
 				<h:panelGroup rendered="#{ejbcawebbean.runningBuildWithCA}">
 							<p:commandButton
 									id="buttonimportca" ajax="false"
