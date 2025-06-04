@@ -15,14 +15,17 @@
 * {
 	font-family: Verdana, Arial, Helvetica, Geneva, sans-serif;
 }
+html, body {
+    /* push down footer to bottom of page when there is too little content. */
+    height: 100%;
+}
+
 body {
 	margin: 0;
 	padding: 0;
 	background-color: #FFF;
 	color: #000;
 	font-size: 11pt;
-	/* push down footer to bottom of page when there is too little content. */
-	height: 100%;
 }
 code, code *, pre, pre *, .monospace {
 	font-family: "DejaVu Sans Mono", "Liberation Mono", Consolas, "Courier New", Courier, monospace;
@@ -52,22 +55,22 @@ p.help, .helpNormal {
     padding-right: 15px;
 }
 #contentBlock {
-    padding-top: 7px;
-    padding-bottom: 40px;
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
 #footerBlock {
     position: relative;
-    margin-top: -47px;
-    height: 40px;
-    padding-left: 30px;
-    padding-right: 15px;
-    clear: both;
-    text-align: center;
+    bottom: 2.5rem;
+    height: 2.5rem;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 #footerInner {
-    line-height: 40px;
+    line-height: 2rem;
     vertical-align: middle;
-    height: 40px;
+    height: 2rem;
 }
 #modalBlock {
     position: fixed;
@@ -243,6 +246,12 @@ div#footer {
 
 /*--------------------------------------------------------------------------*/
 /* CONTENT */
+#page-content-wrapper {
+    min-height: 100vh;
+    padding-bottom: 2.5rem; /* footer height */
+    overflow: auto;
+}
+
 .main-wrapper {
 	margin: 1em auto;
 }
