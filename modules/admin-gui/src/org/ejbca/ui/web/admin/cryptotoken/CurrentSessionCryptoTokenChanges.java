@@ -42,7 +42,7 @@ public class CurrentSessionCryptoTokenChanges implements Serializable {
 
     /**
      * Find all tokens that changed on another node for this session and update them.
-     * This should essentiall be a noop on non-HA deployments.
+     * This should essentially be a noop on non-HA deployments.
      * 
      * @return true if any tokens were updated
      */
