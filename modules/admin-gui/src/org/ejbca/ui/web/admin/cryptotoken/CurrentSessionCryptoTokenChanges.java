@@ -53,11 +53,11 @@ public class CurrentSessionCryptoTokenChanges implements Serializable {
                 var sessionStateMarker = lastKnownSessionState.get(tokenId);
 
                 // if lastKnownJvmState doesn't contain tokenId, it will be null and not equal
-                if (lastKnownJvmState.get(tokenId) == sessionStateMarker) {
+                if (sessionStateMarker.equals(lastKnownJvmState.get(tokenId))) {
                     continue;
                 }
 
-                log.info("Token " + tokenId + " different in this session and this JVM.  Need to update.");
+                log.debug("Token " + tokenId + " different in this session and this JVM.  Need to update.");
                 tokensToUpdate.add(tokenId);
             }
         }
@@ -65,7 +65,7 @@ public class CurrentSessionCryptoTokenChanges implements Serializable {
         for (Integer tokenId : tokensToUpdate) {
             cryptoTokenSession.flushId(tokenId);
             synchronized (this) {
-                log.info("Updating token " + tokenId + " due to change in current session");
+                log.debug("Updating token " + tokenId + " due to change in current session");
                 lastKnownJvmState.put(tokenId, lastKnownSessionState.get(tokenId));
             }
         }
@@ -77,6 +77,7 @@ public class CurrentSessionCryptoTokenChanges implements Serializable {
      * Remember that this token has changed in the current session and on this JVM
      */
     public void tokenChanged(int tokenId) {
+        log.debug("Token " + tokenId + " changed");
         var random = new Random();
         var marker = random.nextLong();
         synchronized (this) {
@@ -85,4 +86,8 @@ public class CurrentSessionCryptoTokenChanges implements Serializable {
         lastKnownSessionState.put(tokenId, marker);
     }
 
+    void changeOneJvmState() {
+        int tokenId = lastKnownJvmState.keySet().iterator().next();
+        lastKnownJvmState.put(tokenId, lastKnownJvmState.get(tokenId) + 1);
+    }
 }
