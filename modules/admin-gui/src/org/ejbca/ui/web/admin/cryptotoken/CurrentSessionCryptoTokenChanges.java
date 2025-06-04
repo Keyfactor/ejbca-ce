@@ -86,6 +86,9 @@ public class CurrentSessionCryptoTokenChanges implements Serializable {
         lastKnownSessionState.put(tokenId, marker);
     }
 
+    /**
+     * Just for the unit test
+     */
     void changeOneJvmState() {
         int tokenId = lastKnownJvmState.keySet().iterator().next();
         lastKnownJvmState.put(tokenId, lastKnownJvmState.get(tokenId) + 1);
