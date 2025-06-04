@@ -899,7 +899,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     @EJB
     private CryptoTokenSessionLocal cryptoTokenSession;
     
-    private HaTokenState tokenState = new HaTokenState();
+    private CurrentSessionCryptoTokenChanges currentSessionCryptoTokenChanges = new CurrentSessionCryptoTokenChanges();
     private transient CryptoTokenManagementSessionLocal cryptoTokenManagementSession = null;
     private transient AuthorizationSessionLocal authorizationSession = null;
     private transient CaSessionLocal caSession = null;
@@ -1382,7 +1382,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 getCryptoTokenManagementSession().saveCryptoToken(getAuthenticationToken(), getCurrentCryptoTokenId(), name, properties, secret);
                 addNonTranslatedInfoMessage("Crypto token saved successfully.");
             }
-            tokenState.tokenChanged(getCurrentCryptoTokenId());
+            currentSessionCryptoTokenChanges.tokenChanged(getCurrentCryptoTokenId());
             flushCaches();
             setCurrentCryptoTokenEditMode(false);
         } catch (CryptoTokenOfflineException e) {
@@ -2099,7 +2099,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     public CryptoTokenManagementSessionLocal getCryptoTokenManagementSession() {
         if (cryptoTokenManagementSession == null) {
             cryptoTokenManagementSession = getEjbcaWebBean().getEjb().getCryptoTokenManagementSession();
-            tokenState.refreshOutOfDateTokens(cryptoTokenSession);
+            currentSessionCryptoTokenChanges.refreshChangedCryptoTokens(cryptoTokenSession);
         }
         return cryptoTokenManagementSession;
     }
