@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import jakarta.ejb.EJB;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.component.UIComponent;
@@ -72,10 +73,12 @@ import org.cesecore.certificates.certificatetransparency.GoogleCtPolicy;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.EABConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
+import org.cesecore.config.GlobalCtConfiguration;
 import org.cesecore.config.InvalidConfigurationException;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.config.RaStyleInfo.RaCssInfo;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingStatus;
@@ -210,7 +213,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             if(globalConfig == null) {
                 globalConfig = getEjbcaWebBean().getGlobalConfiguration();
             }
-
+            final GlobalCtConfiguration globalCtConfiguration = (GlobalCtConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCtConfiguration.CT_CONFIGURATION_ID);
             try {
                 this.title = globalConfig.getEjbcaTitle();
                 this.enableEndEntityProfileLimitations = globalConfig.getEnableEndEntityProfileLimitations();
@@ -246,11 +249,11 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 this.redactPiiByDefault = globalCesecoreConfiguration.getRedactPiiByDefault();
                 this.redactPiiEnforced = globalCesecoreConfiguration.getRedactPiiEnforced();
                 
-                this.ctCacheEnabled = globalCesecoreConfiguration.getCtCacheEnabled();
-                this.ctCacheSize = globalCesecoreConfiguration.getCtCacheSize();
-                this.ctCacheCleanupInterval = globalCesecoreConfiguration.getCtCacheCleanupInterval();
-                this.ctCacheFastFailEnabled = globalCesecoreConfiguration.getCtCacheFastFailEnabled();
-                this.ctCacheFastFailBackoff = globalCesecoreConfiguration.getCtCacheFastFailBackoff();
+                this.ctCacheEnabled = globalCtConfiguration.getCtCacheEnabled();
+                this.ctCacheSize = globalCtConfiguration.getCtCacheSize();
+                this.ctCacheCleanupInterval = globalCtConfiguration.getCtCacheCleanupInterval();
+                this.ctCacheFastFailEnabled = globalCtConfiguration.getCtCacheFastFailEnabled();
+                this.ctCacheFastFailBackoff = globalCtConfiguration.getCtCacheFastFailBackoff();
             } catch (RuntimeException e) {
                 log.error(e.getMessage(), e);
             }
@@ -413,6 +416,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private final RoleDataSessionLocal roleSession = getEjbcaWebBean().getEjb().getRoleDataSession();
     private final OcspResponseCleanupSessionLocal ocspCleanupSession = getEjbcaWebBean().getEjb().getOcspResponseCleanupSession();
     private final InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession = getEjbcaWebBean().getEjb().getInternalKeyBindingMgmtSession();
+    
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
 
     private boolean enableCustomHeaderRest;
     private String customHeaderRestName;
@@ -660,7 +666,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
     public GoogleCtPolicy getGoogleCtPolicy() {
         if (googleCtPolicy == null) {
-            googleCtPolicy = getGlobalConfiguration().getGoogleCtPolicy();
+            GlobalCtConfiguration globalCtConfiguration = (GlobalCtConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCtConfiguration.CT_CONFIGURATION_ID);
+            googleCtPolicy = globalCtConfiguration.getGoogleCtPolicy();
         }
         return googleCtPolicy;
     }
@@ -1074,6 +1081,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 return;
             }
             try {
+                GlobalCtConfiguration globalCtConfiguration = (GlobalCtConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCtConfiguration.CT_CONFIGURATION_ID);
                 globalConfig.setEjbcaTitle(currentConfig.getTitle());
                 saveCurrentHeaderFile();
                 globalConfig.setEnableEndEntityProfileLimitations(currentConfig.getEnableEndEntityProfileLimitations());
@@ -1104,7 +1112,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalConfig.setCTLogs(ctlogsMap);
 
                 if (getGoogleCtPolicy().isValid()) {
-                    globalConfig.setGoogleCtPolicy(getGoogleCtPolicy());
+                    globalCtConfiguration.setGoogleCtPolicy(getGoogleCtPolicy());
                 } else {
                     addErrorMessage("INVALID_CT_POLICY");
                 }
@@ -1117,13 +1125,14 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalCesecoreConfiguration.setMaximumQueryCount(currentConfig.getMaximumQueryCount());
                 globalCesecoreConfiguration.setMaximumQueryTimeout(currentConfig.getMaximumQueryTimeout());
                 globalCesecoreConfiguration.setRedactPiiByDefault(currentConfig.isRedactPiiByDefault());
-                globalCesecoreConfiguration.setRedactPiiEnforced(currentConfig.isRedactPiiEnforced());
-                globalCesecoreConfiguration.setCtCacheEnabled(currentConfig.isCtCacheEnabled());
-                globalCesecoreConfiguration.setCtCacheSize(currentConfig.getCtCacheSize());
-                globalCesecoreConfiguration.setCtCacheCleanupInterval(currentConfig.getCtCacheCleanupInterval());
-                globalCesecoreConfiguration.setCtCacheFastFailEnabled(currentConfig.getCtCacheFastFailEnabled());
-                globalCesecoreConfiguration.setCtCacheFastFailBackoff(currentConfig.getCtCacheFastFailBackoff());
-                getEjbcaWebBean().getEjb().getGlobalConfigurationSession().saveConfiguration(getAdmin(), globalCesecoreConfiguration);
+                globalCesecoreConfiguration.setRedactPiiEnforced(currentConfig.isRedactPiiEnforced());             
+                globalConfigurationSession.saveConfiguration(getAdmin(), globalCesecoreConfiguration);
+                globalCtConfiguration.setCtCacheEnabled(currentConfig.isCtCacheEnabled());
+                globalCtConfiguration.setCtCacheSize(currentConfig.getCtCacheSize());
+                globalCtConfiguration.setCtCacheCleanupInterval(currentConfig.getCtCacheCleanupInterval());
+                globalCtConfiguration.setCtCacheFastFailEnabled(currentConfig.getCtCacheFastFailEnabled());
+                globalCtConfiguration.setCtCacheFastFailBackoff(currentConfig.getCtCacheFastFailBackoff());
+                globalConfigurationSession.saveConfiguration(getAdmin(), globalCtConfiguration);
                 // Purge access rule for key recovery from all roles if key recovery is disabled
                 // This is done after the configuration has been saved successfully, thus making
                 // sure the administrator has access to edit the configuration, since no access

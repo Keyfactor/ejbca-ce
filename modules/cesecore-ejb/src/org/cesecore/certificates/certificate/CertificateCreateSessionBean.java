@@ -95,7 +95,7 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.config.GlobalCesecoreConfiguration;
+import org.cesecore.config.GlobalCtConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.configuration.LogRedactionConfigurationCache;
 import org.cesecore.internal.InternalResources;
@@ -518,10 +518,10 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 return sctDataSession.getThreadPool();
             }
         });
-        final GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession
-                .getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
-        certGenParams.setCtCacheFastFailEnabled(globalCesecoreConfiguration.getCtCacheEnabled());
-        certGenParams.setCtCacheFastFailBackoff(globalCesecoreConfiguration.getCtCacheFastFailBackoff());
+        final GlobalCtConfiguration globalCtConfiguration = (GlobalCtConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalCtConfiguration.CT_CONFIGURATION_ID);
+        certGenParams.setCtCacheFastFailEnabled(globalCtConfiguration.getCtCacheEnabled());
+        certGenParams.setCtCacheFastFailBackoff(globalCtConfiguration.getCtCacheFastFailBackoff());
         certGenParams.setIncompleteIssuanceJournalCallbacks(incompleteIssuanceJournalDataSession);
 
         try {

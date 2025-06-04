@@ -159,6 +159,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
 
     private static final   String STATEDUMP_LOCKDOWN  = "statedump_lockdown";
 
+    @Deprecated(since = "9.4.0")
     private static final String GOOGLE_CT_POLICY = "google_ct_policy";
     private static final String EXTERNAL_SCRIPTS_WHITELIST = "external_scripts_whitelist";
     private static final String IS_EXTERNAL_SCRIPTS_WHITELIST_ENABLED = "is_external_scripts_whitelist_enabled";
@@ -484,6 +485,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
         setCTLogs(logs);
     }
 
+    @Deprecated(since = "9.4.0")
     public GoogleCtPolicy getGoogleCtPolicy() {
         final GoogleCtPolicy googleCtPolicy = (GoogleCtPolicy) data.get(GOOGLE_CT_POLICY);
         if (googleCtPolicy == null) {
@@ -492,6 +494,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
         return googleCtPolicy;
     }
 
+    @Deprecated(since = "9.4.0")
     public void setGoogleCtPolicy(final GoogleCtPolicy value) {
         data.put(GOOGLE_CT_POLICY, value);
     }
