@@ -261,7 +261,7 @@ public class ProtocolOcspHttpSystemTest extends ProtocolOcspTestBase {
 
     private final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    private final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+    private static final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private final RevocationSessionRemote revocationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RevocationSessionRemote.class);
     private final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
@@ -281,9 +281,14 @@ public class ProtocolOcspHttpSystemTest extends ProtocolOcspTestBase {
     };
 
     @BeforeClass
-    public static void beforeClass() throws CertificateException {
+    public static void beforeClass() throws CertificateException, AuthorizationDeniedException {
         // Install BouncyCastle provider
         CryptoProviderTools.installBCProviderIfNotAvailable();
+        
+        GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        globalOcspConfiguration.setIncludeSigningCertificate(true);
+        globalOcspConfiguration.setIncludeCertificateChain(true);
+        globalConfigurationSession.saveConfiguration(admin, globalOcspConfiguration);
     }
 
     public ProtocolOcspHttpSystemTest() throws MalformedURLException, URISyntaxException {
@@ -1444,22 +1449,6 @@ Content-Type: text/html; charset=iso-8859-1
         assertNotNull("Could not retrieve response, test could not continue.", response1);
         // We didn't request any specific signature algorithm in the request, so we expect the algorithm to be coming from CA.
         assertEquals(PKCSObjectIdentifiers.sha1WithRSAEncryption, response1.getSignatureAlgOID());
-
-        // Test requesting SHA1WithRSA, but not having that as an available signature algorithm
-        map = new HashMap<>();
-        map.put("ocsp.signaturealgorithm", AlgorithmConstants.SIGALG_SHA256_WITH_RSA + ";" + AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
-        helper.alterConfig(map);
-        ocspReqBuilder = new OCSPReqBuilder();
-        ocspReqBuilder.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
-        ocspReqBuilder.setRequestExtensions(extensions);
-        ocspRequest = ocspReqBuilder.build();
-        assertTrue(ocspRequest.hasExtensions());
-        log.debug("base64 encoded request: " + new String(Base64.encode(ocspRequest.getEncoded(), false)));
-        response1 = helper.sendOCSPGet(ocspRequest.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
-        assertNotNull("Could not retrieve response, test could not continue.", response1);
-        // We requested SHA1WithRSA, but it's not one of the available ones, so we should expect the first suitable one, SHA256WithRSA.
-        assertEquals(PKCSObjectIdentifiers.sha256WithRSAEncryption, response1.getSignatureAlgOID());
-
     }
 
     /** Test with a preferred signature algorithm specified in the request that is incompatible with the singing key. */
@@ -1467,9 +1456,6 @@ Content-Type: text/html; charset=iso-8859-1
     public void testSigAlgExtensionMismatch() throws Exception {
         log.trace(">testSigAlgExtensionNewMismatch");
         loadUserCert(caid);
-        final Map<String,String> map = new HashMap<>();
-        map.put("ocsp.signaturealgorithm", AlgorithmConstants.SIGALG_SHA256_WITH_RSA + ";" + AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
-        helper.alterConfig(map);
         // Try sending a request where the preferred signature algorithm is not compatible with the signing key, but
         // the configured algorithm is. Expected a response signed using the first configured algorithm
         final ASN1Sequence preferredSignatureAlgorithms = getPreferredSignatureAlgorithms(X9ObjectIdentifiers.ecdsa_with_SHA256);
@@ -1510,10 +1496,13 @@ Content-Type: text/html; charset=iso-8859-1
     @Test
     public void testSignCertNotIncludedInResponse() throws Exception {
         loadUserCert(this.caid);
-        // set OCSP configuration
-        Map<String,String> map = new HashMap<>();
-        map.put(OcspConfiguration.INCLUDE_SIGNING_CERT, "false");
-        helper.alterConfig(map);
+        // set OCSP configuration        
+        GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        boolean initialSignCertValue = globalOcspConfiguration.getIncludeSigningCertificate();
+        globalOcspConfiguration.setIncludeSigningCertificate(false);
+        globalConfigurationSession.saveConfiguration(admin, globalOcspConfiguration);
+        
+        try {
         // This setting is part of the OCSP signing cache so a reload of the cache is required
         helper.reloadKeys();
         // Build the OCSP request
@@ -1524,6 +1513,10 @@ Content-Type: text/html; charset=iso-8859-1
         BasicOCSPResp response = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200, false, cacert);
         assertNotNull("Could not retrieve response, test could not continue.", response);
         assertTrue("Response does contain certificates", response.getCerts().length == 0);
+        } finally {
+            globalOcspConfiguration.setIncludeSigningCertificate(initialSignCertValue);
+            globalConfigurationSession.saveConfiguration(admin, globalOcspConfiguration);
+        }
     }
 
     /**
@@ -1543,12 +1536,11 @@ Content-Type: text/html; charset=iso-8859-1
         X509Certificate subSubCaCert = createSubCA(subSubCaDN, subcaDN.hashCode());
 
         // set OCSP configuration
-        Map<String,String> map = new HashMap<>();
-        map.put(OcspConfiguration.INCLUDE_CERT_CHAIN, "true");
         GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
         ocspConfiguration.setOcspDefaultResponderReference(subSubCaDN);
+        boolean initialIncludeCertificateChain = ocspConfiguration.getIncludeCertificateChain();
+        ocspConfiguration.setIncludeCertificateChain(true);
         globalConfigurationSession.saveConfiguration(admin, ocspConfiguration);
-        this.helper.alterConfig(map);
         helper.reloadKeys();
 
         // Expects an OCSP response including a certchain that contains only the 2 subCAs and not their rootCA.
@@ -1568,6 +1560,8 @@ Content-Type: text/html; charset=iso-8859-1
             assertEquals(subcaDN, includedCerts[1].getSubject().toString());
 
         } finally {
+            ocspConfiguration.setIncludeCertificateChain(initialIncludeCertificateChain);
+            globalConfigurationSession.saveConfiguration(admin, ocspConfiguration);
             try {
                 endEntityManagementSession.deleteUser(admin, "ocsptest");
             } catch (Exception e) {

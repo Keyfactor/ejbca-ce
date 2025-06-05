@@ -12,9 +12,9 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.endentity;
 
+import jakarta.ejb.EJBTransactionRolledbackException;
 import java.io.IOException;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.certificate.DnComponents;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
@@ -35,10 +37,11 @@ import jakarta.faces.model.SelectItem;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
 import jakarta.servlet.http.HttpServletRequest;
-
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -75,8 +78,6 @@ import org.ejbca.ui.web.admin.rainterface.UserView;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ietf.ldap.LDAPDN;
 
-import com.keyfactor.ErrorCode;
-import com.keyfactor.util.certificate.DnComponents;
 
 /**
 *
@@ -88,6 +89,8 @@ import com.keyfactor.util.certificate.DnComponents;
 public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
+    private static final Logger log = Logger.getLogger(AddEndEntityMBean.class);
 
     @EJB
     private AuthorizationSessionLocal authorizationSession;
@@ -150,9 +153,9 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     
     // Authentication check and audit log page access request
     @PostConstruct
-    public void initialize() throws AuthorizationDeniedException, EjbcaException {
+    public void initialize() {
         if (!getEjbcaWebBean().isAuthorizedNoLogSilent(AccessRulesConstants.ROLE_ADMINISTRATOR)) {
-            throw new AuthorizationDeniedException("You are not authorized to view this page.");
+            throw new IllegalStateException("You are not authorized to view this page.");
         }
 
         final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
@@ -179,7 +182,7 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
                 try {
                     facesContext.getExternalContext().getRequestMap().put("add.end.entity.error.message", e.getMessage());
                     facesContext.getExternalContext().dispatch("/error-add-ee-page.xhtml");
-                } catch (Exception ex) {
+                } catch (IOException ex) {
                     throw new IllegalStateException("Error while transfering to error page!");
                 }
             }
@@ -928,11 +931,7 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
         }
         return new ImmutablePair<>(addedUsersList, (addedUsers != null && addedUsers.length > 0));
     }
-    
-    public String encodeUserName(final String userName) throws UnsupportedEncodingException {
-        return URLEncoder.encode(userName, StandardCharsets.UTF_8);
-    }
-    
+
     public String getAddedUserCN(final UserView addedUser) {
         return addedUser.getSubjectDNField(DNFieldExtractor.CN,0);
     }
@@ -1313,6 +1312,9 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
                 handleEjbcaException(e);
             } catch (IllegalNameException e) {
                 handleIllegalNameException(e);
+            } catch (EJBTransactionRolledbackException e) {
+                log.error("EJBTransactionRolledbackException. Root cause is: " + ExceptionUtils.getRootCauseMessage(e));
+                addNonTranslatedErrorMessage(getEjbcaWebBean().getText("ENDENTITYSAVEERROR"));
             } catch (EndEntityProfileValidationException | EJBException e) {
                 addNonTranslatedErrorMessage(e.getMessage());
             } 

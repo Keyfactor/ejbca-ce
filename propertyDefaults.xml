@@ -146,7 +146,6 @@ appserver.type           = ${appserver.type}
 appserver.subtype        = ${appserver.subtype}
 appserver.home           = ${appserver.home}
 java.version(ant.java)   = ${java.version} (${ant.java.version})
-ocsp.signaturealgorithm  = ${ocsp.signaturealgorithm}
 datasource.jndi-name     = ${datasource.jndi-name}
 datasource.jndi-name-prefix = ${datasource.jndi-name-prefix}
 database.name            = ${database.name}
