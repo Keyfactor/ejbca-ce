@@ -26,9 +26,13 @@ import java.util.LinkedHashMap;
 
 import org.apache.http.HttpResponse;
 import org.apache.log4j.Logger;
+import org.cesecore.CaTestUtils;
 import org.cesecore.WebTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.catoken.CAToken;
+import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.Role;
@@ -38,8 +42,8 @@ import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.AvailableProtocolsConfiguration;
-import org.ejbca.config.WebConfiguration;
 import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
+import org.ejbca.config.WebConfiguration;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assume;
@@ -51,6 +55,7 @@ import com.google.common.base.Preconditions;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Checks that client certificate authentication and authorization is
@@ -142,9 +147,12 @@ public class ClientCertificateAuthSystemTest {
     }
 
     @Test
-    public void testMinimalAuth() throws Exception {
+    public void testMinimalAdminAuth() throws Exception {
         setRoleAccess("/administrator", "/ca_functionality/view_ca", "/ca");
-        assertAllowed();
+        assertRaAllowed();
+        assertAdminWebAllowed();
+        assertRestAllowed();
+        assertServletDenied();
     }
 
     @Test
@@ -154,6 +162,7 @@ public class ClientCertificateAuthSystemTest {
         assertRaAllowed();
         assertAdminWebDenied();
         assertRestDenied();
+        assertServletDenied();
     }
 
     /**
@@ -169,7 +178,7 @@ public class ClientCertificateAuthSystemTest {
      */
     @Test
     public void testRemoveAccessRule() throws Exception {
-        setRoleAccess("/administrator", "/ca_functionality/view_ca", "/ca");
+        setRoleAccess("/administrator", "/ca_functionality/view_ca", "/ca", "/cryptotoken/view");
         assertAllowed();
         // Remove access rules and try again
         setRoleAccess("/something_else");
@@ -213,9 +222,15 @@ public class ClientCertificateAuthSystemTest {
         }
     }
 
+    /**
+     * Fetches a page with client certificate (if not set to null) and checks the HTTP status code.
+     * @param uri Relative URI, i.e. without the https://domain:port part in the beginning.
+     * @param responseCode Expected HTTP response code.
+     * @return Contents of the page or response. Must be a text based format (e.g. HTML, JSON, PEM, ...)
+     */
     private String fetchPage(final String uri, final int expectedResponseCode) throws MalformedURLException, IOException {
         Preconditions.checkArgument(uri.startsWith("/"));
-        final String fullUrl = "https://" + WebConfiguration.getHostName() + ":" + ejbcaPort + uri;
+        final String fullUrl = getEjbcaSchemeAndDomain() + uri;
         final HttpResponse response = WebTestUtils.sendGetRequest(fullUrl, serverCert, adminClientCert, adminKeyPair);
         assertEquals("Wrong HTTP response code", expectedResponseCode, response.getStatusLine().getStatusCode());
         final byte[] respBytes = WebTestUtils.getBytesFromResponse(response);
@@ -277,16 +292,50 @@ public class ClientCertificateAuthSystemTest {
         assertContains(html, "\"error_code\":403");
     }
 
+    private String getCryptoTokenServletParams() {
+        final CAInfo caInfo = CaTestUtils.getClientCertCaInfo(alwaysAllowToken);
+        final CAToken caToken = caInfo.getCAToken();
+        final int cryptoTokenId = caToken.getCryptoTokenId();
+        try {
+            final String keyAlias = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+            return "cryptoTokenId=" + cryptoTokenId + "&alias=" + keyAlias;
+        } catch (CryptoTokenOfflineException e) {
+            throw new IllegalStateException("Cannot access token of CA '" + caInfo.getName() + "': " + e.getMessage(), e);
+        }
+    }
+
+    /** Checks that access to one of the servlets (ProfilesExportServlet) is allowed */
+    private void assertServletAllowed() throws MalformedURLException, IOException {
+        final String pem = fetchPage("/ejbca/adminweb/cryptotoken/cryptoTokenDownloads?" + getCryptoTokenServletParams(), 200);
+        assertContains(pem, "-----BEGIN PUBLIC KEY-----");
+    }
+
+    /** Checks that access to one of the servlets (ProfilesExportServlet) is denied */
+    private void assertServletDenied() throws MalformedURLException, IOException {
+        // In some cases it responds with HTTP status code 500 (Internal Server Error) because CheckAdmin throws an AuthorizationDeniedException without handling it.
+        // It would be nicer if it always responded with HTTP status code 403 (Forbidden).
+        final String url = getEjbcaSchemeAndDomain() + "/ejbca/adminweb/cryptotoken/cryptoTokenDownloads?" + getCryptoTokenServletParams();
+        final HttpResponse response = WebTestUtils.sendGetRequest(url, serverCert, adminClientCert, adminKeyPair);
+        final int responseCode = response.getStatusLine().getStatusCode();
+        assertTrue("Wrong HTTP response code, was " + responseCode, (responseCode == 403 || responseCode == 500));
+    }
+
     private void assertAllowed() throws MalformedURLException, IOException {
         assertRaAllowed();
         assertAdminWebAllowed();
         assertRestAllowed();
+        assertServletAllowed();
     }
 
     private void assertDenied() throws MalformedURLException, IOException {
         assertRaDenied();
         assertAdminWebDenied();
         assertRestDenied();
+        assertServletDenied();
+    }
+
+    private String getEjbcaSchemeAndDomain() {
+        return "https://" + WebConfiguration.getHostName() + ":" + ejbcaPort;
     }
 
     protected static void backupProtocolConfiguration() {
