@@ -301,7 +301,7 @@ public class ClientCertificateAuthSystemTest {
     protected static void enableRestProtocolConfiguration() throws AuthorizationDeniedException {
         AvailableProtocolsConfiguration availableProtocolsConfiguration = (AvailableProtocolsConfiguration)
                 globalConfigurationSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
-        availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CA_MANAGEMENT.getName(), true);
+        availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT.getName(), true);
         globalConfigurationSession.saveConfiguration(alwaysAllowToken, availableProtocolsConfiguration);
     }
 }
