@@ -36,7 +36,7 @@ public class EABConfiguration extends ConfigurationBase implements Serializable 
         return (ret == null ? (Map<String, Set<String>>) EAB_MAP_DEFAULT.clone() : new LinkedHashMap<>(ret));
     }
 
-    public void setEabConfigMap(Map<String, Set<String>> eabMap) {
+    public void setEABMap(Map<String, Set<String>> eabMap) {
         data.put(EAB_MAP, eabMap);
     }
     
