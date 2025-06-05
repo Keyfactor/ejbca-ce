@@ -29,6 +29,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.WebTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
@@ -36,8 +37,11 @@ import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.config.AvailableProtocolsConfiguration;
 import org.ejbca.config.WebConfiguration;
+import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -50,7 +54,7 @@ import com.keyfactor.util.keys.KeyTools;
 
 /**
  * Checks that client certificate authentication and authorization is
- * working correctly in the RA UI and the CA UI / AdminWeb.
+ * working correctly in the RA UI, CA UI (AdminWeb) and in the REST interface.
  */
 public class ClientCertificateAuthSystemTest {
 
@@ -59,21 +63,34 @@ public class ClientCertificateAuthSystemTest {
     private static final String TEST_NAME = ClientCertificateAuthSystemTest.class.getSimpleName();
     private static final String ROLE_NAME = TEST_NAME;
 
-    private RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
-    private RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
+    private static final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(TEST_NAME);
+
+    private static final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+    private static final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
+    private static final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
+
+    private static AvailableProtocolsConfiguration protocolConfigBackup;
 
     private X509Certificate serverCert;
     private X509Certificate adminClientCert;
     private KeyPair adminKeyPair;
     private int ejbcaPort = WebConfiguration.getPrivateHttpsPort();
 
-    private AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(TEST_NAME);
 
     @BeforeClass
-    public static void beforeClass() {
+    public static void beforeClass() throws Exception {
         log.trace(">beforeClass");
         CryptoProviderTools.installBCProviderIfNotAvailable();
+        backupProtocolConfiguration();
+        enableRestProtocolConfiguration();
         log.trace("<beforeClass");
+    }
+
+    @AfterClass
+    public static void afterClass() throws Exception {
+        log.trace(">afterClass");
+        restoreProtocolConfiguration();
+        log.trace("<afterClass");
     }
 
     @Before
@@ -95,8 +112,7 @@ public class ClientCertificateAuthSystemTest {
         try {
             adminClientCert = null;
             adminKeyPair = null;
-            assertRaDenied();
-            assertAdminWebDenied();
+            assertDenied();
         } catch (IOException e) {
             // If the HTTP server (e.g. Underthow in Wildfly) is set to require a certificate,
             // then the connection itself will fail, before reaching EJBCA.
@@ -110,29 +126,25 @@ public class ClientCertificateAuthSystemTest {
         ejbcaPort = WebConfiguration.getPublicHttpsPort();
         adminClientCert = null;
         adminKeyPair = null;
-        assertRaDenied();
-        assertAdminWebDenied();
+        assertDenied();
     }
 
     @Test
     public void testNoAuthorization() throws Exception {
         setRoleAccess("/something_else");
-        assertRaDenied();
-        assertAdminWebDenied();
+        assertDenied();
     }
 
     @Test
     public void testSuperadminAuth() throws Exception {
         setRoleAccess("/");
-        assertRaAllowed();
-        assertAdminWebAllowed();
+        assertAllowed();
     }
 
     @Test
     public void testMinimalAuth() throws Exception {
         setRoleAccess("/administrator", "/ca_functionality/view_ca", "/ca");
-        assertRaAllowed();
-        assertAdminWebAllowed();
+        assertAllowed();
     }
 
     @Test
@@ -141,6 +153,7 @@ public class ClientCertificateAuthSystemTest {
         setRoleAccess("/ca_functionality/view_ca", "/ca");
         assertRaAllowed();
         assertAdminWebDenied();
+        assertRestDenied();
     }
 
     /**
@@ -157,24 +170,20 @@ public class ClientCertificateAuthSystemTest {
     @Test
     public void testRemoveAccessRule() throws Exception {
         setRoleAccess("/administrator", "/ca_functionality/view_ca", "/ca");
-        assertRaAllowed();
-        assertAdminWebAllowed();
+        assertAllowed();
         // Remove access rules and try again
         setRoleAccess("/something_else");
-        assertRaDenied();
-        assertAdminWebDenied();
+        assertDenied();
     }
 
     /** Like {@link #testRemoveAccessRule}, but revokes access by removing the role member */
     @Test
     public void testRemoveRoleMember() throws Exception {
         setRoleAccess("/");
-        assertRaAllowed();
-        assertAdminWebAllowed();
+        assertAllowed();
         // Remove administrator from role
         removeRoleMember();
-        assertRaDenied();
-        assertAdminWebDenied();
+        assertDenied();
     }
 
     private void setRoleAccess(final String... accessRules) {
@@ -254,5 +263,45 @@ public class ClientCertificateAuthSystemTest {
     private void assertAdminWebDenied() throws MalformedURLException, IOException {
         final String html = fetchPage("/ejbca/adminweb/", 200);
         assertContains(html, "<h1>Authorization Denied");
+    }
+
+    /** Checks that access to the REST API is allowed */
+    private void assertRestAllowed() throws MalformedURLException, IOException {
+        final String html = fetchPage("/ejbca/ejbca-rest-api/v1/ca", 200);
+        assertContains(html, "{\"certificate_authorities\":[");
+    }
+
+    /** Checks that access to the REST API is denied */
+    private void assertRestDenied() throws MalformedURLException, IOException {
+        final String html = fetchPage("/ejbca/ejbca-rest-api/v1/ca", 403);
+        assertContains(html, "\"error_code\":403");
+    }
+
+    private void assertAllowed() throws MalformedURLException, IOException {
+        assertRaAllowed();
+        assertAdminWebAllowed();
+        assertRestAllowed();
+    }
+
+    private void assertDenied() throws MalformedURLException, IOException {
+        assertRaDenied();
+        assertAdminWebDenied();
+        assertRestDenied();
+    }
+
+    protected static void backupProtocolConfiguration() {
+        protocolConfigBackup = (AvailableProtocolsConfiguration)
+                globalConfigurationSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
+    }
+
+    protected static void restoreProtocolConfiguration() throws AuthorizationDeniedException {
+        globalConfigurationSession.saveConfiguration(alwaysAllowToken, protocolConfigBackup);
+    }
+
+    protected static void enableRestProtocolConfiguration() throws AuthorizationDeniedException {
+        AvailableProtocolsConfiguration availableProtocolsConfiguration = (AvailableProtocolsConfiguration)
+                globalConfigurationSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
+        availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CA_MANAGEMENT.getName(), true);
+        globalConfigurationSession.saveConfiguration(alwaysAllowToken, availableProtocolsConfiguration);
     }
 }
