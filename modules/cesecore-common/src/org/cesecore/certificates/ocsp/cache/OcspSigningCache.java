@@ -28,6 +28,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.cert.ocsp.CertificateID;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.util.LogRedactionUtils;
 
 /**
@@ -80,8 +81,9 @@ public enum OcspSigningCache {
         }
     }
 
-    public void stagingCommit(final String defaultResponderSubjectDn) {
+    public void stagingCommit(final GlobalOcspConfiguration globalOcspConfiguration) {
         OcspSigningCacheEntry stagedDefaultResponder = null;
+        final String defaultResponderSubjectDn = globalOcspConfiguration.getOcspDefaultResponderReference();
         for (final OcspSigningCacheEntry entry : staging.values()) {
             if (entry.getOcspSigningCertificate() != null) {
                 final X509Certificate signingCertificate = entry.getOcspSigningCertificate();
@@ -108,7 +110,7 @@ public enum OcspSigningCache {
                     entry = new OcspSigningCacheEntry(entry.getIssuerCaCertificate(), entry.getIssuerCaCertificateStatus(),
                             stagedDefaultResponder.getCaCertificateChain(), stagedDefaultResponder.getOcspSigningCertificate(),
                             stagedDefaultResponder.getPrivateKey(), stagedDefaultResponder.getSignatureProviderName(),
-                            stagedDefaultResponder.getOcspKeyBinding(), stagedDefaultResponder.getResponderIdType());
+                            stagedDefaultResponder.getOcspKeyBinding(), stagedDefaultResponder.getResponderIdType(), globalOcspConfiguration);
                     entry.setCrlSigningAlgorithm(stagedDefaultResponder.getCrlSigningAlgorithm());
                     modifiedEntries.put(key, entry);
                 } else {

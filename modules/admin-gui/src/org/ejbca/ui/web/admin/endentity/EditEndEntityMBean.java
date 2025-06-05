@@ -182,7 +182,7 @@ public class EditEndEntityMBean extends EndEntityBaseManagedBean implements Seri
     private void initData() throws Exception {
         final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
 
-        userName = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER), StandardCharsets.UTF_8);
+        userName = request.getParameter(USER_PARAMETER);
         ejbcaWebBean = getEjbcaWebBean();
         raBean = SessionBeans.getRaBean(request);
         raBean.initialize(ejbcaWebBean);
