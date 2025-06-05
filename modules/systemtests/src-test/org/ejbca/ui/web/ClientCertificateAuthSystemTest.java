@@ -14,6 +14,7 @@
 package org.ejbca.ui.web;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
@@ -32,9 +33,12 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.management.RoleSessionRemote;
+import org.cesecore.roles.member.RoleMember;
+import org.cesecore.roles.member.RoleMemberSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.WebConfiguration;
 import org.junit.After;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -55,11 +59,13 @@ public class ClientCertificateAuthSystemTest {
     private static final String TEST_NAME = ClientCertificateAuthSystemTest.class.getSimpleName();
     private static final String ROLE_NAME = TEST_NAME;
 
-    private RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class); 
+    private RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
+    private RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
 
     private X509Certificate serverCert;
     private X509Certificate adminClientCert;
     private KeyPair adminKeyPair;
+    private int ejbcaPort = WebConfiguration.getPrivateHttpsPort();
 
     private AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(TEST_NAME);
 
@@ -85,7 +91,31 @@ public class ClientCertificateAuthSystemTest {
     }
 
     @Test
-    public void testNoAccess() throws Exception {
+    public void testNoAuthenticationPrivatePort() throws Exception {
+        try {
+            adminClientCert = null;
+            adminKeyPair = null;
+            assertRaDenied();
+            assertAdminWebDenied();
+        } catch (IOException e) {
+            // If the HTTP server (e.g. Underthow in Wildfly) is set to require a certificate,
+            // then the connection itself will fail, before reaching EJBCA.
+        }
+    }
+
+    @Test
+    public void testNoAuthenticationPublicPort() throws Exception {
+        Assume.assumeTrue("This test requires 3-port separation, with a separate public port.",
+                WebConfiguration.getPublicHttpsPort() != WebConfiguration.getPrivateHttpsPort());
+        ejbcaPort = WebConfiguration.getPublicHttpsPort();
+        adminClientCert = null;
+        adminKeyPair = null;
+        assertRaDenied();
+        assertAdminWebDenied();
+    }
+
+    @Test
+    public void testNoAuthorization() throws Exception {
         setRoleAccess("/something_else");
         assertRaDenied();
         assertAdminWebDenied();
@@ -105,6 +135,48 @@ public class ClientCertificateAuthSystemTest {
         assertAdminWebAllowed();
     }
 
+    @Test
+    public void testRaOnlyAccess() throws Exception {
+        // No /administrator
+        setRoleAccess("/ca_functionality/view_ca", "/ca");
+        assertRaAllowed();
+        assertAdminWebDenied();
+    }
+
+    /**
+     * This test allows access, connects the EJBCA, and then revokes access.
+     * <p>
+     * Limitations:
+     * <ul>
+     * <li>Since the EJBCA systemtests use a single node, the test does not cover clustering
+     *     (e.g. when the role is changed from a different node)
+     * <li>It uses separate connections (no keep-alive or TLS sessions)
+     * <p>
+     * {@link org.ejbca.ui.web.admin.configuration.EjbcaWebBeanImplUnitTest} cover what is not tested by this test, for the AdminWeb.
+     */
+    @Test
+    public void testRemoveAccessRule() throws Exception {
+        setRoleAccess("/administrator", "/ca_functionality/view_ca", "/ca");
+        assertRaAllowed();
+        assertAdminWebAllowed();
+        // Remove access rules and try again
+        setRoleAccess("/something_else");
+        assertRaDenied();
+        assertAdminWebDenied();
+    }
+
+    /** Like {@link #testRemoveAccessRule}, but revokes access by removing the role member */
+    @Test
+    public void testRemoveRoleMember() throws Exception {
+        setRoleAccess("/");
+        assertRaAllowed();
+        assertAdminWebAllowed();
+        // Remove administrator from role
+        removeRoleMember();
+        assertRaDenied();
+        assertAdminWebDenied();
+    }
+
     private void setRoleAccess(final String... accessRules) {
         try {
             final Role role = roleSession.getRole(alwaysAllowToken, null, ROLE_NAME);
@@ -119,9 +191,22 @@ public class ClientCertificateAuthSystemTest {
         }
     }
 
+    private void removeRoleMember() {
+        try {
+            final int roleId = roleSession.getRole(alwaysAllowToken, null, ROLE_NAME).getRoleId();
+            // There should only be a single role member, but remove all to be safe
+            for (final RoleMember member : roleMemberSession.getRoleMembersByRoleId(alwaysAllowToken, roleId)) {
+                assertTrue("Could not delete role member", roleMemberSession.remove(alwaysAllowToken, member.getId()));
+            }
+            assertEquals("Role member should have been removed", 0, roleMemberSession.getRoleMembersByRoleId(alwaysAllowToken, roleId).size());
+        } catch (AuthorizationDeniedException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
     private String fetchPage(final String uri, final int expectedResponseCode) throws MalformedURLException, IOException {
         Preconditions.checkArgument(uri.startsWith("/"));
-        final String fullUrl = "https://" + WebConfiguration.getHostName() + ":" + WebConfiguration.getPrivateHttpsPort() + uri;
+        final String fullUrl = "https://" + WebConfiguration.getHostName() + ":" + ejbcaPort + uri;
         final HttpResponse response = WebTestUtils.sendGetRequest(fullUrl, serverCert, adminClientCert, adminKeyPair);
         assertEquals("Wrong HTTP response code", expectedResponseCode, response.getStatusLine().getStatusCode());
         final byte[] respBytes = WebTestUtils.getBytesFromResponse(response);
@@ -152,8 +237,11 @@ public class ClientCertificateAuthSystemTest {
     /** Checks that access to the RA UI is denied */
     private void assertRaDenied() throws MalformedURLException, IOException {
         final String html = fetchPage("/ejbca/ra/", 200);
-        // TODO also allow auth error message (this only works if there's at least one OAuth provider)
-        assertContainsAnyOf(html, "<form id=\"login\"");
+        assertContainsAnyOf(html,
+                // With at least one OAuth provider configured, there's an automatic redirect to login.xhtml which contains this
+                "<form id=\"login\"",
+                // Without any OAuth providers, there's simply a link to login.xhtml in the menu.
+                "<a href=\"login.xhtml\"");
     }
 
     /** Checks that access to the RA UI is allowed */
