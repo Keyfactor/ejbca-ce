@@ -14,9 +14,7 @@ package org.ejbca.ui.web.jsf.validator;
 
 import org.easymock.EasyMock;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import jakarta.faces.component.UIComponent;
 import jakarta.faces.context.FacesContext;
@@ -40,9 +38,6 @@ public class ProfileNameValidatorUnitTest {
     private UIComponent uiComponent;
     //
     private Map<String, Object> attributesMap;
-
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
 
     @Before
     public void setUp() throws Exception {
@@ -97,34 +92,31 @@ public class ProfileNameValidatorUnitTest {
         verify(uiComponent);
     }
 
-    @Test
+    @Test(expected = NullPointerException.class)
     public void failOnEmptyProfileName() {
         // given
         final String profileName = " ";
-        expectedException.expect(NullPointerException.class); //NullPointerException thrown when trying to get message text
         // when
         testClass.validate(facesContext, uiComponent, profileName);
         // then
         verify(facesContext);
     }
 
-    @Test
+    @Test(expected = NullPointerException.class)
     public void failOnIllegalCharactersInProfileName() {
         // given
         final String profileName = "I_AM_INVALID!";
-        expectedException.expect(NullPointerException.class); //NullPointerException thrown when trying to get message text
         // when
         testClass.validate(facesContext, uiComponent, profileName);
         // then
         verify(facesContext);
     }
 
-    @Test
+    @Test(expected = NullPointerException.class)
     public void failOnProfileNameOverMaximumLengthLimit() {
         // given
         final String profileName = "I_AM_VALID_BUT_LONG"; // Length 19
         attributesMap.put("maximumLength", "10");
-        expectedException.expect(NullPointerException.class); //NullPointerException thrown when trying to get message text
         // when
         testClass.validate(facesContext, uiComponent, profileName);
         // then

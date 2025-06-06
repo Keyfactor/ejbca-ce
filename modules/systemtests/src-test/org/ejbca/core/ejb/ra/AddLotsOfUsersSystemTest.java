@@ -27,6 +27,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
@@ -118,11 +119,11 @@ public class AddLotsOfUsersSystemTest extends CaTestCase {
             String theadUsername = USERNAME_PREFIX + "_" + threadNumber;
             for (int i = 0; i < endEntitiesPerThread; i++) {
                 String username = theadUsername + "_" + i;
-                usernames[i] = username;
-                endEntityManagementSession.addUser(roleMgmgToken, username, "foo123", "CN=" + username, null, null, false,
-                        EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                        EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, getTestCAId());
-
+                usernames[i] = username;               
+                EndEntityInformation endEntityInformation = new EndEntityInformation(username, "CN=" + username, getTestCAId(), null, null, EndEntityTypes.ENDUSER.toEndEntityType(),
+                        EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, null);
+                endEntityInformation.setPassword("foo123");
+                endEntityManagementSession.addUser(roleMgmgToken, endEntityInformation, false);
             }
             return usernames;
         }

@@ -73,10 +73,14 @@ import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionLocal;
+import org.primefaces.component.tabview.Tab;
+import org.primefaces.component.tabview.TabView;
+import org.primefaces.event.TabChangeEvent;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.faces.application.FacesMessage;
+import jakarta.faces.component.UIComponent;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.model.ListDataModel;
 import jakarta.faces.model.SelectItem;
@@ -95,6 +99,8 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
     private Boolean nonceEnabled;
     private OcspKeyBinding.ResponderIdType responderIdType;
     private Boolean ocspSigningCacheUpdate;
+    private boolean includeSigningCertificate;
+    private boolean includeCertificateChain;
     private Boolean cacheHeaderUnauthorizedResponses;
     private String auditLogMessage = "";
     private String transactionLogMessage = "";
@@ -126,6 +132,8 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
     //Serial number of the CA generation to use
     private String currentCaGeneration = null;
 
+    private int lastActiveTab = 0;
+    
     @EJB
     private CaSessionLocal caSession;
     @EJB
@@ -153,6 +161,8 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
         defaultResponseValidityTime = globalConfiguration.getDefaultValidityTime();
         defaultResponseMaxAge = globalConfiguration.getDefaultResponseMaxAge();
         useMaxValidityForExpiration = globalConfiguration.getUseMaxValidityForExpiration();
+        includeSigningCertificate = globalConfiguration.getIncludeSigningCertificate();
+        includeCertificateChain = globalConfiguration.getIncludeCertificateChain();
     }
 
     @Override
@@ -187,6 +197,36 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
             useIssuerNotBeforeAsArchiveCutoff = null;
             currentTrustEntryDescriptionOcspRespToSign = null;
         }
+    }
+    
+    public int getLastActiveTab() {
+        return lastActiveTab;
+    }
+
+    public void setLastActiveTab(final int lastActiveTab) {
+        this.lastActiveTab = lastActiveTab;
+    }
+
+    public void onTabChange(final TabChangeEvent<?> event) {
+        final Tab activeTab = event.getTab();
+        if (activeTab == null) {
+            return;
+        }
+        final TabView tabView = (TabView) activeTab.getParent();
+        // There is tabView.getTabIndex(), but it just calls
+        // SystemConfigMBean.getLastActiveTab(), so it can't be used.
+        int tabIndex = 0;
+        for (final UIComponent tab : tabView.getChildren()) {
+            if (!tab.isRendered()) {
+                continue;
+            }
+            if (tab == activeTab) {
+                setLastActiveTab(tabIndex);
+                break;
+            }
+            tabIndex++;
+        }
+        flushCurrentCache();
     }
 
     public void saveDefaultResponder() {
@@ -260,6 +300,20 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
             }
         }
     }
+    
+    public void saveGlobalIncludeValues() {
+        GlobalOcspConfiguration globalConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        if(globalConfiguration.getIncludeSigningCertificate() != this.includeSigningCertificate || globalConfiguration.getIncludeCertificateChain() != this.includeSigningCertificate) {
+            globalConfiguration.setIncludeSigningCertificate(includeSigningCertificate);
+            globalConfiguration.setIncludeCertificateChain(includeCertificateChain);
+            try {
+                globalConfigurationSession.saveConfiguration(getAuthenticationToken(), globalConfiguration);
+            } catch (AuthorizationDeniedException e) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+            }
+        }
+    }
 
     public boolean getGloballyEnableNonce() {
         GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
@@ -280,7 +334,23 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
     public void setGloballyEnableOcspSigningCacheUpdate(final boolean ocspSigningCacheUpdateEnabled) {
         this.ocspSigningCacheUpdate = ocspSigningCacheUpdateEnabled;
     }
-
+    
+    public void setGlobalIncludeSigningCertificate(final boolean includeSigningCertificate) {
+        this.includeSigningCertificate = includeSigningCertificate;
+    }
+    
+    public boolean getGlobalIncludeSigningCertificate() {
+        return this.includeSigningCertificate;
+    }
+    
+    public void setGlobalIncludeCertificateChain(final boolean includeCertificateChain) {
+        this.includeCertificateChain = includeCertificateChain;
+    }
+    
+    public boolean getGlobalIncludeCertificateChain() {
+        return this.includeCertificateChain;
+    }
+ 
     public boolean getCacheHeaderUnauthorizedResponses() {
         GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
                 .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);

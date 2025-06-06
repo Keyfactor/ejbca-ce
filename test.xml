@@ -57,18 +57,22 @@
        	<ant antfile="build.xml" dir="modules/ejbca-common-web" target="test:unit" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/ejbca-ejb" target="test:unit" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/ejbca-entity" target="test:unit" inheritall="true" inheritrefs="true"/>
+        <ant antfile="build.xml" dir="modules/ejbca-rest-api" target="test:unit" inheritall="true" inheritrefs="true"/>
+        <ant antfile="build.xml" dir="modules/ejbca-rest-common" target="test:unit" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/ejbca-ws-cli" target="test:unit" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/healthcheck-war" target="test:unit" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/plugins" target="test:unit" inheritall="true" inheritrefs="true"/>
         <ant antfile="build.xml" dir="modules/admin-gui" target="test:unit" inheritall="true" inheritrefs="true"/>
         <ant antfile="build.xml" dir="modules/ra-gui" target="test:unit" inheritall="true" inheritrefs="true"/>
         <ant antfile="build.xml" dir="modules/ejbca-ejb-cli" target="test:unit" inheritall="true" inheritrefs="true"/>
+        <ant antfile="build.xml" dir="modules/va" target="test:unit" inheritall="true" inheritrefs="true"/>
         <antcall target="optional-test-msae-unit" inheritall="true" inheritrefs="true"/>
         <antcall target="optional-test-rest-unit" inheritall="true" inheritrefs="true"/>
         <antcall target="optional-test-configdump-unit" inheritall="true" inheritrefs="true"/>
     	<antcall target="optional-test-ct" inheritall="true" inheritrefs="true"/>
     	<antcall target="optional-test-caa-unit" inheritall="true" inheritrefs="true"/>
         <antcall target="optional-test-mpic-unit" inheritall="true" inheritrefs="true"/>
+        <antcall target="optional-test-iodef-unit" inheritall="true" inheritrefs="true"/>
         <antcall target="optional-test-ssh-unit" inheritall="true" inheritrefs="true"/>
     	<antcall target="optional-test-cits-unit" inheritall="true" inheritrefs="true"/>
         <antcall target="optional-test-peerconnector-unit" inheritall="true" inheritrefs="true"/>
@@ -143,6 +147,10 @@
     <target name="optional-test-mpic-system" if="${mpic.exists}">
         <ant antfile="build.xml" dir="modules/mpic" target="test:system" inheritall="true" inheritrefs="true"/>
     </target>
+    <condition property="iodef.exists"><available file="modules/iodef/build.xml" /></condition>
+    <target name="optional-test-iodef-unit" if="${iodef.exists}">
+        <ant antfile="build.xml" dir="modules/iodef" target="test:unit" inheritall="true" inheritrefs="true"/>
+    </target>
     <condition property="ssh.exists"><available file="modules/ssh/build.xml" /></condition>
     <target name="optional-test-ssh-unit" if="${ssh.exists}">
         <ant antfile="build.xml" dir="modules/ssh" target="test:unit" inheritall="true" inheritrefs="true"/>
@@ -180,7 +188,7 @@
 					<include name="modules/cesecore-ejb-interface/src-test/**/${test.runone}.java" />
 					<include name="modules/cesecore-entity/src-test/**/${test.runone}.java" />
 					<include name="modules/cmpProxy/src-test/**/${test.runone}.java" />
-					<include name="modules/va/publisher/src-test/**/${test.runone}.java" />
+					<include name="modules/va/src-test/**/${test.runone}.java" />
 					<include name="modules/acme/src-test/**/${test.runone}.java" />
 					<include name="modules/acme/src-common-test/**/${test.runone}.java" />
 					<include name="modules/caa/src-test/**/${test.runone}.java" />
@@ -188,6 +196,7 @@
 					<include name="modules/mpic/src-test/**/${test.runone}.java" />
 					<include name="modules/ejbca-ws-cli/src-test/**/${test.runone}.java" />
 					<include name="modules/ejbca-rest-api/src-test/**/${test.runone}.java" />
+                    <include name="modules/ejbca-rest-common/src-test/**/${test.runone}.java" />
                     <include name="modules/admin-gui/src-test/**/${test.runone}.java" />
                     <include name="modules/ra-gui/src-test/**/${test.runone}.java" />
                     <include name="modules/plugins/src-test/**/${test.runone}.java" />
@@ -255,7 +264,7 @@
             <matches string="${test-fullname}" pattern="^modules/cmpProxy/.*$"/>
         </condition>
         <condition property="module" value="modules/va">
-            <matches string="${test-fullname}" pattern="^modules/va/publisher/.*$"/>
+            <matches string="${test-fullname}" pattern="^modules/va/.*$"/>
         </condition>
         <condition property="test-buildfile" value="build-http.xml" else="build.xml">
             <matches string="${test-fullname}" pattern="^modules/cmpProxy/.*$"/>
@@ -277,6 +286,9 @@
     	</condition>
     	<condition property="module" value="modules/ejbca-rest-api">
             <matches string="${test-fullname}" pattern="^modules/ejbca-rest-api/.*$"/>
+        </condition>
+        <condition property="module" value="modules/ejbca-rest-common">
+            <matches string="${test-fullname}" pattern="^modules/ejbca-rest-common/.*$"/>
         </condition>
         <condition property="module" value="modules/admin-gui">
             <matches string="${test-fullname}" pattern="^modules/admin-gui/.*$"/>
@@ -416,6 +428,11 @@
         <antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
+    <target name="test:unit:ejbca-rest-common" description="run all JUnit tests for ejbca-rest-common." depends="deleteDirectories">
+        <ant antfile="build.xml" dir="modules/ejbca-rest-common" target="test:unit" inheritall="true" inheritrefs="true"/>
+        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
+    </target>
+
     <target name="test:unit:ejbca-ejb" description="run all JUnit tests for ejbca-ejb module." depends="deleteDirectories">
         <ant antfile="build.xml" dir="modules/ejbca-ejb" target="test:unit" inheritall="true" inheritrefs="true"/>
         <antcall target="createreport" inheritall="true" inheritrefs="true"/>
@@ -516,6 +533,11 @@
         <antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
+    <target name="test:unit:iodef" description="run all JUnit tests for iodef." depends="deleteDirectories">
+        <ant antfile="build.xml" dir="modules/iodef" target="test:unit" inheritall="true" inheritrefs="true"/>
+        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
+    </target>
+
     <target name="test:unit:cesecore-entity" description="run all JUnit tests for cesecore-entity." depends="deleteDirectories">
         <ant antfile="build.xml" dir="modules/cesecore-entity" target="test:unit" inheritall="true" inheritrefs="true"/>
         <antcall target="createreport" inheritall="true" inheritrefs="true"/>
@@ -548,6 +570,11 @@
 
     <target name="test:system:ssh" description="run all System tests for ssh." depends="deleteDirectories">
         <ant antfile="build.xml" dir="modules/ssh" target="test:system" inheritall="true" inheritrefs="true"/>
+        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
+    </target>
+
+    <target name="test:unit:va" description="run all JUnit tests for va." depends="deleteDirectories">
+        <ant antfile="build.xml" dir="modules/va" target="test:unit" inheritall="true" inheritrefs="true"/>
         <antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 

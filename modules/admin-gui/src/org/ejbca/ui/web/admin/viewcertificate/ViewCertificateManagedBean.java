@@ -365,7 +365,7 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
         if (request.getParameter(USER_PARAMETER) != null) {
             noparameter = false;
             if (getEjbcaWebBean().isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWCERTIFICATE)) {
-                userName = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER), "UTF-8");
+                userName = request.getParameter(USER_PARAMETER);
                 getRaBean().loadCertificates(userName);
             }
         }

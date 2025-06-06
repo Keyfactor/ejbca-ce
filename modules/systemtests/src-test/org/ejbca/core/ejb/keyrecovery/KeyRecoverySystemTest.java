@@ -20,9 +20,14 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,6 +51,7 @@ import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue
 import org.cesecore.certificates.KeyEncryptionPaddingAlgorithm;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionRemote;
@@ -97,8 +103,11 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryInformation;
+import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -112,6 +121,7 @@ import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
@@ -808,11 +818,45 @@ public class KeyRecoverySystemTest extends CaTestCase {
         }
     }
     
+    private int setUpKeyRecoveryTest(final String testCaName, final String username, final String password, final String endEntityProfileName)
+            throws CADoesntExistsException, CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
+            AuthorizationDeniedException, EndEntityExistsException, IllegalNameException, CustomFieldException, ApprovalException,
+            CertificateSerialNumberException, EndEntityProfileValidationException, WaitingForApprovalException, EndEntityProfileExistsException, EndEntityProfileNotFoundException {
+        // Create test CA.
+        createTestCA(testCaName);
+        final int caId = caSession.getCAInfo(internalAdmin, testCaName).getCAId();
+        // Create a new end-entity profile with key recovery enabled with the "reuse old certificate" option
+        Collection<Integer> availcas = new ArrayList<Integer>();
+        availcas.add(caId);
+        final EndEntityProfile eeprofile = new EndEntityProfile();
+        eeprofile.setUse(EndEntityProfile.KEYRECOVERABLE, 0, true);
+        eeprofile.setReUseKeyRecoveredCertificate(true);
+        eeprofile.setAvailableCAs(availcas);
+        endEntityProfileSession.addEndEntityProfile(internalAdmin, endEntityProfileName, eeprofile);
+        final int eeProfileId = endEntityProfileSession.getEndEntityProfileId(endEntityProfileName);
+        
+        // Create an end entity.
+        EndEntityInformation eeinfo = new EndEntityInformation(username, "CN=" + username,
+                caId, "", null, EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
+                eeProfileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                new Date(), new Date(), SecConst.TOKEN_SOFT_P12, null);
+        eeinfo.setPassword(password);
+        eeinfo.setKeyRecoverable(true);
+        endEntityManagementSession.addUser(internalAdmin, eeinfo, false);
+        return eeProfileId;
+    }
+    
     /**
      * Tests generation or recovery of keystores for an existing user.
+     * @throws CouldNotRemoveEndEntityException 
+     * @throws NoSuchEndEntityException 
      */
     @Test
-    public void testGenerateOrRecoverKeystore() throws Exception {
+    public void testGenerateOrRecoverKeystore() throws AuthorizationDeniedException, CADoesntExistsException, CAExistsException,
+            CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, EndEntityExistsException, IllegalNameException,
+            CertificateSerialNumberException, EndEntityProfileValidationException, WaitingForApprovalException, EndEntityProfileExistsException,
+            NotFoundException, EjbcaException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException,
+            IOException, NoSuchEndEntityException, CouldNotRemoveEndEntityException {
         log.trace(">testGenerateOrRecoverKeystore");
         final String eeProfileName = "TEST_PKCS12_REQ_WS";
         final String username = "testUserForPkcs12";
@@ -824,36 +868,13 @@ public class KeyRecoverySystemTest extends CaTestCase {
         try {
             setGlobalConfigurationEnableKeyRecovery(true);
 
-            // Create test CA.
-            createTestCA(testCaName);
-            final int caId = caSession.getCAInfo(internalAdmin, testCaName).getCAId();
-            
-            // Create a new end-entity profile with key recovery enabled with the "reuse old certificate" option
-            Collection<Integer> availcas = new ArrayList<Integer>();
-            availcas.add(caId);
-            final EndEntityProfile eeprofile = new EndEntityProfile();
-            eeprofile.setUse(EndEntityProfile.KEYRECOVERABLE, 0, true);
-            eeprofile.setReUseKeyRecoveredCertificate(true);
-            eeprofile.setAvailableCAs(availcas);
-            endEntityProfileSession.addEndEntityProfile(internalAdmin, eeProfileName, eeprofile);
-            final int eeProfileId = endEntityProfileSession.getEndEntityProfileId(eeProfileName);
-            
-            // Create an end entity.
-            EndEntityInformation eeinfo = new EndEntityInformation(username, "CN=" + username,
-                    caId, "", null, EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
-                    eeProfileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                    new Date(), new Date(), SecConst.TOKEN_SOFT_P12, null);
-            eeinfo.setPassword(password);
-            eeinfo.setKeyRecoverable(true);
-            endEntityManagementSession.addUser(internalAdmin, eeinfo, false);
-            endEntityManagementSession.setPassword(internalAdmin, username, password);
-            endEntityManagementSession.changeUser(internalAdmin, eeinfo, false);
+            int eeProfileId = setUpKeyRecoveryTest(testCaName, username, password, eeProfileName);
             
             // 1. Create or recover keystores.
             // 1.1 Create new keystore and issue a certificate.
-            eeinfo = eeAccessSession.findUser(internalAdmin, username);
+            EndEntityInformation eeinfo = eeAccessSession.findUser(internalAdmin, username);
             assertNotNull("Could not find test user", username);
-            // eeinfo.setPassword("foo123");
+
             byte[] keystoreBytes = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, username, password, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
             KeyStore keystore = KeyStore.getInstance(format, BouncyCastleProvider.PROVIDER_NAME);
             keystore.load(new ByteArrayInputStream(keystoreBytes), password.toCharArray());
@@ -863,8 +884,6 @@ public class KeyRecoverySystemTest extends CaTestCase {
             
             // 1.2 Recover keystore and certificate.
             eeinfo = eeAccessSession.findUser(internalAdmin, username);
-//            endEntityManagementSession.changeUser(internalAdmin, eeinfo, false);
-//            endEntityManagementSession.setPassword(internalAdmin, username, password);
             
             assertTrue("markAsRecoverable failed",endEntityManagementSession.prepareForKeyRecovery(internalAdmin, username, eeProfileId, usercert));
             // Generate keystore.
@@ -880,6 +899,7 @@ public class KeyRecoverySystemTest extends CaTestCase {
             endEntityManagementSession.setPassword(internalAdmin, username, password);
             endEntityManagementSession.changeUser(internalAdmin, eeinfo, false);
             // Configure EEP.
+            EndEntityProfile eeprofile = endEntityProfileSession.getEndEntityProfile(eeProfileId);
             eeprofile.setReUseKeyRecoveredCertificate(false);
             endEntityProfileSession.changeEndEntityProfile(internalAdmin, eeProfileName, eeprofile);
             assertTrue("markAsRecoverable failed",endEntityManagementSession.prepareForKeyRecovery(internalAdmin, username, eeProfileId, usercert));
@@ -891,62 +911,123 @@ public class KeyRecoverySystemTest extends CaTestCase {
             // Certificate should not have changed
             assertNull("Could not find user's certificate in key-recovered keystore", keystore.getCertificateAlias(usercert));
             
-            // 2. Test error / exception handling.
-            // 2.1 Test user not found.
-            eeinfo.setStatus(EndEntityConstants.STATUS_NEW);
-            endEntityManagementSession.changeUser(internalAdmin, eeinfo, false);
-            try {
-                final String notExistingUsername = username + "_NOT_EXISTS";
-                assertFalse("This user should not exists: " + notExistingUsername, endEntityManagementSession.existsUser(notExistingUsername));
-                keystoreBytes = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, username + notExistingUsername, password, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
-                fail("Requesting a key recovery for a non existing user should throw an exception.");
-            } catch (Exception e) {
-                if (log.isDebugEnabled()) {
-                    log.debug("NotFoundException expected!: ", e);
-                }
-                assertTrue("Requesting a key recovery for a non existing user should throw a NotFoundException.", e instanceof NotFoundException);
+        } finally {
+            setGlobalConfigurationEnableKeyRecovery(false);
+            if (usercert != null) {
+                keyRecoverySession.removeKeyRecoveryData(internalAdmin, EJBTools.wrap(usercert));
+                assertTrue("Couldn't remove keys from database", !keyRecoverySession.existsKeys(EJBTools.wrap(usercert)));
             }
-            // 2.2 Test wrong password.
-            try {
-                keystoreBytes = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, username, password + "_not_exists", "1024", AlgorithmConstants.KEYALGORITHM_RSA);
-                fail("Requesting a key recovery for a wrong user/password combination should throw an exception.");
-            } catch (Exception e) {
-                if (log.isDebugEnabled()) {
-                    log.debug("AuthLoginException expected!: ", e);
-                }
-                assertTrue("Requesting a key recovery for a wrong user/password combination should throw an AuthLoginException.", e instanceof AuthLoginException);
+            if (fingerprint != null) {
+                internalCertStoreSession.removeCertificate(fingerprint);
             }
-            // 2.3 Test CA not found.
-//            try {
-//                final int nonExistingCaId = 1123243;
-//                assertNull("This CA should not exist.", caSession.getCAInfo(internalAdmin, nonExistingCaId));
-//                availcas = new ArrayList<Integer>();
-//                availcas.add(nonExistingCaId);
-//                eeprofile.setAvailableCAs(availcas);
-//                endEntityProfileSession.changeEndEntityProfile(internalAdmin, eeProfileName, eeprofile);
-//                eeinfo.setCAId(nonExistingCaId);
-//                endEntityManagementSession.setPassword(internalAdmin, username, password);
-//                // Breaks here because of a NPE for the non existing CA.
-//                endEntityManagementSession.changeUser(internalAdmin, eeinfo, false);
-//                eeinfo = eeAccessSession.findUser(internalAdmin, username);
-//                keystoreBytes = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, username, password, hardTokenSN, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
-//                fail("Requesting a key recovery for a non existing CA should throw an exception.");
-//            } catch (Exception e) {
-//                if (log.isDebugEnabled()) {
-//                    log.debug("CADoesntExistsException expected!: ", e);
-//                }
-//                assertTrue("Requesting a key recovery for a non existing CA should throw a CADoesntExistsException.", e instanceof CADoesntExistsException);
-//            }
-            // 2.4 Test CA no authorization for CA.
-            try {
-                keystoreBytes = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(admin, username, password, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
-                fail("Requesting a key recovery for a CA with no authorization should throw an exception.");
-            } catch (Exception e) {
-                if (log.isDebugEnabled()) {
-                    log.debug("AuthorizationDeniedException expected!: ", e);
-                }
-                assertTrue("Requesting a key recovery for a CA with no authorization should throw an AuthorizationDeniedException.", e instanceof AuthorizationDeniedException);
+            if (endEntityManagementSession.existsUser(username)) {
+                endEntityManagementSession.deleteUser(internalAdmin, username);
             }
+            endEntityProfileSession.removeEndEntityProfile(internalAdmin, eeProfileName);
+            removeOldCa(testCaName);
+            log.trace("<testGenerateOrRecoverKeystore");
+        }
+    }
+
+    @Test(expected = NotFoundException.class)
+    public void testEndEntityNotFound()
+            throws EndEntityExistsException, CADoesntExistsException, IllegalNameException, CertificateSerialNumberException,
+            AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException, CAExistsException,
+            CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, EndEntityProfileExistsException, NoSuchEndEntityException,
+            EjbcaException, CouldNotRemoveEndEntityException {
+        final String eeProfileName = "TEST_PKCS12_REQ_WS";
+        final String username = "testUserForPkcs12";
+        final String password = "foo123";
+        final String testCaName = TEST_CA_NAME_PREFIX + "PKCS12CA";
+        X509Certificate usercert = null;
+        String fingerprint = null;
+        try {
+            setGlobalConfigurationEnableKeyRecovery(true);
+            setUpKeyRecoveryTest(testCaName, username, password, eeProfileName);
+            
+            final String notExistingUsername = username + "_NOT_EXISTS";
+            assertFalse("This user should not exists: " + notExistingUsername, endEntityManagementSession.existsUser(notExistingUsername));
+            keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, username + notExistingUsername, password, "1024",
+                    AlgorithmConstants.KEYALGORITHM_RSA);
+            fail("Requesting a key recovery for a non existing user should throw an exception.");
+        } finally {
+            setGlobalConfigurationEnableKeyRecovery(false);
+            if (usercert != null) {
+                keyRecoverySession.removeKeyRecoveryData(internalAdmin, EJBTools.wrap(usercert));
+                assertTrue("Couldn't remove keys from database", !keyRecoverySession.existsKeys(EJBTools.wrap(usercert)));
+            }
+            if (fingerprint != null) {
+                internalCertStoreSession.removeCertificate(fingerprint);
+            }
+            if (endEntityManagementSession.existsUser(username)) {
+                endEntityManagementSession.deleteUser(internalAdmin, username);
+            }
+            endEntityProfileSession.removeEndEntityProfile(internalAdmin, eeProfileName);
+            removeOldCa(testCaName);
+            log.trace("<testGenerateOrRecoverKeystore");
+        }
+    }
+    
+    @Test(expected = AuthLoginException.class)
+    public void testEndEntityWrongPassword()
+            throws EndEntityExistsException, CADoesntExistsException, IllegalNameException, CertificateSerialNumberException,
+            AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException, CAExistsException,
+            CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, EndEntityProfileExistsException, NoSuchEndEntityException,
+            NotFoundException, EjbcaException, CouldNotRemoveEndEntityException {
+        final String eeProfileName = "TEST_PKCS12_REQ_WS";
+        final String username = "testUserForPkcs12";
+        final String password = "foo123";
+        final String testCaName = TEST_CA_NAME_PREFIX + "PKCS12CA";
+        X509Certificate usercert = null;
+        String fingerprint = null;
+        try {
+            setGlobalConfigurationEnableKeyRecovery(true);
+
+            setUpKeyRecoveryTest(testCaName, username, password, eeProfileName);
+            
+            keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, username, password + "_not_exists", "1024",
+                    AlgorithmConstants.KEYALGORITHM_RSA);
+            fail("Requesting a key recovery for a wrong user/password combination should throw an exception.");
+   
+        } finally {
+            setGlobalConfigurationEnableKeyRecovery(false);
+            if (usercert != null) {
+                keyRecoverySession.removeKeyRecoveryData(internalAdmin, EJBTools.wrap(usercert));
+                assertTrue("Couldn't remove keys from database", !keyRecoverySession.existsKeys(EJBTools.wrap(usercert)));
+            }
+            if (fingerprint != null) {
+                internalCertStoreSession.removeCertificate(fingerprint);
+            }
+            if (endEntityManagementSession.existsUser(username)) {
+                endEntityManagementSession.deleteUser(internalAdmin, username);
+            }
+            endEntityProfileSession.removeEndEntityProfile(internalAdmin, eeProfileName);
+            removeOldCa(testCaName);
+            log.trace("<testGenerateOrRecoverKeystore");
+        }
+    }
+    
+    
+    @Test(expected = AuthorizationDeniedException.class)
+    public void testUnauthorized()
+            throws EndEntityExistsException, CADoesntExistsException, IllegalNameException, CertificateSerialNumberException,
+            AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException, CAExistsException,
+            CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, EndEntityProfileExistsException, NoSuchEndEntityException,
+            NotFoundException, EjbcaException, CouldNotRemoveEndEntityException {
+        final String eeProfileName = "TEST_PKCS12_REQ_WS";
+        final String username = "testUserForPkcs12";
+        final String password = "foo123";
+        final String testCaName = TEST_CA_NAME_PREFIX + "PKCS12CA";
+        X509Certificate usercert = null;
+        String fingerprint = null;
+        try {
+            setGlobalConfigurationEnableKeyRecovery(true);
+
+            setUpKeyRecoveryTest(testCaName, username, password, eeProfileName);
+            
+            keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(admin, username, password, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
+            fail("Requesting a key recovery for a CA with no authorization should throw an exception.");
+            
         } finally {
             setGlobalConfigurationEnableKeyRecovery(false);
             if (usercert != null) {

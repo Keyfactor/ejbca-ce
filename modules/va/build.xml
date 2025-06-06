@@ -7,6 +7,7 @@
 	
 	<property name="va.build-status.dir" location="${va.dir}/build-status"/>
 	<property name="va.build-test.dir" location="${va.dir}/build-test"/>
+	<property name="va.src-test.dir" location="${va.dir}/src-test"/>
 	<property name="va.src.war.dir" location="${va.dir}/src-war"/>
 	<property name="va.resources.dir" location="${va.dir}/resources"/>
 
@@ -32,20 +33,18 @@
 		<path refid="lib.x509-common-util.classpath" />
 	</path>
 	
-	<path id="test.classpath">
-		<path refid="compile-ejbca.classpath"/>
+	<path id="compile-test.classpath">
+	    <path refid="compile-common.classpath"/>
+	    <path refid="compile-ejbca.classpath"/>
+	    <path location="${mod.ejbca-extensions.lib}"/>
 		<path refid="lib.junit.classpath"/>
-		<path refid="lib.jee-client.classpath"/>
-		<path refid="lib.commons-io.classpath"/>
-		<path location="${build-va-publisher.dir}"/>
-		<path location="${va.build-test.dir}"/>
-		<path location="${mod.ejbca-ejb-interface.lib}"/>
-		<path location="${mod.systemtest-common.lib}"/>
-		<path location="${mod.systemtest-interface.lib}"/>
-		<path location="${mod.systemtest-ejb.lib}"/>
 		<path refid="lib.cert-cvc.classpath" />
-		<path location="${mod.ejbca-entity.lib}"/>
 	</path>
+
+	<path id="test.classpath">
+	    <path refid="compile-test.classpath"/>
+	    <path location="${va.build-test.dir}"/>
+    </path>
 	
     <target name="clean" description="Clean up this module">
 		<delete dir="${va.build-status.dir}" />
@@ -87,4 +86,53 @@
         </javac>
 		<antcall target="extensions-build" inheritall="true" inheritrefs="true"/>
 	</target>
+
+    <target name="test:unit" depends="compile-test" description="Run unit tests for this module">
+        <antcall target="showtime" inheritall="true" inheritrefs="true"/>
+        <echo message=" ** Running EJBCA va tests **"/>
+        <junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${va.dir}">
+            <classpath>
+                <path refid="test.classpath"/>
+            </classpath>
+            <formatter type="xml" />
+            <batchtest fork="yes" todir="${reports.dir}">
+                <fileset dir="${va.build-test.dir}" includes="**/*UnitTest.class"/>
+            </batchtest>
+            <jvmarg line="${tests.jvmargs}"/>
+        </junit>
+        <antcall target="showtime" inheritall="true" inheritrefs="true"/>
+    </target>
+
+    <target name="compile-test" depends="ejbca-status-compile, extensions-build">
+        <mkdir dir="${va.build-test.dir}" />
+        <javac destdir="${va.build-test.dir}" debug="on" includeantruntime="no"
+            encoding="UTF-8" target="${java.target.version}" classpathref="compile-test.classpath">
+            <src path="${va.src-test.dir}"/>
+        </javac>
+        <copy todir="${va.build-test.dir}" failonerror="true">
+            <fileset dir="${va.src-test.dir}">
+                <include name="**/*.xml"/>
+            </fileset>
+            <fileset dir="${ejbca.home}/src" includes="intresources/**"/>
+            <fileset dir="${ejbca.home}/src/java/" includes="defaultvalues.properties"/>
+        </copy>
+    </target>
+
+    <target name="runone" depends="compile-test">
+        <fail message="'test.runone' is not set. Example -Dtest.runone=FooBarUnitTest . You can also use -Dtest.showoutput=true to send test output to console." unless="test.runone" />
+        <copy file="${log4j.test.file}" tofile="${va.build-test.dir}/log4j.xml" failonerror="true"/>
+        <junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
+            <classpath>
+                <path refid="test.classpath"/>
+            </classpath>
+            <formatter type="xml" />
+            <batchtest fork="yes" todir="${reports.dir}">
+                <fileset dir="${va.build-test.dir}">
+                    <include name="**/${test.runone}.class" />
+                </fileset>
+            </batchtest>
+            <jvmarg line="${tests.jvmargs}"/>
+        </junit>
+    </target>
+
 </project>

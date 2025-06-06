@@ -813,16 +813,33 @@ public abstract class CmpTestCase extends CaTestCase {
         return protectedMessage;
     }
 
+    /** Protect the PKI message with PBE (password based MAC) protection, using the default senderKID set to the string "primekey".
+     */
     protected static PKIMessage protectPKIMessage(PKIMessage msg, boolean badObjectId, String password, int iterations) throws NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
         return protectPKIMessage(msg, badObjectId, password, "primekey", iterations);
     }
 
+    /** Protect the CMP PKI message with PBE (password based MAC) protection
+    *
+    * @param msg the completed message to add protection to
+    * @param badObjectId if we should give an invalid OID for PasswordBasedMAC instead of the correct one, add .7 to the 1.2.840.113533.7.66.13
+    * @param password password to use for password based MAC protection
+    * @param keyID senderKID, RFC4210 section 5.1.1
+    * @param iterations number of iterations used in the RFC4210 PBE algorithms
+    * @return the passed in PKIMessage with protection added to it
+    * @throws NoSuchAlgorithmException
+    * @throws InvalidKeyException
+    * @throws NoSuchProviderException
+    */
     protected static PKIMessage protectPKIMessage(PKIMessage msg, boolean badObjectId, String password, String keyId, int iterations)
             throws NoSuchAlgorithmException, InvalidKeyException {
         // Create the PasswordBased protection of the message
         PKIHeaderBuilder head = CmpMessageHelper.getHeaderBuilder(msg.getHeader());
         if(keyId != null) {
             head.setSenderKID(new DEROctetString(keyId.getBytes()));
+        } else {
+            // Clear it if it was set in the input message
+            head.setSenderKID((byte[])null);
         }
         // SHA1
         AlgorithmIdentifier owfAlg = new AlgorithmIdentifier(new ASN1ObjectIdentifier("1.3.14.3.2.26"));

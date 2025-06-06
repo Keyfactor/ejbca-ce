@@ -34,64 +34,48 @@
 	 				<h3>
 	 					<h:outputText value="#{web.text.LISTOFENDENTITYPROFILES}"/>
 	 				</h3>
-	 			    <h:selectOneListbox id="profilesListBox" size="15" style="width: 50em;" value="#{endEntityProfilesMBean.selectedEndEntityProfileId}">
-	 			        <f:selectItems value="#{endEntityProfilesMBean.endEntityProfileItems}"/>
-	 			        <f:ajax event="change" execute="@this"/>
-	 			    </h:selectOneListbox>
-					<h:panelGrid style="width: 50em;" columns="3" border="0" columnClasses="gridColumnLeft,gridCenter,gridColumnRight">
-				    	<h:column>  
-							<h:commandButton 
-								id="editButton" 
-								action="#{endEntityProfilesMBean.actionEdit}"
-								value="#{endEntityProfilesMBean.authorizedToEdit ? web.text.EDITENDENTITYPROFILE : web.text.VIEWENDENTITYPROFILE}"
-								rendered="#{not endEntityProfilesMBean.deleteInProgress}"/>
-						</h:column>
-                        <h:column>
-                            <h:commandButton 
-                                id="exportButton" 
-                                action="#{endEntityProfilesMBean.actionExportProfile}" 
-                                value="#{web.text.EXPORTENDENTITYPROFILE}" 
-                                rendered="#{not endEntityProfilesMBean.deleteInProgress}"/>
-                        </h:column>
-                        <h:column>
-				    		<h:commandButton 
-				    			id="deleteButton" 
-				    			action="#{endEntityProfilesMBean.actionDelete}" 
-				    			value="#{web.text.DELETEENDENTITYPROFILE}"
-				    			rendered="#{endEntityProfilesMBean.authorizedToEdit and not endEntityProfilesMBean.deleteInProgress}">
-				    			<f:ajax execute="@this" render=":modalBlockContainer :messagesBlock"/>
-				    		</h:commandButton>	
-				    	</h:column>
-				    </h:panelGrid>
-    				<h:panelGroup id="addProfile">	
-						<h3>
-						    <h:outputText value="#{web.text.ADDENDENTITYPROFILE}"/> 
-						</h3>
-						<h:inputText 
-							id="addProfileNew" 
-							value="#{endEntityProfilesMBean.endEntityProfileName}" 
-							size="45" 
-							maxlength="255" 
-							title="#{web.text.FORMAT_ID_STR}"/>
-						<h:commandButton 
+	 			    
+	 			    <h:dataTable value="#{endEntityProfilesMBean.endEntityProfiles}" var="endEntityProfile" styleClass="grid">
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="#{web.text.NAME}"/>
+                    </f:facet>
+                    <h:outputText value="#{endEntityProfile}" title="#{alias}"/>
+                </h:column>
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="#{web.text.ACTIONS}"/>
+                    </f:facet>
+                    <h:commandButton id="buttonviewalias"
+                                     value="#{web.text.VIEW}"
+                                     action="#{endEntityProfilesMBean.actionView(endEntityProfile)}">
+                    </h:commandButton>
+                    <h:commandButton value="#{web.text.EDIT}"
+                                     action="#{endEntityProfilesMBean.actionEdit(endEntityProfile)}"
+                                     rendered="#{endEntityProfilesMBean.authorizedToEdit}">
+                    </h:commandButton>
+                    <h:commandButton value="#{web.text.DELETE}"
+                                     action="#{endEntityProfilesMBean.actionDelete(endEntityProfile)}"
+                                     rendered="#{endEntityProfilesMBean.authorizedToEdit}"/>
+                    <h:commandButton value="#{web.text.CLONE}"
+                                     action="#{endEntityProfilesMBean.actionClone(endEntityProfile)}"
+                                     rendered="#{endEntityProfilesMBean.authorizedToEdit}"/>
+                    <h:commandButton value="#{web.text.EXPORT}"
+                                     action="#{endEntityProfilesMBean.actionExportProfile(endEntityProfile)}"
+                                     rendered="#{endEntityProfilesMBean.authorizedToEdit}"/>
+                </h:column>
+            </h:dataTable>
+            
+            <h:commandButton 
 							id="addButton" 
 							class="buttonstyle" 
 							action="#{endEntityProfilesMBean.actionAdd}" 
-							value="#{web.text.ADDPROFILE}"/>
-						<h:commandButton 
-							id="renameButton" 
-							class="buttonstyle" 
-							action="#{endEntityProfilesMBean.actionRename}" 
-							value="#{web.text.RENAME_SELECTED}"/>
-						<h:commandButton 
-							id="cloneButton" 
-							class="buttonstyle" 
-							action="#{endEntityProfilesMBean.actionCloneProfile}" 
-							value="#{web.text.CLONE_SELECTED}"/>
-	 				</h:panelGroup>	
-				</h:panelGroup>
+							value="#{web.text.ADDPROFILE}"
+							rendered="#{endEntityProfilesMBean.authorizedToEdit}"
+							style="margin-top: 10px"/>
+			  </h:panelGroup>
 			</h:form>
-			
+	    
 			<h:form
 				id="uploadProfiles"
 				enctype="multipart/form-data"
@@ -124,38 +108,5 @@
 				</h:panelGroup>
 			</h:form>
 		</ui:define>
-					
-		<ui:remove><!-- Template will render this when element ":modalBlockContainer" is rendered and "renderModal" param is true. --></ui:remove>
-        <ui:param name="renderModal" value="#{endEntityProfilesMBean.deleteInProgress}"/>
-        <ui:define name="modal">
-        	<h:form id="modal">
-                <ui:remove><!-- Manually add viewstate due to https://java.net/jira/browse/JAVASERVERFACES_SPEC_PUBLIC-790 --></ui:remove>
-                <h:outputText escape="false" value="&lt;input name='jakarta.faces.ViewState' type='hidden' value='#{facesContext.application.stateManager.getViewState(facesContext)}'/&gt;"/>
-				<h:panelGroup id="delete" rendered="#{endEntityProfilesMBean.deleteInProgress}">
-				 		<h2>
-				 			<h:outputText value="#{web.text.DELETEPROFILE}"/>
-				 		</h2>
-                        <h:panelGrid columns="2">
-                    	    <h:outputLabel value="#{web.text.ENDENTITYPROFILENAME}" />
-                        	<h:outputText value="#{endEntityProfilesMBean.selectedEndEntityProfileName}"/>
-                        </h:panelGrid>
-	  					<h:panelGroup styleClass="alignright fullwidth" layout="block">
-	  				    	<h:commandButton 
-	  				    		id="deleteCancelButton" 
-	  				    		value="#{web.text.CANCEL}" 
-	  				    		action="#{endEntityProfilesMBean.actionCancel}" 
-	  				    		immediate="true">
-	  				    		<f:ajax execute="@this" render=":modalBlockContainer"/>
-	  				    	</h:commandButton>
-							<h:commandButton 
-								id="deleteConfirmButton" 
-								value="#{web.text.DELETE}" 
-								action="#{endEntityProfilesMBean.actionDeleteConfirm}">
-								<f:ajax execute="@form" render="@all"/>
-							</h:commandButton>
-						</h:panelGroup>
-				</h:panelGroup>
-			</h:form>
-		</ui:define>
-	</ui:composition>
+</ui:composition>
 </html>     

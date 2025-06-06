@@ -60,6 +60,7 @@
 		<path refid="lib.easymock.classpath"/>
 		<path refid="lib.junit.classpath"/>
 		<path refid="lib.xstream.classpath"/>
+		<path refid="lib.cryptotokens.classpath"/>
 	</path>
 	
 	<path id="compile-cli.classpath">
@@ -76,6 +77,8 @@
 		<path location="${ejbca-entity.build-test.dir}"/>
 		<path location="${mod.ejbca-entity.lib}"/>
 		<path refid="lib.junit.classpath"/>
+		<!-- For X509CAImpl, created in test via factory class -->
+		<path location="${mod.cesecore-x509ca.lib}"/>
 	</path>
 
 	<path id="test.classpath">

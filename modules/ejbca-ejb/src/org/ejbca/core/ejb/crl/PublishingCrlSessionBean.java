@@ -27,16 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.Resource;
-import jakarta.ejb.EJB;
-import jakarta.ejb.EJBException;
-import jakarta.ejb.FinderException;
-import jakarta.ejb.SessionContext;
-import jakarta.ejb.Stateless;
-import jakarta.ejb.TransactionAttribute;
-import jakarta.ejb.TransactionAttributeType;
-
 import org.apache.commons.lang.math.IntRange;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
@@ -78,6 +68,16 @@ import com.keyfactor.CesecoreException;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.FinderException;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 
 /**
  * This session bean provides a bridge between EJBCA and CESecore by incorporating CRL creation (CESeCore) with publishing (EJBCA)

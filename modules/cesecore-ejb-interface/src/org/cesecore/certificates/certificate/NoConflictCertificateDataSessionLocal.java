@@ -15,9 +15,14 @@ package org.cesecore.certificates.certificate;
 import java.util.Collection;
 import java.util.List;
 
+<<<<<<< HEAD
 import jakarta.ejb.Local;
 
+=======
+>>>>>>> main
 import org.cesecore.certificates.crl.RevokedCertInfo;
+
+import jakarta.ejb.Local;
 
 /**
  * Local interface for NoConflictCertificateDataSession.

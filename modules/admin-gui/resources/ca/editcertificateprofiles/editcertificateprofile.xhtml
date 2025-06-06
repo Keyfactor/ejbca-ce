@@ -119,6 +119,8 @@
                     <h:outputText
                         value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html#availableEcdsaCurves')}"
                         escape="false" />
+                    <br/>
+                    <h:outputText styleClass="smallHelp" value="#{web.text.AVAILABLEECDSACURVES_HELP}"/>
                 </h:panelGroup>
                 <h:selectManyListbox styleClass="select-list" rendered="#{!certProfileBean.typeSsh and !certProfileBean.typeIts}"
                     id="selectavailableeccurves"
@@ -135,6 +137,7 @@
                         value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html#availableBitLengths')}"
                         escape="false" />
                     <br/>
+                    <h:outputText styleClass="smallHelp" value="#{web.text.AVAILABLEBITLENGTHS_HELP}"/>
                 </h:panelGroup>
                 <h:selectManyListbox id="selectavailablebitlengths" rendered="#{!certProfileBean.typeSsh and !certProfileBean.typeIts}"
                     value="#{certProfileBean.certificateProfile.availableBitLengths}"

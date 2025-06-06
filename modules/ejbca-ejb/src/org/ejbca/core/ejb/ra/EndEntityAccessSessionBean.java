@@ -25,17 +25,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.Resource;
-import jakarta.ejb.EJB;
-import jakarta.ejb.Stateless;
-import jakarta.ejb.TransactionAttribute;
-import jakarta.ejb.TransactionAttributeType;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.TypedQuery;
-import jakarta.transaction.TransactionSynchronizationRegistry;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
@@ -71,6 +60,17 @@ import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.CertificateWrapper;
 import com.keyfactor.util.certificate.DnComponents;
+
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 
 /**
  * An {@link EndEntityInformation} Data Access Object (DAO).
@@ -114,6 +114,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         perTransactionData = new PerTransactionData(registry);
     }
 
+    @SuppressWarnings("deprecation")
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public AbstractMap.SimpleEntry<String, SupportedPasswordHashAlgorithm> getPasswordAndHashAlgorithmForUser(String username)
@@ -125,6 +126,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
             return new AbstractMap.SimpleEntry<>(user.getPasswordHash(), user.findHashAlgorithm());
         }
     }
+
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override

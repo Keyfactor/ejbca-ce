@@ -12,15 +12,8 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.endentity;
 
-import java.io.Serializable;
-import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.PostActivate;
 import jakarta.faces.context.FacesContext;
@@ -29,7 +22,6 @@ import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -44,22 +36,24 @@ import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.ui.web.RequestHelper;
-import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.bean.SessionBeans;
 import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 import org.ejbca.ui.web.admin.rainterface.RAInterfaceBean;
 import org.ejbca.ui.web.admin.rainterface.UserView;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.certificate.DnComponents;
+import java.io.Serializable;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * JSF managed bean backing view end entity xhtml page
  */
 @Named
 @ViewScoped
-public class ViewEndEntityMBean extends BaseManagedBean implements Serializable {
+public class ViewEndEntityMBean extends EndEntityBaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
     
@@ -166,6 +160,9 @@ public class ViewEndEntityMBean extends BaseManagedBean implements Serializable 
         
         checkInitParameters();
         
+        // Loading the extended information to show in the view later (if any)
+        super.setExtendedInformation(userData.getExtendedInformation());
+        
         initSdnFieldsData();
         initSanFieldData();
         initSdaFieldData();
@@ -236,7 +233,7 @@ public class ViewEndEntityMBean extends BaseManagedBean implements Serializable 
         RequestHelper.setDefaultCharacterEncoding(request);
         String action = request.getParameter(ACTION);
         if (action == null && request.getParameter(TIMESTAMP_PARAMETER) != null && request.getParameter(USER_PARAMETER) != null) {
-            userName = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER), StandardCharsets.UTF_8);
+            userName = request.getParameter(USER_PARAMETER);
             Date timestamp = new Date(Long.parseLong(request.getParameter(TIMESTAMP_PARAMETER)));
 
             notAuthorized = !populateUserDatas(userName);
@@ -254,7 +251,7 @@ public class ViewEndEntityMBean extends BaseManagedBean implements Serializable 
             }
         } else {
             if (action == null && request.getParameter(USER_PARAMETER) != null) {
-                userName = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER), StandardCharsets.UTF_8);
+                userName = request.getParameter(USER_PARAMETER);
                 notAuthorized = !populateUserDatas(userName);
                 noUserParameter = false;
                 if ((userDatas != null) && (userDatas.length > 0)) {
@@ -269,7 +266,7 @@ public class ViewEndEntityMBean extends BaseManagedBean implements Serializable 
                 }
             } else {
                 if (action != null && request.getParameter(USER_PARAMETER) != null) {
-                    userName = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER), StandardCharsets.UTF_8);
+                    userName = request.getParameter(USER_PARAMETER);
                     if (request.getParameter(BUTTON_VIEW_NEWER) != null &&  (currentUserIndex > 0)) {
                             currentUserIndex--;
                         
@@ -421,11 +418,14 @@ public class ViewEndEntityMBean extends BaseManagedBean implements Serializable 
     }
     
     public boolean isRenderOtherCertData() {
-        return eeProfile.isCustomSerialNumberUsed() || 
+        return eeProfile.isCustomSerialNumberUsed() ||
+               eeProfile.getUseExtensiondata() ||
                eeProfile.isValidityStartTimeUsed() || 
                eeProfile.isValidityEndTimeUsed() || 
                eeProfile.isCardNumberUsed() || 
                eeProfile.isPsd2QcStatementUsed() || 
+               eeProfile.isNameConstraintsPermittedUsed() || 
+               eeProfile.isNameConstraintsExcludedUsed() ||
                eeProfile.isCabfOrganizationIdentifierUsed();
     }
     
@@ -497,25 +497,24 @@ public class ViewEndEntityMBean extends BaseManagedBean implements Serializable 
         return userData.getCardNumber();
     }
     
-    public boolean isRenderCertExtensionData() {
-        return eeProfile.getUseExtensiondata() || !getExtensionDataAsMap().isEmpty();
+    public boolean isRenderNameConstraintPermitted() {
+        return eeProfile.isNameConstraintsPermittedUsed();
     }
     
-    public Map<String, String> getExtensionDataAsMap() {
-        final Map<String, String> result = new HashMap<>();
-        ExtendedInformation extendedInformation = userData.getExtendedInformation();
-        if (extendedInformation != null) {
-            @SuppressWarnings("rawtypes")
-            Map data = (Map) extendedInformation.getData();
-            for (Object o : data.keySet()) {
-                String key = (String) o;
-                if (key.startsWith(ExtendedInformation.EXTENSIONDATA)) {
-                    String subKey = key.substring(ExtendedInformation.EXTENSIONDATA.length());
-                    result.put(subKey, (String) data.get(key));
-                }
-            }
-        }
-        return result;
+    public List<String> getNameConstraintPermitted() {
+        return userData.getExtendedInformation().getNameConstraintsPermitted();
+    }
+    
+    public boolean isRenderNameConstraintExcluded() {
+        return eeProfile.isNameConstraintsExcludedUsed();
+    }
+    
+    public List<String> getNameConstraintExcluded() {
+        return userData.getExtendedInformation().getNameConstraintsExcluded();
+    }
+    
+    public boolean isRenderCertExtensionData() {
+        return eeProfile.getUseExtensiondata() || !getExtensionDataAsMap().isEmpty();
     }
     
     public boolean isRenderRawSubjectDn() {

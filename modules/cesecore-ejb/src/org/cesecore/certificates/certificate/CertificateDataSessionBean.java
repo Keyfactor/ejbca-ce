@@ -82,6 +82,16 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
         return entityManager.find(CertificateData.class, fingerprint);
     }
 
+    /** @return the found entity instance or null if the entity does not exist */
+    @Override
+    public CertificateData findBySubjectKeyId(String subjectKeyId) {
+        final TypedQuery<CertificateData> query = entityManager.createQuery(
+                "SELECT a FROM CertificateData a WHERE a.subjectKeyId=:subjectKeyId",
+                CertificateData.class);
+        query.setParameter("subjectKeyId", subjectKeyId);
+        return query.getSingleResult();
+    }
+
     /** @return return the query results as a Set. */
     @Override
     public Set<String> findUsernamesBySubjectDNAndIssuerDN(final String subjectDN, final String issuerDN) {

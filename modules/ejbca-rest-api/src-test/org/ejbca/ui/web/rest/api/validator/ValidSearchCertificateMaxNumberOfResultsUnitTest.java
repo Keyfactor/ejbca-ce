@@ -24,6 +24,7 @@ import static org.easymock.EasyMock.createNiceMock;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 /**
  * A unit test class for annotation @ValidSearchCertificateMaxNumberOfResults and its validator.
@@ -62,6 +63,7 @@ public class ValidSearchCertificateMaxNumberOfResultsUnitTest {
         // when
         boolean valid = validator.isValid(maxNumberOfResults, constraintValidatorContextMock);
         // then
+        assertFalse(valid);
         verify(constraintValidatorContextMock);
     }
 
@@ -74,8 +76,9 @@ public class ValidSearchCertificateMaxNumberOfResultsUnitTest {
         replay(globalCesecoreConfigurationMock);
         Integer maxNumberOfResults = -1;
         // when
-        validator.isValid(maxNumberOfResults, constraintValidatorContextMock);
+        boolean valid=validator.isValid(maxNumberOfResults, constraintValidatorContextMock);
         // then
+        assertFalse(valid);
         verify(constraintValidatorContextMock);
     }
 
@@ -88,8 +91,9 @@ public class ValidSearchCertificateMaxNumberOfResultsUnitTest {
         replay(globalCesecoreConfigurationMock);
         Integer maxNumberOfResults = 0;
         // when
-        validator.isValid(maxNumberOfResults, constraintValidatorContextMock);
+        boolean valid=validator.isValid(maxNumberOfResults, constraintValidatorContextMock);
         // then
+        assertFalse(valid);
         verify(constraintValidatorContextMock);
     }
 
@@ -102,8 +106,9 @@ public class ValidSearchCertificateMaxNumberOfResultsUnitTest {
         replay(globalCesecoreConfigurationMock);
         Integer maxNumberOfResults = 401;
         // when
-        validator.isValid(maxNumberOfResults, constraintValidatorContextMock);
+        boolean valid=validator.isValid(maxNumberOfResults, constraintValidatorContextMock);
         // then
+        assertFalse(valid);
         verify(constraintValidatorContextMock);
     }
 

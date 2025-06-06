@@ -534,6 +534,9 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager implemen
             parsedPublicKey = OAuthTools.getBytesFromOauthKey(inputKeyBytes);
         } catch (CertificateParsingException e) {
             log.info("Could not parse public key from certificate string " + oauthKeyEditor.getPublicKeyValue());
+            if (log.isDebugEnabled()) {
+                log.debug("Could not parse public key from certificate string ", e);
+            }
             systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_BADKEYSTRING");
             return null;
         }
@@ -561,11 +564,17 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager implemen
                 oauthKeyEditor.getPublicKeys().add(key);
             }
         } catch (MalformedURLException e) {
-            log.info("Could not parse public key config url " + oauthKeyEditor.getPublicKeyUrl());
+            log.info("Could not load keys using jwks url " + oauthKeyEditor.getPublicKeyUrl());
+            if (log.isDebugEnabled()) {
+                log.debug("Could not load keys using jwks url", e);
+            }
             systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_BADKEYURL", oauthKeyEditor.getPublicKeyUrl());
             return StringUtils.EMPTY;
         } catch (ParseException | IOException | JOSEException e) {
-            log.info("Could not load keys using config url " + oauthKeyEditor.getPublicKeyUrl());
+            log.info("Could not load keys using jwks url " + oauthKeyEditor.getPublicKeyUrl());
+            if (log.isDebugEnabled()) {
+                log.debug("Could not load keys using jwks url", e);
+            }
             systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_FAILEDKEYURL", oauthKeyEditor.getPublicKeyUrl());
             return StringUtils.EMPTY;
         }

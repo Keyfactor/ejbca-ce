@@ -16,7 +16,7 @@ import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.easymock.EasyMock;
 import org.junit.Test;
 
-public class CurrentSessionCryptoTokenChangesTest {
+public class CurrentSessionCryptoTokenChangesUnitTest {
 
     @Test
     public void localStateChangesNeverRequireUpdates() {
