@@ -96,9 +96,6 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
     private ServiceSessionLocal serviceSession;
 
     private Integer selectedCertProfileId = null;
-    private boolean renameInProgress = false;
-    private boolean deleteInProgress = false;
-    private boolean addFromTemplateInProgress = false;
     private String certProfileName = "";
     private ListDataModel<CertificateProfileItem> certificateProfileItems = null;
     private Part uploadFile;
@@ -255,23 +252,15 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         return getCertificateProfiles().getRowData().getId();
     }
 
-    public boolean isOperationInProgress() {
-        return isDeleteInProgress() || isAddFromTemplateInProgress();
-    }
-
     public void actionAdd() {
         clearMessages();
         redirect("editcertificateprofile.xhtml", "id", CertificateProfileConstants.NO_CERTIFICATE_PROFILE);
     }
 
-    public boolean isAddFromTemplateInProgress() {
-        return addFromTemplateInProgress;
-    }
-
     public void actionAddFromTemplate() {
         selectCurrentRowData();
         if (selectedProfileExists()) {
-            addFromTemplateInProgress = true;
+            redirect("clonecertificateprofile.xhtml");
         }
     }
 
@@ -297,6 +286,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
                 }
                 certificateProfileSession.cloneCertificateProfile(getAdmin(), getSelectedCertProfileName(), certProfileName, authorizedCaIds);
                 setCertProfileName("");
+                actionCancel();
             } catch (CertificateProfileExistsException e) {
                 addErrorMessage("CERTIFICATEPROFILEALREADY");
             } catch (AuthorizationDeniedException e) {
@@ -304,19 +294,14 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
             } catch (CertificateProfileDoesNotExistException e) {
                 // NOPMD: ignore do nothing
             }
-            
-        }
-        actionCancel();
-    }
 
-    public boolean isDeleteInProgress() {
-        return deleteInProgress;
+        }
     }
 
     public void actionDelete() {
         selectCurrentRowData();
         if (selectedProfileExists()) {
-            deleteInProgress = true;
+            redirect("deletecertificateprofile.xhtml");
         }
     }
 
@@ -325,43 +310,23 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
             try {
                 certificateProfileSession.removeCertificateProfile(getAdmin(), getSelectedCertProfileName());
                 certificateProfileSession.flushProfileCache();
+                actionCancel();
             } catch (AuthorizationDeniedException e) {
                 addNonTranslatedErrorMessage("Not authorized to remove certificate profile.");
             }
         } else {
             addErrorMessage("COULDNTDELETECERTPROF");
         }
-        actionCancel();
-    }
-
-    public void actionRenameConfirm() {
-        final String certProfileName = getCertProfileName();
-        if (certProfileName.endsWith(LEGACY_FIXED_MARKER)) {
-            addErrorMessage("YOUCANTEDITFIXEDCERTPROFS");
-        } else if (certProfileName.length() > 0) {
-            if (!StringTools.checkFieldForLegalChars(certProfileName)) {
-                addErrorMessage("ONLYCHARACTERS");
-                return;
-            }
-            try {
-                certificateProfileSession.renameCertificateProfile(getAdmin(), getSelectedCertProfileName(), certProfileName);
-                setCertProfileName("");
-            } catch (CertificateProfileExistsException e) {
-                addErrorMessage("CERTIFICATEPROFILEALREADY");
-            } catch (AuthorizationDeniedException e) {
-                addNonTranslatedErrorMessage("Not authorized to rename certificate profile.");
-            }
-        }
-        actionCancel();
     }
 
     public void actionCancel() {
-        addFromTemplateInProgress = false;
-        deleteInProgress = false;
-        renameInProgress = false;
         certificateProfileItems = null;
         selectedCertProfileId = null;
         certProfileName = null;
+
+        System.out.println("CANCEL");
+
+        redirect("editcertificateprofiles.xhtml");
     }
     
     /** @return true if there exists a certificate profile with the selected id */
