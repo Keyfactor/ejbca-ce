@@ -16,6 +16,7 @@ import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import jakarta.ejb.EJB;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -26,6 +27,7 @@ import org.cesecore.certificate.ca.its.ITSApplicationIds;
 import org.cesecore.certificate.ca.its.ITSCertificateType;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CAFactory;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.CvcCABase;
 import org.cesecore.certificates.ca.ssh.SshCa;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -87,6 +89,9 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     private static final Logger log = Logger.getLogger(CertProfileBean.class);
 
     private static final String LEGACY_FIXED_MARKER = "(FIXED)";
+
+    @EJB
+    private CaSessionLocal caSession;
 
     private int currentCertProfileId = -1;
     private int certificateProfileId;
@@ -167,7 +172,14 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         }
         if (certificateProfile==null) {
             currentCertProfileId = getCertificateProfileId();
-            final CertificateProfile certificateProfile = getEjbcaWebBean().getEjb().getCertificateProfileSession().getCertificateProfile(currentCertProfileId);
+            final CertificateProfile certificateProfile;
+            if (certificateProfileId == 0) {
+                certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+                certificateProfile.setAvailableCAs(caSession.getAuthorizedCaIds(getAdmin()));
+            } else {
+                certificateProfile = getEjbcaWebBean().getEjb().getCertificateProfileSession().getCertificateProfile(currentCertProfileId);
+            }
+
             try {
                 this.certificateProfile = certificateProfile.clone();
                 // Add some defaults
