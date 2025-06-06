@@ -1760,10 +1760,10 @@ public class EditEndEntityMBean extends EndEntityBaseManagedBean implements Seri
         }
 
         if (eeProfile.isCabfOrganizationIdentifierRequired() && StringUtils.isEmpty(cabfOrganizationIdentifier)) {
-            throw new ParameterException(ejbcaWebBean.getText("EXT_CABF_ORGANIZATION_IDENTIFIER_REQUIRED"));
+            throw new ParameterException(getEjbcaErrorWebBean().getText("EXT_CABF_ORGANIZATION_IDENTIFIER_REQUIRED"));
         } else if (StringUtils.isNotEmpty(cabfOrganizationIdentifier)
                 && !cabfOrganizationIdentifier.matches(CabForumOrganizationIdentifier.VALIDATION_REGEX)) {
-            throw new ParameterException(ejbcaWebBean.getText("EXT_CABF_ORGANIZATION_IDENTIFIER_BADFORMAT"));
+            throw new ParameterException(getEjbcaErrorWebBean().getText("EXT_CABF_ORGANIZATION_IDENTIFIER_BADFORMAT"));
         }
         ei.setCabfOrganizationIdentifier(cabfOrganizationIdentifier);
         newUserView.setExtendedInformation(ei);
