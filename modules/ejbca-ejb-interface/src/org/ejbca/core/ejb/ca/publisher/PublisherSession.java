@@ -118,7 +118,17 @@ public interface PublisherSession {
      * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_publisher
      */
     void renamePublisher(AuthenticationToken admin, String oldname, String newname) throws PublisherExistsException, AuthorizationDeniedException;
-    
+
+    /** Updates publisher data.
+     *
+     * @param admin AuthenticationToken of admin.
+     * @param id the publisher is.
+     * @param name the new name of the publisher to change.
+     * @param publisher the publisher to be added.
+     *
+     * @throws AuthorizationDeniedException */
+    void changePublisher(AuthenticationToken admin, int id, String name, BasePublisher publisher) throws AuthorizationDeniedException;
+
     /** Updates publisher data.
      *  
      * @param admin AuthenticationToken of admin.
