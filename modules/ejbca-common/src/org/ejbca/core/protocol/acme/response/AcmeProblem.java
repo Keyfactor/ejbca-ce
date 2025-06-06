@@ -43,7 +43,8 @@ public enum AcmeProblem {
     PROBLEM_EXTERNAL_ACCOUNT_REQUIRED("externalAccountRequired", "External account binding required."),
     PROBLEM_APPROVAL_REQUIRED_FOR_ACCOUNT_REGISTRATION("approvalRequiredForAccountRegistration", "Account registration requires the approval of one or more administrators."),
     PROBLEM_APPROVAL_REQUIRED_FOR_ACCOUNT_KEY_CHANGE("approvalRequiredForKeyChange", "Key change requires the approval of one or more administrators."),
-    PROBLEM_CERTIFICATE_NOT_FOUND("certificateNotFound", "The requested certificate was not found.");
+    PROBLEM_CERTIFICATE_NOT_FOUND("certificateNotFound", "The requested certificate was not found."),
+    PROBLEM_ALREADY_REPLACED("alreadyReplaced", "The requested certificate is already Replaced.");
 
     private final String type;
     private final String detail;
