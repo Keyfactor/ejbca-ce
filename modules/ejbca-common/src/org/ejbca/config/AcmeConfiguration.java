@@ -123,7 +123,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final String DEFAULT_TERMS_OF_SERVICE_URL = "https://example.com/acme/terms";
     private static final String DEFAULT_TERMS_OF_SERVICE_CHANGE_URL = "https://example.com/acme/termsChanged";
     private static final String DEFAULT_WEBSITE_URL = "https://www.example.com/";
-    private static final String DEFAULT_ARI_RETRY_AFTER = "6h";
+    public static final String DEFAULT_ARI_RETRY_AFTER = "6h";
     private static final long DEFAULT_ORDER_VALIDITY = 3600000L;
     public static final int DEFAULT_CHALLENGE_RESPONSE_TIMOUT = 30;
     private static final String DEFAULT_AUTHORIZED_REDIRECT_PORTS = "22,25,80,443";
