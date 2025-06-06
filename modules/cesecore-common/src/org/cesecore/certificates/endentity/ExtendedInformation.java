@@ -124,6 +124,8 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     
     /** Map key for certificate serial number */
     private  static final String CERTIFICATESERIALNUMBER = "CERTIFICATESERIALNUMBER";
+    private  static final String CERTIFICATESEQUENCENUMBER = "CERTIFICATESEQUENCENUMBER";
+
     private static final Object NAMECONSTRAINTS_PERMITTED = "nameconstraints_permitted";
     private static final Object NAMECONSTRAINTS_EXCLUDED = "nameconstraints_excluded";
 
@@ -403,6 +405,11 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         final String s = new String(Base64.encode(sn.toByteArray()));
         this.data.put(CERTIFICATESERIALNUMBER, s);
     }
+
+    public String getSequenceNumber() {
+        return (String) this.data.get(CERTIFICATESEQUENCENUMBER);
+    }
+
 
     /**
      * Returns the issuance revocation code configured on the end entity extended information.
