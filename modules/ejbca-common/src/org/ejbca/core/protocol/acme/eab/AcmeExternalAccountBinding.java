@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.protocol.acme.eab;
 
+import java.io.Serializable;
+
 import org.cesecore.accounts.AccountBinding;
 import org.ejbca.configdump.ConfigDumpItemAware;
 import org.ejbca.core.protocol.acme.AcmeProblemException;
@@ -21,7 +23,7 @@ import org.ejbca.core.protocol.acme.AcmeProblemException;
  * 
  * https://tools.ietf.org/html/rfc8555#section-7.3.4 
  */
-public interface AcmeExternalAccountBinding extends AccountBinding, ConfigDumpItemAware {
+public interface AcmeExternalAccountBinding extends AccountBinding, ConfigDumpItemAware, Serializable {
 
     static final String TYPE_NAME = "ACME_EXTERNAL_ACCOUNT_BINDING";
     

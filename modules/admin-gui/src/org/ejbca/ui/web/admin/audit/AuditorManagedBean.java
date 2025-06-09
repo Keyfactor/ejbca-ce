@@ -83,8 +83,8 @@ public class AuditorManagedBean extends BaseManagedBean implements Serializable 
 	private static final boolean ORDER_ASC = true;
 	private static final boolean ORDER_DESC = false;
 	
-	private final SecurityEventsAuditorSessionLocal securityEventsAuditorSession = new EjbLocalHelper().getSecurityEventsAuditorSession();
-	private final CaSessionLocal caSession = new EjbLocalHelper().getCaSession();
+	private transient SecurityEventsAuditorSessionLocal securityEventsAuditorSession;
+	private transient CaSessionLocal caSession;
 	
 	private boolean renderNext = false;
 
@@ -98,7 +98,7 @@ public class AuditorManagedBean extends BaseManagedBean implements Serializable 
 	private final List<SelectItem> columns = new ArrayList<>();
 	private final List<SelectItem> sortOrders = new ArrayList<>();
 	private List<? extends AuditLogEntry> results;
-	private Map<Object, String> caIdToNameMap;
+	private Map<String, String> caIdToNameMap;
 
 	private Map<String, String> columnNameMap = new HashMap<>();
 	private final List<SelectItem> eventStatusOptions = new ArrayList<>();
@@ -198,7 +198,7 @@ public class AuditorManagedBean extends BaseManagedBean implements Serializable 
 
 	public List<SelectItem> getDevices() {
 		final List<SelectItem> list = new ArrayList<>();
-		for (final String deviceId : securityEventsAuditorSession.getQuerySupportingLogDevices()) {
+		for (final String deviceId : getSecurityEventsAuditorSession().getQuerySupportingLogDevices()) {
 			list.add(new SelectItem(deviceId, deviceId));
 		}
 		return list;
@@ -314,7 +314,7 @@ public class AuditorManagedBean extends BaseManagedBean implements Serializable 
 			setConditionToAdd(new AuditSearchCondition(conditionColumn, conditionsOptions, null, Condition.EQUALS, ""));
 		} else if (AuditLogEntry.FIELD_CUSTOM_ID.equals(conditionColumn)) {
 			List<SelectItem> caIds = new ArrayList<>();
-			for (Entry<Object,String> entry : caIdToNameMap.entrySet()) {
+			for (Entry<String,String> entry : caIdToNameMap.entrySet()) {
 				caIds.add(new SelectItem(entry.getKey(), entry.getValue()));
 			}
 			setConditionToAdd(new AuditSearchCondition(conditionColumn, conditionsOptionsExact, caIds));
@@ -462,16 +462,16 @@ public class AuditorManagedBean extends BaseManagedBean implements Serializable 
         return new EjbLocalHelper().getEjbcaAuditorSession().selectAuditLog(token, device, firstResult, maxResults, whereClause.toString(), orderClause, parameters);
     }
 	
-	public Map<Object, String> getCaIdToName() {
+	public Map<String, String> getCaIdToName() {
 		return caIdToNameMap;
 	}
 
 	private void updateCaIdToNameMap() {
-		final Map<Integer, String> map = caSession.getCAIdToNameMap();
-		final Map<Object, String> ret = new HashMap<>();
+		final Map<Integer, String> map = getCaSession().getCAIdToNameMap();
+		final Map<String, String> ret = new HashMap<>();
 		final AuthenticationToken authenticationToken = EjbcaJSFHelper.getBean().getEjbcaWebBean().getAdminObject();
 		for (final Entry<Integer,String> entry : map.entrySet()) {
-            if (caSession.authorizedToCANoLogging(authenticationToken, entry.getKey())) {
+            if (getCaSession().authorizedToCANoLogging(authenticationToken, entry.getKey())) {
                 ret.put(entry.getKey().toString(), entry.getValue());
             }
 		}
@@ -674,5 +674,17 @@ public class AuditorManagedBean extends BaseManagedBean implements Serializable 
         auditExporter.writeField(AuditLogEntry.FIELD_ADDITIONAL_DETAILS, additionalDetailsEncoded);
         auditExporter.writeField("rowProtection", auditRecordData.getRowProtection());
         auditExporter.writeEndObject();
+    }
+
+    public SecurityEventsAuditorSessionLocal getSecurityEventsAuditorSession() {
+        if (securityEventsAuditorSession == null)
+            securityEventsAuditorSession = new EjbLocalHelper().getSecurityEventsAuditorSession();
+        return securityEventsAuditorSession;
+    }
+
+    public CaSessionLocal getCaSession() {
+        if (caSession == null)
+            caSession = new EjbLocalHelper().getCaSession();
+        return caSession;
     }
 }

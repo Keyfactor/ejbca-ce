@@ -1239,7 +1239,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return new RaCertificateSearchResponse(responseV2, mightHaveMoreResults);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public RaCertificateSearchResponseV2 searchForCertificatesV2(AuthenticationToken authenticationToken, RaCertificateSearchRequestV2 request) {
         final RaCertificateSearchResponseV2 emptyResponse = new RaCertificateSearchResponseV2();

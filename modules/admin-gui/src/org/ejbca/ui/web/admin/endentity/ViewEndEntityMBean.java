@@ -12,13 +12,16 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.endentity;
 
-import java.io.Serializable;
-import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.PostActivate;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.model.SelectItem;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Named;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -39,16 +42,11 @@ import org.ejbca.ui.web.admin.rainterface.RAInterfaceBean;
 import org.ejbca.ui.web.admin.rainterface.UserView;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.certificate.DnComponents;
-
-import jakarta.annotation.PostConstruct;
-import jakarta.faces.context.FacesContext;
-import jakarta.faces.model.SelectItem;
-import jakarta.faces.view.ViewScoped;
-import jakarta.inject.Named;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
+import java.io.Serializable;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * JSF managed bean backing view end entity xhtml page
@@ -58,10 +56,32 @@ import jakarta.servlet.http.HttpServletRequest;
 public class ViewEndEntityMBean extends EndEntityBaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    
+    @PostActivate
+    protected void restoreUnserializedState() throws Exception {
+        if (!getEjbcaWebBean().isAuthorizedNoLogSilent(AccessRulesConstants.ROLE_ADMINISTRATOR)) {
+            throw new AuthorizationDeniedException("You are not authorized to view this page.");
+        }
+        initData();
+    }
+    
+    @Override
+    protected EjbcaWebBean getEjbcaWebBean() {
+        if (ejbcaWebBean == null) {
+            ejbcaWebBean = super.getEjbcaWebBean();
+            try {
+                initData();
+            } catch (Exception e) {
+                // initData can throw an but getEjbcaWebBean wont.  
+                throw new IllegalStateException(e);
+            }
+        }
+        return ejbcaWebBean;
+    }
 
-    private EjbcaWebBean ejbcaWebBean;
-    private CAInterfaceBean caBean;
-    private RAInterfaceBean raBean;
+    private transient EjbcaWebBean ejbcaWebBean;
+    private transient CAInterfaceBean caBean;
+    private transient RAInterfaceBean raBean;
 
     // Fields from legacy ViewEndEntityHelper class
 
@@ -126,7 +146,6 @@ public class ViewEndEntityMBean extends EndEntityBaseManagedBean implements Seri
 
         final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
 
-        ejbcaWebBean = getEjbcaWebBean();
         globalConfiguration = ejbcaWebBean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR,
                 AccessRulesConstants.REGULAR_VIEWENDENTITY);
         caBean = SessionBeans.getCaBean(request);
@@ -214,7 +233,7 @@ public class ViewEndEntityMBean extends EndEntityBaseManagedBean implements Seri
         RequestHelper.setDefaultCharacterEncoding(request);
         String action = request.getParameter(ACTION);
         if (action == null && request.getParameter(TIMESTAMP_PARAMETER) != null && request.getParameter(USER_PARAMETER) != null) {
-            userName = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER), StandardCharsets.UTF_8);
+            userName = request.getParameter(USER_PARAMETER);
             Date timestamp = new Date(Long.parseLong(request.getParameter(TIMESTAMP_PARAMETER)));
 
             notAuthorized = !populateUserDatas(userName);
@@ -232,7 +251,7 @@ public class ViewEndEntityMBean extends EndEntityBaseManagedBean implements Seri
             }
         } else {
             if (action == null && request.getParameter(USER_PARAMETER) != null) {
-                userName = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER), StandardCharsets.UTF_8);
+                userName = request.getParameter(USER_PARAMETER);
                 notAuthorized = !populateUserDatas(userName);
                 noUserParameter = false;
                 if ((userDatas != null) && (userDatas.length > 0)) {
@@ -247,7 +266,7 @@ public class ViewEndEntityMBean extends EndEntityBaseManagedBean implements Seri
                 }
             } else {
                 if (action != null && request.getParameter(USER_PARAMETER) != null) {
-                    userName = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER), StandardCharsets.UTF_8);
+                    userName = request.getParameter(USER_PARAMETER);
                     if (request.getParameter(BUTTON_VIEW_NEWER) != null &&  (currentUserIndex > 0)) {
                             currentUserIndex--;
                         

@@ -16,10 +16,11 @@ import com.keyfactor.util.StringTools;
 import org.cesecore.config.MSAutoEnrollmentSettingsTemplate;
 import org.ejbca.config.MSAutoEnrollmentConfiguration;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AutoEnrollmentDTO {
+public class AutoEnrollmentDTO implements Serializable {
 
     private String alias;
     private String msaeForestRoot;
