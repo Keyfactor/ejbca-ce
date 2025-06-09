@@ -231,23 +231,6 @@ public class CmpMessageHelper {
         return pkiMessageToByteArray(signedPkiMessage);
     }
 
-    public static String getAlgorithmNameFromDigestAndKey(final String digestAlg, final String keyAlg, final boolean isPss) {
-        if (isPss && "RSA".equals(keyAlg)) {
-            String algorithmName = switch (digestAlg) {
-                case "2.16.840.1.101.3.4.2.1" -> "SHA256withRSAandMGF1";
-                case "2.16.840.1.101.3.4.2.2" -> "SHA384withRSAandMGF1";
-                case "2.16.840.1.101.3.4.2.3" -> "SHA512withRSAandMGF1";
-                default -> null;
-            };
-            if (algorithmName == null) {
-                return AlgorithmTools.getAlgorithmNameFromDigestAndKey(digestAlg, keyAlg);
-            } else {
-                return algorithmName;
-            }
-        }
-        return AlgorithmTools.getAlgorithmNameFromDigestAndKey(digestAlg, keyAlg);
-    }
-
     public static PKIMessage buildCertBasedPKIProtection(PKIMessage pkiMessage, CMPCertificate[] extraCerts, PrivateKey key, String signAlg,
             String provider) throws NoSuchProviderException, NoSuchAlgorithmException, SecurityException, SignatureException, InvalidKeyException {
         PKIHeaderBuilder headerBuilder = getHeaderBuilder(pkiMessage.getHeader());
