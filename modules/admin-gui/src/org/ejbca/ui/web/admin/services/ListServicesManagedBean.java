@@ -15,7 +15,6 @@ package org.ejbca.ui.web.admin.services;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -24,6 +23,7 @@ import jakarta.faces.application.Application;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.model.SelectItem;
 import jakarta.inject.Named;
+import org.apache.commons.lang.StringUtils;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.core.model.services.ServiceExistsException;
@@ -44,9 +44,11 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 public class ListServicesManagedBean extends BaseManagedBean {
 
 	private static final long serialVersionUID = 1L;
-	private final EjbLocalHelper ejb = new EjbLocalHelper();
 	private String selectedServiceName;
-	private String clonedServiceName;
+	private String clonedServiceName = StringUtils.EMPTY;
+
+	// this shouldn't be serialized - only access via getter
+	private transient EjbLocalHelper ejb = new EjbLocalHelper();
 
 	public ListServicesManagedBean() {
 	    super(AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.SERVICES_VIEW);
@@ -70,11 +72,11 @@ public class ListServicesManagedBean extends BaseManagedBean {
 
     public List<SortableSelectItem> getAvailableServices() {
         List<SortableSelectItem> availableServices = new ArrayList<>();
-        Collection<Integer> availableServicesIds = ejb.getServiceSession().getVisibleServiceIds();
+        Collection<Integer> availableServicesIds = getEjb().getServiceSession().getVisibleServiceIds();
 		boolean isAuthorizedToDbMaintenanceService = isAuthorizedToDbMaintenanceService();
 		for (Integer id : availableServicesIds) {
-            ServiceConfiguration serviceConfig = ejb.getServiceSession().getServiceConfiguration(id);
-            String serviceName = ejb.getServiceSession().getServiceName(id);
+            ServiceConfiguration serviceConfig = getEjb().getServiceSession().getServiceConfiguration(id);
+            String serviceName = getEjb().getServiceSession().getServiceName(id);
 			if (!isAuthorizedToDbMaintenanceService && DatabaseMaintenanceWorkerConstants.WORKER_CLASS.equals(serviceConfig.getWorkerClassPath())) {
 				continue;
 			}
@@ -149,7 +151,7 @@ public class ListServicesManagedBean extends BaseManagedBean {
 	 * @return "done" - the view ID used to navigate back to the service list page
 	 */
 	public String deleteService(final String serviceName){
-		ejb.getServiceSession().removeService(getAdmin(), serviceName);
+		getEjb().getServiceSession().removeService(getAdmin(), serviceName);
 		return "done";
 	}
 
@@ -187,7 +189,7 @@ public class ListServicesManagedBean extends BaseManagedBean {
 			return "";
 		}
 		try {
-			ejb.getServiceSession().cloneService(getAdmin(), selectedServiceName, clonedServiceName);
+			getEjb().getServiceSession().cloneService(getAdmin(), selectedServiceName, clonedServiceName);
 		} catch (ServiceExistsException e) {
 			addErrorMessage("SERVICENAMEALREADYEXISTS");
 		}
@@ -198,14 +200,14 @@ public class ListServicesManagedBean extends BaseManagedBean {
 	 * @return true if admin has access to /services/edit
 	 */
 	public boolean getHasEditRights() {
-	    return ejb.getAuthorizationSession().isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.SERVICES_EDIT);
+	    return getEjb().getAuthorizationSession().isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.SERVICES_EDIT);
 	}
 
 	/**
 	 * @return true if admin has access to /services/dbMaintenance
 	 */
 	private boolean isAuthorizedToDbMaintenanceService() {
-		return ejb.getAuthorizationSession().isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.SERVICES_DB_MAINTENANCE);
+		return getEjb().getAuthorizationSession().isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.SERVICES_DB_MAINTENANCE);
 	}
 
 	private EditServiceManagedBean getEditServiceBean(){
@@ -222,5 +224,11 @@ public class ListServicesManagedBean extends BaseManagedBean {
 	 */
 	public boolean isServiceListEmpty() {
 		return getAvailableServices().isEmpty();
+	}
+
+	public EjbLocalHelper getEjb() {
+		if (ejb == null)
+			ejb = new EjbLocalHelper();
+		return ejb;
 	}
 }

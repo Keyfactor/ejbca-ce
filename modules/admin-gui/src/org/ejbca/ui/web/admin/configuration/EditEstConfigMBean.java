@@ -83,7 +83,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
         caNameToIdMap = caSession.getAuthorizedCaNamesToIds(getAdmin());
     }
 
-    public class EstAliasGui {
+    public class EstAliasGui implements Serializable {
         private String name;
         private String caId;
         private String endEntityProfileId;

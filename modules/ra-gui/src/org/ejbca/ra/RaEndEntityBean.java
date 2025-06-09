@@ -1853,4 +1853,5 @@ public class RaEndEntityBean implements Serializable {
     public String backToSearch() {
         return "search_ees.xhtml";
     }
+
 }

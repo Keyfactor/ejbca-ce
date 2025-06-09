@@ -12,14 +12,9 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.sign;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
@@ -34,7 +29,19 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.RFC4683Tools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -131,19 +138,17 @@ import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runners.MethodSorters;
 
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.RFC4683Tools;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.certificate.SimpleCertGenerator;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.KeyTools;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Test class for tests based on an RSA
@@ -220,6 +225,9 @@ public class SignSessionWithRsaSystemTest extends SignSessionCommon {
     private static KeyPair rsakeys;
     private static int rsacaid;
 
+    @Rule
+    public TemporaryFolder tempFolder = new TemporaryFolder();
+    
     @ClassRule
     public static DatabaseContentRule databaseContentRule = new DatabaseContentRule();
 
@@ -859,15 +867,21 @@ public class SignSessionWithRsaSystemTest extends SignSessionCommon {
             CertificateCreateException, CryptoTokenOfflineException, SignRequestSignatureException, IllegalNameException, CertificateRevokeException,
             CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CertificateExtensionException,
             PublisherExistsException, NoSuchEndEntityException, SignRequestException, EndEntityExistsException, EndEntityProfileValidationException,
-            WaitingForApprovalException, EjbcaException, EndEntityProfileExistsException, EndEntityProfileNotFoundException {
+            WaitingForApprovalException, EjbcaException, EndEntityProfileExistsException, EndEntityProfileNotFoundException, FileNotFoundException, ClassNotFoundException, IOException {
         final String profileName = "testSingleActiveCertificateConstraintPublishing";
         final String publisherName = "testSingleActiveCertificateConstraintPublishing";
         final String username = "testSingleActiveCertificateConstraintPublishing";
+        
         //Set up a mock publisher
         final CustomPublisherContainer publisher = new CustomPublisherContainer();
         publisher.setClassPath(DummyCustomPublisher.class.getName());
         publisher.setDescription("Used in Junit Test 'testSingleActiveCertificateConstraintPublishing'. Remove this one.");
+        Properties properties = new Properties();
+        String tempCertificatePath = new File(tempFolder.getRoot(), "publishedCertificate").getAbsolutePath();
+        properties.setProperty("savedCertificatePath", tempCertificatePath);
+        publisher.setProperties(properties);
         int publisherId = publisherProxySession.addPublisher(internalAdmin, publisherName, publisher);
+        
         BigInteger certificatoriginalCertificateeSerialNumber = null;
         BigInteger newCertificateSerialNumber = null;
         try {
@@ -905,9 +919,9 @@ public class SignSessionWithRsaSystemTest extends SignSessionCommon {
                     certificateStoreSession.getStatus(testCaSubjectDn, newCertificateSerialNumber));
             assertEquals("Old certificate was not revoked.", CertificateStatus.REVOKED,
                     certificateStoreSession.getStatus(testCaSubjectDn, certificatoriginalCertificateeSerialNumber));
-            DummyCustomPublisher mockPublisher = (DummyCustomPublisher) ((CustomPublisherContainer) publisherSession.getPublisher(publisherId))
-                    .getCustomPublisher();
-            assertNotNull("Certificate was not sent to publisher", mockPublisher.getStoredCertificate());
+            
+            assertNotNull("Certificate was not sent to publisher", 
+                    DummyCustomPublisher.readCertificateFromFile(tempCertificatePath).getCertificate());
         } finally {
 
             certificateProfileSession.removeCertificateProfile(internalAdmin, profileName);

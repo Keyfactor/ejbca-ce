@@ -119,7 +119,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     private String clonedProfileName;
     
     private String endEntityProfileName;
-    private Part uploadFile;
+    private transient Part uploadFile;
     private boolean profileSaved;
     private String uploadFilename;
     private Map<String, String> endEntityProfileNameToIdMap = null;
