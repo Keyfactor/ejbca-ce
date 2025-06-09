@@ -533,8 +533,9 @@ public class EditServiceManagedBean extends BaseManagedBean {
     }
 
     public EjbLocalHelper getEjb() {
-        if (ejb == null)
+        if (ejb == null) {
             ejb = new EjbLocalHelper();
+        }
         return ejb;
     }
 
