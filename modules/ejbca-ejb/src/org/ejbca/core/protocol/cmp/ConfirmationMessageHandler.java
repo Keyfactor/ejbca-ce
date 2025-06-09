@@ -165,12 +165,12 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
                     LOG.debug("Confirm request message (update) header has protection alg: " + protectionAlgorithm.getAlgorithm().getId());
                 }
                 // We don't need a default digest algorithm, if setPreferredDigestAlg is null, the sender cert's algorithm will be used
-
                 cresp.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlgAndHandleParameters(protectionAlgorithm, null));
                 if (cresp.getMessage() == null
                         && PKCSObjectIdentifiers.id_RSASSA_PSS.getId().equals(cmpRequestMessage.getHeader().getProtectionAlg().getAlgorithm().getId())) {
                     // We need to propagate the request information forward to know to use PSS if possible when signing the response
                     cresp.setMessage(cmpRequestMessage.getMessage());
+
                 }
             } else if (LOG.isDebugEnabled()) {
                 LOG.debug("CMP Confirm message header has no protection alg, using default alg in response.");

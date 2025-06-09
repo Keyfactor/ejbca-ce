@@ -121,6 +121,9 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
      * is signature protected. */
     private String preferredDigestAlg = null;
 
+    /** whether PSS is preferred to be used for the response signature, if applicable */
+    private boolean isPss = false;
+
     /** Because CertReqMsg is not serializable we may need to encode/decode bytes if the object is lost during deserialization. */
     private CertReqMsg getReq() {
         if (req == null) {
@@ -627,6 +630,15 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
         if(StringUtils.isNotEmpty(digestAlgo)) {
             preferredDigestAlg = digestAlgo;
         }
+    }
+
+    @Override
+    public boolean isPss() {
+        return isPss;
+    }
+
+    public void setPss(boolean isPss) {
+        this.isPss = isPss;
     }
 
     @Override

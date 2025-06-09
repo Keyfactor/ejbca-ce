@@ -186,6 +186,13 @@ public interface ResponseMessage extends Serializable {
      */
     void setPreferredDigestAlg(String digest);
 
+    /**
+     * Sets whether the response is preferred to be signed using RSASSA-PSS
+     *
+     * @param isPss whether RSASSA-PSS is preferred to be used for the response
+     */
+    void setPss(boolean isPss);
+
     /** Sometimes (CMP) the response identifier sent depends on which request identifier was used,
      * even if the messages themselves are the same mesages.
      *

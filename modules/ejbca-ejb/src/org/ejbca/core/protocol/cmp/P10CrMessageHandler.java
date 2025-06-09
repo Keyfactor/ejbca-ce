@@ -20,6 +20,7 @@ import jakarta.ejb.EJBException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -178,6 +179,7 @@ public class P10CrMessageHandler extends BaseCmpMessageHandler implements ICmpMe
                     // We don't need a default digest algorithm, if setPreferredDigestAlg is null, the sender cert's algorithm will be used
 
                     p10CrReq.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlgAndHandleParameters(p10CrReq.getHeader().getProtectionAlg(), null));
+
                 } else if (LOG.isDebugEnabled()) {
                     LOG.debug("P10CR request message header has no protection alg, using default alg in response.");
                 }

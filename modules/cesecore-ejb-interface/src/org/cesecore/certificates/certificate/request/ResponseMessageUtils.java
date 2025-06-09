@@ -61,6 +61,8 @@ public abstract class ResponseMessageUtils {
         }
         // Which digest algorithm to use to create the response, if applicable
         ret.setPreferredDigestAlg(req.getPreferredDigestAlg());
+        // Whether to use RSASSA-PSS for the response signature, if applicable
+        ret.setPss(req.isPss());
         // Include the CA cert or not in the response, if applicable for the response type
         ret.setIncludeCACert(req.includeCACert());
         // Hint to the response which request type it is in response to

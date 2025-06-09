@@ -77,7 +77,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 	private static final Logger LOG = Logger.getLogger(RevocationMessageHandler.class);
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources INTRES = InternalEjbcaResources.getInstance();
-	
+
 	/** Parameter used to determine the type of protection for the response message */
 	private String responseProtection = null;
 	
@@ -315,6 +315,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
                     		&& PKCSObjectIdentifiers.id_RSASSA_PSS.getId().equals(msg.getHeader().getProtectionAlg().getAlgorithm().getId())) {
 						// We need to propagate the request information forward to know to use PSS if possible when signing the response
 						rresp.setMessage(msg.getMessage());
+
 					}
                 } else if (LOG.isDebugEnabled()) {
                     LOG.debug("RevReq request message header has no protection alg, using default alg in response.");

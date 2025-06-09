@@ -345,6 +345,12 @@ public class CVCRequestMessage implements RequestMessage {
     }
 
     @Override
+    public boolean isPss() {
+        // Not used
+        return false;
+    }
+
+    @Override
     public boolean includeCACert() {
     	return false;
     }

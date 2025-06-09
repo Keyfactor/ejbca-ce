@@ -61,6 +61,8 @@ public class CmpConfirmResponseMessage extends BaseCmpMessage implements Respons
 	
     /** Default digest algorithm for CMP response message, can be overridden */
 	private String digestAlg = CMSSignedGenerator.DIGEST_SHA256;
+    /** whether PSS is preferred to be used for the response signature, if applicable */
+    private transient boolean isPss = false;
 	/** The default provider is BC, if nothing else is specified when setting SignKeyInfo */
 	private String provider = "BC";
 	/** Certificate for the signer of the response message (CA) */
@@ -146,6 +148,7 @@ public class CmpConfirmResponseMessage extends BaseCmpMessage implements Respons
                     myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
 					SignatureParameter signatureParameter = determineSignatureParameterFromRequest();
                     responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, signCertChain, signKey, signAlg, digestAlg, provider, signatureParameter);
+
 				} catch (CertificateEncodingException | SecurityException | SignatureException e) {
 					log.error("Error creating CmpConfirmMessage: ", LogRedactionUtils.getRedactedException(e));
 				} 		
@@ -188,6 +191,11 @@ public class CmpConfirmResponseMessage extends BaseCmpMessage implements Respons
 	        this.digestAlg = digest;
 	    }
 	}
+
+    @Override
+    public void setPss(boolean isPss) {
+        this.isPss = isPss;
+    }
 
 	@Override
 	public void setRequestType(int reqtype) {

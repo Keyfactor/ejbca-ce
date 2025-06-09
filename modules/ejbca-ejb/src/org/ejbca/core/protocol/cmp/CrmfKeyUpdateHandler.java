@@ -138,6 +138,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                     // We don't need a default digest algorithm, if setPreferredDigestAlg is null, the sender cert's algorithm will be used
 
                     crmfreq.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlgAndHandleParameters(crmfreq.getHeader().getProtectionAlg(), null));
+
                 } else if (LOG.isDebugEnabled()) {
                     LOG.debug("CRMF request message (update) header has no protection alg, using default alg in response.");
                 }

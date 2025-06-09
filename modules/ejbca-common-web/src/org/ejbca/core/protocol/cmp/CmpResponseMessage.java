@@ -132,6 +132,8 @@ public class CmpResponseMessage implements CertificateResponseMessage {
     /** Default digest algorithm for CMP response message used for signature protection, is nothing. Can be set/overridden from
      * request message with setPreferredDigestAlg() on the request message. If unset (default) value is taken from signer */
     private String digest  = null;
+    /** Whether the response should have a PSS signature with MGF1 */
+    private boolean isPss = false;
     /** The default provider is BC, if nothing else is specified when setting SignKeyInfo */
     private String provider = BouncyCastleProvider.PROVIDER_NAME;
 
@@ -527,6 +529,7 @@ public class CmpResponseMessage implements CertificateResponseMessage {
                 }
 
                 responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, extraCertsList, signKey, signAlg, digest, provider, signatureParameter);
+
             }
 
             ret = true;
@@ -604,6 +607,11 @@ public class CmpResponseMessage implements CertificateResponseMessage {
         if(!StringUtils.isEmpty(digest)) {
             this.digest = digest;
         }
+    }
+
+    @Override
+    public void setPss(boolean isPss) {
+        this.isPss = isPss;
     }
 
     @Override

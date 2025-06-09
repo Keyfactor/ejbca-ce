@@ -72,6 +72,7 @@ public class CmpErrorResponseMessage extends BaseCmpMessage implements ResponseM
 	private Collection<Certificate> signCerts = null;
 	private String provider = null;
 	private String digestAlg = null;
+    private boolean isPss = false;
 
 
 	@Override
@@ -159,6 +160,7 @@ public class CmpErrorResponseMessage extends BaseCmpMessage implements ResponseM
 
 				SignatureParameter signatureParameter = determineSignatureParameterFromRequest();
 		        responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, this.signCerts, this.signKey, signAlg, digestAlg, this.provider, signatureParameter);
+
 		    } catch (InvalidKeyException | CertificateEncodingException | NoSuchProviderException | NoSuchAlgorithmException | SecurityException
 		              | SignatureException e) {
 		        responseMessage = checkAndSendResponseMessage(responseMessage, myPKIHeaderBuilder, myPKIBody, e);
@@ -210,6 +212,10 @@ public class CmpErrorResponseMessage extends BaseCmpMessage implements ResponseM
 	public void setPreferredDigestAlg(String digest) {
 	    this.digestAlg = digest;
 	}
+
+    public void setPss(boolean isPss){
+        this.isPss = isPss;
+    }
 
 	@Override
 	public void setRequestType(int reqtype) {

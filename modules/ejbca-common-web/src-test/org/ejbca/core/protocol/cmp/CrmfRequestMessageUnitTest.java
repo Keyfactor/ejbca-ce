@@ -310,6 +310,7 @@ public class CrmfRequestMessageUnitTest {
                 signCertChain.add(signCert);
 
                 byte[] newmsg = CmpMessageHelper.signPKIMessage(myPKIMessage, signCertChain, keys.getPrivate(), sigAlg, null, BouncyCastleProvider.PROVIDER_NAME, SignatureParameter.NONE);
+
                 in.close();
                 in = new ASN1InputStream(newmsg);
                 derObject = in.readObject();

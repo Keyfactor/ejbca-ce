@@ -76,6 +76,9 @@ public class P10CrCertificationRequestMessage extends BaseCmpMessage implements 
     /** preferred digest algorithm to use in replies, if applicable */
     private String preferredDigestAlg = CMSSignedGenerator.DIGEST_SHA256;
 
+    /** whether PSS is preferred to be used for the response signature, if applicable */
+    private transient boolean isPss = false;
+
     public P10CrCertificationRequestMessage(final PKIMessage pkiMessage, final String defaultCADN, final String extractUsernameComponent) {
         super();
         try {
@@ -348,6 +351,15 @@ public class P10CrCertificationRequestMessage extends BaseCmpMessage implements 
         if(StringUtils.isNotEmpty(digestAlgo)) {
             preferredDigestAlg = digestAlgo;
         }
+    }
+
+    @Override
+    public boolean isPss() {
+        return isPss;
+    }
+
+    public void setPss(boolean pss) {
+        isPss = pss;
     }
 
     @Override

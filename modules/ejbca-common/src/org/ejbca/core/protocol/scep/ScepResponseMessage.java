@@ -150,6 +150,8 @@ public class ScepResponseMessage implements CertificateResponseMessage {
 
     /** Default digest algorithm for SCEP response message, can be overridden */
     private transient String digestAlg = CMSSignedDataGenerator.DIGEST_SHA256;
+    /** Whether PSS is preferred for the response signature, can be overridden */
+    private transient boolean isPss = false;
     /** Default content encryption algorithm, can be overridden by request message */
     private transient ASN1ObjectIdentifier contentEncAlg = SMIMECapability.dES_CBC;
     /** Default key encryption algorithm, can be overridden by request message */
@@ -495,6 +497,11 @@ public class ScepResponseMessage implements CertificateResponseMessage {
     @Override
     public void setPreferredDigestAlg(String digest) {
     	this.digestAlg = digest;
+    }
+
+    @Override
+    public void setPss(boolean isPss) {
+        this.isPss = isPss;
     }
 
     @Override
