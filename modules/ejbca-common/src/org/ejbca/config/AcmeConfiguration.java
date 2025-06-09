@@ -732,7 +732,8 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     }
 
     public String getAriRetryAfter() {
-        return (String) data.get(KEY_ARI_RETRY_AFTER);
+        final String ariRetryAfter = (String) data.get(KEY_ARI_RETRY_AFTER);
+        return Objects.isNull(ariRetryAfter) ? "6h" : ariRetryAfter;
     }
 
     public void setAriRetryAfter(final String ariRetryAfter) {
