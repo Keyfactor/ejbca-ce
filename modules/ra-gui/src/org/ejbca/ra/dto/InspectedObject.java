@@ -12,10 +12,12 @@
  *************************************************************************/
 package org.ejbca.ra.dto;
 
+import java.io.Serializable;
+
 /**
  * DTO containing information about the inspected Certificate/CSR for use on the inspect.xhtml page.
  */
-public class InspectedObject {
+public class InspectedObject implements Serializable {
 
     private final InspectType type;
     private final String content;

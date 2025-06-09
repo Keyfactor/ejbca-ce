@@ -55,6 +55,14 @@ public abstract class BaseManagedBean implements Serializable {
 
     // Reference to AccessRulesConstants.* and StandardRules.*
     final String[] accessRulesConstantString;
+    private transient EjbcaWebBean ejbcaWebBean;
+
+    /**
+     * No args ctor to adhere to HA class rules.  Should not be called directly.
+     */
+    public BaseManagedBean() {
+        accessRulesConstantString = new String[0];
+    }
     
     /**
      * Initializes authorization assuming authorization required to following resources.
@@ -79,7 +87,9 @@ public abstract class BaseManagedBean implements Serializable {
     }
     
     protected EjbcaWebBean getEjbcaWebBean() {
-        return EjbcaJSFHelper.getBean().getEjbcaWebBean();
+        if (ejbcaWebBean == null)
+            ejbcaWebBean = EjbcaJSFHelper.getBean().getEjbcaWebBean();
+        return ejbcaWebBean;
     }
 
     /**

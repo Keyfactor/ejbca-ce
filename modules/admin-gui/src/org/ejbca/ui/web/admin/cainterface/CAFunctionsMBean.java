@@ -217,7 +217,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
 
     }
 
-    public class CertificateChainElement {
+    public class CertificateChainElement implements Serializable {
         private final Certificate cert;
         private final String subjectDN;
 
@@ -247,7 +247,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
 
     }
 
-    public class CRLGuiInfo {
+    public class CRLGuiInfo implements Serializable {
         private final Date createDate;
         private final Date expireDate;
         private final String subjectDn;
@@ -304,7 +304,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
 
     private void refreshCaGuiInfos() {
         caGuiInfos = new ArrayList<>();
-        final TreeMap<String, Integer> caNames = caSession.getAuthorizedCaNamesToIds(getAdmin());
+        final TreeMap<String, Integer> caNames = caSession.getAuthorizedCaNamesToIdsWithoutCache(getAdmin());
         final List<String> caNameList = new ArrayList<>(caNames.keySet());
         caNameList.sort(String::compareToIgnoreCase);
         for (final String caName : caNameList) {

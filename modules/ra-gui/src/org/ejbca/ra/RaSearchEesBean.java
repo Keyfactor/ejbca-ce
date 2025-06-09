@@ -659,4 +659,5 @@ public class RaSearchEesBean implements Serializable {
     public boolean isApiEditCompatible() {
         return raMasterApiProxyBean.getApiVersion() >= 2;
     }
+
 }
