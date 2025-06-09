@@ -172,13 +172,14 @@ public class CmpMessageHelper {
     /**
      * Creates signature protection on a CMP message based on lots of parameters
      *
-     * @param pkiMessage the CMP message to sign
-     * @param signCertChain the signer certificate chain to be included as extraCerts in the CMP (response) message
-     * @param signKey the key to sign message with
-     * @param signAlg the default signature algorithm used with signKey
+     * @param pkiMessage       the CMP message to sign
+     * @param signCertChain    the signer certificate chain to be included as extraCerts in the CMP (response) message
+     * @param signKey          the key to sign message with
+     * @param signAlg          the default signature algorithm used with signKey
      * @param requestDigestAlg if the request has come in with a different signature algorithm for example SHA256WithRSA
-     *   and signAlg is SHA384WithRSA, the message signature is downgraded to SHA256WithRSA to make sure the client can handle it
-     * @param provider the signature provider to use for signing, BC for software keys and another provider for HSM keys (P11, Azure, etc)
+     *                         and signAlg is SHA384WithRSA, the message signature is downgraded to SHA256WithRSA to make sure the client can handle it
+     * @param provider         the signature provider to use for signing, BC for software keys and another provider for HSM keys (P11, Azure, etc)
+     * @param isPss            whether the response is preferred to use PSS if applicable
      * @return returns the ASN.1 encoded signed CMP message, ready to send to the server, or back to the client
      * @throws InvalidKeyException
      * @throws NoSuchProviderException
@@ -188,7 +189,7 @@ public class CmpMessageHelper {
      * @throws CertificateEncodingException
      */
     public static byte[] signPKIMessage(PKIMessage pkiMessage, Collection<Certificate> signCertChain,
-            PrivateKey signKey, String signAlg, String requestDigestAlg, String provider)
+            PrivateKey signKey, String signAlg, String requestDigestAlg, String provider, boolean isPss)
     		        throws InvalidKeyException, NoSuchProviderException, NoSuchAlgorithmException, SecurityException, SignatureException,
             CertificateEncodingException {
         if (LOG.isTraceEnabled()) {
@@ -204,7 +205,7 @@ public class CmpMessageHelper {
         // If we have an algorithm requested from the sender, take that into account
         String responseSignatureAlgo = signAlg;
         if (requestDigestAlg != null) {
-            final String fromDigest = AlgorithmTools.getAlgorithmNameFromDigestAndKey(requestDigestAlg, signKey.getAlgorithm());
+            final String fromDigest = AlgorithmTools.getAlgorithmNameFromDigestAndKey(requestDigestAlg, signKey.getAlgorithm(), isPss);
             if (fromDigest != null) {
                 responseSignatureAlgo = fromDigest;
             }
@@ -218,6 +219,23 @@ public class CmpMessageHelper {
         }
         // Return response as byte array
         return pkiMessageToByteArray(signedPkiMessage);
+    }
+
+    public static String getAlgorithmNameFromDigestAndKey(final String digestAlg, final String keyAlg, final boolean isPss) {
+        if (isPss && "RSA".equals(keyAlg)) {
+            String algorithmName = switch (digestAlg) {
+                case "2.16.840.1.101.3.4.2.1" -> "SHA256withRSAandMGF1";
+                case "2.16.840.1.101.3.4.2.2" -> "SHA384withRSAandMGF1";
+                case "2.16.840.1.101.3.4.2.3" -> "SHA512withRSAandMGF1";
+                default -> null;
+            };
+            if (algorithmName == null) {
+                return AlgorithmTools.getAlgorithmNameFromDigestAndKey(digestAlg, keyAlg);
+            } else {
+                return algorithmName;
+            }
+        }
+        return AlgorithmTools.getAlgorithmNameFromDigestAndKey(digestAlg, keyAlg);
     }
 
     public static PKIMessage buildCertBasedPKIProtection(PKIMessage pkiMessage, CMPCertificate[] extraCerts, PrivateKey key, String signAlg,

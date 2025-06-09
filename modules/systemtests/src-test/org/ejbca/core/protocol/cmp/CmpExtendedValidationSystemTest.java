@@ -257,7 +257,7 @@ public class CmpExtendedValidationSystemTest extends CmpTestCase {
 
         ArrayList<Certificate> signCertColl = new ArrayList<>();
         byte[] messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
-                null, BouncyCastleProvider.PROVIDER_NAME);
+                null, BouncyCastleProvider.PROVIDER_NAME, false);
 
         // When
         // Send CMP request
@@ -272,7 +272,7 @@ public class CmpExtendedValidationSystemTest extends CmpTestCase {
 
         signCertColl = new ArrayList<>();
         messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
-                null, BouncyCastleProvider.PROVIDER_NAME);
+                null, BouncyCastleProvider.PROVIDER_NAME, false);
         
         // When
         // Send CMP request
@@ -300,7 +300,7 @@ public class CmpExtendedValidationSystemTest extends CmpTestCase {
         signCertColl.add(signingCertificate);
         // Message is signed but an HMAC'ed message is expected
         byte[] messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
-                null, BouncyCastleProvider.PROVIDER_NAME);
+                null, BouncyCastleProvider.PROVIDER_NAME, false);
        
         // When
         // Send CMP request
@@ -317,7 +317,7 @@ public class CmpExtendedValidationSystemTest extends CmpTestCase {
         signCertColl.add(signingCertificate);
         // Message is signed but an HMAC'ed message is expected
         messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
-                null, BouncyCastleProvider.PROVIDER_NAME);
+                null, BouncyCastleProvider.PROVIDER_NAME, false);
 
         // When
         // Send CMP request
@@ -351,7 +351,7 @@ public class CmpExtendedValidationSystemTest extends CmpTestCase {
         ArrayList<Certificate> signCertColl = new ArrayList<>();
         signCertColl.add(signingCertificate);
         byte[] messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
-                null, BouncyCastleProvider.PROVIDER_NAME);
+                null, BouncyCastleProvider.PROVIDER_NAME, false);
 
         // When
         // Send CMP request
@@ -368,7 +368,7 @@ public class CmpExtendedValidationSystemTest extends CmpTestCase {
         signCertColl = new ArrayList<>();
         signCertColl.add(signingCertificate);
         messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
-                null, BouncyCastleProvider.PROVIDER_NAME);
+                null, BouncyCastleProvider.PROVIDER_NAME, false);
         
         // When
         // Send CMP request
@@ -399,7 +399,7 @@ public class CmpExtendedValidationSystemTest extends CmpTestCase {
         ArrayList<Certificate> signCertColl = new ArrayList<>();
         signCertColl.add(signingCertificate);
         byte[] messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
-                null, BouncyCastleProvider.PROVIDER_NAME);
+                null, BouncyCastleProvider.PROVIDER_NAME, false);
 
         // When
         // Send CMP request
@@ -415,7 +415,7 @@ public class CmpExtendedValidationSystemTest extends CmpTestCase {
         signCertColl = new ArrayList<>();
         signCertColl.add(signingCertificate);
         messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
-                null, BouncyCastleProvider.PROVIDER_NAME);
+                null, BouncyCastleProvider.PROVIDER_NAME, false);
         
         // When
         // Send CMP request
@@ -453,7 +453,7 @@ public class CmpExtendedValidationSystemTest extends CmpTestCase {
         ArrayList<Certificate> signCertColl = new ArrayList<>();
         signCertColl.add(signingCertificate);
         byte[] messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
-                null, BouncyCastleProvider.PROVIDER_NAME);
+                null, BouncyCastleProvider.PROVIDER_NAME, false);
         CaTestUtils.removeCa(ADMIN, ISSUER_CA_2_NAME, ISSUER_CA_2_NAME);
 
         // When
@@ -471,7 +471,7 @@ public class CmpExtendedValidationSystemTest extends CmpTestCase {
         signCertColl = new ArrayList<>();
         signCertColl.add(signingCertificate);
         messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
-                null, BouncyCastleProvider.PROVIDER_NAME);
+                null, BouncyCastleProvider.PROVIDER_NAME, false);
         CaTestUtils.removeCa(ADMIN, ISSUER_CA_2_NAME, ISSUER_CA_2_NAME);
 
         // When
@@ -507,7 +507,7 @@ public class CmpExtendedValidationSystemTest extends CmpTestCase {
         ArrayList<Certificate> signCertColl = new ArrayList<>();
         signCertColl.add(signingCertificate);
         byte[] messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
-                null, BouncyCastleProvider.PROVIDER_NAME);
+                null, BouncyCastleProvider.PROVIDER_NAME, false);
         
         // When
         // Send CMP request
@@ -530,7 +530,7 @@ public class CmpExtendedValidationSystemTest extends CmpTestCase {
         signCertColl = new ArrayList<>();
         signCertColl.add(signingCertificate);
         messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
-                null, BouncyCastleProvider.PROVIDER_NAME);
+                null, BouncyCastleProvider.PROVIDER_NAME, false);
         
         // When
         // Send CMP request
@@ -711,7 +711,7 @@ public class CmpExtendedValidationSystemTest extends CmpTestCase {
         ArrayList<Certificate> signCertColl = new ArrayList<>();
         signCertColl.add(signingCertificate);
         byte[] messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
-                null, BouncyCastleProvider.PROVIDER_NAME);
+                null, BouncyCastleProvider.PROVIDER_NAME, false);
         
         // When
         // Send CMP request
@@ -728,7 +728,7 @@ public class CmpExtendedValidationSystemTest extends CmpTestCase {
         signCertColl = new ArrayList<>();
         signCertColl.add(signingCertificate);
         messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
-                null, BouncyCastleProvider.PROVIDER_NAME);
+                null, BouncyCastleProvider.PROVIDER_NAME, false);
        
         // When
         // Send CMP request
@@ -760,7 +760,7 @@ public class CmpExtendedValidationSystemTest extends CmpTestCase {
 
         ArrayList<Certificate> signCertColl = new ArrayList<>();
         signCertColl.add(signingCertificate);
-        byte[] messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, null, BouncyCastleProvider.PROVIDER_NAME);
+        byte[] messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, null, BouncyCastleProvider.PROVIDER_NAME, false);
         
         // When
         // Send CMP request
@@ -776,7 +776,7 @@ public class CmpExtendedValidationSystemTest extends CmpTestCase {
 
         signCertColl = new ArrayList<>();
         signCertColl.add(signingCertificate);
-        messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, null, BouncyCastleProvider.PROVIDER_NAME);
+        messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, null, BouncyCastleProvider.PROVIDER_NAME, false);
 
         // When
         // Send CMP request
@@ -851,7 +851,7 @@ public class CmpExtendedValidationSystemTest extends CmpTestCase {
         ArrayList<Certificate> signCertColl = new ArrayList<>();
         signCertColl.add(signingCertificate);
         byte[] messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
-                null, BouncyCastleProvider.PROVIDER_NAME);
+                null, BouncyCastleProvider.PROVIDER_NAME, false);
 
         // When
         // Send CMP request
@@ -869,7 +869,7 @@ public class CmpExtendedValidationSystemTest extends CmpTestCase {
         signCertColl = new ArrayList<>();
         signCertColl.add(signingCertificate);
         messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
-                null, BouncyCastleProvider.PROVIDER_NAME);
+                null, BouncyCastleProvider.PROVIDER_NAME, false);
 
         // When
         // Send CMP request

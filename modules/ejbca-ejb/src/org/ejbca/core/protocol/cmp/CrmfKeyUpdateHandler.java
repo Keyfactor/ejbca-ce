@@ -26,6 +26,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.bouncycastle.asn1.crmf.CertReqMsg;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -136,7 +137,10 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                         LOG.debug("CRMF request message (update) header has protection alg: " + crmfreq.getHeader().getProtectionAlg().getAlgorithm().getId());
                     }
                     // We don't need a default digest algorithm, if setPreferredDigestAlg is null, the sender cert's algorithm will be used
-                    crmfreq.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(crmfreq.getHeader().getProtectionAlg().getAlgorithm().getId(), null));
+                    crmfreq.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlgAndHandlePSS(crmfreq.getHeader().getProtectionAlg(), null));
+                    if (PKCSObjectIdentifiers.id_RSASSA_PSS.getId().equals(crmfreq.getHeader().getProtectionAlg().getAlgorithm().getId())) {
+                        crmfreq.setPss(true);
+                    }
                 } else if (LOG.isDebugEnabled()) {
                     LOG.debug("CRMF request message (update) header has no protection alg, using default alg in response.");
                 }

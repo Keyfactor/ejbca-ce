@@ -259,6 +259,12 @@ public interface RequestMessage extends Serializable {
      */
     String getPreferredDigestAlg();
 
+    /**
+     * Returns whether the response is preferred to be signed using RSASSA-PSS
+     *
+     * @return whether RSASSA-PSS is preferred to be used for the response
+     */
+    boolean isPss();
 
     /** If the CA certificate should be included in the response or not, default to true = yes.
      * Not applicable for all request/response types.

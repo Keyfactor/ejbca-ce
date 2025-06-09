@@ -307,7 +307,7 @@ public class CrmfRequestMessageUnitTest {
                 // Re-sign the message
                 Collection<Certificate> signCertChain = new ArrayList<>();
                 signCertChain.add(signCert);
-                byte[] newmsg = CmpMessageHelper.signPKIMessage(myPKIMessage, signCertChain, keys.getPrivate(), sigAlg, null, BouncyCastleProvider.PROVIDER_NAME);
+                byte[] newmsg = CmpMessageHelper.signPKIMessage(myPKIMessage, signCertChain, keys.getPrivate(), sigAlg, null, BouncyCastleProvider.PROVIDER_NAME, false);
                 in.close();
                 in = new ASN1InputStream(newmsg);
                 derObject = in.readObject();
@@ -315,7 +315,7 @@ public class CrmfRequestMessageUnitTest {
                 // We have to do this twice, because Novosec caches ProtectedBytes in the PKIMessage object, so we need to
                 // encode it and re-decode it again to get the changes from ECA-2104 encoded correctly.
                 // Not needed when simply signing a new message that you create, only when re-signing
-                newmsg = CmpMessageHelper.signPKIMessage(pkimsg, signCertChain, keys.getPrivate(), sigAlg, null, BouncyCastleProvider.PROVIDER_NAME);
+                newmsg = CmpMessageHelper.signPKIMessage(pkimsg, signCertChain, keys.getPrivate(), sigAlg, null, BouncyCastleProvider.PROVIDER_NAME, false);
                 in.close();
                 in = new ASN1InputStream(newmsg);
                 derObject = in.readObject();

@@ -84,6 +84,9 @@ public class PKCS10RequestMessage implements RequestMessage {
     /** preferred digest algorithm to use in replies, if applicable */
     private transient String preferredDigestAlg = CMSSignedGenerator.DIGEST_SHA1;
 
+    /** whether PSS is preferred to be used for the response signature, if applicable */
+    private transient boolean isPss = false;
+
     /** The pkcs10 request message, not serialized. */
     protected transient JcaPKCS10CertificationRequest pkcs10;
 
@@ -484,6 +487,11 @@ public class PKCS10RequestMessage implements RequestMessage {
     @Override
     public String getPreferredDigestAlg() {
     	return preferredDigestAlg;
+    }
+
+    @Override
+    public boolean isPss() {
+        return isPss;
     }
 
     @Override

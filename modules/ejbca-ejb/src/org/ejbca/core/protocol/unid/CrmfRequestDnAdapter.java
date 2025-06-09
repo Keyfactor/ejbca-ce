@@ -145,6 +145,10 @@ public class CrmfRequestDnAdapter implements ICrmfRequestMessage {
 		return this.original.getPreferredDigestAlg();
 	}
 	@Override
+	public boolean isPss() {
+		return this.original.isPss();
+	}
+	@Override
 	public boolean includeCACert() {
 		return this.original.includeCACert();
 	}

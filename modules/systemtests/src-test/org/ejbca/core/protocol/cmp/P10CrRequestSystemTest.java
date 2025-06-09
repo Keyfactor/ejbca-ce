@@ -197,7 +197,7 @@ public class P10CrRequestSystemTest extends CmpTestCase {
         ArrayList<Certificate> signCertColl = new ArrayList<>();
         signCertColl.add(signCert);
 
-        byte[] ba = CmpMessageHelper.signPKIMessage(req, signCertColl, this.keys.getPrivate(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, null, BouncyCastleProvider.PROVIDER_NAME);
+        byte[] ba = CmpMessageHelper.signPKIMessage(req, signCertColl, this.keys.getPrivate(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, null, BouncyCastleProvider.PROVIDER_NAME, false);
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, CMP_ALIAS);
         checkCmpResponseGeneral(resp, ISSUER_DN, USER_DN, this.cacert, nonce, transid, true, null,
