@@ -65,7 +65,7 @@
 
             <h:panelGrid styleClass="actions margin-top" width="100%" rendered="#{cmpConfigMBean.authorizedToEdit}">
                 <h:outputText value="#{web.text.CMP_ALIASES_NOT_CONFIGURED}"
-                              rendered="#{estConfigMBean.aliasListEmpty}"/>
+                              rendered="#{cmpConfigMBean.aliasListEmpty}"/>
                 <h:panelGroup>
                     <h:commandButton id="buttonaliasadd" name="buttonaliasadd" action="#{cmpConfigMBean.addAlias}"
                                      value="#{web.text.ADD}">

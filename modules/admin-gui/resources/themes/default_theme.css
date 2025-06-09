@@ -1604,5 +1604,54 @@ a.button:active {
 .waiting { cursor: wait; opacity: 0.5; }
 .waiting input { cursor: wait; }
 
+/* PrimeFaces class adjustments: START */
+
+/* Restore vertical centering of row content in PrimeFaces DataTables */
+.ui-datatable table td {
+	vertical-align: middle;
+}
+
+/* Remove cell focus borders */
+.ui-datatable-data td[role="gridcell"]:focus {
+	outline: none;
+	outline-offset: 0;
+	border: 1px solid rgba(0,0,0,.08);
+}
+
+/* PrimeFaces class adjustments: END */
+
+/* Services page */
+.ui-datatable#services\:list-services-table {
+	display: table;
+	padding-top: 1rem;
+	padding-bottom: 1rem;
+}
+
+.ui-datatable#services\:list-services-table table {
+	table-layout: auto !important;
+}
+
+.list-services-column-name {
+	font-weight: bold;
+	max-width: 35vw;
+}
+
+.h-center-column {
+	text-align: center !important;
+}
+
+.action-buttons {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 10px;
+}
+
+.action-buttons input[type="submit"] {
+	flex: 1 1 auto;
+	max-width: 150px;
+	box-sizing: border-box;
+}
+
 /*--------------------------------------------------------------------------*/
 /* EOF */
