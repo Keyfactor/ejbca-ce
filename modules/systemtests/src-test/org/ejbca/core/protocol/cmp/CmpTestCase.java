@@ -29,6 +29,7 @@ import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -1062,14 +1063,11 @@ public abstract class CmpTestCase extends CaTestCase {
         }
         if (signed) {
             // Verify the signature
-            byte[] protBytes = CmpMessageHelper.getProtectedBytes(respObject);
             ASN1BitString bs = respObject.getProtection();
             try {
-                final Signature signature = Signature.getInstance(expectedSignAlg, BouncyCastleProvider.PROVIDER_NAME);
-                signature.initVerify(cacert);
-                signature.update(protBytes);
+                final Signature signature = CmpMessageHelper.extractSignature(respObject, cacert.getPublicKey());
                 assertTrue(signature.verify(bs.getBytes()));
-            } catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeyException | SignatureException e) {
+            } catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeyException | SignatureException | InvalidAlgorithmParameterException e) {
                 log.debug(e.getMessage(), e);
                 fail(e.getMessage());
             }
