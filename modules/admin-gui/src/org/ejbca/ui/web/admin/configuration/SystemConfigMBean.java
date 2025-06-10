@@ -137,7 +137,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     
     private transient UploadedFile headerFile;
     
-    private AuthorizationSessionLocal authorizationSession = getEjbcaWebBean().getEjb().getAuthorizationSession();
+    @EJB
+    private AuthorizationSessionLocal authorizationSession;
     @EJB
     private CaSessionLocal caSession;
     @EJB
