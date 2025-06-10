@@ -42,6 +42,8 @@ import com.keyfactor.util.StringTools;
  * This class is used to manage EAB configs in EJBCA's system configuration.
  */
 public class EABConfigManager implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private static final Logger log = Logger.getLogger(EABConfigManager.class);
 
     private final SystemConfigurationHelper systemConfigurationHelper;

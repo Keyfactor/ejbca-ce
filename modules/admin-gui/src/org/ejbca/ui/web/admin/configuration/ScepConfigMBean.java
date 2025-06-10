@@ -55,6 +55,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
     private static final String HIDDEN_PWD = "**********";
 
     public class ScepAliasGuiInfo implements Serializable {
+        private static final long serialVersionUID = 1L;
         private String alias;
         private String mode;
         private boolean includeCA;

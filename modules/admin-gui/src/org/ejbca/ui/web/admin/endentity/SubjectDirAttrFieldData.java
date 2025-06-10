@@ -26,6 +26,7 @@ import com.keyfactor.util.certificate.DnComponents;
  */
 public class SubjectDirAttrFieldData extends SubjectFieldData implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     private String[] options;
 
     private SubjectDirAttrFieldData(Builder builder) {

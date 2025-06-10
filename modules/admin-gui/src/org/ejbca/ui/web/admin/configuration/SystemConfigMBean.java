@@ -157,6 +157,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
     
     public class GuiInfo implements Serializable {
+        private static final long serialVersionUID = 1L;
         private String title;
         private String headBanner;
         private String footBanner;
@@ -339,6 +340,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     public class EKUInfo implements Serializable {
+        private static final long serialVersionUID = 1L;
         private String oid;
         private String name;
         private EKUInfo(String oid, String name) {
@@ -352,6 +354,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     public class CustomCertExtensionInfo implements Serializable {
+        private static final long serialVersionUID = 1L;
         private int id;
         private String oid;
         private String displayName;
@@ -526,6 +529,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             this.oAuthConfiguration = null;
             oauthKeyManager = new SystemConfigurationOAuthKeyManager(getOauthKeys(),
                 new SystemConfigurationOAuthKeyManager.SystemConfigurationHelper() {
+                    private static final long serialVersionUID = 1L;
+
                     @Override
                     public void saveOauthKeys(final List<OAuthKeyInfo> oauthKeys) {
                         setOauthKeys(oauthKeys);
@@ -608,6 +613,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         if (ctLogManager == null) {
             ctLogManager = new SystemConfigurationCtLogManager(getCurrentConfig().getCtLogs(),
                 new SystemConfigurationCtLogManager.SystemConfigurationHelper() {
+                    private static final long serialVersionUID = 1L;
+
                     @Override
                     public void saveCtLogs(final List<CTLogInfo> ctLogs) {
                         getCurrentConfig().setCtLogs(ctLogs);
@@ -745,6 +752,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     public ValidatorSettings getValidatorSettings() {
         if (validatorSettings == null) {
             validatorSettings = new ValidatorSettings(new ValidatorSettings.ValidatorSettingsHelper() {
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 public GlobalConfiguration getGlobalConfiguration() {
                     return SystemConfigMBean.this.getGlobalConfiguration();
@@ -2197,6 +2206,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     public EABConfigManager getEABConfigManager() {
         if (eabConfigManager == null) {
             eabConfigManager = new EABConfigManager(new EABConfigManager.SystemConfigurationHelper() {
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 public void addErrorMessage(String languageKey) {
                     SystemConfigMBean.this.addErrorMessage(languageKey);

@@ -120,6 +120,8 @@ public class RaViewCertBean implements Serializable {
         // lazily construct this object to ensure that it is available post-deserialization
         if (raCertificateDetailsCallbacks == null)
             raCertificateDetailsCallbacks = new RaCertificateDetails.Callbacks() {
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 public RaLocaleBean getRaLocaleBean() {
                     return raLocaleBean;

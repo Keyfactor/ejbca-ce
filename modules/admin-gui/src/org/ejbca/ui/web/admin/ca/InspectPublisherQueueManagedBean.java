@@ -106,6 +106,8 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
      * A publisher queue item, displayed as a row in the GUI.
      */
     public final class PublisherQueueItem implements Serializable {
+        private static final long serialVersionUID = 1L;
+
         private final PublisherQueueData publisherQueueData;
 
         private boolean selected;

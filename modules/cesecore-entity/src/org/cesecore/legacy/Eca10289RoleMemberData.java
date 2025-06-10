@@ -32,6 +32,7 @@ import org.cesecore.roles.member.RoleMemberData;
 @SuppressWarnings("serial")
 @Deprecated
 public class Eca10289RoleMemberData extends RoleMemberData {
+    private static final long serialVersionUID = 1L;
     private final static Logger log = Logger.getLogger(Eca10289RoleMemberData.class);
 
     public Eca10289RoleMemberData(final RoleMemberData data) {

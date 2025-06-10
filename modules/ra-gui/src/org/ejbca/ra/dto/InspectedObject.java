@@ -19,6 +19,7 @@ import java.io.Serializable;
  */
 public class InspectedObject implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     private final InspectType type;
     private final String content;
     private final String serialNumberHex;

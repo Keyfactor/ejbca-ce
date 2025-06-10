@@ -36,6 +36,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileData;
 @SuppressWarnings("serial")
 @Deprecated
 public class Eca7277CertificateProfileData extends CertificateProfileData {
+    private static final long serialVersionUID = 1L;
     private final static Logger log = Logger.getLogger(Eca7277CertificateProfileData.class);
 
     public Eca7277CertificateProfileData(final CertificateProfileData data) {
