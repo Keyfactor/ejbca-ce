@@ -26,6 +26,9 @@
 <body>
 <ui:composition template="/WEB-INF/include/template.xhtml">
     <ui:param name="resourceBean" value="#{listServicesManagedBean}"/>
+    <f:metadata>
+        <f:viewAction action="#{listServicesManagedBean.loadData}" />
+    </f:metadata>
     <ui:define name="content">
         <h1>
             <h:outputText
@@ -38,20 +41,26 @@
         </h3>
 
         <h:form id="services">
-            <p:dataTable id="list-services-table" var="service" value="#{listServicesManagedBean.sortedServicesList}"
+            <p:dataTable id="list-services-table" var="serviceName" value="#{listServicesManagedBean.sortedServicesList}"
                          rendered="#{!listServicesManagedBean.serviceListEmpty}"
                          styleClass="grid" stripedRows="true" showGridlines="true">
                 <p:column styleClass="list-services-column-name">
                     <f:facet name="header">
                         <h:outputText value="#{web.text.NAME}"/>
                     </f:facet>
-                    <h:outputText value="#{service.value}" title="#{service.value}" style="font-weight: bold"/>
+                    <h:outputText value="#{serviceName}" title="#{serviceName}" style="font-weight: bold"/>
+                </p:column>
+                <p:column styleClass="h-center-column">
+                    <f:facet name="header">
+                        <h:outputText value="#{web.text.TYPE}"/>
+                    </f:facet>
+                    <h:outputText value="#{listServicesManagedBean.getServiceType(serviceName)}"/>
                 </p:column>
                 <p:column styleClass="h-center-column">
                     <f:facet name="header">
                         <h:outputText value="#{web.text.STATUS}"/>
                     </f:facet>
-                    <h:outputText value="#{service.label}"/>
+                    <h:outputText value="#{listServicesManagedBean.getServiceStatus(serviceName)}"/>
                 </p:column>
                 <p:column styleClass="h-center-column">
                     <f:facet name="header">
@@ -59,16 +68,16 @@
                     </f:facet>
                     <div class="action-buttons">
                         <h:commandButton id="viewButton" value="#{web.text.VIEW}"
-                                         action="#{listServicesManagedBean.viewService(service.value)}"/>
+                                         action="#{listServicesManagedBean.viewService(serviceName)}"/>
                         <h:commandButton id="editButton" value="#{web.text.EDIT}"
-                                         action="#{listServicesManagedBean.editService(service.value)}"
+                                         action="#{listServicesManagedBean.editService(serviceName)}"
                                          disabled="#{!listServicesManagedBean.hasEditRights}"/>
                         <h:commandButton id="deleteButton" value="#{web.text.DELETE}"
-                                         action="#{listServicesManagedBean.confirmServiceDeletion(service.value)}"
+                                         action="#{listServicesManagedBean.confirmServiceDeletion(serviceName)}"
                                          disabled="#{!listServicesManagedBean.hasEditRights}"/>
                         <h:commandButton id="cloneButton" value="#{web.text.CLONE}"
                                          rendered="#{manageCAsMBean.canRenewResource}"
-                                         action="#{listServicesManagedBean.cloneService(service.value)}"
+                                         action="#{listServicesManagedBean.cloneService(serviceName)}"
                                          disabled="#{!listServicesManagedBean.hasEditRights}"/>
                     </div>
                 </p:column>

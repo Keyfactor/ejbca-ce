@@ -13,14 +13,14 @@
 
 package org.ejbca.ui.web.admin.services;
 
+import java.io.Serial;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import jakarta.enterprise.context.SessionScoped;
-import jakarta.faces.application.Application;
-import jakarta.faces.context.FacesContext;
 import jakarta.faces.model.SelectItem;
 import jakarta.inject.Named;
 import org.apache.commons.lang.StringUtils;
@@ -30,7 +30,8 @@ import org.ejbca.core.model.services.ServiceExistsException;
 import org.ejbca.core.model.services.workers.DatabaseMaintenanceWorkerConstants;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.admin.BaseManagedBean;
-import org.ejbca.ui.web.admin.configuration.SortableSelectItem;
+import org.ejbca.ui.web.admin.services.servicetypes.CustomWorkerType;
+import org.ejbca.ui.web.admin.services.servicetypes.WorkerType;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
 /**
@@ -43,7 +44,13 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 @SessionScoped
 public class ListServicesManagedBean extends BaseManagedBean {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
+
+	private final List<String> availableServices = new ArrayList<>();
+	private final Map<String, String> serviceNameToStatusMap = new HashMap<>();
+	private final Map<String, String> serviceNameToTypeMap = new HashMap<>();
+
 	private String selectedServiceName;
 	private String clonedServiceName = StringUtils.EMPTY;
 
@@ -70,38 +77,104 @@ public class ListServicesManagedBean extends BaseManagedBean {
 		this.clonedServiceName = clonedServiceName;
 	}
 
-    public List<SortableSelectItem> getAvailableServices() {
-        List<SortableSelectItem> availableServices = new ArrayList<>();
-        Collection<Integer> availableServicesIds = getEjb().getServiceSession().getVisibleServiceIds();
-		boolean isAuthorizedToDbMaintenanceService = isAuthorizedToDbMaintenanceService();
-		for (Integer id : availableServicesIds) {
-            ServiceConfiguration serviceConfig = getEjb().getServiceSession().getServiceConfiguration(id);
-            String serviceName = getEjb().getServiceSession().getServiceName(id);
-			if (!isAuthorizedToDbMaintenanceService && DatabaseMaintenanceWorkerConstants.WORKER_CLASS.equals(serviceConfig.getWorkerClassPath())) {
+	/**
+	 * Loads and prepares the list of available services along with their status and type configurations.
+	 */
+	public void loadData() {
+		availableServices.clear();
+		final Map<String, ServiceConfiguration> serviceNameToConfigurationMap = new HashMap<>();
+		for (Integer id : getEjb().getServiceSession().getVisibleServiceIds()) {
+			final ServiceConfiguration serviceConfiguration = getEjb().getServiceSession().getServiceConfiguration(id);
+			if (!isAuthorizedToDbMaintenanceService() && DatabaseMaintenanceWorkerConstants.WORKER_CLASS.equals(serviceConfiguration.getWorkerClassPath())) {
 				continue;
 			}
-            String hidden = "";
-            if (serviceConfig.isHidden()) {
-                hidden = "<Hidden, Debug mode>";
-            }
-            if (serviceConfig.isActive()) {
-                availableServices.add(new SortableSelectItem(serviceName, EjbcaJSFHelper.getBean().getText().get("ACTIVE") + hidden));
-            } else {
-                availableServices.add(new SortableSelectItem(serviceName, EjbcaJSFHelper.getBean().getText().get("INACTIVE") + hidden));
-            }
-        }
-		return availableServices;
-    }
+			final String serviceName = getEjb().getServiceSession().getServiceName(id);
+			serviceNameToConfigurationMap.put(serviceName, serviceConfiguration);
+			String hidden = "";
+			if (serviceConfiguration.isHidden()) {
+				hidden = " <Hidden, Debug mode>";
+			}
+			availableServices.add(serviceName + hidden);
+		}
+		populateStatusMap(serviceNameToConfigurationMap);
+		populateTypeMap(serviceNameToConfigurationMap);
+	}
+
+	/**
+	 * Populates the {@link #serviceNameToStatusMap} with Active/Inactive statuses of loaded services.
+	 *
+	 * @param serviceConfigurationMap a map where the keys are service names and the values are
+	 *                                {@link ServiceConfiguration} instances containing configuration details.
+	 */
+	private void populateStatusMap(final Map<String, ServiceConfiguration> serviceConfigurationMap) {
+		final String activeLabel = EjbcaJSFHelper.getBean().getText().get("ACTIVE");
+		final String inactiveLabel = EjbcaJSFHelper.getBean().getText().get("INACTIVE");
+		serviceNameToStatusMap.clear();
+		serviceConfigurationMap.forEach((serviceName, serviceConfiguration) ->
+				serviceNameToStatusMap.put(serviceName, serviceConfiguration.isActive() ? activeLabel : inactiveLabel)
+		);
+	}
+
+	/**
+	 * Populates the {@link #serviceNameToTypeMap} with UI labels of loaded services.
+	 *
+	 * @param serviceConfigurationMap a map where the keys are service names and the values are
+	 *                                {@link ServiceConfiguration} instances containing configuration details.
+	 */
+	private void populateTypeMap(final Map<String, ServiceConfiguration> serviceConfigurationMap) {
+		final boolean isAuthorized = isAuthorizedToDbMaintenanceService();
+		serviceNameToTypeMap.clear();
+		serviceConfigurationMap.forEach((serviceName, serviceConfiguration) -> {
+					final var serviceConfigurationView = new ServiceConfigurationView(serviceConfiguration, isAuthorized);
+					final String type = getWorkerTypeLabel(serviceConfigurationView);
+					serviceNameToTypeMap.put(serviceName, type);
+				}
+		);
+	}
+
+	/**
+	 * Retrieves the type label for a given service.
+	 *
+	 * @param serviceConfigurationView the {@link ServiceConfigurationView} containing the worker type
+	 * @return the label of the worker type as a {@link String}, or an empty string if no matching label is found
+	 */
+	private String getWorkerTypeLabel(final ServiceConfigurationView serviceConfigurationView) {
+		final String typeId = generateTypeId(serviceConfigurationView.getWorkerType());
+		return serviceConfigurationView.getAvailableWorkers().stream()
+				.filter(worker -> worker.getValue().equals(typeId))
+				.findFirst()
+				.map(SelectItem::getLabel)
+				.orElse("");
+	}
+
+	/**
+	 * Generates a service worker type identifier that can be used to query {@link ServiceConfigurationView#getAvailableWorkers()} by value.
+	 *
+	 * @param workerType the type of the service worker
+	 * @return the generated type identifier
+	 */
+	private String generateTypeId(final WorkerType workerType) {
+		final String name = workerType.getName();
+		final String classPath = workerType.getClassPath();
+		if (workerType instanceof CustomWorkerType && StringUtils.isNotEmpty(classPath)) {
+			return name + "-" + classPath;
+		}
+		return name;
+	}
+
+	public List<String> getAvailableServices() {
+		return this.availableServices;
+	}
 
 	/**
 	 * Retrieves a sorted list of available services.
 	 * The services are sorted alphabetically by their display value, ignoring casing.
 	 *
-	 * @return a list of sorted {@link SortableSelectItem} instances representing the available services
+	 * @return a list of sorted {@link String} instances representing the available services
 	 */
-	public List<SortableSelectItem> getSortedServicesList() {
-		final List<SortableSelectItem> serviceList = new ArrayList<>(getAvailableServices());
-		serviceList.sort(Comparator.comparing(SelectItem::getValue, Comparator.comparing(Object::toString, String.CASE_INSENSITIVE_ORDER)));
+	public List<String> getSortedServicesList() {
+		final List<String> serviceList = new ArrayList<>(getAvailableServices());
+		serviceList.sort(Comparator.comparing(String::toString, String.CASE_INSENSITIVE_ORDER));
 		return serviceList;
 	}
 
@@ -214,13 +287,6 @@ public class ListServicesManagedBean extends BaseManagedBean {
 		return getEjb().getAuthorizationSession().isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.SERVICES_DB_MAINTENANCE);
 	}
 
-	private EditServiceManagedBean getEditServiceBean(){
-		FacesContext context = FacesContext.getCurrentInstance();    
-		Application app = context.getApplication();   
-		EditServiceManagedBean value =  app.evaluateExpressionGet(context, "#{editService}", EditServiceManagedBean.class);
-		return value;
-	}
-
 	/**
 	 * Checks if the list of available services is empty.
 	 *
@@ -228,6 +294,36 @@ public class ListServicesManagedBean extends BaseManagedBean {
 	 */
 	public boolean isServiceListEmpty() {
 		return getAvailableServices().isEmpty();
+	}
+
+	/**
+	 * Retrieves the service type based on its name.
+	 *
+	 * @param serviceName the name of the service whose type is to be retrieved
+	 * @return the service type as a string, or an empty string if the service name does not exist
+	 */
+	public String getServiceType(final String serviceName) {
+		if (serviceNameToTypeMap.containsKey(serviceName)) {
+			return serviceNameToTypeMap.get(serviceName);
+		}
+		return "";
+	}
+
+	/**
+	 * Retrieves the status of a specified service configuration.
+	 *
+	 * @param serviceName the name of the service whose status is to be retrieved
+	 * @return the status of the service as a string if it exists, or an empty string if it does not
+	 */
+	public String getServiceStatus(final String serviceName) {
+		if (serviceNameToStatusMap.containsKey(serviceName)) {
+			return serviceNameToStatusMap.get(serviceName);
+		}
+		return "";
+	}
+
+	private EditServiceManagedBean getEditServiceBean(){
+        return EditServiceManagedBean.getBean();
 	}
 
 	public EjbLocalHelper getEjb() {
