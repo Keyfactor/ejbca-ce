@@ -490,13 +490,9 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         // Verify the signature of msg using the public key of extraCert
         //-------------------------------------------------------------
         try {
-<<<<<<< HEAD
+
 
             if (CmpMessageHelper.verifySignature(msg, extraCert.getPublicKey())) {
-=======
-            Signature sig = extractSignature(msg);
-            if (sig.verify(msg.getProtection().getBytes())) {
->>>>>>> 21587501b5 (ECA-13442: Support PSS and MGF1 for CMP request verification and response signing)
                 if (password == null) {
                     // If not set earlier
                     password = genRandomPwd();
@@ -516,67 +512,6 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         }
 
         return this.password != null;
-    }
-
-    private Signature extractSignature(PKIMessage msg) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException,
-            InvalidKeyException, SignatureException {
-        Signature sig = Signature.getInstance(
-                msg.getHeader().getProtectionAlg().getAlgorithm().getId(),
-                BouncyCastleProvider.PROVIDER_NAME
-        );
-
-        AlgorithmIdentifier algId = msg.getHeader().getProtectionAlg();
-        if (PKCSObjectIdentifiers.id_RSASSA_PSS.equals(algId.getAlgorithm())) {
-            ASN1Encodable paramsEnc = algId.getParameters();
-            if (paramsEnc != null && !(paramsEnc instanceof ASN1Null)) {
-                RSASSAPSSparams pss = RSASSAPSSparams.getInstance(paramsEnc);
-
-                ASN1ObjectIdentifier hashOid = pss.getHashAlgorithm().getAlgorithm();
-                String digestName;
-                if (hashOid.equals(NISTObjectIdentifiers.id_sha256)) {
-                    digestName = "SHA-256";
-                } else if (hashOid.equals(OIWObjectIdentifiers.idSHA1)) {
-                    digestName = "SHA-1";
-                } else if (hashOid.equals(NISTObjectIdentifiers.id_sha384)) {
-                    digestName = "SHA-384";
-                } else if (hashOid.equals(NISTObjectIdentifiers.id_sha512)) {
-                    digestName = "SHA-512";
-                } else {
-                    throw new IllegalArgumentException("Unsupported PSS hash OID: " + hashOid);
-                }
-
-                AlgorithmIdentifier mgfAlg = pss.getMaskGenAlgorithm();
-                ASN1ObjectIdentifier mgfHashOid =
-                        AlgorithmIdentifier.getInstance(mgfAlg.getParameters()).getAlgorithm();
-                MGF1ParameterSpec mgfSpec;
-                if (mgfHashOid.equals(NISTObjectIdentifiers.id_sha256)) {
-                    mgfSpec = MGF1ParameterSpec.SHA256;
-                } else if (mgfHashOid.equals(OIWObjectIdentifiers.idSHA1)) {
-                    mgfSpec = MGF1ParameterSpec.SHA1;
-                } else if (mgfHashOid.equals(NISTObjectIdentifiers.id_sha384)) {
-                    mgfSpec = MGF1ParameterSpec.SHA384;
-                } else if (mgfHashOid.equals(NISTObjectIdentifiers.id_sha512)) {
-                    mgfSpec = MGF1ParameterSpec.SHA512;
-                } else {
-                    throw new IllegalArgumentException("Unsupported MGF1 hash OID: " + mgfHashOid);
-                }
-
-                int saltLen = pss.getSaltLength().intValue();
-
-                PSSParameterSpec spec = new PSSParameterSpec(
-                        digestName,
-                        "MGF1",
-                        mgfSpec,
-                        saltLen,
-                        PSSParameterSpec.TRAILER_FIELD_BC
-                );
-                sig.setParameter(spec);
-            }
-        }
-
-        sig.initVerify(extraCert.getPublicKey());
-        sig.update(CmpMessageHelper.getProtectedBytes(msg));
-        return sig;
     }
 
     /**

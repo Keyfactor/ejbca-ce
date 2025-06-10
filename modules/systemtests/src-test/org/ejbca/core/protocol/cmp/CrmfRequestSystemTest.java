@@ -149,22 +149,27 @@ public class CrmfRequestSystemTest extends CmpTestCase {
     private final static String ISSUER_DN_SHA384 = "CN=TestCA SHA384";
     private final static String ISSUER_DN_MLDSA = "CN=TestCA ML-DSA-44";
     private final static String ISSUER_DN_SLHDSA = "CN=TestCA SLH-DSA";
+    private final static String ISSUER_DN_PSS = "CN=TestCA-PSS-SHA256";
     private final KeyPair keys;
     private final KeyPair keysMldsa;
     private final KeyPair keysSlhdsa;
     private final KeyPair keysMlkem512;
+    private final KeyPair keysPss;
     private final int caIdSha256;
     private final int caIdSha384;
     private final int caIdMldsa44;
     private final int caIdSlhdsa;
+    private final int caIdPss;
     private final X509Certificate cacertSha256;
     private final X509Certificate cacertSha384;
     private final X509Certificate cacertMldsa;
     private final X509Certificate cacertSlhdsa;
+    private final X509Certificate cacertPss;
     private final CA testx509caSHA256;
     private final CA testx509caSHA384;
     private final CA testx509caMldsa;
     private final CA testx509caSlhdsa;
+    private final CA testx509caPss;
     private final CmpConfiguration cmpConfiguration;
     private final static String cmpAlias = "CrmfRequestTestCmpConfigAlias";
 
@@ -193,12 +198,16 @@ public class CrmfRequestSystemTest extends CmpTestCase {
         this.testx509caSlhdsa = CaTestUtils.createTestX509CA(ISSUER_DN_SLHDSA, null, false, keyusage, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F);
         this.caIdSlhdsa = this.testx509caSlhdsa.getCAId();
         this.cacertSlhdsa = (X509Certificate) this.testx509caSlhdsa.getCACertificate();
+        this.testx509caPss = CaTestUtils.createTestX509CA(ISSUER_DN_PSS, null, false, keyusage, AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
+        this.caIdPss = this.testx509caPss.getCAId();
+        this.cacertPss = (X509Certificate) this.testx509caPss.getCACertificate();
 
         // Client keys
         this.keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         this.keysMldsa = KeyTools.genKeys(AlgorithmConstants.KEYALGORITHM_MLDSA44, AlgorithmConstants.KEYALGORITHM_MLDSA44);
         this.keysSlhdsa = KeyTools.genKeys(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F);
         this.keysMlkem512 = KeyTools.genKeys(AlgorithmConstants.KEYALGORITHM_MLKEM512, AlgorithmConstants.KEYALGORITHM_MLKEM512);
+        this.keysPss = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
     }
     @Override
     @Before
@@ -216,6 +225,9 @@ public class CrmfRequestSystemTest extends CmpTestCase {
         this.caSession.addCA(ADMIN, this.testx509caSlhdsa);
         log.debug("ISSUER_DN_SLHDSA: " + ISSUER_DN_SLHDSA);
         log.debug("caIdSlhdsa: " + this.cacertSlhdsa);
+        this.caSession.addCA(ADMIN, this.testx509caPss);
+        log.debug("ISSUER_DN_SLHDSA: " + ISSUER_DN_PSS);
+        log.debug("caIdSlhdsa: " + this.cacertPss);
 
         // Set default encryption key so we can pass test from Eclipse
         StringConfigurationCache.INSTANCE.setEncryptionKey("qhrnf.f8743;12%#75".toCharArray());
@@ -239,6 +251,7 @@ public class CrmfRequestSystemTest extends CmpTestCase {
         CaTestUtils.removeCa(ADMIN, testx509caSHA384.getCAInfo());
         CaTestUtils.removeCa(ADMIN, testx509caMldsa.getCAInfo());
         CaTestUtils.removeCa(ADMIN, testx509caSlhdsa.getCAInfo());
+        CaTestUtils.removeCa(ADMIN, testx509caPss.getCAInfo());
         try {
             this.endEntityManagementSession.deleteUser(ADMIN, "cmptest");
         } catch (NoSuchEndEntityException e) {
@@ -1341,6 +1354,7 @@ public class CrmfRequestSystemTest extends CmpTestCase {
     @Test
     public void testPssCrmfHttpOkUserSha256PssWithPssCaAndCustomPopoAlg() throws Exception {
         log.info(">testPssCrmfHttpOkUserSha256PssWithPssCaCustomPopoAlg");
+
         cmpConfiguration.setCMPDefaultCA(cmpAlias, ISSUER_DN_PSS);
         cmpConfiguration.setResponseProtection(cmpAlias, "signature");
         globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration);

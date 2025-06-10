@@ -29,6 +29,7 @@ import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -1083,6 +1084,7 @@ public abstract class CmpTestCase extends CaTestCase {
             try {
                 assertTrue(CmpMessageHelper.verifySignature(respObject, cacert.getPublicKey()));
             } catch (SignatureException e) {
+
                 log.debug(e.getMessage(), e);
                 fail(e.getMessage());
             }
