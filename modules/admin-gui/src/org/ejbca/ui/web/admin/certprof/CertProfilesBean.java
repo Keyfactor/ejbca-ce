@@ -324,8 +324,6 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         selectedCertProfileId = null;
         certProfileName = null;
 
-        System.out.println("CANCEL");
-
         redirect("editcertificateprofiles.xhtml");
     }
     
