@@ -54,6 +54,7 @@ public final class QueryGenerator implements Serializable {
      * 
      */
     private static final class Query implements Serializable {
+        private static final long serialVersionUID = 1L;
         public final StringBuilder query = new StringBuilder();
         private final String attrAlias;
         private final static String WHERE = "WHERE";

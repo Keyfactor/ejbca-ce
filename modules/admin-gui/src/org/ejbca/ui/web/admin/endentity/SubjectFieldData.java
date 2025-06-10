@@ -18,6 +18,7 @@ import org.ejbca.ui.web.admin.rainterface.UserView;
 
 public abstract class SubjectFieldData implements Serializable {
     
+    private static final long serialVersionUID = 1L;
     private String label;
     private boolean modifiable;
     private boolean required;

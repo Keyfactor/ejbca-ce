@@ -30,6 +30,8 @@ import org.ejbca.config.GlobalConfiguration;
  */
 public class ValidatorSettings implements Serializable {
     
+    private static final long serialVersionUID = 1L;
+
     public interface ValidatorSettingsHelper extends Serializable {
         GlobalConfiguration getGlobalConfiguration();
         void addErrorMessage(final String languageKey, final Object... params);

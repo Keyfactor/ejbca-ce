@@ -25,6 +25,7 @@ import org.apache.commons.lang.StringUtils;
  *
  */
 public class OAuthKeyManager implements Serializable {
+    private static final long serialVersionUID = 1L;
     private final List<OAuthKeyInfo> oauthKeys;
 
     /**

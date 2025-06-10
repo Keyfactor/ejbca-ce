@@ -29,6 +29,7 @@ import com.keyfactor.util.certificate.DnComponents;
  */
 public class SubjectDnFieldData extends SubjectFieldData implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     private MutablePair<Boolean, Boolean> isEmailAndUsesEmailFieldData;
     private String[] options;
     private String regex; 

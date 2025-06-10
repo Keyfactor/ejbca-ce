@@ -32,7 +32,8 @@ import org.apache.log4j.Logger;
  */
 public class SimpleTime implements Serializable {
 
-	public static final long MILLISECONDS_PER_YEAR = 31536000000L; // 365 days
+	private static final long serialVersionUID = 1L;
+    public static final long MILLISECONDS_PER_YEAR = 31536000000L; // 365 days
 	public static final long MILLISECONDS_PER_MONTH = 2592000000L; // 30 days
     public static final long MILLISECONDS_PER_DAY = 86400000L;
 	public static final long MILLISECONDS_PER_HOUR = 3600000L;
