@@ -27,6 +27,8 @@ import jakarta.faces.component.html.HtmlInputSecret;
  */
 public class JsfDynamicUiHtmlInputSecret extends HtmlInputSecret implements DynamicUiComponent, PropertyChangeListener {
 
+    private static final long serialVersionUID = 1L;
+
     /** Class logger. */
     private static final Logger log = Logger.getLogger(JsfDynamicUiHtmlInputSecret.class);
 

@@ -98,6 +98,7 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
     }
     
     public final static class GuiInfo implements Serializable {
+        private static final long serialVersionUID = 1L;
         public static final String TEXTKEY_PREFIX = "INTERNALKEYBINDING_STATUS_";
         private final int internalKeyBindingId;
         private final String name;

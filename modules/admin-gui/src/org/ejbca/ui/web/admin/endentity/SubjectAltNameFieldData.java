@@ -27,6 +27,7 @@ import com.keyfactor.util.certificate.DnComponents;
  */
 public class SubjectAltNameFieldData extends SubjectFieldData implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     private boolean isRfc822Name;
     private boolean useDataFromRFC822NameField;
     private boolean copyDataFromCN;

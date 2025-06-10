@@ -105,6 +105,7 @@ public class RaCasPageBean implements Serializable {
     }
 
     public class CrlLinkInfo implements Serializable {
+        private static final long serialVersionUID = 1L;
         private final String link;
         private final int partitionIndex;
 

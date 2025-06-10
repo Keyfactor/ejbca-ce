@@ -36,6 +36,8 @@ import org.apache.log4j.Logger;
  */
 public class DynamicUiModel implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     public static final String BASECLASS_PREFIX = "BASECLASS_";
 
     public static final String SUBCLASS_PREFIX = "SUBCLASS_";

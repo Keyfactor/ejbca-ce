@@ -38,6 +38,7 @@ import com.keyfactor.util.keys.KeyTools;
  *
  */
 public class SystemConfigurationCtLogManager extends CtLogManager implements Serializable {
+    private static final long serialVersionUID = 1L;
     private static final String EDIT_CT_LOG = "editCTLog";
     private static final String CT_LOG_SAVED = "saved";
     private static final Logger log = Logger.getLogger(SystemConfigurationCtLogManager.class);
@@ -45,6 +46,7 @@ public class SystemConfigurationCtLogManager extends CtLogManager implements Ser
     private final CtLogEditor ctLogEditor;
 
     public class CtLogEditor implements Serializable {
+        private static final long serialVersionUID = 1L;
         private String url;
         private transient Part publicKeyFile;
         private String label;

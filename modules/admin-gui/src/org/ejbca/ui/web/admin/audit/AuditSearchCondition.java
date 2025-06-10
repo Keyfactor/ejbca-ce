@@ -26,7 +26,8 @@ import org.cesecore.audit.AuditLogEntry;
  */
 public class AuditSearchCondition implements Serializable {
 	
-	private Operation operation = Operation.AND;
+	private static final long serialVersionUID = 1L;
+    private Operation operation = Operation.AND;
 	private final String column;
 	private Condition condition = Condition.EQUALS;
 	private String value;
