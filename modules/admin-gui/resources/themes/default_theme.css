@@ -1634,6 +1634,7 @@ a.button:active {
 .list-services-column-name {
 	font-weight: bold;
 	max-width: 35vw;
+	word-break: break-all;
 }
 
 .h-center-column {
