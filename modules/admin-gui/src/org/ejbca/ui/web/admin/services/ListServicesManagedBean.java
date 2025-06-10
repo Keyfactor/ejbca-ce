@@ -188,6 +188,10 @@ public class ListServicesManagedBean extends BaseManagedBean {
 		if (getEditServiceBean().isServiceNameInvalid(clonedServiceName)) {
 			return "";
 		}
+		if (getEjb().getServiceSession().getService(clonedServiceName) != null){
+			addErrorMessage("SERVICENAMEALREADYEXISTS");
+			return "";
+		}
 		try {
 			getEjb().getServiceSession().cloneService(getAdmin(), selectedServiceName, clonedServiceName);
 		} catch (ServiceExistsException e) {
