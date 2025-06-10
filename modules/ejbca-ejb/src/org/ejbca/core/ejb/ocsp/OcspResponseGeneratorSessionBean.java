@@ -53,6 +53,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.regex.Pattern;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -118,7 +119,6 @@ import org.cesecore.certificates.certificate.HashID;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparency;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.certificates.ocsp.cache.OcspConfigurationCache;
 import org.cesecore.certificates.ocsp.cache.OcspDataConfigCache;
 import org.cesecore.certificates.ocsp.cache.OcspDataConfigCacheEntry;
 import org.cesecore.certificates.ocsp.cache.OcspExtensionsCache;
@@ -149,6 +149,7 @@ import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keybind.impl.OcspKeyBinding.ResponderIdType;
+import org.cesecore.keybind.impl.OcspNonExistingBehavior;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.oscp.OcspResponseData;
@@ -1586,14 +1587,14 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         String statusName = "UnknownStatus";
                         int statusLogCode = OCSPResponseItem.OCSP_UNKNOWN;
                         if (defaultKeyBind != null) {
-                            if (defaultKeyBind.getNonExistingRevoked()) {
+                            if (defaultKeyBind.getOcspNonExistingBehavior().equals(OcspNonExistingBehavior.REVOKED)) {
                                 // See NonExistingRevoked handling below for an explanation.
                                 // We return certificateHold just to be safe, in case the CA certificate is not yet available for some reason.
                                 status = new RevokedStatus(new RevokedInfo(new ASN1GeneralizedTime(new Date(0)),
                                         CRLReason.lookup(CRLReason.certificateHold)));
                                 statusName = "RevokedStatus";
                                 statusLogCode = OCSPResponseItem.OCSP_REVOKED;
-                            } else if (defaultKeyBind.getNonExistingUnauthorized()) {
+                            } else if (defaultKeyBind.getOcspNonExistingBehavior().equals(OcspNonExistingBehavior.UNAUTHORIZED)) {
                                 // In order to save on cycles and mitigate the chances of a DOS attack, we'll return a unsigned unauthorized reply. 
                                 ocspResponse = responseGenerator.build(OCSPRespBuilder.UNAUTHORIZED, null);
                                 if (!isPreSigning && auditLogger.isEnabled()) {
@@ -1759,16 +1760,16 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                          * we don't actually handle requests for the CA issuing the certificate asked about
                          * then we return unknown 
                          * */
-                        if (OcspConfigurationCache.INSTANCE.isNonExistingGood(requestUrl, ocspSigningCacheEntry.getOcspKeyBinding()) &&
-                                OcspSigningCache.INSTANCE.getEntry(certId) != null) {
+                        if (getOcspNonExistingBehavior(requestUrl, ocspSigningCacheEntry.getOcspKeyBinding(), ocspConfiguration).equals(OcspNonExistingBehavior.GOOD) 
+                                && OcspSigningCache.INSTANCE.getEntry(certId) != null) {
                             sStatus = "good";
                             certStatus = null; // null means "good" in OCSP
                             if (!isPreSigning && transactionLogger.isEnabled()) {
                                 transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_GOOD);
                                 transactionLogger.paramPut(TransactionLogger.REV_REASON, CRLReason.certificateHold);
                             }
-                        } else if (OcspConfigurationCache.INSTANCE.isNonExistingRevoked(requestUrl, ocspSigningCacheEntry.getOcspKeyBinding()) &&
-                                OcspSigningCache.INSTANCE.getEntry(certId) != null) {
+                        } else if (getOcspNonExistingBehavior(requestUrl, ocspSigningCacheEntry.getOcspKeyBinding(), ocspConfiguration).equals(OcspNonExistingBehavior.REVOKED)
+                                 && OcspSigningCache.INSTANCE.getEntry(certId) != null) {
                             sStatus = "revoked";
                             // When answering revoked for unknown (non issued) certificates RFC6960 section 2.2 specifies:
                             // When a responder sends a "revoked" response to a status request for a non-issued certificate, the responder MUST include the extended
@@ -1786,7 +1787,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             }
                             // Unknown certificate, "non issued", add the Extended Revoked Definition, RFC6960 4.4.8
                             addExtendedRevokedExtension = true;
-                        } else if (OcspConfigurationCache.INSTANCE.isNonExistingUnauthorized(ocspSigningCacheEntry.getOcspKeyBinding())
+                        } else if (getOcspNonExistingBehavior(requestUrl, ocspSigningCacheEntry.getOcspKeyBinding(), ocspConfiguration).equals(OcspNonExistingBehavior.UNAUTHORIZED)
                                 && OcspSigningCache.INSTANCE.getEntry(certId) != null) {
                             // In order to save on cycles and mitigate the chances of a DOS attack, we'll return a unsigned unauthorized reply. 
                             ocspResponse = responseGenerator.build(OCSPRespBuilder.UNAUTHORIZED, null);
@@ -2580,6 +2581,40 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             sb.append(errMsg).append(": ").append(errMsg);
         }
         return sb.toString();
+    }
+    
+    private OcspNonExistingBehavior getOcspNonExistingBehavior(final StringBuffer url, final OcspKeyBinding ocspKeyBinding, final GlobalOcspConfiguration globalOcspConfiguration) {
+        //Use the CA value as default 
+        OcspNonExistingBehavior result = globalOcspConfiguration.getOcspNonExistingBehavior();
+        //Overwrite with the keybinding if that exists
+        if(ocspKeyBinding != null) {
+            result = ocspKeyBinding.getOcspNonExistingBehavior();
+        }
+        //Handle overrides – this signifies URLs from to a specific answer should always be sent. 
+        //Always send back GOOD for a match
+        Pattern nonExistingIsGoodOverideRegex = OcspConfiguration.getNonExistingIsGoodOverideRegex() != null ? Pattern.compile(OcspConfiguration.getNonExistingIsGoodOverideRegex()) : null;
+        if(isRegexFulFilled(url, nonExistingIsGoodOverideRegex)) {
+            return OcspNonExistingBehavior.GOOD;
+        } 
+        //Always send back UNKNOWN for a match
+        Pattern nonExistingIsBadOverideRegex =  OcspConfiguration.getNonExistingIsBadOverideRegex() != null ? Pattern.compile(OcspConfiguration.getNonExistingIsBadOverideRegex()) : null;
+        if(isRegexFulFilled(url, nonExistingIsBadOverideRegex)) {
+            return OcspNonExistingBehavior.UNKNOWN;
+        }
+        //Always send back REVOKED for a match
+        Pattern nonExistingIsRevokedOverideRegex =  OcspConfiguration.getNonExistingIsRevokedOverideRegex() != null ? Pattern.compile(OcspConfiguration.getNonExistingIsRevokedOverideRegex()) : null;
+        if(isRegexFulFilled(url, nonExistingIsRevokedOverideRegex)) {
+            return OcspNonExistingBehavior.REVOKED;
+        }
+        
+        return result;
+    }
+
+    private boolean isRegexFulFilled(StringBuffer target, Pattern pattern) {
+        if (pattern == null || target == null) {
+            return false;
+        }
+        return pattern.matcher(target.toString()).matches();
     }
 }
 

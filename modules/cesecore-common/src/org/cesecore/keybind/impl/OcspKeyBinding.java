@@ -98,26 +98,27 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     }
 
     public static final String IMPLEMENTATION_ALIAS = "OcspKeyBinding"; // This should not change, even if we rename the class in EJBCA 5.3+..
-    public static final String PROPERTY_NON_EXISTING_GOOD = "nonexistingisgood";
-    public static final String PROPERTY_NON_EXISTING_REVOKED = "nonexistingisrevoked";
-    public static final String PROPERTY_NON_EXISTING_UNAUTHORIZED = "nonexistingisunauthorized";
-    public static final String PROPERTY_INCLUDE_CERT_CHAIN = "includecertchain";
-    public static final String PROPERTY_INCLUDE_SIGN_CERT = "includesigncert";
-    public static final String PROPERTY_RESPONDER_ID_TYPE = "responderidtype";  // keyhash, name
-    public static final String PROPERTY_REQUIRE_TRUSTED_SIGNATURE = "requireTrustedSignature";
-    public static final String PROPERTY_UNTIL_NEXT_UPDATE = "untilNextUpdate";
-    public static final String PROPERTY_MAX_AGE = "maxAge";
-    public static final String PROPERTY_ENABLE_NONCE = "enableNonce";
-    public static final String PROPERTY_OMIT_REASON_CODE_WHEN_REVOCATION_REASON_UNSPECIFIED = "omitreasoncodewhenrevocationreasonunspecified"; 
-    public static final String PROPERTY_USE_ISSUER_NOTBEFORE_AS_ARCHIVE_CUTOFF = "useIssuerNotBeforeAsArchiveCutoff";
-    public static final String PROPERTY_RETENTION_PERIOD = "retentionPeriod";
+    @Deprecated(since = "9.4.0")
+    private static final String PROPERTY_NON_EXISTING_GOOD = "nonexistingisgood";
+    @Deprecated(since = "9.4.0")
+    private static final String PROPERTY_NON_EXISTING_REVOKED = "nonexistingisrevoked";
+    @Deprecated(since = "9.4.0")
+    private static final String PROPERTY_NON_EXISTING_UNAUTHORIZED = "nonexistingisunauthorized";
+    private static final String PROPERTY_NON_EXISTING_BEHAVIOR = "nonExistingBehavior";
+    private static final String PROPERTY_INCLUDE_CERT_CHAIN = "includecertchain";
+    private static final String PROPERTY_INCLUDE_SIGN_CERT = "includesigncert";
+    private static final String PROPERTY_RESPONDER_ID_TYPE = "responderidtype";  // keyhash, name
+    private static final String PROPERTY_REQUIRE_TRUSTED_SIGNATURE = "requireTrustedSignature";
+    private static final String PROPERTY_UNTIL_NEXT_UPDATE = "untilNextUpdate";
+    private static final String PROPERTY_MAX_AGE = "maxAge";
+    private static final String PROPERTY_ENABLE_NONCE = "enableNonce";
+    private static final String PROPERTY_OMIT_REASON_CODE_WHEN_REVOCATION_REASON_UNSPECIFIED = "omitreasoncodewhenrevocationreasonunspecified"; 
+    private static final String PROPERTY_USE_ISSUER_NOTBEFORE_AS_ARCHIVE_CUTOFF = "useIssuerNotBeforeAsArchiveCutoff";
+    private static final String PROPERTY_RETENTION_PERIOD = "retentionPeriod";
     //this property denotes if a previous cert chain is to be returned instead of the current one, identified by its serial number. if null, the current chain should be used. 
-    public static final String PROPERTY_CA_GENERATION = "certChainGeneration";
+    private static final String PROPERTY_CA_GENERATION = "certChainGeneration";
     
     {
-        addProperty(new DynamicUiProperty<>(PROPERTY_NON_EXISTING_GOOD, Boolean.FALSE));
-        addProperty(new DynamicUiProperty<>(PROPERTY_NON_EXISTING_REVOKED, Boolean.FALSE));
-        addProperty(new DynamicUiProperty<>(PROPERTY_NON_EXISTING_UNAUTHORIZED, Boolean.FALSE));
         addProperty(new DynamicUiProperty<>(PROPERTY_INCLUDE_CERT_CHAIN, Boolean.TRUE));
         addProperty(new DynamicUiProperty<>(PROPERTY_INCLUDE_SIGN_CERT, Boolean.TRUE));
         addProperty(new DynamicUiProperty<>(PROPERTY_RESPONDER_ID_TYPE, ResponderIdType.KEYHASH.name(),
@@ -151,30 +152,54 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
         assertCertificateCompatabilityInternal(certificate, ekuConfig);
     }
 
+    @Deprecated(since = "9.4.0")
     public boolean getNonExistingGood() {
         return (Boolean) getProperty(PROPERTY_NON_EXISTING_GOOD).getValue();
     }
+    
+    @Deprecated(since = "9.4.0")
     public void setNonExistingGood(boolean nonExistingGood) {
         setProperty(PROPERTY_NON_EXISTING_GOOD, nonExistingGood);
     }
+    
+    @Deprecated(since = "9.4.0")
     public boolean getNonExistingRevoked() {
         return (Boolean) getProperty(PROPERTY_NON_EXISTING_REVOKED).getValue();
     }
+    
+    @Deprecated(since = "9.4.0")
     public void setNonExistingRevoked(boolean nonExistingRevoked) {
         setProperty(PROPERTY_NON_EXISTING_REVOKED, nonExistingRevoked);
     }
+    
+    @Deprecated(since = "9.4.0")
     public boolean getNonExistingUnauthorized() {
         if(getProperty(PROPERTY_NON_EXISTING_UNAUTHORIZED) == null) {
             setNonExistingUnauthorized(false);
         }
         return (Boolean) getProperty(PROPERTY_NON_EXISTING_UNAUTHORIZED).getValue();
     }
+    
+    @Deprecated(since = "9.4.0")
     public void setNonExistingUnauthorized(boolean nonExistingUnauthorized) {
         setProperty(PROPERTY_NON_EXISTING_UNAUTHORIZED, nonExistingUnauthorized);
     }
+    
+    public OcspNonExistingBehavior getOcspNonExistingBehavior() {
+        if(getData(PROPERTY_NON_EXISTING_BEHAVIOR, null) == null) {
+            setOcspNonExistingBehavior(OcspNonExistingBehavior.UNKNOWN);
+        }
+        return OcspNonExistingBehavior.fromLabel(getData(PROPERTY_NON_EXISTING_BEHAVIOR, null));
+    }
+    
+    public void setOcspNonExistingBehavior(final OcspNonExistingBehavior ocspNonExistingBehavior) {
+        putData(PROPERTY_NON_EXISTING_BEHAVIOR, ocspNonExistingBehavior.getLabel());
+    }
+    
     public boolean getIncludeCertChain() {
         return (Boolean) getProperty(PROPERTY_INCLUDE_CERT_CHAIN).getValue();
     }
+    
     public void setIncludeCertChain(boolean includeCertChain) {
         setProperty(PROPERTY_INCLUDE_CERT_CHAIN, includeCertChain);
     }
