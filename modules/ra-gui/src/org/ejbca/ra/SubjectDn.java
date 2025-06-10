@@ -14,10 +14,10 @@ package org.ejbca.ra;
 
 import java.util.List;
 
+import com.keyfactor.util.certificate.DnComponents;
+
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-
-import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Represents two "interfaces": list (needed for JSF) and map interface
@@ -25,8 +25,7 @@ import com.keyfactor.util.certificate.DnComponents;
  * 
  *
  */
-public class SubjectDn extends RaAbstractDn{
-
+public class SubjectDn extends RaAbstractDn {
     private static final long serialVersionUID = 1880387408052352354L;
 
     public SubjectDn(final EndEntityProfile endEntityProfile) {
@@ -48,6 +47,8 @@ public class SubjectDn extends RaAbstractDn{
 
     @Override
     protected String reorder(String dnBeforeReordering) {
-        return DnComponents.stringToBcX500Name(dnBeforeReordering, nameStyle, ldapOrder).toString();
+        return DnComponents.stringToBcX500Name(dnBeforeReordering, getNameStyle(), ldapOrder).toString();
     }
+    
+
 }

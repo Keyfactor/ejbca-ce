@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.jsf.configuration;
 
+import java.io.Serializable;
 import java.util.Map;
 
 /**
@@ -21,6 +22,6 @@ import java.util.Map;
  *
  * @version $Id: EjbcaJSFLanguageResource.java 31509 2019-02-15 12:30:22Z andrey_s_helmes $
  */
-public interface EjbcaJSFLanguageResource extends Map<String, String> {
+public interface EjbcaJSFLanguageResource extends Map<String, String>, Serializable  {
 
 }

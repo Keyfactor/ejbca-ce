@@ -14,6 +14,7 @@
 package org.ejbca.ui.web.admin.configuration;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -27,9 +28,9 @@ import org.ejbca.config.GlobalConfiguration;
  * This class is responsible for managing the configuration shown under the "Validators" tab
  * in System Configuration.
  */
-public class ValidatorSettings {
+public class ValidatorSettings implements Serializable {
     
-    public interface ValidatorSettingsHelper {
+    public interface ValidatorSettingsHelper extends Serializable {
         GlobalConfiguration getGlobalConfiguration();
         void addErrorMessage(final String languageKey, final Object... params);
         void addInfoMessage(final String languageKey);

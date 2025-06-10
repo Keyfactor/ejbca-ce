@@ -73,7 +73,7 @@ public class AcmeRaMasterApiSessionBean implements AcmeRaMasterApiSessionLocal {
     public CertificateDataWrapper searchForCertificate(final AuthenticationToken authenticationToken, final String fingerprint) {
         throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
     }
-
+    
     @Override
     public CertificateDataWrapper searchForCertificateByIssuerAndSerial(final AuthenticationToken authenticationToken, final String issuerDN, final String serialNumber) {
         throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
