@@ -12,7 +12,9 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.cmp;
 
-public class CmpDto {
+import java.io.Serializable;
+
+public class CmpDto implements Serializable {
 
     private String alias;
     private String CMPDefaultCA;

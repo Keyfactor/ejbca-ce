@@ -79,4 +79,13 @@ public interface AcmeOrder {
     void setIsActive(boolean isActive);
 
     boolean getIsActive();
+    
+    void setReplaces(String replaces);
+    
+    String getReplaces();
+
+    void setReplaced(boolean replaced);
+
+    boolean getReplaced();
+
 }

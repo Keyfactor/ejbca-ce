@@ -224,4 +224,5 @@ public class RaLocaleBean implements Serializable {
     public FacesMessage getFacesMessage(final String messageKey, final Object...params){
         return new FacesMessage(getMessage(messageKey, params));
     }
+
 }

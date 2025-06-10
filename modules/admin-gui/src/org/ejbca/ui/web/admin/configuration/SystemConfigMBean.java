@@ -40,6 +40,18 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.event.ComponentSystemEvent;
+import jakarta.faces.model.ListDataModel;
+import jakarta.faces.model.SelectItem;
+import jakarta.inject.Named;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.Part;
+
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -108,20 +120,10 @@ import com.keyfactor.util.StreamSizeLimitExceededException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 import jakarta.ejb.EJB;
-import jakarta.enterprise.context.SessionScoped;
-import jakarta.faces.application.FacesMessage;
-import jakarta.faces.component.UIComponent;
-import jakarta.faces.context.FacesContext;
-import jakarta.faces.event.ComponentSystemEvent;
-import jakarta.faces.model.ListDataModel;
-import jakarta.faces.model.SelectItem;
-import jakarta.inject.Named;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.Part;
+
 
 /**
  * Backing bean for the various system configuration pages.
- *
  */
 @Named
 @SessionScoped
@@ -178,7 +180,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         return (dotIndex == -1) ? "" : fileName.substring(dotIndex + 1);
     }
     
-    public class GuiInfo {
+    public class GuiInfo implements Serializable {
+        private static final long serialVersionUID = 1L;
         private String title;
         private String headBanner;
         private String footBanner;
@@ -356,7 +359,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public void setCtCacheFastFailBackoff(final long backoff) { this.ctCacheFastFailBackoff = backoff; }
     }
 
-    public class EKUInfo {
+    public class EKUInfo implements Serializable {
+        private static final long serialVersionUID = 1L;
         private String oid;
         private String name;
         private EKUInfo(String oid, String name) {
@@ -369,7 +373,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public void setName(String name) { this.name=name; }
     }
 
-    public class CustomCertExtensionInfo {
+    public class CustomCertExtensionInfo implements Serializable {
+        private static final long serialVersionUID = 1L;
         private int id;
         private String oid;
         private String displayName;
@@ -406,11 +411,11 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private ValidatorSettings validatorSettings;
     private List<SelectItem> availableCryptoTokens;
     private List<SelectItem> availableKeyAliases;
-    private ListDataModel<String> nodesInCluster = null;
+    private transient ListDataModel<String> nodesInCluster = null;
     private String currentNode = null;
     private boolean excludeActiveCryptoTokensFromClearCaches = true;
     private boolean customCertificateExtensionViewMode = false;
-    private Part statedumpFile = null;
+    private transient Part statedumpFile = null;
     private String statedumpDir = null;
     private boolean statedumpLockdownAfterImport = false;
     private SystemConfigurationOAuthKeyManager oauthKeyManager;
@@ -482,8 +487,13 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
     }
 
-    public SystemConfigMBean() throws AuthorizationDeniedException {
+    public SystemConfigMBean() {
         super(AccessRulesConstants.ROLE_ADMINISTRATOR);
+    }
+    
+    @PostConstruct
+    void checkPermissions() throws AuthorizationDeniedException {
+        // do this in PostConstruct instead of the ctor because it needs the app to be initialized
         if (!authorizationSession.isAuthorized(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource()) &&
                 !authorizationSession.isAuthorized(getAdmin(), StandardRules.EKUCONFIGURATION_VIEW.resource()) &&
                 !authorizationSession.isAuthorized(getAdmin(), StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource())) {
@@ -531,6 +541,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             this.oAuthConfiguration = null;
             oauthKeyManager = new SystemConfigurationOAuthKeyManager(getOauthKeys(),
                 new SystemConfigurationOAuthKeyManager.SystemConfigurationHelper() {
+                    private static final long serialVersionUID = 1L;
+
                     @Override
                     public void saveOauthKeys(final List<OAuthKeyInfo> oauthKeys) {
                         setOauthKeys(oauthKeys);
@@ -561,7 +573,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                     }
                 });
         }
-        oauthKeyManager.setAdminToken(getAdmin());
+        oauthKeyManager.setAdminTokenSupplier(this::getAdmin);
         return oauthKeyManager;
     }
 
@@ -613,6 +625,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         if (ctLogManager == null) {
             ctLogManager = new SystemConfigurationCtLogManager(getCurrentConfig().getCtLogs(),
                 new SystemConfigurationCtLogManager.SystemConfigurationHelper() {
+                    private static final long serialVersionUID = 1L;
+
                     @Override
                     public void saveCtLogs(final List<CTLogInfo> ctLogs) {
                         getCurrentConfig().setCtLogs(ctLogs);
@@ -757,6 +771,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     public ValidatorSettings getValidatorSettings() {
         if (validatorSettings == null) {
             validatorSettings = new ValidatorSettings(new ValidatorSettings.ValidatorSettingsHelper() {
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 public GlobalConfiguration getGlobalConfiguration() {
                     return SystemConfigMBean.this.getGlobalConfiguration();
@@ -1540,7 +1556,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     // --------------------------------------------
 
     private AvailableExtendedKeyUsagesConfiguration availableExtendedKeyUsagesConfig = null;
-    private ListDataModel<EKUInfo> availableExtendedKeyUsages = null;
+    private transient ListDataModel<EKUInfo> availableExtendedKeyUsages = null;
     private String currentEKUOid = "";
     private String currentEKUName = "";
 
@@ -1729,10 +1745,10 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     // ----------------------------------------------------
 
     private GlobalCustomCssConfiguration globalCustomCssConfiguration = null;
-    private ListDataModel<RaStyleInfo> raStyleInfos = null;
+    private transient ListDataModel<RaStyleInfo> raStyleInfos = null;
     private List<RaStyleInfo> raStyleInfosList;
-    private Part raCssFile = null;
-    private Part raLogoFile = null;
+    private transient Part raCssFile = null;
+    private transient Part raLogoFile = null;
     private Map<String, RaCssInfo> importedRaCssInfos = null;
     private String archiveName = null;
     private String logoName = null;
@@ -1921,7 +1937,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
     private final String DEFAULT_EXTENSION_CLASSPATH = "org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension";
     private AvailableCustomCertificateExtensionsConfiguration availableCustomCertExtensionsConfig = null;
-    private ListDataModel<CustomCertExtensionInfo> availableCustomCertExtensions = null;
+    private transient ListDataModel<CustomCertExtensionInfo> availableCustomCertExtensions = null;
     private int selectedCustomCertExtensionID = 0;
     private String newOID = "";
     private String newDisplayName = "";
@@ -2219,6 +2235,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     public EABConfigManager getEABConfigManager() {
         if (eabConfigManager == null) {
             eabConfigManager = new EABConfigManager(new EABConfigManager.SystemConfigurationHelper() {
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 public void addErrorMessage(String languageKey) {
                     SystemConfigMBean.this.addErrorMessage(languageKey);
@@ -2287,6 +2305,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     public boolean renderStatedumpTab() {
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.ROLE_ROOT.resource()) && isStatedumpAvailable();
     }
+
+ 
+
     
     public boolean isCtCacheEnabled() {
         return getCurrentConfig().isCtCacheEnabled();
