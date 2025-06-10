@@ -48,7 +48,6 @@ import org.ejbca.core.model.ca.publisher.GeneralPurposeCustomPublisher;
 import org.ejbca.core.model.ca.publisher.ICustomPublisher;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.LdapSearchPublisher;
-import org.ejbca.core.model.ca.publisher.LegacyValidationAuthorityPublisher;
 import org.ejbca.core.model.ca.publisher.MultiGroupPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
@@ -202,7 +201,6 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         return Integer.valueOf(getPublisherType()).toString();
     }
 
-    @SuppressWarnings("deprecation")
     private int getPublisherType() {
         int retval = PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER;
         if (publisher instanceof CustomPublisherContainer) {
@@ -213,10 +211,6 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         }
         if (publisher instanceof LdapSearchPublisher) {
             retval = PublisherConst.TYPE_LDAPSEARCHPUBLISHER;
-        }
-        // Legacy VA publisher doesn't exist in community edition, so check the qualified class name instead.
-        if (publisher.getClass().getName().equals(LegacyValidationAuthorityPublisher.OLD_VA_PUBLISHER_QUALIFIED_NAME)) {
-            retval = PublisherConst.TYPE_VAPUBLISHER;
         }
         if (publisher instanceof ActiveDirectoryPublisher) {
             retval = PublisherConst.TYPE_ADPUBLISHER;
@@ -248,14 +242,6 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
             return pub == null ? false : pub.isReadOnly();
         }
         return false;
-    }
-
-    /**
-    *
-    * @return true if the publisher is deprecated and shouldn't be editable.
-    */
-    public boolean isDeprecated() {
-        return publisher.getClass().getName().equals(LegacyValidationAuthorityPublisher.OLD_VA_PUBLISHER_QUALIFIED_NAME);
     }
 
     public List<String> getCustomClasses() {
