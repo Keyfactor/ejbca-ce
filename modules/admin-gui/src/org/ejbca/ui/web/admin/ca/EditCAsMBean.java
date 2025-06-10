@@ -238,7 +238,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private Date rolloverNotAfter = null;
     private Date caCertNotAfter = null;
     
-    private AuthenticationToken administrator;
+    private transient AuthenticationToken administrator;
     private boolean viewOnly = false;
     
     private List<ItsGeographicRegionGuiWrapper> geographicElementsInGui = null;

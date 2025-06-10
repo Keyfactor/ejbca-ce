@@ -112,7 +112,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     @EJB
     private EndEntityManagementSessionLocal endEntityManagementSession;
     private final Map<String, Integer> caNames = getEjbcaWebBean().getCANames();
-    private CAInterfaceBean caBean;
+    private transient CAInterfaceBean caBean;
     private int selectedCaId;
     private String createCaName;
     private Map<Integer, String> caidtonamemap;
