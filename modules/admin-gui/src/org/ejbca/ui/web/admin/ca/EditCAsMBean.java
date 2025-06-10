@@ -1607,6 +1607,10 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     
     // ======================================= Helpers ===================================================================//
     private String createCaOrMakeRequest(final boolean createCa, final boolean makeRequest) {
+        if (StringUtils.isBlank(caInfoDto.getCaName().trim())) {
+            addErrorMessage("CA_NAME_EMPTY");
+            return "";
+        }
         boolean illegalDnOrAltName;
         byte[] fileBuffer = null;
         try {
@@ -1786,6 +1790,10 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
      * @return Navigation
      */
     public String saveCa() {
+        if (StringUtils.isBlank(caInfoDto.getCaName().trim())) {
+            addErrorMessage("CA_NAME_EMPTY");
+            return "";
+        }
         try {
             final CAInfo caInfo = getCaInfo();
             if (caInfo == null) {
@@ -2124,11 +2132,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     private String saveCaInternal(final CAInfo cainfo) {
-        
-        if (StringUtils.isBlank(caInfoDto.getCaName().trim())) {
-            addErrorMessage("CA_NAME_EMPTY");
-            return "";
-        }
         
         if (StringUtils.isNotBlank(currectCaName) && !currectCaName.equals(caInfoDto.getCaName().trim())) {
             try {

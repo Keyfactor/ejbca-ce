@@ -272,7 +272,8 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
                 authorizedCas.add(caName);
                 caNameToStatusMap.put(caName, statusText);
                 try {
-                    caNameToTypeMap.put(caName, caSession.getCAInfo(getAdmin(), caId).getCaTypeAsString());
+                    caNameToTypeMap.put(caName, 
+                            caSession.getCAInfo(getAdmin(), caId).getCaTypeAsString().replace("SSHCA", "SSH"));
                 } catch (AuthorizationDeniedException e) {
                     // ignore
                 }
