@@ -1460,24 +1460,26 @@ a.button:active {
 
 /* PrimeFaces class adjustments: END */
 
-/* Services page */
-.ui-datatable#services\:list-services-table {
+.table-layout-auto {
 	display: table;
-	padding-top: 1rem;
-	padding-bottom: 1rem;
 }
 
-.ui-datatable#services\:list-services-table table {
+.table-layout-auto table {
 	table-layout: auto !important;
 }
 
-.list-services-column-name {
+.table-title-column {
 	font-weight: bold;
 	max-width: 35vw;
 	word-break: break-all;
 }
 
-.h-center-column {
+.vertical-padding-1 {
+	padding-top: 1rem;
+	padding-bottom: 1rem;
+}
+
+.text-align-center {
 	text-align: center !important;
 }
 
