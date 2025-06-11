@@ -323,7 +323,23 @@ public class PublisherSystemTest extends RoleUsingTestCase {
 		log.trace("<test08storeCRLToDummy()");
 	}
 
-    @Test
+	/**
+	 * edits publisher's name
+	 * @throws AuthorizationDeniedException
+	 */
+	@Test
+	public void test09EditPublisherName() throws AuthorizationDeniedException {
+		log.trace(">testEditPublisherName()");
+		final BasePublisher publisher = this.publisherSession.getPublisher(cloneName);
+		final int publisherId = publisher.getPublisherId();
+		final String newPublisherName = "TESTEDITPUBLISHERNAME";
+		publisherNames.add(newPublisherName);
+
+		this.publisherSession.changePublisher(internalAdmin, publisherId, newPublisherName, publisher);
+		log.trace("<testEditPublisherName()");
+	}
+
+	@Test
     public void testParallelPublishing() throws Exception {
         final String TESTNAME = PublisherSystemTest.class.getSimpleName() + "_testParallelPublishing";
         final CustomPublisherContainer publisher = new CustomPublisherContainer();
