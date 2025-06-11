@@ -1,9 +1,11 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:f="jakarta.faces.core"
-    xmlns:h="jakarta.faces.html"
-    xmlns:ui="jakarta.faces.facelets">
+      xmlns:f="jakarta.faces.core"
+      xmlns:h="jakarta.faces.html"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui">
 <ui:remove>
 	<!--
     /*************************************************************************
@@ -23,84 +25,78 @@
 
 <body>
 <ui:composition template="/WEB-INF/include/template.xhtml">
-    <ui:param name="resourceBean" value="#{listServicesManagedBean}" />
-	<ui:define name="content">
-		<h1>
-			<h:outputText value="#{web.text.MANAGESERVICES}" />
-		</h1>
+    <ui:param name="resourceBean" value="#{listServicesManagedBean}"/>
+    <f:metadata>
+        <f:viewAction action="#{listServicesManagedBean.loadData}" />
+    </f:metadata>
+    <ui:define name="content">
+        <h1>
+            <h:outputText
+                    value="#{listServicesManagedBean.hasEditRights ? web.text.MANAGESERVICES : web.text.VIEWSERVICE}"/>
+            <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Services.html')}" escape="false"/>
+        </h1>
 
-		<h:form id="services">
-			<h:panelGrid styleClass="list" columns="2"
-				columnClasses="listColumn1,listColumn2">
-				<h:panelGroup>
-					<h3>
-						<h:outputText value="#{web.text.LISTOFSERVICES}" />
-					</h3>
-				</h:panelGroup>
-				<h:panelGroup>
-				</h:panelGroup>
+        <h3 id="serviceTitle">
+            <h:outputText value="#{web.text.LISTOFSERVICES}"/>
+        </h3>
 
-				<h:panelGroup>
-					<h:selectOneListbox styleClass="select-list" id="listServices"
-						value="#{listServicesManagedBean.selectedServiceName}"
-						style="width: 50em" size="15">
-						<f:selectItems
-							value="#{listServicesManagedBean.availableServices}" />
-					</h:selectOneListbox>
-				</h:panelGroup>
-				<h:panelGroup>
-				</h:panelGroup>
-
-				<h:panelGrid columns="2" width="100%"
-					columnClasses="subTableColumn1,subTableColumn2">
-					<h:panelGroup>
-						<h:commandButton id="editButton"
-							action="#{listServicesManagedBean.editService}"
-							value="#{web.text.EDITSERVICE}"
-							rendered="#{listServicesManagedBean.hasEditRights}" />
-						<h:commandButton id="viewButton"
-							action="#{listServicesManagedBean.editService}"
-							value="#{web.text.VIEWSERVICE}"
-							rendered="#{!listServicesManagedBean.hasEditRights}" />
-					</h:panelGroup>
-					<h:panelGroup>
-						<h:commandButton id="deleteButton"
-							action="#{listServicesManagedBean.deleteService}"
-							value="#{web.text.DELETESERVICE}"
-							onclick="if (checkSelectionMade('services:listServices')) return confirm('#{web.text.AREYOUSURE}');"
-							rendered="#{listServicesManagedBean.hasEditRights}" />
-					</h:panelGroup>
-				</h:panelGrid>
-				<h:panelGroup>
-				</h:panelGroup>
-			</h:panelGrid>
-
-			<h:panelGrid styleClass="actions margin-top" width="100%"
-				rendered="#{listServicesManagedBean.hasEditRights}">
-				<h:panelGroup>
-					<h3>
-						<h:outputText value="#{web.text.ADDSERVICE}" />
-					</h3>
-				</h:panelGroup>
-				<h:panelGroup>
-					<h:inputText id="newServiceName"
-						value="#{listServicesManagedBean.newServiceName}" size="40"
-						title="#{web.text.FORMAT_ID_STR}" />
-					<h:commandButton id="addButton"
-						action="#{listServicesManagedBean.addService}"
-						value="#{web.text.ADD}" style="margin-left: 3px;" />
-						&#xA0;&#xA0;
-					<h:commandButton id="renameButton"
-						action="#{listServicesManagedBean.renameService}"
-						value="#{web.text.RENAME_SELECTED}" />
-						&#xA0;&#xA0;&#xA0;
-					<h:commandButton id="cloneButton"
-						action="#{listServicesManagedBean.cloneService}"
-						value="#{web.text.CLONE_SELECTED}" />
-				</h:panelGroup>
-			</h:panelGrid>
-		</h:form>
-	</ui:define>
+        <h:form id="services">
+            <p:dataTable id="list-services-table" var="serviceName" value="#{listServicesManagedBean.sortedServicesList}"
+                         rendered="#{!listServicesManagedBean.serviceListEmpty}"
+                         styleClass="grid" stripedRows="true" showGridlines="true">
+                <p:column styleClass="list-services-column-name">
+                    <f:facet name="header">
+                        <h:outputText value="#{web.text.NAME}"/>
+                    </f:facet>
+                    <h:outputText value="#{serviceName}" title="#{serviceName}" style="font-weight: bold"/>
+                </p:column>
+                <p:column styleClass="h-center-column">
+                    <f:facet name="header">
+                        <h:outputText value="#{web.text.TYPE}"/>
+                    </f:facet>
+                    <h:outputText value="#{listServicesManagedBean.getServiceType(serviceName)}"/>
+                </p:column>
+                <p:column styleClass="h-center-column">
+                    <f:facet name="header">
+                        <h:outputText value="#{web.text.STATUS}"/>
+                    </f:facet>
+                    <h:outputText value="#{listServicesManagedBean.getServiceStatus(serviceName)}"/>
+                </p:column>
+                <p:column styleClass="h-center-column">
+                    <f:facet name="header">
+                        <h:outputText value="#{web.text.ACTIONS}"/>
+                    </f:facet>
+                    <div class="action-buttons">
+                        <h:commandButton id="viewButton" value="#{web.text.VIEW}"
+                                         action="#{listServicesManagedBean.viewService(serviceName)}"/>
+                        <h:commandButton id="editButton" value="#{web.text.EDIT}"
+                                         action="#{listServicesManagedBean.editService(serviceName)}"
+                                         disabled="#{!listServicesManagedBean.hasEditRights}"/>
+                        <h:commandButton id="deleteButton" value="#{web.text.DELETE}"
+                                         action="#{listServicesManagedBean.confirmServiceDeletion(serviceName)}"
+                                         disabled="#{!listServicesManagedBean.hasEditRights}"/>
+                        <h:commandButton id="cloneButton" value="#{web.text.CLONE}"
+                                         rendered="#{manageCAsMBean.canRenewResource}"
+                                         action="#{listServicesManagedBean.cloneService(serviceName)}"
+                                         disabled="#{!listServicesManagedBean.hasEditRights}"/>
+                    </div>
+                </p:column>
+            </p:dataTable>
+            <h:panelGrid styleClass="actions margin-top" width="100%"
+                         rendered="#{listServicesManagedBean.hasEditRights}">
+                <h:outputText value="#{web.text.SERVICES_NOT_CONFIGURED}"
+                              rendered="#{listServicesManagedBean.serviceListEmpty}"/>
+                <h:panelGroup>
+                    <h:commandButton id="addButton" name="addButton"
+                                     action="#{listServicesManagedBean.addService}"
+                                     value="#{web.text.ADD}">
+                        <f:param name="faces-redirect" value="true"/>
+                        <f:param name="mode" value="edit"/>
+                    </h:commandButton>
+                </h:panelGroup>
+            </h:panelGrid>
+        </h:form>
+    </ui:define>
 </ui:composition>
 </body>
 </html>
