@@ -71,6 +71,7 @@ import org.cesecore.certificates.KeyEncryptionPaddingAlgorithm;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAFactory;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaMsCompatibilityIrreversibleException;
@@ -159,6 +160,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
     private transient CAInterfaceBean caBean;
     private String editCaName;
+    private String currectCaName;
     private int caid = 0;
 
     private final Map<String,Integer> rootCaProfiles = getEjbcaWebBean().getAuthorizedRootCACertificateProfileNames();
@@ -237,6 +239,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private Date caCertNotAfter = null;
     
     private transient AuthenticationToken administrator;
+    private boolean viewOnly = false;
     
     private List<ItsGeographicRegionGuiWrapper> geographicElementsInGui = null;
     private String currentGeographicRegionType;
@@ -349,6 +352,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
         final Map<String, Object> requestMap = FacesContext.getCurrentInstance().getExternalContext().getRequestMap();
         initPageVariables(requestMap);
+        viewOnly = (boolean) requestMap.getOrDefault("viewonly", false);
 
         viewCertLink = getEjbcaWebBean().getBaseUrl() + globalconfiguration.getAdminWebPath() + "viewcertificate.xhtml";
 
@@ -520,7 +524,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     public boolean isHasEditRight() {
-        return getCaBean().hasEditRight();
+        return caBean.hasEditRight() && !viewOnly;
     }
 
     public boolean isHasCreateRight() {
@@ -610,11 +614,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     public String getEditCaName() {
-        return " : " + EditCaUtil.getTrimmedName(this.editCaName);
-    }
-
-    public String getCreateCaNameTitle() {
-        return " : " + caInfoDto.getCaName();
+        return EditCaUtil.getTrimmedName(this.editCaName);
     }
 
     public List<SelectItem> getKeySequenceFormatList() {
@@ -1394,13 +1394,9 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         } else {
             String certProfileId = caInfoDto.getCurrentCertProfile();
             if (Objects.nonNull(certProfileId)) {
-                if (Objects.nonNull(certProfileId)) {
-                    CertificateProfile cp = certificateProfileSession.getCertificateProfile(Integer.valueOf(certProfileId));
-                    if (Objects.nonNull(cp)) {
-                        return !cp.getUseNameConstraints();
-                    } else {
-                        return true;
-                    }
+                CertificateProfile cp = certificateProfileSession.getCertificateProfile(Integer.valueOf(certProfileId));
+                if (Objects.nonNull(cp)) {
+                    return !cp.getUseNameConstraints();
                 } else {
                     return true;
                 }
@@ -1586,6 +1582,10 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
      * @return Navigation
      */
     public String createCa() {
+        if (StringUtils.isBlank(caInfoDto.getCaName().trim())) {
+            addErrorMessage("CA_NAME_EMPTY");
+            return "";
+        }
         if(isMixedHybridChain())  return "";
         return createCaOrMakeRequest(true, false); // We are creating a ca!
     }
@@ -1607,6 +1607,10 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     
     // ======================================= Helpers ===================================================================//
     private String createCaOrMakeRequest(final boolean createCa, final boolean makeRequest) {
+        if (StringUtils.isBlank(caInfoDto.getCaName().trim())) {
+            addErrorMessage("CA_NAME_EMPTY");
+            return "";
+        }
         boolean illegalDnOrAltName;
         byte[] fileBuffer = null;
         try {
@@ -1734,6 +1738,12 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
      * @return Navigation
      */
     public String saveExternalCA() {
+        
+        if (StringUtils.isBlank(caInfoDto.getCaName().trim())) {
+            addErrorMessage("CA_NAME_EMPTY");
+            return "";
+        }
+        
         if (caInfoDto.getCaType()==CAInfo.CATYPE_X509) {
             final X509CAInfo x509caInfo = (X509CAInfo)cainfo;
             x509caInfo.setExternalCdp(crlCaCRLDPExternal.trim());
@@ -1780,6 +1790,10 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
      * @return Navigation
      */
     public String saveCa() {
+        if (StringUtils.isBlank(caInfoDto.getCaName().trim())) {
+            addErrorMessage("CA_NAME_EMPTY");
+            return "";
+        }
         try {
             final CAInfo caInfo = getCaInfo();
             if (caInfo == null) {
@@ -2046,7 +2060,13 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
      * Small utility function to return the current ca name used in export ca part of edit ca page.
      */
     public String getCaName() {
-        return cainfo.getName();
+        return caInfoDto.getCaName();
+    }
+    
+    public void setCaName(String caName) {
+        if (caName!=null) {
+            caInfoDto.setCaName(caName.trim());
+        }
     }
 
     /**
@@ -2112,7 +2132,17 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     private String saveCaInternal(final CAInfo cainfo) {
+        
+        if (StringUtils.isNotBlank(currectCaName) && !currectCaName.equals(caInfoDto.getCaName().trim())) {
+            try {
+                caSession.renameCA(getAdmin(), currectCaName, caInfoDto.getCaName().trim());
+            } catch (CAExistsException | CADoesntExistsException | AuthorizationDeniedException e) {
+                addNonTranslatedErrorMessage(e);
+                return "";
+            }
+        }
         try {
+            cainfo.setName(caInfoDto.getCaName().trim());
             caAdminSession.editCA(getAdmin(), cainfo);
             return EditCaUtil.MANAGE_CA_NAV;
         } catch (AuthorizationDeniedException | CmsCertificatePathMissingException | InternalKeyBindingNonceConflictException | CaMsCompatibilityIrreversibleException e) {
@@ -2276,9 +2306,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             currentCryptoTokenId = Integer.parseInt(caInfoDto.getCryptoTokenIdParam());
         }
 
-        caInfoDto.setCaSubjectDN("CN=" + caInfoDto.getCaName());
-
-
         if (isCaUninitialized && caInfoDto.isCaTypeX509()) {
             String policies = "";
             final X509CAInfo x509cainfo = (X509CAInfo) cainfo;
@@ -2325,11 +2352,12 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private void initEditCaPage() {
         signbyexternal = cainfo.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA;
         isCaexternal = cainfo.getStatus() == CAConstants.CA_EXTERNAL;
+        caInfoDto.setCaName(cainfo.getName());
+        currectCaName = cainfo.getName();
         
         if (cainfo.getCAType() == CAInfo.CATYPE_PROXY) {
             caInfoDto.setCaType(CAInfo.CATYPE_PROXY);
             cainfo.setCAId(cainfo.getCAId());
-            caInfoDto.setCaName(cainfo.getName());
             caInfoDto.setCaSubjectDN(cainfo.getSubjectDN());
             usedValidators = cainfo.getValidators();
             ProxyCaInfo proxyCaInfo = (ProxyCaInfo)cainfo;
@@ -2732,9 +2760,10 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             if (isEditCA) {
                 editCaName = (String) requestMap.get("editcaname");
                 caid = (Integer) requestMap.get("caid");
-            } else {
-                caInfoDto.setCaName((String) requestMap.get("createcaname"));
-            }
+            } 
+//            else {
+//                caInfoDto.setCaName((String) requestMap.get("createcaname"));
+//            }
         } else { // This page is accessed not via manage ca page we should not continue!
             try {
                 FacesContext.getCurrentInstance().getExternalContext().redirect(EditCaUtil.MANAGE_CA_NAV + ".xhtml");
