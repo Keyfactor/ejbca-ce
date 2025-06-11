@@ -184,6 +184,12 @@
 										 action="#{editPublisher.savePublisherAndTestConnection()}" 
 										 onclick="return checkPassword('#{web.text.PASSWORDSDOESNTMATCH}')"
 										 id="saveAndTestConnection"/>
+						<h:commandButton value="#{web.text.SAVEANDDOWNLOADSSHKEY}" 
+										 style="margin-right:3px;" 
+										 action="#{editPublisher.savePublisherAndDownloadKey()}" 
+										 rendered="#{editPublisher.manageScpPublisher}"
+										 onclick="return checkPassword('#{web.text.PASSWORDSDOESNTMATCH}')"
+										 id="saveAndDownloadSshPubKey"/>
 						<h:commandButton value="#{web.text.SAVE}" 
 										 style="margin-right:3px;" 
 										 action="#{editPublisher.savePublisher()}" 

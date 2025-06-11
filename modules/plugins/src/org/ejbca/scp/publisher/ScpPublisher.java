@@ -14,22 +14,31 @@ package org.ejbca.scp.publisher;
 
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Log4j2Logger;
 import com.jcraft.jsch.Session;
+import com.jcraft.jsch.SftpException;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
+import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.AuthorizationSessionLocal;
+import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
+import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.util.ExternalScriptsAllowlist;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.CustomPublisherProperty;
@@ -41,12 +50,16 @@ import org.ejbca.core.model.util.EjbLocalHelper;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
+
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
+import java.security.Key;
+import java.security.KeyStoreException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
@@ -75,6 +88,9 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
     public static final String SCP_PRIVATE_KEY_PROPERTY_NAME = "scp.privatekey";
     public static final String SCP_KNOWN_HOSTS_PROPERTY_NAME = "scp.knownhosts";
     public static final int DEFAULT_SSH_PORT_NUMBER = 22;
+    
+    public static final String AUTH_CRYPTOTOKEN_KEYPAIR_PROPERTY_NAME = "scp.cryptoken.keypair";
+    public static final String SCP_USE_SFTP = "scp.usesftp";
 
     private static final String EKU_PKIX_OCSPSIGNING = "1.3.6.1.5.5.7.3.9";
 
@@ -89,6 +105,9 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
     private String sshUsername = null;
     private Integer sshPort = null;
     private String privateKeyPassword = null;
+    
+    private String cryptoTokenAndKeyPair = null;
+    private boolean useSftp = true;
     
     private  Map<String, CustomPublisherProperty> properties = new LinkedHashMap<>();
 
@@ -128,6 +147,12 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
             //       telling that password being stored is wrong; but that needs a little bit more work
             throw new IllegalStateException("Could not decrypt encoded private key password.", e);
         }
+        useSftp = getBooleanProperty(properties, SCP_USE_SFTP);
+        if (certSCPDestination.isBlank() && crlSCPDestination.isBlank()) {
+            // publisher is being created as no destination is set
+            useSftp = true;
+        }
+        cryptoTokenAndKeyPair = getProperty(properties, AUTH_CRYPTOTOKEN_KEYPAIR_PROPERTY_NAME);
 
         this.properties.put(SIGNING_CA_PROPERTY_NAME, new CustomPublisherProperty(SIGNING_CA_PROPERTY_NAME, CustomPublisherProperty.UI_SELECTONE, null,
                 null, Integer.valueOf(signingCaId).toString()));
@@ -145,6 +170,13 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
                 new CustomPublisherProperty(SCP_PRIVATE_KEY_PASSWORD_NAME, CustomPublisherProperty.UI_TEXTINPUT_PASSWORD, privateKeyPassword));
         this.properties.put(SCP_KNOWN_HOSTS_PROPERTY_NAME,
                 new CustomPublisherProperty(SCP_KNOWN_HOSTS_PROPERTY_NAME, CustomPublisherProperty.UI_TEXTINPUT, scpKnownHosts));
+        
+        this.properties.put(SCP_USE_SFTP,
+                new CustomPublisherProperty(SCP_USE_SFTP, CustomPublisherProperty.UI_BOOLEAN, Boolean.valueOf(useSftp).toString()));
+        this.properties.put(AUTH_CRYPTOTOKEN_KEYPAIR_PROPERTY_NAME,
+                new CustomPublisherProperty(AUTH_CRYPTOTOKEN_KEYPAIR_PROPERTY_NAME, CustomPublisherProperty.UI_SELECTONE, null, 
+                                null, "None"));
+        
 
     }
 
@@ -159,7 +191,9 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
                 CERT_SCP_DESTINATION_PROPERTY_NAME,
                 SCP_PRIVATE_KEY_PROPERTY_NAME,
                 SCP_PRIVATE_KEY_PASSWORD_NAME,
-                SCP_KNOWN_HOSTS_PROPERTY_NAME
+                SCP_KNOWN_HOSTS_PROPERTY_NAME,
+                SCP_USE_SFTP,
+                AUTH_CRYPTOTOKEN_KEYPAIR_PROPERTY_NAME
         );
     }
 
@@ -181,20 +215,50 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
     public List<CustomPublisherProperty> getCustomUiPropertyList(AuthenticationToken authenticationToken) {
         List<CustomPublisherProperty> customProperties = new ArrayList<>();
         
-        CaSessionLocal caSession = new EjbLocalHelper().getCaSession();
+        EjbLocalHelper ejbLocalHelper = new EjbLocalHelper();
+        CaSessionLocal caSession = ejbLocalHelper.getCaSession();
+        CryptoTokenSessionLocal cryptoTokenSessionLocal = ejbLocalHelper.getCryptoTokenSession();
+        AuthorizationSessionLocal authorizationSession = ejbLocalHelper.getAuthorizationSession();
+        
         List<String> authorizedCaIds = new ArrayList<>();
         List<String> authorizedCaNames = new ArrayList<>();
+        List<String> authorizedCryptoTokenIdsAndKeyPairs = new ArrayList<>();
+        List<String> authorizedCryptoTokenNamesAndKeyPairs = new ArrayList<>();
         final Map<Integer, String> caIdToNameMap = caSession.getCAIdToNameMap();
         authorizedCaIds.add("-1");
         authorizedCaNames.add("None");
+        final Map<Integer, String> cryptoTokenIdToNameMap = cryptoTokenSessionLocal.getCryptoTokenIdToNameMap();
+        authorizedCryptoTokenIdsAndKeyPairs.add("-1;");
+        authorizedCryptoTokenNamesAndKeyPairs.add("None");
+        
+        
         for(Integer caId : caSession.getAuthorizedCaIds(authenticationToken)) {
             authorizedCaIds.add(caId.toString());
             authorizedCaNames.add(caIdToNameMap.get(caId));
+        }
+        for(Integer cryptoTokenId : cryptoTokenIdToNameMap.keySet()) {
+            if (authorizationSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.USE.resource() + "/" + cryptoTokenId.toString())) {
+                CryptoToken token = cryptoTokenSessionLocal.getCryptoToken(cryptoTokenId);
+                try {
+                    for (String keypair: token.getAliases()) {
+                        authorizedCryptoTokenIdsAndKeyPairs.add(cryptoTokenId.toString() + ";" + keypair);
+                        authorizedCryptoTokenNamesAndKeyPairs.add(
+                                cryptoTokenIdToNameMap.get(cryptoTokenId) + "  ------  " + keypair);
+                    }
+                } catch (KeyStoreException | CryptoTokenOfflineException e) {
+                     log.error("Unable to read cryptoken key aliases: ", e);
+                    continue;
+                }
+            }
         }
         for(final String key : properties.keySet()) {
             if(key.equals(SIGNING_CA_PROPERTY_NAME)) {
                 customProperties.add(new CustomPublisherProperty(SIGNING_CA_PROPERTY_NAME, CustomPublisherProperty.UI_SELECTONE, authorizedCaIds, authorizedCaNames,
                         Integer.valueOf(signingCaId).toString()));
+            } else if(key.equals(AUTH_CRYPTOTOKEN_KEYPAIR_PROPERTY_NAME)) {
+                customProperties.add(new CustomPublisherProperty(AUTH_CRYPTOTOKEN_KEYPAIR_PROPERTY_NAME, CustomPublisherProperty.UI_SELECTONE, 
+                        authorizedCryptoTokenIdsAndKeyPairs, authorizedCryptoTokenNamesAndKeyPairs,
+                        cryptoTokenAndKeyPair));
             } else {
                 customProperties.add(properties.get(key));
             }
@@ -298,7 +362,23 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
                 // @formatter:on
                 byte[] encodedObject = scpContainer.getEncoded();              
                 final String fileName = CertTools.getFingerprintAsString(certBlob);
-                performScp(signingCaId, fileName, sshUsername, sshPort, encodedObject, certSCPDestination, scpPrivateKey, privateKeyPassword, scpKnownHosts);
+                
+                log.info("Using SCP Publisher");
+                if (useSftp) {
+                    log.info("Using SFTP");
+                    byte[] knownHostsHardCoded = ("|1|K7CD++ijvBV/rh6jRXP5vh7YLf8=|Cm6Cfxql0wfqU0cDzjV+ojETlfk= "
+                            + "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC7MB6JzSbqel2RH27Efat0AeijBh4NHbTTNh9xyFIKx8Ekt+3Flrdorf8"
+                            + "LERwk33UpMs8tnSLGTv3HZNJIiS+zDIQIQx/lG7V/TrXD0E7W/DnTNktjswYW+XbsHKHpzBi5O+ESTdPkTvfED92M4ncS3FS"
+                            + "+Q/nNLOxfQSeVORquLNGOV4yY5+qyXv9KghVWpaU/4osNOKkYZGgF1dFacfU+dtyPWfFZTTdLDzzwjsujJArtAK+fOXr3Swy"
+                            + "363YggzqvzL15d4IujQbLUcruHV3b5iFDMwVrqSSy5fxJx8Hzr+575aqDCQBTqqTNMBBcwu6CtjRN/ViX4vQDL5juA2t3DZK"
+                            + "lR1jYVeGmypIlf9arlJWp6RQhG/67Y0VrNBVe9byw8Gst/ONmInJUmh1iXbYAaN0dVjO587qYOw8HSDlDx6OBGndQ3gi7W4+"
+                            + "6wbQy6yO47fU/rAqn+TN0VgrtbOo1Iv7S2H/62dlKG+eqNk3QzFZLO1MK3ZKPHvtQAxYzw/M=").getBytes();
+                    String cryptoTokenId = cryptoTokenAndKeyPair.split(";")[0].trim();
+                    String keypair = cryptoTokenAndKeyPair.split(";")[1].trim();
+                    performSftp(signingCaId, fileName, username, sshPort, encodedObject, certSCPDestination, cryptoTokenId, keypair, knownHostsHardCoded);
+                } else {
+                    performScp(signingCaId, fileName, sshUsername, sshPort, encodedObject, certSCPDestination, scpPrivateKey, privateKeyPassword, scpKnownHosts);
+                }
             } catch (GeneralSecurityException | IOException | JSchException e) {
                 String msg = e.getMessage();
                 log.error(msg);
@@ -449,6 +529,75 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
     @Override
     public void setExternalScriptsAllowlist(ExternalScriptsAllowlist allowList) {
         // Method not applicable for this publisher type!        
+    }
+    
+    private void performSftp(final int signingCaId, final String destinationFileName,
+            final String username, final Integer port, final byte[] data, 
+            String destinationPath, final String cryptoTokenId, final String keyPairName,
+            final byte[] knownHosts) throws JSchException, IOException, PublisherException {
+        
+        byte[] signedBytes;
+        if (signingCaId != -1) {
+            if(log.isDebugEnabled()) {
+                log.debug("Signing payload with signing key from CA with ID " + signingCaId);
+            }
+            try {
+                signedBytes = new EjbLocalHelper().getSignSession().signPayload(data, signingCaId);
+            } catch (CryptoTokenOfflineException | CADoesntExistsException | 
+                    SignRequestSignatureException | AuthorizationDeniedException e) {
+                if(log.isDebugEnabled()) {
+                    log.debug("Could not sign certificate", e);
+                }
+                throw new PublisherException("Could not sign certificate", e);
+            }
+        } else {
+            if(log.isDebugEnabled()) {
+                log.debug("Signing CA not defined, publishing raw certificate.");
+            }
+            // If no signing CA is defined, just publish the ScpContainer in its raw form
+            signedBytes = data;
+        }
+        Destination destination = buildDestination(destinationPath, port);
+        
+        JSch jsch = new JSch();
+        Log4j2Logger jschlogger = new Log4j2Logger();
+        JSch.setLogger(jschlogger);
+        jsch.setInstanceLogger(jschlogger);
+        
+        // TODO: send the public key
+        CryptoTokenManagementSessionLocal cryptoTokenManagementSession = new EjbLocalHelper().getCryptoTokenManagementSession();
+        Key sshAuthKey = null;
+        try {
+            sshAuthKey =  cryptoTokenManagementSession.getPublicKey(
+                    new AlwaysAllowLocalAuthenticationToken("ScpPublisher"), 
+                    Integer.parseInt(cryptoTokenId), keyPairName).getPublicKey();
+        } catch (AuthorizationDeniedException | NumberFormatException | CryptoTokenOfflineException e) {
+            // TODO Auto-generated catch block
+            throw new IllegalStateException(e);
+        }
+        jsch.setIdentityRepository(new ScpPublisherIdentityRepository());
+        jsch.setKnownHosts(new ByteArrayInputStream(knownHosts));
+        jsch.addIdentity(new ScpPublisherIdentity(
+                Integer.parseInt(cryptoTokenId), keyPairName, sshAuthKey.getAlgorithm(), sshAuthKey), null);
+        
+        Session session = jsch.getSession(username, destination.host, destination.port);
+        session.connect();
+        
+        Channel channel = session.openChannel("sftp");
+        channel.connect();
+        ChannelSftp c = (ChannelSftp) channel;
+        
+        try {
+            c.put(new ByteArrayInputStream(signedBytes), 
+                    destination.path + "/" + destinationFileName, ChannelSftp.OVERWRITE);
+        } catch (SftpException e) {
+            // TODO Auto-generated catch block
+            throw new IllegalStateException(e);
+        }
+        
+        c.exit();
+        session.disconnect();
+        
     }
 
     /**

@@ -13,6 +13,7 @@
 package org.ejbca.ui.web.admin.publisher;
 
 import java.io.Serializable;
+import java.security.Key;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -34,6 +35,9 @@ import jakarta.inject.Named;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.certificate.ssh.SshKeyFactory;
+import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
+import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
@@ -58,6 +62,7 @@ import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.ejbca.ui.web.ParameterException;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.configuration.SortableSelectItem;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * 
@@ -91,6 +96,8 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     private PublisherQueueSessionLocal publisherqueuesession;
     @EJB
     private CAAdminSessionLocal cAAdminSession;
+    @EJB
+    private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
     
     private LdapPublisherMBData ldapPublisherMBData;
     private LdapSearchPublisherMBData ldapSearchPublisherMBData;
@@ -503,6 +510,40 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
             log.error("Error connecting to publisher " + listPublishers.getSelectedPublisherName(), pce);
             addErrorMessage("ERRORCONNECTINGTOPUB", listPublishers.getSelectedPublisherName(), pce.getMessage());
         }
+    }
+    
+    public boolean isManageScpPublisher() {
+        return selectedPublisherType!=null && selectedPublisherType.contains("ScpPublisher");
+    }
+    
+    public void savePublisherAndDownloadKey() throws AuthorizationDeniedException {
+        try {
+            prepareForSave();
+        } catch (PublisherDoesntExistsException | PublisherExistsException | PublisherException | ParameterException e) {
+            addErrorMessage(e.getMessage());
+            return;
+        }
+        publisherSession.changePublisher(getAdmin(), listPublishers.getSelectedPublisherName(), publisher);
+        //TODO download key, first PEM then SSH
+        
+        String cryptoTokenIdAndKeyPairName = 
+                (String) getCustomPublisherMBData().getCustomPublisherPropertyValues().get("scp.cryptoken.keypair");
+        if (cryptoTokenIdAndKeyPairName==null) {
+            log.info("No SSH key from Cryptotoken is configured.");
+            return;
+        } 
+        int cryptoTokenId = Integer.parseInt(cryptoTokenIdAndKeyPairName.split(";")[0].trim());
+        String keyPairName = cryptoTokenIdAndKeyPairName.split(";")[1].trim();
+        Key sshAuthKey = null;
+        try {
+            sshAuthKey =  cryptoTokenManagementSession.getPublicKey(getAdmin(), cryptoTokenId, keyPairName).getPublicKey();
+        } catch (NumberFormatException | CryptoTokenOfflineException e) {
+            throw new IllegalStateException(e);
+        }
+        
+        // TODO make algo dynamic
+        log.info("Ssh pub key: "+ SshKeyFactory.getDownloadableSshKey("RSA", sshAuthKey));
+        
     }
     
     // This is ugly but could not find a better way for it

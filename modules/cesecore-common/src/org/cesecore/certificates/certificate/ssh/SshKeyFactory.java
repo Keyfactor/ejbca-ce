@@ -14,13 +14,19 @@ package org.cesecore.certificates.certificate.ssh;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
+import java.security.Key;
 import java.security.PublicKey;
+import java.security.interfaces.ECPublicKey;
+import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
 
 import org.bouncycastle.util.encoders.Base64;
+
+import com.keyfactor.util.keys.KeyTools;
 
 /**
  * SSH Key Factory.
@@ -129,4 +135,62 @@ public enum SshKeyFactory {
             throw new IllegalStateException("Could not instance class of type " + sshKeyImplementations.get(algorithm).getCanonicalName(), e);
         }
     }
+    
+    public static String getSshKeyType(String keyAlgorithm) {
+        keyAlgorithm = keyAlgorithm.toLowerCase();
+        if (keyAlgorithm.contains("rsa")) {
+            return "ssh-rsa";
+        } else if (keyAlgorithm.contains("ecdsa")) {
+            if (keyAlgorithm.contains("256")) {
+                return "ecdsa-sha2-nistp256";
+            } else if (keyAlgorithm.contains("384")) {
+                return "ecdsa-sha2-nistp384";
+            } else if (keyAlgorithm.contains("521")) {
+                return "ecdsa-sha2-nistp521";
+            } else {
+                throw new IllegalStateException("Invalid EC public key for auth. "
+                        + "Only ECDSA (256, 384, 521) bit keys are allowed.");
+            }
+        } else if (keyAlgorithm.contains("ed25519")) {
+            return "ssh-ed25519";
+        } else {
+            throw new IllegalStateException("Invalid public key for auth. "
+                    + "Only RSA, ED25519 and ECDSA (256, 384, 521) keys are allowed.");
+        }
+    }
+    
+    public static byte[] makePublicKeyBlob(String keyAlgorithm, Key sshAuthKey) {
+        
+        keyAlgorithm = keyAlgorithm.toLowerCase();
+        String sshKeyType = getSshKeyType(keyAlgorithm);        
+        SshCertificateWriter sshCertificateWriter = new SshCertificateWriter();
+        try {
+            sshCertificateWriter.writeString(sshKeyType);
+            if (keyAlgorithm.contains("rsa")) {
+                RSAPublicKey rsaPubKey = (RSAPublicKey) sshAuthKey;
+                sshCertificateWriter.writeBigInteger(rsaPubKey.getPublicExponent());
+                sshCertificateWriter.writeBigInteger(rsaPubKey.getModulus());
+            } else if (keyAlgorithm.contains("ecdsa")) {
+                ECPublicKey ecPubKey = (ECPublicKey) sshAuthKey;
+                sshCertificateWriter.writeString("nistp" + ecPubKey.getParams().getCurve().getField().getFieldSize());
+                sshCertificateWriter.writeByteArray(KeyTools.encodeEcPoint(ecPubKey.getW(), ecPubKey.getParams().getCurve()));
+            } else if (keyAlgorithm.contains("ed25519")) {
+                sshCertificateWriter.writeByteArray(KeyTools.encodeEd25519PublicKey((PublicKey) sshAuthKey));
+            }
+            sshCertificateWriter.flush();
+            sshCertificateWriter.close();
+            return sshCertificateWriter.toByteArray();
+        } catch (IOException e) {
+            throw new IllegalStateException("Unable to encode public key blob", e);
+        }
+        
+    }
+    
+    public static String getDownloadableSshKey(String keyAlgorithm, Key sshAuthKey) {
+        keyAlgorithm = keyAlgorithm.toLowerCase();
+        String sshKeyType = getSshKeyType(keyAlgorithm);        
+        String result = sshKeyType + " ";
+        result += new String(Base64.encode(makePublicKeyBlob(keyAlgorithm, sshAuthKey)), StandardCharsets.UTF_8);
+        return result;
+      }
 }
