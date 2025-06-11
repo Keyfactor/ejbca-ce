@@ -49,12 +49,8 @@
 						value="#{web.text.CRYPTOTOKEN_NAV_BACK_INIT}" action="#{cryptoTokenMBean.actionBackToPkiInstallation}">
 					</h:commandLink>
 				</h:panelGroup>
-				<h:commandButton
-					action="#{cryptoTokenMBean.toggleCurrentCryptoTokenEditMode}"
-					value="#{web.text.CRYPTOTOKEN_NAV_EDIT}"
-					rendered="#{(!cryptoTokenMBean.currentCryptoTokenEditMode) &amp;&amp; cryptoTokenMBean.allowedToModify}" />
-				<h:panelGroup id="placeholder1"
-					rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode || !cryptoTokenMBean.allowedToModify}" />
+
+				<h:panelGroup id="placeholder1"  />
 
 				<h:outputLabel for="currentCryptoTokenId"
 					value="#{web.text.CRYPTOTOKEN_ID}"
@@ -64,7 +60,7 @@
 					rendered="#{cryptoTokenMBean.currentCryptoTokenId != 0}" />
 
 				<h:outputLabel for="currentCryptoTokenName"
-					value="#{web.text.CRYPTOTOKEN_NAME}" />
+					value="#{web.text.NAME}" />
 				<h:panelGroup id="currentCryptoTokenName">
 					<h:inputText value="#{cryptoTokenMBean.currentCryptoToken.name}"
 						rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"
@@ -794,7 +790,7 @@
                             and (cryptoTokenMBean.currentCryptoTokenId != 0 or cryptoTokenMBean.currentCryptoToken.type == 'Pkcs11NgCryptoToken')}" 
                         onclick="return checkFieldNotEmpty(document.getElementById('currentCryptoTokenForm:currentCryptoTokenNameText'),'The name of crypto token is mandatory!');"/>
 					<h:commandButton
-							action="#{cryptoTokenMBean.cancelCurrentCryptoToken}"
+							action="cryptotokens?faces-redirect=true"
 							value="#{web.text.CANCEL}"
 							rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode and cryptoTokenMBean.currentCryptoTokenId != 0}" />
 					<h:button value="#{web.text.CANCEL}" outcome="cryptotokens.xhtml?faces-redirect=true" immediate="true" rendered="#{cryptoTokenMBean.paramRef eq 'cryptotokens'}"/>

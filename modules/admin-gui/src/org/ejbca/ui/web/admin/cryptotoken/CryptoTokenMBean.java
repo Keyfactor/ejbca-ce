@@ -116,6 +116,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         if (StringUtils.equals(initNewPkiParam, "true")) {
             initNewPki = true;
         }
+        currentCryptoTokenEditMode = "edit".equals(params.get("mode"));
     }
 
     /**
@@ -898,6 +899,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     private boolean initNewPki;
     private String maxOperationCount;
     private KeyPairTemplate keyPairTemplate; // Used for CP5 (same key cannot do encrypt/decrypt and sign/verify)
+    private String selectedCryptoTokenName;
 
     @EJB
     private CryptoTokenSessionLocal cryptoTokenSession;
@@ -972,6 +974,15 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     public void setUnlimitedOperations(boolean unlimitedOperations) {
         this.unlimitedOperations = unlimitedOperations;
     }
+
+    public String getSelectedCryptoTokenName() {
+        return FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("tokenName");
+    }
+
+    public String getSelectedCryptoTokenId() {
+        return FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("tokenId");
+    }
+
 
     /**
      * @return number of allowed operations for this key. -1 if 'Unlimited' is checked
@@ -1121,17 +1132,19 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
      * Invoked when admin requests a CryptoToken deletion.
      */
     public void deleteCryptoToken() throws AuthorizationDeniedException {
+        final int tokenId = getCurrentCryptoTokenId();
         if (getCryptoTokenGuiList() != null) {
-            final CryptoTokenGuiInfo rowData = getCryptoTokenGuiList().getRowData();
             // Check references in ACME EAB with symmetric key.
-            final List<String> references = referencedAcmeConfigurationIDs(rowData.getCryptoTokenId());
+            final List<String> references = referencedAcmeConfigurationIDs(tokenId);
             if (references.size() == 0) {
-                getCryptoTokenManagementSession().deleteCryptoToken(getAuthenticationToken(), rowData.getCryptoTokenId());
+                getCryptoTokenManagementSession().deleteCryptoToken(getAuthenticationToken(), tokenId);
             } else {
                 addErrorMessage("CRYPTOTOKEN_COULD_NOT_BE_DELETED_BECAUSE_REFERENCE_IN_ACME_ALIAS", String.join(", ", references));
             }
             flushCaches();
         }
+
+        redirect("cryptotokens.xhtml");
     }
 
     /**
@@ -1607,6 +1620,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     public int getCurrentCryptoTokenId() {
         // Get the HTTP GET/POST parameter named "cryptoTokenId"
         final String cryptoTokenIdString = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("cryptoTokenId");
+        final String mode = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("mode");
         if (cryptoTokenIdString != null && cryptoTokenIdString.length() > 0) {
             try {
                 int currentCryptoTokenId = Integer.parseInt(cryptoTokenIdString);
@@ -1616,7 +1630,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                     this.currentCryptoTokenId = currentCryptoTokenId;
                 }
                 // Always switch to edit mode for new ones and view mode for all others
-                setCurrentCryptoTokenEditMode(currentCryptoTokenId == 0);
+//                setCurrentCryptoTokenEditMode(currentCryptoTokenId == 0);
             } catch (NumberFormatException e) {
                 log.info("Bad 'cryptoTokenId' parameter value.. set, but not a number..");
             }
