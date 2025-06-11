@@ -73,14 +73,15 @@ public class X509CACrlUnitTest extends X509CAUnitTestBase {
         byte[] cdpDER = xcrl.getExtensionValue(Extension.issuingDistributionPoint.getId());
         assertNotNull("CRL has no distribution points", cdpDER);
 
-        ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(cdpDER));
-        final ASN1OctetString octs = ASN1OctetString.getInstance(aIn.readObject());
-        aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
-        IssuingDistributionPoint cdp = IssuingDistributionPoint.getInstance(aIn.readObject());
-        DistributionPointName distpoint = cdp.getDistributionPoint();
-
-        assertEquals("CRL distribution point is different", cdpURL, ((DERIA5String) ((GeneralNames) distpoint.getName()).getNames()[0].getName()).getString());
-
+        try (ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(cdpDER))) {
+            final ASN1OctetString octs = ASN1OctetString.getInstance(aIn.readObject());
+            try (ASN1InputStream octetInputStream = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()))) {
+                IssuingDistributionPoint cdp = IssuingDistributionPoint.getInstance(octetInputStream.readObject());
+                DistributionPointName distpoint = cdp.getDistributionPoint();
+                assertEquals("CRL distribution point is different", cdpURL,
+                        ((DERIA5String) ((GeneralNames) distpoint.getName()).getNames()[0].getName()).getString());
+            }
+        }
         cainfo.setUseCrlDistributionPointOnCrl(false);
         cainfo.setDefaultCRLDistPoint(null);
         ca.updateCA(cryptoToken, cainfo, cceConfig);
@@ -117,16 +118,16 @@ public class X509CACrlUnitTest extends X509CAUnitTestBase {
         byte[] cFreshestDpDER = xcrl.getExtensionValue(Extension.freshestCRL.getId());
         assertNotNull("CRL has no Freshest Distribution Point", cFreshestDpDER);
 
-        ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(cFreshestDpDER));
-        final ASN1OctetString octs = ASN1OctetString.getInstance(aIn.readObject());
-        aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
-        CRLDistPoint cdp = CRLDistPoint.getInstance(aIn.readObject());
-        DistributionPoint[] distpoints = cdp.getDistributionPoints();
-
-        assertEquals("More CRL Freshest distributions points than expected", 1, distpoints.length);
-        assertEquals("Freshest CRL distribution point is different", freshestCdpURL, ((DERIA5String) ((GeneralNames) distpoints[0].getDistributionPoint()
-                .getName()).getNames()[0].getName()).getString());
-
+        try (ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(cFreshestDpDER))) {
+            final ASN1OctetString octs = ASN1OctetString.getInstance(aIn.readObject());
+            try (ASN1InputStream octetInputStream = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()))) {
+                CRLDistPoint cdp = CRLDistPoint.getInstance(octetInputStream.readObject());
+                DistributionPoint[] distpoints = cdp.getDistributionPoints();
+                assertEquals("More CRL Freshest distributions points than expected", 1, distpoints.length);
+                assertEquals("Freshest CRL distribution point is different", freshestCdpURL,
+                        ((DERIA5String) ((GeneralNames) distpoints[0].getDistributionPoint().getName()).getNames()[0].getName()).getString());
+            }
+        }
         cainfo.setUseCrlDistributionPointOnCrl(false);
         cainfo.setDefaultCRLDistPoint(null);
         cainfo.setCADefinedFreshestCRL(null);
