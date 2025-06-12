@@ -55,6 +55,7 @@ public class RaEndEntityTools {
         RaCertificateSearchResponse response = raMasterApiProxyBean.searchForCertificatesByUsername(authenticationToken, username);
         List<RaCertificateDetails> certificates = new ArrayList<>();
         RaCertificateDetails.Callbacks callbacks = new RaCertificateDetails.Callbacks() {
+            private static final long serialVersionUID = 1L;
             @Override
             public RaLocaleBean getRaLocaleBean() {
                 return raLocaleBean;

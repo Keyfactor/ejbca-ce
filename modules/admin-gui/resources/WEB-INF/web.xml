@@ -23,6 +23,8 @@
         https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd">
 
     <description><![CDATA[EJBCA Administration web]]></description>
+    
+    <distributable />
 
     <listener>
          <listener-class>org.owasp.csrfguard.CsrfGuardServletContextListener</listener-class>

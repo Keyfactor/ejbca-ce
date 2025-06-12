@@ -46,4 +46,7 @@ public interface CryptoTokenSessionLocal extends CryptoTokenSession {
 
     /** @return true if the specified name is used by exactly one CryptoToken and that cryptoToken has the same id (checks the database, not the cache) */
     boolean isCryptoTokenNameUsedByIdOnly(String cryptoTokenName, int cryptoTokenId);
+
+    /** clear one item from cache */
+    void flushId(Integer id);
 }

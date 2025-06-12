@@ -741,7 +741,7 @@ public class SecureXMLDecoder implements AutoCloseable {
 
     // Only supports String value
     private Object parseMutablePair(final XmlPullParser parser) throws XmlPullParserException, IOException {
-        MutablePair pair = new MutablePair();
+        MutablePair<String, String> pair = new MutablePair<String, String>();
         final String clazz = parser.getAttributeValue(null, "class");
         final String method = parser.getAttributeValue(null, "method");
         if(nonNull(clazz) && nonNull(method) && clazz.equals("org.apache.commons.lang3.tuple.MutablePair") && method.equals("getField")) {

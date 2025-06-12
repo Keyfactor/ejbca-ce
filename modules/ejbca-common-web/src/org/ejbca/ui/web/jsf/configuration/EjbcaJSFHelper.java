@@ -28,8 +28,6 @@ import jakarta.faces.context.FacesContext;
  */
 public interface EjbcaJSFHelper extends Serializable {
 
-    void setEjbcaWebBean(EjbcaWebBean ejbcawebbean);
-
     /** Returns the EJBCA version */
     String getEjbcaVersion();
 
@@ -69,8 +67,7 @@ public interface EjbcaJSFHelper extends Serializable {
     static EjbcaJSFHelper getBean(){
         FacesContext context = FacesContext.getCurrentInstance();
         Application app = context.getApplication();
-        EjbcaJSFHelper value = app.evaluateExpressionGet(context, "#{web}", EjbcaJSFHelper.class);
-        return value;
+        return app.evaluateExpressionGet(context, "#{web}", EjbcaJSFHelper.class);
     }
 
     /** @return true if the client browser has identified itself as a legacy Internet Explorer 10 (or earlier) */

@@ -47,7 +47,7 @@ dependencyResolutionManagement {
             library("commons-lang3", ":commons-lang3:3.17.0")
             library("commons-lang3-old", ":commons-lang3:3.14.0")
             library("commons-configuration2", ":commons-configuration2:2.11.0")
-            library("commons-collections4", ":commons-collections4:4.4")
+            library("commons-collections4", ":commons-collections4:4.5.0")
             library("nimbus-jose-jwt", ":nimbus-jose-jwt:9.37.3")
             library("x509-common-util", ":x509-common-util:5.3.2")
             library("cryptotokens-api", ":cryptotokens-api:3.0.0")
