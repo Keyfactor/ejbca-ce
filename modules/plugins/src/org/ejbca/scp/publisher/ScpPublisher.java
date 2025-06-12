@@ -64,6 +64,7 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -236,12 +237,25 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
             authorizedCaIds.add(caId.toString());
             authorizedCaNames.add(caIdToNameMap.get(caId));
         }
-        for(Integer cryptoTokenId : cryptoTokenIdToNameMap.keySet()) {
-            if (authorizationSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.USE.resource() + "/" + cryptoTokenId.toString())) {
+        List<String> cryptoTokenNames = new ArrayList<>();
+        cryptoTokenNames.addAll(cryptoTokenIdToNameMap.values());
+        Collections.sort(cryptoTokenNames);
+        
+        for(String cryptoToken : cryptoTokenNames) {
+            int cryptoTokenId = -1;
+            for (Integer id: cryptoTokenIdToNameMap.keySet()) {
+                if (cryptoTokenIdToNameMap.get(id).equals(cryptoToken)) {
+                    cryptoTokenId = id;
+                    break;
+                }
+            }
+            if (authorizationSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.USE.resource() + "/" + cryptoTokenId)) {
                 CryptoToken token = cryptoTokenSessionLocal.getCryptoToken(cryptoTokenId);
                 try {
-                    for (String keypair: token.getAliases()) {
-                        authorizedCryptoTokenIdsAndKeyPairs.add(cryptoTokenId.toString() + ";" + keypair);
+                    List<String> keyAliases = token.getAliases();
+                    Collections.sort(keyAliases);
+                    for (String keypair: keyAliases) {
+                        authorizedCryptoTokenIdsAndKeyPairs.add(cryptoTokenId + ";" + keypair);
                         authorizedCryptoTokenNamesAndKeyPairs.add(
                                 cryptoTokenIdToNameMap.get(cryptoTokenId) + "  ------  " + keypair);
                     }
@@ -375,7 +389,7 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
                             + "6wbQy6yO47fU/rAqn+TN0VgrtbOo1Iv7S2H/62dlKG+eqNk3QzFZLO1MK3ZKPHvtQAxYzw/M=").getBytes();
                     String cryptoTokenId = cryptoTokenAndKeyPair.split(";")[0].trim();
                     String keypair = cryptoTokenAndKeyPair.split(";")[1].trim();
-                    performSftp(signingCaId, fileName, username, sshPort, encodedObject, certSCPDestination, cryptoTokenId, keypair, knownHostsHardCoded);
+                    performSftp(signingCaId, fileName, sshUsername, sshPort, encodedObject, certSCPDestination, cryptoTokenId, keypair, knownHostsHardCoded);
                 } else {
                     performScp(signingCaId, fileName, sshUsername, sshPort, encodedObject, certSCPDestination, scpPrivateKey, privateKeyPassword, scpKnownHosts);
                 }
@@ -414,7 +428,7 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
         }
         return true;
     }
-
+    
     /**
      * 
      * 
@@ -422,6 +436,123 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
      */
     @Override
     public void testConnection() throws PublisherConnectionException {
+        if (useSftp) {
+            testConnectionSftp();
+        } else {
+            testConnectionScp();
+        }
+    }
+    
+    private void testConnectionSftp() throws PublisherConnectionException {
+        if (StringUtils.isBlank(certSCPDestination) && StringUtils.isBlank(crlSCPDestination)){
+            throw new PublisherConnectionException("Neither Certificate nor CRL destination URLs are configured.");
+        }
+        
+        if (cryptoTokenAndKeyPair.length() < 4) { // default '-1;'
+            throw new PublisherConnectionException("Cryptotoken and keypair must be configured for SFTP authentication.");
+        }
+        
+        if (StringUtils.isBlank(sshUsername)) {
+            throw new PublisherConnectionException("User name can not be empty");
+        }
+        
+     // TODO remove knownHostsHardCoded
+        byte[] knownHosts = ("|1|K7CD++ijvBV/rh6jRXP5vh7YLf8=|Cm6Cfxql0wfqU0cDzjV+ojETlfk= "
+                + "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC7MB6JzSbqel2RH27Efat0AeijBh4NHbTTNh9xyFIKx8Ekt+3Flrdorf8"
+                + "LERwk33UpMs8tnSLGTv3HZNJIiS+zDIQIQx/lG7V/TrXD0E7W/DnTNktjswYW+XbsHKHpzBi5O+ESTdPkTvfED92M4ncS3FS"
+                + "+Q/nNLOxfQSeVORquLNGOV4yY5+qyXv9KghVWpaU/4osNOKkYZGgF1dFacfU+dtyPWfFZTTdLDzzwjsujJArtAK+fOXr3Swy"
+                + "363YggzqvzL15d4IujQbLUcruHV3b5iFDMwVrqSSy5fxJx8Hzr+575aqDCQBTqqTNMBBcwu6CtjRN/ViX4vQDL5juA2t3DZK"
+                + "lR1jYVeGmypIlf9arlJWp6RQhG/67Y0VrNBVe9byw8Gst/ONmInJUmh1iXbYAaN0dVjO587qYOw8HSDlDx6OBGndQ3gi7W4+"
+                + "6wbQy6yO47fU/rAqn+TN0VgrtbOo1Iv7S2H/62dlKG+eqNk3QzFZLO1MK3ZKPHvtQAxYzw/M=").getBytes();
+        int cryptoTokenId = Integer.parseInt(cryptoTokenAndKeyPair.split(";")[0].trim());
+        String keyPairName = cryptoTokenAndKeyPair.split(";")[1].trim();
+        
+        CryptoTokenManagementSessionLocal cryptoTokenManagementSession = new EjbLocalHelper().getCryptoTokenManagementSession();
+        Key sshAuthKey = null;
+        try {
+            sshAuthKey =  cryptoTokenManagementSession.getPublicKey(
+                    new AlwaysAllowLocalAuthenticationToken("ScpPublisher"), 
+                    cryptoTokenId, keyPairName).getPublicKey();
+        } catch (AuthorizationDeniedException | NumberFormatException | CryptoTokenOfflineException e) {
+            // TODO Auto-generated catch block
+            throw new IllegalStateException(e);
+        }
+        
+        final List<PublisherConnectionException> caughtExceptions = new ArrayList<>();
+        testConnectionSftp(certSCPDestination, "certificate", caughtExceptions, cryptoTokenId, keyPairName, sshAuthKey, knownHosts);
+        testConnectionSftp(crlSCPDestination, "crl", caughtExceptions, cryptoTokenId, keyPairName, sshAuthKey, knownHosts);
+        
+        if (!caughtExceptions.isEmpty()) {
+            final StringBuilder msg = new StringBuilder("Could not connect to destination(s). Reasons: ");
+            for (PublisherConnectionException e : caughtExceptions) {
+                msg.append("\n");
+                msg.append(e.getMessage());
+            }
+            throw new PublisherConnectionException(msg.toString());
+        }
+        
+    }
+        
+    private void testConnectionSftp(String testDestination, String destinationType,
+            List<PublisherConnectionException> caughtExceptions,
+            int cryptoTokenId, String keyPairName, Key sshAuthKey, byte[] knownHosts) throws PublisherConnectionException {
+        
+        if (StringUtils.isBlank(testDestination)) {
+            return;
+        }
+        
+        JSch jsch = new JSch();
+        // TODO remove loggers
+        Log4j2Logger jschlogger = new Log4j2Logger();
+        JSch.setLogger(jschlogger);
+        jsch.setInstanceLogger(jschlogger);
+
+        Session session = null;
+        ChannelSftp channelSftp = null;
+        
+        try {
+            
+            Destination destination = buildDestination(testDestination, sshPort);
+            jsch.setIdentityRepository(new ScpPublisherIdentityRepository(new ScpPublisherIdentity(
+                    cryptoTokenId, keyPairName, sshAuthKey.getAlgorithm(), sshAuthKey)));
+            jsch.setKnownHosts(new ByteArrayInputStream(knownHosts));
+            session = jsch.getSession(sshUsername, destination.host, destination.port);
+            jsch.addIdentity(new ScpPublisherIdentity(
+                    cryptoTokenId, keyPairName, sshAuthKey.getAlgorithm(), sshAuthKey), null);
+            
+            session.connect();
+            Channel channel = session.openChannel("sftp");
+            channel.connect();
+            channelSftp = (ChannelSftp) channel;
+            channelSftp.ls(destination.path);
+
+        } catch (JSchException | SftpException e) {
+            String msg = "Could not connect to " + destinationType + " destination. ";
+            if (e.getMessage().contains("Auth fail")) {
+                msg += "Cryptoken key could not be used for authentication. "
+                        + "You may need to add the SSH public Key(shown below) as ~/.ssh/authorized_keys in destionation.";
+            } else if(e.getMessage().contains("UnknownHostKey")) {
+                msg += "You need to update Known Hosts.";
+            } else {
+                msg += e.getMessage();
+            }
+            log.info(msg, e);
+            caughtExceptions.add(new PublisherConnectionException(msg, e));
+        } catch (PublisherException e) {
+            caughtExceptions.add(new PublisherConnectionException(e.getMessage(), e.getCause()));
+        } finally {
+            if (channelSftp != null) {
+                channelSftp.exit();
+            }
+            if (session != null) {
+                session.disconnect();
+            }
+        }
+        
+        
+    }
+
+    private void testConnectionScp() throws PublisherConnectionException {
         if (StringUtils.isBlank(certSCPDestination) && StringUtils.isBlank(crlSCPDestination)){
             throw new PublisherConnectionException("Neither Certificate nor CRL destination URLs are configured.");
         }
@@ -564,7 +695,6 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
         JSch.setLogger(jschlogger);
         jsch.setInstanceLogger(jschlogger);
         
-        // TODO: send the public key
         CryptoTokenManagementSessionLocal cryptoTokenManagementSession = new EjbLocalHelper().getCryptoTokenManagementSession();
         Key sshAuthKey = null;
         try {
@@ -575,12 +705,14 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
             // TODO Auto-generated catch block
             throw new IllegalStateException(e);
         }
-        jsch.setIdentityRepository(new ScpPublisherIdentityRepository());
+        jsch.setIdentityRepository(new ScpPublisherIdentityRepository(new ScpPublisherIdentity(
+                Integer.parseInt(cryptoTokenId), keyPairName, sshAuthKey.getAlgorithm(), sshAuthKey)));
         jsch.setKnownHosts(new ByteArrayInputStream(knownHosts));
+        
+        Session session = jsch.getSession(username, destination.host, destination.port);
         jsch.addIdentity(new ScpPublisherIdentity(
                 Integer.parseInt(cryptoTokenId), keyPairName, sshAuthKey.getAlgorithm(), sshAuthKey), null);
         
-        Session session = jsch.getSession(username, destination.host, destination.port);
         session.connect();
         
         Channel channel = session.openChannel("sftp");

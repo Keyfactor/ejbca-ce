@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
 
+import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Base64;
 
 import com.keyfactor.util.keys.KeyTools;
@@ -35,6 +36,8 @@ import com.keyfactor.util.keys.KeyTools;
 public enum SshKeyFactory {
     INSTANCE;
             
+    private static final Logger log = Logger.getLogger(SshKeyFactory.class);
+    
     /**
      * Sorts potential instances by their SSH prefixes, e.g. ecdsa-sha2-nistp384
      */
@@ -136,16 +139,18 @@ public enum SshKeyFactory {
         }
     }
     
-    public static String getSshKeyType(String keyAlgorithm) {
-        keyAlgorithm = keyAlgorithm.toLowerCase();
+    public static String getSshKeyType(Key sshAuthKey) {
+        String keyAlgorithm = sshAuthKey.getAlgorithm().toLowerCase();
         if (keyAlgorithm.contains("rsa")) {
             return "ssh-rsa";
-        } else if (keyAlgorithm.contains("ecdsa")) {
-            if (keyAlgorithm.contains("256")) {
+        } else if (keyAlgorithm.contains("ec")) {
+            ECPublicKey ecPubKey = (ECPublicKey) sshAuthKey;
+            int fieldSize = ecPubKey.getParams().getCurve().getField().getFieldSize();
+            if (fieldSize==256) {
                 return "ecdsa-sha2-nistp256";
-            } else if (keyAlgorithm.contains("384")) {
+            } else if (fieldSize==384) {
                 return "ecdsa-sha2-nistp384";
-            } else if (keyAlgorithm.contains("521")) {
+            } else if (fieldSize > 510) { // 512 or 521
                 return "ecdsa-sha2-nistp521";
             } else {
                 throw new IllegalStateException("Invalid EC public key for auth. "
@@ -159,10 +164,10 @@ public enum SshKeyFactory {
         }
     }
     
-    public static byte[] makePublicKeyBlob(String keyAlgorithm, Key sshAuthKey) {
+    public static byte[] makePublicKeyBlob(Key sshAuthKey) {
         
-        keyAlgorithm = keyAlgorithm.toLowerCase();
-        String sshKeyType = getSshKeyType(keyAlgorithm);        
+        String keyAlgorithm = sshAuthKey.getAlgorithm().toLowerCase();
+        String sshKeyType = getSshKeyType(sshAuthKey);        
         SshCertificateWriter sshCertificateWriter = new SshCertificateWriter();
         try {
             sshCertificateWriter.writeString(sshKeyType);
@@ -170,7 +175,7 @@ public enum SshKeyFactory {
                 RSAPublicKey rsaPubKey = (RSAPublicKey) sshAuthKey;
                 sshCertificateWriter.writeBigInteger(rsaPubKey.getPublicExponent());
                 sshCertificateWriter.writeBigInteger(rsaPubKey.getModulus());
-            } else if (keyAlgorithm.contains("ecdsa")) {
+            } else if (keyAlgorithm.contains("ec")) {
                 ECPublicKey ecPubKey = (ECPublicKey) sshAuthKey;
                 sshCertificateWriter.writeString("nistp" + ecPubKey.getParams().getCurve().getField().getFieldSize());
                 sshCertificateWriter.writeByteArray(KeyTools.encodeEcPoint(ecPubKey.getW(), ecPubKey.getParams().getCurve()));
@@ -186,11 +191,12 @@ public enum SshKeyFactory {
         
     }
     
-    public static String getDownloadableSshKey(String keyAlgorithm, Key sshAuthKey) {
-        keyAlgorithm = keyAlgorithm.toLowerCase();
-        String sshKeyType = getSshKeyType(keyAlgorithm);        
+    public static String getDownloadableSshKey(Key sshAuthKey) {
+        String keyAlgorithm = sshAuthKey.getAlgorithm().toLowerCase();
+        log.info("keyAlgorithm: " + keyAlgorithm);
+        String sshKeyType = getSshKeyType(sshAuthKey);        
         String result = sshKeyType + " ";
-        result += new String(Base64.encode(makePublicKeyBlob(keyAlgorithm, sshAuthKey)), StandardCharsets.UTF_8);
+        result += new String(Base64.encode(makePublicKeyBlob(sshAuthKey)), StandardCharsets.UTF_8);
         return result;
       }
 }

@@ -23,14 +23,12 @@ public class ScpPublisherIdentityRepository implements IdentityRepository {
     
     private static final Logger log = Logger.getLogger(ScpPublisherIdentityRepository.class);
         
-    //private String publisherName;
     private Vector<Identity> identities = new Vector<>();
     
     // there is only one CryptoToken + KeyPair used for auth
-//    public ScpPublisherIdentityRepository(String publisherName, ScpPublisherIdentity scpPublisherIdentity) {
-//        this.publisherName = publisherName;
-//        identities.add(scpPublisherIdentity);
-//    }
+    public ScpPublisherIdentityRepository(ScpPublisherIdentity scpPublisherIdentity) {
+        identities.add(scpPublisherIdentity);
+    }
 
     @Override
     public String getName() {

@@ -62,12 +62,12 @@ public class ScpPublisherIdentity implements Identity  {
         log.info(cryptotokenId + " : " + keyPairName + " : " + keyAlgorithm);
         this.cryptotokenId = cryptotokenId;
         this.keyPairName = keyPairName;
-        this.keyAlgorithm = SshKeyFactory.getSshKeyType(keyAlgorithm);
+        this.keyAlgorithm = SshKeyFactory.getSshKeyType(sshAuthKey);
         //this.publicKey = (PublicKey) sshAuthKey;
         // ssh-ed25519,ecdsa-sha2-nistp256
         
         //TODO: publicKeyBlob
-        this.publicKeyBlob = SshKeyFactory.makePublicKeyBlob(keyAlgorithm, sshAuthKey);
+        this.publicKeyBlob = SshKeyFactory.makePublicKeyBlob(sshAuthKey);
     }
     
     
@@ -79,6 +79,7 @@ public class ScpPublisherIdentity implements Identity  {
 
     @Override
     public byte[] getPublicKeyBlob() {
+        log.info("getPublicKeyBlob alg: " + new String(Base64.encode(publicKeyBlob)));
         return publicKeyBlob;
     }
 
@@ -89,13 +90,11 @@ public class ScpPublisherIdentity implements Identity  {
     
     @Override
     public byte[] getSignature(byte[] data, String alg) {
-        log.debug("getSignature alg: " + alg);
-        log.debug("getSignature data: " + new String(Base64.encode(data)));
-        if (!alg.equalsIgnoreCase(keyAlgorithm)) {
-            return null;
-        }
+        log.info("getSignature alg: " + alg);
+        log.info("getSignature data: " + new String(Base64.encode(data)));
         
-        String signatureAlgorithm = sshAlgoNameToBcSignAlgoName.get(alg); 
+        String signatureAlgorithm = sshAlgoNameToBcSignAlgoName.get(alg);
+        log.info("signatureAlgorithm alg: " + signatureAlgorithm);
         CryptoTokenSessionLocal cryptoTokenSessionLocal = new EjbLocalHelper().getCryptoTokenSession();
         CryptoToken cryptoToken = cryptoTokenSessionLocal.getCryptoToken(cryptotokenId);
         String providerName = cryptoToken.getSignProviderName();
@@ -124,13 +123,9 @@ public class ScpPublisherIdentity implements Identity  {
         
         SshCertificateWriter sshCertificateWriter = new SshCertificateWriter();
         try {
-          sshCertificateWriter.writeString(alg);
-          sshCertificateWriter.writeByteArray(sign);
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            throw new IllegalStateException(e);
-        } finally {
-          try {
+            sshCertificateWriter.writeString(alg);
+            sshCertificateWriter.writeByteArray(sign);
+
             sshCertificateWriter.flush();
             sshCertificateWriter.close();
 
@@ -138,19 +133,20 @@ public class ScpPublisherIdentity implements Identity  {
             // TODO Auto-generated catch block
             throw new IllegalStateException(e);
         }
-        }
         byte[] formattedSign =  sshCertificateWriter.toByteArray(); 
-        log.debug("getSignature sign: " + new String(Base64.encode(formattedSign)));
+        log.info("getSignature sign: " + new String(Base64.encode(formattedSign)));
         return formattedSign;
     }
 
     @Override
     public String getAlgName() {
+        log.info("keyAlgorithm alg: " + keyAlgorithm);
         return this.keyAlgorithm;
     }
 
     @Override
     public String getName() {
+        log.info("getName alg: " + cryptotokenId);
         return this.cryptotokenId + ":" + this.keyPairName;
     }
 

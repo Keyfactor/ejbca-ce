@@ -37,7 +37,6 @@ import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.ssh.SshKeyFactory;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
-import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
@@ -139,6 +138,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     private boolean keepPublishedInQueue;
     private boolean onlyUseQueue;
     private boolean safeDirectPublishing;
+    private String scpPublisherAuthPublicKey= "";
 
     @Inject
     private ListPublishersManagedBean listPublishers;
@@ -496,6 +496,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     }
     
     public void savePublisherAndTestConnection() throws AuthorizationDeniedException {
+        
         try {
             prepareForSave();
         } catch (PublisherDoesntExistsException | PublisherExistsException | PublisherException | ParameterException e) {
@@ -504,8 +505,14 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         }
         publisherSession.changePublisher(getAdmin(), listPublishers.getSelectedPublisherName(), publisher);
         try {
+            
+            if (isManageScpPublisher()) {
+                savePublisherAndDownloadKey();
+            }
+            
             publisherSession.testConnection(publisherId);
             addInfoMessage("CONTESTEDSUCESSFULLY");
+            
         } catch (PublisherConnectionException pce) {
             log.error("Error connecting to publisher " + listPublishers.getSelectedPublisherName(), pce);
             addErrorMessage("ERRORCONNECTINGTOPUB", listPublishers.getSelectedPublisherName(), pce.getMessage());
@@ -516,16 +523,15 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         return selectedPublisherType!=null && selectedPublisherType.contains("ScpPublisher");
     }
     
-    public void savePublisherAndDownloadKey() throws AuthorizationDeniedException {
-        try {
-            prepareForSave();
-        } catch (PublisherDoesntExistsException | PublisherExistsException | PublisherException | ParameterException e) {
-            addErrorMessage(e.getMessage());
-            return;
-        }
-        publisherSession.changePublisher(getAdmin(), listPublishers.getSelectedPublisherName(), publisher);
-        //TODO download key, first PEM then SSH
-        
+    public boolean isRenderedScpPublisherAuthPublicKey() {
+        return StringUtils.isNotBlank(scpPublisherAuthPublicKey);
+    }
+    
+    public String getScpPublisherAuthPublicKey() {
+        return scpPublisherAuthPublicKey;
+    }
+    
+    private void savePublisherAndDownloadKey() throws AuthorizationDeniedException {
         String cryptoTokenIdAndKeyPairName = 
                 (String) getCustomPublisherMBData().getCustomPublisherPropertyValues().get("scp.cryptoken.keypair");
         if (cryptoTokenIdAndKeyPairName==null) {
@@ -541,8 +547,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
             throw new IllegalStateException(e);
         }
         
-        // TODO make algo dynamic
-        log.info("Ssh pub key: "+ SshKeyFactory.getDownloadableSshKey("RSA", sshAuthKey));
+        scpPublisherAuthPublicKey = SshKeyFactory.getDownloadableSshKey(sshAuthKey);
         
     }
     
