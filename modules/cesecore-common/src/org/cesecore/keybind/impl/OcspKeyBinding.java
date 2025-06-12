@@ -104,19 +104,19 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     private static final String PROPERTY_NON_EXISTING_REVOKED = "nonexistingisrevoked";
     @Deprecated(since = "9.4.0")
     private static final String PROPERTY_NON_EXISTING_UNAUTHORIZED = "nonexistingisunauthorized";
-    private static final String PROPERTY_NON_EXISTING_BEHAVIOR = "nonExistingBehavior";
-    private static final String PROPERTY_INCLUDE_CERT_CHAIN = "includecertchain";
-    private static final String PROPERTY_INCLUDE_SIGN_CERT = "includesigncert";
-    private static final String PROPERTY_RESPONDER_ID_TYPE = "responderidtype";  // keyhash, name
-    private static final String PROPERTY_REQUIRE_TRUSTED_SIGNATURE = "requireTrustedSignature";
-    private static final String PROPERTY_UNTIL_NEXT_UPDATE = "untilNextUpdate";
-    private static final String PROPERTY_MAX_AGE = "maxAge";
-    private static final String PROPERTY_ENABLE_NONCE = "enableNonce";
-    private static final String PROPERTY_OMIT_REASON_CODE_WHEN_REVOCATION_REASON_UNSPECIFIED = "omitreasoncodewhenrevocationreasonunspecified"; 
-    private static final String PROPERTY_USE_ISSUER_NOTBEFORE_AS_ARCHIVE_CUTOFF = "useIssuerNotBeforeAsArchiveCutoff";
-    private static final String PROPERTY_RETENTION_PERIOD = "retentionPeriod";
+    public static final String PROPERTY_NON_EXISTING_BEHAVIOR = "nonExistingBehavior";
+    public static final String PROPERTY_INCLUDE_CERT_CHAIN = "includecertchain";
+    public static final String PROPERTY_INCLUDE_SIGN_CERT = "includesigncert";
+    public static final String PROPERTY_RESPONDER_ID_TYPE = "responderidtype";  // keyhash, name
+    public static final String PROPERTY_REQUIRE_TRUSTED_SIGNATURE = "requireTrustedSignature";
+    public static final String PROPERTY_UNTIL_NEXT_UPDATE = "untilNextUpdate";
+    public static final String PROPERTY_MAX_AGE = "maxAge";
+    public static final String PROPERTY_ENABLE_NONCE = "enableNonce";
+    public static final String PROPERTY_OMIT_REASON_CODE_WHEN_REVOCATION_REASON_UNSPECIFIED = "omitreasoncodewhenrevocationreasonunspecified"; 
+    public static final String PROPERTY_USE_ISSUER_NOTBEFORE_AS_ARCHIVE_CUTOFF = "useIssuerNotBeforeAsArchiveCutoff";
+    public static final String PROPERTY_RETENTION_PERIOD = "retentionPeriod";
     //this property denotes if a previous cert chain is to be returned instead of the current one, identified by its serial number. if null, the current chain should be used. 
-    private static final String PROPERTY_CA_GENERATION = "certChainGeneration";
+    public static final String PROPERTY_CA_GENERATION = "certChainGeneration";
     
     {
         addProperty(new DynamicUiProperty<>(PROPERTY_INCLUDE_CERT_CHAIN, Boolean.TRUE));

@@ -88,6 +88,7 @@ import org.cesecore.keybind.InternalKeyBindingNameInUseException;
 import org.cesecore.keybind.InternalKeyBindingRules;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 import org.cesecore.keybind.impl.OcspKeyBinding;
+import org.cesecore.keybind.impl.OcspNonExistingBehavior;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.AccessRulesMigrator;
@@ -2641,6 +2642,25 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
         globalOcspConfiguration.setIncludeSigningCertificate(OcspConfiguration.getIncludeSignCert());
         globalOcspConfiguration.setIncludeCertificateChain(OcspConfiguration.getIncludeCertChain());
+        
+        boolean nonExistingIsGood = OcspConfiguration.getNonExistingIsGood();
+        boolean nonExistingIsRevoked = OcspConfiguration.getNonExistingIsRevoked();
+        boolean nonExistingIsUnauthorized = OcspConfiguration.getNonExistingIsUnauthorized();
+        //Verify that max one option is true
+        if((!nonExistingIsGood && !nonExistingIsRevoked && !nonExistingIsUnauthorized) || (nonExistingIsGood ^ nonExistingIsRevoked ^ nonExistingIsUnauthorized)) {
+            if(nonExistingIsGood) {
+                globalOcspConfiguration.setOcspNonExistingBehavior(OcspNonExistingBehavior.GOOD);
+            } else if(nonExistingIsRevoked) {
+                globalOcspConfiguration.setOcspNonExistingBehavior(OcspNonExistingBehavior.REVOKED);
+            } else if(nonExistingIsUnauthorized) {
+                globalOcspConfiguration.setOcspNonExistingBehavior(OcspNonExistingBehavior.UNAUTHORIZED);
+            } else {
+                globalOcspConfiguration.setOcspNonExistingBehavior(OcspNonExistingBehavior.UNKNOWN);
+            }
+        } else {
+            throw new UpgradeFailedException("More than one value of ocsp.nonexistingisgood, ocsp.nonexistingisrevoked and ocsp.nonexistingisunauthorized is true at the same time. This is an error state. "
+                    + "Please modify ocsp.properties to set only one or none of these values to be true.");
+        }
         
         try {
             globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);

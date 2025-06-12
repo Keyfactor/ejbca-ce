@@ -263,7 +263,7 @@
 			</h:panelGrid>
 			<h:panelGrid columns="3">
 			     <h:outputLabel for="responseForUnknown" value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_RESPONSE_FOR_UNKNOWN}" />
-                <h:panelGroup id="chainGeneration">  
+                <h:panelGroup id="responseForUnknown">  
                     <h:panelGroup disabled="#{!ocspResponderMBean.inEditMode}">
                         <h:selectOneMenu value="#{ocspResponderMBean.currentUnknownResponse}" disabled="#{!ocspResponderMBean.inEditMode}">
                             <f:selectItems value="#{ocspResponderMBean.availableUnknownResponses}"/>

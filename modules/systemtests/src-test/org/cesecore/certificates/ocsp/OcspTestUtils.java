@@ -81,6 +81,7 @@ import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 import org.cesecore.keybind.impl.OcspKeyBinding;
+import org.cesecore.keybind.impl.OcspNonExistingBehavior;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.util.EjbRemoteHelper;
@@ -94,7 +95,7 @@ import static org.junit.Assert.assertEquals;
 public final class OcspTestUtils {
 
     private static final String FOO123_PASSWORD = "foo123";
-    private static final String PROPERTY_ALIAS = OcspKeyBinding.PROPERTY_NON_EXISTING_GOOD;
+    private static final String PROPERTY_ALIAS = OcspKeyBinding.PROPERTY_NON_EXISTING_BEHAVIOR;
     public static final String OCSP_END_USER_NAME = "OcspSigningUser";
     private static final String CLIENTSSL_END_USER_NAME = "ClientSSLUser";
     private static final String CLIENTSSL_END_USER_DN = "CN=clientSSLUser";
@@ -152,7 +153,7 @@ public final class OcspTestUtils {
         }
         // Create a new InternalKeyBinding with a implementation specific property and bind it to the previously generated key
         final Map<String, Serializable> dataMap = new LinkedHashMap<>();
-        dataMap.put(PROPERTY_ALIAS, Boolean.FALSE);
+        dataMap.put(PROPERTY_ALIAS, OcspNonExistingBehavior.UNKNOWN.getLabel());
         return internalKeyBindingMgmtSession.createInternalKeyBinding(authenticationToken, type, testName, InternalKeyBindingStatus.ACTIVE, null,
                 cryptoTokenId, testName, signAlg, dataMap, null);
     }

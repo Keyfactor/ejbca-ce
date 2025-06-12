@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.cesecore.configuration;
 
-import org.cesecore.certificates.ocsp.cache.OcspConfigurationCache;
 import org.cesecore.config.ConfigurationHolder;
 
 import com.keyfactor.util.StringTools;
@@ -29,7 +28,6 @@ public class CesecoreConfigurationProxySessionBean implements CesecoreConfigurat
     @Override
     public void setConfigurationValue(String key, String value) {
         ConfigurationHolder.updateConfiguration(key, value);      
-        OcspConfigurationCache.INSTANCE.reloadConfiguration();
     }
 
     @Override

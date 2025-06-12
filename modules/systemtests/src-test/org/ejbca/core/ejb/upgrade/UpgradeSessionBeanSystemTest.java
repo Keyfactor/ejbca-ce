@@ -81,6 +81,7 @@ import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingRules;
 import org.cesecore.keybind.impl.OcspKeyBinding;
+import org.cesecore.keybind.impl.OcspNonExistingBehavior;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.AccessRulesHelper;
@@ -1631,6 +1632,29 @@ public class UpgradeSessionBeanSystemTest {
             globalOcspConfiguration.setIncludeCertificateChain(includeCertChainCurrent);
             globalConfigurationProxySession.saveConfiguration(alwaysAllowtoken, globalOcspConfiguration);
         }
+    }
+    
+    @Test
+    public void testMigrateOcspNonExistingValuesGlobal_9_4_0() throws AuthorizationDeniedException {
+        GlobalOcspConfiguration currentGlobalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        OcspNonExistingBehavior originalValue = currentGlobalOcspConfiguration.getOcspNonExistingBehavior();
+        try {
+            //Set up EJBCA in a pre-upgrade state
+            final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            guc.setUpgradedToVersion("9.3.0");
+            guc.setPostUpgradedToVersion("9.3.0");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+            //Set the values to something non-default
+            cesecoreConfigSession.setConfigurationValue("ocsp.nonexistingisgood", "true");
+            //Perform upgrade
+            upgradeSession.upgrade(/* database */ null, /* upgrade from */ "9.3.0", /* post upgrade? */ false);
+        } finally {
+            GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            globalOcspConfiguration.setOcspNonExistingBehavior(originalValue);
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, globalOcspConfiguration);
+        }
+        
     }
 
     private EndEntityInformation makeEndEntityInfo(final String username, final String startTime, final String endTime) {

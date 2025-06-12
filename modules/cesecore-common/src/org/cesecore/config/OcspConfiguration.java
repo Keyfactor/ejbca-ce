@@ -35,11 +35,14 @@ public class OcspConfiguration {
     public static final String SIGNATUREREQUIRED = "ocsp.signaturerequired";
     public static final String CARD_PASSWORD = "ocsp.keys.cardPassword";
     public static final String WARNING_BEFORE_EXPERATION_TIME = "ocsp.warningBeforeExpirationTime";
+    @Deprecated(since = "9.4.0")
     public static final String NON_EXISTING_IS_GOOD = "ocsp.nonexistingisgood";
     public static final String NON_EXISTING_IS_GOOD_URI = NON_EXISTING_IS_GOOD+".uri.";
     public static final String NON_EXISTING_IS_BAD_URI = "ocsp.nonexistingisbad.uri.";
+    @Deprecated(since = "9.4.0")
     public static final String NON_EXISTING_IS_REVOKED = "ocsp.nonexistingisrevoked";
     public static final String NON_EXISTING_IS_REVOKED_URI = NON_EXISTING_IS_REVOKED+".uri.";
+    @Deprecated(since = "9.4.0")
     public static final String NON_EXISTING_IS_UNAUTHORIZED = "ocsp.nonexistingisunauthorized";
 
     @Deprecated(since = "8.3.0") //Only used for upgrades to 8.3.0 and beyond

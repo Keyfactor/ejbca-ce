@@ -111,6 +111,7 @@ import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 import org.cesecore.keybind.impl.OcspKeyBinding;
+import org.cesecore.keybind.impl.OcspNonExistingBehavior;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.token.NullCryptoToken;
@@ -1066,8 +1067,10 @@ public class StandaloneOcspResponseGeneratorSessionSystemTest {
     public void testResponseWithDefaultResponderForExternalNoDefaultSet() throws Exception {
         // Make sure that a default responder is set
         setOcspDefaultResponderReference("");
-        String originalNoneExistingIsGood = cesecoreConfigurationProxySession.getConfigurationValue(OcspConfiguration.NON_EXISTING_IS_GOOD);
-        cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.NON_EXISTING_IS_GOOD, "false");
+        GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        OcspNonExistingBehavior originalNoneExisting = globalOcspConfiguration.getOcspNonExistingBehavior();
+        globalOcspConfiguration.setOcspNonExistingBehavior(OcspNonExistingBehavior.UNKNOWN);
+        globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);
         try {
             //Make default responder standalone
             OcspTestUtils.deleteCa(authenticationToken, x509ca);
@@ -1137,7 +1140,9 @@ public class StandaloneOcspResponseGeneratorSessionSystemTest {
                 internalCertificateStoreSession.removeCertificate(externalCaCertificate);
             }
         } finally {
-            cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.NON_EXISTING_IS_GOOD, originalNoneExistingIsGood);
+            GlobalOcspConfiguration restorelOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            restorelOcspConfiguration.setOcspNonExistingBehavior(originalNoneExisting);
+            globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);
         }
     }
 
@@ -1146,8 +1151,10 @@ public class StandaloneOcspResponseGeneratorSessionSystemTest {
     public void testResponseWithDefaultResponderForExternalRevoked() throws Exception {
         // Make sure that a default responder is set
         setOcspDefaultResponderReference(CertTools.getIssuerDN(ocspSigningCertificate));
-        String originalNoneExistingIsGood = cesecoreConfigurationProxySession.getConfigurationValue(OcspConfiguration.NON_EXISTING_IS_GOOD);
-        cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.NON_EXISTING_IS_GOOD, "false");
+        GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        OcspNonExistingBehavior originalNoneExisting = globalOcspConfiguration.getOcspNonExistingBehavior();
+        globalOcspConfiguration.setOcspNonExistingBehavior(OcspNonExistingBehavior.UNKNOWN);
+        globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);
         try {
             //Make default responder standalone
             OcspTestUtils.deleteCa(authenticationToken, x509ca);
@@ -1223,7 +1230,9 @@ public class StandaloneOcspResponseGeneratorSessionSystemTest {
                 internalCertificateStoreSession.removeCertificate(externalCaCertificate);
             }
         } finally {
-            cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.NON_EXISTING_IS_GOOD, originalNoneExistingIsGood);
+            GlobalOcspConfiguration restorelOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            restorelOcspConfiguration.setOcspNonExistingBehavior(originalNoneExisting);
+            globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);
         }
     }
 
@@ -1248,7 +1257,9 @@ public class StandaloneOcspResponseGeneratorSessionSystemTest {
     public void testStandAloneOcspResponseDefaultResponder() throws Exception {
         // Make sure that a default responder is set
         String originalResponder = setOcspDefaultResponderReference(CertTools.getIssuerDN(ocspSigningCertificate));
-        cesecoreConfigurationProxySession.setConfigurationValue("ocsp.nonexistingisgood", "false");
+        GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        globalOcspConfiguration.setOcspNonExistingBehavior(OcspNonExistingBehavior.UNKNOWN);
+        globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);        
         try {
               //Now delete the original CA, making this test completely standalone.
             OcspTestUtils.deleteCa(authenticationToken, x509ca);
@@ -1278,7 +1289,6 @@ public class StandaloneOcspResponseGeneratorSessionSystemTest {
                     .getSerialNumber());
             assertTrue(singleResponses[0].getCertStatus() instanceof UnknownStatus);
         } finally {
-            cesecoreConfigurationProxySession.setConfigurationValue("ocsp.nonexistingisgood", "false");
             setOcspDefaultResponderReference(originalResponder);
         }
     }

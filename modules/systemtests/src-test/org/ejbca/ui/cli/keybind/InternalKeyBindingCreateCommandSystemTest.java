@@ -92,8 +92,6 @@ public class InternalKeyBindingCreateCommandSystemTest {
             InternalKeyBinding internalKeyBinding = internalKeyBindingMgmtSession.getInternalKeyBinding(alwaysAllowToken, keyBindingId);
             assertTrue("Purported Long value was not saved as Long.",
                     internalKeyBinding.getProperty(OcspKeyBinding.PROPERTY_MAX_AGE).getValue() instanceof Long);
-            assertTrue("Purported Boolean value was not saved as Boolean.", internalKeyBinding.getProperty(OcspKeyBinding.PROPERTY_NON_EXISTING_GOOD)
-                    .getValue() instanceof Boolean);
         } finally {
             Integer keyBindingId = internalKeyBindingMgmtSession.getIdFromName(KEYBINDING_NAME);
             if (keyBindingId != null) {
