@@ -172,12 +172,8 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     /** Creates a new instance of GlobalConfiguration */
     public GlobalConfiguration()  {
        super();
-
        setEjbcaTitle(DEFAULTEJBCATITLE);
        setHeadBannerLogo(DEFAULT_HEADER_LOGO);
-       setEnableEndEntityProfileLimitations(true);  // Still needed for 100% up-time upgrade from before EJBCA 6.3.0
-       setEnableAuthenticatedUsersOnly(false);  // Still needed for 100% up-time upgrade from before EJBCA 6.3.0
-       setEnableKeyRecovery(false);  // Still needed for 100% up-time upgrade from before EJBCA 6.3.0
     }
     
     public byte[] initHeadBannerLogo(String path) {
