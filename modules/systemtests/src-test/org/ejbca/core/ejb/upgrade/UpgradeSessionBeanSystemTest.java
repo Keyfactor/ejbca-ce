@@ -1635,7 +1635,7 @@ public class UpgradeSessionBeanSystemTest {
     }
     
     @Test
-    public void testMigrateOcspNonExistingValuesGlobal_9_4_0() throws AuthorizationDeniedException {
+    public void testMigrateOcspNonExistingValuesGlobal_9_4_0_Good() throws AuthorizationDeniedException {
         GlobalOcspConfiguration currentGlobalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
         OcspNonExistingBehavior originalValue = currentGlobalOcspConfiguration.getOcspNonExistingBehavior();
         try {
@@ -1647,14 +1647,124 @@ public class UpgradeSessionBeanSystemTest {
             globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
             //Set the values to something non-default
             cesecoreConfigSession.setConfigurationValue("ocsp.nonexistingisgood", "true");
+            cesecoreConfigSession.setConfigurationValue("ocsp.nonexistingisrevoked", "false");
+            cesecoreConfigSession.setConfigurationValue("ocsp.nonexistingisunauthorized", "false");
             //Perform upgrade
             upgradeSession.upgrade(/* database */ null, /* upgrade from */ "9.3.0", /* post upgrade? */ false);
+            //Check the value
+            GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            assertEquals("ocsp.nonexistingisgood=true was not upgraded.", OcspNonExistingBehavior.GOOD, globalOcspConfiguration.getOcspNonExistingBehavior());
         } finally {
             GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
             globalOcspConfiguration.setOcspNonExistingBehavior(originalValue);
             globalConfigSession.saveConfiguration(alwaysAllowtoken, globalOcspConfiguration);
-        }
-        
+        }    
+    }
+    
+    @Test
+    public void testMigrateOcspNonExistingValuesGlobal_9_4_0_Unknown() throws AuthorizationDeniedException {
+        GlobalOcspConfiguration currentGlobalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        OcspNonExistingBehavior originalValue = currentGlobalOcspConfiguration.getOcspNonExistingBehavior();
+        try {
+            //Set up EJBCA in a pre-upgrade state
+            final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            guc.setUpgradedToVersion("9.3.0");
+            guc.setPostUpgradedToVersion("9.3.0");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+            //Set the values to something non-default
+            cesecoreConfigSession.setConfigurationValue("ocsp.nonexistingisgood", "false");
+            cesecoreConfigSession.setConfigurationValue("ocsp.nonexistingisrevoked", "false");
+            cesecoreConfigSession.setConfigurationValue("ocsp.nonexistingisunauthorized", "false");
+            //Perform upgrade
+            upgradeSession.upgrade(/* database */ null, /* upgrade from */ "9.3.0", /* post upgrade? */ false);
+            //Check the value
+            GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            assertEquals("ocsp.nonexistingis unkown status was not upgraded.", OcspNonExistingBehavior.UNKNOWN, globalOcspConfiguration.getOcspNonExistingBehavior());
+        } finally {
+            GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            globalOcspConfiguration.setOcspNonExistingBehavior(originalValue);
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, globalOcspConfiguration);
+        }   
+    }
+    
+    @Test
+    public void testMigrateOcspNonExistingValuesGlobal_9_4_0_Revoked() throws AuthorizationDeniedException {
+        GlobalOcspConfiguration currentGlobalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        OcspNonExistingBehavior originalValue = currentGlobalOcspConfiguration.getOcspNonExistingBehavior();
+        try {
+            //Set up EJBCA in a pre-upgrade state
+            final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            guc.setUpgradedToVersion("9.3.0");
+            guc.setPostUpgradedToVersion("9.3.0");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+            //Set the values to something non-default
+            cesecoreConfigSession.setConfigurationValue("ocsp.nonexistingisgood", "false");
+            cesecoreConfigSession.setConfigurationValue("ocsp.nonexistingisrevoked", "true");
+            cesecoreConfigSession.setConfigurationValue("ocsp.nonexistingisunauthorized", "false");
+            //Perform upgrade
+            upgradeSession.upgrade(/* database */ null, /* upgrade from */ "9.3.0", /* post upgrade? */ false);
+            //Check the value
+            GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            assertEquals("ocsp.nonexistingisrevoked=true was not upgraded.", OcspNonExistingBehavior.REVOKED, globalOcspConfiguration.getOcspNonExistingBehavior());
+        } finally {
+            GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            globalOcspConfiguration.setOcspNonExistingBehavior(originalValue);
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, globalOcspConfiguration);
+        }    
+    }
+    
+    @Test
+    public void testMigrateOcspNonExistingValuesGlobal_9_4_0_Unauthorized() throws AuthorizationDeniedException {
+        GlobalOcspConfiguration currentGlobalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        OcspNonExistingBehavior originalValue = currentGlobalOcspConfiguration.getOcspNonExistingBehavior();
+        try {
+            //Set up EJBCA in a pre-upgrade state
+            final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            guc.setUpgradedToVersion("9.3.0");
+            guc.setPostUpgradedToVersion("9.3.0");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+            //Set the values to something non-default
+            cesecoreConfigSession.setConfigurationValue("ocsp.nonexistingisgood", "false");
+            cesecoreConfigSession.setConfigurationValue("ocsp.nonexistingisrevoked", "false");
+            cesecoreConfigSession.setConfigurationValue("ocsp.nonexistingisunauthorized", "true");
+            //Perform upgrade
+            upgradeSession.upgrade(/* database */ null, /* upgrade from */ "9.3.0", /* post upgrade? */ false);
+            //Check the value
+            GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            assertEquals("ocsp.nonexistingisunauthorized=true was not upgraded.", OcspNonExistingBehavior.UNAUTHORIZED, globalOcspConfiguration.getOcspNonExistingBehavior());
+        } finally {
+            GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            globalOcspConfiguration.setOcspNonExistingBehavior(originalValue);
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, globalOcspConfiguration);
+        }    
+    }
+    
+    @Test
+    public void testMigrateOcspNonExistingValuesGlobal_9_4_0_failOnMultiple() throws AuthorizationDeniedException {
+        GlobalOcspConfiguration currentGlobalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        OcspNonExistingBehavior originalValue = currentGlobalOcspConfiguration.getOcspNonExistingBehavior();
+        try {
+            //Set up EJBCA in a pre-upgrade state
+            final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            guc.setUpgradedToVersion("9.3.0");
+            guc.setPostUpgradedToVersion("9.3.0");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+            //Set the values to something non-default
+            cesecoreConfigSession.setConfigurationValue("ocsp.nonexistingisgood", "true");
+            cesecoreConfigSession.setConfigurationValue("ocsp.nonexistingisrevoked", "true");
+            cesecoreConfigSession.setConfigurationValue("ocsp.nonexistingisunauthorized", "false");
+            //Perform upgrade
+            boolean result = upgradeSession.upgrade(/* database */ null, /* upgrade from */ "9.3.0", /* post upgrade? */ false);
+            assertFalse("Upgrade should have failed if multiple values were set to true", result);
+        } finally {
+            GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            globalOcspConfiguration.setOcspNonExistingBehavior(originalValue);
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, globalOcspConfiguration);
+        }    
     }
 
     private EndEntityInformation makeEndEntityInfo(final String username, final String startTime, final String endTime) {

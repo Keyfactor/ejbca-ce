@@ -2633,7 +2633,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     @Override
     public void migrateDatabase9_4_0() throws UpgradeFailedException {
-        //Move ocsp.includecertchain and ocsp.includesignercert from the properties files and into the database configuration
+        //Move ocsp.includecertchain, ocsp.includesignercert and  ocsp.nonexistingis* from the properties files and into the database configuration
         migrateOcspOptions_9_4_0();
     }
     
