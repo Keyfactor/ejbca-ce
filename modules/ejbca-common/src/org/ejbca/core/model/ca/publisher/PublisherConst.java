@@ -31,14 +31,6 @@ public class PublisherConst {
 	
 	/**LDAP Search Publisher*/
 	public static final int TYPE_LDAPSEARCHPUBLISHER = 4;
-	
-	/** 
-	 * External OCSP Publisher
-	 * 
-	 * @deprecated This publisher type no longer exists in EJBCA
-	 */
-	@Deprecated
-    public static final int TYPE_VAPUBLISHER = 5;
 
     /** Multi publisher */
     public static final int TYPE_MULTIGROUPPUBLISHER = 6;
