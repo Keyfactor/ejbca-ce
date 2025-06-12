@@ -16,7 +16,6 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -37,8 +36,7 @@ import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
-import org.apache.commons.configuration2.Configuration;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
@@ -48,8 +46,6 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
-import org.cesecore.authorization.control.AuditLogRules;
-import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.user.AccessMatchType;
@@ -84,7 +80,6 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingNameInUseException;
-import org.cesecore.keybind.InternalKeyBindingRules;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
@@ -446,26 +441,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     private boolean upgrade(String dbtype, String oldVersion) {
     	log.debug(">upgrade from version: "+oldVersion+", with dbtype: "+dbtype);
-        if (isLesserThan(oldVersion, "6.3.2")) {
-            log.error(
-                    "Upgrading from EJBCA prior to version 6.3.2 is forbidden. Read the EJBCA Upgrade Guide for more information.");
-            return false;
-        }
-        if (isLesserThan(oldVersion, "6.4")) {
-            try {
-                upgradeSession.migrateDatabase640();
-            } catch (UpgradeFailedException e) {
-                return false;
-            }
-            setLastUpgradedToVersion("6.4");
-        }
         if (isLesserThan(oldVersion, "6.4.2")) {
-            try {
-                upgradeSession.migrateDatabase642();
-            } catch (UpgradeFailedException e) {
-                return false;
-            }
-            setLastUpgradedToVersion("6.4.2");
+            log.error(
+                    "Upgrading from EJBCA prior to version 6.4.2 is forbidden. Read the EJBCA Upgrade Guide for more information.");
+            return false;
         }
         if (isLesserThan(oldVersion, "6.5.1")) {
             try {
@@ -957,179 +936,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @Override
     public boolean isPostUpgradeNeeded() {
         return isLesserThan(getLastPostUpgradedToVersion(), "9.3.0");
-    }
-
-    /**
-     * Upgrade access rules such that every role that already has access to /system_functionality/edit_systemconfiguration
-     * will also have access to the new access rule /system_functionality/edit_available_extended_key_usages
-     *
-     * @return true if the upgrade was successful and false otherwise
-     */
-    @SuppressWarnings("deprecation")
-    private boolean addEKUAndCustomCertExtensionsAccessRulestoRoles() {
-        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.ROLE_ROOT.resource(),
-        		Arrays.asList(StandardRules.SYSTEMCONFIGURATION_EDIT.resource()),
-                Arrays.asList(StandardRules.EKUCONFIGURATION_EDIT.resource(), StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_EDIT.resource()), false);
-        accessTreeUpdateSession.signalForAccessTreeUpdate();
-        return true;
-    }
-
-    private void importExtendedKeyUsagesFromFile() {
-        final URL url = ConfigurationHolder.class.getResource("/conf/extendedkeyusage.properties");
-        AvailableExtendedKeyUsagesConfiguration ekuConfig;
-        if (url == null) {
-            // Create using the default template of the current version if no such file exists
-            ekuConfig = (AvailableExtendedKeyUsagesConfiguration)
-                    globalConfigurationSession.getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.CONFIGURATION_ID);
-        } else {
-            ekuConfig = new AvailableExtendedKeyUsagesConfiguration(false);
-            final Configuration conf = ConfigurationHolder.instance();
-            final String ekuname = "extendedkeyusage.name.";
-            final String ekuoid = "extendedkeyusage.oid.";
-            int j=0;
-            for (int i = 0; i < 255; i++) {
-                final String oid = conf.getString(ekuoid+i);
-                if (oid != null) {
-                    String name = conf.getString(ekuname+i);
-                    if (name != null) {
-                        // A null value in the properties file means that we should not use this value, so set it to null for real
-                        if (!name.equalsIgnoreCase("null")) {
-                            // Set the untranslated name (since the translation is actually only available in the Admin GUI)
-                            ekuConfig.addExtKeyUsage(oid, name);
-                            j++;
-                        }
-                    } else {
-                        log.error("Found extended key usage oid "+oid+", but no name defined. Not adding to list of extended key usages.");
-                    }
-                }
-                // No eku with a certain number == continue trying next, we will try 0-255.
-            }
-            if(log.isDebugEnabled()) {
-                log.debug("Read " + j + " extended key usages from the configurations file");
-            }
-        }
-        try {
-            globalConfigurationSession.saveConfiguration(authenticationToken, ekuConfig);
-        } catch (AuthorizationDeniedException e) {
-            log.error("Received an AuthorizationDeniedException even though AlwaysAllowLocalAuthenticationToken is used. " + e.getLocalizedMessage());
-        }
-    }
-
-    /**
-     * This method adds read-only rules that were created for the new read-only admin in https://jira.primekey.se/browse/ECA-4344. It makes sure that any roles which previously
-     * had access to the affected resources retain read rights (in case those roles should be restricted as a result of this ticket).
-     *
-     * All access has been made more granular, so performing this step post-upgrade is safe.
-     *
-     *
-     * The exact changes performed are documented in the UPGRADE document.
-     * @throws UpgradeFailedException if upgrade fails.
-     */
-    @SuppressWarnings("deprecation")
-    @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    private void addReadOnlyRules640() throws UpgradeFailedException {
-        // Roles with access to /ca_functionality/basic_functions/activate_ca or just /ca_functionality/ (+recursive)
-        // should be given access to /ca_functionality/view_ca
-        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.CAFUNCTIONALITY.resource(),
-                Arrays.asList(AccessRulesConstants.REGULAR_ACTIVATECA), Arrays.asList(StandardRules.CAVIEW.resource()), false);
-        // Roles with access to /ca_functionality/edit_certificate_profiles should be given access to /ca_functionality/view_certificate_profiles
-        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.CAFUNCTIONALITY.resource(),
-                Arrays.asList(StandardRules.CERTIFICATEPROFILEEDIT.resource()), Arrays.asList(StandardRules.CERTIFICATEPROFILEVIEW.resource()), false);
-        // Roles with access to /ca_functionality/edit_publisher should be given /ca_functionality/view_publisher
-        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.CAFUNCTIONALITY.resource(),
-                Arrays.asList(AccessRulesConstants.REGULAR_EDITPUBLISHER), Arrays.asList(AccessRulesConstants.REGULAR_VIEWPUBLISHER), false);
-        // Roles with access to /ra_functionality/edit_end_entity_profiles should be given /ra_functionality/view_end_entity_profiles
-        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, AccessRulesConstants.REGULAR_RAFUNCTIONALITY,
-                Arrays.asList(AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES), Arrays.asList(AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES), false);
-        // Roles with access to "/" (non-recursive) should be given /services/edit, /services/view and /peer/view (+recursive)
-        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.ROLE_ROOT.resource(),
-                Arrays.asList(StandardRules.ROLE_ROOT.resource()), Arrays.asList(AccessRulesConstants.SERVICES_EDIT, AccessRulesConstants.SERVICES_VIEW), false);
-        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.ROLE_ROOT.resource(),
-                Arrays.asList(StandardRules.ROLE_ROOT.resource()), Arrays.asList(AccessRulesConstants.REGULAR_PEERCONNECTOR_VIEW), true);
-        // Roles with access to /internalkeybinding should be given /internalkeybinding/view (+recursive)
-        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.ROLE_ROOT.resource(),
-                Arrays.asList(InternalKeyBindingRules.BASE.resource()), Arrays.asList(InternalKeyBindingRules.VIEW.resource()), true);
-    }
-
-    /**
-     * Adds the access rules defined in https://jira.primekey.se/browse/ECA-4463
-     *
-     * These are:   View rules for system configuration, EKU config and CCE config
-     *
-     * Any roles which matched the previous auditor role, or which had edit access to the above will be given view access.
-     * @throws UpgradeFailedException
-     *
-     */
-    @SuppressWarnings("deprecation")
-    @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    private void addReadOnlyRules642() throws UpgradeFailedException {
-        // If role is the old auditor from 6.4.0, grant new view rights
-        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.ROLE_ROOT.resource(), Arrays.asList(
-                AccessRulesConstants.ROLE_ADMINISTRATOR,
-                AccessRulesConstants.REGULAR_VIEWCERTIFICATE,
-                AuditLogRules.VIEW.resource(),
-                InternalKeyBindingRules.VIEW.resource(),
-                StandardRules.CAVIEW.resource(),
-                StandardRules.CERTIFICATEPROFILEVIEW.resource(),
-                StandardRules.APPROVALPROFILEVIEW.resource(),
-                CryptoTokenRules.VIEW.resource(),
-                AccessRulesConstants.REGULAR_VIEWPUBLISHER,
-                AccessRulesConstants.SERVICES_VIEW,
-                AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES,
-                AccessRulesConstants.REGULAR_PEERCONNECTOR_VIEW,
-                StandardRules.SYSTEMCONFIGURATION_VIEW.resource(),
-                StandardRules.EKUCONFIGURATION_VIEW.resource(),
-                StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource(),
-                StandardRules.VIEWROLES.resource(),
-                AccessRulesConstants.REGULAR_VIEWENDENTITY
-                ), Arrays.asList(
-                        StandardRules.SYSTEMCONFIGURATION_VIEW.resource(),
-                        StandardRules.EKUCONFIGURATION_VIEW.resource(),
-                        StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource(),
-                        StandardRules.VIEWROLES.resource(),
-                        AccessRulesConstants.REGULAR_VIEWENDENTITY
-                        ), false);
-        // Other cases where we should grant additional access.
-        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.ROLE_ROOT.resource(),
-                Arrays.asList(StandardRules.SYSTEMCONFIGURATION_EDIT.resource()), Arrays.asList(StandardRules.SYSTEMCONFIGURATION_VIEW.resource()), false);
-        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.ROLE_ROOT.resource(),
-                Arrays.asList(StandardRules.EKUCONFIGURATION_EDIT.resource()), Arrays.asList(StandardRules.EKUCONFIGURATION_VIEW.resource()), false);
-        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.ROLE_ROOT.resource(),
-                Arrays.asList(StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_EDIT.resource()), Arrays.asList(StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource()), false);
-        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.ROLE_ROOT.resource(),
-                Arrays.asList(StandardRules.EDITROLES.resource()), Arrays.asList(StandardRules.VIEWROLES.resource()), false);
-    }
-
-    /**
-     * EJBCA 6.4.0 introduces new sun rules to System Configuration in regards to Custom OIDs and EKUs.
-     *
-     * Access rules have also been added for read only rights to parts of the GUI.
-     * @throws UpgradeFailedException if upgrade fails (rolls back)
-     */
-    @Override
-    public void migrateDatabase640() throws UpgradeFailedException {
-        //First add access rules for handling custom OIDs to any roles which previous had access to system configuration
-        // Add the new access rule /system_functionality/edit_available_extended_key_usages to every role that already has the access rule /system_functionality/edit_systemconfiguration
-        addEKUAndCustomCertExtensionsAccessRulestoRoles();
-        importExtendedKeyUsagesFromFile();
-        // Next add access rules for the new audit role template, allowing easy restriction of resources where needed.
-        addReadOnlyRules640();
-        log.error("(This is not an error) Completed upgrade procedure to 6.4.0");
-    }
-
-    /**
-     * EJBCA 6.4.2:
-     *
-     * 1.   Adds view rules to System Configuration, EKU Configuration and Certificate Extension Configuration. Any roles with edit rights to those pages, or which match the Auditor role
-     *      from 6.4.0 will be automatically upgraded.
-     * 2.   Adds view rules to Roles. Any roles with edit rights roles, or which match the Auditor role from 6.4.0 will be automatically upgraded.
-     *
-     * @throws UpgradeFailedException if upgrade fails (rolls back)
-     */
-    @Override
-    public void migrateDatabase642() throws UpgradeFailedException {
-        addReadOnlyRules642();
-        log.error("(This is not an error) Completed upgrade procedure to 6.4.2");
     }
 
     /**

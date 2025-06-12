@@ -12,8 +12,6 @@
  *************************************************************************/ 
 package org.cesecore.certificates.certificate.certextensions;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -39,9 +37,6 @@ public class AvailableCustomCertificateExtensionsConfiguration extends Configura
     
     public AvailableCustomCertificateExtensionsConfiguration() {
         super();
-        if(!isConfigurationInitialized()) {
-            addAvailableCustomCertExtensionsFromFile();
-        }
     }
     
     public AvailableCustomCertificateExtensionsConfiguration(Serializable dataobj) {
@@ -115,63 +110,6 @@ public class AvailableCustomCertificateExtensionsConfiguration extends Configura
             }
         }
         return properties;
-    }
-    
-    /*
-     * Returns a new AvailableCustomCertificateExtensionsConfiguration object containing only extensions from the properties  
-     * file certextensions.properties 
-     * 
-     * This method is called only when upgrading CertificateProfile to EJBCA 6.4.0 where the CustomCertExtensions are 
-     * redefined to be referenced by their OIDs instead of IDs. 
-     * 
-     * TODO Remove this method when support for EJBCA 6.4.0 is dropped.
-     */
-    @Deprecated
-    public static AvailableCustomCertificateExtensionsConfiguration getAvailableCustomCertExtensionsFromFile() {
-        return new AvailableCustomCertificateExtensionsConfiguration();
-    }
-    
-    
-    /*
-     * Imports CustomCertExtensions from certextensions.properties into the database.
-     * 
-     * TODO Remove this method when support for EJBCA 6.4.0 is dropped.
-     */
-    @Deprecated
-    private void addAvailableCustomCertExtensionsFromFile() {
-        // If the file has already been removed, no need to go further
-        InputStream is = CertificateExtensionFactory.class.getResourceAsStream("/certextensions.properties");
-        if(is == null) {
-            return;
-        }
-        
-        try{
-            Properties props = new Properties();
-            try {
-                props.load(is);
-            } finally {
-                is.close();
-            }
-            
-            int count = 0;
-            for(int i=1;i<255;i++){
-                if(props.get("id" + i +".oid")!=null){
-                    if(log.isDebugEnabled()) {
-                        log.debug("found " + props.get("id" + i +".oid"));
-                    }
-                    CertificateExtension ce = getCertificateExtensionFromFile(i, props);
-                    addCustomCertExtension(ce);
-                    count++;
-                }
-            }
-            if(log.isDebugEnabled()) {
-                log.debug("Nr of read Custom Certificate Extensions from file: " + count);
-            }
-        }catch(IOException e){
-            log.error("Error parsing the 'certextensions.properties' file.",e);
-        } catch (CertificateExtentionConfigurationException e) {
-            log.error(e.getMessage(),e);
-        }
     }
     
     /**
