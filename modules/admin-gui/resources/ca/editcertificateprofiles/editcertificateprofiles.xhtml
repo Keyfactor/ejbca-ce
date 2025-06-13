@@ -32,19 +32,20 @@
 			<h:panelGroup>
 			<h3><h:outputText value="#{web.text.LISTOFCERTIFICATEPROFILES}"/></h3>
 			<h:outputText value="#{certProfilesBean.resetCertificateProfilesTrigger}"/>
-			<h:dataTable id="editcertificateprofilesTable" value="#{certProfilesBean.certificateProfiles}" var="certificateProfile" styleClass="grid" columnClasses="gridColumn1,gridColumn2">
-				<h:column headerClass="gridColumn1">
+			<p:dataTable id="editcertificateprofilesTable" value="#{certProfilesBean.certificateProfiles}" var="certificateProfile"
+						 styleClass="grid table-layout-auto vertical-padding-1" stripedRows="true" showGridlines="true">
+				<p:column styleClass="table-title-column">
 					<f:facet name="header"><h:outputText value="#{web.text.CERTIFICATEPROFILENAME}" title="#{certificateProfile.id}"/></f:facet>
 					<h:outputText value="#{certificateProfile.name}"/>
 					<h:outputText rendered="#{certificateProfile.missingCa}" value="#{web.text.MISSINGCAIDS}"/>
-				</h:column>
-				<h:column headerClass="gridColumn2">
-					<f:facet name="header"><h:outputText value="Type"/></f:facet>
+				</p:column>
+				<p:column styleClass="text-align-center">
+					<f:facet name="header"><h:outputText value="#{web.text.TYPE}"/></f:facet>
 					<h:outputText value="#{certificateProfile.type}"/>
-				</h:column>
-				<h:column headerClass="gridColumn3">
+				</p:column>
+				<p:column styleClass="text-align-center">
 					<f:facet name="header"><h:outputText value="#{web.text.ACTIONS}"/></f:facet>
-					<h:panelGroup styleClass="button-group">
+					<div class="action-buttons">
 					<h:commandButton value="#{web.text.VIEW}" action="#{certProfilesBean.actionView}">
                         <f:param name="viewOnly" />
                         <f:param name="id" value="#{certProfilesBean.currentCertificateProfileId}" />  
@@ -58,27 +59,28 @@
 					<h:commandButton value="#{web.text.CLONE}" action="#{certProfilesBean.actionAddFromTemplate}"
 						rendered="#{certProfilesBean.authorizedToEdit}"/>
 					<h:commandButton value="#{web.text.EXPORT}" action="#{certProfilesBean.actionExportProfile}" disabled="#{certificateProfile.fixed}" />
-					</h:panelGroup>
-				</h:column>
-			</h:dataTable>
+					</div>
+				</p:column>
+			</p:dataTable>
 			<h:commandButton id="addProfileButton"
 							 value="#{web.text.ADD}"
 							 action="#{certProfilesBean.actionAdd}"
-							 disabled="#{certificateProfile.fixed or certProfilesBean.authorizedToOnlyView}"
-							 style="margin-top: 10px"/>
+							 disabled="#{certificateProfile.fixed or certProfilesBean.authorizedToOnlyView}"/>
 			</h:panelGroup>
 		</h:form>
 		<h:panelGroup >
-		<h3>
+		<h3 class="vertical-padding-1">
 			<h:outputText value="#{web.text.IMPORT}/" rendered="#{certProfilesBean.authorizedToEdit}"/><h:outputText value="#{web.text.EXPORT}"/>
 		</h3>
-		<h:form id="uploadCertificate" enctype="multipart/form-data">
+		<h:form id="uploadCertificate" enctype="multipart/form-data" styleClass="no-border row-padding-bottom-1">
 			<h:panelGrid columns="1" >
 				<h:outputLabel for="certificateUploadInput" value="#{web.text.IMPORTPROFILESFROM}" rendered="#{certProfilesBean.authorizedToEdit}"/>
 				<h:panelGroup>
-					<h:inputFile id="certificateUploadInput" value="#{certProfilesBean.uploadFile}" size="20" rendered="#{certProfilesBean.authorizedToEdit}"/>
-					<h:commandButton action="#{certProfilesBean.actionImportProfiles}" value="#{web.text.IMPORTPROFILE}" rendered="#{certProfilesBean.authorizedToEdit}"/>
-					<h:commandButton styleClass="commandButtonExport" value="#{web.text.EXPORTPROFILES}" action="#{certProfilesBean.actionExportProfiles}" />
+					<div class="action-buttons">
+						<h:inputFile id="certificateUploadInput" value="#{certProfilesBean.uploadFile}" size="20" rendered="#{certProfilesBean.authorizedToEdit}"/>
+						<h:commandButton action="#{certProfilesBean.actionImportProfiles}" value="#{web.text.IMPORTPROFILE}" rendered="#{certProfilesBean.authorizedToEdit}"/>
+						<h:commandButton value="#{web.text.EXPORTPROFILES}" action="#{certProfilesBean.actionExportProfiles}" />
+					</div>
 				</h:panelGroup>
 			</h:panelGrid>
 		</h:form>
