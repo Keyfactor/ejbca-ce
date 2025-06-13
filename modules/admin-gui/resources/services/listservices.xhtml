@@ -82,7 +82,7 @@
                     </div>
                 </p:column>
             </p:dataTable>
-            <h:panelGrid styleClass="actions" width="100%" rendered="#{listServicesManagedBean.hasEditRights}">
+            <h:panelGrid rendered="#{listServicesManagedBean.hasEditRights}" styleClass="no-border row-padding-bottom-1">
                 <h:outputText value="#{web.text.SERVICES_NOT_CONFIGURED}"
                               rendered="#{listServicesManagedBean.serviceListEmpty}"/>
                 <h:panelGroup>
