@@ -12,21 +12,6 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.cryptotoken;
 
-import java.io.File;
-import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.stream.Collectors;
-
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
@@ -40,7 +25,18 @@ import com.keyfactor.util.keys.token.KeyGenParams.KeyGenParamsBuilder;
 import com.keyfactor.util.keys.token.KeyGenParams.KeyPairTemplate;
 import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabel;
 import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
-
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.context.ExternalContext;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.context.Flash;
+import jakarta.faces.model.ListDataModel;
+import jakarta.faces.model.SelectItem;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Named;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -78,14 +74,22 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import org.ejbca.util.SlotList;
 
-import jakarta.ejb.EJB;
-import jakarta.ejb.EJBException;
-import jakarta.faces.application.FacesMessage;
-import jakarta.faces.context.FacesContext;
-import jakarta.faces.model.ListDataModel;
-import jakarta.faces.model.SelectItem;
-import jakarta.faces.view.ViewScoped;
-import jakarta.inject.Named;
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * JavaServer Faces Managed Bean for managing CryptoTokens.
@@ -116,7 +120,18 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         if (StringUtils.equals(initNewPkiParam, "true")) {
             initNewPki = true;
         }
-        currentCryptoTokenEditMode = "edit".equals(params.get("mode"));
+    }
+
+    @PostConstruct
+    public void init() {
+        final Flash flashContext = FacesContext.getCurrentInstance().getExternalContext().getFlash();
+
+        String modeParam = "";
+        if (flashContext != null) {
+            modeParam = (String) flashContext.get("mode");
+        }
+
+        currentCryptoTokenEditMode = getCurrentCryptoTokenId() == 0 || "edit".equals(modeParam);
     }
 
     /**
@@ -900,6 +915,8 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     private String maxOperationCount;
     private KeyPairTemplate keyPairTemplate; // Used for CP5 (same key cannot do encrypt/decrypt and sign/verify)
     private String selectedCryptoTokenName;
+    private String selectedCryptoTokenId;
+    private String[] selectedCryptoTokenKeyAlias;
 
     @EJB
     private CryptoTokenSessionLocal cryptoTokenSession;
@@ -970,19 +987,34 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         return unlimitedOperations;
     }
 
-
     public void setUnlimitedOperations(boolean unlimitedOperations) {
         this.unlimitedOperations = unlimitedOperations;
     }
 
     public String getSelectedCryptoTokenName() {
-        return FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("tokenName");
+        if (selectedCryptoTokenName == null) {
+            selectedCryptoTokenName = (String) FacesContext.getCurrentInstance().getExternalContext().getFlash().get("tokenName");
+        }
+        return selectedCryptoTokenName;
+    }
+
+    public void setSelectedCryptoTokenName(String selectedCryptoTokenName) {
+        this.selectedCryptoTokenName = selectedCryptoTokenName;
     }
 
     public String getSelectedCryptoTokenId() {
-        return FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("tokenId");
+        if (selectedCryptoTokenId == null) {
+            selectedCryptoTokenId = (String) FacesContext.getCurrentInstance().getExternalContext().getFlash().get("tokenId");
+        }
+        return selectedCryptoTokenId;
     }
 
+    public String[] getSelectedCryptoTokenKeyAlias() {
+        if (selectedCryptoTokenKeyAlias == null) {
+            selectedCryptoTokenKeyAlias = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterValuesMap().get("keyalias");
+        }
+        return selectedCryptoTokenKeyAlias;
+    }
 
     /**
      * @return number of allowed operations for this key. -1 if 'Unlimited' is checked
@@ -1145,6 +1177,70 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         }
 
         redirect("cryptotokens.xhtml");
+    }
+
+    public void prepareDownloadKey(final String cryptoTokenId, final String keyPairAlias) throws IOException {
+        final ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
+        final String cryptoTokenDownloadsUrl = String.format("/cryptotoken/cryptoTokenDownloads?cryptoTokenId=%s&alias=%s",
+                cryptoTokenId, keyPairAlias);
+        redirect(externalContext.getRequestContextPath() + cryptoTokenDownloadsUrl);
+    }
+
+    public void editCryptoToken(final String cryptoTokenId) {
+        final ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
+        final Flash flashContext = externalContext.getFlash();
+        if (flashContext == null) {
+            redirect("cryptotokens.xhtml");
+            return;
+        }
+
+        flashContext.setKeepMessages(true);
+        flashContext.put("mode", "edit");
+
+        redirect("cryptotoken.xhtml", "cryptoTokenId", cryptoTokenId, "ref", "default");
+    }
+
+    public String prepareDelete(final String cryptoTokenId, final String cryptoTokenName) {
+        final Flash flashContext = FacesContext.getCurrentInstance().getExternalContext().getFlash();
+        if (flashContext == null) {
+            return "cryptotokens.xhtml?faces-redirect=true";
+        }
+
+        flashContext.setKeepMessages(true);
+        flashContext.put("tokenName", cryptoTokenName);
+        flashContext.put("tokenId", cryptoTokenId);
+
+        return "deletecryptotoken.xhtml?faces-redirect=true";
+    }
+
+    public void prepareDeleteKey(final String... cryptoTokenKeyAlias) throws AuthorizationDeniedException {
+        if (ArrayUtils.isEmpty(cryptoTokenKeyAlias)) {
+            addNonTranslatedErrorMessage("Crypto Token key pair must be selected.");
+            return;
+        }
+
+        final Flash flashContext = FacesContext.getCurrentInstance().getExternalContext().getFlash();
+        flashContext.setKeepMessages(true);
+        flashContext.put("mode", "edit");
+        flashContext.put("tokenName", getCurrentCryptoToken().getName());
+
+        Object[] params = {"cryptoTokenId", getCurrentCryptoTokenId(), "ref", "default"};
+        final Object[] keyAliases = Arrays.stream(cryptoTokenKeyAlias)
+                .flatMap(keyAlias -> Stream.of("keyalias", keyAlias))
+                .toArray(Object[]::new);
+        params = ArrayUtils.addAll(params, keyAliases);
+
+        redirect("deletecryptotokenkey.xhtml", params);
+    }
+
+    public String[] getSelectedKeyPairs() {
+        if (keyPairGuiInfos != null) {
+            return keyPairGuiInfos.stream()
+                    .filter(KeyPairGuiInfo::isSelected)
+                    .map(KeyPairGuiInfo::getAlias)
+                    .toArray(String[]::new);
+        }
+        return new String[0];
     }
 
     /**
@@ -1620,8 +1716,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     public int getCurrentCryptoTokenId() {
         // Get the HTTP GET/POST parameter named "cryptoTokenId"
         final String cryptoTokenIdString = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("cryptoTokenId");
-        final String mode = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("mode");
-        if (cryptoTokenIdString != null && cryptoTokenIdString.length() > 0) {
+        if (StringUtils.isNotBlank(cryptoTokenIdString)) {
             try {
                 int currentCryptoTokenId = Integer.parseInt(cryptoTokenIdString);
                 // If there is a query parameter present and the id is different we flush the cache!
@@ -1629,8 +1724,6 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                     flushCaches();
                     this.currentCryptoTokenId = currentCryptoTokenId;
                 }
-                // Always switch to edit mode for new ones and view mode for all others
-//                setCurrentCryptoTokenEditMode(currentCryptoTokenId == 0);
             } catch (NumberFormatException e) {
                 log.info("Bad 'cryptoTokenId' parameter value.. set, but not a number..");
             }
@@ -1722,10 +1815,6 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
 
     public void setCurrentCryptoTokenEditMode(boolean currentCryptoTokenEditMode) {
         this.currentCryptoTokenEditMode = currentCryptoTokenEditMode;
-    }
-
-    public void toggleCurrentCryptoTokenEditMode() {
-        currentCryptoTokenEditMode ^= true;
     }
 
     //
@@ -2053,42 +2142,30 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     }
 
     /**
-     * Invoked when admin requests the removal of a key pair.
-     * @throws AuthorizationDeniedException 
+     * Invoked when admin requests the removal of key pairs.
+     * @throws AuthorizationDeniedException
      */
-    public void removeKeyPair() throws AuthorizationDeniedException {
-        final KeyPairGuiInfo keyPairGuiInfo = getKeyPairGuiList().getRowData();
-        final String alias = keyPairGuiInfo.getAlias();
-        try {
-            if (!keyPairGuiInfo.isPlaceholder()) {
-                getCryptoTokenManagementSession().removeKeyPair(getAdmin(), getCurrentCryptoTokenId(), alias);
-            } else {
-                getCryptoTokenManagementSession().removeKeyPairPlaceholder(getAdmin(), getCurrentCryptoTokenId(), alias);
-            }
-            flushCaches();
-        } catch (Exception e) {
-            addNonTranslatedErrorMessage(e);
-        }
-    }
+    public void removeKeyPairs() throws AuthorizationDeniedException {
+        final List<String> selectedKeyAlias = Arrays.stream(getSelectedCryptoTokenKeyAlias()).toList();
+        final int cryptoTokenId = getCurrentCryptoTokenId();
 
-    /**
-     * Invoked when admin requests the removal of multiple key pair.
-     */
-    public void removeSelectedKeyPairs() {
-        if (keyPairGuiInfos != null) {
-            keyPairGuiInfos.stream().filter(KeyPairGuiInfo::isSelected).forEach(cryptoTokenKeyPairInfo -> {
-                try {
-                    if (!cryptoTokenKeyPairInfo.isPlaceholder()) {
-                        getCryptoTokenManagementSession().removeKeyPair(getAdmin(), getCurrentCryptoTokenId(), cryptoTokenKeyPairInfo.getAlias());
-                    } else {
-                        getCryptoTokenManagementSession().removeKeyPairPlaceholder(getAdmin(), getCurrentCryptoTokenId(), cryptoTokenKeyPairInfo.getAlias());
+        getKeyPairGuiInfos().stream()
+                .filter(keyPairGuiInfo -> selectedKeyAlias.contains(keyPairGuiInfo.getAlias()))
+                .forEach(keyPairGuiInfo -> {
+                    final String alias = keyPairGuiInfo.getAlias();
+                    try {
+                        if (!keyPairGuiInfo.isPlaceholder()) {
+                            getCryptoTokenManagementSession().removeKeyPair(getAdmin(), cryptoTokenId, alias);
+                        } else {
+                            getCryptoTokenManagementSession().removeKeyPairPlaceholder(getAdmin(),
+                                    cryptoTokenId, alias);
+                        }
+                    } catch (Exception e) {
+                        addNonTranslatedErrorMessage(e);
                     }
-                } catch (Exception e) {
-                    addNonTranslatedErrorMessage(e);
-                }
-            });
-        }
+                });
         flushCaches();
+        editCryptoToken(String.valueOf(cryptoTokenId));
     }
 
     /**

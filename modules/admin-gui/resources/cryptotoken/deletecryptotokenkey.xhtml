@@ -3,7 +3,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
 	  xmlns:h="jakarta.faces.html"
 	  xmlns:ui="jakarta.faces.facelets"
-	  xmlns:f="jakarta.faces.core">
+	  xmlns:fn="jakarta.tags.functions"
+>
 <ui:remove>
 	<!--
     /*************************************************************************
@@ -25,24 +26,23 @@
 	<ui:param name="resourceBean" value="#{cryptoTokenMBean}"/>
 	<ui:define name="content">
 		<h1>
-			<h:outputText value="#{web.text.MANAGECRYPTOTOKENS}"/>
+			<h:outputText value="#{web.text.CRYPTOTOKEN} : #{cryptoTokenMBean.selectedCryptoTokenName}" />
 		</h1>
 		<h:form>
-			<h:panelGroup rendered="#{cryptoTokenMBean.allowedToDelete}">
+			<h:panelGroup rendered="#{cryptoTokenMBean.allowedToKeyRemoval}">
 				<h3>
 					<h:outputText value="#{web.text.DELETE}"/>
 				</h3>
 				<h:panelGrid columns="2">
-					<h:outputLabel for="deletedCryptoTokenName" value="#{web.text.NAME}:"/>
-					<h:outputText id="deletedCryptoTokenName" value="#{cryptoTokenMBean.selectedCryptoTokenName}"/>
+					<h:outputLabel for="deletedCryptoTokenKeyAlias" value="#{web.text.CRYPTOTOKEN_KPM_ALIAS}:"/>
+					<h:outputText id="deletedCryptoTokenKeyAlias" value="#{fn:join(cryptoTokenMBean.selectedCryptoTokenKeyAlias, ', ')}"/>
 					<h:panelGroup/>
 					<h:panelGroup>
-						<h:commandButton id="deletedCryptoTokenSaveButton" name="deletedCryptoTokenSaveButton" style="margin-right:10px;"
-										 action="#{cryptoTokenMBean.deleteCryptoToken}" value="#{web.text.DELETE_CONFIRM}">
-							<f:param name="cryptoTokenId" value="#{cryptoTokenMBean.selectedCryptoTokenId}"/>
-						</h:commandButton>
-						<h:commandButton id="deleteCryptoTokenCancelButton" name="deleteCryptoTokenCancelButton"
-										 action="cryptotokens?faces-redirect=true" value="#{web.text.CANCEL}" immediate="true" />
+						<h:commandButton id="deleteCryptoTokenKeySaveButton" name="deleteCryptoTokenKeySaveButton" style="margin-right:10px;"
+										 action="#{cryptoTokenMBean.removeKeyPairs}" value="#{web.text.DELETE_CONFIRM}"/>
+						<h:commandButton id="deleteCryptoTokenKeyCancelButton" name="deleteCryptoTokenKeyCancelButton"
+										 value="#{web.text.CANCEL}" immediate="true"
+										 action="#{cryptoTokenMBean.editCryptoToken(cryptoTokenMBean.currentCryptoTokenId)}"/>
 					</h:panelGroup>
 				</h:panelGrid>
 			</h:panelGroup>
