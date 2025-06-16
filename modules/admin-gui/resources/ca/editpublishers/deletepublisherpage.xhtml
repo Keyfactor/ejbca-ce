@@ -2,8 +2,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="jakarta.faces.html"
-      xmlns:ui="jakarta.faces.facelets"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:ui="jakarta.faces.facelets">
 <ui:remove>
     <!--
     /*************************************************************************
@@ -37,9 +36,9 @@
                     <h:outputText id="deletedPublisherName" value="#{listPublishers.selectedPublisherName}"/>
                     <h:panelGroup/>
                     <h:panelGroup>
-                        <p:commandButton id="deleteCaSaveButton" name="deleteCaSaveButton" style="margin-right:10px;" ajax="false"
+                        <h:commandButton id="deleteCaSaveButton" name="deleteCaSaveButton" style="margin-right:10px;" ajax="false"
                                          action="#{listPublishers.deletePublisher}" value="#{web.text.DELETE_CONFIRM}"/>
-                        <p:commandButton id="deletePublisherCancelButton" name="deletePublisherCancelButton" ajax="false"
+                        <h:commandButton id="deletePublisherCancelButton" name="deletePublisherCancelButton" ajax="false"
                                          action="listpublishers?faces-redirect=true" value="#{web.text.CANCEL}" immediate="true"/>
                     </h:panelGroup>
                 </h:panelGrid>
