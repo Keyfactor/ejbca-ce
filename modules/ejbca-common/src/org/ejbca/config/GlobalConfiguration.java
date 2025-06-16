@@ -142,6 +142,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final   String LOCALKEYRECOVERYCRYPTOTOKEN  = "localkeyrecoverycryptotoken";
     private static final   String LOCALKEYRECOVERYKEYALIAS     = "localkeyrecoverykeyalias";
 
+    @Deprecated(since = "9.4.0")
     private static final   String ENABLEICAOCANAMECHANGE       = "enableicaocanamechange";
 
     private static final   String USEAPPROVALNOTIFICATIONS     = "useapprovalnotifications";
@@ -171,10 +172,8 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     /** Creates a new instance of GlobalConfiguration */
     public GlobalConfiguration()  {
        super();
-
        setEjbcaTitle(DEFAULTEJBCATITLE);
        setHeadBannerLogo(DEFAULT_HEADER_LOGO);
-       setEnableIcaoCANameChange(false);
     }
     
     public byte[] initHeadBannerLogo(String path) {
@@ -352,7 +351,15 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     public String getLocalKeyRecoveryKeyAlias() { return (String) data.get(LOCALKEYRECOVERYKEYALIAS); }
     public void setLocalKeyRecoveryKeyAlias(final String value) { data.put(LOCALKEYRECOVERYKEYALIAS, value); }
 
+    /**
+     * @deprecated this value has been shifted to GlobalCaConfiguration in 9.4.0 and only remains for 100% uptime and upgrade
+     */
+    @Deprecated(since = "9.4.0")
     public boolean getEnableIcaoCANameChange() { return getBoolean(ENABLEICAOCANAMECHANGE, false); }
+    /**
+     * @deprecated this value has been shifted to GlobalCaConfiguration in 9.4.0 and only remains for 100% uptime and upgrade
+     */
+    @Deprecated(since = "9.4.0")
     public void setEnableIcaoCANameChange(final boolean value) { putBoolean(ENABLEICAOCANAMECHANGE, value);}
     
     /** @return true of email notification of requested approvals should be sent (default false) */

@@ -71,6 +71,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.ocsp.OcspTestUtils;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
+import org.cesecore.config.GlobalCaConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OcspConfiguration;
@@ -1630,6 +1631,45 @@ public class UpgradeSessionBeanSystemTest {
             globalOcspConfiguration.setIncludeSigningCertificate(includeSignerCertCurrent);
             globalOcspConfiguration.setIncludeCertificateChain(includeCertChainCurrent);
             globalConfigurationProxySession.saveConfiguration(alwaysAllowtoken, globalOcspConfiguration);
+        }
+    }
+    
+    @Test
+    public void testMigrateCaConfiguration9_4_0() throws AuthorizationDeniedException {
+        //Stash the original value
+        GlobalCaConfiguration globalCaConfiguration = (GlobalCaConfiguration) globalConfigSession.getCachedConfiguration(GlobalCaConfiguration.CA_CONFIGURATION_ID);
+        boolean originalValue = globalCaConfiguration.getEnableIcaoCANameChange();
+        
+        try {
+            //Make sure there is a (non-default) value to upgrade from 
+            GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            globalConfiguration.setEnableIcaoCANameChange(true);
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, globalConfiguration);
+            final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            guc.setUpgradedToVersion("9.3.0");
+            guc.setPostUpgradedToVersion("9.3.0");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+            
+            //Perform upgrade
+            upgradeSession.upgrade(/* database */ null, /* upgrade from */ "9.3.0", /* post upgrade? */ false);
+            
+            //Verify that the non-default value has been migrated
+            globalCaConfiguration = (GlobalCaConfiguration) globalConfigSession.getCachedConfiguration(GlobalCaConfiguration.CA_CONFIGURATION_ID);
+            assertTrue("enableIcaoNameChange value was not migrated.", globalCaConfiguration.getEnableIcaoCANameChange());
+            
+            //Perform post-upgrade and verify that the value is removed from globalconfigdata
+            upgradeSession.upgrade(/* database */ null, /* upgrade from */ "9.3.0", /* post upgrade? */ true);
+            globalConfiguration = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            LinkedHashMap<Object, Object> data = globalConfiguration.getRawData();
+            assertFalse("enableicaocanamechange was not removed from GlobalConfigData in post-upgrade.", data.containsKey("enableicaocanamechange"));
+            
+            
+        } finally {
+            //Restore the original value
+            globalCaConfiguration.setEnableIcaoCANameChange(originalValue);
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, globalCaConfiguration);
+            
         }
     }
 

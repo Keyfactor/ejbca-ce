@@ -75,6 +75,7 @@ import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.ConfigurationHolder;
+import org.cesecore.config.GlobalCaConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OAuthConfiguration;
@@ -674,6 +675,12 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
             setLastPostUpgradedToVersion("9.3.0");
         }
+        if (isLesserThan(oldVersion, "9.4.0")) {
+            if (!postMigrateDatabase9_4_0()) {
+                return false;
+            }
+            setLastPostUpgradedToVersion("9.4.0");
+        }
         
         // NOTE: If you add additional post upgrade tasks here, also modify isPostUpgradeNeeded() and performPreUpgrade()
         //setLastPostUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
@@ -766,6 +773,33 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         accessTreeUpdateSession.signalForAccessTreeUpdate();
         log.info("Post upgrade to 9.3.0 complete.");
         return true;
+    }
+    
+    private boolean postMigrateDatabase9_4_0() {
+        log.info("Starting post upgrade to 9.4.0");
+        removeEnableIcaoNameChangeFromGlobalConfiguration();
+        log.info("Post upgrade to 9.4.0 complete.");
+        return true;
+    }
+    
+    /**
+     * Removes the enableIcaoNameChange value from GlobalConfiguration post upgrade to 9.4 
+     * 
+     */
+    private void removeEnableIcaoNameChangeFromGlobalConfiguration() {
+        GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        //Go straight into the data map and remove it
+        LinkedHashMap<Object, Object> data = globalConfiguration.getRawData();
+        if (data.containsKey("enableicaocanamechange")) {
+            data.remove("enableicaocanamechange");
+            globalConfiguration.loadData(data);
+            try {
+                globalConfigurationSession.saveConfiguration(authenticationToken, globalConfiguration);
+            } catch (AuthorizationDeniedException e) {
+                throw new IllegalStateException("Always allow token was denied access to global configuration.", e);
+            }
+        }
+        
     }
     
     /**
@@ -2578,6 +2612,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     public void migrateDatabase9_4_0() throws UpgradeFailedException {
         //Move ocsp.includecertchain and ocsp.includesignercert from the properties files and into the database configuration
         migrateOcspOptions_9_4_0();
+        //Move enableIcaoNameChange from GlobalConfiguration to the new GlobalCaConfiguration row
+        migrateCaConfigurationFromGlobalConfig9_4_0();
     }
     
     @SuppressWarnings("deprecation")
@@ -2594,6 +2630,20 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             throw new UpgradeFailedException(msg, e);
         }
     }  
+    
+    @SuppressWarnings("deprecation")
+    private void migrateCaConfigurationFromGlobalConfig9_4_0() throws UpgradeFailedException {
+        GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        GlobalCaConfiguration globalCaConfiguration = (GlobalCaConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCaConfiguration.CA_CONFIGURATION_ID);
+        globalCaConfiguration.setEnableIcaoCANameChange(globalConfiguration.getEnableIcaoCANameChange());        
+        try {
+            globalConfigurationSession.saveConfiguration(authenticationToken, globalCaConfiguration);
+        } catch (AuthorizationDeniedException e) {
+            String msg = "Always allow token was denied authoriation to global configuration table.";
+            log.error(msg, e);
+            throw new UpgradeFailedException(msg, e);
+        }  
+    }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
