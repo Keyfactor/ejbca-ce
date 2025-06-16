@@ -14,6 +14,7 @@ package org.cesecore.config;
 
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.keybind.impl.OcspKeyBinding;
@@ -71,6 +72,14 @@ public class GlobalOcspConfiguration extends ConfigurationBase implements Serial
         data.put(INCLUDE_CERTIFICATE_CHAIN, includeCertificateChain);
     }
 
+    // OCSP Cleanup
+    private static final String PROPERTY_OCSP_CLEANUP_USE = "ocsp.cleanup.use";
+    private static final boolean PROPERTY_OCSP_CLEANUP_USE_DEFAULT = false;
+    private static final String PROPERTY_OCSP_CLEANUP_SCHEDULE = "ocsp.cleanup.schedule";
+    private static final String PROPERTY_OCSP_CLEANUP_SCHEDULE_DEFAULT = "5";
+    private static final String PROPERTY_OCSP_CLEANUP_SCHEDULE_UNIT = "ocsp.cleanup.schedule_unit";
+    private static final String PROPERTY_OCSP_CLEANUP_SCHEDULE_UNIT_DEFAULT = TimeUnit.HOURS.toString();
+
     public boolean getExplicitNoCacheUnauthorizedResponsesEnabled() {
         if (Objects.isNull(data.get(EXPLICIT_NO_CACHE_UNAUTHORIZED_RESPONSES_ENABLED))) {
             setExplicitNoCacheUnauthorizedResponsesEnabled(false); // Put the default if not already present
@@ -114,6 +123,31 @@ public class GlobalOcspConfiguration extends ConfigurationBase implements Serial
     
     public void setOcspResponderIdType(OcspKeyBinding.ResponderIdType ocspResponderIdType) {
         data.put(OCSP_RESPONDER_ID_TYPE_REFERENCE, ocspResponderIdType);
+    }
+
+    // OCSP Cleanup
+    public void setOcspCleanupUse(final boolean value) {
+        putBoolean(PROPERTY_OCSP_CLEANUP_USE, value);
+    }
+
+    public boolean getOcspCleanupUse() {
+        return getBoolean(PROPERTY_OCSP_CLEANUP_USE, PROPERTY_OCSP_CLEANUP_USE_DEFAULT);
+    }
+
+    public void setOcspCleanupSchedule(final String value) {
+        data.put(PROPERTY_OCSP_CLEANUP_SCHEDULE, value);
+    }
+
+    public String getOcspCleanupSchedule() {
+        return getString(PROPERTY_OCSP_CLEANUP_SCHEDULE, PROPERTY_OCSP_CLEANUP_SCHEDULE_DEFAULT);
+    }
+
+    public void setOcspCleanupScheduleUnit(final String value) {
+        data.put(PROPERTY_OCSP_CLEANUP_SCHEDULE_UNIT, value);
+    }
+
+    public String getOcspCleanupScheduleUnit() { return getString(
+            PROPERTY_OCSP_CLEANUP_SCHEDULE_UNIT, PROPERTY_OCSP_CLEANUP_SCHEDULE_UNIT_DEFAULT);
     }
     
     /**

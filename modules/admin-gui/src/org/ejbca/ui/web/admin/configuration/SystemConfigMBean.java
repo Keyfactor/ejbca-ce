@@ -74,6 +74,7 @@ import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.EABConfiguration;
 import org.cesecore.config.GlobalCaConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
+import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.InvalidConfigurationException;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.config.RaStyleInfo;
@@ -136,7 +137,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private static final String[] ALLOWED_HEADER_FILE_EXTENSIONS = {"jpg", "jpeg", "png"};
     
     private transient UploadedFile headerFile;
-    
+
     @EJB
     private AuthorizationSessionLocal authorizationSession;
     @EJB
@@ -157,7 +158,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private ServiceSessionLocal serviceSession;
     @EJB
     private StatedumpSessionLocal statedumpSession;
-    
+
     public UploadedFile getHeaderFile() {
         return headerFile;
     }
@@ -232,7 +233,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         private boolean ctCacheFastFailEnabled;
         private long ctCacheFastFailBackoff;
 
-        private GuiInfo(GlobalConfiguration globalConfig, GlobalCesecoreConfiguration globalCesecoreConfiguration, AdminPreference adminPreference, GlobalCaConfiguration globalCaConfiguration) {
+        private GuiInfo(GlobalConfiguration globalConfig, GlobalCesecoreConfiguration globalCesecoreConfiguration, AdminPreference adminPreference, GlobalCaConfiguration globalCaConfiguration, GlobalOcspConfiguration globalOcspConfiguration) {
             try {
                 this.title = globalConfig.getEjbcaTitle();
                 this.enableEndEntityProfileLimitations = globalConfig.getEnableEndEntityProfileLimitations();
@@ -249,9 +250,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 this.vaStatusTimeConstraint = globalConfig.getVaStatusTimeConstraint();
                 this.enableIcaoCANameChange =  globalCaConfiguration.getEnableIcaoCANameChange();
                 this.ctLogs = new ArrayList<>(globalConfig.getCTLogs().values());
-                this.ocspCleanupUse = globalConfig.getOcspCleanupUse();
-                this.ocspCleanupSchedule = globalConfig.getOcspCleanupSchedule();
-                this.ocspCleanupScheduleUnit = globalConfig.getOcspCleanupScheduleUnit();
+                this.ocspCleanupUse = globalOcspConfiguration.getOcspCleanupUse();
+                this.ocspCleanupSchedule = globalOcspConfiguration.getOcspCleanupSchedule();
+                this.ocspCleanupScheduleUnit = globalOcspConfiguration.getOcspCleanupScheduleUnit();
 
                 // Admin Preferences
                 if(adminPreference == null) {
@@ -406,6 +407,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private GlobalConfiguration globalConfig = null;
     private GlobalCesecoreConfiguration globalCesecoreConfiguration = null;
     private GlobalCaConfiguration globalCaConfiguration = null;
+    private GlobalOcspConfiguration globalOcspConfiguration = null;
     private OAuthConfiguration oAuthConfiguration = null;
     private AdminPreference adminPreference = null;
     private GuiInfo currentConfig = null;
@@ -425,7 +427,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private GoogleCtPolicy googleCtPolicy;
     private boolean preCertificateMaintenanceServiceCheckDone = false;
     private boolean preCertificateMaintenanceServiceAvailable;
-    private int lastActiveTab = 0;   
+    private int lastActiveTab = 0;
 
 
     private boolean enableCustomHeaderRest;
@@ -491,7 +493,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     public SystemConfigMBean() {
         super(AccessRulesConstants.ROLE_ADMINISTRATOR);
     }
-    
+
     @PostConstruct
     void checkPermissions() throws AuthorizationDeniedException {
         // do this in PostConstruct instead of the ctor because it needs the app to be initialized
@@ -746,7 +748,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         return adminPreference;
     }
-    
+
     private GlobalCaConfiguration getGlobalCaConfiguration() {
         if(globalCaConfiguration == null) {
             globalCaConfiguration = (GlobalCaConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCaConfiguration.CA_CONFIGURATION_ID);
@@ -754,11 +756,19 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         return globalCaConfiguration;
     }
 
+    private GlobalOcspConfiguration getGlobalOcspConfiguration() {
+        if (globalOcspConfiguration == null) {
+            globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        }
+
+        return globalOcspConfiguration;
+    }
+
     /** @return cached or populate a new system configuration GUI representation for view or edit */
     public GuiInfo getCurrentConfig() {
         if (this.currentConfig == null) {
             try {
-                this.currentConfig = new GuiInfo(getGlobalConfiguration(), getGlobalCesecoreConfiguration(), getAdminPreference(), getGlobalCaConfiguration());
+                this.currentConfig = new GuiInfo(getGlobalConfiguration(), getGlobalCesecoreConfiguration(), getAdminPreference(), getGlobalCaConfiguration(), getGlobalOcspConfiguration());
             } catch (Exception e) {
                 String msg = "Cannot read Administrator Preferences.";
                 log.info(msg + e.getLocalizedMessage());
@@ -1106,14 +1116,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalConfig.setUseSessionTimeout(currentConfig.isEnableSessionTimeout());
                 globalConfig.setSessionTimeoutTime(currentConfig.getSessionTimeoutTime());
                 globalConfig.setVaStatusTimeConstraint(currentConfig.getVaStatusTimeConstraint());
-                
-                
-
-                if (isValidOcspCleanupSettings()) {
-                    globalConfig.setOcspCleanupSchedule(currentConfig.getOcspCleanupSchedule());
-                    globalConfig.setOcspCleanupScheduleUnit(currentConfig.getOcspCleanupScheduleUnit());
-                    globalConfig.setOcspCleanupUse(currentConfig.getOcspCleanupUse());
-                }
 
                 LinkedHashMap<Integer, CTLogInfo> ctlogsMap = new LinkedHashMap<>();
                 for (CTLogInfo ctlog : currentConfig.getCtLogs()) {
@@ -1161,12 +1163,27 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 log.info(msg);
                 super.addNonTranslatedErrorMessage(msg);
             }
-            
+
             globalCaConfiguration.setEnableIcaoCANameChange(currentConfig.getEnableIcaoCANameChange());
             try {
                 globalConfigurationSession.saveConfiguration(getAdmin(), globalCaConfiguration);
             } catch (AuthorizationDeniedException e) {
                 String msg = "Cannot save Global CA Configuration. " + e.getLocalizedMessage();
+                log.info(msg);
+                super.addNonTranslatedErrorMessage(msg);
+            }
+
+            // Save OCSP related settings to the GlobalOcspConfiguration
+            if (isValidOcspCleanupSettings()) {
+                globalOcspConfiguration.setOcspCleanupSchedule(currentConfig.getOcspCleanupSchedule());
+                globalOcspConfiguration.setOcspCleanupScheduleUnit(currentConfig.getOcspCleanupScheduleUnit());
+                globalOcspConfiguration.setOcspCleanupUse(currentConfig.getOcspCleanupUse());
+            }
+
+            try {
+                globalConfigurationSession.saveConfiguration(getAdmin(), globalOcspConfiguration);
+            } catch (AuthorizationDeniedException e) {
+                String msg = "Cannot save Global OCSP Configuration. " + e.getLocalizedMessage();
                 log.info(msg);
                 super.addNonTranslatedErrorMessage(msg);
             }
@@ -1257,6 +1274,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         validatorSettings = null;
         preCertificateMaintenanceServiceCheckDone = false;
         globalCaConfiguration = null;
+        globalOcspConfiguration = null;
         enableCustomHeaderRest = getAvailableProtocolsConfiguration().isCustomHeaderForRestEnabled();
         customHeaderRestName = getAvailableProtocolsConfiguration().getCustomHeaderForRest();
     }
@@ -2307,9 +2325,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.ROLE_ROOT.resource()) && isStatedumpAvailable();
     }
 
- 
-
-    
     public boolean isCtCacheEnabled() {
         return getCurrentConfig().isCtCacheEnabled();
     }
