@@ -128,7 +128,6 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
         addProperty(new DynamicUiProperty<>(PROPERTY_MAX_AGE, 0L));
         addProperty(new DynamicUiProperty<>(PROPERTY_ENABLE_NONCE, Boolean.TRUE));
         addProperty(new DynamicUiProperty<>(PROPERTY_OMIT_REASON_CODE_WHEN_REVOCATION_REASON_UNSPECIFIED, Boolean.TRUE));
-
     }
 
     
@@ -144,7 +143,7 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
 
     @Override
     protected void upgrade(float latestVersion, float currentVersion) {
-        // Nothing to do
+
     }
     
     @Override

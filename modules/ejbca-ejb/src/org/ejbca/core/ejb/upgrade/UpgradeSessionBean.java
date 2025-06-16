@@ -84,6 +84,7 @@ import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
+import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingNameInUseException;
 import org.cesecore.keybind.InternalKeyBindingRules;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
@@ -205,6 +206,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
     private InternalKeyBindingDataSessionLocal internalKeyBindingDataSession;
+    @EJB
+    private InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession;
     @EJB
     private OcspResponseGeneratorSessionLocal ocspResponseGeneratorSession;
     @EJB
@@ -692,6 +695,13 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             setLastPostUpgradedToVersion("9.3.0");
         }
         
+        if (isLesserThan(oldVersion, "9.4.0")) {
+            if (!postMigrateDatabase9_4_0()) {
+                return false;
+            }
+            setLastPostUpgradedToVersion("9.4.0");
+        }
+        
         // NOTE: If you add additional post upgrade tasks here, also modify isPostUpgradeNeeded() and performPreUpgrade()
         //setLastPostUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
@@ -782,6 +792,17 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }       
         accessTreeUpdateSession.signalForAccessTreeUpdate();
         log.info("Post upgrade to 9.3.0 complete.");
+        return true;
+    }
+    
+    private boolean postMigrateDatabase9_4_0() {
+        log.info("Starting post upgrade to 9.4.0");
+        //Remove old data from OCSP Responders 
+        for(int id : internalKeyBindingDataSession.getIds(OcspKeyBinding.IMPLEMENTATION_ALIAS)) {
+            
+        }
+        
+        log.info("Post upgrade to 9.4.0 complete.");
         return true;
     }
     
@@ -939,7 +960,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public boolean isPostUpgradeNeeded() {
-        return isLesserThan(getLastPostUpgradedToVersion(), "9.3.0");
+        return isLesserThan(getLastPostUpgradedToVersion(), "9.4.0");
     }
 
     /**
@@ -2635,6 +2656,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     public void migrateDatabase9_4_0() throws UpgradeFailedException {
         //Move ocsp.includecertchain, ocsp.includesignercert and  ocsp.nonexistingis* from the properties files and into the database configuration
         migrateOcspOptions_9_4_0();
+        //Migrate non-existing values in ocsp responders to the new single value 
+        upgradeOcspKeybindings_9_4_0();
     }
     
     @SuppressWarnings("deprecation")
@@ -2670,6 +2693,30 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             throw new UpgradeFailedException(msg, e);
         }
     }  
+    
+    /**
+     * In 9.4 the behavior for ocsp keybindings in regards to unknown certs was changed from being three booleans to being a single value.
+     */
+    @SuppressWarnings("deprecation")
+    private void upgradeOcspKeybindings_9_4_0() throws UpgradeFailedException {
+        for(int id : internalKeyBindingDataSession.getIds(OcspKeyBinding.IMPLEMENTATION_ALIAS)) {
+            OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingDataSession.getInternalKeyBindingForEdit(id);
+            if(ocspKeyBinding.getNonExistingGood()) {
+                ocspKeyBinding.setOcspNonExistingBehavior(OcspNonExistingBehavior.GOOD);
+            } else if(ocspKeyBinding.getNonExistingRevoked()) {
+                ocspKeyBinding.setOcspNonExistingBehavior(OcspNonExistingBehavior.REVOKED);
+            } else if(ocspKeyBinding.getNonExistingUnauthorized()) {
+                ocspKeyBinding.setOcspNonExistingBehavior(OcspNonExistingBehavior.UNAUTHORIZED);
+            } else {
+                ocspKeyBinding.setOcspNonExistingBehavior(OcspNonExistingBehavior.UNKNOWN);
+            }
+            try {
+                internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, ocspKeyBinding);
+            } catch (InternalKeyBindingNameInUseException | AuthorizationDeniedException e) {
+                throw new UpgradeFailedException("Failure when upgrading OCSP responder.", e);
+            }
+        }
+    }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
