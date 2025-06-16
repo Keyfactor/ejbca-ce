@@ -13,13 +13,15 @@
 
 package org.ejbca.ui.web.pub;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Properties;
 
-import org.apache.commons.fileupload.util.Streams;
 import org.cesecore.CaTestUtils;
 import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -117,10 +119,21 @@ public class HealthCheckSystemTest {
     public void testAllOk() throws IOException {
         final HttpURLConnection response = performHealthCheckGetRequest();
         assertEquals("Response code was not 200", 200, response.getResponseCode());
-        final String responseStr = Streams.asString(response.getInputStream());
+        final String responseStr = readInputStream(response.getInputStream());      
         assertTrue("Response did not contain OK, was: " + responseStr, responseStr.contains("ALLOK"));
     }
 
+    private String readInputStream(final InputStream inputStream) throws IOException {
+        StringBuilder stringBuilder = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                stringBuilder.append(line);
+            }
+        }
+        return stringBuilder.toString();      
+    }
+    
     /**
      * This test creates a CA with a non-auto activated crypto token, sets it offline then verifies that healthcheck doesn't care when "ca=false"
      */
@@ -255,7 +268,7 @@ public class HealthCheckSystemTest {
             CRYPTO_TOKEN_MANAGEMENT_SESSION.deactivate(admin, caInfo.getCAToken().getCryptoTokenId());
             final HttpURLConnection response = performHealthCheckGetRequest();
             assertEquals("Response code was not 500", 500, response.getResponseCode());
-            final String responseStr = Streams.asString(response.getErrorStream());
+            final String responseStr = readInputStream(response.getErrorStream());      
             assertTrue("Response did not contain correct error message, was: " + responseStr, responseStr.contains("CA: Error CA Token is disconnected"));
         } finally {
             CaTestCase.removeTestCA(caName);
@@ -330,7 +343,7 @@ public class HealthCheckSystemTest {
         try {
             final HttpURLConnection response = performHealthCheckGetRequest();
             assertEquals("Response code was not 500", 500, response.getResponseCode());
-            final String responseStr = Streams.asString(response.getErrorStream());
+            final String responseStr = readInputStream(response.getErrorStream());  
             assertTrue("Response did not contain correct error message, was: " + responseStr,
                     responseStr.contains("Error when testing the connection with publisher"));
         } finally {
@@ -360,7 +373,7 @@ public class HealthCheckSystemTest {
         try {
             final HttpURLConnection response = performHealthCheckGetRequestWithFalseFlag("publishers");
             assertEquals("Response code was not 200", 200, response.getResponseCode());
-            final String responseStr = Streams.asString(response.getInputStream());
+            final String responseStr = readInputStream(response.getInputStream());  
             assertTrue("Response did not contain correct error message, was: " + responseStr, responseStr.contains("ALLOK"));
         } finally {
             PUBLISHER_PROXY_SESSION.removePublisherInternal(admin, publisherName);
@@ -394,7 +407,7 @@ public class HealthCheckSystemTest {
         try {
             final HttpURLConnection response = performHealthCheckGetRequest();
             assertEquals("Response code was not 500", 500, response.getResponseCode());
-            final String responseStr = Streams.asString(response.getErrorStream());
+            final String responseStr = readInputStream(response.getErrorStream());  
             assertTrue("Response did not contain correct error message, was: " + responseStr,
                     responseStr.contains("Could not perform a test signature on the audit log."));
         } finally {

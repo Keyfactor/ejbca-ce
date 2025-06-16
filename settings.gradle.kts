@@ -83,9 +83,8 @@ dependencyResolutionManagement {
             library("swagger-models", ":swagger-models-jakarta:2.2.22")
             library("swagger-integration", ":swagger-integration-jakarta:2.2.22")
             library("classgraph", ":classgraph:4.8.174")
-            library("commons-fileupload2", ":commons-fileupload2-jakarta:2.0.0-M1")
-            library("commons-fileupload2-core", ":commons-fileupload2-core:2.0.0-M2")
-            library("commons-fileupload", ":commons-fileupload:1.5")
+            library("commons-fileupload2", ":commons-fileupload2-jakarta-servlet6:2.0.0-M4")
+            library("commons-fileupload2-core", ":commons-fileupload2-core:2.0.0-M4")
             library("jacknji11", ":jacknji11:1.3.1")
             library("p11ng", ":p11ng:0.25.7")
             library("protobuf-java", ":protobuf-java:3.25.5")
@@ -234,7 +233,6 @@ dependencyResolutionManagement {
                     "commons-logging",
                     "commons-codec",
                     "commons-io",
-                    "commons-fileupload",
                     "commons-beanutils",
                     "commons-text",
                     "log4j-api",
