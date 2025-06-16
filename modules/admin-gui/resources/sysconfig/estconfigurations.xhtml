@@ -99,7 +99,8 @@
 
             <p:panelGrid columns="1" styleClass="actions margin-top ui-noborder" width="100%" rendered="#{estConfigMBean.authorizedToEdit}">
                 <h:outputText value="#{web.text.EST_ALIASES_NOT_CONFIGURED}"
-                              rendered="#{estConfigMBean.aliasListEmpty}"/>
+                              rendered="#{estConfigMBean.aliasListEmpty}"
+                              styleClass="inline-block padding-top-1-rem"/>
                 <h:panelGroup>
                     <p:commandButton id="buttonaliasadd" name="buttonaliasadd" action="#{estConfigMBean.addAlias}"
                                      value="#{web.text.ADD}">

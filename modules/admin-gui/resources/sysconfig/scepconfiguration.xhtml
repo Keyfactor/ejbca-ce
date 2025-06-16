@@ -66,7 +66,9 @@
 
             <h:panelGrid styleClass="actions margin-top" width="100%"
                          rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}">
-                <h:outputText value="#{web.text.SCEP_ALIASES_NOT_CONFIGURED}" rendered="#{scepConfigMBean.aliasListEmpty}"/>
+                <h:outputText value="#{web.text.SCEP_ALIASES_NOT_CONFIGURED}"
+                              rendered="#{scepConfigMBean.aliasListEmpty}"
+                              styleClass="inline-block padding-top-1-rem"/>
                 <h:panelGroup id="scepAddAlias">
                     <h:commandButton action="#{scepConfigMBean.addAliasAction}" value="#{web.text.ADD}"
                                      rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
