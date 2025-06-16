@@ -1702,6 +1702,11 @@ table.row-padding-bottom-1 tr td {
 	padding: 0 0 1rem 0
 }
 
+.cell-padding-right-1,
+.cell-padding-right-1 table tr td {
+    padding-right: 1rem;
+}
+
 label.break-line {
 	display: block;
 }
