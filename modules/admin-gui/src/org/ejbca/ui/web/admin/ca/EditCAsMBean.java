@@ -158,7 +158,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     @EJB
     private KeyValidatorSessionLocal keyValidatorSession;
 
-    private transient CAInterfaceBean caBean;
+    private CAInterfaceBean caBean;
     private String editCaName;
     private String currectCaName;
     private int caid = 0;
@@ -524,7 +524,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     public boolean isHasEditRight() {
-        return caBean.hasEditRight() && !viewOnly;
+        return getCaBean().hasEditRight() && !viewOnly;
     }
 
     public boolean isHasCreateRight() {

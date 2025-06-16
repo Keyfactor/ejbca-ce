@@ -36,6 +36,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import jakarta.ejb.EJBException;
+import jakarta.faces.context.FacesContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
 
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
@@ -103,6 +106,7 @@ import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.CertificateView;
 import org.ejbca.ui.web.ParameterException;
 import org.ejbca.ui.web.RequestHelper;
+import org.ejbca.ui.web.admin.bean.SessionBeans;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.cert.OID;
 
@@ -1367,6 +1371,14 @@ public class CAInterfaceBean implements Serializable {
     }
 
     private EjbcaWebBean getEjbcawebbean() {
+        if (ejbcawebbean == null) {
+            final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+            try {
+                ejbcawebbean = SessionBeans.getEjbcaWebBean(request.getSession());
+            } catch (ServletException e) {
+                throw new IllegalStateException("Could not initiate EjbcaWebBean", e);
+            }
+        }
         return ejbcawebbean;
     }
 

@@ -75,12 +75,7 @@ public class SerializationUtils {
         else if (clazz.isEnum())
             return true;
         else if (clazz.isArray())
-            return isSerializable(clazz.getComponentType());
-
-        // these classes are marked as serializable, but they really aren't.
-        // Generally because they contain AuthenticationTokens
-        else if (CAInterfaceBean.class.isAssignableFrom(clazz))
-            return false;
+            return isSerializable(clazz.getComponentType());        
         else if (AuthenticationToken.class.isAssignableFrom(clazz))
             return false;
 
