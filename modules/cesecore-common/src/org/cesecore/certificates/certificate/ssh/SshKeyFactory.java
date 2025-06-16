@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
 
-import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Base64;
 
 import com.keyfactor.util.keys.KeyTools;
@@ -35,9 +34,7 @@ import com.keyfactor.util.keys.KeyTools;
  */
 public enum SshKeyFactory {
     INSTANCE;
-            
-    private static final Logger log = Logger.getLogger(SshKeyFactory.class);
-    
+        
     /**
      * Sorts potential instances by their SSH prefixes, e.g. ecdsa-sha2-nistp384
      */
@@ -146,20 +143,16 @@ public enum SshKeyFactory {
         } else if (keyAlgorithm.contains("ec")) {
             ECPublicKey ecPubKey = (ECPublicKey) sshAuthKey;
             int fieldSize = ecPubKey.getParams().getCurve().getField().getFieldSize();
-            if (fieldSize==256) {
-                return "ecdsa-sha2-nistp256";
-            } else if (fieldSize==384) {
-                return "ecdsa-sha2-nistp384";
-            } else if (fieldSize > 510) { // 512 or 521
-                return "ecdsa-sha2-nistp521";
+            if (fieldSize==256 || fieldSize==384 || fieldSize==521) {
+                return "ecdsa-sha2-nistp" + fieldSize;
             } else {
-                throw new IllegalStateException("Invalid EC public key for auth. "
+                throw new IllegalArgumentException("Invalid EC public key for auth. "
                         + "Only ECDSA (256, 384, 521) bit keys are allowed.");
             }
         } else if (keyAlgorithm.contains("ed25519")) {
             return "ssh-ed25519";
         } else {
-            throw new IllegalStateException("Invalid public key for auth. "
+            throw new IllegalArgumentException("Invalid public key for auth. "
                     + "Only RSA, ED25519 and ECDSA (256, 384, 521) keys are allowed.");
         }
     }
@@ -192,8 +185,6 @@ public enum SshKeyFactory {
     }
     
     public static String getDownloadableSshKey(Key sshAuthKey) {
-        String keyAlgorithm = sshAuthKey.getAlgorithm().toLowerCase();
-        log.info("keyAlgorithm: " + keyAlgorithm);
         String sshKeyType = getSshKeyType(sshAuthKey);        
         String result = sshKeyType + " ";
         result += new String(Base64.encode(makePublicKeyBlob(sshAuthKey)), StandardCharsets.UTF_8);

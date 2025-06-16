@@ -12,15 +12,23 @@
  *************************************************************************/
 package org.ejbca.scp.publisher;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.math.BigInteger;
+import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Signature;
+import java.security.SignatureException;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1Sequence;
 import org.cesecore.certificates.certificate.ssh.SshCertificateWriter;
 import org.cesecore.certificates.certificate.ssh.SshKeyFactory;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
@@ -32,6 +40,7 @@ import com.jcraft.jsch.JSchException;
 //import com.jcraft.jsch.MyBuffer;
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 public class ScpPublisherIdentity implements Identity  {
     
@@ -47,26 +56,23 @@ public class ScpPublisherIdentity implements Identity  {
         
         sshAlgoNameToBcSignAlgoName.put("ecdsa-sha2-nistp256", "SHA256withECDSA");
         sshAlgoNameToBcSignAlgoName.put("ecdsa-sha2-nistp384", "SHA384withECDSA");
-        sshAlgoNameToBcSignAlgoName.put("ecdsa-sha2-nistp521", "SHA521withECDSA");
+        sshAlgoNameToBcSignAlgoName.put("ecdsa-sha2-nistp521", "SHA512withECDSA");
     }
     
     private int cryptotokenId;
     private String keyPairName;
     private String keyAlgorithm;
-    //private PublicKey publicKey;
     private byte[] publicKeyBlob;
     
     public ScpPublisherIdentity(int cryptotokenId, String keyPairName, 
             String keyAlgorithm, Key sshAuthKey) throws PublisherException {
         
-        log.info(cryptotokenId + " : " + keyPairName + " : " + keyAlgorithm);
+        if (log.isDebugEnabled()) {
+            log.debug("Creating ScpPublisherIdentity: " + cryptotokenId + " : " + keyPairName + " : " + keyAlgorithm);
+        }
         this.cryptotokenId = cryptotokenId;
         this.keyPairName = keyPairName;
         this.keyAlgorithm = SshKeyFactory.getSshKeyType(sshAuthKey);
-        //this.publicKey = (PublicKey) sshAuthKey;
-        // ssh-ed25519,ecdsa-sha2-nistp256
-        
-        //TODO: publicKeyBlob
         this.publicKeyBlob = SshKeyFactory.makePublicKeyBlob(sshAuthKey);
     }
     
@@ -79,7 +85,9 @@ public class ScpPublisherIdentity implements Identity  {
 
     @Override
     public byte[] getPublicKeyBlob() {
-        log.info("getPublicKeyBlob alg: " + new String(Base64.encode(publicKeyBlob)));
+        if (log.isDebugEnabled()) {
+            log.debug("getPublicKeyBlob alg: " + new String(Base64.encode(publicKeyBlob)));
+        }
         return publicKeyBlob;
     }
 
@@ -90,63 +98,70 @@ public class ScpPublisherIdentity implements Identity  {
     
     @Override
     public byte[] getSignature(byte[] data, String alg) {
-        log.info("getSignature alg: " + alg);
-        log.info("getSignature data: " + new String(Base64.encode(data)));
-        
         String signatureAlgorithm = sshAlgoNameToBcSignAlgoName.get(alg);
-        log.info("signatureAlgorithm alg: " + signatureAlgorithm);
         CryptoTokenSessionLocal cryptoTokenSessionLocal = new EjbLocalHelper().getCryptoTokenSession();
         CryptoToken cryptoToken = cryptoTokenSessionLocal.getCryptoToken(cryptotokenId);
         String providerName = cryptoToken.getSignProviderName();
+        log.debug("providerName: " + providerName);
         
         Signature sig;
         try {
             sig = Signature.getInstance(signatureAlgorithm, providerName);
         } catch (NoSuchAlgorithmException e) {
-            // TODO Auto-generated catch block
             throw new IllegalStateException(e);
         } catch (NoSuchProviderException e) {
-            // TODO Auto-generated catch block
-            throw new IllegalStateException(e);
+            throw new IllegalStateException("Provider could not be loaded: " + providerName, e);
         }
         
         byte[] sign = null;
         try {
-            //sig.init();
             sig.initSign(cryptoToken.getPrivateKey(keyPairName));
             sig.update(data);
             sign = sig.sign();
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
+        } catch (InvalidKeyException | CryptoTokenOfflineException | SignatureException e) {
+            log.info("SSH authentication could not be done using cryptotokenId: " 
+                            + cryptotokenId + ", keypair: " + keyPairName + ", algorithm: " + alg, e);
             throw new IllegalStateException(e);
         }
         
         SshCertificateWriter sshCertificateWriter = new SshCertificateWriter();
         try {
             sshCertificateWriter.writeString(alg);
-            sshCertificateWriter.writeByteArray(sign);
+            if (alg.contains("ecdsa")) {
+                ByteArrayInputStream inStream = new ByteArrayInputStream(sign);
+                ASN1InputStream asnInputStream = new ASN1InputStream(inStream);
+                ASN1Sequence asn1Sequence = (ASN1Sequence) asnInputStream.readObject();
+                ASN1Encodable[] asn1Encodables = asn1Sequence.toArray();
+                SshCertificateWriter signatureWriter = new SshCertificateWriter();
+                for (ASN1Encodable asn1Encodable : asn1Encodables) {
+                    ASN1Integer asn1Integer = (ASN1Integer) asn1Encodable.toASN1Primitive();
+                    BigInteger integer = asn1Integer.getValue();
+                    signatureWriter.writeBigInteger(integer);
+                }
+                asnInputStream.close();
+                sshCertificateWriter.writeByteArray(signatureWriter.toByteArray());
+                signatureWriter.close();
+            } else {
+                sshCertificateWriter.writeByteArray(sign);
+            }
 
             sshCertificateWriter.flush();
             sshCertificateWriter.close();
 
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            throw new IllegalStateException(e);
+            throw new IllegalStateException("Could not convert to SSH signature", e);
         }
-        byte[] formattedSign =  sshCertificateWriter.toByteArray(); 
-        log.info("getSignature sign: " + new String(Base64.encode(formattedSign)));
-        return formattedSign;
+        return sshCertificateWriter.toByteArray();
     }
 
     @Override
     public String getAlgName() {
-        log.info("keyAlgorithm alg: " + keyAlgorithm);
+        log.debug("keyAlgorithm: " + keyAlgorithm);
         return this.keyAlgorithm;
     }
 
     @Override
     public String getName() {
-        log.info("getName alg: " + cryptotokenId);
         return this.cryptotokenId + ":" + this.keyPairName;
     }
 

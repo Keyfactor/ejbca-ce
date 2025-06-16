@@ -14,15 +14,11 @@ package org.ejbca.scp.publisher;
 
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
-
 import com.jcraft.jsch.Identity;
 import com.jcraft.jsch.IdentityRepository;
 
 public class ScpPublisherIdentityRepository implements IdentityRepository {
-    
-    private static final Logger log = Logger.getLogger(ScpPublisherIdentityRepository.class);
-        
+            
     private Vector<Identity> identities = new Vector<>();
     
     // there is only one CryptoToken + KeyPair used for auth

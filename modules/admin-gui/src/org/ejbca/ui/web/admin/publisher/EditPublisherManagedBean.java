@@ -507,7 +507,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         try {
             
             if (isManageScpPublisher()) {
-                savePublisherAndDownloadKey();
+                savePublisherAndShowDownloadableKey();
             }
             
             publisherSession.testConnection(publisherId);
@@ -531,11 +531,11 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         return scpPublisherAuthPublicKey;
     }
     
-    private void savePublisherAndDownloadKey() throws AuthorizationDeniedException {
+    private void savePublisherAndShowDownloadableKey() throws AuthorizationDeniedException {
         String cryptoTokenIdAndKeyPairName = 
                 (String) getCustomPublisherMBData().getCustomPublisherPropertyValues().get("scp.cryptoken.keypair");
-        if (cryptoTokenIdAndKeyPairName==null) {
-            log.info("No SSH key from Cryptotoken is configured.");
+        if (cryptoTokenIdAndKeyPairName==null || cryptoTokenIdAndKeyPairName.length() < 4) {
+            addErrorMessage("No SSH key from Cryptotoken is configured.");
             return;
         } 
         int cryptoTokenId = Integer.parseInt(cryptoTokenIdAndKeyPairName.split(";")[0].trim());
@@ -544,7 +544,8 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         try {
             sshAuthKey =  cryptoTokenManagementSession.getPublicKey(getAdmin(), cryptoTokenId, keyPairName).getPublicKey();
         } catch (NumberFormatException | CryptoTokenOfflineException e) {
-            throw new IllegalStateException(e);
+            addErrorMessage(e.getMessage());
+            return;
         }
         
         scpPublisherAuthPublicKey = SshKeyFactory.getDownloadableSshKey(sshAuthKey);
