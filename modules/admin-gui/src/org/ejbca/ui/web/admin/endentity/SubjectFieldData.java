@@ -12,17 +12,19 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.endentity;
 
+import java.io.Serializable;
+
 import org.ejbca.ui.web.admin.rainterface.UserView;
 
-public abstract class SubjectFieldData {
+public abstract class SubjectFieldData implements Serializable {
     
+    private static final long serialVersionUID = 1L;
     private String label;
     private boolean modifiable;
     private boolean required;
     private String fieldValue;
 
     protected SubjectFieldData(String label, boolean modifiable, boolean required, String value) {
-        super();
         this.label = label;
         this.modifiable = modifiable;
         this.required = required;

@@ -23,8 +23,14 @@ import java.util.Properties;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
+/**
+ * Bean used by JSP pages containing logic for setting and getting end entity
+ * data.
+ * 
+ * Currently only used for extension data.
+ *
+ */
 public class EndEntityBaseManagedBean extends BaseManagedBean {
-
     private static final long serialVersionUID = 1L;
 
     private ExtendedInformation extendedInformation;
@@ -49,6 +55,7 @@ public class EndEntityBaseManagedBean extends BaseManagedBean {
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public void setExtensionData(final String extensionData) {
+      
         Properties properties = new Properties();
         try {
             properties.load(new StringReader(extensionData));

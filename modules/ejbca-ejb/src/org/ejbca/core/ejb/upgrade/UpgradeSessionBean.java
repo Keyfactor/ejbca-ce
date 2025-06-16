@@ -15,7 +15,6 @@ package org.ejbca.core.ejb.upgrade;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -46,7 +45,6 @@ import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
@@ -77,6 +75,7 @@ import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.ConfigurationHolder;
+import org.cesecore.config.GlobalCaConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OAuthConfiguration;
@@ -131,7 +130,6 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.GeneralPurposeCustomPublisher;
-import org.ejbca.core.model.ca.publisher.upgrade.BasePublisherConverter;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.util.JDBCUtil;
@@ -448,17 +446,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     private boolean upgrade(String dbtype, String oldVersion) {
     	log.debug(">upgrade from version: "+oldVersion+", with dbtype: "+dbtype);
-        if (isLesserThan(oldVersion, "6.2.4")) {
+        if (isLesserThan(oldVersion, "6.3.2")) {
             log.error(
-                    "Upgrading from EJBCA prior to version 6.2.4 is forbidden. You must upgrade to the intermediate release EJBCA 6.3.2.6 first. Read the EJBCA Upgrade Guide for more information.");
+                    "Upgrading from EJBCA prior to version 6.3.2 is forbidden. Read the EJBCA Upgrade Guide for more information.");
             return false;
-        }
-        if (isLesserThan(oldVersion, "6.3.1")) {
-            // Upgrade the old Validation Authority Publisher in Community Edition (leave it be in Enterprise for the sake of 100% uptime)
-            if (!enterpriseEditionEjbBridgeSession.isRunningEnterprise()) {
-                publisherSession.adhocUpgradeTo6_3_1_1();
-            }
-            setLastUpgradedToVersion("6.3.1");
         }
         if (isLesserThan(oldVersion, "6.4")) {
             try {
@@ -618,16 +609,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     private boolean postUpgrade(String oldVersion, String dbtype) {
         log.debug(">post-upgrade from version: "+oldVersion);
-        if (isLesserThan(oldVersion, "5.0.0")) {
+        if (isLesserThan(oldVersion, "6.4.0")) {
             log.error(
-                    "Post-upgrade from EJBCA prior to version 5.0.0 is forbidden. You must upgrade to the intermediate release EJBCA 6.3.2.6 first. Read the EJBCA Upgrade Guide for more information.");
+                    "Post-upgrade from EJBCA prior to version 6.4.0 is forbidden. Read the EJBCA Upgrade Guide for more information.");
             return false;
-        }
-        if (isLesserThan(oldVersion, "6.3.2")) {
-            if (!postMigrateDatabase632()) {
-                return false;
-            }
-            setLastPostUpgradedToVersion("6.3.2");
         }
         if (isLesserThan(oldVersion, "6.8.0")) {
             if (!postMigrateDatabase680()) {
@@ -689,6 +674,12 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 return false;
             }
             setLastPostUpgradedToVersion("9.3.0");
+        }
+        if (isLesserThan(oldVersion, "9.4.0")) {
+            if (!postMigrateDatabase9_4_0()) {
+                return false;
+            }
+            setLastPostUpgradedToVersion("9.4.0");
         }
         
         // NOTE: If you add additional post upgrade tasks here, also modify isPostUpgradeNeeded() and performPreUpgrade()
@@ -782,6 +773,33 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         accessTreeUpdateSession.signalForAccessTreeUpdate();
         log.info("Post upgrade to 9.3.0 complete.");
         return true;
+    }
+    
+    private boolean postMigrateDatabase9_4_0() {
+        log.info("Starting post upgrade to 9.4.0");
+        removeEnableIcaoNameChangeFromGlobalConfiguration();
+        log.info("Post upgrade to 9.4.0 complete.");
+        return true;
+    }
+    
+    /**
+     * Removes the enableIcaoNameChange value from GlobalConfiguration post upgrade to 9.4 
+     * 
+     */
+    private void removeEnableIcaoNameChangeFromGlobalConfiguration() {
+        GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        //Go straight into the data map and remove it
+        LinkedHashMap<Object, Object> data = globalConfiguration.getRawData();
+        if (data.containsKey("enableicaocanamechange")) {
+            data.remove("enableicaocanamechange");
+            globalConfiguration.loadData(data);
+            try {
+                globalConfigurationSession.saveConfiguration(authenticationToken, globalConfiguration);
+            } catch (AuthorizationDeniedException e) {
+                throw new IllegalStateException("Always allow token was denied access to global configuration.", e);
+            }
+        }
+        
     }
     
     /**
@@ -1080,46 +1098,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 Arrays.asList(StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_EDIT.resource()), Arrays.asList(StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource()), false);
         legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.ROLE_ROOT.resource(),
                 Arrays.asList(StandardRules.EDITROLES.resource()), Arrays.asList(StandardRules.VIEWROLES.resource()), false);
-    }
-
-    /**
-     * EJBCA 6.3.1.1 moves the VA Publisher from Community to Enterprise, changing its baseclass in the process for Enterprise users.
-     * This method will fail gracefully if user is not running Enterprise. It will also upgrade any placeholder publishers from 6.3.1.1 Community
-     * if so required.
-     *
-     * @return true if the upgrade was successful
-     */
-    private boolean postMigrateDatabase632() {
-        if(!enterpriseEditionEjbBridgeSession.isRunningEnterprise()) {
-            log.error("Upgrade procedure to 6.3.2 can only be run on EJBCA Enterprise.");
-            return true; // Fail gracefully and pretend it was ok.
-        }
-        log.error("(this is not an error) Starting post upgrade to 6.3.2");
-        //Find all publishers, make copies of them using the new publisher class.
-        Map<Integer, BasePublisher> allPublishers = publisherSession.getAllPublishers();
-        Map<Integer, String> publisherNames = publisherSession.getPublisherIdToNameMap();
-        BasePublisherConverter publisherFactory;
-        try {
-            publisherFactory = (BasePublisherConverter) Class.forName("org.ejbca.va.publisher.EnterpriseValidationAuthorityPublisherFactoryImpl").getDeclaredConstructor().newInstance();
-        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-            //Shouldn't happen since we've already checked that we're running Enterprise
-            throw new IllegalStateException(e);
-        }
-        AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("UpgradeSessionBean.postMigrateDatabase631"));
-
-        for(Integer publisherId : allPublishers.keySet()) {
-            BasePublisher newPublisher = publisherFactory.createPublisher(allPublishers.get(publisherId));
-            if (newPublisher != null) {
-                try {
-                    String publisherName = publisherNames.get(publisherId);
-                    log.info("Upgrading publisher: " + publisherName);
-                    publisherSession.changePublisher(admin, publisherName, newPublisher);
-                } catch (AuthorizationDeniedException e) {
-                    throw new IllegalStateException("Always allow token was not given access to publishers.", e);
-                }
-            }
-        }
-        return true;
     }
 
     /**
@@ -2635,6 +2613,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     public void migrateDatabase9_4_0() throws UpgradeFailedException {
         //Move ocsp.includecertchain and ocsp.includesignercert from the properties files and into the database configuration
         migrateOcspOptions_9_4_0();
+        //Move enableIcaoNameChange from GlobalConfiguration to the new GlobalCaConfiguration row
+        migrateCaConfigurationFromGlobalConfig9_4_0();
     }
     
     @SuppressWarnings("deprecation")
@@ -2651,6 +2631,20 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             throw new UpgradeFailedException(msg, e);
         }
     }  
+    
+    @SuppressWarnings("deprecation")
+    private void migrateCaConfigurationFromGlobalConfig9_4_0() throws UpgradeFailedException {
+        GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        GlobalCaConfiguration globalCaConfiguration = (GlobalCaConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCaConfiguration.CA_CONFIGURATION_ID);
+        globalCaConfiguration.setEnableIcaoCANameChange(globalConfiguration.getEnableIcaoCANameChange());        
+        try {
+            globalConfigurationSession.saveConfiguration(authenticationToken, globalCaConfiguration);
+        } catch (AuthorizationDeniedException e) {
+            String msg = "Always allow token was denied authoriation to global configuration table.";
+            log.error(msg, e);
+            throw new UpgradeFailedException(msg, e);
+        }  
+    }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override

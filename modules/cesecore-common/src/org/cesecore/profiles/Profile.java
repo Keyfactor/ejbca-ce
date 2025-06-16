@@ -22,7 +22,7 @@ import java.util.Map;
  * @version $Id$
  *
  */
-public interface Profile extends Serializable{
+public interface Profile extends Serializable {
     
     /**
      * Designator for the base type, in this case a Class which extends ProfileBase

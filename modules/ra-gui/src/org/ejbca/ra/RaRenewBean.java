@@ -100,7 +100,7 @@ public class RaRenewBean implements Serializable {
     private List<String> availableKeyAlgorithms;
     private List<Integer> availableBitLengths;
     private List<String> availableEcCurves;
-    private UIComponent confirmPasswordComponent;
+    private transient UIComponent confirmPasswordComponent;
 
     public void initialize() {
         if (initialized) {

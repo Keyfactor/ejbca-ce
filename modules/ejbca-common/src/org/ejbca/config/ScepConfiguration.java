@@ -224,7 +224,6 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public boolean getClientCertificateRenewal(final String alias) {
         String key = alias + "." + SCEP_CLIENT_CERTIFICATE_RENEWAL;
         String value = getValue(key, alias);
-        //Lazy initialization for SCEP configurations older than 6.3.1
         if (value == null) {
             data.put(alias + "." + SCEP_CLIENT_CERTIFICATE_RENEWAL, DEFAULT_CLIENT_CERTIFICATE_RENEWAL);
             return Boolean.getBoolean(DEFAULT_CLIENT_CERTIFICATE_RENEWAL);
