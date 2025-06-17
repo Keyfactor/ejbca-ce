@@ -1496,7 +1496,6 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             }
             currentSessionCryptoTokenChanges.tokenChanged(getCurrentCryptoTokenId());
             flushCaches();
-            setCurrentCryptoTokenEditMode(false);
         } catch (CryptoTokenOfflineException e) {
             addNonTranslatedErrorMessage(e);
         } catch (CryptoTokenAuthenticationFailedException e) {
