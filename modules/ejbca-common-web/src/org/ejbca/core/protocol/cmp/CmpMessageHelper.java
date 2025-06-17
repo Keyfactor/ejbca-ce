@@ -47,6 +47,8 @@ import com.keyfactor.util.RandomHelper;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 
+import com.keyfactor.util.crypto.algorithm.SignatureParameter;
+import com.keyfactor.util.crypto.algorithm.SignatureParameter;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1BitString;
@@ -186,7 +188,7 @@ public class CmpMessageHelper {
      * @param requestDigestAlg if the request has come in with a different signature algorithm for example SHA256WithRSA
      *                         and signAlg is SHA384WithRSA, the message signature is downgraded to SHA256WithRSA to make sure the client can handle it
      * @param provider         the signature provider to use for signing, BC for software keys and another provider for HSM keys (P11, Azure, etc)
-     * @param isPss            whether the response is preferred to use PSS if applicable
+     * @param signatureParameter An additional parameter to specify the response signature algorithm, e.g. whether to use PSS
      * @return returns the ASN.1 encoded signed CMP message, ready to send to the server, or back to the client
      * @throws InvalidKeyException
      * @throws NoSuchProviderException
@@ -196,7 +198,7 @@ public class CmpMessageHelper {
      * @throws CertificateEncodingException
      */
     public static byte[] signPKIMessage(PKIMessage pkiMessage, Collection<Certificate> signCertChain,
-            PrivateKey signKey, String signAlg, String requestDigestAlg, String provider, boolean isPss)
+            PrivateKey signKey, String signAlg, String requestDigestAlg, String provider, SignatureParameter signatureParameter)
     		        throws InvalidKeyException, NoSuchProviderException, NoSuchAlgorithmException, SecurityException, SignatureException,
             CertificateEncodingException {
         if (LOG.isTraceEnabled()) {
@@ -212,7 +214,7 @@ public class CmpMessageHelper {
         // If we have an algorithm requested from the sender, take that into account
         String responseSignatureAlgo = signAlg;
         if (requestDigestAlg != null) {
-            final String fromDigest = AlgorithmTools.getAlgorithmNameFromDigestAndKey(requestDigestAlg, signKey.getAlgorithm(), isPss);
+            final String fromDigest = AlgorithmTools.getAlgorithmNameFromDigestAndKey(requestDigestAlg, signKey.getAlgorithm(), signatureParameter);
             if (fromDigest != null) {
                 responseSignatureAlgo = fromDigest;
             }

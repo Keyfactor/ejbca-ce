@@ -381,11 +381,6 @@ public class SshRequestMessage implements RequestMessage {
     }
 
     @Override
-    public boolean isPss() {
-        return false;
-    }
-
-    @Override
     public boolean includeCACert() {
         return false;
     }

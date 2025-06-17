@@ -62,9 +62,6 @@ public class SimpleRequestMessage implements RequestMessage {
     /** preferred digest algorithm to use in replies, if applicable */
     private final transient String preferredDigestAlg = CMSSignedGenerator.DIGEST_SHA1;
 
-    /** whether PSS is preferred to be used for the response signature, if applicable */
-    private transient boolean isPss = false;
-
     /** Type of error */
     private int error = 0;
 
@@ -276,11 +273,6 @@ public class SimpleRequestMessage implements RequestMessage {
     @Override
     public String getPreferredDigestAlg() {
     	return preferredDigestAlg;
-    }
-
-    @Override
-    public boolean isPss() {
-        return isPss;
     }
 
     @Override

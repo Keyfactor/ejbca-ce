@@ -26,6 +26,7 @@ import java.util.Collection;
 
 import com.keyfactor.util.CertTools;
 
+import com.keyfactor.util.crypto.algorithm.SignatureParameter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -69,8 +70,6 @@ public class CmpRevokeResponseMessage extends BaseCmpMessage implements Response
 
     /** Default digest algorithm for CMP response message, can be overridden */
     private String digestAlg = CMSSignedGenerator.DIGEST_SHA256;
-    /** whether PSS is preferred to be used for the response signature, if applicable */
-    private transient boolean isPss = false;
     /** The default provider is BC, if nothing else is specified when setting SignKeyInfo */
     private String provider = "BC";
 	
@@ -174,7 +173,8 @@ public class CmpRevokeResponseMessage extends BaseCmpMessage implements Response
             }
 		    myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
             try {
-                responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, signCertChain, signKey, signAlg, digestAlg, provider, isPss);
+				SignatureParameter signatureParameter = determineSignatureParameterFromRequest();
+                responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, signCertChain, signKey, signAlg, digestAlg, provider, signatureParameter);
             } catch (CertificateEncodingException | SecurityException | SignatureException e) {
                 log.error("Failed to sign CMPRevokeResponseMessage");
                 log.error(e.getLocalizedMessage(), e);
@@ -222,11 +222,6 @@ public class CmpRevokeResponseMessage extends BaseCmpMessage implements Response
 	    if(StringUtils.isNotEmpty(digest)) {
 	        this.digestAlg = digest;
 	    }
-	}
-
-	@Override
-	public void setPss(boolean isPss) {
-		this.isPss = isPss;
 	}
 
 	@Override

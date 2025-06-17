@@ -246,10 +246,6 @@ public class X509ResponseMessage implements CertificateResponseMessage {
     }
 
     @Override
-    public void setPss(boolean isPss) {
-    }
-
-    @Override
     public void setRequestType(int reqtype) {
     }
 

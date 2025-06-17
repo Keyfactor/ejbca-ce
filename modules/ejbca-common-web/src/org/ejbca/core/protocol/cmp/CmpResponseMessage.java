@@ -34,6 +34,7 @@ import java.util.List;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 
+import com.keyfactor.util.crypto.algorithm.SignatureParameter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -65,6 +66,7 @@ import org.bouncycastle.asn1.crmf.POPOPrivKey;
 import org.bouncycastle.asn1.crmf.ProofOfPossession;
 import org.bouncycastle.asn1.crmf.SubsequentMessage;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.GeneralName;
@@ -130,8 +132,6 @@ public class CmpResponseMessage implements CertificateResponseMessage {
     /** Default digest algorithm for CMP response message used for signature protection, is nothing. Can be set/overridden from
      * request message with setPreferredDigestAlg() on the request message. If unset (default) value is taken from signer */
     private String digest  = null;
-    /** Whether the response should have a PSS signature with MGF1 */
-    private boolean isPss = false;
     /** The default provider is BC, if nothing else is specified when setting SignKeyInfo */
     private String provider = BouncyCastleProvider.PROVIDER_NAME;
 
@@ -514,7 +514,18 @@ public class CmpResponseMessage implements CertificateResponseMessage {
                     }
                 }
                 myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
-                responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, extraCertsList, signKey, signAlg, digest, provider, isPss);
+                SignatureParameter signatureParameter = SignatureParameter.NONE;
+
+                // Check if the request message is of type CrmfRequestMessage or P10CrCertificationRequestMessage
+                // and extract the protection algorithm from the header of the PKI message
+                if (reqMsg != null) {
+                    if (reqMsg instanceof CrmfRequestMessage || reqMsg instanceof P10CrCertificationRequestMessage) {
+                        // Use the BaseCmpMessage method to determine the signature parameter from the request
+                        signatureParameter = ((BaseCmpMessage) reqMsg).determineSignatureParameterFromRequest();
+                    }
+                }
+
+                responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, extraCertsList, signKey, signAlg, digest, provider, signatureParameter);
             }
 
             ret = true;
@@ -592,11 +603,6 @@ public class CmpResponseMessage implements CertificateResponseMessage {
         if(!StringUtils.isEmpty(digest)) {
             this.digest = digest;
         }
-    }
-
-    @Override
-    public void setPss(boolean isPss) {
-        this.isPss = isPss;
     }
 
     @Override
