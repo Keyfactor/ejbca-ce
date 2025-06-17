@@ -65,6 +65,8 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
+import org.cesecore.certificates.certificatetransparency.GoogleCtPolicy;
+import org.cesecore.certificates.certificatetransparency.PolicyBreakpoint;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
@@ -1678,8 +1680,50 @@ public class UpgradeSessionBeanSystemTest {
     public void testMigrateCtConfiguration9_4_0() throws AuthorizationDeniedException {
         //Stash the original values
         final GlobalCtConfiguration originalGlobalCtConfiguration = (GlobalCtConfiguration) globalConfigSession.getCachedConfiguration(GlobalCtConfiguration.CT_CONFIGURATION_ID);
-        dgdgdfg
         try {
+            //Set some non-default values 
+            GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+            globalCesecoreConfiguration.setCtCacheEnabled(false);
+            globalCesecoreConfiguration.setCtCacheCleanupInterval(1);
+            globalCesecoreConfiguration.setCtCacheSize(2);
+            globalCesecoreConfiguration.setCtCacheFastFailEnabled(false);
+            globalCesecoreConfiguration.setCtCacheFastFailBackoff(3);
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, globalCesecoreConfiguration);
+            GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            GoogleCtPolicy googleCtPolicy = new GoogleCtPolicy();
+            List<PolicyBreakpoint> breakpoints = new ArrayList<>();
+            breakpoints.add(new PolicyBreakpoint(0, 12, 11));
+            googleCtPolicy.setBreakpoints(breakpoints);
+            globalConfiguration.setGoogleCtPolicy(googleCtPolicy);
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, globalConfiguration);
+            //Set the upgrade-from version 
+            final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            guc.setUpgradedToVersion("9.3.0");
+            guc.setPostUpgradedToVersion("9.3.0");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+            //Perform upgrade
+            upgradeSession.upgrade(/* database */ null, /* upgrade from */ "9.3.0", /* post upgrade? */ false);
+            //Verify upgrade
+            GlobalCtConfiguration globalCtConfiguration = (GlobalCtConfiguration) globalConfigSession.getCachedConfiguration(GlobalCtConfiguration.CT_CONFIGURATION_ID);
+            assertEquals("Google CT policy was not migrated from GlobalConfiguration", googleCtPolicy, globalCtConfiguration.getGoogleCtPolicy());
+            assertEquals("Value was not migrated from GlobalCesecoreConfiguration", false, globalCtConfiguration.getCtCacheEnabled());
+            assertEquals("Value was not migrated from GlobalCesecoreConfiguration", 1, globalCtConfiguration.getCtCacheCleanupInterval());
+            assertEquals("Value was not migrated from GlobalCesecoreConfiguration", 2, globalCtConfiguration.getCtCacheSize());
+            assertEquals("Value was not migrated from GlobalCesecoreConfiguration", false, globalCtConfiguration.getCtCacheFastFailEnabled());
+            assertEquals("Value was not migrated from GlobalCesecoreConfiguration", 3, globalCtConfiguration.getCtCacheFastFailBackoff());
+            //Perform post-upgrade and verify that the values are removed from globalconfigdata 
+            upgradeSession.upgrade(/* database */ null, /* upgrade from */ "9.3.0", /* post upgrade? */ true);
+            globalConfiguration = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            LinkedHashMap<Object, Object> globalConfigData = globalConfiguration.getRawData();
+            assertFalse("google_ct_policy was not removed from GlobalConfiguration in post-upgrade.", globalConfigData.containsKey("google_ct_policy"));
+            globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+            LinkedHashMap<Object, Object> globalCesecoreConfigData = globalCesecoreConfiguration.getRawData();
+            assertFalse("ct_cache_enabled was not removed from GlobalConfiguration in post-upgrade.", globalCesecoreConfigData.containsKey("ct_cache_enabled"));
+            assertFalse("ct_cache_size was not removed from GlobalConfiguration in post-upgrade.", globalCesecoreConfigData.containsKey("ct_cache_size"));
+            assertFalse("ct_cache_cleanup_interval was not removed from GlobalConfiguration in post-upgrade.", globalCesecoreConfigData.containsKey("ct_cache_cleanup_interval"));
+            assertFalse("ct_cache_fast_fail_enabled was not removed from GlobalConfiguration in post-upgrade.", globalCesecoreConfigData.containsKey("ct_cache_fast_fail_enabled"));
+            assertFalse("ct_cache_fast_fail_backoff was not removed from GlobalConfiguration in post-upgrade.", globalCesecoreConfigData.containsKey("ct_cache_fast_fail_backoff"));
             
         } finally {
             //Restore original value
