@@ -14,7 +14,6 @@ package org.ejbca.ui.web.admin.endentity;
 
 import java.io.Serializable;
 import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
