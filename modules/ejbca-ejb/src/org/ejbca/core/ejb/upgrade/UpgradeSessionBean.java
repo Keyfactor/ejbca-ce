@@ -768,7 +768,12 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private boolean postMigrateDatabase9_4_0() {
         log.info("Starting post upgrade to 9.4.0");
         removeEnableIcaoNameChangeFromGlobalConfiguration();
-        removeOldOcspNonExistingValues_9_4_0();
+        try {
+            removeOldOcspNonExistingValues_9_4_0();
+        } catch (AuthorizationDeniedException e) {
+            log.error("Could not modify ocsp keybindings.", e);
+            return false;
+        }
         log.info("Post upgrade to 9.4.0 complete.");
         return true;
     }
@@ -792,10 +797,20 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }     
     }
     
-    private void removeOldOcspNonExistingValues_9_4_0() {
+    private void removeOldOcspNonExistingValues_9_4_0() throws AuthorizationDeniedException {
         //Remove old data from OCSP Responders 
         for(int id : internalKeyBindingDataSession.getIds(OcspKeyBinding.IMPLEMENTATION_ALIAS)) {
-            
+            OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingDataSession.getInternalKeyBindingForEdit(id);
+            LinkedHashMap<Object, Object> data = ocspKeyBinding.getDataMapToPersist();
+            data.remove("nonexistingisgood");
+            data.remove("nonexistingisrevoked");
+            data.remove("nonexistingisunauthorized");
+            ocspKeyBinding.loadData(data);
+            try {
+                internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, ocspKeyBinding);
+            } catch (InternalKeyBindingNameInUseException e) {
+                throw new IllegalStateException("Internal keybinding with name " + ocspKeyBinding.getName() + " was modified, but for some reason the system thinks it was created.", e);
+            } 
         }
     }
     

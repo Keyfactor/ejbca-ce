@@ -76,6 +76,8 @@ import org.cesecore.configuration.GlobalConfigurationProxySessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
+import org.cesecore.keybind.InternalKeyBindingNameInUseException;
+import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keybind.impl.OcspNonExistingBehavior;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
@@ -128,6 +130,7 @@ import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.KeyGenParams;
 
 /**
  * System tests for the upgrade session bean. 
@@ -1589,6 +1592,19 @@ public class UpgradeSessionBeanSystemTest {
         }    
     }
      
+    @Test
+    public void testUpgradeOcspResponders9_4_0() throws InternalKeyBindingNameInUseException, AuthorizationDeniedException {
+        final String responderName = "testUpgradeOcspResponders9_4_0";
+        OcspKeyBinding ocspKeyBinding = new OcspKeyBinding();
+        ocspKeyBinding.setName(responderName);
+        int keyBindingId = internalKeyBindingSession.persistInternalKeyBinding(alwaysAllowtoken, ocspKeyBinding);
+        try {
+            asdsada
+        } finally {
+            internalKeyBindingSession.deleteInternalKeyBinding(alwaysAllowtoken, keyBindingId);
+        }
+    }
+    
     @Test
     public void testMigrateCaConfiguration9_4_0() throws AuthorizationDeniedException {
         //Stash the original value
