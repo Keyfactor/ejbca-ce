@@ -507,7 +507,10 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         try {
             
             if (isManageScpPublisher()) {
-                savePublisherAndShowDownloadableKey();
+                boolean result = savePublisherAndShowDownloadableKey();
+                if (!result) {
+                    return;
+                }
             }
             
             publisherSession.testConnection(publisherId);
@@ -531,12 +534,18 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         return scpPublisherAuthPublicKey;
     }
     
-    private void savePublisherAndShowDownloadableKey() throws AuthorizationDeniedException {
+    private boolean savePublisherAndShowDownloadableKey() throws AuthorizationDeniedException {
+        
+        boolean useSftp = (boolean) getCustomPublisherMBData().getCustomPublisherPropertyValues().get("scp.usesftp");
+        if (!useSftp) {
+            log.debug("SFTP is not being used.");
+            return true;
+        }
         String cryptoTokenIdAndKeyPairName = 
                 (String) getCustomPublisherMBData().getCustomPublisherPropertyValues().get("scp.cryptoken.keypair");
         if (cryptoTokenIdAndKeyPairName==null || cryptoTokenIdAndKeyPairName.length() < 4) {
             addErrorMessage("No SSH key from Cryptotoken is configured.");
-            return;
+            return false;
         } 
         int cryptoTokenId = Integer.parseInt(cryptoTokenIdAndKeyPairName.split(";")[0].trim());
         String keyPairName = cryptoTokenIdAndKeyPairName.split(";")[1].trim();
@@ -545,10 +554,11 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
             sshAuthKey =  cryptoTokenManagementSession.getPublicKey(getAdmin(), cryptoTokenId, keyPairName).getPublicKey();
         } catch (NumberFormatException | CryptoTokenOfflineException e) {
             addErrorMessage(e.getMessage());
-            return;
+            return false;
         }
         
         scpPublisherAuthPublicKey = SshKeyFactory.getDownloadableSshKey(sshAuthKey);
+        return true;
         
     }
     

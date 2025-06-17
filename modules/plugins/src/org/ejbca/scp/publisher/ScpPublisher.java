@@ -434,7 +434,7 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
         try {
             // No use in signing a CRL - it's already signed - just write it in cleartext.
             if (useSftp) {
-                log.info("Using SFTP");
+                log.debug("Using SFTP");
                 String cryptoTokenId = cryptoTokenAndKeyPair.split(";")[0].trim();
                 String keypair = cryptoTokenAndKeyPair.split(";")[1].trim();
                 performSftp(-1, fileName, sshUsername, sshPort, incrl, crlSCPDestination, cryptoTokenId, keypair, sftpKnownHostsContents.getBytes());
