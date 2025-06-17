@@ -1063,11 +1063,9 @@ public abstract class CmpTestCase extends CaTestCase {
         }
         if (signed) {
             // Verify the signature
-            ASN1BitString bs = respObject.getProtection();
             try {
-                final Signature signature = CmpMessageHelper.extractSignature(respObject, cacert.getPublicKey());
-                assertTrue(signature.verify(bs.getBytes()));
-            } catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeyException | SignatureException | InvalidAlgorithmParameterException e) {
+                assertTrue(CmpMessageHelper.verifySignature(respObject, cacert.getPublicKey()));
+            } catch (SignatureException e) {
                 log.debug(e.getMessage(), e);
                 fail(e.getMessage());
             }
