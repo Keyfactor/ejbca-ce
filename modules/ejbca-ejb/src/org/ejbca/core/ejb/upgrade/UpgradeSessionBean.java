@@ -108,6 +108,7 @@ import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.EstConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.InternalConfiguration;
+import org.ejbca.config.MSAutoEnrollmentConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeSessionLocal;
 import org.ejbca.core.ejb.ServiceLocatorException;
@@ -587,21 +588,28 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             } catch (UpgradeFailedException e) {
                 return false;
             }
-        }        
+        }
         if (isLesserThan(oldVersion, "9.2.0")) {
             try {
                 upgradeSession.migrateDatabase920();
             } catch (UpgradeFailedException e) {
                 return false;
             }
-        }   
+        }
+        if (isLesserThan(oldVersion, "9.3.3")) {
+            try {
+                upgradeSession.migrateDatabase933();
+            } catch (UpgradeFailedException e) {
+                return false;
+            }
+        }
         if (isLesserThan(oldVersion, "9.4.0")) {
             try {
                 upgradeSession.migrateDatabase9_4_0();
             } catch (UpgradeFailedException e) {
                 return false;
             }
-        }        
+        }
         setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
     }
@@ -2575,6 +2583,33 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     }
 
     @Override
+    public void migrateDatabase933() throws UpgradeFailedException {
+        migrateUseSSL933();
+    }
+
+    private void migrateUseSSL933() throws UpgradeFailedException {
+        //Update trustManagerType setting to "KEY_BINDING" for existing MSAutoenrollment aliases using SSL
+        final MSAutoEnrollmentConfiguration msaeConfig = (MSAutoEnrollmentConfiguration) globalConfigurationSession
+                .getCachedConfiguration(MSAutoEnrollmentConfiguration.CONFIGURATION_ID);
+        if (msaeConfig != null) {
+            for (final String msaeAlias : msaeConfig.getAliasList()) {
+                if (msaeConfig.isUseSSL(msaeAlias)) {
+                    // If useSSL was true set trustManagerType to KEY_BINDING
+                    msaeConfig.setTrustManagerType(msaeAlias, "KEY_BINDING");
+                }
+            }
+            try {
+                globalConfigurationSession.saveConfiguration(authenticationToken, msaeConfig);
+                log.info("Completed MSAutoEnrollment useSSL to trustManagerType migration");
+            } catch (AuthorizationDeniedException e) {
+                final String msg = "Cannot save migrated MSAutoEnrollment configuration";
+                log.error(msg, e);
+                throw new UpgradeFailedException(msg);
+            }
+        }
+    }
+
+    @Override
     public void migrateDatabase9_4_0() throws UpgradeFailedException {
         //Move ocsp.includecertchain and ocsp.includesignercert from the properties files and into the database configuration
         migrateOcspOptions_9_4_0();
@@ -2593,7 +2628,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             log.error(msg, e);
             throw new UpgradeFailedException(msg, e);
         }
-    }  
+    }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
