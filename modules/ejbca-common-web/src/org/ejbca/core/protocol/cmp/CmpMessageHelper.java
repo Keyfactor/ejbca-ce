@@ -43,6 +43,7 @@ import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.RandomHelper;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.crypto.algorithm.SignatureParameter;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -97,11 +98,16 @@ import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.ReasonFlags;
+import org.bouncycastle.cert.cmp.CMPException;
+import org.bouncycastle.cert.cmp.GeneralPKIMessage;
+import org.bouncycastle.cert.cmp.ProtectedPKIMessage;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.MacCalculator;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.bouncycastle.pkcs.jcajce.JcePBMac1CalculatorBuilder;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.certificate.request.FailInfo;
@@ -281,8 +287,7 @@ public class CmpMessageHelper {
      * @throws SignatureException if the passed-in signature is improperly encoded or of the wrong type, if this signature algorithm is unable to process the input data provided, etc.
      * @throws IllegalStateException something goes wrong during the creating of the MAC protection
      */
-    public static boolean verifyCertBasedPKIProtection(PKIMessage pKIMessage, PublicKey pubKey) throws NoSuchAlgorithmException,
-             InvalidKeyException, SignatureException, IllegalStateException {
+    public static boolean verifyCertBasedPKIProtection(PKIMessage pKIMessage, PublicKey pubKey) throws SignatureException, IllegalStateException {
         if(pKIMessage.getProtection() == null) {
             throw new SignatureException("Message was not signed.");
         }
@@ -294,15 +299,8 @@ public class CmpMessageHelper {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Verifying signature with algorithm: " + sigAlg.getAlgorithm().getId());
         }
-        Signature sig;
-        try {
-            sig = Signature.getInstance(sigAlg.getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
-        } catch (NoSuchProviderException e) {
-            throw new IllegalStateException("BouncyCastle provider not installed.", e);
-        }
-        sig.initVerify(pubKey);
-        sig.update(getProtectedBytes(pKIMessage));
-        boolean result = sig.verify(pKIMessage.getProtection().getBytes());
+
+        boolean result = verifySignature(pKIMessage, pubKey);
         if (LOG.isDebugEnabled()) {
             LOG.debug("Verification result: " + result);
         }
@@ -671,6 +669,19 @@ public class CmpMessageHelper {
             LOG.error(ex.getLocalizedMessage(), ex);
         }
         return res;
+    }
+
+    public static boolean verifySignature(final PKIMessage msg, final PublicKey publicKey) throws SignatureException {
+        try {
+            GeneralPKIMessage generalMsg = new GeneralPKIMessage(msg);
+            ProtectedPKIMessage protectedMsg = new ProtectedPKIMessage(generalMsg);
+            JcaContentVerifierProviderBuilder verifierBuilder = new JcaContentVerifierProviderBuilder();
+            verifierBuilder.setProvider(BouncyCastleProvider.PROVIDER_NAME);
+            ContentVerifierProvider verifierProvider = verifierBuilder.build(publicKey);
+            return protectedMsg.verify(verifierProvider);
+        } catch (CMPException | OperatorCreationException e) {
+            throw new SignatureException("Signature verification failed", e);
+        }
     }
 
     /**

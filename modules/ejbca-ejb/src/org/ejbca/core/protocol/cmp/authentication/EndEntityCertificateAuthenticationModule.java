@@ -479,10 +479,8 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         //Verify the signature of msg using the public key of extraCert
         //-------------------------------------------------------------
         try {
-            final Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
-            sig.initVerify(extraCert.getPublicKey());
-            sig.update(CmpMessageHelper.getProtectedBytes(msg));
-            if (sig.verify(msg.getProtection().getBytes())) {
+
+            if (CmpMessageHelper.verifySignature(msg, extraCert.getPublicKey())) {
                 if (password == null) {
                     // If not set earlier
                     password = genRandomPwd();
@@ -491,7 +489,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                 this.errorMessage = "Failed to verify the signature in the PKIMessage";
                 return false;
             }
-        } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException | SignatureException e) {
+        } catch (SignatureException e) {
             if(log.isDebugEnabled()) {
                 log.debug(e.getLocalizedMessage());
             }
