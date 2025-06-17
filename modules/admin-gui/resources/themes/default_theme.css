@@ -18,6 +18,7 @@
 html, body {
     /* push down footer to bottom of page when there is too little content. */
     height: 100%;
+    font-size: 11pt;
 }
 
 body {
