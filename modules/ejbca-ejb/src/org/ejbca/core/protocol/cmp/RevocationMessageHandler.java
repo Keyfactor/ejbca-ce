@@ -30,6 +30,7 @@ import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.cmp.RevDetails;
 import org.bouncycastle.asn1.cmp.RevReqContent;
 import org.bouncycastle.asn1.crmf.CertTemplate;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
@@ -310,7 +311,8 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
                     // We don't need a default digest algorithm, if setPreferredDigestAlg is null, the sender cert's algorithm will be used
 
                     rresp.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlgAndHandleParameters(msg.getHeader().getProtectionAlg(), null));
-                    if (rresp.getMessage() == null) {
+                    if (rresp.getMessage() == null
+                    		&& PKCSObjectIdentifiers.id_RSASSA_PSS.getId().equals(msg.getHeader().getProtectionAlg().getAlgorithm().getId())) {
 						// We need to propagate the request information forward to know to use PSS if possible when signing the response
 						rresp.setMessage(msg.getMessage());
 					}

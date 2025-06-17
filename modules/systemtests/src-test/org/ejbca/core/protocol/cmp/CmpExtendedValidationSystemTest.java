@@ -405,7 +405,6 @@ public class CmpExtendedValidationSystemTest extends CmpTestCase {
 
         ArrayList<Certificate> signCertColl = new ArrayList<>();
         signCertColl.add(signingCertificate);
-
         byte[] messageBytes = CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA,
                 null, BouncyCastleProvider.PROVIDER_NAME, SignatureParameter.NONE);
 

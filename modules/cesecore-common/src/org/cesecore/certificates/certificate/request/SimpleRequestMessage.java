@@ -274,6 +274,7 @@ public class SimpleRequestMessage implements RequestMessage {
     public String getPreferredDigestAlg() {
     	return preferredDigestAlg;
     }
+
     @Override
     public boolean includeCACert() {
     	return includeCACert;

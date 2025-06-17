@@ -259,7 +259,6 @@ public interface RequestMessage extends Serializable {
      */
     String getPreferredDigestAlg();
 
-
     /** If the CA certificate should be included in the response or not, default to true = yes.
      * Not applicable for all request/response types.
      *

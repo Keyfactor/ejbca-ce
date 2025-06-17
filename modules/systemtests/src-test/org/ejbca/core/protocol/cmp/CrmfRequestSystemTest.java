@@ -34,6 +34,7 @@ import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.crypto.algorithm.SignatureParameter;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.string.StringConfigurationCache;
 
@@ -290,7 +291,8 @@ public class CrmfRequestSystemTest extends CmpTestCase {
         signCertColl.add(signCert);
         CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
         int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
-        byte[] ba = CmpMessageHelper.signPKIMessage(req, signCertColl, this.keys.getPrivate(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, null, BouncyCastleProvider.PROVIDER_NAME);
+
+        byte[] ba = CmpMessageHelper.signPKIMessage(req, signCertColl, this.keys.getPrivate(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, null, BouncyCastleProvider.PROVIDER_NAME, SignatureParameter.NONE);
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         checkCmpResponseGeneral(resp, ISSUER_DN_SHA256, USER_DN, this.cacertSha256, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
@@ -1353,7 +1355,9 @@ public class CrmfRequestSystemTest extends CmpTestCase {
 
         PKIMessage req = genCertReq(
                 ISSUER_DN_PSS, userDN, keysPss, cacertPss,
-                nonce, transId, false, null, null, null, null, null, null, popoAlgId);
+
+                nonce, transId, false, null, null, null, null, null, null
+        );
         byte[] pssReq = CmpMessageHelper.signPKIMessage(req, List.of(cacertPss), keysPss.getPrivate(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1,
                 null, BouncyCastleProvider.PROVIDER_NAME, SignatureParameter.PSS);
 
@@ -1388,8 +1392,9 @@ public class CrmfRequestSystemTest extends CmpTestCase {
                 ISSUER_DN_SHA384, userDN, keysPss, cacertSha384,
                 nonce, transId, false, null, null, null, null, null, null
         );
-        byte[] pssReq = CmpMessageHelper.signPKIMessage(req, List.of(cacertSha384), keysPss.getPrivate(), AlgorithmConstants.SIGALG_SHA384_WITH_RSA,
-                NISTObjectIdentifiers.id_sha384.getId(), BouncyCastleProvider.PROVIDER_NAME, SignatureParameter.PSS
+
+        byte[] pssReq = CmpMessageHelper.signPKIMessage(req, List.of(cacertPss), keysPss.getPrivate(), AlgorithmConstants.SIGALG_SHA384_WITH_RSA_AND_MGF1,
+                null, BouncyCastleProvider.PROVIDER_NAME, SignatureParameter.PSS
         );
 
         byte[] response = sendCmpHttp(pssReq, 200, cmpAlias);

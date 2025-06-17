@@ -167,7 +167,8 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
                 // We don't need a default digest algorithm, if setPreferredDigestAlg is null, the sender cert's algorithm will be used
 
                 cresp.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlgAndHandleParameters(protectionAlgorithm, null));
-                if (cresp.getMessage() == null) {
+                if (cresp.getMessage() == null
+                        && PKCSObjectIdentifiers.id_RSASSA_PSS.getId().equals(cmpRequestMessage.getHeader().getProtectionAlg().getAlgorithm().getId())) {
                     // We need to propagate the request information forward to know to use PSS if possible when signing the response
                     cresp.setMessage(cmpRequestMessage.getMessage());
                 }
