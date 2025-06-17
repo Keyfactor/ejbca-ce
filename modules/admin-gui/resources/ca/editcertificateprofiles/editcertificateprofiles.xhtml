@@ -72,7 +72,7 @@
 		<h3 class="vertical-padding-1">
 			<h:outputText value="#{web.text.IMPORT}/" rendered="#{certProfilesBean.authorizedToEdit}"/><h:outputText value="#{web.text.EXPORT}"/>
 		</h3>
-		<h:form id="uploadCertificate" enctype="multipart/form-data" styleClass="no-border row-padding-bottom-1">
+		<h:form id="uploadCertificate" enctype="multipart/form-data" styleClass="no-border no-padding row-padding-bottom-1-rem">
 			<h:panelGrid columns="1" >
 				<h:outputLabel for="certificateUploadInput" value="#{web.text.IMPORTPROFILESFROM}" rendered="#{certProfilesBean.authorizedToEdit}"/>
 				<h:panelGroup>

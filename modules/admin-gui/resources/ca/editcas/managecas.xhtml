@@ -113,7 +113,7 @@
             </h3>
             <h:panelGroup rendered="#{manageCAsMBean.canAddResource}">
                 <h:outputLabel for="importCertificateBundle" value="#{web.text.SELECT_CERTIFICATE_BUNDLE}"
-                               styleClass="break-line padding-bottom-1"/>
+                               styleClass="break-line no-padding padding-bottom-1-rem"/>
                 <h:inputFile value="#{manageCAsMBean.certificateBundle}" id="importCertificateBundle">
                     <f:ajax render="@all" listener="#{manageCAsMBean.importCertificateBundle}"/>
                 </h:inputFile>

@@ -88,7 +88,7 @@
 				id="uploadProfiles"
 				enctype="multipart/form-data"
 				rendered="#{endEntityProfilesMBean.authorizedToEdit}"
-                styleClass="no-border row-padding-bottom-1">
+                styleClass="no-border no-padding row-padding-bottom-1-rem">
 				<ui:remove><!-- Manually add viewstate due to https://java.net/jira/browse/JAVASERVERFACES_SPEC_PUBLIC-790 --></ui:remove>
                 <h:outputText escape="false" value="&lt;input name='jakarta.faces.ViewState' type='hidden' value='#{facesContext.application.stateManager.getViewState(facesContext)}'/&gt;"/>
                 <h:panelGrid columns="1" >
