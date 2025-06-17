@@ -13,7 +13,10 @@
 
 package org.ejbca.ui.cli;
 
-import java.io.*;
+import java.io.EOFException;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,13 +26,12 @@ import java.util.List;
  * <p><b>Java Serial Object File Analyzer</b>
  * <p>Should tell us a bit of information about result.ser files that should help in using and developing the SerObjectMerger
  *
- * @version $Id$
  */
 public class SerObjectAnalyzer extends ClientToolBox {
 
     @Override
     protected void execute(String[] args) {
-        final List<String> argsList = new ArrayList<String>(Arrays.asList(args));
+        final List<String> argsList = new ArrayList<>(Arrays.asList(args));
         argsList.remove(getName());
         if (argsList.isEmpty() || argsList.contains("help")) {
             System.out.println("Usage: SerObjectAnalyzer file1.ser ...");
@@ -40,21 +42,21 @@ public class SerObjectAnalyzer extends ClientToolBox {
         if (argsList.size() > 1) {
             System.out.println("SerObjectAnalyzer: starting with reading " + argsList.size() + " files...");
         }
-        List<BigInteger> bigList = new ArrayList<BigInteger>();
         for (String fileName : argsList) {
             int counterBI = 0;
             int counterOther = 0;
 
             try {
                 FileInputStream fi = new FileInputStream(fileName);
-                ObjectInputStream oi = new ObjectInputStream(fi);
-                while (true) {
-                    Object obj = oi.readObject();
-                    if (obj instanceof java.math.BigInteger) {
-                        counterBI++;
-                    } else {
-                        counterOther++;
-                        System.out.println(fileName + ": this object is not a BigInteger: " + obj.getClass().getName());
+                try (ObjectInputStream oi = new ObjectInputStream(fi)) {
+                    while (true) {
+                        Object obj = oi.readObject();
+                        if (obj instanceof BigInteger) {
+                            counterBI++;
+                        } else {
+                            counterOther++;
+                            System.out.println(fileName + ": this object is not a BigInteger: " + obj.getClass().getName());
+                        }
                     }
                 }
             } catch (EOFException e) {

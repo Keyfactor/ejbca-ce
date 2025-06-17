@@ -72,6 +72,7 @@ import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
+import org.cesecore.authorization.AuthorizationCache;
 
 /**
  *
@@ -416,6 +417,20 @@ public final class EjbcaWebBeanImplUnitTest {
         assertEquals("Admin should have an authentication token", mockedAuthToken, ejbcaWebBean.getAdminObject());
     }
 
+    /**
+     * Like clientCert, but expected authentication to be cached. This method
+     * is used by the {@link #updateNumberChange()} test case.
+     */
+    private void clientCertCached() throws Exception {
+        expectExtractCertificate();
+        expect(ejbs.getAuthorizationSession().isAuthorized(same(mockedAuthToken), eq(TEST_ACCESS_RESOURCE))).andReturn(true);
+        replayAll();
+        ejbcaWebBean.initialize(mockedRequest, TEST_ACCESS_RESOURCE);
+        verifyAll();
+        assertEquals("Wrong admin fingerprint", adminFingerprint, ejbcaWebBean.getCertificateFingerprint());
+        assertEquals("Admin should have an authentication token", mockedAuthToken, ejbcaWebBean.getAdminObject());
+    }
+
     /** Tests successful authentication without client certificate but with OAuth2 token */
     @Test
     public void bearerToken() throws Exception {
@@ -522,6 +537,29 @@ public final class EjbcaWebBeanImplUnitTest {
         clientCert(); // should perform authentication again
         resetAll();
         tlsSession = TLS_SESSION_3;
+        clientCert(); // should also perform authentication again
+    }
+
+    /**
+     * Simulates an incremented update number in AccessTreeUpdateData, which
+     * can happen in clustered environments, when a role is modified on a
+     * different EJBCA node.
+     */
+    @Test
+    public void updateNumberChange() throws Exception {
+        // Do an initial authentication to populate the authState field.
+        clientCert();
+        int initialUpdateNumber = AuthorizationCache.INSTANCE.getLastUpdateNumber();
+        reset(allMockObjects.toArray()); // can't use resetAll, since that would replace the mocked authenticationToken also
+
+        // Second time, the authentication should be cached until
+        // the update number changes.
+        clientCertCached();
+        resetAll();
+
+        // This time, we bump the update number (note that the AuthorizationCache
+        // is a different cache than the authState field).
+        AuthorizationCache.INSTANCE.clear(initialUpdateNumber + 1);
         clientCert(); // should also perform authentication again
     }
     

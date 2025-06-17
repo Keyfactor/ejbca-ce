@@ -833,7 +833,7 @@ public class BasicCertificateExtensionUnitTest {
 		    baseExt.getValueEncoded(userData, null, null, null, null, null);
 		    fail("Should have fail as both raw and nvalues specified");
 		} catch (CertificateExtensionException ex) {
-                    assertEquals(intres.getLocalizedMessage("certext.certextmissconfigured", 1), ex.getMessage());
+                    assertEquals("Certificate Extension " + 1 + " seems to be misconfigured.", ex.getMessage());
 		}
     }
 

@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.keyfactor.util.StringTools;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.MutableTriple;
@@ -30,8 +32,6 @@ import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.kfenroll.ProxyCaInfo;
 import org.cesecore.util.ConverterUtils;
 import org.cesecore.util.SimpleTime;
-
-import com.keyfactor.util.StringTools;
 
 /**
  * Wrapper class for holding CaInfo properties.

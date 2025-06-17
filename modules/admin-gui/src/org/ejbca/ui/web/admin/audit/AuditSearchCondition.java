@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.audit;
 
+import java.io.Serializable;
 import java.util.List;
 
 import jakarta.faces.model.SelectItem;
@@ -23,9 +24,10 @@ import org.cesecore.audit.AuditLogEntry;
  * 
  * @version $Id$
  */
-public class AuditSearchCondition {
+public class AuditSearchCondition implements Serializable {
 	
-	private Operation operation = Operation.AND;
+	private static final long serialVersionUID = 1L;
+    private Operation operation = Operation.AND;
 	private final String column;
 	private Condition condition = Condition.EQUALS;
 	private String value;
