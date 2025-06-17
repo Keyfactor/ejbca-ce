@@ -71,6 +71,10 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     private static final String AUTH_KEY_BINDING = "authKeyBinding";
     private static final String POLICY_UPDATE_INTERVAL = "policyUpdateInterval";
 
+    // Trust Manager Type Settings
+    private static final String TRUST_MANAGER_TYPE = "trustManagerType";
+    public static final String DEFAULT_TRUST_MANAGER_LOCAL_TRUST_STORE = "LOCAL_TRUST_STORE";
+
     // MS Enrollment Servlet Settings
     private static final String CA_NAME = "caName";
     
@@ -80,7 +84,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     public static final String MS_TEMPLATE_SETTINGS = "msTemplateSettings";
 
     public static final int DEFAULT_POLICY_UPDATE_INTERVAL = 8; // In hours
-    public static final int DEFAULT_AD_CONNECTION_PORT = 389;    
+    public static final int DEFAULT_AD_CONNECTION_PORT = 389;
     public static final int DEFAULT_LDAP_READ_TIMEOUT = 5000; // In milliseconds    
     public static final int DEFAULT_LDAP_CONNECT_TIMEOUT = 5000; // In milliseconds
     
@@ -126,6 +130,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
             data.put(alias + MSAE_KRB5_CONF_BYTES, null);
             data.put(alias + MSAE_KRB5_CONF_FILENAME, "");
             data.put(alias + IS_USE_SSL, "false");
+            data.put(alias + TRUST_MANAGER_TYPE, "");
             data.put(alias + IS_FOLLOW_LDAP_REFERRAL, "false");
             data.put(alias + AD_CONNECTION_PORT, String.valueOf(DEFAULT_AD_CONNECTION_PORT));
             data.put(alias + LDAP_READ_TIMEOUT, String.valueOf(DEFAULT_LDAP_READ_TIMEOUT));
@@ -155,6 +160,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
         keys.add(alias + MSAE_KRB5_CONF_BYTES);
         keys.add(alias + MSAE_KRB5_CONF_FILENAME);
         keys.add(alias + IS_USE_SSL);
+        keys.add(alias + TRUST_MANAGER_TYPE);
         keys.add(alias + IS_FOLLOW_LDAP_REFERRAL);
         keys.add(alias + AD_CONNECTION_PORT);
         keys.add(alias + AD_LOGIN_DN);
@@ -270,7 +276,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
         String key = alias + "." + MSAE_KEYTAB_BYTES;
         setValueBytes(key, msaeKeyTabBytes, alias);
     }
-    
+
     // MSAE Krb5 Conf
     public String getMsaeKrb5ConfFilename(String alias) {
         String key = alias + "." + MSAE_KRB5_CONF_FILENAME;
@@ -291,7 +297,6 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
         String key = alias + "." + MSAE_KRB5_CONF_BYTES;
         setValueBytes(key, msaeKrb5ConfBytes, alias);
     }
-    
 
     // MSAE Settings
     public boolean isUseSSL(String alias) {
@@ -303,6 +308,17 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     public void setIsUseSsl(String alias, final boolean isUseSsl) {
         String key = alias + "." + IS_USE_SSL;
         setValue(key, isUseSsl ? "true" : "false", alias);
+    }
+
+    public String getTrustManagerType(String alias) {
+        String key = alias + "." + TRUST_MANAGER_TYPE;
+        String value = getValue(key, alias);
+        return value;
+    }
+
+    public void setTrustManagerType(String alias, String trustManagerType) {
+        String key = alias + "." + TRUST_MANAGER_TYPE;
+        setValue(key, trustManagerType, alias);
     }
 
     public boolean isFollowLdapReferral(String alias) {
@@ -669,6 +685,5 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
         for (String alias : aliases) {
             filterDiffMapForLogging(diff, alias + "." + AD_LOGIN_PASSWORD);
         }
-    }     
-    
+    }
 }
