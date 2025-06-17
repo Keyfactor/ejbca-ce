@@ -73,6 +73,7 @@ import org.cesecore.certificates.ocsp.OcspTestUtils;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.GlobalCaConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
+import org.cesecore.config.GlobalCtConfiguration;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
@@ -1670,6 +1671,19 @@ public class UpgradeSessionBeanSystemTest {
             globalCaConfiguration.setEnableIcaoCANameChange(originalValue);
             globalConfigSession.saveConfiguration(alwaysAllowtoken, globalCaConfiguration);
             
+        }
+    }
+    
+    @Test
+    public void testMigrateCtConfiguration9_4_0() throws AuthorizationDeniedException {
+        //Stash the original values
+        final GlobalCtConfiguration originalGlobalCtConfiguration = (GlobalCtConfiguration) globalConfigSession.getCachedConfiguration(GlobalCtConfiguration.CT_CONFIGURATION_ID);
+        dgdgdfg
+        try {
+            
+        } finally {
+            //Restore original value
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, originalGlobalCtConfiguration);
         }
     }
 
