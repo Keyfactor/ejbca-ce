@@ -914,6 +914,8 @@ public class RaSearchCertsBean implements Serializable {
     public Callbacks getRaCertificateDetailsCallbacks() {
         if (raCertificateDetailsCallbacks == null) {
             raCertificateDetailsCallbacks = new RaCertificateDetails.Callbacks() {
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 public RaLocaleBean getRaLocaleBean() {
                     return raLocaleBean;

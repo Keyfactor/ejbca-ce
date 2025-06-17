@@ -1,3 +1,0 @@
--- If you are using an older version of Derby, such as 10.2, you need to drop and re-create this table. See doc/howto/create-tables-ejbca5-derby.sql for drop/create statements.
--- This column is added by the JPA provider if there are sufficient privileges
--- ALTER TABLE AdminEntityData ADD tokenType VARCHAR(256) DEFAULT NULL;

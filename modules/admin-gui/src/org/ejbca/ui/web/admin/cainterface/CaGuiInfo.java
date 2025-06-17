@@ -20,6 +20,7 @@ import java.io.Serializable;
  */
 public class CaGuiInfo implements Serializable {
         
+        private static final long serialVersionUID = 1L;
         private CaInfoProperty caName;
         private CaInfoProperty subjectDn;
         private CaInfoProperty alternativeName;

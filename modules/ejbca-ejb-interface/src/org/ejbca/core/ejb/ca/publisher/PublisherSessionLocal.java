@@ -100,17 +100,6 @@ public interface PublisherSessionLocal extends PublisherSession {
      * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_publisher
      */
     void removePublisherInternal(AuthenticationToken admin, String name) throws AuthorizationDeniedException;
-
-    /**
-     * Allows upgrade for Community Users to EJBCA 6.3.1.1 from previous versions of EJBCA by replacing the old 
-     * VA publisher with a placeholder 
-     * 
-     * @return the number of upgraded publishers
-     */
-    int adhocUpgradeTo6_3_1_1();
-
-    /** @return true if the old VA publisher is still present in the database and upgrade is needed. */
-    boolean isOldVaPublisherPresent();
     
     /** @return return the query results as a List. */
     List<PublisherData> findAll();

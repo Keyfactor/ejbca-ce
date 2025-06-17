@@ -290,8 +290,6 @@
 		<!-- Workaround for tests using BatchMakeP12 -->
 		<mkdir dir="${systemtests.build.test.dir}/conf"/>
 		<!-- Workaround for tests TestCertificateProfile -->
-		<copy todir="${systemtests.build.test.dir}/conf" file="${ejbca.home}/conf/extendedkeyusage.properties" failonerror="false"/>
-		<!-- Workaround for tests TestCertificateProfile -->
 		<property name="runone-internal.classpath" value="systemtests.classpath"/>
 		<echo message="runone-internal.classpath=${runone-internal.classpath}"/>
 		<!-- needed by the cesecore tests -->
@@ -330,9 +328,7 @@
 		<antcall target="showtime" inheritall="true" inheritrefs="true"/>
 		<mkdir dir="${systemtests.dir}/p12"/>
 		<!-- Workaround for tests using BatchMakeP12 -->
-		<mkdir dir="${systemtests.build.test.dir}/conf"/>
-		<!-- Workaround for tests TestCertificateProfile -->
-		<copy todir="${systemtests.build.test.dir}/conf" file="${ejbca.home}/conf/extendedkeyusage.properties" failonerror="false"/>		
+		<mkdir dir="${systemtests.build.test.dir}/conf"/>	
 		<!-- needed by the cesecore tests -->
 		<copy todir="${systemtests.build.test.dir}" file="${ejbca.home}/src/java/defaultvalues.properties"/>
 		<!-- The CMP unid test requires the mysql.lib property to be set -->

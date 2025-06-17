@@ -166,21 +166,19 @@ public class ECAUtils {
     }
     
     public static SignedData parseOerEncodedSignedData(byte[] oerEncodedSignedData) {
-        OERInputStream oerIn = new OERInputStream(new ByteArrayInputStream(oerEncodedSignedData));
-        try {
+        try (OERInputStream oerIn = new OERInputStream(new ByteArrayInputStream(oerEncodedSignedData))) {
             return SignedData.getInstance(oerIn.parse(IEEE1609dot2.SignedData.build()));
         } catch (IOException e) {
             throw new IllegalStateException("SignedData is malformed: " + e);
         }
+        
     }
     
     public static SignedData parseOerEncodedWrappedSignedData(byte[] oerEncodedSignedData) {
-        OERInputStream oerIn = new OERInputStream(new ByteArrayInputStream(oerEncodedSignedData));
-        try {
+        try (OERInputStream oerIn = new OERInputStream(new ByteArrayInputStream(oerEncodedSignedData))) {        
             Ieee1609Dot2Content content = EtsiTs103097DataSigned.getInstance(
                     oerIn.parse(EtsiTs103097Module.EtsiTs103097Data_Signed.build())).getContent();
-            if (content.getChoice() != Ieee1609Dot2Content.signedData)
-            {
+            if (content.getChoice() != Ieee1609Dot2Content.signedData) {
                 throw new IllegalStateException("EtsiTs103097Data-Signed did not have signed data content");
             }
             return SignedData.getInstance(content.getIeee1609Dot2Content());
@@ -190,12 +188,10 @@ public class ECAUtils {
     }
     
     public static SignedData parseOerEncodedWrappedSignedExtenalData(byte[] oerEncodedSignedExtData) {
-        OERInputStream oerIn = new OERInputStream(new ByteArrayInputStream(oerEncodedSignedExtData));
-        try {
+        try(OERInputStream oerIn = new OERInputStream(new ByteArrayInputStream(oerEncodedSignedExtData))) {       
             Ieee1609Dot2Content content = EtsiTs103097DataSigned.getInstance(
                     oerIn.parse(EtsiTs103097Module.EtsiTs103097Data_SignedExternalPayload.build())).getContent();
-            if (content.getChoice() != Ieee1609Dot2Content.signedData)
-            {
+            if (content.getChoice() != Ieee1609Dot2Content.signedData) {
                 throw new IllegalStateException(
                         "EtsiTs103097Data-SignedExternalPayload did not have signed data content");
             }
@@ -206,12 +202,10 @@ public class ECAUtils {
     }
     
     public static EncryptedData parseOerEncodedWrappedEncryptedData(byte[] oerEncodedEncryptedData) {
-        OERInputStream oerIn = new OERInputStream(new ByteArrayInputStream(oerEncodedEncryptedData));
-        try {
+        try(OERInputStream oerIn = new OERInputStream(new ByteArrayInputStream(oerEncodedEncryptedData))) {
             Ieee1609Dot2Content content = EtsiTs103097DataEncrypted.getInstance(
                     oerIn.parse(EtsiTs103097Module.EtsiTs103097Data_Encrypted.build())).getContent();
-            if (content.getChoice() != Ieee1609Dot2Content.encryptedData)
-            {
+            if (content.getChoice() != Ieee1609Dot2Content.encryptedData) {
                 throw new IllegalStateException("EtsiTs103097DataEncrypted did not have encrypted data content");
             }
             return EncryptedData.getInstance(content.getIeee1609Dot2Content());
@@ -221,12 +215,10 @@ public class ECAUtils {
     }
     
     public static byte[] parseOerEncodedWrappedUnsecuredData(byte[] oerEncodedUnsecuredData) {
-        OERInputStream oerIn = new OERInputStream(new ByteArrayInputStream(oerEncodedUnsecuredData));
-        try {
+        try(OERInputStream oerIn = new OERInputStream(new ByteArrayInputStream(oerEncodedUnsecuredData))) {
             Ieee1609Dot2Content content = EtsiTs103097DataSigned.getInstance(
                     oerIn.parse(EtsiTs103097Module.EtsiTs103097Data_Unsecured.build())).getContent();
-            if (content.getChoice() != Ieee1609Dot2Content.unsecuredData)
-            {
+            if (content.getChoice() != Ieee1609Dot2Content.unsecuredData) {
                 throw new IllegalStateException("Wrong data content in Ieee1609Dot2Content.");
             } 
             return ((Opaque) content.getIeee1609Dot2Content()).getContent();
@@ -236,8 +228,7 @@ public class ECAUtils {
     }
     
     public static EtsiTs102941DataContent parseOerEncodedWrapped102941Data(byte[] oerEncoded102941Data) {
-        OERInputStream oerIn = new OERInputStream(new ByteArrayInputStream(oerEncoded102941Data));
-        try {
+        try(OERInputStream oerIn = new OERInputStream(new ByteArrayInputStream(oerEncoded102941Data))) {
             EtsiTs102941DataContent content = EtsiTs102941Data.getInstance(
                     oerIn.parse(EtsiTs102941MessagesCa.EtsiTs102941Data.build())).getContent();
             return content;
@@ -406,9 +397,8 @@ public class ECAUtils {
         if(encodedCertificate==null) {
             return null;
         }
-        OERInputStream oerIn = new OERInputStream(new ByteArrayInputStream(encodedCertificate));
         CertificateBase content;
-        try {
+        try(OERInputStream oerIn = new OERInputStream(new ByteArrayInputStream(encodedCertificate))) {
             content = CertificateBase.getInstance(
                     oerIn.parse(IEEE1609dot2.CertificateBase.build()));
         } catch (IOException e) {
