@@ -1045,9 +1045,6 @@
 				<exclude name="container/**" />
 				<exclude name=".jx/**" />
 		    </zipfileset>
-		    <zipfileset dir="." prefix="${basezipfile}" filemode="600" dirmode="700">
-		    	<include name="conf/extendedkeyusage.properties" />		    	
-		    </zipfileset>
 		</zip>
         <antcall target="signjar">
             <param name="signjar.file" value="../${basezipfile}.zip"/>
@@ -1476,7 +1473,6 @@ SHA-256 checksum: ${cesecorebinSHA256}
         -->
         <copy todir="../cesecore/src/main/java" overwrite="true">
             <fileset dir="src/java">
-                <include name="certextensions.properties"/>
                 <include name="profilemappings.properties"/>
                 <include name="profilemappings_enterprise.properties"/>
             </fileset>
