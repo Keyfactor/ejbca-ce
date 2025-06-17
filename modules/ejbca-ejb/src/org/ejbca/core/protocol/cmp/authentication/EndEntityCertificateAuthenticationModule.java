@@ -25,8 +25,6 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
-import java.security.spec.MGF1ParameterSpec;
-import java.security.spec.PSSParameterSpec;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -35,9 +33,6 @@ import java.util.Set;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.ASN1Encodable;
-import org.bouncycastle.asn1.ASN1Null;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.cmp.CMPCertificate;
@@ -47,12 +42,7 @@ import org.bouncycastle.asn1.cmp.RevReqContent;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.bouncycastle.asn1.crmf.CertReqMsg;
 import org.bouncycastle.asn1.crmf.CertTemplate;
-import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
-import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
-import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-import org.bouncycastle.asn1.pkcs.RSASSAPSSparams;
 import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
@@ -490,7 +480,6 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         //-------------------------------------------------------------
         try {
 
-
             if (CmpMessageHelper.verifySignature(msg, extraCert.getPublicKey())) {
                 if (password == null) {
                     // If not set earlier
@@ -506,8 +495,6 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             }
             this.errorMessage = e.getLocalizedMessage();
             return false;
-        } catch (InvalidAlgorithmParameterException e) {
-            throw new RuntimeException(e);
         }
 
         return this.password != null;

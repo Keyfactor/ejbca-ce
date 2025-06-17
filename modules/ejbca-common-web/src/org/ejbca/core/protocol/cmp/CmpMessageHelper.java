@@ -16,7 +16,6 @@ package org.ejbca.core.protocol.cmp;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -29,8 +28,6 @@ import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
-import java.security.spec.MGF1ParameterSpec;
-import java.security.spec.PSSParameterSpec;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -41,6 +38,13 @@ import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.RandomHelper;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+
+import com.keyfactor.util.crypto.algorithm.SignatureParameter;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1BitString;
@@ -49,7 +53,6 @@ import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
 import org.bouncycastle.asn1.ASN1Integer;
-import org.bouncycastle.asn1.ASN1Null;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1OutputStream;
@@ -85,12 +88,9 @@ import org.bouncycastle.asn1.crmf.CertTemplate;
 import org.bouncycastle.asn1.crmf.POPOPrivKey;
 import org.bouncycastle.asn1.crmf.POPOSigningKey;
 import org.bouncycastle.asn1.crmf.ProofOfPossession;
-import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
-import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PBKDF2Params;
 import org.bouncycastle.asn1.pkcs.PBMAC1Params;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-import org.bouncycastle.asn1.pkcs.RSASSAPSSparams;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.Extension;
@@ -98,11 +98,16 @@ import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.ReasonFlags;
+import org.bouncycastle.cert.cmp.CMPException;
+import org.bouncycastle.cert.cmp.GeneralPKIMessage;
+import org.bouncycastle.cert.cmp.ProtectedPKIMessage;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.MacCalculator;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.bouncycastle.pkcs.jcajce.JcePBMac1CalculatorBuilder;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.certificate.request.FailInfo;
@@ -111,12 +116,6 @@ import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.model.InternalEjbcaResources;
 
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.RandomHelper;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.crypto.algorithm.SignatureParameter;
 
 /**
  * Helper class to create different standard parts of CMP messages
@@ -292,7 +291,8 @@ public class CmpMessageHelper {
      * @throws SignatureException if the passed-in signature is improperly encoded or of the wrong type, if this signature algorithm is unable to process the input data provided, etc.
      * @throws IllegalStateException something goes wrong during the creating of the MAC protection
      */
-    public static boolean verifyCertBasedPKIProtection(PKIMessage pKIMessage, PublicKey pubKey) throws SignatureException, IllegalStateException, InvalidKeyException, NoSuchAlgorithmException {
+
+    public static boolean verifyCertBasedPKIProtection(PKIMessage pKIMessage, PublicKey pubKey) throws SignatureException, IllegalStateException {
         if(pKIMessage.getProtection() == null) {
             throw new SignatureException("Message was not signed.");
         }
@@ -305,15 +305,7 @@ public class CmpMessageHelper {
             LOG.debug("Verifying signature with algorithm: " + sigAlg.getAlgorithm().getId());
         }
 
-        Signature sig;
-        try {
-            sig = extractSignature(pKIMessage, pubKey);
-        } catch (NoSuchProviderException e) {
-            throw new IllegalStateException("BouncyCastle provider not installed.", e);
-        } catch (InvalidAlgorithmParameterException e) {
-            throw new IllegalStateException(e);
-        }
-        boolean result = sig.verify(pKIMessage.getProtection().getBytes());
+        boolean result = verifySignature(pKIMessage, pubKey);
         if (LOG.isDebugEnabled()) {
             LOG.debug("Verification result: " + result);
         }
@@ -685,65 +677,17 @@ public class CmpMessageHelper {
     }
 
 
-    public static Signature extractSignature(PKIMessage msg, PublicKey publicKey) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException,
-            InvalidKeyException, SignatureException {
-        Signature sig = Signature.getInstance(
-                msg.getHeader().getProtectionAlg().getAlgorithm().getId(),
-                BouncyCastleProvider.PROVIDER_NAME
-        );
-
-        AlgorithmIdentifier algId = msg.getHeader().getProtectionAlg();
-        if (PKCSObjectIdentifiers.id_RSASSA_PSS.equals(algId.getAlgorithm())) {
-            ASN1Encodable paramsEnc = algId.getParameters();
-            if (paramsEnc != null && !(paramsEnc instanceof ASN1Null)) {
-                RSASSAPSSparams pss = RSASSAPSSparams.getInstance(paramsEnc);
-
-                ASN1ObjectIdentifier hashOid = pss.getHashAlgorithm().getAlgorithm();
-                String digestName;
-                if (hashOid.equals(NISTObjectIdentifiers.id_sha256)) {
-                    digestName = "SHA-256";
-                } else if (hashOid.equals(OIWObjectIdentifiers.idSHA1)) {
-                    digestName = "SHA-1";
-                } else if (hashOid.equals(NISTObjectIdentifiers.id_sha384)) {
-                    digestName = "SHA-384";
-                } else if (hashOid.equals(NISTObjectIdentifiers.id_sha512)) {
-                    digestName = "SHA-512";
-                } else {
-                    throw new IllegalArgumentException("Unsupported PSS hash OID: " + hashOid);
-                }
-
-                AlgorithmIdentifier mgfAlg = pss.getMaskGenAlgorithm();
-                ASN1ObjectIdentifier mgfHashOid =
-                        AlgorithmIdentifier.getInstance(mgfAlg.getParameters()).getAlgorithm();
-                MGF1ParameterSpec mgfSpec;
-                if (mgfHashOid.equals(NISTObjectIdentifiers.id_sha256)) {
-                    mgfSpec = MGF1ParameterSpec.SHA256;
-                } else if (mgfHashOid.equals(OIWObjectIdentifiers.idSHA1)) {
-                    mgfSpec = MGF1ParameterSpec.SHA1;
-                } else if (mgfHashOid.equals(NISTObjectIdentifiers.id_sha384)) {
-                    mgfSpec = MGF1ParameterSpec.SHA384;
-                } else if (mgfHashOid.equals(NISTObjectIdentifiers.id_sha512)) {
-                    mgfSpec = MGF1ParameterSpec.SHA512;
-                } else {
-                    throw new IllegalArgumentException("Unsupported MGF1 hash OID: " + mgfHashOid);
-                }
-
-                int saltLen = pss.getSaltLength().intValue();
-
-                PSSParameterSpec spec = new PSSParameterSpec(
-                        digestName,
-                        "MGF1",
-                        mgfSpec,
-                        saltLen,
-                        PSSParameterSpec.TRAILER_FIELD_BC
-                );
-                sig.setParameter(spec);
-            }
+    public static boolean verifySignature(final PKIMessage msg, final PublicKey publicKey) throws SignatureException {
+        try {
+            GeneralPKIMessage generalMsg = new GeneralPKIMessage(msg);
+            ProtectedPKIMessage protectedMsg = new ProtectedPKIMessage(generalMsg);
+            JcaContentVerifierProviderBuilder verifierBuilder = new JcaContentVerifierProviderBuilder();
+            verifierBuilder.setProvider(BouncyCastleProvider.PROVIDER_NAME);
+            ContentVerifierProvider verifierProvider = verifierBuilder.build(publicKey);
+            return protectedMsg.verify(verifierProvider);
+        } catch (CMPException | OperatorCreationException e) {
+            throw new SignatureException("Signature verification failed", e);
         }
-
-        sig.initVerify(publicKey);
-        sig.update(CmpMessageHelper.getProtectedBytes(msg));
-        return sig;
     }
 
     /**
