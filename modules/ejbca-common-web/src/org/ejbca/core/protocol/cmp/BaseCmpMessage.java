@@ -29,6 +29,8 @@ import java.util.List;
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CryptoProviderTools;
 
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.crypto.algorithm.SignatureParameter;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1OutputStream;
@@ -270,6 +272,15 @@ public abstract class BaseCmpMessage implements Serializable {
     public void setAdditionalExtraCertsCertificates(final List<Certificate> certificates) {
         this.additionalExtraCerts = certificates;
     }
+
+	public SignatureParameter determineSignatureParameterFromRequest() {
+		if (getMessage() != null && getMessage().getHeader() != null && getMessage().getHeader().getProtectionAlg() != null) {
+			String requestSignatureAlgOid = getMessage().getHeader().getProtectionAlg().getAlgorithm().getId();
+			return AlgorithmTools.getSignatureParameterFromOid(requestSignatureAlgOid);
+		} else {
+			return SignatureParameter.NONE;
+		}
+	}
 
     protected PublicKey getPublicKey(final SubjectPublicKeyInfo subjectPKInfo, final String provider)
             throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException {
