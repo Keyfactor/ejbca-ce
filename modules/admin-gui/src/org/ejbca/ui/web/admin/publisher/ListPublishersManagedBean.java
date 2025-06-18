@@ -37,7 +37,6 @@ import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.LdapSearchPublisher;
-import org.ejbca.core.model.ca.publisher.LegacyValidationAuthorityPublisher;
 import org.ejbca.core.model.ca.publisher.MultiGroupPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
@@ -208,7 +207,6 @@ public class ListPublishersManagedBean extends BaseManagedBean implements Serial
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_EDITPUBLISHER);
     }
 
-    @SuppressWarnings("deprecation")
     private String getPublisherType(String publisherName) {
         BasePublisher publisher = publisherSession.getPublisher(publisherName);
         int retval = PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER;
@@ -220,10 +218,6 @@ public class ListPublishersManagedBean extends BaseManagedBean implements Serial
         }
         if (publisher instanceof LdapSearchPublisher) {
             retval = PublisherConst.TYPE_LDAPSEARCHPUBLISHER;
-        }
-        // Legacy VA publisher doesn't exist in community edition, so check the qualified class name instead.
-        if (publisher.getClass().getName().equals(LegacyValidationAuthorityPublisher.OLD_VA_PUBLISHER_QUALIFIED_NAME)) {
-            retval = PublisherConst.TYPE_VAPUBLISHER;
         }
         if (publisher instanceof ActiveDirectoryPublisher) {
             retval = PublisherConst.TYPE_ADPUBLISHER;

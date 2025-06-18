@@ -19,65 +19,57 @@ import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.configuration.ConfigurationCache;
 
 /**
- * Class Holding cache variable for CESeCore global configuration. Needed because EJB spec does not allow volatile, non-final 
- * fields in session beans.
- * 
+ * Needed because EJB spec does not allow volatile, non-final fields in session beans.
  */
-public class GlobalCesecoreConfigurationCache implements ConfigurationCache {
+public class GlobalCaConfigurationCache implements ConfigurationCache {
 
-    /**
-     * Cache variable containing the global configuration. This cache may be
-     * unsynchronized between multiple instances of EJBCA, but is common to all
-     * threads in the same VM. Set volatile to make it thread friendly.
-     */
-    private volatile GlobalCesecoreConfiguration globalconfigurationCache = null;
-    /** help variable used to control that GlobalConfiguration update isn't performed to often. */
+    private volatile GlobalCaConfiguration globalCaConfiguration = null;
     private volatile long lastupdatetime = -1;  
     
-    public GlobalCesecoreConfigurationCache() {
-    }
-
     @Override
     public String getConfigId() {
-        return GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID;
+        return GlobalCaConfiguration.CA_CONFIGURATION_ID;
     }
 
     @Override
     public void clearCache() {
-        globalconfigurationCache = null;
+        globalCaConfiguration = null;
+
     }
 
     @Override
     public void saveData() {
-        globalconfigurationCache.saveData();
+       globalCaConfiguration.saveData();
+
     }
 
     @Override
     public boolean needsUpdate() {
-        return globalconfigurationCache == null || lastupdatetime + CesecoreConfiguration.getCacheGlobalConfigurationTime() <= System.currentTimeMillis();
+        return globalCaConfiguration == null || lastupdatetime + CesecoreConfiguration.getCacheGlobalConfigurationTime() <= System.currentTimeMillis();
     }
 
     @Override
     public ConfigurationBase getConfiguration() {
-        return globalconfigurationCache;
+        return globalCaConfiguration;
     }
 
     @Override
     public ConfigurationBase getConfiguration(@SuppressWarnings("rawtypes") HashMap data) {
-        ConfigurationBase returnval = new GlobalCesecoreConfiguration();
+        ConfigurationBase returnval = new GlobalCaConfiguration();
         returnval.loadData(data);
         return returnval;
     }
 
     @Override
     public ConfigurationBase getNewConfiguration() {
-        return new GlobalCesecoreConfiguration();
+        return new GlobalCaConfiguration();
     }
 
     @Override
     public void updateConfiguration(ConfigurationBase configuration) {
-        this.globalconfigurationCache = (GlobalCesecoreConfiguration) configuration;
+        this.globalCaConfiguration = (GlobalCaConfiguration) configuration;
         lastupdatetime = System.currentTimeMillis();
+
     }
 
     @Override

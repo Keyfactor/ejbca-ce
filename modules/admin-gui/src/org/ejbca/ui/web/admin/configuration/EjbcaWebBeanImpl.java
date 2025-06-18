@@ -189,6 +189,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
 
     /** Wraps all authentication state, so it can be replaced atomically (i.e. other threads won't see "half-updated" state) */
     private class AuthState implements Serializable {
+        private static final long serialVersionUID = 1L;
         String usercommonname = "";
         String certificateFingerprint; // Unique key to identify the admin in this session. Usually a hash of the admin's certificate
         String authenticationTokenTlsSessionId; // Keep the currect TLS session ID so we can detect changes

@@ -184,6 +184,8 @@ public class RaEndEntityBean implements Serializable {
     private boolean sshCriticalOptionsVerifyRequired;
 
     private final Callbacks raEndEntityDetailsCallbacks = new RaEndEntityDetails.Callbacks() {
+        private static final long serialVersionUID = 1L;
+
         @Override
         public RaLocaleBean getRaLocaleBean() {
             return raLocaleBean;

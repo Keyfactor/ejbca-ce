@@ -58,6 +58,8 @@ import com.nimbusds.jose.jwk.JWKSet;
  * new OAuth Keys.
  */
 public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private static final Logger log = Logger.getLogger(SystemConfigurationOAuthKeyManager.class);
 
     private static final String EDIT_OAUTH_KEY = "editOAuthKey";
@@ -97,6 +99,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager implemen
     }
 
     public class OAuthKeyEditor implements Serializable {
+        private static final long serialVersionUID = 1L;
         private String label;
         private String keyIdentifier;
         private OAuthProviderType type = OAuthProviderType.TYPE_GENERIC;

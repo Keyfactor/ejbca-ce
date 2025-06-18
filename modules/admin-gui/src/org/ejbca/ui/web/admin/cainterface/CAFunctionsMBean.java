@@ -218,6 +218,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
     }
 
     public class CertificateChainElement implements Serializable {
+        private static final long serialVersionUID = 1L;
         private final Certificate cert;
         private final String subjectDN;
 
@@ -248,6 +249,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
     }
 
     public class CRLGuiInfo implements Serializable {
+        private static final long serialVersionUID = 1L;
         private final Date createDate;
         private final Date expireDate;
         private final String subjectDn;

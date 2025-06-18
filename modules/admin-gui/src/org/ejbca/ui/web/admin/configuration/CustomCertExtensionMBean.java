@@ -136,6 +136,7 @@ public class CustomCertExtensionMBean extends BaseManagedBean implements Seriali
     
     public class CustomExtensionPropertyGUIInfo implements Serializable {
        
+        private static final long serialVersionUID = 1L;
         private final String key;
         private final String label;
         private String value;

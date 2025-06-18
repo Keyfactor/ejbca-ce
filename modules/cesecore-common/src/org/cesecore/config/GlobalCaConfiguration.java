@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA Community: The OpenSource Certificate Authority                *
+ *  CESeCore: CE Security Core                                           *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,26 +10,45 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
-package org.ejbca.ui.web.admin.cainterface;
+package org.cesecore.config;
 
 import java.io.Serializable;
 
-public class CaInfoProperty implements Serializable {    
-    private static final long serialVersionUID = 1L;
-    private final String text;
-    private final String data;
+import org.cesecore.configuration.ConfigurationBase;
+
+/**
+ *
+ */
+public class GlobalCaConfiguration extends ConfigurationBase implements Serializable {
+
+    public static final String CA_CONFIGURATION_ID = "GLOBAL_CA";
     
-    public CaInfoProperty(final String text, final String data) {
-        this.text = text;
-        this.data = data;
+    private static final long serialVersionUID = 1L;
+    
+    private static final String ENABLE_ICAO_CA_NAME_CHANGE = "enableIcaoCaNameChange";
+    
+    public GlobalCaConfiguration() {
+        super();
+        //Default values
+        setEnableIcaoCANameChange(false);
+    }
+    
+    @Override
+    public void upgrade() {
+
     }
 
-    public String getText() {
-        return text;
+    public boolean getEnableIcaoCANameChange() {
+        return getBoolean(ENABLE_ICAO_CA_NAME_CHANGE, false);
+    }
+    
+    public void setEnableIcaoCANameChange(final boolean value) {
+        putBoolean(ENABLE_ICAO_CA_NAME_CHANGE, value);
+    }
+    
+    @Override
+    public String getConfigurationId() {
+        return CA_CONFIGURATION_ID;
     }
 
-    public String getData() {
-        return data;
-    }
 }

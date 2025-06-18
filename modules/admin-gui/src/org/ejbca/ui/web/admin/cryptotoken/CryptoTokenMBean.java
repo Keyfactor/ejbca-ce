@@ -122,6 +122,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
      * GUI table representation of a CryptoToken that can be interacted with.
      */
     public class CryptoTokenGuiInfo implements Serializable {
+        private static final long serialVersionUID = 1L;
         private final CryptoTokenInfo cryptoTokenInfo;
         private final String p11LibraryAlias;
         private final boolean allowedActivation;
@@ -310,6 +311,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
      * GUI edit/view representation of a CryptoToken that can be interacted with.
      */
     public class CurrentCryptoTokenGuiInfo implements Serializable {
+        private static final long serialVersionUID = 1L;
         private String name = "";
         private String type = SoftCryptoToken.class.getSimpleName();
         private String secret1 = "";
@@ -732,6 +734,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
      * Selectable key pair GUI representation
      */
     public class KeyPairGuiInfo implements Serializable {
+        private static final long serialVersionUID = 1L;
         private final String alias;
         private final String keyAlgorithm;
         private final String keySpecification; // to be displayed in GUI
