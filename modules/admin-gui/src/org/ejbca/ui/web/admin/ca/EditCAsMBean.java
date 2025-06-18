@@ -95,6 +95,8 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLoc
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.config.GlobalCaConfiguration;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 import org.cesecore.keys.token.CryptoTokenInfo;
@@ -155,6 +157,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     @EJB
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
     @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
+    @EJB
     private KeyValidatorSessionLocal keyValidatorSession;
 
     private transient CAInterfaceBean caBean;
@@ -211,7 +215,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private String newSubjectDn;
 
 
-    private GlobalConfiguration globalconfiguration;
     private Map<Integer, String> caIdToNameMap;
     private final Map<String,Integer> caSigners = getEjbcaWebBean().getActiveCANames();
     private final Map<Integer,String> publisheridtonamemap = getEjbcaWebBean().getPublisherIdToNameMapByValue();
@@ -336,12 +339,19 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
     public EditCAsMBean() {
         super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
-        globalconfiguration = getEjbcaWebBean().getGlobalConfiguration();
     }
 
     @PostConstruct
     public void initialize() {
         EditCaUtil.navigateToManageCaPageIfNotPostBack();
+        GlobalConfiguration globalconfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+        try {
+            caBean = SessionBeans.getCaBean(request);
+        } catch (ServletException e) {
+            throw new IllegalStateException("Could not initiate CAInterfaceBean", e);
+        }
+
 
         caIdToNameMap = caSession.getCAIdToNameMap();
         isUniqueIssuerDnSerialNoIndexPresent = getCaBean().isUniqueIssuerDNSerialNoIndexPresent();
@@ -842,6 +852,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     public void genDefaultCrlDistPoint() {
+        GlobalConfiguration globalconfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         final StringBuilder sb = new StringBuilder();
         sb.append(globalconfiguration.getStandardCRLDistributionPointURINoDN());
         if (!isEditCA) {
@@ -874,6 +885,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
     public void genCaDefinedFreshestCrl() {
         final StringBuilder sb = new StringBuilder();
+        GlobalConfiguration globalconfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         sb.append(globalconfiguration.getStandardDeltaCRLDistributionPointURINoDN());
         if (!isEditCA) {
             sb.append(encode(caInfoDto.getCaSubjectDN()));
@@ -887,6 +899,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     public void genDefaultOcspLocator() {
+        GlobalConfiguration globalconfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         caInfoDto.setDefaultOCSPServiceLocator(globalconfiguration.getStandardOCSPServiceLocatorURI());
     }
 
@@ -1007,7 +1020,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
     public boolean isRenderUseCaNameChange() {
         if (cainfo != null) {
-            return caInfoDto.isCaTypeX509() && cainfo.getSignedBy() == CAInfo.SELFSIGNED && globalconfiguration.getEnableIcaoCANameChange();
+            GlobalCaConfiguration globalCaConfiguration = (GlobalCaConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCaConfiguration.CA_CONFIGURATION_ID);
+            return caInfoDto.isCaTypeX509() && cainfo.getSignedBy() == CAInfo.SELFSIGNED && globalCaConfiguration.getEnableIcaoCANameChange();
         }
         return false;
     }
@@ -1394,13 +1408,9 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         } else {
             String certProfileId = caInfoDto.getCurrentCertProfile();
             if (Objects.nonNull(certProfileId)) {
-                if (Objects.nonNull(certProfileId)) {
-                    CertificateProfile cp = certificateProfileSession.getCertificateProfile(Integer.valueOf(certProfileId));
-                    if (Objects.nonNull(cp)) {
-                        return !cp.getUseNameConstraints();
-                    } else {
-                        return true;
-                    }
+                CertificateProfile cp = certificateProfileSession.getCertificateProfile(Integer.valueOf(certProfileId));
+                if (Objects.nonNull(cp)) {
+                    return !cp.getUseNameConstraints();
                 } else {
                     return true;
                 }

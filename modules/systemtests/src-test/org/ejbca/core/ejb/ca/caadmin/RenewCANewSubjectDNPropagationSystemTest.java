@@ -31,12 +31,12 @@ import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.config.GlobalCaConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -80,15 +80,15 @@ public class RenewCANewSubjectDNPropagationSystemTest extends CaTestCase {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-        GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        backupEnableIcaoCANameChangeValue = globalConfiguration.getEnableIcaoCANameChange();
-        globalConfiguration.setEnableIcaoCANameChange(true);
-        globalConfigSession.saveConfiguration(internalAdmin, globalConfiguration);
+        GlobalCaConfiguration globalCaConfiguration = (GlobalCaConfiguration) globalConfigSession.getCachedConfiguration(GlobalCaConfiguration.CA_CONFIGURATION_ID);
+        backupEnableIcaoCANameChangeValue = globalCaConfiguration.getEnableIcaoCANameChange();
+        globalCaConfiguration.setEnableIcaoCANameChange(true);
+        globalConfigSession.saveConfiguration(internalAdmin, globalCaConfiguration);
     }
 
     @AfterClass
     public static void afterClass() throws Exception {
-        GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        GlobalCaConfiguration globalConfiguration = (GlobalCaConfiguration) globalConfigSession.getCachedConfiguration(GlobalCaConfiguration.CA_CONFIGURATION_ID);
         globalConfiguration.setEnableIcaoCANameChange(backupEnableIcaoCANameChangeValue);
         globalConfigSession.saveConfiguration(internalAdmin, globalConfiguration);
     }

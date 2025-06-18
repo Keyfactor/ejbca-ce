@@ -88,7 +88,6 @@ tasks.processTestResources {
         include("dncomponents.properties")
         include("profilemappings.properties")
         include("profilemappings_enterprise.properties")
-        include("certextensions.properties")
     }
     from("${rootProject.projectDir}/conf") {
         // Required by Pkcs11WrapperUnitTest
@@ -111,7 +110,6 @@ tasks.jar {
         include("dncomponents.properties")
         include("profilemappings.properties")
         include("profilemappings_enterprise.properties")
-        include("certextensions.properties")
     }
     from("${rootProject.projectDir}/src/intresources") {
         into("intresources")
