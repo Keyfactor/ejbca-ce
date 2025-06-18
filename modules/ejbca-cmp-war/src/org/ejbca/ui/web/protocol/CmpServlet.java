@@ -381,15 +381,13 @@ public class CmpServlet extends HttpServlet {
             validateCertificateStatus(extraCertificate, messageInformation);
 
             try {
-                sig.initVerify(extraCertificate.getPublicKey());
-                sig.update(CmpMessageHelper.getProtectedBytes(pkimsg));
-                if (!sig.verify(pkimsg.getProtection().getBytes())) {
+                if (!CmpMessageHelper.verifySignature(pkimsg, extraCertificate.getPublicKey())) {
                     // - if verification fails, return a CMP error message
                     String msg = intres.getLocalizedMessage("cmp.errorauthmessage", "Verification of signature failed. " + messageInformation);
                     log.info(msg);
                     throw new CmpServletValidationError(msg);
                 }
-            } catch (InvalidKeyException | SignatureException e) {
+            } catch (SignatureException e) {
                 String msg = intres.getLocalizedMessage("cmp.errorauthmessage", "Signature defined in CMP message could not be initialized. " + messageInformation, e);
                 log.info(msg);
                 throw new CmpServletValidationError(msg);

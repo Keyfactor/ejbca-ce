@@ -13,16 +13,21 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import java.math.BigInteger;
 import java.security.KeyPair;
+import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.certificate.SimpleCertGenerator;
@@ -35,17 +40,30 @@ import org.bouncycastle.asn1.cmp.CMPCertificate;
 import org.bouncycastle.asn1.cmp.PKIBody;
 import org.bouncycastle.asn1.cmp.PKIFailureInfo;
 import org.bouncycastle.asn1.cmp.PKIMessage;
+import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.BufferingContentSigner;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.cesecore.CaTestUtils;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.authorization.user.AccessMatchType;
+import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
@@ -54,6 +72,10 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
+import org.cesecore.roles.Role;
+import org.cesecore.roles.management.RoleSessionRemote;
+import org.cesecore.roles.member.RoleMember;
+import org.cesecore.roles.member.RoleMemberSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -62,6 +84,7 @@ import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
 import org.junit.After;
 import org.junit.Before;
@@ -102,9 +125,16 @@ public class P10CrRequestSystemTest extends CmpTestCase {
     private final CA testx509ca;
     private final CmpConfiguration cmpConfiguration;
     private static final String CMP_ALIAS = "CrmfRequestTestCmpConfigAlias";
+    private static final String CMP_ALIAS_CERT_AUTH = "CrmfRequestTestCmpConfigAlias2";
+    private static final String TEST_ROLE = "P10CrRequestSystemTestRole";
+    private static final String SIGNINGCERT_EE = "P10CrRequestSystemTest" + new Random().nextLong();;
+    private static final String SIGNINGCERT_DN = "O=CmpExtendedValidationTest,CN=" + SIGNINGCERT_EE;
+    private static final X500Name SIGNINGCERT_DN_X500NAME = new X500Name(SIGNINGCERT_DN);
     private static final int P10CR_CERT_REQ_ID = 0; //cerReqId is undefined for p10cr request types, setting it to zero according to openssl
 
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    private final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
+    private final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
     private final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
 
@@ -119,7 +149,7 @@ public class P10CrRequestSystemTest extends CmpTestCase {
         this.testx509ca = CaTestUtils.createTestX509CA(ISSUER_DN, null, false, keyusage);
         this.caid = this.testx509ca.getCAId();
         this.cacert = (X509Certificate) this.testx509ca.getCACertificate();
-        this.keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        this.keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
     }
     @Override
     @Before
@@ -128,16 +158,8 @@ public class P10CrRequestSystemTest extends CmpTestCase {
         this.caSession.addCA(ADMIN, this.testx509ca);
         log.debug("ISSUER_DN: " + ISSUER_DN);
         log.debug("caid: " + this.caid);
-        this.cmpConfiguration.addAlias(CMP_ALIAS);
-        this.cmpConfiguration.setRAMode(CMP_ALIAS, false);
-        this.cmpConfiguration.setResponseProtection(CMP_ALIAS, "signature");
-        this.cmpConfiguration.setCMPDefaultCA(CMP_ALIAS, ISSUER_DN);
-        this.cmpConfiguration.setAuthenticationModule(CMP_ALIAS, CmpConfiguration.AUTHMODULE_HMAC);
-        this.cmpConfiguration.setAuthenticationParameters(CMP_ALIAS, "foo123");
-        this.cmpConfiguration.setExtractUsernameComponent(CMP_ALIAS, "CN");
-        this.cmpConfiguration.setRACertProfile(CMP_ALIAS, CP_DN_OVERRIDE_NAME);
-        this.cmpConfiguration.setRAEEProfile(CMP_ALIAS, String.valueOf(eepDnOverrideId));
-        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
+        addCmpAlias(CMP_ALIAS, CmpConfiguration.AUTHMODULE_HMAC);
+        addCmpAlias(CMP_ALIAS_CERT_AUTH, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
     }
 
     @Override
@@ -160,6 +182,19 @@ public class P10CrRequestSystemTest extends CmpTestCase {
         return this.getClass().getSimpleName();
     }
 
+    private void addCmpAlias(String name, String authenticationType) throws AuthorizationDeniedException {
+        this.cmpConfiguration.addAlias(name);
+        this.cmpConfiguration.setRAMode(name, false);
+        this.cmpConfiguration.setResponseProtection(name, "signature");
+        this.cmpConfiguration.setCMPDefaultCA(name, ISSUER_DN);
+        this.cmpConfiguration.setAuthenticationModule(name, authenticationType);
+        this.cmpConfiguration.setAuthenticationParameters(name, "foo123");
+        this.cmpConfiguration.setExtractUsernameComponent(name, "CN");
+        this.cmpConfiguration.setRACertProfile(name, CP_DN_OVERRIDE_NAME);
+        this.cmpConfiguration.setRAEEProfile(name, String.valueOf(eepDnOverrideId));
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
+    }
+
     @Test
     public void p10CrHttpUnknowUser() throws Exception {
         log.trace(">p10CrRequestHttpUnknowUser");
@@ -167,13 +202,13 @@ public class P10CrRequestSystemTest extends CmpTestCase {
         byte[] transid = CmpMessageHelper.createSenderNonce();
         PKIMessage req = genP10CrCertReq(ISSUER_DN, USER_DN, this.keys, this.cacert, nonce, transid, false, null, new Date(), new Date(), null, null, null, false);
         assertNotNull(req);
-        
+
         byte[] ba = CmpMessageHelper.pkiMessageToByteArray(req);
         byte[] resp = sendCmpHttp(ba, 200, CMP_ALIAS);
-        
+
         checkCmpResponseGeneral(resp, ISSUER_DN, USER_DN, this.cacert, nonce, transid, true, null,
                 PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
-        
+
         // Expect a CertificateResponse (reject) message with error FailInfo.INCORRECT_DATA
         checkCmpFailMessage(resp, "Wrong username or password", PKIBody.TYPE_CERT_REP, P10CR_CERT_REQ_ID, PKIFailureInfo.incorrectData);
         log.trace("<p10CrRequestHttpUnknowUser");
@@ -208,6 +243,56 @@ public class P10CrRequestSystemTest extends CmpTestCase {
     }
 
     @Test
+    public void p10CrHttpSignedMessageWithPssDigestAlgSet() throws Exception {
+        log.trace(">p10CrHttpSignedMessageWithPssDigestAlgSet");
+        X500Name userDN = createCmpUser(SIGNINGCERT_EE, "foo123", SIGNINGCERT_DN, true, this.caid, -1, -1);
+
+        byte[] nonce = CmpMessageHelper.createSenderNonce();
+        byte[] transid = CmpMessageHelper.createSenderNonce();
+        final X509Certificate signingCertificate = createSigningCertificate(ISSUER_DN, SIGNINGCERT_EE, keys, CaTestUtils.getCaPrivateKey(testx509ca),
+                CertificateConstants.CERT_ACTIVE, false);
+        ArrayList<Certificate> signCertColl = new ArrayList<>();
+        signCertColl.add(signingCertificate);
+        PKIMessage req = genP10CrCertReq(ISSUER_DN, userDN, this.keys, this.cacert, nonce, transid, false, null, null,
+                null, null, null, null, false);
+        assertNotNull(req);
+
+        byte[] ba = CmpMessageHelper.signPKIMessage(req, signCertColl, this.keys.getPrivate(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA,
+                NISTObjectIdentifiers.id_sha256.getId(), BouncyCastleProvider.PROVIDER_NAME, SignatureParameter.PSS);
+        // Send request and receive response
+        byte[] resp = sendCmpHttp(ba, 200, CMP_ALIAS_CERT_AUTH);
+        checkCmpResponseGeneral(resp, ISSUER_DN, SIGNINGCERT_DN_X500NAME, this.cacert, nonce, transid, true, null,
+                PKCSObjectIdentifiers.id_RSASSA_PSS.getId(), false);
+        checkCmpCertRepMessage(cmpConfiguration, CMP_ALIAS_CERT_AUTH, SIGNINGCERT_DN_X500NAME, cacert, resp, 0);
+        log.trace("<p10CrHttpSignedMessageWithPssDigestAlgSet");
+    }
+
+    @Test
+    public void p10CrHttpSignedMessageWithPssCaSignAlgSet() throws Exception {
+        log.trace(">p10CrHttpSignedMessageWithPssCaSignAlgSet");
+        X500Name userDN = createCmpUser(SIGNINGCERT_EE, "foo123", SIGNINGCERT_DN, true, this.caid, -1, -1);
+
+        byte[] nonce = CmpMessageHelper.createSenderNonce();
+        byte[] transid = CmpMessageHelper.createSenderNonce();
+        final X509Certificate signingCertificate = createSigningCertificate(ISSUER_DN, SIGNINGCERT_EE, keys, CaTestUtils.getCaPrivateKey(testx509ca),
+                CertificateConstants.CERT_ACTIVE, false);
+        ArrayList<Certificate> signCertColl = new ArrayList<>();
+        signCertColl.add(signingCertificate);
+        PKIMessage req = genP10CrCertReq(ISSUER_DN, userDN, this.keys, this.cacert, nonce, transid, false, null, null,
+                null, null, null, null, false);
+        assertNotNull(req);
+
+        byte[] ba = CmpMessageHelper.signPKIMessage(req, signCertColl, this.keys.getPrivate(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1,
+                null, BouncyCastleProvider.PROVIDER_NAME, SignatureParameter.PSS);
+        // Send request and receive response
+        byte[] resp = sendCmpHttp(ba, 200, CMP_ALIAS_CERT_AUTH);
+        checkCmpResponseGeneral(resp, ISSUER_DN, SIGNINGCERT_DN_X500NAME, this.cacert, nonce, transid, true, null,
+                PKCSObjectIdentifiers.id_RSASSA_PSS.getId(), false);
+        checkCmpCertRepMessage(cmpConfiguration, CMP_ALIAS_CERT_AUTH, SIGNINGCERT_DN_X500NAME, cacert, resp, 0);
+        log.trace("<p10CrHttpSignedMessageWithPssCaSignAlgSet");
+    }
+
+    @Test
     public void p10CrHttpOkUser() throws Exception {
         log.trace(">p10CrHttpOkUser");
         // Create a new good USER
@@ -229,9 +314,9 @@ public class P10CrRequestSystemTest extends CmpTestCase {
                 PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
         //Request id not applicable for pc10cr requests!
         X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, CMP_ALIAS, userDN, this.cacert, resp, P10CR_CERT_REQ_ID);
-        
+
         String altNames = DnComponents.getSubjectAlternativeName(cert);
-        
+
         assertNull("AltNames was not null (" + altNames + ").", altNames);
 
         // Send a confirm message to the CA
@@ -264,7 +349,7 @@ public class P10CrRequestSystemTest extends CmpTestCase {
         assertNotNull(req);
 
         req = protectPKIMessage(req, false, "foo123", "mykeyid", 567);
-        
+
         ba = CmpMessageHelper.pkiMessageToByteArray(req);
         // Send request and receive response
         resp = sendCmpHttp(ba, 200, CMP_ALIAS);
@@ -275,7 +360,7 @@ public class P10CrRequestSystemTest extends CmpTestCase {
         assertNull("AltNames was not null (" + altNames + ").", altNames);
 
         log.trace("<p10CrHttpOkUser");
-        
+
     }
 
     @Test
@@ -295,7 +380,7 @@ public class P10CrRequestSystemTest extends CmpTestCase {
 
             // Since the RegTokenPwd is not supported by p10cr, we need this hmac protection here
             req = protectPKIMessage(req, false, "foo123", "mykeyid", 567);
-            
+
             byte[] ba = CmpMessageHelper.pkiMessageToByteArray(req);
             // Send request and receive response
             byte[] resp = sendCmpHttp(ba, 200, CMP_ALIAS);
@@ -374,7 +459,7 @@ public class P10CrRequestSystemTest extends CmpTestCase {
         try {
             PKIMessage req = genP10CrCertReq(ISSUER_DN, requestName, this.keys, this.cacert, nonce, transid, false, null, null, null, null, null, null, false);
             assertNotNull(req);
-            
+
             // Since the RegTokenPwd is not supported by p10cr, we need this hmac protection here
             req = protectPKIMessage(req, false, "foo123", "mykeyid", 567);
 
@@ -418,10 +503,10 @@ public class P10CrRequestSystemTest extends CmpTestCase {
         try {
             PKIMessage req = genP10CrCertReq(ISSUER_DN, dn, key2, this.cacert, nonce, transid, false, null, null, null, null, null, null, false);
             assertNotNull(req);
-            
+
             // Since the RegTokenPwd is not supported by p10cr, we need this hmac protection here
             req = protectPKIMessage(req, false, "foo123", "mykeyid", 567);
-            
+
             byte[] ba = CmpMessageHelper.pkiMessageToByteArray(req);
             // Send request and receive response
             byte[] resp = sendCmpHttp(ba, 200, CMP_ALIAS);
@@ -510,7 +595,7 @@ public class P10CrRequestSystemTest extends CmpTestCase {
 
             PKIMessage req = genP10CrCertReq(subcaDN, userDN, this.keys, subcaCert, nonce, transid, false, null, null, null, null, null, null, false);
             assertNotNull(req);
-            
+
             // Since the RegTokenPwd is not supported by p10cr, we need this hmac protection here
             req = protectPKIMessage(req, false, "foo123", "mykeyid", 567);
 
@@ -540,5 +625,52 @@ public class P10CrRequestSystemTest extends CmpTestCase {
             CaTestUtils.removeCa(ADMIN, this.caSession.getCAInfo(ADMIN, subcaID));
         }
         log.trace("<p10CrIncludingCertChainInSignedCMPResponse");
+    }
+
+    private X509Certificate createSigningCertificate(final String issuerDn, final String username, final KeyPair signingKeyPair, final PrivateKey issuerKey,
+            final int certStatus, boolean isExpired) throws Exception {
+        // Create the signing certificate, signed by the ca certificate
+        Date firstDate = new Date();
+        Date lastDate = new Date();
+        if (isExpired) {
+            firstDate.setTime(10000);
+            lastDate.setTime(12000);
+        } else {
+            firstDate.setTime(firstDate.getTime() - (10 * 60 * 1000));
+            lastDate.setTime(lastDate.getTime() + (24 * 60 * 60 * 1000));
+        }
+        byte[] serno = new byte[8];
+        // This is a test, so randomness does not have to be secure (CSPRNG)
+        Random random = new Random();
+        random.nextBytes(serno);
+        final SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(signingKeyPair.getPublic().getEncoded());
+        X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(DnComponents.stringToBcX500Name(issuerDn, false),
+                new BigInteger(serno).abs(), firstDate, lastDate,
+                DnComponents.stringToBcX500Name(SIGNINGCERT_DN, false), pkinfo);
+        final ContentSigner signer = new BufferingContentSigner(
+                new JcaContentSignerBuilder("SHA256WithRSA").setProvider(BouncyCastleProvider.PROVIDER_NAME).build(issuerKey), 20480);
+        final X509CertificateHolder certHolder = certbuilder.build(signer);
+        final X509Certificate cert = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
+        assertNotNull("Certificate was null", cert);
+        certificateStoreSession.storeCertificateRemote(ADMIN, EJBTools.wrap(cert), username, CertTools.getFingerprintAsString(cacert), certStatus,
+                CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                CertificateConstants.NO_CRL_PARTITION, null, System.currentTimeMillis(), null);
+        grantAccessToCert(cert);
+        return cert;
+    }
+
+    private void grantAccessToCert(final Certificate cert) throws Exception {
+        roleSession.deleteRoleIdempotent(ADMIN, null, TEST_ROLE);
+        final List<String> accessRules = Arrays.asList(
+                AccessRulesConstants.REGULAR_CREATEENDENTITY,
+                AccessRulesConstants.REGULAR_EDITENDENTITY,
+                AccessRulesConstants.REGULAR_CREATECERTIFICATE,
+                AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepDnOverrideId + AccessRulesConstants.CREATE_END_ENTITY,
+                AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepDnOverrideId + AccessRulesConstants.EDIT_END_ENTITY,
+                StandardRules.CAACCESS.resource() + testx509ca.getCAId());
+        final Role role = roleSession.persistRole(ADMIN, new Role(null, TEST_ROLE, accessRules, Collections.emptyList()));
+        roleMemberSession.persist(ADMIN, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, testx509ca.getCAId(), RoleMember.NO_PROVIDER,
+                X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
+                DnComponents.getPartFromDN(CertTools.getSubjectDN(cert), "CN"), role.getRoleId(), null));
     }
 }

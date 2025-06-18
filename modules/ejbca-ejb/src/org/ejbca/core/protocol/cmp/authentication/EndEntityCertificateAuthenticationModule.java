@@ -15,10 +15,8 @@ package org.ejbca.core.protocol.cmp.authentication;
 
 import java.lang.reflect.InvocationTargetException;
 import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.CertPathBuilderException;
 import java.security.cert.CertPathValidatorException;
@@ -47,7 +45,6 @@ import org.bouncycastle.asn1.crmf.CertTemplate;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;

@@ -51,6 +51,7 @@ import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1OutputStream;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.DERGeneralizedTime;
@@ -72,7 +73,9 @@ import org.bouncycastle.asn1.crmf.CertRequest;
 import org.bouncycastle.asn1.crmf.CertTemplateBuilder;
 import org.bouncycastle.asn1.crmf.OptionalValidity;
 import org.bouncycastle.asn1.crmf.ProofOfPossession;
+import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.RSASSAPSSparams;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.Extension;
@@ -881,6 +884,81 @@ public class NestedMessageContentSystemTest extends CmpTestCase {
         assertNotNull("CrmfRequest did not return a certificate", cert);
         assertTrue(cert instanceof X509Certificate);
         log.debug("Subject DN of created certificate: "+X500Name.getInstance(((X509Certificate)cert).getSubjectX500Principal().getEncoded()));
+    }
+
+    @Test
+    public void test10CrmfReqSignedWithPss() throws Exception {
+        byte[] senderNonce = CmpMessageHelper.createSenderNonce();
+        byte[] transactionID = CmpMessageHelper.createSenderNonce();
+        Date nb = new Date((new Date()).getTime() - 31536000000L);
+        Date na = new Date((new Date()).getTime() + 31536000000L);
+        assertNotNull(nb);
+        assertNotNull(na);
+
+        KeyPair keys = KeyTools.genKeys("1024", "RSA");
+        RSASSAPSSparams pssParams = new RSASSAPSSparams(
+                new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256),
+                new AlgorithmIdentifier(PKCSObjectIdentifiers.id_mgf1,
+                        new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256)),
+                new ASN1Integer(32),
+                new ASN1Integer(1)
+        );
+        AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.id_RSASSA_PSS, pssParams);
+        PKIMessage crmfMsg = genCertReq(this.issuerDN, SUBJECT_DN, keys, this.cacert, senderNonce, transactionID, false, null, nb,
+                na, null, pAlg, new DEROctetString(senderNonce));
+
+        String adminName = "cmpTestAdmin";
+        KeyPair admkeys = KeyTools.genKeys("1024", "RSA");
+        AuthenticationToken adminToken = createAdminToken(admkeys, adminName, "CN=" + adminName + ",C=SE");
+        Certificate admCert = getCertFromCredentials(adminToken);
+        CMPCertificate[] cmpcert = getCMPCert(admCert);
+        crmfMsg = CmpMessageHelper.buildCertBasedPKIProtection(crmfMsg, cmpcert, admkeys.getPrivate(),
+                "SHA256withRSAandMGF1", BouncyCastleProvider.PROVIDER_NAME);
+        assertNotNull(crmfMsg);
+        CertReqMessages ir = (CertReqMessages) crmfMsg.getBody().getContent();
+        int reqID = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+
+        //------------------Creating NestedMessageContent
+        String reqSubjectDN = "CN=bogusSubjectNested";
+        final byte[] nonce = CmpMessageHelper.createSenderNonce();
+        final byte[] transid = CmpMessageHelper.createSenderNonce();
+
+        PKIHeaderBuilder pkiHeaderBuilder = new PKIHeaderBuilder(PKIHeader.CMP_2000, new GeneralName(new X500Name(reqSubjectDN)),
+                new GeneralName(new X500Name(this.cacert.getSubjectX500Principal().getName())));
+        pkiHeaderBuilder.setMessageTime(new ASN1GeneralizedTime(new Date()));
+        pkiHeaderBuilder.setSenderNonce(new DEROctetString(nonce));
+        pkiHeaderBuilder.setTransactionID(new DEROctetString(transid));
+
+        ASN1EncodableVector v = new ASN1EncodableVector();
+        v.add( crmfMsg );
+        DERSequence seq = new DERSequence(v);
+        PKIBody pkiBody = new PKIBody(PKIBody.TYPE_NESTED, seq);
+        assertNotNull("Failed to create nested Message PKIBody", pkiBody);
+
+        PKIMessage pkiMessage = new PKIMessage(pkiHeaderBuilder.build(), pkiBody);
+        assertNotNull("Failed to created nested message PKIMessage", pkiMessage);
+        KeyPair raKeys = KeyTools.genKeys("1024", "RSA");
+        assertEquals("RACertPath is suppose to be '" + this.raCertsPath + "', instead it is '" + this.cmpConfiguration.getRACertPath(cmpAlias) + "'.", this.cmpConfiguration.getRACertPath(cmpAlias), this.raCertsPath);
+        createRACertificate("raCrmfSigner", "foo123", this.raCertsPath, cmpAlias, raKeys, null, null, CMPTESTPROFILE, this.caid);
+        pkiMessage = CmpMessageHelper.buildCertBasedPKIProtection(pkiMessage, null, raKeys.getPrivate(),
+                "SHA256withRSAandMGF1", BouncyCastleProvider.PROVIDER_NAME);
+        assertNotNull("Failed to create pkiIHeader", pkiHeaderBuilder);
+        assertNotNull("pkiBody is null", pkiBody);
+        assertNotNull("pkiMessage is null", pkiMessage);
+
+        final byte[] ba = CmpMessageHelper.pkiMessageToByteArray(pkiMessage);
+        // Send request and receive response
+        final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
+
+        checkCmpResponseGeneral(resp, this.issuerDN, SUBJECT_DN, this.cacert, crmfMsg.getHeader().getSenderNonce().getOctets(),
+                crmfMsg.getHeader().getTransactionID().getOctets(), true, null,
+                PKCSObjectIdentifiers.id_RSASSA_PSS.getId(), false);
+        final Certificate cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, SUBJECT_DN, this.cacert, resp, reqID);
+        assertTrue(cert instanceof X509Certificate);
+        log.debug("Subject DN of created certificate: "+X500Name.getInstance(((X509Certificate)cert).getSubjectX500Principal().getEncoded()));
+        assertNotNull("CrmfRequest did not return a certificate", cert);
+
+        removeAuthenticationToken(adminToken, admCert, adminName);
     }
 
     private static X509Certificate getCertFromCredentials(AuthenticationToken authToken) {
