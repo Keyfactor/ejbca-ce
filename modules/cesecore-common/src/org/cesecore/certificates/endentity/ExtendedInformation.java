@@ -123,8 +123,8 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     public static final String END_ENTITY_PROFILE_NAME   = INTERNAL_KEY_PREFIX+"eep_name";
     
     /** Map key for certificate serial number */
-    private  static final String CERTIFICATESERIALNUMBER = "CERTIFICATESERIALNUMBER";
-    private  static final String CERTIFICATESEQUENCENUMBER = "CERTIFICATESEQUENCENUMBER";
+    public  static final String CERTIFICATESERIALNUMBER = "CERTIFICATESERIALNUMBER";
+    public  static final String CERTIFICATESEQUENCENUMBER = "CERTIFICATESEQUENCENUMBER";
 
     private static final Object NAMECONSTRAINTS_PERMITTED = "nameconstraints_permitted";
     private static final Object NAMECONSTRAINTS_EXCLUDED = "nameconstraints_excluded";
