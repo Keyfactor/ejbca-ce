@@ -74,6 +74,9 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     // Trust Manager Type Settings
     private static final String TRUST_MANAGER_TYPE = "trustManagerType";
     public static final String DEFAULT_TRUST_MANAGER_LOCAL_TRUST_STORE = "LOCAL_TRUST_STORE";
+    public static final String SSL_METHOD_LOCAL_TRUST_STORE = "LOCAL_TRUST_STORE";
+    public static final String SSL_METHOD_IMPORTED_CA = "IMPORTED_CA";
+    public static final String SSL_METHOD_KEY_BINDING = "KEY_BINDING";
 
     // MS Enrollment Servlet Settings
     private static final String CA_NAME = "caName";

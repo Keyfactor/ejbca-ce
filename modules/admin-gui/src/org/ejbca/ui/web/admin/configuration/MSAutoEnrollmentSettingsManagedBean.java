@@ -340,6 +340,15 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
                 .collect(Collectors.toList());
     }
 
+    public List<SelectItem> getAvailableSSLTrustManagerTypes() {
+        List<SelectItem> trustManagerTypes = new ArrayList<>();
+        trustManagerTypes.add(new SelectItem(MSAutoEnrollmentConfiguration.SSL_METHOD_LOCAL_TRUST_STORE, getEjbcaWebBean().getText("MSAE_LOCAL_TRUST_STORE")));
+        trustManagerTypes.add(new SelectItem(MSAutoEnrollmentConfiguration.SSL_METHOD_IMPORTED_CA, getEjbcaWebBean().getText("MSAE_IMPORTED_CA")));
+        trustManagerTypes.add(new SelectItem(MSAutoEnrollmentConfiguration.SSL_METHOD_KEY_BINDING, getEjbcaWebBean().getText("MSAE_KEY_BINDING")));
+
+        return trustManagerTypes;
+    }
+
     /**
      * @return a list of all CA names and caids
      */
