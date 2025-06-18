@@ -72,14 +72,14 @@
                                              action="#{manageCAsMBean.editCaPage(caname)}"
                                              icon="pi pi-file-edit" styleClass="rounded-button"
                                              rendered="#{manageCAsMBean.canEditResource}"/>
-                            <h:commandButton value="#{web.text.DELETE}" ajax="false"
-                                             action="#{manageCAsMBean.deleteCA(caname)}"
-                                             icon="pi pi-trash" styleClass="rounded-button"
-                                             rendered="#{manageCAsMBean.canRemoveResource}"/>
                             <h:commandButton value="#{web.text.CREATEAUTHCSR}" ajax="false"
                                              rendered="#{manageCAsMBean.canRenewResource}"
                                              icon="pi pi-clone" styleClass="rounded-button"
                                              action="#{manageCAsMBean.createAuthCertSignRequest(caname)}"/>
+                            <h:commandButton value="#{web.text.DELETE}" ajax="false"
+                                             action="#{manageCAsMBean.deleteCA(caname)}"
+                                             icon="pi pi-trash" styleClass="rounded-button"
+                                             rendered="#{manageCAsMBean.canRemoveResource}"/>
                         </div>
                     </p:column>
                 </p:dataTable>

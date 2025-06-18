@@ -70,10 +70,10 @@
                             <f:param name="alias" value="#{fn:escapeXml(alias)}"/>
                             <f:param name="mode" value="edit"/>
                         </h:commandButton>
+                        <h:commandButton value="#{web.text.CLONE}" action="#{autoenrollmentConfigMBean.actionClone(alias)}"/>
                         <h:commandButton value="#{web.text.DELETE}"
                                          action="#{autoenrollmentConfigMBean.actionDelete(alias)}"
                                          disabled="#{!autoenrollmentConfigMBean.authorizedToEdit}"/>
-                        <h:commandButton value="#{web.text.CLONE}" action="#{autoenrollmentConfigMBean.actionClone(alias)}"/>
                     </div>
                 </p:column>
             </p:dataTable>

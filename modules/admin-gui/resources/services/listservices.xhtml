@@ -72,12 +72,12 @@
                         <h:commandButton id="editButton" value="#{web.text.EDIT}"
                                          action="#{listServicesManagedBean.editService(serviceName)}"
                                          disabled="#{!listServicesManagedBean.hasEditRights}"/>
-                        <h:commandButton id="deleteButton" value="#{web.text.DELETE}"
-                                         action="#{listServicesManagedBean.confirmServiceDeletion(serviceName)}"
-                                         disabled="#{!listServicesManagedBean.hasEditRights}"/>
                         <h:commandButton id="cloneButton" value="#{web.text.CLONE}"
                                          rendered="#{manageCAsMBean.canRenewResource}"
                                          action="#{listServicesManagedBean.cloneService(serviceName)}"
+                                         disabled="#{!listServicesManagedBean.hasEditRights}"/>
+                        <h:commandButton id="deleteButton" value="#{web.text.DELETE}"
+                                         action="#{listServicesManagedBean.confirmServiceDeletion(serviceName)}"
                                          disabled="#{!listServicesManagedBean.hasEditRights}"/>
                     </div>
                 </p:column>

@@ -73,13 +73,6 @@
 									target="#{listPublishers.selectedPublisherName}"
 									value="#{publisherGuiInfo.name}"/>
 						</h:commandButton>
-						<h:commandButton value="#{web.text.DELETE}"
-										 action="deletepublisherpage"
-										 rendered="#{listPublishers.hasEditRights}">
-							<f:setPropertyActionListener
-									target="#{listPublishers.selectedPublisherName}"
-									value="#{publisherGuiInfo.name}"/>
-						</h:commandButton>
 						<h:commandButton value="#{web.text.CLONE}"
 										 action="clonepublisherpage"
 										 rendered="#{listPublishers.hasEditRights}">
@@ -89,6 +82,13 @@
 							<f:setPropertyActionListener
 									target="#{listPublishers.newPublisherName}" value=""/>
 						</h:commandButton>
+                        <h:commandButton value="#{web.text.DELETE}"
+                                         action="deletepublisherpage"
+                                         rendered="#{listPublishers.hasEditRights}">
+                            <f:setPropertyActionListener
+                                    target="#{listPublishers.selectedPublisherName}"
+                                    value="#{publisherGuiInfo.name}"/>
+                        </h:commandButton>
 					</div>
 				</p:column>
 			</p:dataTable>

@@ -57,14 +57,14 @@
                                          action="#{endEntityProfilesMBean.actionEdit(endEntityProfile)}"
                                          rendered="#{endEntityProfilesMBean.authorizedToEdit}">
                         </h:commandButton>
-                        <h:commandButton value="#{web.text.DELETE}"
-                                         action="#{endEntityProfilesMBean.actionDelete(endEntityProfile)}"
-                                         rendered="#{endEntityProfilesMBean.authorizedToEdit}"/>
                         <h:commandButton value="#{web.text.CLONE}"
                                          action="#{endEntityProfilesMBean.actionClone(endEntityProfile)}"
                                          rendered="#{endEntityProfilesMBean.authorizedToEdit}"/>
                         <h:commandButton value="#{web.text.EXPORT}"
                                          action="#{endEntityProfilesMBean.actionExportProfile(endEntityProfile)}"
+                                         rendered="#{endEntityProfilesMBean.authorizedToEdit}"/>
+                        <h:commandButton value="#{web.text.DELETE}"
+                                         action="#{endEntityProfilesMBean.actionDelete(endEntityProfile)}"
                                          rendered="#{endEntityProfilesMBean.authorizedToEdit}"/>
                     </div>
                 </p:column>

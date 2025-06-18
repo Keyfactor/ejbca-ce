@@ -67,11 +67,11 @@
                             <f:param name="alias" value="#{fn:escapeXml(alias)}"/>
                             <f:param name="mode" value="edit"/>
                         </h:commandButton>
+                        <h:commandButton value="#{web.text.CLONE}"
+                                         action="#{estConfigMBean.cloneAlias(alias)}"/>
                         <h:commandButton value="#{web.text.DELETE}"
                                          action="#{estConfigMBean.deleteAlias(alias)}"
                                          disabled="#{!estConfigMBean.authorizedToEdit}"/>
-                        <h:commandButton value="#{web.text.CLONE}"
-                                         action="#{estConfigMBean.cloneAlias(alias)}"/>
                     </div>
                 </p:column>
             </p:dataTable>

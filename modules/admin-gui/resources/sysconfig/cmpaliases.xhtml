@@ -57,11 +57,11 @@
                                          action="#{cmpConfigMBean.actionEdit(alias)}"
                                          disabled="#{!cmpConfigMBean.authorizedToEdit}">
                         </h:commandButton>
-                        <h:commandButton value="#{web.text.DELETE}"
-                                         action="#{cmpConfigMBean.deleteAlias(alias)}"
-                                         disabled="#{!cmpConfigMBean.authorizedToEdit}"/>
                         <h:commandButton value="#{web.text.CLONE}"
                                          action="#{cmpConfigMBean.cloneAlias(alias)}"
+                                         disabled="#{!cmpConfigMBean.authorizedToEdit}"/>
+                        <h:commandButton value="#{web.text.DELETE}"
+                                         action="#{cmpConfigMBean.deleteAlias(alias)}"
                                          disabled="#{!cmpConfigMBean.authorizedToEdit}"/>
                     </div>
                 </p:column>
