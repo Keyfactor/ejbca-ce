@@ -101,7 +101,6 @@ import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
-import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.unidfnr.UnidFnrHandlerMock;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
@@ -110,9 +109,6 @@ import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.GeneralPurposeCustomPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.protocol.ocsp.extension.certhash.OcspCertHashExtension;
 import org.ejbca.core.protocol.ocsp.extension.unid.OCSPUnidExtension;
 import org.junit.After;
@@ -146,7 +142,6 @@ public class UpgradeSessionBeanSystemTest {
     private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     private EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-    private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
     private GlobalConfigurationSessionRemote globalConfigSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private GlobalConfigurationProxySessionRemote globalConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private PublisherSessionRemote publisherSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class);
@@ -366,44 +361,7 @@ public class UpgradeSessionBeanSystemTest {
         upgradeMethod.setAccessible(true);
         return (Boolean) upgradeMethod.invoke(UpgradeSessionBean.class.newInstance(), firstVersion, secondVersion);
     }
-    
         
-    /**
-     * This test verifies that CMP aliases which refer to EEPs as names will refer to them by ID afterwards. 
-     */
-    @Test
-    public void testUpgradeCmpConfigurationTo651()
-            throws AuthorizationDeniedException, EndEntityProfileExistsException, EndEntityProfileNotFoundException {
-        String aliasName = "testUpgradeCmpConfigurationTo651";
-        String profileName = "testUpgradeCmpConfigurationTo651_EE_Profile";
-        CmpConfiguration cmpConfiguration = (CmpConfiguration) globalConfigSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
-        endEntityProfileSession.addEndEntityProfile(alwaysAllowtoken, profileName, new EndEntityProfile());
-        int endEntityProfileId = endEntityProfileSession.getEndEntityProfileId(profileName);
-        try {
-            cmpConfiguration.addAlias(aliasName);
-            cmpConfiguration.setValue(aliasName + "." + CmpConfiguration.CONFIG_RA_ENDENTITYPROFILEID, null, aliasName);
-            cmpConfiguration.setValue(aliasName + "." + CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, profileName, aliasName);
-            globalConfigSession.saveConfiguration(alwaysAllowtoken, cmpConfiguration);
-            //Perform upgrade. 
-            upgradeSession.upgrade(null, "6.5.0", false);
-            //Confirm that the new value has been set.
-            cmpConfiguration = (CmpConfiguration) globalConfigSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
-            assertEquals("End Entity Profile ID was not set during upgrade.", Integer.toString(endEntityProfileId),
-                    cmpConfiguration.getRAEEProfile(aliasName));
-            //Confirm that the old value was unchanged
-            assertEquals("End Entity Profile ID was not set during upgrade.", profileName,
-                    cmpConfiguration.getValue(aliasName + "." + CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, aliasName));
-
-        } finally {
-            cmpConfiguration = (CmpConfiguration) globalConfigSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
-            if (cmpConfiguration.aliasExists(aliasName)) {
-                cmpConfiguration.removeAlias(aliasName);
-                globalConfigSession.saveConfiguration(alwaysAllowtoken, cmpConfiguration);
-            }
-            endEntityProfileSession.removeEndEntityProfile(alwaysAllowtoken, profileName);
-        }
-    }
-    
     @Test
     public void upgradeTo680RoleMembers() throws AuthorizationDeniedException {
         final String roleName = TESTCLASS + " upgradeTo680RoleMembers";
@@ -513,7 +471,7 @@ public class UpgradeSessionBeanSystemTest {
         // Attempt with version installed earlier than EJBCA 6.6.0 and upgraded from 6.7.0
         upgradeTestSession.createRole(roleName3, oldAcccessRules3, null);
 
-        guc.setUpgradedFromVersion("6.5.0");
+        guc.setUpgradedFromVersion("6.5.1");
         globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
         try {
             upgradeSession.upgrade(null, "6.7.0", false);
@@ -557,7 +515,7 @@ public class UpgradeSessionBeanSystemTest {
         caSession.addCA(alwaysAllowtoken, caWithApprovalsSet);
         
         GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
-        guc.setUpgradedFromVersion("6.5.0");
+        guc.setUpgradedFromVersion("6.5.1");
         globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
         try {
             upgradeSession.upgrade(null, "6.7.0", false);
@@ -604,7 +562,7 @@ public class UpgradeSessionBeanSystemTest {
         certificateProfileSession.addCertificateProfile(alwaysAllowtoken, withApprovalsName, withApprovals);
 
         GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
-        guc.setUpgradedFromVersion("6.5.0");
+        guc.setUpgradedFromVersion("6.5.1");
         globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
         try {
             upgradeSession.upgrade(null, "6.7.0", false);
