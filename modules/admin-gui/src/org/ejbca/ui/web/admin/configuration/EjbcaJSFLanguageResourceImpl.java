@@ -30,7 +30,8 @@ import org.ejbca.util.HTMLTools;
  */
 public class EjbcaJSFLanguageResourceImpl implements EjbcaJSFLanguageResource {
 
-	private EjbcaWebBean ejbcawebbean;
+	private static final long serialVersionUID = 1L;
+    private EjbcaWebBean ejbcawebbean;
 	
 	public EjbcaJSFLanguageResourceImpl(EjbcaWebBean ejbcawebbean){
 		this.ejbcawebbean = ejbcawebbean;

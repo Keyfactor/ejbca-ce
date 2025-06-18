@@ -13,7 +13,13 @@
 
 package org.ejbca.ui.cli;
 
-import java.io.*;
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -32,7 +38,7 @@ public class SerObjectMerger extends ClientToolBox {
 
     @Override
     protected void execute(String[] args) {
-        final List<String> argsList = new ArrayList<String>(Arrays.asList(args));
+        final List<String> argsList = new ArrayList<>(Arrays.asList(args));
         argsList.remove(getName());
         if (argsList.isEmpty() || argsList.contains("help")) {
             System.out.println("Usage: SerObjectMerger file1.ser file2.ser ...");
@@ -44,27 +50,28 @@ public class SerObjectMerger extends ClientToolBox {
         }
         try {
             System.out.println("SerObjectMerger: starting with reading " + argsList.size() + " files...");
-            List<BigInteger> bigList = new ArrayList<BigInteger>();
+            List<BigInteger> bigList = new ArrayList<>();
             for (String fileName : argsList) {
                 int duplicates = 0;
                 int counterBI = 0;
                 int counterOther = 0;
                 try {
                     System.out.println(fileName + ": starting...");
-                    ObjectInputStream oi = new ObjectInputStream(new FileInputStream(fileName));
-                    while (true) {
-                        Object obj = oi.readObject();
-                        if (obj instanceof java.math.BigInteger) {
-                            counterBI++;
-                            BigInteger bi = (BigInteger) obj;
-                            if (bigList.contains(bi)) {
-                                duplicates++;
+                    try (ObjectInputStream oi = new ObjectInputStream(new FileInputStream(fileName))) {
+                        while (true) {
+                            Object obj = oi.readObject();
+                            if (obj instanceof BigInteger) {
+                                counterBI++;
+                                BigInteger bi = (BigInteger) obj;
+                                if (bigList.contains(bi)) {
+                                    duplicates++;
+                                } else {
+                                    bigList.add(bi);
+                                }
                             } else {
-                                bigList.add(bi);
+                                counterOther++;
+                                System.out.println(fileName + ": this object is not a BigInteger: " + obj.getClass().getName());
                             }
-                        } else {
-                            counterOther++;
-                            System.out.println(fileName + ": this object is not a BigInteger: " + obj.getClass().getName());
                         }
                     }
                 } catch (EOFException e) {

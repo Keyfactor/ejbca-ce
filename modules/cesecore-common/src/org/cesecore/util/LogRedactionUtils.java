@@ -385,7 +385,7 @@ public class LogRedactionUtils {
 
         if (checkIfExtendsEjbcaException(thrownException)) {
             try {
-                Class c = thrownException.getClass();
+                Class<?> c = thrownException.getClass();
                 Method getErrorCodeMethod = c.getDeclaredMethod("getErrorCode");
                 Method setErrorCodeMethod = c.getDeclaredMethod("setErrorCode", ErrorCode.class);
                 setErrorCodeMethod.invoke(redactedException, (ErrorCode) getErrorCodeMethod.invoke(thrownException));

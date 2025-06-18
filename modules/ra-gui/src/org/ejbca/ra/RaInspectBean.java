@@ -322,4 +322,5 @@ public class RaInspectBean implements Serializable {
     public InspectedObject getInspectedObject() {
         return inspectedObject;
     }
+
 }

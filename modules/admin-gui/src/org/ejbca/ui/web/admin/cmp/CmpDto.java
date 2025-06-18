@@ -12,8 +12,11 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.cmp;
 
-public class CmpDto {
+import java.io.Serializable;
 
+public class CmpDto implements Serializable {
+
+    private static final long serialVersionUID = 1L;
     private String alias;
     private String CMPDefaultCA;
     private String responseProtection;

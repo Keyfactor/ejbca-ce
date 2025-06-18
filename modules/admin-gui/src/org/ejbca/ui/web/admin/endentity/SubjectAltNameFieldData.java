@@ -18,13 +18,16 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.ui.web.admin.rainterface.UserView;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
+import java.io.Serializable;
+
 import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Class holding and validating data for subject alternative name attributes of End Entity
  */
-public class SubjectAltNameFieldData extends SubjectFieldData {
+public class SubjectAltNameFieldData extends SubjectFieldData implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     private boolean isRfc822Name;
     private boolean useDataFromRFC822NameField;
     private boolean copyDataFromCN;

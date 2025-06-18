@@ -100,10 +100,5 @@ public class PublisherProxySessionBean implements PublisherProxySessionRemote {
             htp.setPublisher(publisher);
         }
     }
-
-    @Override
-    public int adhocUpgradeTo6_3_1_1() {
-        return publisherSession.adhocUpgradeTo6_3_1_1();
-    }
     
 }

@@ -48,7 +48,6 @@ import org.ejbca.core.model.ca.publisher.GeneralPurposeCustomPublisher;
 import org.ejbca.core.model.ca.publisher.ICustomPublisher;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.LdapSearchPublisher;
-import org.ejbca.core.model.ca.publisher.LegacyValidationAuthorityPublisher;
 import org.ejbca.core.model.ca.publisher.MultiGroupPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
@@ -71,7 +70,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     private static final Logger log = Logger.getLogger(EditPublisherManagedBean.class);
 
     private static final Map<Integer, String> AVAILABLE_PUBLISHERS;
-    private final Map<Class <? extends BasePublisher>, Runnable> publisherInitMap = new HashMap<>();
+    private transient Map<Class <? extends BasePublisher>, Runnable> publisherInitMap = null;
     private List<CustomPublisherProperty> availableCustomPublisherPropertyList;
 
     static {
@@ -202,7 +201,6 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         return Integer.valueOf(getPublisherType()).toString();
     }
 
-    @SuppressWarnings("deprecation")
     private int getPublisherType() {
         int retval = PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER;
         if (publisher instanceof CustomPublisherContainer) {
@@ -213,10 +211,6 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         }
         if (publisher instanceof LdapSearchPublisher) {
             retval = PublisherConst.TYPE_LDAPSEARCHPUBLISHER;
-        }
-        // Legacy VA publisher doesn't exist in community edition, so check the qualified class name instead.
-        if (publisher.getClass().getName().equals(LegacyValidationAuthorityPublisher.OLD_VA_PUBLISHER_QUALIFIED_NAME)) {
-            retval = PublisherConst.TYPE_VAPUBLISHER;
         }
         if (publisher instanceof ActiveDirectoryPublisher) {
             retval = PublisherConst.TYPE_ADPUBLISHER;
@@ -248,14 +242,6 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
             return pub == null ? false : pub.isReadOnly();
         }
         return false;
-    }
-
-    /**
-    *
-    * @return true if the publisher is deprecated and shouldn't be editable.
-    */
-    public boolean isDeprecated() {
-        return publisher.getClass().getName().equals(LegacyValidationAuthorityPublisher.OLD_VA_PUBLISHER_QUALIFIED_NAME);
     }
 
     public List<String> getCustomClasses() {
@@ -598,14 +584,13 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     
     private void initializePage() {
         initCommonParts();
-        publisherInitMap.get(publisher.getClass()).run();
+        getPublisherInitMap().get(publisher.getClass()).run();
     }
 
     private void initCommonParts() {
         if (publisher == null) { // Loading from database
             publisher = publisherSession.getPublisher(listPublishers.getSelectedPublisherName());
             publisherId = publisher.getPublisherId();
-            fillPublisherInitMapAndInitPublisherData();
         }
 
         selectedPublisherType = getSelectedPublisherValue();
@@ -618,12 +603,16 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         useQueueForOcspResponses = publisher.getUseQueueForOcspResponses();
     }
 
-    private void fillPublisherInitMapAndInitPublisherData() {
-        publisherInitMap.put(ActiveDirectoryPublisher.class, () -> initActiveDirectoryPublisher());
-        publisherInitMap.put(LdapSearchPublisher.class, () -> initLdapSearchPublisher());
-        publisherInitMap.put(LdapPublisher.class, () -> initLdapPublisher()); 
-        publisherInitMap.put(CustomPublisherContainer.class, () -> initCustomPublisher());
-        publisherInitMap.put(MultiGroupPublisher.class, () -> initMultiGroupPublisher());
+    public Map<Class <? extends BasePublisher>, Runnable> getPublisherInitMap() {
+        if (publisherInitMap == null) {
+            publisherInitMap = new HashMap<>();
+            publisherInitMap.put(ActiveDirectoryPublisher.class, () -> initActiveDirectoryPublisher());
+            publisherInitMap.put(LdapSearchPublisher.class, () -> initLdapSearchPublisher());
+            publisherInitMap.put(LdapPublisher.class, () -> initLdapPublisher()); 
+            publisherInitMap.put(CustomPublisherContainer.class, () -> initCustomPublisher());
+            publisherInitMap.put(MultiGroupPublisher.class, () -> initMultiGroupPublisher());
+        }
+        return publisherInitMap;
     }
     
 }

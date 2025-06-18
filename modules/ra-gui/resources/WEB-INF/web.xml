@@ -24,6 +24,8 @@
 
     <description><![CDATA[EJBCA RA GUI]]></description>
 
+    <distributable />
+    
     <!-- Set to "Development" for debugging.
         "Production" also implies jakarta.faces.FACELETS_REFRESH_PERIOD=-1 which means pages are never recompiled.
         TODO: Set automatically when ejbca.productionmode=false
