@@ -28,7 +28,7 @@ import jakarta.validation.ConstraintValidatorContext;
 import jakarta.validation.Payload;
 
 import java.util.regex.Pattern;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.ejbca.ui.web.rest.api.io.request.AddEndEntityRestRequest;
 
 import com.keyfactor.util.certificate.DnComponents;
@@ -165,9 +165,11 @@ public @interface ValidAddEndEntityRestRequest {
             if (addEndEntityRestRequest.getCustomData() != null && !addEndEntityRestRequest.getCustomData().isEmpty()) {
                 try {
                     for (ExtendedInformationRestRequestComponent extendedInformation : addEndEntityRestRequest.getCustomData()) {
-                        if (extendedInformation.getName().equals("CERTIFICATESERIALNUMBER")) {
+                        if (extendedInformation.getName().equals("CERTIFICATESERIALNUMBER")
+                                && !StringUtils.isEmpty(extendedInformation.getValue())) {
                             Base64.decode(extendedInformation.getValue().getBytes());
-                        } else if (extendedInformation.getName().equals("CERTIFICATESEQUENCENUMBER")) {
+                        } else if (extendedInformation.getName().equals("CERTIFICATESEQUENCENUMBER")
+                                && !StringUtils.isEmpty(extendedInformation.getValue())) {
                             if (extendedInformation.getValue().length() > 5) {
                                 ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidEditEndEntityRestRequest.invalid.custom.sequencenumber.length}");
                                 return false;
