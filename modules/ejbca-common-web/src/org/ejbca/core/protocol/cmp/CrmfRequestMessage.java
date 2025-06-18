@@ -553,9 +553,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
                                 log.debug("POP verify returns: " + ret);
                             }
                         } catch (OperatorCreationException e) {
-                            if (log.isDebugEnabled()) {
-                                log.debug("ContentVerifier verification failed: " + e.getMessage());
-                            }
+                            log.error("POP verification failed: " + e.getMessage());
                         }
                     } else {
                         log.info("Can not verify POP, protObject exists but there is nothing in it.");
