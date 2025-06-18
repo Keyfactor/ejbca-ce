@@ -40,6 +40,7 @@ import com.keyfactor.util.string.StringConfigurationCache;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DEROctetString;
@@ -61,6 +62,7 @@ import org.bouncycastle.asn1.crmf.EncryptedValue;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
+import org.bouncycastle.asn1.pkcs.RSASSAPSSparams;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
@@ -998,7 +1000,7 @@ public class CrmfRequestSystemTest extends CmpTestCase {
             // Add protocolEncKey that is not an RSA key, this will return an error as well
             KeyPair protocolEncKey = KeyTools.genKeys("secp256r1", "ECDSA");
             req = genCertReq(ISSUER_DN_SHA256, userDN1, userDN1, null, /*keys*/null, null, protocolEncKey, cacertSha256, nonce, transid, false,
-                    null, null, null, null, pAlg, null, false);
+                    null, null, null, null, pAlg, null, false, null);
             assertNotNull(req);
             ir = (CertReqMessages) req.getBody().getContent();
             reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
@@ -1014,7 +1016,7 @@ public class CrmfRequestSystemTest extends CmpTestCase {
             // Sending null means that the server should choose the keytype and size allowed by the certificate profile
             protocolEncKey = KeyTools.genKeys("1024", "RSA");
             req = genCertReq(ISSUER_DN_SHA256, userDN1, userDN1, null, /*keys*/null, null, protocolEncKey, cacertSha256, nonce, transid, false,
-                    null, null, null, null, pAlg, null, false);
+                    null, null, null, null, pAlg, null, false, null);
             assertNotNull(req);
             ir = (CertReqMessages) req.getBody().getContent();
             reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
@@ -1032,7 +1034,7 @@ public class CrmfRequestSystemTest extends CmpTestCase {
             certificateProfile.setAvailableKeyAlgorithms(new String[]{"RSA"});
             certProfileSession.changeCertificateProfile(ADMIN, cmptestCPName, certificateProfile);
             req = genCertReq(ISSUER_DN_SHA256, userDN1, userDN1, null, /*keys*/null, null, protocolEncKey, cacertSha256, nonce, transid, false,
-                    null, null, null, null, pAlg, null, false);
+                    null, null, null, null, pAlg, null, false, null);
             assertNotNull(req);
             ir = (CertReqMessages) req.getBody().getContent();
             reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
@@ -1067,7 +1069,7 @@ public class CrmfRequestSystemTest extends CmpTestCase {
             certificateProfile.setAvailableEcCurves(new String[]{"secp256r1"});
             certProfileSession.changeCertificateProfile(ADMIN, cmptestCPName, certificateProfile);
             req = genCertReq(ISSUER_DN_SHA256, userDN1, userDN1, null, /*keys*/null, null, protocolEncKey, cacertSha256, nonce, transid, false,
-                    null, null, null, null, pAlg, null, false);
+                    null, null, null, null, pAlg, null, false, null);
             assertNotNull(req);
             ir = (CertReqMessages) req.getBody().getContent();
             reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
@@ -1110,7 +1112,7 @@ public class CrmfRequestSystemTest extends CmpTestCase {
             SubjectPublicKeyInfo spkInfo = new SubjectPublicKeyInfo(new AlgorithmIdentifier(
                     PKCSObjectIdentifiers.rsaEncryption, DERNull.INSTANCE), new byte[0]);
             req = genCertReq(ISSUER_DN_SHA256, userDN1, userDN1, null, /*keys*/null, spkInfo, protocolEncKey, cacertSha256, nonce, transid, false,
-                    null, null, null, null, pAlg, null, false);
+                    null, null, null, null, pAlg, null, false, null);
             assertNotNull(req);
             ir = (CertReqMessages) req.getBody().getContent();
             reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
@@ -1132,7 +1134,7 @@ public class CrmfRequestSystemTest extends CmpTestCase {
             // Note for a normal RSA key the AlgorithmIdentifier.parameters is specified to be DERNull (not java null, but ASN.1 type null)
             // See RFC3279 for SubjectPublicKeyInfo OIDs and parameters for RSA, ECDSA etc
             req = genCertReq(ISSUER_DN_SHA256, userDN1, userDN1, null, /*keys*/null, spkInfo, protocolEncKey, cacertSha256, nonce, transid, false,
-                    null, null, null, null, pAlg, null, false);
+                    null, null, null, null, pAlg, null, false, null);
             assertNotNull(req);
             ir = (CertReqMessages) req.getBody().getContent();
             reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
@@ -1150,7 +1152,7 @@ public class CrmfRequestSystemTest extends CmpTestCase {
             spkInfo = new SubjectPublicKeyInfo(new AlgorithmIdentifier(
                     PKCSObjectIdentifiers.des_EDE3_CBC, DERNull.INSTANCE), new byte[0]);
             req = genCertReq(ISSUER_DN_SHA256, userDN1, userDN1, null, /*keys*/null, spkInfo, protocolEncKey, cacertSha256, nonce, transid, false,
-                    null, null, null, null, pAlg, null, false);
+                    null, null, null, null, pAlg, null, false, null);
             assertNotNull(req);
             ir = (CertReqMessages) req.getBody().getContent();
             reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
@@ -1176,7 +1178,7 @@ public class CrmfRequestSystemTest extends CmpTestCase {
 //            SubjectPublicKeyInfo spkInfoEC = new SubjectPublicKeyInfo(new AlgorithmIdentifier(
 //                    X9ObjectIdentifiers.id_ecPublicKey, DERNull.INSTANCE), new byte[0]);
             req = genCertReq(ISSUER_DN_SHA256, userDN1, userDN1, null, /*keys*/null, spkInfo, protocolEncKey, cacertSha256, nonce, transid, false,
-                    null, null, null, null, pAlg, null, false);
+                    null, null, null, null, pAlg, null, false, null);
             assertNotNull(req);
             ir = (CertReqMessages) req.getBody().getContent();
             reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
@@ -1214,7 +1216,7 @@ public class CrmfRequestSystemTest extends CmpTestCase {
             spkInfo = new SubjectPublicKeyInfo(new AlgorithmIdentifier(
                     X9ObjectIdentifiers.id_ecPublicKey, params), new byte[0]);
             req = genCertReq(ISSUER_DN_SHA256, userDN1, userDN1, null, /*keys*/null, spkInfo, protocolEncKey, cacertSha256, nonce, transid, false,
-                    null, null, null, null, pAlg, null, false);
+                    null, null, null, null, pAlg, null, false, null);
             assertNotNull(req);
             ir = (CertReqMessages) req.getBody().getContent();
             reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
@@ -1238,7 +1240,7 @@ public class CrmfRequestSystemTest extends CmpTestCase {
             spkInfo = new SubjectPublicKeyInfo(new AlgorithmIdentifier(
                     X9ObjectIdentifiers.id_ecPublicKey, params), new byte[0]);
             req = genCertReq(ISSUER_DN_SHA256, userDN1, userDN1, null, /*keys*/null, spkInfo, protocolEncKey, cacertSha256, nonce, transid, false,
-                    null, null, null, null, pAlg, null, false);
+                    null, null, null, null, pAlg, null, false, null);
             assertNotNull(req);
             ir = (CertReqMessages) req.getBody().getContent();
             reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
@@ -1348,8 +1350,8 @@ public class CrmfRequestSystemTest extends CmpTestCase {
     }
 
     @Test
-    public void testPssCrmfHttpOkUserSha256PssWithPssCa() throws Exception {
-        log.info(">testPssCrmfHttpOkUserSha256PssWithPssCa");
+    public void testPssCrmfHttpOkUserSha256PssWithPssCaAndCustomPopoAlg() throws Exception {
+        log.info(">testPssCrmfHttpOkUserSha256PssWithPssCaCustomPopoAlg");
         cmpConfiguration.setCMPDefaultCA(cmpAlias, ISSUER_DN_PSS);
         cmpConfiguration.setResponseProtection(cmpAlias, "signature");
         globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration);
@@ -1358,10 +1360,14 @@ public class CrmfRequestSystemTest extends CmpTestCase {
         byte[] nonce   = CmpMessageHelper.createSenderNonce();
         byte[] transId = CmpMessageHelper.createSenderNonce();
 
+        // POPO algorithm identifier for RSA-PSS with SHA-256 and MGF1
+        AlgorithmIdentifier popoAlgId = new AlgorithmIdentifier(PKCSObjectIdentifiers.id_RSASSA_PSS, new RSASSAPSSparams(
+                new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256), new AlgorithmIdentifier(PKCSObjectIdentifiers.id_mgf1,
+                                new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256)), new ASN1Integer(32),new ASN1Integer(1)));
+
         PKIMessage req = genCertReq(
                 ISSUER_DN_PSS, userDN, keysPss, cacertPss,
-                nonce, transId, false, null, null, null, null, null, null
-        );
+                nonce, transId, false, null, null, null, null, null, null, popoAlgId);
         byte[] pssReq = CmpMessageHelper.signPKIMessage(req, List.of(cacertPss), keysPss.getPrivate(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1,
                 null, BouncyCastleProvider.PROVIDER_NAME, SignatureParameter.PSS);
 
@@ -1378,7 +1384,7 @@ public class CrmfRequestSystemTest extends CmpTestCase {
                 )
         );
 
-        log.info("<testPssCrmfHttpOkUserSha256PssWithPssCa");
+        log.info("<testPssCrmfHttpOkUserSha256PssWithPssCaCustomPopoAlg");
     }
 
     @Test
@@ -1393,11 +1399,11 @@ public class CrmfRequestSystemTest extends CmpTestCase {
         byte[] transId = CmpMessageHelper.createSenderNonce();
 
         PKIMessage req = genCertReq(
-                ISSUER_DN_SHA384, userDN, keysPss, cacertPss,
+                ISSUER_DN_SHA384, userDN, keysPss, cacertSha384,
                 nonce, transId, false, null, null, null, null, null, null
         );
-        byte[] pssReq = CmpMessageHelper.signPKIMessage(req, List.of(cacertPss), keysPss.getPrivate(), AlgorithmConstants.SIGALG_SHA384_WITH_RSA_AND_MGF1,
-                null, BouncyCastleProvider.PROVIDER_NAME, SignatureParameter.PSS
+        byte[] pssReq = CmpMessageHelper.signPKIMessage(req, List.of(cacertSha384), keysPss.getPrivate(), AlgorithmConstants.SIGALG_SHA384_WITH_RSA,
+                NISTObjectIdentifiers.id_sha384.getId(), BouncyCastleProvider.PROVIDER_NAME, SignatureParameter.PSS
         );
 
         byte[] response = sendCmpHttp(pssReq, 200, cmpAlias);
