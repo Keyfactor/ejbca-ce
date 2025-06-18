@@ -19,7 +19,7 @@ import com.jcraft.jsch.IdentityRepository;
 
 public class ScpPublisherIdentityRepository implements IdentityRepository {
             
-    private Vector<Identity> identities = new Vector<>();
+    private final Vector<Identity> identities = new Vector<>();
     
     // there is only one CryptoToken + KeyPair used for auth
     public ScpPublisherIdentityRepository(ScpPublisherIdentity scpPublisherIdentity) {

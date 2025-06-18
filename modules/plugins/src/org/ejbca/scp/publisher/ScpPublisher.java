@@ -185,7 +185,7 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
                 new CustomPublisherProperty(SCP_PRIVATE_KEY_PASSWORD_NAME, CustomPublisherProperty.UI_TEXTINPUT_PASSWORD, privateKeyPassword));
         this.properties.put(SCP_KNOWN_HOSTS_PROPERTY_NAME,
                 new CustomPublisherProperty(SCP_KNOWN_HOSTS_PROPERTY_NAME, CustomPublisherProperty.UI_TEXTINPUT, scpKnownHosts));
-        
+
     }
 
     @Override
@@ -227,7 +227,6 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
         EjbLocalHelper ejbLocalHelper = new EjbLocalHelper();
         CaSessionLocal caSession = ejbLocalHelper.getCaSession();
         CryptoTokenSessionLocal cryptoTokenSessionLocal = ejbLocalHelper.getCryptoTokenSession();
-//        CryptoTokenManagementSessionLocal cryptoTokenManagementSessionLocal = ejbLocalHelper.getCryptoTokenManagementSession();
         AuthorizationSessionLocal authorizationSession = ejbLocalHelper.getAuthorizationSession();
         
         List<String> authorizedCaIds = new ArrayList<>();
@@ -263,29 +262,13 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
                 try {
                     List<String> keyAliases = token.getAliases();
                     Collections.sort(keyAliases);
-//                    KeyPairInfo keyPairInfo = null;
                     for (String keypair: keyAliases) {
-//                        try {
-//                            keyPairInfo = cryptoTokenManagementSessionLocal.getKeyPairInfo(authenticationToken, cryptoTokenId, keypair);
-//                        } catch (AuthorizationDeniedException e) {
-//                            log.error("Unable to read cryptoken key info: ", e);
-//                            continue;
-//                        }
-//                        // TODO
-//                        log.debug("keyPairInfo: " + keyPairInfo.getKeyAlgorithm() + keyPairInfo.getKeySpecification());
-//                        if (keyPairInfo.getKeyAlgorithm().equals("RSA") || keyPairInfo.getKeyAlgorithm().equals("Ed25519")
-//                                || keyPairInfo.getKeySpecification().equals("prime256v1")
-//                                || keyPairInfo.getKeySpecification().equals("secp256r1")
-//                                || keyPairInfo.getKeySpecification().equals("secp384r1")
-//                                || keyPairInfo.getKeySpecification().equals("secp521r1")) {
                             authorizedCryptoTokenIdsAndKeyPairs.add(cryptoTokenId + ";" + keypair);
                             authorizedCryptoTokenNamesAndKeyPairs.add(
                                     cryptoTokenIdToNameMap.get(cryptoTokenId) + "  ------  " + keypair);
-//                        }
                     }
                 } catch (KeyStoreException | CryptoTokenOfflineException e) {
                      log.error("Unable to read cryptoken key aliases: ", e);
-                    continue;
                 }
             }
         }
@@ -484,7 +467,7 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
         String keyPairName = cryptoTokenAndKeyPair.split(";")[1].trim();
         
         CryptoTokenManagementSessionLocal cryptoTokenManagementSession = new EjbLocalHelper().getCryptoTokenManagementSession();
-        Key sshAuthKey = null;
+        Key sshAuthKey;
         try {
             sshAuthKey =  cryptoTokenManagementSession.getPublicKey(
                     new AlwaysAllowLocalAuthenticationToken("ScpPublisher"), 
@@ -511,7 +494,7 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
         
     private void testConnectionSftp(String testDestination, String destinationType,
             List<PublisherConnectionException> caughtExceptions,
-            int cryptoTokenId, String keyPairName, Key sshAuthKey, byte[] knownHosts) throws PublisherConnectionException {
+            int cryptoTokenId, String keyPairName, Key sshAuthKey, byte[] knownHosts) {
         
         if (StringUtils.isBlank(testDestination)) {
             return;
@@ -521,12 +504,12 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
         Session session = null;
         ChannelSftp channelSftp = null;
         
-        try {
+        try (final ByteArrayInputStream knownHostsInputStream = new ByteArrayInputStream(knownHosts)) {
             
             Destination destination = buildDestination(testDestination, sshPort);
             jsch.setIdentityRepository(new ScpPublisherIdentityRepository(new ScpPublisherIdentity(
                     cryptoTokenId, keyPairName, sshAuthKey.getAlgorithm(), sshAuthKey)));
-            jsch.setKnownHosts(new ByteArrayInputStream(knownHosts));
+            jsch.setKnownHosts(knownHostsInputStream);
             session = jsch.getSession(sshUsername, destination.host, destination.port);
             jsch.addIdentity(new ScpPublisherIdentity(
                     cryptoTokenId, keyPairName, sshAuthKey.getAlgorithm(), sshAuthKey), null);
@@ -537,7 +520,7 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
             channelSftp = (ChannelSftp) channel;
             channelSftp.ls(destination.path);
 
-        } catch (JSchException | SftpException e) {
+        } catch (JSchException | SftpException | IOException e) {
             String msg = "Could not connect to " + destinationType + " destination. ";
             if (e.getMessage().contains("Auth fail")) {
                 msg += "Cryptoken key could not be used for authentication. "
@@ -679,7 +662,7 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
     private void performSftp(final int signingCaId, final String destinationFileName,
             final String username, final Integer port, final byte[] data, 
             String destinationPath, final String cryptoTokenId, final String keyPairName,
-            final byte[] knownHosts) throws JSchException, IOException, PublisherException {
+            final byte[] knownHosts) throws JSchException, PublisherException {
         
         byte[] signedBytes;
         if (signingCaId != -1) {
@@ -707,7 +690,7 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
         JSch jsch = new JSch();
         
         CryptoTokenManagementSessionLocal cryptoTokenManagementSession = new EjbLocalHelper().getCryptoTokenManagementSession();
-        Key sshAuthKey = null;
+        Key sshAuthKey;
         try {
             sshAuthKey =  cryptoTokenManagementSession.getPublicKey(
                     new AlwaysAllowLocalAuthenticationToken("ScpPublisher"), 
@@ -902,7 +885,7 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
         private Destination(String host, String path, Integer port) {
             this.host = host;
             this.path = path;
-            this.port = port!=null ? port : 22;
+            this.port = port!=null ? port : DEFAULT_SSH_PORT_NUMBER;
         }
     }
 

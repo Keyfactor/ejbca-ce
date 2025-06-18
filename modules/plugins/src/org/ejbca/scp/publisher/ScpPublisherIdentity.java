@@ -37,7 +37,6 @@ import org.ejbca.core.model.util.EjbLocalHelper;
 
 import com.jcraft.jsch.Identity;
 import com.jcraft.jsch.JSchException;
-//import com.jcraft.jsch.MyBuffer;
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
@@ -46,7 +45,7 @@ public class ScpPublisherIdentity implements Identity  {
     
     private static final Logger log = Logger.getLogger(ScpPublisherIdentity.class);
     
-    private static Map<String, String> sshAlgoNameToBcSignAlgoName = new HashMap<>();
+    private static final Map<String, String> sshAlgoNameToBcSignAlgoName = new HashMap<>();
     
     static {
         sshAlgoNameToBcSignAlgoName.put("rsa-sha2-256", "SHA256withRSA");
@@ -113,7 +112,7 @@ public class ScpPublisherIdentity implements Identity  {
             throw new IllegalStateException("Provider could not be loaded: " + providerName, e);
         }
         
-        byte[] sign = null;
+        byte[] sign;
         try {
             sig.initSign(cryptoToken.getPrivateKey(keyPairName));
             sig.update(data);

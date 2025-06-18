@@ -549,7 +549,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         } 
         int cryptoTokenId = Integer.parseInt(cryptoTokenIdAndKeyPairName.split(";")[0].trim());
         String keyPairName = cryptoTokenIdAndKeyPairName.split(";")[1].trim();
-        Key sshAuthKey = null;
+        Key sshAuthKey;
         try {
             sshAuthKey =  cryptoTokenManagementSession.getPublicKey(getAdmin(), cryptoTokenId, keyPairName).getPublicKey();
         } catch (NumberFormatException | CryptoTokenOfflineException e) {
