@@ -2715,7 +2715,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             for (final String msaeAlias : msaeConfig.getAliasList()) {
                 if (msaeConfig.isUseSSL(msaeAlias)) {
                     // If useSSL was true set trustManagerType to KEY_BINDING
-                    msaeConfig.setTrustManagerType(msaeAlias, "KEY_BINDING");
+                    msaeConfig.setTrustManagerType(msaeAlias, MSAutoEnrollmentConfiguration.SSL_METHOD_KEY_BINDING);
                 }
             }
             try {
