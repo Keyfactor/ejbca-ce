@@ -647,6 +647,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
 
             // MSAE Settings
             autoEnrollmentConfiguration.setIsUseSsl(alias, dto.isUseSSL());
+            autoEnrollmentConfiguration.setTrustManagerType(alias, dto.getTrustManagerType());
             autoEnrollmentConfiguration.setFollowLdapReferral(alias, dto.isFollowLdapReferral());
             autoEnrollmentConfiguration.setAdConnectionPort(alias, dto.getAdConnectionPort());
             autoEnrollmentConfiguration.setLdapReadTimeout(alias, dto.getLdapReadTimeout());
