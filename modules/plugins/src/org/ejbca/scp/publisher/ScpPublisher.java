@@ -265,7 +265,7 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
                     for (String keypair: keyAliases) {
                             authorizedCryptoTokenIdsAndKeyPairs.add(cryptoTokenId + ";" + keypair);
                             authorizedCryptoTokenNamesAndKeyPairs.add(
-                                    cryptoTokenIdToNameMap.get(cryptoTokenId) + "  ------  " + keypair);
+                                    cryptoTokenIdToNameMap.get(cryptoTokenId) + " ❯ " + keypair);
                     }
                 } catch (KeyStoreException | CryptoTokenOfflineException e) {
                      log.error("Unable to read cryptoken key aliases: ", e);
