@@ -54,13 +54,9 @@
 				</h:column>
 				<h:column>
 					<f:facet name="header">
-						<h:outputText value="#{web.text.CRYPTOTOKEN_NAME}" />
+						<h:outputText value="#{web.text.NAME}" />
 					</f:facet>
-					<h:outputLink
-						value="cryptotoken.jsf?cryptoTokenId=#{cryptoTokenGuiInfo.cryptoTokenId}&amp;ref=default">
-						<h:outputText value="#{cryptoTokenGuiInfo.tokenName}"
-							title="#{web.text.CRYPTOTOKEN_VIEWWITH} #{cryptoTokenGuiInfo.cryptoTokenId}" />
-					</h:outputLink>
+					<h:outputText value="#{cryptoTokenGuiInfo.tokenName}" />
 				</h:column>
 				<h:column>
 					<f:facet name="header">
@@ -134,6 +130,11 @@
 						</h:panelGroup>
 					</f:facet>
 					<h:panelGroup styleClass="button-group">
+						<h:button value="#{web.text.VIEW}"
+								  outcome="cryptotoken.jsf?cryptoTokenId=#{cryptoTokenGuiInfo.cryptoTokenId}&amp;ref=default" />
+						<h:commandButton value="#{web.text.EDIT}"
+										 action="#{cryptoTokenMBean.editCryptoToken(cryptoTokenGuiInfo.cryptoTokenId)}"
+										 rendered="#{cryptoTokenMBean.allowedToModify}" />
 						<h:panelGroup
 							rendered="#{!cryptoTokenGuiInfo.active &amp;&amp; cryptoTokenGuiInfo.allowedActivation}">
 							<h:inputSecret size="16" title="#{web.text.CRYPTOTOKEN_PIN}"
@@ -155,9 +156,8 @@
 								rendered="#{cryptoTokenGuiInfo.canReactivate}" />
 						</h:panelGroup>
 						<h:commandButton value="#{web.text.DELETE}"
-							action="#{cryptoTokenMBean.deleteCryptoToken}"
-							rendered="#{cryptoTokenMBean.allowedToDelete}"
-							onclick="return confirm('#{web.text.CRYPTOTOKEN_DELETE_CONFIRM}')" />
+							action="#{cryptoTokenMBean.prepareDelete(cryptoTokenGuiInfo.cryptoTokenId, cryptoTokenGuiInfo.tokenName)}"
+							rendered="#{cryptoTokenMBean.allowedToDelete}" />
 					</h:panelGroup>
 					<!-- button-group -->
 				</h:column>
