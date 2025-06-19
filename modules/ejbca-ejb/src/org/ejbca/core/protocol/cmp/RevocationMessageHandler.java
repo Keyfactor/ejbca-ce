@@ -30,6 +30,7 @@ import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.cmp.RevDetails;
 import org.bouncycastle.asn1.cmp.RevReqContent;
 import org.bouncycastle.asn1.crmf.CertTemplate;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
@@ -76,7 +77,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 	private static final Logger LOG = Logger.getLogger(RevocationMessageHandler.class);
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources INTRES = InternalEjbcaResources.getInstance();
-	
+
 	/** Parameter used to determine the type of protection for the response message */
 	private String responseProtection = null;
 	
@@ -308,7 +309,11 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
                         LOG.debug("RevReq request message header has protection alg: " + msg.getHeader().getProtectionAlg().getAlgorithm().getId());
                     }
                     // We don't need a default digest algorithm, if setPreferredDigestAlg is null, the sender cert's algorithm will be used
-                    rresp.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(msg.getHeader().getProtectionAlg().getAlgorithm().getId(), null));
+                    rresp.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlgAndHandleParameters(msg.getHeader().getProtectionAlg(), null));
+                    if (rresp.getMessage() == null) {
+						// We need to propagate the request information forward to know to use PSS if possible when signing the response
+						rresp.setMessage(msg.getMessage());
+					}
                 } else if (LOG.isDebugEnabled()) {
                     LOG.debug("RevReq request message header has no protection alg, using default alg in response.");
                 }

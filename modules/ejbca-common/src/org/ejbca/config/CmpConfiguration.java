@@ -61,11 +61,6 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     public static final String CONFIG_RA_NAMEGENERATIONPREFIX = "ra.namegenerationprefix";
     public static final String CONFIG_RA_NAMEGENERATIONPOSTFIX = "ra.namegenerationpostfix";
     public static final String CONFIG_RA_PASSWORDGENPARAMS = "ra.passwordgenparams";
-    /**
-     * @deprecated since 6.5.1, but remains to allow 100% uptime during upgrade. Use CONFIG_RA_ENDENTITYPROFILEID instead
-     */
-    @Deprecated
-    public static final String CONFIG_RA_ENDENTITYPROFILE = "ra.endentityprofile";
     public static final String CONFIG_RA_ENDENTITYPROFILEID = "ra.endentityprofileid";
     public static final String CONFIG_RA_CERTIFICATEPROFILE = "ra.certificateprofile";
     public static final String CONFIG_RESPONSEPROTECTION = "responseprotection";
@@ -198,7 +193,6 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
             data.put(alias + CONFIG_RA_NAMEGENERATIONPOSTFIX, DEFAULT_RA_USERNAME_GENERATION_POSTFIX);
             data.put(alias + CONFIG_RA_PASSWORDGENPARAMS, DEFAULT_RA_PASSWORD_GENERARION_PARAMS);
             data.put(alias + CONFIG_RA_ALLOWCUSTOMCERTSERNO, DEFAULT_RA_ALLOW_CUSTOM_SERNO);
-            data.put(alias + CONFIG_RA_ENDENTITYPROFILE, "EMPTY");
             data.put(alias + CONFIG_RA_ENDENTITYPROFILEID, DEFAULT_RA_EEPROFILE);
             data.put(alias + CONFIG_RA_CERTIFICATEPROFILE, DEFAULT_RA_CERTPROFILE);
             data.put(alias + CONFIG_RACANAME, DEFAULT_RA_CANAME);
@@ -234,7 +228,6 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
         keys.add(alias + CONFIG_RA_NAMEGENERATIONPOSTFIX);
         keys.add(alias + CONFIG_RA_PASSWORDGENPARAMS);
         keys.add(alias + CONFIG_RA_ALLOWCUSTOMCERTSERNO);
-        keys.add(alias + CONFIG_RA_ENDENTITYPROFILE);
         keys.add(alias + CONFIG_RA_ENDENTITYPROFILEID);
         keys.add(alias + CONFIG_RA_CERTIFICATEPROFILE);
         keys.add(alias + CONFIG_RACANAME);

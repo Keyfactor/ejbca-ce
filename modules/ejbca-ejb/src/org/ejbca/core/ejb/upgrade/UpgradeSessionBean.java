@@ -1,5 +1,6 @@
 /*************************************************************************
  *                                                                       *
+
  *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
@@ -441,18 +442,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     private boolean upgrade(String dbtype, String oldVersion) {
     	log.debug(">upgrade from version: "+oldVersion+", with dbtype: "+dbtype);
-        if (isLesserThan(oldVersion, "6.4.2")) {
-            log.error(
-                    "Upgrading from EJBCA prior to version 6.4.2 is forbidden. Read the EJBCA Upgrade Guide for more information.");
-            return false;
-        }
         if (isLesserThan(oldVersion, "6.5.1")) {
-            try {
-                upgradeSession.migrateDatabase651();
-            } catch (UpgradeFailedException e) {
-                return false;
-            }
-            setLastUpgradedToVersion("6.5.1");
+            log.error(
+                    "Upgrading from EJBCA prior to version 6.5.1 is forbidden. Read the EJBCA Upgrade Guide for more information.");
+            return false;
         }
         if (isLesserThan(oldVersion, "6.6.0")) {
             try {
@@ -936,47 +929,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @Override
     public boolean isPostUpgradeNeeded() {
         return isLesserThan(getLastPostUpgradedToVersion(), "9.3.0");
-    }
-
-    /**
-     * EJBCA 6.5.1:
-     *
-     * This upgrade only affects CMP aliases:
-     * 1.   End entity profiles will be referred to by ID instead of by name. In consideration of 100% uptime requirements, the value
-     *      ra.endentityprofile is replaced by ra.endentityprofileid, allowing legacy configurations to keep using the old value.
-     *
-     * @throws UpgradeFailedException if upgrade fails (rolls back)
-     */
-    @Override
-    public void migrateDatabase651() throws UpgradeFailedException {
-        CmpConfiguration cmpConfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
-        for(final String cmpAlias : cmpConfiguration.getAliasList()) {
-            // Avoid aliases that may already have been upgraded
-            if(StringUtils.isEmpty(cmpConfiguration.getRAEEProfile(cmpAlias))) {
-                @SuppressWarnings("deprecation")
-                String endEntityProfileName = cmpConfiguration.getValue(cmpAlias + "." + CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, cmpAlias);
-                if (!StringUtils.isEmpty(endEntityProfileName)) {
-                    try {
-                        cmpConfiguration.setRAEEProfile(cmpAlias,
-                                Integer.toString(endEntityProfileSession.getEndEntityProfileId(endEntityProfileName)));
-                    } catch (EndEntityProfileNotFoundException e) {
-                        //Fail gracefully if a CMP alias already is in an error state
-                        log.error("CMP alias " + cmpAlias + " could not be upgraded. It refers by name to End Entity Profile " + endEntityProfileName
-                                + ", which does not appear to exist. Value has instead been set to 1 (EMPTY). Please review this profile after upgrade.");
-                        cmpConfiguration.setRAEEProfile(cmpAlias, CmpConfiguration.DEFAULT_RA_EEPROFILE);
-                    }
-                } else {
-                    //Could be a client alias, we still need to set a default value though
-                    cmpConfiguration.setRAEEProfile(cmpAlias, CmpConfiguration.DEFAULT_RA_EEPROFILE);
-                }
-            }
-        }
-        try {
-            globalConfigurationSession.saveConfiguration(authenticationToken, cmpConfiguration);
-        } catch (AuthorizationDeniedException e) {
-            log.error("Always allow token was denied authoriation to global configuration table.", e);
-        }
-        log.error("(This is not an error) Completed upgrade procedure to 6.5.1");
     }
 
     /**

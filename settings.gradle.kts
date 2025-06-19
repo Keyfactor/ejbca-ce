@@ -49,7 +49,7 @@ dependencyResolutionManagement {
             library("commons-configuration2", ":commons-configuration2:2.11.0")
             library("commons-collections4", ":commons-collections4:4.5.0")
             library("nimbus-jose-jwt", ":nimbus-jose-jwt:9.37.3")
-            library("x509-common-util", ":x509-common-util:5.3.2")
+            library("x509-common-util", ":x509-common-util:5.3.5")
             library("cryptotokens-api", ":cryptotokens-api:3.0.0")
             library("cryptotokens-impl", ":cryptotokens-impl:3.0.0")
             library("cryptotokens-impl-ee", ":cryptotokens-impl-ee:3.0.0")
@@ -83,9 +83,8 @@ dependencyResolutionManagement {
             library("swagger-models", ":swagger-models-jakarta:2.2.22")
             library("swagger-integration", ":swagger-integration-jakarta:2.2.22")
             library("classgraph", ":classgraph:4.8.174")
-            library("commons-fileupload2", ":commons-fileupload2-jakarta:2.0.0-M1")
-            library("commons-fileupload2-core", ":commons-fileupload2-core:2.0.0-M2")
-            library("commons-fileupload", ":commons-fileupload:1.5")
+            library("commons-fileupload2", ":commons-fileupload2-jakarta-servlet6:2.0.0-M4")
+            library("commons-fileupload2-core", ":commons-fileupload2-core:2.0.0-M4")
             library("jacknji11", ":jacknji11:1.3.1")
             library("p11ng", ":p11ng:0.25.7")
             library("protobuf-java", ":protobuf-java:3.25.5")
@@ -234,7 +233,6 @@ dependencyResolutionManagement {
                     "commons-logging",
                     "commons-codec",
                     "commons-io",
-                    "commons-fileupload",
                     "commons-beanutils",
                     "commons-text",
                     "log4j-api",
