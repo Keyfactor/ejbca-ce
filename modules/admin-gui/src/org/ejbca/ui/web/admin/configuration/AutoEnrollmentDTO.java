@@ -32,7 +32,7 @@ public class AutoEnrollmentDTO {
     private String krb5ConfFilename;
     private String keyTabFilename;
     private boolean isUseSSL;
-    private String trustManagerType = MSAutoEnrollmentConfiguration.DEFAULT_TRUST_MANAGER_LOCAL_TRUST_STORE;
+    private String trustManagerType = MSAutoEnrollmentConfiguration.DEFAULT_TRUST_MANAGER;
     private boolean followLdapReferral;
     private int adConnectionPort = MSAutoEnrollmentConfiguration.DEFAULT_AD_CONNECTION_PORT;
     private int ldapReadTimeout = MSAutoEnrollmentConfiguration.DEFAULT_LDAP_READ_TIMEOUT;
