@@ -1222,13 +1222,21 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         if (altName == null) {
             altName = "";
         }
-        if (StringUtils.isNotEmpty(specifiedDnTypeValueFromCn) && !altName.contains(specifiedDnTypeValueFromCn)) {
+        if (StringUtils.isNotEmpty(specifiedDnTypeValueFromCn) && shouldCopyCnToAltName(specifiedDnTypeValueFromCn, altName, specifiedDnType)) {
             if (StringUtils.isNotEmpty(altName)) {
                 altName += ", ";
             }
             altName += specifiedDnTypeValueFromCn;
         }
         return altName;
+    }
+
+    private boolean shouldCopyCnToAltName(final String specifiedDnTypeValueFromCn, final String altName, final String specifiedDnType) {
+		return switch (specifiedDnType) {
+			case DnComponents.DNSNAME -> !altName.equals(specifiedDnTypeValueFromCn);
+			case DnComponents.UPN -> !altName.contains(specifiedDnTypeValueFromCn);
+			default -> false;
+		};
     }
 
     @Override
