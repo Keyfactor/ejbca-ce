@@ -99,8 +99,8 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
     private boolean deleteInProgress = false;
     private boolean addFromTemplateInProgress = false;
     private String certProfileName = "";
-    private ListDataModel<CertificateProfileItem> certificateProfileItems = null;
-    private Part uploadFile;
+    private transient ListDataModel<CertificateProfileItem> certificateProfileItems = null;
+    private transient Part uploadFile;
 
     public CertProfilesBean() {
         super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CERTIFICATEPROFILEVIEW.resource());

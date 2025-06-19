@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.collections4.Predicate;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Logger;
@@ -141,7 +142,7 @@ public class ExternalProcessToolsSystemTest {
         final String cmd = getFilePathFromClasspath("external_process_tools_with_write_to_disk_exit_code_0");
         List<String> out = null;
         final List<String> arguments = new ArrayList<String>();
-        int cnt = -1;
+        long cnt = -1;
         
         // A:1 Script contains output to ERROUT but should not fail because of failOnStandardError=false. ERROUT should have been logged.
         try {
@@ -236,7 +237,7 @@ public class ExternalProcessToolsSystemTest {
             final String cmd = getFilePathFromClasspath("external_process_tools_dont_write_to_disk");
             List<String> out = null;
             final List<String> arguments = new ArrayList<String>();
-            int cnt = -1;
+            long cnt = -1;
             int exitCode = 0;
             
             // B:1 Script contains output to ERROUT but should not fail because of failOnStandardError=false.
@@ -392,13 +393,14 @@ public class ExternalProcessToolsSystemTest {
     }
     
     /** Counts the occurrence of string prefix in the list. */
-    private int count(final List<String> list, final String prefix) {
-        int result = 0;
+    @SuppressWarnings("deprecation")
+    private long count(final List<String> list, final String prefix) {
+       long result = 0;
         if (CollectionUtils.isNotEmpty(list)) {
-            result = CollectionUtils.countMatches(list, new Predicate() {
+            result = IterableUtils.countMatches(list, new Predicate<String>() {
                 @Override
-                public boolean evaluate(Object string) {
-                    return ((String) string).startsWith(prefix);
+                public boolean evaluate(String string) {
+                    return  string.startsWith(prefix);
                 }
             });
         }

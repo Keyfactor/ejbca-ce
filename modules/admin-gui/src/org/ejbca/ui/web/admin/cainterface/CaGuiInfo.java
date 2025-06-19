@@ -13,11 +13,14 @@
 
 package org.ejbca.ui.web.admin.cainterface;
 
+import java.io.Serializable;
+
 /**
  * Certification authority POJO for view purposes.
  */
-public class CaGuiInfo {
+public class CaGuiInfo implements Serializable {
         
+        private static final long serialVersionUID = 1L;
         private CaInfoProperty caName;
         private CaInfoProperty subjectDn;
         private CaInfoProperty alternativeName;

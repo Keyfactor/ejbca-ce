@@ -80,7 +80,6 @@ import org.ejbca.core.model.ca.publisher.CustomPublisherProperty;
 import org.ejbca.core.model.ca.publisher.FatalPublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.LdapSearchPublisher;
-import org.ejbca.core.model.ca.publisher.LegacyValidationAuthorityPublisher;
 import org.ejbca.core.model.ca.publisher.MultiGroupPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
@@ -1053,7 +1052,6 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         return publisher;
     }
 
-    @SuppressWarnings("deprecation")
     private BasePublisher constructPublisher(final int publisherType) {
         switch (publisherType) {
         case PublisherConst.TYPE_LDAPPUBLISHER:
@@ -1062,13 +1060,6 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             return new LdapSearchPublisher();
         case PublisherConst.TYPE_ADPUBLISHER:
             return new ActiveDirectoryPublisher();
-        case PublisherConst.TYPE_VAPUBLISHER:
-            //Attempt to create the legacy publisher if available, if not return null. 
-            try {
-                return (BasePublisher) Class.forName(LegacyValidationAuthorityPublisher.OLD_VA_PUBLISHER_QUALIFIED_NAME).newInstance();
-            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-                return null;
-            }
         case PublisherConst.TYPE_MULTIGROUPPUBLISHER:
             return new MultiGroupPublisher();
         case PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER:
@@ -1084,44 +1075,6 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             final String msg = intres.getLocalizedMessage("store.editpublishernotauthorized", admin.toString());
             throw new AuthorizationDeniedException(msg);
         }
-    }
-
-    @SuppressWarnings("deprecation")
-    @Override
-    public int adhocUpgradeTo6_3_1_1() {
-        int numberOfUpgradedPublishers = 0;
-        for (PublisherData publisherData : findAll()) {
-            // Extract the data payload instead of the BasePublisher since the original BasePublisher implementation might no longer
-            // be on the classpath
-            HashMap<?, ?> h = parseDataMapFromPublisher(publisherData);
-            // Handle Base64 encoded string values
-            @SuppressWarnings("unchecked")
-            HashMap<Object, Object> data = new Base64GetHashMap(h);
-            if (PublisherConst.TYPE_VAPUBLISHER == (Integer) data.get(BasePublisher.TYPE)) {
-                numberOfUpgradedPublishers++;
-                publisherData.setPublisher(new LegacyValidationAuthorityPublisher(data));
-                //Purge the entry from the cache
-                PublisherCache.INSTANCE.removeEntry(publisherData.getId());
-            }           
-        }
-        return numberOfUpgradedPublishers;
-    }
-
-    @SuppressWarnings("deprecation")
-    @Override
-    public boolean isOldVaPublisherPresent() {
-        for (PublisherData publisherData : findAll()) {
-            // Extract the data payload instead of the BasePublisher since the original BasePublisher implementation might no longer
-            // be on the classpath
-            HashMap<?, ?> h = parseDataMapFromPublisher(publisherData);
-            // Handle Base64 encoded string values
-            @SuppressWarnings("unchecked")
-            HashMap<Object, Object> data = new Base64GetHashMap(h);
-            if (PublisherConst.TYPE_VAPUBLISHER == (Integer) data.get(BasePublisher.TYPE)) {
-                return true;
-            }           
-        }
-        return false;
     }
     
     @Override

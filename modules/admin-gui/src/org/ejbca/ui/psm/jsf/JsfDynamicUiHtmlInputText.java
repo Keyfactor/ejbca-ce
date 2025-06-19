@@ -27,6 +27,8 @@ import org.cesecore.util.ui.DynamicUiProperty;
  */
 public class JsfDynamicUiHtmlInputText extends HtmlInputText implements DynamicUiComponent, PropertyChangeListener {
 
+    private static final long serialVersionUID = 1L;
+
     /** Class logger. */
     private static final Logger log = Logger.getLogger(JsfDynamicUiHtmlInputText.class);
 
