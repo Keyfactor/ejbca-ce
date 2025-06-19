@@ -17,14 +17,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 
-import org.apache.commons.fileupload.util.Streams;
 import org.apache.log4j.Logger;
 import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -56,7 +57,6 @@ import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 
 /**
  *
- * @version $Id$
  */
 public class WebEjbcaHealthCheckSystemTest extends WebHealthTestAbstract {
 
@@ -162,13 +162,13 @@ public class WebEjbcaHealthCheckSystemTest extends WebHealthTestAbstract {
         if (ret != 200) {
             final InputStream errStream = con.getErrorStream();
             if (errStream != null) {
-                final String errStr = Streams.asString(errStream);
+                final String errStr = readInputStream(errStream);
                 log.error("HTTP response error message:\n"+errStr);
             }
             fail("Got HTTP error response "+ret+". See ERROR log message.");
         }
         assertEquals("Response code", 200, ret);
-        String retStr = Streams.asString(con.getInputStream());
+        String retStr = readInputStream(con.getInputStream());
         log.debug("Return String: "+retStr);
         assertEquals("ALLOK", retStr);
         con.disconnect();
@@ -181,6 +181,17 @@ public class WebEjbcaHealthCheckSystemTest extends WebHealthTestAbstract {
         log.info("All threads finished. Total time: " + diff + " ms");
         assertTrue("Healt check test(s) timed out, took "+diff+" ms to complete.", diff < 40L*1000L);
         log.trace("<testEjbcaHealthHttp()");
+    }
+    
+    private String readInputStream(final InputStream inputStream) throws IOException {
+        StringBuilder stringBuilder = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                stringBuilder.append(line);
+            }
+        }
+        return stringBuilder.toString();      
     }
 
 }

@@ -22,6 +22,7 @@ import java.util.List;
 
 public class AutoEnrollmentDTO implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     private String alias;
     private String msaeForestRoot;
     private String msaeDomain;

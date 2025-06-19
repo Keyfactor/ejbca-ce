@@ -46,15 +46,10 @@ import org.cesecore.internal.InternalResources;
 import com.keyfactor.util.CertTools;
 
 /**
- * Class parsing the modules/ejbca-common/src/certextensions.properties file 
- * and maintains a set of available custom extensions to the system.
+ * Class maintaining a set of available extensions to the system.
  * 
- * It is also responsible for creating the actual CertificateExtensions
- * used in certificate generation.
+ * It is also responsible for creating the actual CertificateExtensions used in certificate generation.
  * 
- * It also keep a list of standard (not custom) built in extensions.
- *
- * @version $Id$
  */
 public class CertificateExtensionFactory {
 

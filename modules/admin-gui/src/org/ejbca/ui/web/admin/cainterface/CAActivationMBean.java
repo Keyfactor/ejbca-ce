@@ -68,7 +68,8 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	
 	/** GUI representation of a CA for the activation view */
 	public class CaActivationGuiInfo implements Serializable {
-	    private final int status;
+	    private static final long serialVersionUID = 1L;
+        private final int status;
 	    private final String name;
 	    private final int caId;
         private boolean monitored;
@@ -104,7 +105,8 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 
     /** GUI representation of a CryptoToken and its CA(s) for the activation view */
 	public class TokenAndCaActivationGuiInfo implements Serializable {
-	    private final CryptoTokenInfo cryptoTokenInfo;
+	    private static final long serialVersionUID = 1L;
+        private final CryptoTokenInfo cryptoTokenInfo;
 	    private final List<CaActivationGuiInfo> caActivationGuiInfos = new ArrayList<>();
         private final boolean allowedActivation;
         private final boolean allowedDeactivation;
@@ -143,6 +145,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 
     /** GUI representation of a CryptoToken and its CA(s) for the activation view */
     public class TokenAndCaActivationGuiComboInfo implements Serializable {
+        private static final long serialVersionUID = 1L;
         private final boolean firstCryptoTokenListing;
         private final TokenAndCaActivationGuiInfo cryptoTokenInfo;
         private final CaActivationGuiInfo caActivationGuiInfo;

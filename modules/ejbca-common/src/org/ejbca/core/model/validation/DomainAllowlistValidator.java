@@ -112,6 +112,8 @@ public class DomainAllowlistValidator extends ValidatorBase implements DnsNameVa
     @Override
     public void initDynamicUiModel() {
         uiModel = new DynamicUiModel(data, getFilteredDataMapForLogging()) {
+            private static final long serialVersionUID = 1L;
+
             @Override
             public Map<String, Object> getRawData() throws CesecoreException {
                 final Map<String, Object> rawData = super.getRawData();
@@ -238,6 +240,7 @@ public class DomainAllowlistValidator extends ValidatorBase implements DnsNameVa
         testButton.setRenderingHint(DynamicUiProperty.RENDER_BUTTON);
         testButton.setTransientValue(true);
         testButton.setActionCallback(new DynamicUiActionCallback() {
+            private static final long serialVersionUID = 1L;
             @Override
             public void action(final Object parameter) throws DynamicUiCallbackException, CesecoreException {
                 final DynamicUiProperty<?> domainEntryProperty = uiModel.getProperties().get(TEST_DOMAINENTRY_KEY);

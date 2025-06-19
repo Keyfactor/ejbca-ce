@@ -72,9 +72,9 @@
 
 					<h:panelGroup>
 						<h:outputText value="#{editPublisher.currentPublisherName}"
-							rendered="#{editPublisher.readOnly or editPublisher.deprecated}" />
+							rendered="#{editPublisher.readOnly}" />
 						<h:selectOneMenu value="#{editPublisher.selectedPublisherType}" 
-										 rendered="#{!editPublisher.readOnly and !editPublisher.deprecated}"
+										 rendered="#{!editPublisher.readOnly}"
 										 id="selectpublishertype">
 							<f:selectItems value="#{editPublisher.availablePublisherTypes}" />
 							<f:ajax render=":messages @form" listener="#{editPublisher.changePublisherType}"/>

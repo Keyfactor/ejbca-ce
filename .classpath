@@ -173,7 +173,7 @@
 	<classpathentry kind="lib" path="lib/jee/soapclient/saaj-impl-3.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/gmbal-api-only-4.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/ejbca-ws-client-gen.jar"/>
-	<classpathentry kind="lib" path="lib/x509-common-util-5.3.2.jar" sourcepath="/x509-common-util"/>
+	<classpathentry kind="lib" path="lib/x509-common-util-5.3.5.jar" sourcepath="/x509-common-util"/>
 	<classpathentry kind="lib" path="lib/cryptotokens-api-3.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/cryptotokens-impl-3.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/cryptotokens-impl-ee-3.0.0.jar"/>
@@ -191,7 +191,7 @@
 	<classpathentry kind="lib" path="lib/jee/myfaces-api-4.0.2.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang-2.6.jar"/>
 	<classpathentry kind="lib" path="lib/jee/jakarta.xml.bind-api-4.0.2.jar"/>
-	<classpathentry kind="lib" path="lib/commons-collections4-4.4.jar"/>
+	<classpathentry kind="lib" path="lib/commons-collections4-4.5.0.jar"/>
 	<classpathentry kind="lib" path="lib/snakeyaml-2.0.jar"/>
 	<classpathentry kind="lib" path="lib/ext/swagger/commons-lang3-3.14.0.jar"/>
 	<classpathentry kind="lib" path="lib/ext/swagger/reflections-0.9.11.jar"/>
@@ -239,9 +239,8 @@
 	<classpathentry kind="lib" path="lib/nimbus-jose-jwt-9.37.3.jar"/>
 	<classpathentry kind="lib" path="lib/jcip-annotations-1.0-1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang3-3.17.0.jar"/>
-	<classpathentry kind="lib" path="lib/commons-fileupload2-jakarta-2.0.0-M1.jar"/>
-	<classpathentry kind="lib" path="lib/commons-fileupload2-core-2.0.0-M2.jar"/>
-	<classpathentry kind="lib" path="lib/commons-fileupload-1.5.jar"/>
+	<classpathentry kind="lib" path="lib/commons-fileupload2-core-2.0.0-M4.jar"/>
+	<classpathentry kind="lib" path="lib/commons-fileupload2-jakarta-servlet6-2.0.0-M4.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-core-4.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-bindings-soap-4.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-databinding-jaxb-4.1.1.jar"/>

@@ -141,6 +141,7 @@ public class ValidatorsBean extends BaseManagedBean {
      */
     public class ValidatorItem implements Serializable {
 
+        private static final long serialVersionUID = 1L;
         private final int id;
         private final String name;
         private final String implementationLabel;

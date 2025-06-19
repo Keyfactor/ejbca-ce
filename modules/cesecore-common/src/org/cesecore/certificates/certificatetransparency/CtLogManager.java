@@ -31,6 +31,7 @@ import org.apache.commons.lang.StringUtils;
  * @version $Id$
  */
 public class CtLogManager implements Serializable {
+    private static final long serialVersionUID = 1L;
     private final List<CTLogInfo> ctLogs;
 
     /**

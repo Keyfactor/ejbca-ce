@@ -84,6 +84,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
     }
 
     public class EstAliasGui implements Serializable {
+        private static final long serialVersionUID = 1L;
         private String name;
         private String caId;
         private String endEntityProfileId;

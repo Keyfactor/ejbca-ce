@@ -147,6 +147,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
         final DynamicUiProperty<String> testButton = new DynamicUiProperty<>(String.class, "testCommand", "testCommand");
         testButton.setRenderingHint(DynamicUiProperty.RENDER_BUTTON);
         testButton.setActionCallback(new DynamicUiActionCallback() {
+            private static final long serialVersionUID = 1L;
             @Override
             @SuppressWarnings("unchecked")
             public void action(final Object parameter) throws DynamicUiCallbackException {

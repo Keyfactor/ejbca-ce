@@ -54,6 +54,7 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
     private static final long serialVersionUID = -2452049885728885525L;
         
     public class ApprovalProfileGuiInfo implements Serializable {
+        private static final long serialVersionUID = 1L;
         private final int id;
         private final String name;
         public ApprovalProfileGuiInfo(final int id, final String name) {

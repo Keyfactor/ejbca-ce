@@ -76,6 +76,7 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
     private InternalKeyBindingMgmtSessionLocal internalKeyBindings;
 
     public class OAuthKeyInfoGui implements Serializable {
+        private static final long serialVersionUID = 1L;
         String label;
 
         public OAuthKeyInfoGui(String label) {
