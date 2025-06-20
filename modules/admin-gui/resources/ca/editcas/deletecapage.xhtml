@@ -36,9 +36,8 @@
                     <h:outputLabel for="deletedCaName" value="#{web.text.CA_DELETE_TEMPLATE}"/>
                     <h:outputText id="deletedCaName" value="#{manageCAsMBean.selectedCaNameForDelete}"/>
                     <h:panelGroup/>
-                    <h:panelGroup>
-                        <h:commandButton id="deleteCaSaveButton" name="deleteCaSaveButton" style="margin-right:10px;"
-                                         ajax="false"
+                    <h:panelGroup styleClass="action-buttons">
+                        <h:commandButton id="deleteCaSaveButton" name="deleteCaSaveButton" ajax="false"
                                          action="#{manageCAsMBean.removeCA}" value="#{web.text.DELETE_CONFIRM}"/>
                         <h:commandButton id="deleteCaCancelButton" name="deleteCaCancelButton" ajax="false"
                                          action="managecas" value="#{web.text.CANCEL}" immediate="true"/>

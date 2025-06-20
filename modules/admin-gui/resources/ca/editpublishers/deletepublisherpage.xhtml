@@ -35,8 +35,8 @@
                     <h:outputLabel for="deletedPublisherName" value="#{web.text.NAME}:"/>
                     <h:outputText id="deletedPublisherName" value="#{listPublishers.selectedPublisherName}"/>
                     <h:panelGroup/>
-                    <h:panelGroup>
-                        <h:commandButton id="deleteCaSaveButton" name="deleteCaSaveButton" style="margin-right:10px;" ajax="false"
+                    <h:panelGroup styleClass="action-buttons">
+                        <h:commandButton id="deleteCaSaveButton" name="deleteCaSaveButton" ajax="false"
                                          action="#{listPublishers.deletePublisher}" value="#{web.text.DELETE_CONFIRM}"/>
                         <h:commandButton id="deletePublisherCancelButton" name="deletePublisherCancelButton" ajax="false"
                                          action="listpublishers?faces-redirect=true" value="#{web.text.CANCEL}" immediate="true"/>

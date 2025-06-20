@@ -64,7 +64,7 @@
 						<h:outputLabel for="deleteValidatorName" value="#{web.text.VALIDATORNAME}:"/>
 						<h:outputText id="deleteValidatorName" value="#{validatorsBean.validatorName}"/>
 		  				<h:panelGroup/>
-						<h:panelGroup>
+						<h:panelGroup styleClass="action-buttons">
 							<h:commandButton value="#{web.text.DELETE_CONFIRM}" action="#{validatorsBean.actionDeleteConfirm}"/>
 							<h:commandButton value="#{web.text.CANCEL}" action="#{validatorsBean.actionCancel}"/>
 						</h:panelGroup>

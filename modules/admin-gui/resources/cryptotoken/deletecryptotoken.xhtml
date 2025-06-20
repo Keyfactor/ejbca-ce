@@ -36,8 +36,8 @@
 					<h:outputLabel for="deletedCryptoTokenName" value="#{web.text.NAME}:"/>
 					<h:outputText id="deletedCryptoTokenName" value="#{cryptoTokenMBean.selectedCryptoTokenName}"/>
 					<h:panelGroup/>
-					<h:panelGroup>
-						<h:commandButton id="deletedCryptoTokenSaveButton" name="deletedCryptoTokenSaveButton" style="margin-right:10px;"
+					<h:panelGroup styleClass="action-buttons">
+						<h:commandButton id="deletedCryptoTokenSaveButton" name="deletedCryptoTokenSaveButton"
 										 action="#{cryptoTokenMBean.deleteCryptoToken}" value="#{web.text.DELETE_CONFIRM}">
 							<f:param name="cryptoTokenId" value="#{cryptoTokenMBean.selectedCryptoTokenId}"/>
 						</h:commandButton>

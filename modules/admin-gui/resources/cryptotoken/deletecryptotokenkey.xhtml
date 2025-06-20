@@ -37,8 +37,8 @@
 					<h:outputLabel for="deletedCryptoTokenKeyAlias" value="#{web.text.CRYPTOTOKEN_KPM_ALIAS}:"/>
 					<h:outputText id="deletedCryptoTokenKeyAlias" value="#{fn:join(cryptoTokenMBean.selectedCryptoTokenKeyAlias, ', ')}"/>
 					<h:panelGroup/>
-					<h:panelGroup>
-						<h:commandButton id="deleteCryptoTokenKeySaveButton" name="deleteCryptoTokenKeySaveButton" style="margin-right:10px;"
+					<h:panelGroup styleClass="action-buttons">
+						<h:commandButton id="deleteCryptoTokenKeySaveButton" name="deleteCryptoTokenKeySaveButton"
 										 action="#{cryptoTokenMBean.removeKeyPairs}" value="#{web.text.DELETE_CONFIRM}"/>
 						<h:commandButton id="deleteCryptoTokenKeyCancelButton" name="deleteCryptoTokenKeyCancelButton"
 										 value="#{web.text.CANCEL}" immediate="true"

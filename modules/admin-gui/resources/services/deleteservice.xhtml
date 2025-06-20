@@ -37,7 +37,7 @@
                     <h:outputLabel for="serviceName" value="#{web.text.NAME}"/>
                     <h:outputText id="serviceName" value="#{listServicesManagedBean.selectedServiceName}"/>
                     <h:panelGroup/>
-                    <h:panelGroup>
+                    <h:panelGroup styleClass="action-buttons">
                         <h:commandButton id="deleteButton" value="#{web.text.DELETE_CONFIRM}"
                                          action="#{listServicesManagedBean.deleteService(listServicesManagedBean.selectedServiceName)}"
                                          disabled="#{!listServicesManagedBean.hasEditRights}"/>
