@@ -58,7 +58,7 @@
                             <h:panelGroup id="matchWithSelectedBlock" layout="block" rendered="#{roleMembersBean.authorizedToEditRole}">
                                 <h:selectOneMenu id="matchWith" value="#{roleMembersBean.matchWithSelected}">
                                     <f:selectItems value="#{roleMembersBean.matchWithItems}" />
-                                    <f:ajax execute="@this" render=":rolemembers:list:tokenMatchValueBlock #{web.ejbcaWebBean.runningEnterprise ? ':rolemembers:list:oAuthProviderBlock' : ''}" />
+                                    <f:ajax execute="@this" render=":rolemembers:list:tokenMatchValueBlock #{':rolemembers:list:oAuthProviderBlock'}"/>
                                 </h:selectOneMenu> 
                             </h:panelGroup>
                         </f:facet>
@@ -75,7 +75,7 @@
                         </f:facet>
                         <h:outputText value="#{roleMembersBean.getTokenIssuerIdString(roleMember)}"/>
                     </h:column>
-                    <h:column rendered="#{web.ejbcaWebBean.runningEnterprise}">
+                    <h:column>
                         <f:facet name="header" >
                             <h:outputText value="#{web.text.OAUTHPROVIDER}"/>
                             <h:panelGroup id="oAuthProviderBlock" layout="block" rendered="#{roleMembersBean.authorizedToEditRole}">
