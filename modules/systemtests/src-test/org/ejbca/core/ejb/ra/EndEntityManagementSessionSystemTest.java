@@ -1359,6 +1359,80 @@ public class EndEntityManagementSessionSystemTest extends CaTestCase {
     }
     
     @Test
+    public void testEndEntityIssuanceRevocationReason() throws Exception {
+        // First make sure we have end entity profile limitations enabled
+        final boolean eelimitation = setEnableEndEntityProfileLimitations(true);
+        final String eeprofileName = "TESTISSUANCEREVREASON";
+        try {            
+            // Add a new end entity profile, by default password is required and we should not be able to add a user with empty or null password.
+            EndEntityProfile profile = new EndEntityProfile();
+            profile.addField(DnComponents.COMMONNAME);
+            profile.setAvailableCAs(Arrays.asList(SecConst.ALLCAS));
+            
+            profile.setIssuanceRevocationReasonUsed(true);
+            profile.setIssuanceRevocationReasonModifiable(true);
+            profile.setIssuanceRevocationReasonDefault(true);
+            profile.setIssuanceRevocationReason(RevocationReasons.CERTIFICATEHOLD);
+            // Profile will be removed in finally clause
+            endEntityProfileSession.addEndEntityProfile(admin, eeprofileName, profile);
+            int profileId = endEntityProfileSession.getEndEntityProfileId(eeprofileName);
+            
+            EndEntityInformation data = 
+                    enrollEndEntityAndAssertRevocationReason(profileId, null, RevocationReasons.CERTIFICATEHOLD);
+            String thisusername = data.getUsername();
+            data.setDN("CN=XX" + data.getUsername());
+            data.setPassword("foo123");
+            data.getExtendedInformation().setIssuanceRevocationReason(RevocationReasons.AFFILIATIONCHANGED.getDatabaseValue());
+            endEntityManagementSession.changeUser(admin, data, false);
+            data = endEntityAccessSession.findUser(admin, thisusername);
+            assertNotNull(data);
+            assertEquals(thisusername, data.getUsername());
+            assertEquals("CN=XX" + thisusername, data.getDN());
+            assertEquals(RevocationReasons.AFFILIATIONCHANGED.getDatabaseValue(), data.getExtendedInformation().getIssuanceRevocationReason());
+            
+            data = enrollEndEntityAndAssertRevocationReason(profileId, RevocationReasons.CERTIFICATEHOLD, RevocationReasons.CERTIFICATEHOLD);
+            
+            profile.setIssuanceRevocationReasonDefault(false);
+            endEntityProfileSession.changeEndEntityProfile(admin, eeprofileName, profile);
+            data = enrollEndEntityAndAssertRevocationReason(profileId, null, null);
+            
+        } finally {            
+            setEnableEndEntityProfileLimitations(eelimitation);
+            endEntityProfileSession.removeEndEntityProfile(admin, eeprofileName);
+        }
+    }
+    
+    private EndEntityInformation enrollEndEntityAndAssertRevocationReason(int profileId, 
+            RevocationReasons reasonRequest, RevocationReasons reasonExpected) throws Exception {
+        
+        String thisusername = genRandomUserName();
+        try {
+            EndEntityInformation endEntityInformation = new EndEntityInformation(thisusername,  "CN=" + thisusername, caId, null, null, 
+                    EndEntityTypes.ENDUSER.toEndEntityType(), profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, null);
+            endEntityInformation.setPassword("foo123");
+            if (reasonRequest!=null) {
+                endEntityInformation.setExtendedInformation(new ExtendedInformation());
+                endEntityInformation.getExtendedInformation().setIssuanceRevocationReason(reasonRequest.getDatabaseValue());
+            }
+            endEntityManagementSession.addUser(admin, endEntityInformation, false);
+            usernames.add(thisusername);
+        } catch (EndEntityProfileValidationException e) {
+            fail("User " + thisusername + " was not added to the database although it should have been. " + e.getMessage());
+        }
+        
+        EndEntityInformation data = endEntityAccessSession.findUser(admin, thisusername);
+        assertNotNull(data);
+        assertEquals(thisusername, data.getUsername());
+        assertEquals("CN=" + thisusername, data.getDN());
+        if (reasonExpected!=null) {
+            assertEquals(reasonExpected.getDatabaseValue(), data.getExtendedInformation().getIssuanceRevocationReason());
+        }
+        return data;
+    }
+
+
+    
+    @Test
     public void testCnCopyToMsUpn() throws Exception {
                 
         EndEntityProfile profile = new EndEntityProfile();

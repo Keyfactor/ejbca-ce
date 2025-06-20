@@ -1652,7 +1652,7 @@
                         for="useRevocationReasonAfterIssuanceCheckBox"
                         value="#{web.text.USE} : " />
                     <h:outputLabel for="revocationReasonMenu"
-                        value="#{web.text.VALUE} = " />
+                        value="#{web.text.VALUE}  " />
                     <h:selectOneMenu id="revocationReasonMenu"
                         value="#{endEntityProfileMBean.currentRevocationReason}"
                         disabled="#{not endEntityProfileMBean.useRevocationReasonAfterIssuance or endEntityProfileMBean.viewOnly}">
@@ -1668,6 +1668,14 @@
                     <h:outputLabel
                         for="revocationReasonModifiableCheckBox"
                         value="#{web.text.MODIFYABLE}" />
+                    <h:selectBooleanCheckbox
+                        id="revocationReasonDefaultCheckBox"
+                        value="#{endEntityProfileMBean.revocationReasonDefault}"
+                        disabled="#{not endEntityProfileMBean.useRevocationReasonAfterIssuance or endEntityProfileMBean.viewOnly}">
+                    </h:selectBooleanCheckbox>
+                    <h:outputLabel
+                        for="revocationReasonModifiableCheckBox"
+                        value="#{web.text.DEFAULT}" />
                 </h:panelGrid>
                 <h:panelGroup>
 						&nbsp;
