@@ -874,11 +874,6 @@ div.status table td img {
 }
 
 /* --- Page: CA > CryptoTokens */
-form#cryptotokens table {
-	border-collapse: collapse;
-	right: auto; /* ??? */
-	left: auto;
-}
 form#cryptotokens img.statusIcon {
 	border-width: 0;
 }
@@ -1498,6 +1493,7 @@ input[type="file"]::file-selector-button:hover {
 .table-title-column {
     font-weight: bold;
     max-width: 35vw;
+    min-width: 3rem;
     word-break: break-all;
 }
 
