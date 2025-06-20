@@ -44,8 +44,8 @@
                         <f:converter converterId="trimConverter"/>
                     </h:inputText>
                     <h:panelGroup/>
-                    <h:panelGroup>
-                        <h:commandButton id="clonePublisherSaveButton" name="clonePublisherSaveButton" style="margin-right:10px;" ajax="false"
+                    <h:panelGroup styleClass="action-buttons">
+                        <h:commandButton id="clonePublisherSaveButton" name="clonePublisherSaveButton" ajax="false"
                                          action="#{listPublishers.clonePublisher}" value="#{web.text.CLONE_CONFIRM}"/>
                         <h:commandButton id="clonePublisherCancelbutton" name="clonePublisherCancelbutton" ajax="false"
                                          action="listpublishers?faces-redirect=true" value="#{web.text.CANCEL}" immediate="true">

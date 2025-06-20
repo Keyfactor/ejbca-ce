@@ -67,7 +67,7 @@
 					<h:outputLabel for="addFromTemplateProfileNew" value="#{web.text.APPROVALPROFILE_NEWNAME}"/>
 	  				<h:inputText id="addFromTemplateProfileNew" value="#{approvalProfilesMBean.approvalProfileName}" title="#{web.text.FORMAT_ID_STR}" size="40" maxlength="250"/>
 	  				<h:panelGroup/>
-					<h:panelGroup>
+					<h:panelGroup styleClass="action-buttons">
 						<h:commandButton value="#{web.text.CLONE_CONFIRM}" action="#{approvalProfilesMBean.actionAddFromTemplateConfirm}"/>
 						<h:commandButton value="#{web.text.CANCEL}" action="#{approvalProfilesMBean.actionCancel}" immediate="true"/>
 					</h:panelGroup>
