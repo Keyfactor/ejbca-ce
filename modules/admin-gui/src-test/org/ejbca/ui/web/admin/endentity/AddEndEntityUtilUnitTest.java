@@ -39,6 +39,9 @@ public class AddEndEntityUtilUnitTest {
         assertTrue(INVALID_SDN, AddEndEntityUtil.isValidDNField("test*(孩儿"));
         assertTrue(INVALID_SDN, AddEndEntityUtil.isValidDNField("test*孩儿/"));
         assertTrue(INVALID_SDN, AddEndEntityUtil.isValidDNField("test#"));
+        assertTrue(INVALID_SDN, AddEndEntityUtil.isValidDNField("test&"));
+        assertTrue(INVALID_SDN, AddEndEntityUtil.isValidDNField("test&+"));
+        assertTrue(INVALID_SDN, AddEndEntityUtil.isValidDNField("test+"));
     }
 
     @Test
@@ -49,8 +52,6 @@ public class AddEndEntityUtilUnitTest {
         assertFalse(VALID_SDN, AddEndEntityUtil.isValidDNField("?test\n"));
         assertFalse(VALID_SDN, AddEndEntityUtil.isValidDNField("test\r"));
         assertFalse(VALID_SDN, AddEndEntityUtil.isValidDNField("test`"));
-        assertFalse(VALID_SDN, AddEndEntityUtil.isValidDNField("test&"));
-        assertFalse(VALID_SDN, AddEndEntityUtil.isValidDNField("test&"));
         assertFalse(VALID_SDN, AddEndEntityUtil.isValidDNField("test{"));
         assertFalse(VALID_SDN, AddEndEntityUtil.isValidDNField("test}"));
         assertFalse(VALID_SDN, AddEndEntityUtil.isValidDNField("test^"));

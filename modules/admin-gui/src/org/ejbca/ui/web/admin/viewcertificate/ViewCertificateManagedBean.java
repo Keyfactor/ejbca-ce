@@ -12,24 +12,11 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.viewcertificate;
 
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.math.BigInteger;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.event.ComponentSystemEvent;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
 import jakarta.servlet.http.HttpServletRequest;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -46,6 +33,18 @@ import org.ejbca.ui.web.admin.bean.SessionBeans;
 import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 import org.ejbca.ui.web.admin.rainterface.RAInterfaceBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
+
+import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * JavaServer Faces Managed Bean for managing viewcertificate popup view.
@@ -76,7 +75,7 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     private static final int RETURN_TO_ROLEMEMBERS = 5;
     
     private static final String HIDDEN_INDEX               = "hiddenindex";
-    
+
     private boolean noparameter = true;
     private boolean cacerts = false;
     private boolean useKeyRecovery = false;   
@@ -361,7 +360,7 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
         if (request.getParameter(USER_PARAMETER) != null) {
             noparameter = false;
             if (ejbcaBean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWCERTIFICATE)) {
-                userName = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER), "UTF-8");
+                userName = request.getParameter(USER_PARAMETER);
                 raBean.loadCertificates(userName);
             }
         }

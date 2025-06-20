@@ -28,8 +28,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
@@ -1218,17 +1220,29 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
      * @return altName updated with dns or upn copied from CN
      */
     private String copyCnToAltName(final String subjectDn, String altName, final EndEntityProfile profile, final String specifiedDnType) {
-        String specifiedDnTypeValueFromCn = EndEntityInformationFiller.copyCnToAltName(profile, subjectDn, specifiedDnType);
-        if (altName == null) {
-            altName = "";
-        }
-        if (StringUtils.isNotEmpty(specifiedDnTypeValueFromCn) && !altName.contains(specifiedDnTypeValueFromCn)) {
-            if (StringUtils.isNotEmpty(altName)) {
-                altName += ", ";
+        final String specifiedDnTypeValueFromCn = EndEntityInformationFiller.copyCnToAltName(profile, subjectDn, specifiedDnType);
+        if (StringUtils.isEmpty(altName)) {
+            if (StringUtils.isNotEmpty(specifiedDnTypeValueFromCn)) {
+                return specifiedDnTypeValueFromCn;
+            } else {
+                return "";
             }
-            altName += specifiedDnTypeValueFromCn;
         }
-        return altName;
+        if (StringUtils.isEmpty(specifiedDnTypeValueFromCn)) {
+            return altName;
+        }
+
+        final Set<String> altNameFields = Arrays.stream(altName.split(",")).map(String::trim).collect(Collectors.toSet());
+        final String fieldsToAdd = Arrays.stream(specifiedDnTypeValueFromCn.split(","))
+                .map(String::trim)
+                .filter(field -> !altNameFields.contains(field))
+                .collect(Collectors.joining(", "));
+
+        return altName + (StringUtils.isEmpty(fieldsToAdd) ? "" : ", " + fieldsToAdd);
+    }
+
+    private static boolean shouldCopyCNToAltName(String altName, String specifiedDnTypeValueFromCn) {
+        return Arrays.stream(altName.split(",")).noneMatch(property -> property.trim().equalsIgnoreCase(specifiedDnTypeValueFromCn));
     }
 
     @Override

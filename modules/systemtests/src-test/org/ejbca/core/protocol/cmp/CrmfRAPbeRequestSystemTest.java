@@ -232,13 +232,16 @@ public class CrmfRAPbeRequestSystemTest extends CmpTestCase {
         // In this test userDN contains special, escaped characters to verify
         // that that works with CMP RA as well
         final PKIMessage certRequest = genCertReq(issuerDN, userDN, this.keys, this.cacert, nonce, transid, true, null, notBefore, notAfter, null, null, null);
-        runCrmfHttpOkUser(certRequest, nonce, transid, notAfter, false, null);
+        // First message will use a sender KeyID (can be anything as it's not mapped on the server side)
+        runCrmfHttpOkUser(certRequest, nonce, transid, notAfter, false, null, "primekey");
         // Verify that we can get extraCerts with PBE protection
         this.cmpConfiguration.setResponseExtraCertsCA(ALIAS, String.valueOf(this.testx509ca.getCAId()));
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
         final CMPCertificate[] expectedExtraCerts = getCMPCert(this.testx509ca.getCACertificate());
         assertEquals("Should be one cert in expectedExtraCerts", 1, expectedExtraCerts.length);
-        runCrmfHttpOkUser(certRequest, nonce, transid, notAfter, false, expectedExtraCerts);
+        // Second message will not use a sender KeyID (can be anything as it's not mapped on the server side)
+        // a null senderKID parameter means no PKIMessage.PKIHeader.senderKID is included (it's optional in RFC4210 5.1.1)
+        runCrmfHttpOkUser(certRequest, nonce, transid, notAfter, false, expectedExtraCerts, null);
     }
 
     @Test
@@ -260,7 +263,7 @@ public class CrmfRAPbeRequestSystemTest extends CmpTestCase {
 
         KeyPair falconKeyPair = KeyTools.genKeys("falcon-512", "falcon-512");
         final PKIMessage certRequestFalcon = genCertReq(issuerDN, userDN, falconKeyPair, this.cacert, nonce, transid, true, null, notBefore, notAfter, null, null, null);
-        runCrmfHttpOkUser(certRequestFalcon, nonce, transid, notAfter, false, null);
+        runCrmfHttpOkUser(certRequestFalcon, nonce, transid, notAfter, false, null, "senderKID");
 
     }
 
@@ -287,7 +290,7 @@ public class CrmfRAPbeRequestSystemTest extends CmpTestCase {
         // that that works with CMP RA as well
         final PKIMessage certRequest = genCertReqWithSAN(issuerDN, userDN, this.keys, this.cacert, nonce, transid, true, null, notBefore, notAfter, null, null,
                 null);
-        runCrmfHttpOkUser(certRequest, nonce, transid, notAfter, true, null);
+        runCrmfHttpOkUser(certRequest, nonce, transid, notAfter, true, null, "senderKID");
     }
 
     /** Tests issuance of certificates with multi-value RDN using CMP.
@@ -747,9 +750,9 @@ public class CrmfRAPbeRequestSystemTest extends CmpTestCase {
         return approvedRevocations;
     } // approveRevocation
 
-    private void runCrmfHttpOkUser(final PKIMessage one, final byte[] nonce, final byte[] transid, final Date notAfter, final boolean SANTest, final CMPCertificate[] expectedExtraCerts) throws Exception {
+    private void runCrmfHttpOkUser(final PKIMessage one, final byte[] nonce, final byte[] transid, final Date notAfter, final boolean SANTest, final CMPCertificate[] expectedExtraCerts, final String senderKID) throws Exception {
         try {
-            PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, 567);
+            PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, senderKID, 567);
             assertNotNull(req);
 
             CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
@@ -766,8 +769,7 @@ public class CrmfRAPbeRequestSystemTest extends CmpTestCase {
             }
             // Send request and receive response
             byte[] resp = sendCmpHttp(ba, 200, ALIAS);
-            checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, PBEPASSWORD,
-                    PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
+            checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, PBEPASSWORD, null, false);
             X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDN, this.cacert, resp, reqId);
             // Check that validity override works
             assertEquals("'Not Before' should be limited by the CA not before date.", cacert.getNotBefore(), cert.getNotBefore());
@@ -791,15 +793,14 @@ public class CrmfRAPbeRequestSystemTest extends CmpTestCase {
             String hash = "foo123";
             PKIMessage confirm = genCertConfirm(userDN, this.cacert, nonce, transid, hash, reqId, null);
             assertNotNull(confirm);
-            PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD, 567);
+            PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD, senderKID, 567);
             bao = new ByteArrayOutputStream();
             out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
             out.writeObject(req1);
             ba = bao.toByteArray();
             // Send request and receive response
             resp = sendCmpHttp(ba, 200, ALIAS);
-            checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, PBEPASSWORD,
-                    PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
+            checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, PBEPASSWORD, null, false);
             checkCmpPKIConfirmMessage(userDN, this.cacert, resp);
             // no extraCerts in Confirm Message
             respObject = PKIMessage.getInstance(resp);
@@ -808,7 +809,7 @@ public class CrmfRAPbeRequestSystemTest extends CmpTestCase {
 
             // Now revoke the bastard including the CMPv2 reason code extension!
             PKIMessage rev = genRevReq(issuerDN, userDN, cert.getSerialNumber(), this.cacert, nonce, transid, false, null, null);
-            PKIMessage revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
+            PKIMessage revReq = protectPKIMessage(rev, false, PBEPASSWORD, senderKID, 567);
             assertNotNull(revReq);
             bao = new ByteArrayOutputStream();
             out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
@@ -816,8 +817,7 @@ public class CrmfRAPbeRequestSystemTest extends CmpTestCase {
             ba = bao.toByteArray();
             // Send request and receive response
             resp = sendCmpHttp(ba, 200, ALIAS);
-            checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, PBEPASSWORD,
-                    PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
+            checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, PBEPASSWORD, null, false);
             checkCmpRevokeConfirmMessage(issuerDN, userDN, cert.getSerialNumber(), this.cacert, resp, true);
             int reason = checkRevokeStatus(issuerDN, cert.getSerialNumber());
             assertEquals(reason, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
@@ -828,7 +828,7 @@ public class CrmfRAPbeRequestSystemTest extends CmpTestCase {
 
             // Create a revocation request for a non existing cert, should fail (revocation response with status failure)!
             rev = genRevReq(issuerDN, userDN, new BigInteger("1"), this.cacert, nonce, transid, true, null, null);
-            revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
+            revReq = protectPKIMessage(rev, false, PBEPASSWORD, senderKID, 1024);
             assertNotNull(revReq);
             bao = new ByteArrayOutputStream();
             out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
@@ -836,8 +836,7 @@ public class CrmfRAPbeRequestSystemTest extends CmpTestCase {
             ba = bao.toByteArray();
             // Send request and receive response
             resp = sendCmpHttp(ba, 200, ALIAS);
-            checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, PBEPASSWORD,
-                    PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
+            checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, PBEPASSWORD, null, false);
             checkCmpRevokeConfirmMessage(issuerDN, userDN, cert.getSerialNumber(), this.cacert, resp, false);
             // no extraCerts in Revoke Response Message
             respObject = PKIMessage.getInstance(resp);
