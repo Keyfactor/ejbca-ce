@@ -48,8 +48,7 @@
         <h:form id="login">
         <h:dataTable value="#{adminLoginMBean.allOauthKeys}"
                      var="oauthkey"
-                     styleClass="oauthProviderTable"
-                     rendered="#{web.ejbcaWebBean.runningEnterprise}">
+                     styleClass="oauthProviderTable">
             <h:column>
                 <h:commandLink action="#{adminLoginMBean.clickLoginLink(oauthkey.label)}">
                     <h:outputText value="#{oauthkey.label}" />

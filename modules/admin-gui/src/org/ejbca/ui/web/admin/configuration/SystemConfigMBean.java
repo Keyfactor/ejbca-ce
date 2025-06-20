@@ -2223,7 +2223,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
     
     public boolean renderOAuthProviders() {
-        return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.ROLE_ROOT.resource()) && getEjbcaWebBean().isRunningEnterprise();
+        return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.ROLE_ROOT.resource());
     }
     
     public boolean renderCustomCertificateExtensions() {
