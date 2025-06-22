@@ -3,8 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:f="jakarta.faces.core"
       xmlns:h="jakarta.faces.html"
-      xmlns:ui="jakarta.faces.facelets"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:ui="jakarta.faces.facelets">
 <ui:remove>
     <!--
     /*************************************************************************
@@ -45,14 +44,14 @@
                         <f:converter converterId="trimConverter"/>
                     </h:inputText>
                     <h:panelGroup/>
-                    <h:panelGroup>
-                        <p:commandButton id="clonePublisherSaveButton" name="clonePublisherSaveButton" style="margin-right:10px;" ajax="false"
+                    <h:panelGroup styleClass="action-buttons">
+                        <h:commandButton id="clonePublisherSaveButton" name="clonePublisherSaveButton" ajax="false"
                                          action="#{listPublishers.clonePublisher}" value="#{web.text.CLONE_CONFIRM}"/>
-                        <p:commandButton id="clonePublisherCancelbutton" name="clonePublisherCancelbutton" ajax="false"
+                        <h:commandButton id="clonePublisherCancelbutton" name="clonePublisherCancelbutton" ajax="false"
                                          action="listpublishers?faces-redirect=true" value="#{web.text.CANCEL}" immediate="true">
                             <f:setPropertyActionListener
                                     target="#{listPublishers.newPublisherName}" value="" />
-                        </p:commandButton>
+                        </h:commandButton>
                     </h:panelGroup>
                 </h:panelGrid>
             </h:panelGroup>

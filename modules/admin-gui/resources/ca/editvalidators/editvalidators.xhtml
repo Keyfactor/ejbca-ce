@@ -31,29 +31,32 @@
                 <h:outputText value=" #{web.ejbcaWebBean.getHelpReference('/Validators_Overview.html')}" escape="false"/>
             </h1>
             
-            <!--div class="message"><h:messages layout="table" errorClass="alert" infoClass="infoMessage"/></div-->
         		<h:form id="editvalidators" >
 					<h:panelGroup rendered="#{!validatorsBean.operationInProgress}">
 					<h3><h:outputText value="#{web.text.LISTOFVALIDATORS}"/></h3>
 					<h:outputText value="#{validatorsBean.resetValidatorsTrigger}"/>
-					<h:dataTable id="listValidatorsDataTable" value="#{validatorsBean.availableValidators}" var="validatoritem" styleClass="grid" columnClasses="gridColumn1,gridColumn2" rendered="#{validatorsBean.existsValidators}">
-						<h:column headerClass="gridColumn1" >
+					<p:dataTable id="listValidatorsDataTable" value="#{validatorsBean.availableValidators}" var="validatoritem"
+                                 rendered="#{validatorsBean.existsValidators}"
+                                 styleClass="grid table-layout-auto vertical-padding-1" stripedRows="true" showGridlines="true">
+						<p:column styleClass="table-title-column">
 							<f:facet name="header"><h:outputText value="#{web.text.VALIDATORNAME}" title="#{validatoritem.id}"/></f:facet>
 							<h:outputText value="#{validatoritem.name}"/>
-						</h:column>
-						<h:column headerClass="gridColumn2">
+						</p:column>
+						<p:column styleClass="text-align-center">
 							<f:facet name="header"><h:outputText value="#{web.text.VALIDATORTYPE}"/></f:facet>	
 							<h:outputText value="#{validatoritem.label} "/>
-						</h:column>
+						</p:column>
 						
-						<h:column headerClass="gridColumn2">
-							<f:facet name="header"><h:outputText value="#{web.text.ACTIONS}"/></f:facet>	
-							<h:commandButton value="#{web.text.VIEW}" action="#{validatorsBean.actionView}" disabled="#{!validatorsBean.authorizedToView}" />
-							<h:commandButton value="#{web.text.EDIT}" action="#{validatorsBean.actionEdit}" disabled="#{!validatorsBean.authorizedToView or !validatorsBean.authorizedToEdit}"/>
-							<h:commandButton value="#{web.text.DELETE}" action="#{validatorsBean.actionDelete}" disabled="#{!validatorsBean.authorizedToView or !validatorsBean.authorizedToEdit}"/>
-							<h:commandButton value="#{web.text.CLONE}" action="#{validatorsBean.actionAddFromTemplate}" disabled="#{!validatorsBean.authorizedToView or !validatorsBean.authorizedToEdit}"/>
-						</h:column>
-					</h:dataTable>
+						<p:column styleClass="text-align-center">
+							<f:facet name="header"><h:outputText value="#{web.text.ACTIONS}"/></f:facet>
+                            <div class="action-buttons">
+							    <h:commandButton value="#{web.text.VIEW}" action="#{validatorsBean.actionView}" disabled="#{!validatorsBean.authorizedToView}" />
+							    <h:commandButton value="#{web.text.EDIT}" action="#{validatorsBean.actionEdit}" disabled="#{!validatorsBean.authorizedToView or !validatorsBean.authorizedToEdit}"/>
+							    <h:commandButton value="#{web.text.CLONE}" action="#{validatorsBean.actionAddFromTemplate}" disabled="#{!validatorsBean.authorizedToView or !validatorsBean.authorizedToEdit}"/>
+                                <h:commandButton value="#{web.text.DELETE}" action="#{validatorsBean.actionDelete}" disabled="#{!validatorsBean.authorizedToView or !validatorsBean.authorizedToEdit}"/>
+                            </div>
+						</p:column>
+					</p:dataTable>
 				</h:panelGroup>
 				<h:panelGroup rendered="#{validatorsBean.deleteInProgress}">
 					<h3><h:outputText value="#{web.text.DELETEVALIDATOR_TITLE}"/></h3>
@@ -61,13 +64,13 @@
 						<h:outputLabel for="deleteValidatorName" value="#{web.text.VALIDATORNAME}:"/>
 						<h:outputText id="deleteValidatorName" value="#{validatorsBean.validatorName}"/>
 		  				<h:panelGroup/>
-						<h:panelGroup>
+						<h:panelGroup styleClass="action-buttons">
 							<h:commandButton value="#{web.text.DELETE_CONFIRM}" action="#{validatorsBean.actionDeleteConfirm}"/>
 							<h:commandButton value="#{web.text.CANCEL}" action="#{validatorsBean.actionCancel}"/>
 						</h:panelGroup>
 					</h:panelGrid>
 				</h:panelGroup>				
-	        	<h:panelGrid columns="1">
+	        	<h:panelGrid  rendered="#{!validatorsBean.deleteInProgress}" columns="1" styleClass="no-border no-padding padding-bottom-1-rem">
 	        		<h:outputText value="#{web.text.NOVALIDATORSEXIST}" rendered="#{!validatorsBean.existsValidators}" />
 					<h:commandButton value="#{web.text.ADD}" action="#{validatorsBean.actionAdd}" disabled="#{!validatorsBean.authorizedToView or !validatorsBean.authorizedToEdit}"/>
 				</h:panelGrid>

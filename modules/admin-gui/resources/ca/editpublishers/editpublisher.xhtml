@@ -59,10 +59,10 @@
 
 					<h:panelGroup>
 						<h:outputText value="#{listPublishers.selectedPublisherName}"
-									  rendered="#{editPublisher.readOnly or editPublisher.deprecated}"
+									  rendered="#{editPublisher.readOnly}"
 									  style="font-weight:bold;"/>
 						<h:inputText size="45" maxlength="255" title="#{web.text.NAME}" disabled="#{editPublisher.readOnly}" value="#{editPublisher.publisherName}"
-									 rendered="#{!editPublisher.readOnly and !editPublisher.deprecated}"
+									 rendered="#{!editPublisher.readOnly}"
 									 required="true" requiredMessage="#{web.text.YOUAREREQUIRED} #{web.text.NAME}"/>
 					</h:panelGroup>
 					

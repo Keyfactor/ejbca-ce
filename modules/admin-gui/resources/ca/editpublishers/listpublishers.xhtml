@@ -36,98 +36,67 @@
 		<h:form id="listPublishers">
 			<p:dataTable value="#{listPublishers.publisherGuiList}"
 						 var="publisherGuiInfo"
-						 styleClass="grid"
-						 columnClasses=",gridCenter,gridCenter,gridCenter"
-						 paginator="true" paginatorPosition="bottom"
-						 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-						 currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} publishers"
-						 rowsPerPageTemplate="50,100,{ShowAll|'All'}"
-			>
+						 styleClass="grid table-layout-auto vertical-padding-1" stripedRows="true" showGridlines="true">
 				<p:column rendered="false">
 					<h:selectBooleanCheckbox value="#{listPublishers.selectedPublisherName}" />
 				</p:column>
 
-				<p:column>
+				<p:column styleClass="table-title-column">
 					<f:facet name="header">
 						<h:outputText value="#{web.text.NAME}"/>
 					</f:facet>
 					<h:outputText value="#{publisherGuiInfo.name}"/>
 				</p:column>
 
-				<p:column>
+				<p:column styleClass="text-align-center">
 					<f:facet name="header">
-						<h:outputText value="#{web.text.TYPE}" />
+						<h:outputText value="#{web.text.TYPE}"/>
 					</f:facet>
-					<h:outputText value="#{publisherGuiInfo.type}" />
+					<h:outputText value="#{publisherGuiInfo.type}"/>
 				</p:column>
 
-				<p:column style="width: 5%">
+				<p:column styleClass="text-align-center">
 					<f:facet name="header">
-						<h:outputText value="#{web.text.VIEW}"/>
+						<h:outputText value="#{web.text.ACTIONS}"/>
 					</f:facet>
-					<p:commandButton icon="pi pi-file-edit" styleClass="rounded-button"
-									 title="#{web.text.VIEW}" ajax="fasle"
-									 action="#{listPublishers.viewPublisher}">
-						<f:setPropertyActionListener
-								target="#{listPublishers.selectedPublisherName}"
-								value="#{publisherGuiInfo.name}" />
-					</p:commandButton>
+					<div class="action-buttons">
+						<h:commandButton value="#{web.text.VIEW}" ajax="fasle"
+										 action="#{listPublishers.viewPublisher}">
+							<f:setPropertyActionListener
+									target="#{listPublishers.selectedPublisherName}"
+									value="#{publisherGuiInfo.name}"/>
+						</h:commandButton>
+						<h:commandButton value="#{web.text.EDIT}"
+										 action="#{listPublishers.editPublisher}"
+										 rendered="#{listPublishers.hasEditRights}">
+							<f:setPropertyActionListener
+									target="#{listPublishers.selectedPublisherName}"
+									value="#{publisherGuiInfo.name}"/>
+						</h:commandButton>
+						<h:commandButton value="#{web.text.CLONE}"
+										 action="clonepublisherpage"
+										 rendered="#{listPublishers.hasEditRights}">
+							<f:setPropertyActionListener
+									target="#{listPublishers.selectedPublisherName}"
+									value="#{publisherGuiInfo.name}"/>
+							<f:setPropertyActionListener
+									target="#{listPublishers.newPublisherName}" value=""/>
+						</h:commandButton>
+                        <h:commandButton value="#{web.text.DELETE}"
+                                         action="deletepublisherpage"
+                                         rendered="#{listPublishers.hasEditRights}">
+                            <f:setPropertyActionListener
+                                    target="#{listPublishers.selectedPublisherName}"
+                                    value="#{publisherGuiInfo.name}"/>
+                        </h:commandButton>
+					</div>
 				</p:column>
-
-				<p:column style="width: 5%">
-					<f:facet name="header">
-						<h:outputText value="#{web.text.EDIT}"/>
-					</f:facet>
-					<p:commandButton icon="pi pi-file-edit" styleClass="rounded-button"
-									 title="#{web.text.EDIT}"
-									 action="#{listPublishers.editPublisher}"
-									 rendered="#{listPublishers.hasEditRights}">
-						<f:setPropertyActionListener
-								target="#{listPublishers.selectedPublisherName}"
-								value="#{publisherGuiInfo.name}" />
-					</p:commandButton>
-				</p:column>
-
-				<p:column style="width: 5%">
-					<f:facet name="header">
-						<h:outputText value="#{web.text.DELETE}"/>
-					</f:facet>
-					<p:commandButton id="actionDelete" icon="pi pi-trash" styleClass="rounded-button"
-									 title="#{web.text.DELETE}"
-									 action="deletepublisherpage"
-									 rendered="#{listPublishers.hasEditRights}">
-						<f:setPropertyActionListener
-								target="#{listPublishers.selectedPublisherName}"
-								value="#{publisherGuiInfo.name}" />
-					</p:commandButton>
-				</p:column>
-
-				<p:column style="width: 5%">
-					<f:facet name="header">
-						<h:outputText value="#{web.text.CLONE}"/>
-					</f:facet>
-					<p:commandButton id="actionClone" icon="pi pi-clone" styleClass="rounded-button"
-									 title="#{web.text.CLONE}"
-									 action="clonepublisherpage"
-									 rendered="#{listPublishers.hasEditRights}">
-						<f:setPropertyActionListener
-								target="#{listPublishers.selectedPublisherName}"
-								value="#{publisherGuiInfo.name}" />
-						<f:setPropertyActionListener
-								target="#{listPublishers.newPublisherName}" value="" />
-					</p:commandButton>
-				</p:column>
-
 			</p:dataTable>
 
-			<p:panelGrid columns="1" styleClass="actions margin-top ui-noborder" width="100%" rendered="#{estConfigMBean.authorizedToEdit}">
-				<h:panelGroup>
-					<p:commandButton id="addButton" name="addButton"
-									 action="#{listPublishers.addPublisher}"
-									 value="#{web.text.ADD}"
-					/>
-				</h:panelGroup>
-			</p:panelGrid>
+			<h:commandButton id="addButton" name="addButton"
+							 value="#{web.text.ADD}"
+							 action="#{listPublishers.addPublisher}"
+							 rendered="#{estConfigMBean.authorizedToEdit}"/>
 
 		</h:form>
 	</ui:define>

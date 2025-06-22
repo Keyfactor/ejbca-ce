@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="jakarta.faces.html"
-      xmlns:ui="jakarta.faces.facelets"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:ui="jakarta.faces.facelets">
 <ui:remove>
     <!--
     /*************************************************************************
@@ -25,8 +25,8 @@
     <ui:param name="resourceBean" value="#{manageCAsMBean}"/>
     <ui:define name="content">
         <h1>
-				  <h:outputText value="#{web.text.MANAGECAS}"/>
-			  </h1>
+            <h:outputText value="#{web.text.MANAGECAS}"/>
+        </h1>
         <h:form>
             <h:panelGroup rendered="#{manageCAsMBean.canRemoveResource}">
                 <h3>
@@ -36,10 +36,10 @@
                     <h:outputLabel for="deletedCaName" value="#{web.text.CA_DELETE_TEMPLATE}"/>
                     <h:outputText id="deletedCaName" value="#{manageCAsMBean.selectedCaNameForDelete}"/>
                     <h:panelGroup/>
-                    <h:panelGroup>
-                        <p:commandButton id="deleteCaSaveButton" name="deleteCaSaveButton" style="margin-right:10px;" ajax="false"
+                    <h:panelGroup styleClass="action-buttons">
+                        <h:commandButton id="deleteCaSaveButton" name="deleteCaSaveButton" ajax="false"
                                          action="#{manageCAsMBean.removeCA}" value="#{web.text.DELETE_CONFIRM}"/>
-                        <p:commandButton id="deleteCaCancelButton" name="deleteCaCancelButton" ajax="false"
+                        <h:commandButton id="deleteCaCancelButton" name="deleteCaCancelButton" ajax="false"
                                          action="managecas" value="#{web.text.CANCEL}" immediate="true"/>
                     </h:panelGroup>
                 </h:panelGrid>

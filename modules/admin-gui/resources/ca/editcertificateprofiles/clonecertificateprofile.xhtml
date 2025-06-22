@@ -37,7 +37,7 @@
                     <h:outputLabel for="addFromTemplateProfileNew" value="#{web.text.CERTPROFILE_NEWNAME}"/>
                     <h:inputText id="addFromTemplateProfileNew" value="#{certProfilesBean.certProfileName}" title="#{web.text.FORMAT_ID_STR}" size="40" maxlength="255"/>
                     <h:panelGroup/>
-                    <h:panelGroup>
+                    <h:panelGroup styleClass="action-buttons">
                         <h:commandButton id="cloneConfirmButton" value="#{web.text.CLONE_CONFIRM}" action="#{certProfilesBean.actionAddFromTemplateConfirm}"/>
                         <h:commandButton id="cloneCancelButton" value="#{web.text.CANCEL}" action="#{certProfilesBean.actionCancel}"/>
                     </h:panelGroup>
