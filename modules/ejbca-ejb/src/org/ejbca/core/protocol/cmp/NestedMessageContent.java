@@ -226,11 +226,6 @@ public class NestedMessageContent extends BaseCmpMessage implements RequestMessa
     }
 
     @Override
-    public boolean isPss() {
-        return false;
-    }
-
-    @Override
     public String getRequestAltNames() {
         return null;
     }

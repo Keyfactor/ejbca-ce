@@ -148,10 +148,6 @@ public class Pkcs10RequestDnAdapter implements RequestMessage {
 		return this.original.getPreferredDigestAlg();
 	}
 	@Override
-	public boolean isPss() {
-		return this.original.isPss();
-	}
-	@Override
 	public boolean includeCACert() {
 		return this.original.includeCACert();
 	}
