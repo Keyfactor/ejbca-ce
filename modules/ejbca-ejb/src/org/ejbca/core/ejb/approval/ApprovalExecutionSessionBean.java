@@ -71,7 +71,6 @@ import org.ejbca.util.approval.ApprovalUtil;
  * circular dependencies, since execution will require SSBs that originally created the
  * approval request.
  */
-@SuppressWarnings("deprecation")
 @Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLocal, ApprovalExecutionSessionRemote {
@@ -140,8 +139,6 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
             final boolean readyToCheckExecution = approvalProfile.canApprovalExecute(approvalsPerformed);
             approvalSession.setApprovals(approvalData, approvalsPerformed);
             if (readyToCheckExecution) {
-                //Kept for legacy reasons to allow for 100% uptime, can be removed once upgrading from 6.6.0 is no longer supported. 
-                approvalData.setRemainingapprovals(0);
                 final ApprovalRequest approvalRequest = approvalData.getApprovalRequest();
                 if (approvalRequest.isExecutable()) {
                     try {
@@ -252,8 +249,6 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
             }
             approvalSession.setApprovals(approvalData, approvalsPerformed);
             //Retrieve the approval profile just to make sure that the state is still valid
-            //Kept for legacy reasons
-            approvalData.setRemainingapprovals(0);
             if (approvalData.getApprovalRequest().isExecutable()) {
                 approvalData.setStatus(ApprovalDataVO.STATUS_EXECUTIONDENIED);
                 approvalData.setExpireDate(new Date());

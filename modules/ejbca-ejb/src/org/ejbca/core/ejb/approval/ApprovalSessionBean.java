@@ -45,9 +45,7 @@ import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CaSessionLocal;
-import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
-import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
@@ -73,11 +71,9 @@ import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.approvalrequests.AcmeKeyChangeApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.AcmeNewAccountApprovalRequest;
-import org.ejbca.core.model.approval.approvalrequests.ActivateCATokenApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest;
-import org.ejbca.core.model.approval.approvalrequests.KeyRecoveryApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
 import org.ejbca.core.model.approval.profile.ApprovalPartition;
 import org.ejbca.core.model.approval.profile.ApprovalPartitionWorkflowState;
@@ -253,7 +249,6 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     }
     
     /** Updates the ApprovalData from the given approval request, and initializes the list of approvals to an empty list. */
-    @SuppressWarnings("deprecation")
     private void updateApprovalData(final ApprovalData approvalData, final ApprovalRequest approvalRequest) {
         approvalData.setApprovalid(approvalRequest.generateApprovalId());
         approvalData.setApprovaltype(approvalRequest.getApprovalType());
@@ -266,8 +261,6 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         setApprovalRequest(approvalData, approvalRequest);
         setApprovals(approvalData, new ArrayList<Approval>());
         approvalData.setExpiredate((new Date()).getTime() + approvalRequest.getRequestValidity());
-        //Kept for legacy reasons
-        approvalData.setRemainingapprovals(approvalRequest.getNumOfRequiredApprovals());
         if (approvalRequest instanceof AddEndEntityApprovalRequest) {
             AddEndEntityApprovalRequest addEndEntity = (AddEndEntityApprovalRequest) approvalRequest;           
             approvalData.setEmail(addEndEntity.getEndEntityInformation().getEmail());
@@ -369,15 +362,6 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         if (log.isTraceEnabled()) {
             log.trace("<markAsStepDone, approvalId: " + approvalId + ", step " + step);
         }
-    }
-    
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    @Override
-    public List<ApprovalData> findWaitingForApprovalApprovalDataLocal() {
-        final TypedQuery<ApprovalData> query = entityManager
-                .createQuery("SELECT a FROM ApprovalData a WHERE a.status=" + ApprovalDataVO.STATUS_WAITINGFORAPPROVAL, ApprovalData.class);
-        List<ApprovalData> result = query.getResultList();
-        return result;
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -549,61 +533,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         final List<ApprovalData> approvalDataList = findByCustomQuery(index, numberofrows, queryWrapper);
         final List<ApprovalDataVO> returnData = new ArrayList<>(approvalDataList.size());
         for (ApprovalData approvalData : approvalDataList) {
-            final ApprovalDataVO approvalInformation = approvalData.getApprovalDataVO();
-            //Perform a lazy upgrade of incoming approval requests produced prior to 6.5.0, which will lack a reference to an approval profile. The 
-            //upgrade procedure will have created the required approval profiles. 
-            ApprovalRequest approvalRequest = approvalInformation.getApprovalRequest();
-            if(approvalRequest.getApprovalProfile() == null) {
-                if(log.isDebugEnabled()) {
-                    log.debug("Attempting to upgrade approval with ID " + approvalData.getApprovalid() 
-                    + " to 6.6.0+ status by retrieving an approval profile from either the certificate profile or the CA.");
-                }
-                ApprovalProfile approvalProfile;
-
-                //For the sake of upgrade, we're forced to use instanceof to find the relevant certificate profile ID, based on the behavior in 
-                //6.5.x 
-                CertificateProfile certificateProfile = null;
-                if (approvalRequest instanceof ActivateCATokenApprovalRequest) {
-                    //See legacy instantiation in CAAdminSessionBean
-                    certificateProfile = certificateProfileSession
-                            .getCertificateProfile(caSession.getCAInfoInternal(approvalRequest.getCAId()).getCertificateProfileId());
-                } else if (approvalRequest instanceof AddEndEntityApprovalRequest) {
-                    //See legacy instantiation in EndEntityManagementSessionBean
-                    certificateProfile = certificateProfileSession.getCertificateProfile(
-                            ((AddEndEntityApprovalRequest) approvalRequest).getEndEntityInformation().getCertificateProfileId());
-                } else if (approvalRequest instanceof ChangeStatusEndEntityApprovalRequest) {
-                    //See legacy instantiation in EndEntityManagementSessionBean
-                    EndEntityInformation endEntityInformation = endEntityAccessSession
-                            .findUser(((ChangeStatusEndEntityApprovalRequest) approvalRequest).getUsername());
-                    certificateProfile = certificateProfileSession.getCertificateProfile(endEntityInformation.getCertificateProfileId());
-                } else if (approvalRequest instanceof EditEndEntityApprovalRequest) {
-                    //See legacy instantiation in EndEntityManagementSessionBean
-                    certificateProfile = certificateProfileSession.getCertificateProfile(
-                            ((EditEndEntityApprovalRequest) approvalRequest).getNewEndEntityInformation().getCertificateProfileId());
-                } else if (approvalRequest instanceof KeyRecoveryApprovalRequest) {
-                    //See legacy instantiation in KeyRecoverySessionBean
-                    final CertificateInfo certificateInfor = certificateStoreSession.getCertificateInfo(
-                            CertTools.getFingerprintAsString(((KeyRecoveryApprovalRequest) approvalRequest).getRequestAdminCert()));
-                    certificateProfile = certificateProfileSession.getCertificateProfile(certificateInfor.getCertificateProfileId());
-                } else if (approvalRequest instanceof RevocationApprovalRequest) {
-                    //See legacy instantiation in RevocationSessionBean
-                    EndEntityInformation endEntityInformation = endEntityAccessSession
-                            .findUser(((RevocationApprovalRequest) approvalRequest).getUsername());
-                    certificateProfile = certificateProfileSession.getCertificateProfile(endEntityInformation.getCertificateProfileId());
-                }
-                
-                approvalProfile = approvalProfileSession.getApprovalProfileForAction(
-                        ApprovalRequestType.getFromIntegerValue(approvalRequest.getApprovalRequestType()),
-                        caSession.getCAInfoInternal(approvalRequest.getCAId()), certificateProfile);
-             
-                approvalRequest.setApprovalProfile(approvalProfile);
-                approvalInformation.setApprovalRequest(approvalRequest);
-                approvalSession.updateApprovalRequest(approvalData.getId(), approvalRequest);
-                if (log.isDebugEnabled()) {
-                    log.debug("Upgraded approval with ID " + approvalData.getApprovalid() + " to 6.6.0+ by setting approval profile with ID "
-                            + approvalProfile != null ? (approvalProfile.getProfileId() + "(" + approvalProfile.getProfileName() + ")") : "(no approval profile)" + ".");
-                }
-            }
+            final ApprovalDataVO approvalInformation = approvalData.getApprovalDataVO();    
             returnData.add(approvalInformation);         
         }
         log.trace("<queryInternal()");

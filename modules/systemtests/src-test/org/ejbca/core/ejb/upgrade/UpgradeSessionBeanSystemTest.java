@@ -14,12 +14,10 @@ package org.ejbca.core.ejb.upgrade;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.cert.CertificateParsingException;
@@ -82,7 +80,6 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
-import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberDataProxySessionRemote;
@@ -198,141 +195,7 @@ public class UpgradeSessionBeanSystemTest {
         globalConfigSession.saveConfiguration(alwaysAllowtoken, gucBackup);
         globalConfigSession.saveConfiguration(alwaysAllowtoken, gcBackup);
     }
-       
-   /**
-    * This test checks that an upgrade to 6.6.0 adds view/edit access to approval profiles if you have view/edit access to certificate profiles. 
-    */
-   @Test
-   public void testUpgradeTo660ApprovalRules() throws RoleExistsException, AuthorizationDeniedException, RoleNotFoundException {
-       final String testRoleName = TESTCLASS + " TestRole"; 
-       // Test view (auditor) access
-       try {
-           final List<AccessRuleData> oldAccessRules = Arrays.asList(
-                   new AccessRuleData(testRoleName, StandardRules.CERTIFICATEPROFILEVIEW.resource(), AccessRuleState.RULE_ACCEPT, false)
-                   );
-           final List<AccessUserAspectData> oldAccessUserAspectDatas = Arrays.asList(
-                   new AccessUserAspectData(testRoleName, 1, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASEINS, "CN=foo")
-                   );
-           upgradeTestSession.createRole(testRoleName, oldAccessRules, oldAccessUserAspectDatas);
-           upgradeSession.upgrade(null, "6.5.1", false);
-           final List<AccessRuleData> upgradedAccessRules = upgradeTestSession.getAccessRuleDatas(testRoleName);
-           assertAccessRuleDataIsPresent(upgradedAccessRules, testRoleName, StandardRules.APPROVALPROFILEVIEW.resource(), false);
-       } finally {
-           upgradeTestSession.deleteRole(testRoleName);
-           deleteRole(null, testRoleName);
-       }
-       // Test edit access
-       try {
-           final List<AccessRuleData> oldAccessRules = Arrays.asList(
-                   new AccessRuleData(testRoleName, StandardRules.CERTIFICATEPROFILEEDIT.resource(), AccessRuleState.RULE_ACCEPT, false)
-                   );
-           final List<AccessUserAspectData> oldAccessUserAspectDatas = Arrays.asList(
-                   new AccessUserAspectData(testRoleName, 1, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASEINS, "CN=foo")
-                   );
-           upgradeTestSession.createRole(testRoleName, oldAccessRules, oldAccessUserAspectDatas);
-           upgradeSession.upgrade(null, "6.5.1", false);
-           final List<AccessRuleData> upgradedAccessRules = upgradeTestSession.getAccessRuleDatas(testRoleName);
-           assertAccessRuleDataIsPresent(upgradedAccessRules, testRoleName, StandardRules.APPROVALPROFILEEDIT.resource(), false);
-       } finally {
-           upgradeTestSession.deleteRole(testRoleName);
-           deleteRole(null, testRoleName);
-       }
-   }
-   
-    /**
-    * This test verifies that CAs and Certificate Profiles using approvals are automatically assigned approval profiles at upgrade. 
-    */
-   @Test
-   public void testUpgradeTo660Approvals() throws CAExistsException, AuthorizationDeniedException, CertificateProfileExistsException, CADoesntExistsException, CertificateParsingException, CryptoTokenOfflineException, OperatorCreationException, IOException {       
-       //This CA should not be assigned an approval profile on account of lacking approvals
-       List<Integer> approvalRequirements = new ArrayList<>();
-       approvalRequirements.add(ApprovalRequestType.ACTIVATECA.getIntegerValue());
-
-       //This CA should not be assigned an approval profile on account of lacking any actions
-       X509CA noActionsCa =  CaTestUtils.createTestX509CA("CN=NoActions", "foo123".toCharArray(), false);
-       noActionsCa.setNumOfRequiredApprovals(2);
-       noActionsCa.setApprovalProfile(-1);
-       caSession.addCA(alwaysAllowtoken, noActionsCa);
-       
-       //This CA should be assigned a profile on with two approvals 
-       X509CA twoApprovalsCa =  CaTestUtils.createTestX509CA("CN=TwoApprovals", "foo123".toCharArray(), false);
-       twoApprovalsCa.setNumOfRequiredApprovals(2);
-       twoApprovalsCa.setApprovalSettings(approvalRequirements);
-       caSession.addCA(alwaysAllowtoken, twoApprovalsCa);
-       
-       //This CA should be assigned a profile on with three approvals 
-       X509CA threeApprovalsCa = CaTestUtils.createTestX509CA("CN=ThreeApprovals", "foo123".toCharArray(), false);
-       threeApprovalsCa.setNumOfRequiredApprovals(3);
-       threeApprovalsCa.setApprovalSettings(approvalRequirements);
-       caSession.addCA(alwaysAllowtoken, threeApprovalsCa);
-       
-       //This certificate profile has approvals set, but nothing to approve. 
-       String noActionsCertificateProfileName = "NoActionsCertificateProfile";
-       CertificateProfile noActionsCertificateProfile = new CertificateProfile();
-       noActionsCertificateProfile.setNumOfReqApprovals(2);
-       certificateProfileSession.addCertificateProfile(alwaysAllowtoken, noActionsCertificateProfileName, noActionsCertificateProfile);    
-              
-       //This certificate profile should require two approvals, and should reuse the one from the CA
-       CertificateProfile twoProfilesCertificateProfile = new CertificateProfile();
-       twoProfilesCertificateProfile.setNumOfReqApprovals(2);
-       twoProfilesCertificateProfile.setApprovalSettings(Arrays.asList(ApprovalRequestType.ADDEDITENDENTITY.getIntegerValue()));
-       String certificateProfileName = "TwoApprovalsCertificateProfile";
-       certificateProfileSession.addCertificateProfile(alwaysAllowtoken, certificateProfileName, twoProfilesCertificateProfile);      
-     
-       int twoApprovalProfileId = -1;
-       int threeApprovalProfileId = -1;
-       int noActionProfileId = -1;
-       int noActionCertificateProfileId = -1;
-       
-       try {
-           upgradeSession.upgrade(null, "6.5.1", false);
-           
-           CAInfo retrievedNoActionsCa = caSession.getCAInfo(alwaysAllowtoken, noActionsCa.getCAId());
-           noActionProfileId = retrievedNoActionsCa.getApprovalProfile();
-           assertEquals("Approval profile was created for CA with no approvals set.", -1, noActionProfileId);
-           
-           CAInfo retrievedTwoApprovalsCa = caSession.getCAInfo(alwaysAllowtoken, twoApprovalsCa.getCAId());
-           twoApprovalProfileId = retrievedTwoApprovalsCa.getApprovalProfile();
-           assertNotEquals("No approval profile was set for two approvals CA", -1, twoApprovalProfileId);
-           AccumulativeApprovalProfile twoApprovalProfile = (AccumulativeApprovalProfile) approvalProfileSession.getApprovalProfile(twoApprovalProfileId);
-           assertEquals("Correct number of approvals was not set in profile during upgrade.", 2, twoApprovalProfile.getNumberOfApprovalsRequired());
-           
-           CAInfo retrievedThreeApprovalsCa = caSession.getCAInfo(alwaysAllowtoken, threeApprovalsCa.getCAId());
-           threeApprovalProfileId = retrievedThreeApprovalsCa.getApprovalProfile();
-           AccumulativeApprovalProfile threeApprovalProfile = (AccumulativeApprovalProfile) approvalProfileSession.getApprovalProfile(threeApprovalProfileId);
-           assertEquals("Correct number of approvals was not set in profile during upgrade.", 3, threeApprovalProfile.getNumberOfApprovalsRequired());
-           
-           CertificateProfile retrievedCertificateProfile = certificateProfileSession.getCertificateProfile(certificateProfileName);
-           assertEquals("Two approvals profile was not reused for certificate profile.", twoApprovalProfileId,
-                    retrievedCertificateProfile.getApprovalProfileID());
-            
-            CertificateProfile retrievedNoActionCertificateProfile = certificateProfileSession.getCertificateProfile(noActionsCertificateProfileName);
-            noActionCertificateProfileId = retrievedNoActionCertificateProfile.getApprovalProfileID();
-            assertEquals("Approval profile was set for certificate profile lacking actions.", -1, noActionCertificateProfileId
-                    );
-            
-        } finally {          
-            if (twoApprovalProfileId != -1) {
-                approvalProfileSession.removeApprovalProfile(alwaysAllowtoken, twoApprovalProfileId);
-            }
-            if (threeApprovalProfileId != -1) {
-                approvalProfileSession.removeApprovalProfile(alwaysAllowtoken, threeApprovalProfileId);
-            }
-            if (noActionProfileId != -1) {
-                approvalProfileSession.removeApprovalProfile(alwaysAllowtoken, noActionProfileId);
-            }
-            if (noActionCertificateProfileId != -1) {
-                approvalProfileSession.removeApprovalProfile(alwaysAllowtoken, noActionCertificateProfileId);
-            }
-            CaTestUtils.removeCa(alwaysAllowtoken, noActionsCa.getCAInfo());
-            CaTestUtils.removeCa(alwaysAllowtoken, twoApprovalsCa.getCAInfo());
-            CaTestUtils.removeCa(alwaysAllowtoken, threeApprovalsCa.getCAInfo());
-            certificateProfileSession.removeCertificateProfile(alwaysAllowtoken, certificateProfileName);
-            certificateProfileSession.removeCertificateProfile(alwaysAllowtoken, noActionsCertificateProfileName);
-            
-       }
-   }
-   
+        
    /** Basic test that Statedump defaults to being disabled. The actual upgrade is to be tested manually in ECAQA-82 */
    @SuppressWarnings("unchecked")
    @Test
@@ -1484,10 +1347,6 @@ public class UpgradeSessionBeanSystemTest {
         } catch (AuthorizationDeniedException e) {
             log.debug(e.getMessage());
         }
-    }
-    
-    private void assertAccessRuleDataIsPresent(final List<AccessRuleData> accessRules, final String roleName, final String rule, final boolean recursive) {
-        assertTrue("Role was not upgraded with rule " + rule, accessRules.contains(new AccessRuleData(roleName, rule, AccessRuleState.RULE_ACCEPT, recursive)));
     }
 
 }
