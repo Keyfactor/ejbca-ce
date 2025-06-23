@@ -487,7 +487,8 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     }
     
     public boolean isRenderOtherCertDataSection() {
-        return (selectedEeProfile.isCustomSerialNumberUsed()
+        return (selectedEeProfile.getUseExtensiondata()
+        || selectedEeProfile.isCustomSerialNumberUsed()
         || selectedEeProfile.isValidityStartTimeUsed()
         || selectedEeProfile.isValidityEndTimeUsed()
         || selectedEeProfile.isCardNumberUsed()
@@ -518,12 +519,7 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     }
     
     public String getValidityStartTimeValue() {
-        final String validityStartTime = selectedEeProfile.getValidityStartTime();
-        String startTime = StringUtils.EMPTY;
-        if (validityStartTime != null && validityStartTime.trim().length() > 0) {
-            startTime = getEjbcaWebBean().getISO8601FromImpliedUTCOrRelative(validityStartTime);
-        }
-        return startTime;
+        return this.validityStartTimeValue;
     }    
     
     public void setValidityStartTimeValue(final String validityStartTimeValue) {
@@ -543,12 +539,7 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     }
 
     public String getValidityEndTimeValue() {
-        final String validityEndTime = selectedEeProfile.getValidityEndTime();
-        String endTime = StringUtils.EMPTY;
-        if (validityEndTime != null && validityEndTime.trim().length() > 0) {
-            endTime = getEjbcaWebBean().getISO8601FromImpliedUTCOrRelative(validityEndTime);
-        }
-        return endTime;
+        return this.validityEndTimeValue;
     }    
 
     public void setValidityEndTimeValue(final String validityEndTimeValue) {
@@ -594,7 +585,7 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     }
     
     public boolean isNameConstraintsExcludedUsed() {
-        return selectedEeProfile.isNameConstraintsPermittedUsed();
+        return selectedEeProfile.isNameConstraintsExcludedUsed();
     }
     
     public String getNameConstraintsExcludedHelpText() {
@@ -1230,16 +1221,13 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
 
     
     private UserView checkAndSetExtendedInformation(UserView newUserView) {
-        if (getExtensionData() != null) {
+        if (this.extensionData != null) {
             ExtendedInformation ei = newUserView.getExtendedInformation();
             if (ei == null) {
                 ei = new ExtendedInformation();
-                newUserView.setExtendedInformation(ei);
-            }
-
-            // Save the new value if the profile allows it
-            if (selectedEeProfile.getUseExtensiondata()) {
-                super.setExtensionData(getExtensionData());
+                super.setExtendedInformation(ei);
+                super.setExtensionData(this.extensionData);
+                newUserView.setExtendedInformation(super.getExtendedInformation());
             }
         }
         return newUserView;
@@ -1422,7 +1410,6 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
             }
             ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, storeValue);
             newUserView.setExtendedInformation(ei);
-            selectedEeProfile.setValidityStartTime(validityStartTimeValue.trim());
         }
 
         if (selectedEeProfile.isValidityEndTimeUsed() && (validityEndTimeValue != null && (validityEndTimeValue.trim().length() > 0))) {
@@ -1433,7 +1420,6 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
             }
             ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, storeValue);
             newUserView.setExtendedInformation(ei);
-            selectedEeProfile.setValidityEndTime(validityEndTimeValue.trim());
         }
         return newUserView;
     }
