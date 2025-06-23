@@ -31,6 +31,12 @@ public class GlobalCtConfiguration extends ConfigurationBase {
     private static final String CT_CACHE_FAST_FAIL_ENABLED_KEY = "ct_cache_fast_fail_enabled";
     private static final String CT_CACHE_FAST_FAIL_BACKOFF_KEY = "ct_cache_fast_fail_backoff";
     private static final String GOOGLE_CT_POLICY = "google_ct_policy";
+    
+    private static final long DEFAULT_CACHE_SIZE = 1000000L;
+    private static final long DEFAULT_CLEANUP_INTERVAL = 10000L;
+    private static final boolean DEFAULT_CACHE_ENABLED = true;
+    private static final boolean DEFAULT_FAST_FAIL_ENABLED = true;
+    private static final long DEFAULT_FAST_FAIL_BACKOFF = 1000L;
 
     @Override
     public void upgrade() {
@@ -46,7 +52,7 @@ public class GlobalCtConfiguration extends ConfigurationBase {
     }
 
     public boolean getCtCacheEnabled() {
-        return getBoolean(CT_CACHE_ENABLED_KEY, true);
+        return getBoolean(CT_CACHE_ENABLED_KEY, DEFAULT_CACHE_ENABLED);
     }
 
     public void setCtCacheEnabled(final boolean value) {
@@ -56,7 +62,7 @@ public class GlobalCtConfiguration extends ConfigurationBase {
     public long getCtCacheSize() {
         Long value = (Long) data.get(CT_CACHE_SIZE_KEY);
         if (value == null) {
-            setCtCacheSize(1000000L);
+            setCtCacheSize(DEFAULT_CACHE_SIZE);
         }
         return (Long) data.get(CT_CACHE_SIZE_KEY);
     }
@@ -68,7 +74,7 @@ public class GlobalCtConfiguration extends ConfigurationBase {
     public long getCtCacheCleanupInterval() {
         Long value = (Long) data.get(CT_CACHE_CLEANUP_INTERVAL_KEY);
         if (value == null) {
-            setCtCacheCleanupInterval(10000L);
+            setCtCacheCleanupInterval(DEFAULT_CLEANUP_INTERVAL);
         }
         return (Long) data.get(CT_CACHE_CLEANUP_INTERVAL_KEY);
     }
@@ -78,7 +84,7 @@ public class GlobalCtConfiguration extends ConfigurationBase {
     }
 
     public boolean getCtCacheFastFailEnabled() {
-        return getBoolean(CT_CACHE_FAST_FAIL_ENABLED_KEY, true);
+        return getBoolean(CT_CACHE_FAST_FAIL_ENABLED_KEY, DEFAULT_FAST_FAIL_ENABLED);
     }
 
     public void setCtCacheFastFailEnabled(final boolean fastFailEnabled) {
@@ -88,7 +94,7 @@ public class GlobalCtConfiguration extends ConfigurationBase {
     public long getCtCacheFastFailBackoff() {
         Long value = (Long) data.get(CT_CACHE_FAST_FAIL_BACKOFF_KEY);
         if (value == null) {
-            setCtCacheFastFailBackoff(1000L);
+            setCtCacheFastFailBackoff(DEFAULT_FAST_FAIL_BACKOFF);
         }
         return (Long) data.get(CT_CACHE_FAST_FAIL_BACKOFF_KEY);
     }
