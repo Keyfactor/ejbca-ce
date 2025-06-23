@@ -340,6 +340,12 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
                 .collect(Collectors.toList());
     }
 
+    public List<SelectItem> getAvailableSSLTrustManagerTypes() {
+        return List.of(new SelectItem(MSAutoEnrollmentConfiguration.TRUST_MANAGER_LOCAL_TRUST_STORE, getEjbcaWebBean().getText("MSAE_LOCAL_TRUST_STORE")),
+                       new SelectItem(MSAutoEnrollmentConfiguration.TRUST_MANAGER_IMPORTED_CA, getEjbcaWebBean().getText("MSAE_IMPORTED_CA")),
+                       new SelectItem(MSAutoEnrollmentConfiguration.TRUST_MANAGER_KEY_BINDING, getEjbcaWebBean().getText("MSAE_KEY_BINDING")));
+    }
+
     /**
      * @return a list of all CA names and caids
      */

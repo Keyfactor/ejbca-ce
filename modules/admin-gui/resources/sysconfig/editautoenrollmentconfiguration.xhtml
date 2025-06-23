@@ -201,9 +201,7 @@
                                           value="#{msAutoEnrollmentSettings.dto.trustManagerType}"
                                           layout="lineDirection"
                                           disabled="#{autoenrollmentConfigMBean.viewOnly}">
-                            <f:selectItem itemLabel="#{web.text.MSAE_LOCAL_TRUST_STORE}" itemValue="LOCAL_TRUST_STORE"/>
-                            <f:selectItem itemLabel="#{web.text.MSAE_IMPORTED_CA}" itemValue="IMPORTED_CA"/>
-                            <f:selectItem itemLabel="#{web.text.MSAE_KEY_BINDING}" itemValue="KEY_BINDING"/>
+                            <f:selectItems value="#{msAutoEnrollmentSettings.availableSSLTrustManagerTypes}"/>
                             <f:ajax event="change" render="useSSLGrid msaeAuthKeyBinding authKeyBindingMenu "/>
                         </h:selectOneRadio>
                     </h:panelGroup>
