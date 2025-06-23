@@ -632,11 +632,6 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
         }
     }
 
-    @Override
-    public boolean isPss() {
-        return isPss;
-    }
-
     public void setPss(boolean isPss) {
         this.isPss = isPss;
     }

@@ -353,11 +353,6 @@ public class P10CrCertificationRequestMessage extends BaseCmpMessage implements 
         }
     }
 
-    @Override
-    public boolean isPss() {
-        return isPss;
-    }
-
     public void setPss(boolean pss) {
         isPss = pss;
     }

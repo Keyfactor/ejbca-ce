@@ -490,11 +490,7 @@ public class PKCS10RequestMessage implements RequestMessage {
     }
 
     @Override
-    public boolean isPss() {
-        return isPss;
-    }
 
-    @Override
     public boolean includeCACert() {
     	return includeCACert;
     }
