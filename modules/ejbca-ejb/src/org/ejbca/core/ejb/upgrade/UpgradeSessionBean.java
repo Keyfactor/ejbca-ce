@@ -642,10 +642,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             } catch (UpgradeFailedException e) {
                 return false;
             }
-<<<<<<< HEAD
         }        
-=======
-        }
+
         if (isLesserThan(oldVersion, "9.3.3")) {
             try {
                 upgradeSession.migrateDatabase933();
@@ -653,14 +651,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 return false;
             }
         }
-        if (isLesserThan(oldVersion, "9.4.0")) {
-            try {
-                upgradeSession.migrateDatabase9_4_0();
-            } catch (UpgradeFailedException e) {
-                return false;
-            }
-        }
->>>>>>> 1754709ca8 (ECA-13075: Add trustManagerType for MSAutoEnrollment configuration and migrate existing settings)
         setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
     }
@@ -2729,12 +2719,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
     }
 
-    @Override
-    public void migrateDatabase9_4_0() throws UpgradeFailedException {
-        //Move ocsp.includecertchain and ocsp.includesignercert from the properties files and into the database configuration
-        migrateOcspOptions_9_4_0();
-    }
-    
     /**
      * Checks if the column cAId column exists in AdminGroupData
      *
