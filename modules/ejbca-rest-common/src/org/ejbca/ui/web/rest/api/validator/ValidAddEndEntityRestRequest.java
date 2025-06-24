@@ -28,11 +28,13 @@ import jakarta.validation.ConstraintValidatorContext;
 import jakarta.validation.Payload;
 
 import java.util.regex.Pattern;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.ejbca.ui.web.rest.api.io.request.AddEndEntityRestRequest;
 
 import com.keyfactor.util.certificate.DnComponents;
 import org.ejbca.ui.web.rest.api.io.request.EndEntityStatus;
+import org.ejbca.ui.web.rest.api.io.request.ExtendedInformationRestRequestComponent;
 import org.ejbca.ui.web.rest.api.io.request.TokenType;
 
 /**
@@ -93,6 +95,7 @@ public @interface ValidAddEndEntityRestRequest {
     class Validator implements ConstraintValidator<ValidAddEndEntityRestRequest, AddEndEntityRestRequest> {
 
         private final Pattern PATTERN_DATE_ISO8601 = Pattern.compile("^(?:[1-9]\\d{3}-(?:(?:0[1-9]|1[0-2])-(?:0[1-9]|1\\d|2[0-8])|(?:0[13-9]|1[0-2])-(?:29|30)|(?:0[13578]|1[02])-31)|(?:[1-9]\\d(?:0[48]|[2468][048]|[13579][26])|(?:[2468][048]|[13579][26])00)-02-29) (?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d$");
+        private final Pattern PATTERN_ALPHA_NUMERIC = Pattern.compile("^[A-Za-z0-9]+$");
 
         @Override
         public void initialize(final ValidAddEndEntityRestRequest validAddEndEntityRestRequest) {
@@ -162,11 +165,22 @@ public @interface ValidAddEndEntityRestRequest {
 
             if (addEndEntityRestRequest.getCustomData() != null && !addEndEntityRestRequest.getCustomData().isEmpty()) {
                 try {
-                    addEndEntityRestRequest.getCustomData().forEach((extendedInformation) -> {
-                        if (extendedInformation.getName().equals("CERTIFICATESERIALNUMBER")) {
+                    for (ExtendedInformationRestRequestComponent extendedInformation : addEndEntityRestRequest.getCustomData()) {
+                        if (extendedInformation.getName().equals(ExtendedInformation.CERTIFICATESERIALNUMBER)
+                                && !StringUtils.isEmpty(extendedInformation.getValue())) {
                             Base64.decode(extendedInformation.getValue().getBytes());
+                        } else if (extendedInformation.getName().equals(ExtendedInformation.CERTIFICATESEQUENCENUMBER)
+                                && !StringUtils.isEmpty(extendedInformation.getValue())) {
+                            if (extendedInformation.getValue().length() > 5) {
+                                ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidEditEndEntityRestRequest.invalid.custom.sequencenumber.length}");
+                                return false;
+                            } else if (!PATTERN_ALPHA_NUMERIC.matcher(extendedInformation.getValue()).matches()) {
+                                ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidEditEndEntityRestRequest.invalid.custom.sequencenumber}");
+                                return false;
+                            }
+
                         }
-                    });
+                    }
                 } catch (Exception e) {
                     ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidEditEndEntityRestRequest.invalid.custom.serialnumber}");
                     return false;

@@ -229,13 +229,12 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
 
             if (CAInfo.CATYPE_CVC == ca.getCAType() &&
                     endEntityInformation.getExtendedInformation() != null &&
-                    endEntityInformation.getExtendedInformation().certificateSerialNumber() != null &&
+                    endEntityInformation.getExtendedInformation().getSequenceNumber() != null &&
                     requestMessage instanceof SimpleRequestMessage) {
-                sequence = endEntityInformation.getExtendedInformation().certificateSerialNumber().toString();
+                sequence = endEntityInformation.getExtendedInformation().getSequenceNumber();
                 if (sequence.length() > 5) {
                     throw new CertificateCreateException(ErrorCode.FIELD_VALUE_NOT_VALID, "Certificate serial number is too long for CVC type certificate.");
                 }
-                endEntityInformation.getExtendedInformation().setCertificateSerialNumber(null);
             } else {
                 byte[] ki = requestMessage.getRequestKeyInfo();
                 // CVC sequence is only 5 characters, don't fill with a lot of garbage here, it must be a readable string
