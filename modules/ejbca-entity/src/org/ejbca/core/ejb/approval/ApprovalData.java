@@ -235,6 +235,21 @@ public class ApprovalData extends ProtectedData implements Serializable {
      * Method used to set the email which included in the user credentials
      */
     public void setEmail(String email) { this.email = email; }
+    
+    /**
+     * No longer used, but remains for 100% uptime because column is not nullable in database.
+     */
+    //@Column
+    @Deprecated(since = "6.6.0")
+    public int getRemainingapprovals() {
+        return 0; 
+    }
+    /**
+     * No longer used, but remains for 100% uptime because column is not nullable in database.
+     */
+    @Deprecated(since = "6.6.0")
+    public void setRemainingapprovals(int remainingApprovals) { }
+
 
 	//@Version @Column
 	public int getRowVersion() { return rowVersion; }

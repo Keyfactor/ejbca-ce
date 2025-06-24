@@ -25,7 +25,10 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.LocalJvmOnlyAuthenticationToken;
 import org.cesecore.keys.validation.ValidationResult;
+import org.ejbca.core.ejb.authentication.cli.CliAuthenticationToken;
+import org.ejbca.core.ejb.authentication.cli.CliAuthenticationTokenReferenceRegistry;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 
 
@@ -369,11 +372,47 @@ public abstract class ApprovalRequest implements Externalizable {
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         final int version = in.readInt();
-        if (version < 6) {
-            final String msg = "Incompatible approval request found (version < 6). Please clean from database to continue.";
+        if (version < 5) {
+            final String msg = "Incompatible approval request found (version < 5). Please clean from database to continue.";
             log.error(msg);
             throw new IllegalStateException(msg);
         }
+        if (version >= 5) {
+            // Version 5 after introducing approval profiles
+            this.requestAdmin = (AuthenticationToken) in.readObject();
+            if (log.isTraceEnabled()) {
+                log.trace("ApprovalRequest has a requestAdmin token of type: "+this.requestAdmin.getClass().getName());
+            }
+            if (this.requestAdmin instanceof LocalJvmOnlyAuthenticationToken) {
+                if (log.isTraceEnabled()) {
+                    log.trace("It was a LocalJvmOnlyAuthenticationToken so we will re-init it with local random token.");
+                }
+                LocalJvmOnlyAuthenticationToken localtoken = (LocalJvmOnlyAuthenticationToken) this.requestAdmin;
+                localtoken.initRandomToken();
+            } else if (this.requestAdmin instanceof CliAuthenticationToken) {
+                // A Cli authentication token was probably used already and must thus be "re-registered"
+                CliAuthenticationToken ctok = (CliAuthenticationToken)this.requestAdmin;
+                CliAuthenticationTokenReferenceRegistry.INSTANCE.registerToken(ctok);
+            }
+            this.requestSignature = (String) in.readObject();
+            this.approvalRequestType = in.readInt();
+            this.cAId = in.readInt();
+            this.endEntityProfileId = in.readInt();
+            final int stepSize = in.readInt();
+            if (log.isTraceEnabled()) {
+                log.trace("ApprovalRequest have "+stepSize+" approval steps.");
+            }
+            this.approvalSteps = new boolean[stepSize];
+            for (int i = 0; i < approvalSteps.length; i++) {
+                approvalSteps[i] = in.readBoolean();
+            }
+            this.approvalProfile = (ApprovalProfile) in.readObject();
+            this.editedByAdmins = (List<TimeAndAdmin>) in.readObject();
+            if (log.isDebugEnabled()) {
+                log.debug("ApprovalRequest (version 5) of type "+getApprovalType()+" read.");
+            }
+        }
+
         if (version >= 6) {
             this.validationResults = (List<ValidationResult>) in.readObject();
             if (log.isDebugEnabled()) {
