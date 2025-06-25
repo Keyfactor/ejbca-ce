@@ -52,6 +52,7 @@
 		<h:form id="cryptotokens">
 			<p:dataTable value="#{cryptoTokenMBean.cryptoTokenGuiList}"
                          var="cryptoTokenGuiInfo"
+                         rendered="#{!cryptoTokenMBean.cryptoTokenListEmpty}"
                          styleClass="grid table-layout-auto vertical-padding-1" stripedRows="true" showGridlines="true">
 				<p:column rendered="false">
 					<h:selectBooleanCheckbox value="#{cryptoTokenGuiInfo.selected}" />
@@ -165,7 +166,15 @@
                     </div>
 				</p:column>
 			</p:dataTable>
-			<h:button value="#{web.text.ADD}" outcome="cryptotoken.jsf?cryptoTokenId=0&amp;ref=cryptotokens" rendered="#{cryptoTokenMBean.allowedToModify}"/>
+
+            <h:panelGrid rendered="#{cryptoTokenMBean.allowedToModify}" styleClass="no-border no-padding row-padding-bottom-1-rem">
+                <h:outputText value="#{web.text.CRYPTOTOKENS_NOT_CONFIGURED}"
+                              rendered="#{cryptoTokenMBean.cryptoTokenListEmpty}"
+                              styleClass="inline-block padding-top-1-rem"/>
+                <h:panelGroup>
+                    <h:button value="#{web.text.ADD}" outcome="cryptotoken.jsf?cryptoTokenId=0&amp;ref=cryptotokens"/>
+                </h:panelGroup>
+            </h:panelGrid>
 		</h:form>
 	</ui:define>
 </ui:composition>
