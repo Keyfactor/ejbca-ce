@@ -46,6 +46,7 @@ CREATE TABLE ApprovalData (
     cAId INT4 NOT NULL,
     endEntityProfileId INT4 NOT NULL,
     expireDate INT8 NOT NULL,
+    remainingApprovals INT4 NOT NULL,
     subjectDn VARCHAR(400) with null,
     email VARCHAR(256) with null,
     reqAdminCertIssuerDn VARCHAR(256) with null,
@@ -445,7 +446,7 @@ CREATE TABLE AcmeAuthorizationData (
 );
 
 CREATE TABLE SctData (
-	pk VARCHAR(256) NOT NULL,
+    pk VARCHAR(256) NOT NULL,
     logId INT4 NOT NULL,
     fingerprint VARCHAR(256) NOT NULL,
     certificateExpirationDate INT8 NOT NULL,

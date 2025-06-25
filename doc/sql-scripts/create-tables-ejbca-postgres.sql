@@ -46,6 +46,7 @@ CREATE TABLE ApprovalData (
     cAId INT4 NOT NULL,
     endEntityProfileId INT4 NOT NULL,
     expireDate INT8 NOT NULL,
+    remainingApprovals INT4 NOT NULL,
     subjectDn TEXT,
     email TEXT,
     reqAdminCertIssuerDn TEXT,
@@ -441,7 +442,7 @@ CREATE TABLE AcmeAuthorizationData (
 );
 
 CREATE TABLE SctData (
-	pk TEXT NOT NULL,
+    pk TEXT NOT NULL,
     logId INT4 NOT NULL,
     fingerprint TEXT NOT NULL,
     certificateExpirationDate INT8 NOT NULL,
@@ -453,7 +454,7 @@ CREATE TABLE SctData (
 
 CREATE TABLE OcspResponseData (
     id TEXT NOT NULL,
-	serialNumber TEXT NOT NULL,
+    serialNumber TEXT NOT NULL,
     producedAt INT8 NOT NULL,
     nextUpdate INT8,
     ocspResponse BYTEA,

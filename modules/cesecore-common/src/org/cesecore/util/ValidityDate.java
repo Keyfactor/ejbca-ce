@@ -21,8 +21,8 @@ import java.util.TimeZone;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateUtils;
-import org.apache.commons.lang3.time.FastDateFormat;
+import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
 
 /**

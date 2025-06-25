@@ -49,6 +49,7 @@ CREATE TABLE ApprovalData (
     cAId INT(11) NOT NULL,
     endEntityProfileId INT(11) NOT NULL,
     expireDate BIGINT(20) NOT NULL,
+    remainingApprovals INT(11) NOT NULL,
     subjectDn VARCHAR(400) BINARY,
     email VARCHAR(250) BINARY,
     reqAdminCertIssuerDn VARCHAR(250) BINARY,
@@ -449,7 +450,7 @@ CREATE TABLE AcmeAuthorizationData (
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
 CREATE TABLE SctData (
-	pk VARCHAR(250) BINARY NOT NULL,
+    pk VARCHAR(250) BINARY NOT NULL,
     logId INT(11) NOT NULL,
     fingerprint VARCHAR(256) BINARY NOT NULL,
     certificateExpirationDate BIGINT NOT NULL,
