@@ -104,7 +104,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
         }
         final ApprovalData approvalData = approvalSession.findNonExpiredApprovalDataLocal(approvalId);
         if (approvalData == null) {
-            String msg = intres.getLocalizedMessage("approval.notexist", approvalId);
+            String msg = "Approval request with requestID " + approvalId + " does not exist.";
             log.info(msg);
             throw new ApprovalException(ErrorCode.APPROVAL_REQUEST_ID_NOT_EXIST, msg);
         }
@@ -218,7 +218,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
         log.trace(">reject: hash="+approvalId);
         final ApprovalData approvalData = approvalSession.findNonExpiredApprovalDataLocal(approvalId);
         if (approvalData == null) {
-            String msg = intres.getLocalizedMessage("approval.notexist", approvalId);
+            String msg =  "Approval request with requestID " + approvalId + " does not exist.";
             log.info(msg);
             throw new ApprovalException(ErrorCode.APPROVAL_REQUEST_ID_NOT_EXIST, msg);
         }

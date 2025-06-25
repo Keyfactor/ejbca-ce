@@ -281,7 +281,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 auditSession.log(EjbcaEventTypes.APPROVAL_REMOVE, EventStatus.SUCCESS, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
                         admin.toString(), String.valueOf(ad.getCaid()), null, null, detailsMsg);
             } else {
-                String msg = intres.getLocalizedMessage("approval.notexist", requestId);
+                String msg =  "Approval request with requestID " + requestId + " does not exist.";
                 log.info(msg);
                 throw new ApprovalException(ErrorCode.APPROVAL_REQUEST_ID_NOT_EXIST, msg);
             }
