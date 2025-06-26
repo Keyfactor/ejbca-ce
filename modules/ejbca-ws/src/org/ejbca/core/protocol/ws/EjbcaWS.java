@@ -496,7 +496,6 @@ public class EjbcaWS implements IEjbcaWS {
      * @param cryptoTokenProperties as a List of KeyValuePair objects.
      * @throws EjbcaException if an error occurred
      * @throws AuthorizationDeniedException if client isn't authorized to request
-     * @see org.ejbca.core.protocol.ws.objects.CryptoTokenConstantsWS
      */
     @WebMethod
     @Action(input="http://ws.protocol.core.ejbca.org/createCryptoToken")
