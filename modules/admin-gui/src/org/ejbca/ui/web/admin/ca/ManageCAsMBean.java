@@ -554,4 +554,8 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
             return EditCaUtil.MANAGE_CA_NAV;
         }
     }
+
+    public boolean isCaListEmpty() {
+        return authorizedCas == null || authorizedCas.isEmpty();
+    }
 }

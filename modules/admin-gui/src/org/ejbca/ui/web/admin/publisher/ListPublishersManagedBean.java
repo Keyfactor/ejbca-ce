@@ -272,4 +272,7 @@ public class ListPublishersManagedBean extends BaseManagedBean implements Serial
         }
     }
 
+    public boolean isAliasListEmpty() {
+        return getEjbcaWebBean().getAuthorizedPublisherNames().isEmpty();
+    }
 }

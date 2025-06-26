@@ -2252,4 +2252,8 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         }
         return cryptoTokenGuiInfos;
     }
+
+    public boolean isCryptoTokenListEmpty() {
+        return getCryptoTokenManagementSession().getCryptoTokenInfos(getAuthenticationToken()).isEmpty();
+    }
 }
