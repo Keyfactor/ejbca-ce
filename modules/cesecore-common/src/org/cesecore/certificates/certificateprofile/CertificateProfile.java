@@ -35,8 +35,8 @@ import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
@@ -54,7 +54,6 @@ import org.cesecore.certificates.certificate.ssh.SshExtension;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
-import org.cesecore.util.ValidityDate;
 
 /**
  * CertificateProfile is a basic class used to customize a certificate configuration or be inherited by fixed certificate profiles.
@@ -160,8 +159,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
     // Profile fields
     protected static final String CERTVERSION = "certversion";
-    @Deprecated
-    protected static final String VALIDITY = "validity";
+
     protected static final String ENCODED_VALIDITY = "encodedvalidity";
     protected static final String USE_CERTIFICATE_VALIDITY_OFFSET = "usecertificatevalidityoffset";
     protected static final String CERTIFICATE_VALIDITY_OFFSET = "certificatevalidityoffset";
@@ -204,12 +202,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     @Deprecated
     protected static final String APPROVALSETTINGS = "approvalsettings";
-    /**
-     * @deprecated since 6.6.0, use the appropriate approval profile instead
-     * Needed for a while in order to be able to import old statedumps from 6.5 and earlier
-     */
-    @Deprecated
-    public static final String NUMOFREQAPPROVALS = "numofreqapprovals";
+
     /**
      * @deprecated since 6.8.0, where approval settings and profiles became interlinked.
      */
@@ -295,14 +288,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String USEQCETSITYPE = "useqcetsitype";
     protected static final String QCETSITYPE = "qcetsitype";
     protected static final String QCETSIPDS = "qcetsipds";
-    /** @deprecated since EJBCA 6.6.1. It was only used in 6.6.0, and is needed to handle upgrades from that version
-     * PDS URLs are now handled in QCETSIPDS */
-    @Deprecated
-    protected static final String QCETSIPDSURL = "qcetsipdsurl";
-    /** @deprecated since EJBCA 6.6.1. It was only used in 6.6.0, and is needed to handle upgrades from that version
-    * PDS URLs are now handled in QCETSIPDS */
-    @Deprecated
-    protected static final String QCETSIPDSLANG = "qcetsipdslang";
+
     protected static final String USEQCPSD2 = "useqcpsd2";
     protected static final String USEQCCOUNTRIES = "useqccountries";
     protected static final String QCCOUNTRIESSTRING = "qccountriestring";
@@ -476,7 +462,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setAllowBackdatedRevocation(false);
         setUseCertificateStorage(true);
         setStoreCertificateData(true);
-        setStoreSubjectAlternativeName(true); // New profiles created after EJBCA 6.6.0 will store SAN by default
+        setStoreSubjectAlternativeName(true);
 
         setUseBasicConstraints(true);
         setBasicConstraintsCritical(true);
@@ -739,29 +725,13 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     /**
-     * @see ValidityDate#getDateBeforeVersion661(long, java.util.Date)
-     * @return a long that is used to provide the end date of certificates for this profile, interpreted by ValidityDate#getDate
-     * @deprecated since EJBCA 6.6.1
-     */
-    @Deprecated
-    public long getValidity() {
-        return (Long) data.get(VALIDITY);
-    }
-
-    /**
      * Gets the encoded validity.
      * @return the validity as ISO8601 date or relative time.
      * @see {@link org.cesecore.util.ValidityDate ValidityDate}
      * @see {@link org.cesecore.util.SimpleTime SimpleTime}
      */
-    @SuppressWarnings("deprecation")
     public String getEncodedValidity() {
-        String result = (String) data.get(ENCODED_VALIDITY);
-        if (StringUtils.isBlank(result)) {
-            result = ValidityDate.getStringBeforeVersion661(getValidity());
-            setEncodedValidity(result);
-        }
-        return result;
+        return (String) data.get(ENCODED_VALIDITY);
     }
 
     /**
@@ -1124,15 +1094,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
     /** @return true if the CertificateData.subjectAltName column should be populated. */
     public boolean getStoreSubjectAlternativeName() {
-        // Lazy upgrade for profiles created prior to EJBCA 6.6.0
-        final Boolean value = (Boolean) data.get(STORESUBJECTALTNAME);
-        if (value == null) {
-            // Old profiles created before EJBCA 6.6.0 will not store SAN by default.
-            setStoreSubjectAlternativeName(false);
-            return false;
-        } else {
-            return value;
-        }
+        return (Boolean) data.get(STORESUBJECTALTNAME);
     }
 
     public void setStoreSubjectAlternativeName(final boolean storeSubjectAlternativeName) {
@@ -2315,9 +2277,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         } else {
             data.put(QCETSIPDS, new ArrayList<>(pds));
         }
-        // Remove old data from EJBCA < 6.6.1
-        data.remove(QCETSIPDSURL);
-        data.remove(QCETSIPDSLANG);
     }
 
     /**
@@ -2623,34 +2582,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public void setApprovalSettings(List<Integer> approvalSettings) {
         data.put(APPROVALSETTINGS, approvalSettings);
     }
-
-    /**
-     * Returns the number of different administrators that needs to approve an action, default 1.
-     *
-     * @deprecated since 6.6.0, use the appropriate approval profile instead
-     * Needed for a while in order to be able to import old statedumps from 6.5 and earlier
-     */
-    @Deprecated
-    public int getNumOfReqApprovals() {
-        Integer result = (Integer) data.get(NUMOFREQAPPROVALS);
-        if(result != null) {
-            return result;
-        } else {
-            return 1;
-        }
-    }
-
-    /**
-     * The number of different administrators that needs to approve
-     *
-     * @deprecated since 6.6.0, use the appropriate approval profile instead
-     * Needed for a while in order to be able to import old statedumps from 6.5 and earlier
-     */
-    @Deprecated
-    public void setNumOfReqApprovals(int numOfReqApprovals) {
-        data.put(NUMOFREQAPPROVALS, numOfReqApprovals);
-    }
-
+    
     /**
      * @return the id of the approval profile. ID -1 means  that no approval profile was set
      *
@@ -3385,7 +3317,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     /**
      * Implementation of UpgradableDataHashMap function upgrade.
      */
-    @SuppressWarnings("deprecation")
     @Override
     public void upgrade() {
         if (log.isTraceEnabled()) {
@@ -3396,86 +3327,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             String msg = intres.getLocalizedMessage("certprofile.upgrade", getVersion());
             log.info(msg);
 
-            if(data.get(USEISSUERALTERNATIVENAME) == null) { // v 36
-                setUseIssuerAlternativeName(false);
-            }
-            if(data.get(ISSUERALTERNATIVENAMECRITICAL) == null) { // v 36
-                setIssuerAlternativeNameCritical(false);
-            }
-            if(data.get(USEDOCUMENTTYPELIST) == null) { // v 37
-                setUseDocumentTypeList(false);
-            }
-            if(data.get(DOCUMENTTYPELISTCRITICAL) == null) { // v 37
-                setDocumentTypeListCritical(false);
-            }
-            if(data.get(DOCUMENTTYPELIST) == null) { // v 37
-                setDocumentTypeList(new ArrayList<>());
-            }
-            if(data.get(AVAILABLEKEYALGORITHMS) == null) { // v 39
-                // Make some intelligent guesses what key algorithm this profile is used for
-                final List<String> availableKeyAlgorithms = AlgorithmTools.getAvailableKeyAlgorithms();
-                if (getMinimumAvailableBitLength()>521) {
-                    availableKeyAlgorithms.remove(AlgorithmConstants.KEYALGORITHM_ECDSA);
-                }
-                if (getMaximumAvailableBitLength()<1024) {
-                    availableKeyAlgorithms.remove(AlgorithmConstants.KEYALGORITHM_RSA);
-                }
-                setAvailableKeyAlgorithmsAsList(availableKeyAlgorithms);
-            }
-            if (data.get(AVAILABLEECCURVES) == null) { // v 40
-               setAvailableEcCurves(new String[]{ ANY_EC_CURVE });
-            }
-            if(data.get(APPROVALPROFILE) == null) { // v41
-                setApprovalProfileID(-1);
-            }
-            // v42. ETSI QC Type and PDS specified in EN 319 412-05.
-            // Nothing to set though, since null values means to not use the new values
-
-            // v43, ECA-5304.
-            if (data.get(USEDEFAULTCAISSUER) == null) {
-                setUseDefaultCAIssuer(false);
-            }
-
-            // v44. ECA-5141
-            // 'encodedValidity' is derived by the former long value!
-            if(null == data.get(ENCODED_VALIDITY)) {
-                if (data.get(VALIDITY) != null) { // avoid NPE if this is a very raw profile
-                    setEncodedValidity(ValidityDate.getStringBeforeVersion661(getValidity()));
-                }
-                // Don't upgrade to anything is there was nothing to upgrade
-            }
-            // v44. ECA-5330
-            // initialize fields for expiration restriction for weekdays. use is false because of backward compatibility, the before restriction default is true
-            if(null == data.get(USE_EXPIRATION_RESTRICTION_FOR_WEEKDAYS)) {
-                setUseExpirationRestrictionForWeekdays(false);
-            }
-            if(null == data.get(EXPIRATION_RESTRICTION_WEEKDAYS)) {
-                setDefaultExpirationRestrictionWeekdays();
-            }
-            if(null == data.get(EXPIRATION_RESTRICTION_FOR_WEEKDAYS_BEFORE)) {
-                setExpirationRestrictionForWeekdaysExpireBefore(true);
-            }
-            // v44. ECA-3554
-            // initialize default certificate not before offset (default '-10m' because of backward compatibility).
-            if(null == data.get(USE_CERTIFICATE_VALIDITY_OFFSET)) {
-                setUseCertificateValidityOffset(false);
-            }
-            if(null == data.get(CERTIFICATE_VALIDITY_OFFSET)) {
-                setCertificateValidityOffset(DEFAULT_CERTIFICATE_VALIDITY_OFFSET);
-            }
-
-            // v45: Multiple ETSI QC PDS values (ECA-5478)
-            if (!data.containsKey(QCETSIPDS)) {
-                final String url = (String) data.get(QCETSIPDSURL);
-                final String lang = (String) data.get(QCETSIPDSLANG);
-                if (StringUtils.isNotEmpty(url)) {
-                    final List<PKIDisclosureStatement> pdsList = new ArrayList<>();
-                    pdsList.add(new PKIDisclosureStatement(url, lang));
-                    data.put(QCETSIPDS, pdsList);
-                } else {
-                    data.put(QCETSIPDS, null);
-                }
-            }
             // v46: approvals changed type to LinkedHashMap
             setApprovals(getApprovals());
 

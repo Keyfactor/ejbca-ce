@@ -71,7 +71,6 @@ import org.ejbca.util.approval.ApprovalUtil;
  * circular dependencies, since execution will require SSBs that originally created the
  * approval request.
  */
-@SuppressWarnings("deprecation")
 @Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLocal, ApprovalExecutionSessionRemote {
@@ -105,7 +104,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
         }
         final ApprovalData approvalData = approvalSession.findNonExpiredApprovalDataLocal(approvalId);
         if (approvalData == null) {
-            String msg = intres.getLocalizedMessage("approval.notexist", approvalId);
+            String msg = "Approval request with requestID " + approvalId + " does not exist.";
             log.info(msg);
             throw new ApprovalException(ErrorCode.APPROVAL_REQUEST_ID_NOT_EXIST, msg);
         }
@@ -140,8 +139,6 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
             final boolean readyToCheckExecution = approvalProfile.canApprovalExecute(approvalsPerformed);
             approvalSession.setApprovals(approvalData, approvalsPerformed);
             if (readyToCheckExecution) {
-                //Kept for legacy reasons to allow for 100% uptime, can be removed once upgrading from 6.6.0 is no longer supported. 
-                approvalData.setRemainingapprovals(0);
                 final ApprovalRequest approvalRequest = approvalData.getApprovalRequest();
                 if (approvalRequest.isExecutable()) {
                     try {
@@ -221,7 +218,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
         log.trace(">reject: hash="+approvalId);
         final ApprovalData approvalData = approvalSession.findNonExpiredApprovalDataLocal(approvalId);
         if (approvalData == null) {
-            String msg = intres.getLocalizedMessage("approval.notexist", approvalId);
+            String msg =  "Approval request with requestID " + approvalId + " does not exist.";
             log.info(msg);
             throw new ApprovalException(ErrorCode.APPROVAL_REQUEST_ID_NOT_EXIST, msg);
         }
@@ -252,8 +249,6 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
             }
             approvalSession.setApprovals(approvalData, approvalsPerformed);
             //Retrieve the approval profile just to make sure that the state is still valid
-            //Kept for legacy reasons
-            approvalData.setRemainingapprovals(0);
             if (approvalData.getApprovalRequest().isExecutable()) {
                 approvalData.setStatus(ApprovalDataVO.STATUS_EXECUTIONDENIED);
                 approvalData.setExpireDate(new Date());

@@ -41,7 +41,6 @@ import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.util.DNFieldExtractor;
-import org.cesecore.internal.UpgradeableDataHashMap;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -54,7 +53,6 @@ import static org.junit.Assert.fail;
 /**
  * Tests the CertificateProfile class.
  *
- * @version $Id$
  */
 public class CertificateProfileUnitTest {
 
@@ -697,58 +695,6 @@ public class CertificateProfileUnitTest {
         assertEquals("foo", pol.getQualifierId());
     }
 
-    @SuppressWarnings({ "unchecked", "deprecation" })
-    @Test
-    public void testCertificateProfileUpgradeDefaults() {
-        // Test with default/unset values
-        final Map<String,Object> data = new HashMap<>();
-        initDataMap(data);
-        data.put(UpgradeableDataHashMap.VERSION, 1.0F);
-        data.put(CertificateProfile.QCETSIPDSLANG, "");
-        data.put(CertificateProfile.QCETSIPDSURL, "");
-        final CertificateProfile cp = new CertificateProfile();
-        cp.loadData(data);
-
-        Map<String,Object> res = (Map<String, Object>) cp.saveData();
-        assertTrue("Old property should still exist, so 100% uptime upgrades work", res.containsKey(CertificateProfile.QCETSIPDSLANG));
-        assertTrue("Old property should still exist, so 100% uptime upgrades work", res.containsKey(CertificateProfile.QCETSIPDSURL));
-        assertTrue("New property should have been added", res.containsKey(CertificateProfile.QCETSIPDS));
-        assertNull(res.get(CertificateProfile.QCETSIPDS));
-
-        cp.setQCEtsiPds(Arrays.asList(new PKIDisclosureStatement("https://example.com/pds", "en")));
-        res = (Map<String, Object>) cp.saveData();
-        assertFalse("Old property should have been removed after profile modification", res.containsKey(CertificateProfile.QCETSIPDSLANG));
-        assertFalse("Old property should have been removed after profile modification", res.containsKey(CertificateProfile.QCETSIPDSURL));
-    }
-
-    @SuppressWarnings({ "unchecked", "deprecation" })
-    @Test
-    public void testCertificateProfileUpgradeNonDefaults() {
-        final Map<String,Object> data = new HashMap<>();
-        initDataMap(data);
-        data.put(CertificateProfile.QCETSIPDSLANG, "en");
-        data.put(CertificateProfile.QCETSIPDSURL, "https://example.com/pds.pdf");
-        final CertificateProfile cp = new CertificateProfile();
-        cp.loadData(data);
-
-        final Map<String,Object> res = (Map<String, Object>) cp.saveData();
-        assertTrue("Old property should still exist, so 100% uptime upgrades work", res.containsKey(CertificateProfile.QCETSIPDSLANG));
-        assertTrue("Old property should still exist, so 100% uptime upgrades work", res.containsKey(CertificateProfile.QCETSIPDSURL));
-        assertTrue("New property should have been added", res.containsKey(CertificateProfile.QCETSIPDS));
-        final List<PKIDisclosureStatement> pdsList = (List<PKIDisclosureStatement>) res.get(CertificateProfile.QCETSIPDS);
-        assertNotNull(pdsList);
-        assertEquals(1, pdsList.size());
-        assertEquals("en", pdsList.get(0).getLanguage());
-        assertEquals("https://example.com/pds.pdf", pdsList.get(0).getUrl());
-    }
-
-    /** Initializes a data hash map. This does not (yet) initialize the full data hashmap from "v1", so it might be necessary to add additional properties in the future. */
-    private void initDataMap(final Map<String, Object> data) {
-        data.put(UpgradeableDataHashMap.VERSION, 1.0F);
-        data.put(CertificateProfile.AVAILABLEBITLENGTHS, new ArrayList<>(Arrays.asList(1024)));
-        data.put(CertificateProfile.MINIMUMAVAILABLEBITLENGTH, Integer.valueOf(1024));
-        data.put(CertificateProfile.MAXIMUMAVAILABLEBITLENGTH, Integer.valueOf(1024));
-    }
 
     @Test
     public void testInvalidKeySpecs() throws InvalidAlgorithmParameterException {
