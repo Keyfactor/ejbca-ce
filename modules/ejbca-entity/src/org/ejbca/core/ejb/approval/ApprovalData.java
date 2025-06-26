@@ -237,7 +237,7 @@ public class ApprovalData extends ProtectedData implements Serializable {
     public void setEmail(String email) { this.email = email; }
     
     /**
-     * No longer used, but remains for 100% uptime because column is not nullable in database.
+     * No longer used, but remains for 100% uptime because column is not nullable in database, and hence needs to remain in ORM. 
      */
     //@Column
     @Deprecated(since = "6.6.0")
@@ -245,7 +245,7 @@ public class ApprovalData extends ProtectedData implements Serializable {
         return 0; 
     }
     /**
-     * No longer used, but remains for 100% uptime because column is not nullable in database.
+     * No longer used, but remains for 100% uptime because column is not nullable in database, and hence needs to remain in ORM. 
      */
     @Deprecated(since = "6.6.0")
     public void setRemainingapprovals(int remainingApprovals) { }
