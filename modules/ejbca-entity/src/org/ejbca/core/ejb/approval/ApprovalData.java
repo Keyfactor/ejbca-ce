@@ -62,7 +62,6 @@ public class ApprovalData extends ProtectedData implements Serializable {
 	private long expireDate;
 	private String email;
 	private String subjectDn;	
-	private int remainingApprovals;
 	private int rowVersion = 0;
 	private String rowProtection;
 		
@@ -236,22 +235,21 @@ public class ApprovalData extends ProtectedData implements Serializable {
      * Method used to set the email which included in the user credentials
      */
     public void setEmail(String email) { this.email = email; }
+    
+    /**
+     * No longer used, but remains for 100% uptime because column is not nullable in database, and hence needs to remain in ORM. 
+     */
+    //@Column
+    @Deprecated(since = "6.6.0")
+    public int getRemainingapprovals() {
+        return 0; 
+    }
+    /**
+     * No longer used, but remains for 100% uptime because column is not nullable in database, and hence needs to remain in ORM. 
+     */
+    @Deprecated(since = "6.6.0")
+    public void setRemainingapprovals(int remainingApprovals) { }
 
-	/**
-	 * Indicates the number of approvals that remains in order to execute the action
-	 * @deprecated in 6.6.0, the type of approval handled is now part of the approval profile
-	 */
-	//@Column
-	@Deprecated
-	public int getRemainingapprovals() {
-	    // TODO remove this method when support for Ejbca 6.5.x is dropped
-	    return remainingApprovals; 
-	}
-	/**
-	 * Indicates the number of approvals that remains in order to execute the action  
-	 */
-	@Deprecated
-	public void setRemainingapprovals(int remainingApprovals) { this.remainingApprovals = remainingApprovals; }
 
 	//@Version @Column
 	public int getRowVersion() { return rowVersion; }
@@ -309,7 +307,7 @@ public class ApprovalData extends ProtectedData implements Serializable {
         final ProtectionStringBuilder build = new ProtectionStringBuilder();
         // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
         build.append(getId()).append(getApprovalid()).append(getApprovaltype()).append(getEndEntityProfileId()).append(getCaid()).append(getReqadmincertissuerdn());
-        build.append(getReqadmincertsn()).append(getStatus()).append(getApprovaldata()).append(getRequestdata()).append(getRequestdate()).append(getExpiredate()).append(getRemainingapprovals());
+        build.append(getReqadmincertsn()).append(getStatus()).append(getApprovaldata()).append(getRequestdata()).append(getRequestdate()).append(getExpiredate());
         if (version >= 3) {
             build.append(getSubjectDn());
             build.append(getEmail());

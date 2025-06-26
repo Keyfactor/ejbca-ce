@@ -117,13 +117,6 @@ public abstract class CAInfo implements Serializable {
     @Deprecated
     private int approvalProfile;
 
-    /**
-     * @deprecated since 6.6.0, use the appropriate approval profile instead
-     * Needed for a while in order to be able to import old statedumps from 6.5 and earlier
-     */
-    @Deprecated
-    protected int numOfReqApprovals;
-
     private LinkedHashMap<ApprovalRequestType, Integer> approvals;
 
 
