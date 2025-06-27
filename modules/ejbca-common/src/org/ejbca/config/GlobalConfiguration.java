@@ -152,10 +152,6 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     @Deprecated(since = "9.4.0")
     private static final   String ENABLEICAOCANAMECHANGE       = "enableicaocanamechange";
 
-    private static final   String USEAPPROVALNOTIFICATIONS     = "useapprovalnotifications";
-    private static final   String APPROVALADMINEMAILADDRESS    = "approvaladminemailaddress";
-    private static final   String APPROVALNOTIFICATIONFROMADDR = "approvalnotificationfromaddr";
-
     private static final   String NODESINCLUSTER               = "nodesincluster";
 
     private static final   String ENABLECOMMANDLINEINTERFACE   = "enablecommandlineinterface";
@@ -368,25 +364,6 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
      */
     @Deprecated(since = "9.4.0")
     public void setEnableIcaoCANameChange(final boolean value) { putBoolean(ENABLEICAOCANAMECHANGE, value);}
-    
-    /** @return true of email notification of requested approvals should be sent (default false) */
-     @Deprecated // Used during upgrade to EJBCA 6.6.0
-     public boolean getUseApprovalNotifications() { return getBoolean(USEAPPROVALNOTIFICATIONS, false); }
-     /**
-      * Returns the email address to the administrators that should recieve notification emails
-      * should be an alias to all approval administrators default "" never null
-      */
-     @Deprecated // Used during upgrade to EJBCA 6.6.0
-     public String getApprovalAdminEmailAddress() {
-         final Object value = data.get(APPROVALADMINEMAILADDRESS);
-         return value == null ? "" : (String) value;
-     }
-     /** @return the email address used in the from field of approval notification emails */
-     @Deprecated // Used during upgrade to EJBCA 6.6.0
-     public String getApprovalNotificationFromAddress() {
-         final Object value = data.get(APPROVALNOTIFICATIONFROMADDR);
-         return value == null ? "" : (String) value;
-     }
 
     /**
      * @deprecated this value has been shifted to GlobalOcspConfiguration in 9.4.0 and only remains for 100% uptime and upgrade

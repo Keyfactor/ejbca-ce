@@ -200,7 +200,7 @@ public class BasicCertificateExtension extends CertificateExtension implements C
         if (encoding.equalsIgnoreCase(ENCODING_NAME_RAW)) {
             if (values.length > 1) {
                 // nvalues can not be used together with encoding=RAW
-                throw new CertificateExtensionException(intres.getLocalizedMessage("certext.certextmissconfigured", getId()));
+                throw new CertificateExtensionException("Certificate Extension " + getId() + " seems to be misconfigured.");                        
             } else {
                 result = parseRaw(values[0]);
             }

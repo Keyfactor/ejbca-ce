@@ -41,16 +41,16 @@
     -->
     
     <entity class="org.cesecore.oscp.OcspResponseData" access="PROPERTY" metadata-complete="false">
-    	<attributes>
+        <attributes>
             <id name="id"><column name="id" column-definition="VARCHAR(250) BINARY"/></id>
             <basic fetch="EAGER" name="caId"><column name="cAId" column-definition="INT(11)" nullable="false"/></basic>
-        	<basic fetch="EAGER" name="serialNumber"><column name="serialNumber" column-definition="VARCHAR(250) BINARY" nullable="false"/></basic>
-    		<basic fetch="EAGER" name="producedAt"><column name="producedAt" column-definition="BIGINT(20)" nullable="false"/></basic>
-    		<basic fetch="EAGER" name="nextUpdate"><column name="nextUpdate" column-definition="BIGINT(20)"/></basic>
-    		<basic fetch="EAGER" name="ocspResponse"><column name="ocspResponse" column-definition="LONGBLOB"/></basic>
-    		<basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="LONGTEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="serialNumber"><column name="serialNumber" column-definition="VARCHAR(250) BINARY" nullable="false"/></basic>
+            <basic fetch="EAGER" name="producedAt"><column name="producedAt" column-definition="BIGINT(20)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="nextUpdate"><column name="nextUpdate" column-definition="BIGINT(20)"/></basic>
+            <basic fetch="EAGER" name="ocspResponse"><column name="ocspResponse" column-definition="LONGBLOB"/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="LONGTEXT"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT(11)" nullable="false"/></version>
-    	</attributes>
+        </attributes>
     </entity>
     <entity class="org.ejbca.acme.AcmeNonceData" access="PROPERTY" metadata-complete="false">
         <attributes>
@@ -210,7 +210,7 @@
         </attributes>
     </entity>
     <entity class="org.cesecore.authorization.rules.AccessRuleData" access="PROPERTY" metadata-complete="false">
-    	<table name="AccessRulesData"/>
+        <table name="AccessRulesData"/>
         <attributes>
             <id name="primaryKey"><column name="pK" column-definition="INT(11)"/></id>
             <basic fetch="EAGER" name="accessRuleName"><column name="accessRule" column-definition="VARCHAR(250) BINARY" nullable="false"/></basic>
@@ -223,7 +223,7 @@
         </attributes>
     </entity>
     <entity class="org.cesecore.authorization.cache.AccessTreeUpdateData" access="PROPERTY" metadata-complete="false">
-    	<table name="AuthorizationTreeUpdateData"/>
+        <table name="AuthorizationTreeUpdateData"/>
         <attributes>
             <id name="primaryKey"><column name="pK" column-definition="INT(11)"/></id>
             <basic fetch="EAGER" name="accessTreeUpdateNumber"><column name="authorizationTreeUpdateNumber" column-definition="INT(11)" nullable="false"/></basic>
@@ -232,7 +232,7 @@
         </attributes>
     </entity>
     <entity class="org.cesecore.authorization.user.AccessUserAspectData" access="PROPERTY" metadata-complete="false">
-    	<table name="AdminEntityData"/>    
+        <table name="AdminEntityData"/>    
         <attributes>
             <id name="primaryKey"><column name="pK" column-definition="INT(11)"/></id>
             <basic fetch="EAGER" name="matchWith"><column name="matchWith" column-definition="INT(11)" nullable="false"/></basic>
@@ -264,7 +264,7 @@
         </attributes>
     </entity> 
     <entity class="org.cesecore.roles.RoleData" access="PROPERTY" metadata-complete="false">
-    	<table name="RoleData"/>
+        <table name="RoleData"/>
         <attributes>
             <id name="id"><column name="id" column-definition="INT(11)"/></id>
             <basic fetch="EAGER" name="roleName"><column name="roleName" column-definition="VARCHAR(250) BINARY" nullable="false"/></basic>
@@ -275,7 +275,7 @@
         </attributes>
     </entity>
     <entity class="org.cesecore.roles.AdminGroupData" access="PROPERTY" metadata-complete="false">
-    	<table name="AdminGroupData"/>
+        <table name="AdminGroupData"/>
         <attributes>
             <id name="primaryKey"><column name="pK" column-definition="INT(11)"/></id>
             <basic fetch="EAGER" name="roleName"><column name="adminGroupName" column-definition="VARCHAR(250) BINARY" nullable="false"/></basic>
@@ -390,10 +390,10 @@
     <!-- See JavaDoc for notes about KeyRecoveryData.markedAsRecoverable -->
     <entity class="org.ejbca.core.ejb.keyrecovery.KeyRecoveryData" access="PROPERTY" metadata-complete="false">
         <attributes>
-        	<embedded-id name="keyRecoveryDataPK">
-        		<attribute-override name="certSN"><column name="certSN" column-definition="VARCHAR(80) BINARY"/></attribute-override>
-        		<attribute-override name="issuerDN"><column name="issuerDN" column-definition="VARCHAR(250) BINARY"/></attribute-override>
-        	</embedded-id>
+            <embedded-id name="keyRecoveryDataPK">
+                <attribute-override name="certSN"><column name="certSN" column-definition="VARCHAR(80) BINARY"/></attribute-override>
+                <attribute-override name="issuerDN"><column name="issuerDN" column-definition="VARCHAR(250) BINARY"/></attribute-override>
+            </embedded-id>
             <basic fetch="EAGER" name="username"><column name="username" column-definition="VARCHAR(250) BINARY"/></basic>
             <basic fetch="EAGER" name="markedAsRecoverableBool"><column name="markedAsRecoverable" column-definition="TINYINT(4)" nullable="false"/></basic>
             <basic fetch="EAGER" name="keyData"><column name="keyData" column-definition="LONGTEXT" nullable="false"/><lob/></basic>
@@ -509,7 +509,7 @@
             <id name="id"><column name="id" column-definition="INT(11)"/></id>
             <basic fetch="EAGER" name="name"><column name="name" column-definition="VARCHAR(250) BINARY" nullable="false"/></basic>
             <basic fetch="EAGER" name="connectorState"><column name="connectorState" column-definition="INT(11)" nullable="false"/></basic>
-     	    <basic fetch="EAGER" name="url"><column name="url" column-definition="VARCHAR(250) BINARY" nullable="false"/></basic>
+            <basic fetch="EAGER" name="url"><column name="url" column-definition="VARCHAR(250) BINARY" nullable="false"/></basic>
             <basic fetch="EAGER" name="data"><column name="data" column-definition="LONGTEXT"/><lob/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="LONGTEXT"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT(11)" nullable="false"/></version>
@@ -520,7 +520,7 @@
             <id name="pk"><column name="pk" column-definition="VARCHAR(250) BINARY"/></id>
             <basic fetch="EAGER" name="logId"><column name="logId" column-definition="INT(11)" nullable="false"/></basic>
             <basic fetch="EAGER" name="fingerprint"><column name="fingerprint" column-definition="VARCHAR(250) BINARY" nullable="false"/></basic>
-     	    <basic fetch="EAGER" name="certificateExpirationDate"><column name="certificateExpirationDate" column-definition="BIGINT(20)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="certificateExpirationDate"><column name="certificateExpirationDate" column-definition="BIGINT(20)" nullable="false"/></basic>
             <basic fetch="EAGER" name="data"><column name="data" column-definition="LONGTEXT"/><lob/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="LONGTEXT"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT(11)" nullable="false"/></version>

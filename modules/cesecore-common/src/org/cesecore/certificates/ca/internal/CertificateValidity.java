@@ -18,7 +18,6 @@ import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Date;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
 import org.bouncycastle.asn1.x509.PrivateKeyUsagePeriod;
@@ -248,15 +247,9 @@ public class CertificateValidity {
      * @param profile the certificate profile
      * @return the encoded validity.
      */
-	@SuppressWarnings("deprecation")
     private long getCertificateProfileValidtyEndDate(final CAInfo caInfo, final CertificateProfile profile) {
         final String encodedValidity = profile.getEncodedValidity();
-        Date date = null;
-        if (StringUtils.isNotBlank(encodedValidity)) {
-            date = ValidityDate.getDate(encodedValidity, firstDate, caInfo.isExpirationInclusive());
-        } else {
-            date = ValidityDate.getDateBeforeVersion661(profile.getValidity(),firstDate);
-        }
+        Date date = ValidityDate.getDate(encodedValidity, firstDate, caInfo.isExpirationInclusive());
         return date.getTime();
 	}
 	

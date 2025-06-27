@@ -23,7 +23,6 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URL;
 
-import org.apache.commons.fileupload.util.Streams;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.CaTestUtils;
@@ -51,7 +50,6 @@ import static org.junit.Assume.assumeTrue;
  * Try HTTP methods that should be disabled, like HTTP DELETE, for all public
  * web modules.
  * 
- * @version $Id$
  */
 public class HttpMethodsSystemTest {
 
@@ -290,7 +288,15 @@ public class HttpMethodsSystemTest {
         int ret = con.getResponseCode();
         log.debug("HTTP response code: "+ret+". Response message: "+con.getResponseMessage());
         if ( ret == 200 ) {
-            log.debug(Streams.asString(con.getInputStream())); 
+            StringBuilder stringBuilder = new StringBuilder();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    stringBuilder.append(line);
+                }
+            }
+            final String content = stringBuilder.toString();          
+            log.debug(content); 
         }
         con.disconnect();
         return ret;
