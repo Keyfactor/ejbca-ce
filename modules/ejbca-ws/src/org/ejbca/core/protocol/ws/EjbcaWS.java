@@ -118,7 +118,6 @@ import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.RaCrlSearchRequest;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
-import org.ejbca.core.model.hardtoken.HardTokenDoesntExistsException;
 import org.ejbca.core.model.hardtoken.HardTokenExistsException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
