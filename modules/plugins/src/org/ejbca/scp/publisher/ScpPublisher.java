@@ -101,9 +101,10 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
     public static final String AUTH_CRYPTOTOKEN_KEYPAIR_PROPERTY_NAME = "scp.cryptoken.keypair";
     public static final String USE_SFTP = "scp.usesftp";
     public static final String SFTP_KNOWN_HOSTS_CONTENT_PROPERTY_NAME = "scp.knownhosts.content";
+    public static final String EXPORT_FORMAT = "scp.export.format";
 
     private static final String EKU_PKIX_OCSPSIGNING = "1.3.6.1.5.5.7.3.9";
-    
+
     private static final String CRL_NAME_CA_NAME_PATTERN = "${CA_NAME}";
     private static final String CRL_NAME_CA_COMMON_NAME_PATTERN = "${CA_COMMON_NAME}";
     private static final String CRL_NAME_CA_SUBJECT_DN_PATTERN = "${CA_SUBJECTDN}";
@@ -128,9 +129,10 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
     private String cryptoTokenAndKeyPair = null;
     private boolean useSftp = true;
     private String sftpKnownHostsContents = null;
-    
+    private String exportFormat = null;
+
     private String crlFileNamePattern;
-        
+
     private  Map<String, CustomPublisherProperty> properties = new LinkedHashMap<>();
 
 
@@ -172,9 +174,11 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
         }
         
         useSftp = getBooleanProperty(properties, USE_SFTP);
+        exportFormat = getProperty(properties, EXPORT_FORMAT);
         if (certSCPDestination.isBlank() && crlSCPDestination.isBlank()) {
             // publisher is being created as no destination is set
             useSftp = true;
+            exportFormat = "YAML";
         }
         cryptoTokenAndKeyPair = getProperty(properties, AUTH_CRYPTOTOKEN_KEYPAIR_PROPERTY_NAME);
         
@@ -193,7 +197,7 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
         
         this.properties.put(CRL_FILE_NAME_PATTERN,
                 new CustomPublisherProperty(CRL_FILE_NAME_PATTERN, CustomPublisherProperty.UI_TEXTINPUT, crlFileNamePattern));
-        
+
         this.properties.put(USE_SFTP,
                 new CustomPublisherProperty(USE_SFTP, CustomPublisherProperty.UI_BOOLEAN, Boolean.valueOf(useSftp).toString()));
         this.properties.put(AUTH_CRYPTOTOKEN_KEYPAIR_PROPERTY_NAME,
@@ -201,7 +205,9 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
                                 null, "None"));
         this.properties.put(SFTP_KNOWN_HOSTS_CONTENT_PROPERTY_NAME,
                 new CustomPublisherProperty(SFTP_KNOWN_HOSTS_CONTENT_PROPERTY_NAME, CustomPublisherProperty.UI_TEXTINPUT_AREA, sftpKnownHostsContents));
-        
+        this.properties.put(EXPORT_FORMAT,
+                new CustomPublisherProperty(EXPORT_FORMAT, CustomPublisherProperty.UI_SELECTONE, List.of("Java Serialized Object", "YAML"), List.of("Java Serialized Object", "YAML"), exportFormat));
+
         this.properties.put(SCP_PRIVATE_KEY_PROPERTY_NAME,
                 new CustomPublisherProperty(SCP_PRIVATE_KEY_PROPERTY_NAME, CustomPublisherProperty.UI_TEXTINPUT, scpPrivateKey));
         this.properties.put(SCP_PRIVATE_KEY_PASSWORD_NAME,
@@ -224,6 +230,7 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
                 USE_SFTP,
                 AUTH_CRYPTOTOKEN_KEYPAIR_PROPERTY_NAME,
                 SFTP_KNOWN_HOSTS_CONTENT_PROPERTY_NAME,
+                EXPORT_FORMAT,
                 SCP_PRIVATE_KEY_PROPERTY_NAME,
                 SCP_PRIVATE_KEY_PASSWORD_NAME,
                 SCP_KNOWN_HOSTS_PROPERTY_NAME
@@ -449,8 +456,8 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
             log.trace(">storeCRL, Storing CRL");
         }
         String fileName = crlFileNamePattern;
-        if (StringUtils.isNotBlank(crlFileNamePattern) && 
-                (crlFileNamePattern.contains(CRL_NAME_CA_NAME_PATTERN) 
+        if (StringUtils.isNotBlank(crlFileNamePattern) &&
+                (crlFileNamePattern.contains(CRL_NAME_CA_NAME_PATTERN)
                 || crlFileNamePattern.contains(CRL_NAME_CA_COMMON_NAME_PATTERN)
                 || crlFileNamePattern.contains(CRL_NAME_CA_SUBJECT_DN_PATTERN)
                 || crlFileNamePattern.contains(CRL_NAME_CRL_NUMBER_PATTERN)
@@ -466,13 +473,13 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
                 if (deltaCrl) {
                     fileName = fileName.replace(CRL_NAME_DELTA_PATTERN, CRL_NAME_DELTA_VALUE);
                 }
-                
+
                 if (crlFileNamePattern.contains(CRL_NAME_CA_COMMON_NAME_PATTERN)) {
                     String issuerCommonName = DnComponents.getPartFromDN(issuerDn, "CN");
                     fileName = fileName.replace(CRL_NAME_CA_COMMON_NAME_PATTERN, issuerCommonName);
                 }
-                
-                if (crlFileNamePattern.contains(CRL_NAME_CA_NAME_PATTERN) 
+
+                if (crlFileNamePattern.contains(CRL_NAME_CA_NAME_PATTERN)
                         || crlFileNamePattern.contains(CRL_NAME_PARTITION_PATTERN)) {
                     //relatively expensive
                     CaSessionLocal caSession = new EjbLocalHelper().getCaSession();
@@ -487,21 +494,21 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
                         }
                     }
                 }
-                
+
                 // delta and partition does not occur always
                 fileName = fileName.replace(CRL_NAME_PARTITION_PATTERN, "").replace(CRL_NAME_DELTA_PATTERN, "");
-                
+
                 // turns out we allow '<', '>', '/' etc characters in CA names and Subject DN
-                // strips '\0', '\n', '\r', '/', '\\', '?', '%', '$', '*', ':', ';', '|', '\"', '\'', '`', '<', '>' 
+                // strips '\0', '\n', '\r', '/', '\\', '?', '%', '$', '*', ':', ';', '|', '\"', '\'', '`', '<', '>'
                 fileName = StringTools.stripFilename(fileName);
-                
+
             } catch (CRLException | AuthorizationDeniedException e) {
                 log.error("Unable to read CRL during publishing: ", e);
                 throw new PublisherException("Unable to read CRL during publishing: " + e.getMessage());
             }
-            
-       }           
-        
+
+       }
+
         if (StringUtils.isBlank(fileName)) { // default
             fileName = CertTools.getFingerprintAsString(incrl) + ".crl";
         }
@@ -816,8 +823,8 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
                     // file does not exist
                 }
             }
-            
-            c.put(new ByteArrayInputStream(signedBytes), 
+
+            c.put(new ByteArrayInputStream(signedBytes),
                     destination.path + "/" + destinationFileName, ChannelSftp.OVERWRITE);
         } catch (SftpException e) {
             throw new PublisherException("Unable to publish: " + destinationFileName, e);
