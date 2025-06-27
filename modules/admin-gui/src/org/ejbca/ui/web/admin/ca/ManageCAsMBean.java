@@ -249,7 +249,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        caNames = getEjbcaWebBean().getCANames();
+        caNames = caSession.getAuthorizedCaNamesToIds(getAdmin());
     }
     
     public Map<Integer, String> getListOfCas() {
