@@ -735,24 +735,6 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     }
 
     /**
-     * Checks if the admin have authorization to view the resource without performing any logging. Used by menu page Does not return false if not
-     * authorized, instead throws an AuthorizationDeniedException.
-     *
-     * @deprecated Don't use as is in a new admin GUI. Use {@link #isAuthorizedNoLogSilent(String...)} instead.
-     *
-     * @return true if is authorized to resource, throws AuthorizationDeniedException if not authorized, never returns false.
-     * @throws AuthorizationDeniedException is not authorized to resource
-     */
-    @Override
-    @Deprecated
-    public boolean isAuthorizedNoLog(final String... resources) throws AuthorizationDeniedException { // still used by JSP/JSF code (viewcertificate.xhtml)
-        if (!authorizationSession.isAuthorizedNoLogging(authState.administrator, resources)) {
-            throw new AuthorizationDeniedException("Not authorized to " + Arrays.toString(resources));
-        }
-        return true;
-    }
-
-    /**
      * Checks if the admin have authorization to view the resource without performing any logging. Will simply return a boolean,
      * does not throw exception.
      *
@@ -827,12 +809,6 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             }
         }
         return "/" + globalconfiguration.getImagesPath() + "/" + imagefile + "." + postfix;
-    }
-
-    @Deprecated
-    @Override
-    public String getImagefileInfix(final String imagefilename) {
-        return getAdminWebBaseUrl() + getImagePath(imagefilename);
     }
 
     @Override
@@ -1032,27 +1008,6 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     @Override
     public void reloadEstConfiguration() {
         estconfiguration = (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
-    }
-
-    /** @deprecated Since EJBCA 7.0.0. Use CaSession.getCAIdToNameMap instead. */
-    @Override
-    @Deprecated
-    public Map<Integer,String> getCAIdToNameMap() {
-        return caSession.getCAIdToNameMap();
-    }
-
-    /** @deprecated Since EJBCA 7.0.0. Use CaSession.getAuthorizedCaIds instead. */
-    @Override
-    @Deprecated
-    public List<Integer> getAuthorizedCAIds() {
-        return caSession.getAuthorizedCaIds(authState.administrator);
-    }
-
-    /** @deprecated Since EJBCA 7.0.0. Use CaSession.getAuthorizedCaNamesToIds instead. */
-    @Override
-    @Deprecated
-    public TreeMap<String,Integer> getCANames() {
-        return caSession.getAuthorizedCaNamesToIdsWithoutCache(authState.administrator);
     }
 
     @Override
@@ -1731,7 +1686,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     public Collection<String> getAvailableCAsOfEEProfile(final String endEntityProfileId)
             throws NumberFormatException, AuthorizationDeniedException {
         if (StringUtils.equals(endEntityProfileId, CmpConfiguration.PROFILE_USE_KEYID)) {
-            final List<String> certificateAuthorities = new ArrayList<>(getCANames().keySet());
+            final List<String> certificateAuthorities = new ArrayList<>(caSession.getAuthorizedCaNamesToIds(authState.administrator).keySet());
             return addKeyIdAndSort(certificateAuthorities);
         }
         final EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(Integer.valueOf(endEntityProfileId));
@@ -1741,7 +1696,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         final Collection<Integer> certificateAuthorityIds = endEntityProfile.getAvailableCAs();
         if (certificateAuthorityIds.contains(CAConstants.ALLCAS)) {
             // End entity contains "Any CA"
-            final List<String> certificateAuthorities = new ArrayList<>(getCANames().keySet());
+            final List<String> certificateAuthorities = new ArrayList<>(caSession.getAuthorizedCaNamesToIds(authState.administrator).keySet());
             return addKeyIdAndSort(certificateAuthorities);
         }
         final List<String> certificateAuthorities = new ArrayList<>();
@@ -1826,13 +1781,6 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         return entries;
     }
 
-    /** @deprecated Since EJBCA 7.0.0. Use CaSession.getAuthorizedCaNamesToIds instead. */
-    @Override
-    @Deprecated
-    public TreeMap<String, Integer> getCAOptions() {
-        return getCANames();
-    }
-
     /**
      * Gets the list of CA names by the list of CA IDs.
      * @param idString the semicolon separated list of CA IDs.
@@ -1841,7 +1789,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
      */
     @Override
     public String getCaNamesString(final String idString) throws NumberFormatException {
-        final TreeMap<String, Integer> availableCas = getCAOptions();
+        final TreeMap<String, Integer> availableCas = caSession.getAuthorizedCaNamesToIds(authState.administrator);
         final List<String> result = new ArrayList<>();
         if (StringUtils.isNotBlank(idString)) {
             for (final String id : idString.split(SEMICOLON)) {

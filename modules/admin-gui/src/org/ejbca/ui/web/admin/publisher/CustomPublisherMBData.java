@@ -100,6 +100,10 @@ public final class CustomPublisherMBData implements Serializable {
     public boolean renderCustomTextInput(final CustomPublisherProperty customPublisherProperty) {
         return customPublisherProperty.getType() == CustomPublisherProperty.UI_TEXTINPUT;
     }
+    
+    public boolean renderCustomTextInputArea(final CustomPublisherProperty customPublisherProperty) {
+        return customPublisherProperty.getType() == CustomPublisherProperty.UI_TEXTINPUT_AREA;
+    }
 
     public boolean renderCustomSelectOneMenu(final CustomPublisherProperty customPublisherProperty) {
         return customPublisherProperty.getType() == CustomPublisherProperty.UI_SELECTONE;

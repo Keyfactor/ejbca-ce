@@ -1361,6 +1361,14 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     public void setIssuanceRevocationReasonModifiable(final boolean use) {
         setModifyable(ISSUANCEREVOCATIONREASON, 0, use);
     }
+    
+    public boolean isIssuanceRevocationReasonDefault() {
+        return isRequired(ISSUANCEREVOCATIONREASON, 0);
+    }
+
+    public void setIssuanceRevocationReasonDefault(final boolean use) {
+        setRequired(ISSUANCEREVOCATIONREASON, 0, use);
+    }
 
     /**
      * Returns the initial revocation reason.

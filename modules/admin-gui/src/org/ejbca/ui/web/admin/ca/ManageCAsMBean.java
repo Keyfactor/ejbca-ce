@@ -111,18 +111,18 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
     private EndEntityManagementSessionLocal endEntityManagementSession;
-    private final Map<String, Integer> caNames = getEjbcaWebBean().getCANames();
+    private Map<String, Integer> caNames;
     private CAInterfaceBean caBean;
     private int selectedCaId;
     private String createCaName;
     private Map<Integer, String> caidtonamemap;
-    
+
     private List<String> authorizedCas;
     private Map<String, String> caNameToStatusMap;
     private Map<String, String> caNameToTypeMap;
-    
+
     private int selectedCaIdForDelete;
-    
+
     private transient Part certificateBundle;
 
     public void setCertificateBundle(final Part certificateBundle) {
@@ -253,6 +253,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
         } catch (ServletException e) {
             throw new IllegalStateException("Could not initiate CAInterfaceBean", e);
         }
+        caNames = caSession.getAuthorizedCaNamesToIds(getAdmin());
         caidtonamemap = caSession.getCAIdToNameMap();
         initializeListOfCas();
         final Map<String, Object> requestMap = FacesContext.getCurrentInstance().getExternalContext().getRequestMap();
@@ -272,7 +273,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
                 authorizedCas.add(caName);
                 caNameToStatusMap.put(caName, statusText);
                 try {
-                    caNameToTypeMap.put(caName, 
+                    caNameToTypeMap.put(caName,
                             caSession.getCAInfo(getAdmin(), caId).getCaTypeAsString().replace("SSHCA", "SSH"));
                 } catch (AuthorizationDeniedException e) {
                     // ignore
@@ -281,23 +282,23 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
         }
         return;
     }
-    
+
     public int getSelectedCaIdForDelete() {
         return selectedCaIdForDelete;
     }
-    
+
     public String getSelectedCaNameForDelete() {
         return caidtonamemap.getOrDefault(selectedCaIdForDelete, "");
     }
-    
+
     public List<String> getCanames() {
         return authorizedCas;
     }
-    
+
     public String getType(String caName) {
         return caNameToTypeMap.get(caName);
     }
-    
+
     public String getStatus(String caName) {
         return caNameToStatusMap.get(caName);
     }
@@ -358,7 +359,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
         FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("iseditca", true);
         return EditCaUtil.EDIT_CA_NAV;
     }
-    
+
     public String viewCaPage(String caName) {
         if (!authorizedCas.contains(caName)) {
             addErrorMessage("YOUMUSTSELECTCA");
@@ -459,13 +460,13 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
             addErrorMessage("YOUMUSTSELECTCA");
             return EditCaUtil.MANAGE_CA_NAV;
         }
-        
+
         selectedCaId = caNames.get(caName);
         boolean canNotDeleteCa = endEntityManagementSession.checkForCAId(selectedCaId) ||
                 certificateProfileSessionLocal.existsCAIdInCertificateProfiles(selectedCaId) ||
                 endEntityProfileSession.existsCAInEndEntityProfiles(selectedCaId) ||
                 isCaIdInUseByRoleOrRoleMember(selectedCaId);
-        
+
         try {
             if (canNotDeleteCa || !authorizedCas.contains(caName)) {
                 addErrorMessage("COULDNTDELETECA");
@@ -490,7 +491,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
             addNonTranslatedErrorMessage(e.getMessage());
             return EditCaUtil.MANAGE_CA_NAV;
         }
-        
+
         FacesContext.getCurrentInstance().getExternalContext()
                         .getRequestMap().put("selectedCaIdForDelete", selectedCaId);
         return EditCaUtil.DELETE_CA_NAV;
@@ -501,13 +502,13 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
                 certificateProfileSessionLocal.existsCAIdInCertificateProfiles(selectedCaIdForDelete) ||
                 endEntityProfileSession.existsCAInEndEntityProfiles(selectedCaIdForDelete) ||
                 isCaIdInUseByRoleOrRoleMember(selectedCaIdForDelete);
-        
+
         if (!caIdIsPresent && authorizedCas.contains(caidtonamemap.get(selectedCaIdForDelete))) {
             caSession.removeCA(getEjbcaWebBean().getAdminObject(), selectedCaIdForDelete);
         } else {
             addErrorMessage("COULDNTDELETECA");
         }
-        
+
         return EditCaUtil.MANAGE_CA_NAV;
     }
 
