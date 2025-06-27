@@ -1236,10 +1236,6 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         return altName + (StringUtils.isEmpty(fieldsToAdd) ? "" : ", " + fieldsToAdd);
     }
 
-    private static boolean shouldCopyCNToAltName(String altName, String specifiedDnTypeValueFromCn) {
-        return Arrays.stream(altName.split(",")).noneMatch(property -> property.trim().equalsIgnoreCase(specifiedDnTypeValueFromCn));
-    }
-
     @Override
     public void deleteUser(final AuthenticationToken authenticationToken, final String username)
             throws AuthorizationDeniedException, NoSuchEndEntityException, CouldNotRemoveEndEntityException {  
