@@ -36,7 +36,7 @@
                     <h:outputLabel for="deleteProfileName" value="#{web.text.NAME}"/>
                     <h:outputText id="deleteProfileName" value="#{autoenrollmentConfigMBean.selectedAlias}"/>
                     <h:panelGroup/>
-                    <h:panelGroup>
+                    <h:panelGroup styleClass="action-buttons">
                         <h:commandButton id="buttonaliasdelete" value="#{web.text.DELETE_CONFIRM}"
                                          action="#{autoenrollmentConfigMBean.deleteAliasAction}"
                                          disabled="#{!autoenrollmentConfigMBean.authorizedToEdit}"/>

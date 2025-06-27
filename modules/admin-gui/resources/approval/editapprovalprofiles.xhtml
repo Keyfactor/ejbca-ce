@@ -46,9 +46,9 @@
 					<div class="button-group">
 						<h:commandButton value="#{web.text.VIEW}" action="#{approvalProfilesMBean.actionView}" immediate="true"/>
 						<h:commandButton value="#{web.text.EDIT}" action="#{approvalProfilesMBean.actionEdit}" rendered="#{approvalProfilesMBean.authorizedToEdit}" immediate="true"/>
-						<h:commandButton value="#{web.text.DELETE}" action="#{approvalProfilesMBean.actionDelete}" rendered="#{approvalProfilesMBean.authorizedToEdit}" immediate="true"/>
 						<h:commandButton value="#{web.text.RENAME}" action="#{approvalProfilesMBean.actionRename}" rendered="#{approvalProfilesMBean.authorizedToEdit}" immediate="true"/>
 						<h:commandButton value="#{web.text.CLONE}" action="#{approvalProfilesMBean.actionAddFromTemplate}" rendered="#{approvalProfilesMBean.authorizedToEdit}"/>
+                        <h:commandButton value="#{web.text.DELETE}" action="#{approvalProfilesMBean.actionDelete}" rendered="#{approvalProfilesMBean.authorizedToEdit}" immediate="true"/>
 					</div>
 					<f:facet name="footer">
 						<h:commandButton id="addButton" value="#{web.text.ADD}" action="#{approvalProfilesMBean.actionAdd}" disabled="#{!(approvalProfilesMBean.authorizedToEdit)}"/>
@@ -67,7 +67,7 @@
 					<h:outputLabel for="addFromTemplateProfileNew" value="#{web.text.APPROVALPROFILE_NEWNAME}"/>
 	  				<h:inputText id="addFromTemplateProfileNew" value="#{approvalProfilesMBean.approvalProfileName}" title="#{web.text.FORMAT_ID_STR}" size="40" maxlength="250"/>
 	  				<h:panelGroup/>
-					<h:panelGroup>
+					<h:panelGroup styleClass="action-buttons">
 						<h:commandButton value="#{web.text.CLONE_CONFIRM}" action="#{approvalProfilesMBean.actionAddFromTemplateConfirm}"/>
 						<h:commandButton value="#{web.text.CANCEL}" action="#{approvalProfilesMBean.actionCancel}" immediate="true"/>
 					</h:panelGroup>
@@ -99,7 +99,7 @@
 					<h:outputLabel for="deleteProfileName" value="#{web.text.APPROVALPROFILE_NAME}"/>
 					<h:outputText id="deleteProfileName" value="#{approvalProfilesMBean.selectedApprovalProfileName}"/>
 	  				<h:panelGroup/>
-					<h:panelGroup>
+					<h:panelGroup styleClass="action-buttons">
 						<h:commandButton value="#{web.text.DELETE_CONFIRM}" action="#{approvalProfilesMBean.actionDeleteConfirm}"/>
 						<h:commandButton value="#{web.text.CANCEL}" action="#{approvalProfilesMBean.actionCancel}"/>
 					</h:panelGroup>

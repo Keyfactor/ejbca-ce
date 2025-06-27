@@ -15,14 +15,17 @@
 * {
 	font-family: Verdana, Arial, Helvetica, Geneva, sans-serif;
 }
+html, body {
+    /* push down footer to bottom of page when there is too little content. */
+    height: 100%;
+    font-size: 11pt;
+}
 body {
 	margin: 0;
 	padding: 0;
 	background-color: #FFF;
 	color: #000;
 	font-size: 11pt;
-	/* push down footer to bottom of page when there is too little content. */
-	height: 100%;
 }
 code, code *, pre, pre *, .monospace {
 	font-family: "DejaVu Sans Mono", "Liberation Mono", Consolas, "Courier New", Courier, monospace;
@@ -52,22 +55,22 @@ p.help, .helpNormal {
     padding-right: 15px;
 }
 #contentBlock {
-    padding-top: 7px;
-    padding-bottom: 40px;
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
 #footerBlock {
     position: relative;
-    margin-top: -47px;
-    height: 40px;
-    padding-left: 30px;
-    padding-right: 15px;
-    clear: both;
-    text-align: center;
+    bottom: 2.5rem;
+    height: 2.5rem;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 #footerInner {
-    line-height: 40px;
+    line-height: 2rem;
     vertical-align: middle;
-    height: 40px;
+    height: 2rem;
 }
 #modalBlock {
     position: fixed;
@@ -241,6 +244,12 @@ div#footer {
 
 /*--------------------------------------------------------------------------*/
 /* CONTENT */
+#page-content-wrapper {
+    min-height: 100vh;
+    padding-bottom: 2.5rem; /* footer height */
+    overflow: auto;
+}
+
 .main-wrapper {
 	margin: 1em auto;
 }
@@ -865,11 +874,6 @@ div.status table td img {
 }
 
 /* --- Page: CA > CryptoTokens */
-form#cryptotokens table {
-	border-collapse: collapse;
-	right: auto; /* ??? */
-	left: auto;
-}
 form#cryptotokens img.statusIcon {
 	border-width: 0;
 }
@@ -1434,6 +1438,123 @@ a.button:active {
 /* Set on document.documentElement */
 .waiting { cursor: wait; opacity: 0.5; }
 .waiting input { cursor: wait; }
+
+/* PrimeFaces class adjustments: START */
+
+/* Restore vertical centering of row content in PrimeFaces DataTables */
+.ui-datatable table td {
+    vertical-align: middle;
+}
+
+/* Remove cell focus borders */
+.ui-datatable-data td[role="gridcell"]:focus {
+    outline: none;
+    outline-offset: 0;
+    border: 1px solid rgba(0,0,0,.08);
+}
+
+/* Match the file upload button style to the plain PrimeFaces buttons  */
+input[type="file"] {
+    color: #495057;
+    background: #fff;
+    border: 1px solid #ced4da;
+    outline: none;
+    font-size: 1rem;
+    border-radius: 4px;
+}
+
+input[type="file"]:hover {
+    border-color: #2196f3;
+}
+
+input[type="file"]::file-selector-button {
+    background-color: #fff;
+    color: #495057;
+    border: none;
+    border-right: 1px solid #ced4da;
+    height: 100%;
+    padding: calc(0.5rem + 0.5px);
+}
+
+input[type="file"]::file-selector-button:hover {
+    background-color: #f5f5f5;
+}
+
+/* PrimeFaces class adjustments: END */
+
+.table-layout-auto {
+    display: table;
+}
+
+.table-layout-auto table {
+    table-layout: auto !important;
+}
+
+.table-title-column {
+    font-weight: bold;
+    max-width: 35vw;
+    min-width: 3rem;
+    word-break: break-all;
+}
+
+.vertical-padding-1 {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+.text-align-center {
+    text-align: center !important;
+}
+
+.action-buttons {
+    display: inline-flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+}
+
+.action-buttons input[type="submit"] {
+    flex: 0 0 auto;
+    max-width: unset;
+    box-sizing: border-box;
+    white-space: nowrap;
+}
+
+.no-border,
+.no-border table {
+    border: none;
+    border-collapse: collapse;
+}
+
+.no-padding,
+.no-padding table tr td,
+table.no-padding tr td  {
+    padding: 0;
+}
+
+.padding-bottom-1-rem,
+.row-padding-bottom-1-rem,
+.row-padding-bottom-1-rem table tr td,
+table.row-padding-bottom-1-rem tr td {
+    padding-bottom: 1rem;
+}
+
+.padding-top-1-rem {
+    padding-top: 1rem;
+}
+
+.cell-padding-right-1-rem,
+.cell-padding-right-1-rem table tr td {
+    padding-right: 1rem;
+}
+
+label.break-line {
+    display: block;
+}
+
+.inline-block {
+    display: inline-block;
+}
 
 /*--------------------------------------------------------------------------*/
 /* EOF */

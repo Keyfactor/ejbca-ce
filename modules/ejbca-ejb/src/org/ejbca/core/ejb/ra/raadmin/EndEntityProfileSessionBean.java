@@ -553,7 +553,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
 
     @Override
     public void renameEndEntityProfile(final AuthenticationToken admin, final String oldprofilename, final String newprofilename) throws AuthorizationDeniedException, EndEntityProfileExistsException {
-        if (newprofilename.trim().equalsIgnoreCase(EndEntityConstants.EMPTY_ENDENTITYPROFILENAME) || oldprofilename.trim().equalsIgnoreCase(EndEntityConstants.EMPTY_ENDENTITYPROFILENAME)) {
+        if (newprofilename.trim().equalsIgnoreCase(EndEntityConstants.EMPTY_ENDENTITYPROFILENAME) || (oldprofilename != null && oldprofilename.trim().equalsIgnoreCase(EndEntityConstants.EMPTY_ENDENTITYPROFILENAME))) {
         	final String msg = INTRES.getLocalizedMessage("ra.errorrenameprofile", oldprofilename, newprofilename);
         	LOG.info(msg);
             throw new EndEntityProfileExistsException();
