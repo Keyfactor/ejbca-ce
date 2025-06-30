@@ -20,11 +20,10 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
-import org.cesecore.repository.dbprotection.ProtectedDataImpl;
-import org.cesecore.repository.dbprotection.ProtectedDataIntegrityImpl;
-import org.cesecore.repository.dbprotection.ProtectionStringBuilder;
-import org.ejbca.dto.EntityManagerBean;
-import org.cesecore.repository.exception.DatabaseProtectionException;
+import org.cesecore.dbprotection.DatabaseProtectionException;
+import org.cesecore.dbprotection.ProtectedDataImpl;
+import org.cesecore.dbprotection.ProtectedDataIntegrityImpl;
+import org.cesecore.dbprotection.ProtectionStringBuilder;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -98,10 +97,6 @@ public final class ${name?cap_first}Bean implements Serializable, EntityManagerB
 
     public void setRowProtection(final String rowProtection) {
         this.rowProtection = rowProtection;
-    }
-
-    public ${name?cap_first} toDto() {
-        return new ${name?cap_first}Converter().toDto(this);
     }
 
     @Transient

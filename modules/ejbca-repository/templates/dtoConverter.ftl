@@ -15,8 +15,9 @@ package ${packageName}.dto;
 
 <#if xmlName??>
 import java.util.Collections;
-import ${packageName}.util.XmlUtil;
+import org.cesecore.repository.util.XmlUtil;
 </#if>
+import org.cesecore.repository.dto.Converter;
 
 public final class ${name?cap_first}Converter implements Converter<${name?cap_first}, ${name?cap_first}Bean> {
 

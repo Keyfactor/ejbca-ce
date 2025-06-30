@@ -1,5 +1,4 @@
 {
-  "packageName": "org.ejbca.repository",
   "idName": "primaryKey",
   "idType": "Integer",
   "fields": [

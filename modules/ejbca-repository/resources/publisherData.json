@@ -1,6 +1,4 @@
 {
-  "packageName": "org.ejbca.repository",
-  "name": "publisherData",
   "indexName": "name",
   "xmlName": "data",
   "idName": "id",
