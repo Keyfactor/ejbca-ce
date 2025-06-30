@@ -1,0 +1,22 @@
+{
+  "packageName": "org.ejbca.repository",
+  "name": "publisherData",
+  "indexName": "name",
+  "xmlName": "data",
+  "idName": "id",
+  "idType": "Integer",
+  "fields": [
+    {
+      "javaType": "Integer",
+      "javaName": "id"
+    },
+    {
+      "javaType": "String",
+      "javaName": "name"
+    },
+    {
+      "javaType": "Integer",
+      "javaName": "updateCounter"
+    }
+  ]
+}

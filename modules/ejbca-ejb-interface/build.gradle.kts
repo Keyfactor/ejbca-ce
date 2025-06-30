@@ -9,6 +9,7 @@ dependencies {
     compileOnly(project(":modules:cesecore-common"))
     compileOnly(project(":modules:cesecore-ejb-interface"))
     compileOnly(project(":modules:cesecore-entity"))
+    compileOnly(project(":modules:ejbca-repository"))
     compileOnly(libs.jakartaee.api)
     compileOnly(libs.jaxb.runtime)
     compileOnly(libs.bcpkix)
@@ -21,12 +22,21 @@ dependencies {
     compileOnly(libs.commons.lang3)
     compileOnly(libs.x509.common.util)
     compileOnly(libs.bundles.cryptotokens)
+    testImplementation(libs.junit)
 }
 
 sourceSets {
     main {
         java {
             setSrcDirs(listOf("src"))
+        }
+    }
+    test {
+        java {
+            setSrcDirs(listOf("src-test"))
+        }
+        resources {
+            srcDirs("resources-test")
         }
     }
 }

@@ -45,6 +45,7 @@ dependencies {
     implementation(libs.csrfguard.jsp.tags)
     implementation(libs.primefaces)
     testRuntimeOnly(libs.myfaces.api)
+    testImplementation(project(":modules:ejbca-repository"))
 }
 
 sourceSets {
