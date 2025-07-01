@@ -472,23 +472,43 @@
     <navigation-rule>
         <from-view-id>/services/listservices.xhtml</from-view-id>
         <navigation-case>
-            <from-outcome>listservices</from-outcome>
-            <to-view-id>/services/listservices.xhtml</to-view-id>
+            <from-outcome>edit</from-outcome>
+            <to-view-id>/services/editservice.xhtml</to-view-id>
+            <redirect/>
         </navigation-case>
         <navigation-case>
-            <from-outcome>editservice</from-outcome>
-            <to-view-id>/services/editservice.xhtml</to-view-id>
+            <from-outcome>clone</from-outcome>
+            <to-view-id>/services/cloneservice.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>delete</from-outcome>
+            <to-view-id>/services/deleteservice.xhtml</to-view-id>
+            <redirect/>
         </navigation-case>
     </navigation-rule>
     <navigation-rule>
         <from-view-id>/services/editservice.xhtml</from-view-id>
         <navigation-case>
-            <from-outcome>listservices</from-outcome>
+            <from-outcome>done</from-outcome>
             <to-view-id>/services/listservices.xhtml</to-view-id>
+            <redirect/>
         </navigation-case>
+    </navigation-rule>
+    <navigation-rule>
+        <from-view-id>/services/cloneservice.xhtml</from-view-id>
         <navigation-case>
-            <from-outcome>editservice</from-outcome>
-            <to-view-id>/services/editservice.xhtml</to-view-id>
+            <from-outcome>done</from-outcome>
+            <to-view-id>/services/listservices.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+    </navigation-rule>
+    <navigation-rule>
+        <from-view-id>/services/deleteservice.xhtml</from-view-id>
+        <navigation-case>
+            <from-outcome>done</from-outcome>
+            <to-view-id>/services/listservices.xhtml</to-view-id>
+            <redirect/>
         </navigation-case>
     </navigation-rule>
 

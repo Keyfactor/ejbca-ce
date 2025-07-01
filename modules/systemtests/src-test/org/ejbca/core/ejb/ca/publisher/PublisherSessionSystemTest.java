@@ -34,7 +34,7 @@ import org.junit.Test;
 
 /**
  * Tests Publisher session.
- * 
+ *
  * @version $Id$
  */
 public class PublisherSessionSystemTest {
@@ -83,6 +83,7 @@ public class PublisherSessionSystemTest {
         publ1.setDescription("barfoo");
         final String name = PublisherSessionSystemTest.class.getSimpleName();
         final String name1 = PublisherSessionSystemTest.class.getSimpleName()+"1";
+        final String name2 = PublisherSessionSystemTest.class.getSimpleName()+"2";
         try {
             // Test some initial empty checks to see we do not get NPEs
             int noid = publisherProxySession.getPublisherId(name);
@@ -110,15 +111,24 @@ public class PublisherSessionSystemTest {
             assertEquals("datasource is not what we set", "foo", ((LdapPublisher)pub).getBaseDN());
             int id1 = publisherProxySession.getPublisherId(name);
             assertEquals("Id should be the same after change, but it is not", id, id1);
+            publisherSession.changePublisher(internalAdmin, id, name2, pub);
+            pub = publisherSession.getPublisher(name2);
+            assertEquals("Name is not what we set", "PublisherSessionSystemTest2", pub.getName());
+            assertEquals("Description is not what we set", "newdesc", pub.getDescription());
+            assertEquals("Publisher is not a LdapPublisher", LdapPublisher.class.getName(), pub.getClass().getName());
+            assertEquals("datasource is not what we set", "foo", ((LdapPublisher)pub).getBaseDN());
+            id1 = publisherProxySession.getPublisherId(name2);
+            assertEquals("Id should be the same after change, but it is not", id, id1);
             // Remove publishers
-            publisherProxySession.removePublisherInternal(internalAdmin, name);
             publisherProxySession.removePublisherInternal(internalAdmin, name1);
+            publisherProxySession.removePublisherInternal(internalAdmin, name2);
             assertNull("Should return null when publisher does not exist", publisherSession.getPublisher(name));
             assertNull("Should return null when publisher does not exist", publisherSession.getPublisher(name1));
+            assertNull("Should return null when publisher does not exist", publisherSession.getPublisher(name2));
             assertNull("Should return null when publisher does not exist", publisherSession.getPublisher(id));
         } finally {
-            publisherProxySession.removePublisherInternal(internalAdmin, name);
-            publisherProxySession.removePublisherInternal(internalAdmin, name1);            
+            publisherProxySession.removePublisherInternal(internalAdmin, name1);
+            publisherProxySession.removePublisherInternal(internalAdmin, name2);
         }
     }
     

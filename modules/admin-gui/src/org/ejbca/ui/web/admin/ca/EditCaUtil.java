@@ -38,6 +38,7 @@ public final class EditCaUtil {
     private static final Logger log = Logger.getLogger(EditCaUtil.class);
 
     public static final String MANAGE_CA_NAV = "managecas";
+    public static final String DELETE_CA_NAV = "deletecapage";
     public static final String EDIT_CA_NAV = "editcapage";
     public static final String SIGN_CERT_REQ_NAV = "recievefile";
     public static final String DISPLAY_RESULT_NAV = "displayresult";

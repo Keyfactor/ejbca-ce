@@ -15,6 +15,7 @@ package org.ejbca.ui.web.admin.endentity;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.certificate.DnComponents;
 import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJB;
 import jakarta.ejb.PostActivate;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.model.SelectItem;
@@ -25,6 +26,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.ExtendedInformation;
@@ -121,6 +123,9 @@ public class ViewEndEntityMBean extends EndEntityBaseManagedBean implements Seri
     private List<ImmutablePair<String, String>> subjectDnNameFieldDatas;
     private List<ImmutablePair<String, String>> subjectAltNameFieldDatas;
     private List<ImmutablePair<String, String>> subjectDirAttrsFieldDatas;
+    
+    @EJB
+    private CaSessionLocal caSession;
 
     // **************************************************************        
 
@@ -761,7 +766,7 @@ public class ViewEndEntityMBean extends EndEntityBaseManagedBean implements Seri
                 }
                 for (int i = 0; i < hist.size(); i++) {
                     CertReqHistory next = hist.get(i);
-                    userDatas[i + currentexists] = new UserView(next.getEndEntityInformation(), ejbcaWebBean.getCAIdToNameMap());
+                    userDatas[i + currentexists] = new UserView(next.getEndEntityInformation(), caSession.getCAIdToNameMap());
                 }
 
             }
