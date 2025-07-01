@@ -292,7 +292,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 return false;
 
             // for AWSKMS auto-activate tokens that don't take a secret, it makes no sense to show a reactivate button
-            if (CryptoTokenFactory.AWSKMS_SIMPLE_NAME.equals(cryptoTokenInfo.getType()) && !requiresSecretToActivate)
+            if (CryptoTokenFactory.AWSKMS_SIMPLE_NAME.equals(cryptoTokenInfo.getType()))
                 return false;
 
             // for now, show reactivate for all other token types
