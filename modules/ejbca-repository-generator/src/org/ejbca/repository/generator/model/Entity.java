@@ -30,27 +30,12 @@ public class Entity implements Serializable {
     private String idType;
     private String indexName;
     private String protectVersion;
+    private boolean production;
     private List<Field> fields;
 
     public Entity() {
         protectVersion = "1";
-    }
-
-    public Entity(String packageName,
-                  String name,
-                  String xmlName,
-                  String idName,
-                  String idType,
-                  String indexName,
-                  List<Field> fields,
-                  List<Field> mandatoryFields) {
-        this.packageName = packageName;
-        this.name = name;
-        this.xmlName = xmlName;
-        this.idName = idName;
-        this.idType = idType;
-        this.indexName = indexName;
-        this.fields = fields;
+        production = true;
     }
 
     public String getPackageName() {
@@ -107,6 +92,14 @@ public class Entity implements Serializable {
 
     public void setXmlName(String xmlName) {
         this.xmlName = xmlName;
+    }
+
+    public boolean isProduction() {
+        return production;
+    }
+
+    public void setProduction(boolean production) {
+        this.production = production;
     }
 
     public List<Field> getFields() {

@@ -58,11 +58,8 @@ public class Main {
         }
     }
 
-    private static String getSrcDirName(final boolean test, final String templateName) {
-        if (test) {
-            return "modules/ejbca-repository/src-test";
-        }
-        else {
+    private static String getSrcDirName(final boolean production, final String templateName) {
+        if (production) {
             if (templateName.toLowerCase().contains("bean")) {
                 return "modules/ejbca-entity/src";
             }
@@ -70,11 +67,14 @@ public class Main {
                 return "modules/ejbca-ejb-interface/src";
             }
         }
+        else {
+            return "modules/ejbca-repository/src-test";
+        }
     }
 
-    private static void generateFiles(Configuration configuration, File rootDir, boolean test, String[] templateNames, Entity entity) throws Exception {
+    private static void generateFiles(Configuration configuration, File rootDir, boolean production, String[] templateNames, Entity entity) throws Exception {
         for (String templateName : templateNames) {
-            File srcDir = new File(rootDir, getSrcDirName(test, templateName));
+            File srcDir = new File(rootDir, getSrcDirName(production, templateName));
             File dir = getDir(srcDir, entity.getPackageName()+".dto");
             doGenerateFile(configuration, dir, templateName, entity);
         }
@@ -134,15 +134,16 @@ public class Main {
         return field;
     }
 
-    private static Entity parseJson(final String dtoName, final InputStream inputStream) {
+    private static Entity parseJson(final String dtoName, final InputStream inputStream, boolean production) {
         Entity entity = JsonUtil.parseJson(inputStream, Entity.class);
         entity.setPackageName("org.ejbca");
         entity.setName(dtoName);
+        entity.setProduction(production);
         return entity;
     }
 
-    private static void doMain(File rootDir, boolean test) throws Exception {
-        final String nameSuffix = test ? "-test" : "";
+    private static void doMain(File rootDir, boolean production) throws Exception {
+        final String nameSuffix = production ? "" : "-test";
         final File templatesDir = new File(rootDir, "modules/ejbca-repository/templates");
         final String[] templateNames = templatesDir.list();
         File resourcesDir = new File(rootDir, "modules/ejbca-repository/resources" + nameSuffix);
@@ -151,8 +152,8 @@ public class Main {
         for (File jsonFile : jsonFiles) {
             try (FileInputStream fileInputStream = getFileInputStream(jsonFile)) {
                 final var name = jsonFile.getName().replace(".json", "");
-                final var entity = parseJson(name, fileInputStream);
-                generateFiles(configuration, rootDir, test, templateNames, entity);
+                final var entity = parseJson(name, fileInputStream, production);
+                generateFiles(configuration, rootDir, production, templateNames, entity);
             }
         }
     }
