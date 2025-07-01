@@ -24,7 +24,6 @@ import com.google.common.reflect.ClassPath.ClassInfo;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 
 import jakarta.ejb.EJB;
 import jakarta.faces.annotation.ManagedProperty;

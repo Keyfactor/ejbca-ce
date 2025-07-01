@@ -1,0 +1,43 @@
+{
+  "packageName": "org.ejbca.repository",
+  "idName": "primaryKey",
+  "idType": "Integer",
+  "fields": [
+    {
+      "javaType": "Integer",
+      "javaName": "primaryKey"
+    },
+    {
+      "javaType": "String",
+      "javaName": "tokenType"
+    },
+    {
+      "javaType": "int",
+      "javaName": "tokenIssuerId"
+    },
+    {
+      "javaType": "int",
+      "javaName": "tokenProviderId"
+    },
+    {
+      "javaType": "int",
+      "javaName": "tokenMatchKey"
+    },
+    {
+      "javaType": "int",
+      "javaName": "tokenMatchOperator"
+    },
+    {
+      "javaType": "String",
+      "javaName": "tokenMatchValue"
+    },
+    {
+      "javaType": "int",
+      "javaName": "roleId"
+    },
+    {
+      "javaType": "String",
+      "javaName": "description"
+    }
+  ]
+}

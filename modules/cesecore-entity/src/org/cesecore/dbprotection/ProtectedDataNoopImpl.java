@@ -32,7 +32,19 @@ public class ProtectedDataNoopImpl implements ProtectedDataImpl {
     public void verifyData(final ProtectedData obj) {
         // Do nothing
     }
-	
+
+    @Override
+    public void verifyData(final String unProtectedData, final String protectedData, final String beanName, final String rowId) throws DatabaseProtectionException {
+        // Do nothing
+    }
+
+
+    @Override
+    public String getProtectedData(final Integer rowVersion, final String unProtectedData) throws DatabaseProtectionException {
+        // Do nothing
+        return null;
+    }
+
     @Override
     public String calculateProtection(final ProtectedData obj) {
         // Do nothing
