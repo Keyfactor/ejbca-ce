@@ -11,7 +11,7 @@
 	<property name="ejbca-interface.build.dir" location="${ejbca-interface.dir}/build"/>
 	<property name="ejbca-interface.src.dir" location="${ejbca-interface.dir}/src"/>
 
-	
+
 
 	<path id="compile.classpath">
 		<path refid="lib.commons-lang.classpath"/>

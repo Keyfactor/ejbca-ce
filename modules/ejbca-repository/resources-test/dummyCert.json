@@ -1,5 +1,4 @@
 {
-  "packageName": "org.ejbca.repository",
   "xmlName": "data",
   "idName": "id",
   "idType": "Long",

@@ -20,11 +20,12 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
-import org.cesecore.repository.dbprotection.ProtectedDataImpl;
-import org.cesecore.repository.dbprotection.ProtectedDataIntegrityImpl;
-import org.cesecore.repository.dbprotection.ProtectionStringBuilder;
-import org.ejbca.dto.EntityManagerBean;
-import org.cesecore.repository.exception.DatabaseProtectionException;
+<#if production>
+import org.cesecore.dbprotection.DatabaseProtectionException;
+import org.cesecore.dbprotection.ProtectedDataImpl;
+import org.cesecore.dbprotection.ProtectedDataIntegrityImpl;
+import org.cesecore.dbprotection.ProtectionStringBuilder;
+</#if>
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -32,6 +33,7 @@ import java.util.Objects;
 @Entity
 @Table(name = "${name?cap_first}")
 public final class ${name?cap_first}Bean implements Serializable, EntityManagerBean {
+<#if production>
 
     private static ProtectedDataImpl protectedDataImpl;
 
@@ -47,6 +49,7 @@ public final class ${name?cap_first}Bean implements Serializable, EntityManagerB
     public static void setProtectedDataImpl(final ProtectedDataImpl protectedDataImpl) {
         ${name?cap_first}Bean.protectedDataImpl = protectedDataImpl;
     }
+</#if>
 
 <#list fields as field>
     private ${field.javaType} ${field.javaName};
@@ -100,10 +103,6 @@ public final class ${name?cap_first}Bean implements Serializable, EntityManagerB
         this.rowProtection = rowProtection;
     }
 
-    public ${name?cap_first} toDto() {
-        return new ${name?cap_first}Converter().toDto(this);
-    }
-
     @Transient
     @Override
     public int getProtectVersion() {
@@ -113,13 +112,18 @@ public final class ${name?cap_first}Bean implements Serializable, EntityManagerB
     @Transient
     @Override
     public String getProtectString(final int version) {
+<#if production>
         ProtectionStringBuilder builder = new ProtectionStringBuilder();
-<#list fields as field>
+    <#list fields as field>
         builder.append(get${field.javaName?cap_first}());
-</#list>
+    </#list>
         return builder.toString();
+<#else>
+        return null;
+</#if>
     }
 
+<#if production>
     @PrePersist
     @PreUpdate
     protected void protectData() throws DatabaseProtectionException {
@@ -129,7 +133,14 @@ public final class ${name?cap_first}Bean implements Serializable, EntityManagerB
             setRowProtection(protectedData);
         }
     }
+<#else>
+    @PrePersist
+    @PreUpdate
+    protected void protectData() {
+    }
+</#if>
 
+<#if production>
     @PostLoad
     protected void verifyData() throws DatabaseProtectionException {
         try {
@@ -139,6 +150,11 @@ public final class ${name?cap_first}Bean implements Serializable, EntityManagerB
             protectedDataImpl.onDataVerificationError(e);
         }
     }
+<#else>
+    @PostLoad
+    protected void verifyData() {
+    }
+</#if>
 
     @Override
     public String toString() {

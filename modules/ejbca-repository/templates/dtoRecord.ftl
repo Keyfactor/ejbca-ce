@@ -13,7 +13,7 @@
 
 package ${packageName}.dto;
 
-import ${packageName}.util.CompareUtil;
+import org.cesecore.repository.util.CompareUtil;
 <#if xmlName??>
 import java.util.Map;
 
