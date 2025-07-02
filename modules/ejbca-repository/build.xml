@@ -33,6 +33,13 @@
 	<property name="ejbca-repository.src-test.dir" location="${ejbca-repository.dir}/src-test"/>
 	<property name="ejbca-repository.resources.dir" location="${ejbca-repository.dir}/resources"/>
 
+	<path id="test.classpath">
+		<path refid="compile.classpath"/>
+		<path refid="lib.junit.classpath"/>
+		<path location="${ejbca-repository.build.dir}"/>
+		<path location="${ejbca-repository.build-test.dir}"/>
+	</path>
+
 	<path id="compile.classpath">
 		<path refid="lib.commons-config.classpath"/>
 		<path refid="lib.commons-lang.classpath"/><!-- Dependency of commons-config -->
@@ -66,12 +73,9 @@
 		<path location="${mod.ejbca-repository.lib}" />
 	</path>
 
-	<path id="test.classpath">
-		<path refid="compile-test.classpath"/>
-	</path>
-
     <target name="clean" description="Clean up this module">
 		<delete dir="${ejbca-repository.build.dir}" />
+		<delete dir="${ejbca-repository.build-test.dir}" />
     </target>
 
     <target name="compile">

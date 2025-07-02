@@ -488,7 +488,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
             if (this.createNewPublisher) {
                 publisherSession.addPublisher(getAdmin(), getPublisherName(), publisher);
             } else {
-                publisherSession.changePublisher(getAdmin(), getPublisherId(), getPublisherName(), publisher);
+                publisherSession.changePublisher(getAdmin(), getPublisherName(), publisher);
             }
         } catch (PublisherExistsException e) {
             addErrorMessage("PUBLISHERALREADYEXISTS", getPublisherName());
@@ -511,7 +511,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
             if (this.createNewPublisher) {
                 publisherSession.addPublisher(getAdmin(), getPublisherName(), publisher);
             } else {
-                publisherSession.changePublisher(getAdmin(), getPublisherId(), getPublisherName(), publisher);
+                publisherSession.changePublisher(getAdmin(), getPublisherName(), publisher);
             }
         } catch (PublisherExistsException e) {
             addErrorMessage("PUBLISHERALREADYEXISTS", getPublisherName());

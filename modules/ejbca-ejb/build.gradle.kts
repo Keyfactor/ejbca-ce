@@ -10,6 +10,7 @@ dependencies {
     compileOnly(project(":modules:ejbca-entity"))
     compileOnly(project(":modules:ejbca-common"))
     compileOnly(project(":modules:ejbca-common-web"))
+    compileOnly(project(":modules:ejbca-repository"))
     compileOnly(project(":modules:ejbca-ws:common"))
     compileOnly(project(":modules:edition-specific:interface"))
     compileOnly(libs.ejbca.ws.client.gen)

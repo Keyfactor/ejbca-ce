@@ -26,9 +26,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.ejb.Asynchronous;
 import jakarta.ejb.CreateException;
 import jakarta.ejb.EJB;
@@ -38,7 +43,6 @@ import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.TypedQuery;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -62,11 +66,18 @@ import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.common.exception.ReferencesToItemExistException;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.oscp.OcspResponseData;
-import org.cesecore.util.Base64GetHashMap;
+import org.cesecore.repository.Cache;
+import org.cesecore.repository.CachedDatabase;
+import org.cesecore.repository.Database;
+import org.cesecore.repository.exception.RecordIdAlreadyExistsException;
+import org.cesecore.repository.exception.RecordIndexAlreadyExistsException;
+import org.cesecore.repository.exception.RecordIndexDoesNotExistException;
+import org.cesecore.repository.util.XmlUtil;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.ProfileID;
 import org.cesecore.util.SecureXMLDecoder;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
@@ -91,6 +102,10 @@ import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.certificate.DnComponents;
+import org.ejbca.dto.PublisherData;
+import org.ejbca.dto.PublisherDataBean;
+import org.ejbca.dto.PublisherDataBuilder;
+import org.ejbca.dto.PublisherDataConverter;
 
 /**
  * Handles management of Publishers.
@@ -124,10 +139,35 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     @EJB
     private SecurityEventsLoggerSessionLocal auditSession;
 
+    private static final Lock INIT_LOCK = new ReentrantLock();
+    private static CachedDatabase<PublisherData, Integer, PublisherDataBean> repository;
+    private static ConcurrentMap<Integer, BasePublisher> basePublisherMap;
+
+    @PostConstruct
+    public void postConstruct() {
+        if (repository == null) {
+            try {
+                INIT_LOCK.lock();
+                if (repository == null) {
+                    Database<PublisherData, Integer, PublisherDataBean> database = new Database<>(
+                            entityManager,
+                            PublisherDataBean.class,
+                            new PublisherDataConverter(),
+                            "name");
+                    final var cache = new Cache<PublisherData, Integer>(EjbcaConfiguration.getCachePublisherTime());
+                    repository = new CachedDatabase<>(database, cache);
+                    basePublisherMap = new ConcurrentHashMap<>();
+                }
+            } finally {
+                INIT_LOCK.unlock();
+            }
+        }
+    }
+
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public void flushPublisherCache() {
-        PublisherCache.INSTANCE.flush();
+        repository.clearCache();
         if (log.isDebugEnabled()) {
             log.debug("Flushed Publisher cache.");
         }
@@ -138,9 +178,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     public void publishQueuedEntry(AuthenticationToken admin, int publisherId, PublisherQueueData entity) {
         final BasePublisher publisher = getPublisher(publisherId);
         final PublishingResult publisherResult = publisherQueueSession.doPublish(admin, publisher, entity);
-
-        boolean success = false;
-        success = publisherResult.getSuccesses() > 0;
+        final boolean success = publisherResult.getSuccesses() > 0;
         if (success) {
             final int eepId = certificateStoreSession.getCertificateData(entity.getFingerprint()).getCertificateData().getEndEntityProfileId();
             final String userDn = LogRedactionUtils.getSubjectDnLogSafe(entity.getVolatileData().getUserDN(), eepId);
@@ -191,7 +229,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         final List<BasePublisher> publishersToQueuePending = new ArrayList<>();
         final List<BasePublisher> publishersToQueueSuccess = new ArrayList<>();
         for (final Integer id : publisherids) {
-            BasePublisher publisher = getPublisherInternal(id, null, true);
+            BasePublisher publisher = getPublisher(repository.findById(id));
             if (publisher != null) {
                 // If the publisher will not publish the certificate, break out directly and do not call the publisher or queue the certificate
                 if (publisher.willPublishCertificate(status, revocationDate)) {
@@ -224,7 +262,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         for (int i = 0; i < publishersToTryDirect.size(); i++) {
             final Object publisherResult = publisherResults.get(i);
             final BasePublisher publ = publishersToTryDirect.get(i);
-            final int id = publ.getPublisherId();
+            final Integer id = publ.getPublisherId();
             final String name = getPublisherName(id);
             if (!(publisherResult instanceof PublisherException)) {
                 // If it wasn't an exception, it's a Boolean, but check it anyhow to avoid any chance of exception
@@ -310,7 +348,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         boolean returnval = true;
         for (Integer id : publisherids) {
             int publishStatus = PublisherConst.STATUS_PENDING;
-            final BasePublisher publ = getPublisherInternal(id, null, true);
+            final BasePublisher publ = getPublisher(id);
             if (publ != null) {
                 final String name = getPublisherName(id);
                 // If it should be published directly
@@ -421,7 +459,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
 
         for (final int id : publisherids) {
             int publishStatus = PublisherConst.STATUS_PENDING;
-            BasePublisher publ = getPublisherInternal(id, null, true);
+            BasePublisher publ = getPublisher(id);
             if (publ != null) {
                 if (isOcspResponsePublisher(publ)) {
                     final String name = getPublisherName(id);
@@ -526,8 +564,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     }
 
     private boolean republishCrlPartition(final AuthenticationToken admin, final Collection<Integer> publisherids, final String caFingerprint, final String issuerDn, final int crlPartitionIndex) throws AuthorizationDeniedException {
-        final byte[] crlbytes = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class).getLastCRL(issuerDn,
-                crlPartitionIndex, false);
+        final byte[] crlbytes = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class).getLastCRL(issuerDn, crlPartitionIndex, false);
         boolean result = false;
         // Get the CRLnumber
         X509CRL crl;
@@ -548,28 +585,28 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     }
 
     @Override
-    public void testConnection(int publisherid) throws PublisherConnectionException { // NOPMD: this is not a JUnit test
+    public void testConnection(int publisherId) throws PublisherConnectionException { // NOPMD: this is not a JUnit test
         if (log.isTraceEnabled()) {
-            log.trace(">testConnection(id: " + publisherid + ")");
+            log.trace(">testConnection(id: " + publisherId + ")");
         }
-        PublisherData pdl = PublisherData.findById(entityManager, publisherid);
-        if (pdl != null) {
-            String name = pdl.getName();
-            try {
-                getPublisher(pdl).testConnection();
-                String msg = intres.getLocalizedMessage("publisher.testedpublisher", name);
-                log.info(msg);
-            } catch (PublisherConnectionException | FatalPublisherConnectionException pe) {
-                String msg = intres.getLocalizedMessage("publisher.errortestpublisher", name);
-                log.info(msg);
-                throw new PublisherConnectionException(pe.getMessage(), pe);
-            }
-        } else {
-            String msg = intres.getLocalizedMessage("publisher.nopublisher", publisherid);
+        final var dto = repository.findById(publisherId);
+        if (dto == null) {
+            String msg = intres.getLocalizedMessage("publisher.nopublisher", publisherId);
             log.info(msg);
         }
+        else {
+            try {
+                getPublisher(publisherId).testConnection();
+                String msg = intres.getLocalizedMessage("publisher.testedpublisher", dto.name());
+                log.info(msg);
+            } catch (PublisherConnectionException | FatalPublisherConnectionException e) {
+                String msg = intres.getLocalizedMessage("publisher.errortestpublisher", dto.name());
+                log.info(msg);
+                throw new PublisherConnectionException(e.getMessage(), e);
+            }
+        }
         if (log.isTraceEnabled()) {
-            log.trace("<testConnection(id: " + publisherid + ")");
+            log.trace("<testConnection(id: " + publisherId + ")");
         }
     }
 
@@ -607,7 +644,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     @Override
     public void addPublisherFromData(AuthenticationToken admin, int id, String name, Map<?, ?> data) throws PublisherExistsException,
             AuthorizationDeniedException {
-        final BasePublisher publisher = constructPublisher((Integer) (data.get(BasePublisher.TYPE)));
+        final BasePublisher publisher = PublisherDataUtil.constructPublisher((Integer) (data.get(BasePublisher.TYPE)));
         if (publisher != null) {
             publisher.setPublisherId(id);
             publisher.setName(name);
@@ -616,112 +653,144 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         }
     }
 
-    private void addPublisherInternal(AuthenticationToken admin, int id, String name, BasePublisher publisher) throws AuthorizationDeniedException,
-            PublisherExistsException {
+    private void addPublisherInternal(final AuthenticationToken admin, final int id, final String name, final BasePublisher publisher) throws PublisherExistsException, AuthorizationDeniedException {
         authorizedToEditPublishers(admin);
-        if (PublisherData.findByName(entityManager, name) == null) {
-            if (PublisherData.findById(entityManager, id) == null) {
-                entityManager.persist(new PublisherData(id, name, publisher));
-            } else {
-                final String msg = intres.getLocalizedMessage("publisher.erroraddpublisher", id);
-                log.info(msg);
-                throw new PublisherExistsException();
-            }
-        } else {
-            final String msg = intres.getLocalizedMessage("publisher.erroraddpublisher", name);
-            log.info(msg);
-            throw new PublisherExistsException();
+        var dto = new PublisherDataBuilder()
+                .setId(id)
+                .setName(name)
+                .setUpdateCounter(0)
+                .build();
+        dto = PublisherDataUtil.setPublisher(dto, publisher);
+        try {
+            repository.add(dto);
+            basePublisherMap.put(dto.id(), publisher);
+        }
+        catch (RecordIdAlreadyExistsException e) {
+            throw new PublisherExistsException(intres.getLocalizedMessage("publisher.erroraddpublisher", id));
+        }
+        catch (RecordIndexAlreadyExistsException e) {
+            throw new PublisherExistsException(intres.getLocalizedMessage("publisher.erroraddpublisher", name));
         }
     }
 
-    @Override
-    public void changePublisher(AuthenticationToken admin, int id, String name, BasePublisher publisher) throws AuthorizationDeniedException {
-        if (log.isTraceEnabled()) {
-            log.trace(">changePublisher(name: " + name + ", id: " + id + ")");
-        }
-        authorizedToEditPublishers(admin);
-
-        final PublisherData htp = PublisherData.findById(entityManager, id);
-        if (htp != null) {
-            final PublisherData htpn = PublisherData.findByName(entityManager, name);
-            if (htpn == null || htpn.getId() == id) {
-                final Map<Object, Object> diff = getPublisher(htp).diff(publisher);
-                htp.setName(name);
-                htp.setPublisher(publisher);
-                // Since loading a Publisher is quite complex, we simple purge the cache here
-                PublisherCache.INSTANCE.removeEntry(htp.getId());
-                final String msg = intres.getLocalizedMessage("publisher.changedpublisher", name);
-                final Map<String, Object> details = new LinkedHashMap<>();
-                details.put("msg", msg);
-                for (Map.Entry<Object, Object> entry : diff.entrySet()) {
-                    // Strip passwords from log
-                    final String key = entry.getKey().toString();
-                    String value = entry.getValue().toString();
-                    if (key.contains(LdapPublisher.LOGINPASSWORD)) {
-                        value = "hidden";
-                    }
-                    details.put(key, value);
-                }
-                auditSession.log(EjbcaEventTypes.PUBLISHER_CHANGE, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA,
-                        admin.toString(), null, null, null, details);
-
-            } else {
-                String msg = intres.getLocalizedMessage("publisher.errorchangepublisher", name);
-                log.info(msg);
+    List<PublisherData> setPublisherInDatabase(final String name, final BasePublisher publisher) {
+        final String publisherData = PublisherDataUtil.toString(publisher);
+        final String selectSql = "SELECT bean FROM PublisherDataBean bean WHERE bean.name=:name";
+        return repository.execute((em)-> {
+            List<PublisherDataBean> originalBeans = em.createQuery(selectSql, PublisherDataBean.class)
+                    .setParameter("name", name)
+                    .getResultList();
+            if (originalBeans.isEmpty()) {
+                return List.of();
             }
-        } else {
-            String msg = intres.getLocalizedMessage("publisher.errorchangepublisher", name);
-            log.info(msg);
-        }
-        if (log.isTraceEnabled()) {
-            log.trace("<changePublisher()");
-        }
+            final var bean = originalBeans.get(0);
+            final PublisherData originalDto = PublisherDataConverter.INSTANCE.toDto(bean);
+            bean.setData(publisherData);
+            bean.setUpdateCounter(bean.getUpdateCounter() + 1);
+            em.merge(bean);
+            final PublisherData updatedDto = PublisherDataConverter.INSTANCE.toDto(bean);
+            return List.of(originalDto, updatedDto);
+        });
     }
 
     @Override
-    public void changePublisher(AuthenticationToken admin, String name, BasePublisher publisher) throws AuthorizationDeniedException {
+    public void changePublisher(final AuthenticationToken admin, final String name, final BasePublisher publisher) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">changePublisher(name: " + name + ")");
         }
+        authorizedToEditPublishers(admin);
+        final List<PublisherData> publisherDataList = setPublisherInDatabase(name, publisher);
+        if (publisherDataList.isEmpty()) {
+            String msg = intres.getLocalizedMessage("publisher.errorchangepublisher", name);
+            log.info(msg);
+        }
+        else {
+            final var originalDto = publisherDataList.get(0);
+            final var updatedDto = publisherDataList.get(1);
+            basePublisherMap.put(updatedDto.id(), publisher);
+            final var diff = XmlUtil.getDiff(
+                    originalDto.data(),
+                    updatedDto.data());
+            final String msg = intres.getLocalizedMessage("publisher.changedpublisher", name);
+            final Map<String, Object> details = new LinkedHashMap<>();
+            details.put("msg", msg);
+            for (Map.Entry<String, Object> entry : diff.entrySet()) {
+                // Strip passwords from log
+                final String key = entry.getKey().toString();
+                String value = key.contains(LdapPublisher.LOGINPASSWORD) ?
+                        "hidden" :
+                        entry.getValue().toString();
+                details.put(key, value);
+            }
+            auditSession.log(EjbcaEventTypes.PUBLISHER_CHANGE, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA,
+                    admin.toString(), null, null, null, details);
 
-        final PublisherData htp = PublisherData.findByName(entityManager, name);
-        this.changePublisher(admin, htp.getId(), name, publisher);
-
+        }
         if (log.isTraceEnabled()) {
             log.trace("<changePublisher()");
         }
     }
 
+    private PublisherDataBean getPublisherDataBeanByName(final EntityManager em, final String sql, final String name) {
+        final var beans = em.createQuery(sql, PublisherDataBean.class)
+                .setParameter("name", name)
+                .getResultList();
+        return beans.isEmpty() ?
+                null :
+                beans.get(0);
+    }
+
+    private void cloneDbBean(final String oldName, final String newName) {
+        final var sql = "SELECT bean FROM PublisherDataBean bean WHERE bean.name=:name";
+        repository.execute((em) -> {
+            final int newId = findFreePublisherId();
+            final PublisherDataBean originalBean = getPublisherDataBeanByName(em, sql, oldName);
+            if (originalBean == null) {
+                throw new RecordIndexDoesNotExistException("No publisher with name " + oldName + " found.");
+            }
+            final PublisherDataBean newBean = getPublisherDataBeanByName(em, sql, newName);
+            if (newBean != null) {
+                throw new RecordIndexAlreadyExistsException("There is already a publisher with the name " + newName + ".");
+            }
+            em.detach(originalBean);
+            originalBean.setId(newId);
+            originalBean.setName(newName);
+            em.persist(originalBean);
+            log.info("Cloning publisher: oldName=" + oldName + ", newId=" + newId + ", newName=" + newName);
+            return null;
+        });
+    }
+
     @Override
-    public void clonePublisher(AuthenticationToken admin, String oldname, String newname) throws PublisherDoesntExistsException,
+    public void clonePublisher(final AuthenticationToken admin, final String oldName, final String newName) throws PublisherDoesntExistsException,
             AuthorizationDeniedException, PublisherExistsException {
         if (log.isTraceEnabled()) {
-            log.trace(">clonePublisher(name: " + oldname + ")");
+            log.trace(">clonePublisher(name: " + oldName + ")");
         }
-        BasePublisher publisherdata = null;
-        PublisherData htp = PublisherData.findByName(entityManager, oldname);
-        if (htp == null) {
-            throw new PublisherDoesntExistsException("Could not find publisher " + oldname);
-        }
+        authorizedToEditPublishers(admin);
         try {
-            publisherdata = (BasePublisher) getPublisher(htp).clone();
-            addPublisherInternal(admin, findFreePublisherId(), newname, publisherdata);
-            final String msg = intres.getLocalizedMessage("publisher.clonedpublisher", newname, oldname);
-            final Map<String, Object> details = new LinkedHashMap<>();
-            details.put("msg", msg);
-            auditSession.log(EjbcaEventTypes.PUBLISHER_CREATION, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA,
-                    admin.toString(), null, null, null, details);
-        } catch (PublisherExistsException f) {
-            final String msg = intres.getLocalizedMessage("publisher.errorclonepublisher", newname, oldname);
-            log.info(msg);
-            throw f;
-        } catch (CloneNotSupportedException e) {
-            // Severe error, should never happen
-            throw new EJBException(e);
+            cloneDbBean(oldName, newName);
         }
-        if (log.isTraceEnabled()) {
-            log.trace("<clonePublisher()");
+        catch (RecordIndexDoesNotExistException e) {
+            throw new PublisherDoesntExistsException(e.getMessage());
         }
+        catch (RecordIndexAlreadyExistsException e) {
+            throw new PublisherExistsException(e.getMessage());
+        }
+        finally {
+            if (log.isTraceEnabled()) {
+                log.trace("<clonePublisher()");
+            }
+        }
+    }
+
+    private Integer removeByName(final String name) {
+        return repository.execute((em) -> {
+            String sql = "DELETE FROM PublisherDataBean WHERE name=:name";
+            return em.createQuery(sql)
+                    .setParameter("name", name)
+                    .executeUpdate();
+        });
     }
 
     @Override
@@ -731,15 +800,12 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         }
         authorizedToEditPublishers(admin);
         try {
-            PublisherData htp = PublisherData.findByName(entityManager, name);
-            if (htp == null) {
+            final var count = removeByName(name);
+            if (count == 0) {
                 if (log.isDebugEnabled()) {
                     log.debug("Trying to remove a publisher that does not exist: " + name);
                 }
             } else {
-                entityManager.remove(htp);
-                // Purge the cache here
-                PublisherCache.INSTANCE.removeEntry(htp.getId());
                 final String msg = intres.getLocalizedMessage("publisher.removedpublisher", name);
                 final Map<String, Object> details = new LinkedHashMap<>();
                 details.put("msg", msg);
@@ -770,7 +836,10 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
      */
     private void checkPublisherInUse(final String name) throws ReferencesToItemExistException {
         final List<String> inUseBy = new ArrayList<>();
-        int publisherId = getPublisherId(name);
+        Integer publisherId = getPublisherId(name);
+        if (publisherId == null) {
+            return;
+        }
         if (caAdminSession.exitsPublisherInCAs(publisherId)) {
             inUseBy.add("one or more CAs");
         }
@@ -798,128 +867,165 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         }
     }
 
+    private void verifyPublisherNameExists(EntityManager entityManager, final String name) throws RecordIndexDoesNotExistException {
+        String selectSql = "SELECT bean FROM PublisherDataBean bean WHERE name=:name";
+        List<PublisherDataBean> list = entityManager.createQuery(selectSql, PublisherDataBean.class)
+                .setParameter("name", name)
+                .getResultList();
+        if (list.isEmpty()) {
+            throw new RecordIndexDoesNotExistException("There is no publisher with the name " + name + ".");
+        }
+    }
+
+    private void verifyPublisherNameDoesNotExist(EntityManager entityManager, final String name) throws RecordIndexAlreadyExistsException {
+        String selectSql = "SELECT bean FROM PublisherDataBean bean WHERE name=:name";
+        List<PublisherDataBean> list = entityManager.createQuery(selectSql, PublisherDataBean.class)
+                .setParameter("name", name)
+                .getResultList();
+        if (!list.isEmpty()) {
+            throw new RecordIndexAlreadyExistsException("There is already a publisher with the name " + name + ".");
+        }
+    }
+
+    private void doRenamePublisher(final AuthenticationToken admin, final String oldName, final String newName) {
+        final String selectSql = "SELECT bean FROM PublisherDataBean bean WHERE bean.name=:oldName";
+        repository.execute((em) -> {
+            verifyPublisherNameExists(em, oldName);
+            verifyPublisherNameDoesNotExist(em, newName);
+            final var bean = em.createQuery(selectSql, PublisherDataBean.class)
+                    .setParameter("oldName", oldName)
+                    .getSingleResult();
+            bean.setName(newName);
+            em.merge(bean);
+            return null;
+        });
+        String msg = intres.getLocalizedMessage("publisher.renamedpublisher", oldName, newName);
+        final Map<String, Object> details = new LinkedHashMap<>();
+        details.put("msg", msg);
+        auditSession.log(EjbcaEventTypes.PUBLISHER_RENAME, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA,
+                admin.toString(), null, null, null, details);
+    }
+
     @Override
-    public void renamePublisher(AuthenticationToken admin, String oldname, String newname) throws PublisherExistsException,
-            AuthorizationDeniedException {
+    public void renamePublisher(final AuthenticationToken admin, final String oldName, final String newName) throws PublisherExistsException,
+            AuthorizationDeniedException, PublisherDoesntExistsException {
         if (log.isTraceEnabled()) {
-            log.trace(">renamePublisher(from " + oldname + " to " + newname + ")");
+            log.trace(">renamePublisher(from " + oldName + " to " + newName + ")");
         }
         authorizedToEditPublishers(admin);
-        boolean success = false;
-        if (PublisherData.findByName(entityManager, newname) == null) {
-            PublisherData htp = PublisherData.findByName(entityManager, oldname);
-            if (htp != null) {
-                htp.setName(newname);
-                success = true;
-                // Since loading a Publisher is quite complex, we simple purge the cache here
-                PublisherCache.INSTANCE.removeEntry(htp.getId());
-            }
+        try {
+            doRenamePublisher(admin, oldName, newName);
         }
-        if (success) {
-            String msg = intres.getLocalizedMessage("publisher.renamedpublisher", oldname, newname);
-            final Map<String, Object> details = new LinkedHashMap<>();
-            details.put("msg", msg);
-            auditSession.log(EjbcaEventTypes.PUBLISHER_RENAME, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA,
-                    admin.toString(), null, null, null, details);
-        } else {
-            String msg = intres.getLocalizedMessage("publisher.errorrenamepublisher", oldname, newname);
+        catch (RecordIndexDoesNotExistException e) {
+            String msg = intres.getLocalizedMessage("publisher.errorrenamepublisher", oldName, newName);
             log.info(msg);
-            throw new PublisherExistsException();
+            throw new PublisherDoesntExistsException(e.getMessage());
         }
-        if (log.isTraceEnabled()) {
-            log.trace("<renamePublisher()");
+        catch (RecordIndexAlreadyExistsException e) {
+            String msg = intres.getLocalizedMessage("publisher.errorrenamepublisher", oldName, newName);
+            log.info(msg);
+            throw new PublisherExistsException(e.getMessage());
+        }
+        finally {
+            if (log.isTraceEnabled()) {
+                log.trace("<renamePublisher()");
+            }
         }
     }
     
     @Override
     public Map<Integer, BasePublisher> getAllPublishersInternal() {
-        final Map<Integer, BasePublisher> returnval = new HashMap<>();
-        for (PublisherData publisherData : findAll()) {
-            final BasePublisher publisher = getPublisher(publisherData);
-            returnval.put(publisherData.getId(), publisher);
+        final Map<Integer, BasePublisher> map = new HashMap<>();
+        for (final var dto : findAll()) {
+            final BasePublisher publisher = getPublisher(dto);
+            map.put(dto.id(), publisher);
         }
-        return returnval;
+        return map;
     }
-    
+
+    @SuppressWarnings("unchecked")
     @Override
     public List<PublisherData> findAll() {
-        final TypedQuery<PublisherData> query = entityManager.createQuery("SELECT a FROM PublisherData a", PublisherData.class);
-        return query.getResultList();
+        return repository.findAll();
     }
 
     @Override
-    public Map<Integer, BasePublisher> getPublishersForPeer(int peerId) {
+    public Map<Integer, BasePublisher> getPublishersForPeer(final int peerId) {
         return findAll().stream()
-                        .map(publisherData -> getPublisher(publisherData))
+                        .map(this::getPublisher)
                         .filter(CustomPublisherContainer.class::isInstance)
                         .map(CustomPublisherContainer.class::cast)
                         .filter(p -> p.getPeerId().equals(String.valueOf(peerId)))
                         .collect(Collectors.toMap(BasePublisher::getPublisherId, Function.identity()));
-
     }
 
     @Override
     public Map<Integer, BasePublisher> getAllPublishers() {
-        final Map<Integer, BasePublisher> returnval = new HashMap<>();
-        BasePublisher publisher = null;
-        for (PublisherData publisherData : findAll()) {
-            publisher = getPublisher(publisherData);
-            if (publisher != null) {
-                returnval.put(publisherData.getId(), publisher);
-            }
+        final var dtoList = findAll();
+        final Map<Integer, BasePublisher> map = new HashMap<>();
+        for (final var dto : dtoList) {
+            map.put(dto.id(), getPublisher(dto));
         }
-        return returnval;
+        return map;
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public HashMap<Integer, String> getPublisherIdToNameMap() {
-        final HashMap<Integer, String> returnval = new HashMap<>();
-        for (PublisherData publisherData : findAll()) {
-            returnval.put(publisherData.getId(), publisherData.getName());
-        }
-        return returnval;
+    public Map<Integer, String> getPublisherIdToNameMap() {
+        return findAll().stream()
+                .collect(Collectors.toMap(
+                        PublisherData::id,
+                        PublisherData::name));
     }
 
     @Override
-    public HashMap<String, Integer> getPublisherNameToIdMap() {
-        final HashMap<String, Integer> returnval = new HashMap<>();
-        for (PublisherData publisherData : findAll()) {
-            returnval.put(publisherData.getName(), publisherData.getId());
-        }
-        return returnval;
+    public Map<String, Integer> getPublisherNameToIdMap() {
+        return findAll().stream()
+                .collect(Collectors.toMap(
+                        PublisherData::name,
+                        PublisherData::id));
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public BasePublisher getPublisher(String name) {
-        return getPublisherInternal(-1, name, true);
+        final var dto = repository.findByIndex(name);
+        return getPublisher(dto);
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public BasePublisher getPublisher(int id) {
-        return getPublisherInternal(id, null, true);
+        return getPublisher(repository.findById(id));
+    }
+
+    @Override
+    public PublisherData getPublisherData(final int id) {
+        return repository.findById(id);
+    }
+
+    @Override
+    public PublisherData getPublisherData(final String name) {
+        return repository.findByIndex(name);
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public int getPublisherUpdateCount(int publisherid) {
-        int returnval = 0;
-        PublisherData pd = PublisherData.findById(entityManager, publisherid);
-        if (pd != null) {
-            returnval = pd.getUpdateCounter();
-        }
-        return returnval;
+    public int getPublisherUpdateCount(int id) {
+        final var dto = repository.findById(id);
+        return dto == null ?
+                0 :
+                dto.updateCounter();
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public int getPublisherId(String name) {
-        // Get publisher to ensure it is in the cache, or read
-        final BasePublisher pub = getPublisherInternal(-1, name, true);
-        return (pub != null) ? pub.getPublisherId() : 0;
-    }
+        final var dto = repository.findByIndex(name);
+        return dto == null ?
+                0 :
+                dto.id();
+   }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
@@ -927,27 +1033,36 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         if (log.isTraceEnabled()) {
             log.trace(">getPublisherName(id: " + id + ")");
         }
-        // Get publisher to ensure it is in the cache, or read
-        final BasePublisher pub = getPublisherInternal(id, null, true);
-        final String ret = (pub != null) ? pub.getName() : null;
+        final var dto = repository.findById(id);
+        final var name = dto == null ?
+                null :
+                dto.name();
         if (log.isTraceEnabled()) {
-            log.trace("<getPublisherName(): " + ret);
+            log.trace("<getPublisherName(): " + name);
         }
-        return ret;
+        return name;
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public Map<?, ?> getPublisherData(int id) throws PublisherDoesntExistsException {
+    public Map<?, ?> getPublisherDataAsMap(int id) throws PublisherDoesntExistsException {
         if (log.isTraceEnabled()) {
-            log.trace(">getPublisherData(id: " + id + ")");
+            log.trace(">getPublisherDataAsMap(id: " + id + ")");
         }
-
-        final BasePublisher pub = getPublisherInternal(id, null, true);
-        if (pub == null) {
+        final var dto = repository.findById(id);
+        if (dto == null) {
+            if (log.isTraceEnabled()) {
+                log.trace("<getPublisherDataAsMap(id: " + id + ")");
+            }
             throw new PublisherDoesntExistsException("Publisher with id " + id + " doesn't exist");
         }
-        return (Map<?, ?>) pub.saveData();
+        else {
+            final var basePublisher = getPublisher(dto);
+            if (log.isTraceEnabled()) {
+                log.trace("<getPublisherDataAsMap(id: " + id + ")");
+            }
+            return basePublisher.getRawData();
+        }
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -957,10 +1072,10 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             log.trace(">testAllConnections");
         }
         StringBuilder stringBuilder = new StringBuilder(); 
-        for(PublisherData pdl : findAll()) {
-            String name = pdl.getName();
+        for (final var dto : findAll()) {
+            String name = dto.name();
             try {
-                getPublisher(pdl).testConnection();
+                getPublisher(dto).testConnection();
             } catch (PublisherConnectionException | FatalPublisherConnectionException pe) {
                 String msg = intres.getLocalizedMessage("publisher.errortestpublisher", name);
                 log.info(msg);
@@ -974,121 +1089,28 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     }
 
     private int findFreePublisherId() {
-        final ProfileID.DB db = new ProfileID.DB() {
-            @Override
-            public boolean isFree(int i) {
-                return PublisherData.findById(PublisherSessionBean.this.entityManager, i) == null;
-            }
-        };
+        final ProfileID.DB db = (id) -> repository.findById(id) == null;
         return ProfileID.getNotUsedID(db);
     }
 
-    /**
-     * Internal method for getting Publisher, to avoid code duplication. Tries to find the Publisher even if the id is wrong due to CA certificate DN not being
-     * the same as CA DN. Uses PublisherCache directly if configured to do so.
-     * 
-     * Note! No authorization checks performed in this internal method
-     * 
-     * @param id
-     *            numerical id of Publisher that we search for, or -1 if a name is to be used instead
-     * @param name
-     *            human readable name of Publisher, used instead of id if id == -1, can be null if id != -1
-     * @param fromCache if we should use the cache or return a new, decoupled, instance from the database, to be used when you need
-     *             a completely distinct object, for edit, and not a shared cached instance.
-     * @return BasePublisher value object or null if it does not exist
-     */
-    private BasePublisher getPublisherInternal(int id, final String name, boolean fromCache) {
-        if (log.isTraceEnabled()) {
-            log.trace(">getPublisherInternal: " + id + ", " + name);
-        }
-        Integer idValue = id;
-        if (id == -1) {
-            idValue = PublisherCache.INSTANCE.getNameToIdMap().get(name);
-        }
-        BasePublisher returnval = null;
-        // If we should read from cache, and we have an id to use in the cache, and the cache does not need to be updated
-        if (fromCache && idValue != null && !PublisherCache.INSTANCE.shouldCheckForUpdates(idValue)) {
-            // Get from cache (or null)
-            returnval = PublisherCache.INSTANCE.getEntry(idValue);
-        }
-
-        // if we selected to not read from cache, or if the cache did not contain this entry
-        if (returnval == null) {
-            if (log.isDebugEnabled()) {
-                log.debug("Publisher with ID " + idValue + " and/or name '" + name + "' will be checked for updates.");
-            }
-            // We need to read from database because we specified to not get from cache or we don't have anything in the cache
-            PublisherData pd = null;
-            if (name != null) {
-                pd = PublisherData.findByName(entityManager, name);
-            } else if (idValue != null) {
-                pd = PublisherData.findById(entityManager, idValue);
-            }
-            if (pd != null) {
-                returnval = getPublisher(pd);
-                final int digest = pd.getProtectString(0).hashCode();
-                // The cache compares the database data with what is in the cache
-                // If database is different from cache, replace it in the cache
-                PublisherCache.INSTANCE.updateWith(pd.getId(), digest, pd.getName(), returnval);
-            } else {
-                // Ensure that it is removed from cache if it exists
-                if (idValue != null) {
-                    PublisherCache.INSTANCE.removeEntry(idValue);
-                }
-            }
-        }
-        if (log.isTraceEnabled()) {
-            log.trace("<getPublisherInternal: " + id + ", " + name + ": " + (returnval == null ? "null" : "not null"));
-        }
-        return returnval;
-    }
-    
-    private HashMap<?, ?> parseDataMapFromPublisher(final PublisherData publisherData) {
-        final String data = publisherData.getData();
-        try (SecureXMLDecoder decoder = new SecureXMLDecoder(new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8)))) {
+    private HashMap<?, ?> parseDataMapFromPublisher(final PublisherData dto) {
+        final var xml = new PublisherDataConverter().toBean(dto).getData();
+        try (SecureXMLDecoder decoder = new SecureXMLDecoder(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)))) {
             return (HashMap<?, ?>) decoder.readObject();
         } catch (IOException e) {
             final String msg = "Failed to parse PublisherData data map in database: " + e.getMessage();
             if (log.isDebugEnabled()) {
-                log.debug(msg + ". Data:\n" + data);
+                log.debug(msg + ". Data:\n" + dto.data());
             }
             throw new IllegalStateException(msg, e);
         }
     }
 
-    /** @return the publisher data and updates it if necessary. */
-    private BasePublisher getPublisher(final PublisherData pData) {
-        BasePublisher publisher = pData.getCachedPublisher();
-        if (publisher == null) {
-            HashMap<?, ?> h = parseDataMapFromPublisher(pData);
-            // Handle Base64 encoded string values
-            HashMap<?, ?> data = new Base64GetHashMap(h);
-
-            publisher = constructPublisher((Integer) (data.get(BasePublisher.TYPE)));
-            if (publisher != null) {
-                publisher.setPublisherId(pData.getId());
-                publisher.setName(pData.getName());
-                publisher.loadData(data);
-            }
+    private BasePublisher getPublisher(final PublisherData dto) {
+        if (dto == null) {
+            return null;
         }
-        return publisher;
-    }
-
-    private BasePublisher constructPublisher(final int publisherType) {
-        switch (publisherType) {
-        case PublisherConst.TYPE_LDAPPUBLISHER:
-            return new LdapPublisher();
-        case PublisherConst.TYPE_LDAPSEARCHPUBLISHER:
-            return new LdapSearchPublisher();
-        case PublisherConst.TYPE_ADPUBLISHER:
-            return new ActiveDirectoryPublisher();
-        case PublisherConst.TYPE_MULTIGROUPPUBLISHER:
-            return new MultiGroupPublisher();
-        case PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER:
-            return new CustomPublisherContainer();
-        default:
-            throw new IllegalStateException("Invalid or unimplemented publisher type " + publisherType);
-        }
+        return basePublisherMap.computeIfAbsent(dto.id(), k -> PublisherDataUtil.getPublisher(dto));
     }
 
     private void authorizedToEditPublishers(AuthenticationToken admin) throws AuthorizationDeniedException {
