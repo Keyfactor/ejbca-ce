@@ -628,6 +628,7 @@
                 <include name="mpic.jar" />
 	            <include name="unidfnr-ejb.jar" />
 	            <include name="ejbca-ejb.jar" />
+				<include name="ejbca-repository.jar" />
 				<include name="acme-common.jar" />
         		<include name="ejbca-ssh.jar" />
         		<include name="ejbca-cits.jar" />

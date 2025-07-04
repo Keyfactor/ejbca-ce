@@ -34,6 +34,7 @@ public class AutoEnrollmentDTO implements Serializable {
     private String krb5ConfFilename;
     private String keyTabFilename;
     private boolean isUseSSL;
+    private String trustManagerType = MSAutoEnrollmentConfiguration.DEFAULT_TRUST_MANAGER;
     private boolean followLdapReferral;
     private int adConnectionPort = MSAutoEnrollmentConfiguration.DEFAULT_AD_CONNECTION_PORT;
     private int ldapReadTimeout = MSAutoEnrollmentConfiguration.DEFAULT_LDAP_READ_TIMEOUT;
@@ -61,6 +62,7 @@ public class AutoEnrollmentDTO implements Serializable {
             krb5ConfFileBytes = autoEnrollmentConfiguration.getMsaeKrb5ConfBytes(alias);
             krb5ConfFilename = autoEnrollmentConfiguration.getMsaeKrb5ConfFilename(alias);
             isUseSSL = autoEnrollmentConfiguration.isUseSSL(alias);
+            trustManagerType = autoEnrollmentConfiguration.getTrustManagerType(alias);
             followLdapReferral = autoEnrollmentConfiguration.isFollowLdapReferral(alias);
             adConnectionPort = autoEnrollmentConfiguration.getADConnectionPort(alias);
             ldapReadTimeout = autoEnrollmentConfiguration.getLdapReadTimeout(alias);
@@ -160,6 +162,14 @@ public class AutoEnrollmentDTO implements Serializable {
 
     public void setUseSSL(boolean useSSL) {
         isUseSSL = useSSL;
+    }
+
+    public String getTrustManagerType() {
+        return trustManagerType;
+    }
+
+    public void setTrustManagerType(String trustManagerType) {
+        this.trustManagerType = trustManagerType;
     }
 
     public boolean isFollowLdapReferral() {

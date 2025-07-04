@@ -29,7 +29,17 @@ public interface ProtectedDataImpl {
     /** Reads and verifies the actual database integrity protection, or does nothing 
      * @throws DatabaseProtectionException */
     void verifyData(ProtectedData obj) throws DatabaseProtectionException;
-	
+
+    /**
+     * Verifies that <code>protectedData</code> is correct. Otherwise, it throws a <code>DatabaseProtectionException</code>.
+     * @param unProtectedData The unprotected data that is to be signed
+     * @param protectedData The signed value from the database
+     * @param beanName The name of the Java bean
+     * @param rowId The String representation of the database row.
+     * @throws DatabaseProtectionException If the unProtectedData is not correct.
+     */
+    void verifyData(final String unProtectedData, final String protectedData, final String beanName, final String rowId) throws DatabaseProtectionException;
+
     /**
      * 
      * @param obj
@@ -37,6 +47,13 @@ public interface ProtectedDataImpl {
      * @throws DatabaseProtectionException if database protection is enabled, and the audit log does not function
      */
     String calculateProtection(final ProtectedData obj) throws DatabaseProtectionException;
+
+    /**
+     * @param rowVersion The version to use
+     * @param unProtectedData The concatenated value that is to be protected
+     * @return The protected String that is to be stored in the database or to be compared with the stored value.
+     */
+    String getProtectedData(final Integer rowVersion, final String unProtectedData) throws DatabaseProtectionException;
 
     /**
      * Throws DatabaseProtectionException if erroronverifyfail is enabled in databaseprotection.properties
