@@ -939,7 +939,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public boolean isPostUpgradeNeeded() {
-        return isLesserThan(getLastPostUpgradedToVersion(), "9.3.0");
+        return isLesserThan(getLastPostUpgradedToVersion(), "9.4.0");
     }
 
     /**
