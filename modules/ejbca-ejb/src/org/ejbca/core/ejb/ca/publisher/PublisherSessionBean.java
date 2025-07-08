@@ -675,20 +675,22 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
 
     List<PublisherData> setPublisherInDatabase(final String name, final BasePublisher publisher) {
         final String publisherData = PublisherDataUtil.toString(publisher);
-        final String selectSql = "SELECT bean FROM PublisherDataBean bean WHERE bean.name=:name";
+        final String selectSql = "SELECT bean FROM PublisherDataBean bean WHERE bean.id=:id";
         return repository.execute((em)-> {
             List<PublisherDataBean> originalBeans = em.createQuery(selectSql, PublisherDataBean.class)
-                    .setParameter("name", name)
+                    .setParameter("id", publisher.getPublisherId())
                     .getResultList();
             if (originalBeans.isEmpty()) {
                 return List.of();
             }
             final var bean = originalBeans.get(0);
             final PublisherData originalDto = PublisherDataConverter.INSTANCE.toDto(bean);
+            bean.setName(name);
             bean.setData(publisherData);
             bean.setUpdateCounter(bean.getUpdateCounter() + 1);
             em.merge(bean);
             final PublisherData updatedDto = PublisherDataConverter.INSTANCE.toDto(bean);
+            publisher.setName(name);
             return List.of(originalDto, updatedDto);
         });
     }
