@@ -653,6 +653,12 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         }
     }
 
+    private void putBasePublisher(PublisherData dto, BasePublisher publisher) {
+        publisher.setPublisherId(dto.id());
+        publisher.setName(dto.name());
+        basePublisherMap.put(dto.id(), publisher);
+    }
+
     private void addPublisherInternal(final AuthenticationToken admin, final int id, final String name, final BasePublisher publisher) throws PublisherExistsException, AuthorizationDeniedException {
         authorizedToEditPublishers(admin);
         var dto = new PublisherDataBuilder()
@@ -663,7 +669,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         dto = PublisherDataUtil.setPublisher(dto, publisher);
         try {
             repository.add(dto);
-            basePublisherMap.put(dto.id(), publisher);
+            putBasePublisher(dto, publisher);
         }
         catch (RecordIdAlreadyExistsException e) {
             throw new PublisherExistsException(intres.getLocalizedMessage("publisher.erroraddpublisher", id));
@@ -709,7 +715,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         else {
             final var originalDto = publisherDataList.get(0);
             final var updatedDto = publisherDataList.get(1);
-            basePublisherMap.put(updatedDto.id(), publisher);
+            putBasePublisher(updatedDto, publisher);
             final var diff = XmlUtil.getDiff(
                     originalDto.data(),
                     updatedDto.data());
