@@ -1005,11 +1005,14 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
         containerWrapper.setCertificateProfileName(certificateProfileName);
 
         final byte[] yamlBytes = YamlWriter.exportToYamlBytes(containerWrapper);
-        final byte[] signature = signPayload(signingCaId, yamlBytes);
-
         final ScpContainerSigned container = new ScpContainerSigned(containerWrapper);
-        container.setSignature(new String(Base64.encode(signature)));
-        return YamlWriter.exportToYamlBytes(container);
+        if (signingCaId != -1) {
+            final byte[] signature = signPayload(signingCaId, yamlBytes);
+            container.setSignature(new String(Base64.encode(signature)));
+            return YamlWriter.exportToYamlBytes(container);
+        } else {
+            return yamlBytes;
+        }
     }
 
 }
