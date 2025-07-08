@@ -41,8 +41,10 @@
 					<h:inputText id="estName" disabled="#{editCmpConfigMBean.viewOnly}"
 								 value="#{editCmpConfigMBean.cmpDto.alias}"
 								 required="true"
+								 maxlength="32"
 								 requiredMessage="#{web.text.YOUAREREQUIRED} #{web.text.NAME}">
 						<f:converter converterId="trimConverter"/>
+						<f:validateLength maximum="32" />
 					</h:inputText>
 				</h:panelGroup>
 	        	<!--  CMP Operational mode  -->
