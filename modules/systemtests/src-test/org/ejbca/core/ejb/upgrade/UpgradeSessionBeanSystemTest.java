@@ -1275,6 +1275,53 @@ public class UpgradeSessionBeanSystemTest {
             globalConfigurationProxySession.saveConfiguration(alwaysAllowtoken, globalOcspConfiguration);
         }
     }
+
+    @Test
+    public void testOcspCleanupSchedule940() throws AuthorizationDeniedException {
+        final GlobalOcspConfiguration currentGlobalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        final boolean originalOcspCleanUp = currentGlobalOcspConfiguration.getOcspCleanupUse();
+        final String originalOcspCleanUpSchedule = currentGlobalOcspConfiguration.getOcspCleanupSchedule();
+        final String originalOcspCleanUpUnit = currentGlobalOcspConfiguration.getOcspCleanupScheduleUnit();
+
+        try {
+            // Set up deprecated values in GlobalConfiguration
+            GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            globalConfiguration.setOcspCleanupUse(true);
+            globalConfiguration.setOcspCleanupSchedule("66");
+            globalConfiguration.setOcspCleanupScheduleUnit("MINUTES");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, globalConfiguration);
+
+            //Set up EJBCA in a pre-upgrade state
+            final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            guc.setUpgradedToVersion("9.3.0");
+            guc.setPostUpgradedToVersion("9.3.0");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+
+            // Perform upgrade, without post upgrade
+            upgradeSession.upgrade(null, "9.3.0", false);
+
+            // Verify migration
+            final GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            assertTrue("ocsp.cleanup.use was not migrated.", globalOcspConfiguration.getOcspCleanupUse());
+            assertEquals("ocsp.cleanup.schedule was not migrated", "66", globalOcspConfiguration.getOcspCleanupSchedule());
+            assertEquals("ocsp.cleanup.schedule_unit was not migrated", "MINUTES", globalOcspConfiguration.getOcspCleanupScheduleUnit());
+
+            // Perform post-upgrade and verify old values are cleared from database.
+            upgradeSession.upgrade(null, "9.3.0", true);
+            globalConfiguration = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            LinkedHashMap<Object, Object> data = globalConfiguration.getRawData();
+            assertFalse("ocsp.cleanup.use was not cleared from database.", data.containsKey("ocsp.cleanup.use"));
+            assertFalse("ocsp.cleanup.schedule was not cleared from database.", data.containsKey("ocsp.cleanup.schedule"));
+            assertFalse("ocsp.cleanup.schedule_unit was not cleared from database.", data.containsKey("ocsp.cleanup.schedule_unit"));
+        } finally {
+            //Set values to back to current
+            final GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            globalOcspConfiguration.setOcspCleanupUse(originalOcspCleanUp);
+            globalOcspConfiguration.setOcspCleanupSchedule(originalOcspCleanUpSchedule);
+            globalOcspConfiguration.setOcspCleanupScheduleUnit(originalOcspCleanUpUnit);
+            globalConfigurationProxySession.saveConfiguration(alwaysAllowtoken, globalOcspConfiguration);
+        }
+    }
     
     @Test
     public void testMigrateCaConfiguration9_4_0() throws AuthorizationDeniedException {

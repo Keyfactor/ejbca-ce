@@ -76,13 +76,20 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final  String   DEFAULTEJBCATITLE             = InternalConfiguration.getAppNameCapital() + " Administration";
 
     // OCSP Cleanup
+    @Deprecated(since = "9.4.0")
     private static final String OCSP_CLEANUP_USE = "ocsp.cleanup.use";
+    @Deprecated(since = "9.4.0")
     private static final boolean OCSP_CLEANUP_USE_DEFAULT = false;
 
+    @Deprecated(since = "9.4.0")
     private static final String OCSP_CLEANUP_SCHEDULE = "ocsp.cleanup.schedule";
+    @Deprecated(since = "9.4.0")
     private static final String OCSP_CLEANUP_SCHEDULE_DEFAULT = "5";
 
+    @Deprecated(since = "9.4.0")
     private static final String OCSP_CLEANUP_SCHEDULE_UNIT = "ocsp.cleanup.schedule_unit";
+
+    @Deprecated(since = "9.4.0")
     private static final String OCSP_CLEANUP_SCHEDULE_UNIT_DEFAULT = TimeUnit.HOURS.toString();
 
     /** Default value for Enable Command Line Interface. */
@@ -357,15 +364,42 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
      */
     @Deprecated(since = "9.4.0")
     public void setEnableIcaoCANameChange(final boolean value) { putBoolean(ENABLEICAOCANAMECHANGE, value);}
-    
-       public void setOcspCleanupUse(final boolean value) { putBoolean(OCSP_CLEANUP_USE, value);}
-       public boolean getOcspCleanupUse() {return getBoolean(OCSP_CLEANUP_USE, OCSP_CLEANUP_USE_DEFAULT); }
 
-       public void setOcspCleanupSchedule(final String value) { data.put(OCSP_CLEANUP_SCHEDULE, value); }
-       public String getOcspCleanupSchedule() { return getString(OCSP_CLEANUP_SCHEDULE, OCSP_CLEANUP_SCHEDULE_DEFAULT); }
+    /**
+     * @deprecated this value has been shifted to GlobalOcspConfiguration in 9.4.0 and only remains for 100% uptime and upgrade
+     */
+    @Deprecated(since = "9.4.0")
+    public void setOcspCleanupUse(final boolean value) { putBoolean(OCSP_CLEANUP_USE, value);}
 
-        public void setOcspCleanupScheduleUnit(final String value) { data.put(OCSP_CLEANUP_SCHEDULE_UNIT, value); }
-        public String getOcspCleanupScheduleUnit() { return getString(OCSP_CLEANUP_SCHEDULE_UNIT, OCSP_CLEANUP_SCHEDULE_UNIT_DEFAULT); }
+    /**
+     * @deprecated this value has been shifted to GlobalOcspConfiguration in 9.4.0 and only remains for 100% uptime and upgrade
+     */
+    @Deprecated(since = "9.4.0")
+    public boolean getOcspCleanupUse() {return getBoolean(OCSP_CLEANUP_USE, OCSP_CLEANUP_USE_DEFAULT); }
+
+    /**
+     * @deprecated this value has been shifted to GlobalOcspConfiguration in 9.4.0 and only remains for 100% uptime and upgrade
+     */
+    @Deprecated(since = "9.4.0")
+    public void setOcspCleanupSchedule(final String value) { data.put(OCSP_CLEANUP_SCHEDULE, value); }
+
+    /**
+     * @deprecated this value has been shifted to GlobalOcspConfiguration in 9.4.0 and only remains for 100% uptime and upgrade
+     */
+    @Deprecated(since = "9.4.0")
+    public String getOcspCleanupSchedule() { return getString(OCSP_CLEANUP_SCHEDULE, OCSP_CLEANUP_SCHEDULE_DEFAULT); }
+
+    /**
+     * @deprecated this value has been shifted to GlobalOcspConfiguration in 9.4.0 and only remains for 100% uptime and upgrade
+     */
+    @Deprecated(since = "9.4.0")
+    public void setOcspCleanupScheduleUnit(final String value) { data.put(OCSP_CLEANUP_SCHEDULE_UNIT, value); }
+
+    /**
+     * @deprecated this value has been shifted to GlobalOcspConfiguration in 9.4.0 and only remains for 100% uptime and upgrade
+     */
+    @Deprecated(since = "9.4.0")
+    public String getOcspCleanupScheduleUnit() { return getString(OCSP_CLEANUP_SCHEDULE_UNIT, OCSP_CLEANUP_SCHEDULE_UNIT_DEFAULT); }
 
        public void setNodesInCluster(final Set<String> nodes) { data.put(NODESINCLUSTER, nodes); }
        @SuppressWarnings("unchecked")
