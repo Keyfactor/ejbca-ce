@@ -75,17 +75,21 @@ public class BatchMakeP12CommandSystemTest extends CaTestCase {
         super.setUp();
         log.trace(">test01CreateNewUser()");
   
-        endEntityManagementSession.addUser(admin, username1, "foo123", "C=SE, O=AnaTom, CN=" + username1, "", username1 + "@anatom.se", false,
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(),
-                SecConst.TOKEN_SOFT_P12, caid);
+        EndEntityInformation endEntityInformation1 = new EndEntityInformation(username1, "C=SE, O=AnaTom, CN=" + username1, caid, "", username1 + "@anatom.se", EndEntityTypes.ENDUSER.toEndEntityType(),
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, null);
+        endEntityInformation1.setPassword("foo123");
+        EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).addUser(admin, endEntityInformation1, false);
+    
         endEntityManagementSession.setClearTextPassword(admin, username1, "foo123");
 
         log.debug("created " + username1 + ", pwd=foo123");
         assertEquals("end entity password wasn't set", "foo123", findPassword(username1));
 
-        endEntityManagementSession.addUser(admin, username2, "foo123", "C=SE, O=AnaTom, CN=" + username2, "", username2 + "@anatom.se", false,
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(),
-                SecConst.TOKEN_SOFT_P12, caid);
+        EndEntityInformation endEntityInformation2 = new EndEntityInformation(username2, "C=SE, O=AnaTom, CN=" + username2, caid, "", username2 + "@anatom.se", EndEntityTypes.ENDUSER.toEndEntityType(),
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, null);
+        endEntityInformation2.setPassword("foo123");
+        EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).addUser(admin, endEntityInformation2, false);
+        
         endEntityManagementSession.setClearTextPassword(admin, username2, "foo123");
 
         log.debug("created " + username2 + ", pwd=foo123");

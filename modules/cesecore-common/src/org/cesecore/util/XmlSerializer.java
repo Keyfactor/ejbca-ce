@@ -12,8 +12,8 @@
  *************************************************************************/
 package org.cesecore.util;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificateprofile.PKIDisclosureStatement;
 
@@ -276,7 +276,7 @@ public class XmlSerializer {
                 ps.print(((Class<?>) o).getName());
             } else {
                 // Escape XML special characters
-                ps.print(StringEscapeUtils.escapeXml(o.toString()));
+                ps.print(StringEscapeUtils.escapeXml11(o.toString()));
             }
             ps.println("</" + type + ">");
         }

@@ -3,7 +3,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
     xmlns:f="jakarta.faces.core"
     xmlns:h="jakarta.faces.html"
-    xmlns:ui="jakarta.faces.facelets">
+    xmlns:ui="jakarta.faces.facelets"
+    xmlns:p="http://primefaces.org/ui">
 <ui:remove>
 	<!--
     /*************************************************************************
@@ -45,24 +46,24 @@
 				value=" #{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}"
 				escape="false" />
 		</h1>
+        <h3>
+            <h:outputText value="#{web.text.LISTOFCRYPTOTOKENS}"/>
+        </h3>
 		<h:form id="cryptotokens">
-			<h:dataTable value="#{cryptoTokenMBean.cryptoTokenGuiList}"
-				var="cryptoTokenGuiInfo" styleClass="grid"
-				columnClasses=",gridCenter,,,,gridCenter,gridCenter,gridCenter,">
-				<h:column rendered="false">
+			<p:dataTable value="#{cryptoTokenMBean.cryptoTokenGuiList}"
+                         var="cryptoTokenGuiInfo"
+                         rendered="#{!cryptoTokenMBean.cryptoTokenListEmpty}"
+                         styleClass="grid table-layout-auto vertical-padding-1" stripedRows="true" showGridlines="true">
+				<p:column rendered="false">
 					<h:selectBooleanCheckbox value="#{cryptoTokenGuiInfo.selected}" />
-				</h:column>
-				<h:column>
+				</p:column>
+				<p:column styleClass="table-title-column">
 					<f:facet name="header">
-						<h:outputText value="#{web.text.CRYPTOTOKEN_NAME}" />
+						<h:outputText value="#{web.text.NAME}" />
 					</f:facet>
-					<h:outputLink
-						value="cryptotoken.jsf?cryptoTokenId=#{cryptoTokenGuiInfo.cryptoTokenId}&amp;ref=default">
-						<h:outputText value="#{cryptoTokenGuiInfo.tokenName}"
-							title="#{web.text.CRYPTOTOKEN_VIEWWITH} #{cryptoTokenGuiInfo.cryptoTokenId}" />
-					</h:outputLink>
-				</h:column>
-				<h:column>
+					<h:outputText value="#{cryptoTokenGuiInfo.tokenName}" />
+				</p:column>
+				<p:column styleClass="text-align-center">
 					<f:facet name="header">
 						<h:outputText value="#{web.text.CRYPTOTOKEN_TYPE}" />
 					</f:facet>
@@ -80,33 +81,33 @@
                         rendered="#{cryptoTokenGuiInfo.AWSKMSType}" />
 					<h:outputText value="#{web.text.CRYPTOTOKEN_TYPE_SOFT}"
 						rendered="#{!cryptoTokenGuiInfo.p11SlotType &amp;&amp; !cryptoTokenGuiInfo.fortanixType &amp;&amp; !cryptoTokenGuiInfo.azureType &amp;&amp; !cryptoTokenGuiInfo.securosysType &amp;&amp; !cryptoTokenGuiInfo.AWSKMSType}" />
-				</h:column>
-				<h:column>
+				</p:column>
+				<p:column styleClass="text-align-center">
 					<f:facet name="header">
 						<h:outputText value="#{web.text.CRYPTOTOKEN_LIBRARY}" />
 					</f:facet>
 					<h:outputText value="#{cryptoTokenGuiInfo.p11LibraryAlias}" />
-				</h:column>
-				<h:column>
+				</p:column>
+				<p:column styleClass="text-align-center">
 					<f:facet name="header">
 						<h:outputText value="#{web.text.CRYPTOTOKEN_LABEL_TYPE}" />
 					</f:facet>
 					<h:outputText value="#{cryptoTokenGuiInfo.p11SlotLabelTypeText}" />
-				</h:column>
-				<h:column>
+				</p:column>
+				<p:column styleClass="text-align-center">
 					<f:facet name="header">
 						<h:outputText value="#{web.text.CRYPTOTOKEN_SLOT}" />
 					</f:facet>
 					<h:outputText value="#{cryptoTokenGuiInfo.p11Slot}" />
-				</h:column>
-				<h:column>
+				</p:column>
+				<p:column styleClass="text-align-center">
 					<f:facet name="header">
 						<h:outputText value="#{web.text.CRYPTOTOKEN_ACTIVE}" />
 					</f:facet>
 					<h:graphicImage height="16" width="16"
 						url="#{cryptoTokenGuiInfo.statusImg}" styleClass="statusIcon" />
-				</h:column>
-				<h:column>
+				</p:column>
+				<p:column styleClass="text-align-center">
 					<f:facet name="header">
 						<h:outputText value="#{web.text.CRYPTOTOKEN_AUTO}" />
 					</f:facet>
@@ -114,8 +115,8 @@
 						url="#{cryptoTokenGuiInfo.autoActivationYesImg}"
 						styleClass="statusIcon"
 						rendered="#{cryptoTokenGuiInfo.autoActivation}" />
-				</h:column>
-				<h:column>
+				</p:column>
+				<p:column styleClass="text-align-center">
 					<f:facet name="header">
 						<h:outputText value="#{web.text.CRYPTOTOKEN_REFDHEAD}" />
 					</f:facet>
@@ -123,17 +124,22 @@
 						rendered="#{!cryptoTokenGuiInfo.referenced}" />
 					<h:outputText value="#{web.text.CRYPTOTOKEN_REFD}"
 						rendered="#{cryptoTokenGuiInfo.referenced}" />
-				</h:column>
-				<h:column>
+				</p:column>
+				<p:column styleClass="text-align-center">
 					<f:facet name="header">
 						<h:panelGroup>
-							<h:outputText value="#{web.text.CRYPTOTOKEN_ACTIONS}" />
+							<h:outputText value="#{web.text.ACTIONS}" />
 							<h:outputText
-								value="#{web.ejbcaWebBean.getHelpReference('/Managing_Crypto_Tokens.html#Activation_and_Deactivation')}"
+								value=" #{web.ejbcaWebBean.getHelpReference('/Managing_Crypto_Tokens.html#Activation_and_Deactivation')}"
 								escape="false" />
 						</h:panelGroup>
 					</f:facet>
-					<h:panelGroup styleClass="button-group">
+                    <div class="action-buttons">
+						<h:button value="#{web.text.VIEW}"
+								  outcome="cryptotoken.jsf?cryptoTokenId=#{cryptoTokenGuiInfo.cryptoTokenId}&amp;ref=default" />
+						<h:commandButton value="#{web.text.EDIT}"
+										 action="#{cryptoTokenMBean.editCryptoToken(cryptoTokenGuiInfo.cryptoTokenId)}"
+										 rendered="#{cryptoTokenMBean.allowedToModify}" />
 						<h:panelGroup
 							rendered="#{!cryptoTokenGuiInfo.active &amp;&amp; cryptoTokenGuiInfo.allowedActivation}">
 							<h:inputSecret size="16" title="#{web.text.CRYPTOTOKEN_PIN}"
@@ -155,19 +161,20 @@
 								rendered="#{cryptoTokenGuiInfo.canReactivate}" />
 						</h:panelGroup>
 						<h:commandButton value="#{web.text.DELETE}"
-							action="#{cryptoTokenMBean.deleteCryptoToken}"
-							rendered="#{cryptoTokenMBean.allowedToDelete}"
-							onclick="return confirm('#{web.text.CRYPTOTOKEN_DELETE_CONFIRM}')" />
-					</h:panelGroup>
-					<!-- button-group -->
-				</h:column>
-			</h:dataTable>
-			<br />
-			<h:outputLink
-				value="cryptotoken.jsf?cryptoTokenId=0&amp;ref=cryptotokens"
-				rendered="#{cryptoTokenMBean.allowedToModify}">
-				<h:outputText value="#{web.text.CRYPTOTOKEN_CREATENEW}" />
-			</h:outputLink>
+							action="#{cryptoTokenMBean.prepareDelete(cryptoTokenGuiInfo.cryptoTokenId, cryptoTokenGuiInfo.tokenName)}"
+							rendered="#{cryptoTokenMBean.allowedToDelete}" />
+                    </div>
+				</p:column>
+			</p:dataTable>
+
+            <h:panelGrid rendered="#{cryptoTokenMBean.allowedToModify}" styleClass="no-border no-padding row-padding-bottom-1-rem">
+                <h:outputText value="#{web.text.CRYPTOTOKENS_NOT_CONFIGURED}"
+                              rendered="#{cryptoTokenMBean.cryptoTokenListEmpty}"
+                              styleClass="inline-block padding-top-1-rem"/>
+                <h:panelGroup>
+                    <h:button value="#{web.text.ADD}" outcome="cryptotoken.jsf?cryptoTokenId=0&amp;ref=cryptotokens"/>
+                </h:panelGroup>
+            </h:panelGrid>
 		</h:form>
 	</ui:define>
 </ui:composition>

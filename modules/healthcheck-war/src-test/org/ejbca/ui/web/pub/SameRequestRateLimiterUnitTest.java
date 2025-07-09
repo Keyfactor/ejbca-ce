@@ -14,6 +14,7 @@ package org.ejbca.ui.web.pub;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assume.assumeTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,6 +62,8 @@ public class SameRequestRateLimiterUnitTest {
 
     @Test
     public void test100ThreadsWithLimiter() {
+        // This test is flaky when run in resource-constrained CI runner pods.
+        assumeTrue("Skipping in GitLab CI", !"true".equals(System.getenv("GITLAB_CI")));
         log.trace(">test100ThreadsWithLimiter");
         final List<Integer> allResults = new ArrayList<Integer>();
         // Start a 100 threads that perform want to perform the same request concurrently

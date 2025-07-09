@@ -119,7 +119,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     private String clonedProfileName;
     
     private String endEntityProfileName;
-    private Part uploadFile;
+    private transient Part uploadFile;
     private boolean profileSaved;
     private String uploadFilename;
     private Map<String, String> endEntityProfileNameToIdMap = null;
@@ -543,6 +543,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     }
     
     public void actionView(String endEntityProfileName) {
+        endEntityProfileName = endEntityProfileName.replace(ejbcaWebBean.getText("MISSINGCAIDS"), "").trim();
         clearMessages();
         if (endEntityProfileName==null) {
             addErrorMessage(PROFILE_NOT_SELECTED);
@@ -558,6 +559,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
 
 
     public void actionEdit(String endEntityProfileName) {
+        endEntityProfileName = endEntityProfileName.replace(ejbcaWebBean.getText("MISSINGCAIDS"), "").trim();
         clearMessages();
         if (endEntityProfileName==null) {
             addErrorMessage(PROFILE_NOT_SELECTED);
@@ -574,6 +576,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     }
 
     public void actionClone(String endEntityProfileName) {
+        endEntityProfileName = endEntityProfileName.replace(ejbcaWebBean.getText("MISSINGCAIDS"), "").trim();
         clearMessages();
         setEndEntityProfileName(endEntityProfileName);
         if (endEntityProfileName!=null) {
@@ -589,6 +592,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     
     public void actionCloneConfirm() {
         clearMessages();
+        clonedProfileName = clonedProfileName.trim();
         if (isAuthorizedToEdit() && validateEndEntityProfileName() && validateEndEntityProfileName(clonedProfileName)) {
             try {
                 endEntityProfileSession.cloneEndEntityProfile(getAdmin(), endEntityProfileName, clonedProfileName);
@@ -603,7 +607,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     }
     
     public void actionDelete(String selectedEndEntityProfile) {
-        
+        selectedEndEntityProfile = selectedEndEntityProfile.replace(ejbcaWebBean.getText("MISSINGCAIDS"), "").trim();
         if (selectedEndEntityProfile.equals(EndEntityConstants.EMPTY_ENDENTITYPROFILENAME)) {
             addErrorMessage(YOU_CANT_EDIT_EMPTY_PROFILE);
             return;

@@ -80,7 +80,6 @@ import org.ejbca.core.model.ca.publisher.CustomPublisherProperty;
 import org.ejbca.core.model.ca.publisher.FatalPublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.LdapSearchPublisher;
-import org.ejbca.core.model.ca.publisher.LegacyValidationAuthorityPublisher;
 import org.ejbca.core.model.ca.publisher.MultiGroupPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
@@ -636,36 +635,58 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     }
 
     @Override
-    public void changePublisher(AuthenticationToken admin, String name, BasePublisher publisher) throws AuthorizationDeniedException {
+    public void changePublisher(AuthenticationToken admin, int id, String name, BasePublisher publisher) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
-            log.trace(">changePublisher(name: " + name + ")");
+            log.trace(">changePublisher(name: " + name + ", id: " + id + ")");
         }
         authorizedToEditPublishers(admin);
 
-        PublisherData htp = PublisherData.findByName(entityManager, name);
+        final PublisherData htp = PublisherData.findById(entityManager, id);
         if (htp != null) {
-            final Map<Object, Object> diff = getPublisher(htp).diff(publisher);
-            htp.setPublisher(publisher);
-            // Since loading a Publisher is quite complex, we simple purge the cache here
-            PublisherCache.INSTANCE.removeEntry(htp.getId());
-            final String msg = intres.getLocalizedMessage("publisher.changedpublisher", name);
-            final Map<String, Object> details = new LinkedHashMap<>();
-            details.put("msg", msg);
-            for (Map.Entry<Object, Object> entry : diff.entrySet()) {
-                // Strip passwords from log
-                final String key = entry.getKey().toString();
-                String value = entry.getValue().toString();
-                if (key.contains(LdapPublisher.LOGINPASSWORD)) {
-                    value = "hidden";
+            final PublisherData htpn = PublisherData.findByName(entityManager, name);
+            if (htpn == null || htpn.getId() == id) {
+                final Map<Object, Object> diff = getPublisher(htp).diff(publisher);
+                htp.setName(name);
+                htp.setPublisher(publisher);
+                // Since loading a Publisher is quite complex, we simple purge the cache here
+                PublisherCache.INSTANCE.removeEntry(htp.getId());
+                final String msg = intres.getLocalizedMessage("publisher.changedpublisher", name);
+                final Map<String, Object> details = new LinkedHashMap<>();
+                details.put("msg", msg);
+                for (Map.Entry<Object, Object> entry : diff.entrySet()) {
+                    // Strip passwords from log
+                    final String key = entry.getKey().toString();
+                    String value = entry.getValue().toString();
+                    if (key.contains(LdapPublisher.LOGINPASSWORD)) {
+                        value = "hidden";
+                    }
+                    details.put(key, value);
                 }
-                details.put(key, value);
+                auditSession.log(EjbcaEventTypes.PUBLISHER_CHANGE, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA,
+                        admin.toString(), null, null, null, details);
+
+            } else {
+                String msg = intres.getLocalizedMessage("publisher.errorchangepublisher", name);
+                log.info(msg);
             }
-            auditSession.log(EjbcaEventTypes.PUBLISHER_CHANGE, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA,
-                    admin.toString(), null, null, null, details);
         } else {
             String msg = intres.getLocalizedMessage("publisher.errorchangepublisher", name);
             log.info(msg);
         }
+        if (log.isTraceEnabled()) {
+            log.trace("<changePublisher()");
+        }
+    }
+
+    @Override
+    public void changePublisher(AuthenticationToken admin, String name, BasePublisher publisher) throws AuthorizationDeniedException {
+        if (log.isTraceEnabled()) {
+            log.trace(">changePublisher(name: " + name + ")");
+        }
+
+        final PublisherData htp = PublisherData.findByName(entityManager, name);
+        this.changePublisher(admin, htp.getId(), name, publisher);
+
         if (log.isTraceEnabled()) {
             log.trace("<changePublisher()");
         }
@@ -1053,7 +1074,6 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         return publisher;
     }
 
-    @SuppressWarnings("deprecation")
     private BasePublisher constructPublisher(final int publisherType) {
         switch (publisherType) {
         case PublisherConst.TYPE_LDAPPUBLISHER:
@@ -1062,13 +1082,6 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             return new LdapSearchPublisher();
         case PublisherConst.TYPE_ADPUBLISHER:
             return new ActiveDirectoryPublisher();
-        case PublisherConst.TYPE_VAPUBLISHER:
-            //Attempt to create the legacy publisher if available, if not return null. 
-            try {
-                return (BasePublisher) Class.forName(LegacyValidationAuthorityPublisher.OLD_VA_PUBLISHER_QUALIFIED_NAME).newInstance();
-            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-                return null;
-            }
         case PublisherConst.TYPE_MULTIGROUPPUBLISHER:
             return new MultiGroupPublisher();
         case PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER:
@@ -1084,44 +1097,6 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             final String msg = intres.getLocalizedMessage("store.editpublishernotauthorized", admin.toString());
             throw new AuthorizationDeniedException(msg);
         }
-    }
-
-    @SuppressWarnings("deprecation")
-    @Override
-    public int adhocUpgradeTo6_3_1_1() {
-        int numberOfUpgradedPublishers = 0;
-        for (PublisherData publisherData : findAll()) {
-            // Extract the data payload instead of the BasePublisher since the original BasePublisher implementation might no longer
-            // be on the classpath
-            HashMap<?, ?> h = parseDataMapFromPublisher(publisherData);
-            // Handle Base64 encoded string values
-            @SuppressWarnings("unchecked")
-            HashMap<Object, Object> data = new Base64GetHashMap(h);
-            if (PublisherConst.TYPE_VAPUBLISHER == (Integer) data.get(BasePublisher.TYPE)) {
-                numberOfUpgradedPublishers++;
-                publisherData.setPublisher(new LegacyValidationAuthorityPublisher(data));
-                //Purge the entry from the cache
-                PublisherCache.INSTANCE.removeEntry(publisherData.getId());
-            }           
-        }
-        return numberOfUpgradedPublishers;
-    }
-
-    @SuppressWarnings("deprecation")
-    @Override
-    public boolean isOldVaPublisherPresent() {
-        for (PublisherData publisherData : findAll()) {
-            // Extract the data payload instead of the BasePublisher since the original BasePublisher implementation might no longer
-            // be on the classpath
-            HashMap<?, ?> h = parseDataMapFromPublisher(publisherData);
-            // Handle Base64 encoded string values
-            @SuppressWarnings("unchecked")
-            HashMap<Object, Object> data = new Base64GetHashMap(h);
-            if (PublisherConst.TYPE_VAPUBLISHER == (Integer) data.get(BasePublisher.TYPE)) {
-                return true;
-            }           
-        }
-        return false;
     }
     
     @Override

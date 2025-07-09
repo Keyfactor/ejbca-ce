@@ -12,20 +12,6 @@
  *************************************************************************/
 package org.ejbca.config;
 
-import java.io.Serializable;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.log4j.Logger;
@@ -39,6 +25,20 @@ import org.ejbca.core.protocol.acme.AcmeIdentifier;
 import org.ejbca.core.protocol.acme.eab.AcmeExternalAccountBinding;
 import org.ejbca.core.protocol.acme.eab.AcmeExternalAccountBindingFactory;
 import org.ejbca.core.protocol.dnssec.DnsSecDefaults;
+
+import java.io.Serializable;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Configuration used by specifying the configurationId as part of the request URL path or as URL parameter.
@@ -54,7 +54,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
 
     protected static final InternalResources intres = InternalResources.getInstance();
 
-    protected static final float LATEST_VERSION = 13;
+    protected static final float LATEST_VERSION = 15;
 
     private static final String KEY_RA_NAMEGENERATIONSCHEME = "ra.namegenerationscheme";
     private static final String KEY_RA_NAMEGENERATIONPARAMS = "ra.namegenerationparameters";
@@ -98,6 +98,9 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final String KEY_APPROVAL_FOR_KEY_CHANGE_ID = "approvalForKeyChangeId";
     private static final String KEY_CLIENT_AUTHENTICATION_REQUIRED = "clientAuthenticationRequired";
     private static final String KEY_PREFERRED_ROOT_CA_SUBJECTDN = "preferredrootcasubjectdn";
+    private static final String KEY_ENABLED_RENEWAL_INFO = "enabledRenewalInfo";
+    private static final String KEY_SUGGESTED_RENEWAL_START = "suggestedRenewalStart";
+    private static final String KEY_SUGGESTED_RENEWAL_END = "suggestedRenewalEnd";
 
     private static final String DEFAULT_RA_USERNAME_GENERATION_SCHEME = UsernameGenerateMode.RANDOM.name();
     private static final String DEFAULT_RA_USERNAME_GENERATION_PARAMS = "CN";
@@ -133,6 +136,10 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final boolean DEFAULT_CLIENT_AUTHENTICATION_REQUIRED = false;
     public static final String DEFAULT_PREFERRED_ROOT_CA_SUBJECTDN = "default";
 
+    public static final boolean DEFAULT_ENABLED_RENEWAL_INFO = true;
+    public static final String DEFAULT_SUGGESTED_RENEWAL_START = "5d";
+    public static final String DEFAULT_SUGGESTED_RENEWAL_END = "1d";
+
     private static final String[] DEFAULT_TLS_APLN_PROTOCOLS_ENABLED = new String[]{ "TLSv1.2", "TLSv1.3" };
 
     private String configurationId = null;
@@ -155,7 +162,17 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     public void upgrade() {
         if (Float.compare(getLatestVersion(), getVersion()) > 0) {
             // New version of the class, upgrade.
-            
+            // v14. Renewal Info
+            if (data.get(KEY_ENABLED_RENEWAL_INFO) == null) {
+                setEnabledRenewalInfo(DEFAULT_ENABLED_RENEWAL_INFO);
+            }
+            if (data.get(KEY_SUGGESTED_RENEWAL_START) == null) {
+                setSuggestedRenewalStart(DEFAULT_SUGGESTED_RENEWAL_START);
+            }
+            if (data.get(KEY_SUGGESTED_RENEWAL_END) == null) {
+                setSuggestedRenewalEnd(DEFAULT_SUGGESTED_RENEWAL_END);
+            }
+
             // v13. MPIC challenge response
             log.info(intres.getLocalizedMessage("acmeconfiguration.upgrade", getVersion()));
 
@@ -579,6 +596,30 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     public void setWildcardWithHttp01ChallengeAllowed(final boolean allowed) {
         super.data.put(KEY_WILDCARD_WITH_HTTP_01_CHALLENGE_ALLOWED, String.valueOf(allowed));
     }
+
+    public boolean isEnabledRenewalInfo() {
+        return Boolean.valueOf((String) super.data.get(KEY_ENABLED_RENEWAL_INFO));
+    }
+
+    public void setEnabledRenewalInfo(final boolean enabledRenewalInfo) {
+        super.data.put(KEY_ENABLED_RENEWAL_INFO, String.valueOf(enabledRenewalInfo));
+    }
+
+    public String getSuggestedRenewalStart() {
+        return String.valueOf(super.data.get(KEY_SUGGESTED_RENEWAL_START));
+    }
+
+    public void setSuggestedRenewalStart(final String suggestedRenewalStart) {
+        super.data.put(KEY_SUGGESTED_RENEWAL_START, suggestedRenewalStart);
+    }
+
+    public String getSuggestedRenewalEnd() {
+        return String.valueOf(super.data.get(KEY_SUGGESTED_RENEWAL_END));
+    }
+
+    public void setSuggestedRenewalEnd(final String suggestedRenewalEnd) {
+        super.data.put(KEY_SUGGESTED_RENEWAL_END, suggestedRenewalEnd);
+    }
     
     public boolean isUseMpicService() {
         return Boolean.valueOf((String) super.data.get(KEY_USE_MPIC_SERVICE));
@@ -872,5 +913,8 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         setApprovalForKeyChangeId(DEFAULT_APPROVAL_FOR_KEY_CHANGE_ID);
         setClientAuthenticationRequired(DEFAULT_CLIENT_AUTHENTICATION_REQUIRED);
         setPreferredRootCaSubjectDn(DEFAULT_PREFERRED_ROOT_CA_SUBJECTDN);
+        setEnabledRenewalInfo(DEFAULT_ENABLED_RENEWAL_INFO);
+        setSuggestedRenewalStart(DEFAULT_SUGGESTED_RENEWAL_START);
+        setSuggestedRenewalEnd(DEFAULT_SUGGESTED_RENEWAL_END);
     }
 }

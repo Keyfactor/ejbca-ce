@@ -12,12 +12,13 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.swagger.v3.oas.annotations.media.Schema;
-import org.cesecore.certificates.endentity.EndEntityConstants;
+import java.util.EnumSet;
+
 import org.ejbca.ui.web.rest.api.validator.ValidSearchEndEntityCriteriaRestRequest;
 
-import java.util.EnumSet;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * JSON input for end entity search containing a single search criteria.

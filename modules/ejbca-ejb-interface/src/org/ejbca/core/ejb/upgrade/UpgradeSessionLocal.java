@@ -42,16 +42,6 @@ public interface UpgradeSessionLocal  extends UpgradeSession{
     boolean isEndEntityProfileInCertificateData();
     
     /** For internal user from UpgradeSessionBean only! */
-    void migrateDatabase624() throws UpgradeFailedException;
-    /** For internal user from UpgradeSessionBean only! */
-    void migrateDatabase640() throws UpgradeFailedException;	
-    /** For internal user from UpgradeSessionBean only! */
-    void migrateDatabase642() throws UpgradeFailedException;
-    /** For internal user from UpgradeSessionBean only! */
-    void migrateDatabase651() throws UpgradeFailedException;
-    /** For internal user from UpgradeSessionBean only! */
-    void migrateDatabase660() throws UpgradeFailedException;
-    /** For internal user from UpgradeSessionBean only! */
     void migrateDatabase680() throws UpgradeFailedException;
     /** For internal user from UpgradeSessionBean only! */
     void migrateDatabase6101() throws UpgradeFailedException;
@@ -81,6 +71,10 @@ public interface UpgradeSessionLocal  extends UpgradeSession{
     void migrateDatabase830() throws UpgradeFailedException;
     /** For internal user from UpgradeSessionBean only */
     void migrateDatabase920() throws UpgradeFailedException;
+    /** For internal user from Upgrade SessionBean only */
+    void migrateDatabase933() throws UpgradeFailedException;
+    /** For internal user from UpgradeSessionBean only */
+    void migrateDatabase940() throws UpgradeFailedException;
     /** For internal user from UpgradeSessionBean only */
     void fixPartitionedCrls() throws UpgradeFailedException;
     /** For internal user from UpgradeSessionBean only */

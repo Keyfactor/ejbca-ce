@@ -400,5 +400,4 @@ public class RaRoleMembersBean implements Serializable {
         }
         return availableTokenTypes;
     }
-    
 }

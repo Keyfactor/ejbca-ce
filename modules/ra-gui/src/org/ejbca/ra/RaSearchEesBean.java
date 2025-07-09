@@ -13,6 +13,8 @@
 package org.ejbca.ra;
 
 import java.io.Serializable;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -110,6 +112,8 @@ public class RaSearchEesBean implements Serializable {
     private List<RaCertificateDetails> currentIssuedCerts = null;
 
     private final Callbacks raEndEntityDetailsCallbacks = new RaEndEntityDetails.Callbacks() {
+        private static final long serialVersionUID = 1L;
+
         @Override
         public RaLocaleBean getRaLocaleBean() {
             return raLocaleBean;
@@ -576,6 +580,7 @@ public class RaSearchEesBean implements Serializable {
         RaCertificateSearchResponse response = raMasterApiProxyBean.searchForCertificatesByUsername(
                 raAuthenticationBean.getAuthenticationToken(), username);
         RaCertificateDetails.Callbacks raCertificateDetailsCallbacks = new RaCertificateDetails.Callbacks() {
+            private static final long serialVersionUID = 1L;
             @Override
             public RaLocaleBean getRaLocaleBean() {
                 return raLocaleBean;
@@ -638,7 +643,7 @@ public class RaSearchEesBean implements Serializable {
      */
     public String redirectToEdit() {
         String url = "endentity.xhtml?faces-redirect=true&edit=true&ee="
-                + currentEndEntityDetails.getUsername();
+                + URLEncoder.encode(currentEndEntityDetails.getUsername(), StandardCharsets.UTF_8);
         return url;
     }
     
@@ -647,9 +652,8 @@ public class RaSearchEesBean implements Serializable {
      * @return the URL to editing the chosen End Entity
      */
     public String redirectToEdit(final RaEndEntityDetails chosen) {
-        String url = "endentity.xhtml?faces-redirect=true&edit=true&ee="
-                + chosen.getUsername();
-        return url;
+		return "endentity.xhtml?faces-redirect=true&edit=true&ee="
+                + URLEncoder.encode(chosen.getUsername(), StandardCharsets.UTF_8);
     }
 
     /**
@@ -658,4 +662,5 @@ public class RaSearchEesBean implements Serializable {
     public boolean isApiEditCompatible() {
         return raMasterApiProxyBean.getApiVersion() >= 2;
     }
+
 }

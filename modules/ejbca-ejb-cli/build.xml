@@ -64,10 +64,8 @@
     </path-->
 
     <target name="build" description="Build this module" depends="compile">
-    	<!-- Upgrade of certificate profiles requires extendedkeyusage.properties -->
     	<mkdir dir="${ejbca-ejb-cli.build.dir}/conf"/>
     	<copy todir="${ejbca-ejb-cli.build.dir}/conf">
-    		<fileset dir="${ejbca.home}/conf" includes="extendedkeyusage.properties"/>
     		<fileset dir="${ejbca.home}/conf" includes="ejbca.properties"/>
             <!-- Required because it holds 'password.encryption.key', required for 'encryptpwd' CLI command. -->
             <fileset dir="${ejbca.home}/conf" includes="cesecore.properties"/>

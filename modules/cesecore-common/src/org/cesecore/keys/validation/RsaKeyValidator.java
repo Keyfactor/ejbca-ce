@@ -256,6 +256,7 @@ public class RsaKeyValidator extends KeyValidatorBase {
         settingsTemplate.setLabels(KeyValidatorSettingsTemplate.map());
         settingsTemplate.setRequired(true);
         settingsTemplate.setActionCallback(new DynamicUiActionCallback() {
+            private static final long serialVersionUID = 1L;
             @Override
             public void action(final Object parameter) throws DynamicUiCallbackException {
                 final Map<Object, Object> oldValues = (Map<Object, Object>) data.clone();
@@ -269,6 +270,8 @@ public class RsaKeyValidator extends KeyValidatorBase {
         });
         uiModel.add(settingsTemplate);
         final DynamicUiProperty<String> bitLengths = new DynamicUiProperty<String>(String.class, BIT_LENGTHS, getBitLengthsAsString(), getAvailableBitLengths(0)) {
+            private static final long serialVersionUID = 1L;
+
             @Override
             public boolean isDisabled() { return isBitLengthsDisabled(); }
         };
@@ -277,42 +280,62 @@ public class RsaKeyValidator extends KeyValidatorBase {
         bitLengths.setRequired(true);
         uiModel.add(bitLengths);
         uiModel.add(new DynamicUiProperty<Boolean>(Boolean.class, PUBLIC_KEY_EXPONENT_ONLY_ALLOW_ODD, isPublicKeyExponentOnlyAllowOdd()) {
+            private static final long serialVersionUID = 1L;
+
             @Override
             public boolean isDisabled() { return isPropertyDisabled(); }
         });
         uiModel.add(new DynamicUiProperty<BigInteger>(BigInteger.class, PUBLIC_KEY_EXPONENT_MIN, getPublicKeyExponentMin()) {
+            private static final long serialVersionUID = 1L;
+
             @Override
             public boolean isDisabled() { return isPropertyDisabled(); }
         });
         uiModel.add(new DynamicUiProperty<BigInteger>(BigInteger.class, PUBLIC_KEY_EXPONENT_MAX, getPublicKeyExponentMax()) {
+            private static final long serialVersionUID = 1L;
+
             @Override
             public boolean isDisabled() { return isPropertyDisabled(); }
         });
         uiModel.add(new DynamicUiProperty<Boolean>(Boolean.class, PUBLIC_KEY_MODULUS_ONLY_ALLOW_ODD, isPublicKeyModulusOnlyAllowOdd()) {
+            private static final long serialVersionUID = 1L;
+
             @Override
             public boolean isDisabled() { return isPropertyDisabled(); }
         });
         uiModel.add(new DynamicUiProperty<Boolean>(Boolean.class, PUBLIC_KEY_MODULUS_DONT_ALLOW_POWER_OF_PRIME, isPublicKeyModulusDontAllowPowerOfPrime()) {
+            private static final long serialVersionUID = 1L;
+
             @Override
             public boolean isDisabled() { return isPropertyDisabled(); }
         });
         uiModel.add(new DynamicUiProperty<Boolean>(Boolean.class, PUBLIC_KEY_MODULUS_DONT_ALLOW_ROCA_WEAK_KEYS, isPublicKeyModulusDontAllowRocaWeakKeys()) {
+            private static final long serialVersionUID = 1L;
+
             @Override
             public boolean isDisabled() { return isPropertyDisabled(); }
         });
         uiModel.add(new DynamicUiProperty<Boolean>(Boolean.class, PUBLIC_KEY_MODULUS_DONT_ALLOW_CLOSE_PRIMES, isPublicKeyModulusDontAllowClosePrimes()) {
+            private static final long serialVersionUID = 1L;
+
             @Override
             public boolean isDisabled() { return isPropertyDisabled(); }
         });
         uiModel.add(new DynamicUiProperty<Integer>(Integer.class, PUBLIC_KEY_MODULUS_MIN_FACTOR, getPublicKeyModulusMinFactor()) {
+            private static final long serialVersionUID = 1L;
+
             @Override
             public boolean isDisabled() { return isPropertyDisabled(); }
         });
         uiModel.add(new DynamicUiProperty<BigInteger>(BigInteger.class, PUBLIC_KEY_MODULUS_MIN, getPublicKeyModulusMin()) {
+            private static final long serialVersionUID = 1L;
+
             @Override
             public boolean isDisabled() { return isPropertyDisabled(); }
         });
         uiModel.add(new DynamicUiProperty<BigInteger>(BigInteger.class, PUBLIC_KEY_MODULUS_MAX, getPublicKeyModulusMax()) {
+            private static final long serialVersionUID = 1L;
+
             @Override
             public boolean isDisabled() { return isPropertyDisabled(); }
         });

@@ -1205,6 +1205,14 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     public void setRevocationReasonModifiable(boolean modifiable) {
         profiledata.setIssuanceRevocationReasonModifiable(modifiable);
     }
+    
+    public boolean isRevocationReasonDefault() {
+        return profiledata.isIssuanceRevocationReasonDefault();
+    }
+
+    public void setRevocationReasonDefault(boolean defaultValue) {
+        profiledata.setIssuanceRevocationReasonDefault(defaultValue);
+    }
 
     public boolean getUseSendNotification() {
         return profiledata.isSendNotificationUsed();
@@ -1272,6 +1280,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     }
     
     private void validateEndEntityProfileName() {
+        profileName = profileName.trim();
         if (StringUtils.isBlank(getEndEntityProfileName())) {
             editerrors.add(ejbcaWebBean.getText("EEPROFILENAMEREQUIRED"));
         } else if (!StringTools.checkFieldForLegalChars(getEndEntityProfileName())) {
@@ -1520,11 +1529,12 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         log.trace(">saveProfile");
         clearMessages();
         setSpecialFields();
-        validateProfile();
+        validateProfile();        
         if (editerrors.isEmpty()) {
             cleanUpUnused();
             if (profileId==0) {
                 try {
+                    profileName = profileName.trim();
                     endEntityProfileSession.addEndEntityProfile(getAdmin(), profileName, profiledata);
                 } catch (EndEntityProfileExistsException e) {
                     addErrorMessage(PROFILE_ALREADY_EXISTS);

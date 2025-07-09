@@ -12,6 +12,12 @@
  *************************************************************************/
 package org.cesecore.util;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.beans.XMLEncoder;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -35,14 +41,7 @@ import org.cesecore.certificates.certificateprofile.PKIDisclosureStatement;
 import org.cesecore.certificates.endentity.EndEntityApprovalRequest;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * Test that XML serialization works as expected.
@@ -50,9 +49,6 @@ import static org.junit.Assert.fail;
 public class XmlSerializerUnitTest {
 	
 	private static final Logger log = Logger.getLogger(XmlSerializerUnitTest.class);
-
-	@Rule
-    public ExpectedException expectedException = ExpectedException.none();
 
     // We need our own approvalClass since we don't have an impl in CESeCore
     private static class TestApprovalRequest implements EndEntityApprovalRequest {
@@ -223,13 +219,15 @@ public class XmlSerializerUnitTest {
     @Test
     public void encodeSimpleMapFastWithIllegalArgumentException() {
         // given
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("encodeSimpleMapFast does not handle type: java.io.File");
-        final HashMap<Object, Object> failingMap = new Base64PutHashMap();
-        failingMap.put("longvalue", 123456789L); // this works
-        failingMap.put("unsupported", new File("bad")); // this should fail
-        // when
-        XmlSerializer.encodeSimpleMapFastInternal(failingMap);
+        Throwable throwable =  assertThrows(Throwable.class, () -> {
+            final HashMap<Object, Object> failingMap = new Base64PutHashMap();
+            failingMap.put("longvalue", 123456789L); // this works
+            failingMap.put("unsupported", new File("bad")); // this should fail
+            // when
+            XmlSerializer.encodeSimpleMapFastInternal(failingMap);
+        });
+        assertEquals("Incorrect exception was thrown.", IllegalArgumentException.class, throwable.getClass());
+        assertEquals("Incorrect error message in exception.", "encodeSimpleMapFast does not handle type: java.io.File", throwable.getMessage());        
     }
 
 

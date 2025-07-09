@@ -56,6 +56,8 @@ import jakarta.ejb.TimerService;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -90,9 +92,15 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
 
     @Resource
     private SessionContext sessionContext;
-    private TimerService timerService; // When the sessionContext is injected, the timerService should be looked up.
-    private AuthorizationSessionLocal authorizationSession;
+    private transient TimerService timerService; // When the sessionContext is injected, the timerService should be looked up.
+    private transient AuthorizationSessionLocal authorizationSession;
 
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        timerService = sessionContext.getTimerService();
+        authorizationSession = sessionContext.getBusinessObject(AuthorizationSessionLocal.class);
+    }
+    
     @PostConstruct
     public void postConstruct() {
         timerService = sessionContext.getTimerService();

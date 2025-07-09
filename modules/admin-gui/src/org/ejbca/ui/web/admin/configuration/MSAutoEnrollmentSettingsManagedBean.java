@@ -78,10 +78,10 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     private static final String KEYTAB_CONTENT_TYPE = "application/octet-stream";
     private static final String KRB5_CONF_CONTENT_TYPE = "application/octet-stream";
     private static final String KRB5_CONF_CONTENT_TYPE_PLAIN = "text/plain";
-    private Part keyTabFile;
+    private transient Part keyTabFile;
 
     // MSAE Krb5Conf Settings
-    private Part krb5ConfFile;
+    private transient Part krb5ConfFile;
     private String selectedTemplateOid;
     private String selectedCertificateProfileName;
     private Integer selectedCertificateProfileId;
@@ -89,7 +89,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     private Integer selectedEndEntityProfileId;
     private IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = new IdNameHashMap<>();
     private IdNameHashMap<CertificateProfile> authorizedCertificateProfiles = new IdNameHashMap<>();
-    private ListDataModel<MSAutoEnrollmentSettingsTemplate> mappedMsTemplates = null;
+    private transient ListDataModel<MSAutoEnrollmentSettingsTemplate> mappedMsTemplates = null;
 
     @EJB
     private MsaeLdapMessageSessionLocal msaeLdapMessageSession;
@@ -338,6 +338,12 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         return internalKeyBindingMgmtSession.getInternalKeyBindingInfos(getAdmin(), AuthenticationKeyBinding.IMPLEMENTATION_ALIAS).stream()
                 .map(current -> new SelectItem(current.getId(), current.getName(), current.getName(), !current.getStatus().equals(InternalKeyBindingStatus.ACTIVE)))
                 .collect(Collectors.toList());
+    }
+
+    public List<SelectItem> getAvailableSSLTrustManagerTypes() {
+        return List.of(new SelectItem(MSAutoEnrollmentConfiguration.TRUST_MANAGER_LOCAL_TRUST_STORE, getEjbcaWebBean().getText("MSAE_LOCAL_TRUST_STORE")),
+                       new SelectItem(MSAutoEnrollmentConfiguration.TRUST_MANAGER_IMPORTED_CA, getEjbcaWebBean().getText("MSAE_IMPORTED_CA")),
+                       new SelectItem(MSAutoEnrollmentConfiguration.TRUST_MANAGER_KEY_BINDING, getEjbcaWebBean().getText("MSAE_KEY_BINDING")));
     }
 
     /**
@@ -647,6 +653,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
 
             // MSAE Settings
             autoEnrollmentConfiguration.setIsUseSsl(alias, dto.isUseSSL());
+            autoEnrollmentConfiguration.setTrustManagerType(alias, dto.getTrustManagerType());
             autoEnrollmentConfiguration.setFollowLdapReferral(alias, dto.isFollowLdapReferral());
             autoEnrollmentConfiguration.setAdConnectionPort(alias, dto.getAdConnectionPort());
             autoEnrollmentConfiguration.setLdapReadTimeout(alias, dto.getLdapReadTimeout());

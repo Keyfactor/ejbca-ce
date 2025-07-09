@@ -84,7 +84,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  *
@@ -115,7 +117,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
 
 
 
-    private LoadingCache<CertificateStatusCacheKey, Integer> cache;
+    private transient LoadingCache<CertificateStatusCacheKey, Integer> cache;
 
     private boolean allowBlankAudience = false;
 
@@ -133,7 +135,6 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     @PostConstruct
     public void initialize() {
         initializeAudienceCheck();
-        initializeCache();
     }
 
     /**
@@ -148,15 +149,6 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
         if (isAllowBlankAudience() && LOG.isDebugEnabled()) {
             LOG.debug("Database not post-upgraded to 7.8.0 yet.  Allowing OAuth logins without checking 'aud' claim.");
         }
-    }
-
-    private void initializeCache() {
-        cache = Caffeine.newBuilder()
-                .maximumSize(10_000)
-                .refreshAfterWrite(12, TimeUnit.SECONDS)
-                .expireAfterAccess(60, TimeUnit.SECONDS)
-                .build(key -> certificateStoreSession.getFirstStatusByIssuerAndSerno(
-                        key.getSubjectDn(), key.getSerialNumber()));
     }
 
     @Override
@@ -594,7 +586,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     }
 
     private int getCachedStatus(X509Certificate certificate) {
-        return cache.get(new CertificateStatusCacheKey(CertTools.getIssuerDN(certificate),
+        return getCache().get(new CertificateStatusCacheKey(CertTools.getIssuerDN(certificate),
                 CertTools.getSerialNumber(certificate)));
     }
 
@@ -616,6 +608,29 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
 
     public boolean isAllowBlankAudience() {
         return allowBlankAudience;
+    }
+
+    public LoadingCache<CertificateStatusCacheKey, Integer> getCache() {
+        // the cache is transient - lazily construct it
+        
+        if (cache == null) {
+            // We need to use a custom execuror service - the default executor will
+            // not work with the app server's Security Manager.
+            var threadNumber = new AtomicInteger();
+            var executor = Executors.newCachedThreadPool(r -> {
+                var t = new Thread(r);
+                t.setDaemon(true);
+                t.setName("certificate-status-cache-" + threadNumber.incrementAndGet());
+                return t;
+            });
+            cache = Caffeine.newBuilder()
+                    .executor(executor)
+                    .maximumSize(10_000)
+                    .refreshAfterWrite(12, TimeUnit.SECONDS)
+                    .expireAfterAccess(60, TimeUnit.SECONDS)
+                    .build(key -> certificateStoreSession.getFirstStatusByIssuerAndSerno(key.getSubjectDn(), key.getSerialNumber()));
+        }
+        return cache;
     }
 
     private static class CertificateStatusCacheKey {

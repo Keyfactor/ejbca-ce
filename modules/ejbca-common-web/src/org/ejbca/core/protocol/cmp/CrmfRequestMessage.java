@@ -15,6 +15,7 @@ package org.ejbca.core.protocol.cmp;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
@@ -22,8 +23,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.Signature;
-import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.util.Date;
 
@@ -64,6 +63,10 @@ import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.Time;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.ContentVerifier;
+import org.bouncycastle.operator.ContentVerifierProvider;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.bouncycastle.util.Arrays;
 import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.protocol.cmp.authentication.RegTokenPasswordExtractor;
@@ -534,13 +537,23 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
                             log.debug("POP protection bytes length: " + protBytes.length);
                             log.debug("POP algorithm identifier is: " + algId.getAlgorithm().getId());
                         }
-                        final Signature sig = Signature.getInstance(algId.getAlgorithm().getId(), "BC");
-                        sig.initVerify(getRequestPublicKey());
-                        sig.update(protBytes);
-                        final ASN1BitString bs = sk.getSignature();
-                        ret = sig.verify(bs.getBytes());
-                        if (log.isDebugEnabled()) {
-                            log.debug("POP verify returns: " + ret);
+
+                        try {
+                            final ContentVerifierProvider verifierProvider = new JcaContentVerifierProviderBuilder().setProvider("BC").build(getRequestPublicKey());
+                            final ContentVerifier verifier = verifierProvider.get(algId);
+
+                            final OutputStream verifierStream = verifier.getOutputStream();
+                            verifierStream.write(protBytes);
+                            verifierStream.close();
+
+                            final ASN1BitString bs = sk.getSignature();
+                            ret = verifier.verify(bs.getBytes());
+
+                            if (log.isDebugEnabled()) {
+                                log.debug("POP verify returns: " + ret);
+                            }
+                        } catch (OperatorCreationException e) {
+                            log.info("POP verification failed: " + e.getMessage());
                         }
                     } else {
                         log.info("Can not verify POP, protObject exists but there is nothing in it.");
@@ -548,8 +561,6 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
                 }
             } catch (IOException e) {
                 log.error("Error encoding CertReqMsg: ", e);
-            } catch (SignatureException e) {
-                log.error("SignatureException verifying POP: ", e);
             }
         } else if (pop.getType() == ProofOfPossession.TYPE_KEY_ENCIPHERMENT) {
             // Looks like the requestor want to have the certificate sent back encrypted, verify that that is the case

@@ -51,6 +51,7 @@
 	        window.onload=resetTimer("#{ejbcawebbean.sessionTimeoutTime}");
 	        document.onkeypress=resetTimer("#{ejbcawebbean.sessionTimeoutTime}");
         </h:outputScript>
+    <div id="page-content-wrapper">
     <ui:insert name="banner">
       
       <h:panelGroup layout="block" styleClass="banner-container" >
@@ -129,14 +130,6 @@
         
         </h:panelGroup>
 
-        <h:panelGroup layout="block" id="footerBlock" styleClass="footerBlock">
-            <ui:insert name="footer">
-                <h:panelGroup layout="block" id="footerInner" styleClass="footerInner">
-                    <h:outputText value="© 2002–#{web.currentYear}. EJBCA® is a registered trademark."/>
-                </h:panelGroup>
-            </ui:insert>
-        </h:panelGroup>
-
         <h:panelGroup id="modalBlockContainer">
         <h:panelGroup layout="block" id="modalBlock" styleClass="modalBlock" rendered="#{not empty renderModal and renderModal}">
             <h:panelGroup layout="block" id="modalInner" styleClass="modalInner">
@@ -148,6 +141,14 @@
         </h:panelGroup>
         </h:panelGroup>
         
+    </h:panelGroup>
+    </div>
+    <h:panelGroup layout="block" id="footerBlock" styleClass="footerBlock">
+        <ui:insert name="footer">
+            <h:panelGroup layout="block" id="footerInner" styleClass="footerInner">
+                <h:outputText value="© 2002–#{web.currentYear}. EJBCA® is a registered trademark."/>
+            </h:panelGroup>
+        </ui:insert>
     </h:panelGroup>
     </h:body>
     </f:view>

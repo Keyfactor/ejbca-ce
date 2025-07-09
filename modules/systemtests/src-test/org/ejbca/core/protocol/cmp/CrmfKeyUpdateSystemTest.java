@@ -1752,10 +1752,12 @@ public class CrmfKeyUpdateSystemTest extends CmpTestCase {
             this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
             final String password = "foo123";
             //--------------- create the user and issue its certificate, expired -----------------
-            endEntityManagementSession.addUser(ADMIN, RENEWAL_USERNAME, password, RENEWAL_USER_DN.toString(), "rfc822name=" + RENEWAL_USERNAME + "@primekey.se",
-                    RENEWAL_USERNAME + "@primekey.se", true, endEntityProfileId, certificateProfileId, EndEntityTypes.ENDUSER.toEndEntityType(),
-                    SecConst.TOKEN_SOFT_PEM, this.caid);
-
+            EndEntityInformation endEntityInformation = new EndEntityInformation(RENEWAL_USERNAME, RENEWAL_USER_DN.toString(), this.caid, "rfc822name=" + RENEWAL_USERNAME + "@primekey.se", RENEWAL_USERNAME + "@primekey.se",
+                    EndEntityTypes.ENDUSER.toEndEntityType(),
+                    endEntityProfileId, certificateProfileId, SecConst.TOKEN_SOFT_PEM, null);
+            endEntityInformation.setPassword(password);
+            endEntityManagementSession.addUser(ADMIN, endEntityInformation, true);      
+            
             KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
             SimpleRequestMessage expiredReq = new SimpleRequestMessage(keys.getPublic(), RENEWAL_USERNAME, password,
                     new Date(System.currentTimeMillis()));
@@ -1819,9 +1821,11 @@ public class CrmfKeyUpdateSystemTest extends CmpTestCase {
         //------------------ create the user and issue his first certificate -------------
         final String password = "foo123";
         //--------------- create the user and issue its certificate, expired -----------------
-        endEntityManagementSession.addUser(ADMIN, RENEWAL_USERNAME, password, RENEWAL_USER_DN.toString(), "rfc822name=" + RENEWAL_USERNAME + "@primekey.se",
-                RENEWAL_USERNAME + "@primekey.se", true, endEntityProfileId, certificateProfileId, EndEntityTypes.ENDUSER.toEndEntityType(),
-                SecConst.TOKEN_SOFT_PEM, this.caid);
+        EndEntityInformation endEntityInformation = new EndEntityInformation(RENEWAL_USERNAME, RENEWAL_USER_DN.toString(), this.caid,
+                "rfc822name=" + RENEWAL_USERNAME + "@primekey.se", RENEWAL_USERNAME + "@primekey.se", EndEntityTypes.ENDUSER.toEndEntityType(),
+                endEntityProfileId, certificateProfileId, SecConst.TOKEN_SOFT_PEM, null);
+        endEntityInformation.setPassword(password);
+        endEntityManagementSession.addUser(ADMIN, endEntityInformation, true);  
 
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         SimpleRequestMessage expiredReq = new SimpleRequestMessage(keys.getPublic(), RENEWAL_USERNAME, password,

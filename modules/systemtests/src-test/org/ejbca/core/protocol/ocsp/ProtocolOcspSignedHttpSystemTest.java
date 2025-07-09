@@ -39,6 +39,7 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
@@ -48,8 +49,10 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorTestSessionRemote;
 import org.cesecore.certificates.ocsp.OcspTestUtils;
+import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keys.util.PublicKeyWrapper;
@@ -111,6 +114,7 @@ public class ProtocolOcspSignedHttpSystemTest extends CaTestCase {
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private CesecoreConfigurationProxySessionRemote configurationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(
             CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private static GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
@@ -125,8 +129,13 @@ public class ProtocolOcspSignedHttpSystemTest extends CaTestCase {
     private String originalSigRequiredValue;
     
     @BeforeClass
-    public static void beforeClass() {
+    public static void beforeClass() throws AuthorizationDeniedException {
         CryptoProviderTools.installBCProvider();
+        
+        GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        globalOcspConfiguration.setIncludeSigningCertificate(true);
+        globalOcspConfiguration.setIncludeCertificateChain(true);
+        globalConfigurationSession.saveConfiguration(admin, globalOcspConfiguration);
     }
 
     @Override
@@ -177,9 +186,12 @@ public class ProtocolOcspSignedHttpSystemTest extends CaTestCase {
         // Make user that we know...
         boolean userExists = endEntityManagementSession.existsUser(END_ENTITY_NAME);
         if (!userExists) {
-            endEntityManagementSession.addUser(admin, END_ENTITY_NAME, "foo123", "C=SE,O=AnaTom,CN=OCSPTest", null, "ocsptest@anatom.se", false,
-                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(),
-                    SecConst.TOKEN_SOFT_PEM, caid);
+            EndEntityInformation endEntityInformation = new EndEntityInformation(END_ENTITY_NAME, "C=SE,O=AnaTom,CN=OCSPTest", caid, null,
+                    "ocsptest@anatom.se", EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_PEM, null);
+            endEntityInformation.setPassword("foo123");
+            endEntityManagementSession.addUser(admin, endEntityInformation, false);
+            
             log.debug("created user: ocsptest, foo123, C=SE, O=AnaTom, CN=OCSPTest");
         } else {
             log.debug("User ocsptest already exists.");

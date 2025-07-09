@@ -21,7 +21,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateExpiredException;
@@ -40,7 +39,6 @@ import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.config.CmpConfiguration;
@@ -130,10 +128,8 @@ public class NestedMessageContent extends BaseCmpMessage implements RequestMessa
                     if (log.isDebugEnabled()) {
                         log.debug("Verifying message signature using algorithm id: "+algId);
                     }
-                    Signature sig = Signature.getInstance(algId, BouncyCastleProvider.PROVIDER_NAME);
-                    sig.initVerify(cert.getPublicKey());
-                    sig.update(CmpMessageHelper.getProtectedBytes(raSignedMessage));
-                    ret = sig.verify(raSignedMessage.getProtection().getBytes());
+
+                    ret = CmpMessageHelper.verifySignature(raSignedMessage, cert.getPublicKey());
                     if (log.isDebugEnabled()) {
                         log.debug("Verifying the NestedMessageContent using the RA certificate with subjectDN '" + LogRedactionUtils.getSubjectDnLogSafe(cert.getSubjectX500Principal().toString()) + "' returned " + ret);
                     }
@@ -141,7 +137,7 @@ public class NestedMessageContent extends BaseCmpMessage implements RequestMessa
                     log.info("No signature was found in NestedMessageContent");
                 }
             }
-        } catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeyException | SignatureException e) {
+        } catch (SignatureException e) {
             if (log.isDebugEnabled()) {
                 log.debug(e.getMessage());
             }
