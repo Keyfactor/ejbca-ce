@@ -679,12 +679,12 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         }
     }
 
-    List<PublisherData> setPublisherInDatabase(final String name, final BasePublisher publisher) {
+    List<PublisherData> setPublisherInDatabase(final int publisherId, final String name, final BasePublisher publisher) {
         final String publisherData = PublisherDataUtil.toString(publisher);
         final String selectSql = "SELECT bean FROM PublisherDataBean bean WHERE bean.id=:id";
         return repository.execute((em)-> {
             List<PublisherDataBean> originalBeans = em.createQuery(selectSql, PublisherDataBean.class)
-                    .setParameter("id", publisher.getPublisherId())
+                    .setParameter("id", publisherId)
                     .getResultList();
             if (originalBeans.isEmpty()) {
                 return List.of();
@@ -706,8 +706,22 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         if (log.isTraceEnabled()) {
             log.trace(">changePublisher(name: " + name + ")");
         }
+
+        final int publisherId = getPublisherId(name);
+        changePublisher(admin, publisherId, name, publisher);
+
+        if (log.isTraceEnabled()) {
+            log.trace("<changePublisher()");
+        }
+    }
+
+    @Override
+    public void changePublisher(final AuthenticationToken admin, final int id, final String name, final BasePublisher publisher) throws AuthorizationDeniedException {
+        if (log.isTraceEnabled()) {
+            log.trace(">changePublisher(id: " + id + ")");
+        }
         authorizedToEditPublishers(admin);
-        final List<PublisherData> publisherDataList = setPublisherInDatabase(name, publisher);
+        final List<PublisherData> publisherDataList = setPublisherInDatabase(id, name, publisher);
         if (publisherDataList.isEmpty()) {
             String msg = intres.getLocalizedMessage("publisher.errorchangepublisher", name);
             log.info(msg);

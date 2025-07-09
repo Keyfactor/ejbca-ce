@@ -488,7 +488,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
             if (this.createNewPublisher) {
                 publisherSession.addPublisher(getAdmin(), getPublisherName(), publisher);
             } else {
-                publisherSession.changePublisher(getAdmin(), getPublisherName(), publisher);
+                publisherSession.changePublisher(getAdmin(), getPublisherId(), getPublisherName(), publisher);
             }
         } catch (PublisherExistsException e) {
             addErrorMessage("PUBLISHERALREADYEXISTS", getPublisherName());
@@ -499,23 +499,8 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     }
     
     public void savePublisherAndTestConnection() throws AuthorizationDeniedException {
-        
-        try {
-            prepareForSave();
-        } catch (PublisherDoesntExistsException | PublisherExistsException | PublisherException | ParameterException e) {
-            addErrorMessage(e.getMessage());
-            return;
-        }
 
-        try {
-            if (this.createNewPublisher) {
-                publisherSession.addPublisher(getAdmin(), getPublisherName(), publisher);
-            } else {
-                publisherSession.changePublisher(getAdmin(), getPublisherName(), publisher);
-            }
-        } catch (PublisherExistsException e) {
-            addErrorMessage("PUBLISHERALREADYEXISTS", getPublisherName());
-        }
+        savePublisher();
 
         try {
             
@@ -679,6 +664,16 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
                 publisher = new LdapPublisher();
             } else {
                 publisher = publisherSession.getPublisher(listPublishers.getSelectedPublisherName());
+
+                // New publisher name indicates cloning publisher.
+                if (StringUtils.isNotBlank(listPublishers.getNewPublisherName())) {
+					try {
+						publisher = (BasePublisher) publisher.clone();
+					} catch (CloneNotSupportedException e) {
+                        // Severe error, should never happen
+                        throw new RuntimeException(e);
+					}
+				}
             }
 
             publisherId = publisher.getPublisherId();
