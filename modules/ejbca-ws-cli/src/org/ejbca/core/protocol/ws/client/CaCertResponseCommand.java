@@ -72,7 +72,7 @@ public class CaCertResponseCommand extends EJBCAWSRABaseCommand implements IAdmi
 			String certfile = args[ARG_CERT];
 			String cachainfile = args[ARG_CACHAIN];
 			String keystorepwd = null;
-			if (args.length > 5) {
+			if (args.length == 5) {
 				keystorepwd = args[ARG_KEYSTOREPWD];				
 			}
 			if (keystorepwd == null) {
@@ -133,7 +133,7 @@ public class CaCertResponseCommand extends EJBCAWSRABaseCommand implements IAdmi
 
 	protected void usage() {
 		getPrintStream().println("Command used to import a certificate from an external CA. Can be X.509 or CVC. Used to receive certificate responses to request created with 'cacertrequest' command.");
-		getPrintStream().println("Usage : cacertrequest <caname> <certfile> <cachainfile> [<CA token password>]\n\n");
+		getPrintStream().println("Usage : cacertresponse <caname> <certfile> <cachainfile> [<CA token password>]\n\n");
 		getPrintStream().println("Caname is the name of the CA that will generate the request.");
 		getPrintStream().println("Certfile is a file with the certificate issued by the external CA. This is a file with a single PEM or binary certificate.");
 		getPrintStream().println("Cachainfile is a file with the certificate chain of the external CA. This can be a file with several PEM certificates in it, or a file with a single PEM or binary Root CA certificate.");
