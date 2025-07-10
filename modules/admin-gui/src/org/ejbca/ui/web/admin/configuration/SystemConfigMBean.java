@@ -2275,7 +2275,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 @Override
                 public void saveEabConfig(Map<String, Set<String>> eabConfigMap, String eabConfigFileHash) {
                     final EABConfiguration eabConfiguration = getEjbcaWebBean().getEABConfiguration();
-                    eabConfiguration.setEabConfigMap(eabConfigMap);
+                    eabConfiguration.setEABMap(eabConfigMap);
                     eabConfiguration.setFileHash(eabConfigFileHash);
                     try {
                         getEjbcaWebBean().saveEABConfiguration(eabConfiguration);
