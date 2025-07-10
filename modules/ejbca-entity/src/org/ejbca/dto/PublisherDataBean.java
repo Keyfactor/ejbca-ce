@@ -128,7 +128,7 @@ public final class PublisherDataBean implements Serializable, EntityManagerBean 
     @PreUpdate
     protected void protectData() throws DatabaseProtectionException {
         final var unProtectedData = getProtectString(getProtectVersion());
-        final var protectedData = protectedDataImpl.getProtectedData(rowVersion, unProtectedData);
+        final var protectedData = protectedDataImpl.getProtectedData(getProtectVersion(), unProtectedData);
         if (protectedData != null) {
             setRowProtection(protectedData);
         }
