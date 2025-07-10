@@ -41,12 +41,14 @@
                     <h:inputText id="clonedAliasName" name="textfieldalias"
                                  value="#{cmpConfigMBean.newAlias}" size="40"
                                  title="#{web.text.FORMAT_ID_STR}"
+                                 maxlength="32"
                                  required="true"
                                  requiredMessage="#{web.text.YOUAREREQUIRED} #{web.text.CMP_CLONE_NEW_NAME}">
                         <f:converter converterId="trimConverter"/>
+                        <f:validateLength maximum="32" />
                     </h:inputText>
                     <h:panelGroup/>
-                    <h:panelGroup>
+                    <h:panelGroup styleClass="action-buttons">
                         <h:commandButton id="cloneAliasSaveButton" name="cloneAliasSaveButton"
                                          action="#{cmpConfigMBean.cloneAliasAction}" value="#{web.text.CLONE_CONFIRM}"/>
                         <h:commandButton id="cloneAliasCancelbutton" name="cloneAliasCancelbutton"

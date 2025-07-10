@@ -12,14 +12,30 @@
  *************************************************************************/
 package org.ejbca.core.services.worker;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.crl.RevocationReasons;
+import org.cesecore.util.TraceLogMethodsRule;
+import org.ejbca.core.YamlWriter;
+import org.ejbca.core.model.services.workers.CertificateCrlReader;
+import org.ejbca.scp.publisher.ScpContainer;
+import org.ejbca.scp.publisher.ScpContainerSigned;
+import org.ejbca.scp.publisher.ScpContainerWrapper;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestRule;
 
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
@@ -27,19 +43,9 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
-import org.cesecore.certificates.certificate.CertificateConstants;
-import org.cesecore.certificates.crl.RevocationReasons;
-import org.cesecore.util.TraceLogMethodsRule;
-import org.ejbca.core.model.services.workers.CertificateCrlReader;
-import org.ejbca.scp.publisher.ScpContainer;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestRule;
-
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.CryptoProviderTools;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 /**
  * Unit tests for the CertificateCrlReader Worker
@@ -275,7 +281,7 @@ public class CertificateCrlReaderUnitTest {
             -43, 126, 104, 50, -110, -106, -71, -77, 78, 57, -15, 103, 5, 119, -104, 34, 15, 53, 53, 27, -114, 94, -126, 44, -126, -54, 82, 60, -9,
             -106, 47, 96, -110, 72, -55, -117, -6, 57, -4, 118, -46, -112, 28, -110, 90, 89, -48, -5, 63, 50, 58, 85, 96, 97, -63, 97, 39, -100, 66,
             -24, -23, 82, -62, -40, -36, -33, 60, 53, 65, -16, -93, -115, 117, 64, 42, -2, 105, -15, -10, -29, 125, -21, 9, 19, 10, 19, 127, -94, 21,
-            -33, -87, -128, -68, -65, -51, -21, 52, -6, -97, -55, 74, 50, -31, -87, -89, -8, 122, 84, -82, -33, 0, 0, 0, 0, 0, 0 };;
+            -33, -87, -128, -68, -65, -51, -21, 52, -6, -97, -55, 74, 50, -31, -87, -89, -8, 122, 84, -82, -33, 0, 0, 0, 0, 0, 0 };
 
     /**
      * The CA certificate used to sign the above ScpContainers
@@ -300,7 +306,97 @@ public class CertificateCrlReaderUnitTest {
             + "CpGKyqvcwkgKWj4Ubn+6y1bs9FLT4zHpXmbS+BaPeC/uupzFa4kQ5MiHtWb8wkjf\n"
             + "NKWDRcPn9rsn+qeYZ5o9Qz53girVew3Gvc9EX9o5a28H6ZGw1vRJy/P1IBE67hg=\n" 
             + "-----END CERTIFICATE-----";
-    
+
+    private static final byte[] PUBLISHED_YAML_FILE = """
+            data:
+              certificate: |
+                -----BEGIN CERTIFICATE-----
+                MIICWzCCAcSgAwIBAgIIJND6Haa3NoAwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE
+                AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAyMDEw
+                ODA5MTE1MloXDTA0MDEwODA5MjE1MlowLzEPMA0GA1UEAxMGMjUxMzQ3MQ8wDQYD
+                VQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMIGdMA0GCSqGSIb3DQEBAQUAA4GLADCB
+                hwKBgQCQ3UA+nIHECJ79S5VwI8WFLJbAByAnn1k/JEX2/a0nsc2/K3GYzHFItPjy
+                Bv5zUccPLbRmkdMlCD1rOcgcR9mmmjMQrbWbWp+iRg0WyCktWb/wUS8uNNuGQYQe
+                ACl11SAHFX+u9JUUfSppg7SpqFhSgMlvyU/FiGLVEHDchJEdGQIBEaOBgTB/MA8G
+                A1UdEwEB/wQFMAMBAQAwDwYDVR0PAQH/BAUDAwegADAdBgNVHQ4EFgQUyxKILxFM
+                MNujjNnbeFpnPgB76UYwHwYDVR0jBBgwFoAUy5k/bKQ6TtpTWhsPWFzafOFgLmsw
+                GwYDVR0RBBQwEoEQMjUxMzQ3QGFuYXRvbS5zZTANBgkqhkiG9w0BAQUFAAOBgQAS
+                5wSOJhoVJSaEGHMPw6t3e+CbnEL9Yh5GlgxVAJCmIqhoScTMiov3QpDRHOZlZ15c
+                UlqugRBtORuA9xnLkrdxYNCHmX6aJTfjdIW61+o/ovP0yz6ulBkqcKzopAZLirX+
+                XSWf2uI9miNtxYMVnbQ1KPdEAt7Za3OQR6zcS0lGKg==
+                -----END CERTIFICATE-----
+              certificateProfile: 34
+              certificateProfileName: My Certificate Profile Name
+              certificateStatus: 2
+              certificateType: 1
+              issuer: issuerDN
+              latestVersion: 0.0
+              revocationDate: 1751883738893
+              revocationReason: 12
+              serialNumber: 10
+              subjectDn: CN=251347,O=AnaTom,C=SE
+              updateTime: 1751883738893
+              username: null
+            signature: |
+              MIAGCSqGSIb3DQEHAqCAMIACAQExDTALBglghkgBZQMEAgEwgAYJKoZIhvcNAQcB
+              oIAkgASCA+hjZXJ0aWZpY2F0ZTogfAogIC0tLS0tQkVHSU4gQ0VSVElGSUNBVEUt
+              LS0tLQogIE1JSUNXekNDQWNTZ0F3SUJBZ0lJSk5ENkhhYTNOb0F3RFFZSktvWklo
+              dmNOQVFFRkJRQXdMekVQTUEwR0ExVUUKICBBeE1HVkdWemRFTkJNUTh3RFFZRFZR
+              UUtFd1pCYm1GVWIyMHhDekFKQmdOVkJBWVRBbE5GTUI0WERUQXlNREV3CiAgT0RB
+              NU1URTFNbG9YRFRBME1ERXdPREE1TWpFMU1sb3dMekVQTUEwR0ExVUVBeE1HTWpV
+              eE16UTNNUTh3RFFZRAogIFZRUUtFd1pCYm1GVWIyMHhDekFKQmdOVkJBWVRBbE5G
+              TUlHZE1BMEdDU3FHU0liM0RRRUJBUVVBQTRHTEFEQ0IKICBod0tCZ1FDUTNVQStu
+              SUhFQ0o3OVM1VndJOFdGTEpiQUJ5QW5uMWsvSkVYMi9hMG5zYzIvSzNHWXpIRkl0
+              UGp5CiAgQnY1elVjY1BMYlJta2RNbENEMXJPY2djUjltbW1qTVFyYldiV3AraVJn
+              MFd5Q2t0V2Ivd1VTOHVOTnVHUVlRZQogIEFDbDExU0FIRlgrdTlKVVVmU3BwZzdT
+              cHFGaFNnTWx2eVUvRmlHTFZFSERjaEpFZEdRSUJFYU9CZ1RCL01BOEcKICBBMVVk
+              RXdFQi93UUZNQU1CQVFBd0R3WURWUjBQQVFIL0JBVURBd2VnQURBZEJnTlZIUTRF
+              RmdRVXl4S0lMeEZNCiAgTU51ampObmJlRnBuUGdCNzZVWXdId1lEVlIwakJCZ3dG
+              b0FVeTVrL2JLUTZUdHBUV2hzUFdGemFmT0ZnTG1zdwogIEd3WURWUjBSQkJRd0Vv
+              RVFNalV4TXpRM1FHRnVZWFJ2YlM1elpUQU5CZ2txaGtpRzl3MEJBUVVGQUFPQmdR
+              QVMKICA1d1NPSmhvVkpTYUVHSE1QdzZ0M2UrQ2JuRUw5WWg1R2xneFZBSkNtSXFo
+              b1NjVE1pb3YzUXBEUkhPWmxaMTVjCiAgVWxxdWdSQnRPUnVBOXhuTGtyZHhZTkNI
+              bVg2YUpUZmpkSVc2MStvL292UDB5ejZ1bEJrcWNLem9wQVpMaXJYKwogIFhTV2Yy
+              dUk5bWlOdHhZTVZuYlExS1BkRUF0N1phM09RUjZ6Y1MwbEdLZz09CiAgLS0tLS1F
+              TkQgQ0VSVElGSUNBVEUtLS0tLQpjZXJ0aWZpY2F0ZVByb2ZpbGU6IDM0CmNlcnRp
+              ZmljYXRlUHJvZmlsZU5hbWU6IE15IENlcnRpZmljYXRlIFByb2ZpbGUgTmFtZQpj
+              BIHbZXJ0aWZpY2F0ZVN0YXR1czogMgpjZXJ0aWZpY2F0ZVR5cGU6IDEKaXNzdWVy
+              OiBpc3N1ZXJETgpsYXRlc3RWZXJzaW9uOiAwLjAKcmV2b2NhdGlvbkRhdGU6IDE3
+              NTE4ODM3Mzg4OTMKcmV2b2NhdGlvblJlYXNvbjogMTIKc2VyaWFsTnVtYmVyOiAx
+              MApzdWJqZWN0RG46IENOPTI1MTM0NyxPPUFuYVRvbSxDPVNFCnVwZGF0ZVRpbWU6
+              IDE3NTE4ODM3Mzg4OTMKdXNlcm5hbWU6IG51bGwKAAAAAAAAoIAwggNnMIICT6AD
+              AgECAhRWV3E51TtemMznmv7KQnTmGSOY8jANBgkqhkiG9w0BAQsFADA7MRUwEwYD
+              VQQDDAxNYW5hZ2VtZW50Q0ExFTATBgNVBAoMDEVKQkNBIFNhbXBsZTELMAkGA1UE
+              BhMCU0UwHhcNMjUwNTA1MTM0NTE0WhcNMzUwNTAzMTM0NTEzWjA7MRUwEwYDVQQD
+              DAxNYW5hZ2VtZW50Q0ExFTATBgNVBAoMDEVKQkNBIFNhbXBsZTELMAkGA1UEBhMC
+              U0UwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCXPUQhOSFTF3XeQWw3
+              OeGWTub7fKNTFHbIz3vz31mGZQ5ciEbwPbop1hZWXTQocC2JJ74VOVAdwAeNFH7S
+              ztxVOsJfvREmD1f98l3Sv0WyMNPBRY+Afx+f7BqX4GFd+aWDurMOFBtVe9tnVU9Z
+              O2+/xIJaDK87oUoLVjJjTNvOaSTEvOSTTwvaWiHdHS/+QTfcizSIbwVy80x8Dt18
+              BCL+LJg27nNW+npcwx0Jv5Qp8dZKfMUfzqqCKf3KY0JtulR3hRcewH9Lecsty+hI
+              3mHZ20HI+6uQJ8ztKz1SIYYfRlYYx4LlUzdHf2ZcxvxZP771zrxCMpPWQeXedhU0
+              /Ft7AgMBAAGjYzBhMA8GA1UdEwEB/wQFMAMBAf8wHwYDVR0jBBgwFoAUyK17ukhU
+              SF7pfzDR7icTQ1EP/XIwHQYDVR0OBBYEFMite7pIVEhe6X8w0e4nE0NRD/1yMA4G
+              A1UdDwEB/wQEAwIBhjANBgkqhkiG9w0BAQsFAAOCAQEAUliuYPZh85zB7w8qMPhU
+              jYdgEi6AlMzlOmyMMqqA0vn6k36k6L7plkHcJraqt2WDLVReJqgOrPfecuZJUEnd
+              GiKcjJMLuTz3jGvZ1Fdgwl9bj9TSM4oKtaiLGwDwhzn6Y7LEw57HbRBcitjLT/7m
+              go5HdhZY43Zj+1aB3zWq+snzM6ISDblUC7bqvJELDGKZ4ezxe+49t3XXL8DzmaCb
+              z8ar7M4YBo8QayxKGj5Onbc0CqdkqDC3VUcu9ielCLsyHJOt+wOu9MvGtzIlKS6M
+              YbHPAMD2+2bcbRywItgFh+71213zTKosugWCjQ3m3Lecvisjj3Q9zHUgBzVXjo11
+              LgAAMYICFTCCAhECAQEwUzA7MRUwEwYDVQQDDAxNYW5hZ2VtZW50Q0ExFTATBgNV
+              BAoMDEVKQkNBIFNhbXBsZTELMAkGA1UEBhMCU0UCFFZXcTnVO16YzOea/spCdOYZ
+              I5jyMAsGCWCGSAFlAwQCAaCBljAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwG
+              CSqGSIb3DQEJBTEPFw0yNTA3MDcxNDA1MDFaMCsGCSqGSIb3DQEJNDEeMBwwCwYJ
+              YIZIAWUDBAIBoQ0GCSqGSIb3DQEBCwUAMC8GCSqGSIb3DQEJBDEiBCBNeyiFDMIN
+              Vn6HYGLbUEj6e8t/LRNWJSPBVXlp5Pz+EzANBgkqhkiG9w0BAQsFAASCAQBspz4C
+              QmtUCewZB4ckdkMjoGC0qodwaL+FtdnzdunJEiwwpgzAwyQxpP9k0I6cse/IUUoC
+              ueluf9EFclesdQksup57zOMRPshLYCxphvMMzYni9KNrG+HuYVBfn6wE89b/Wt1A
+              hpaE5lg2lAV3GSz9GDYwtJXyaIZR5IpHBa8alp4pj6gGv0MvN5rL2OrMlE8eKKQA
+              +VYV7EQiwmR0erkMPbaQPtg0DC89LHadZNC1nVWEV0mpmLFJUzEyOjNPoFjT+4ZN
+              7QK1iCdLZ/8ID7kQ9BTEn2DfQ7UzNZRtgBpc/fFw/g1IP5ZIXt3KISrx0ZSZb4zH
+              pxgtAchJwXvFbv40AAAAAAAA
+            """.getBytes(StandardCharsets.UTF_8);
+
     @Rule
     public TestRule traceLogMethodsRule = new TraceLogMethodsRule();
 
@@ -438,4 +534,38 @@ public class CertificateCrlReaderUnitTest {
         unwrapScpContainer.setAccessible(true);
         unwrapScpContainer.invoke(new CertificateCrlReader(), baos.toByteArray());
     }
+
+    @Test
+    public void testUnwrapSignedYaml() throws Exception {
+        final ScpContainerSigned containerSigned = YamlWriter.importFromYamlBytes(PUBLISHED_YAML_FILE, ScpContainerSigned.class);
+        final byte[] decodedSignature = Base64.decode(containerSigned.getSignature().getBytes(StandardCharsets.UTF_8));
+
+        final X509Certificate signingCaCertificate = CertTools.getCertfromByteArray(SIGNING_CA_CERT.getBytes(), X509Certificate.class);
+
+        final Method getAndVerifySignedData = CertificateCrlReader.class.getDeclaredMethod("getAndVerifySignedData", byte[].class, List.class);
+        getAndVerifySignedData.setAccessible(true);
+
+        final CertificateCrlReader certificateCrlReader = new CertificateCrlReader();
+        byte[] unwrappedData = (byte[]) getAndVerifySignedData.invoke(certificateCrlReader, decodedSignature, List.of(signingCaCertificate));
+
+        final ScpContainerWrapper scpContainerWrapper = YamlWriter.importFromYamlBytes(unwrappedData, ScpContainerWrapper.class);
+        final ScpContainer scpContainer = scpContainerWrapper.toScpContainer();
+
+        final Certificate certfromYaml = CertTools.getCertfromByteArray(
+                containerSigned.getData().getCertificate().getBytes(), Certificate.class);
+
+        assertNotNull(scpContainer);
+        assertEquals(certfromYaml, scpContainer.getCertificate());
+        assertEquals("CN=251347,O=AnaTom,C=SE", scpContainer.getSubjectDn());
+        assertEquals(BigInteger.TEN, scpContainer.getSerialNumber());
+        assertEquals(2, scpContainer.getCertificateStatus());
+        assertEquals("issuerDN", scpContainer.getIssuer());
+        assertEquals(12, scpContainer.getRevocationReason());
+        assertEquals(1751883738893L, scpContainer.getRevocationDate());
+        assertEquals(34, scpContainer.getCertificateProfile());
+        assertEquals("My Certificate Profile Name", scpContainerWrapper.getCertificateProfileName());
+        assertEquals(1, scpContainer.getCertificateType());
+        assertEquals(1751883738893L, scpContainer.getUpdateTime());
+    }
+
 }

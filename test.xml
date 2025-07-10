@@ -47,6 +47,7 @@
 	</target>
 
     <target name="test:runsa" description="run stand-alone JUnit test cases, use -Dtest.includep11=true to include P11 tests" depends="deleteDirectories">
+        <ant antfile="build.xml" dir="modules/ejbca-repository" target="test:unit" inheritall="true" inheritrefs="true"/>
       	<antcall target="optional-test-acme-unit" inheritall="true" inheritrefs="true"/>
        	<ant antfile="build.xml" dir="modules/cesecore-common" target="test:unit" inheritall="true" inheritrefs="true"/>
        	<ant antfile="build.xml" dir="modules/cesecore-ejb" target="test:unit" inheritall="true" inheritrefs="true"/>
@@ -79,6 +80,7 @@
         <antcall target="optional-test-plugins-ee-unit" inheritall="true" inheritrefs="true"/>
     	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
+
     <condition property="configdump.exists"><available file="modules/configdump/build.xml" /></condition>
     <target name="optional-test-configdump-system" if="${configdump.exists}">
         <ant antfile="build.xml" dir="modules/configdump" target="test:system" inheritall="true" inheritrefs="true"/>
@@ -207,6 +209,7 @@
                     <include name="modules/msae/src-test/**/${test.runone}.java" />
                     <include name="modules/cits/src-test/**/${test.runone}.java" />
                     <include name="modules/cesecore-x509ca/src-test/**/${test.runone}.java" />
+                    <include name="modules/ejbca-repository/src-test/**/${test.runone}.java" />
 				</fileset>
     	    </path>
     		<map from="${ejbca.home}/" to=""/>
@@ -316,6 +319,9 @@
         </condition>
         <condition property="module" value="modules/cesecore-x509ca">
             <matches string="${test-fullname}" pattern="^modules/cesecore-x509ca/.*$"/>
+        </condition>
+        <condition property="module" value="modules/ejbca-repository">
+            <matches string="${test-fullname}" pattern="^modules/ejbca-repository/.*$"/>
         </condition>
         <fail message="The requested test '${test.runone}' was not found." unless="module"/>
     	<ant antfile="${test-buildfile}" dir="${module}" target="runone" inheritall="true" inheritrefs="true"/>

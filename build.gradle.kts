@@ -178,6 +178,7 @@ dependencies {
     earlib(project(path = ":modules:edition-specific:interface", configuration = "archives"))
     earlib(project(path = ":modules:plugins", configuration = "archives"))
     earlib(project(path = ":modules:ejbca-ws-cli", configuration = "archives"))
+    earlib(project(path = ":modules:ejbca-repository", configuration = "archives"))
     if (edition == "ee") {
         earlib(project(path = ":modules:cesecore-cvcca", configuration = "archives"))
         earlib(project(path = ":modules:acme:common", configuration = "archives"))

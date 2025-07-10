@@ -62,6 +62,7 @@ import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.EABConfiguration;
 import org.cesecore.config.GlobalCaConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
+import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.GlobalCtConfiguration;
 import org.cesecore.config.InvalidConfigurationException;
 import org.cesecore.config.OAuthConfiguration;
@@ -137,7 +138,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private static final String[] ALLOWED_HEADER_FILE_EXTENSIONS = {"jpg", "jpeg", "png"};
     
     private transient UploadedFile headerFile;
-    
+
     @EJB
     private AuthorizationSessionLocal authorizationSession;
     @EJB
@@ -156,8 +157,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private RoleDataSessionLocal roleSession;
     @EJB
     private ServiceSessionLocal serviceSession;
-    
-    //StatedumpSession is not available on CE, so using standard EJB injection fails. 
+
+    //StatedumpSession is not available on CE, so using standard EJB injection fails.
     private transient final StatedumpSessionLocal statedumpSession = new EjbLocalHelper().getStatedumpSession();
     
     public UploadedFile getHeaderFile() {
@@ -239,6 +240,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             final GlobalCtConfiguration globalCtConfiguration = (GlobalCtConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCtConfiguration.CT_CONFIGURATION_ID);
             final GlobalCaConfiguration globalCaConfiguration = (GlobalCaConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCaConfiguration.CA_CONFIGURATION_ID);
             final GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+            final GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+
             try {
                 this.title = globalConfig.getEjbcaTitle();
                 this.enableEndEntityProfileLimitations = globalConfig.getEnableEndEntityProfileLimitations();
@@ -255,9 +258,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 this.vaStatusTimeConstraint = globalConfig.getVaStatusTimeConstraint();
                 this.enableIcaoCANameChange =  globalCaConfiguration.getEnableIcaoCANameChange();
                 this.ctLogs = new ArrayList<>(globalConfig.getCTLogs().values());
-                this.ocspCleanupUse = globalConfig.getOcspCleanupUse();
-                this.ocspCleanupSchedule = globalConfig.getOcspCleanupSchedule();
-                this.ocspCleanupScheduleUnit = globalConfig.getOcspCleanupScheduleUnit();
+                this.ocspCleanupUse = globalOcspConfiguration.getOcspCleanupUse();
+                this.ocspCleanupSchedule = globalOcspConfiguration.getOcspCleanupSchedule();
+                this.ocspCleanupScheduleUnit = globalOcspConfiguration.getOcspCleanupScheduleUnit();
 
                 // Admin Preferences
                 if(adminPreference == null) {
@@ -428,7 +431,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private GoogleCtPolicy googleCtPolicy;
     private boolean preCertificateMaintenanceServiceCheckDone = false;
     private boolean preCertificateMaintenanceServiceAvailable;
-    private int lastActiveTab = 0;   
+    private int lastActiveTab = 0;
 
     private boolean enableCustomHeaderRest;
     private String customHeaderRestName;
@@ -493,7 +496,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     public SystemConfigMBean() {
         super(AccessRulesConstants.ROLE_ADMINISTRATOR);
     }
-    
+
     @PostConstruct
     void checkPermissions() throws AuthorizationDeniedException {
         // do this in PostConstruct instead of the ctor because it needs the app to be initialized
@@ -734,7 +737,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         return adminPreference;
     }
-    
 
     /** @return cached or populate a new system configuration GUI representation for view or edit */
     public GuiInfo getCurrentConfig() {
@@ -999,6 +1001,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Please import from either a directory or an uploaded ZIP file, but not both.", null));
             return;
         }
+
         final GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         if (globalConfiguration.getStatedumpLockedDown()) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Statedump has been locked down on this EJBCA installation and is not available.", null));
@@ -1078,7 +1081,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 final GlobalCtConfiguration globalCtConfiguration = (GlobalCtConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCtConfiguration.CT_CONFIGURATION_ID);
                 final GlobalConfiguration globalConfig = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
                 globalConfig.setEjbcaTitle(currentConfig.getTitle());
-                
+
                 globalConfig.setEnableEndEntityProfileLimitations(currentConfig.getEnableEndEntityProfileLimitations());
                 globalConfig.setEnableKeyRecovery(currentConfig.getEnableKeyRecovery());
                 globalConfig.setLocalKeyRecovery(currentConfig.getLocalKeyRecovery());
@@ -1091,14 +1094,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalConfig.setUseSessionTimeout(currentConfig.isEnableSessionTimeout());
                 globalConfig.setSessionTimeoutTime(currentConfig.getSessionTimeoutTime());
                 globalConfig.setVaStatusTimeConstraint(currentConfig.getVaStatusTimeConstraint());
-                
-                
-
-                if (isValidOcspCleanupSettings()) {
-                    globalConfig.setOcspCleanupSchedule(currentConfig.getOcspCleanupSchedule());
-                    globalConfig.setOcspCleanupScheduleUnit(currentConfig.getOcspCleanupScheduleUnit());
-                    globalConfig.setOcspCleanupUse(currentConfig.getOcspCleanupUse());
-                }
 
                 LinkedHashMap<Integer, CTLogInfo> ctlogsMap = new LinkedHashMap<>();
                 for (CTLogInfo ctlog : currentConfig.getCtLogs()) {
@@ -1113,7 +1108,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 }
 
                 getEjbcaWebBean().saveGlobalConfiguration(globalConfig);
-                
+
                 saveCurrentHeaderFile();
 
                 // Restart OCSP cleanup job timers
@@ -1123,8 +1118,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalCesecoreConfiguration.setMaximumQueryCount(currentConfig.getMaximumQueryCount());
                 globalCesecoreConfiguration.setMaximumQueryTimeout(currentConfig.getMaximumQueryTimeout());
                 globalCesecoreConfiguration.setRedactPiiByDefault(currentConfig.isRedactPiiByDefault());
-                globalCesecoreConfiguration.setRedactPiiEnforced(currentConfig.isRedactPiiEnforced());             
+                globalCesecoreConfiguration.setRedactPiiEnforced(currentConfig.isRedactPiiEnforced());
                 globalConfigurationSession.saveConfiguration(getAdmin(), globalCesecoreConfiguration);
+
                 globalCtConfiguration.setCtCacheEnabled(currentConfig.isCtCacheEnabled());
                 globalCtConfiguration.setCtCacheSize(currentConfig.getCtCacheSize());
                 globalCtConfiguration.setCtCacheCleanupInterval(currentConfig.getCtCacheCleanupInterval());
@@ -1156,6 +1152,22 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalConfigurationSession.saveConfiguration(getAdmin(), globalCaConfiguration);
             } catch (AuthorizationDeniedException e) {
                 String msg = "Cannot save Global CA Configuration. " + e.getLocalizedMessage();
+                log.info(msg);
+                super.addNonTranslatedErrorMessage(msg);
+            }
+
+            // Save OCSP related settings to the GlobalOcspConfiguration
+            final GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            if (isValidOcspCleanupSettings()) {
+                globalOcspConfiguration.setOcspCleanupSchedule(currentConfig.getOcspCleanupSchedule());
+                globalOcspConfiguration.setOcspCleanupScheduleUnit(currentConfig.getOcspCleanupScheduleUnit());
+                globalOcspConfiguration.setOcspCleanupUse(currentConfig.getOcspCleanupUse());
+            }
+
+            try {
+                globalConfigurationSession.saveConfiguration(getAdmin(), globalOcspConfiguration);
+            } catch (AuthorizationDeniedException e) {
+                String msg = "Cannot save Global OCSP Configuration. " + e.getLocalizedMessage();
                 log.info(msg);
                 super.addNonTranslatedErrorMessage(msg);
             }
@@ -2298,9 +2310,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.ROLE_ROOT.resource()) && isStatedumpAvailable();
     }
 
- 
-
-    
     public boolean isCtCacheEnabled() {
         return getCurrentConfig().isCtCacheEnabled();
     }

@@ -75,6 +75,7 @@ dependencyResolutionManagement {
             library("jackson-core", ":jackson-core:2.17.2")
             library("jackson-databind", ":jackson-databind:2.17.2")
             library("jackson-annotations", ":jackson-annotations:2.17.2")
+            library("jackson-dataformat-xml", "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.18.3")
             library("jackson-dataformat-yaml", ":jackson-dataformat-yaml:2.17.2")
             library("reflections", ":reflections:0.9.11")
             library("swagger-annotations", ":swagger-annotations-jakarta:2.2.22")
@@ -143,6 +144,7 @@ dependencyResolutionManagement {
             library("stax.ex", ":stax-ex:1.8")
             library("txw2", ":txw2:2.3.1")
             library("yasson", ":yasson:3.0.4")
+            library("freemarker", ":freemarker:2.3.34")
             // test dependencies
             library("junit", ":junit:4.13.2")
             library("easymock", ":easymock:5.2.0")
@@ -385,6 +387,8 @@ include(
     "modules:systemtests:common",
     "modules:systemtests:ejb",
     "modules:clientToolBox",
+    "modules:ejbca-repository",
+    "modules:ejbca-repository-generator",
 )
 
 fun loadPropertiesFromFiles(vararg filePaths: String): Properties {

@@ -76,13 +76,20 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final  String   DEFAULTEJBCATITLE             = InternalConfiguration.getAppNameCapital() + " Administration";
 
     // OCSP Cleanup
+    @Deprecated(since = "9.4.0")
     private static final String OCSP_CLEANUP_USE = "ocsp.cleanup.use";
+    @Deprecated(since = "9.4.0")
     private static final boolean OCSP_CLEANUP_USE_DEFAULT = false;
 
+    @Deprecated(since = "9.4.0")
     private static final String OCSP_CLEANUP_SCHEDULE = "ocsp.cleanup.schedule";
+    @Deprecated(since = "9.4.0")
     private static final String OCSP_CLEANUP_SCHEDULE_DEFAULT = "5";
 
+    @Deprecated(since = "9.4.0")
     private static final String OCSP_CLEANUP_SCHEDULE_UNIT = "ocsp.cleanup.schedule_unit";
+
+    @Deprecated(since = "9.4.0")
     private static final String OCSP_CLEANUP_SCHEDULE_UNIT_DEFAULT = TimeUnit.HOURS.toString();
 
     /** Default value for Enable Command Line Interface. */
@@ -144,10 +151,6 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
 
     @Deprecated(since = "9.4.0")
     private static final   String ENABLEICAOCANAMECHANGE       = "enableicaocanamechange";
-
-    private static final   String USEAPPROVALNOTIFICATIONS     = "useapprovalnotifications";
-    private static final   String APPROVALADMINEMAILADDRESS    = "approvaladminemailaddress";
-    private static final   String APPROVALNOTIFICATIONFROMADDR = "approvalnotificationfromaddr";
 
     private static final   String NODESINCLUSTER               = "nodesincluster";
 
@@ -362,34 +365,42 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
      */
     @Deprecated(since = "9.4.0")
     public void setEnableIcaoCANameChange(final boolean value) { putBoolean(ENABLEICAOCANAMECHANGE, value);}
-    
-    /** @return true of email notification of requested approvals should be sent (default false) */
-     @Deprecated // Used during upgrade to EJBCA 6.6.0
-     public boolean getUseApprovalNotifications() { return getBoolean(USEAPPROVALNOTIFICATIONS, false); }
-     /**
-      * Returns the email address to the administrators that should recieve notification emails
-      * should be an alias to all approval administrators default "" never null
-      */
-     @Deprecated // Used during upgrade to EJBCA 6.6.0
-     public String getApprovalAdminEmailAddress() {
-         final Object value = data.get(APPROVALADMINEMAILADDRESS);
-         return value == null ? "" : (String) value;
-     }
-     /** @return the email address used in the from field of approval notification emails */
-     @Deprecated // Used during upgrade to EJBCA 6.6.0
-     public String getApprovalNotificationFromAddress() {
-         final Object value = data.get(APPROVALNOTIFICATIONFROMADDR);
-         return value == null ? "" : (String) value;
-     }
 
-       public void setOcspCleanupUse(final boolean value) { putBoolean(OCSP_CLEANUP_USE, value);}
-       public boolean getOcspCleanupUse() {return getBoolean(OCSP_CLEANUP_USE, OCSP_CLEANUP_USE_DEFAULT); }
+    /**
+     * @deprecated this value has been shifted to GlobalOcspConfiguration in 9.4.0 and only remains for 100% uptime and upgrade
+     */
+    @Deprecated(since = "9.4.0")
+    public void setOcspCleanupUse(final boolean value) { putBoolean(OCSP_CLEANUP_USE, value);}
 
-       public void setOcspCleanupSchedule(final String value) { data.put(OCSP_CLEANUP_SCHEDULE, value); }
-       public String getOcspCleanupSchedule() { return getString(OCSP_CLEANUP_SCHEDULE, OCSP_CLEANUP_SCHEDULE_DEFAULT); }
+    /**
+     * @deprecated this value has been shifted to GlobalOcspConfiguration in 9.4.0 and only remains for 100% uptime and upgrade
+     */
+    @Deprecated(since = "9.4.0")
+    public boolean getOcspCleanupUse() {return getBoolean(OCSP_CLEANUP_USE, OCSP_CLEANUP_USE_DEFAULT); }
 
-        public void setOcspCleanupScheduleUnit(final String value) { data.put(OCSP_CLEANUP_SCHEDULE_UNIT, value); }
-        public String getOcspCleanupScheduleUnit() { return getString(OCSP_CLEANUP_SCHEDULE_UNIT, OCSP_CLEANUP_SCHEDULE_UNIT_DEFAULT); }
+    /**
+     * @deprecated this value has been shifted to GlobalOcspConfiguration in 9.4.0 and only remains for 100% uptime and upgrade
+     */
+    @Deprecated(since = "9.4.0")
+    public void setOcspCleanupSchedule(final String value) { data.put(OCSP_CLEANUP_SCHEDULE, value); }
+
+    /**
+     * @deprecated this value has been shifted to GlobalOcspConfiguration in 9.4.0 and only remains for 100% uptime and upgrade
+     */
+    @Deprecated(since = "9.4.0")
+    public String getOcspCleanupSchedule() { return getString(OCSP_CLEANUP_SCHEDULE, OCSP_CLEANUP_SCHEDULE_DEFAULT); }
+
+    /**
+     * @deprecated this value has been shifted to GlobalOcspConfiguration in 9.4.0 and only remains for 100% uptime and upgrade
+     */
+    @Deprecated(since = "9.4.0")
+    public void setOcspCleanupScheduleUnit(final String value) { data.put(OCSP_CLEANUP_SCHEDULE_UNIT, value); }
+
+    /**
+     * @deprecated this value has been shifted to GlobalOcspConfiguration in 9.4.0 and only remains for 100% uptime and upgrade
+     */
+    @Deprecated(since = "9.4.0")
+    public String getOcspCleanupScheduleUnit() { return getString(OCSP_CLEANUP_SCHEDULE_UNIT, OCSP_CLEANUP_SCHEDULE_UNIT_DEFAULT); }
 
        public void setNodesInCluster(final Set<String> nodes) { data.put(NODESINCLUSTER, nodes); }
        @SuppressWarnings("unchecked")

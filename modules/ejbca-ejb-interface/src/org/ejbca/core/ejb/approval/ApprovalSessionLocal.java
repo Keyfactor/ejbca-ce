@@ -58,14 +58,6 @@ public interface ApprovalSessionLocal extends ApprovalSession {
      */
 	ApprovalData findNonExpiredApprovalDataLocal(int approvalId);
 	
-	/**
-	 * Returns a list of all approval requests whose status is WAITING_FOR_APPROVAL only (aka. not including status APPROVED).
-	 * This method is called mainly when upgrading older approval requests to EJBCA 6.6.0 or later.
-	 * 
-	 * @return A list of all approval requests whose status is WAITING_FOR_APPROVAL
-	 */
-	List<ApprovalData> findWaitingForApprovalApprovalDataLocal();
-	
     /**
      * Method that takes an approvalId (hash) and returns the request's ID (the value in the "Id" column in the "ApprovalData" table in the database)
      * 

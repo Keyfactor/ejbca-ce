@@ -13,6 +13,7 @@
 package org.ejbca.ui.web.admin.publisher;
 
 import java.io.Serializable;
+import java.security.Key;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -34,6 +35,8 @@ import jakarta.inject.Named;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.certificate.ssh.SshKeyFactory;
+import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
@@ -57,6 +60,7 @@ import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.ejbca.ui.web.ParameterException;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.configuration.SortableSelectItem;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * 
@@ -90,6 +94,8 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     private PublisherQueueSessionLocal publisherqueuesession;
     @EJB
     private CAAdminSessionLocal cAAdminSession;
+    @EJB
+    private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
     
     private LdapPublisherMBData ldapPublisherMBData;
     private LdapSearchPublisherMBData ldapSearchPublisherMBData;
@@ -119,6 +125,8 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
 
     private BasePublisher publisher = null;
     private Integer publisherId = null;
+    private String publisherName = null;
+    private boolean createNewPublisher = false;
     
     public int getPublisherId(){
         return publisherId;
@@ -131,6 +139,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     private boolean keepPublishedInQueue;
     private boolean onlyUseQueue;
     private boolean safeDirectPublishing;
+    private String scpPublisherAuthPublicKey= "";
 
     @Inject
     private ListPublishersManagedBean listPublishers;
@@ -150,6 +159,14 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
 
     public EditPublisherManagedBean() {
         super(AccessRulesConstants.REGULAR_VIEWPUBLISHER);
+    }
+
+    public String getPublisherName() {
+        return publisherName;
+    }
+
+    public void setPublisherName(String publisherName) {
+        this.publisherName = publisherName;
     }
 
     public List<SortableSelectItem> getAvailablePublisherTypes() {
@@ -225,16 +242,12 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         return getEjbcaWebBean().isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_EDITPUBLISHER);
     }
 
-    public String getEditPublisherTitle() {
-        return getEjbcaWebBean().getText("PUBLISHER") + " : " + listPublishers.getSelectedPublisherName();
-    }
-
     /**
     *
     * @return true if the publisher type is inherently read-only
     */
     public boolean isReadOnly() {
-        if (!getHasEditRights()) {
+        if (!getHasEditRights() || listPublishers.isReadOnly()) {
             return true;
         } else if (publisher instanceof CustomPublisherContainer) {
             ICustomPublisher pub = ((CustomPublisherContainer) publisher).getCustomPublisher();
@@ -470,25 +483,96 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
             addErrorMessage(e.getMessage());
             return StringUtils.EMPTY;
         }
-        publisherSession.changePublisher(getAdmin(), listPublishers.getSelectedPublisherName(), publisher);
-        return "listpublishers?faces-redirect=true";
+
+        try {
+            if (this.createNewPublisher) {
+                publisherSession.addPublisher(getAdmin(), getPublisherName(), publisher);
+            } else {
+                publisherSession.changePublisher(getAdmin(), getPublisherId(), getPublisherName(), publisher);
+            }
+        } catch (PublisherExistsException e) {
+            addErrorMessage("PUBLISHERALREADYEXISTS", getPublisherName());
+            return StringUtils.EMPTY;
+        }
+
+		return "listpublishers?faces-redirect=true";
     }
     
     public void savePublisherAndTestConnection() throws AuthorizationDeniedException {
+        
         try {
             prepareForSave();
         } catch (PublisherDoesntExistsException | PublisherExistsException | PublisherException | ParameterException e) {
             addErrorMessage(e.getMessage());
             return;
         }
-        publisherSession.changePublisher(getAdmin(), listPublishers.getSelectedPublisherName(), publisher);
+
         try {
+            if (this.createNewPublisher) {
+                publisherSession.addPublisher(getAdmin(), getPublisherName(), publisher);
+            } else {
+                publisherSession.changePublisher(getAdmin(), getPublisherId(), getPublisherName(), publisher);
+            }
+        } catch (PublisherExistsException e) {
+            addErrorMessage("PUBLISHERALREADYEXISTS", getPublisherName());
+        }
+
+        try {
+            
+            if (isManageScpPublisher()) {
+                boolean result = savePublisherAndShowDownloadableKey();
+                if (!result) {
+                    return;
+                }
+            }
+            
             publisherSession.testConnection(publisherId);
             addInfoMessage("CONTESTEDSUCESSFULLY");
+            
         } catch (PublisherConnectionException pce) {
-            log.error("Error connecting to publisher " + listPublishers.getSelectedPublisherName(), pce);
-            addErrorMessage("ERRORCONNECTINGTOPUB", listPublishers.getSelectedPublisherName(), pce.getMessage());
+            log.error("Error connecting to publisher " + getPublisherName(), pce);
+            addErrorMessage("ERRORCONNECTINGTOPUB", getPublisherName(), pce.getMessage());
         }
+    }
+    
+    public boolean isManageScpPublisher() {
+        return selectedPublisherType!=null && selectedPublisherType.contains("ScpPublisher");
+    }
+    
+    public boolean isRenderedScpPublisherAuthPublicKey() {
+        return StringUtils.isNotBlank(scpPublisherAuthPublicKey);
+    }
+    
+    public String getScpPublisherAuthPublicKey() {
+        return scpPublisherAuthPublicKey;
+    }
+    
+    private boolean savePublisherAndShowDownloadableKey() throws AuthorizationDeniedException {
+        
+        boolean useSftp = (boolean) getCustomPublisherMBData().getCustomPublisherPropertyValues().get("scp.usesftp");
+        if (!useSftp) {
+            log.debug("SFTP is not being used.");
+            return true;
+        }
+        String cryptoTokenIdAndKeyPairName = 
+                (String) getCustomPublisherMBData().getCustomPublisherPropertyValues().get("scp.cryptoken.keypair");
+        if (cryptoTokenIdAndKeyPairName==null || cryptoTokenIdAndKeyPairName.length() < 4) {
+            addErrorMessage("No SSH key from Cryptotoken is configured.");
+            return false;
+        } 
+        int cryptoTokenId = Integer.parseInt(cryptoTokenIdAndKeyPairName.split(";")[0].trim());
+        String keyPairName = cryptoTokenIdAndKeyPairName.split(";")[1].trim();
+        Key sshAuthKey;
+        try {
+            sshAuthKey =  cryptoTokenManagementSession.getPublicKey(getAdmin(), cryptoTokenId, keyPairName).getPublicKey();
+        } catch (NumberFormatException | CryptoTokenOfflineException e) {
+            addErrorMessage(e.getMessage());
+            return false;
+        }
+        
+        scpPublisherAuthPublicKey = SshKeyFactory.getDownloadableSshKey(sshAuthKey);
+        return true;
+        
     }
     
     // This is ugly but could not find a better way for it
@@ -589,8 +673,16 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
 
     private void initCommonParts() {
         if (publisher == null) { // Loading from database
-            publisher = publisherSession.getPublisher(listPublishers.getSelectedPublisherName());
+            this.createNewPublisher = listPublishers.getSelectedPublisherId() == null || listPublishers.getSelectedPublisherId() == 0;
+
+            if (StringUtils.isBlank(listPublishers.getSelectedPublisherName())) {
+                publisher = new LdapPublisher();
+            } else {
+                publisher = publisherSession.getPublisher(listPublishers.getSelectedPublisherName());
+            }
+
             publisherId = publisher.getPublisherId();
+            publisherName = this.createNewPublisher ? listPublishers.getNewPublisherName() : publisher.getName();
         }
 
         selectedPublisherType = getSelectedPublisherValue();

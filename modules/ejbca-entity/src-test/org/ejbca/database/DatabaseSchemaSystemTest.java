@@ -179,7 +179,6 @@ public class DatabaseSchemaSystemTest {
         entity.setEndEntityProfileId(0);
         entity.setExpiredate(0);
         entity.setId(Integer.valueOf(0));
-        entity.setRemainingapprovals(0);
         entity.setReqadmincertissuerdn(VARCHAR_250B);
         entity.setReqadmincertsn(VARCHAR_250B);
         entity.setRequestdata(CLOB_1MiB);
