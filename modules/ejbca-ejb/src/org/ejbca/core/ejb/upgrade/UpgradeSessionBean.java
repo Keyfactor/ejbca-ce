@@ -722,10 +722,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private boolean postMigrateDatabase940() {
         log.info("Starting post upgrade to 9.4.0");
         try {
-            removeEnableIcaoNameChangeFromGlobalConfiguration();
-            removeOldCtValues();
-            removeOcspCleanupFromGlobalConfiguration();
-            removeEEPLimitationsFromGlobalConfiguration();
+            removeEnableIcaoNameChangeFromGlobalConfiguration940();
+            removeOldCtValues940();
+            removeOcspCleanupFromGlobalConfiguration940();
+            removeEEPLimitationsFromGlobalConfiguration940();
         } catch (AuthorizationDeniedException e) {
             log.error("Administrator was not authorized to perform post-upgrade.");
             return false;
@@ -734,7 +734,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         return true;
     }
 
-    private void removeEEPLimitationsFromGlobalConfiguration() {
+    private void removeEEPLimitationsFromGlobalConfiguration940() {
+        log.info("Post-Upgrade: Removing old EEP Limitations data");
         GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         LinkedHashMap<Object, Object> data = globalConfiguration.getRawData();
         if (data.containsKey("endentityprofilelimitations")) {
@@ -748,7 +749,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
     }
 
-    private void removeOcspCleanupFromGlobalConfiguration() {
+    private void removeOcspCleanupFromGlobalConfiguration940() {
+        log.info("Post-Upgrade: Removing old OCSP cleanup data");
         GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         LinkedHashMap<Object, Object> data = globalConfiguration.getRawData();
         if (data.containsKey("ocsp.cleanup.use")) {
@@ -774,7 +776,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * Removes the enableIcaoNameChange value from GlobalConfiguration post upgrade to 9.4 
      * 
      */
-    private void removeEnableIcaoNameChangeFromGlobalConfiguration() throws AuthorizationDeniedException {
+    private void removeEnableIcaoNameChangeFromGlobalConfiguration940() throws AuthorizationDeniedException {
+        log.info("Post-Upgrade: Removing old EnableIcaoNameChange");
         GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         //Go straight into the data map and remove it
         LinkedHashMap<Object, Object> data = globalConfiguration.getRawData();
@@ -792,7 +795,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     /**
      * Removes the CT related values which were migrated from GlobalConfiguration and GlobalCesecoreConfiguration in 9.4.0
      */
-    private void removeOldCtValues() throws AuthorizationDeniedException {
+    private void removeOldCtValues940() throws AuthorizationDeniedException {
+        log.info("Post-Upgrade: Removing old CT data");
         GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         //Go straight into the data map and remove it
         LinkedHashMap<Object, Object> globalConfigData = globalConfiguration.getRawData();
@@ -2281,6 +2285,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     @Override
     public void migrateDatabase940() throws UpgradeFailedException {
+        log.info("Starting upgrade to 9.4.0");
         //Move ocsp.includecertchain and ocsp.includesignercert from the properties files and into the database configuration
         migrateOcspOptions940();
         //Move enableIcaoNameChange from GlobalConfiguration to the new GlobalCaConfiguration row
@@ -2290,11 +2295,12 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         // Move ocsp cleanup settings from Global to the GlobalOcsp
         migrateOcspCleanUpFromGlobalConfig940();
         // Move EEP Limitations from Global to GlobalEEPConfiguration
-        migrateEEPLimitations();
+        migrateEEPLimitations940();
     }
 
     @SuppressWarnings("deprecation")
-    private void migrateEEPLimitations() throws UpgradeFailedException {
+    private void migrateEEPLimitations940() throws UpgradeFailedException {
+        log.info("Upgrade: Migrating EEP Limitations data");
         final GlobalConfiguration globalConfig = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         final GlobalEndEntityProfileConfiguration globalEEPConfiguration = (GlobalEndEntityProfileConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalEndEntityProfileConfiguration.EEP_CONFIGURATION_ID);
         globalEEPConfiguration.setEnableEndEntityProfileLimitations(globalConfig.getEnableEndEntityProfileLimitations());
@@ -2310,6 +2316,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     
     @SuppressWarnings("deprecation")
     private void migrateOcspOptions940() throws UpgradeFailedException {
+        log.info("Upgrade: Migrating OCSP options");
         GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
         globalOcspConfiguration.setIncludeSigningCertificate(OcspConfiguration.getIncludeSignCert());
         globalOcspConfiguration.setIncludeCertificateChain(OcspConfiguration.getIncludeCertChain());
@@ -2325,6 +2332,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     
     @SuppressWarnings("deprecation")
     private void migrateCaConfigurationFromGlobalConfig940() throws UpgradeFailedException {
+        log.info("Upgrade: Migrating CA configuration");
         GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         GlobalCaConfiguration globalCaConfiguration = (GlobalCaConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCaConfiguration.CA_CONFIGURATION_ID);
         globalCaConfiguration.setEnableIcaoCANameChange(globalConfiguration.getEnableIcaoCANameChange());        
@@ -2339,6 +2347,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     @SuppressWarnings("deprecation")
     private void migrateCtConfigurationIntoGlobalCtConfiguration940() throws UpgradeFailedException {
+        log.info("Upgrade: Migrating CT configuration");
         GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
         GlobalCtConfiguration globalCtConfiguration = (GlobalCtConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCtConfiguration.CT_CONFIGURATION_ID);
@@ -2359,6 +2368,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     @SuppressWarnings("deprecation")
     private void migrateOcspCleanUpFromGlobalConfig940() throws UpgradeFailedException {
+        log.info("Upgrade: Migrating OCSP Cleanup Schedule data");
         GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
 
