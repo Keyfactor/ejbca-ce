@@ -45,6 +45,11 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
+import org.bouncycastle.asn1.x500.RDN;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x500.X500NameBuilder;
+import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.util.Properties;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -184,7 +189,10 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
                 try {
                     ExtendedUserDataHandler extendedUserDataHandler = (ExtendedUserDataHandler) Class.forName(preProcessorClass).getDeclaredConstructor().newInstance();
                     requestMessage = extendedUserDataHandler.processRequestMessage(requestMessage, certificateProfileSession.getCertificateProfileName(userdata.getCertificateProfileId()));
-                    userdata.setDN(requestMessage.getRequestX500Name().toString());
+                    
+                    final String mergedDN = mergeDnFromRequestWithUserDataDN(requestMessage.getRequestX500Name(), userdata.getDN());
+                    userdata.setDN(mergedDN);
+                    
                 } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | IllegalArgumentException
                         | InvocationTargetException | NoSuchMethodException | SecurityException e) {
                     throw new IllegalStateException("Request Preprocessor implementation " + preProcessorClass + " could not be instantiated.");
@@ -300,7 +308,10 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
                 try {
                     ExtendedUserDataHandler extendedUserDataHandler = (ExtendedUserDataHandler) Class.forName(preProcessorClass).getDeclaredConstructor().newInstance();
                     req = extendedUserDataHandler.processRequestMessage(req, certificateProfileSession.getCertificateProfileName(userdata.getCertificateProfileId()));
-                    userdata.setDN(req.getRequestX500Name().toString());
+                    
+                    final String mergedDN = mergeDnFromRequestWithUserDataDN(req.getRequestX500Name(), userdata.getDN());
+                    userdata.setDN(mergedDN);
+                    
                 } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | IllegalArgumentException
                         | InvocationTargetException | NoSuchMethodException | SecurityException e) {
                     throw new IllegalStateException("Request Preprocessor implementation " + preProcessorClass + " could not be instansiated.");
@@ -332,8 +343,46 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
         }
         return retval;
     }
-    
-    
+
+    /**
+     * Merging a DN from request (if any) + DN already included in the userDN (if any)
+     * @param requestX500Name
+     * @param userDn
+     * @return the string containing the merged DN
+     */
+    private String mergeDnFromRequestWithUserDataDN(X500Name requestX500Name, String userDn) {
+
+        X500NameBuilder builder = new X500NameBuilder(BCStyle.INSTANCE);
+
+        // Add RDNs from request
+        if (requestX500Name != null) {
+            for (RDN rdn : requestX500Name.getRDNs()) {
+                AttributeTypeAndValue atv = rdn.getFirst();
+                if (atv != null) {
+                    builder.addRDN(atv);
+                }
+            }
+        }
+
+        // Add RDNs from user DN
+        if (userDn != null && !userDn.trim().isEmpty()) {
+            try {
+                X500Name toAdd = new X500Name(userDn);
+                for (RDN rdn : toAdd.getRDNs()) {
+                    AttributeTypeAndValue atv = rdn.getFirst();
+                    if (atv != null) {
+                        builder.addRDN(atv);
+                    }
+                }
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Invalid user DN string: " + userDn, e);
+            }
+        }
+
+        //Return the merged DN
+        return builder.build().toString();
+
+    }
 
     /**
      * @throws CADoesntExistsException if userdata.caId is not a valid caid. This is checked in editUser or addUserFromWS
