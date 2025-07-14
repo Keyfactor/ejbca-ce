@@ -39,10 +39,15 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase implements Se
     private static final String REDACT_PII_DATA_DEFAULT = "redact.pii.default";
     private static final String REDACT_PII_DATA_ENFORCED = "redact.pii.enforced";
     
+    @Deprecated(since = "9.4.0")
     private static final String CT_CACHE_ENABLED_KEY = "ct_cache_enabled";
+    @Deprecated(since = "9.4.0")
     private static final String CT_CACHE_SIZE_KEY = "ct_cache_size";
+    @Deprecated(since = "9.4.0")
     private static final String CT_CACHE_CLEANUP_INTERVAL_KEY = "ct_cache_cleanup_interval";
+    @Deprecated(since = "9.4.0")
     private static final String CT_CACHE_FAST_FAIL_ENABLED_KEY = "ct_cache_fast_fail_enabled";
+    @Deprecated(since = "9.4.0")
     private static final String CT_CACHE_FAST_FAIL_BACKOFF_KEY = "ct_cache_fast_fail_backoff";
     
     @Override
@@ -113,9 +118,12 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase implements Se
         data.put(MAXIMUM_QUERY_TIMEOUT_KEY, Math.max(maximumQueryTimeoutMs, 0L));
     }
     
+    @Deprecated(since = "9.4.0")
     public boolean getCtCacheEnabled() { return getBoolean(CT_CACHE_ENABLED_KEY, true); }
+    @Deprecated(since = "9.4.0")
     public void setCtCacheEnabled(final boolean value) { data.put(CT_CACHE_ENABLED_KEY, value); } 
     
+    @Deprecated(since = "9.4.0")
     public long getCtCacheSize() { 
         Long value = (Long) data.get(CT_CACHE_SIZE_KEY);
         if(value == null) {
@@ -123,10 +131,13 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase implements Se
         }
         return (Long) data.get(CT_CACHE_SIZE_KEY);
     }
+    
+    @Deprecated(since = "9.4.0")
     public void setCtCacheSize(final long ctCacheSize) {
         data.put(CT_CACHE_SIZE_KEY, ctCacheSize);
     }
     
+    @Deprecated(since = "9.4.0")
     public long getCtCacheCleanupInterval() {
         Long value = (Long) data.get(CT_CACHE_CLEANUP_INTERVAL_KEY);
         if(value == null) {
@@ -135,18 +146,22 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase implements Se
         return (Long) data.get(CT_CACHE_CLEANUP_INTERVAL_KEY);
     }
     
+    @Deprecated(since = "9.4.0")
     public void setCtCacheCleanupInterval(final long interval) {
         data.put(CT_CACHE_CLEANUP_INTERVAL_KEY, interval);
     }
     
+    @Deprecated(since = "9.4.0")
     public boolean getCtCacheFastFailEnabled() {
         return getBoolean(CT_CACHE_FAST_FAIL_ENABLED_KEY, true);
     }
     
+    @Deprecated(since = "9.4.0")
     public void setCtCacheFastFailEnabled(final boolean fastFailEnabled) {
         data.put(CT_CACHE_FAST_FAIL_ENABLED_KEY, fastFailEnabled);
     }
     
+    @Deprecated(since = "9.4.0")
     public long getCtCacheFastFailBackoff() {
         Long value = (Long) data.get(CT_CACHE_FAST_FAIL_BACKOFF_KEY);
         if(value == null) {
@@ -155,6 +170,7 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase implements Se
         return (Long) data.get(CT_CACHE_FAST_FAIL_BACKOFF_KEY);
     }
     
+    @Deprecated(since = "9.4.0")
     public void setCtCacheFastFailBackoff(final long backoff) {
         data.put(CT_CACHE_FAST_FAIL_BACKOFF_KEY, backoff);
     }
