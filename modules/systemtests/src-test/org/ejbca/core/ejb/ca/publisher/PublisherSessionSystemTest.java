@@ -137,8 +137,8 @@ public class PublisherSessionSystemTest {
         final String name_2 = getNextPublisherName();
 
         // Test some initial empty checks to see we do not get NPEs
-        Integer noId = publisherProxySession.getPublisherId(name_1);
-        assertNull("There is no publisher with the name: " + name_1, noId);
+        int noId = publisherProxySession.getPublisherId(name_1);
+        assertEquals("There is no publisher with the name: " + name_1, 0, noId);
         String noName = publisherProxySession.getPublisherName(123);
         assertNull("There is no publisher with the id: 123", noName);
         // Add new publisher
