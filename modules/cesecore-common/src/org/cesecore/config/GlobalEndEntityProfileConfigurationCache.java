@@ -23,6 +23,10 @@ public class GlobalEndEntityProfileConfigurationCache implements ConfigurationCa
     private volatile GlobalEndEntityProfileConfiguration globalEEPConfiguration = null;
     private volatile long lastupdatetime = -1;
 
+    public GlobalEndEntityProfileConfigurationCache() {
+        // Do nothing
+    }
+
     @Override
     public String getConfigId() {
         return GlobalEndEntityProfileConfiguration.EEP_CONFIGURATION_ID;
