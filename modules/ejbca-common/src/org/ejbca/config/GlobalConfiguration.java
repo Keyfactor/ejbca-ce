@@ -142,7 +142,10 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final   String HEADLOGO         = "headlogo";
 
       // Other configuration.
+
+    @Deprecated(since = "9.4.0")
     private static final   String ENABLEEEPROFILELIMITATIONS   = "endentityprofilelimitations";
+
     private static final   String ENABLEAUTHENTICATEDUSERSONLY = "authenticatedusersonly";
     private static final   String ENABLEKEYRECOVERY            = "enablekeyrecovery";
     private static final   String LOCALKEYRECOVERY             = "localkeyrecovery";
@@ -340,7 +343,10 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
 
     public   String getAvailableThemesAsString(){return (String) data.get(AVAILABLETHEMES);}
 
+    @Deprecated(since = "9.4.0")
     public boolean getEnableEndEntityProfileLimitations() { return getBoolean(ENABLEEEPROFILELIMITATIONS, true); }
+
+    @Deprecated(since = "9.4.0")
     public void setEnableEndEntityProfileLimitations(final boolean value) { putBoolean(ENABLEEEPROFILELIMITATIONS, value); }
 
     public boolean getEnableAuthenticatedUsersOnly() { return getBoolean(ENABLEAUTHENTICATEDUSERSONLY, false);}

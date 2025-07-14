@@ -64,6 +64,7 @@ import org.cesecore.config.GlobalCaConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.GlobalCtConfiguration;
+import org.cesecore.config.GlobalEndEntityProfileConfiguration;
 import org.cesecore.config.InvalidConfigurationException;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.config.RaStyleInfo;
@@ -241,10 +242,11 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             final GlobalCaConfiguration globalCaConfiguration = (GlobalCaConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCaConfiguration.CA_CONFIGURATION_ID);
             final GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
             final GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            final GlobalEndEntityProfileConfiguration globalEEPConfiguration = (GlobalEndEntityProfileConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalEndEntityProfileConfiguration.EEP_CONFIGURATION_ID);
 
             try {
                 this.title = globalConfig.getEjbcaTitle();
-                this.enableEndEntityProfileLimitations = globalConfig.getEnableEndEntityProfileLimitations();
+                this.enableEndEntityProfileLimitations = globalEEPConfiguration.getEnableEndEntityProfileLimitations();
                 this.enableKeyRecovery = globalConfig.getEnableKeyRecovery();
                 this.localKeyRecovery = globalConfig.getLocalKeyRecovery();
                 this.localKeyRecoveryCryptoTokenId = globalConfig.getLocalKeyRecoveryCryptoTokenId() != null ? globalConfig.getLocalKeyRecoveryCryptoTokenId() : 0;
@@ -1080,9 +1082,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             try {
                 final GlobalCtConfiguration globalCtConfiguration = (GlobalCtConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCtConfiguration.CT_CONFIGURATION_ID);
                 final GlobalConfiguration globalConfig = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-                globalConfig.setEjbcaTitle(currentConfig.getTitle());
 
-                globalConfig.setEnableEndEntityProfileLimitations(currentConfig.getEnableEndEntityProfileLimitations());
+                globalConfig.setEjbcaTitle(currentConfig.getTitle());
                 globalConfig.setEnableKeyRecovery(currentConfig.getEnableKeyRecovery());
                 globalConfig.setLocalKeyRecovery(currentConfig.getLocalKeyRecovery());
                 globalConfig.setLocalKeyRecoveryCryptoTokenId(zeroToNull(currentConfig.getLocalKeyRecoveryCryptoTokenId()));
@@ -1146,12 +1147,23 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 log.info(msg);
                 super.addNonTranslatedErrorMessage(msg);
             }
+
             GlobalCaConfiguration globalCaConfiguration = (GlobalCaConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCaConfiguration.CA_CONFIGURATION_ID);
             globalCaConfiguration.setEnableIcaoCANameChange(currentConfig.getEnableIcaoCANameChange());
             try {
                 globalConfigurationSession.saveConfiguration(getAdmin(), globalCaConfiguration);
             } catch (AuthorizationDeniedException e) {
                 String msg = "Cannot save Global CA Configuration. " + e.getLocalizedMessage();
+                log.info(msg);
+                super.addNonTranslatedErrorMessage(msg);
+            }
+
+            final GlobalEndEntityProfileConfiguration globalEEPConfiguration = (GlobalEndEntityProfileConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalEndEntityProfileConfiguration.EEP_CONFIGURATION_ID);
+            globalEEPConfiguration.setEnableEndEntityProfileLimitations(currentConfig.getEnableEndEntityProfileLimitations());
+            try {
+                globalConfigurationSession.saveConfiguration(getAdmin(), globalEEPConfiguration);
+            } catch (AuthorizationDeniedException e) {
+                String msg = "Cannot save Global EEP Configuration. " + e.getLocalizedMessage();
                 log.info(msg);
                 super.addNonTranslatedErrorMessage(msg);
             }
