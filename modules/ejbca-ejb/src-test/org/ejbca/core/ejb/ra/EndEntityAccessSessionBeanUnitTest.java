@@ -15,11 +15,11 @@ package org.ejbca.core.ejb.ra;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.config.GlobalEndEntityProfileConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.easymock.EasyMockRunner;
 import org.easymock.Mock;
 import org.easymock.TestSubject;
-import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionBean.UserDataQueryResult;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
@@ -56,10 +56,11 @@ public class EndEntityAccessSessionBeanUnitTest {
 		final String endEntityAccessRule = "/view_end_entity";
 		final boolean authorizedToAnyProfile = true;
 
-		GlobalConfiguration globalConfiguration = new GlobalConfiguration();
-		globalConfiguration.setEnableEndEntityProfileLimitations(true);
+		GlobalEndEntityProfileConfiguration globalEEPConfiguration = new GlobalEndEntityProfileConfiguration();
+		globalEEPConfiguration.setEnableEndEntityProfileLimitations(true);
+
 		expect(globalConfigurationSession.getCachedConfiguration(
-				GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).andReturn(globalConfiguration);
+				GlobalEndEntityProfileConfiguration.EEP_CONFIGURATION_ID)).andReturn(globalEEPConfiguration);
 		replay(globalConfigurationSession);
 
 		//when

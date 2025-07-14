@@ -29,9 +29,9 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.config.GlobalEndEntityProfileConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.util.LogRedactionUtils;
-import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
@@ -85,8 +85,8 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
     @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
 
-    private GlobalConfiguration getGlobalConfiguration() {
-        return (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+    private GlobalEndEntityProfileConfiguration getGlobalEEPConfiguration() {
+        return (GlobalEndEntityProfileConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalEndEntityProfileConfiguration.EEP_CONFIGURATION_ID);
     }
 
     /** Internal localization of logs and errors */
@@ -227,7 +227,7 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
         if (data == null) {
             throw new NoSuchEndEntityException("Could not find user " + username);
         }
-        if (getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
+        if (getGlobalEEPConfiguration().getEnableEndEntityProfileLimitations()) {
             // Check if administrator is authorized to edit user.
             assertAuthorizedToEndEntityProfile(authenticationToken, data.getEndEntityProfileId(), AccessRulesConstants.EDIT_END_ENTITY, data.getCaId());
         }

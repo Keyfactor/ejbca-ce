@@ -111,6 +111,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.cert.SubjectDirAttrExtension;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.config.GlobalEndEntityProfileConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenInfo;
@@ -1890,13 +1891,17 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
     @Test
     public void test20bKeyRecoverAny() throws Exception {
         log.trace(">test20bKeyRecoverAny");
-        final GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        boolean eelimitation = gc.getEnableEndEntityProfileLimitations();
-        boolean keyrecovery = gc.getEnableKeyRecovery();
-        if (!gc.getEnableKeyRecovery() || !gc.getEnableEndEntityProfileLimitations()) {
-            gc.setEnableKeyRecovery(true);
-            gc.setEnableEndEntityProfileLimitations(true);
-            globalConfigurationSession.saveConfiguration(intAdmin, gc);
+        final GlobalEndEntityProfileConfiguration globalEEPConfiguration = (GlobalEndEntityProfileConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalEndEntityProfileConfiguration.EEP_CONFIGURATION_ID);
+        final GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+
+        boolean eelimitation = globalEEPConfiguration.getEnableEndEntityProfileLimitations();
+        boolean keyrecovery = globalConfiguration.getEnableKeyRecovery();
+
+        if (!keyrecovery || !eelimitation) {
+            globalConfiguration.setEnableKeyRecovery(true);
+            globalEEPConfiguration.setEnableEndEntityProfileLimitations(true);
+            globalConfigurationSession.saveConfiguration(intAdmin, globalConfiguration);
+            globalConfigurationSession.saveConfiguration(intAdmin, globalEEPConfiguration);
         }
 
         if(endEntityProfileSession.getEndEntityProfile(KEY_RECOVERY_EEP) == null) {
@@ -2075,9 +2080,10 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
                 assertEquals(key1, key2);
             }
         } finally {
-            gc.setEnableEndEntityProfileLimitations(eelimitation);
-            gc.setEnableKeyRecovery(keyrecovery);
-            globalConfigurationSession.saveConfiguration(intAdmin, gc);
+            globalEEPConfiguration.setEnableEndEntityProfileLimitations(eelimitation);
+            globalConfiguration.setEnableKeyRecovery(keyrecovery);
+            globalConfigurationSession.saveConfiguration(intAdmin, globalConfiguration);
+            globalConfigurationSession.saveConfiguration(intAdmin, globalEEPConfiguration);
         }
 
         log.trace("<test20bKeyRecoverAny");
@@ -3627,11 +3633,13 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
         CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         profile.setAllowDNOverrideByEndEntityInformation(allowDNOverrideByEndEntityInformation);
         certificateProfileSession.addCertificateProfile(intAdmin, WS_TEST_CERTIFICATE_PROFILE_NAME, profile);
+
         //This test will fail if EEP limitations are enabled
-        GlobalConfiguration originalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        globalConfiguration.setEnableEndEntityProfileLimitations(false);
-        globalConfigurationSession.saveConfiguration(intAdmin, globalConfiguration);
+        final GlobalEndEntityProfileConfiguration globalEEPConfiguration = (GlobalEndEntityProfileConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalEndEntityProfileConfiguration.EEP_CONFIGURATION_ID);
+        final GlobalEndEntityProfileConfiguration originalGlobalEEPConfiguration = (GlobalEndEntityProfileConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalEndEntityProfileConfiguration.EEP_CONFIGURATION_ID);
+        globalEEPConfiguration.setEnableEndEntityProfileLimitations(false);
+        globalConfigurationSession.saveConfiguration(intAdmin, globalEEPConfiguration);
+
         String userName = "eeiDnOverride" + secureRandom.nextLong();
         final UserDataVOWS userData = new UserDataVOWS();
         userData.setUsername(userName);
@@ -3677,7 +3685,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
             if (certificateProfileSession.getCertificateProfileId(WS_TEST_CERTIFICATE_PROFILE_NAME) != 0) {
                 certificateProfileSession.removeCertificateProfile(intAdmin, WS_TEST_CERTIFICATE_PROFILE_NAME);
             }
-            globalConfigurationSession.saveConfiguration(intAdmin, originalConfiguration);
+            globalConfigurationSession.saveConfiguration(intAdmin, originalGlobalEEPConfiguration);
         }
     }
 
