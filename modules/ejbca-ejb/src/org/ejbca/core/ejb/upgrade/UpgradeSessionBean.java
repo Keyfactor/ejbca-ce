@@ -72,6 +72,7 @@ import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.config.GlobalCaConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
+import org.cesecore.config.GlobalCtConfiguration;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.config.OcspConfiguration;
@@ -726,7 +727,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 log.error("Role seems to have changed ID while retaining name/namespace or vice versa.");
                 return false;
             } catch (AuthorizationDeniedException e) {
-                log.error("Administrator was not authorized to perform post-upgrade, lacks access to Configuration Checker configuration");
+                log.error("Administrator was not authorized to perform post-upgrade.");
                 return false;
             }
         }       
@@ -737,8 +738,14 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     
     private boolean postMigrateDatabase940() {
         log.info("Starting post upgrade to 9.4.0");
-        removeEnableIcaoNameChangeFromGlobalConfiguration();
-        removeOcspCleanupFromGlobalConfiguration();
+        try {
+            removeEnableIcaoNameChangeFromGlobalConfiguration();
+            removeOldCtValues();
+            removeOcspCleanupFromGlobalConfiguration();
+        } catch (AuthorizationDeniedException e) {
+            log.error("Administrator was not authorized to perform post-upgrade.");
+            return false;
+        }
         log.info("Post upgrade to 9.4.0 complete.");
         return true;
     }
@@ -769,7 +776,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * Removes the enableIcaoNameChange value from GlobalConfiguration post upgrade to 9.4 
      * 
      */
-    private void removeEnableIcaoNameChangeFromGlobalConfiguration() {
+    private void removeEnableIcaoNameChangeFromGlobalConfiguration() throws AuthorizationDeniedException {
         GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         //Go straight into the data map and remove it
         LinkedHashMap<Object, Object> data = globalConfiguration.getRawData();
@@ -782,7 +789,44 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 throw new IllegalStateException("Always allow token was denied access to global configuration.", e);
             }
         }
-        
+    }
+
+    /**
+     * Removes the CT related values which were migrated from GlobalConfiguration and GlobalCesecoreConfiguration in 9.4.0
+     */
+    private void removeOldCtValues() throws AuthorizationDeniedException {
+        GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        //Go straight into the data map and remove it
+        LinkedHashMap<Object, Object> globalConfigData = globalConfiguration.getRawData();
+        if (globalConfigData.containsKey("google_ct_policy")) {
+            globalConfigData.remove("google_ct_policy");
+            globalConfiguration.loadData(globalConfigData);
+            try {
+                globalConfigurationSession.saveConfiguration(authenticationToken, globalConfiguration);
+            } catch (AuthorizationDeniedException e) {
+                throw new IllegalStateException("Always allow token was denied access to global configuration.", e);
+            }
+        }
+        GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+        LinkedHashMap<Object, Object> globalCesecoreConfigData = globalCesecoreConfiguration.getRawData();
+        if (globalCesecoreConfigData.containsKey("ct_cache_enabled")) {
+            globalCesecoreConfigData.remove("ct_cache_enabled");
+        }
+        if (globalCesecoreConfigData.containsKey("ct_cache_size")) {
+            globalCesecoreConfigData.remove("ct_cache_size");
+        }
+        if (globalCesecoreConfigData.containsKey("ct_cache_cleanup_interval")) {
+            globalCesecoreConfigData.remove("ct_cache_cleanup_interval");
+        }
+        if (globalCesecoreConfigData.containsKey("ct_cache_fast_fail_enabled")) {
+            globalCesecoreConfigData.remove("ct_cache_fast_fail_enabled");
+        }
+        if (globalCesecoreConfigData.containsKey("ct_cache_fast_fail_backoff")) {
+            globalCesecoreConfigData.remove("ct_cache_fast_fail_backoff");
+        }
+        globalCesecoreConfiguration.loadData(globalCesecoreConfigData);
+        globalConfigurationSession.saveConfiguration(authenticationToken, globalCesecoreConfiguration);
+
     }
     
     /**
@@ -1959,6 +2003,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @Override
     public void migrateDatabase781() throws UpgradeFailedException {
         final GlobalConfiguration globalConfig = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        @SuppressWarnings("deprecation")
         GoogleCtPolicy ctPolicy = globalConfig.getGoogleCtPolicy();
         ctPolicy.setBreakpoints(ctPolicy.getBreakpoints());
         for (int i = 0; i < 4; i++) {
@@ -2242,6 +2287,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         migrateOcspOptions940();
         //Move enableIcaoNameChange from GlobalConfiguration to the new GlobalCaConfiguration row
         migrateCaConfigurationFromGlobalConfig940();
+        //Move various CT settings from GlobalConfiguration and CesecoreGlobalConfiguration into the new GlobalCtConfiguration
+        migrateCtConfigurationIntoGlobalCtConfiguration9_4_0();
         // Move ocsp cleanup settings from Global to the GlobalOcsp
         migrateOcspCleanUpFromGlobalConfig940();
     }
@@ -2269,7 +2316,27 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         try {
             globalConfigurationSession.saveConfiguration(authenticationToken, globalCaConfiguration);
         } catch (AuthorizationDeniedException e) {
-            String msg = "Always allow token was denied authoriation to global configuration table.";
+            String msg = "Always allow token was denied authoriation to global CA configuration table.";
+            log.error(msg, e);
+            throw new UpgradeFailedException(msg, e);
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    private void migrateCtConfigurationIntoGlobalCtConfiguration9_4_0() throws UpgradeFailedException {
+        GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+        GlobalCtConfiguration globalCtConfiguration = (GlobalCtConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCtConfiguration.CT_CONFIGURATION_ID);
+        globalCtConfiguration.setGoogleCtPolicy(globalConfiguration.getGoogleCtPolicy());
+        globalCtConfiguration.setCtCacheEnabled(globalCesecoreConfiguration.getCtCacheEnabled());
+        globalCtConfiguration.setCtCacheCleanupInterval(globalCesecoreConfiguration.getCtCacheCleanupInterval());
+        globalCtConfiguration.setCtCacheSize(globalCesecoreConfiguration.getCtCacheSize());
+        globalCtConfiguration.setCtCacheFastFailEnabled(globalCesecoreConfiguration.getCtCacheFastFailEnabled());
+        globalCtConfiguration.setCtCacheFastFailBackoff(globalCesecoreConfiguration.getCtCacheFastFailBackoff());
+        try {
+            globalConfigurationSession.saveConfiguration(authenticationToken, globalCtConfiguration);
+        } catch (AuthorizationDeniedException e) {
+            String msg = "Always allow token was denied authoriation to global CT configuration table.";
             log.error(msg, e);
             throw new UpgradeFailedException(msg, e);
         }  
