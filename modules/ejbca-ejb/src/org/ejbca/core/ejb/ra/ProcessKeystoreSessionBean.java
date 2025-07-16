@@ -53,6 +53,7 @@ import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.Enumeration;
 
@@ -105,6 +106,19 @@ public class ProcessKeystoreSessionBean implements ProcessKeystoreSessionLocal, 
             while (en.hasMoreElements()) {
                 privateKeyAlias = null;
                 final String alias = en.nextElement();
+
+                // Check if the certificate is a CA certificate
+                // if yes, we simply skip it and continue with next alias.
+                if (keystore.isCertificateEntry(alias) || keystore.isKeyEntry(alias)) {
+                    Certificate cert = keystore.getCertificate(alias);
+                    if (cert instanceof X509Certificate) {
+                        X509Certificate x509Cert = (X509Certificate) cert;
+                        if (x509Cert.getBasicConstraints() >= 0) {
+                            continue;
+                        }
+                    }
+                } 
+                
                 if (keystore.isKeyEntry(alias)) {
                     privateKeyAlias = alias;
                     if (log.isDebugEnabled()) {
@@ -115,6 +129,7 @@ public class ProcessKeystoreSessionBean implements ProcessKeystoreSessionLocal, 
                     log.info("Keystore contains an alias which is not a key entry alias.");
                     throw new KeyImportException("Keystore contains an alias which is not a key entry alias.");
                 }
+                
                 final Certificate[] certChain = KeyTools.getCertChain(keystore, privateKeyAlias);
                 if (certChain == null || certChain.length == 0) {
                     log.info("Cannot load any certificate chain with alias: " + privateKeyAlias);
