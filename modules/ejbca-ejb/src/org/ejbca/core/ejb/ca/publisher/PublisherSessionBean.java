@@ -596,7 +596,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         }
         else {
             try {
-                getPublisher(publisherId).testConnection();
+                getPublisher(dto).testConnection();
                 String msg = intres.getLocalizedMessage("publisher.testedpublisher", dto.name());
                 log.info(msg);
             } catch (PublisherConnectionException | FatalPublisherConnectionException e) {
