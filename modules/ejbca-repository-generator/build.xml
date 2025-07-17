@@ -64,12 +64,12 @@
 	
     <target name="build" description="Generates all classes for ejbca-repository" depends="compile">
 		<echo message="ejbca-repository-generator.build.dir=${ejbca-repository-generator.build.dir}"/>
-		<java classname="org.ejbca.repository.generator.Main" failonerror="true">
+		<!--<java classname="org.ejbca.repository.generator.Main" failonerror="true">
 			<classpath>
 				<path refid="compile.classpath"/>
 				<path location="${ejbca-repository-generator.build.dir}" />
 			</classpath>
-		</java>
+		</java>-->
 	</target>
 
     <target name="compile">

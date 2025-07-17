@@ -24,8 +24,6 @@
 
     <import file="${ejbca-repository.dir}/../build-helpers.xml"/>
 
-	<property name="ejbca.home" value="/home/gustav-hallen/projects/ejbca" />
-	<property name="java.target.version" value="21" />
 	<property name="ejbca-repository.build.dir" location="${ejbca-repository.dir}/build"/>
 	<property name="ejbca-repository-generator.build.dir" location="${ejbca-repository.dir}/../ejbca-repository-generator/build"/>
 	<property name="ejbca-repository.build-test.dir" location="${ejbca-repository.dir}/build-test"/>
@@ -64,6 +62,7 @@
 		<path refid="compile.classpath"/>
 		<path refid="lib.junit.classpath"/>
 		<path location="${mod.ejbca-repository.lib}" />
+		<path location="${ejbca-repository.build-test.dir}" />
 	</path>
 
 	<path id="test.classpath">
@@ -94,7 +93,7 @@
     </target>
 
 	<!-- ejbca-common,  -->
-	<target name="compile-test" depends="build, build-cli-conditional">
+	<target name="compile-test" depends="build">
 		<mkdir dir="${ejbca-repository.build-test.dir}" />
 		<javac srcdir="${ejbca-repository.src-test.dir}" destdir="${ejbca-repository.build-test.dir}" debug="on" includeantruntime="no"
 			encoding="UTF-8" target="${java.target.version}" classpathref="compile-test.classpath"/>
