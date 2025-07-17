@@ -27,6 +27,7 @@
 	<target name="proxy-ca" depends="cesecore-common, -build-proxy-ca, -copy-proxy-ca"/>
 
 	<target name="clean" depends="clean-optional" description="Clean all modules">
+	  <ant antfile="${mod.ejbca-repository-generator.path}/build.xml" target="clean" inheritall="true"/>
 		<ant antfile="${mod.ejbca-ejb.path}/build.xml" target="clean" inheritall="true"/>
 		<ant antfile="${mod.ejbca-ejb-cli.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.ejbca-ejb-interface.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>

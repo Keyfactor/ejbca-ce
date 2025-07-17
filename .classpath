@@ -16,6 +16,8 @@
 	<classpathentry kind="src" path="modules/caa/src"/>
 	<classpathentry kind="src" path="modules/caa/src-cli"/>
 	<classpathentry kind="src" path="modules/caa/src-test"/>
+	<classpathentry kind="src" path="modules/ejbca-repository/src"/>
+	<classpathentry kind="src" path="modules/ejbca-repository/src-test"/>
 	<classpathentry kind="src" path="modules/certificatestore/src"/>
 	<classpathentry kind="src" path="modules/cesecore-common/src"/>
 	<classpathentry kind="src" path="modules/cesecore-common/src-test"/>
@@ -178,7 +180,7 @@
 	<classpathentry kind="lib" path="lib/cryptotokens-impl-3.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/cryptotokens-impl-ee-3.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/primefaces/primefaces-15.0.3-jakarta.jar"/>
-	<classpathentry kind="lib" path="lib/p11ng-0.25.7.jar" sourcepath="/p11ng"/>
+	<classpathentry kind="lib" path="lib/p11ng-0.25.7-20250719-9ea9aa2.jar" sourcepath="/p11ng"/>
 	<classpathentry kind="var" path="APPSRV_HOME/bin/client/jboss-client.jar"/>
 	<classpathentry kind="var" path="ANT_HOME/lib/ant.jar"/>
 	<classpathentry kind="lib" path="src/appserver/jboss/jboss7"/>
