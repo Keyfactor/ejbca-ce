@@ -70,6 +70,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final String KEY_TERMS_OF_SERVICE_URL = "termsOfServiceUrl";
     private static final String KEY_TERMS_OF_SERVICE_CHANGE_URL = "termsOfServiceChangeUrl";
     private static final String KEY_WEB_SITE_URL = "webSiteUrl";
+    private static final String KEY_ACME_ARI_EXPLANATION_URL = "";
     private static final String KEY_ORDER_VALIDITY = "orderValidity";
     private static final String KEY_PRE_AUTHORIZATION_VALIDITY = "preAuthorizationValidity";
     private static final String KEY_WILDCARD_CERTIFICATE_ISSUANCE_ALLOWED = "wildcardCertificateIssuanceAllowed";
@@ -125,6 +126,8 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
 
     private static final String DEFAULT_TERMS_OF_SERVICE_URL = "https://example.com/acme/terms";
     private static final String DEFAULT_TERMS_OF_SERVICE_CHANGE_URL = "https://example.com/acme/termsChanged";
+    private static final String DEFAULT_ACME_ARI_EXPLANATION_URL = "";
+    
     private static final String DEFAULT_WEBSITE_URL = "https://www.example.com/";
     private static final long DEFAULT_ORDER_VALIDITY = 3600000L;
     public static final int DEFAULT_CHALLENGE_RESPONSE_TIMOUT = 30;
@@ -264,6 +267,9 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
             // v4. Added wildcard certificate issuance with http-01 challenge allowed.
             if (data.get(KEY_WILDCARD_WITH_HTTP_01_CHALLENGE_ALLOWED) == null) {
                 setWildcardWithHttp01ChallengeAllowed(DEFAULT_KEY_WILDCARD_WITH_HTTP_01_CHALLENGE_ALLOWED);
+            }
+            if (data.get(KEY_ACME_ARI_EXPLANATION_URL) == null) {
+                setAcmeAriExplanationUrl(getAcmeAriExplanationUrl());
             }
             // v3. Change of ToS URL is set to ToS URL and MUST be changed by the user if feature is used (but 
             // it's a required field on GUI).
@@ -529,6 +535,21 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
 
     public void setTermsOfServiceChangeUrl(final String url) {
         super.data.put(KEY_TERMS_OF_SERVICE_CHANGE_URL, url);
+    }
+    
+    /**
+     * @return a URL pointing to a location where users can understand how/why the suggested window is calculated.
+     */
+    public String getAcmeAriExplanationUrl() {
+        String value = (String) data.get(KEY_ACME_ARI_EXPLANATION_URL);
+        if (value == null) {
+            value = "";
+        }
+        return value;
+    }
+
+    public void setAcmeAriExplanationUrl(final String url) {
+        super.data.put(KEY_ACME_ARI_EXPLANATION_URL, url);
     }
 
     /**
@@ -889,6 +910,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         setPreAuthorizationAllowed(DEFAULT_PRE_AUTHORIZATION_ALLOWED);
         setTermsOfServiceUrl(DEFAULT_TERMS_OF_SERVICE_URL);
         setTermsOfServiceChangeUrl(DEFAULT_TERMS_OF_SERVICE_CHANGE_URL);
+        setAcmeAriExplanationUrl(DEFAULT_ACME_ARI_EXPLANATION_URL);
         setTermsOfServiceRequireNewApproval(DEFAULT_REQUIRE_NEW_APPROVAL);
         setAgreeToNewTermsOfServiceAllowed(DEFAULT_AGREE_TO_TERMS_OF_SERVICE_CHANGED);
         setWildcardCertificateIssuanceAllowed(DEFAULT_WILDCARD_CERTIFICATE_ISSUANCE_ALLOWED);
