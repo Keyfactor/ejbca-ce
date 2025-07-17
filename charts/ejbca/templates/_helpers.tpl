@@ -125,3 +125,14 @@ Append the application variant to enterprise edition repository paths
 {{- print $repository }}
 {{- end }}
 {{- end }}
+
+{{/*
+Define maximum replica
+*/}}
+{{- define "ejbca.maxReplicaCount" -}}
+{{- if .Values.autoscaling.enabled }}
+{{- .Values.autoscaling.maxReplicas }}
+{{- else }}
+{{- .Values.replicaCount }}
+{{- end }}
+{{- end }}
