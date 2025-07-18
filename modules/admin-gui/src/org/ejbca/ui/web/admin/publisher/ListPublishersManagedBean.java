@@ -167,6 +167,8 @@ public class ListPublishersManagedBean extends BaseManagedBean implements Serial
                     addErrorMessage("PUBLISHER_USEDBY_CA");
                     addNonTranslatedErrorMessage(StringUtils.join(caUsingPublisher(selectedPublisherName), ", "));
                 }
+
+                return null;
             }
         } else {
             addErrorMessage("YOUHAVETOSELECTAPUBLISHER");

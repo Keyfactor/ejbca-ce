@@ -24,6 +24,7 @@ import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
+import org.ejbca.dto.PublisherData;
 
 /**
  * Local interface for PublisherSession.
@@ -71,6 +72,7 @@ public interface PublisherSessionLocal extends PublisherSession {
 
     /**
      * Returns a publisher id, given it's publishers name
+     *
      * @return the id or 0 if the publisher cannot be found.
      */
     int getPublisherId(String name);

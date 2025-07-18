@@ -20,6 +20,8 @@ import java.util.Collections;
 
 public final class PublisherDataConverter implements Converter<PublisherData, PublisherDataBean> {
 
+    public static final PublisherDataConverter INSTANCE = new PublisherDataConverter();
+
     public PublisherDataBean toBean(PublisherData dto) {
         if (dto == null) {
             return null;
