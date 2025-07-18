@@ -27,6 +27,7 @@
 	<target name="proxy-ca" depends="cesecore-common, -build-proxy-ca, -copy-proxy-ca"/>
 
 	<target name="clean" depends="clean-optional" description="Clean all modules">
+	  <ant antfile="${mod.ejbca-repository-generator.path}/build.xml" target="clean" inheritall="true"/>
 		<ant antfile="${mod.ejbca-ejb.path}/build.xml" target="clean" inheritall="true"/>
 		<ant antfile="${mod.ejbca-ejb-cli.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.ejbca-ejb-interface.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
@@ -222,7 +223,7 @@
 	        <ant antfile="${mod.ejbca-rest-system.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 	 </target>   
 	
-	<target name="ejbca-entity" depends="ejbca-common" description="Build EJBCA JPA entity library">
+	<target name="ejbca-entity" depends="ejbca-common, ejbca-repository-generator" description="Build EJBCA JPA entity library">
 		<ant antfile="${mod.ejbca-entity.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
@@ -230,7 +231,7 @@
 		<ant antfile="${mod.ejbca-entity.path}/build.xml" target="build-cli" inheritall="true" inheritrefs="true"/>
 	</target>
 
-	<target name="ejbca-ejb-interface" depends="ejbca-entity, ejbca-common, ejbca-ws-common" description="Build EJBCA EJB interfaces library">
+	<target name="ejbca-ejb-interface" depends="ejbca-entity, ejbca-common, ejbca-ws-common, ejbca-repository, ejbca-repository-generator" description="Build EJBCA EJB interfaces library">
 		<ant antfile="${mod.ejbca-ejb-interface.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
@@ -458,8 +459,17 @@
 	<target name="ejbca.ear.module-dependencies" depends="cesecore-ejb, scep-war, webdist-war, cmp-war, healthcheck-ejbca-war, clearcache-ejbca-war,
 						ejbca-ejb, ejbca-properties, edition-specific-interface, peerconnector, eedition-ejb, acme, admin-gui, ra-gui, ejbca-ws, ejbca.clients,
 						systemtests.build.libs, ct, va-ejbca-war, certstore-war, crlstore-war, caa, est-war, unidfnr, ejbca-rest-common, ejbca-rest-certificate, ejbca-rest-coap, ejbca-rest-configdump,
-						ejbca-rest-ca,ejbca-rest-cryptotoken, ejbca-rest-camanagement, ejbca-rest-endentity, ejbca-rest-ssh, ejbca-rest-system, ejbca-rest-api, cesecore-cvcca, cesecore-x509ca, ssh, iodef, mpic, msae, cits">
-		</target>
+						ejbca-rest-ca,ejbca-rest-cryptotoken, ejbca-rest-camanagement, ejbca-rest-endentity, ejbca-rest-ssh, ejbca-rest-system, ejbca-rest-api, cesecore-cvcca, cesecore-x509ca, ssh,
+						iodef, mpic, msae, cits, ejbca-repository">
+	</target>
+
+	<target name="ejbca-repository" depends="cesecore-common">
+		<ant antfile="${modules.basedir}/ejbca-repository/build.xml" target="build" inheritall="true" inheritrefs="true"/>
+	</target>
+
+	<target name="ejbca-repository-generator">
+		<ant antfile="${modules.basedir}/ejbca-repository-generator/build.xml" target="build" inheritall="true" inheritrefs="true"/>
+	</target>
 
 	<target name="ct" depends="ejbca-ejb-interface" if="mod.ct.exists">
 		<ant antfile="${mod.ct.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>

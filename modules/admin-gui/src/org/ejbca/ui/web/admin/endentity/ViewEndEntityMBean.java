@@ -15,6 +15,8 @@ package org.ejbca.ui.web.admin.endentity;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.certificate.DnComponents;
 import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJB;
+import jakarta.ejb.PostActivate;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.model.SelectItem;
 import jakarta.faces.view.ViewScoped;
@@ -24,6 +26,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.ExtendedInformation;
@@ -55,10 +58,32 @@ import java.util.List;
 public class ViewEndEntityMBean extends EndEntityBaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    
+    @PostActivate
+    protected void restoreUnserializedState() throws Exception {
+        if (!getEjbcaWebBean().isAuthorizedNoLogSilent(AccessRulesConstants.ROLE_ADMINISTRATOR)) {
+            throw new AuthorizationDeniedException("You are not authorized to view this page.");
+        }
+        initData();
+    }
+    
+    @Override
+    protected EjbcaWebBean getEjbcaWebBean() {
+        if (ejbcaWebBean == null) {
+            ejbcaWebBean = super.getEjbcaWebBean();
+            try {
+                initData();
+            } catch (Exception e) {
+                // initData can throw an but getEjbcaWebBean wont.  
+                throw new IllegalStateException(e);
+            }
+        }
+        return ejbcaWebBean;
+    }
 
-    private EjbcaWebBean ejbcaWebBean;
-    private CAInterfaceBean caBean;
-    private RAInterfaceBean raBean;
+    private transient EjbcaWebBean ejbcaWebBean;
+    private transient CAInterfaceBean caBean;
+    private transient RAInterfaceBean raBean;
 
     // Fields from legacy ViewEndEntityHelper class
 
@@ -98,6 +123,9 @@ public class ViewEndEntityMBean extends EndEntityBaseManagedBean implements Seri
     private List<ImmutablePair<String, String>> subjectDnNameFieldDatas;
     private List<ImmutablePair<String, String>> subjectAltNameFieldDatas;
     private List<ImmutablePair<String, String>> subjectDirAttrsFieldDatas;
+    
+    @EJB
+    private CaSessionLocal caSession;
 
     // **************************************************************        
 
@@ -123,7 +151,6 @@ public class ViewEndEntityMBean extends EndEntityBaseManagedBean implements Seri
 
         final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
 
-        ejbcaWebBean = getEjbcaWebBean();
         globalConfiguration = ejbcaWebBean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR,
                 AccessRulesConstants.REGULAR_VIEWENDENTITY);
         caBean = SessionBeans.getCaBean(request);
@@ -739,7 +766,7 @@ public class ViewEndEntityMBean extends EndEntityBaseManagedBean implements Seri
                 }
                 for (int i = 0; i < hist.size(); i++) {
                     CertReqHistory next = hist.get(i);
-                    userDatas[i + currentexists] = new UserView(next.getEndEntityInformation(), ejbcaWebBean.getCAIdToNameMap());
+                    userDatas[i + currentexists] = new UserView(next.getEndEntityInformation(), caSession.getCAIdToNameMap());
                 }
 
             }

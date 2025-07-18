@@ -64,7 +64,7 @@ public class RaEndEntityDetails implements Serializable {
 
     private static final long serialVersionUID = -7607596829535211817L;
 
-    public interface Callbacks {
+    public interface Callbacks extends Serializable {
         RaLocaleBean getRaLocaleBean();
 
         EndEntityProfile getEndEntityProfile(final int eepId);
@@ -973,4 +973,5 @@ public class RaEndEntityDetails implements Serializable {
     public void setPrevious(RaEndEntityDetails previous) {
         this.previous = previous;
     }
+
 }

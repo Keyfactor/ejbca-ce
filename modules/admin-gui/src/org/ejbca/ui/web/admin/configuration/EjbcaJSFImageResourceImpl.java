@@ -30,6 +30,7 @@ import jakarta.ejb.EJBException;
  */
 public class EjbcaJSFImageResourceImpl implements EjbcaJSFImageResource {
 
+    private static final long serialVersionUID = 1L;
     private EjbcaWebBean ejbcawebbean;
     
     public EjbcaJSFImageResourceImpl(EjbcaWebBean ejbcawebbean){

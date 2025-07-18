@@ -679,5 +679,5 @@ public class RaManageRequestBean implements Serializable {
             log.debug("Got exception while trying to " + action + " an approval request: " + t.getMessage());
         }
     }
-
+    
 }

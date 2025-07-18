@@ -13,12 +13,10 @@
 
 package org.ejbca.ui.web.admin.cainterface;
 
-/**
- *
- *
- */
+import java.io.Serializable;
 
-public class CaInfoProperty {    
+public class CaInfoProperty implements Serializable {    
+    private static final long serialVersionUID = 1L;
     private final String text;
     private final String data;
     

@@ -26,6 +26,7 @@ dependencies {
     testImplementation(project(":modules:systemtests:ejb"))
     testImplementation(project(":modules:systemtests:interface"))
     testImplementation(project(":modules:va:extensions"))
+    testImplementation(project(":modules:ejbca-repository"))
 
     if (project.extra["edition"] == "ee") {
         testImplementation(project(":modules:acme:common"))
@@ -46,6 +47,7 @@ dependencies {
     testImplementation(libs.caffeine)
     testImplementation(libs.cert.cvc)
     testImplementation(libs.ejbca.ws.client.gen)
+    testImplementation(libs.guava)
     testImplementation(libs.hibernate.core)
     testImplementation(libs.jakarta.xml.bind.api)
     testImplementation(libs.jakarta.xml.ws.api)

@@ -100,4 +100,11 @@ public class IdNameHashMap<T extends Serializable> implements Serializable {
     public boolean isEmpty() {
         return idMap.isEmpty();
     }
+
+    @Override
+    public String toString() {
+        return "IdNameHashMap [nameMap=" + nameMap + ", idMap=" + idMap + "]";
+    }
+    
+    
 }

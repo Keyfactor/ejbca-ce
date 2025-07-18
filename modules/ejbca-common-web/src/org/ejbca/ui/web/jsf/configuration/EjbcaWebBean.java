@@ -101,19 +101,6 @@ public interface EjbcaWebBean extends Serializable {
 
     void saveDefaultAdminPreference(final AdminPreference adminPreference) throws AuthorizationDeniedException;
 
-    // TODO ECA-7823 Refactor EjbcaWebBean's deprecated methods
-    /**
-     * Checks if the admin have authorization to view the resource without performing any logging. Used by menu page Does not return false if not
-     * authorized, instead throws an AuthorizationDeniedException.
-     *
-     * @deprecated Don't use as is in a new admin GUI. Use {@link #isAuthorizedNoLogSilent(String...)} instead.
-     *
-     * @return true if is authorized to resource, throws AuthorizationDeniedException if not authorized, never returns false.
-     * @throws AuthorizationDeniedException is not authorized to resource
-     */
-    @Deprecated
-    boolean isAuthorizedNoLog(final String... resources) throws AuthorizationDeniedException;
-
     /**
      * Checks if the admin have authorization to view the resource without performing any logging. Will simply return a boolean,
      * does not throw exception.
@@ -146,16 +133,6 @@ public interface EjbcaWebBean extends Serializable {
      * 'caimg.en.png' if English was the users preferred language. It's important that all letters in imagefilename is lowercase.
      */
     String getImagePath(final String imagefilename);
-
-    /**
-     * Legacy version of getImagePath, that returns an URL including the adminweb base path.
-     *
-     * @param imagefilename Name of image
-     * @return Image URL including adminweb base path
-     * @deprecated Since EJBCA 7.4.3
-     */
-    @Deprecated
-    String getImagefileInfix(String imagefilename);
 
     String getEditionFolder();
 
@@ -241,21 +218,6 @@ public interface EjbcaWebBean extends Serializable {
     void reloadAutoenrollmentConfiguration();
     
     void reloadEstConfiguration();
-    
-    // TODO ECA-7823 Refactor EjbcaWebBean's deprecated methods
-    /** @deprecated Since EJBCA 7.0.0. Use CaSession.getCAIdToNameMap instead. */
-    @Deprecated
-    Map<Integer,String> getCAIdToNameMap();
-
-    // TODO ECA-7823 Refactor EjbcaWebBean's deprecated methods
-    /** @deprecated Since EJBCA 7.0.0. Use CaSession.getAuthorizedCaIds instead. */
-    @Deprecated
-    List<Integer> getAuthorizedCAIds();
-
-    // TODO ECA-7823 Refactor EjbcaWebBean's deprecated methods
-    /** @deprecated Since EJBCA 7.0.0. Use CaSession.getAuthorizedCaNamesToIds instead. */
-    @Deprecated
-    TreeMap<String,Integer> getCANames();
 
     TreeMap<String,Integer> getExternalCANames();
 
@@ -471,11 +433,6 @@ public interface EjbcaWebBean extends Serializable {
     Map<String, Integer> getCertificateProfilesNoKeyId(final String endEntityProfileId);
 
     Collection<String> getCertificateProfileIDsNoKeyId(final String endEntityProfileId);
-
-    // TODO ECA-7823 Refactor EjbcaWebBean's deprecated methods
-    /** @deprecated Since EJBCA 7.0.0. Use CaSession.getAuthorizedCaNamesToIds instead. */
-    @Deprecated
-    TreeMap<String, Integer> getCAOptions();
 
     /**
      * Gets the list of CA names by the list of CA IDs.

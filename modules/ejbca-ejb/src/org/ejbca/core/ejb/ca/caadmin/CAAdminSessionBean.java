@@ -140,6 +140,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.ocsp.exception.NotSupportedException;
 import org.cesecore.certificates.util.dn.DNFieldsUtil;
+import org.cesecore.config.GlobalCaConfiguration;
 import org.cesecore.config.InvalidConfigurationException;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.CertificateImportException;
@@ -162,7 +163,6 @@ import org.cesecore.util.ValidityDate;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.EjbcaConfiguration;
-import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
@@ -2213,9 +2213,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             String newCAName = null;
             boolean subjectDNWillBeChanged = newSubjectDN != null && !newSubjectDN.isEmpty();
             if (subjectDNWillBeChanged) {
-                GlobalConfiguration globalConfig = (GlobalConfiguration) globalConfigurationSession
-                        .getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-                if (!globalConfig.getEnableIcaoCANameChange()) {
+                GlobalCaConfiguration globalCaConfiguration = (GlobalCaConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCaConfiguration.CA_CONFIGURATION_ID);
+                if (!globalCaConfiguration.getEnableIcaoCANameChange()) {
                     final String errorMessage = "The \"Enable ICAO CA Name Change\" feature is disabled by administrator. Aborting CA Name Change renewal!";
                     log.error(errorMessage);
                     throw new IllegalStateException(errorMessage);

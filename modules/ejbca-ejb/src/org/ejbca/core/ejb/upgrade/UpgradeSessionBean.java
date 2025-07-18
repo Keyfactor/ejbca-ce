@@ -1,5 +1,6 @@
 /*************************************************************************
  *                                                                       *
+
  *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
@@ -15,9 +16,7 @@ package org.ejbca.core.ejb.upgrade;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -26,7 +25,6 @@ import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -38,21 +36,16 @@ import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
-import org.apache.commons.configuration2.Configuration;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
-import org.cesecore.authorization.control.AuditLogRules;
-import org.cesecore.authorization.control.CryptoTokenRules;
-import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
@@ -77,7 +70,9 @@ import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.ConfigurationHolder;
+import org.cesecore.config.GlobalCaConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
+import org.cesecore.config.GlobalCtConfiguration;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.config.OcspConfiguration;
@@ -85,7 +80,6 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingNameInUseException;
-import org.cesecore.keybind.InternalKeyBindingRules;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
@@ -101,7 +95,6 @@ import org.cesecore.roles.member.RoleMemberDataSessionLocal;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.SecureXMLDecoder;
 import org.cesecore.util.SimpleTime;
-import org.cesecore.util.ui.PropertyValidationException;
 import org.ejbca.config.AvailableProtocolsConfiguration;
 import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
 import org.ejbca.config.CmpConfiguration;
@@ -110,11 +103,10 @@ import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.EstConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.InternalConfiguration;
+import org.ejbca.config.MSAutoEnrollmentConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeSessionLocal;
 import org.ejbca.core.ejb.ServiceLocatorException;
-import org.ejbca.core.ejb.approval.ApprovalData;
-import org.ejbca.core.ejb.approval.ApprovalProfileExistsException;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationTokenMetaData;
@@ -124,14 +116,10 @@ import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.config.GlobalUpgradeConfiguration;
 import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
-import org.ejbca.core.model.approval.Approval;
-import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
-import org.ejbca.core.model.approval.profile.ApprovalPartition;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.GeneralPurposeCustomPublisher;
-import org.ejbca.core.model.ca.publisher.upgrade.BasePublisherConverter;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.util.JDBCUtil;
@@ -448,53 +436,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     private boolean upgrade(String dbtype, String oldVersion) {
     	log.debug(">upgrade from version: "+oldVersion+", with dbtype: "+dbtype);
-        if (isLesserThan(oldVersion, "6.2.4")) {
-            log.error(
-                    "Upgrading from EJBCA prior to version 6.2.4 is forbidden. You must upgrade to the intermediate release EJBCA 6.3.2.6 first. Read the EJBCA Upgrade Guide for more information.");
-            return false;
-        }
-        if (isLesserThan(oldVersion, "6.3.1")) {
-            // Upgrade the old Validation Authority Publisher in Community Edition (leave it be in Enterprise for the sake of 100% uptime)
-            if (!enterpriseEditionEjbBridgeSession.isRunningEnterprise()) {
-                publisherSession.adhocUpgradeTo6_3_1_1();
-            }
-            setLastUpgradedToVersion("6.3.1");
-        }
-        if (isLesserThan(oldVersion, "6.4")) {
-            try {
-                upgradeSession.migrateDatabase640();
-            } catch (UpgradeFailedException e) {
-                return false;
-            }
-            setLastUpgradedToVersion("6.4");
-        }
-        if (isLesserThan(oldVersion, "6.4.2")) {
-            try {
-                upgradeSession.migrateDatabase642();
-            } catch (UpgradeFailedException e) {
-                return false;
-            }
-            setLastUpgradedToVersion("6.4.2");
-        }
-        if (isLesserThan(oldVersion, "6.5.1")) {
-            try {
-                upgradeSession.migrateDatabase651();
-            } catch (UpgradeFailedException e) {
-                return false;
-            }
-            setLastUpgradedToVersion("6.5.1");
-        }
         if (isLesserThan(oldVersion, "6.6.0")) {
-            try {
-                upgradeSession.migrateDatabase660();
-            } catch (UpgradeFailedException e) {
-                return false;
-            }
-            if (!isEndEntityProfileInCertificateData()) {
-                // Persist mark that this upgrade has not been performed so we can do it in later release (unless the value was set due to this being a fresh installation)
-                setEndEntityProfileInCertificateData(false);
-            }
-            setLastUpgradedToVersion("6.6.0");
+            log.error(
+                    "Upgrading from EJBCA prior to version 6.6.0 is forbidden. Read the EJBCA Upgrade Guide for more information.");
+            return false;
         }
         if (isLesserThan(oldVersion, "6.8.0")) {
             try {
@@ -597,37 +542,38 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             } catch (UpgradeFailedException e) {
                 return false;
             }
-        }        
+        }
         if (isLesserThan(oldVersion, "9.2.0")) {
             try {
                 upgradeSession.migrateDatabase920();
             } catch (UpgradeFailedException e) {
                 return false;
             }
-        }   
-        if (isLesserThan(oldVersion, "9.4.0")) {
+        }
+        if (isLesserThan(oldVersion, "9.3.3")) {
             try {
-                upgradeSession.migrateDatabase9_4_0();
+                upgradeSession.migrateDatabase933();
             } catch (UpgradeFailedException e) {
                 return false;
             }
-        }        
+        }
+        if (isLesserThan(oldVersion, "9.4.0")) {
+            try {
+                upgradeSession.migrateDatabase940();
+            } catch (UpgradeFailedException e) {
+                return false;
+            }
+        }
         setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
     }
 
     private boolean postUpgrade(String oldVersion, String dbtype) {
         log.debug(">post-upgrade from version: "+oldVersion);
-        if (isLesserThan(oldVersion, "5.0.0")) {
+        if (isLesserThan(oldVersion, "6.4.0")) {
             log.error(
-                    "Post-upgrade from EJBCA prior to version 5.0.0 is forbidden. You must upgrade to the intermediate release EJBCA 6.3.2.6 first. Read the EJBCA Upgrade Guide for more information.");
+                    "Post-upgrade from EJBCA prior to version 6.4.0 is forbidden. Read the EJBCA Upgrade Guide for more information.");
             return false;
-        }
-        if (isLesserThan(oldVersion, "6.3.2")) {
-            if (!postMigrateDatabase632()) {
-                return false;
-            }
-            setLastPostUpgradedToVersion("6.3.2");
         }
         if (isLesserThan(oldVersion, "6.8.0")) {
             if (!postMigrateDatabase680()) {
@@ -690,6 +636,12 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
             setLastPostUpgradedToVersion("9.3.0");
         }
+        if (isLesserThan(oldVersion, "9.4.0")) {
+            if (!postMigrateDatabase940()) {
+                return false;
+            }
+            setLastPostUpgradedToVersion("9.4.0");
+        }
         
         // NOTE: If you add additional post upgrade tasks here, also modify isPostUpgradeNeeded() and performPreUpgrade()
         //setLastPostUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
@@ -699,7 +651,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     /**
      * Update all EndEntityProfiles.
      *
-     * Runs in a new transaction because {@link upgradeIndex} depends on the changes.
+     * Runs in a new transaction because {@link UpgradeSessionLocal#upgradeIndex} depends on the changes.
      */
     private boolean postMigrateDatabase781() {
         log.info("Starting post upgrade to 7.8.1");
@@ -733,7 +685,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     /**
      * Remove the Configuration Checker fom database
      *
-     * Runs in a new transaction because {@link upgradeIndex} depends on the changes.
+     * Runs in a new transaction because {@link UpgradeSessionLocal#upgradeIndex} depends on the changes.
      */
     private boolean postMigrateDatabase830() {
         log.info("Starting post upgrade to 8.3.0");
@@ -754,7 +706,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     /**
      * Remove the Configuration Checker fom database
      *
-     * Runs in a new transaction because {@link upgradeIndex} depends on the changes.
+     * Runs in a new transaction because {@link UpgradeSessionLocal#upgradeIndex} depends on the changes.
      */
     @SuppressWarnings("deprecation")
     private boolean postMigrateDatabase930() {
@@ -775,13 +727,106 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 log.error("Role seems to have changed ID while retaining name/namespace or vice versa.");
                 return false;
             } catch (AuthorizationDeniedException e) {
-                log.error("Administrator was not authorized to perform post-upgrade, lacks access to Configuration Checker configuration");
+                log.error("Administrator was not authorized to perform post-upgrade.");
                 return false;
             }
         }       
         accessTreeUpdateSession.signalForAccessTreeUpdate();
         log.info("Post upgrade to 9.3.0 complete.");
         return true;
+    }
+    
+    private boolean postMigrateDatabase940() {
+        log.info("Starting post upgrade to 9.4.0");
+        try {
+            removeEnableIcaoNameChangeFromGlobalConfiguration();
+            removeOldCtValues();
+            removeOcspCleanupFromGlobalConfiguration();
+        } catch (AuthorizationDeniedException e) {
+            log.error("Administrator was not authorized to perform post-upgrade.");
+            return false;
+        }
+        log.info("Post upgrade to 9.4.0 complete.");
+        return true;
+    }
+
+    private void removeOcspCleanupFromGlobalConfiguration() {
+        GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        LinkedHashMap<Object, Object> data = globalConfiguration.getRawData();
+        if (data.containsKey("ocsp.cleanup.use")) {
+            data.remove("ocsp.cleanup.use");
+        }
+
+        if (data.containsKey("ocsp.cleanup.schedule")) {
+            data.remove("ocsp.cleanup.schedule");
+        }
+
+        if (data.containsKey("ocsp.cleanup.schedule_unit")) {
+            data.remove("ocsp.cleanup.schedule_unit");
+        }
+
+        try {
+            globalConfigurationSession.saveConfiguration(authenticationToken, globalConfiguration);
+        } catch (AuthorizationDeniedException e) {
+            throw new IllegalStateException("Always allow token was denied access to global configuration.", e);
+        }
+    }
+
+    /**
+     * Removes the enableIcaoNameChange value from GlobalConfiguration post upgrade to 9.4 
+     * 
+     */
+    private void removeEnableIcaoNameChangeFromGlobalConfiguration() throws AuthorizationDeniedException {
+        GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        //Go straight into the data map and remove it
+        LinkedHashMap<Object, Object> data = globalConfiguration.getRawData();
+        if (data.containsKey("enableicaocanamechange")) {
+            data.remove("enableicaocanamechange");
+            globalConfiguration.loadData(data);
+            try {
+                globalConfigurationSession.saveConfiguration(authenticationToken, globalConfiguration);
+            } catch (AuthorizationDeniedException e) {
+                throw new IllegalStateException("Always allow token was denied access to global configuration.", e);
+            }
+        }
+    }
+
+    /**
+     * Removes the CT related values which were migrated from GlobalConfiguration and GlobalCesecoreConfiguration in 9.4.0
+     */
+    private void removeOldCtValues() throws AuthorizationDeniedException {
+        GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        //Go straight into the data map and remove it
+        LinkedHashMap<Object, Object> globalConfigData = globalConfiguration.getRawData();
+        if (globalConfigData.containsKey("google_ct_policy")) {
+            globalConfigData.remove("google_ct_policy");
+            globalConfiguration.loadData(globalConfigData);
+            try {
+                globalConfigurationSession.saveConfiguration(authenticationToken, globalConfiguration);
+            } catch (AuthorizationDeniedException e) {
+                throw new IllegalStateException("Always allow token was denied access to global configuration.", e);
+            }
+        }
+        GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+        LinkedHashMap<Object, Object> globalCesecoreConfigData = globalCesecoreConfiguration.getRawData();
+        if (globalCesecoreConfigData.containsKey("ct_cache_enabled")) {
+            globalCesecoreConfigData.remove("ct_cache_enabled");
+        }
+        if (globalCesecoreConfigData.containsKey("ct_cache_size")) {
+            globalCesecoreConfigData.remove("ct_cache_size");
+        }
+        if (globalCesecoreConfigData.containsKey("ct_cache_cleanup_interval")) {
+            globalCesecoreConfigData.remove("ct_cache_cleanup_interval");
+        }
+        if (globalCesecoreConfigData.containsKey("ct_cache_fast_fail_enabled")) {
+            globalCesecoreConfigData.remove("ct_cache_fast_fail_enabled");
+        }
+        if (globalCesecoreConfigData.containsKey("ct_cache_fast_fail_backoff")) {
+            globalCesecoreConfigData.remove("ct_cache_fast_fail_backoff");
+        }
+        globalCesecoreConfiguration.loadData(globalCesecoreConfigData);
+        globalConfigurationSession.saveConfiguration(authenticationToken, globalCesecoreConfiguration);
+
     }
     
     /**
@@ -938,413 +983,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public boolean isPostUpgradeNeeded() {
-        return isLesserThan(getLastPostUpgradedToVersion(), "9.3.0");
-    }
-
-    /**
-     * Upgrade access rules such that every role that already has access to /system_functionality/edit_systemconfiguration
-     * will also have access to the new access rule /system_functionality/edit_available_extended_key_usages
-     *
-     * @return true if the upgrade was successful and false otherwise
-     */
-    @SuppressWarnings("deprecation")
-    private boolean addEKUAndCustomCertExtensionsAccessRulestoRoles() {
-        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.ROLE_ROOT.resource(),
-        		Arrays.asList(StandardRules.SYSTEMCONFIGURATION_EDIT.resource()),
-                Arrays.asList(StandardRules.EKUCONFIGURATION_EDIT.resource(), StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_EDIT.resource()), false);
-        accessTreeUpdateSession.signalForAccessTreeUpdate();
-        return true;
-    }
-
-    private void importExtendedKeyUsagesFromFile() {
-        final URL url = ConfigurationHolder.class.getResource("/conf/extendedkeyusage.properties");
-        AvailableExtendedKeyUsagesConfiguration ekuConfig;
-        if (url == null) {
-            // Create using the default template of the current version if no such file exists
-            ekuConfig = (AvailableExtendedKeyUsagesConfiguration)
-                    globalConfigurationSession.getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.CONFIGURATION_ID);
-        } else {
-            ekuConfig = new AvailableExtendedKeyUsagesConfiguration(false);
-            final Configuration conf = ConfigurationHolder.instance();
-            final String ekuname = "extendedkeyusage.name.";
-            final String ekuoid = "extendedkeyusage.oid.";
-            int j=0;
-            for (int i = 0; i < 255; i++) {
-                final String oid = conf.getString(ekuoid+i);
-                if (oid != null) {
-                    String name = conf.getString(ekuname+i);
-                    if (name != null) {
-                        // A null value in the properties file means that we should not use this value, so set it to null for real
-                        if (!name.equalsIgnoreCase("null")) {
-                            // Set the untranslated name (since the translation is actually only available in the Admin GUI)
-                            ekuConfig.addExtKeyUsage(oid, name);
-                            j++;
-                        }
-                    } else {
-                        log.error("Found extended key usage oid "+oid+", but no name defined. Not adding to list of extended key usages.");
-                    }
-                }
-                // No eku with a certain number == continue trying next, we will try 0-255.
-            }
-            if(log.isDebugEnabled()) {
-                log.debug("Read " + j + " extended key usages from the configurations file");
-            }
-        }
-        try {
-            globalConfigurationSession.saveConfiguration(authenticationToken, ekuConfig);
-        } catch (AuthorizationDeniedException e) {
-            log.error("Received an AuthorizationDeniedException even though AlwaysAllowLocalAuthenticationToken is used. " + e.getLocalizedMessage());
-        }
-    }
-
-    /**
-     * This method adds read-only rules that were created for the new read-only admin in https://jira.primekey.se/browse/ECA-4344. It makes sure that any roles which previously
-     * had access to the affected resources retain read rights (in case those roles should be restricted as a result of this ticket).
-     *
-     * All access has been made more granular, so performing this step post-upgrade is safe.
-     *
-     *
-     * The exact changes performed are documented in the UPGRADE document.
-     * @throws UpgradeFailedException if upgrade fails.
-     */
-    @SuppressWarnings("deprecation")
-    @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    private void addReadOnlyRules640() throws UpgradeFailedException {
-        // Roles with access to /ca_functionality/basic_functions/activate_ca or just /ca_functionality/ (+recursive)
-        // should be given access to /ca_functionality/view_ca
-        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.CAFUNCTIONALITY.resource(),
-                Arrays.asList(AccessRulesConstants.REGULAR_ACTIVATECA), Arrays.asList(StandardRules.CAVIEW.resource()), false);
-        // Roles with access to /ca_functionality/edit_certificate_profiles should be given access to /ca_functionality/view_certificate_profiles
-        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.CAFUNCTIONALITY.resource(),
-                Arrays.asList(StandardRules.CERTIFICATEPROFILEEDIT.resource()), Arrays.asList(StandardRules.CERTIFICATEPROFILEVIEW.resource()), false);
-        // Roles with access to /ca_functionality/edit_publisher should be given /ca_functionality/view_publisher
-        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.CAFUNCTIONALITY.resource(),
-                Arrays.asList(AccessRulesConstants.REGULAR_EDITPUBLISHER), Arrays.asList(AccessRulesConstants.REGULAR_VIEWPUBLISHER), false);
-        // Roles with access to /ra_functionality/edit_end_entity_profiles should be given /ra_functionality/view_end_entity_profiles
-        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, AccessRulesConstants.REGULAR_RAFUNCTIONALITY,
-                Arrays.asList(AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES), Arrays.asList(AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES), false);
-        // Roles with access to "/" (non-recursive) should be given /services/edit, /services/view and /peer/view (+recursive)
-        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.ROLE_ROOT.resource(),
-                Arrays.asList(StandardRules.ROLE_ROOT.resource()), Arrays.asList(AccessRulesConstants.SERVICES_EDIT, AccessRulesConstants.SERVICES_VIEW), false);
-        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.ROLE_ROOT.resource(),
-                Arrays.asList(StandardRules.ROLE_ROOT.resource()), Arrays.asList(AccessRulesConstants.REGULAR_PEERCONNECTOR_VIEW), true);
-        // Roles with access to /internalkeybinding should be given /internalkeybinding/view (+recursive)
-        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.ROLE_ROOT.resource(),
-                Arrays.asList(InternalKeyBindingRules.BASE.resource()), Arrays.asList(InternalKeyBindingRules.VIEW.resource()), true);
-    }
-
-    /**
-     * Adds the access rules defined in https://jira.primekey.se/browse/ECA-4463
-     *
-     * These are:   View rules for system configuration, EKU config and CCE config
-     *
-     * Any roles which matched the previous auditor role, or which had edit access to the above will be given view access.
-     * @throws UpgradeFailedException
-     *
-     */
-    @SuppressWarnings("deprecation")
-    @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    private void addReadOnlyRules642() throws UpgradeFailedException {
-        // If role is the old auditor from 6.4.0, grant new view rights
-        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.ROLE_ROOT.resource(), Arrays.asList(
-                AccessRulesConstants.ROLE_ADMINISTRATOR,
-                AccessRulesConstants.REGULAR_VIEWCERTIFICATE,
-                AuditLogRules.VIEW.resource(),
-                InternalKeyBindingRules.VIEW.resource(),
-                StandardRules.CAVIEW.resource(),
-                StandardRules.CERTIFICATEPROFILEVIEW.resource(),
-                StandardRules.APPROVALPROFILEVIEW.resource(),
-                CryptoTokenRules.VIEW.resource(),
-                AccessRulesConstants.REGULAR_VIEWPUBLISHER,
-                AccessRulesConstants.SERVICES_VIEW,
-                AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES,
-                AccessRulesConstants.REGULAR_PEERCONNECTOR_VIEW,
-                StandardRules.SYSTEMCONFIGURATION_VIEW.resource(),
-                StandardRules.EKUCONFIGURATION_VIEW.resource(),
-                StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource(),
-                StandardRules.VIEWROLES.resource(),
-                AccessRulesConstants.REGULAR_VIEWENDENTITY
-                ), Arrays.asList(
-                        StandardRules.SYSTEMCONFIGURATION_VIEW.resource(),
-                        StandardRules.EKUCONFIGURATION_VIEW.resource(),
-                        StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource(),
-                        StandardRules.VIEWROLES.resource(),
-                        AccessRulesConstants.REGULAR_VIEWENDENTITY
-                        ), false);
-        // Other cases where we should grant additional access.
-        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.ROLE_ROOT.resource(),
-                Arrays.asList(StandardRules.SYSTEMCONFIGURATION_EDIT.resource()), Arrays.asList(StandardRules.SYSTEMCONFIGURATION_VIEW.resource()), false);
-        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.ROLE_ROOT.resource(),
-                Arrays.asList(StandardRules.EKUCONFIGURATION_EDIT.resource()), Arrays.asList(StandardRules.EKUCONFIGURATION_VIEW.resource()), false);
-        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.ROLE_ROOT.resource(),
-                Arrays.asList(StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_EDIT.resource()), Arrays.asList(StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource()), false);
-        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.ROLE_ROOT.resource(),
-                Arrays.asList(StandardRules.EDITROLES.resource()), Arrays.asList(StandardRules.VIEWROLES.resource()), false);
-    }
-
-    /**
-     * EJBCA 6.3.1.1 moves the VA Publisher from Community to Enterprise, changing its baseclass in the process for Enterprise users.
-     * This method will fail gracefully if user is not running Enterprise. It will also upgrade any placeholder publishers from 6.3.1.1 Community
-     * if so required.
-     *
-     * @return true if the upgrade was successful
-     */
-    private boolean postMigrateDatabase632() {
-        if(!enterpriseEditionEjbBridgeSession.isRunningEnterprise()) {
-            log.error("Upgrade procedure to 6.3.2 can only be run on EJBCA Enterprise.");
-            return true; // Fail gracefully and pretend it was ok.
-        }
-        log.error("(this is not an error) Starting post upgrade to 6.3.2");
-        //Find all publishers, make copies of them using the new publisher class.
-        Map<Integer, BasePublisher> allPublishers = publisherSession.getAllPublishers();
-        Map<Integer, String> publisherNames = publisherSession.getPublisherIdToNameMap();
-        BasePublisherConverter publisherFactory;
-        try {
-            publisherFactory = (BasePublisherConverter) Class.forName("org.ejbca.va.publisher.EnterpriseValidationAuthorityPublisherFactoryImpl").getDeclaredConstructor().newInstance();
-        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-            //Shouldn't happen since we've already checked that we're running Enterprise
-            throw new IllegalStateException(e);
-        }
-        AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("UpgradeSessionBean.postMigrateDatabase631"));
-
-        for(Integer publisherId : allPublishers.keySet()) {
-            BasePublisher newPublisher = publisherFactory.createPublisher(allPublishers.get(publisherId));
-            if (newPublisher != null) {
-                try {
-                    String publisherName = publisherNames.get(publisherId);
-                    log.info("Upgrading publisher: " + publisherName);
-                    publisherSession.changePublisher(admin, publisherName, newPublisher);
-                } catch (AuthorizationDeniedException e) {
-                    throw new IllegalStateException("Always allow token was not given access to publishers.", e);
-                }
-            }
-        }
-        return true;
-    }
-
-    /**
-     * EJBCA 6.4.0 introduces new sun rules to System Configuration in regards to Custom OIDs and EKUs.
-     *
-     * Access rules have also been added for read only rights to parts of the GUI.
-     * @throws UpgradeFailedException if upgrade fails (rolls back)
-     */
-    @Override
-    public void migrateDatabase640() throws UpgradeFailedException {
-        //First add access rules for handling custom OIDs to any roles which previous had access to system configuration
-        // Add the new access rule /system_functionality/edit_available_extended_key_usages to every role that already has the access rule /system_functionality/edit_systemconfiguration
-        addEKUAndCustomCertExtensionsAccessRulestoRoles();
-        importExtendedKeyUsagesFromFile();
-        // Next add access rules for the new audit role template, allowing easy restriction of resources where needed.
-        addReadOnlyRules640();
-        log.error("(This is not an error) Completed upgrade procedure to 6.4.0");
-    }
-
-    /**
-     * EJBCA 6.4.2:
-     *
-     * 1.   Adds view rules to System Configuration, EKU Configuration and Certificate Extension Configuration. Any roles with edit rights to those pages, or which match the Auditor role
-     *      from 6.4.0 will be automatically upgraded.
-     * 2.   Adds view rules to Roles. Any roles with edit rights roles, or which match the Auditor role from 6.4.0 will be automatically upgraded.
-     *
-     * @throws UpgradeFailedException if upgrade fails (rolls back)
-     */
-    @Override
-    public void migrateDatabase642() throws UpgradeFailedException {
-        addReadOnlyRules642();
-        log.error("(This is not an error) Completed upgrade procedure to 6.4.2");
-    }
-
-    /**
-     * EJBCA 6.5.1:
-     *
-     * This upgrade only affects CMP aliases:
-     * 1.   End entity profiles will be referred to by ID instead of by name. In consideration of 100% uptime requirements, the value
-     *      ra.endentityprofile is replaced by ra.endentityprofileid, allowing legacy configurations to keep using the old value.
-     *
-     * @throws UpgradeFailedException if upgrade fails (rolls back)
-     */
-    @Override
-    public void migrateDatabase651() throws UpgradeFailedException {
-        CmpConfiguration cmpConfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
-        for(final String cmpAlias : cmpConfiguration.getAliasList()) {
-            // Avoid aliases that may already have been upgraded
-            if(StringUtils.isEmpty(cmpConfiguration.getRAEEProfile(cmpAlias))) {
-                @SuppressWarnings("deprecation")
-                String endEntityProfileName = cmpConfiguration.getValue(cmpAlias + "." + CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, cmpAlias);
-                if (!StringUtils.isEmpty(endEntityProfileName)) {
-                    try {
-                        cmpConfiguration.setRAEEProfile(cmpAlias,
-                                Integer.toString(endEntityProfileSession.getEndEntityProfileId(endEntityProfileName)));
-                    } catch (EndEntityProfileNotFoundException e) {
-                        //Fail gracefully if a CMP alias already is in an error state
-                        log.error("CMP alias " + cmpAlias + " could not be upgraded. It refers by name to End Entity Profile " + endEntityProfileName
-                                + ", which does not appear to exist. Value has instead been set to 1 (EMPTY). Please review this profile after upgrade.");
-                        cmpConfiguration.setRAEEProfile(cmpAlias, CmpConfiguration.DEFAULT_RA_EEPROFILE);
-                    }
-                } else {
-                    //Could be a client alias, we still need to set a default value though
-                    cmpConfiguration.setRAEEProfile(cmpAlias, CmpConfiguration.DEFAULT_RA_EEPROFILE);
-                }
-            }
-        }
-        try {
-            globalConfigurationSession.saveConfiguration(authenticationToken, cmpConfiguration);
-        } catch (AuthorizationDeniedException e) {
-            log.error("Always allow token was denied authoriation to global configuration table.", e);
-        }
-        log.error("(This is not an error) Completed upgrade procedure to 6.5.1");
-    }
-
-    /**
-     * EJBCA 6.6.0:
-     *
-     * 1.   Adds new access rules for approval profiles
-     * 2.   If CA or certificate profiles require Approvals, create a new Approval Profile matching those settings and convert to using that
-     *
-     * @throws UpgradeFailedException if upgrade fails (rolls back)
-     */
-    @SuppressWarnings("deprecation")
-    @Override
-    public void migrateDatabase660() throws UpgradeFailedException {
-        log.debug("migrateDatabase660: Upgrading roles with approval rules");
-        // Any roles with access to /ca_functionality/view_certificate_profiles should be given /ca_functionality/view_approval_profiles
-        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.CAFUNCTIONALITY.resource(),
-                Arrays.asList(StandardRules.CERTIFICATEPROFILEVIEW.resource()), Arrays.asList(StandardRules.APPROVALPROFILEVIEW.resource()), false);
-        // Any roles with access to /ca_functionality/edit_certificate_profiles should be given /ca_functionality/edit_approval_profiles
-        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.CAFUNCTIONALITY.resource(),
-                Arrays.asList(StandardRules.CERTIFICATEPROFILEEDIT.resource()), Arrays.asList(StandardRules.APPROVALPROFILEEDIT.resource()), false);
-        // Create AccumulativeApprovalProfile for all CA's and Certificate Profiles running approvals
-        //Sort cache by the number of approvals
-        Map<Integer, Integer> approvalProfileCache = new HashMap<>();
-        Map<Integer, Integer> approvalPartitionCache = new HashMap<>();
-        //Add approval profiles to all CAs with approvals
-        try {
-            log.debug("migrateDatabase660: Upgrading CAs with approval profiles");
-            for (int caId : caSession.getAllCaIds()) {
-                try {
-                    CACommon ca = caSession.getCAForEdit(authenticationToken, caId);
-                    int numberOfRequiredApprovals = ca.getNumOfRequiredApprovals();
-                    //Verify that the CA is in need of an approval profile...
-                    if (ca.getApprovalProfile() == -1 && ca.getApprovalSettings().size() > 0) {
-                        //Maybe this profile has already been created?
-                        if (approvalProfileCache.containsKey(Integer.valueOf(numberOfRequiredApprovals))) {
-                            //Indeed it has!
-                            ca.setApprovalProfile(approvalProfileCache.get(numberOfRequiredApprovals));
-                            caSession.editCA(authenticationToken, ca, true);
-                        } else {
-                            //None found! Let's create one!
-                            String name = "Require " + numberOfRequiredApprovals + " Approval" + (numberOfRequiredApprovals > 1 ? "s" : "");
-                            AccumulativeApprovalProfile newProfile = new AccumulativeApprovalProfile(name);
-                            try {
-                                newProfile.setNumberOfApprovalsRequired(numberOfRequiredApprovals);
-                            } catch (PropertyValidationException e1) {
-                                log.info("Attempted to upgrade an approval profile with negative value (" + numberOfRequiredApprovals + "). Setting 0 instead.");
-                                try {
-                                    newProfile.setNumberOfApprovalsRequired(0);
-                                } catch (PropertyValidationException e) {
-                                    throw new IllegalStateException(e);
-                                }
-                            }
-                            addApprovalNotification(newProfile);
-                            try {
-                                int newProfileId = approvalProfileSession.addApprovalProfile(authenticationToken, newProfile);
-                                approvalProfileCache.put(numberOfRequiredApprovals, newProfileId);
-                                approvalPartitionCache.put(numberOfRequiredApprovals, newProfile.getFirstStep().getPartitions().values().iterator().next().getPartitionIdentifier());
-                                ca.setApprovalProfile(newProfileId);
-                                caSession.editCA(authenticationToken, ca, true);
-                            } catch (ApprovalProfileExistsException e) {
-                                throw new IllegalStateException("Approval profile was apparently already persisted.", e);
-                            }
-                        }
-                    }
-                } catch (CADoesntExistsException e) {
-                    throw new IllegalStateException("CA was not found, in spite of ID just being retrieved", e);
-                }
-            }
-            //Do the same for all certificate profiles (same boilerplate, repeated).
-            log.debug("migrateDatabase660: Upgrading Certificate Profiles with approval profiles");
-            Map<Integer, CertificateProfile> allCertificateProfiles = certProfileSession.getAllCertificateProfiles();
-            for (Integer certificateProfileId : allCertificateProfiles.keySet()) {
-                CertificateProfile certificateProfile = allCertificateProfiles.get(certificateProfileId);
-                int numberOfRequiredApprovals = certificateProfile.getNumOfReqApprovals();
-                //Verify that the Certificate Profile is in need of an approval profile...
-                if (certificateProfile.getApprovalProfileID() == -1 && certificateProfile.getApprovalSettings().size() > 0) {
-                    //Maybe this profile has already been created?
-                    String certificateProfileName = certProfileSession.getCertificateProfileName(certificateProfileId);
-                    if (approvalProfileCache.containsKey(Integer.valueOf(numberOfRequiredApprovals))) {
-                        //Indeed it has!
-                        certificateProfile.setApprovalProfileID(approvalProfileCache.get(numberOfRequiredApprovals));
-                        certProfileSession.changeCertificateProfile(authenticationToken, certificateProfileName, certificateProfile);
-                    } else {
-                        //None found! Let's create one!
-                        String name = "Require " + numberOfRequiredApprovals + " approval" + (numberOfRequiredApprovals > 1 ? "s" : "");
-                        AccumulativeApprovalProfile newProfile = new AccumulativeApprovalProfile(name);
-                        try {
-                            newProfile.setNumberOfApprovalsRequired(numberOfRequiredApprovals);
-                        } catch (PropertyValidationException e1) {
-                            log.info("Attempted to upgrade an approval profile with negative value (" + numberOfRequiredApprovals + "). Setting 0 instead.");
-                            try {
-                                newProfile.setNumberOfApprovalsRequired(0);
-                            } catch (PropertyValidationException e) {
-                                throw new IllegalStateException(e);
-                            }
-                        }
-                        addApprovalNotification(newProfile);
-                        try {
-                            int newProfileId = approvalProfileSession.addApprovalProfile(authenticationToken, newProfile);
-                            approvalProfileCache.put(numberOfRequiredApprovals, newProfileId);
-                            approvalPartitionCache.put(numberOfRequiredApprovals, newProfile.getFirstStep().getPartitions().values().iterator().next().getPartitionIdentifier());
-                            certificateProfile.setApprovalProfileID(newProfileId);
-                            certProfileSession.changeCertificateProfile(authenticationToken, certificateProfileName, certificateProfile);
-                        } catch (ApprovalProfileExistsException e) {
-                            throw new IllegalStateException("Upgrade appears to be happening concurrently.", e);
-                        }
-                    }
-                }
-            }
-
-            // An approval now is specific to a partition in a step. Connect previously performed approvals
-            // to the newly created partition so that the new code will recognize it. Note that an AccumulativeApprovalProfile
-            // only has one step and one partition. The step ID is '0', which is the default step ID in an approval, which
-            // is why the step ID in an approval does not need updating the same way as the partition ID needs updating.
-            List<ApprovalData> approvalRequests = approvalSession.findWaitingForApprovalApprovalDataLocal();
-            if (approvalRequests.isEmpty()) {
-                log.debug("migrateDatabase660: No approval requests to upgrade");
-            } else {
-                log.debug("migrateDatabase660: Upgrading approval requests");
-            }
-            for(ApprovalData request : approvalRequests) {
-                Collection<Approval> approvals = request.getApprovals();
-                if(approvals.size() > 0) {
-                    final int nrOfRequiredApprovals = request.getRemainingapprovals() + approvals.size();
-                    final Integer partitionId = approvalPartitionCache.get(Integer.valueOf(nrOfRequiredApprovals));
-                    if (partitionId != null) {
-                        // It's an old approval from before 6.6.0, that needs upgrading
-                        for (Approval approval : approvals) {
-                            approval.setPartitionId(partitionId);
-                        }
-                        approvalSession.setApprovals(request, approvals);
-                    } else {
-                        // Might be an approval from 6.6.0, in case the upgrade fails at first and the user adds an approval (in 6.6 or later) before the successful upgrade.
-                        // Check that this is really the case
-                        boolean error = false;
-                        for (Approval approval : approvals) {
-                            if (approval.getPartitionId() == 0) { // not from 6.6.0, and can not be upgraded
-                                error = true;
-                            }
-                        }
-                        if (error) {
-                            log.error("An approval in the approval request with ID " + request.getId() + " could not be upgraded because it could not be mapped to an accumulative approval profile. The approvals in this request have been deleted");
-                            approvalSession.setApprovals(request, new ArrayList<Approval>());
-                        }
-                    }
-                }
-            }
-
-        } catch (AuthorizationDeniedException e) {
-            throw new IllegalStateException("AlwaysAllowToken was denied access", e);
-        }
-        log.error("(This is not an error) Completed upgrade procedure to 6.6.0");
+        return isLesserThan(getLastPostUpgradedToVersion(), "9.4.0");
     }
 
     /**
@@ -2011,22 +1650,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         return newAccessRules;
     }
 
-    /** Add the previously global configuration configured approval notification */
-    @SuppressWarnings("deprecation")
-    private void addApprovalNotification(final AccumulativeApprovalProfile newProfile) {
-        final GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        if (gc.getUseApprovalNotifications()) {
-            final String baseUrl = gc.getBaseUrlFromConfig();
-            final String defaultSubject = "[AR-${approvalRequest.ID}-${approvalRequest.STEP_ID}-${approvalRequest.PARTITION_ID}] " +
-                    "Approval Request to ${approvalRequest.TYPE} is now in state ${approvalRequest.WORKFLOWSTATE}";
-            final String defaultBody = "Approval Request to ${approvalRequest.TYPE} from ${approvalRequest.REQUESTOR} is now in state ${approvalRequest.WORKFLOWSTATE}.\n" +
-                    "\n" +
-                    "Direct link to the request: " + baseUrl + "ra/managerequest.xhtml?aid=${approvalRequest.ID}";
-            final ApprovalPartition approvalPartition = newProfile.getFirstStep().getPartitions().values().iterator().next();
-            newProfile.addNotificationProperties(approvalPartition, gc.getApprovalAdminEmailAddress(), gc.getApprovalNotificationFromAddress(), defaultSubject, defaultBody);
-        }
-    }
-
     /**
      * The configuration files <code>certstore.properties</code> and <code>crlstore.properties</code> are removed as of EJBCA 7.2.
      * <p>This method adjusts the configuration as follows:
@@ -2133,7 +1756,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     }
 
     /**
-     * Runs in a new transaction because {@link upgradeIndex} depends on the changes and the release of the metadata locks on CRLData.
+     * Runs in a new transaction because {@link UpgradeSessionLocal#upgradeIndex} depends on the changes and the release of the metadata locks on CRLData.
      */
     @Override
     public void fixPartitionedCrls() throws UpgradeFailedException {
@@ -2373,13 +1996,14 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     /**
      * Update GoogleCtPolicy.
      *
-     * Runs in a new transaction because {@link upgradeIndex} depends on the changes.
+     * Runs in a new transaction because {@link UpgradeSessionLocal#upgradeIndex} depends on the changes.
      *
      * @throws UpgradeFailedException if upgrade fails
      */
     @Override
     public void migrateDatabase781() throws UpgradeFailedException {
         final GlobalConfiguration globalConfig = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        @SuppressWarnings("deprecation")
         GoogleCtPolicy ctPolicy = globalConfig.getGoogleCtPolicy();
         ctPolicy.setBreakpoints(ctPolicy.getBreakpoints());
         for (int i = 0; i < 4; i++) {
@@ -2631,13 +2255,46 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     }
 
     @Override
-    public void migrateDatabase9_4_0() throws UpgradeFailedException {
+    public void migrateDatabase933() throws UpgradeFailedException {
+        migrateUseSSL933();
+    }
+
+    private void migrateUseSSL933() throws UpgradeFailedException {
+        //Update trustManagerType setting to "KEY_BINDING" for existing MSAutoenrollment aliases using SSL
+        final MSAutoEnrollmentConfiguration msaeConfig = (MSAutoEnrollmentConfiguration) globalConfigurationSession
+                .getCachedConfiguration(MSAutoEnrollmentConfiguration.CONFIGURATION_ID);
+        if (msaeConfig != null) {
+            for (final String msaeAlias : msaeConfig.getAliasList()) {
+                if (msaeConfig.isUseSSL(msaeAlias)) {
+                    // If useSSL was true set trustManagerType to KEY_BINDING
+                    msaeConfig.setTrustManagerType(msaeAlias, MSAutoEnrollmentConfiguration.TRUST_MANAGER_KEY_BINDING);
+                }
+            }
+            try {
+                globalConfigurationSession.saveConfiguration(authenticationToken, msaeConfig);
+                log.info("Completed MSAutoEnrollment useSSL to trustManagerType migration");
+            } catch (AuthorizationDeniedException e) {
+                final String msg = "Cannot save migrated MSAutoEnrollment configuration";
+                log.error(msg, e);
+                throw new UpgradeFailedException(msg);
+            }
+        }
+    }
+
+    @Override
+    public void migrateDatabase940() throws UpgradeFailedException {
         //Move ocsp.includecertchain and ocsp.includesignercert from the properties files and into the database configuration
-        migrateOcspOptions_9_4_0();
+        migrateOcspOptions940();
+        //Move enableIcaoNameChange from GlobalConfiguration to the new GlobalCaConfiguration row
+        migrateCaConfigurationFromGlobalConfig940();
+        //Move various CT settings from GlobalConfiguration and CesecoreGlobalConfiguration into the new GlobalCtConfiguration
+        migrateCtConfigurationIntoGlobalCtConfiguration9_4_0();
+        // Move ocsp cleanup settings from Global to the GlobalOcsp
+        migrateOcspCleanUpFromGlobalConfig940();
     }
     
     @SuppressWarnings("deprecation")
-    private void migrateOcspOptions_9_4_0() throws UpgradeFailedException {
+    private void migrateOcspOptions940() throws UpgradeFailedException {
         GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
         globalOcspConfiguration.setIncludeSigningCertificate(OcspConfiguration.getIncludeSignCert());
         globalOcspConfiguration.setIncludeCertificateChain(OcspConfiguration.getIncludeCertChain());
@@ -2650,6 +2307,59 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             throw new UpgradeFailedException(msg, e);
         }
     }  
+    
+    @SuppressWarnings("deprecation")
+    private void migrateCaConfigurationFromGlobalConfig940() throws UpgradeFailedException {
+        GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        GlobalCaConfiguration globalCaConfiguration = (GlobalCaConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCaConfiguration.CA_CONFIGURATION_ID);
+        globalCaConfiguration.setEnableIcaoCANameChange(globalConfiguration.getEnableIcaoCANameChange());        
+        try {
+            globalConfigurationSession.saveConfiguration(authenticationToken, globalCaConfiguration);
+        } catch (AuthorizationDeniedException e) {
+            String msg = "Always allow token was denied authoriation to global CA configuration table.";
+            log.error(msg, e);
+            throw new UpgradeFailedException(msg, e);
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    private void migrateCtConfigurationIntoGlobalCtConfiguration9_4_0() throws UpgradeFailedException {
+        GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+        GlobalCtConfiguration globalCtConfiguration = (GlobalCtConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCtConfiguration.CT_CONFIGURATION_ID);
+        globalCtConfiguration.setGoogleCtPolicy(globalConfiguration.getGoogleCtPolicy());
+        globalCtConfiguration.setCtCacheEnabled(globalCesecoreConfiguration.getCtCacheEnabled());
+        globalCtConfiguration.setCtCacheCleanupInterval(globalCesecoreConfiguration.getCtCacheCleanupInterval());
+        globalCtConfiguration.setCtCacheSize(globalCesecoreConfiguration.getCtCacheSize());
+        globalCtConfiguration.setCtCacheFastFailEnabled(globalCesecoreConfiguration.getCtCacheFastFailEnabled());
+        globalCtConfiguration.setCtCacheFastFailBackoff(globalCesecoreConfiguration.getCtCacheFastFailBackoff());
+        try {
+            globalConfigurationSession.saveConfiguration(authenticationToken, globalCtConfiguration);
+        } catch (AuthorizationDeniedException e) {
+            String msg = "Always allow token was denied authoriation to global CT configuration table.";
+            log.error(msg, e);
+            throw new UpgradeFailedException(msg, e);
+        }  
+    }
+
+    @SuppressWarnings("deprecation")
+    private void migrateOcspCleanUpFromGlobalConfig940() throws UpgradeFailedException {
+        GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+
+        globalOcspConfiguration.setOcspCleanupUse(globalConfiguration.getOcspCleanupUse());
+        globalOcspConfiguration.setOcspCleanupSchedule(globalConfiguration.getOcspCleanupSchedule());
+        globalOcspConfiguration.setOcspCleanupScheduleUnit(globalConfiguration.getOcspCleanupScheduleUnit());
+
+        try {
+            globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);
+        } catch (AuthorizationDeniedException e) {
+            String msg = "Always allow token was denied authorisation to global configuration table.";
+            log.error(msg, e);
+            throw new UpgradeFailedException(msg, e);
+        }
+    }
+
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
