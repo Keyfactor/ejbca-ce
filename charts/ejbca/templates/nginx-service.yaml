@@ -63,20 +63,24 @@ spec:
 {{- end }}
 {{- end }}
 ---
-# Conditional Pod index based access - use case: UI Access or Manually selecting Closer Instance
-{{- if ne (int .Values.replicaCount) 1 }}
-{{- if and .Values.nginx.enabled .Values.nginx.loadBalancerAccess.enableReplicaSpecificAccess }}
-{{- range $i := until (int .Values.replicaCount) }}
+# Conditional Pod index based access - use case: Peering, UI Access or Manually selecting Closer Instance
+{{- if or (ne (int .Values.replicaCount) 1) (.Values.autoscaling.enabled) }}
+{{- if and .Values.nginx.enabled }}
+{{- range $i := until (int (include "ejbca.maxReplicaCount" .)) }}
 kind: Service
 apiVersion: v1
 metadata:
-  name: {{ include "ejbca.fullname" $ }}-nginx-load-balancer-{{ . }}
+  name: {{ include "ejbca.fullname" $ }}-nginx-per-pod-{{ . }}
   {{- with $.Values.serviceAnnotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
+  {{- if $.Values.nginx.loadBalancerAccess.enableReplicaSpecificAccess }}
   type: "LoadBalancer"
+  {{- else }}
+  type: "ClusterIP"
+  {{- end }}
   ports:
     {{- if $.Values.nginx.service.httpPort }}
     - name: nginx-http
@@ -95,39 +99,4 @@ spec:
 {{- end }}
 {{- end }}
 {{- end }}
----
-# Headless service cluster internal access - use case: peering
-{{- if ne (int .Values.replicaCount) 1 }}
-{{- if .Values.nginx.enabled }}
-kind: Service
-apiVersion: v1
-metadata:
-  name: {{ include "ejbca.fullname" . }}-nginx-headless
-  {{- with .Values.serviceAnnotations }}
-  annotations:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
-spec:
-  type: ClusterIP
-  clusterIP: None
-  ports:
-    {{- if .Values.nginx.service.httpPort }}
-    - name: nginx-http
-      port: {{ .Values.nginx.service.httpPort }}
-      {{- if eq .Values.nginx.service.type "NodePort" }}
-      nodePort: {{ .Values.nginx.service.httpPort }}
-      {{- end }}
-      targetPort: nginx-http
-      protocol: TCP
-    {{- end }}
-    - name: nginx-https
-      port: {{ .Values.nginx.service.httpsPort }}
-      {{- if eq .Values.nginx.service.type "NodePort" }}
-      nodePort: {{ .Values.nginx.service.httpsPort }}
-      {{- end }}
-      targetPort: nginx-https
-      protocol: TCP
-  selector:
-    {{- include "ejbca.selectorLabels" . | nindent 4 }}
-{{- end }}
-{{- end }}
+

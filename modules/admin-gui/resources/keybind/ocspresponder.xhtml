@@ -53,7 +53,7 @@
 				<h:message for="internalKeyBindingId"/>
 				<h:outputLabel for="name" value="#{web.text.INTERNALKEYBINDING_FIELD_NAME}"/>
 				<h:panelGroup id="name">
-					<h:inputText rendered="#{ocspResponderMBean.inEditMode}" value="#{ocspResponderMBean.currentName}" required="true" requiredMessage="#{web.text.YOUAREREQUIRED} #{web.text.INTERNALKEYBINDING_FIELD_NAME}" size="40" maxlength="255" title="#{web.text.FORMAT_ID_STR}" />
+					<h:inputText rendered="#{ocspResponderMBean.inEditMode}" value="#{ocspResponderMBean.currentName}" size="40" maxlength="255" title="#{web.text.FORMAT_ID_STR}" />
 					<h:outputText rendered="#{!ocspResponderMBean.inEditMode}" value="#{ocspResponderMBean.currentName}"/>
 				</h:panelGroup>
 				<h:message for="name"/>

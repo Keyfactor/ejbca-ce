@@ -74,7 +74,7 @@ public interface UpgradeSessionLocal  extends UpgradeSession{
     /** For internal user from Upgrade SessionBean only */
     void migrateDatabase933() throws UpgradeFailedException;
     /** For internal user from UpgradeSessionBean only */
-    void migrateDatabase9_4_0() throws UpgradeFailedException;
+    void migrateDatabase940() throws UpgradeFailedException;
     /** For internal user from UpgradeSessionBean only */
     void fixPartitionedCrls() throws UpgradeFailedException;
     /** For internal user from UpgradeSessionBean only */

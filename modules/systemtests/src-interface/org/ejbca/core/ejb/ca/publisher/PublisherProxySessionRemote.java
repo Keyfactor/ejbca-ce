@@ -54,9 +54,10 @@ public interface PublisherProxySessionRemote {
     
     /**
      * Returns a publisher id, given it's publishers name
+     *
      * @return the id or 0 if the publisher cannot be found.
      */
-    int getPublisherId(String name);
+    Integer getPublisherId(String name);
 
     /**
      * Returns a publishers name given its id.
@@ -83,7 +84,7 @@ public interface PublisherProxySessionRemote {
      * @throws PublisherExistsException if publisher already exists.
      * @throws AuthorizationDeniedException 
      */
-    void renamePublisher(AuthenticationToken admin, String oldname, String newname) throws PublisherExistsException, AuthorizationDeniedException;
+    void renamePublisher(AuthenticationToken admin, String oldname, String newname) throws PublisherExistsException, AuthorizationDeniedException, PublisherDoesntExistsException;
     
     /**
      * Test the connection to of a publisher
@@ -100,9 +101,5 @@ public interface PublisherProxySessionRemote {
      * next time we try to access it.
      */
     void flushPublisherCache();
-
-    /** Change a Publisher without affecting the cache */
-    void internalChangePublisherNoFlushCache(String name, BasePublisher publisher)
-            throws AuthorizationDeniedException; 
 
 }
