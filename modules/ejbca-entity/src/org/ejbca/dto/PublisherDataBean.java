@@ -36,7 +36,7 @@ public final class PublisherDataBean implements Serializable, EntityManagerBean 
 
     static {
         protectedDataImpl = new ProtectedDataIntegrityImpl();
-        protectedDataImpl.setTableName("PublisherData");
+        protectedDataImpl.setTableName("PublisherDataBean");
     }
 
     public static ProtectedDataImpl getProtectedDataImpl() {
@@ -120,6 +120,7 @@ public final class PublisherDataBean implements Serializable, EntityManagerBean 
         builder.append(getId());
         builder.append(getName());
         builder.append(getUpdateCounter());
+        builder.append(getData());
         return builder.toString();
     }
 
@@ -127,7 +128,7 @@ public final class PublisherDataBean implements Serializable, EntityManagerBean 
     @PreUpdate
     protected void protectData() throws DatabaseProtectionException {
         final var unProtectedData = getProtectString(getProtectVersion());
-        final var protectedData = protectedDataImpl.getProtectedData(rowVersion, unProtectedData);
+        final var protectedData = protectedDataImpl.getProtectedData(getProtectVersion(), unProtectedData);
         if (protectedData != null) {
             setRowProtection(protectedData);
         }

@@ -24,6 +24,8 @@ import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
 import jakarta.inject.Named;
 
+import org.apache.commons.lang3.StringUtils;
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
@@ -111,6 +113,12 @@ public class RemoteAuthenticationMBean extends InternalKeyBindingMBeanBase {
                 for (final DynamicUiProperty<? extends Serializable> property : internalKeyBindingProperties) {
                     dataMap.put(property.getName(), property.getValue());
                 }
+                if(StringUtils.isEmpty(getCurrentName())) {
+                    FacesContext.getCurrentInstance().addMessage(null,
+                            new FacesMessage(FacesMessage.SEVERITY_ERROR, "Cannot create a Remote Authentication with a blank name", null));
+                    return;
+                }
+                
                 setCurrentInternalKeybindingId(String.valueOf(internalKeyBindingSession.createInternalKeyBinding(getAuthenticationToken(),
                         getSelectedInternalKeyBindingType(), getCurrentName(), InternalKeyBindingStatus.DISABLED, null,
                         getCurrentCryptoToken().intValue(), getCurrentKeyPairAlias(), getCurrentSignatureAlgorithm(), dataMap,
@@ -134,7 +142,13 @@ public class RemoteAuthenticationMBean extends InternalKeyBindingMBeanBase {
         try {
             final InternalKeyBinding internalKeyBinding = internalKeyBindingSession.getInternalKeyBinding(getAuthenticationToken(),
                     Integer.parseInt(getCurrentInternalKeyBindingId()));
-            internalKeyBinding.setName(getCurrentName());
+            if(StringUtils.isEmpty(getCurrentName())) {
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR, "Cannot create a Remote Authentication with a blank name", null));
+                return;
+            } else {
+                internalKeyBinding.setName(getCurrentName());
+            }
             if (isCryptoTokenActive()) {
                 final int loadedCryptoTokenId = internalKeyBinding.getCryptoTokenId();
                 final String loadedKeyPairAlias = internalKeyBinding.getKeyPairAlias();

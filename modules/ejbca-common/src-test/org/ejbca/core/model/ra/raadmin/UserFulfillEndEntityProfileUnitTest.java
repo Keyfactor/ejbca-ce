@@ -1444,7 +1444,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         LinkedHashMap<String, Set<String>> map = new LinkedHashMap<>();
         map.put("Namespace1", new LinkedHashSet<>());
         map.put("Namespace2", new LinkedHashSet<>());
-        eabConfiguration.setEabConfigMap(map);
+        eabConfiguration.setEABMap(map);
 
         final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         Set<String> namespaces = new HashSet<>(Collections.singletonList("EABNamespace"));
@@ -1474,7 +1474,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         map.put(eabNamespace, new LinkedHashSet<>());
         map.get(eabNamespace).add("SomeId");
         map.put("Namespace2", new LinkedHashSet<>());
-        eabConfiguration.setEabConfigMap(map);
+        eabConfiguration.setEABMap(map);
 
         final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         Set<String> namespaces = new HashSet<>(Collections.singletonList(eabNamespace));
@@ -1506,7 +1506,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         set.add(accountBindingId);
         map.put(eabNamespace, set);
         map.put("Namespace2", new LinkedHashSet<>());
-        eabConfiguration.setEabConfigMap(map);
+        eabConfiguration.setEABMap(map);
 
         final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         Set<String> namespaces = new HashSet<>(Collections.singletonList(eabNamespace));

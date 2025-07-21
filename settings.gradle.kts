@@ -1,4 +1,4 @@
-import java.util.Properties
+import java.util.*
 
 rootProject.name = "ejbca"
 
@@ -50,9 +50,9 @@ dependencyResolutionManagement {
             library("commons-collections4", ":commons-collections4:4.5.0")
             library("nimbus-jose-jwt", ":nimbus-jose-jwt:9.37.3")
             library("x509-common-util", ":x509-common-util:5.3.5")
-            library("cryptotokens-api", ":cryptotokens-api:3.0.0")
-            library("cryptotokens-impl", ":cryptotokens-impl:3.0.0")
-            library("cryptotokens-impl-ee", ":cryptotokens-impl-ee:3.0.0")
+            library("cryptotokens-api", ":cryptotokens-api:3.2.1")
+            library("cryptotokens-impl", ":cryptotokens-impl:3.2.1")
+            library("cryptotokens-impl-ee", ":cryptotokens-impl-ee:3.2.1")
             library("adsddl", ":adsddl:1.9")
             library("jakarta.jws-api", ":jakarta.jws-api:3.0.0")
             library("jakarta.xml.soap-api", ":jakarta.xml.soap-api:3.0.2")
@@ -87,7 +87,7 @@ dependencyResolutionManagement {
             library("commons-fileupload2", ":commons-fileupload2-jakarta-servlet6:2.0.0-M4")
             library("commons-fileupload2-core", ":commons-fileupload2-core:2.0.0-M4")
             library("jacknji11", ":jacknji11:1.3.1")
-            library("p11ng", ":p11ng:0.25.7")
+            library("p11ng", ":p11ng:0.25.7-20250719-9ea9aa2")
             library("protobuf-java", ":protobuf-java:3.25.5")
             library("ctlog", ":ctlog:0.1.7")
             library("commons-beanutils", ":commons-beanutils:1.9.4")

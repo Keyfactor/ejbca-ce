@@ -63,6 +63,7 @@ import org.cesecore.config.EABConfiguration;
 import org.cesecore.config.GlobalCaConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.config.GlobalOcspConfiguration;
+import org.cesecore.config.GlobalCtConfiguration;
 import org.cesecore.config.InvalidConfigurationException;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.config.RaStyleInfo;
@@ -234,7 +235,13 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         private boolean ctCacheFastFailEnabled;
         private long ctCacheFastFailBackoff;
 
-        private GuiInfo(GlobalConfiguration globalConfig, GlobalCesecoreConfiguration globalCesecoreConfiguration, AdminPreference adminPreference, GlobalCaConfiguration globalCaConfiguration, GlobalOcspConfiguration globalOcspConfiguration) {
+        private GuiInfo(AdminPreference adminPreference) {
+            final GlobalConfiguration globalConfig = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            final GlobalCtConfiguration globalCtConfiguration = (GlobalCtConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCtConfiguration.CT_CONFIGURATION_ID);
+            final GlobalCaConfiguration globalCaConfiguration = (GlobalCaConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCaConfiguration.CA_CONFIGURATION_ID);
+            final GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+            final GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+
             try {
                 this.title = globalConfig.getEjbcaTitle();
                 this.enableEndEntityProfileLimitations = globalConfig.getEnableEndEntityProfileLimitations();
@@ -270,11 +277,11 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 this.redactPiiByDefault = globalCesecoreConfiguration.getRedactPiiByDefault();
                 this.redactPiiEnforced = globalCesecoreConfiguration.getRedactPiiEnforced();
                 
-                this.ctCacheEnabled = globalCesecoreConfiguration.getCtCacheEnabled();
-                this.ctCacheSize = globalCesecoreConfiguration.getCtCacheSize();
-                this.ctCacheCleanupInterval = globalCesecoreConfiguration.getCtCacheCleanupInterval();
-                this.ctCacheFastFailEnabled = globalCesecoreConfiguration.getCtCacheFastFailEnabled();
-                this.ctCacheFastFailBackoff = globalCesecoreConfiguration.getCtCacheFastFailBackoff();
+                this.ctCacheEnabled = globalCtConfiguration.getCtCacheEnabled();
+                this.ctCacheSize = globalCtConfiguration.getCtCacheSize();
+                this.ctCacheCleanupInterval = globalCtConfiguration.getCtCacheCleanupInterval();
+                this.ctCacheFastFailEnabled = globalCtConfiguration.getCtCacheFastFailEnabled();
+                this.ctCacheFastFailBackoff = globalCtConfiguration.getCtCacheFastFailBackoff();
             } catch (RuntimeException e) {
                 log.error(e.getMessage(), e);
             }
@@ -405,10 +412,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public String getEncoding() { return this.encoding; }
     }
 
-    private GlobalConfiguration globalConfig = null;
-    private GlobalCesecoreConfiguration globalCesecoreConfiguration = null;
-    private GlobalCaConfiguration globalCaConfiguration = null;
-    private GlobalOcspConfiguration globalOcspConfiguration = null;
     private OAuthConfiguration oAuthConfiguration = null;
     private AdminPreference adminPreference = null;
     private GuiInfo currentConfig = null;
@@ -429,7 +432,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private boolean preCertificateMaintenanceServiceCheckDone = false;
     private boolean preCertificateMaintenanceServiceAvailable;
     private int lastActiveTab = 0;
-
 
     private boolean enableCustomHeaderRest;
     private String customHeaderRestName;
@@ -672,7 +674,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
     public GoogleCtPolicy getGoogleCtPolicy() {
         if (googleCtPolicy == null) {
-            googleCtPolicy = getGlobalConfiguration().getGoogleCtPolicy();
+            GlobalCtConfiguration globalCtConfiguration = (GlobalCtConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCtConfiguration.CT_CONFIGURATION_ID);
+            googleCtPolicy = globalCtConfiguration.getGoogleCtPolicy();
         }
         return googleCtPolicy;
     }
@@ -721,21 +724,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         preCertificateMaintenanceServiceCheckDone = false; // trigger a new check
     }
 
-    public GlobalCesecoreConfiguration getGlobalCesecoreConfiguration() {
-        if (globalCesecoreConfiguration == null) {
-            globalCesecoreConfiguration = (GlobalCesecoreConfiguration) getEjbcaWebBean().getEjb().getGlobalConfigurationSession()
-                    .getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
-        }
-        return globalCesecoreConfiguration;
-    }
-
-    public GlobalConfiguration getGlobalConfiguration() {
-        if(globalConfig == null) {
-            globalConfig = getEjbcaWebBean().getGlobalConfiguration();
-        }
-        return globalConfig;
-    }
-
     private OAuthConfiguration getOAuthConfiguration() {
         if (oAuthConfiguration == null) {
             oAuthConfiguration = getEjbcaWebBean().getOAuthConfiguration();
@@ -750,26 +738,11 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         return adminPreference;
     }
 
-    private GlobalCaConfiguration getGlobalCaConfiguration() {
-        if(globalCaConfiguration == null) {
-            globalCaConfiguration = (GlobalCaConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCaConfiguration.CA_CONFIGURATION_ID);
-        }
-        return globalCaConfiguration;
-    }
-
-    private GlobalOcspConfiguration getGlobalOcspConfiguration() {
-        if (globalOcspConfiguration == null) {
-            globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-        }
-
-        return globalOcspConfiguration;
-    }
-
     /** @return cached or populate a new system configuration GUI representation for view or edit */
     public GuiInfo getCurrentConfig() {
         if (this.currentConfig == null) {
             try {
-                this.currentConfig = new GuiInfo(getGlobalConfiguration(), getGlobalCesecoreConfiguration(), getAdminPreference(), getGlobalCaConfiguration(), getGlobalOcspConfiguration());
+                this.currentConfig = new GuiInfo(getAdminPreference());
             } catch (Exception e) {
                 String msg = "Cannot read Administrator Preferences.";
                 log.info(msg + e.getLocalizedMessage());
@@ -787,7 +760,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
                 @Override
                 public GlobalConfiguration getGlobalConfiguration() {
-                    return SystemConfigMBean.this.getGlobalConfiguration();
+                    return (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
                 }
 
                 @Override
@@ -868,7 +841,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
     /** Returns true if EJBCA was built with Statedump (from EJBCA 6.5.0 or later) and it hasn't been locked down in the user interface. */
     public boolean isStatedumpAvailable() {
-        return statedumpSession != null && !getGlobalConfiguration().getStatedumpLockedDown();
+        final GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        return statedumpSession != null && !globalConfiguration.getStatedumpLockedDown();
     }
 
     public List<SelectItem> getStatedumpAvailableTemplates() {
@@ -996,9 +970,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     private void lockDownStatedump() throws AuthorizationDeniedException {
-        getGlobalConfiguration(); // sets globalConfig
-        globalConfig.setStatedumpLockedDown(true);
-        getEjbcaWebBean().saveGlobalConfiguration(globalConfig);
+        final GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        globalConfiguration.setStatedumpLockedDown(true);
+        globalConfigurationSession.saveConfiguration(getAdmin(), globalConfiguration);
         if (log.isDebugEnabled()) {
             final boolean state = getEjbcaWebBean().getGlobalConfiguration().getStatedumpLockedDown();
             log.debug("Statedump lockdown state changed to "+state);
@@ -1028,7 +1002,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             return;
         }
 
-        if (getGlobalConfiguration().getStatedumpLockedDown()) {
+        final GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        if (globalConfiguration.getStatedumpLockedDown()) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Statedump has been locked down on this EJBCA installation and is not available.", null));
             return;
         }
@@ -1103,8 +1078,10 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 return;
             }
             try {
+                final GlobalCtConfiguration globalCtConfiguration = (GlobalCtConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCtConfiguration.CT_CONFIGURATION_ID);
+                final GlobalConfiguration globalConfig = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
                 globalConfig.setEjbcaTitle(currentConfig.getTitle());
-                saveCurrentHeaderFile();
+
                 globalConfig.setEnableEndEntityProfileLimitations(currentConfig.getEnableEndEntityProfileLimitations());
                 globalConfig.setEnableKeyRecovery(currentConfig.getEnableKeyRecovery());
                 globalConfig.setLocalKeyRecovery(currentConfig.getLocalKeyRecovery());
@@ -1125,26 +1102,31 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalConfig.setCTLogs(ctlogsMap);
 
                 if (getGoogleCtPolicy().isValid()) {
-                    globalConfig.setGoogleCtPolicy(getGoogleCtPolicy());
+                    globalCtConfiguration.setGoogleCtPolicy(getGoogleCtPolicy());
                 } else {
                     addErrorMessage("INVALID_CT_POLICY");
                 }
 
                 getEjbcaWebBean().saveGlobalConfiguration(globalConfig);
 
+                saveCurrentHeaderFile();
+
                 // Restart OCSP cleanup job timers
                 ocspCleanupSession.restart();
 
+                GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
                 globalCesecoreConfiguration.setMaximumQueryCount(currentConfig.getMaximumQueryCount());
                 globalCesecoreConfiguration.setMaximumQueryTimeout(currentConfig.getMaximumQueryTimeout());
                 globalCesecoreConfiguration.setRedactPiiByDefault(currentConfig.isRedactPiiByDefault());
                 globalCesecoreConfiguration.setRedactPiiEnforced(currentConfig.isRedactPiiEnforced());
-                globalCesecoreConfiguration.setCtCacheEnabled(currentConfig.isCtCacheEnabled());
-                globalCesecoreConfiguration.setCtCacheSize(currentConfig.getCtCacheSize());
-                globalCesecoreConfiguration.setCtCacheCleanupInterval(currentConfig.getCtCacheCleanupInterval());
-                globalCesecoreConfiguration.setCtCacheFastFailEnabled(currentConfig.getCtCacheFastFailEnabled());
-                globalCesecoreConfiguration.setCtCacheFastFailBackoff(currentConfig.getCtCacheFastFailBackoff());
-                getEjbcaWebBean().getEjb().getGlobalConfigurationSession().saveConfiguration(getAdmin(), globalCesecoreConfiguration);
+                globalConfigurationSession.saveConfiguration(getAdmin(), globalCesecoreConfiguration);
+
+                globalCtConfiguration.setCtCacheEnabled(currentConfig.isCtCacheEnabled());
+                globalCtConfiguration.setCtCacheSize(currentConfig.getCtCacheSize());
+                globalCtConfiguration.setCtCacheCleanupInterval(currentConfig.getCtCacheCleanupInterval());
+                globalCtConfiguration.setCtCacheFastFailEnabled(currentConfig.getCtCacheFastFailEnabled());
+                globalCtConfiguration.setCtCacheFastFailBackoff(currentConfig.getCtCacheFastFailBackoff());
+                globalConfigurationSession.saveConfiguration(getAdmin(), globalCtConfiguration);
                 // Purge access rule for key recovery from all roles if key recovery is disabled
                 // This is done after the configuration has been saved successfully, thus making
                 // sure the administrator has access to edit the configuration, since no access
@@ -1164,7 +1146,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 log.info(msg);
                 super.addNonTranslatedErrorMessage(msg);
             }
-
+            GlobalCaConfiguration globalCaConfiguration = (GlobalCaConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCaConfiguration.CA_CONFIGURATION_ID);
             globalCaConfiguration.setEnableIcaoCANameChange(currentConfig.getEnableIcaoCANameChange());
             try {
                 globalConfigurationSession.saveConfiguration(getAdmin(), globalCaConfiguration);
@@ -1175,6 +1157,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             }
 
             // Save OCSP related settings to the GlobalOcspConfiguration
+            final GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
             if (isValidOcspCleanupSettings()) {
                 globalOcspConfiguration.setOcspCleanupSchedule(currentConfig.getOcspCleanupSchedule());
                 globalOcspConfiguration.setOcspCleanupScheduleUnit(currentConfig.getOcspCleanupScheduleUnit());
@@ -1208,7 +1191,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
     }
 
-    private void saveCurrentHeaderFile() {
+    private void saveCurrentHeaderFile() throws AuthorizationDeniedException {
         if (headerFile != null) {
 
             String fileName = headerFile.getFileName();
@@ -1228,7 +1211,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                     outputStream.write(buffer, 0, bytesRead);
                 }
                 // Convert the output stream to byte array
+                GlobalConfiguration globalConfig = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
                 globalConfig.setHeadBannerLogo(outputStream.toByteArray());
+                globalConfigurationSession.saveConfiguration(getAdmin(), globalConfig);
 
             } catch (IOException e) {
                 log.error("Exception while trying to save the logo file in database.");
@@ -1255,7 +1240,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     public void flushCache() {
-        globalConfig = null;
         oAuthConfiguration = null;
         adminPreference = null;
         currentConfig = null;
@@ -1274,8 +1258,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         googleCtPolicy = null;
         validatorSettings = null;
         preCertificateMaintenanceServiceCheckDone = false;
-        globalCaConfiguration = null;
-        globalOcspConfiguration = null;
         enableCustomHeaderRest = getAvailableProtocolsConfiguration().isCustomHeaderForRestEnabled();
         customHeaderRestName = getAvailableProtocolsConfiguration().getCustomHeaderForRest();
     }
@@ -2231,8 +2213,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     public List<SelectItem> getAvailableThemes() {
+        final GlobalConfiguration globalConfig = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         final List<SelectItem> ret = new ArrayList<>();
-        final String[] themes = getGlobalConfiguration().getAvailableThemes();
+        final String[] themes = globalConfig.getAvailableThemes();
         for(String theme : themes) {
             ret.add(new SelectItem(theme, theme));
         }
@@ -2240,8 +2223,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     public List<SelectItem> getPossibleEntriesPerPage() {
+        final GlobalConfiguration globalConfig = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         final List<SelectItem> ret = new ArrayList<>();
-        final String[] possibleValues = getGlobalConfiguration().getPossibleEntiresPerPage();
+        final String[] possibleValues = globalConfig.getPossibleEntiresPerPage();
         for(String value : possibleValues) {
             ret.add(new SelectItem(Integer.parseInt(value), value));
         }
@@ -2275,7 +2259,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 @Override
                 public void saveEabConfig(Map<String, Set<String>> eabConfigMap, String eabConfigFileHash) {
                     final EABConfiguration eabConfiguration = getEjbcaWebBean().getEABConfiguration();
-                    eabConfiguration.setEabConfigMap(eabConfigMap);
+                    eabConfiguration.setEABMap(eabConfigMap);
                     eabConfiguration.setFileHash(eabConfigFileHash);
                     try {
                         getEjbcaWebBean().saveEABConfiguration(eabConfiguration);
