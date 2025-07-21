@@ -53,7 +53,6 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final long serialVersionUID = 1L;
 
     protected static final InternalResources intres = InternalResources.getInstance();
-
     protected static final float LATEST_VERSION = 15;
 
     private static final String KEY_RA_NAMEGENERATIONSCHEME = "ra.namegenerationscheme";
@@ -93,6 +92,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final String DNS_RESOLVER_DEFAULT = "8.8.8.8";
     private static final int DNS_SERVER_PORT_DEFAULT = 53;
     private static final String KEY_RETRY_AFTER = "retryAfter";
+    private static final String KEY_ARI_RETRY_AFTER = "ariRetryAfter";
     private static final String KEY_CHALLENGE_RESPONSE_TIMOUT = "challengeResponseTimout";
     private static final String KEY_AUTHORIZED_REDIRECT_PORTS = "authorizedRedirectPorts";
     private static final String KEY_APPROVAL_FOR_NEW_ACCOUNT_ID = "approvalForNewAccountId";
@@ -129,6 +129,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final String DEFAULT_ACME_ARI_EXPLANATION_URL = "";
     
     private static final String DEFAULT_WEBSITE_URL = "https://www.example.com/";
+    public static final String DEFAULT_ARI_RETRY_AFTER = "6h";
     private static final long DEFAULT_ORDER_VALIDITY = 3600000L;
     public static final int DEFAULT_CHALLENGE_RESPONSE_TIMOUT = 30;
     private static final String DEFAULT_AUTHORIZED_REDIRECT_PORTS = "22,25,80,443";
@@ -165,6 +166,8 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     public void upgrade() {
         if (Float.compare(getLatestVersion(), getVersion()) > 0) {
             // New version of the class, upgrade.
+            log.info(intres.getLocalizedMessage("acmeconfiguration.upgrade", getVersion()));
+
             // v14. Renewal Info
             if (data.get(KEY_ENABLED_RENEWAL_INFO) == null) {
                 setEnabledRenewalInfo(DEFAULT_ENABLED_RENEWAL_INFO);
@@ -175,10 +178,10 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
             if (data.get(KEY_SUGGESTED_RENEWAL_END) == null) {
                 setSuggestedRenewalEnd(DEFAULT_SUGGESTED_RENEWAL_END);
             }
-
+            if (data.get(KEY_ARI_RETRY_AFTER) == null) {
+                setAriRetryAfter(DEFAULT_ARI_RETRY_AFTER);
+            }
             // v13. MPIC challenge response
-            log.info(intres.getLocalizedMessage("acmeconfiguration.upgrade", getVersion()));
-
             if (data.get(KEY_USE_MPIC_SERVICE) == null) {
                 setUseMpicService(DEFAULT_USE_MPIC_SERVICE);
             }
@@ -789,6 +792,15 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         data.put(KEY_RETRY_AFTER, retryAfter);
     }
 
+    public String getAriRetryAfter() {
+        final String ariRetryAfter = (String) data.get(KEY_ARI_RETRY_AFTER);
+        return Objects.isNull(ariRetryAfter) ? "6h" : ariRetryAfter;
+    }
+
+    public void setAriRetryAfter(final String ariRetryAfter) {
+        data.put(KEY_ARI_RETRY_AFTER, ariRetryAfter);
+    }
+
     public int getChallengeResponseTimout() {
         final Integer seconds = (Integer) data.get(KEY_CHALLENGE_RESPONSE_TIMOUT);
         return Objects.isNull(seconds) ? DEFAULT_CHALLENGE_RESPONSE_TIMOUT : seconds.intValue();
@@ -925,6 +937,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         setMpicAttemptCount(DEFAULT_KEY_MPIC_ATTEMPT_COUNT);
         data.put(KEY_DNS_IDENTIFIER_CHALLENGE_TYPES, DEFAULT_DNS_IDENTIFIER_CHALLENGE_TYPES);
         setWebSiteUrl(DEFAULT_WEBSITE_URL);
+        setAriRetryAfter(DEFAULT_ARI_RETRY_AFTER);
         setOrderValidity(DEFAULT_ORDER_VALIDITY);
         setDnsResolver(DNS_RESOLVER_DEFAULT);
         setDnssecTrustAnchor(DnsSecDefaults.IANA_ROOT_ANCHORS_DEFAULT);
