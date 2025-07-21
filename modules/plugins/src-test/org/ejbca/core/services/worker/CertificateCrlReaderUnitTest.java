@@ -414,12 +414,12 @@ public class CertificateCrlReaderUnitTest {
     public void testUnwrapRedactedSignedData() throws NoSuchMethodException, SecurityException, CertificateParsingException, IllegalAccessException,
             IllegalArgumentException, InvocationTargetException {
         CertificateCrlReader certificateCrlReader = new CertificateCrlReader();
-        Method getAndVerifySignedData = CertificateCrlReader.class.getDeclaredMethod("getAndVerifySignedData", byte[].class, List.class);
+        Method getAndVerifySignedData = CertificateCrlReader.class.getDeclaredMethod("getAndVerifySignedData", byte[].class, List.class, Boolean.class);
         getAndVerifySignedData.setAccessible(true);
         X509Certificate signingCaCertificate = CertTools.getCertfromByteArray(SIGNING_CA_CERT.getBytes(), X509Certificate.class);
         //First let's see if we can verify the signature and unwrap the original byte array from the envelope
         byte[] unwrappedData = (byte[]) getAndVerifySignedData.invoke(certificateCrlReader, CANNED_SIGNED_REVOCATION,
-                Arrays.asList(signingCaCertificate));
+                Arrays.asList(signingCaCertificate), false);
         //Next let's see if we can deserialize the container
         Method unwrapScpContainer = CertificateCrlReader.class.getDeclaredMethod("unwrapScpContainer", byte[].class);
         unwrapScpContainer.setAccessible(true);
@@ -445,10 +445,10 @@ public class CertificateCrlReaderUnitTest {
     public void testUnwrapRedactedUnsignedData() throws NoSuchMethodException, SecurityException, CertificateParsingException, IllegalAccessException,
             IllegalArgumentException, InvocationTargetException {
         CertificateCrlReader certificateCrlReader = new CertificateCrlReader();
-        Method getAndVerifySignedData = CertificateCrlReader.class.getDeclaredMethod("getAndVerifySignedData", byte[].class, List.class);
+        Method getAndVerifySignedData = CertificateCrlReader.class.getDeclaredMethod("getAndVerifySignedData", byte[].class, List.class, Boolean.class);
         getAndVerifySignedData.setAccessible(true);
         //First let's see if we can verify the signature and unwrap the original byte array from the envelope
-        byte[] unwrappedData = (byte[]) getAndVerifySignedData.invoke(certificateCrlReader, CANNED_UNSIGNED_REVOCATION, null);
+        byte[] unwrappedData = (byte[]) getAndVerifySignedData.invoke(certificateCrlReader, CANNED_UNSIGNED_REVOCATION, null, false);
         //Next let's see if we can deserialize the container
         Method unwrapScpContainer = CertificateCrlReader.class.getDeclaredMethod("unwrapScpContainer", byte[].class);
         unwrapScpContainer.setAccessible(true);
@@ -474,12 +474,12 @@ public class CertificateCrlReaderUnitTest {
     public void testUnwrapUnredactedSignedData() throws NoSuchMethodException, SecurityException, CertificateParsingException, IllegalAccessException,
             IllegalArgumentException, InvocationTargetException, CertificateEncodingException {
         CertificateCrlReader certificateCrlReader = new CertificateCrlReader();
-        Method getAndVerifySignedData = CertificateCrlReader.class.getDeclaredMethod("getAndVerifySignedData", byte[].class, List.class);
+        Method getAndVerifySignedData = CertificateCrlReader.class.getDeclaredMethod("getAndVerifySignedData", byte[].class, List.class, Boolean.class);
         getAndVerifySignedData.setAccessible(true);
         X509Certificate signingCaCertificate = CertTools.getCertfromByteArray(SIGNING_CA_CERT.getBytes(), X509Certificate.class);
         //First let's see if we can verify the signature and unwrap the original byte array from the envelope
         byte[] unwrappedData = (byte[]) getAndVerifySignedData.invoke(certificateCrlReader, CANNED_FULL_SIGNED_REVOCATION,
-                Arrays.asList(signingCaCertificate));
+                Arrays.asList(signingCaCertificate), false);
         //Next let's see if we can deserialize the container
         Method unwrapScpContainer = CertificateCrlReader.class.getDeclaredMethod("unwrapScpContainer", byte[].class);
         unwrapScpContainer.setAccessible(true);
@@ -542,11 +542,11 @@ public class CertificateCrlReaderUnitTest {
 
         final X509Certificate signingCaCertificate = CertTools.getCertfromByteArray(SIGNING_CA_CERT.getBytes(), X509Certificate.class);
 
-        final Method getAndVerifySignedData = CertificateCrlReader.class.getDeclaredMethod("getAndVerifySignedData", byte[].class, List.class);
+        final Method getAndVerifySignedData = CertificateCrlReader.class.getDeclaredMethod("getAndVerifySignedData", byte[].class, List.class, Boolean.class);
         getAndVerifySignedData.setAccessible(true);
 
         final CertificateCrlReader certificateCrlReader = new CertificateCrlReader();
-        byte[] unwrappedData = (byte[]) getAndVerifySignedData.invoke(certificateCrlReader, decodedSignature, List.of(signingCaCertificate));
+        byte[] unwrappedData = (byte[]) getAndVerifySignedData.invoke(certificateCrlReader, decodedSignature, List.of(signingCaCertificate), false);
 
         final ScpContainerWrapper scpContainerWrapper = YamlWriter.importFromYamlBytes(unwrappedData, ScpContainerWrapper.class);
         final ScpContainer scpContainer = scpContainerWrapper.toScpContainer();
