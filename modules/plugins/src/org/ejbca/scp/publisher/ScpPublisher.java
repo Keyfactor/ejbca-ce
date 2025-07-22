@@ -185,7 +185,7 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
         }
         cryptoTokenAndKeyPair = getProperty(properties, AUTH_CRYPTOTOKEN_KEYPAIR_PROPERTY_NAME);
         
-        sftpKnownHostsContents = getProperty(properties, SFTP_KNOWN_HOSTS_CONTENT_PROPERTY_NAME);
+        sftpKnownHostsContents = getSftpKnownHostsContents(getProperty(properties, SFTP_KNOWN_HOSTS_CONTENT_PROPERTY_NAME));
 
         this.properties.put(SIGNING_CA_PROPERTY_NAME, new CustomPublisherProperty(SIGNING_CA_PROPERTY_NAME, CustomPublisherProperty.UI_SELECTONE, null,
                 null, Integer.valueOf(signingCaId).toString()));
@@ -1013,6 +1013,14 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
         } else {
             return yamlBytes;
         }
+    }
+
+    private String getSftpKnownHostsContents(String knownHostsContentsProperty) {
+        if (knownHostsContentsProperty == null) {
+            return null;
+        }
+
+        return knownHostsContentsProperty.replaceAll(",", System.lineSeparator());
     }
 
 }

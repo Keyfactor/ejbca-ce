@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import jakarta.faces.model.SelectItem;
 
@@ -73,7 +74,11 @@ public final class CustomPublisherMBData implements Serializable {
             final StringBuilder sb = new StringBuilder();
             for (final CustomPublisherProperty customPublisherProperty : publisher.getCustomUiPropertyList(EjbcaJSFHelper.getBean().getAdmin())) {
                 final String name = customPublisherProperty.getName();
-                final Object value = customPublisherPropertyValues.get(name);
+                Object value = customPublisherPropertyValues.get(name);
+
+                if (name.equals("scp.knownhosts.content") && value != null && value.toString().contains(System.lineSeparator())) {
+                    value = value.toString().lines().collect(Collectors.joining(","));
+                }
 
                 if (renderCustomCheckbox(customPublisherProperty)) {
                     sb.append(name).append('=').append((Boolean) value ? "true" : "false").append('\n');
