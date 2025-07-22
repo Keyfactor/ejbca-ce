@@ -21,8 +21,8 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import org.cesecore.dbprotection.DatabaseProtectionException;
+import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectedDataImpl;
-import org.cesecore.dbprotection.ProtectedDataIntegrityImpl;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 
 import java.io.Serializable;
@@ -35,16 +35,8 @@ public class RoleMemberDataBean implements Serializable, EntityManagerBean {
     private static ProtectedDataImpl protectedDataImpl;
 
     static {
-        protectedDataImpl = new ProtectedDataIntegrityImpl();
-        protectedDataImpl.setTableName("RoleMemberData");
-    }
-
-    public static ProtectedDataImpl getProtectedDataImpl() {
-        return protectedDataImpl;
-    }
-
-    public static void setProtectedDataImpl(final ProtectedDataImpl protectedDataImpl) {
-        RoleMemberDataBean.protectedDataImpl = protectedDataImpl;
+        final String entityClassName = RoleMemberDataBean.class.getSimpleName();
+        protectedDataImpl = ProtectedData.initializeProtectedDataImpl(entityClassName);
     }
 
     private int primaryKey;
