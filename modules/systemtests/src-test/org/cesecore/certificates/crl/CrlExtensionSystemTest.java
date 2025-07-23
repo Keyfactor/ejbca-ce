@@ -118,7 +118,7 @@ public class CrlExtensionSystemTest {
         byte[] extensionValue = x509crl.getExtensionValue(EXPIRED_CERT_ON_CRL_OID);  
         LocalDateTime notBefore = LocalDateTime.ofInstant(Instant.ofEpochMilli(CertTools.getNotBefore(x509caInfo.getCertificateChain().get(0)).getTime()), ZoneId.of("UTC"));
         //Substring, because the first four bytes from the extension contains something weird
-        assertEquals("Time was not correctly declared.", notBefore.format(DateTimeFormatter.ofPattern("yyyyMMddkkmmss"))+"Z", (new String(extensionValue)).substring(4));
+        assertEquals("Time was not correctly declared.", notBefore.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))+"Z", (new String(extensionValue)).substring(4));
         } finally {
             crlStoreSession.removeByIssuerDN(x509caInfo.getSubjectDN());
         }
