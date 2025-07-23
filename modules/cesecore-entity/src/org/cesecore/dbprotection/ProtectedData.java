@@ -81,28 +81,42 @@ public abstract class ProtectedData {
     /** A default constructor is needed by JPA.
      * This constructor initializes the available database integrity protection module, if any is available
      */
-    public ProtectedData() {
+    protected ProtectedData() {
+        impl = initializeProtectedDataImpl(getTableName());
+    }
+
+    /**
+     * Initializes and returns the implementation of ProtectedDataImpl.
+     *
+     * @return an instance of ProtectedDataImpl, either a valid implementation or a no-op implementation
+     */
+    public static ProtectedDataImpl initializeProtectedDataImpl(final String tableName) {
         if (integrityExists) {
             try {
                 if (implClass == null) {
-                    // We only end up here once, if the class does not exist, we will never end up here again (ClassNotFoundException)
-                    // and if the class exists we will never end up here again (it will not be null)
-                    implClass = Class.forName(implClassName);
-                    log.debug("ProtectedDataIntegrityImpl is available, and used, in this version of EJBCA.");
+                    // We only end up here once, if the class does not exist, we will never end up here again (ClassNotFoundException),
+                    // and if the class exists, we will never end up here again (it will not be null)
+                    synchronized (ProtectedData.class) {
+                        if (implClass == null) {
+                            // Load the integrity implementation class once.
+                            implClass = Class.forName(implClassName);
+                            log.debug("ProtectedDataIntegrityImpl is available, and used, in this version of EJBCA.");
+                        }
+                    }
                 }
-                impl = (ProtectedDataImpl)implClass.getDeclaredConstructor().newInstance();
-                impl.setTableName(getTableName());
+                final ProtectedDataImpl instance = (ProtectedDataImpl) implClass.getDeclaredConstructor().newInstance();
+                instance.setTableName(tableName);
+                return instance;
             } catch (ClassNotFoundException e) {
                 // We only end up here once, if the class does not exist, we will never end up here again
                 integrityExists = false;
                 log.info("No database integrity protection available in this version of EJBCA.");
-                impl = new ProtectedDataNoopImpl();
-            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-                log.error("Error intitilizing database integrity protection: ", e);
-            }  
-        } else {
-            impl = new ProtectedDataNoopImpl();
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                     NoSuchMethodException | SecurityException e) {
+                log.error("Error initializing database integrity protection: ", e);
+            }
         }
+        return new ProtectedDataNoopImpl();
     }
 
     /**
@@ -112,7 +126,7 @@ public abstract class ProtectedData {
      * WARNING: changing an existing protectString for an implementing class must make sure backwards and forwards compatibility (versioning) 
      * in order to not break existing installations. 
      *
-     * @param version the version of the string that is protected, used as input when verifying data. -1 when getting protection string for data to be
+     * @param rowversion the version of the string that is protected, used as input when verifying data. -1 when getting protection string for data to be
      *          inserted or updated. -1 means that the data class should use it's latest version of protect string
      * @return String to be integrity protected, i.e. input to hmac.
      */
