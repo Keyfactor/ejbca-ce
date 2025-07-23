@@ -70,8 +70,14 @@ public class RaAuthenticationHelper implements Serializable {
     public AuthenticationToken getAuthenticationToken(final HttpServletRequest httpServletRequest, final HttpServletResponse httpServletResponse) {
         final String currentTlsSessionId = getTlsSessionId(httpServletRequest);
         final int lastUpdateNumber = AuthorizationCache.INSTANCE.getLastUpdateNumber();
-        if (authenticationToken==null || !StringUtils.equals(authenticationTokenTlsSessionId, currentTlsSessionId) ||
-                authenticatedAtUpdateNumber != lastUpdateNumber) {
+        if (authenticationToken != null && authenticatedAtUpdateNumber != lastUpdateNumber) {
+            if (log.isDebugEnabled()) {
+                log.debug("Roles have been updated. Forcing re-authentication for administrator '" + authenticationToken + "'");
+            }
+            authenticationToken = null;
+            x509AuthenticationTokenFingerprint = null;
+        }
+        if (authenticationToken==null || !StringUtils.equals(authenticationTokenTlsSessionId, currentTlsSessionId)) {
             if (log.isTraceEnabled()) {
                 log.trace("New TLS session IDs or authenticationToken: currentClientTlsSessionID: "+currentTlsSessionId+", authenticationTokenTlsSessionId: "+authenticationTokenTlsSessionId);
             }
