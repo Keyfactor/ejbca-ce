@@ -21,8 +21,8 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import org.cesecore.dbprotection.DatabaseProtectionException;
+import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectedDataImpl;
-import org.cesecore.dbprotection.ProtectedDataIntegrityImpl;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 
 import java.io.Serializable;
@@ -35,16 +35,8 @@ public final class PublisherDataBean implements Serializable, EntityManagerBean 
     private static ProtectedDataImpl protectedDataImpl;
 
     static {
-        protectedDataImpl = new ProtectedDataIntegrityImpl();
-        protectedDataImpl.setTableName("PublisherData");
-    }
-
-    public static ProtectedDataImpl getProtectedDataImpl() {
-        return protectedDataImpl;
-    }
-
-    public static void setProtectedDataImpl(final ProtectedDataImpl protectedDataImpl) {
-        PublisherDataBean.protectedDataImpl = protectedDataImpl;
+        final String entityClassName = PublisherDataBean.class.getSimpleName();
+        protectedDataImpl = ProtectedData.initializeProtectedDataImpl(entityClassName);
     }
 
     private Integer id;
@@ -120,6 +112,7 @@ public final class PublisherDataBean implements Serializable, EntityManagerBean 
         builder.append(getId());
         builder.append(getName());
         builder.append(getUpdateCounter());
+        builder.append(getData());
         return builder.toString();
     }
 
@@ -127,7 +120,7 @@ public final class PublisherDataBean implements Serializable, EntityManagerBean 
     @PreUpdate
     protected void protectData() throws DatabaseProtectionException {
         final var unProtectedData = getProtectString(getProtectVersion());
-        final var protectedData = protectedDataImpl.getProtectedData(rowVersion, unProtectedData);
+        final var protectedData = protectedDataImpl.getProtectedData(getProtectVersion(), unProtectedData);
         if (protectedData != null) {
             setRowProtection(protectedData);
         }

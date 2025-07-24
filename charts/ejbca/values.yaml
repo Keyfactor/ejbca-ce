@@ -249,6 +249,12 @@ httpd:
     bindIP: 0.0.0.0
     httpPort: 80
     httpsPort: 443
+  # only relevant if multiple replicas
+  loadBalancerAccess:
+    enableStickySessionClientIp: false
+    # create a load balancer service for each Pod with separate IP address
+    enableReplicaSpecificAccess: false
+  additionalHosts:
 # External communication from cluster
 # Requires services.proxyAJP or services.proxyHttp to be enabled for adminweb access
 ingress:

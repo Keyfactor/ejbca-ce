@@ -36,7 +36,6 @@ import org.ejbca.acme.AcmeAuthorizationData;
 import org.ejbca.acme.AcmeNonceData;
 import org.ejbca.acme.AcmeOrderData;
 import org.ejbca.core.ejb.approval.ApprovalData;
-import org.ejbca.core.ejb.ca.publisher.PublisherData;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueData;
 import org.ejbca.core.ejb.ca.store.CertReqHistoryData;
 import org.ejbca.core.ejb.ca.validation.BlacklistData;
@@ -45,6 +44,7 @@ import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData;
 import org.ejbca.core.ejb.services.ServiceData;
+import org.ejbca.dto.PublisherDataBean;
 import org.ejbca.peerconnector.PeerData;
 
 import java.io.Serializable;
@@ -79,7 +79,7 @@ public record DatabaseContent(
         List<OcspResponseData> ocspResponseData,
         List<PeerData> peerData,
         List<ProfileData> profileData,
-        List<PublisherData> publisherData,
+        List<PublisherDataBean> publisherData,
         List<PublisherQueueData> publisherQueueData,
         List<RoleData> roleData,
         List<RoleMemberData> roleMemberData,

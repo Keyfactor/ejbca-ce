@@ -53,7 +53,7 @@ tasks.register<JavaExec>("runAfterCompile") {
 }
 
 tasks.named("compileJava") {
-    finalizedBy("runAfterCompile")
+    //finalizedBy("runAfterCompile")
 }
 
 tasks.jar {

@@ -44,6 +44,15 @@ public class ${name?cap_first}Builder {
 </#if>
     }
 
+    public ${name?cap_first}Builder(${name?cap_first}Bean ${name}) {
+<#list fields as field>
+        set${field.javaName?cap_first}(${name}.get${field.javaName?cap_first}());
+</#list>
+<#if xmlName??>
+        set${xmlName?cap_first}(${name}.get${xmlName?cap_first}());
+</#if>
+    }
+
 <#list fields as field>
 <#if field.javaEnum??>
     public ${name?cap_first}Builder set${field.javaName?cap_first}(final ${field.javaEnum} ${field.javaName}) {
