@@ -887,7 +887,7 @@ table.results table.actions tbody tr:active {
 /* CONTENT > PAGES */
 
 /* --- Page: Home */
-h3#welcome {
+h2#welcome {
 	color: #2E5A94;
 	text-shadow: .1em .1em .15em rgba(0,0,0,.1);
 	-o-text-shadow: .1em .1em .15em #DDD;
@@ -898,6 +898,12 @@ h3#welcome {
 div#information {
 	margin-top: .5em;
 }
+#information > table > tbody > tr > td {
+	padding:0.5em;
+}
+#information .warning {
+	color: #FF0000;
+}
 div#home {
 	margin-top: 1.5em;
 }
@@ -906,25 +912,17 @@ div#home {
 	padding: 0em;
 }
 div.status {
-	margin: 0em 1em 0em 0em;
+	margin: 0;
 }
 div.status h4 {
-	margin: 0px;
-	padding: 3px 4px;
-	background: #5B8CCD none;
-	border: 1px solid #2E5A94;
-	border-bottom: 0px none;
-	border-radius: .8em .8em 0em 0em;
-	-o-border-radius: .8em .8em 0em 0em;
-	-moz-border-radius: .8em .8em 0em 0em;
-	-khtml-border-radius: .8em .8em 0em 0em;
-	-webkit-border-radius: .8em .8em 0em 0em;
-	color: #FFF;
-	font-size: small;
-}
-div.status h4.warning {
+	font-weight: 700;
+	vertical-align: middle;
+	margin: 0;
+	padding: 1rem 1rem;
 	background: #fb4c2f none;
+	color: #FFFFFF;
 }
+
 div.status h4 a:link,
 div.status h4 a:visited,
 div.status h4 a:hover,
@@ -935,11 +933,13 @@ div.status h4 a:active {
 }
 div.status table {
 	width: 100%;
+	border: 1px solid #e9ecef;
 }
 div.status h4,
 div.status table th,
 div.status table td {
 	white-space: nowrap;
+	border: 0;
 }
 div.status table td.ca-status,
 div.status table td.crl-status,
@@ -953,6 +953,10 @@ div.status table td img {
 }
 div.status table.grid tr:hover {
 	background: #FFF;
+}
+
+div.status table.grid tbody tr td {
+	padding: 1em;
 }
 
 /* --- Page: CA > CryptoTokens */
@@ -1612,6 +1616,10 @@ a.button:active {
     border: 1px solid rgba(0,0,0,.08);
 }
 
+.ui-datatable .ui-datatable-data tr td.custom-padding {
+	padding: 0.5em;
+}
+
 /* Match the file upload button style to the plain PrimeFaces buttons  */
 input[type="file"] {
     color: #495057;
@@ -1659,6 +1667,10 @@ input[type="file"]::file-selector-button:hover {
 .vertical-padding-1 {
     padding-top: 1rem;
     padding-bottom: 1rem;
+}
+
+.left-padding-2 {
+	padding-left: 2em !important;
 }
 
 .text-align-center {
