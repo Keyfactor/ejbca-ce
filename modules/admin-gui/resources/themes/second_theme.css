@@ -822,12 +822,6 @@ h3#welcome {
 div#information {
 	margin-top: .5em;
 }
-#information > table > tbody > tr > td {
-	padding:0.5em;
-}
-#information .warning {
-	color: #FF0000;
-}
 div#home {
 	margin-top: 1.5em;
 }
@@ -836,15 +830,21 @@ div#home {
 	padding: 0em;
 }
 div.status {
-	margin: 0;
+	margin: 0em 1em 0em 0em;
 }
 div.status h4 {
-	font-weight: 700;
-	vertical-align: middle;
-	margin: 0;
-	padding: 1rem 1rem;
-	background: #fb4c2f none;
-	color: #FFFFFF;
+	margin: 0px;
+	padding: 3px 4px;
+	background: #DDD none;
+	border: 1px solid #6F9AD3;
+	border-bottom: 0px none;
+	border-radius: .8em .8em 0em 0em;
+	-o-border-radius: .8em .8em 0em 0em;
+	-moz-border-radius: .8em .8em 0em 0em;
+	-khtml-border-radius: .8em .8em 0em 0em;
+	-webkit-border-radius: .8em .8em 0em 0em;
+	color: #000;
+	font-size: small;
 }
 div.status h4 a:link,
 div.status h4 a:visited,
@@ -856,13 +856,11 @@ div.status h4 a:active {
 }
 div.status table {
 	width: 100%;
-	border: 1px solid #e9ecef;
 }
 div.status h4,
 div.status table th,
 div.status table td {
 	white-space: nowrap;
-	border: 0;
 }
 div.status table td.ca-status,
 div.status table td.crl-status,
@@ -873,10 +871,6 @@ div.status table td img {
 	width: 16px;
 	height: 16px;
 	margin-top: .1em;
-}
-
-div.status table.grid tbody tr td {
-	padding: 1em;
 }
 
 /* --- Page: CA > CryptoTokens */
@@ -1459,10 +1453,6 @@ a.button:active {
     border: 1px solid rgba(0,0,0,.08);
 }
 
-.ui-datatable .ui-datatable-data tr td.custom-padding {
-	padding: 0.5em;
-}
-
 /* Match the file upload button style to the plain PrimeFaces buttons  */
 input[type="file"] {
     color: #495057;
@@ -1510,10 +1500,6 @@ input[type="file"]::file-selector-button:hover {
 .vertical-padding-1 {
     padding-top: 1rem;
     padding-bottom: 1rem;
-}
-
-.left-padding-2 {
-	padding-left: 2em !important;
 }
 
 .text-align-center {
