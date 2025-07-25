@@ -139,9 +139,9 @@ public class AdminIndexMBean extends CheckAdmin implements Serializable {
     private int getPublisherQueueLength(int publisherId) {
         return publisherQueueSession.getPendingEntriesCountForPublisher(publisherId);
     }
-
+    
     public String getPublisherQueueInspectionLink(final String publisherName) {
-        return String.format("ca/inspectpublisherqueue.xhtml?faces-redirect=true&publisherId=%s", publisherSession.getPublisher(publisherName).getPublisherId());
+        return "ca/inspectpublisherqueue.xhtml?publisherId=" + publisherSession.getPublisher(publisherName).getPublisherId();
     }
     
     public boolean isAuthorizedToViewPublishers() {
