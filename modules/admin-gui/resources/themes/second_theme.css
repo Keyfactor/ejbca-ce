@@ -811,19 +811,26 @@ table.results table.actions tbody tr:active {
 /* CONTENT > PAGES */
 
 /* --- Page: Home */
-h3#welcome {
+h2#welcome {
 	color: #555;
 	text-shadow: .1em .1em .15em rgba(0,0,0,.1);
 	-o-text-shadow: .1em .1em .15em #DDD;
 	-moz-text-shadow: .1em .1em .15em rgba(0,0,0,.1);
 	-khtml-text-shadow: .1em .1em .15em #DDD;
 	-webkit-text-shadow: .1em .1em .15em rgba(0,0,0,.1);
+    margin-top: 0;
 }
 div#information {
 	margin-top: .5em;
 }
 #information > table > tbody > tr > td {
-	padding:0.5em;
+    padding: 0.3rem 1rem 0.3rem 0;
+    line-height: 1.5rem;
+}
+/* Aligns icons with the text */
+#information > table > tbody > tr > td img {
+    vertical-align: middle;
+    margin-right: 0.2rem;
 }
 #information .warning {
 	color: #FF0000;
@@ -1512,8 +1519,8 @@ input[type="file"]::file-selector-button:hover {
     padding-bottom: 1rem;
 }
 
-.left-padding-2 {
-	padding-left: 2em !important;
+.left-padding-1 {
+	padding-left: 1rem !important;
 }
 
 .text-align-center {
