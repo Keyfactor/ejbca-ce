@@ -3,10 +3,13 @@ import java.util.*
 rootProject.name = "ejbca"
 
 val ejbcaProperties: Properties = loadPropertiesFromFiles(
+    "src/internal.properties",
     "conf/ejbca.properties",
     "conf/database.properties",
     "conf/systemtests.properties"
 )
+
+val appVersion = ejbcaProperties.getProperty("app.version.number", "0.0.0")
 
 // specify what edition you want to build by passing -Pedition=ee or =ce (default: ee)
 val editionProp = providers.gradleProperty("edition").getOrElse("ee")
@@ -25,6 +28,7 @@ gradle.allprojects {
     ejbcaProperties.forEach { (key, value) ->
         extra["$key"] = value
     }
+    version = appVersion
 }
 
 dependencyResolutionManagement {

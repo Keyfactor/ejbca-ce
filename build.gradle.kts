@@ -25,6 +25,10 @@ allprojects {
             dirs(rootProject.projectDir.resolve("lib/ext/wsgen"))
         }
     }
+    // don't append the EJBCA version number to EAR, WAR, JAR, and other archive filenames
+    tasks.withType<AbstractArchiveTask>().configureEach {
+        archiveVersion.set("")
+    }
 }
 
 // add the directory containing 'jboss-client.jar' to the list of library repositories
