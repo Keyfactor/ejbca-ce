@@ -1,8 +1,11 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:h="jakarta.faces.html"
-    xmlns:ui="jakarta.faces.facelets">
+      xmlns:f="jakarta.faces.core"
+      xmlns:h="jakarta.faces.html"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui">
 <ui:remove>
     <!--
  /*************************************************************************
@@ -21,43 +24,106 @@
 </ui:remove>
 
 <ui:composition template="/WEB-INF/include/template.xhtml">
-    <ui:param name="resourceBean" value="#{adminIndexMBean}" />
+    <ui:param name="resourceBean" value="#{adminIndexMBean}"/>
     <ui:define name="content">
 
-        <h:panelGroup class="version-info">
-            <h:outputText value="#{web.text.VERSION} #{web.ejbcaVersion}" />
-            <h:outputText value="#{web.text.EXPORTABLE}" style="color: #FF0000; font-size: 0.7em;" rendered="#{ejbcawebbean.usingExportableCryptography}"/>
-            <noscript>
-                <h:outputText value="#{web.text.JAVASCRIPTDISABLED}" style="color: #FF0000; font-size: 0.7em;"/>
-            </noscript>
-            <h:outputText value="#{web.text.POSTUPGRADE_REQUIRED}" style="color: #FF0000; font-size: 0.7em;" rendered="#{ejbcawebbean.postUpgradeRequired}"/>
-            <h3 id="welcome"><h:outputText
-                    value="#{web.text.WELCOME} #{ejbcawebbean.usersCommonName} #{web.text.TOEJBCA}"/></h3>
-        </h:panelGroup>
+        <h2 id="welcome">
+            <h:outputText
+                    value="#{web.text.WELCOME} #{ejbcawebbean.usersCommonName} #{web.text.TOEJBCA}"/>
+        </h2>
 
         <div id="information">
-            <div><h:outputText value="#{web.text.NODEHOSTNAME} #{ejbcawebbean.hostName}"/></div>
-            <div><h:outputText value="#{web.text.SERVERTIME} #{ejbcawebbean.serverTime}"/></div>
+            <h:panelGroup>
+                <table>
+                    <tbody class="ui-datatable-data ui-widget-content">
+                    <tr>
+                        <td class="table-title-column">
+                            <h:outputText
+                                    value="#{web.text.VERSION}"/>
+                        </td>
+                        <td>
+                            <h:outputText value="#{web.ejbcaVersion}"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="table-title-column">
+                            <h:outputText
+                                    value="#{web.text.NODEHOSTNAME}"/>
+                        </td>
+                        <td>
+                            <h:outputText value="#{ejbcawebbean.hostName}"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="table-title-column">
+                            <h:outputText
+                                    value="#{web.text.SERVERTIME}"/>
+                        </td>
+                        <td>
+                            <h:outputText value="#{ejbcawebbean.serverTime}"/>
+                        </td>
+                    </tr>
+                    <ui:fragment rendered="#{ejbcawebbean.postUpgradeRequired}">
+                        <tr>
+                            <td class="table-title-column">
+                                <h:graphicImage url="#{ejbcawebbean.getImagePath('status-crl-expired.png')}"/>
+                                Warning
+                            </td>
+                            <td>
+                                <h:outputText value="#{web.text.POSTUPGRADE_REQUIRED}"
+                                              styleClass="warning"
+                                              rendered="#{ejbcawebbean.postUpgradeRequired}"
+                                />
+                            </td>
+                        </tr>
+                    </ui:fragment>
+                    <ui:fragment rendered="#{ejbcawebbean.usingExportableCryptography}">
+                        <tr>
+                            <td class="table-title-column">
+                                <h:graphicImage url="#{ejbcawebbean.getImagePath('status-crl-expired.png')}"/>
+                                Warning
+                            </td>
+                            <td>
+                                <h:outputText value="#{web.text.EXPORTABLE}" styleClass="warning"
+                                              rendered="#{ejbcawebbean.usingExportableCryptography}"/>
+                            </td>
+                        </tr>
+                    </ui:fragment>
+                    <tr>
+                        <td class="table-title-column">
+                            <noscript>
+                                <h:graphicImage url="#{ejbcawebbean.getImagePath('status-crl-expired.png')}"/>
+                                Warning
+                            </noscript>
+                        </td>
+                        <td>
+                            <noscript>
+                                <h:outputText value="#{web.text.JAVASCRIPTDISABLED}"
+                                              styleClass="warning"/>
+                            </noscript>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </h:panelGroup>
         </div>
 
         <div id="home">
             <table>
                 <tr>
-
                     <td>
                         <ui:insert name="cacrlstatuses">
                             <ui:include src="statuspages/cacrlstatuses.xhtml"/>
                         </ui:insert>
                     </td>
-
-                    <td>
+                    <td class="left-padding-1">
                         <ui:insert name="publisherqueuestatuses">
                             <ui:include src="statuspages/publisherqueuestatuses.xhtml"/>
                         </ui:insert>
                     </td>
                 </tr>
                 <tr>
-                    <td>
+                    <td colspan="2">
                         <br/>
                         <ui:insert name="removepublicuser">
                             <ui:include src="statuspages/publicaccess.xhtml"/>
