@@ -57,6 +57,7 @@ sourceSets {
 tasks.jar {
     manifest {
         attributes(
+            "Implementation-Version" to project.version,
             "Main-Class" to "org.ejbca.ui.cli.ClientToolBox",
             "Class-Path" to configurations.runtimeClasspath.get().joinToString(" ") { "lib/${it.name}" }
         )
