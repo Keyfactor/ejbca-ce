@@ -31,11 +31,11 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.config.GlobalEndEntityProfileConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.util.LogRedactionUtils;
-import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
@@ -327,9 +327,9 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
                         null);
                 throw new AuthorizationDeniedException(msg);
             }
-            GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession
-                    .getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-            if (globalConfiguration.getEnableEndEntityProfileLimitations()) {
+
+            final GlobalEndEntityProfileConfiguration globalEEPConfiguration = (GlobalEndEntityProfileConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalEndEntityProfileConfiguration.EEP_CONFIGURATION_ID);
+            if (globalEEPConfiguration.getEnableEndEntityProfileLimitations()) {
                 if (!authorizationSession.isAuthorized(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + approvalData.getEndEntityProfileId()
                         + AccessRulesConstants.APPROVE_END_ENTITY)) {
                     final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", AccessRulesConstants.ENDENTITYPROFILEPREFIX
