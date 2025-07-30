@@ -78,7 +78,7 @@ public final class CustomPublisherMBData implements Serializable {
                 final String name = customPublisherProperty.getName();
                 Object value = customPublisherPropertyValues.get(name);
 
-                if (SFTP_KNOWN_HOSTS_CONTENT_PROPERTY_NAME.equals(name) && value != null && value.toString().contains(System.lineSeparator())) {
+                if (SFTP_KNOWN_HOSTS_CONTENT_PROPERTY_NAME.equals(name) && value != null && value.toString().contains("\n")) {
                     value = value.toString().lines().collect(Collectors.joining(","));
                 }
 
