@@ -40,6 +40,8 @@ public final class CustomPublisherMBData implements Serializable {
     // This will be used in the gui to guide the user that he/she has already set a password
     public static final String PASSWORD_PLACEHOLDER = "placeholder";
 
+    private static final String SFTP_KNOWN_HOSTS_CONTENT_PROPERTY_NAME = "scp.knownhosts.content";
+
     private String customPublisherPropertyData;
     private String customPublisherCurrentClass;
     private Map<String, Object> customPublisherPropertyValues;
@@ -76,7 +78,7 @@ public final class CustomPublisherMBData implements Serializable {
                 final String name = customPublisherProperty.getName();
                 Object value = customPublisherPropertyValues.get(name);
 
-                if (name.equals("scp.knownhosts.content") && value != null && value.toString().contains(System.lineSeparator())) {
+                if (SFTP_KNOWN_HOSTS_CONTENT_PROPERTY_NAME.equals(name) && value != null && value.toString().contains(System.lineSeparator())) {
                     value = value.toString().lines().collect(Collectors.joining(","));
                 }
 

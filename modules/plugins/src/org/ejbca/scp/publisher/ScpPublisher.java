@@ -1020,7 +1020,7 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
             return null;
         }
 
-        return knownHostsContentsProperty.replaceAll(",", System.lineSeparator());
+        return knownHostsContentsProperty.replaceAll(",", "\n");
     }
 
 }
