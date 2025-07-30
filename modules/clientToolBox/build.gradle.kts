@@ -24,7 +24,9 @@ dependencies {
     implementation(project(":modules:ejbca-common-web"))
     runtimeOnly(libs.angus.activation)
     runtimeOnly(libs.ejbca.ws.client.gen)
-    runtimeOnly(libs.jacknji11)
+    if (project.extra["edition"] == "ee") {
+        runtimeOnly(libs.jacknji11)
+    }
     runtimeOnly(libs.jakarta.jws.api)
     runtimeOnly(libs.jakarta.xml.soap.api)
     runtimeOnly(libs.jaxb.core)
