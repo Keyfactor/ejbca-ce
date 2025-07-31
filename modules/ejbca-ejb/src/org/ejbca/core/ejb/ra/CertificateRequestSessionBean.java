@@ -370,7 +370,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
                 X500Name toAdd = new X500Name(userDn);
                 for (RDN rdn : toAdd.getRDNs()) {
                     AttributeTypeAndValue atv = rdn.getFirst();
-                    if (atv != null) {
+                    if (atv != null && !containsRDN(builder.build(), atv)) {
                         builder.addRDN(atv);
                     }
                 }
@@ -382,6 +382,16 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
         //Return the merged DN
         return builder.build().toString();
 
+    }
+
+    private boolean containsRDN(X500Name name, AttributeTypeAndValue atv) {
+        for (RDN rdn : name.getRDNs()) {
+            AttributeTypeAndValue existingAtv = rdn.getFirst();
+            if (existingAtv != null && existingAtv.getType().equals(atv.getType())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
