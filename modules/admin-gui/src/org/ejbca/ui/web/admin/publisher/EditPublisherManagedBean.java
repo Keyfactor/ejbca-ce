@@ -27,12 +27,14 @@ import java.util.stream.Collectors;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
+import jakarta.faces.context.FacesContext;
 import jakarta.faces.event.AjaxBehaviorEvent;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.ssh.SshKeyFactory;
@@ -502,6 +504,10 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
 
         savePublisher();
 
+        testConnection();
+    }
+
+    public void testConnection() throws AuthorizationDeniedException {
         try {
             
             if (isManageScpPublisher()) {
@@ -534,8 +540,8 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     
     private boolean savePublisherAndShowDownloadableKey() throws AuthorizationDeniedException {
         
-        boolean useSftp = (boolean) getCustomPublisherMBData().getCustomPublisherPropertyValues().get("scp.usesftp");
-        if (!useSftp) {
+        final Object useSftp = getCustomPublisherMBData().getCustomPublisherPropertyValues().getOrDefault("scp.usesftp", false);
+        if (!BooleanUtils.toBoolean(useSftp.toString())) {
             log.debug("SFTP is not being used.");
             return true;
         }
