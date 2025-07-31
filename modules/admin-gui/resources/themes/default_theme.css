@@ -1678,6 +1678,12 @@ input[type="file"]::file-selector-button:hover {
     vertical-align: middle;
 }
 
+/* Align text in the table footer */
+
+body .ui-datatable .ui-datatable-footer {
+	text-align: right;
+}
+
 /* PrimeFaces class adjustments: END */
 
 .table-layout-auto {
