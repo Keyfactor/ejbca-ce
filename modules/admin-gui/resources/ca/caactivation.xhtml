@@ -68,8 +68,8 @@
                     </f:facet>
                     <h:panelGroup rendered="#{tokenAndCa.first}">
                         <p:selectBooleanCheckbox value="#{tokenAndCa.cryptoToken.cryptoTokenNewState}" disabled="#{tokenAndCa.cryptoToken.stateChangeDisabled}"/>
-                        <h:outputLabel value="#{web.text.ACTIVATECAS_KEEPACT}" rendered="#{tokenAndCa.cryptoToken.cryptoTokenActive}"/>
-                        <h:outputLabel value="#{web.text.ACTIVATE}" rendered="#{!tokenAndCa.cryptoToken.cryptoTokenActive}"/>
+                        <p:outputLabel value="#{web.text.ACTIVATECAS_KEEPACT}" rendered="#{tokenAndCa.cryptoToken.cryptoTokenActive}"/>
+                        <p:outputLabel value="#{web.text.ACTIVATE}" rendered="#{!tokenAndCa.cryptoToken.cryptoTokenActive}"/>
                     </h:panelGroup>
                     <h:outputText rendered="#{!tokenAndCa.first}" escape="false" value=""/>
                 </p:column>
@@ -106,8 +106,8 @@
                     </f:facet>
                     <h:panelGroup>
                         <p:selectBooleanCheckbox id="keepActive" value="#{tokenAndCa.ca.newState}" disabled="#{tokenAndCa.ca.unableToChangeState or !cAActivationMBean.authorizedToBasicFunctions}"/>
-                        <h:outputLabel value="#{web.text.ACTIVATECAS_KEEPACT}" rendered="#{tokenAndCa.ca.active}"/>
-                        <h:outputLabel value="#{web.text.ACTIVATE}" rendered="#{!tokenAndCa.ca.active}"/>
+                        <p:outputLabel value="#{web.text.ACTIVATECAS_KEEPACT}" rendered="#{tokenAndCa.ca.active}"/>
+                        <p:outputLabel value="#{web.text.ACTIVATE}" rendered="#{!tokenAndCa.ca.active}"/>
                     </h:panelGroup>
                 </p:column>
                 <p:column styleClass="text-align-center">
@@ -119,7 +119,7 @@
                     </f:facet>
                     <h:panelGroup>
                         <p:selectBooleanCheckbox id="healthCheck" value="#{tokenAndCa.ca.monitoredNewState}" disabled="#{(!tokenAndCa.ca.monitoredNewState and !tokenAndCa.cryptoToken.existing) or !cAActivationMBean.authorizedToBasicFunctions}"/>
-                        <h:outputLabel value="#{web.text.ACTIVATECAS_HCHECK}"/>
+                        <p:outputLabel value="#{web.text.ACTIVATECAS_HCHECK}"/>
                     </h:panelGroup>
                 </p:column>
                 <p:column styleClass="text-align-center">
