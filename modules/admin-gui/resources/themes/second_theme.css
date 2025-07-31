@@ -1459,6 +1459,11 @@ a.button:active {
     vertical-align: middle;
 }
 
+.ui-datatable table td img.status {
+	vertical-align: middle;
+	margin-right: 0.5rem;
+}
+
 /* Remove cell focus borders */
 .ui-datatable-data td[role="gridcell"]:focus {
     outline: none;
