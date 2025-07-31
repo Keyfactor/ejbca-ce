@@ -40,6 +40,7 @@ import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.junit.util.CryptoTokenRunner;
 import org.cesecore.junit.util.PKCS12TestRunner;
+import org.cesecore.junit.util.RetryRule;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.impl.OcspKeyBinding;
@@ -95,10 +96,13 @@ public class GenerationalOcspSystemTest {
     @Rule
     public TestName testName = new TestName();
 
+    @Rule
+    public TestRule retryRule = new RetryRule(3, 1000);
+
     private CryptoTokenRunner cryptoTokenRunner;
     private String originalSigningTruststoreValidTime;
 
-    public GenerationalOcspSystemTest(CryptoTokenRunner cryptoTokenRunner) throws Exception {
+    public GenerationalOcspSystemTest(CryptoTokenRunner cryptoTokenRunner) {
         this.cryptoTokenRunner = cryptoTokenRunner;
 
     }
@@ -175,7 +179,7 @@ public class GenerationalOcspSystemTest {
                 assertEquals("Response status not zero (ok).", OCSPRespBuilder.SUCCESSFUL, sanityResponse.getStatus());
                 BasicOCSPResp sanityBasicOcspResponse = (BasicOCSPResp) sanityResponse.getResponseObject();
                 List<X509Certificate> sanitySigningChain = CertTools.convertToX509CertificateList(Arrays.asList(sanityBasicOcspResponse.getCerts()));
-                //Verify that the current chain is in use      
+                //Verify that the current chain is in use
                 if (!CertTools.getSerialNumber(sanitySigningChain.get(1)).equals(CertTools.getSerialNumber(gen1CaCertificate))) {
                     throw new IllegalStateException("Latest signing chain is not in use, sanity not verified. Test cannot continue.");
                 }
@@ -185,7 +189,7 @@ public class GenerationalOcspSystemTest {
             ocspResponder.setCaGeneration(CertTools.getSerialNumberAsString(gen0CaCertificate));
             internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, ocspResponder);
             ocspResponseGeneratorSession.reloadOcspSigningCache();
-            
+
             //Perform a check to verify that the old chain is being returned      
             {
                 OCSPReqBuilder gen = new OCSPReqBuilder();
@@ -199,7 +203,7 @@ public class GenerationalOcspSystemTest {
                 assertEquals("Response status not zero (ok).", OCSPRespBuilder.SUCCESSFUL, generationalResponse.getStatus());
                 BasicOCSPResp generationalBasicOcspResponse = (BasicOCSPResp) generationalResponse.getResponseObject();
                 List<X509Certificate> generationalSigningChain = CertTools.convertToX509CertificateList(Arrays.asList(generationalBasicOcspResponse.getCerts()));
-                //Verify that the current chain is in use    
+                //Verify that the current chain is in use
                 assertEquals("Previous CA chain was not used.", CertTools.getSerialNumber(gen0CaCertificate), CertTools.getSerialNumber(generationalSigningChain.get(1)));
       
             }

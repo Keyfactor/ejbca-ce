@@ -28,7 +28,7 @@
 		<h1>
 			<h:outputText value="#{web.text.CRYPTOTOKEN} : #{cryptoTokenMBean.selectedCryptoTokenName}" />
 		</h1>
-		<h:form>
+		<h:form id="deleteCryptoTokenKeyForm">
 			<h:panelGroup rendered="#{cryptoTokenMBean.allowedToKeyRemoval}">
 				<h3>
 					<h:outputText value="#{web.text.DELETE}"/>

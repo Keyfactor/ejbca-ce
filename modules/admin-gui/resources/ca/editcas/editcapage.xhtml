@@ -54,7 +54,7 @@
                 </h:panelGroup>
                 <h:panelGroup id="getcanamegroup">
                     <h:outputText id="getcaname" value="#{editCAsMBean.caName}" rendered="#{not editCAsMBean.hasEditRight}"/>
-                    <h:inputText name="setcanameinput" size="45"
+                    <h:inputText id="textfieldcaname" name="setcanameinput" size="45"
                                  value="#{editCAsMBean.caName}"
                                  rendered="#{editCAsMBean.hasEditRight}">
                       <f:ajax event="change" render="@form"/>

@@ -129,7 +129,11 @@ hsm:
         # mandatory keys for file mount: "server.pem", "dockerlunaclient.pem"
       privateKey:
         secret: "hsm-luna-secret-client-key"
-        # mandatory key for file mount: "dockerlunaclientKey.pem"      
+        # mandatory key for file mount: "dockerlunaclientKey.pem"
+  dpod:
+    enabled: false
+    hsmConfigurationSecret: hsm-dpod-secret
+    # mandatory keys for file mount: "Chrystoki.conf"
   utimaco:
     enabled: false
     hsmConfigurationConfigMap: ejbca-utimaco-configmap

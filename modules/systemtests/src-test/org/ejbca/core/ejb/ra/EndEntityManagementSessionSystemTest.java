@@ -76,6 +76,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.config.GlobalEndEntityProfileConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.PublicKeyWrapper;
@@ -265,10 +266,11 @@ public class EndEntityManagementSessionSystemTest extends CaTestCase {
     }
     
     private boolean setEnableEndEntityProfileLimitations(final boolean newValue) throws AuthorizationDeniedException {
-        final GlobalConfiguration gc = (GlobalConfiguration) globalConfSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        final boolean previousValue = gc.getEnableEndEntityProfileLimitations();
-        gc.setEnableEndEntityProfileLimitations(newValue);
-        globalConfSession.saveConfiguration(admin, gc);
+        final GlobalEndEntityProfileConfiguration globalEEPConfiguration = (GlobalEndEntityProfileConfiguration) globalConfSession.getCachedConfiguration(GlobalEndEntityProfileConfiguration.EEP_CONFIGURATION_ID);
+        final boolean previousValue = globalEEPConfiguration.getEnableEndEntityProfileLimitations();
+
+        globalEEPConfiguration.setEnableEndEntityProfileLimitations(newValue);
+        globalConfSession.saveConfiguration(admin, globalEEPConfiguration);
         return previousValue;
     }
     

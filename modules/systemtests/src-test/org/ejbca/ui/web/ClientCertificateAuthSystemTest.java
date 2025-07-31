@@ -271,7 +271,7 @@ public class ClientCertificateAuthSystemTest {
     /** Checks that access to the RA UI is allowed */
     private void assertAdminWebAllowed() throws MalformedURLException, IOException {
         final String html = fetchPage("/ejbca/adminweb/", 200);
-        assertContains(html, "<h3 id=\"welcome\">Welcome " + TEST_NAME + " to EJBCA Administration.");
+        assertContains(html, "<h2 id=\"welcome\">Welcome " + TEST_NAME + " to EJBCA Administration.");
     }
 
     /** Checks that access to the RA UI is denied */

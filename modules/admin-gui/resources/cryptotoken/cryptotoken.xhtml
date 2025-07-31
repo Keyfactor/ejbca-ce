@@ -800,6 +800,7 @@
 			rendered="#{!cryptoTokenMBean.currentCryptoToken.active &amp;&amp; cryptoTokenMBean.currentCryptoTokenId!=0}" />
 		<h:form id="currentCryptoTokenAliasesForm" rendered="#{cryptoTokenMBean.currentCryptoToken.active}">
 			<h:dataTable value="#{cryptoTokenMBean.keyPairGuiList}"
+				id="keyPairList"
 				var="keyPairGuiInfo"
 				rendered="#{!cryptoTokenMBean.keyPairGuiListEmpty}"
 				styleClass="grid"
@@ -872,18 +873,20 @@
 							disabled="#{keyPairGuiInfo.placeholder}">
 						<f:ajax execute="@this selectPaddingSchemeMenu" render=":modalBlockContainer"/>
 					</h:commandButton>
-					<h:commandButton value="#{web.text.CRYPTOTOKEN_KPM_TEST}"
+					<h:commandButton id="test" value="#{web.text.CRYPTOTOKEN_KPM_TEST}"
 						action="#{cryptoTokenMBean.testKeyPair}"
 						rendered="#{cryptoTokenMBean.allowedToKeyTest}"
 						disabled="#{keyPairGuiInfo.placeholder}" />
-					<h:commandButton value="#{web.text.CRYPTOTOKEN_KPM_REMOVE}"
+					<h:commandButton id="remove" value="#{web.text.CRYPTOTOKEN_KPM_REMOVE}"
 						action="#{cryptoTokenMBean.prepareDeleteKey(keyPairGuiInfo.alias)}"
 						rendered="#{cryptoTokenMBean.allowedToKeyRemoval and cryptoTokenMBean.currentCryptoTokenEditMode}" />
 					<h:commandButton
+						id="genFromTemplate"
 						value="#{web.text.CRYPTOTOKEN_KPM_GENFROMTEMPLATE}"
 						action="#{cryptoTokenMBean.generateFromTemplate}"
 						rendered="#{keyPairGuiInfo.placeholder &amp;&amp; cryptoTokenMBean.allowedToKeyGeneration}" />
 					<h:commandButton
+							id="downPub"
 							value="#{web.text.CRYPTOTOKEN_KPM_DOWNPUB}"
 							rendered="#{!keyPairGuiInfo.placeholder}"
 							action="#{cryptoTokenMBean.prepareDownloadKey(cryptoTokenMBean.currentCryptoTokenId, keyPairGuiInfo.alias)}" />
@@ -906,7 +909,7 @@
 					rendered="#{!cryptoTokenMBean.keyPairGuiListEmpty &amp;&amp; cryptoTokenMBean.allowedToKeyRemoval}" />
 				<h:panelGroup
 					rendered="#{!cryptoTokenMBean.keyPairGuiListEmpty &amp;&amp; cryptoTokenMBean.allowedToKeyRemoval}" />
-				<h:commandButton value="#{web.text.CRYPTOTOKEN_KPM_REMOVESEL}"
+				<h:commandButton id="removeSelected" value="#{web.text.CRYPTOTOKEN_KPM_REMOVESEL}"
 					action="#{cryptoTokenMBean.prepareDeleteKey(cryptoTokenMBean.selectedKeyPairs)}"
 					rendered="#{!cryptoTokenMBean.keyPairGuiListEmpty &amp;&amp; cryptoTokenMBean.allowedToKeyRemoval}" />
 				<h:inputText id="genNewKeyPairAlias" value="#{cryptoTokenMBean.newKeyPairAlias}"
