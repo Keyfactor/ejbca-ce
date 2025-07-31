@@ -1618,7 +1618,7 @@ a.button:active {
 }
 
 .ui-datatable table td img.status {
-	vertical-align: middle;
+	vertical-align: text-bottom;
 	margin-right: 0.5rem;
 	border: 0;
 	max-width: 16px;
