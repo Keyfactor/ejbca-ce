@@ -38,7 +38,7 @@
                 <h3>
                     <h:outputText value="#{web.text.LISTOFCAS}"/>
                 </h3>
-                <p:dataTable value="#{manageCAsMBean.canames}" var="caname"
+                <p:dataTable id="calist" value="#{manageCAsMBean.canames}" var="caname"
                              rendered="#{!manageCAsMBean.caListEmpty}"
                              styleClass="grid table-layout-auto vertical-padding-1"
                              stripedRows="true" showGridlines="true">
@@ -65,19 +65,22 @@
                             <h:outputText value="#{web.text.ACTIONS}"/>
                         </f:facet>
                         <div class="action-buttons">
-                            <h:commandButton
+                            <h:commandButton id="view"
                                     value="#{web.text.VIEW}" ajax="false"
                                     icon="pi pi-search" styleClass="rounded-button"
                                     action="#{manageCAsMBean.viewCaPage(caname)}"/>
-                            <h:commandButton value="#{web.text.EDIT}" ajax="false"
+                            <h:commandButton id="edit"
+                                             value="#{web.text.EDIT}" ajax="false"
                                              action="#{manageCAsMBean.editCaPage(caname)}"
                                              icon="pi pi-file-edit" styleClass="rounded-button"
                                              rendered="#{manageCAsMBean.canEditResource}"/>
-                            <h:commandButton value="#{web.text.CREATEAUTHCSR}" ajax="false"
+                            <h:commandButton id="createAuthenticatedCSR"
+                                             value="#{web.text.CREATEAUTHCSR}" ajax="false"
                                              rendered="#{manageCAsMBean.canRenewResource}"
                                              icon="pi pi-clone" styleClass="rounded-button"
                                              action="#{manageCAsMBean.createAuthCertSignRequest(caname)}"/>
-                            <h:commandButton value="#{web.text.DELETE}" ajax="false"
+                            <h:commandButton id="delete"
+                                             value="#{web.text.DELETE}" ajax="false"
                                              action="#{manageCAsMBean.deleteCA(caname)}"
                                              icon="pi pi-trash" styleClass="rounded-button"
                                              rendered="#{manageCAsMBean.canRemoveResource}"/>
