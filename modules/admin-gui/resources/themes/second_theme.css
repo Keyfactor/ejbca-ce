@@ -1601,5 +1601,11 @@ label.break-line {
     display: inline-block;
 }
 
+.align-checkboxes {
+    text-align: left;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
 /*--------------------------------------------------------------------------*/
 /* EOF */

@@ -66,7 +66,7 @@
                                 value="#{web.text.ACTIVATECAS_ACTION}"/>
                         </h:panelGroup>
                     </f:facet>
-                    <h:panelGroup rendered="#{tokenAndCa.first}">
+                    <h:panelGroup rendered="#{tokenAndCa.first}" layout="block" styleClass="align-checkboxes">
                         <p:selectBooleanCheckbox id="ctKeepActive" value="#{tokenAndCa.cryptoToken.cryptoTokenNewState}" disabled="#{tokenAndCa.cryptoToken.stateChangeDisabled}"/>
                         <p:outputLabel for="ctKeepActive" value="#{web.text.ACTIVATECAS_KEEPACT}" rendered="#{tokenAndCa.cryptoToken.cryptoTokenActive}"/>
                         <p:outputLabel for="ctKeepActive" value="#{web.text.ACTIVATE}" rendered="#{!tokenAndCa.cryptoToken.cryptoTokenActive}"/>
@@ -104,7 +104,7 @@
                                 value="#{web.text.ACTIVATECAS_SACTION}"/>
                         </h:panelGroup>
                     </f:facet>
-                    <h:panelGroup>
+                    <h:panelGroup layout="block" styleClass="align-checkboxes">
                         <p:selectBooleanCheckbox id="keepActive" value="#{tokenAndCa.ca.newState}" disabled="#{tokenAndCa.ca.unableToChangeState or !cAActivationMBean.authorizedToBasicFunctions}"/>
                         <p:outputLabel for="keepActive" value="#{web.text.ACTIVATECAS_KEEPACT}" rendered="#{tokenAndCa.ca.active}"/>
                         <p:outputLabel for="keepActive" value="#{web.text.ACTIVATE}" rendered="#{!tokenAndCa.ca.active}"/>
@@ -117,7 +117,7 @@
                                 value="#{web.text.ACTIVATECAS_MONITORED}"/>
                         </h:panelGroup>
                     </f:facet>
-                    <h:panelGroup>
+                    <h:panelGroup layout="block" styleClass="align-checkboxes">
                         <p:selectBooleanCheckbox id="healthCheck" value="#{tokenAndCa.ca.monitoredNewState}" disabled="#{(!tokenAndCa.ca.monitoredNewState and !tokenAndCa.cryptoToken.existing) or !cAActivationMBean.authorizedToBasicFunctions}"/>
                         <p:outputLabel for="healthCheck" value="#{web.text.ACTIVATECAS_HCHECK}"/>
                     </h:panelGroup>
