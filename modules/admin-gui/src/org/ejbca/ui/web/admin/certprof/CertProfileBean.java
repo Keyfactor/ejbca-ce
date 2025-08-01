@@ -336,6 +336,19 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                 }
                 certificateProfile.setApprovals(approvals);
 
+                // Solves a UI bug, where the RSA key lengths are not properly stored after the key algorithm RSA is selected (only) 
+                // and the RSA bit sizes are not changed. In this case the default values (RSA + EC bit lengths) are stored.  
+                if (certificateProfile.getAvailableKeyAlgorithms().length == 1 && AlgorithmConstants.KEYALGORITHM_RSA.equalsIgnoreCase(certificateProfile.getAvailableKeyAlgorithms()[0])) {
+                    final List<Integer> bitLengths = new ArrayList<>();
+                    for (int bitLength: certificateProfile.getAvailableBitLengths()) {
+                        // Bit lengths: 1024, 1536, 2048, 3072, 4096, 6144 and 8192. 
+                        if (AlgorithmTools.DEFAULTBITLENGTHS_RSA.contains(bitLength)) {
+                            bitLengths.add(bitLength);
+                        }
+                    }
+                    certificateProfile.setAvailableBitLengthsAsList(bitLengths);
+                }
+                
                 // Modify the profile
                 CertificateProfileSessionLocal certificateProfileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
                 if (certificateProfileId == 0) {
