@@ -1,6 +1,6 @@
-import java.net.Socket
 import org.gradle.internal.os.OperatingSystem
 import java.io.ByteArrayOutputStream
+import java.net.Socket
 
 val edition: String by extra
 val appServerHome: String? by extra
@@ -392,6 +392,47 @@ subprojects {
             }
             // print a summary derived from all test reports
             finalizedBy(":summarizeTestResults")
+        }
+    }
+
+    afterEvaluate {
+        // Add a service manifest builder task to subprojects/modules that have the `ext["serviceInterfaces"]` property defined.
+        if (project.hasProperty("serviceInterfaces") && plugins.hasPlugin("java")) {
+            val buildServiceManifestTask = tasks.register<JavaExec>("buildServiceManifest") {
+                group = "build"
+                description = "Generate service manifest."
+
+                val serviceInterfacesProperty = project.property("serviceInterfaces")
+                val serviceInterfaces = when (serviceInterfacesProperty) {
+                    is List<*> -> serviceInterfacesProperty.filterIsInstance<String>()
+                    is String -> listOf(serviceInterfacesProperty)
+                    else -> {
+                        logger.warn("The 'serviceInterfaces' property should be a List<String> or String, got ${serviceInterfacesProperty?.javaClass?.simpleName}")
+                        emptyList()
+                    }
+                }
+
+                if (serviceInterfaces.isEmpty()) {
+                    logger.warn("The 'serviceInterfaces' property does not hold a valid value.")
+                    return@register
+                }
+
+                val mainSourceSet = project.the<SourceSetContainer>()["main"]
+                val outputDir = mainSourceSet.output.classesDirs.singleFile
+
+                classpath = project.configurations["compileClasspath"] + mainSourceSet.output
+                mainClass.set("com.primekey.anttools.ServiceManifestBuilder")
+                args(outputDir.absolutePath, serviceInterfaces.joinToString(","))
+            }
+
+            dependencies {
+                val compileOnly by configurations
+                compileOnly(rootProject.libs.service.manifest.builder)
+            }
+
+            tasks.named("jar") {
+                dependsOn(buildServiceManifestTask)
+            }
         }
     }
 }

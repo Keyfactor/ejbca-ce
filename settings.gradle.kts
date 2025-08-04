@@ -128,6 +128,7 @@ dependencyResolutionManagement {
             library("woodstox.core", ":woodstox-core:6.5.0")
             library("wsdl4j", ":wsdl4j:1.6.3")
             library("xmlschema.core", ":xmlschema-core:2.2.5")
+            library("service.manifest.builder", ":servicemanifestbuilder:1.0.1")
             // hibernate
             library("antlr4-runtime", ":antlr4-runtime:4.13.0")
             library("byte-buddy", ":byte-buddy:1.14.15")
