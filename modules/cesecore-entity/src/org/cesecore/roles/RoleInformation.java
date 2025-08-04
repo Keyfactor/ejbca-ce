@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.roles.member.RoleMember;
 
 /**
@@ -28,20 +27,12 @@ public class RoleInformation implements Serializable {
     private final int identifier;
     private final String name;
     @SuppressWarnings("deprecation")
-    private final List<AccessUserAspectData> accessUserAspects;
     // Fields added in EJBCA 6.8.0 that we cannot be sure is ever set (defaults to null)
     private final String nameSpace;
     
-    /** @deprecated use fromRoleMembers */
-    @Deprecated
-    public RoleInformation(final int identifier, final String roleName, final List<AccessUserAspectData> accessUserAspects) {
-        this(identifier, null, roleName, accessUserAspects);
-    }
-    
-    private RoleInformation(final int identifier, final String nameSpace, final String roleName, final List<AccessUserAspectData> accessUserAspects) {
+    private RoleInformation(final int identifier, final String nameSpace, final String roleName) {
         this.identifier = identifier;
         this.name = roleName;
-        this.accessUserAspects = accessUserAspects;
         this.nameSpace = nameSpace;
     }
     

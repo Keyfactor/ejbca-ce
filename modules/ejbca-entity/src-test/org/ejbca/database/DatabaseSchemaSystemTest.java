@@ -24,11 +24,6 @@ import jakarta.persistence.Persistence;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.Arrays;
-import org.cesecore.authorization.rules.AccessRuleData;
-import org.cesecore.authorization.rules.AccessRuleState;
-import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.AccessUserAspectData;
-import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificateprofile.CertificateProfileData;
@@ -39,7 +34,6 @@ import org.cesecore.configuration.GlobalConfigurationData;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.keybind.InternalKeyBindingData;
 import org.cesecore.keys.token.CryptoTokenData;
-import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.member.RoleMemberData;
 import org.ejbca.core.ejb.approval.ApprovalData;
@@ -189,50 +183,16 @@ public class DatabaseSchemaSystemTest {
         storeAndRemoveEntity(entity);
         LOG.trace("<testApprovalData");
     }
-
-    @Test
-    public void testAccessRulesData() {
-        LOG.trace(">testAccessRulesData");
-        logMemStats();
-        AccessRuleData entity = new AccessRuleData(BOGUS_INTEGER.intValue(), VARCHAR_250B, AccessRuleState.RULE_ACCEPT, false);
-        entity.setRowProtection(CLOB_10KiB);
-        entity.setRowVersion(0);
-        storeAndRemoveEntity(entity);
-        LOG.trace("<testAccessRulesData");
-    }
-
-    @Test
-    public void testAdminEntityData() {
-        LOG.trace(">testAdminEntityData");
-        logMemStats();
-        AccessUserAspectData entity = new AccessUserAspectData(VARCHAR_250B, BOGUS_INTEGER, X500PrincipalAccessMatchValue.WITH_SERIALNUMBER,
-                AccessMatchType.TYPE_EQUALCASE, VARCHAR_250B);
-        entity.setRowProtection(CLOB_10KiB);
-        entity.setRowVersion(0);
-        storeAndRemoveEntity(entity);
-        LOG.trace("<testAdminEntityData");
-    }
     
     @Test
     public void testRoleMemberData() {
-        LOG.trace(">testAdminEntityData");
+        LOG.trace(">testRoleMemberData");
         logMemStats();
         RoleMemberData entity = new RoleMemberData(BOGUS_INT, VARCHAR_250B, BOGUS_INT, BOGUS_INT, BOGUS_INT, VARCHAR_2000B, BOGUS_INT, VARCHAR_250B);
         entity.setRowProtection(CLOB_10KiB);
         entity.setRowVersion(0);
         storeAndRemoveEntity(entity);
-        LOG.trace("<testAdminEntityData");
-    }
-
-    @Test
-    public void testAdminGroupData() {
-        LOG.trace(">testAdminGroupData");
-        logMemStats();
-        AdminGroupData entity = new AdminGroupData(BOGUS_INTEGER, VARCHAR_250B);
-        entity.setRowProtection(CLOB_10KiB);
-        entity.setRowVersion(0);
-        storeAndRemoveEntity(entity);
-        LOG.trace("<testAdminGroupData");
+        LOG.trace("<testRoleMemberData");
     }
 
     @Test

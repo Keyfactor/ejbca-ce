@@ -15,13 +15,10 @@ package org.ejbca.util;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.authorization.rules.AccessRuleData;
-import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 import org.cesecore.certificates.ca.CAInfo;
@@ -260,47 +257,6 @@ public final class CAIdTools {
                     roleMember.setTokenIssuerId(toId);
                     changed = true;
                 }
-            }
-        }
-        return changed;
-    }
-    
-    /**
-     * Updates any references to a CA's CAId and Subject DN.
-     * @param roleName Name of the role. Used when creating roles to replace the old roles with.
-     * @param rules Access rules of the role. Updated in place.
-     * @param users Access users of the role. Updated in place.
-     * @param fromId Old CA Id.
-     * @param toId New CA Id.
-     * @param toSubjectDN New CA Subject DN.
-     * @return True if there was a change.
-     */
-    @Deprecated
-    public static boolean updateCAIds(final String roleName, final Map<Integer,AccessRuleData> rules, final Map<Integer,AccessUserAspectData> users, final int fromId, final int toId, final String toSubjectDN) {
-        final String toReplace = StandardRules.CAACCESS.resource()+String.valueOf(fromId);
-        final String toReplaceSlash = toReplace+"/";
-        boolean changed = false;
-        // Look for references from access rules
-        for (int id : new ArrayList<>(rules.keySet())) {
-            AccessRuleData rule = rules.get(id);
-            final String accessRuleName = rule.getAccessRuleName();
-            
-            if (accessRuleName.equals(toReplace) || accessRuleName.startsWith(toReplaceSlash)) {
-                final String newName = StandardRules.CAACCESS.resource() + String.valueOf(toId) + accessRuleName.substring(toReplace.length());
-                final int state = rule.getState();
-                rule = new AccessRuleData(roleName, newName, rule.getInternalState(), rule.getRecursive());
-                rule.setState(state);
-                rules.put(id, rule);
-                changed = true;
-            }
-        }
-        // Look for references from access users
-        for (int id : new ArrayList<>(users.keySet())) {
-            AccessUserAspectData user = users.get(id);
-            if (user.getCaId() == fromId) {
-                user = new AccessUserAspectData(roleName, toId, user.getMatchWith(), user.getTokenType(), user.getMatchTypeAsType(), user.getMatchValue());
-                users.put(id, user);
-                changed = true;
             }
         }
         return changed;
