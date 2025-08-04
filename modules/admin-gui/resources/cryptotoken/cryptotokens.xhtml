@@ -137,7 +137,7 @@
 					</f:facet>
                     <div class="action-buttons">
 						<h:button id="view" value="#{web.text.VIEW}"
-								  outcome="cryptotoken.jsf?cryptoTokenId=#{cryptoTokenGuiInfo.cryptoTokenId}&amp;ref=default" />
+								  outcome="cryptotoken.xhtml?cryptoTokenId=#{cryptoTokenGuiInfo.cryptoTokenId}&amp;ref=default" />
 						<h:commandButton id="edit" value="#{web.text.EDIT}"
 										 action="#{cryptoTokenMBean.editCryptoToken(cryptoTokenGuiInfo.cryptoTokenId)}"
 										 rendered="#{cryptoTokenMBean.allowedToModify}" />
@@ -173,7 +173,7 @@
                               rendered="#{cryptoTokenMBean.cryptoTokenListEmpty}"
                               styleClass="inline-block padding-top-1-rem"/>
                 <h:panelGroup>
-                    <h:button value="#{web.text.ADD}" outcome="cryptotoken.jsf?cryptoTokenId=0&amp;ref=cryptotokens"/>
+                    <h:button value="#{web.text.ADD}" outcome="cryptotoken.xhtml?cryptoTokenId=0&amp;ref=cryptotokens"/>
                 </h:panelGroup>
             </h:panelGrid>
 		</h:form>

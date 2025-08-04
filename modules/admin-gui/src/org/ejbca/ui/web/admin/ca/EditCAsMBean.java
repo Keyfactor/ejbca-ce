@@ -373,7 +373,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         }
 
         CRYPTO_TOKEN_LINK = getEjbcaWebBean().getBaseUrl() + globalconfiguration.getAdminWebPath()
-        + "cryptotoken/cryptotoken.jsf?cryptoTokenId=";
+        + "cryptotoken/cryptotoken.xhtml?cryptoTokenId=";
 
         // Init include health check
         caInfoDto.setIncludeInHealthCheck(cainfo == null || cainfo.getIncludeInHealthCheck());
