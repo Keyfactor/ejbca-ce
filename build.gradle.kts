@@ -32,18 +32,7 @@ allprojects {
 }
 
 // add the directory containing 'jboss-client.jar' to the list of library repositories
-if (!isProductionMode) {
-    if (appServerHome == null) {
-        throw GradleException(
-            """
-                📣 To build EJBCA in non-production mode ('ejbca.productionmode=false'), 
-                you must first configure the application server's home directory.
-                
-                You can do this by either setting an 'APPSRV_HOME' environment variable 
-                or by configuring the 'appserver.home' property in the 'conf/ejbca.properties' file.
-            """.trimIndent()
-        )
-    }
+if (appServerHome != null) {
     allprojects {
         repositories {
             flatDir {
@@ -51,6 +40,17 @@ if (!isProductionMode) {
             }
         }
     }
+}
+else if (!isProductionMode){
+    throw GradleException(
+        """
+                📣 To build EJBCA in non-production mode ('ejbca.productionmode=false'), 
+                you must first configure the application server's home directory.
+                
+                You can do this by either setting an 'APPSRV_HOME' environment variable 
+                or by configuring the 'appserver.home' property in the 'conf/ejbca.properties' file.
+            """.trimIndent()
+    )
 }
 
 plugins {
