@@ -9,8 +9,6 @@ val ejbcaProperties: Properties = loadPropertiesFromFiles(
     "conf/systemtests.properties"
 )
 
-val appVersion = ejbcaProperties.getProperty("app.version.number", "0.0.0")
-
 // specify what edition you want to build by passing -Pedition=ee or =ce (default: ee)
 val editionProp = providers.gradleProperty("edition").getOrElse("ee")
 val eeModuleExists = file("modules/edition-specific-ee").exists()
@@ -19,16 +17,24 @@ val edition = if (editionProp == "ce" || !eeModuleExists) "ce" else "ee"
 val appServerHome: String? = ejbcaProperties.getProperty("appserver.home", System.getenv("APPSRV_HOME"))
 val isProductionMode = ejbcaProperties.getProperty("ejbca.productionmode", "true").toBoolean()
 
+val appVersionNumber = ejbcaProperties.getProperty("app.version.number", "0.0.0").toString()
+val appVersionString = if (edition == "ee") {
+    ejbcaProperties.expandPlaceholders("app.version")
+} else {
+    ejbcaProperties.expandPlaceholders("community.version")
+}
+
 // share project properties with other build files
 gradle.allprojects {
     extra["isProductionMode"] = isProductionMode
     extra["edition"] = edition
     extra["appServerHome"] = appServerHome
+    extra["appVersionString"] = appVersionString
     // add other properties loaded from EJBCA configuration files
     ejbcaProperties.forEach { (key, value) ->
         extra["$key"] = value
     }
-    version = appVersion
+    version = appVersionNumber
 }
 
 dependencyResolutionManagement {
@@ -408,4 +414,13 @@ fun loadPropertiesFromFiles(vararg filePaths: String): Properties {
         }
     }
     return properties
+}
+
+fun Properties.expandPlaceholders(templateKey: String): String {
+    val template = ejbcaProperties.getProperty(templateKey);
+    val placeholderPattern = Regex("\\$\\{([^}]+)\\}")
+    return placeholderPattern.replace(template) { matchResult ->
+        val propertyKey = matchResult.groupValues[1]
+        getProperty(propertyKey) ?: matchResult.value
+    }
 }
