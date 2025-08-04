@@ -584,3 +584,16 @@ tasks.register("configureGitHooks") {
 tasks.named("build") {
     dependsOn("configureGitHooks")
 }
+
+// Create shortcuts for commonly used modules
+val moduleShortcuts = mapOf(
+    "configdump" to ":modules:configdump:cli:build"
+)
+
+moduleShortcuts.forEach { (shortcut, fullPath) ->
+    tasks.register(shortcut) {
+        description = "Builds the $shortcut module."
+        group = "build"
+        dependsOn(fullPath)
+    }
+}
