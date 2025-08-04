@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
-import jakarta.faces.context.FacesContext;
 import jakarta.faces.event.AjaxBehaviorEvent;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
@@ -128,8 +127,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     private BasePublisher publisher = null;
     private Integer publisherId = null;
     private String publisherName = null;
-    private boolean createNewPublisher = false;
-    
+
     public int getPublisherId(){
         return publisherId;
     }
@@ -487,8 +485,9 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         }
 
         try {
-            if (this.createNewPublisher) {
+            if (this.publisherId <= 0) {
                 publisherSession.addPublisher(getAdmin(), getPublisherName(), publisher);
+                this.publisherId = publisher.getPublisherId();
             } else {
                 publisherSession.changePublisher(getAdmin(), getPublisherId(), getPublisherName(), publisher);
             }
@@ -664,7 +663,6 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
 
     private void initCommonParts() {
         if (publisher == null) { // Loading from database
-            this.createNewPublisher = listPublishers.getSelectedPublisherId() == null || listPublishers.getSelectedPublisherId() == 0;
 
             if (StringUtils.isBlank(listPublishers.getSelectedPublisherName())) {
                 publisher = new LdapPublisher();
@@ -683,7 +681,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
             }
 
             publisherId = publisher.getPublisherId();
-            publisherName = this.createNewPublisher ? listPublishers.getNewPublisherName() : publisher.getName();
+            publisherName = publisherId > 0 ? publisher.getName() : listPublishers.getNewPublisherName();
         }
 
         selectedPublisherType = getSelectedPublisherValue();
