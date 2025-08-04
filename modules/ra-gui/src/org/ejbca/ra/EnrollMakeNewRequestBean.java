@@ -51,6 +51,7 @@ import com.keyfactor.util.keys.KeyTools;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Primitive;
@@ -2088,7 +2089,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
      * @param selectedEndEntityProfile the selectedEndEntityProfile to set
      */
     public void setSelectedEndEntityProfile(final String selectedEndEntityProfile) {
-        if (!StringUtils.equals(selectedEndEntityProfile, this.selectedEndEntityProfile)) {
+        if (!Strings.CS.equals(selectedEndEntityProfile, this.selectedEndEntityProfile)) {
             this.selectedEndEntityProfile = selectedEndEntityProfile;
             // When ever the end entity profile changes this affects available request fields
             resetRequestInfo();
@@ -2120,7 +2121,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         final String currentSelection = this.selectedKeyPairGeneration == null
                 ? null
                 : this.selectedKeyPairGeneration.name();
-        if (!StringUtils.equals(selectedKeyStoreGeneration, currentSelection)) {
+        if (!Strings.CS.equals(selectedKeyStoreGeneration, currentSelection)) {
             resetAlgorithmCsrUpload();
         }
         if (StringUtils.isNotEmpty(selectedKeyStoreGeneration)) {
@@ -2346,7 +2347,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
      * @param selectedCertificateProfile the selectedCertificateProfile to set
      */
     public void setSelectedCertificateProfile(final String selectedCertificateProfile) {
-        if (!StringUtils.equals(selectedCertificateProfile, this.selectedCertificateProfile)) {
+        if (!Strings.CS.equals(selectedCertificateProfile, this.selectedCertificateProfile)) {
             // When ever the certificate profile changes this affects the available key algorithms
             availableAlgorithmSelectItems = null;
             // ...and any uploaded CSR needs to be revalidated (and we can do this by forcing a re-upload)

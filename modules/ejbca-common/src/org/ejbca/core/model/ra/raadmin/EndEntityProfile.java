@@ -13,33 +13,14 @@
 
 package org.ejbca.core.model.ra.raadmin;
 
-import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.keys.KeyStoreCipher;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.DateUtils;
-import org.apache.commons.lang.time.FastDateFormat;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
+import org.apache.commons.lang3.time.DateUtils;
+import org.apache.commons.lang3.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields;
@@ -59,6 +40,25 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.raadmin.validators.RegexFieldValidator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
+
+import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import static org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND;
 import static org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND_FIELD_NUMBER;
@@ -831,7 +831,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 
     public boolean getSshVerifyRequired() {
         final String value = getValue(SSH_CRITICAL_OPTION_VERIFY_REQUIRED, 0);
-        return StringUtils.equals(value, TRUE) ? true : false;
+        return Strings.CS.equals(value, TRUE) ? true : false;
     }
 
     public void setSshVerifyRequired(final boolean value) {
@@ -2079,7 +2079,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	}
     	if (getUse(ISSUANCEREVOCATIONREASON, 0) && !isModifyable(ISSUANCEREVOCATIONREASON, 0)) {
     		final String value = getValue(ISSUANCEREVOCATIONREASON, 0);
-    		if (!StringUtils.equals(issuanceRevReason, value)) {
+    		if (!Strings.CS.equals(issuanceRevReason, value)) {
     			throw new EndEntityProfileValidationException("Issuance revocation reason '"+issuanceRevReason+"' does not match required value '"+value+"'.");
     		}
     	}
@@ -2380,7 +2380,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
                 } else {
                     // Check that postalAddress has #der_encoding_in_hex format, i.e. a full der sequence in hex format
                     if (DnComponents.POSTALADDRESS.equals(DnComponents.dnIdToProfileName(dnId))) {
-                        if (!StringUtils.startsWith(fieldValue, "#30")) {
+                        if (!Strings.CS.startsWith(fieldValue, "#30")) {
                             throw new EndEntityProfileValidationException(DnComponents.dnIdToProfileName(dnId) + " (" + fieldValue + ") does not seem to be in #der_encoding_in_hex format. See \"End_Entity_Profiles.html\" for more information about the postalAddress (2.5.4.16) field.");
                         }
                     }
@@ -2753,7 +2753,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     			if (!isEmptyOrRelative(oldEndTime)) {
     				// We use an absolute time format, so we need to upgrade
 					try {
-						final String newEndTime = ValidityDate.formatAsUTC(DateUtils.parseDateStrictly(oldEndTime, timePatterns));
+						final String newEndTime = ValidityDate.formatAsUTC(
+								DateUtils.parseDateStrictly(oldEndTime, timePatterns));
 						setValue(ENDTIME, 0, newEndTime);
 						if (log.isDebugEnabled()) {
 							log.debug("Upgraded " + ENDTIME + " from \"" + oldEndTime + "\" to \"" + newEndTime + "\" in EndEntityProfile.");

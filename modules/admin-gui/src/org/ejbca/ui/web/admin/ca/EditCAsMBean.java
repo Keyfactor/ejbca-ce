@@ -59,6 +59,7 @@ import jakarta.servlet.http.Part;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.tuple.MutableTriple;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -1248,21 +1249,21 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         caInfoDto.setTestKey("");
 
         for (final String alias : availableCryptoTokenEncryptionAliases) {
-            if (CAToken.SOFTPRIVATEDECKEYALIAS.equals(alias) || StringUtils.containsIgnoreCase(alias, "default")) {
+            if (CAToken.SOFTPRIVATEDECKEYALIAS.equals(alias) || Strings.CI.contains(alias, "default")) {
                 caInfoDto.setCryptoTokenDefaultKey(alias);
-            } else if (CAToken.SOFTPRIVATESIGNKEYALIAS.equals(alias) || StringUtils.containsIgnoreCase(alias, "sign")) {
+            } else if (CAToken.SOFTPRIVATESIGNKEYALIAS.equals(alias) || Strings.CI.contains(alias, "sign")) {
                 caInfoDto.setCryptoTokenCertSignKey(alias);
-            } else if (StringUtils.containsIgnoreCase(alias, "test")) {
+            } else if (Strings.CI.contains(alias, "test")) {
                 caInfoDto.setTestKey(alias);
             }
         }
 
         for (final String alias : availableCryptoTokenKeyAliases) {
-            if (CAToken.SOFTPRIVATEDECKEYALIAS.equals(alias) || StringUtils.containsIgnoreCase(alias, "default")) {
+            if (CAToken.SOFTPRIVATEDECKEYALIAS.equals(alias) || Strings.CI.contains(alias, "default")) {
                 caInfoDto.setCryptoTokenDefaultKey(alias);
-            } else if (CAToken.SOFTPRIVATESIGNKEYALIAS.equals(alias) || StringUtils.containsIgnoreCase(alias, "sign"))  {
+            } else if (CAToken.SOFTPRIVATESIGNKEYALIAS.equals(alias) || Strings.CI.contains(alias, "sign"))  {
                 caInfoDto.setCryptoTokenCertSignKey(alias);
-            } else if (StringUtils.containsIgnoreCase(alias, "test")) {
+            } else if (Strings.CI.contains(alias, "test")) {
                 caInfoDto.setTestKey(alias);
             }
         }

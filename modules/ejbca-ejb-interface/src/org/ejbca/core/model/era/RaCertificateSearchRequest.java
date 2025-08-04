@@ -14,6 +14,7 @@ package org.ejbca.core.model.era;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.io.Serializable;
 import java.math.BigInteger;
@@ -655,8 +656,8 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
      */
     public boolean matchUsername(final String username) {
         return username != null && !StringUtils.isEmpty(usernameSearchString) &&
-                ((!usernameSearchExact && StringUtils.contains(username.toUpperCase(), usernameSearchString.toUpperCase())) ||
-                        (usernameSearchExact && StringUtils.equalsIgnoreCase(username, usernameSearchString)));
+                ((!usernameSearchExact && Strings.CS.contains(username.toUpperCase(), usernameSearchString.toUpperCase())) ||
+                        (usernameSearchExact && Strings.CI.equals(username, usernameSearchString)));
     }
 
     /**
@@ -664,8 +665,8 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
      */
     public boolean matchExternalAccountId(final String externalAccountId) {
         return externalAccountId != null && !StringUtils.isEmpty(externalAccountIdSearchString) && (externalAccountIdSearchExact ?
-                StringUtils.equalsIgnoreCase(externalAccountId, usernameSearchString) :
-                StringUtils.contains(externalAccountId.toUpperCase(), usernameSearchString.toUpperCase()));
+                Strings.CI.equals(externalAccountId, usernameSearchString) :
+                    Strings.CS.contains(externalAccountId.toUpperCase(), usernameSearchString.toUpperCase()));
     }
 
     /**
@@ -673,8 +674,8 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
      */
     public boolean matchSubjectDn(final String subjectDn) {
         return subjectDn != null && !StringUtils.isEmpty(subjectDnSearchString) &&
-                ((!subjectDnSearchExact && StringUtils.contains(subjectDn.toUpperCase(), subjectDnSearchString.toUpperCase())) ||
-                        (subjectDnSearchExact && StringUtils.equalsIgnoreCase(subjectDn, subjectDnSearchString)));
+                ((!subjectDnSearchExact && Strings.CS.contains(subjectDn.toUpperCase(), subjectDnSearchString.toUpperCase())) ||
+                        (subjectDnSearchExact && Strings.CI.equals(subjectDn, subjectDnSearchString)));
     }
 
     /**
@@ -682,8 +683,8 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
      */
     public boolean matchSubjectAn(final String subjectAn) {
         return subjectAn != null && !StringUtils.isEmpty(subjectAnSearchString) &&
-                ((!subjectAnSearchExact && StringUtils.contains(subjectAn, subjectAnSearchString))||
-                        (subjectAnSearchExact && StringUtils.equals(subjectAn, subjectAnSearchString)));
+                ((!subjectAnSearchExact && Strings.CS.contains(subjectAn, subjectAnSearchString))||
+                        (subjectAnSearchExact && Strings.CS.equals(subjectAn, subjectAnSearchString)));
     }
 
     /**

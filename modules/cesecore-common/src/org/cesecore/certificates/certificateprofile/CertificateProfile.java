@@ -36,8 +36,9 @@ import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
@@ -2606,7 +2607,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         for (final String key : useStandardCertificateExtensions.keySet()) {
             if (data.get(key) != null && (Boolean) data.get(key)) {
                 // All extension use keys in the Certificate Profile are named "use" + name of extension
-                ret.add(StringUtils.removeStart(key, "use"));
+                ret.add(Strings.CS.removeStart(key, "use"));
             }
         }
         return ret;
@@ -2617,7 +2618,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         final Set<String> ret = new LinkedHashSet<>();
         for (final String key : useStandardCertificateExtensions.keySet()) {
             // All extension use keys in the Certificate Profile are named "use" + name of extension
-            ret.add(StringUtils.removeStart(key, "use"));
+            ret.add(Strings.CS.removeStart(key, "use"));
         }
         return ret;
     }

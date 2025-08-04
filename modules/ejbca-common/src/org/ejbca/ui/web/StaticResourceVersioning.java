@@ -33,7 +33,7 @@ public class StaticResourceVersioning {
         String versionString = InternalConfiguration.getAppVersionNumber();
         // add a random string in non-production mode to avoid caching issues during development
         if (!EjbcaConfiguration.getIsInProductionMode()) {
-            versionString += "-" + RandomStringUtils.randomAlphanumeric(RANDOM_PART_LENGTH);
+            versionString += "-" + RandomStringUtils.insecure().next(RANDOM_PART_LENGTH, true, true);
         }
         VERSION = sanitize(versionString);
     }

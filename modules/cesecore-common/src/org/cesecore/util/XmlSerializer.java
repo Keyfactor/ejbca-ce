@@ -12,8 +12,8 @@
  *************************************************************************/
 package org.cesecore.util;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificateprofile.PKIDisclosureStatement;
 
@@ -233,7 +233,7 @@ public class XmlSerializer {
 	 * @param ps PrintStream where the XML output will be written
 	 */
     private static void printObject(final Object o, int indent, final PrintStream ps) {
-        if (StringUtils.startsWith(getType(o), "object")) {
+        if (Strings.CS.startsWith(getType(o), "object")) {
             // Object objects are handled by the specific handlers 
             printValue(o, indent, ps);
         } else {
@@ -276,7 +276,7 @@ public class XmlSerializer {
                 ps.print(((Class<?>) o).getName());
             } else {
                 // Escape XML special characters
-                ps.print(StringEscapeUtils.escapeXml(o.toString()));
+                ps.print(StringEscapeUtils.escapeXml11(o.toString()));
             }
             ps.println("</" + type + ">");
         }

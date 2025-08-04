@@ -38,7 +38,7 @@ import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.keys.KeyTools;
 
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.ssh.SshCertificate;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -676,7 +676,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
         if (!fingerprint.equals(certificateData.fingerprint)) {
             return false;
         }
-        if (!StringUtils.equals(cAFingerprint, certificateData.cAFingerprint)) {
+        if (!Strings.CS.equals(cAFingerprint, certificateData.cAFingerprint)) {
             return false;
         }
         if (!equalsStatus(certificateData, strictStatus)) {
@@ -700,7 +700,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
         if (expireDate != certificateData.expireDate) {
             return false;
         }
-        if (!ObjectUtils.defaultIfNull(invalidityDate, -1L).equals(ObjectUtils.defaultIfNull(certificateData.invalidityDate, -1L))) {
+        if (!ObjectUtils.getIfNull(invalidityDate, -1L).equals(ObjectUtils.getIfNull(certificateData.invalidityDate, -1L))) {
             return false;
         }
         if (revocationDate != certificateData.revocationDate) {
@@ -709,10 +709,10 @@ public class CertificateData extends BaseCertificateData implements Serializable
         if (revocationReason != certificateData.revocationReason) {
             return false;
         }
-        if (!StringUtils.equals(username, certificateData.username)) {
+        if (!Strings.CS.equals(username, certificateData.username)) {
             return false;
         }
-        if (!StringUtils.equals(tag, certificateData.tag)) {
+        if (!Strings.CS.equals(tag, certificateData.tag)) {
             return false;
         }
         if (certificateProfileId == null && certificateData.certificateProfileId != null) {
@@ -730,19 +730,19 @@ public class CertificateData extends BaseCertificateData implements Serializable
                 return false;
             }
         }
-        if (!ObjectUtils.defaultIfNull(crlPartitionIndex, 0).equals(ObjectUtils.defaultIfNull(certificateData.crlPartitionIndex, 0))) {
+        if (!ObjectUtils.getIfNull(crlPartitionIndex, 0).equals(ObjectUtils.getIfNull(certificateData.crlPartitionIndex, 0))) {
             return false;
         }
         if (updateTime != certificateData.updateTime) {
             return false;
         }
-        if (!StringUtils.equals(subjectAltName, certificateData.subjectAltName)) {
+        if (!Strings.CS.equals(subjectAltName, certificateData.subjectAltName)) {
             return false;
         }
-        if (!StringUtils.equals(certificateRequest, certificateData.certificateRequest)) {
+        if (!Strings.CS.equals(certificateRequest, certificateData.certificateRequest)) {
             return false;
         }
-        if (!StringUtils.equals(accountBindingId, certificateData.accountBindingId)) {
+        if (!Strings.CS.equals(accountBindingId, certificateData.accountBindingId)) {
             return false;
         }
         return true;

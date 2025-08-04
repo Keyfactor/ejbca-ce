@@ -68,6 +68,7 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
@@ -2198,16 +2199,16 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             // Look for DNS name
             if (generalName.getTagNo() == 2) {
                 final String str = DnComponents.getGeneralNameString(2, generalName.getName());
-                if(StringUtils.contains(str, "(") && StringUtils.contains(str, ")") ) { // if it contains parts that should be redacted
+                if(Strings.CS.contains(str, "(") && Strings.CS.contains(str, ")") ) { // if it contains parts that should be redacted
                     // Remove the parentheses from the SubjectAltName that will end up on the certificate
-                    String certBuilderDNSValue = StringUtils.remove(str, "dNSName=");
+                    String certBuilderDNSValue = Strings.CS.remove(str, "dNSName=");
                     certBuilderDNSValue = StringUtils.remove(certBuilderDNSValue, '(');
                     certBuilderDNSValue = StringUtils.remove(certBuilderDNSValue, ')');
                     // Replace the old value with the new
                     gns[j] = new GeneralName(2, new DERIA5String(certBuilderDNSValue));
                     sanEdited = true;
                     if (publishToCT) {
-                        String redactedLable = StringUtils.substring(str, StringUtils.indexOf(str, "("), StringUtils.lastIndexOf(str, ")")+1); // tex. (top.secret).domain.se => redactedLable = (top.secret) aka. including the parentheses
+                        String redactedLable = StringUtils.substring(str, Strings.CS.indexOf(str, "("), Strings.CS.lastIndexOf(str, ")")+1); // tex. (top.secret).domain.se => redactedLable = (top.secret) aka. including the parentheses
                         nrOfRecactedLables.add(new ASN1Integer(StringUtils.countMatches(redactedLable, ".")+1));
                     }
                 } else {
@@ -2217,9 +2218,9 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             // Look for rfc822Name
             if(generalName.getTagNo() == 1) {
                 final String str = DnComponents.getGeneralNameString(1, generalName.getName());
-                if(StringUtils.contains(str, "\\+") ) { // if it contains a '+' character that should be unescaped
+                if(Strings.CS.contains(str, "\\+") ) { // if it contains a '+' character that should be unescaped
                     // Remove '\' from the email that will end up on the certificate
-                    String certBuilderEmailValue = StringUtils.remove(str, "rfc822name=");
+                    String certBuilderEmailValue = Strings.CS.remove(str, "rfc822name=");
                     certBuilderEmailValue = StringUtils.remove(certBuilderEmailValue, '\\');
                     // Replace the old value with the new
                     gns[j] = new GeneralName(1, new DERIA5String(certBuilderEmailValue));
@@ -2256,9 +2257,9 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             }
             if(generalName.getTagNo() == 1) {
                 final String str = DnComponents.getGeneralNameString(1, generalName.getName());
-                if(StringUtils.contains(str, "\\+") ) { // if it contains a '+' character that should be unescaped
+                if(Strings.CS.contains(str, "\\+") ) { // if it contains a '+' character that should be unescaped
                     // Remove '\' from the email that will end up on the certificate
-                    String certBuilderEmailValue = StringUtils.remove(str, "rfc822name=");
+                    String certBuilderEmailValue = Strings.CS.remove(str, "rfc822name=");
                     certBuilderEmailValue = StringUtils.remove(certBuilderEmailValue, '\\');
                     // Replace the old value with the new
                     gns[j] = new GeneralName(1, new DERIA5String(certBuilderEmailValue));
@@ -2533,7 +2534,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         try {
             for (String keyAlias : cryptoToken.getAliases()) {
                 String subjectKeyId = new String(Hex.encode(KeyTools.createSubjectKeyId(cryptoToken.getPublicKey(keyAlias)).getKeyIdentifier()));
-                if (StringUtils.equals(subjectKeyId, new String(Hex.encode(crlSubjectKeyIdentifier)))) {
+                if (Strings.CS.equals(subjectKeyId, new String(Hex.encode(crlSubjectKeyIdentifier)))) {
                     if (log.isDebugEnabled()) {
                         log.debug("Using key alias: '" + keyAlias + "' to sign CRL");
                     }

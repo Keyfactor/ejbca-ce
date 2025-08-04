@@ -54,6 +54,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.math.IntRange;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.its.ITSCertificate;
 import org.bouncycastle.jce.X509KeyUsage;
@@ -1372,7 +1373,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 // Before importing the certificate we want to make sure that the public key matches the CAs private key
                 PublicKey caCertPublicKey = cacert.getPublicKey();
                 // If it is a DV certificate signed by a CVCA, enrich the public key for EC parameters from the CVCA's certificate
-                if (StringUtils.equals(cacert.getType(), "CVC")) {
+                if (Strings.CS.equals(cacert.getType(), "CVC")) {
                     if (caCertPublicKey.getAlgorithm().equals("ECDSA")) {
                         CardVerifiableCertificate cvccert = (CardVerifiableCertificate) cacert;
                         try {
@@ -1922,7 +1923,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 x509cainfo.setSubjectAltName(subjectaltname);
                 x509cainfo.setPolicies(policies);
                 cainfo = x509cainfo;
-            } else if (StringUtils.equals(caCertificate.getType(), "CVC")) {
+            } else if (Strings.CS.equals(caCertificate.getType(), "CVC")) {
                 cainfo = new CVCCAInfo(subjectdn, caname, CAConstants.CA_EXTERNAL, certprofileid, validityString, signedby, null, null);
             } else {
                 throw new CertificateImportException("Certificate was of an unknown type: " + caCertificate.getType());
@@ -3797,7 +3798,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             // therefore we need to make a more complex match, checking if keySigAlgs contains the part,
             // ignoring case so that SHA256WITHRSA matches SHA256WithRSA, and ECDSA matches SHA1WithECDSA (or SHA256WithECDSA)
             // But SHA1WithECDSA, or ECDSA does not match SHA1WithRSA, or Ed448, or... 
-            boolean containsAlg = keySigAlgs.stream().anyMatch(x -> StringUtils.containsIgnoreCase(x, certSigAlg));
+            boolean containsAlg = keySigAlgs.stream().anyMatch(x -> Strings.CI.contains(x, certSigAlg));
             if (certSigAlg == null || !containsAlg) {
                 if (log.isDebugEnabled()) {
                     log.info("Not trying to verify certificate signed with algorithm " + certSigAlg + " because key is only suitable for " + keySigAlgs);
