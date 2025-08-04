@@ -587,7 +587,8 @@ tasks.named("build") {
 
 // Create shortcuts for commonly used modules
 val moduleShortcuts = mapOf(
-    "configdump" to ":modules:configdump:cli:build"
+    "configdump" to ":modules:configdump:cli:build",
+    "clientToolBox" to ":modules:clientToolBox:build",
 )
 
 moduleShortcuts.forEach { (shortcut, fullPath) ->
