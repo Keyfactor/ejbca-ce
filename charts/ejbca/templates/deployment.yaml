@@ -274,6 +274,10 @@ spec:
             - name: ejbca-config-external-cas
               mountPath: /mnt/external/secrets/tls/cas/
             {{- end }}
+            {{- if .Values.ejbca.importJvmTruststore }}
+            - name: ejbca-config-jvm-truststore
+              mountPath: /mnt/external/secrets/ca/ts/
+            {{- end }}
             {{- if .Values.ejbca.importAppserverKeystore }}
             - name: ejbca-config-appserver-keystore
               mountPath: /mnt/external/secrets/tls/ks/
@@ -306,6 +310,9 @@ spec:
         {{- end }}
         {{- if .Values.hsm.luna.enabled }}
           {{ include "ejbca.hsm.sidecar.luna" . | nindent 8 }}
+        {{- end }}
+        {{- if .Values.hsm.dpod.enabled }}
+          {{ include "ejbca.hsm.sidecar.dpod" . | nindent 8 }}
         {{- end }}
         {{- if .Values.hsm.utimaco.enabled }}
           {{ include "ejbca.hsm.sidecar.utimaco" . | nindent 8 }}
@@ -353,6 +360,11 @@ spec:
         - name: ejbca-config-external-cas
           secret:
             secretName: {{ .Values.ejbca.externalCasSecret }}
+        {{- end }}
+        {{- if .Values.ejbca.importJvmTruststore }}
+        - name: ejbca-config-jvm-truststore
+          secret:
+            secretName: {{ .Values.ejbca.jvmTruststoreSecret }}
         {{- end }}
         {{- if .Values.ejbca.importAppserverKeystore }}
         - name: ejbca-config-appserver-keystore
@@ -410,6 +422,9 @@ spec:
         {{- end }}
         {{- if .Values.hsm.luna.enabled }}
           {{ include "ejbca.hsm.volume.luna" . | nindent 8 }}
+        {{- end }}
+        {{- if .Values.hsm.dpod.enabled }}
+          {{ include "ejbca.hsm.volume.dpod" . | nindent 8 }}
         {{- end }}
         {{- if .Values.hsm.utimaco.enabled }}
           {{ include "ejbca.hsm.volume.utimaco" . | nindent 8 }}

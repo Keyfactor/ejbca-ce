@@ -36,6 +36,7 @@ import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.util.HttpTools;
 
 import com.keyfactor.util.CertTools;
+import org.cesecore.authorization.AuthorizationCache;
 
 /**
  * Web session authentication helper.
@@ -54,6 +55,7 @@ public class RaAuthenticationHelper implements Serializable {
     private AuthenticationToken authenticationToken = null;
     private String authenticationTokenTlsSessionId = null;
     private String x509AuthenticationTokenFingerprint = null;
+    private int authenticatedAtUpdateNumber = 0;
 
     public RaAuthenticationHelper(final WebAuthenticationProviderSessionLocal webAuthenticationProviderSession, final RaMasterApiProxyBeanLocal raMasterApi) {
         this.webAuthenticationProviderSession = webAuthenticationProviderSession;
@@ -67,6 +69,14 @@ public class RaAuthenticationHelper implements Serializable {
     /** @return the X509CertificateAuthenticationToken if the client has provided a certificate or a PublicAccessAuthenticationToken otherwise. */
     public AuthenticationToken getAuthenticationToken(final HttpServletRequest httpServletRequest, final HttpServletResponse httpServletResponse) {
         final String currentTlsSessionId = getTlsSessionId(httpServletRequest);
+        final int lastUpdateNumber = AuthorizationCache.INSTANCE.getLastUpdateNumber();
+        if (authenticationToken != null && authenticatedAtUpdateNumber != lastUpdateNumber) {
+            if (log.isDebugEnabled()) {
+                log.debug("Roles have been updated. Forcing re-authentication for administrator '" + authenticationToken + "'");
+            }
+            authenticationToken = null;
+            x509AuthenticationTokenFingerprint = null;
+        }
         if (authenticationToken==null || !StringUtils.equals(authenticationTokenTlsSessionId, currentTlsSessionId)) {
             if (log.isTraceEnabled()) {
                 log.trace("New TLS session IDs or authenticationToken: currentClientTlsSessionID: "+currentTlsSessionId+", authenticationTokenTlsSessionId: "+authenticationTokenTlsSessionId);
@@ -141,6 +151,7 @@ public class RaAuthenticationHelper implements Serializable {
             if (authenticationToken == null) {
                 authenticationToken = webAuthenticationProviderSession.authenticateUsingNothing(httpServletRequest.getRemoteAddr(), httpServletRequest.isSecure());
             }
+            authenticatedAtUpdateNumber = lastUpdateNumber;
         }
         resetUnwantedHttpHeaders(httpServletRequest, httpServletResponse);
         return authenticationToken;

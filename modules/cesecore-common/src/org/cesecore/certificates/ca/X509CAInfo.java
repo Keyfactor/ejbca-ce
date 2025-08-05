@@ -32,7 +32,6 @@ import java.security.cert.TrustAnchor;
 import java.security.cert.X509CRL;
 import java.security.cert.X509CertSelector;
 import java.security.cert.X509Certificate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -386,10 +385,23 @@ public class X509CAInfo extends CAInfo {
 
   /** Creates a regex that matches all Default CRL Distribution Points. Partition numbers (if any) are matched in groups. */
   private String getRegexForCrlDistPoints() {
-      // \E and \Q are "end quote" and "start quote", see the javadoc of Pattern
-      return Pattern.quote(StringUtils.trim(defaultcrldistpoint))
-              .replace("*", "\\E(\\d+)\\Q") // match digits where there is a "*"
-              .replaceAll("\\s*;\\s*", "\\\\E|\\\\Q"); // match multiple different URIs separated with ";"
+      String def = StringUtils.trim(defaultcrldistpoint);
+
+      // Split on semicolon outside quotes only
+      String[] parts = def.split(";(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
+
+      StringBuilder regex = new StringBuilder();
+      for (String part : parts) {
+          part = part.trim();
+          // Remove any leftover leading/trailing double quotes
+          part = part.replaceAll("^\"+|\"+$", "");
+
+          if (!regex.isEmpty()) {
+              regex.append("|");
+          }
+          regex.append(Pattern.quote(part).replace("*", "\\E(\\d+)\\Q"));
+      }
+      return regex.toString();
   }
 
   /**

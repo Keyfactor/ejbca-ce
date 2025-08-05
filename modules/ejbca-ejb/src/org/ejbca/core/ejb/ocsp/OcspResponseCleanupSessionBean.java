@@ -13,8 +13,8 @@
 package org.ejbca.core.ejb.ocsp;
 
 import org.apache.log4j.Logger;
+import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.ejbca.config.GlobalConfiguration;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
@@ -143,13 +143,13 @@ public class OcspResponseCleanupSessionBean implements OcspResponseCleanupSessio
     }
 
     private boolean useOcspCleanup() {
-        GlobalConfiguration config = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        GlobalOcspConfiguration config = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
 
         return config.getOcspCleanupUse();
     }
 
     private ScheduleExpression getCleanupSchedule() {
-        GlobalConfiguration config = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        GlobalOcspConfiguration config = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
 
         try {
             final Integer schedule = Integer.valueOf(config.getOcspCleanupSchedule());

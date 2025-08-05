@@ -14,12 +14,17 @@ package org.cesecore.config;
 
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keybind.impl.OcspKeyBinding.ResponderIdType;
 
 import com.keyfactor.util.certificate.DnComponents;
+
+/**
+ * Contains global configuration values for OCSP and OCSP responders
+ */
 
 public class GlobalOcspConfiguration extends ConfigurationBase implements Serializable {
 
@@ -42,6 +47,38 @@ public class GlobalOcspConfiguration extends ConfigurationBase implements Serial
     private static final String PROPERTY_OCSP_DEFAULT_RESPONSE_VALIDITY = "ocspDefaultResponseValidity";
     private static final String PROPERTY_OCSP_DEFAULT_RESPONSE_MAX_AGE = "ocspDefaultResponseMaxAge";
     private static final String PROPERTY_OCSP_USE_MAX_AGE_FOR_EXPIRATION = "useMaxValidityForExpiration";
+    private static final String INCLUDE_SIGNING_CERTIFICATE = "includeSigningCertificate";
+    private static final String INCLUDE_CERTIFICATE_CHAIN = "includeCertificateChain";
+    
+    public boolean getIncludeSigningCertificate() {
+        if(data.get(INCLUDE_SIGNING_CERTIFICATE) == null) {
+            setIncludeSigningCertificate(true);
+        }
+        return (boolean) data.get(INCLUDE_SIGNING_CERTIFICATE);
+    }
+    
+    public void setIncludeSigningCertificate(final boolean includeSigningCertificate) {
+        data.put(INCLUDE_SIGNING_CERTIFICATE, includeSigningCertificate);
+    }
+    
+    public boolean getIncludeCertificateChain() {
+        if(data.get(INCLUDE_CERTIFICATE_CHAIN) == null) {
+           setIncludeCertificateChain(true);
+        }
+        return (boolean) data.get(INCLUDE_CERTIFICATE_CHAIN);
+    }
+    
+    public void setIncludeCertificateChain(final boolean includeCertificateChain) {
+        data.put(INCLUDE_CERTIFICATE_CHAIN, includeCertificateChain);
+    }
+
+    // OCSP Cleanup
+    private static final String PROPERTY_OCSP_CLEANUP_USE = "ocsp.cleanup.use";
+    private static final boolean PROPERTY_OCSP_CLEANUP_USE_DEFAULT = false;
+    private static final String PROPERTY_OCSP_CLEANUP_SCHEDULE = "ocsp.cleanup.schedule";
+    private static final String PROPERTY_OCSP_CLEANUP_SCHEDULE_DEFAULT = "5";
+    private static final String PROPERTY_OCSP_CLEANUP_SCHEDULE_UNIT = "ocsp.cleanup.schedule_unit";
+    private static final String PROPERTY_OCSP_CLEANUP_SCHEDULE_UNIT_DEFAULT = TimeUnit.HOURS.toString();
 
     public boolean getExplicitNoCacheUnauthorizedResponsesEnabled() {
         if (Objects.isNull(data.get(EXPLICIT_NO_CACHE_UNAUTHORIZED_RESPONSES_ENABLED))) {
@@ -86,6 +123,31 @@ public class GlobalOcspConfiguration extends ConfigurationBase implements Serial
     
     public void setOcspResponderIdType(OcspKeyBinding.ResponderIdType ocspResponderIdType) {
         data.put(OCSP_RESPONDER_ID_TYPE_REFERENCE, ocspResponderIdType);
+    }
+
+    // OCSP Cleanup
+    public void setOcspCleanupUse(final boolean value) {
+        putBoolean(PROPERTY_OCSP_CLEANUP_USE, value);
+    }
+
+    public boolean getOcspCleanupUse() {
+        return getBoolean(PROPERTY_OCSP_CLEANUP_USE, PROPERTY_OCSP_CLEANUP_USE_DEFAULT);
+    }
+
+    public void setOcspCleanupSchedule(final String value) {
+        data.put(PROPERTY_OCSP_CLEANUP_SCHEDULE, value);
+    }
+
+    public String getOcspCleanupSchedule() {
+        return getString(PROPERTY_OCSP_CLEANUP_SCHEDULE, PROPERTY_OCSP_CLEANUP_SCHEDULE_DEFAULT);
+    }
+
+    public void setOcspCleanupScheduleUnit(final String value) {
+        data.put(PROPERTY_OCSP_CLEANUP_SCHEDULE_UNIT, value);
+    }
+
+    public String getOcspCleanupScheduleUnit() { return getString(
+            PROPERTY_OCSP_CLEANUP_SCHEDULE_UNIT, PROPERTY_OCSP_CLEANUP_SCHEDULE_UNIT_DEFAULT);
     }
     
     /**

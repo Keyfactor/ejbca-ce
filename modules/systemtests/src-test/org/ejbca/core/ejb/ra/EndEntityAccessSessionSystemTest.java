@@ -160,9 +160,11 @@ public class EndEntityAccessSessionSystemTest extends CaTestCase {
         String username = "testQueryUser";
         String password = "foo123";
         int caid = getTestCAId();
-        endEntityManagementSessionRemote.addUser(alwaysAllowToken, username, password, "C=SE, O=AnaTom, CN=" + username, null, null, true,
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, caid);
+        EndEntityInformation endEntityInformation = new EndEntityInformation(username, "C=SE, O=AnaTom, CN=" + username, caid,
+                null, null, EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                SecConst.TOKEN_SOFT_P12, null);
+        endEntityInformation.setPassword(password);
+        endEntityManagementSessionRemote.addUser(alwaysAllowToken, endEntityInformation, false);
         try {
             Query query = new Query(Query.TYPE_USERQUERY);
             query.add(UserMatch.MATCH_WITH_USERNAME, BasicMatch.MATCH_TYPE_EQUALS, username);
@@ -191,13 +193,19 @@ public class EndEntityAccessSessionSystemTest extends CaTestCase {
         String password = "foo123";
         int otherCaId = getTestCAId();
         createTestCA(caName);
-        endEntityManagementSessionRemote.addUser(alwaysAllowToken, firstUser, password, "C=SE, CN=" + firstUser, null, null, true,
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, getTestCAId(caName));
+        EndEntityInformation endEntityInformation = new EndEntityInformation(firstUser, "C=SE, CN=" + firstUser, getTestCAId(caName),
+                null, null, EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                SecConst.TOKEN_SOFT_P12, null);
+        endEntityInformation.setPassword(password);
+        endEntityManagementSessionRemote.addUser(alwaysAllowToken, endEntityInformation, true);
+        
         //Create a second user from a different CA just to verify
-        endEntityManagementSessionRemote.addUser(alwaysAllowToken, secondUser, password, "C=SE, CN=" + secondUser, null, null, true,
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, otherCaId);
+        EndEntityInformation endEntityInformation2 = new EndEntityInformation(secondUser, "C=SE, CN=" + secondUser, otherCaId,
+                null, null, EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                SecConst.TOKEN_SOFT_P12, null);
+        endEntityInformation2.setPassword(password);
+        endEntityManagementSessionRemote.addUser(alwaysAllowToken, endEntityInformation2, true);
+        
         try {
             Query query = new Query(Query.TYPE_USERQUERY);
             query.add(UserMatch.MATCH_WITH_COMMONNAME, BasicMatch.MATCH_TYPE_BEGINSWITH, firstUser);
@@ -226,10 +234,12 @@ public class EndEntityAccessSessionSystemTest extends CaTestCase {
             createTestCA(caName);
             CAInfo caInfo = caSession.getCAInfo(alwaysAllowToken, caName);
             
-            endEntityManagementSessionRemote.addUser(alwaysAllowToken, username, "foo123", "C=SE, CN=" + username, null, null, true,
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, getTestCAId(caName));
-            
+            EndEntityInformation endEntityInformation = new EndEntityInformation(username, "C=SE, CN=" + username, getTestCAId(caName),
+                    null, null, EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                    SecConst.TOKEN_SOFT_P12, null);
+            endEntityInformation.setPassword("foo123");
+            endEntityManagementSessionRemote.addUser(alwaysAllowToken, endEntityInformation, true);
+
             // 1. Search for user with no certificates at all.
             assertFindCertificateResults(alwaysAllowToken, username, 0, 0);
             
@@ -288,9 +298,11 @@ public class EndEntityAccessSessionSystemTest extends CaTestCase {
             createTestCA(caName);
             CAInfo caInfo = caSession.getCAInfo(alwaysAllowToken, caName);
             
-            endEntityManagementSessionRemote.addUser(alwaysAllowToken, username, "foo123", "C=SE, CN=" + username, null, null, true,
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, getTestCAId(caName));
+            EndEntityInformation endEntityInformation = new EndEntityInformation(username, "C=SE, CN=" + username, getTestCAId(caName),
+                    null, null, EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                    SecConst.TOKEN_SOFT_P12, null);
+            endEntityInformation.setPassword("foo123");
+            endEntityManagementSessionRemote.addUser(alwaysAllowToken, endEntityInformation, true);
             
             // 1. Search for user with no certificates at all.
             CertificateWrapper result = endEntityAccessSession.getCertificate(alwaysAllowToken, "12345678ABC", caInfo.getSubjectDN());

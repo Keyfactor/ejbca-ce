@@ -23,6 +23,7 @@ import java.security.cert.CertificateEncodingException;
 import java.util.Collection;
 
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.crypto.algorithm.SignatureParameter;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -122,9 +123,8 @@ public class CmpConfirmResponseMessage extends BaseCmpMessage implements Respons
 		final PKIBody myPKIBody = new PKIBody(19, DERNull.INSTANCE);
 		PKIMessage myPKIMessage = null;
 
-		final boolean pbeProtected = (getPbeDigestAlg() != null) && (getPbeMacAlg() != null) && (getPbeKeyId() != null) && (getPbeKey() != null) ;
-		final boolean pbmac1Protected = (getPbmac1PrfAlg() != null) && (getPbmac1MacAlg() != null) && (getPbmac1KeyId() != null)
-				&& (getPbmac1Key() != null);
+		final boolean pbeProtected = (getPbeDigestAlg() != null) && (getPbeMacAlg() != null) && (getPbeKey() != null);
+		final boolean pbmac1Protected = (getPbmac1PrfAlg() != null) && (getPbmac1MacAlg() != null) && (getPbmac1Key() != null);
 		if (pbeProtected) {
 		    myPKIHeader.setProtectionAlg(new AlgorithmIdentifier(new ASN1ObjectIdentifier(getPbeDigestAlg())));
 		    myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
@@ -142,8 +142,9 @@ public class CmpConfirmResponseMessage extends BaseCmpMessage implements Respons
 	                    // with the same DN but different keys
                         myPKIHeader.setSenderKID(CertTools.getSubjectKeyId(signCertChain.iterator().next()));
 			        }
-				    myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);				    
-					responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, signCertChain, signKey, signAlg, digestAlg, provider);
+                    myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
+					SignatureParameter signatureParameter = determineSignatureParameterFromRequest();
+                    responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, signCertChain, signKey, signAlg, digestAlg, provider, signatureParameter);
 				} catch (CertificateEncodingException | SecurityException | SignatureException e) {
 					log.error("Error creating CmpConfirmMessage: ", LogRedactionUtils.getRedactedException(e));
 				} 		

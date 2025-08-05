@@ -101,7 +101,8 @@ public class PublicKeyBlacklistKeyValidator extends KeyValidatorBase {
         for (final String algorithm : AlgorithmTools.getAvailableKeyAlgorithms()) {
             labels.put(algorithm, algorithm);
         }
-        final DynamicUiProperty<String> keyAlgorithms = new DynamicUiProperty<String>(String.class, KEY_ALGORITHMS, getKeyAlgorithmsAsString(), labels.keySet());
+        final DynamicUiProperty<String> keyAlgorithms = new DynamicUiProperty<String>(String.class, KEY_ALGORITHMS, getKeyAlgorithmsAsString(),
+                labels.keySet().stream().toList());
         keyAlgorithms.setRenderingHint(DynamicUiProperty.RENDER_SELECT_MANY);
         keyAlgorithms.setLabels(labels);
         keyAlgorithms.setHasMultipleValues(true);

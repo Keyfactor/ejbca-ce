@@ -33,11 +33,10 @@ public class ApprovalMatch extends BasicMatch {
     public static final int MATCH_WITH_REQUESTADMINCERTISSUERDN      = 5;
     public static final int MATCH_WITH_REQUESTADMINCERTSERIALNUMBER  = 6;
     public static final int MATCH_WITH_STATUS                        = 7; 
-    public static final int MATCH_WITH_REMAININGAPPROVALS            = 8;
 
     /** These refer to column names in the database and are used for native SQL querying. */
     private static final String[] MATCH_WITH_SQLNAMES = {
-        "id", "approvalid", "approvaltype", "endEntityProfileId", "caid", "reqadmincertissuerdn", "reqadmincertsn", "status", "remainingapprovals"
+        "id", "approvalid", "approvaltype", "endEntityProfileId", "caid", "reqadmincertissuerdn", "reqadmincertsn", "status", 
     };
 
     private int matchwith;
@@ -74,7 +73,7 @@ public class ApprovalMatch extends BasicMatch {
             // Because some databases (read JavaDB/Derby) does not allow matching of integer with a string expression
             // like "where status='10'" instead of "where status=10", we have to hav e some special handling here.
             String stringChar = "'";
-            if ((matchwith >= MATCH_WITH_UNIQUEID && matchwith <= MATCH_WITH_CAID) || (matchwith == MATCH_WITH_STATUS) || (matchwith == MATCH_WITH_REMAININGAPPROVALS)) {
+            if ((matchwith >= MATCH_WITH_UNIQUEID && matchwith <= MATCH_WITH_CAID) || (matchwith == MATCH_WITH_STATUS)) {
                 stringChar = "";
             }
             returnval = MATCH_WITH_SQLNAMES[matchwith] + " = "+stringChar + matchvalue.trim() + stringChar;
@@ -101,7 +100,7 @@ public class ApprovalMatch extends BasicMatch {
             // Because some databases (read JavaDB/Derby) does not allow matching of integer with a string expression
             // like "where status='10'" instead of "where status=10", we have to have some special handling here.
             final Object value;
-            if ((matchwith >= MATCH_WITH_UNIQUEID && matchwith <= MATCH_WITH_CAID) || (matchwith == MATCH_WITH_STATUS) || (matchwith == MATCH_WITH_REMAININGAPPROVALS)) {
+            if ((matchwith >= MATCH_WITH_UNIQUEID && matchwith <= MATCH_WITH_CAID) || (matchwith == MATCH_WITH_STATUS)) {
                 value = Integer.parseInt(matchvalue); 
             } else {
                 value = matchvalue.trim();

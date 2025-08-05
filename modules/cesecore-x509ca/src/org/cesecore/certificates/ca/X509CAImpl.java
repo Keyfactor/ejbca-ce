@@ -285,10 +285,9 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                                    // EJBCA 3.6.1 and earlier.
         final List<ExtendedCAServiceInfo> externalcaserviceinfos = new ArrayList<>();
         for (final Integer type : getExternalCAServiceTypes()) {
-            // TYPE_OCSPEXTENDEDSERVICE type was removed in 6.0.0.
             // TYPE_HARDTOKENENCEXTENDEDSERVICE type was removed in 7.1.0.
-            // They are removed from the database in the upgrade method in this class, but need to be ignored for instantiation.
-            if (type != ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE && type != ExtendedCAServiceTypes.TYPE_HARDTOKENENCEXTENDEDSERVICE) {
+            // It's removed from the database in the upgrade method in this class, but needs to be ignored for instantiation.
+            if (type != ExtendedCAServiceTypes.TYPE_HARDTOKENENCEXTENDEDSERVICE) {
                 ExtendedCAServiceInfo info = this.getExtendedCAServiceInfo(type);
                 if (info != null) {
                     externalcaserviceinfos.add(info);
@@ -1350,7 +1349,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
 
         // ECA-11391 and "Forbid encryption usage for ECC keys" flag in Certificate Profile allow creating certificates
         // using the same Certificate Profile (relevant key usages) where for example both RSA and ECDSA key algorithms are selected in the profile.
-        if (publicKey.getAlgorithm().equals(AlgorithmConstants.KEYALGORITHM_ECDSA) && certProfile.getKeyUsageForbidEncryptionUsageForECC()) {
+        if (AlgorithmConstants.KEYALGORITHM_ECDSA.equals(AlgorithmTools.getKeyAlgorithm(publicKey)) && certProfile.getKeyUsageForbidEncryptionUsageForECC()) {
             certProfile.setKeyUsage(CertificateConstants.KEYENCIPHERMENT, false);
             certProfile.setKeyUsage(CertificateConstants.DATAENCIPHERMENT, false);
         }

@@ -35,6 +35,7 @@
 				rendered="#{cryptoTokenMBean.currentCryptoTokenId != 0}" />
 		</h1>
 		<h:form id="currentCryptoTokenForm">
+			<h:inputHidden value="#{cryptoTokenMBean.currentCryptoTokenEditMode}" />
 			<h:panelGrid columns="2">
 				<h:panelGroup>
 					<h:outputLink rendered="#{cryptoTokenMBean.paramRef eq 'default'}"
@@ -49,12 +50,8 @@
 						value="#{web.text.CRYPTOTOKEN_NAV_BACK_INIT}" action="#{cryptoTokenMBean.actionBackToPkiInstallation}">
 					</h:commandLink>
 				</h:panelGroup>
-				<h:commandButton
-					action="#{cryptoTokenMBean.toggleCurrentCryptoTokenEditMode}"
-					value="#{web.text.CRYPTOTOKEN_NAV_EDIT}"
-					rendered="#{(!cryptoTokenMBean.currentCryptoTokenEditMode) &amp;&amp; cryptoTokenMBean.allowedToModify}" />
-				<h:panelGroup id="placeholder1"
-					rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode || !cryptoTokenMBean.allowedToModify}" />
+
+				<h:panelGroup id="placeholder1"  />
 
 				<h:outputLabel for="currentCryptoTokenId"
 					value="#{web.text.CRYPTOTOKEN_ID}"
@@ -64,7 +61,7 @@
 					rendered="#{cryptoTokenMBean.currentCryptoTokenId != 0}" />
 
 				<h:outputLabel for="currentCryptoTokenName"
-					value="#{web.text.CRYPTOTOKEN_NAME}" />
+					value="#{web.text.NAME}" />
 				<h:panelGroup id="currentCryptoTokenName">
 					<h:inputText value="#{cryptoTokenMBean.currentCryptoToken.name}"
 						rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"
@@ -769,10 +766,6 @@
 				
 				<h:panelGroup />
 				<h:panelGroup styleClass="margin-top">
-					<h:commandButton
-						action="#{cryptoTokenMBean.cancelCurrentCryptoToken}"
-						value="#{web.text.CRYPTOTOKEN_CANCEL}"
-						rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode and cryptoTokenMBean.currentCryptoTokenId != 0}" />
                     <ui:remove>
                     <!-- Three cases of the Save button. 
                     "Save" with slot-check if we are creating a new crypto token, will check if slot is already in use by another crypto token. 
@@ -782,7 +775,7 @@
                     </ui:remove>
 					<h:commandButton
 						action="#{cryptoTokenMBean.saveCurrentCryptoTokenWithCheck}"
-						value="#{web.text.CRYPTOTOKEN_SAVE}"
+						value="#{web.text.SAVE}"
 						rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode and !cryptoTokenMBean.p11SlotUsed and cryptoTokenMBean.currentCryptoTokenId == 0 
                             and cryptoTokenMBean.currentCryptoToken.type != 'Pkcs11NgCryptoToken'}" 
 						onclick="return checkFieldNotEmpty(document.getElementById('currentCryptoTokenForm:currentCryptoTokenNameText'),'The name of crypto token is mandatory!');"/>
@@ -793,10 +786,12 @@
                         onclick="return checkFieldNotEmpty(document.getElementById('currentCryptoTokenForm:currentCryptoTokenNameText'),'The name of crypto token is mandatory!');"/>
                     <h:commandButton
                         action="#{cryptoTokenMBean.saveCurrentCryptoToken}"
-                        value="#{web.text.CRYPTOTOKEN_SAVE}"
+                        value="#{web.text.SAVE}"
                         rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode 
                             and (cryptoTokenMBean.currentCryptoTokenId != 0 or cryptoTokenMBean.currentCryptoToken.type == 'Pkcs11NgCryptoToken')}" 
                         onclick="return checkFieldNotEmpty(document.getElementById('currentCryptoTokenForm:currentCryptoTokenNameText'),'The name of crypto token is mandatory!');"/>
+					<h:button value="#{web.text.CANCEL}" outcome="cryptotokens.xhtml?faces-redirect=true" immediate="true"
+							  rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"/>
 				</h:panelGroup>
 			</h:panelGrid>
 		</h:form>
@@ -805,6 +800,7 @@
 			rendered="#{!cryptoTokenMBean.currentCryptoToken.active &amp;&amp; cryptoTokenMBean.currentCryptoTokenId!=0}" />
 		<h:form id="currentCryptoTokenAliasesForm" rendered="#{cryptoTokenMBean.currentCryptoToken.active}">
 			<h:dataTable value="#{cryptoTokenMBean.keyPairGuiList}"
+				id="keyPairList"
 				var="keyPairGuiInfo"
 				rendered="#{!cryptoTokenMBean.keyPairGuiListEmpty}"
 				styleClass="grid"
@@ -877,23 +873,23 @@
 							disabled="#{keyPairGuiInfo.placeholder}">
 						<f:ajax execute="@this selectPaddingSchemeMenu" render=":modalBlockContainer"/>
 					</h:commandButton>
-					<h:commandButton value="#{web.text.CRYPTOTOKEN_KPM_TEST}"
+					<h:commandButton id="test" value="#{web.text.CRYPTOTOKEN_KPM_TEST}"
 						action="#{cryptoTokenMBean.testKeyPair}"
 						rendered="#{cryptoTokenMBean.allowedToKeyTest}"
 						disabled="#{keyPairGuiInfo.placeholder}" />
-					<h:commandButton value="#{web.text.CRYPTOTOKEN_KPM_REMOVE}"
-						action="#{cryptoTokenMBean.removeKeyPair}"
-						rendered="#{cryptoTokenMBean.allowedToKeyRemoval}"
-						onclick="return confirm('#{web.text.CRYPTOTOKEN_KPM_CONF_REM}')" />
+					<h:commandButton id="remove" value="#{web.text.CRYPTOTOKEN_KPM_REMOVE}"
+						action="#{cryptoTokenMBean.prepareDeleteKey(keyPairGuiInfo.alias)}"
+						rendered="#{cryptoTokenMBean.allowedToKeyRemoval and cryptoTokenMBean.currentCryptoTokenEditMode}" />
 					<h:commandButton
+						id="genFromTemplate"
 						value="#{web.text.CRYPTOTOKEN_KPM_GENFROMTEMPLATE}"
 						action="#{cryptoTokenMBean.generateFromTemplate}"
 						rendered="#{keyPairGuiInfo.placeholder &amp;&amp; cryptoTokenMBean.allowedToKeyGeneration}" />
-					<h:outputLink
-						value="cryptoTokenDownloads?cryptoTokenId=#{cryptoTokenMBean.currentCryptoTokenId}&amp;alias=#{keyPairGuiInfo.alias}"
-						rendered="#{!keyPairGuiInfo.placeholder}">
-						<h:outputText value="#{web.text.CRYPTOTOKEN_KPM_DOWNPUB}" />
-					</h:outputLink>
+					<h:commandButton
+							id="downPub"
+							value="#{web.text.CRYPTOTOKEN_KPM_DOWNPUB}"
+							rendered="#{!keyPairGuiInfo.placeholder}"
+							action="#{cryptoTokenMBean.prepareDownloadKey(cryptoTokenMBean.currentCryptoTokenId, keyPairGuiInfo.alias)}" />
 				</h:column>
 			</h:dataTable>
 			<h:panelGroup rendered="#{cryptoTokenMBean.keyPairGuiListFailed}">
@@ -908,15 +904,14 @@
 			</h:panelGroup>
 			<h:outputText value="#{web.text.CRYPTOTOKEN_KPM_NOPAIRS}"
 				rendered="#{cryptoTokenMBean.keyPairGuiListEmpty &amp;&amp; !cryptoTokenMBean.keyPairGuiListFailed}" />
-			<h:panelGrid columns="3">
+			<h:panelGrid columns="3" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}">
 				<h:panelGroup
 					rendered="#{!cryptoTokenMBean.keyPairGuiListEmpty &amp;&amp; cryptoTokenMBean.allowedToKeyRemoval}" />
 				<h:panelGroup
 					rendered="#{!cryptoTokenMBean.keyPairGuiListEmpty &amp;&amp; cryptoTokenMBean.allowedToKeyRemoval}" />
-				<h:commandButton value="#{web.text.CRYPTOTOKEN_KPM_REMOVESEL}"
-					action="#{cryptoTokenMBean.removeSelectedKeyPairs}"
-					rendered="#{!cryptoTokenMBean.keyPairGuiListEmpty &amp;&amp; cryptoTokenMBean.allowedToKeyRemoval}"
-					onclick="return confirm('#{web.text.CRYPTOTOKEN_KPM_CONF_REMS}')" />
+				<h:commandButton id="removeSelected" value="#{web.text.CRYPTOTOKEN_KPM_REMOVESEL}"
+					action="#{cryptoTokenMBean.prepareDeleteKey(cryptoTokenMBean.selectedKeyPairs)}"
+					rendered="#{!cryptoTokenMBean.keyPairGuiListEmpty &amp;&amp; cryptoTokenMBean.allowedToKeyRemoval}" />
 				<h:inputText id="genNewKeyPairAlias" value="#{cryptoTokenMBean.newKeyPairAlias}"
 					rendered="#{cryptoTokenMBean.allowedToKeyGeneration}" size="30"
 					title="#{web.text.FORMAT_ALIAS}">

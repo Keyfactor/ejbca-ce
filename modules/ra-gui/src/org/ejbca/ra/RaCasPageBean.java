@@ -104,7 +104,8 @@ public class RaCasPageBean implements Serializable {
         }
     }
 
-    public class CrlLinkInfo {
+    public class CrlLinkInfo implements Serializable {
+        private static final long serialVersionUID = 1L;
         private final String link;
         private final int partitionIndex;
 
@@ -141,12 +142,12 @@ public class RaCasPageBean implements Serializable {
 
     /** View Scoped variables to load once and use in the UI */
     private List<CaAndCrl> casAndCrlItems = null;
-    private Boolean atLeastOneCrlLinkPresent = null;
+    private Boolean atLeastOneCrlLinkPresent = false;
     private Boolean isAuthorized = null;
 
     /** @return true if at least one of the CAs available via #loadCasAndCrlItems() has CRLs present on this system. */
     public boolean isAtLeastOneCrlLinkPresent() {
-        if (atLeastOneCrlLinkPresent == null) {
+        if (atLeastOneCrlLinkPresent == false) {
             getCasAndCrlItems();
         }
         return atLeastOneCrlLinkPresent;
@@ -272,4 +273,5 @@ public class RaCasPageBean implements Serializable {
         final byte[] hashSubjectX500Principal = CertTools.generateSHA1Fingerprint(x509Certificate.getSubjectX500Principal().getEncoded());
         return new String(Base64.encode(hashSubjectX500Principal)).substring(0, 27).replaceAll("\\+", "%2B");
     }
+
 }

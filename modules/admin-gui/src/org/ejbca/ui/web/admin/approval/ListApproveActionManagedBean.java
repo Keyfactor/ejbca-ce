@@ -59,7 +59,7 @@ public class ListApproveActionManagedBean extends BaseManagedBean {
 	private static final String SORT_BY_REQUESTINGADMIN = "requestUsername";
 	private static final String SORT_BY_STATUS = "status";
 	
-	private final EjbLocalHelper ejbLocalHelper = new EjbLocalHelper();
+	private transient EjbLocalHelper ejbLocalHelper;
 	private List<SelectItem> availableStatus;
 	private String selectedStatus;	
 	private List<SelectItem> availableTimeSpans;
@@ -139,9 +139,9 @@ public class ListApproveActionManagedBean extends BaseManagedBean {
 
         List<ApprovalDataVO> result = new ArrayList<>();
 		try {
-            RAAuthorization raAuthorization = new RAAuthorization(EjbcaJSFHelper.getBean().getAdmin(), ejbLocalHelper.getGlobalConfigurationSession(),
-            		ejbLocalHelper.getAuthorizationSession(), ejbLocalHelper.getCaSession(), ejbLocalHelper.getEndEntityProfileSession());
-			result = ejbLocalHelper.getApprovalSession().query(query, 0, QUERY_MAX_NUM_ROWS, 
+            RAAuthorization raAuthorization = new RAAuthorization(EjbcaJSFHelper.getBean().getAdmin(), getEjbLocalHelper().getGlobalConfigurationSession(),
+            		getEjbLocalHelper().getAuthorizationSession(), getEjbLocalHelper().getCaSession(), getEjbLocalHelper().getEndEntityProfileSession());
+			result = getEjbLocalHelper().getApprovalSession().query(query, 0, QUERY_MAX_NUM_ROWS, 
 			        raAuthorization.getCAAuthorizationString(), raAuthorization.getEndEntityProfileAuthorizationString(AccessRulesConstants.APPROVE_END_ENTITY));
 			if(result.size() == QUERY_MAX_NUM_ROWS){
 				String messagestring = getEjbcaWebBean().getText("MAXAPPROVALQUERYROWS1", true) + " " + QUERY_MAX_NUM_ROWS + " " + getEjbcaWebBean().getText("MAXAPPROVALQUERYROWS2", true);
@@ -298,4 +298,10 @@ public class ListApproveActionManagedBean extends BaseManagedBean {
 	public void setSelectedTimeSpan(String selectedTimeSpan) {
 		this.selectedTimeSpan = selectedTimeSpan;
 	}
+
+    public EjbLocalHelper getEjbLocalHelper() {
+        if (ejbLocalHelper == null)
+            ejbLocalHelper = new EjbLocalHelper();
+        return ejbLocalHelper;
+    }
 }

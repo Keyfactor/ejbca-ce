@@ -14,6 +14,8 @@
 package org.ejbca.ui.web.admin.configuration;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
@@ -129,6 +131,7 @@ import org.ejbca.util.HttpTools;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.keys.KeyTools;
+import org.cesecore.authorization.AuthorizationCache;
 
 import static org.ejbca.core.ejb.authorization.AuthorizationSystemSession.SUPERADMIN_ROLE;
 import static org.primefaces.util.Constants.SEMICOLON;
@@ -148,25 +151,25 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     private static final char SINGLE_SPACE_CHAR = ' ';
     private static final String PUBLIC_ACCESS_AUTHENTICATION_TOKEN = "PublicAccessAuthenticationToken";
 
-    private final EjbBridgeSessionLocal ejbLocalHelper;
-    private final EnterpriseEditionEjbBridgeSessionLocal enterpriseEjbLocalHelper;
-    private final AdminPreferenceSessionLocal adminPreferenceSession;
-    private final ApprovalProfileSessionLocal approvalProfileSession;
-    private final AuthorizationSessionLocal authorizationSession;
-    private final CAAdminSessionLocal caAdminSession;
-    private final CaSessionLocal caSession;
-    private final CertificateProfileSessionLocal certificateProfileSession;
-    private final CertificateStoreSessionLocal certificateStoreSession;
-    private final EndEntityManagementSessionLocal endEntityManagementSession;
-    private final EndEntityProfileSessionLocal endEntityProfileSession;
-    private final PublisherSessionLocal publisherSession;
-    private final SecurityEventsLoggerSessionLocal auditSession;
-    private final RoleSessionLocal roleSession;
-    private final RoleMemberSessionLocal roleMemberSession;
-    private final UpgradeSessionLocal upgradeSession;
-    private final GlobalConfigurationSessionLocal globalConfigurationSession;
-    private final WebAuthenticationProviderSessionLocal authenticationSession;
-    private final ClearCacheSessionLocal clearCacheSession;
+    private transient EjbBridgeSessionLocal ejbLocalHelper;
+    private transient EnterpriseEditionEjbBridgeSessionLocal enterpriseEjbLocalHelper;
+    private transient AdminPreferenceSessionLocal adminPreferenceSession;
+    private transient ApprovalProfileSessionLocal approvalProfileSession;
+    private transient AuthorizationSessionLocal authorizationSession;
+    private transient CAAdminSessionLocal caAdminSession;
+    private transient CaSessionLocal caSession;
+    private transient CertificateProfileSessionLocal certificateProfileSession;
+    private transient CertificateStoreSessionLocal certificateStoreSession;
+    private transient EndEntityManagementSessionLocal endEntityManagementSession;
+    private transient EndEntityProfileSessionLocal endEntityProfileSession;
+    private transient PublisherSessionLocal publisherSession;
+    private transient SecurityEventsLoggerSessionLocal auditSession;
+    private transient RoleSessionLocal roleSession;
+    private transient RoleMemberSessionLocal roleMemberSession;
+    private transient UpgradeSessionLocal upgradeSession;
+    private transient GlobalConfigurationSessionLocal globalConfigurationSession;
+    private transient WebAuthenticationProviderSessionLocal authenticationSession;
+    private transient ClearCacheSessionLocal clearCacheSession;
 
     private AdminPreference currentAdminPreference;
     private GlobalConfiguration globalconfiguration;
@@ -179,11 +182,14 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     private AvailableExtendedKeyUsagesConfiguration availableExtendedKeyUsagesConfig = null;
     private AvailableCustomCertificateExtensionsConfiguration availableCustomCertExtensionsConfig = null;
     private EABConfiguration eabConfiguration = null;
-    private ServletContext servletContext = null;
     private WebLanguagesImpl adminsweblanguage;
 
+    // this is initialized when needed
+    private transient ServletContext servletContext = null;
+
     /** Wraps all authentication state, so it can be replaced atomically (i.e. other threads won't see "half-updated" state) */
-    private class AuthState {
+    private class AuthState implements Serializable {
+        private static final long serialVersionUID = 1L;
         String usercommonname = "";
         String certificateFingerprint; // Unique key to identify the admin in this session. Usually a hash of the admin's certificate
         String authenticationTokenTlsSessionId; // Keep the currect TLS session ID so we can detect changes
@@ -195,10 +201,14 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         AuthenticationToken administrator;
         String requestServerName;
         String currentRemoteIp;
+        int authenticatedAtUpdateNumber;
     }
 
-    private AuthState authState = new AuthState();
-    private AuthState stagingState = new AuthState();
+    // these are transient to trigger re-authentication logic when transferred
+    // to a new JVM.  This is required because authentication tokens, although
+    // serializable, cannot be transferred to a new JVM.
+    private transient AuthState authState = new AuthState();
+    private transient AuthState stagingState = new AuthState();
 
     /*
      * We should make this configurable, so GUI client can use their own time zone rather than the
@@ -217,6 +227,10 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     protected EjbcaWebBeanImpl(final EjbBridgeSessionLocal ejbBridge, final EnterpriseEditionEjbBridgeSessionLocal enterpriseEjbBridge) {
         ejbLocalHelper = ejbBridge;
         enterpriseEjbLocalHelper = enterpriseEjbBridge;
+        setEjbReferences();
+    }
+
+    private void setEjbReferences() {
         adminPreferenceSession = ejbLocalHelper.getAdminPreferenceSession();
         approvalProfileSession = ejbLocalHelper.getApprovalProfileSession();
         authorizationSession = ejbLocalHelper.getAuthorizationSession();
@@ -234,6 +248,20 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         globalConfigurationSession = ejbLocalHelper.getGlobalConfigurationSession();
         authenticationSession = ejbLocalHelper.getWebAuthenticationProviderSession();
         clearCacheSession = ejbLocalHelper.getClearCacheSession();
+    }
+    
+    /**
+     * Implementing this ensures that transient fields will exist after serialization.
+     */
+    private void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException {
+        // default deserialization
+        ois.defaultReadObject();
+        ejbLocalHelper = new EjbLocalHelper();
+        enterpriseEjbLocalHelper = new EnterpriseEjbLocalHelper();
+        authState = new AuthState();
+        stagingState = new AuthState();
+
+        setEjbReferences();
     }
 
     private void commonInit() {
@@ -285,12 +313,14 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         final String currentTlsSessionId = getTlsSessionId(httpServletRequest);
         final String oauthBearerToken = getBearerToken(httpServletRequest);
         final String oauthIdToken = getOauthIdToken(httpServletRequest);
+        final int lastUpdateNumber = AuthorizationCache.INSTANCE.getLastUpdateNumber();
         // Re-initialize if we are not initialized (new session) or if authentication parameters change within an existing session (TLS session ID or client certificate).
         // If authentication parameters change it can be an indication of session hijacking, which should be denied if we re-auth, or just session re-use in web browser such as what FireFox 57 seems to do even after browser re-start
         if (!authState.initialized || !StringUtils.equals(authState.authenticationTokenTlsSessionId, currentTlsSessionId)
                 || (authState.isAuthenticatedWithToken && !StringUtils.equals(authState.oauthAuthenticationToken, oauthBearerToken))
                 || (authState.isAuthenticatedWithToken && !StringUtils.equals(authState.oauthIdToken, oauthIdToken))
-                || (!authState.isAuthenticatedWithToken && !StringUtils.equals(fingerprint, authState.certificateFingerprint))) {
+                || (!authState.isAuthenticatedWithToken && !StringUtils.equals(fingerprint, authState.certificateFingerprint))
+                || authState.authenticatedAtUpdateNumber != lastUpdateNumber) {
             if (log.isDebugEnabled() && authState.initialized) {
                 // Only log this if we are not initialized, i.e. if we entered here because session authentication parameters changed
                 log.debug("TLS session authentication changed withing the HTTP Session, re-authenticating admin. Old TLS session ID: "+authState.authenticationTokenTlsSessionId+", new TLS session ID: "+currentTlsSessionId+", old cert fp: "+authState.certificateFingerprint+", new cert fp: "+fingerprint);
@@ -397,6 +427,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             stagingState.authenticationTokenTlsSessionId = currentTlsSessionId;
             // Set ServletContext for reading language files from resources
             servletContext = httpServletRequest.getSession(true).getServletContext();
+            stagingState.authenticatedAtUpdateNumber = lastUpdateNumber;
         } else {
             // No need to authenticate again
             stagingState = authState;
@@ -704,24 +735,6 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     }
 
     /**
-     * Checks if the admin have authorization to view the resource without performing any logging. Used by menu page Does not return false if not
-     * authorized, instead throws an AuthorizationDeniedException.
-     *
-     * @deprecated Don't use as is in a new admin GUI. Use {@link #isAuthorizedNoLogSilent(String...)} instead.
-     *
-     * @return true if is authorized to resource, throws AuthorizationDeniedException if not authorized, never returns false.
-     * @throws AuthorizationDeniedException is not authorized to resource
-     */
-    @Override
-    @Deprecated
-    public boolean isAuthorizedNoLog(final String... resources) throws AuthorizationDeniedException { // still used by JSP/JSF code (viewcertificate.xhtml)
-        if (!authorizationSession.isAuthorizedNoLogging(authState.administrator, resources)) {
-            throw new AuthorizationDeniedException("Not authorized to " + Arrays.toString(resources));
-        }
-        return true;
-    }
-
-    /**
      * Checks if the admin have authorization to view the resource without performing any logging. Will simply return a boolean,
      * does not throw exception.
      *
@@ -798,12 +811,6 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             }
         }
         return "/" + imagePath + "/" + imagefile + "." + postfix;
-    }
-
-    @Deprecated
-    @Override
-    public String getImagefileInfix(final String imagefilename) {
-        return getAdminWebBaseUrl() + getImagePath(imagefilename);
     }
 
     @Override
@@ -1003,27 +1010,6 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     @Override
     public void reloadEstConfiguration() {
         estconfiguration = (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
-    }
-
-    /** @deprecated Since EJBCA 7.0.0. Use CaSession.getCAIdToNameMap instead. */
-    @Override
-    @Deprecated
-    public Map<Integer,String> getCAIdToNameMap() {
-        return caSession.getCAIdToNameMap();
-    }
-
-    /** @deprecated Since EJBCA 7.0.0. Use CaSession.getAuthorizedCaIds instead. */
-    @Override
-    @Deprecated
-    public List<Integer> getAuthorizedCAIds() {
-        return caSession.getAuthorizedCaIds(authState.administrator);
-    }
-
-    /** @deprecated Since EJBCA 7.0.0. Use CaSession.getAuthorizedCaNamesToIds instead. */
-    @Override
-    @Deprecated
-    public TreeMap<String,Integer> getCANames() {
-        return caSession.getAuthorizedCaNamesToIds(authState.administrator);
     }
 
     @Override
@@ -1702,7 +1688,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     public Collection<String> getAvailableCAsOfEEProfile(final String endEntityProfileId)
             throws NumberFormatException, AuthorizationDeniedException {
         if (StringUtils.equals(endEntityProfileId, CmpConfiguration.PROFILE_USE_KEYID)) {
-            final List<String> certificateAuthorities = new ArrayList<>(getCANames().keySet());
+            final List<String> certificateAuthorities = new ArrayList<>(caSession.getAuthorizedCaNamesToIds(authState.administrator).keySet());
             return addKeyIdAndSort(certificateAuthorities);
         }
         final EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(Integer.valueOf(endEntityProfileId));
@@ -1712,7 +1698,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         final Collection<Integer> certificateAuthorityIds = endEntityProfile.getAvailableCAs();
         if (certificateAuthorityIds.contains(CAConstants.ALLCAS)) {
             // End entity contains "Any CA"
-            final List<String> certificateAuthorities = new ArrayList<>(getCANames().keySet());
+            final List<String> certificateAuthorities = new ArrayList<>(caSession.getAuthorizedCaNamesToIds(authState.administrator).keySet());
             return addKeyIdAndSort(certificateAuthorities);
         }
         final List<String> certificateAuthorities = new ArrayList<>();
@@ -1797,13 +1783,6 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         return entries;
     }
 
-    /** @deprecated Since EJBCA 7.0.0. Use CaSession.getAuthorizedCaNamesToIds instead. */
-    @Override
-    @Deprecated
-    public TreeMap<String, Integer> getCAOptions() {
-        return getCANames();
-    }
-
     /**
      * Gets the list of CA names by the list of CA IDs.
      * @param idString the semicolon separated list of CA IDs.
@@ -1812,7 +1791,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
      */
     @Override
     public String getCaNamesString(final String idString) throws NumberFormatException {
-        final TreeMap<String, Integer> availableCas = getCAOptions();
+        final TreeMap<String, Integer> availableCas = caSession.getAuthorizedCaNamesToIds(authState.administrator);
         final List<String> result = new ArrayList<>();
         if (StringUtils.isNotBlank(idString)) {
             for (final String id : idString.split(SEMICOLON)) {

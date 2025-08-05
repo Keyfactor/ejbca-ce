@@ -15,19 +15,37 @@ package org.ejbca.ui.web.admin.endentity;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.ejbca.ui.web.admin.BaseManagedBean;
-import org.ejbca.ui.web.admin.rainterface.UserView;
 
+/**
+ * Bean used by JSP pages containing logic for setting and getting end entity
+ * data.
+ * 
+ * Currently only used for extension data.
+ *
+ */
 public class EndEntityBaseManagedBean extends BaseManagedBean {
-
     private static final long serialVersionUID = 1L;
 
-    protected UserView userData = null;
+    private ExtendedInformation extendedInformation;
+
+    /**
+     * Set the current end entity's ExtendedInformation.
+     * @param extendedInformation 
+     */
+    public void setExtendedInformation(ExtendedInformation extendedInformation) {
+        this.extendedInformation = extendedInformation;
+    }
+    
+    public ExtendedInformation getExtendedInformation() {
+        return this.extendedInformation;
+    }
 
     /**
      * Parses certificate extension data from a String of properties in Java 
@@ -37,6 +55,7 @@ public class EndEntityBaseManagedBean extends BaseManagedBean {
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public void setExtensionData(final String extensionData) {
+      
         Properties properties = new Properties();
         try {
             properties.load(new StringReader(extensionData));
@@ -46,7 +65,7 @@ public class EndEntityBaseManagedBean extends BaseManagedBean {
         }
 
         // Remove old extensiondata
-        Map data = (Map) this.userData.getExtendedInformation().getData();
+        Map data = (Map) extendedInformation.getData();
         // We have to use an iterator in order to remove an item while iterating, if we try to remove an object from
         // the map while looping over keys we will get a ConcurrentModificationException
         Iterator it = data.keySet().iterator();
@@ -70,7 +89,7 @@ public class EndEntityBaseManagedBean extends BaseManagedBean {
         }
 
         // Updated ExtendedInformation to use the new data
-        this.userData.getExtendedInformation().loadData(data);
+        extendedInformation.loadData(data);
     }
 
     /**
@@ -79,11 +98,11 @@ public class EndEntityBaseManagedBean extends BaseManagedBean {
      */
     public String getExtensionData() {
         final String result;
-        if (this.userData.getExtendedInformation() == null) {
+        if (extendedInformation == null) {
             result = "";
         } else {
             @SuppressWarnings("rawtypes")
-            Map data = (Map) this.userData.getExtendedInformation().getData();
+            Map data = (Map) extendedInformation.getData();
             Properties properties = new Properties();
 
             for (Object o : data.keySet()) {
@@ -111,6 +130,26 @@ public class EndEntityBaseManagedBean extends BaseManagedBean {
             int firstLineSeparator = buff.indexOf(lineSeparator);
 
             result = firstLineSeparator >= 0 ? buff.substring(firstLineSeparator + lineSeparator.length()) : buff.toString();
+        }
+        return result;
+    }
+
+    /**
+     * 
+     * @return A Map view of the extension data.
+     */
+    public Map<String, String> getExtensionDataAsMap() {
+        final Map<String, String> result = new HashMap<>();
+        if (extendedInformation != null) {
+            @SuppressWarnings("rawtypes")
+            Map data = (Map) extendedInformation.getData();
+            for (Object o : data.keySet()) {
+                String key = (String) o;
+                if (key.startsWith(ExtendedInformation.EXTENSIONDATA)) {
+                    String subKey = key.substring(ExtendedInformation.EXTENSIONDATA.length());
+                    result.put(subKey, (String) data.get(key));
+                }
+            }
         }
         return result;
     }

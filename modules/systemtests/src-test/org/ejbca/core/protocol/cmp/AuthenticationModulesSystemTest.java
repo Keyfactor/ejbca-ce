@@ -2043,8 +2043,12 @@ public class AuthenticationModulesSystemTest extends CmpTestCase {
                 EndEntityTypes.ENDUSER), eepid, cpid, SecConst.TOKEN_SOFT_PEM, null);
         user.setPassword(password);
         try {
-            this.endEntityManagementSession.addUser(ADMIN, username, password, subjectDN, "rfc822name=" + username + "@primekey.se", username
-                    + "@primekey.se", clearpassword, eepid, cpid, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, _caid);
+            EndEntityInformation endEntityInformation = new EndEntityInformation(username, subjectDN, _caid, "rfc822name=" + username + "@primekey.se", username
+                    + "@primekey.se", EndEntityTypes.ENDUSER.toEndEntityType(),
+                    eepid, cpid, SecConst.TOKEN_SOFT_PEM, null);
+            endEntityInformation.setPassword(password);
+            endEntityManagementSession.addUser(ADMIN, endEntityInformation, clearpassword);
+            
             log.debug("created user: " + username);
         } catch (Exception e) {
             log.debug("User " + username + " already exists. Setting the user status to NEW");

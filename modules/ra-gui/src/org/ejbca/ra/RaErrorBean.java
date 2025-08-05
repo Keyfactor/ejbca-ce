@@ -95,4 +95,5 @@ public class RaErrorBean implements Serializable {
             }
         }
     }
+
 }

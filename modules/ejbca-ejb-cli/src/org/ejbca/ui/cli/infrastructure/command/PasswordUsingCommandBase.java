@@ -242,7 +242,7 @@ public abstract class PasswordUsingCommandBase extends CommandBase {
             return null;
         } else {
             // Set hashed value anew in order to send back
-            authenticationToken.setSha1HashFromCleartextPassword(password);
+            authenticationToken.setHashFromCleartextPassword(password);
             return authenticationToken;
         }
     }

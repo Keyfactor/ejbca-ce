@@ -31,6 +31,7 @@ public class CustomPublisherProperty implements Serializable {
     public static final int UI_BOOLEAN   = 2;
     public static final int UI_TEXTOUTPUT = 3;
     public static final int UI_TEXTINPUT_PASSWORD = 4;
+    public static final int UI_TEXTINPUT_AREA = 5;
 
     private final String name;
     private final int type;

@@ -8,6 +8,8 @@ ejbca:
   ## mainly relevant for EJBCA peers(RA/VA)
   importExternalCas: false
   #externalCasSecret: managementca-secret
+  importJvmTruststore: false
+  #jvmTruststoreSecret: jvmtruststore-secret
 
   configdumpImport:
     enabled: false
@@ -127,7 +129,11 @@ hsm:
         # mandatory keys for file mount: "server.pem", "dockerlunaclient.pem"
       privateKey:
         secret: "hsm-luna-secret-client-key"
-        # mandatory key for file mount: "dockerlunaclientKey.pem"      
+        # mandatory key for file mount: "dockerlunaclientKey.pem"
+  dpod:
+    enabled: false
+    hsmConfigurationSecret: hsm-dpod-secret
+    # mandatory keys for file mount: "Chrystoki.conf"
   utimaco:
     enabled: false
     hsmConfigurationConfigMap: ejbca-utimaco-configmap
@@ -247,6 +253,12 @@ httpd:
     bindIP: 0.0.0.0
     httpPort: 80
     httpsPort: 443
+  # only relevant if multiple replicas
+  loadBalancerAccess:
+    enableStickySessionClientIp: false
+    # create a load balancer service for each Pod with separate IP address
+    enableReplicaSpecificAccess: false
+  additionalHosts:
 # External communication from cluster
 # Requires services.proxyAJP or services.proxyHttp to be enabled for adminweb access
 ingress:

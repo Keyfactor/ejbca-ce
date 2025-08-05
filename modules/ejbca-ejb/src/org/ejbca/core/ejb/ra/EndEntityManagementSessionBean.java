@@ -28,8 +28,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
@@ -97,17 +99,16 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.EABConfiguration;
+import org.cesecore.config.GlobalEndEntityProfileConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.validation.IssuancePhase;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.keys.validation.ValidationException;
 import org.cesecore.keys.validation.ValidationResult;
-import org.cesecore.keys.validation.Validator;
 import org.cesecore.roles.member.RoleMemberData;
 import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.PrintableStringNameStyle;
 import org.cesecore.util.ValidityDate;
-import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ApplicationManagedTransactionsBean;
@@ -234,9 +235,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         perTransactionData = new PerTransactionData(registry);
     }
 
-    /** Gets the Global Configuration from ra admin session bean */
-    private GlobalConfiguration getGlobalConfiguration() {
-        return (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+    private GlobalEndEntityProfileConfiguration getGlobalEEPConfiguration() {
+        return (GlobalEndEntityProfileConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalEndEntityProfileConfiguration.EEP_CONFIGURATION_ID);
     }
 
     @Override
@@ -246,28 +246,6 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         final OriginalEndEntity originalInfo = new OriginalEndEntity(existingUser);
         perTransactionData.setOriginalEndEntity(username, originalInfo);
         return existingUser;
-    }
-
-    @Override
-    public void addUser(final AuthenticationToken authenticationToken,
-                        final String username,
-                        final String password,
-                        final String subjectDn,
-                        final String subjectAltName,
-                        final String email,
-                        final boolean clearPwd,
-                        final int endEntityProfileId,
-                        final int certificateProfileId,
-                        final EndEntityType type,
-                        final int tokenType,
-                        final int caId)
-            throws EndEntityExistsException, AuthorizationDeniedException, EndEntityProfileValidationException,
-            WaitingForApprovalException, CADoesntExistsException, CustomFieldException, IllegalNameException,
-            ApprovalException, CertificateSerialNumberException {
-        final EndEntityInformation userdata = new EndEntityInformation(username, subjectDn, caId, subjectAltName, email, EndEntityConstants.STATUS_NEW,
-                type, endEntityProfileId, certificateProfileId, null, null, tokenType, null);
-        userdata.setPassword(password);
-        addUser(authenticationToken, userdata, clearPwd);
     }
 
     private static final ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_ADDUSER = {
@@ -294,7 +272,6 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     public EndEntityInformation canonicalizeUser(final EndEntityInformation endEntity) throws CustomFieldException {
         // Make a deep copy
         EndEntityInformation endEntityInformationCopy = new EndEntityInformation(endEntity);
-        final int endEntityProfileId = endEntityInformationCopy.getEndEntityProfileId();
         final String dn = DnComponents.stringToBCDNString(StringTools.strip(endEntityInformationCopy.getDN()));
         endEntityInformationCopy.setDN(dn);
         endEntityInformationCopy.setSubjectAltName(StringTools.strip(endEntityInformationCopy.getSubjectAltName()));
@@ -350,8 +327,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         final int caId = endEntity.getCAId();
         // Check if administrator is authorized to add user to CA.
         endEntityAuthenticationSession.assertAuthorizedToCA(authenticationToken, caId);
-        final GlobalConfiguration globalConfiguration = getGlobalConfiguration();
-        if (globalConfiguration.getEnableEndEntityProfileLimitations()) {
+        final GlobalEndEntityProfileConfiguration globalEEPConfiguration = getGlobalEEPConfiguration();
+        if (globalEEPConfiguration.getEnableEndEntityProfileLimitations()) {
             // Check if administrator is authorized to add user.
             endEntityAuthenticationSession.assertAuthorizedToEndEntityProfile(authenticationToken, endEntityProfileId, AccessRulesConstants.CREATE_END_ENTITY, caId);
         }
@@ -433,7 +410,10 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         endEntity.setUsername(StringTools.trim(endEntity.getUsername()));
         final String username = endEntity.getUsername();
         unCanonicalized.setUsername(username);
-        if (globalConfiguration.getEnableEndEntityProfileLimitations()) {
+        
+        setDefaultIssuanceRevocationReason(profile, endEntity);
+
+        if (globalEEPConfiguration.getEnableEndEntityProfileLimitations()) {
             // Check if user fulfills it's profile.
             final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(endEntity.getCertificateProfileId());
             try {
@@ -702,8 +682,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         // Check authorization
         final int currentCaId = currentUserData.getCaId();
         endEntityAuthenticationSession.assertAuthorizedToCA(authenticationToken, currentCaId);
-        final GlobalConfiguration globalConfiguration = getGlobalConfiguration();
-        if (globalConfiguration.getEnableEndEntityProfileLimitations()) {
+        if (getGlobalEEPConfiguration().getEnableEndEntityProfileLimitations()) {
             // Check if administrator is authorized to edit user.
             endEntityAuthenticationSession.assertAuthorizedToEndEntityProfile(authenticationToken, currentUserData.getEndEntityProfileId(), AccessRulesConstants.EDIT_END_ENTITY, currentCaId);
         }
@@ -849,6 +828,19 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             WaitingForApprovalException {
         changeUser(admin, endEntityInformation, clearPwd, 0, null, null, true);
     }
+    
+    private void setDefaultIssuanceRevocationReason(EndEntityProfile profile, EndEntityInformation endEntityInformation) {
+        if (profile.isIssuanceRevocationReasonUsed() && profile.isIssuanceRevocationReasonDefault() &&
+                (endEntityInformation.getExtendedInformation()==null 
+                    || endEntityInformation.getExtendedInformation().getCustomData(
+                            ExtendedInformation.CUSTOM_REVOCATIONREASON)==null)) {
+            if (endEntityInformation.getExtendedInformation()==null) {
+                endEntityInformation.setExtendedInformation(new ExtendedInformation());
+            }
+            endEntityInformation.getExtendedInformation().setIssuanceRevocationReason(
+                                    profile.getIssuanceRevocationReason().getDatabaseValue());
+         }
+    }
 
     /**
      * Change user information
@@ -881,8 +873,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         String username = endEntityInformation.getUsername();
         // Check if administrator is authorized to edit user to CA.
         endEntityAuthenticationSession.assertAuthorizedToCA(authenticationToken, caId);
-        final GlobalConfiguration globalConfiguration = getGlobalConfiguration();
-        if (globalConfiguration.getEnableEndEntityProfileLimitations()) {
+        final GlobalEndEntityProfileConfiguration globalEEPConfiguration = getGlobalEEPConfiguration();
+        if (globalEEPConfiguration.getEnableEndEntityProfileLimitations()) {
             // Check if administrator is authorized to edit user.
             endEntityAuthenticationSession.assertAuthorizedToEndEntityProfile(authenticationToken, endEntityProfileId, AccessRulesConstants.EDIT_END_ENTITY, caId);
         }
@@ -961,6 +953,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             newPassword = profile.makeAutoGeneratedPassword();
         }
 
+        setDefaultIssuanceRevocationReason(profile, endEntityInformation);
         final EndEntityType type = endEntityInformation.getType();
         final ExtendedInformation extendedInformation = endEntityInformation.getExtendedInformation();
         final String trimmedNewUsername = StringTools.trim(newUsername);
@@ -968,8 +961,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         if (!isUsernameValid(trimmedNewUsername)) {
             throw new IllegalNameException(INVALID_SYMBOLS_INUSERNAME);
         }
+        
         // Check if user fulfills it's profile.
-        if (globalConfiguration.getEnableEndEntityProfileLimitations()) {
+        if (globalEEPConfiguration.getEnableEndEntityProfileLimitations()) {
             final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(endEntityInformation.getCertificateProfileId());
             try {
                 String dirAttrs = null;
@@ -1122,6 +1116,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     }
                 }
             }
+            
             ensureOldClusterNodeCompatibility(extendedInformation);
             userData.setExtendedInformation(extendedInformation);
             userData.setStatus(newStatus);
@@ -1218,17 +1213,25 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
      * @return altName updated with dns or upn copied from CN
      */
     private String copyCnToAltName(final String subjectDn, String altName, final EndEntityProfile profile, final String specifiedDnType) {
-        String specifiedDnTypeValueFromCn = EndEntityInformationFiller.copyCnToAltName(profile, subjectDn, specifiedDnType);
-        if (altName == null) {
-            altName = "";
-        }
-        if (StringUtils.isNotEmpty(specifiedDnTypeValueFromCn) && !altName.contains(specifiedDnTypeValueFromCn)) {
-            if (StringUtils.isNotEmpty(altName)) {
-                altName += ", ";
+        final String specifiedDnTypeValueFromCn = EndEntityInformationFiller.copyCnToAltName(profile, subjectDn, specifiedDnType);
+        if (StringUtils.isEmpty(altName)) {
+            if (StringUtils.isNotEmpty(specifiedDnTypeValueFromCn)) {
+                return specifiedDnTypeValueFromCn;
+            } else {
+                return "";
             }
-            altName += specifiedDnTypeValueFromCn;
         }
-        return altName;
+        if (StringUtils.isEmpty(specifiedDnTypeValueFromCn)) {
+            return altName;
+        }
+
+        final Set<String> altNameFields = Arrays.stream(altName.split(",")).map(String::trim).collect(Collectors.toSet());
+        final String fieldsToAdd = Arrays.stream(specifiedDnTypeValueFromCn.split(","))
+                .map(String::trim)
+                .filter(field -> !altNameFields.contains(field))
+                .collect(Collectors.joining(", "));
+
+        return altName + (StringUtils.isEmpty(fieldsToAdd) ? "" : ", " + fieldsToAdd);
     }
 
     @Override
@@ -1246,7 +1249,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             caId = data1.getCaId();
             endEntityProfileId = data1.getEndEntityProfileId();
             endEntityAuthenticationSession.assertAuthorizedToCA(authenticationToken, caId);
-            if (getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
+            if (getGlobalEEPConfiguration().getEnableEndEntityProfileLimitations()) {
                 endEntityAuthenticationSession.assertAuthorizedToEndEntityProfile(authenticationToken, data1.getEndEntityProfileId(), AccessRulesConstants.DELETE_END_ENTITY, caId);
             }
         } else {
@@ -1560,7 +1563,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         // Check authorization
         final int caid = data.getCaId();
         endEntityAuthenticationSession.assertAuthorizedToCA(admin, caid);
-        if (getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
+        if (getGlobalEEPConfiguration().getEnableEndEntityProfileLimitations()) {
             endEntityAuthenticationSession.assertAuthorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.EDIT_END_ENTITY, caid);
         }
         setUserStatus(admin, data, status, approvalRequestID, lastApprovingAdmin);
@@ -1693,7 +1696,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 newPasswd = profile.makeAutoGeneratedPassword();
             }
         }
-        if (getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
+        if (getGlobalEEPConfiguration().getEnableEndEntityProfileLimitations()) {
             // Check if user fulfills it's profile.
             if (profile != null) {
                 try {
@@ -1716,7 +1719,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         endEntityAuthenticationSession.assertAuthorizedToCA(authenticationToken, caId);
         try {
             final Date now = new Date();
-            if ((newPasswd == null) && (clearText)) {
+            if ((newPasswd == null) && clearText) {
                 data.setClearPassword("");
                 data.setPasswordHash("");
             } else {
@@ -1787,7 +1790,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         // Authorized?
         final int caId = data.getCaId();
         endEntityAuthenticationSession.assertAuthorizedToCA(authenticationToken, caId);
-        if (getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
+        if (getGlobalEEPConfiguration().getEnableEndEntityProfileLimitations()) {
             endEntityAuthenticationSession.assertAuthorizedToEndEntityProfile(authenticationToken, data.getEndEntityProfileId(), AccessRulesConstants.REVOKE_END_ENTITY, caId);
         }
 
@@ -1865,7 +1868,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         final int caId = userData.getCaId();
         endEntityAuthenticationSession.assertAuthorizedToCA(authenticationToken, caId);
-        if (getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
+        if (getGlobalEEPConfiguration().getEnableEndEntityProfileLimitations()) {
             endEntityAuthenticationSession.assertAuthorizedToEndEntityProfile(authenticationToken, userData.getEndEntityProfileId(), AccessRulesConstants.REVOKE_END_ENTITY, caId);
         }
 
@@ -2085,7 +2088,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         if (endEntityProfileId != EndEntityConstants.NO_END_ENTITY_PROFILE) {
             // We can only perform this check if we have a trail of what eep was used.
-            if (getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
+            if (getGlobalEEPConfiguration().getEnableEndEntityProfileLimitations()) {
                 endEntityAuthenticationSession.assertAuthorizedToEndEntityProfile(authenticationToken, endEntityProfileId, AccessRulesConstants.REVOKE_END_ENTITY, caId);
             }
         }

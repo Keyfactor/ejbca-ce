@@ -14,6 +14,8 @@ package org.ejbca.ui.web.admin.rainterface;
 
 import java.io.Serializable;
 import java.math.BigInteger;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -103,15 +105,17 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
 
-    private transient List<SelectItem> searchCriteria;
-    private transient List<SelectItem> booleanCriteria;
-    private transient Map<Integer, MatchHow[]> matchMap;
-    private transient List<String> matchWithCa;
-    private transient List<String> matchWithCertificateProfile;
-    private transient List<String> matchWithEndEntityProfile;
-    private transient List<String> availableAdvancedStatusCodes;
-    private transient List<SelectItem> availableStatusCodes;
-    private transient List<SelectItem> revocationReasons;
+    private List<SelectItem> searchCriteria;
+    private List<SelectItem> booleanCriteria;
+    private Map<Integer, MatchHow[]> matchMap;
+    private List<String> matchWithCa;
+    private List<String> matchWithCertificateProfile;
+    private List<String> matchWithEndEntityProfile;
+    private List<String> availableAdvancedStatusCodes;
+    private List<SelectItem> availableStatusCodes;
+    private List<SelectItem> revocationReasons;
+    
+    // this contains an authorization token and needs to be constructed lazily
     private transient RAAuthorization raAuthorization;
 
     //Basic mode values:
@@ -214,8 +218,6 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
         matchMap.put(UserMatch.MATCH_WITH_STATEORPROVINCE, new MatchHow[]{MatchHow.BEGINSWITH});
         matchMap.put(UserMatch.MATCH_WITH_DOMAINCOMPONENT, new MatchHow[]{MatchHow.BEGINSWITH});
         matchMap.put(UserMatch.MATCH_WITH_COUNTRY, new MatchHow[]{MatchHow.BEGINSWITH});
-
-        raAuthorization = new RAAuthorization(getAdmin(), globalConfigurationSession, authorizationSession, caSession, endEntityProfileSession);
 
         matchWithCa = new ArrayList<>();
         for (CAInfo caInfo : caSession.getAuthorizedCaInfos(getAdmin())) {
@@ -347,8 +349,8 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
             query.add(UserMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(searchByStatusCode));
             try {
                 Collection<EndEntityInformation> userlist = endEntityAccessSession.query(getAdmin(), query,
-                        raAuthorization.getCAAuthorizationString(),
-                        raAuthorization.getEndEntityProfileAuthorizationString(true, AccessRulesConstants.VIEW_END_ENTITY), 0,
+                        getRaAuthorization().getCAAuthorizationString(),
+                        getRaAuthorization().getEndEntityProfileAuthorizationString(true, AccessRulesConstants.VIEW_END_ENTITY), 0,
                         AccessRulesConstants.VIEW_END_ENTITY);
                 if (userlist.size() > 0) {
                     results = compileResults(userlist);
@@ -385,8 +387,8 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
         }
         try {
             Collection<EndEntityInformation> userlist = endEntityAccessSession.query(getAdmin(), query,
-                    raAuthorization.getCAAuthorizationString(),
-                    raAuthorization.getEndEntityProfileAuthorizationString(true, AccessRulesConstants.VIEW_END_ENTITY), 0,
+                    getRaAuthorization().getCAAuthorizationString(),
+                    getRaAuthorization().getEndEntityProfileAuthorizationString(true, AccessRulesConstants.VIEW_END_ENTITY), 0,
                     AccessRulesConstants.VIEW_END_ENTITY);
             if (userlist.size() > 0) {
                 results = compileResults(userlist);
@@ -404,15 +406,18 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
     }
 
     public String getCertificatePopupLink(final String username) {
-        return getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH + "viewcertificate.xhtml?username=" + username;
+        return getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH + "viewcertificate.xhtml?username="
+                + URLEncoder.encode(username, StandardCharsets.UTF_8);
     }
 
     public String getViewEndEntityPopupLink(final String username) {
-        return getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH + "ra/viewendentity.xhtml?username=" + username;
+        return getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH + "ra/viewendentity.xhtml?username="
+                + URLEncoder.encode(username, StandardCharsets.UTF_8);
     }
 
     public String getEditEndEntityPopupLink(final String username) {
-        return getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH + "ra/editendentity.xhtml?username=" + username;
+        return getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH + "ra/editendentity.xhtml?username="
+                + URLEncoder.encode(username, StandardCharsets.UTF_8);
     }
 
     /**
@@ -667,6 +672,14 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
 
     public void clearBefore() {
         this.before = null;
+    }
+
+    public RAAuthorization getRaAuthorization() {
+        if (raAuthorization == null) {
+            raAuthorization = new RAAuthorization(getAdmin(), globalConfigurationSession, authorizationSession, caSession, endEntityProfileSession);
+        }
+
+        return raAuthorization;
     }
 
     public class EndEntitySearchResult implements Serializable {

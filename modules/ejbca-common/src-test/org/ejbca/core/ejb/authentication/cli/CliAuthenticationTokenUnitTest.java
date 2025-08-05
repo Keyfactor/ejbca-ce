@@ -26,13 +26,13 @@ import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.user.AccessUserAspect;
 import org.easymock.EasyMock;
+import org.ejbca.util.crypto.CryptoTools;
 import org.ejbca.util.crypto.SupportedPasswordHashAlgorithm;
 import org.junit.Test;
 
 /**
  * Unit tests for the CliAuthenticationToken class
  * 
- * @version $Id$
  * 
  */
 public class CliAuthenticationTokenUnitTest {
@@ -46,9 +46,8 @@ public class CliAuthenticationTokenUnitTest {
     @Test
     public void testUseTokenWorksTwiceInternally() throws AuthenticationFailedException {
         final Long referenceNumber = 0L;
-        final String passwordHash = "kittens";
-        CliAuthenticationToken authenticationToken = new CliAuthenticationToken(new UsernamePrincipal("TEST"), passwordHash, BCRYPT_SALT, referenceNumber,
-                SupportedPasswordHashAlgorithm.SHA1_OLD);
+        final String passwordHash = CryptoTools.makePasswordHash("kittens");
+        CliAuthenticationToken authenticationToken = new CliAuthenticationToken(new UsernamePrincipal("TEST"), passwordHash, BCRYPT_SALT, referenceNumber, SupportedPasswordHashAlgorithm.SHA1_BCRYPT);
         CliAuthenticationTokenReferenceRegistry.INSTANCE.registerToken(authenticationToken);
         AccessUserAspect accessUser = EasyMock.createMock(AccessUserAspect.class);
         EasyMock.expect(accessUser.getMatchValue()).andReturn("TEST");
@@ -63,9 +62,8 @@ public class CliAuthenticationTokenUnitTest {
     @Test
     public void testUseTokenDoesNotWorkAfterSerialization() throws IOException, ClassNotFoundException, AuthenticationFailedException {
         final Long referenceNumber = 0L;
-        final String passwordHash = "kittens";
-        CliAuthenticationToken authenticationToken = new CliAuthenticationToken(new UsernamePrincipal("TEST"), passwordHash, BCRYPT_SALT, referenceNumber,
-                SupportedPasswordHashAlgorithm.SHA1_OLD);
+        final String passwordHash = CryptoTools.makePasswordHash("kittens");
+        CliAuthenticationToken authenticationToken = new CliAuthenticationToken(new UsernamePrincipal("TEST"), passwordHash, BCRYPT_SALT, referenceNumber,  SupportedPasswordHashAlgorithm.SHA1_BCRYPT);
         CliAuthenticationTokenReferenceRegistry.INSTANCE.registerToken(authenticationToken);
         AccessUserAspect accessUser = EasyMock.createMock(AccessUserAspect.class);
         EasyMock.expect(accessUser.getTokenType()).andReturn(CliAuthenticationTokenMetaData.TOKEN_TYPE).times(2);
@@ -97,9 +95,8 @@ public class CliAuthenticationTokenUnitTest {
     @Test
     public void testReplayAttack() throws AuthenticationFailedException, SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException  {
         final Long referenceNumber = 0L;
-        final String passwordHash = "kittens";
-        CliAuthenticationToken authenticationToken = new CliAuthenticationToken(new UsernamePrincipal("TEST"), passwordHash, BCRYPT_SALT, referenceNumber,
-                SupportedPasswordHashAlgorithm.SHA1_OLD);
+        final String passwordHash = CryptoTools.makePasswordHash("kittens");
+        CliAuthenticationToken authenticationToken = new CliAuthenticationToken(new UsernamePrincipal("TEST"), passwordHash, BCRYPT_SALT, referenceNumber, SupportedPasswordHashAlgorithm.SHA1_BCRYPT);
         CliAuthenticationTokenReferenceRegistry.INSTANCE.registerToken(authenticationToken);
         AccessUserAspect accessUser = EasyMock.createMock(AccessUserAspect.class);
         EasyMock.expect(accessUser.getMatchValue()).andReturn("TEST").times(2);
@@ -123,15 +120,14 @@ public class CliAuthenticationTokenUnitTest {
     @Test 
     public void testIncorrectPasswordBehaviour() throws Exception {
         final Long referenceNumber = 0L;
-        final String passwordHash = "kittens";
-        CliAuthenticationToken authenticationToken = new CliAuthenticationToken(new UsernamePrincipal("TEST"), passwordHash, BCRYPT_SALT, referenceNumber,
-                SupportedPasswordHashAlgorithm.SHA1_OLD);
+        final String passwordHash = CryptoTools.makePasswordHash("kittens");
+        CliAuthenticationToken authenticationToken = new CliAuthenticationToken(new UsernamePrincipal("TEST"), passwordHash, BCRYPT_SALT, referenceNumber, SupportedPasswordHashAlgorithm.SHA1_BCRYPT);
         CliAuthenticationTokenReferenceRegistry.INSTANCE.registerToken(authenticationToken);
         AccessUserAspect accessUser = EasyMock.createMock(AccessUserAspect.class);
         EasyMock.expect(accessUser.getMatchValue()).andReturn("TEST");
         EasyMock.expect(accessUser.getTokenType()).andReturn(CliAuthenticationTokenMetaData.TOKEN_TYPE);
         EasyMock.replay(accessUser);
-        authenticationToken.setSha1Hash("You're a kitty!");
+        authenticationToken.setHash("You're a kitty!");
         boolean caught = false;
         try {
             authenticationToken.matches(accessUser);  

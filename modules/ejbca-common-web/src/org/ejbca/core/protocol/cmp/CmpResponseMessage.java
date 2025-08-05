@@ -34,6 +34,7 @@ import java.util.List;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 
+import com.keyfactor.util.crypto.algorithm.SignatureParameter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -469,8 +470,8 @@ public class CmpResponseMessage implements CertificateResponseMessage {
                 myPKIBody = new PKIBody(23, myErrorContent); // 23 = error
             }
 
-            final boolean pbeProtected = (pbeKeyId != null) && (pbeKey != null) && (pbeDigestAlg != null) && (pbeMacAlg != null);
-            final boolean pbmac1Protected = (pbmac1KeyId != null) && (pbmac1Key != null) && (pbmac1PrfAlg != null) && (pbmac1MacAlg != null);
+            final boolean pbeProtected = (pbeKey != null) && (pbeDigestAlg != null) && (pbeMacAlg != null);
+            final boolean pbmac1Protected = (pbmac1Key != null) && (pbmac1PrfAlg != null) && (pbmac1MacAlg != null);
             if (pbeProtected) {
                 myPKIHeader.setProtectionAlg(new AlgorithmIdentifier(CMPObjectIdentifiers.passwordBasedMac));
                 PKIHeader header = myPKIHeader.build();
@@ -512,7 +513,18 @@ public class CmpResponseMessage implements CertificateResponseMessage {
                     }
                 }
                 myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
-                responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, extraCertsList, signKey, signAlg, digest, provider);
+                SignatureParameter signatureParameter = SignatureParameter.NONE;
+
+                // Check if the request message is of type CrmfRequestMessage or P10CrCertificationRequestMessage
+                // and extract the protection algorithm from the header of the PKI message
+                if (reqMsg != null) {
+                    if (reqMsg instanceof CrmfRequestMessage || reqMsg instanceof P10CrCertificationRequestMessage) {
+                        // Use the BaseCmpMessage method to determine the signature parameter from the request
+                        signatureParameter = ((BaseCmpMessage) reqMsg).determineSignatureParameterFromRequest();
+                    }
+                }
+
+                responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, extraCertsList, signKey, signAlg, digest, provider, signatureParameter);
             }
 
             ret = true;

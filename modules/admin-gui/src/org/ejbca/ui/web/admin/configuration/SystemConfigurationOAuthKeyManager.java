@@ -14,6 +14,7 @@
 package org.ejbca.ui.web.admin.configuration;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -25,6 +26,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import jakarta.servlet.http.Part;
 
@@ -55,7 +57,9 @@ import com.nimbusds.jose.jwk.JWKSet;
  * functionality to the OAuthKeyManager, such as loading and saving state from the database and editing of
  * new OAuth Keys.
  */
-public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
+public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private static final Logger log = Logger.getLogger(SystemConfigurationOAuthKeyManager.class);
 
     private static final String EDIT_OAUTH_KEY = "editOAuthKey";
@@ -64,13 +68,15 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
 
     private final SystemConfigurationHelper systemConfigurationHelper;
     private final OAuthKeyEditor oauthKeyEditor;
-    private AuthenticationToken adminToken;
     private OAuthConfiguration oAuthConfiguration;
     private List<Pair<String, Integer>> keyBindings = new ArrayList<>();
     
-    private final EjbLocalHelper ejbLocalHelper = new EjbLocalHelper();
-    private final GlobalConfigurationSessionLocal globalConfigurationSession = ejbLocalHelper.getGlobalConfigurationSession();
+    private transient EjbLocalHelper ejbLocalHelper;
+    private transient GlobalConfigurationSessionLocal globalConfigurationSession;
+    private SerializableSupplier<AuthenticationToken> adminTokenSupplier;
 
+    public interface SerializableSupplier<T> extends Serializable, Supplier<T> {};
+    
     private enum OAuthKeyEditorMode {
         VIEW,
         ADD,
@@ -92,7 +98,8 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         }
     }
 
-    public class OAuthKeyEditor {
+    public class OAuthKeyEditor implements Serializable {
+        private static final long serialVersionUID = 1L;
         private String label;
         private String keyIdentifier;
         private OAuthProviderType type = OAuthProviderType.TYPE_GENERIC;
@@ -104,7 +111,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         private boolean audienceCheckDisabled = false;
         private boolean fetchUserInfo = false;
         private String scope;
-        private Part publicKeyFile;
+        private transient Part publicKeyFile;
         
         // if null, use client secret
         private Integer keyBinding = null;
@@ -427,7 +434,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         }
     }
 
-    public interface SystemConfigurationHelper {
+    public interface SystemConfigurationHelper extends Serializable {
         /**
          * Displays an error message to the user.
          * @param languageKey the language key of the message to show
@@ -467,7 +474,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
 
         // get the names of all the key bindings
         log.trace("Loading key bindings");
-        ejbLocalHelper.getInternalKeyBindingMgmtSession().getAllInternalKeyBindingInfos(AuthenticationKeyBinding.IMPLEMENTATION_ALIAS).stream()
+        getEjbLocalHelper().getInternalKeyBindingMgmtSession().getAllInternalKeyBindingInfos(AuthenticationKeyBinding.IMPLEMENTATION_ALIAS).stream()
                 .sorted((b1, b2) -> b1.getName().compareTo(b2.getName())).forEach(b -> {
                     log.info("Adding key binding:" + b.getName() + ":" + b.getId());
                     keyBindings.add(Pair.of(b.getName(), b.getId()));
@@ -475,11 +482,11 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
     }
     
     public AuthenticationToken getAdminToken() {
-        return adminToken;
+        return adminTokenSupplier.get();
     }
     
-    public void setAdminToken(final AuthenticationToken adminToken) {
-        this.adminToken = adminToken;
+    public void setAdminTokenSupplier(final SerializableSupplier<AuthenticationToken> adminTokenSupplier) {
+        this.adminTokenSupplier = adminTokenSupplier;
     }
 
     public List<PublicKeyUploadInFormOf> getAvailableKeyUploadForms() {
@@ -530,6 +537,9 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             parsedPublicKey = OAuthTools.getBytesFromOauthKey(inputKeyBytes);
         } catch (CertificateParsingException e) {
             log.info("Could not parse public key from certificate string " + oauthKeyEditor.getPublicKeyValue());
+            if (log.isDebugEnabled()) {
+                log.debug("Could not parse public key from certificate string ", e);
+            }
             systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_BADKEYSTRING");
             return null;
         }
@@ -557,11 +567,17 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
                 oauthKeyEditor.getPublicKeys().add(key);
             }
         } catch (MalformedURLException e) {
-            log.info("Could not parse public key config url " + oauthKeyEditor.getPublicKeyUrl());
+            log.info("Could not load keys using jwks url " + oauthKeyEditor.getPublicKeyUrl());
+            if (log.isDebugEnabled()) {
+                log.debug("Could not load keys using jwks url", e);
+            }
             systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_BADKEYURL", oauthKeyEditor.getPublicKeyUrl());
             return StringUtils.EMPTY;
         } catch (ParseException | IOException | JOSEException e) {
-            log.info("Could not load keys using config url " + oauthKeyEditor.getPublicKeyUrl());
+            log.info("Could not load keys using jwks url " + oauthKeyEditor.getPublicKeyUrl());
+            if (log.isDebugEnabled()) {
+                log.debug("Could not load keys using jwks url", e);
+            }
             systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_FAILEDKEYURL", oauthKeyEditor.getPublicKeyUrl());
             return StringUtils.EMPTY;
         }
@@ -621,7 +637,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             }
         }
         if (oAuthConfiguration == null) {
-            oAuthConfiguration = (OAuthConfiguration) globalConfigurationSession.getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
+            oAuthConfiguration = (OAuthConfiguration) getGlobalConfigurationSession().getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
         }
         if (oAuthConfiguration != null && oAuthConfiguration.getOauthKeys() != null && !StringUtils.isEmpty(newKeyIdentifier)) {
             for (OAuthKeyInfo info : oAuthConfiguration.getOauthKeys().values()) {
@@ -878,5 +894,17 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
 
     public List<Pair<String, Integer>> getKeyBindings() {
         return keyBindings;
+    }
+
+    public EjbLocalHelper getEjbLocalHelper() {
+        if (ejbLocalHelper == null)
+            ejbLocalHelper = new EjbLocalHelper();
+        return ejbLocalHelper;
+    }
+
+    public GlobalConfigurationSessionLocal getGlobalConfigurationSession() {
+        if (globalConfigurationSession == null)
+            globalConfigurationSession = getEjbLocalHelper().getGlobalConfigurationSession();
+        return globalConfigurationSession;
     }
 }

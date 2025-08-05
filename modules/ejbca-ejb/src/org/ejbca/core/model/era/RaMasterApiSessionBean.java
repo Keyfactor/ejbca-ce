@@ -124,6 +124,7 @@ import org.cesecore.certificates.util.dn.DNFieldsUtil;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.EABConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
+import org.cesecore.config.GlobalEndEntityProfileConfiguration;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.config.RaStyleInfo;
@@ -981,8 +982,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
 
         String endEntityAuth = null;
-        GlobalConfiguration globalconfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        if (globalconfiguration.getEnableEndEntityProfileLimitations()) {
+        if (getGlobalEEPConfiguration().getEnableEndEntityProfileLimitations()) {
             endEntityAuth = getAuthorizedEndEntityProfileIdsString(authenticationToken);
             if (authorizedToApproveCAActions && authorizedToApproveRAActions) {
                 endEntityAuth = getAuthorizedEndEntityProfileIdsString(authenticationToken);
@@ -1239,7 +1239,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return new RaCertificateSearchResponse(responseV2, mightHaveMoreResults);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public RaCertificateSearchResponseV2 searchForCertificatesV2(AuthenticationToken authenticationToken, RaCertificateSearchRequestV2 request) {
         final RaCertificateSearchResponseV2 emptyResponse = new RaCertificateSearchResponseV2();
@@ -2299,8 +2298,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             throw new EjbcaException(ErrorCode.USER_WRONG_STATUS, "User '" + username + "' is not in KEYRECOVERY status");
         }
         try {
-            final GlobalConfiguration globalConfig = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-            if (globalConfig.getEnableEndEntityProfileLimitations()) {
+            if (getGlobalEEPConfiguration().getEnableEndEntityProfileLimitations()) {
                 // Check if administrator is authorized to perform key recovery
                 endEntityAuthenticationSessionLocal.isAuthorizedToEndEntityProfile(authenticationToken, userData.getEndEntityProfileId(), AccessRulesConstants.KEYRECOVERY_RIGHTS);
             }
@@ -2884,7 +2882,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             return false;
         }
         int endEntityProfileId = endEntityInformation.getEndEntityProfileId();
-        if (((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableEndEntityProfileLimitations()) {
+        if (getGlobalEEPConfiguration().getEnableEndEntityProfileLimitations()) {
             authorized = authorizationSession.isAuthorized(
                     authenticationToken,
                     AccessRulesConstants.ENDENTITYPROFILEPREFIX + endEntityProfileId + AccessRulesConstants.KEYRECOVERY_RIGHTS,
@@ -2956,9 +2954,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             final org.ejbca.util.query.Query query = ejbcaWSHelperSession.convertUserMatch(authenticationToken, usermatch);
             if (query.getQueryString().contains("subjectDN") || query.getQueryString().contains("serialNo")) {
                 Collection<EndEntityInformation> resultsWithCasFiltered = filterCas(authenticationToken, query, maxNumberOfRows);
-                GlobalConfiguration globalconfiguration = (GlobalConfiguration) globalConfigurationSession
-                        .getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-                if (globalconfiguration.getEnableEndEntityProfileLimitations()) {
+
+                if (getGlobalEEPConfiguration().getEnableEndEntityProfileLimitations()) {
                     Collection<EndEntityInformation> resultsWithCasAndEepFiltered = filterEep(authenticationToken, resultsWithCasFiltered);
                     if (CollectionUtils.isNotEmpty(resultsWithCasAndEepFiltered)) {
                         retValue = new ArrayList<>(resultsWithCasAndEepFiltered.size());
@@ -3031,7 +3028,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (!((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableKeyRecovery()) {
             return false;
         }
-        if (((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableEndEntityProfileLimitations()) {
+        if (getGlobalEEPConfiguration().getEnableEndEntityProfileLimitations()) {
             try {
                 EndEntityInformation data = endEntityAccessSession.findUser(authenticationToken, username);
                 if (data != null) {
@@ -3939,5 +3936,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public Long getCertificateCount(AuthenticationToken authenticationToken, Boolean isActive) throws AuthorizationDeniedException {
         return certificateDataSession.getCertificateCount(authenticationToken, isActive);
+    }
+
+    private GlobalEndEntityProfileConfiguration getGlobalEEPConfiguration() {
+        return (GlobalEndEntityProfileConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalEndEntityProfileConfiguration.EEP_CONFIGURATION_ID);
     }
 }

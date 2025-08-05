@@ -25,7 +25,6 @@ import java.util.ServiceLoader;
 import org.apache.log4j.Logger;
 import org.bouncycastle.cert.X509CRLHolder;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
-import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceTypes;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.internal.InternalResources;
 
@@ -100,16 +99,12 @@ public abstract class CvcCABase extends CABase implements Serializable, CvcCA {
 		setExpireTime(expireTime);
 		final List<ExtendedCAServiceInfo> externalcaserviceinfos = new ArrayList<>();
         for (final Integer externalCAServiceType : getExternalCAServiceTypes()) {
-            //Type was removed in 6.0.0. It is removed from the database in the upgrade method in this class, but it needs to be ignored 
-            //for instantiation. 
-            if (externalCAServiceType != ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE) {
-                final ExtendedCAServiceInfo info = this.getExtendedCAServiceInfo(externalCAServiceType);
-                if (info != null) {
-                    externalcaserviceinfos.add(info);
-                }
+            final ExtendedCAServiceInfo info = this.getExtendedCAServiceInfo(externalCAServiceType);
+            if (info != null) {
+                externalcaserviceinfos.add(info);
             }
-		}
-        
+        }
+
 		final CVCCAInfo info = new CVCCAInfo(subjectDN, name, status, updateTime, getCertificateProfileId(), getDefaultCertificateProfileId(),
 		        getEncodedValidity(), getExpireTime(), getCAType(), getSignedBy(), getCertificateChain(),
 				getCAToken(), getDescription(), getRevocationReason(), getRevocationDate(), getCRLPeriod(), getCRLIssueInterval(), getCRLOverlapTime(), getDeltaCRLPeriod(), 
@@ -162,35 +157,12 @@ public abstract class CvcCABase extends CABase implements Serializable, CvcCA {
 		return LATEST_VERSION;
 	}
 
-    @SuppressWarnings("deprecation")
     @Override
 	public void upgrade(){
 		if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
 			// New version of the class, upgrade
             log.info("Upgrading CVCCA with version "+getVersion());
 
-			// Put upgrade code here...
-            
-            // v1->v2 is only an upgrade in order to upgrade CA token
-            // v2->v3 is a upgrade of X509CA that has to be adjusted here too, due to the common heritage
-            if (data.get(CRLPERIOD) instanceof Integer) {
-            	setCRLPeriod(0L);
-            }
-            if (data.get(CRLISSUEINTERVAL) instanceof Integer) {
-            	setCRLIssueInterval(0L);
-            }
-            if (data.get(CRLOVERLAPTIME) instanceof Integer) {
-            	setCRLOverlapTime(0L);
-            }
-            if (data.get(DELTACRLPERIOD) instanceof Integer) {
-            	setDeltaCRLPeriod(0L);
-            }
-
-            // v4.
-            // 'encodedValidity' MUST set to "" (Empty String) here. The initialization is done during post-upgrade of EJBCA 6.6.1.
-            if(null == data.get(ENCODED_VALIDITY) && null != data.get(VALIDITY)) {
-                setEncodedValidity(getEncodedValidity());
-            }
             
             data.put(VERSION, LATEST_VERSION);
 		}  

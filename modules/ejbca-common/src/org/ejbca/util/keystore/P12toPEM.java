@@ -14,16 +14,13 @@
 package org.ejbca.util.keystore;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
@@ -32,11 +29,9 @@ import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
-import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -50,75 +45,6 @@ import com.keyfactor.util.keys.KeyTools;
  */
 public class P12toPEM {
     private static Logger log = Logger.getLogger(P12toPEM.class);
-    String exportpath = "./p12/pem/";
-    String p12File;
-    String password;
-    KeyStore ks = null;
-    
-    byte[] beginCertificate = "-----BEGIN CERTIFICATE-----".getBytes();
-    byte[] endCertificate = "-----END CERTIFICATE-----".getBytes();
-    byte[] beginPrivateKey = "-----BEGIN PRIVATE KEY-----".getBytes();
-    byte[] endPrivateKey = "-----END PRIVATE KEY-----".getBytes();
-    byte[] NL = "\n".getBytes();
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param args DOCUMENT ME!
-     */
-    public static void main(String[] args) {
-        // Bouncy Castle security provider
-    	CryptoProviderTools.installBCProvider();
-
-        P12toPEM p12 = null;
-
-        try {
-            if (args.length > 1) {
-                p12 = new P12toPEM(args[0], args[1]);
-            } else {
-                System.out.println(
-                    "Usage: P12toPEM <p12file> <p12password>");
-                System.exit(0); // NOPMD this is a cli command
-            }
-
-            p12.createPEM();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Basic construtor for the P12toPEM class, set variables for the class.
-     *
-     * @param p12File p12File The (path +) name of the input p12 file.
-     * @param password password The password for the p12 file.
-     * 
-     */
-    public P12toPEM(String p12File, String password) {
-        this.p12File = p12File;
-        this.password = password;
-    }
-
-	/**
-	 * Basic constructor using a in memory KeyStore instead for a file.
-	 *
-	 * @param keystore the KeyStore to use.
-	 * @param password password The password for the p12 file.
-	 */
-	public P12toPEM(KeyStore keystore, String password) {		
-		this.password = password;
-		this.ks = keystore;
-	}
-
-
-    /**
-     * Sets the directory where PEM-files wil be stores
-     *
-     * @param path path where PEM-files will be stores
-     */
-    public void setExportPath(String path) {
-        exportpath = path;
-    }
 
     /**
      * Converts a P12 into a PEM
@@ -131,33 +57,17 @@ public class P12toPEM {
      * @throws KeyStoreException if the keystore has not been initialised. 
      * @throws UnrecoverableKeyException if the password was incorrect 
      */
-    public File createPEM() throws FileNotFoundException, NoSuchAlgorithmException, CertificateException, KeyStoreException, UnrecoverableKeyException {
-         if(this.ks == null){    	
-            try {
-                ks = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
-            } catch (NoSuchProviderException e) {
-              throw new IllegalStateException("BouncyCastle provider not found.", e);
-            }
-            InputStream in = new FileInputStream(p12File);
-            try {
-                try {
-                    ks.load(in, password.toCharArray());
-                } finally {
-                    in.close();
-                }
-            } catch(IOException e) {
-                throw new IllegalStateException("Unexpected IOException was thrown", e);
-            }
-        }
+    public static File createPEM(final KeyStore keystore, final String password, final String exportPath) throws FileNotFoundException, NoSuchAlgorithmException, CertificateException, KeyStoreException, UnrecoverableKeyException {
+
         // Find the private key key entry in the keystore
-        Enumeration<String> e = ks.aliases();
+        Enumeration<String> e = keystore.aliases();
         Object o = null;
         PrivateKey serverPrivKey = null;
         while (e.hasMoreElements()) {
             o = e.nextElement();
             if (o instanceof String) {
-                if ((ks.isKeyEntry((String) o)) &&
-                        ((serverPrivKey = (PrivateKey) ks.getKey((String) o, password.toCharArray())) != null)) {
+                if ((keystore.isKeyEntry((String) o)) &&
+                        ((serverPrivKey = (PrivateKey) keystore.getKey((String) o, password.toCharArray())) != null)) {
                     if (log.isDebugEnabled()) {
                         log.debug("Aliases " + o + " is KeyEntry.");
                     }
@@ -172,7 +82,7 @@ public class P12toPEM {
         if (serverPrivKey != null) {
             privKeyEncoded = serverPrivKey.getEncoded();
         }
-        Certificate[] chain = KeyTools.getCertChain(ks, (String) o);
+        Certificate[] chain = KeyTools.getCertChain(keystore, (String) o);
         if (log.isDebugEnabled()) {
             log.debug("Loaded certificate chain with length " + chain.length + " from keystore.");
         }
@@ -183,41 +93,30 @@ public class P12toPEM {
         String userFile = DnComponents.getPartFromDN(sn, "CN");
         String filetype = ".pem";
 
-        File path = new File(exportpath);
+        File path = new File(exportPath);
         path.mkdir();
 
         File tmpFile = new File(path, userFile + filetype);
 
-        OutputStream out = new FileOutputStream(tmpFile);
-        try {
-            try {
-                out.write(beginCertificate);
-                out.write(NL);
-                byte[] userCertB64 = Base64.encode(output);
-                out.write(userCertB64);
-                out.write(NL);
-                out.write(endCertificate);
-            } finally {
-                out.close();
-            }
+        try (OutputStream out = new FileOutputStream(tmpFile)) {
+            out.write(CertTools.BEGIN_CERTIFICATE_WITH_NL.getBytes());
+            byte[] userCertB64 = Base64.encode(output);
+            out.write(userCertB64);
+            out.write(CertTools.END_CERTIFICATE_WITH_NL.getBytes());
         } catch (IOException e1) {
             throw new IllegalStateException("Unexpected IOException was thrown", e1);
         }
-     
+            
         tmpFile = new File(path, userFile + "-Key" + filetype);
 
-        out = new FileOutputStream(tmpFile);
-        try {
-            try {
-                out.write(beginPrivateKey);
-                out.write(NL);
-                byte[] privKey = Base64.encode(privKeyEncoded);
-                out.write(privKey);
-                out.write(NL);
-                out.write(endPrivateKey);
-            } finally {
-                out.close();
-            }
+        try (FileOutputStream keyOutputStream = new FileOutputStream(tmpFile)) {
+            keyOutputStream.write(CertTools.BEGIN_PRIVATE_KEY.getBytes());
+            keyOutputStream.write("\n".getBytes());
+            byte[] privKey = Base64.encode(privKeyEncoded);
+            keyOutputStream.write(privKey);
+            keyOutputStream.write("\n".getBytes());
+            keyOutputStream.write(CertTools.END_PRIVATE_KEY.getBytes());
+
         } catch (IOException e1) {
             throw new IllegalStateException("Unexpected IOException was thrown", e1);
         }
@@ -229,32 +128,18 @@ public class P12toPEM {
             log.info(
                 "User certificate is selfsigned, this is a RootCA, no CA certificates written.");
         } else {
-            out = new FileOutputStream(tmpFile);
-            try {
+            try (FileOutputStream chainOutputStream = new FileOutputStream(tmpFile)) {
+
                 for (int num = 1; num < chain.length; num++) {
                     X509Certificate tmpX509Cert = (X509Certificate) chain[num];
                     byte[] tmpOutput = tmpX509Cert.getEncoded();
-                    try {
-                        out.write(beginCertificate);
-                        out.write(NL);
-
-                        byte[] tmpCACertB64 = Base64.encode(tmpOutput);
-
-                        out.write(tmpCACertB64);
-                        out.write(NL);
-                        out.write(endCertificate);
-                        out.write(NL);
-                    } catch (IOException e1) {
-                        throw new IllegalStateException("Unexpected IOException was thrown", e1);
-                    }
+                    chainOutputStream.write(CertTools.BEGIN_CERTIFICATE_WITH_NL.getBytes());
+                    byte[] tmpCACertB64 = Base64.encode(tmpOutput);
+                    chainOutputStream.write(tmpCACertB64);
+                    chainOutputStream.write(CertTools.END_CERTIFICATE_WITH_NL.getBytes());
                 }
-
-            } finally {
-                try {
-                    out.close();
-                } catch (IOException e1) {
-                    throw new IllegalStateException("Unexpected IOException was thrown", e1);
-                }
+            } catch (IOException e1) {
+                throw new IllegalStateException("Unexpected IOException was thrown", e1);
             }
         }
         return tmpFile;
