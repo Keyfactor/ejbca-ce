@@ -510,7 +510,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         try {
             
             if (isManageScpPublisher()) {
-                boolean result = savePublisherAndShowDownloadableKey();
+                boolean result = populateScpPublisherPublicKeyField();
                 if (!result) {
                     return;
                 }
@@ -536,8 +536,8 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     public String getScpPublisherAuthPublicKey() {
         return scpPublisherAuthPublicKey;
     }
-    
-    private boolean savePublisherAndShowDownloadableKey() throws AuthorizationDeniedException {
+
+    private boolean populateScpPublisherPublicKeyField() throws AuthorizationDeniedException {
         
         final Object useSftp = getCustomPublisherMBData().getCustomPublisherPropertyValues().getOrDefault("scp.usesftp", false);
         if (!BooleanUtils.toBoolean(useSftp.toString())) {
