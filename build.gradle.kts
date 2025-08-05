@@ -598,6 +598,7 @@ tasks.named("build") {
 val moduleShortcuts = mapOf(
     "configdump" to ":modules:configdump:cli:build",
     "clientToolBox" to ":modules:clientToolBox:build",
+    "cmpclient" to ":modules:cmpclient:build",
 )
 
 moduleShortcuts.forEach { (shortcut, fullPath) ->
