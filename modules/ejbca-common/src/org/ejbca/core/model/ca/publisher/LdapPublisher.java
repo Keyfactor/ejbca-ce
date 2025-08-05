@@ -402,8 +402,13 @@ public class LdapPublisher extends BasePublisher {
 	 * @throws PublisherException
 	 */
 	protected void createIntermediateNodes(LDAPConnection lc, String dn) throws PublisherException {
-        // Get the parent node
+        // Get the parent node. First check the the DN value is not null or blank.
         final String parentDN = DnComponents.getParentDN(dn);
+        if (parentDN==null || parentDN.isBlank()) {
+            // We can't get the parent DN, log error and return.
+            log.warn( "Cannot get the parent node for this DN="+LogRedactionUtils.getSubjectDnLogSafe(dn));
+            return;
+        }
         try {
             lc.read(parentDN, ldapSearchConstraints);
             // Successfully read this parent node, lets return.
@@ -429,10 +434,11 @@ public class LdapPublisher extends BasePublisher {
                 try {
                     lc.add(entry, ldapStoreConstraints);
                     if (log.isDebugEnabled()) {
-                        log.debug("Created node " + LogRedactionUtils.getSubjectDnLogSafe(parentDN));
+                        String msg = intres.getLocalizedMessage("publisher.ldapaddedintermediate", "", LogRedactionUtils.getSubjectDnLogSafe(parentDN));
+                        log.debug(msg);
                     }
                 } catch(LDAPException e1) {
-                    String msg = intres.getLocalizedMessage("publisher.ldapaddedintermediate", LogRedactionUtils.getSubjectDnLogSafe(parentDN));
+                    String msg = intres.getLocalizedMessage("publisher.ldapaddedintermediate", "ERROR", LogRedactionUtils.getSubjectDnLogSafe(parentDN));
                     log.error(msg, LogRedactionUtils.getRedactedException(e1));
                     throw new PublisherException(msg);            
                 }
