@@ -18,7 +18,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 
 import com.keyfactor.util.StringTools;

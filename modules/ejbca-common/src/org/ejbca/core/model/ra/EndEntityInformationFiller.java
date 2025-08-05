@@ -25,7 +25,7 @@ import java.util.Set;
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.Rdn;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;

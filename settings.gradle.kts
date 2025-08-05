@@ -43,7 +43,6 @@ dependencyResolutionManagement {
             library("log4j-v12-api", ":log4j-1.2-api:2.20.0")
             library("log4j-api", ":log4j-api:2.20.0")
             library("log4j-core", ":log4j-core:2.20.0")
-            library("commons-lang", ":commons-lang:2.6")
             library("commons-lang3", ":commons-lang3:3.17.0")
             library("commons-lang3-old", ":commons-lang3:3.14.0")
             library("commons-configuration2", ":commons-configuration2:2.11.0")
@@ -228,7 +227,6 @@ dependencyResolutionManagement {
             bundle(
                 "utils",
                 listOf(
-                    "commons-lang",
                     "commons-lang3",
                     "commons-configuration2",
                     "commons-collections4",

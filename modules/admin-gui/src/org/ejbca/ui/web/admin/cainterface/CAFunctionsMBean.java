@@ -21,7 +21,7 @@ import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
 import jakarta.servlet.http.Part;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
@@ -324,7 +324,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             if (cainfo instanceof X509CAInfo) {
                 final int numberOfPartitions = cainfo.getAllCrlPartitionIndexes() == null
                         ? 0
-                        : cainfo.getAllCrlPartitionIndexes().getMaximumInteger();
+                        : cainfo.getAllCrlPartitionIndexes().getMaximum();
                 for (int currentPartitionIndex = 0; currentPartitionIndex <= numberOfPartitions; currentPartitionIndex++) {
                     final CRLInfo currentCrlInfo = crlStoreSession.getLastCRLInfoLightWeight(cainfo.getLatestSubjectDN(), currentPartitionIndex, false);
                     if (currentCrlInfo != null) {

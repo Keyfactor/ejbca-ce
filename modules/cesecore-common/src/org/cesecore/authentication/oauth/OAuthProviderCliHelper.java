@@ -14,7 +14,7 @@
  
 package org.cesecore.authentication.oauth;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Utility class for OAuth Provider related operations

@@ -14,7 +14,7 @@ package org.cesecore.keys.token;
 
 import java.io.Serializable;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Representation of a KeyPair in a CryptoToken. Does not contain the actual keys.

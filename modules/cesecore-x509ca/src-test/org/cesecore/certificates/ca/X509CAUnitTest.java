@@ -47,14 +47,14 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
 
 import javax.security.auth.x500.X500Principal;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
@@ -850,7 +850,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
                     } catch (InvalidKeyException | CertificateException | NoSuchAlgorithmException | NoSuchProviderException | SignatureException e) {
                         // NOPMD: expected
                     }
-                    assertFalse("presign public key should not be same as certificate public key", ArrayUtils.isEquals(pubK.getEncoded(), certificate.getPublicKey().getEncoded()));
+                    assertFalse("presign public key should not be same as certificate public key", Objects.deepEquals(pubK.getEncoded(), certificate.getPublicKey().getEncoded()));
                     // presign certificate should have presign key authority key identifier
                     byte[] certAuthKeyID = CertTools.getAuthorityKeyId(certificate);
                     JcaX509ExtensionUtils extensionUtils = new JcaX509ExtensionUtils(SHA1DigestCalculator.buildSha1Instance());

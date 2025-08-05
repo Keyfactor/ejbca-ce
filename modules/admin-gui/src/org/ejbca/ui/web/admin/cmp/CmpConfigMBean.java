@@ -13,7 +13,7 @@
 package org.ejbca.ui.web.admin.cmp;
 
 import com.keyfactor.util.StringTools;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;

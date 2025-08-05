@@ -35,7 +35,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.math.NumberUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -680,7 +680,7 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
     }
 
     protected void flushCurrentCache() {
-        if (!NumberUtils.isNumber(currentInternalKeyBindingId) || "0".equals(currentInternalKeyBindingId)) {
+        if (!NumberUtils.isCreatable(currentInternalKeyBindingId) || "0".equals(currentInternalKeyBindingId)) {
             // Show defaults for a new object
             currentName = "";
             getAvailableCryptoTokens();

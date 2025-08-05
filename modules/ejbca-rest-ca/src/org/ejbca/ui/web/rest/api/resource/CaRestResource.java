@@ -35,8 +35,8 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.math.IntRange;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.IntegerRange;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -176,13 +176,13 @@ public class CaRestResource extends BaseRestResource {
                 CertificateConstants.NO_CRL_PARTITION, true));
 
         final CAInfo caInfo = caSession.getCAInfo(admin, caId);
-        IntRange crlPartitions = caInfo != null ? caInfo.getAllCrlPartitionIndexes() : null;
+        IntegerRange crlPartitions = caInfo != null ? caInfo.getAllCrlPartitionIndexes() : null;
         if (crlPartitions != null) {
             Map<String, Integer> latestPartitionCrlVersions = new HashMap<>();
             Map<String, Integer> latestPartitionDeltaCrlVersions = new HashMap<>();
 
-            for (int crlPartitionIndex = crlPartitions.getMinimumInteger();
-                 crlPartitionIndex <= crlPartitions.getMaximumInteger(); crlPartitionIndex++) {
+            for (int crlPartitionIndex = crlPartitions.getMinimum();
+                 crlPartitionIndex <= crlPartitions.getMaximum(); crlPartitionIndex++) {
                 latestPartitionCrlVersions.put("partition_" + crlPartitionIndex,
                         crlStoreSession.getLastCRLNumber(issuerDn, crlPartitionIndex, false));
                 // always included, CRL for deltaCrl or otherwise

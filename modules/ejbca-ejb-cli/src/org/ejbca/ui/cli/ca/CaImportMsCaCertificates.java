@@ -32,7 +32,7 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.certificate.DnComponents;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;

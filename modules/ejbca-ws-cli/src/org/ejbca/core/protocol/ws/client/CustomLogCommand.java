@@ -19,7 +19,7 @@ import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.common.IEjbcaWS;
 import org.ejbca.ui.cli.ErrorAdminCommandException;

@@ -24,8 +24,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 
-import org.apache.commons.lang.SerializationUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.SerializationUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.config.InvalidConfigurationException;
 import org.cesecore.config.MSAutoEnrollmentSettingsTemplate;
@@ -621,7 +621,6 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
         data.put(ALIAS_LIST, aliases);
     }
 
-    @SuppressWarnings("unchecked")
     public void cloneAlias(String originAlias, String cloneAlias) {
         if(log.isDebugEnabled()) {
             log.debug("Cloning Autoenrollment alias '" + originAlias + "' to '" + cloneAlias + "'");

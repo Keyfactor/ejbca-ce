@@ -21,8 +21,8 @@ import static org.junit.Assume.assumeTrue;
 import java.io.File;
 import java.util.Arrays;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.keys.token.PKCS11TestUtils;
 import org.junit.Before;

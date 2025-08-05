@@ -22,7 +22,7 @@ import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.concurrent.Callable;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.CAInfo;

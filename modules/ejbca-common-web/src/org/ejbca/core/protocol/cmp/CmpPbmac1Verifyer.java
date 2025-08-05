@@ -16,7 +16,7 @@ package org.ejbca.core.protocol.cmp;
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.cmp.PKIHeader;

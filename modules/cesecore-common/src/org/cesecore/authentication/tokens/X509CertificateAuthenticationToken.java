@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
 
 import javax.security.auth.x500.X500Principal;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.user.AccessUserAspect;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;

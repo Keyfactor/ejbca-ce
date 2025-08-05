@@ -14,7 +14,7 @@ package org.ejbca.statedump.ejb;
 
 import java.io.Serializable;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Identifies an object in EJBCA.

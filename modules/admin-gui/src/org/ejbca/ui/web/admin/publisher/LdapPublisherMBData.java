@@ -21,7 +21,7 @@ import java.util.Map;
 import jakarta.faces.event.AjaxBehaviorEvent;
 import jakarta.faces.model.SelectItem;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.LdapPublisher.ConnectionSecurity;

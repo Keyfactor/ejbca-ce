@@ -14,7 +14,7 @@ package org.cesecore.certificates.endentity;
 
 import java.io.Serializable;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Contains a single RoleOfPSP/roleOfPspName pair of a RolesOfPSP statement (ETSI TS 119 495). 

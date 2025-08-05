@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import jakarta.ejb.EJB;
 import jakarta.faces.event.AjaxBehaviorEvent;
@@ -29,7 +30,7 @@ import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.tokens.AuthenticationTokenMetaData;
@@ -185,8 +186,8 @@ public class RaRoleMembersBean implements Serializable {
         resultsFiltered = new ArrayList<>();
         for (final RoleMember member : lastExecutedResponse.getRoleMembers()) {
             final AccessMatchValue accessMatchValue = getAccessMatchValue(member.getTokenType(), member.getTokenMatchKey());
-            final String caName = !accessMatchValue.isIssuedByCa() ? "" : StringUtils.defaultString(caIdToNameMap.get(member.getTokenIssuerId()), raLocaleBean.getMessage("role_members_page_info_unknownca"));
-            final String providerLabel =!accessMatchValue.isIssuedByOauthProvider() ? "" : StringUtils.defaultString(providerIdToLabelMap.get(member.getTokenProviderId()), raLocaleBean.getMessage("role_members_page_info_unknownprovider"));
+            final String caName = !accessMatchValue.isIssuedByCa() ? "" : Objects.toString(caIdToNameMap.get(member.getTokenIssuerId()), raLocaleBean.getMessage("role_members_page_info_unknownca"));
+            final String providerLabel =!accessMatchValue.isIssuedByOauthProvider() ? "" : Objects.toString(providerIdToLabelMap.get(member.getTokenProviderId()), raLocaleBean.getMessage("role_members_page_info_unknownprovider"));
             final String roleName = StringUtils.defaultString(roleIdToNameMap.get(member.getRoleId()));
             final String namespace = roleIdToNamespaceMap.get(member.getRoleId());
             final String tokenTypeText = raLocaleBean.getMessage("role_member_token_type_" + member.getTokenType());

@@ -24,8 +24,8 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
 import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.math.NumberUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.keys.token.AwsKmsAuthenticationType;
@@ -307,7 +307,7 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
                 if (!usedBy.isEmpty() && !ignoreslotwarning) {
                     for (String usedByName : usedBy) {
                         String name = usedByName;
-                        if (NumberUtils.isNumber(name)) {
+                        if (NumberUtils.isCreatable(name)) {
                             // if the crypto token name is purely numeric, it is likely to be a database protection token
                             name = name + " (database protection?)";
                         }

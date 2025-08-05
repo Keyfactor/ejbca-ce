@@ -14,7 +14,7 @@ package org.cesecore.roles.member;
 
 import java.io.Serializable;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.roles.Role;
 

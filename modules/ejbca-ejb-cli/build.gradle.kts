@@ -15,7 +15,6 @@ dependencies {
     compileOnly(libs.commons.collections4)
     compileOnly(libs.commons.configuration2)
     compileOnly(libs.commons.io)
-    compileOnly(libs.commons.lang)
     compileOnly(libs.commons.lang3)
     compileOnly(libs.bundles.cryptotokens)
     compileOnly(libs.jakartaee.api)

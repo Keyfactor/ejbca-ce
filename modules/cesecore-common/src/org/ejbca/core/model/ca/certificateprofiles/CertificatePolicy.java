@@ -14,7 +14,7 @@ package org.ejbca.core.model.ca.certificateprofiles;
 
 import java.io.Serializable;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.asn1.x509.PolicyQualifierId;
 
 

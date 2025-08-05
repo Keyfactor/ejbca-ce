@@ -52,7 +52,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.math.IntRange;
+import org.apache.commons.lang3.IntegerRange;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.its.ITSCertificate;
@@ -3566,9 +3566,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         final String caDataDn = caInfo.getSubjectDN();
         final boolean doPublishDeltaCRL = caInfo.getDeltaCRLPeriod() > 0;
         publishCrlPartition(admin, caCertFingerprint, caCertDn, CertificateConstants.NO_CRL_PARTITION, publisherIds, caDataDn, doPublishDeltaCRL);
-        final IntRange crlPartitions = caInfo.getAllCrlPartitionIndexes();
+        final IntegerRange crlPartitions = caInfo.getAllCrlPartitionIndexes();
         if (crlPartitions != null) {
-            for (int crlPartitionIndex = crlPartitions.getMinimumInteger(); crlPartitionIndex <= crlPartitions.getMaximumInteger(); crlPartitionIndex++) {
+            for (int crlPartitionIndex = crlPartitions.getMinimum(); crlPartitionIndex <= crlPartitions.getMaximum(); crlPartitionIndex++) {
                 publishCrlPartition(admin, caCertFingerprint, caCertDn, crlPartitionIndex, publisherIds, caDataDn, doPublishDeltaCRL);
             }
         }

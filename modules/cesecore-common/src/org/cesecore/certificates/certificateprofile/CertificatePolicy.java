@@ -14,7 +14,7 @@ package org.cesecore.certificates.certificateprofile;
 
 import java.io.Serializable;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.asn1.x509.PolicyQualifierId;
 
 

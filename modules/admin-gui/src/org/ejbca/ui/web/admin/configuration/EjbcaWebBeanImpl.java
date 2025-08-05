@@ -57,8 +57,8 @@ import javax.net.ssl.TrustManager;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.math.NumberUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.audit.enums.EventStatus;
@@ -2060,7 +2060,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             Integer caId = 0;
             // To be backward compatible with EJBCA 6.11, where this was stored as the name instead of ID, we make it possible to use both. See ECA-6556
             final String defaultCAIDStr = estConfiguration.getDefaultCAID(alias);
-            if (NumberUtils.isNumber(defaultCAIDStr)) {
+            if (NumberUtils.isCreatable(defaultCAIDStr)) {
                 caId = Integer.valueOf(defaultCAIDStr);
             } else if (StringUtils.isNotEmpty(defaultCAIDStr)) {
                 // We have a caName, and want the Id

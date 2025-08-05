@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.net.URLDecoder;
 import java.security.cert.X509Certificate;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.cert.ocsp.OCSPResp;
 import org.bouncycastle.cert.ocsp.OCSPRespBuilder;

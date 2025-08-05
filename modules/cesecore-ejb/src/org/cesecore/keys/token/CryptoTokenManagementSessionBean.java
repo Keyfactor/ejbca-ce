@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.cesecore.keys.token;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.audit.enums.EventStatus;

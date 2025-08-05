@@ -60,7 +60,7 @@ import javax.net.ssl.TrustManagerFactory;
 import jakarta.xml.bind.DatatypeConverter;
 import javax.xml.namespace.QName;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;

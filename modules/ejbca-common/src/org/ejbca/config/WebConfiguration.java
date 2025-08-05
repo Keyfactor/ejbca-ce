@@ -14,7 +14,7 @@
 package org.ejbca.config;
 
 import com.keyfactor.util.StringTools;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.util.SlotList;
 import org.ejbca.util.URIUtil;

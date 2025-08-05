@@ -45,8 +45,8 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.math.IntRange;
+import org.apache.commons.lang3.IntegerRange;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.AuditRecordStorageException;
@@ -550,10 +550,10 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     
     
     @Override
-    public boolean republishCrl(final AuthenticationToken admin, final Collection<Integer> publisherids, final String caFingerprint, final String issuerDn, final IntRange crlPartitionIndeces) throws AuthorizationDeniedException {
+    public boolean republishCrl(final AuthenticationToken admin, final Collection<Integer> publisherids, final String caFingerprint, final String issuerDn, final IntegerRange crlPartitionIndeces) throws AuthorizationDeniedException {
         boolean result = true;
         if(crlPartitionIndeces != null) {
-            for (int crlPartitionIndex = crlPartitionIndeces.getMinimumInteger(); crlPartitionIndex <= crlPartitionIndeces.getMaximumInteger(); crlPartitionIndex++) {
+            for (int crlPartitionIndex = crlPartitionIndeces.getMinimum(); crlPartitionIndex <= crlPartitionIndeces.getMaximum(); crlPartitionIndex++) {
                 result &= republishCrlPartition(admin, publisherids, caFingerprint, issuerDn, crlPartitionIndex);
             }
             result &=  republishCrlPartition(admin, publisherids, caFingerprint, issuerDn, CertificateConstants.NO_CRL_PARTITION);
@@ -858,8 +858,8 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
      */
     private void checkPublisherInUse(final String name) throws ReferencesToItemExistException {
         final List<String> inUseBy = new ArrayList<>();
-        Integer publisherId = getPublisherId(name);
-        if (publisherId == null) {
+        int publisherId = getPublisherId(name);
+        if (publisherId == 0) {
             return;
         }
         if (caAdminSession.exitsPublisherInCAs(publisherId)) {
@@ -1113,19 +1113,6 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     private int findFreePublisherId() {
         final ProfileID.DB db = (id) -> repository.findById(id) == null;
         return ProfileID.getNotUsedID(db);
-    }
-
-    private HashMap<?, ?> parseDataMapFromPublisher(final PublisherData dto) {
-        final var xml = new PublisherDataConverter().toBean(dto).getData();
-        try (SecureXMLDecoder decoder = new SecureXMLDecoder(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)))) {
-            return (HashMap<?, ?>) decoder.readObject();
-        } catch (IOException e) {
-            final String msg = "Failed to parse PublisherData data map in database: " + e.getMessage();
-            if (log.isDebugEnabled()) {
-                log.debug(msg + ". Data:\n" + dto.data());
-            }
-            throw new IllegalStateException(msg, e);
-        }
     }
 
     private BasePublisher getPublisher(final PublisherData dto) {

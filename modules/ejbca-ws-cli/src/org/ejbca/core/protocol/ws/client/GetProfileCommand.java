@@ -16,7 +16,7 @@ package org.ejbca.core.protocol.ws.client;
 import java.io.File;
 import java.io.FileOutputStream;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.ui.cli.ErrorAdminCommandException;

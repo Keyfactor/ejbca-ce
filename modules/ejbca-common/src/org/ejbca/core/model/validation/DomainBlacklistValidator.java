@@ -39,8 +39,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.regex.Pattern;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.keys.validation.DnsNameValidator;
@@ -330,7 +330,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
         try {
             final String text = intres.getLocalizedMessage("validator.domainblacklist.info_text",
                     CollectionUtils.size(getBlacklist()), ValidityDate.formatAsUTC(blacklistDate), getBlacklistSha256());
-            final String html = StringEscapeUtils.escapeHtml(text).replace("|", "<br />");
+            final String html = StringEscapeUtils.escapeHtml4(text).replace("|", "<br />");
             uiProperty.setValue(html);
         } catch (PropertyValidationException e) {
             throw new IllegalStateException(e);
@@ -396,7 +396,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
         }
         final Entry<Boolean,List<String>> result = validate(null, null, domain.trim());
         if (result.getKey()) {
-            return StringEscapeUtils.escapeHtml(intres.getLocalizedMessage("validator.domainblacklist.validation_successful", getProfileName()));
+            return StringEscapeUtils.escapeHtml4(intres.getLocalizedMessage("validator.domainblacklist.validation_successful", getProfileName()));
         } else if (CollectionUtils.isEmpty(result.getValue())) {
             return "Failed to checked domain"; // Bug. Should never happen
         } else {
@@ -405,7 +405,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
                 if (sb.length() != 0) {
                     sb.append("<br />");
                 }
-                sb.append(StringEscapeUtils.escapeHtml(message));
+                sb.append(StringEscapeUtils.escapeHtml4(message));
             }
             return sb.toString();
         }

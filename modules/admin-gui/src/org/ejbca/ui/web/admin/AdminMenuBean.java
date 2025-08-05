@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.control.CryptoTokenRules;

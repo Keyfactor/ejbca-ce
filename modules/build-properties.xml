@@ -301,7 +301,6 @@
 	<path id="lib.slf4japi.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="slf4j-api*.jar"/></path>
 	<path id="lib.commons-lang.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-lang-*.jar"/></path>
     <path id="lib.commons-lang.classpath">
-        <!-- Include both commons-lang 2 and 3 -->
         <fileset dir="${ejbca.home}/lib" includes="commons-lang*.jar"/>
     </path>
 	<path id="lib.commons-text.classpath">

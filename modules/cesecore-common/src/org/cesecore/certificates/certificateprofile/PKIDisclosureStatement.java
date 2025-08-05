@@ -14,7 +14,7 @@ package org.cesecore.certificates.certificateprofile;
 
 import java.io.Serializable;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Contains a single URI/language pair of a PKI disclosure statement. 

@@ -51,7 +51,7 @@ import jakarta.transaction.Synchronization;
 import jakarta.transaction.TransactionSynchronizationRegistry;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameStyle;

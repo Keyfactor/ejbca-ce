@@ -27,7 +27,7 @@ import java.security.cert.CertificateException;
 import java.util.Date;
 import java.util.Enumeration;
 
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.authorization.AuthorizationDeniedException;

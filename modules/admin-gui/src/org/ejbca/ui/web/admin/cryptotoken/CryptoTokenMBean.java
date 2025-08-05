@@ -36,8 +36,8 @@ import jakarta.faces.model.ListDataModel;
 import jakarta.faces.model.SelectItem;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.math.NumberUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.accounts.AccountBindingException;
@@ -1402,7 +1402,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                         final StringBuilder msg = new StringBuilder("The P11 slot is already used by other crypto token(s)");
                         for (String cryptoTokenName : usedBy) {
                             String usedByName = cryptoTokenName;
-                            if (NumberUtils.isNumber(usedByName)) {
+                            if (NumberUtils.isCreatable(usedByName)) {
                                 // if the crypto token name is purely numeric, it is likely to be a database protection token
                                 usedByName = usedByName + " (database protection?)";
                             }

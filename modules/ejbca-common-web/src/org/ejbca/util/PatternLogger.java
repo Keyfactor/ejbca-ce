@@ -21,8 +21,8 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.FastDateFormat;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
 
@@ -34,8 +34,6 @@ import org.bouncycastle.util.encoders.Hex;
  * Use paramPut(String key, String value) to add values,
  * Use writeln() to log all the stored values and then use flush() to store them to file.
  * 
- * @author thamwickenberg
- * @version $Id$
  */
 public class PatternLogger implements IPatternLogger {
 

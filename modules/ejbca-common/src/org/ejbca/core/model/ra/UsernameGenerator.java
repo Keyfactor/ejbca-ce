@@ -15,7 +15,7 @@ package org.ejbca.core.model.ra;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.model.UsernameGenerateMode;
