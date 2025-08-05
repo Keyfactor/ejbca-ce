@@ -395,6 +395,15 @@ subprojects {
         }
     }
 
+    tasks.withType<Jar> {
+        // add common attributes to JAR manifest files
+        manifest {
+            attributes(
+                "Implementation-Version" to project.extra["ejbcaVersionString"]
+            )
+        }
+    }
+
     afterEvaluate {
         // Add a service manifest builder task to subprojects/modules that have the `ext["serviceInterfaces"]` property defined.
         if (project.hasProperty("serviceInterfaces") && plugins.hasPlugin("java")) {
