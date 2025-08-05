@@ -70,6 +70,7 @@ import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.GlobalCaConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.config.GlobalCtConfiguration;
+import org.cesecore.config.GlobalEndEntityProfileConfiguration;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
@@ -1323,6 +1324,41 @@ public class UpgradeSessionBeanSystemTest {
             globalOcspConfiguration.setOcspCleanupSchedule(originalOcspCleanUpSchedule);
             globalOcspConfiguration.setOcspCleanupScheduleUnit(originalOcspCleanUpUnit);
             globalConfigurationProxySession.saveConfiguration(alwaysAllowtoken, globalOcspConfiguration);
+        }
+    }
+
+    @Test
+    public void testEEPLimitationsMigration940() throws AuthorizationDeniedException {
+        GlobalEndEntityProfileConfiguration globalEEPConfiguration = (GlobalEndEntityProfileConfiguration) globalConfigSession.getCachedConfiguration(GlobalEndEntityProfileConfiguration.EEP_CONFIGURATION_ID);
+        final boolean originalEEPLimitations = globalEEPConfiguration.getEnableEndEntityProfileLimitations();
+
+        try {
+            // Have GC a different value for EEP Limitations
+            GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            globalConfiguration.setEnableEndEntityProfileLimitations(!originalEEPLimitations);
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, globalConfiguration);
+
+            final GlobalUpgradeConfiguration globalUpgradeConfiguration = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            globalUpgradeConfiguration.setUpgradedToVersion("9.3.0");
+            globalUpgradeConfiguration.setPostUpgradedToVersion("9.3.0");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, globalUpgradeConfiguration);
+
+            // Perform upgrade
+            upgradeSession.upgrade(null, "9.3.0", false);
+            globalEEPConfiguration = (GlobalEndEntityProfileConfiguration) globalConfigSession.getCachedConfiguration(GlobalEndEntityProfileConfiguration.EEP_CONFIGURATION_ID);
+            assertEquals("endentityprofilelimitations value was not migrated.", !originalEEPLimitations, globalEEPConfiguration.getEnableEndEntityProfileLimitations());
+
+            // Perform post-upgrade
+            upgradeSession.upgrade(/* database */ null, /* upgrade from */ "9.3.0", /* post upgrade? */ true);
+            globalConfiguration = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            LinkedHashMap<Object, Object> data = globalConfiguration.getRawData();
+            assertFalse("endentityprofilelimitations was not removed from GlobalConfigData in post-upgrade.", data.containsKey("endentityprofilelimitations"));
+
+        } finally {
+            //Restore the original value
+            globalEEPConfiguration.setEnableEndEntityProfileLimitations(originalEEPLimitations);
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, globalEEPConfiguration);
+
         }
     }
     

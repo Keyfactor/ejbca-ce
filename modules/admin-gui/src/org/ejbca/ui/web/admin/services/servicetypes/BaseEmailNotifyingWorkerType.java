@@ -26,8 +26,7 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
 /**
  * Class managing the view of the Certificate Expiration Notifier Worker
- * 
- * @version $Id$
+ *
  *
  */
 public abstract class BaseEmailNotifyingWorkerType extends BaseWorkerType {

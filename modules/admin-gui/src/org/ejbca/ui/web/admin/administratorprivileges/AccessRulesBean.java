@@ -44,6 +44,8 @@ import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.config.GlobalEndEntityProfileConfiguration;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingRules;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.roles.AccessRulesHelper;
@@ -276,6 +278,8 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
     private KeyValidatorSessionLocal keyValidatorSession;
     @EJB
     private RoleSessionLocal roleSession;
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
 
     private Map<Integer, String> caIdToNameMap;
     private Map<Integer, String> eepIdToNameMap;
@@ -743,7 +747,8 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
 
     /** @return true if this installation is configured to use EndEntityProfileLimitations */
     private boolean isEnableEndEntityProfileLimitations() {
-        return super.getEjbcaWebBean().getGlobalConfiguration().getEnableEndEntityProfileLimitations();
+        final GlobalEndEntityProfileConfiguration globalEEPConfiguration = (GlobalEndEntityProfileConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalEndEntityProfileConfiguration.EEP_CONFIGURATION_ID);
+        return globalEEPConfiguration.getEnableEndEntityProfileLimitations();
     }
 
     /** @return true if this installation is configured to perform key recovery */
