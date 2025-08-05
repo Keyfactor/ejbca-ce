@@ -32,7 +32,7 @@
             <h:outputText value="#{web.text.CRYPTOTOKEN_NEW}"
                           rendered="#{cryptoTokenMBean.currentCryptoTokenId == 0}"/>
             <h:outputText
-                    value="#{web.text.CRYPTOTOKEN} : #{cryptoTokenMBean.currentCryptoToken.name}"
+                    value="#{web.text.CRYPTOTOKEN}: #{cryptoTokenMBean.currentCryptoToken.name}"
                     rendered="#{cryptoTokenMBean.currentCryptoTokenId != 0}"/>
         </h1>
         <h:form id="currentCryptoTokenForm">
@@ -630,6 +630,7 @@
                     <p:column>
                         <h:panelGroup id="currentCryptoTokenSecret1LabelGroup">
                             <h:outputLabel id="currentCryptoTokenSecret1Label" for="currentCryptoTokenSecret1" value="#{web.text.CRYPTOTOKEN_PIN}"/>
+                            <h:outputText value=" #{web.text.CRYPTOTOKEN_PIN_NOTICE}" rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken}"/>
                         </h:panelGroup>
                     </p:column>
                     <p:column>
@@ -638,9 +639,6 @@
                                 <h:inputSecret id="currentCryptoTokenSecret1" value="#{cryptoTokenMBean.currentCryptoToken.secret1}" size="20" title="#{web.text.CRYPTOTOKEN_PIN}">
                                     <f:passThroughAttribute name="autocomplete" value="new-password"/>
                                 </h:inputSecret>
-                                <h:panelGroup styleClass="help">
-                                    <h:outputText value=" #{web.text.CRYPTOTOKEN_PIN_NOTICE}" rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken}"/>
-                                </h:panelGroup>
                             </h:panelGroup>
                         </h:panelGroup>
                     </p:column>
@@ -830,13 +828,9 @@
             </ui:fragment>
 
             <h:panelGrid columns="3" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}" styleClass="no-padding">
-                <!--            <h:panelGrid endered="#{cryptoTokenMBean.currentCryptoTokenEditMode}">-->
-
                 <h:commandButton id="removeSelected" value="#{web.text.CRYPTOTOKEN_KPM_REMOVESEL}"
                                  action="#{cryptoTokenMBean.prepareDeleteKey(cryptoTokenMBean.selectedKeyPairs)}"
-                                 rendered="#{!cryptoTokenMBean.keyPairGuiListEmpty &amp;&amp; cryptoTokenMBean.allowedToKeyRemoval}"
-                />
-
+                                 rendered="#{!cryptoTokenMBean.keyPairGuiListEmpty &amp;&amp; cryptoTokenMBean.allowedToKeyRemoval}"/>
                 <h:panelGroup
                         rendered="#{!cryptoTokenMBean.keyPairGuiListEmpty &amp;&amp; cryptoTokenMBean.allowedToKeyRemoval}"/>
                 <h:panelGroup
@@ -850,7 +844,6 @@
             </ui:fragment>
 
             <h:panelGrid columns="3" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}">
-
 
                 <h:inputText id="genNewKeyPairAlias" value="#{cryptoTokenMBean.newKeyPairAlias}"
                              rendered="#{cryptoTokenMBean.allowedToKeyGeneration}" size="30"
