@@ -1627,6 +1627,10 @@ a.button:active {
 	padding: 0.5em;
 }
 
+body .ui-panelgrid .ui-panelgrid-cell {
+	padding: 0.5em 0.5em 0.5em 0;
+}
+
 /* Match the file upload button style to the plain PrimeFaces buttons  */
 input[type="file"] {
     color: #495057;
