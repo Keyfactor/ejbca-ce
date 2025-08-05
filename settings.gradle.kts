@@ -17,8 +17,8 @@ val edition = if (editionProp == "ce" || !eeModuleExists) "ce" else "ee"
 val appServerHome: String? = ejbcaProperties.getProperty("appserver.home", System.getenv("APPSRV_HOME"))
 val isProductionMode = ejbcaProperties.getProperty("ejbca.productionmode", "true").toBoolean()
 
-val appVersionNumber = ejbcaProperties.getProperty("app.version.number", "0.0.0").toString()
-val appVersionString = if (edition == "ee") {
+val ejbcaVersionNumber = ejbcaProperties.getProperty("app.version.number", "0.0.0").toString()
+val ejbcaVersionString = if (edition == "ee") {
     ejbcaProperties.expandPlaceholders("app.version")
 } else {
     ejbcaProperties.expandPlaceholders("community.version")
@@ -29,12 +29,12 @@ gradle.allprojects {
     extra["isProductionMode"] = isProductionMode
     extra["edition"] = edition
     extra["appServerHome"] = appServerHome
-    extra["appVersionString"] = appVersionString
+    extra["ejbcaVersionString"] = ejbcaVersionString
     // add other properties loaded from EJBCA configuration files
     ejbcaProperties.forEach { (key, value) ->
         extra["$key"] = value
     }
-    version = appVersionNumber
+    version = ejbcaVersionNumber
 }
 
 dependencyResolutionManagement {

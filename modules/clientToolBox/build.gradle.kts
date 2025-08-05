@@ -56,7 +56,7 @@ sourceSets {
 
 tasks.jar {
     manifest {
-        val versionString = project.extra["appVersionString"] as String
+        val versionString = project.extra["ejbcaVersionString"] as String
         attributes(
             "Implementation-Version" to versionString,
             "Main-Class" to "org.ejbca.ui.cli.ClientToolBox",
