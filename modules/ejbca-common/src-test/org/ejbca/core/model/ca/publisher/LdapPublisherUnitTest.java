@@ -70,4 +70,28 @@ public class LdapPublisherUnitTest {
         assertEquals("Wrong DN with fields={UID} ", "CN=name1,CN=name2,UID=abc,OU=devs,OU=ejbca,O=org", publ.constructLDAPDN("CN=name1,CN=name2,OU=devs,OU=ejbca,UID=abc,givenName=john", "O=org"));
     }
     
+    @Test
+    public void constructLdapDn_EmptyBaseDN() {
+        final LdapPublisher publ = new LdapPublisher();
+        publ.setBaseDN("");
+        publ.setUseFieldInLdapDN(Arrays.asList(DNFieldExtractor.CN, DNFieldExtractor.OU, DNFieldExtractor.O, DNFieldExtractor.L, DNFieldExtractor.ST, DNFieldExtractor.C));
+        assertEquals("Wrong Constructed LDAP DN  ", "CN=Name 1,OU=devs,OU=ejbca,O=org,L=Local,ST=Region,C=SE", publ.constructLDAPDN("CN=Name 1,OU=devs,OU=ejbca,O=org,l=Local,st=Region,c=SE", "O=notused"));
+    }
+
+    @Test
+    public void constructLdapDn_BlankBaseDN() {
+        final LdapPublisher publ = new LdapPublisher();
+        publ.setBaseDN(" "); // A space can be used via the webform.
+        publ.setUseFieldInLdapDN(Arrays.asList(DNFieldExtractor.CN, DNFieldExtractor.OU, DNFieldExtractor.O, DNFieldExtractor.L, DNFieldExtractor.ST, DNFieldExtractor.C));
+        assertEquals("Wrong Constructed LDAP DN  ", "CN=Name 1,OU=devs,OU=ejbca,O=org,L=Local,ST=Region,C=SE", publ.constructLDAPDN("CN=Name 1,OU=devs,OU=ejbca,O=org,l=Local,st=Region,c=SE", "O=notused"));
+    }
+
+    @Test
+    public void constructLdapDn_WithBaseDN() {
+        final LdapPublisher publ = new LdapPublisher();
+        publ.setBaseDN("dc=Root");
+        publ.setUseFieldInLdapDN(Arrays.asList(DNFieldExtractor.CN, DNFieldExtractor.O, DNFieldExtractor.ST, DNFieldExtractor.C));
+        assertEquals("Wrong Constructed LDAP DN  ", "CN=Name 1,O=org,ST=Region,C=SE,dc=Root", publ.constructLDAPDN("CN=Name 1,OU=devs,OU=ejbca,O=org,l=Local,st=Region,c=SE", "O=notused"));
+    }
+
 }
