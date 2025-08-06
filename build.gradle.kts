@@ -431,7 +431,23 @@ subprojects {
 
                 classpath = project.configurations["compileClasspath"] + mainSourceSet.output
                 mainClass.set("com.primekey.anttools.ServiceManifestBuilder")
-                args(outputDir.absolutePath, serviceInterfaces.joinToString(","))
+                args(outputDir.absolutePath, serviceInterfaces.joinToString(";"))
+
+                // Service Manifest Builder is a bit chatty. Let's print its output only if the task fails.
+                val stdoutOutput = ByteArrayOutputStream()
+                val stderrOutput = ByteArrayOutputStream()
+                standardOutput = stdoutOutput
+                errorOutput = stderrOutput
+                isIgnoreExitValue = true
+
+                doLast {
+                    val exitCode = executionResult.get().exitValue
+                    if (exitCode != 0) {
+                        logger.error("Standard output:\n${standardOutput}")
+                        logger.error("Error output:\n${errorOutput}")
+                        throw GradleException("ServiceManifestBuilder failed with exit code: $exitCode")
+                    }
+                }
             }
 
             dependencies {

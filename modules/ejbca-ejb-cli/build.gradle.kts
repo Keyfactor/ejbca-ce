@@ -36,3 +36,9 @@ sourceSets {
         }
     }
 }
+
+// define interfaces that should be used to generate service manifest files
+ext["serviceInterfaces"] = listOf(
+    "org.ejbca.ui.cli.infrastructure.command.CliCommandPlugin"
+)
+
