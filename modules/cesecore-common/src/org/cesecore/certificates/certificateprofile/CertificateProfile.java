@@ -505,6 +505,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
         setUseKeyUsage(true);
         setKeyUsage(new boolean[9]);
+        setKeyUsageForbidEncryptionUsageForECC(true);
         setAllowKeyUsageOverride(false);
         setKeyUsageCritical(true);
 
@@ -2583,7 +2584,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public void setApprovalSettings(List<Integer> approvalSettings) {
         data.put(APPROVALSETTINGS, approvalSettings);
     }
-    
+
     /**
      * @return the id of the approval profile. ID -1 means  that no approval profile was set
      *

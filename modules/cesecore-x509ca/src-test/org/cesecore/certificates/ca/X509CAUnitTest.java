@@ -12,13 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -52,6 +45,18 @@ import java.util.Set;
 import java.util.TimeZone;
 
 import javax.security.auth.x500.X500Principal;
+
+import com.keyfactor.util.CeSecoreNameStyle;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.SHA1DigestCalculator;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -144,17 +149,12 @@ import org.cesecore.keys.validation.IssuancePhase;
 import org.cesecore.keys.validation.ValidationException;
 import org.junit.Test;
 
-import com.keyfactor.util.CeSecoreNameStyle;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.SHA1DigestCalculator;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.certificate.SimpleCertGenerator;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.KeyTools;
-import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /** JUnit test for X.509 CA
  *
@@ -349,14 +349,22 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         boolean[] ku = cert.getKeyUsage();
         assertTrue(ku[0]);
         assertTrue(ku[1]);
-        assertTrue(ku[2]);
         assertFalse(ku[3]);
         assertFalse(ku[4]);
         assertFalse(ku[5]);
         assertFalse(ku[6]);
         assertFalse(ku[7]);
         int bcku = CertTools.sunKeyUsageToBC(ku);
-        assertEquals(X509KeyUsage.digitalSignature|X509KeyUsage.nonRepudiation|X509KeyUsage.keyEncipherment, bcku);
+        // The CERTPROFILE_FIXED_ENDUSER have by default 'Forbid encryption usage for ECC keys' checked since 9.4.0 which
+        // defaults to 'Forbid encryption usage for ECC keys' in certificate profiles
+        final String keyAlg = cert.getPublicKey().getAlgorithm();
+        if (StringUtils.startsWith(keyAlg, "EC")) {
+            assertFalse("keyEncipherment should not be present for EC keys", ku[2]);
+            assertEquals(X509KeyUsage.digitalSignature|X509KeyUsage.nonRepudiation, bcku);
+        } else {
+            assertTrue("keyEncipherment should be present for non EC keys", ku[2]);
+            assertEquals(X509KeyUsage.digitalSignature|X509KeyUsage.nonRepudiation|X509KeyUsage.keyEncipherment, bcku);
+        }
 
         // Create a CRL
         Collection<RevokedCertInfo> revcerts = new ArrayList<>();
@@ -1062,7 +1070,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
                 .setIssuerPrivKey(privateKey)
                 .setEntityPubKey(publicKey)
                 .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
-                .generateCertificate();  
+                .generateCertificate();
         assertNotNull(cacert);
         List<Certificate> cachain = new ArrayList<>();
         cachain.add(cacert);
