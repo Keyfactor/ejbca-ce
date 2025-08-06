@@ -1,6 +1,6 @@
-import java.net.Socket
 import org.gradle.internal.os.OperatingSystem
 import java.io.ByteArrayOutputStream
+import java.net.Socket
 
 val edition: String by extra
 val appServerHome: String? by extra
@@ -25,21 +25,14 @@ allprojects {
             dirs(rootProject.projectDir.resolve("lib/ext/wsgen"))
         }
     }
+    // don't append the EJBCA version number to EAR, WAR, JAR, and other archive filenames
+    tasks.withType<AbstractArchiveTask>().configureEach {
+        archiveVersion.set("")
+    }
 }
 
 // add the directory containing 'jboss-client.jar' to the list of library repositories
-if (!isProductionMode) {
-    if (appServerHome == null) {
-        throw GradleException(
-            """
-                📣 To build EJBCA in non-production mode ('ejbca.productionmode=false'), 
-                you must first configure the application server's home directory.
-                
-                You can do this by either setting an 'APPSRV_HOME' environment variable 
-                or by configuring the 'appserver.home' property in the 'conf/ejbca.properties' file.
-            """.trimIndent()
-        )
-    }
+if (appServerHome != null) {
     allprojects {
         repositories {
             flatDir {
@@ -47,6 +40,17 @@ if (!isProductionMode) {
             }
         }
     }
+}
+else if (!isProductionMode){
+    throw GradleException(
+        """
+                📣 To build EJBCA in non-production mode ('ejbca.productionmode=false'), 
+                you must first configure the application server's home directory.
+                
+                You can do this by either setting an 'APPSRV_HOME' environment variable 
+                or by configuring the 'appserver.home' property in the 'conf/ejbca.properties' file.
+            """.trimIndent()
+    )
 }
 
 plugins {
@@ -389,6 +393,56 @@ subprojects {
             finalizedBy(":summarizeTestResults")
         }
     }
+
+    tasks.withType<Jar> {
+        // add common attributes to JAR manifest files
+        manifest {
+            attributes(
+                "Implementation-Version" to project.extra["ejbcaVersionString"]
+            )
+        }
+    }
+
+    afterEvaluate {
+        // Add a service manifest builder task to subprojects/modules that have the `ext["serviceInterfaces"]` property defined.
+        if (project.hasProperty("serviceInterfaces") && plugins.hasPlugin("java")) {
+            val buildServiceManifestTask = tasks.register<JavaExec>("buildServiceManifest") {
+                group = "build"
+                description = "Generate service manifest."
+
+                val serviceInterfacesProperty = project.property("serviceInterfaces")
+                val serviceInterfaces = when (serviceInterfacesProperty) {
+                    is List<*> -> serviceInterfacesProperty.filterIsInstance<String>()
+                    is String -> listOf(serviceInterfacesProperty)
+                    else -> {
+                        logger.warn("The 'serviceInterfaces' property should be a List<String> or String, got ${serviceInterfacesProperty?.javaClass?.simpleName}")
+                        emptyList()
+                    }
+                }
+
+                if (serviceInterfaces.isEmpty()) {
+                    logger.warn("The 'serviceInterfaces' property does not hold a valid value.")
+                    return@register
+                }
+
+                val mainSourceSet = project.the<SourceSetContainer>()["main"]
+                val outputDir = mainSourceSet.output.classesDirs.singleFile
+
+                classpath = project.configurations["compileClasspath"] + mainSourceSet.output
+                mainClass.set("com.primekey.anttools.ServiceManifestBuilder")
+                args(outputDir.absolutePath, serviceInterfaces.joinToString(","))
+            }
+
+            dependencies {
+                val compileOnly by configurations
+                compileOnly(rootProject.libs.service.manifest.builder)
+            }
+
+            tasks.named("jar") {
+                dependsOn(buildServiceManifestTask)
+            }
+        }
+    }
 }
 
 // If system tests in certain modules are executed before others, they cause test failures in unrelated modules.
@@ -537,4 +591,18 @@ tasks.register("configureGitHooks") {
 
 tasks.named("build") {
     dependsOn("configureGitHooks")
+}
+
+// Create shortcuts for commonly used modules
+val moduleShortcuts = mapOf(
+    "configdump" to ":modules:configdump:cli:build",
+    "clientToolBox" to ":modules:clientToolBox:build",
+)
+
+moduleShortcuts.forEach { (shortcut, fullPath) ->
+    tasks.register(shortcut) {
+        description = "Builds the $shortcut module."
+        group = "build"
+        dependsOn(fullPath)
+    }
 }
