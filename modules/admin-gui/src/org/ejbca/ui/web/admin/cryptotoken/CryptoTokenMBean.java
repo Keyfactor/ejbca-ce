@@ -2256,4 +2256,17 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     public boolean isCryptoTokenListEmpty() {
         return getCryptoTokenManagementSession().getCryptoTokenInfos(getAuthenticationToken()).isEmpty();
     }
+
+    public boolean isAnyKeyUsagePresent() throws AuthorizationDeniedException {
+        ListDataModel<KeyPairGuiInfo> keyPairs = getKeyPairGuiList();
+        if (keyPairs == null) {
+            return false;
+        }
+        for (KeyPairGuiInfo keyPairGuiInfo : keyPairs) {
+            if (keyPairGuiInfo.getKeyUsage() != null) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
