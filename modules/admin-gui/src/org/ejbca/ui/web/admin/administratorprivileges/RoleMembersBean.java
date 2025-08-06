@@ -182,7 +182,6 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
     }
 
     /** @return a viewable list of 'match with'-texts */
-    @SuppressWarnings("deprecation")
     public List<SelectItem> getMatchWithItems() {
         if (matchWithItems == null) {
             matchWithItems = new ArrayList<>();
@@ -192,11 +191,9 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
                 final AuthenticationTokenMetaData authenticationTokenMetaData = AccessMatchValueReverseLookupRegistry.INSTANCE.getMetaData(tokenType);
                 if (authenticationTokenMetaData.isUserConfigurable()) {
                     for (final AccessMatchValue accessMatchValue : authenticationTokenMetaData.getAccessMatchValues()) {
-                        // Special exclusion of this rather useless match value that will never match anything
-                        if (!X500PrincipalAccessMatchValue.NONE.equals(accessMatchValue)) {
-                            matchWithItems.add(new SelectItem(tokenType + ":" + accessMatchValue.getNumericValue(),
-                                    getEjbcaWebBean().getText(tokenType) + ": " + getEjbcaWebBean().getText(accessMatchValue.name())));
-                        }
+                        matchWithItems.add(new SelectItem(tokenType + ":" + accessMatchValue.getNumericValue(),
+                                getEjbcaWebBean().getText(tokenType) + ": " + getEjbcaWebBean().getText(accessMatchValue.name())));
+
                     }
                 }
             }

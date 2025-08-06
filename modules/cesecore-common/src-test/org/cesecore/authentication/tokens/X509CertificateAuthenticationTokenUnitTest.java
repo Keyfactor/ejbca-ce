@@ -196,7 +196,6 @@ public class X509CertificateAuthenticationTokenUnitTest {
      * Test matching with the rest of the vile lot.
      * 
      */
-    @SuppressWarnings("deprecation")
     @Test
     public void testMatchWithAllValues() {
         X509CertificateAuthenticationToken authenticationToken = getAuthenticationToken();
@@ -207,18 +206,15 @@ public class X509CertificateAuthenticationTokenUnitTest {
             switch (matchValue) {
             case WITH_SERIALNUMBER:
                 accessUser = EasyMock.createMock(AccessUserAspectImpl.class);
-                EasyMock.expect(accessUser.getCaId()).andReturn(caid).times(2);
-                EasyMock.expect(accessUser.getMatchValue()).andReturn(certificate.getSerialNumber().toString(16)).times(2);
-                EasyMock.expect(accessUser.getMatchWith()).andReturn(X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue()).times(2);
-                EasyMock.expect(accessUser.getMatchValue()).andReturn(certificate.getSerialNumber().toString(16)).times(2);
+                EasyMock.expect(accessUser.getCaId()).andReturn(caid);
+                EasyMock.expect(accessUser.getMatchValue()).andReturn(certificate.getSerialNumber().toString(16));
+                EasyMock.expect(accessUser.getMatchWith()).andReturn(X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue());
+                EasyMock.expect(accessUser.getMatchValue()).andReturn(certificate.getSerialNumber().toString(16));
                 EasyMock.expect(accessUser.getMatchTypeAsType()).andReturn(AccessMatchType.TYPE_EQUALCASE);
-                EasyMock.expect(accessUser.getMatchTypeAsType()).andReturn(AccessMatchType.TYPE_NOT_EQUALCASEINS);
-                EasyMock.expect(accessUser.getTokenType()).andReturn(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE).times(2);
+                EasyMock.expect(accessUser.getTokenType()).andReturn(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE);
                 EasyMock.replay(accessUser);
                 // Try once for AccessMatchType.TYPE_EQUALCASE/TYPE_EQUALCASEINS
                 assertTrue(authenticationToken.matches(accessUser));
-                // Try again for TYPE_NOT_EQUALCASE/TYPE_NOT_EQUALCASEINS
-                assertFalse(authenticationToken.matches(accessUser));
                 EasyMock.verify(accessUser);
                 break;
             case WITH_ANY:

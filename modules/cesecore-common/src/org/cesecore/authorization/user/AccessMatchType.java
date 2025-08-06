@@ -1,5 +1,6 @@
 /*************************************************************************
  *                                                                       *
+
  *  CESeCore: CE Security Core                                           *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
@@ -25,10 +26,6 @@ public enum AccessMatchType {
     TYPE_EQUALCASE(1000),
     /** Case insensitive. Can be used for textual match values, e.g. a Common Name. Do <b>NOT</b> use with serial numbers (a change since 6.8.0)  */
     TYPE_EQUALCASEINS(1001),
-    @Deprecated
-    TYPE_NOT_EQUALCASE(1002),
-    @Deprecated
-    TYPE_NOT_EQUALCASEINS(1003),
     @Deprecated
     TYPE_NONE(1999),
     /** Type 2000-2005 are old types used from before EJBCA 4, we must expect to find these in the database in old installations, even though we don't want to use them. 
