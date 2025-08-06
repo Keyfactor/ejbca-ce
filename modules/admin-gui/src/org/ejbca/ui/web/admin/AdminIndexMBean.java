@@ -73,11 +73,12 @@ public class AdminIndexMBean extends CheckAdmin implements Serializable {
     }
 
     /** Backing object for main page list of CA and CRL statuses. */
-    public class CaCrlStatusInfo {
+    public static class CaCrlStatusInfo implements Serializable {
+        private static final long serialVersionUID = 1L;
         private final String caName;
         private final boolean caService;
         private final boolean crlStatus;
-        private CaCrlStatusInfo(final String caName, final boolean caService, final boolean crlStatus) {
+        public CaCrlStatusInfo(final String caName, final boolean caService, final boolean crlStatus) {
             this.caName = caName;
             this.caService = caService;
             this.crlStatus = crlStatus;
@@ -87,7 +88,8 @@ public class AdminIndexMBean extends CheckAdmin implements Serializable {
         public boolean isCrlStatus() { return crlStatus; }
     }
 
-    private class CaCrlStatusInfoComparator implements Comparator<CaCrlStatusInfo> {
+    private static class CaCrlStatusInfoComparator implements Comparator<CaCrlStatusInfo>, Serializable {
+        private static final long serialVersionUID = 1L;
         @Override
         public int compare(CaCrlStatusInfo o1, CaCrlStatusInfo o2) {
             return o1.getCaName().compareToIgnoreCase(o2.getCaName());
@@ -130,11 +132,17 @@ public class AdminIndexMBean extends CheckAdmin implements Serializable {
 
         @Override
         public CaCrlStatusInfo getRowData(String rowKey) {
-            if (caCrlStatusInfo != null) {
-                for (CaCrlStatusInfo info : caCrlStatusInfo) {
-                    if (info.getCaName().equals(rowKey)) {
-                        return info;
-                    }
+            if (caCrlStatusInfo == null) {
+                try {
+                    caCrlStatusInfo = getAuthorizedInternalCaCrlStatusInfos();
+                } catch (Exception e) {
+                    log.error("Failed to load caCrlStatusInfo in getRowData", e);
+                    return null;
+                }
+            }
+            for (CaCrlStatusInfo info : caCrlStatusInfo) {
+                if (info.getCaName().equals(rowKey)) {
+                    return info;
                 }
             }
             return null;
@@ -186,7 +194,7 @@ public class AdminIndexMBean extends CheckAdmin implements Serializable {
             ret.add(new CaCrlStatusInfo(caName, caService, crlStatus));
         }
         
-        Collections.sort(ret, new CaCrlStatusInfoComparator());
+        ret.sort(new CaCrlStatusInfoComparator());
         return ret;
     }
 
