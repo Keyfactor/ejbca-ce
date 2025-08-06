@@ -33,8 +33,9 @@
         </h3>
         <h:panelGroup rendered="#{ejbcawebbean.adminPreference.frontpageCaStatus and adminMenuBean.authorizedToViewCA}">
 
-            <p:dataTable value="#{adminIndexMBean.authorizedInternalCaCrlStatusInfos}"
+            <p:dataTable value="#{adminIndexMBean.caCrlStatusModel}"
                          var="caCrlStatusInfo"
+                         lazy="true"
                          styleClass="grid table-layout-auto vertical-padding-1"
                          stripedRows="true"
                          showGridlines="true"
@@ -44,7 +45,7 @@
                          paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                          currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} CAs"
                          rowsPerPageTemplate="10,20,50,100,{ShowAll|'All'}"
-            >
+                         pageLinks="3">
                 <p:column styleClass="table-title-column">
                     <f:facet name="header">
                         <h:outputText value="#{web.text.CANAME}"/>
