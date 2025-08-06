@@ -750,6 +750,12 @@
                     <h:outputText value="#{web.text.CRYPTOTOKEN_KPM_NOTGENERATED}"
                                   rendered="#{keyPairGuiInfo.placeholder}"/>
                 </p:column>
+                <p:column styleClass="text-align-center" rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken and keyPairGuiInfo.keyUsage != null}">
+                    <f:facet name="header">
+                        <h:outputText value="#{web.text.CRYPTOTOKEN_KPM_KEY_USAGE}"/>
+                    </f:facet>
+                    <h:outputText id="kpKeyUsage" value="#{keyPairGuiInfo.keyUsage}"/>
+                </p:column>
                 <p:column rendered="#{cryptoTokenMBean.currentCryptoToken.showAuthorizationInfo}" styleClass="text-align-center">
                     <f:facet name="header">
                         <h:outputText value="#{web.text.CRYPTOTOKEN_KPM_PADDING_SCHEME}"/>
