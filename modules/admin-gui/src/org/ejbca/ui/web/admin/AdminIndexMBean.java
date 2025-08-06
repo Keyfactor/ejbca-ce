@@ -19,7 +19,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
@@ -34,6 +36,9 @@ import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.primefaces.model.FilterMeta;
+import org.primefaces.model.LazyDataModel;
+import org.primefaces.model.SortMeta;
 
 /**
  *  JSF Managed Bean or the index page in the Admin GUI.
@@ -56,6 +61,17 @@ public class AdminIndexMBean extends CheckAdmin implements Serializable {
     @EJB
     private PublisherQueueSessionLocal publisherQueueSession;
 
+    private LazyDataModel<CaCrlStatusInfo> caCrlStatusModel;
+
+    @PostConstruct
+    public void init() {
+        caCrlStatusModel = new CaCrlStatusLazyDataModel();
+    }
+
+    public LazyDataModel<CaCrlStatusInfo> getCaCrlStatusModel() {
+        return caCrlStatusModel;
+    }
+
     /** Backing object for main page list of CA and CRL statuses. */
     public class CaCrlStatusInfo {
         private final String caName;
@@ -75,6 +91,53 @@ public class AdminIndexMBean extends CheckAdmin implements Serializable {
         @Override
         public int compare(CaCrlStatusInfo o1, CaCrlStatusInfo o2) {
             return o1.getCaName().compareToIgnoreCase(o2.getCaName());
+        }
+    }
+
+    public class CaCrlStatusLazyDataModel extends LazyDataModel<CaCrlStatusInfo> {
+        private static final long serialVersionUID = 1L;
+        private List<CaCrlStatusInfo> caCrlStatusInfo;
+
+        @Override
+        public int count(Map<String, FilterMeta> filterBy) {
+            try {
+                return getAuthorizedInternalCaCrlStatusInfos().size();
+            } catch (Exception e) {
+                log.error("Failed to count CA CRL status infos", e);
+                return 0;
+            }
+        }
+
+        @Override
+        public List<CaCrlStatusInfo> load(int first, int pageSize, Map<String, SortMeta> sortBy, Map<String, FilterMeta> filterBy) {
+            try {
+                caCrlStatusInfo = getAuthorizedInternalCaCrlStatusInfos();
+                int to = first + pageSize;
+                if (to > caCrlStatusInfo.size()) {
+                    to = caCrlStatusInfo.size();
+                }
+                return caCrlStatusInfo.subList(first, to);
+            } catch (Exception e) {
+                log.error("Failed to load CA CRL status infos lazily", e);
+                return Collections.emptyList();
+            }
+        }
+
+        @Override
+        public String getRowKey(CaCrlStatusInfo object) {
+            return object.getCaName();
+        }
+
+        @Override
+        public CaCrlStatusInfo getRowData(String rowKey) {
+            if (caCrlStatusInfo != null) {
+                for (CaCrlStatusInfo info : caCrlStatusInfo) {
+                    if (info.getCaName().equals(rowKey)) {
+                        return info;
+                    }
+                }
+            }
+            return null;
         }
     }
     
