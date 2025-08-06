@@ -1,4 +1,4 @@
-import java.util.Properties
+import java.util.*
 
 rootProject.name = "ejbca"
 
@@ -44,15 +44,14 @@ dependencyResolutionManagement {
             library("log4j-api", ":log4j-api:2.20.0")
             library("log4j-core", ":log4j-core:2.20.0")
             library("commons-lang", ":commons-lang:2.6")
-            library("commons-lang3", ":commons-lang3:3.17.0")
-            library("commons-lang3-old", ":commons-lang3:3.14.0")
+            library("commons-lang3", ":commons-lang3:3.18.0")
             library("commons-configuration2", ":commons-configuration2:2.11.0")
             library("commons-collections4", ":commons-collections4:4.5.0")
             library("nimbus-jose-jwt", ":nimbus-jose-jwt:9.37.3")
             library("x509-common-util", ":x509-common-util:5.3.5")
-            library("cryptotokens-api", ":cryptotokens-api:3.0.0")
-            library("cryptotokens-impl", ":cryptotokens-impl:3.0.0")
-            library("cryptotokens-impl-ee", ":cryptotokens-impl-ee:3.0.0")
+            library("cryptotokens-api", ":cryptotokens-api:3.2.1")
+            library("cryptotokens-impl", ":cryptotokens-impl:3.2.1")
+            library("cryptotokens-impl-ee", ":cryptotokens-impl-ee:3.2.1")
             library("adsddl", ":adsddl:1.9")
             library("jakarta.jws-api", ":jakarta.jws-api:3.0.0")
             library("jakarta.xml.soap-api", ":jakarta.xml.soap-api:3.0.2")
@@ -75,6 +74,7 @@ dependencyResolutionManagement {
             library("jackson-core", ":jackson-core:2.17.2")
             library("jackson-databind", ":jackson-databind:2.17.2")
             library("jackson-annotations", ":jackson-annotations:2.17.2")
+            library("jackson-dataformat-xml", "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.18.3")
             library("jackson-dataformat-yaml", ":jackson-dataformat-yaml:2.17.2")
             library("reflections", ":reflections:0.9.11")
             library("swagger-annotations", ":swagger-annotations-jakarta:2.2.22")
@@ -86,7 +86,7 @@ dependencyResolutionManagement {
             library("commons-fileupload2", ":commons-fileupload2-jakarta-servlet6:2.0.0-M4")
             library("commons-fileupload2-core", ":commons-fileupload2-core:2.0.0-M4")
             library("jacknji11", ":jacknji11:1.3.1")
-            library("p11ng", ":p11ng:0.25.7")
+            library("p11ng", ":p11ng:0.25.7-20250719-9ea9aa2")
             library("protobuf-java", ":protobuf-java:3.25.5")
             library("ctlog", ":ctlog:0.1.7")
             library("commons-beanutils", ":commons-beanutils:1.9.4")
@@ -143,6 +143,7 @@ dependencyResolutionManagement {
             library("stax.ex", ":stax-ex:1.8")
             library("txw2", ":txw2:2.3.1")
             library("yasson", ":yasson:3.0.4")
+            library("freemarker", ":freemarker:2.3.34")
             // test dependencies
             library("junit", ":junit:4.13.2")
             library("easymock", ":easymock:5.2.0")
@@ -385,6 +386,8 @@ include(
     "modules:systemtests:common",
     "modules:systemtests:ejb",
     "modules:clientToolBox",
+    "modules:ejbca-repository",
+    "modules:ejbca-repository-generator",
 )
 
 fun loadPropertiesFromFiles(vararg filePaths: String): Properties {

@@ -19,7 +19,7 @@ import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -45,7 +45,6 @@ import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.IllegalNameException;
@@ -113,10 +112,17 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     @EJB
     private EndEntityManagementSessionLocal endEntityManagementSession;
     private Map<String, Integer> caNames;
-    private transient CAInterfaceBean caBean;
+    private CAInterfaceBean caBean;
     private int selectedCaId;
     private String createCaName;
-    private Map<Integer, String> caIdToNameMap;
+    private Map<Integer, String> caidtonamemap;
+
+    private List<String> authorizedCas;
+    private Map<String, String> caNameToStatusMap;
+    private Map<String, String> caNameToTypeMap;
+
+    private int selectedCaIdForDelete;
+
     private transient Part certificateBundle;
 
     public void setCertificateBundle(final Part certificateBundle) {
@@ -235,59 +241,66 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
         }
     }
 
-    public String getCreateCaName() {
-        return createCaName;
-    }
-
-    public void setCreateCaName(String createCaName) {
-        this.createCaName = createCaName;
-    }
-
     public ManageCAsMBean() {
         super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
     }
 
     @PostConstruct
     public void init() {
+        final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+        try {
+            caBean = SessionBeans.getCaBean(request);
+        } catch (ServletException e) {
+            throw new IllegalStateException("Could not initiate CAInterfaceBean", e);
+        }
         caNames = caSession.getAuthorizedCaNamesToIds(getAdmin());
+        caidtonamemap = caSession.getCAIdToNameMap();
+        initializeListOfCas();
+        final Map<String, Object> requestMap = FacesContext.getCurrentInstance().getExternalContext().getRequestMap();
+        selectedCaIdForDelete = (int) requestMap.getOrDefault("selectedCaIdForDelete", 0);
     }
-    
-    public Map<Integer, String> getListOfCas() {
-        final Map<Integer, String> caMap = new LinkedHashMap<>();
+
+    private void initializeListOfCas() {
+        authorizedCas = new ArrayList<>();
+        caNameToStatusMap = new HashMap<>();
+        caNameToTypeMap = new HashMap<>();
         for (final String caName : caNames.keySet()) {
             int caId = caNames.get(caName);
-            int caStatus = getCaBean().getCAStatusNoAuth(caId);
+            int caStatus = caBean.getCAStatusNoAuth(caId);
             String statusText = getEjbcaWebBean().getText(CAConstants.getStatusText(caStatus));
 
-            String nameAndStatus = caName + " (" + statusText + ")";
-            caSession.flushCACache();
             if (caSession.authorizedToCANoLogging(getAdmin(), caId)) {
-                caMap.put(caId, nameAndStatus);
+                authorizedCas.add(caName);
+                caNameToStatusMap.put(caName, statusText);
+                try {
+                    caNameToTypeMap.put(caName,
+                            caSession.getCAInfo(getAdmin(), caId).getCaTypeAsString().replace("SSHCA", "SSH"));
+                } catch (AuthorizationDeniedException e) {
+                    // ignore
+                }
             }
         }
-        return caMap;
+        return;
     }
 
-    public String getEditCAButtonValue() {
-        return isAuthorized() ? getEjbcaWebBean().getText("VIEWCA") : getEjbcaWebBean().getText("EDITCA");
+    public int getSelectedCaIdForDelete() {
+        return selectedCaIdForDelete;
     }
 
-    private boolean isAuthorized() {
-        boolean onlyView = false;
-        if (getEjbcaWebBean().isAuthorizedNoLogSilent(StandardRules.CAEDIT.resource())
-                || getEjbcaWebBean().isAuthorizedNoLogSilent(StandardRules.CAVIEW.resource())) {
-            onlyView = !getEjbcaWebBean().isAuthorizedNoLogSilent(StandardRules.CAEDIT.resource())
-                    && getEjbcaWebBean().isAuthorizedNoLogSilent(StandardRules.CAVIEW.resource());
-        }
-        return onlyView;
+    public String getSelectedCaNameForDelete() {
+        return caidtonamemap.getOrDefault(selectedCaIdForDelete, "");
     }
 
-    public int getSelectedCaId() {
-        return selectedCaId;
+    public List<String> getCanames() {
+        return authorizedCas;
     }
 
-    public void setSelectedCaId(final int selectedCaId) {
-        this.selectedCaId = selectedCaId;
+    public String getType(String caName) {
+        return caNameToTypeMap.get(caName);
+    }
+
+    public String getStatus(String caName) {
+        return caNameToStatusMap.get(caName);
     }
 
     public boolean isCanRemoveResource() {
@@ -329,33 +342,38 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
 
     public String getConfirmMessage() {
         if (selectedCaId != 0) {
-            return getEjbcaWebBean().getText("AREYOUSURETODELETECA", true, getCaIdToNameMap().get(selectedCaId));
+            return getEjbcaWebBean().getText("AREYOUSURETODELETECA", true, caidtonamemap.get(selectedCaId));
         } else {
             return StringUtils.EMPTY;
         }
     }
 
-    public String editCaPage() {
-        if (selectedCaId == 0) {
+    public String editCaPage(String caName) {
+        if (!authorizedCas.contains(caName)) {
+            addErrorMessage("YOUMUSTSELECTCA");
             return EditCaUtil.MANAGE_CA_NAV;
         }
-        FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("editcaname", getCaIdToNameMap().get(selectedCaId));
-        FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("caid", selectedCaId);
+        int caId = caNames.get(caName);
+        FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("editcaname", caName);
+        FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("caid", caId);
         FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("iseditca", true);
         return EditCaUtil.EDIT_CA_NAV;
     }
 
-    public String createCaPage() {
-        if (StringUtils.isBlank(createCaName)) {
-            addErrorMessage("CA_NAME_EMPTY");
+    public String viewCaPage(String caName) {
+        if (!authorizedCas.contains(caName)) {
+            addErrorMessage("YOUMUSTSELECTCA");
             return EditCaUtil.MANAGE_CA_NAV;
         }
-        if (caNames.containsKey(createCaName)) {
-            addErrorMessage("CAALREADYEXISTS", createCaName);
-            return EditCaUtil.MANAGE_CA_NAV;
-        }
+        int caId = caNames.get(caName);
+        FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("editcaname", caName);
+        FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("caid", caId);
+        FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("iseditca", true);
+        FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("viewonly", true);
+        return EditCaUtil.EDIT_CA_NAV;
+    }
 
-        FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("createcaname", EditCaUtil.getTrimmedName(this.createCaName));
+    public String createCaPage() {
         FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("iseditca", false);
         return EditCaUtil.EDIT_CA_NAV;
     }
@@ -437,13 +455,20 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
         return result;
     }
 
-    public String deleteCA() {
-        if (selectedCaId == 0) {
+    public String deleteCA(String caName) {
+        if (!authorizedCas.contains(caName)) {
             addErrorMessage("YOUMUSTSELECTCA");
             return EditCaUtil.MANAGE_CA_NAV;
         }
+
+        selectedCaId = caNames.get(caName);
+        boolean canNotDeleteCa = endEntityManagementSession.checkForCAId(selectedCaId) ||
+                certificateProfileSessionLocal.existsCAIdInCertificateProfiles(selectedCaId) ||
+                endEntityProfileSession.existsCAInEndEntityProfiles(selectedCaId) ||
+                isCaIdInUseByRoleOrRoleMember(selectedCaId);
+
         try {
-            if (!removeCA(selectedCaId)) {
+            if (canNotDeleteCa || !authorizedCas.contains(caName)) {
                 addErrorMessage("COULDNTDELETECA");
                 final List<String> certificateProfilesUsedByCa = certificateProfilesUsedByCa(selectedCaId);
                 if (!certificateProfilesUsedByCa.isEmpty()) {
@@ -460,22 +485,31 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
                     addErrorMessage("CA_INROLES");
                     addNonTranslatedErrorMessage(StringUtils.join(rolesUsedByCa, ", "));
                 }
+                return EditCaUtil.MANAGE_CA_NAV;
             }
         } catch (AuthorizationDeniedException | EndEntityProfileNotFoundException e) {
             addNonTranslatedErrorMessage(e.getMessage());
+            return EditCaUtil.MANAGE_CA_NAV;
         }
-        return EditCaUtil.MANAGE_CA_NAV;
+
+        FacesContext.getCurrentInstance().getExternalContext()
+                        .getRequestMap().put("selectedCaIdForDelete", selectedCaId);
+        return EditCaUtil.DELETE_CA_NAV;
     }
 
-    private boolean removeCA(final int caId) throws AuthorizationDeniedException{
-        final boolean caIdIsPresent = endEntityManagementSession.checkForCAId(caId) ||
-                certificateProfileSessionLocal.existsCAIdInCertificateProfiles(caId) ||
-                endEntityProfileSession.existsCAInEndEntityProfiles(caId) ||
-                isCaIdInUseByRoleOrRoleMember(caId);
-        if (!caIdIsPresent) {
-            caSession.removeCA(getEjbcaWebBean().getAdminObject(), caId);
+    public String removeCA() throws AuthorizationDeniedException{
+        final boolean caIdIsPresent = endEntityManagementSession.checkForCAId(selectedCaIdForDelete) ||
+                certificateProfileSessionLocal.existsCAIdInCertificateProfiles(selectedCaIdForDelete) ||
+                endEntityProfileSession.existsCAInEndEntityProfiles(selectedCaIdForDelete) ||
+                isCaIdInUseByRoleOrRoleMember(selectedCaIdForDelete);
+
+        if (!caIdIsPresent && authorizedCas.contains(caidtonamemap.get(selectedCaIdForDelete))) {
+            caSession.removeCA(getEjbcaWebBean().getAdminObject(), selectedCaIdForDelete);
+        } else {
+            addErrorMessage("COULDNTDELETECA");
         }
-        return !caIdIsPresent;
+
+        return EditCaUtil.MANAGE_CA_NAV;
     }
 
     private boolean isCaIdInUseByRoleOrRoleMember(final int caId) {
@@ -497,29 +531,13 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
         return false;
     }
 
-    public String renameCA() {
-        if (StringUtils.isBlank(createCaName)) {
-            addErrorMessage("CA_NAME_EMPTY");
-            return EditCaUtil.MANAGE_CA_NAV;
-        } else if (caNames.containsKey(createCaName)) {
-            addErrorMessage("CAALREADYEXISTS", createCaName);
-            return EditCaUtil.MANAGE_CA_NAV;
-        } else if (selectedCaId == 0) {
-            addErrorMessage("SELECTCATORENAME");
+    public String createAuthCertSignRequest(String caName) {
+        if (!authorizedCas.contains(caName)) {
+            addErrorMessage("YOUMUSTSELECTCA");
             return EditCaUtil.MANAGE_CA_NAV;
         }
-
-        try {
-            caSession.renameCA(getAdmin(), caSession.getCAIdToNameMap().get(selectedCaId), createCaName);
-        } catch (CAExistsException | CADoesntExistsException | AuthorizationDeniedException e) {
-            addNonTranslatedErrorMessage(e);
-        }
-        return EditCaUtil.MANAGE_CA_NAV;
-    }
-
-    public String createAuthCertSignRequest() {
+        selectedCaId = caNames.get(caName);
         if (selectedCaId != 0) {
-
             int selectedCaType;
             try {
                 selectedCaType = caSession.getCAInfo(getAdmin(), selectedCaId).getCAType();
@@ -527,7 +545,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
                 throw new IllegalStateException("Admin is not authorized to get ca type!", e);
             }
 
-            FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("selectedCaName", getCaIdToNameMap().get(selectedCaId));
+            FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("selectedCaName", caidtonamemap.get(selectedCaId));
             FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("selectedCaId", selectedCaId);
             FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("selectedCaType", selectedCaType);
 
@@ -538,23 +556,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
         }
     }
 
-    public CAInterfaceBean getCaBean() {
-        if (caBean == null) {
-            final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-            try {
-                caBean = SessionBeans.getCaBean(request);
-            } catch (ServletException e) {
-                throw new IllegalStateException("Could not initiate CAInterfaceBean", e);
-            }
-        }
-        return caBean;
-    }
-
-    public Map<Integer, String> getCaIdToNameMap() {
-        if (caIdToNameMap == null) {
-            caSession.flushCACache();
-            caIdToNameMap = caSession.getCAIdToNameMap();
-        }
-        return caIdToNameMap;
+    public boolean isCaListEmpty() {
+        return authorizedCas == null || authorizedCas.isEmpty();
     }
 }

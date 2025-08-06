@@ -13,11 +13,6 @@
 package org.cesecore.roles;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.commons.lang.StringUtils;
-import org.cesecore.roles.member.RoleMember;
 
 /**
  * Container POJO used due to the fact RoleData in certain contexts doesn't survive encoding to JSF
@@ -26,35 +21,13 @@ public class RoleInformation implements Serializable {
     private static final long serialVersionUID = 1L;
     private final int identifier;
     private final String name;
-    @SuppressWarnings("deprecation")
     // Fields added in EJBCA 6.8.0 that we cannot be sure is ever set (defaults to null)
     private final String nameSpace;
     
-    private RoleInformation(final int identifier, final String nameSpace, final String roleName) {
+    public RoleInformation(final int identifier, final String nameSpace, final String roleName) {
         this.identifier = identifier;
         this.name = roleName;
         this.nameSpace = nameSpace;
-    }
-    
-    /** 
-     * Static helper to create new instance and still allowing deserialization of this class on EJBCA instances that
-     * don't have access to the RoleMember class.
-     * 
-     * Note that this it is in general a bad idea to keep a list of RoleMembers that were part of the Role at a point
-     * in time in this class.
-     */
-    @SuppressWarnings("deprecation")
-    public static RoleInformation fromRoleMembers(final int identifier, final String nameSpace, final String roleName, final List<RoleMember> roleMembers) {
-        final String nameSpaceToUse = StringUtils.isEmpty(nameSpace) ? null : nameSpace;
-        final List<AccessUserAspectData> accessUserAspects = new ArrayList<>();
-        if (roleMembers!=null) {
-            for (final RoleMember roleMember : roleMembers) {
-                final String roleNameForAspect = StringUtils.isEmpty(nameSpace) ? roleName : nameSpace+";"+roleName;
-                accessUserAspects.add(new AccessUserAspectData(roleNameForAspect, roleMember.getTokenIssuerId(), roleMember.getTokenMatchKey(),
-                        roleMember.getTokenType(), roleMember.getAccessMatchType(), roleMember.getTokenMatchValue()));
-            }
-        }
-        return new RoleInformation(identifier, nameSpaceToUse, roleName, accessUserAspects);
     }
 
     /** @return the Role name */
@@ -112,9 +85,5 @@ public class RoleInformation implements Serializable {
         } else if (!nameSpace.equals(other.nameSpace))
             return false;
         return true;
-    }
-
-    public List<AccessUserAspectData> getAccessUserAspects() {
-        return accessUserAspects;
     }
 }

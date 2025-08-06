@@ -55,7 +55,19 @@
                 <h:outputLabel for="certificateProfileId"
                     value="#{web.text.CERTIFICATEPROFILEID}" />
                 <h:outputText id="certificateProfileId"
-                    value="#{certProfileBean.certificateProfileId}" />
+                    value="#{certProfileBean.certificateProfileId == 0 ? 'None' : certProfileBean.certificateProfileId}" />
+
+                <h:outputLabel for="certProfileNameGroup" value="#{web.text.ENDENTITYPROFILENAME}" />
+                <h:panelGroup id="certProfileNameGroup">
+                    <h:inputText id="profileName"
+                                 value="#{certProfileBean.profileName}"
+                                 rendered="#{!certProfileBean.viewOnly}">
+                        <f:ajax event="change" execute="@this" render="@none"/>
+                    </h:inputText>
+                    <h:outputText id="certProfileNameView"
+                                  value="#{certProfileBean.profileName}"
+                                  rendered="#{certProfileBean.viewOnly}"/>
+                </h:panelGroup>
 
                 <h:outputLabel for="selecttype" value="#{web.text.TYPE}" />
                 <h:panelGroup id="selecttype">

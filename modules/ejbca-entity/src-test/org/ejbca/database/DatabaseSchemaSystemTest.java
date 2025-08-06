@@ -37,7 +37,6 @@ import org.cesecore.keys.token.CryptoTokenData;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.member.RoleMemberData;
 import org.ejbca.core.ejb.approval.ApprovalData;
-import org.ejbca.core.ejb.ca.publisher.PublisherData;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueData;
 import org.ejbca.core.ejb.ca.store.CertReqHistoryData;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoveryData;
@@ -46,6 +45,7 @@ import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData;
 import org.ejbca.core.ejb.services.ServiceData;
+import org.ejbca.dto.PublisherDataBean;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -246,14 +246,14 @@ public class DatabaseSchemaSystemTest {
     public void testPublisherData() {
         LOG.trace(">testPublisherData");
         logMemStats();
-        PublisherData entity = new PublisherData();
-        entity.setData(CLOB_100KiB);
-        entity.setId(BOGUS_INTEGER);
-        entity.setName(VARCHAR_250B);
-        entity.setRowProtection(CLOB_10KiB);
-        entity.setRowVersion(0);
-        entity.setUpdateCounter(0);
-        storeAndRemoveEntity(entity);
+        PublisherDataBean bean = new PublisherDataBean();
+        bean.setData(CLOB_100KiB);
+        bean.setId(BOGUS_INTEGER);
+        bean.setName(VARCHAR_250B);
+        bean.setRowProtection(CLOB_10KiB);
+        bean.setRowVersion(0);
+        bean.setUpdateCounter(0);
+        storeAndRemoveEntity(bean);
         LOG.trace("<testPublisherData");
     }
 

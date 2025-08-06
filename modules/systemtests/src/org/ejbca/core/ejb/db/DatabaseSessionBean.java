@@ -39,7 +39,6 @@ import org.ejbca.acme.AcmeAuthorizationData;
 import org.ejbca.acme.AcmeNonceData;
 import org.ejbca.acme.AcmeOrderData;
 import org.ejbca.core.ejb.approval.ApprovalData;
-import org.ejbca.core.ejb.ca.publisher.PublisherData;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueData;
 import org.ejbca.core.ejb.ca.store.CertReqHistoryData;
 import org.ejbca.core.ejb.ca.validation.BlacklistData;
@@ -50,6 +49,7 @@ import org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData;
 import org.ejbca.core.ejb.services.ServiceData;
 import org.ejbca.core.model.util.EjbLocalHelper;
+import org.ejbca.dto.PublisherDataBean;
 import org.ejbca.peerconnector.PeerData;
 
 import java.util.List;
@@ -110,7 +110,7 @@ public class DatabaseSessionBean implements DatabaseSessionRemote {
                 clearTable(OcspResponseData.class, true),
                 clearTable(PeerData.class, true),
                 clearTable(ProfileData.class, true),
-                clearTable(PublisherData.class, true),
+                clearTable(PublisherDataBean.class, true),
                 clearTable(PublisherQueueData.class, true),
                 clearTable(RoleData.class, clearProtectedTables),
                 clearTable(RoleMemberData.class, clearProtectedTables),

@@ -33,6 +33,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspect;
+import org.cesecore.authorization.user.AccessUserAspectImpl;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.util.ProfileID;
 
@@ -272,64 +273,8 @@ public class RoleMemberDataSessionBean implements RoleMemberDataSessionLocal, Ro
         return ret;
     }
     
-    // TODO: Remove this once there is a better way to match tokens
     private AccessUserAspect convertToAccessUserAspect(final RoleMember roleMember) {
-        return new AccessUserAspect() {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public int getMatchWith() {
-                return roleMember.getTokenMatchKey();
-            }
-
-            @Override
-            public void setMatchWith(Integer matchWith) { }
-
-            @Override
-            public int getMatchType() {
-                return roleMember.getTokenMatchOperator();
-            }
-
-            @Override
-            public void setMatchType(Integer matchType) { }
-
-            @Override
-            public AccessMatchType getMatchTypeAsType() {
-                return AccessMatchType.matchFromDatabase(roleMember.getTokenMatchOperator());
-            }
-
-            @Override
-            public void setMatchTypeAsValue(AccessMatchType matchType) { }
-
-            @Override
-            public String getMatchValue() {
-                return roleMember.getTokenMatchValue();
-            }
-
-            @Override
-            public void setMatchValue(String matchValue) { }
-
-            @Override
-            public Integer getCaId() {
-                return roleMember.getTokenIssuerId();
-            }
-
-            @Override
-            public void setCaId(Integer caId) { }
-
-            @Override
-            public Integer getOauthProviderId() {
-                return roleMember.getTokenProviderId();
-            }
-
-            @Override
-            public String getTokenType() {
-                return (roleMember == null ? null : roleMember.getTokenType());
-            }
-
-            @Override
-            public void setTokenType(String tokenType) { }
-        };
+        return new AccessUserAspectImpl(roleMember); 
     }
     
     @Override

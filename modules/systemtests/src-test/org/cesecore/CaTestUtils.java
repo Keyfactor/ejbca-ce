@@ -44,6 +44,7 @@ import com.keyfactor.util.keys.token.KeyGenParams;
 import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -464,15 +465,15 @@ public abstract class CaTestUtils {
     public static X509CA createTestX509CA(String cadn, char[] tokenpin, boolean pkcs11, int keyusage, String caSignAlg) throws CertificateParsingException,
             CryptoTokenOfflineException, OperatorCreationException, InvalidAlgorithmException, CertIOException {
         final String keyspec;
-        if (StringUtils.contains(caSignAlg, "RSA")) {
+        if (Strings.CS.contains(caSignAlg, "RSA")) {
             keyspec = RSA_1024;
-        } else if (StringUtils.contains(caSignAlg, "ECDSA")) {
+        } else if (Strings.CS.contains(caSignAlg, "ECDSA")) {
             keyspec = EC_256;
-        } else if (StringUtils.containsIgnoreCase(caSignAlg, "ML-DSA-44")) {
+        } else if (Strings.CI.contains(caSignAlg, "ML-DSA-44")) {
             keyspec = ML_DSA_44;
-        } else if (StringUtils.containsIgnoreCase(caSignAlg, "SLH-DSA-SHA2-128F")) {
+        } else if (Strings.CI.contains(caSignAlg, "SLH-DSA-SHA2-128F")) {
             keyspec = SLHDSA_SHA2_128F;
-        } else if (StringUtils.containsIgnoreCase(caSignAlg, "FALCON-512")) {
+        } else if (Strings.CI.contains(caSignAlg, "FALCON-512")) {
             keyspec = FALCON_512;
         } else {
             throw new InvalidAlgorithmException("Trying to create testCA with invalid signature algorithm: " + caSignAlg);

@@ -42,8 +42,8 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.config.GlobalCesecoreConfiguration;
+import org.cesecore.config.GlobalEndEntityProfileConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
 import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
@@ -115,8 +115,8 @@ public class RAInterfaceBean implements Serializable {
     	this.ejbcawebbean = ejbcawebbean;
     }
 
-    private GlobalConfiguration getGlobalConfiguration() {
-        return (GlobalConfiguration) getGlobalConfigurationSession().getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+    private GlobalEndEntityProfileConfiguration getGlobalEEPConfiguration() {
+        return (GlobalEndEntityProfileConfiguration) getGlobalConfigurationSession().getCachedConfiguration(GlobalEndEntityProfileConfiguration.EEP_CONFIGURATION_ID);
     }
 
     /** Adds a user to the database, the string array must be in format defined in class UserView.
@@ -275,7 +275,7 @@ public class RAInterfaceBean implements Serializable {
         UserView userview = null;
         EndEntityInformation user = getEndEntityAccessSession().findUser(getAdministrator(), username);
         if (user != null) {
-            if (getGlobalConfiguration().getEnableEndEntityProfileLimitations()
+            if (getGlobalEEPConfiguration().getEnableEndEntityProfileLimitations()
                     && !endEntityAuthorization(getAdministrator(), user.getEndEntityProfileId(), AccessRulesConstants.EDIT_END_ENTITY, false)) {
                 throw new AuthorizationDeniedException("Not authorized to edit user.");
             }
@@ -412,7 +412,7 @@ public class RAInterfaceBean implements Serializable {
     		return false;
     	}
     	int profileid = data.getEndEntityProfileId();
-    	if (getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
+    	if (getGlobalEEPConfiguration().getEnableEndEntityProfileLimitations()) {
     		returnval= endEntityAuthorization(getAdministrator(), profileid, AccessRulesConstants.REVOKE_END_ENTITY, false);
     	} else {
     		returnval=true;
@@ -423,7 +423,7 @@ public class RAInterfaceBean implements Serializable {
     public boolean keyRecoveryPossible(Certificate cert, String username) throws AuthorizationDeniedException {
     	boolean returnval = true;
     	returnval = getAuthorizationSession().isAuthorizedNoLogging(getAdministrator(), AccessRulesConstants.REGULAR_KEYRECOVERY);
-    	if (getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
+    	if (getGlobalEEPConfiguration().getEnableEndEntityProfileLimitations()) {
     		EndEntityInformation data = getEndEntityAccessSession().findUser(getAdministrator(), username);
     		if (data != null) {
     			int profileid = data.getEndEntityProfileId();
@@ -439,7 +439,7 @@ public class RAInterfaceBean implements Serializable {
                     WaitingForApprovalException, CADoesntExistsException {
     	boolean authorized = true;
     	int endEntityProfileId = getEndEntityAccessSession().findUser(getAdministrator(), username).getEndEntityProfileId();
-    	if(getGlobalConfiguration().getEnableEndEntityProfileLimitations()){
+    	if(getGlobalEEPConfiguration().getEnableEndEntityProfileLimitations()){
     		authorized = endEntityAuthorization(getAdministrator(), endEntityProfileId, AccessRulesConstants.KEYRECOVERY_RIGHTS, false);
     	}
     	if(authorized){

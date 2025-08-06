@@ -19,6 +19,7 @@
     <property name="mod.common-lib.path" location="${mod.common.path}/lib" />
     <property name="mod.systemtests.path" location="${mod.path}/systemtests" />
     <property name="mod.dist.path" location="${mod.path}/dist" />
+    <property name="mod.ejbca-repository-generator.path" location="${mod.path}/ejbca-repository-generator" />
 	<property name="mod.ejbca-common.path" location="${mod.path}/ejbca-common" /> 
 	<property name="mod.ejbca-common-web.path" location="${mod.path}/ejbca-common-web" />
     <property name="mod.ejbca-entity.path" location="${mod.path}/ejbca-entity" />
@@ -74,6 +75,7 @@
     <property name="mod.peerconnector-rar.lib" location="${mod.dist.path}/peerconnector.rar" />
     <property name="mod.peerconnector-war.lib" location="${mod.dist.path}/peerconnector.war" />
     <property name="mod.peerconnector-publ.lib" location="${mod.dist.path}/peerconnector-publ.jar" />
+	<property name="mod.ejbca-repository.lib" location="${mod.dist.path}/ejbca-repository.jar" />
     <property name="mod.acme.path" location="${mod.path}/acme" />
     <property name="mod.acme.war" location="${mod.dist.path}/acme.war" />
     <property name="mod.acme-common.jar" location="${mod.dist.path}/acme-common.jar" />

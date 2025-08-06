@@ -29,7 +29,7 @@ dependencies {
         implementation(project(path = ":modules:ejbca-rest-cryptotoken", configuration = "archives"))
         implementation(project(path = ":modules:ejbca-rest-camanagement", configuration = "archives"))
     }
-    implementation(libs.commons.lang3.old)
+    implementation(libs.commons.lang3)
     implementation(libs.reflections)
     implementation(libs.swagger.annotations)
     implementation(libs.swagger.core)
