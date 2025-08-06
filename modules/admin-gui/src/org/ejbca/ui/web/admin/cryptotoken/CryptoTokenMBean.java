@@ -39,6 +39,7 @@ import jakarta.inject.Named;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.accounts.AccountBindingException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -117,7 +118,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         FacesContext fc = FacesContext.getCurrentInstance();
         Map<String, String> params = fc.getExternalContext().getRequestParameterMap();
         String initNewPkiParam = params.get("initNewPki");
-        if (StringUtils.equals(initNewPkiParam, "true")) {
+        if (Strings.CS.equals(initNewPkiParam, "true")) {
             initNewPki = true;
         }
     }

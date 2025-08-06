@@ -31,8 +31,9 @@ import jakarta.faces.event.AjaxBehaviorEvent;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.ssh.SshKeyFactory;
@@ -126,8 +127,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     private BasePublisher publisher = null;
     private Integer publisherId = null;
     private String publisherName = null;
-    private boolean createNewPublisher = false;
-    
+
     public int getPublisherId(){
         return publisherId;
     }
@@ -485,8 +485,9 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         }
 
         try {
-            if (this.createNewPublisher) {
+            if (this.publisherId <= 0) {
                 publisherSession.addPublisher(getAdmin(), getPublisherName(), publisher);
+                this.publisherId = publisher.getPublisherId();
             } else {
                 publisherSession.changePublisher(getAdmin(), getPublisherId(), getPublisherName(), publisher);
             }
@@ -502,10 +503,14 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
 
         savePublisher();
 
+        testConnection();
+    }
+
+    public void testConnection() throws AuthorizationDeniedException {
         try {
             
             if (isManageScpPublisher()) {
-                boolean result = savePublisherAndShowDownloadableKey();
+                boolean result = populateScpPublisherPublicKeyField();
                 if (!result) {
                     return;
                 }
@@ -531,11 +536,11 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     public String getScpPublisherAuthPublicKey() {
         return scpPublisherAuthPublicKey;
     }
-    
-    private boolean savePublisherAndShowDownloadableKey() throws AuthorizationDeniedException {
+
+    private boolean populateScpPublisherPublicKeyField() throws AuthorizationDeniedException {
         
-        boolean useSftp = (boolean) getCustomPublisherMBData().getCustomPublisherPropertyValues().get("scp.usesftp");
-        if (!useSftp) {
+        final Object useSftp = getCustomPublisherMBData().getCustomPublisherPropertyValues().getOrDefault("scp.usesftp", false);
+        if (!BooleanUtils.toBoolean(useSftp.toString())) {
             log.debug("SFTP is not being used.");
             return true;
         }
@@ -562,8 +567,8 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     
     // This is ugly but could not find a better way for it
     public boolean isPublisherSupportingOcspResponses() {
-        return StringUtils.contains(selectedPublisherType, "PeerPublisher")
-                || StringUtils.contains(selectedPublisherType, "EnterpriseValidationAuthorityPublisher");
+        return Strings.CS.contains(selectedPublisherType, "PeerPublisher")
+                || Strings.CS.contains(selectedPublisherType, "EnterpriseValidationAuthorityPublisher");
     }
     
     private void prepareForSave() throws PublisherDoesntExistsException, PublisherExistsException, PublisherException, ParameterException {
@@ -658,7 +663,6 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
 
     private void initCommonParts() {
         if (publisher == null) { // Loading from database
-            this.createNewPublisher = listPublishers.getSelectedPublisherId() == null || listPublishers.getSelectedPublisherId() == 0;
 
             if (StringUtils.isBlank(listPublishers.getSelectedPublisherName())) {
                 publisher = new LdapPublisher();
@@ -677,7 +681,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
             }
 
             publisherId = publisher.getPublisherId();
-            publisherName = this.createNewPublisher ? listPublishers.getNewPublisherName() : publisher.getName();
+            publisherName = publisherId > 0 ? publisher.getName() : listPublishers.getNewPublisherName();
         }
 
         selectedPublisherType = getSelectedPublisherValue();
