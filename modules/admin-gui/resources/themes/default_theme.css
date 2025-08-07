@@ -1636,6 +1636,10 @@ a.button:active {
 	padding: 0.5em;
 }
 
+body .ui-panelgrid .ui-panelgrid-cell {
+	padding: 0.5em 0.5em 0.5em 0;
+}
+
 /* Match the file upload button style to the plain PrimeFaces buttons  */
 input[type="file"] {
     color: #495057;
@@ -1682,6 +1686,10 @@ input[type="file"]::file-selector-button:hover {
 
 body .ui-datatable .ui-datatable-footer {
 	text-align: right;
+}
+
+.no-summary > span.ui-message-info-summary {
+    margin: 0;
 }
 
 /* PrimeFaces class adjustments: END */
@@ -1744,6 +1752,15 @@ table.no-padding tr td  {
     padding: 0;
 }
 
+table.no-left-padding-1st-column td:nth-child(1),
+table.no-left-padding-1st-column th:nth-child(1) {
+    padding-left: 0;
+}
+
+.no-margin {
+    margin: 0;
+}
+
 .padding-bottom-1-rem,
 .row-padding-bottom-1-rem,
 .row-padding-bottom-1-rem table tr td,
@@ -1753,6 +1770,10 @@ table.row-padding-bottom-1-rem tr td {
 
 .padding-top-1-rem {
     padding-top: 1rem;
+}
+
+.margin-top-1-rem {
+    margin-top: 1rem;
 }
 
 .cell-padding-right-1-rem,
