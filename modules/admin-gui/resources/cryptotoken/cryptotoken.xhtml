@@ -660,7 +660,7 @@
                     </p:column>
                 </p:row>
 
-                <p:row>
+                <p:row rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}">
                     <p:column>
                         <ui:remove>
                             <!-- Three cases of the Save button.
@@ -696,20 +696,18 @@
             </p:panelGrid>
         </h:form>
 
-        <ui:fragment rendered="#{!cryptoTokenMBean.currentCryptoToken.active &amp;&amp; cryptoTokenMBean.currentCryptoTokenId!=0}">
-            <h3>
-                <h:outputText value="#{web.text.CRYPTOTOKEN_KPM_NA}"
-                              rendered="#{!cryptoTokenMBean.currentCryptoToken.active &amp;&amp; cryptoTokenMBean.currentCryptoTokenId!=0}"/>
+        <ui:fragment rendered="#{cryptoTokenMBean.currentCryptoTokenId!=0}">
+            <h3 class="padding-top-1-rem">
+                <h:outputText value="#{web.text.MANAGE_KEY_PAIRS}"/>
             </h3>
         </ui:fragment>
 
-        <h:form id="currentCryptoTokenAliasesForm" rendered="#{cryptoTokenMBean.currentCryptoToken.active}">
-            <ui:fragment rendered="#{!cryptoTokenMBean.keyPairGuiListEmpty}">
-                <h3>
-                    <h:outputText value="#{web.text.LISTOFKEYPAIRS}"/>
-                </h3>
-            </ui:fragment>
+        <ui:fragment rendered="#{!cryptoTokenMBean.currentCryptoToken.active &amp;&amp; cryptoTokenMBean.currentCryptoTokenId!=0}">
+            <p:staticMessage severity="info" detail="#{web.text.CRYPTOTOKEN_KPM_NA}"
+                             styleClass="no-summary no-margin margin-top-1-rem"/>
+        </ui:fragment>
 
+        <h:form id="currentCryptoTokenAliasesForm" rendered="#{cryptoTokenMBean.currentCryptoToken.active}">
             <p:dataTable value="#{cryptoTokenMBean.keyPairGuiList}"
                          id="keyPairList"
                          var="keyPairGuiInfo"
@@ -827,10 +825,8 @@
             </h:panelGroup>
 
             <ui:fragment rendered="#{cryptoTokenMBean.keyPairGuiListEmpty &amp;&amp; !cryptoTokenMBean.keyPairGuiListFailed}">
-                <h3>
-                    <h:outputText value="#{web.text.CRYPTOTOKEN_KPM_NOPAIRS}"
-                                  rendered="#{cryptoTokenMBean.keyPairGuiListEmpty &amp;&amp; !cryptoTokenMBean.keyPairGuiListFailed}"/>
-                </h3>
+                <p:staticMessage severity="info" detail="#{web.text.CRYPTOTOKEN_KPM_NOPAIRS}"
+                                 styleClass="no-summary no-margin margin-top-1-rem"/>
             </ui:fragment>
 
             <h:panelGrid columns="3" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}" styleClass="no-padding">
@@ -849,7 +845,7 @@
                 </h3>
             </ui:fragment>
 
-            <h:panelGrid columns="3" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}">
+            <h:panelGrid columns="3" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}" styleClass="no-left-padding-1st-column">
 
                 <h:inputText id="genNewKeyPairAlias" value="#{cryptoTokenMBean.newKeyPairAlias}"
                              rendered="#{cryptoTokenMBean.allowedToKeyGeneration}" size="30"

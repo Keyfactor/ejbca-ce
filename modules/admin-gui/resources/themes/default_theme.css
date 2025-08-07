@@ -1688,6 +1688,10 @@ body .ui-datatable .ui-datatable-footer {
 	text-align: right;
 }
 
+.no-summary > span.ui-message-info-summary {
+    margin: 0;
+}
+
 /* PrimeFaces class adjustments: END */
 
 .table-layout-auto {
@@ -1748,6 +1752,15 @@ table.no-padding tr td  {
     padding: 0;
 }
 
+table.no-left-padding-1st-column td:nth-child(1),
+table.no-left-padding-1st-column th:nth-child(1) {
+    padding-left: 0;
+}
+
+.no-margin {
+    margin: 0;
+}
+
 .padding-bottom-1-rem,
 .row-padding-bottom-1-rem,
 .row-padding-bottom-1-rem table tr td,
@@ -1757,6 +1770,10 @@ table.row-padding-bottom-1-rem tr td {
 
 .padding-top-1-rem {
     padding-top: 1rem;
+}
+
+.margin-top-1-rem {
+    margin-top: 1rem;
 }
 
 .cell-padding-right-1-rem,
