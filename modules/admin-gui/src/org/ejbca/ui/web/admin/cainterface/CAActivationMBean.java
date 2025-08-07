@@ -61,11 +61,11 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	private static final Logger log = Logger.getLogger(CAActivationMBean.class);
 
 	private static final long serialVersionUID = -2660384552215596717L;
-	
+
 	public CAActivationMBean() {
 	    super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
 	}
-	
+
 	/** GUI representation of a CA for the activation view */
 	public class CaActivationGuiInfo implements Serializable {
 	    private static final long serialVersionUID = 1L;
@@ -75,7 +75,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
         private boolean monitored;
         private boolean monitoredNewState;
         private boolean newState;
-	    
+
 	    private CaActivationGuiInfo(int status, boolean monitored, String name, int caId) {
 	        this.status = status;
             this.newState = isActive();
@@ -132,7 +132,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	    }
 
         public List<CaActivationGuiInfo> getCas() { return caActivationGuiInfos; }
-	    
+
         public int getCryptoTokenId() { return cryptoTokenInfo.getCryptoTokenId(); }
         public String getCryptoTokenName() { return cryptoTokenInfo.getName(); }
         public boolean isExisting() { return !"NullCryptoToken".equals(cryptoTokenInfo.getType()); }
@@ -168,7 +168,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 
 	private List<TokenAndCaActivationGuiComboInfo> authorizedTokensAndCas = null;
 	private String authenticationcode;
-    
+
 
 	public List<TokenAndCaActivationGuiComboInfo> getAuthorizedTokensAndCas() {
         final Map<Integer,TokenAndCaActivationGuiInfo> sortMap = new HashMap<>();
@@ -271,7 +271,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	                } catch (Exception e) {
 	                    super.addNonTranslatedErrorMessage(e);
 	                }
-	            } 
+	            }
 	            // Valid transition 2: Currently online, become offline
 	            if (!ca.isNewState() && ca.getStatus()==CAConstants.CA_ACTIVE) {
 	                try {
@@ -310,19 +310,19 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
         }
         return false;
     }
-    
+
     /**
-     * AccessRulesConstants.REGULAR_ACTIVATECA is not the best rule to check, but will work as a placeholder until authorization is revamped. 
-     * 
+     * AccessRulesConstants.REGULAR_ACTIVATECA is not the best rule to check, but will work as a placeholder until authorization is revamped.
+     *
      * @return true if admin is authorized to {@link AccessRulesConstants#REGULAR_ACTIVATECA}
      */
     public boolean isAuthorizedToBasicFunctions() {
         return getAuthorizationSession().isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_ACTIVATECA);
     }
-    
+
     public void setAuthenticationCode(String authenticationcode) { this.authenticationcode = authenticationcode; }
 	public String getAuthenticationCode() { return ""; }
-	
+
     public AuthenticationToken getAuthenticationToken() {
         if (authenticationToken == null)
             authenticationToken = EjbcaJSFHelper.getBean().getEjbcaWebBean().getAdminObject();
@@ -343,7 +343,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 
     public CaSessionLocal getCaSession() {
         if (caSession == null)
-            caSession = getEjbLocalhelper().getCaSession(); 
+            caSession = getEjbLocalhelper().getCaSession();
         return caSession;
     }
 
@@ -357,5 +357,9 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
         if (authorizationSession == null)
             authorizationSession = getEjbLocalhelper().getAuthorizationSession();
         return authorizationSession;
+    }
+
+    public String getCryptoTokenViewLink(final String cryptoTokenId) {
+        return String.format("/cryptotoken/cryptotoken.xhtml?faces-redirect=true&cryptoTokenId=%s&ref=caactivation", cryptoTokenId);
     }
 }

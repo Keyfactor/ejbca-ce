@@ -26,12 +26,14 @@ sourceSets {
             setSrcDirs(
                 listOf("src")
             )
-            resources {
-                srcDirs("resources")
-            }
         }
     }
 }
+
+// define interfaces that should be used to generate service manifest files
+ext["serviceInterfaces"] = listOf(
+    "org.cesecore.certificates.ca.CACommon"
+)
 
 tasks.jar {
     from(sourceSets["main"].output)

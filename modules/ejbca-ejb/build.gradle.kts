@@ -44,14 +44,18 @@ sourceSets {
     }
 }
 
+// define interfaces that should be used to generate service manifest files
+ext["serviceInterfaces"] = listOf(
+    "org.cesecore.authorization.rules.AccessRulePlugin",
+    "org.cesecore.certificates.ocsp.extension.OCSPExtension",
+    "org.cesecore.certificates.ca.ExtendedUserDataHandler"
+)
+
 tasks.jar {
     from("resources") {
         include("ejb-jar.xml")
         include("jboss-ejb3.xml")
         into("META-INF")
-    }
-    from("resources/META-INF/services") {
-        into("META-INF/services")
     }
     from(sourceSets["main"].output)
 }

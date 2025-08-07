@@ -403,6 +403,7 @@ table.grid td {
 	margin: 0px;
 	padding: 2px 3px;
 	border: 1px solid #2E5A94;
+	font-size: 1rem !important;
 }
 /* nested table */
 table.grid table td {
@@ -1616,6 +1617,14 @@ a.button:active {
     vertical-align: middle;
 }
 
+.ui-datatable table td img.status {
+	vertical-align: text-bottom;
+	margin-right: 0.5rem;
+	border: 0;
+	max-width: 16px;
+	max-height: 16px;
+}
+
 /* Remove cell focus borders */
 .ui-datatable-data td[role="gridcell"]:focus {
     outline: none;
@@ -1652,6 +1661,27 @@ input[type="file"]::file-selector-button {
 
 input[type="file"]::file-selector-button:hover {
     background-color: #f5f5f5;
+}
+
+/* Add some margins to checkboxes */
+
+.ui-chkbox {
+	display: inline-flex;
+	align-items: center;
+	vertical-align: middle;
+	margin: 0 5px 0 0 !important;
+	width: auto;
+	height: auto
+}
+
+.ui-selectbooleancheckbox + label .ui-outputlabel-label {
+    vertical-align: middle;
+}
+
+/* Align text in the table footer */
+
+body .ui-datatable .ui-datatable-footer {
+	text-align: right;
 }
 
 /* PrimeFaces class adjustments: END */
@@ -1736,6 +1766,18 @@ label.break-line {
 
 .inline-block {
     display: inline-block;
+}
+
+.align-checkboxes {
+    text-align: left;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+label.align-label > span.ui-outputlabel-label {
+    display: flex;
+    align-items: center;
+    height: 100%;
 }
 
 /*--------------------------------------------------------------------------*/
