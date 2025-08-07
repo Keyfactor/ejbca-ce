@@ -59,7 +59,7 @@ import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
@@ -358,11 +358,13 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         // The CERTPROFILE_FIXED_ENDUSER have by default 'Forbid encryption usage for ECC keys' checked since 9.4.0 which
         // defaults to 'Forbid encryption usage for ECC keys' in certificate profiles
         final String keyAlg = cert.getPublicKey().getAlgorithm();
-        if (StringUtils.startsWith(keyAlg, "EC")) {
-            assertFalse("keyEncipherment should not be present for EC keys", ku[2]);
+        if (Strings.CS.startsWith(keyAlg, "EC")
+                || Strings.CS.startsWith(keyAlg, "Ed")
+                || AlgorithmTools.isPQC(keyAlg) && !AlgorithmTools.isKEM(keyAlg)) {
+            assertFalse("keyEncipherment should not be present for signature keys", ku[2]);
             assertEquals(X509KeyUsage.digitalSignature|X509KeyUsage.nonRepudiation, bcku);
         } else {
-            assertTrue("keyEncipherment should be present for non EC keys", ku[2]);
+            assertTrue("keyEncipherment should be present for RSA and KEM keys", ku[2]);
             assertEquals(X509KeyUsage.digitalSignature|X509KeyUsage.nonRepudiation|X509KeyUsage.keyEncipherment, bcku);
         }
 
@@ -1129,8 +1131,8 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             // An unescaped '+' character is interpreted as a separator between two connected subjectAltName fields. So "rfc822Name=user+plus@user.com" is
             // handled as "rfc822Name=user" and "plus@user.com". Since the second part does not map to any known fields, the resulting SubjectAltName is
             // "rfc822Name=user"
-            assertFalse(StringUtils.equals("rfc822name=" + emailUnescaped, DnComponents.getSubjectAlternativeName(certificate)));
-            assertFalse(StringUtils.equals("rfc822name=" + emailEscaped, DnComponents.getSubjectAlternativeName(certificate)));
+            assertFalse(Strings.CS.equals("rfc822name=" + emailUnescaped, DnComponents.getSubjectAlternativeName(certificate)));
+            assertFalse(Strings.CS.equals("rfc822name=" + emailEscaped, DnComponents.getSubjectAlternativeName(certificate)));
             assertEquals("rfc822name=user", DnComponents.getSubjectAlternativeName(certificate));
         } catch (CAOfflineException e) {
             fail("Certificate could not be created: " + e.getMessage());
