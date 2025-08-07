@@ -122,13 +122,13 @@
                     <h:outputText value="* #{web.text.ACTIVATECAS_FOOTNOTE} (#{web.ejbcaWebBean.hostName})."/>
                 </f:facet>
             </p:dataTable>
-            <h:panelGrid columns="3">
-                <p:outputLabel rendered="#{cAActivationMBean.activationCodeShown}" for="authCode" value="#{web.text.ACTIVATECAS_ACTCODE}:" styleClass="alignmiddle"/>
+            <h:panelGroup styleClass="action-buttons">
+                <p:outputLabel rendered="#{cAActivationMBean.activationCodeShown}" for="authCode" value="#{web.text.ACTIVATECAS_ACTCODE}:" styleClass="align-label"/>
                 <h:inputSecret rendered="#{cAActivationMBean.activationCodeShown}" id="authCode" value="#{cAActivationMBean.authenticationCode}">
                     <f:passThroughAttribute name="autocomplete" value="new-password"/>
                 </h:inputSecret>
                 <h:commandButton id="applyButton" action="#{cAActivationMBean.applyChanges}" value="#{web.text.APPLY}" rendered="#{cAActivationMBean.authorizedToBasicFunctions }"/>
-            </h:panelGrid>
+            </h:panelGroup>
         </h:form>
     </ui:define>
 </ui:composition>

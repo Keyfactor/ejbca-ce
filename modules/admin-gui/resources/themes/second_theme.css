@@ -1607,5 +1607,11 @@ label.break-line {
     padding-right: 1rem;
 }
 
+label.align-label > span.ui-outputlabel-label {
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+
 /*--------------------------------------------------------------------------*/
 /* EOF */
