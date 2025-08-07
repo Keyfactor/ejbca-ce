@@ -22,11 +22,13 @@ sourceSets {
         java {
             setSrcDirs(listOf("../src-interface"))
         }
-        resources {
-            srcDirs("resources")
-        }
     }
 }
+
+// define interfaces that should be used to generate service manifest files
+ext["serviceInterfaces"] = listOf(
+    "org.cesecore.authentication.tokens.AuthenticationTokenMetaData"
+)
 
 tasks.jar {
     from(sourceSets["main"].output)
