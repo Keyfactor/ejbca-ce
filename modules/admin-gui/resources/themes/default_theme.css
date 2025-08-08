@@ -1740,6 +1740,11 @@ body .ui-datatable .ui-datatable-footer {
     white-space: nowrap;
 }
 
+.action-buttons input[type="submit"]:disabled {
+	background-color: rgba(239, 239, 239, 0.3);
+	color: lightgray;
+}
+
 .no-border,
 .no-border table {
     border: none;
