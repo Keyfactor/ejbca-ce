@@ -45,10 +45,12 @@ sourceSets {
     }
 }
 
+// define interfaces that should be used to generate service manifest files
+ext["serviceInterfaces"] = listOf(
+    "org.cesecore.certificates.certificate.certextensions.CustomCertificateExtension"
+)
+
 tasks.jar {
     from(sourceSets["main"].output)
-    from("resources/META-INF") {
-        into("META-INF")
-    }
     archiveBaseName.set("systemtests-common")
 }

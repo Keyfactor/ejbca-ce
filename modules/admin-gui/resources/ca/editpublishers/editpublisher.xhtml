@@ -194,7 +194,7 @@
 				<h:panelGrid styleClass="edit-top" width="100%" columns="2"
 					rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
 					<h:panelGroup />
-					<h:panelGroup>
+					<h:panelGroup rendered="#{!editPublisher.readOnly}">
 						<h:commandButton value="#{web.text.SAVEANDTESTCONNECTION}" 
 										 style="margin-right:3px;" 
 										 action="#{editPublisher.savePublisherAndTestConnection()}" 
@@ -206,6 +206,14 @@
 										 onclick="return checkPassword('#{web.text.PASSWORDSDOESNTMATCH}')"
 										 id="save"/>
 						<h:button id="cancelEditPublisher" value="#{web.text.CANCEL}" outcome="listpublishers?faces-redirect=true" />
+					</h:panelGroup>
+					<h:panelGroup rendered="#{editPublisher.readOnly}">
+						<h:commandButton value="#{web.text.TEST_CONNECTION}"
+										 style="margin-right:3px;"
+										 action="#{editPublisher.testConnection()}"
+										 onclick="return checkPassword('#{web.text.PASSWORDSDOESNTMATCH}')"
+										 id="testConnection"/>
+						<h:button id="cancelViewPublisher" value="#{web.text.CANCEL}" outcome="listpublishers?faces-redirect=true" />
 					</h:panelGroup>
 				</h:panelGrid>
 			</h:form>

@@ -3,6 +3,7 @@ import java.util.*
 rootProject.name = "ejbca"
 
 val ejbcaProperties: Properties = loadPropertiesFromFiles(
+    "src/internal.properties",
     "conf/ejbca.properties",
     "conf/database.properties",
     "conf/systemtests.properties"
@@ -16,15 +17,24 @@ val edition = if (editionProp == "ce" || !eeModuleExists) "ce" else "ee"
 val appServerHome: String? = ejbcaProperties.getProperty("appserver.home", System.getenv("APPSRV_HOME"))
 val isProductionMode = ejbcaProperties.getProperty("ejbca.productionmode", "true").toBoolean()
 
+val ejbcaVersionNumber = ejbcaProperties.getProperty("app.version.number", "0.0.0").toString()
+val ejbcaVersionString = if (edition == "ee") {
+    ejbcaProperties.expandPlaceholders("app.version")
+} else {
+    ejbcaProperties.expandPlaceholders("community.version")
+}
+
 // share project properties with other build files
 gradle.allprojects {
     extra["isProductionMode"] = isProductionMode
     extra["edition"] = edition
     extra["appServerHome"] = appServerHome
+    extra["ejbcaVersionString"] = ejbcaVersionString
     // add other properties loaded from EJBCA configuration files
     ejbcaProperties.forEach { (key, value) ->
         extra["$key"] = value
     }
+    version = ejbcaVersionNumber
 }
 
 dependencyResolutionManagement {
@@ -123,6 +133,7 @@ dependencyResolutionManagement {
             library("woodstox.core", ":woodstox-core:6.5.0")
             library("wsdl4j", ":wsdl4j:1.6.3")
             library("xmlschema.core", ":xmlschema-core:2.2.5")
+            library("service.manifest.builder", ":servicemanifestbuilder:1.0.1")
             // hibernate
             library("antlr4-runtime", ":antlr4-runtime:4.13.0")
             library("byte-buddy", ":byte-buddy:1.14.15")
@@ -402,4 +413,13 @@ fun loadPropertiesFromFiles(vararg filePaths: String): Properties {
         }
     }
     return properties
+}
+
+fun Properties.expandPlaceholders(templateKey: String): String {
+    val template = ejbcaProperties.getProperty(templateKey);
+    val placeholderPattern = Regex("\\$\\{([^}]+)\\}")
+    return placeholderPattern.replace(template) { matchResult ->
+        val propertyKey = matchResult.groupValues[1]
+        getProperty(propertyKey) ?: matchResult.value
+    }
 }
