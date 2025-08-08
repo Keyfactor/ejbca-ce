@@ -213,7 +213,7 @@ public class ConfigdumpSetting implements Serializable {
     private ResolveReferenceMode resolveReferenceMode = ResolveReferenceMode.NO_RESOLUTION_SET;
     private Map<ConfigdumpItem<?>, OverwriteMode> overwriteResolutions = new HashMap<>();
     private Map<ConfigdumpItem<?>, ResolveReferenceMode> resolveReferenceModeResolutions = new HashMap<>();
-    private Map<ConfigdumpItem<?>, String> passwords = new HashMap<>();
+    private Map<ConfigdumpItem<?>, Map<String, String>> passwords = new HashMap<>();
     private boolean initializeCas;
     private boolean exportDefaults;
     private boolean exportExternalCas = true; // needs to be true in import mode, or overwrite detection will not work
@@ -413,11 +413,14 @@ public class ConfigdumpSetting implements Serializable {
         return true;
     }
 
-    public void putPassword(final ConfigdumpItem<?> configdumpItem, final String password) {
-        passwords.put(configdumpItem, password);
+    public void putPassword(final ConfigdumpItem<?> configdumpItem, final String field, final String password) {
+        if(!passwords.containsKey(configdumpItem)){
+            passwords.put(configdumpItem, new HashMap<>());
+        }
+        passwords.get(configdumpItem).put(field, password);
     }
 
-    public Optional<String> getPasswordFor(final ConfigdumpItem<?> configdumpItem) {
+    public Optional<Map<String,String>> getPasswordFor(final ConfigdumpItem<?> configdumpItem) {
         return Optional.ofNullable(passwords.get(configdumpItem));
     }
 
