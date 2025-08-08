@@ -1685,11 +1685,15 @@ body .ui-datatable .ui-datatable-footer {
     margin: 0;
 }
 
-.ui-messages-error:has(ul li:nth-child(2)) .ui-messages-error-icon {
+.ui-messages-error:has(ul li:nth-child(2)) .ui-messages-error-icon,
+.ui-messages-warn:has(ul li:nth-child(2)) .ui-messages-warn-icon,
+.ui-messages-info:has(ul li:nth-child(2)) .ui-messages-info-icon {
     display: none;
 }
 
-.ui-messages-error:has(ul li:nth-child(2)) ul {
+.ui-messages-error:has(ul li:nth-child(2)) ul,
+.ui-messages-warn:has(ul li:nth-child(2)) ul,
+.ui-messages-info:has(ul li:nth-child(2)) ul {
     list-style-type: disc;
     padding-left: 1rem;
 }
