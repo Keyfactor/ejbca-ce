@@ -35,7 +35,6 @@ import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.ui.cli.ca.CertificateImporter.Result;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
@@ -57,8 +56,6 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
     private static final Logger log = Logger.getLogger(CaImportCertDirCommand.class);
 
     public static final String DATE_FORMAT = "yyyy.MM.dd-HH:mm";
-    public static final String DATE_FORMAT_WINSAFE = "yyyy.MM.dd-HH.mm"; // The colon character (:) will cause issued within Windows filenames, so use a period instead. 
-
     private static final String USERNAME_FILTER_KEY = "--filter";
     private static final String CA_NAME_KEY = "--caname";
     private static final String ACTIVE_KEY = "-a";
@@ -70,7 +67,6 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
     private static final String REVOCATION_TIME = "--revocation-time";
     private static final String THREAD_COUNT = "--threads";
     private static final String CACERT = "--cacert";
-    private static final String REVOKEDETAILS = "--revoke-details-in-filename";
 
     private static final String ACTIVE = "ACTIVE";
     private static final String REVOKED = "REVOKED";
@@ -99,10 +95,6 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
                 "Number of threads used during the import. Default is 1 thread."));
         registerParameter(new Parameter(CACERT, "CA Certificate File", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "Specify an alternate CA certificate file (in PEM). Use this option when importing certificates that were issued by the previous CA certificate. Please note that the supplied certificate is not verified."));
-        registerParameter(new Parameter(REVOKEDETAILS, "Revocation Details", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG,
-                "Revocation details are to be derived from the filename of the certificate. The filename must end with '!<REASON>!<INVALIDITY_TIME>'. The REASON can be the value or label as described in RFC5280 section 5.3.1. "
-                + "INVALIDITY_TIME is formatted as '"+DATE_FORMAT_WINSAFE+"' and assumed to be the local timezone. Note: Filename extensions (ie., '.crt. or '.pem') are not supported. Please also note that any file without "
-                + "revocation details will not be imported."));
    }
 
     @Override
@@ -248,59 +240,6 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 
 
             for (final File file : files) {
-                
-                // Check if revocation details are to be derived from the filename. Only do this if status is REVOKED
-                if ( (status == CertificateConstants.CERT_REVOKED) &&  parameters.containsKey(REVOKEDETAILS)) {
-                    // Find the revocation details from the filename. The details are separated with an exclamation (!) character.
-                    final String[] sa = file.getName().split("!");
-                    if (sa.length <3) {
-                        log.error("ERROR: The revocation details are not found in filename '"+file.getName()+"'. Ignoring this file.");
-                        results.add( Result.GENERAL_IMPORT_ERROR);
-                        continue;
-                   } else {
-                        // Process the REASON from 2nd last string in array
-                        String sRevCode = sa[ sa.length-2 ].toUpperCase();
-                        // Check if using a code value
-                        try {
-                            final int iRevCode = Integer.parseInt(sRevCode);
-                            revocationReason = RevocationReasons.getFromDatabaseValue(iRevCode);
-                            if(revocationReason == null) {
-                                log.error("ERROR: '" + iRevCode + "' is not a valid revocation reason code. Ignoring this file '"+file.getName()+"'.");
-                                results.add( Result.GENERAL_IMPORT_ERROR);
-                                continue;
-                            }
-                            
-                        } catch (NumberFormatException e) {
-                            // Not an integer, must be the full text
-                            // Correct the string value to suit RevocationReason
-                            if ( sRevCode.equals("KEYCOMPROMISE")) sRevCode = "KEY_COMPROMISE";
-                            if ( sRevCode.equals("CACOMPROMISE")) sRevCode = "CA_COMPROMISE";
-                            if ( sRevCode.equals("AFFILIATIONCHANGED")) sRevCode = "AFFILIATION_CHANGED";
-                            if ( sRevCode.equals("CESSATIONOFOPERATION")) sRevCode = "CESSATION_OF_OPERATION";
-                            if ( sRevCode.equals("CERTIFICATEHOLD")) sRevCode = "CERTIFICATE_HOLD";
-                            if ( sRevCode.equals("PRIVILEGESWITHDRAWN")) sRevCode = "PRIVILEGES_WITHDRAWN";
-                            if ( sRevCode.equals("AACOMPROMISE")) sRevCode = "AA_COMPROMISE";
-                                                             
-                            revocationReason = RevocationReasons.getFromCliValue(sRevCode.toUpperCase());
-                            if(revocationReason == null) {
-                               log.error("ERROR: '" + sRevCode + "' is not a valid revocation reason. Ignoring this file '"+file.getName()+"'.");
-                               results.add( Result.GENERAL_IMPORT_ERROR);
-                               continue;
-                            }
-                       }
-                        
-                        // Process the TIME from last string in array
-                       final String sRevTime = sa[ sa.length-1 ];
-                       try {
-                            revocationTime = new SimpleDateFormat(DATE_FORMAT_WINSAFE).parse( sRevTime);
-                        } catch (ParseException e) {
-                            log.error("ERROR: '" + sRevTime + "' was not a valid revocation time. Use this time format '"+DATE_FORMAT_WINSAFE+"'. Ignoring this file '"+file.getName()+"'.");
-                            results.add( Result.GENERAL_IMPORT_ERROR);
-                            continue;
-                        }
-                    }
-                }                
-                
                 futures.add(executorService.submit(new CertificateImporter()
                         .setAuthenticationToken(getAuthenticationToken())
                         .setCaCertificate(cacert)

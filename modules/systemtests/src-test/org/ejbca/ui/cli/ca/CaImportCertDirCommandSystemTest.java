@@ -195,60 +195,6 @@ public class CaImportCertDirCommandSystemTest {
     }
     
     @Test
-    public void testImportRevokedWithReasonAndTimeInFilennameReasonCode() throws AuthorizationDeniedException, ParseException {
-        // Rename the certificate file
-        File newFile = new File(tempDirectory, "test!cert!6!2022.07.08-15.49");
-        certificateFile.renameTo(newFile);
-        String[] args = new String[] { "DN", CA_NAME, "REVOKED", tempDirectory.getAbsolutePath(), "--eeprofile", "EMPTY", "--certprofile", "ENDUSER",
-                "--revoke-details-in-filename" };
-        assertEquals(CommandResult.SUCCESS, command.execute(args));
-        EndEntityInformation endEntityInformation = endEntityAccessSession.findUser(authenticationToken, CERTIFICATE_DN);
-        assertNotNull("Certificate was not imported.", endEntityInformation);
-        assertEquals("Certificate was imported with incorrect status", EndEntityConstants.STATUS_GENERATED, endEntityInformation.getStatus());
-        CertificateStatus certificateStatus = certificateStoreSession.getStatus(CA_DN, certificateSerialNumber);
-        assertEquals("Certificate revocation reason was incorrectly imported.", RevocationReasons.CERTIFICATEHOLD.getDatabaseValue(),
-                certificateStatus.revocationReason);
-        assertEquals("Certificate revocation date was incorrectly imported.", new SimpleDateFormat(CaImportCertDirCommand.DATE_FORMAT_WINSAFE).parse("2022.07.08-15.49"),
-                certificateStatus.revocationDate);
-    }
-
-    @Test
-    public void testImportRevokedWithReasonAndTimeInFilennameReasonText() throws AuthorizationDeniedException, ParseException {
-        // Rename the certificate file
-        File newFile = new File(tempDirectory, "!affiliationChanged!2023.08.21-05.26");
-        certificateFile.renameTo(newFile);
-        String[] args = new String[] { "DN", CA_NAME, "REVOKED", tempDirectory.getAbsolutePath(), "--eeprofile", "EMPTY", "--certprofile", "ENDUSER",
-                "--revoke-details-in-filename" };
-        assertEquals(CommandResult.SUCCESS, command.execute(args));
-        EndEntityInformation endEntityInformation = endEntityAccessSession.findUser(authenticationToken, CERTIFICATE_DN);
-        assertNotNull("Certificate was not imported.", endEntityInformation);
-        assertEquals("Certificate was imported with incorrect status", EndEntityConstants.STATUS_GENERATED, endEntityInformation.getStatus());
-        CertificateStatus certificateStatus = certificateStoreSession.getStatus(CA_DN, certificateSerialNumber);
-        assertEquals("Certificate revocation reason was incorrectly imported.", RevocationReasons.AFFILIATIONCHANGED.getDatabaseValue(),
-                certificateStatus.revocationReason);
-        assertEquals("Certificate revocation date was incorrectly imported.", new SimpleDateFormat(CaImportCertDirCommand.DATE_FORMAT_WINSAFE).parse("2023.08.21-05.26"),
-                certificateStatus.revocationDate);
-    }
-
-    @Test
-    public void testImportRevokedWithReasonAndTimeInFilennameReasonTextWithUnderscores() throws AuthorizationDeniedException, ParseException {
-        // Rename the certificate file
-        File newFile = new File(tempDirectory, "test!CESSATION_OF_OPERATION!2021.02.28-0.01");
-        certificateFile.renameTo(newFile);
-        String[] args = new String[] { "DN", CA_NAME, "REVOKED", tempDirectory.getAbsolutePath(), "--eeprofile", "EMPTY", "--certprofile", "ENDUSER",
-                "--revoke-details-in-filename" };
-        assertEquals(CommandResult.SUCCESS, command.execute(args));
-        EndEntityInformation endEntityInformation = endEntityAccessSession.findUser(authenticationToken, CERTIFICATE_DN);
-        assertNotNull("Certificate was not imported.", endEntityInformation);
-        assertEquals("Certificate was imported with incorrect status", EndEntityConstants.STATUS_GENERATED, endEntityInformation.getStatus());
-        CertificateStatus certificateStatus = certificateStoreSession.getStatus(CA_DN, certificateSerialNumber);
-        assertEquals("Certificate revocation reason was incorrectly imported.", RevocationReasons.CESSATIONOFOPERATION.getDatabaseValue(),
-                certificateStatus.revocationReason);
-        assertEquals("Certificate revocation date was incorrectly imported.", new SimpleDateFormat(CaImportCertDirCommand.DATE_FORMAT_WINSAFE).parse("2021.02.28-0.01"),
-                certificateStatus.revocationDate);
-    }
-    
-    @Test
     public void testImportFromAnotherCA() throws Exception {
         // Import a certificate from another CA. One way to do this is to save the current CA cert, re-create the CA, then import EE cert.
         // Get the CA cert and save it to file
