@@ -14,7 +14,6 @@ package org.ejbca.ui.cli.ca;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.cert.Certificate;
