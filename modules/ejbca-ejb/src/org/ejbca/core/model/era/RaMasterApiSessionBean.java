@@ -65,7 +65,6 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.WebPrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
-import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.control.StandardRules;
@@ -435,27 +434,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         final HashMap<String, Boolean> accessRules = authorizationSession.getAccessAvailableToAuthenticationToken(authenticationToken);
         final int updateNumber = accessTreeUpdateSession.getAccessTreeUpdateNumber();
         return new RaAuthorizationResult(accessRules, updateNumber);
-    }
-
-    @Override
-    @Deprecated
-    public AccessSet getUserAccessSet(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
-        return authorizationSystemSession.getAccessSetForAuthToken(authenticationToken);
-    }
-
-    @Override
-    @Deprecated
-    public List<AccessSet> getUserAccessSets(final List<AuthenticationToken> authenticationTokens) {
-        final List<AccessSet> ret = new ArrayList<>();
-        for (final AuthenticationToken authenticationToken : authenticationTokens) {
-            try {
-                ret.add(authorizationSystemSession.getAccessSetForAuthToken(authenticationToken));
-            } catch (AuthenticationFailedException e) {
-                // Always add, even if null. Otherwise the caller won't be able to determine which AccessSet belongs to which AuthenticationToken
-                ret.add(null);
-            }
-        }
-        return ret;
     }
 
     @Override
@@ -3517,6 +3495,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return certificateProfileSession.getProfileAsXml(authenticationToken, profileId);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public Collection<CertificateWrapper> processCardVerifiableCertificateRequest(
             final AuthenticationToken authenticationToken, final String username, final String password, final String cvcReq

@@ -106,17 +106,6 @@ public abstract class CAInfo implements Serializable {
     protected Collection<ExtendedCAServiceInfo> extendedcaserviceinfos;
     protected boolean useNoConflictCertificateData = false; // By Default we use normal certificate data table.
 
-    /**
-     * @deprecated since 6.8.0, where approval settings and profiles became interlinked.
-     */
-    @Deprecated
-    private Collection<Integer> approvalSettings;
-    /**
-     * @deprecated since 6.8.0, where approval settings and profiles became interlinked.
-     */
-    @Deprecated
-    private int approvalProfile;
-
     private LinkedHashMap<ApprovalRequestType, Integer> approvals;
 
 
@@ -471,51 +460,6 @@ public abstract class CAInfo implements Serializable {
             approvals = new LinkedHashMap<>();
         }
         this.approvals = new LinkedHashMap<>(approvals);
-    }
-
-    /**
-     * Returns the ID of an approval profile
-     *
-     * @deprecated since 6.8.0. Use getApprovals() instead;
-     */
-    @Deprecated
-    public int getApprovalProfile() {
-        return approvalProfile;
-    }
-
-    /**
-     * Sets the ID of an approval profile.
-     *
-     * @deprecated since 6.8.0. Use setApprovals() instead;
-     */
-    @Deprecated
-    public void setApprovalProfile(final int approvalProfileID) {
-        this.approvalProfile = approvalProfileID;
-    }
-
-
-    /**
-     * Returns a collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which
-     * action that requires approvals, default none
-     *
-     * Never null
-     *
-     * @deprecated since 6.8.0. Use getApprovals() instead;
-     */
-    @Deprecated
-    public Collection<Integer> getApprovalSettings() {
-        return approvalSettings;
-    }
-
-    /**
-     * Collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which
-     * action that requires approvals
-     *
-     * @deprecated since 6.8.0. Use getApprovals() instead;
-     */
-    @Deprecated
-    public void setApprovalSettings(Collection<Integer> approvalSettings) {
-        this.approvalSettings = approvalSettings;
     }
 
     /**

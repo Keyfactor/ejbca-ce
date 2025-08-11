@@ -28,7 +28,6 @@ import org.cesecore.authorization.AuthorizationCache.AuthorizationCacheCallback;
 import org.cesecore.authorization.AuthorizationCache.AuthorizationResult;
 import org.cesecore.authorization.access.AuthorizationCacheReloadListener;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
-import org.cesecore.authorization.cache.RemoteAccessSetCacheHolder;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
@@ -188,8 +187,6 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
             log.trace("forceCacheExpire");
         }
         AuthorizationCache.INSTANCE.clear(accessTreeUpdateSession.getAccessTreeUpdateNumber());
-        // Clear the local RA Access Set Cache
-        RemoteAccessSetCacheHolder.forceEmptyCache();
         authorizationSession.scheduleBackgroundRefresh();
     }
 

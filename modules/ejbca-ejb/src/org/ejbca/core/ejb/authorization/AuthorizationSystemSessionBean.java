@@ -15,19 +15,10 @@ package org.ejbca.core.ejb.authorization;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ServiceLoader;
-import java.util.Set;
-
-import jakarta.ejb.EJB;
-import jakarta.ejb.Stateless;
-import jakarta.ejb.TransactionAttribute;
-import jakarta.ejb.TransactionAttributeType;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -38,7 +29,6 @@ import org.cesecore.authentication.tokens.PublicAccessMatchValue;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
-import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRulePlugin;
@@ -65,6 +55,13 @@ import org.ejbca.core.ejb.authentication.cli.CliUserAccessMatchValue;
 import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 /**
  * This session bean handles high level authorization system tasks.
@@ -328,18 +325,6 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
                 , Role.STATE_ALLOW);
         roleDataSession.persistRole(publicRole);
         return true;
-    }
-
-    @SuppressWarnings("deprecation")
-    @Override
-    public AccessSet getAccessSetForAuthToken(AuthenticationToken authenticationToken) throws AuthenticationFailedException {
-        final HashMap<String, Boolean> accessRules = authorizationSession.getAccessAvailableToAuthenticationToken(authenticationToken);
-        final Set<String> allResources = new HashSet<>(getAllResources(false).keySet());
-        // Since we no longer support the recursive rule in AccessSets from EJBCA 6.8.0 we also need to include non-configurable access rules
-        // ..but this is kind of theoretical since we currently don't support any of these operations from the RA
-        allResources.add(StandardRules.CAADD.resource());
-        allResources.add(StandardRules.CAREMOVE.resource());
-        return AccessSet.fromAccessRules(accessRules, allResources);
     }
 
     private void initPublicAccessRoleOnFreshInstallation(){

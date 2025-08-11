@@ -93,7 +93,6 @@ public abstract class CvcCABase extends CABase implements Serializable, CvcCA {
     }
 
     @Override
-    @SuppressWarnings("deprecation")
     public void init(HashMap<Object, Object> loadedData, int caId, String subjectDN, String name, int status, Date updateTime, Date expireTime) {
 		super.init(loadedData);
 		setExpireTime(expireTime);
@@ -112,9 +111,6 @@ public abstract class CvcCABase extends CABase implements Serializable, CvcCA {
 				getApprovals(),
 				getIncludeInHealthCheck(), isDoEnforceUniquePublicKeys(),isDoEnforceKeyRenewal(), isDoEnforceUniqueDistinguishedName(), isDoEnforceUniqueSubjectDNSerialnumber(),
 				isUseCertReqHistory(), isUseUserStorage(), isUseCertificateStorage(), isAddCompromisedKeysToBlockList(), isAcceptRevocationNonExistingEntry());
-        //These to settings were deprecated in 6.8.0, but are still set for upgrade reasons
-        info.setApprovalProfile(getApprovalProfile());
-        info.setApprovalSettings(getApprovalSettings());
 		super.setCAInfo(info);
         setCAId(caId);        
 	}
