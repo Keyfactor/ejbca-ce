@@ -13,10 +13,8 @@
 package org.cesecore.roles.member;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import jakarta.ejb.EJB;
@@ -259,20 +257,7 @@ public class RoleMemberDataSessionBean implements RoleMemberDataSessionLocal, Ro
         }
         return ret;
     }
-    
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    @Override
-    @Deprecated
-    public Map<Integer,Integer> getRoleIdsAndTokenMatchKeysMatchingAuthenticationToken(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
-        final Map<Integer,Integer> ret = new HashMap<>();
-        for (final RoleMember roleMember : getRoleMembersForAuthenticationToken(authenticationToken)) {
-            if (authenticationToken.matches(convertToAccessUserAspect(roleMember))) {
-                ret.put(roleMember.getRoleId(), roleMember.getTokenMatchKey());
-            }
-        }
-        return ret;
-    }
-    
+        
     private AccessUserAspect convertToAccessUserAspect(final RoleMember roleMember) {
         return new AccessUserAspectImpl(roleMember); 
     }

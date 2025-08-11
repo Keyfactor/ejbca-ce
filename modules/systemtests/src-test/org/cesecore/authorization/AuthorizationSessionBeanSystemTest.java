@@ -40,7 +40,6 @@ import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberDataProxySessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.db.DatabaseContentRule;
-import org.junit.Assume;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -127,7 +126,6 @@ public class AuthorizationSessionBeanSystemTest {
 
     @Test
     public void testIsAuthorizedBelongToMoreThanOneGroup() throws RoleExistsException, AuthorizationDeniedException {
-        Assume.assumeTrue("Installation has not yet been post-upgraded to 6.8.0. Test would fail.", roleMemberProxySession.isNewAuthorizationPatternMarkerPresent());
         final String nameSpace = null;
         final String commonName = "testIsAuthorizedBelongToMoreThanOneGroup";
         final String roleName1 = commonName + "1";
@@ -180,153 +178,6 @@ public class AuthorizationSessionBeanSystemTest {
             assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/notused/notused"));
             assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInFirst/accept"));
             assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInFirst/denyInFirst"));
-            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInFirst/notused"));
-            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInFirst/unexistent"));
-            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/somerule/allowInFirst"));
-            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/somerule/denyInFirst"));
-            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/somerule/notused"));
-            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/somerule/unexistent"));
-            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/notused", "/allowInBoth/unexistent"));
-            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/allowInFirst", "/allowInBoth/notused", "/allowInBoth/unexistent"));
-            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/denyInFirst", "/allowInBoth/allowInFirst"));
-            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/allowInFirst", "/allowInBoth/denyInFirst"));
-            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/acceptInOne", "/allowInBoth/denyInFirst", "/allowInBoth/unexistent"));
-        } finally {
-            cleanUpRole(nameSpace, roleName1);
-            cleanUpRole(nameSpace, roleName2);
-        }
-    }
-
-    // Same tokenMatchKeys priority → Intersection of access rights or "decline has priority over accept"
-    @Test
-    public void testIsAuthorizedBelongToMoreThanOneGroupLegacy1() throws RoleExistsException, AuthorizationDeniedException {
-        Assume.assumeFalse("Installation has been post-upgraded to 6.8.0. Test would fail.", roleMemberProxySession.isNewAuthorizationPatternMarkerPresent());
-        final String nameSpace = null;
-        final String commonName = "testIsAuthorizedBelongToMoreThanOneGroupLegacy1";
-        final String roleName1 = commonName + "1";
-        final String roleName2 = commonName + "2";
-        try {
-            final HashMap<String,Boolean> accessRules1 = new HashMap<>();
-            accessRules1.put("/allowInFirst", Role.STATE_ALLOW);
-            accessRules1.put("/denyInFirst", Role.STATE_DENY);
-            accessRules1.put("/allowInBoth", Role.STATE_ALLOW);
-            accessRules1.put("/allowInBoth/allowInFirst", Role.STATE_ALLOW);
-            accessRules1.put("/allowInBoth/denyInFirst", Role.STATE_DENY);
-            accessRules1.put("/allowInFirst/allowInFirst", Role.STATE_ALLOW);
-            accessRules1.put("/allowInFirst/denyInFirst", Role.STATE_DENY);
-            accessRules1.put("/somerule/allowInFirst", Role.STATE_ALLOW);
-            accessRules1.put("/somerule/denyInFirst", Role.STATE_DENY);
-            final Role role1 = roleSession.persistRole(alwaysAllowAuthenticationToken, new Role(nameSpace, roleName1, accessRules1));
-            final HashMap<String,Boolean> accessRules2 = new HashMap<>();
-            accessRules2.put("/allowInBoth", Role.STATE_ALLOW);
-            accessRules2.put("/allowInBoth/allowInFirst", Role.STATE_DENY);
-            accessRules2.put("/allowInBoth/denyInFirst", Role.STATE_ALLOW);
-            accessRules2.put("/allowInFirst/allowInFirst", Role.STATE_DENY);
-            accessRules2.put("/allowInFirst/denyInFirst", Role.STATE_ALLOW);
-            accessRules2.put("/somerule/allowInFirst", Role.STATE_DENY);
-            accessRules2.put("/somerule/denyInFirst", Role.STATE_ALLOW);
-            final Role role2 = roleSession.persistRole(alwaysAllowAuthenticationToken, new Role(nameSpace, roleName2, accessRules2));
-            final String subjectAndIssuerDn = "CN="+commonName;
-            final int caId = subjectAndIssuerDn.hashCode();
-            final int roleMemberId1 = roleMemberProxySession.createOrEdit(new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
-                    caId, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
-                    AccessMatchType.TYPE_EQUALCASE.getNumericValue(), commonName, role1.getRoleId(), null));
-            assertEquals(caId, roleMemberProxySession.findRoleMember(roleMemberId1).getTokenIssuerId());
-            final int roleMemberId2 = roleMemberProxySession.createOrEdit(new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
-                    caId, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
-                    AccessMatchType.TYPE_EQUALCASE.getNumericValue(), commonName, role2.getRoleId(), null));
-            assertEquals(caId, roleMemberProxySession.findRoleMember(roleMemberId2).getTokenIssuerId());
-            assertFalse(roleMemberId1==roleMemberId2);
-            final AuthenticationToken authenticationToken = createAuthenticationToken(subjectAndIssuerDn);
-            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.ROLE_ROOT.resource()));
-            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth"));
-            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInFirst"));
-            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/denyInFirst"));
-            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/notused"));
-            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/unexistent"));
-            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/allowInFirst"));
-            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/denyInFirst"));
-            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/notused"));
-            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/unexistent"));
-            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/allowInFirst/notused"));
-            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/denyInFirst/notused"));
-            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/notused/notused"));
-            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInFirst/accept"));
-            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInFirst/denyInFirst"));
-            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInFirst/notused"));
-            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInFirst/unexistent"));
-            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/somerule/allowInFirst"));
-            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/somerule/denyInFirst"));
-            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/somerule/notused"));
-            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/somerule/unexistent"));
-            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/notused", "/allowInBoth/unexistent"));
-            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/allowInFirst", "/allowInBoth/notused", "/allowInBoth/unexistent"));
-            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/denyInFirst", "/allowInBoth/allowInFirst"));
-            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/allowInFirst", "/allowInBoth/denyInFirst"));
-            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/acceptInOne", "/allowInBoth/denyInFirst", "/allowInBoth/unexistent"));
-        } finally {
-            cleanUpRole(nameSpace, roleName1);
-            cleanUpRole(nameSpace, roleName2);
-        }
-    }
-
-    // Different tokenMatchKeys priority "If rule has higher priority, its state is to be used."
-    @Test
-    public void testIsAuthorizedBelongToMoreThanOneGroupLegacy2() throws RoleExistsException, AuthorizationDeniedException {
-        Assume.assumeFalse("Installation has been post-upgraded to 6.8.0. Test would fail.", roleMemberProxySession.isNewAuthorizationPatternMarkerPresent());
-        final String nameSpace = null;
-        final String commonName = "testIsAuthorizedBelongToMoreThanOneGroupLegacy2";
-        final String roleName1 = commonName + "1";
-        final String roleName2 = commonName + "2";
-        try {
-            final HashMap<String,Boolean> accessRules1 = new HashMap<>();
-            accessRules1.put("/allowInFirst", Role.STATE_ALLOW);
-            accessRules1.put("/denyInFirst", Role.STATE_DENY);
-            accessRules1.put("/allowInBoth", Role.STATE_ALLOW);
-            accessRules1.put("/allowInBoth/allowInFirst", Role.STATE_ALLOW);
-            accessRules1.put("/allowInBoth/denyInFirst", Role.STATE_DENY);
-            accessRules1.put("/allowInFirst/allowInFirst", Role.STATE_ALLOW);
-            accessRules1.put("/allowInFirst/denyInFirst", Role.STATE_DENY);
-            accessRules1.put("/somerule/allowInFirst", Role.STATE_ALLOW);
-            accessRules1.put("/somerule/denyInFirst", Role.STATE_DENY);
-            final Role role1 = roleSession.persistRole(alwaysAllowAuthenticationToken, new Role(nameSpace, roleName1, accessRules1));
-            final HashMap<String,Boolean> accessRules2 = new HashMap<>();
-            accessRules2.put("/allowInBoth", Role.STATE_ALLOW);
-            accessRules2.put("/allowInBoth/allowInFirst", Role.STATE_DENY);
-            accessRules2.put("/allowInBoth/denyInFirst", Role.STATE_ALLOW);
-            accessRules2.put("/allowInFirst/allowInFirst", Role.STATE_DENY);
-            accessRules2.put("/allowInFirst/denyInFirst", Role.STATE_ALLOW);
-            accessRules2.put("/somerule/allowInFirst", Role.STATE_DENY);
-            accessRules2.put("/somerule/denyInFirst", Role.STATE_ALLOW);
-            final Role role2 = roleSession.persistRole(alwaysAllowAuthenticationToken, new Role(nameSpace, roleName2, accessRules2));
-            final String organisation = "Testing";
-            final String subjectAndIssuerDn = "CN="+commonName + ",O="+organisation;
-            final int caId = subjectAndIssuerDn.hashCode();
-            final int roleMemberId1 = roleMemberProxySession.createOrEdit(new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
-                    caId, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
-                    AccessMatchType.TYPE_EQUALCASE.getNumericValue(), commonName, role1.getRoleId(), null));
-            assertEquals(caId, roleMemberProxySession.findRoleMember(roleMemberId1).getTokenIssuerId());
-            final int roleMemberId2 = roleMemberProxySession.createOrEdit(new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
-                    caId, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_ORGANIZATION.getNumericValue(),
-                    AccessMatchType.TYPE_EQUALCASE.getNumericValue(), organisation, role2.getRoleId(), null));
-            assertEquals(caId, roleMemberProxySession.findRoleMember(roleMemberId2).getTokenIssuerId());
-            assertFalse(roleMemberId1==roleMemberId2);
-            final AuthenticationToken authenticationToken = createAuthenticationToken(subjectAndIssuerDn);
-            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.ROLE_ROOT.resource()));
-            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth"));
-            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInFirst"));
-            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/denyInFirst"));
-            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/notused"));
-            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/unexistent"));
-            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/allowInFirst"));
-            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/denyInFirst"));
-            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/notused"));
-            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/unexistent"));
-            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/allowInFirst/notused"));
-            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/denyInFirst/notused"));
-            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInBoth/notused/notused"));
-            assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInFirst/accept"));
-            assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInFirst/denyInFirst"));
             assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInFirst/notused"));
             assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/allowInFirst/unexistent"));
             assertTrue( authorizationSession.isAuthorizedNoLogging(authenticationToken, "/somerule/allowInFirst"));
