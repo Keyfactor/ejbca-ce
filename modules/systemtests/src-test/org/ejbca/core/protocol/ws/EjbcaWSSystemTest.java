@@ -2244,7 +2244,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
         final String newTimeFormatRequest = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ssZZ", TimeZone.getTimeZone("CEST"))
                 .format(nowWithOutSeconds);
         final String newTimeFormatResponse = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ssZZ", TimeZone.getTimeZone("UTC"))
-                .format(nowWithOutSeconds);
+                .format(nowWithOutSeconds).replace("Z", "+00:00");
         log.debug("oldTimeFormat=" + oldTimeFormat);
         log.debug("newTimeFormatStorage=" + newTimeFormatStorage);
         log.debug("newTimeFormatRequest=" + newTimeFormatRequest);
