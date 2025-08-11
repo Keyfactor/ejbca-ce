@@ -212,8 +212,8 @@ public class ConfigdumpSetting implements Serializable {
     private OverwriteMode overwriteMode = OverwriteMode.NONE;
     private ResolveReferenceMode resolveReferenceMode = ResolveReferenceMode.NO_RESOLUTION_SET;
     private Map<ConfigdumpItem<?>, OverwriteMode> overwriteResolutions = new HashMap<>();
-    private Map<ConfigdumpItem<?>, ResolveReferenceMode> resolveReferenceModeResolutions = new HashMap<>();
-    private Map<ConfigdumpItem<?>, Map<String, String>> passwords = new HashMap<>();
+    private final Map<ConfigdumpItem<?>, ResolveReferenceMode> resolveReferenceModeResolutions = new HashMap<>();
+    private final Map<ConfigdumpItem<?>, Map<String, String>> passwords = new HashMap<>();
     private boolean initializeCas;
     private boolean exportDefaults;
     private boolean exportExternalCas = true; // needs to be true in import mode, or overwrite detection will not work
