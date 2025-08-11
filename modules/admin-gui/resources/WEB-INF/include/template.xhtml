@@ -118,7 +118,9 @@
     <h:panelGroup layout="block" styleClass="container">
         <h:panelGroup layout="block" id="messagesAndContent">
             <h:panelGroup layout="block" id="messagesBlock">
-                <h:messages id="messages" styleClass="globalMessages" errorClass="errorMessage" warnClass="warnMessage" infoClass="infoMessage" layout="list" globalOnly="false"/>
+                <p:messages severity="info" globalOnly="false" id="infoMessage" showDetail="true" showSummary="true" skipDetailIfEqualsSummary="true"/>
+                <p:messages severity="warn" globalOnly="false" id="warnMessage" showDetail="true" showSummary="true" skipDetailIfEqualsSummary="true"/>
+                <p:messages severity="error,fatal" globalOnly="false" id="errorMessage" showDetail="true" showSummary="true" skipDetailIfEqualsSummary="true"/>
             </h:panelGroup>
     
             <h:panelGroup layout="block" id="contentBlock" styleClass="contentBlock">

@@ -52,7 +52,7 @@ p.help, .helpNormal {
 #messagesAndContent {
     min-height: 100%;
     padding-left: 30px;
-    padding-right: 15px;
+    padding-right: 30px;
 }
 #contentBlock {
     padding-top: 10px;
@@ -1372,13 +1372,6 @@ a.button:active {
 	position: relative;
 	top: 1px;
 }
-.infoMessage {
-	font-style: italic;
-	padding: 0.5em;
-	border-radius: 0.3em;
-	background: #fcfcfc;
-	margin-bottom: 1em;
-}
 .propertyTable {
 	border: 0px;
 	right: auto;
@@ -1523,6 +1516,21 @@ input[type="file"]::file-selector-button:hover {
 
 .no-summary > span.ui-message-info-summary {
     margin: 0;
+}
+
+#infoMessage .ui-messages-info-icon,
+#warnMessage .ui-messages-warn-icon,
+#errorMessage .ui-messages-error-icon {
+    margin-top: -0.2rem !important;
+}
+
+.ui-messages-error:has(ul li:nth-child(2)) .ui-messages-error-icon {
+	display: none;
+}
+
+.ui-messages-error:has(ul li:nth-child(2)) ul {
+	list-style-type: disc;
+	padding-left: 1rem;
 }
 
 /* PrimeFaces class adjustments: END */
