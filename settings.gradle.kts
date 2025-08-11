@@ -399,6 +399,7 @@ include(
     "modules:clientToolBox",
     "modules:ejbca-repository",
     "modules:ejbca-repository-generator",
+    "modules:cmpclient",
 )
 
 fun loadPropertiesFromFiles(vararg filePaths: String): Properties {
