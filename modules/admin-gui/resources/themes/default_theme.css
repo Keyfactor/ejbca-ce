@@ -1685,6 +1685,12 @@ body .ui-datatable .ui-datatable-footer {
     margin: 0;
 }
 
+#infoMessage .ui-messages-info-icon,
+#warnMessage .ui-messages-warn-icon,
+#errorMessage .ui-messages-error-icon {
+    margin-top: -0.2rem !important;
+}
+
 .ui-messages-error:has(ul li:nth-child(2)) .ui-messages-error-icon,
 .ui-messages-warn:has(ul li:nth-child(2)) .ui-messages-warn-icon,
 .ui-messages-info:has(ul li:nth-child(2)) .ui-messages-info-icon {
