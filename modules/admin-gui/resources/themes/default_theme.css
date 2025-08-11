@@ -1673,15 +1673,8 @@ input[type="text"]:disabled:not(.ui-state-disabled),
 input[type="password"]:disabled:not(.ui-state-disabled),
 select:disabled:not(.ui-state-disabled),
 textarea:disabled:not(.ui-state-disabled) {
-	opacity: 0.6;
-}
-
-input[type="button"]:disabled:not(.ui-state-disabled):hover,
-input[type="text"]:disabled:not(.ui-state-disabled):hover,
-input[type="password"]:disabled:not(.ui-state-disabled):hover,
-select:disabled:not(.ui-state-disabled):hover,
-textarea:disabled:not(.ui-state-disabled):hover {
-	border: 1px solid rgba(0,0,0,0.3);
+    opacity: 0.6;
+    border: 1px solid rgba(0,0,0,0.3);
 }
 
 /* Add some margins to checkboxes */
