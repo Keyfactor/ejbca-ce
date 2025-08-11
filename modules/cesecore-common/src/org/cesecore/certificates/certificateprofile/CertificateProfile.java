@@ -37,6 +37,7 @@ import com.keyfactor.util.keys.KeyTools;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
@@ -504,6 +505,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
         setUseKeyUsage(true);
         setKeyUsage(new boolean[9]);
+        setKeyUsageForbidEncryptionUsageForECC(true);
         setAllowKeyUsageOverride(false);
         setKeyUsageCritical(true);
 
@@ -2541,7 +2543,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         for (final String key : useStandardCertificateExtensions.keySet()) {
             if (data.get(key) != null && (Boolean) data.get(key)) {
                 // All extension use keys in the Certificate Profile are named "use" + name of extension
-                ret.add(StringUtils.removeStart(key, "use"));
+                ret.add(Strings.CS.removeStart(key, "use"));
             }
         }
         return ret;
@@ -2552,7 +2554,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         final Set<String> ret = new LinkedHashSet<>();
         for (final String key : useStandardCertificateExtensions.keySet()) {
             // All extension use keys in the Certificate Profile are named "use" + name of extension
-            ret.add(StringUtils.removeStart(key, "use"));
+            ret.add(Strings.CS.removeStart(key, "use"));
         }
         return ret;
     }
@@ -2582,7 +2584,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public void setApprovalSettings(List<Integer> approvalSettings) {
         data.put(APPROVALSETTINGS, approvalSettings);
     }
-    
+
     /**
      * @return the id of the approval profile. ID -1 means  that no approval profile was set
      *

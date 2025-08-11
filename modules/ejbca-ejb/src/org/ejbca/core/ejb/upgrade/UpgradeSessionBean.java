@@ -37,6 +37,7 @@ import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
@@ -330,7 +331,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 setCustomCertificateValidityWithSecondsGranularity(true);
                 // Since we know that this is a brand new installation, no upgrade should be needed
                 setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
-                setLastPostUpgradedToVersion("9.3.0");
+                setLastPostUpgradedToVersion("9.4.0");
             } else {
                 // Ensure that we save currently known oldest installation version before any upgrade is invoked
                 if(getLastUpgradedToVersion() != null) {
@@ -2136,7 +2137,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 boolean cmpVendorCaFound = false;
                 for (final Integer caId : caIdToNameMap.keySet()) {
                     final String currentCmpVendorCaName = caIdToNameMap.get(caId);
-                    if (StringUtils.equals(cmpVendorName.trim(), currentCmpVendorCaName.trim())) {
+                    if (Strings.CS.equals(cmpVendorName.trim(), currentCmpVendorCaName.trim())) {
                         cmpVendorCaIds.add(caId.toString());
                         cmpVendorCaFound = true;
                         break;
@@ -2169,7 +2170,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 boolean estVendorCaFound = false;
                 for (final Integer caId : caIdToNameMap.keySet()) {
                     final String currentEstVendorCaName = caIdToNameMap.get(caId);
-                    if (StringUtils.equals(estVendorName.trim(), currentEstVendorCaName.trim())) {
+                    if (Strings.CS.equals(estVendorName.trim(), currentEstVendorCaName.trim())) {
                         estVendorCaIds.add(caId.toString());
                         estVendorCaFound = true;
                         break;

@@ -12,11 +12,29 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.certprof;
 
+import java.io.IOException;
+import java.io.Serializable;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import jakarta.ejb.EJB;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -55,28 +73,12 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJB;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.model.ListDataModel;
 import jakarta.faces.model.SelectItem;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
-import java.io.IOException;
-import java.io.Serializable;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 /**
  * JSF MBean backing the certificate profile pages.
@@ -182,11 +184,10 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
 
             try {
                 this.certificateProfile = certificateProfile.clone();
-                // Add some defaults
+                // Add some sensible defaults
                 final GlobalConfiguration globalConfiguration = getEjbcaWebBean().getGlobalConfiguration();
                 if (StringUtils.isBlank(this.certificateProfile.getCRLDistributionPointURI())) {
                     this.certificateProfile.setCRLDistributionPointURI(globalConfiguration.getStandardCRLDistributionPointURI());
-                    this.certificateProfile.setCRLIssuer(GlobalConfiguration.DEFAULT_CRL_DIST_URI_PATH_DN);
                 }
                 if (StringUtils.isBlank(this.certificateProfile.getFreshestCRLURI())) {
                     this.certificateProfile.setFreshestCRLURI(globalConfiguration.getStandardDeltaCRLDistributionPointURI());
@@ -1114,7 +1115,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     public void toggleUseQCCountriesString() throws IOException {
         getCertificateProfile().setUseQCCountries(!getCertificateProfile().getUseQCCountries());
     }
-    
+
     public void toggleUseQCCustomString() throws IOException {
         getCertificateProfile().setUseQCCustomString(!getCertificateProfile().getUseQCCustomString());
     }
@@ -1485,7 +1486,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
             for (ApprovalRequestType approvalRequestType : ApprovalRequestType.values()) {
                 int approvalProfileId = approvals.getOrDefault(approvalRequestType, -1);
                 // Hide ACME approval types.
-                if (ApprovalRequestType.ACMEACCOUNTREGISTRATION.equals(approvalRequestType) 
+                if (ApprovalRequestType.ACMEACCOUNTREGISTRATION.equals(approvalRequestType)
                  || ApprovalRequestType.ACMEACCOUNTKEYCHANGE.equals(approvalRequestType)) {
                     continue;
                 }
@@ -1554,11 +1555,11 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     public String getQcEtsiTypeWebauth() {
         return CertificateProfileConstants.QC_ETSI_TYPE_WEBAUTH;
     }
-  
+
     public String getQCSemanticsOids() {
         return certificateProfile.getQCSemanticsIds();
     }
-    
+
     public void setQCSemanticsOids(final String oids) {
         final SortedSet<String> filteredOids = new TreeSet<>(Arrays.asList(oids.split(",")));
         certificateProfile.setQCSemanticsIds(String.join(",", filteredOids));

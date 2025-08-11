@@ -12,13 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -53,8 +46,20 @@ import java.util.TimeZone;
 
 import javax.security.auth.x500.X500Principal;
 
+import com.keyfactor.util.CeSecoreNameStyle;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.SHA1DigestCalculator;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
@@ -144,17 +149,12 @@ import org.cesecore.keys.validation.IssuancePhase;
 import org.cesecore.keys.validation.ValidationException;
 import org.junit.Test;
 
-import com.keyfactor.util.CeSecoreNameStyle;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.SHA1DigestCalculator;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.certificate.SimpleCertGenerator;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.KeyTools;
-import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /** JUnit test for X.509 CA
  *
@@ -349,14 +349,24 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         boolean[] ku = cert.getKeyUsage();
         assertTrue(ku[0]);
         assertTrue(ku[1]);
-        assertTrue(ku[2]);
         assertFalse(ku[3]);
         assertFalse(ku[4]);
         assertFalse(ku[5]);
         assertFalse(ku[6]);
         assertFalse(ku[7]);
         int bcku = CertTools.sunKeyUsageToBC(ku);
-        assertEquals(X509KeyUsage.digitalSignature|X509KeyUsage.nonRepudiation|X509KeyUsage.keyEncipherment, bcku);
+        // The CERTPROFILE_FIXED_ENDUSER have by default 'Forbid encryption usage for ECC keys' checked since 9.4.0 which
+        // defaults to 'Forbid encryption usage for ECC keys' in certificate profiles
+        final String keyAlg = cert.getPublicKey().getAlgorithm();
+        if (Strings.CS.startsWith(keyAlg, "EC")
+                || Strings.CS.startsWith(keyAlg, "Ed")
+                || AlgorithmTools.isPQC(keyAlg) && !AlgorithmTools.isKEM(keyAlg)) {
+            assertFalse("keyEncipherment should not be present for signature keys", ku[2]);
+            assertEquals(X509KeyUsage.digitalSignature|X509KeyUsage.nonRepudiation, bcku);
+        } else {
+            assertTrue("keyEncipherment should be present for RSA and KEM keys", ku[2]);
+            assertEquals(X509KeyUsage.digitalSignature|X509KeyUsage.nonRepudiation|X509KeyUsage.keyEncipherment, bcku);
+        }
 
         // Create a CRL
         Collection<RevokedCertInfo> revcerts = new ArrayList<>();
@@ -1062,7 +1072,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
                 .setIssuerPrivKey(privateKey)
                 .setEntityPubKey(publicKey)
                 .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
-                .generateCertificate();  
+                .generateCertificate();
         assertNotNull(cacert);
         List<Certificate> cachain = new ArrayList<>();
         cachain.add(cacert);
@@ -1121,8 +1131,8 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             // An unescaped '+' character is interpreted as a separator between two connected subjectAltName fields. So "rfc822Name=user+plus@user.com" is
             // handled as "rfc822Name=user" and "plus@user.com". Since the second part does not map to any known fields, the resulting SubjectAltName is
             // "rfc822Name=user"
-            assertFalse(StringUtils.equals("rfc822name=" + emailUnescaped, DnComponents.getSubjectAlternativeName(certificate)));
-            assertFalse(StringUtils.equals("rfc822name=" + emailEscaped, DnComponents.getSubjectAlternativeName(certificate)));
+            assertFalse(Strings.CS.equals("rfc822name=" + emailUnescaped, DnComponents.getSubjectAlternativeName(certificate)));
+            assertFalse(Strings.CS.equals("rfc822name=" + emailEscaped, DnComponents.getSubjectAlternativeName(certificate)));
             assertEquals("rfc822name=user", DnComponents.getSubjectAlternativeName(certificate));
         } catch (CAOfflineException e) {
             fail("Certificate could not be created: " + e.getMessage());

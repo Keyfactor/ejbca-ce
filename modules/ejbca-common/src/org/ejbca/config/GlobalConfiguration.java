@@ -64,7 +64,8 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     // Path added to baseurl used as default value in DeltaCRLDistributionPointURI field in Certificate Profile definitions.
     private static final String DEFAULT_DELTA_CRL_DIST_URI_PATH  = "publicweb/webdist/certdist?cmd=deltacrl&issuer=";
 
-    // Path added to baseurl used as default value in CRLDistributionPointURI field in Certificate Profile definitions.
+
+    // DN added to baseurl used as default value in CRLDistributionPointURI field in Certificate Profile definitions.
     public static final String DEFAULT_CRL_DIST_URI_PATH_DN = "CN=TestCA,O=AnaTom,C=SE";
 
     // Path added to baseurl used as default value in OCSP Service Locator URI field in Certificate Profile definitions.
@@ -178,14 +179,14 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final String ENABLESESSIONTIMEOUT = "use_session_timeout";
     private static final String SESSIONTIMEOUTTIME = "session_timeout_time";
     private static final String VA_STATUS_TIME_CONSTRAINT_KEY = "va_status_time_constraint";
-    
+
     /** Creates a new instance of GlobalConfiguration */
     public GlobalConfiguration()  {
        super();
        setEjbcaTitle(DEFAULT_EJBCA_TITLE);
        setHeadBannerLogo(DEFAULT_HEADER_LOGO);
     }
-    
+
     public byte[] initHeadBannerLogo(String path) {
         try {
             Path logoPath = Paths.get(path);
@@ -209,7 +210,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     public void initializeAdminWeb() {
         initialize("default_theme.css,second_theme.css", "" + WebConfiguration.getPublicHttpPort(), "" + WebConfiguration.getPrivateHttpsPort());
     }
-    
+
     public void initializeRaWeb() {
         initialize("default_theme.css,second_theme.css", "" + WebConfiguration.getPublicHttpPort(), "" + WebConfiguration.getPrivateHttpsPort());
     }
@@ -300,11 +301,11 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     public String getDefaultAvailableTheme(){
       return getAvailableThemes()[0];
     }
-    
+
     public byte[] getHeadBannerLogo() {
         return (byte[]) data.get(HEADLOGO);
     }
-    
+
     public void setHeadBannerLogo(byte[] logo) {
         data.put(HEADLOGO, logo);
     }
@@ -450,7 +451,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
             return vaStatusTimeConstraint;
         }
     }
-   
+
     public void setVaStatusTimeConstraint(final int vaStatusTimeConstraint) {
         data.put(VA_STATUS_TIME_CONSTRAINT_KEY, vaStatusTimeConstraint);
     }

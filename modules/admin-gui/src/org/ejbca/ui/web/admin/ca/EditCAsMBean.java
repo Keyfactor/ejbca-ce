@@ -59,6 +59,7 @@ import jakarta.servlet.http.Part;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.tuple.MutableTriple;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -347,7 +348,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     @PostConstruct
     public void initialize() {
         EditCaUtil.navigateToManageCaPageIfNotPostBack();
-        GlobalConfiguration globalconfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
         try {
             caBean = SessionBeans.getCaBean(request);
@@ -372,8 +372,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             log.error("Error while trying to get the ca info!", e);
         }
 
-        CRYPTO_TOKEN_LINK = getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH
-        + "cryptotoken/cryptotoken.jsf?cryptoTokenId=";
+        CRYPTO_TOKEN_LINK = getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH + "cryptotoken/cryptotoken.xhtml?cryptoTokenId=";
 
         // Init include health check
         caInfoDto.setIncludeInHealthCheck(cainfo == null || cainfo.getIncludeInHealthCheck());
@@ -1252,21 +1251,21 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         caInfoDto.setTestKey("");
 
         for (final String alias : availableCryptoTokenEncryptionAliases) {
-            if (CAToken.SOFTPRIVATEDECKEYALIAS.equals(alias) || StringUtils.containsIgnoreCase(alias, "default")) {
+            if (CAToken.SOFTPRIVATEDECKEYALIAS.equals(alias) || Strings.CI.contains(alias, "default")) {
                 caInfoDto.setCryptoTokenDefaultKey(alias);
-            } else if (CAToken.SOFTPRIVATESIGNKEYALIAS.equals(alias) || StringUtils.containsIgnoreCase(alias, "sign")) {
+            } else if (CAToken.SOFTPRIVATESIGNKEYALIAS.equals(alias) || Strings.CI.contains(alias, "sign")) {
                 caInfoDto.setCryptoTokenCertSignKey(alias);
-            } else if (StringUtils.containsIgnoreCase(alias, "test")) {
+            } else if (Strings.CI.contains(alias, "test")) {
                 caInfoDto.setTestKey(alias);
             }
         }
 
         for (final String alias : availableCryptoTokenKeyAliases) {
-            if (CAToken.SOFTPRIVATEDECKEYALIAS.equals(alias) || StringUtils.containsIgnoreCase(alias, "default")) {
+            if (CAToken.SOFTPRIVATEDECKEYALIAS.equals(alias) || Strings.CI.contains(alias, "default")) {
                 caInfoDto.setCryptoTokenDefaultKey(alias);
-            } else if (CAToken.SOFTPRIVATESIGNKEYALIAS.equals(alias) || StringUtils.containsIgnoreCase(alias, "sign"))  {
+            } else if (CAToken.SOFTPRIVATESIGNKEYALIAS.equals(alias) || Strings.CI.contains(alias, "sign"))  {
                 caInfoDto.setCryptoTokenCertSignKey(alias);
-            } else if (StringUtils.containsIgnoreCase(alias, "test")) {
+            } else if (Strings.CI.contains(alias, "test")) {
                 caInfoDto.setTestKey(alias);
             }
         }

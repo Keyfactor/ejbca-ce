@@ -36,11 +36,14 @@ sourceSets {
         java {
             setSrcDirs(listOf("src"))
         }
-        resources {
-            srcDirs("resources")
-        }
     }
 }
+
+// define interfaces that should be used to generate service manifest files
+ext["serviceInterfaces"] = listOf(
+    "org.ejbca.core.model.ca.publisher.ICustomPublisher",
+    "org.cesecore.keys.validation.Validator"
+)
 
 tasks.jar {
     from(sourceSets["main"].output)
