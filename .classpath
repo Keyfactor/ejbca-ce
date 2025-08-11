@@ -241,13 +241,13 @@
 	<classpathentry kind="lib" path="lib/commons-lang3-3.17.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-fileupload2-core-2.0.0-M4.jar"/>
 	<classpathentry kind="lib" path="lib/commons-fileupload2-jakarta-servlet6-2.0.0-M4.jar"/>
-	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-core-4.1.1.jar"/>
-	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-bindings-soap-4.1.1.jar"/>
-	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-databinding-jaxb-4.1.1.jar"/>
-	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-frontend-jaxws-4.1.1.jar"/>
-	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-frontend-simple-4.1.1.jar"/>
-	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-transports-http-4.1.1.jar"/>
-	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-wsdl-4.1.1.jar"/>
+	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-core-4.1.3.jar"/>
+	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-bindings-soap-4.1.3.jar"/>
+	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-databinding-jaxb-4.1.3.jar"/>
+	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-frontend-jaxws-4.1.3.jar"/>
+	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-frontend-simple-4.1.3.jar"/>
+	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-transports-http-4.1.3.jar"/>
+	<classpathentry kind="lib" path="lib/jee/soapclient/cxf-rt-wsdl-4.1.3.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/istack-commons-runtime-3.0.11.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/jakarta.xml.bind-api-4.0.2.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/jaxb-runtime-4.0.5.jar"/>
