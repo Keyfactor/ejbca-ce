@@ -52,7 +52,7 @@ p.help, .helpNormal {
 #messagesAndContent {
     min-height: 100%;
     padding-left: 30px;
-    padding-right: 15px;
+    padding-right: 30px;
 }
 #contentBlock {
     padding-top: 10px;
@@ -1372,13 +1372,6 @@ a.button:active {
 	position: relative;
 	top: 1px;
 }
-.infoMessage {
-	font-style: italic;
-	padding: 0.5em;
-	border-radius: 0.3em;
-	background: #fcfcfc;
-	margin-bottom: 1em;
-}
 .propertyTable {
 	border: 0px;
 	right: auto;
@@ -1475,6 +1468,10 @@ a.button:active {
 	padding: 0.5em;
 }
 
+body .ui-panelgrid .ui-panelgrid-cell {
+	padding: 0.5em 0.5em 0.5em 0;
+}
+
 /* Match the file upload button style to the plain PrimeFaces buttons  */
 input[type="file"] {
     color: #495057;
@@ -1502,6 +1499,16 @@ input[type="file"]::file-selector-button:hover {
     background-color: #f5f5f5;
 }
 
+/* Make sure old-styled elements are shown as disabled */
+input[type="button"]:disabled:not(.ui-state-disabled),
+input[type="text"]:disabled:not(.ui-state-disabled),
+input[type="password"]:disabled:not(.ui-state-disabled),
+select:disabled:not(.ui-state-disabled),
+textarea:disabled:not(.ui-state-disabled) {
+    opacity: 0.6;
+    border: 1px solid rgba(0,0,0,0.3);
+}
+
 /* Add some margins to checkboxes */
 
 .ui-chkbox {
@@ -1515,6 +1522,25 @@ input[type="file"]::file-selector-button:hover {
 
 .ui-selectbooleancheckbox + label .ui-outputlabel-label {
     vertical-align: middle;
+}
+
+.no-summary > span.ui-message-info-summary {
+    margin: 0;
+}
+
+#infoMessage .ui-messages-info-icon,
+#warnMessage .ui-messages-warn-icon,
+#errorMessage .ui-messages-error-icon {
+    margin-top: -0.2rem !important;
+}
+
+.ui-messages-error:has(ul li:nth-child(2)) .ui-messages-error-icon {
+	display: none;
+}
+
+.ui-messages-error:has(ul li:nth-child(2)) ul {
+	list-style-type: disc;
+	padding-left: 1rem;
 }
 
 /* PrimeFaces class adjustments: END */
@@ -1565,6 +1591,11 @@ input[type="file"]::file-selector-button:hover {
     white-space: nowrap;
 }
 
+.action-buttons input[type="submit"]:disabled {
+	background-color: rgba(239, 239, 239, 0.3);
+	color: lightgray;
+}
+
 .no-border,
 .no-border table {
     border: none;
@@ -1577,6 +1608,15 @@ table.no-padding tr td  {
     padding: 0;
 }
 
+table.no-left-padding-1st-column td:nth-child(1),
+table.no-left-padding-1st-column th:nth-child(1) {
+    padding-left: 0;
+}
+
+.no-margin {
+    margin: 0;
+}
+
 .padding-bottom-1-rem,
 .row-padding-bottom-1-rem,
 .row-padding-bottom-1-rem table tr td,
@@ -1586,6 +1626,10 @@ table.row-padding-bottom-1-rem tr td {
 
 .padding-top-1-rem {
     padding-top: 1rem;
+}
+
+.margin-top-1-rem {
+    margin-top: 1rem;
 }
 
 .cell-padding-right-1-rem,

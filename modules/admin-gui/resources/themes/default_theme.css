@@ -52,7 +52,7 @@ p.help, .helpNormal {
 #messagesAndContent {
     min-height: 100%;
     padding-left: 30px;
-    padding-right: 15px;
+    padding-right: 30px;
 }
 #contentBlock {
     padding-top: 10px;
@@ -310,7 +310,7 @@ select {
 input[type=obligatory] {
 	font-size: 11pt;
 	box-shadow: 0 0 5px rgba(255, 157, 20, 1);
-    -webkit-box-shadow: 0 0 5px rgba(255, 157, 20, 1); 
+    -webkit-box-shadow: 0 0 5px rgba(255, 157, 20, 1);
     -moz-box-shadow: 0 0 5px rgba(255, 157, 20, 1);
     -o-box-shadow: 0 0 5px #FF9D14;
 	border: 1px solid rgba(255, 157, 20, 0.8);
@@ -552,25 +552,25 @@ table.edit tr td {
 .editColumnEE1 {
 	width: 45%;
 	text-align: right;
-	word-wrap: break-word; 
+	word-wrap: break-word;
 	word-break: break-all;
 }
 .editColumnEE2 {
 	width: 55%;
 	text-align: left;
-	word-wrap: break-word; 
+	word-wrap: break-word;
 	word-break: break-all;
 }
 .viewEeColumn1 {
 	width: 50%;
 	text-align: right;
-	word-wrap: break-word; 
+	word-wrap: break-word;
 	word-break: break-all;
 }
 .viewEeColumn2 {
 	width: 50%;
 	text-align: left;
-	word-wrap: break-word; 
+	word-wrap: break-word;
 	word-break: break-all;
 }
 .editColumnSystem1 {
@@ -603,7 +603,7 @@ table.edit tr td {
 	width: 10%;
 	text-align: center;
 	vertical-align: middle;
-} 
+}
 .editColumn-eeProfile2 {
 	width: 40%;
 	text-align: right;
@@ -616,7 +616,7 @@ table.edit tr td {
 	width: 15%;
 	text-align: center;
 	vertical-align: middle;
-} 
+}
 .column2-cafunctions {
 	width: 30%;
 	text-align: center;
@@ -1314,11 +1314,11 @@ table#config tr td:first-child {
 }
 
 /* --- Table: My Preferences */
-.myPreferencesColumn { 
-    text-align: left; 
-    width: 50%; 
+.myPreferencesColumn {
+    text-align: left;
+    width: 50%;
 }
-    
+
 /* --- Table: SUP > Logs */
 
 td#InfoRow0 { color: black; font-size: 9pt; background-color: white; }
@@ -1524,13 +1524,6 @@ a.button:active {
 	position: relative;
 	top: 1px;
 }
-.infoMessage {
-	font-style: italic;
-	padding: 0.5em;
-	border-radius: 0.3em;
-	background: #fcfcfc;
-	margin-bottom: 1em;
-}
 .propertyTable {
 	border: 0px;
 	right: auto;
@@ -1636,6 +1629,10 @@ a.button:active {
 	padding: 0.5em;
 }
 
+body .ui-panelgrid .ui-panelgrid-cell {
+	padding: 0.5em 0.5em 0.5em 0;
+}
+
 /* Match the file upload button style to the plain PrimeFaces buttons  */
 input[type="file"] {
     color: #495057;
@@ -1663,6 +1660,16 @@ input[type="file"]::file-selector-button:hover {
     background-color: #f5f5f5;
 }
 
+/* Make sure old-styled elements are shown as disabled */
+input[type="button"]:disabled:not(.ui-state-disabled),
+input[type="text"]:disabled:not(.ui-state-disabled),
+input[type="password"]:disabled:not(.ui-state-disabled),
+select:disabled:not(.ui-state-disabled),
+textarea:disabled:not(.ui-state-disabled) {
+    opacity: 0.6;
+    border: 1px solid rgba(0,0,0,0.3);
+}
+
 /* Add some margins to checkboxes */
 
 .ui-chkbox {
@@ -1682,6 +1689,29 @@ input[type="file"]::file-selector-button:hover {
 
 body .ui-datatable .ui-datatable-footer {
 	text-align: right;
+}
+
+.no-summary > span.ui-message-info-summary {
+    margin: 0;
+}
+
+#infoMessage .ui-messages-info-icon,
+#warnMessage .ui-messages-warn-icon,
+#errorMessage .ui-messages-error-icon {
+    margin-top: -0.2rem !important;
+}
+
+.ui-messages-error:has(ul li:nth-child(2)) .ui-messages-error-icon,
+.ui-messages-warn:has(ul li:nth-child(2)) .ui-messages-warn-icon,
+.ui-messages-info:has(ul li:nth-child(2)) .ui-messages-info-icon {
+    display: none;
+}
+
+.ui-messages-error:has(ul li:nth-child(2)) ul,
+.ui-messages-warn:has(ul li:nth-child(2)) ul,
+.ui-messages-info:has(ul li:nth-child(2)) ul {
+    list-style-type: disc;
+    padding-left: 1rem;
 }
 
 /* PrimeFaces class adjustments: END */
@@ -1732,6 +1762,11 @@ body .ui-datatable .ui-datatable-footer {
     white-space: nowrap;
 }
 
+.action-buttons input[type="submit"]:disabled {
+	background-color: rgba(239, 239, 239, 0.3);
+	color: lightgray;
+}
+
 .no-border,
 .no-border table {
     border: none;
@@ -1744,6 +1779,15 @@ table.no-padding tr td  {
     padding: 0;
 }
 
+table.no-left-padding-1st-column td:nth-child(1),
+table.no-left-padding-1st-column th:nth-child(1) {
+    padding-left: 0;
+}
+
+.no-margin {
+    margin: 0;
+}
+
 .padding-bottom-1-rem,
 .row-padding-bottom-1-rem,
 .row-padding-bottom-1-rem table tr td,
@@ -1753,6 +1797,10 @@ table.row-padding-bottom-1-rem tr td {
 
 .padding-top-1-rem {
     padding-top: 1rem;
+}
+
+.margin-top-1-rem {
+    margin-top: 1rem;
 }
 
 .cell-padding-right-1-rem,
