@@ -484,7 +484,11 @@ public class RsaKeyValidator extends KeyValidatorBase {
      * @param value the string value for PublicKeyExponentMin
      */
     public void setPublicKeyExponentMinAsString(String value) {
-        setPublicKeyExponentMin(new BigInteger(value));
+        if (StringUtils.isEmpty(value)) {
+            setPublicKeyExponentMin(null);
+        } else {
+            setPublicKeyExponentMin(new BigInteger(value));
+        }
     }
 
     public BigInteger getPublicKeyExponentMax() {
@@ -526,7 +530,11 @@ public class RsaKeyValidator extends KeyValidatorBase {
      * @param value the string value for PublicKeyExponentMax
      */
     public void setPublicKeyExponentMaxAsString(String value) {
-        setPublicKeyExponentMax(new BigInteger(value));
+        if (StringUtils.isEmpty(value)) {
+            setPublicKeyExponentMax(null);
+        } else {
+            setPublicKeyExponentMax(new BigInteger(value));
+        }
     }
 
     public boolean isPublicKeyModulusOnlyAllowOdd() {
