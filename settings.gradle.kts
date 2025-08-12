@@ -40,10 +40,10 @@ gradle.allprojects {
 dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
-            library("bcprov", ":bcprov:jdk18on-1.80")
-            library("bcpkix", ":bcpkix:jdk18on-1.80")
-            library("bctls", ":bctls:jdk18on-1.80")
-            library("bcutil", ":bcutil:jdk18on-1.80")
+            library("bcprov", ":bcprov:jdk18on-1.80.1")
+            library("bcpkix", ":bcpkix:jdk18on-1.80.1")
+            library("bctls", ":bctls:jdk18on-1.80.1")
+            library("bcutil", ":bcutil:jdk18on-1.80.1")
             library("ejbca-ws-client-gen", ":ejbca-ws-client-gen:1")
             library("caffeine", ":caffeine:3.1.6")
             library("jakartaee-api", ":jakarta.jakartaee-api:10.0.0")
@@ -397,6 +397,7 @@ include(
     "modules:clientToolBox",
     "modules:ejbca-repository",
     "modules:ejbca-repository-generator",
+    "modules:cmpclient",
 )
 
 fun loadPropertiesFromFiles(vararg filePaths: String): Properties {

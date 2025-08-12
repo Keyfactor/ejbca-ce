@@ -26,6 +26,11 @@ sourceSets {
     }
 }
 
+// define interfaces that should be used to generate service manifest files
+ext["serviceInterfaces"] = listOf(
+    "org.cesecore.certificates.ocsp.extension.OCSPExtension"
+)
+
 tasks.jar {
     from("../resources/WEB-INF/META-INF") {
         into("META-INF")

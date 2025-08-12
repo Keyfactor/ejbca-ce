@@ -354,7 +354,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 .setDoEnforceUniqueSubjectDNSerialnumber(isDoEnforceUniqueSubjectDNSerialnumber())
                 .setUseCertReqHistory(isUseCertReqHistory())
                 .setUseUserStorage(isUseUserStorage())
-                .setAddCompromisedKeysToBlockList(isAddCompromisedKeysToBlockList()) 
+                .setAddCompromisedKeysToBlockList(isAddCompromisedKeysToBlockList())
                 .setUseCertificateStorage(isUseCertificateStorage())
                 .setAcceptRevocationNonExistingEntry(isAcceptRevocationNonExistingEntry())
                 .setCmpRaAuthSecret(getCmpRaAuthSecret())
@@ -822,7 +822,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         return addCompromisedKeysToBlockList;
 
     }
-    
+
     @Override
     public void setDoPreProduceOcspResponses(boolean doPreProduceOcspResponses) {
         data.put(DO_PRE_PRODUCE_OCSP_RESPONSES, doPreProduceOcspResponses);
@@ -1277,7 +1277,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 certGenParams, cceConfig, /*linkCertificate=*/false, /*caNameChange=*/false);
     }
 
-    
+
     /**
      * Combines the LDAP names coming from the user's registered one and those from the EEP
      * @param dn1
@@ -1299,10 +1299,10 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 combinedLdapName.add(rdn);
             }
         }
-        
+
         return combinedLdapName.toString();
     }
-    
+
     /**
      * Sequence is ignored by X509CA. The ctParams argument will NOT be kept after the function call returns,
      * and is allowed to contain references to session beans.
@@ -1350,7 +1350,11 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
 
         // ECA-11391 and "Forbid encryption usage for ECC keys" flag in Certificate Profile allow creating certificates
         // using the same Certificate Profile (relevant key usages) where for example both RSA and ECDSA key algorithms are selected in the profile.
-        if (AlgorithmConstants.KEYALGORITHM_ECDSA.equals(AlgorithmTools.getKeyAlgorithm(publicKey)) && certProfile.getKeyUsageForbidEncryptionUsageForECC()) {
+        final String keyAlg = AlgorithmTools.getKeyAlgorithm(publicKey);
+        if (Strings.CS.startsWith(keyAlg, "EC")
+                || Strings.CS.startsWith(keyAlg, "Ed")
+                || AlgorithmTools.isPQC(keyAlg) && !AlgorithmTools.isKEM(keyAlg)
+                && certProfile.getKeyUsageForbidEncryptionUsageForECC()) {
             certProfile.setKeyUsage(CertificateConstants.KEYENCIPHERMENT, false);
             certProfile.setKeyUsage(CertificateConstants.DATAENCIPHERMENT, false);
         }

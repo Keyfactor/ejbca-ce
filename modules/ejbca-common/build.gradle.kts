@@ -37,12 +37,23 @@ sourceSets {
         java {
             setSrcDirs(listOf("src"))
         }
-        resources {
-            srcDirs("resources")
-        }
     }
 }
 
+// define interfaces that should be used to generate service manifest files
+ext["serviceInterfaces"] = listOf(
+    "org.cesecore.authentication.tokens.AuthenticationTokenMetaData",
+    "org.cesecore.configuration.ConfigurationCache",
+    "org.ejbca.core.model.approval.profile.ApprovalProfile",
+    "org.cesecore.keys.validation.Validator",
+    "org.ejbca.core.model.validation.domainblacklist.DomainBlacklistNormalizer",
+    "org.ejbca.core.model.validation.domainblacklist.DomainBlacklistChecker"
+)
+
 tasks.jar {
     from(sourceSets["main"].output)
+    // include the static service manifest files for "org.ejbca.core.model.ca.publisher.CTCustomPublisher"
+    from(sourceSets["main"].java.srcDirs) {
+        include("META-INF/**")
+    }
 }
