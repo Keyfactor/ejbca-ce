@@ -234,7 +234,7 @@ public class X509CertificateAuthenticationTokenUnitTest {
             case WITH_UPN:
                 break;
             default:
-                AccessMatchType match = AccessMatchType.values()[(matchValue.ordinal() % 4)+1];
+                AccessMatchType match = AccessMatchType.values()[(matchValue.ordinal() % 2)+1];
 
                 accessUser = EasyMock.createMock(AccessUserAspectImpl.class);
                 EasyMock.expect(accessUser.getCaId()).andReturn(caid);
