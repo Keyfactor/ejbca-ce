@@ -351,11 +351,11 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
      * @return the string containing the merged DN
      */
     private String mergeDnFromRequestWithUserDataDN(X500Name requestX500Name, String userDn) {
-
+        
         X500NameBuilder builder = new X500NameBuilder(BCStyle.INSTANCE);
 
         // Add RDNs from request
-        if (requestX500Name != null) {
+        if (requestX500Name != null && requestX500Name.getRDNs().length == 0) {
             for (RDN rdn : requestX500Name.getRDNs()) {
                 AttributeTypeAndValue atv = rdn.getFirst();
                 if (atv != null) {
