@@ -12,8 +12,25 @@
  *************************************************************************/
 package org.ejbca.ra;
 
-import com.keyfactor.util.certificate.DnComponents;
+import java.io.IOException;
+import java.io.Serializable;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.ResourceBundle;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -46,6 +63,8 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ra.RaEndEntityDetails.Callbacks;
 
+import com.keyfactor.util.certificate.DnComponents;
+
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.faces.annotation.ManagedProperty;
@@ -55,22 +74,6 @@ import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.io.Serializable;
-import java.io.StringReader;
-import java.util.Comparator;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.LinkedHashMap;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.ResourceBundle;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 /**
  * Backing bean for end entity details view.
@@ -523,11 +526,11 @@ public class RaEndEntityBean implements Serializable {
             changed = true;
         }
         if (eep.isPsd2QcStatementUsed()) {
-            if (!StringUtils.equals(psd2NcaName, extendedInformation.getQCEtsiPSD2NCAName())) {
+            if (!Strings.CS.equals(psd2NcaName, extendedInformation.getQCEtsiPSD2NCAName())) {
                 extendedInformation.setQCEtsiPSD2NcaName(StringUtils.trimToNull(psd2NcaName));
                 changed = true;
             }
-            if (!StringUtils.equals(psd2NcaId, extendedInformation.getQCEtsiPSD2NCAId())) {
+            if (!Strings.CS.equals(psd2NcaId, extendedInformation.getQCEtsiPSD2NCAId())) {
                 extendedInformation.setQCEtsiPSD2NcaId(StringUtils.trimToNull(psd2NcaId));
                 changed = true;
             }
@@ -544,7 +547,7 @@ public class RaEndEntityBean implements Serializable {
             if (!verifyCabfOrganizationIdentifier()) {
                 return;
             }
-            if (!StringUtils.equals(cabfOrganizationIdentifier, extendedInformation.getCabfOrganizationIdentifier())) {
+            if (!Strings.CS.equals(cabfOrganizationIdentifier, extendedInformation.getCabfOrganizationIdentifier())) {
                 extendedInformation.setCabfOrganizationIdentifier(StringUtils.trimToNull(cabfOrganizationIdentifier));
                 changed = true;
             }
@@ -769,7 +772,7 @@ public class RaEndEntityBean implements Serializable {
                 .anyMatch(key -> {
                     final String currentValue = extendedInformation.getExtensionData(key);
                     final String editedValue = editedExtensionData.getProperty(key);
-                    return !StringUtils.equals(editedValue, currentValue);
+                    return !Strings.CS.equals(editedValue, currentValue);
                 });
     }
 

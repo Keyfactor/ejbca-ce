@@ -16,6 +16,15 @@ import java.io.Serializable;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 
+import org.apache.commons.lang3.Strings;
+import org.apache.log4j.Logger;
+import org.cesecore.dbprotection.DatabaseProtectionException;
+import org.cesecore.dbprotection.ProtectedData;
+import org.cesecore.dbprotection.ProtectionStringBuilder;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PostLoad;
@@ -24,15 +33,6 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Query;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
-import org.cesecore.dbprotection.DatabaseProtectionException;
-import org.cesecore.dbprotection.ProtectedData;
-import org.cesecore.dbprotection.ProtectionStringBuilder;
-
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.CertTools;
 
 /**
  * Base64 encoded certificates.<br>
@@ -189,7 +189,7 @@ public class Base64CertData extends ProtectedData implements Serializable {
         if (rowVersion != other.rowVersion) {
             return false;
         }
-        if (!StringUtils.equals(certificateRequest, other.certificateRequest)) {
+        if (!Strings.CS.equals(certificateRequest, other.certificateRequest)) {
             return false;
         }
         return true;

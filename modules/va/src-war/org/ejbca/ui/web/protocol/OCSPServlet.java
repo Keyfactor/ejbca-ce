@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.net.URLDecoder;
 import java.security.cert.X509Certificate;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.cert.ocsp.OCSPResp;
 import org.bouncycastle.cert.ocsp.OCSPRespBuilder;
@@ -78,13 +78,13 @@ public class OCSPServlet extends HttpServlet {
                 log.trace(">doGet()");
             }
             // We have a command to force reloading of keys that can only be run from localhost
-            final boolean doReload = StringUtils.equals(request.getParameter("reloadkeys"), "true");
+            final boolean doReload = Strings.CS.equals(request.getParameter("reloadkeys"), "true");
             final String newConfig = request.getParameter("newConfig");
             final boolean doNewConfig = newConfig != null && newConfig.length() > 0;
             final boolean doRestoreConfig = request.getParameter("restoreConfig") != null;
             final String remote = request.getRemoteAddr();
             if (doReload || doNewConfig || doRestoreConfig) {
-                if (!StringUtils.equals(remote, "127.0.0.1")) {
+                if (!Strings.CS.equals(remote, "127.0.0.1")) {
                     log.info("Got reloadkeys or updateConfig of restoreConfig command from unauthorized ip: " + remote);
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
                     return;

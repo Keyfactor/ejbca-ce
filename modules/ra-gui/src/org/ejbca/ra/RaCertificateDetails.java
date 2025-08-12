@@ -36,14 +36,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
-import jakarta.faces.component.UIComponent;
-import jakarta.faces.component.UIInput;
-import jakarta.faces.context.ExternalContext;
-import jakarta.faces.context.FacesContext;
-import jakarta.faces.event.ComponentSystemEvent;
-import jakarta.faces.model.SelectItem;
-
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
 import org.bouncycastle.asn1.ASN1Primitive;
@@ -91,6 +85,13 @@ import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.component.UIInput;
+import jakarta.faces.context.ExternalContext;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.event.ComponentSystemEvent;
+import jakarta.faces.model.SelectItem;
 
 /**
  * UI representation of a certificate from the back end.
@@ -947,7 +948,7 @@ public class RaCertificateDetails implements Serializable {
             log.error(e);
         } catch (AlreadyRevokedException e) {
             final String msg = e.getMessage();
-            if (StringUtils.equals(msg, intres.getLocalizedMessage("ra.invalidrevocationdate"))) {
+            if (Strings.CS.equals(msg, intres.getLocalizedMessage("ra.invalidrevocationdate"))) {
                 callbacks.getRaLocaleBean().addMessageError("component_certdetails_error_invalid_revocation_date");
             } else {
                 callbacks.getRaLocaleBean().addMessageError("component_certdetails_error_revocation_failed");

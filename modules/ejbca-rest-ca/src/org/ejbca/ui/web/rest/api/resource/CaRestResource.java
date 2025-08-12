@@ -25,18 +25,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import jakarta.ejb.EJB;
-import jakarta.ejb.Stateless;
-import jakarta.ejb.TransactionAttribute;
-import jakarta.ejb.TransactionAttributeType;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.ws.rs.core.EntityPart;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.Response.Status;
-
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.IntegerRange;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -68,6 +59,15 @@ import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.core.EntityPart;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 
 /**
  * JAX-RS resource handling CA related requests.
@@ -226,7 +226,7 @@ public class CaRestResource extends BaseRestResource {
 
             if (x509crl == null) {
                 throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Could not parse CRL. It must be in DER format.");
-            } else if (!StringUtils.equals(cainfo.getSubjectDN(), CertTools.getIssuerDN(x509crl))) {
+            } else if (!Strings.CS.equals(cainfo.getSubjectDN(), CertTools.getIssuerDN(x509crl))) {
                 throw new RestException(Status.BAD_REQUEST.getStatusCode(), "CRL is not issued by " + issuerDn);
             } else {
                 final int uploadedCrlNumber = CrlExtensions.getCrlNumber(x509crl).intValue();

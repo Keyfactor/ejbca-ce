@@ -16,6 +16,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.model.UsernameGenerateMode;
@@ -168,7 +169,7 @@ public class UsernameGenerator {
             // when the pattern is ${identifier}, group 0 is 'identifier'
             String key = m.group(1);
             String value = null;
-            if (StringUtils.equals(key, UsernameGenerateMode.RANDOM.name())) {
+            if (Strings.CS.equals(key, UsernameGenerateMode.RANDOM.name())) {
                 value = getRandomString(params.getRandomPrefixLength());
             }
             // if the pattern does exists, replace it by its value

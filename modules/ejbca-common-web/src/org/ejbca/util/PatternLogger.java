@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
@@ -116,7 +116,7 @@ public class PatternLogger implements IPatternLogger {
 		}else{
 			this.valuepairs.put(key, value);
 		}	  
-		if (StringUtils.equals(key, IPatternLogger.PROCESS_TIME)) {
+		if (Strings.CS.equals(key, IPatternLogger.PROCESS_TIME)) {
 			startProcessTime = new Date();
 		}
 	}

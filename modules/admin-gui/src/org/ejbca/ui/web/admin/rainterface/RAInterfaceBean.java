@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -467,7 +468,7 @@ public class RAInterfaceBean implements Serializable {
     public String getFormatedCertSN(CertificateView certificateData) {
 
     	String serialnumber = certificateData.getSerialNumber();
-    	if(StringUtils.equals(certificateData.getType(), "X.509")) {
+    	if(Strings.CS.equals(certificateData.getType(), "X.509")) {
     		if((serialnumber.length()%2) != 0) {
     			serialnumber = "0" + serialnumber;
     		}

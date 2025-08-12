@@ -13,11 +13,6 @@
 
 package org.ejbca.config;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
-import org.cesecore.configuration.ConfigurationBase;
-import org.ejbca.core.model.UsernameGenerateMode;
-
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -28,6 +23,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
+import org.apache.log4j.Logger;
+import org.cesecore.configuration.ConfigurationBase;
+import org.ejbca.core.model.UsernameGenerateMode;
 
 /**
  * Configuration of the SCEP protocol.
@@ -280,7 +281,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public boolean getRAMode(String alias) {
         String key = alias + "." + SCEP_OPERATIONMODE;
         String value = getValue(key, alias);
-        return StringUtils.equalsIgnoreCase(value, Mode.RA.getResource());
+        return Strings.CI.equals(value, Mode.RA.getResource());
     }
 
     public void setRAMode(String alias, boolean ramode) {
@@ -291,7 +292,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public boolean getIncludeCA(String alias) {
         String key = alias + "." + SCEP_INCLUDE_CA;
         String value = getValue(key, alias);
-        return StringUtils.equalsIgnoreCase(value, "true");
+        return Strings.CI.equals(value, "true");
     }
 
     public void setIncludeCA(String alias, boolean includeca) {
@@ -302,7 +303,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public boolean getReturnCaChainInGetCaCert(String alias) {
         String key = alias + "." + SCEP_RETURN_CA_CHAIN_IN_GETCACERT;
         String value = getValue(key, alias);
-        return StringUtils.equalsIgnoreCase(value, "true");
+        return Strings.CI.equals(value, "true");
     }
 
     public void setReturnCaChainInGetCaCert(String alias, boolean returnCaChainInGetCaCert) {
@@ -313,7 +314,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public boolean getCaChainRootFirstOrder(final String alias) {
         String key = alias + "." + SCEP_CHAIN_ROOT_FIRST;
         String value = getValue(key, alias);
-        return StringUtils.equalsIgnoreCase(value, Boolean.TRUE.toString());
+        return Strings.CI.equals(value, Boolean.TRUE.toString());
     }
 
     public void setCaChainRootFirstOrder(String alias, boolean caChainRootFirstOrder) {
@@ -330,7 +331,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
             data.put(alias + "." + SCEP_ALLOW_LEGACY_DIGEST_ALGORITHM, "true");
             return Boolean.getBoolean("true");
         }
-        return StringUtils.equalsIgnoreCase(value, "true");
+        return Strings.CI.equals(value, "true");
     }
 
     public void setAllowLegacyDigestAlgorithm(String alias, boolean allowLegacyDigestAlgorithm) {
@@ -426,7 +427,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public boolean getUseIntune(final String alias) {
         String key = alias + "." + SCEP_USE_INTUNE;
         String value = getValue(key, alias);
-        return StringUtils.equalsIgnoreCase(value, Boolean.TRUE.toString());
+        return Strings.CI.equals(value, Boolean.TRUE.toString());
     }
 
     public void setIntuneAuthority(final String alias, final String value) {
@@ -737,7 +738,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         while (itr.hasNext()) {
             String oldkey = itr.next();
             String newkey = oldkey;
-            newkey = StringUtils.replace(newkey, oldAlias, newAlias);
+            newkey = Strings.CS.replace(newkey, oldAlias, newAlias);
             Object value = data.get(oldkey);
             data.put(newkey, value);
         }
@@ -772,7 +773,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         while (itr.hasNext()) {
             String originalKey = itr.next();
             String cloneKey = originalKey;
-            cloneKey = StringUtils.replace(cloneKey, originAlias, cloneAlias);
+            cloneKey = Strings.CS.replace(cloneKey, originAlias, cloneAlias);
             Object value = data.get(originalKey);
             data.put(cloneKey, value);
         }

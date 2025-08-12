@@ -19,7 +19,7 @@ import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.common.IEjbcaWS;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -78,13 +78,13 @@ public class CustomLogCommand extends EJBCAWSRABaseCommand implements IAdminComm
 			String msg = args[ARG_MSG];
 
 			int logLevel = IEjbcaWS.CUSTOMLOG_LEVEL_INFO;
-			if (StringUtils.equalsIgnoreCase(level, "error")) {
+			if (Strings.CI.equals(level, "error")) {
 				logLevel = IEjbcaWS.CUSTOMLOG_LEVEL_ERROR;
 			}
-			if (StringUtils.equalsIgnoreCase(caname, "null")) {
+			if (Strings.CI.equals(caname, "null")) {
 				caname = null;
 			}
-			if (StringUtils.equalsIgnoreCase(username, "null")) {
+			if (Strings.CI.equals(username, "null")) {
 				username = null;
 			}
 			getPrintStream().println("Custom log level: "+(logLevel == IEjbcaWS.CUSTOMLOG_LEVEL_ERROR ? "ERROR" : "INFO"));
@@ -98,7 +98,7 @@ public class CustomLogCommand extends EJBCAWSRABaseCommand implements IAdminComm
 
 			Certificate incert = null;
 			org.ejbca.core.protocol.ws.client.gen.Certificate logcert = null;
-			if (!StringUtils.equalsIgnoreCase(certfile, "null")) {
+			if (!Strings.CI.equals(certfile, "null")) {
 				try {
 					FileInputStream in = new FileInputStream(certfile);
 					Collection<Certificate> certs = CertTools.getCertsFromPEM(in, Certificate.class);

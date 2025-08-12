@@ -22,7 +22,7 @@ import java.io.File;
 import java.util.Arrays;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.keys.token.PKCS11TestUtils;
 import org.junit.Before;
@@ -101,7 +101,7 @@ public class Pkcs11WrapperUnitTest {
         log.info("Testing " + tokenReferenceType);
         switch (tokenReferenceType) {
         case SLOT_INDEX:
-            assertTrue("Configured slot/token index was not found.", tokenIds.length >= Integer.valueOf(StringUtils.removeStart(PKCS11TestUtils.getPkcs11SlotValue(), "i")));
+            assertTrue("Configured slot/token index was not found.", tokenIds.length >= Integer.valueOf(Strings.CS.removeStart(PKCS11TestUtils.getPkcs11SlotValue(), "i")));
             break;
         case SLOT_LABEL:
             final String expectedLabel = PKCS11TestUtils.getPkcs11SlotValue();

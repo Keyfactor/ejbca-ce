@@ -127,7 +127,7 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 					String country = DnComponents.getPartFromDN(dn, "C");
 					String mnemonic = DnComponents.getPartFromDN(dn, "CN");
 					if (sequence.equalsIgnoreCase("null")) {
-						sequence = RandomStringUtils.randomNumeric(5);
+						sequence = RandomStringUtils.secure().nextNumeric(5);
 						getPrintStream().println("No sequence given, using random 5 number sequence: "+sequence);
 					}
 					if (country == null) {

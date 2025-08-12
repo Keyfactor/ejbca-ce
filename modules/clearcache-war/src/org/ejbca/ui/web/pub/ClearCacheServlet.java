@@ -20,17 +20,17 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.commons.lang3.Strings;
+import org.apache.log4j.Logger;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.ejb.config.ClearCacheSessionLocal;
+
 import jakarta.ejb.EJB;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
-import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.core.ejb.config.ClearCacheSessionLocal;
 
 /**
  * Servlet used to clear all caches (Global Configuration Cache, End Entity Profile Cache, 
@@ -58,8 +58,8 @@ public class ClearCacheServlet extends HttpServlet {
         if (log.isTraceEnabled()) {
             log.trace(">doGet()");
         }
-        if (StringUtils.equals(httpServletRequest.getParameter("command"), "clearcaches")) {
-            final boolean excludeActiveCryptoTokens = StringUtils.equalsIgnoreCase("true", httpServletRequest.getParameter("excludeactivects"));
+        if (Strings.CS.equals(httpServletRequest.getParameter("command"), "clearcaches")) {
+            final boolean excludeActiveCryptoTokens = Strings.CI.equals("true", httpServletRequest.getParameter("excludeactivects"));
             if (isLocalhostAddress(httpServletRequest.getRemoteAddr()) || acceptedHost(httpServletRequest.getRemoteHost())) {
                 clearCacheSession.clearCaches(excludeActiveCryptoTokens);
             } else {
@@ -109,7 +109,7 @@ public class ClearCacheServlet extends HttpServlet {
 					log.debug("Checking remote host against host in list: "+nodename+", "+nodeip);
 				}
 				// Assume that automatic reverse DNS lookup is disabled in the Servlet container and compare "remotehost" with the IP address we got
-				if (StringUtils.equals(remotehost, nodeip)) {
+				if (Strings.CS.equals(remotehost, nodeip)) {
 					ret = true;
 					break;
 				}

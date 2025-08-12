@@ -16,7 +16,7 @@ package org.ejbca.core.protocol.ws.client;
 import java.math.BigInteger;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
@@ -80,7 +80,7 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
         try {
             userdata.setUsername(myArgs[ARG_USERNAME]);
             String pwd = myArgs[ARG_PASSWORD];
-            if (StringUtils.equalsIgnoreCase("null", pwd)) {
+            if (Strings.CI.equals("null", pwd)) {
             	pwd = null;
             }
             userdata.setPassword(pwd);

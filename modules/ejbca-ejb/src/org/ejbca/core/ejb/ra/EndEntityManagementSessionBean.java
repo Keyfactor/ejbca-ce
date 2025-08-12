@@ -52,6 +52,7 @@ import jakarta.transaction.TransactionSynchronizationRegistry;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameStyle;
@@ -1092,7 +1093,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             }
             if (extendedInformation != null) {
                 final String requestCounter = extendedInformation.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
-                if (StringUtils.equals(requestCounter, "0") && newStatus == EndEntityConstants.STATUS_NEW && oldStatus != EndEntityConstants.STATUS_NEW) {
+                if (Strings.CS.equals(requestCounter, "0") && newStatus == EndEntityConstants.STATUS_NEW && oldStatus != EndEntityConstants.STATUS_NEW) {
                     // If status is set to new, we should re-set the allowed request counter to the default values
                     // But we only do this if no value is specified already, i.e. 0 or null
                     resetRequestCounter(false, extendedInformation, username, endEntityProfileId);
@@ -1429,7 +1430,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             return UserDataChangeMode.MANDATORY_CHANGE;
         }
         if (newExtendedInfo != null) {
-            if (!StringUtils.equals(
+            if (!Strings.CS.equals(
                     newExtendedInfo.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER),
                     oldExtendedInfo.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER))) {
                 return UserDataChangeMode.MANDATORY_CHANGE;
@@ -2358,9 +2359,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         log.debug("Status is " + newStatus + ", notification sent for notificationevents: " + userNotification.getNotificationEvents());
                     }
                     try {
-                        if (StringUtils.equals(userNotification.getNotificationRecipient(), UserNotification.RCPT_USER)) {
+                        if (Strings.CS.equals(userNotification.getNotificationRecipient(), UserNotification.RCPT_USER)) {
                             recipientEmail = userEmail;
-                        } else if (StringUtils.contains(userNotification.getNotificationRecipient(), UserNotification.RCPT_CUSTOM)) {
+                        } else if (Strings.CS.contains(userNotification.getNotificationRecipient(), UserNotification.RCPT_CUSTOM)) {
                             // Just if this fail it will say that sending to user with email "custom" failed.
                             recipientEmail = "custom";
                             // Plug-in mechanism for retrieving custom notification email recipient addresses

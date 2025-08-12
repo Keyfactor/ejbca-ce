@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.conn.ssl.TrustStrategy;
@@ -86,7 +87,7 @@ public class HttpTools {
         final Matcher nameMatcher = headerParameter.matcher(params);
         while (nameMatcher.find()) {
             final String paramName = nameMatcher.group(PARAM_NAME_GROUP);
-            if (StringUtils.equalsIgnoreCase(paramName, parameterName)) {
+            if (Strings.CI.equals(paramName, parameterName)) {
                 final String quoted = nameMatcher.group(PARAM_QUOTED_VALUE_GROUP);
                 final String unquoted = nameMatcher.group(PARAM_UNQUOTED_VALUE_GROUP);
                 final String paramValue = quoted != null ? quoted : unquoted;
@@ -182,7 +183,7 @@ public class HttpTools {
      * @return Header value without scheme part, or null if not matching the scheme.
      */
     public static String extractAuthorizationOfScheme(final String authorizationHeader, final String expectedScheme) {
-        if (StringUtils.startsWithIgnoreCase(authorizationHeader, expectedScheme+" ")) {
+        if (Strings.CI.startsWith(authorizationHeader, expectedScheme+" ")) {
             return authorizationHeader.split(" +", 2)[1];
         } else {
             return null;

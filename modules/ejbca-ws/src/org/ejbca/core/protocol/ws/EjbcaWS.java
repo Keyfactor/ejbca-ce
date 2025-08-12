@@ -36,21 +36,10 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
-import jakarta.annotation.Resource;
-import jakarta.ejb.EJB;
-import jakarta.ejb.Stateless;
-import jakarta.ejb.TransactionAttribute;
-import jakarta.ejb.TransactionAttributeType;
-import jakarta.jws.WebMethod;
-import jakarta.jws.WebService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.xml.bind.DatatypeConverter;
 import javax.xml.datatype.DatatypeConfigurationException;
-import jakarta.xml.ws.Action;
-import jakarta.xml.ws.WebServiceContext;
-import jakarta.xml.ws.handler.MessageContext;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.Properties;
@@ -162,6 +151,19 @@ import com.keyfactor.util.certificate.CertificateWrapper;
 import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
+
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.jws.WebMethod;
+import jakarta.jws.WebService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.xml.bind.DatatypeConverter;
+import jakarta.xml.ws.Action;
+import jakarta.xml.ws.WebServiceContext;
+import jakarta.xml.ws.handler.MessageContext;
 
 /**
  * Implementor of the IEjbcaWS interface.
@@ -2338,9 +2340,9 @@ public class EjbcaWS implements IEjbcaWS {
             final IPatternLogger logger = TransactionLogger.getPatternLogger();
             logAdminName(admin, logger);
             try {
-                if (StringUtils.equalsIgnoreCase(profileType, "eep")) {
+                if (Strings.CI.equals(profileType, "eep")) {
                     return raMasterApiProxyBean.getEndEntityProfileAsXml(admin, profileId);
-                } else if (StringUtils.equalsIgnoreCase(profileType, "cp")) {
+                } else if (Strings.CI.equals(profileType, "cp")) {
                     return raMasterApiProxyBean.getCertificateProfileAsXml(admin, profileId);
                 } else {
                     throw new UnknownProfileTypeException("Unknown profile type '" + profileType

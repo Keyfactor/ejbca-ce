@@ -389,7 +389,9 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
                 }
             }
             //On upgrading from commons-lang to commons-lang3 (9.4), the timezone marker was added to the timestamp. Remove it to preserve legacy behavior.
-            startTime = startTime.replace("Z", "+00:00");
+            if (startTime != null) {
+                startTime = startTime.replace("Z", "+00:00");
+            }
             dataWS.setStartTime(startTime);
             String endTime = ei.getCustomData(ExtendedInformation.CUSTOM_ENDTIME);
             if (endTime != null && endTime.length() > 0 && !endTime.matches("^\\d+:\\d?\\d:\\d?\\d$")) {
@@ -400,7 +402,9 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
                     log.info("Failed to convert " + ExtendedInformation.CUSTOM_ENDTIME + " to ISO8601 format.");
                 }
             }
-            endTime = endTime.replace("Z", "+00:00");
+            if (endTime != null) {
+                endTime = endTime.replace("Z", "+00:00");
+            }
             dataWS.setEndTime(endTime);
             // Fill custom data in extended information
             @SuppressWarnings("unchecked")

@@ -30,6 +30,7 @@ import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.pkcs.RSAPrivateKey;
@@ -197,7 +198,7 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
                             IOUtils.closeQuietly(reader);
                             for (final String line : lines) {
                                 final String trimmedLine = StringUtils.trim(line);
-                                if (StringUtils.startsWith(trimmedLine, "#") || StringUtils.isEmpty(trimmedLine)) {
+                                if (Strings.CS.startsWith(trimmedLine, "#") || StringUtils.isEmpty(trimmedLine)) {
                                     continue;
                                 }
                                 if (trimmedLine.length() != 20) {
@@ -291,7 +292,7 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
                             IOUtils.closeQuietly(reader);
                             for (final String line : lines) {
                                 final String trimmedLine = StringUtils.trim(line);
-                                if (StringUtils.startsWith(trimmedLine, "#") || StringUtils.isEmpty(trimmedLine)) {
+                                if (Strings.CS.startsWith(trimmedLine, "#") || StringUtils.isEmpty(trimmedLine)) {
                                     continue;
                                 }
                                 if (trimmedLine.length() != 20) {

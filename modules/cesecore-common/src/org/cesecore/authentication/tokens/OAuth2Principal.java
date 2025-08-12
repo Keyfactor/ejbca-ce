@@ -21,6 +21,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 /**
  * OAuth2 principal that contains the JWT claim attributes.
@@ -109,13 +110,13 @@ public class OAuth2Principal implements Principal, Serializable {
         }
         final OAuth2Principal other = (OAuth2Principal)obj;
         return oauthProviderId == other.oauthProviderId &&
-                StringUtils.equals(issuer, other.issuer) &&
-                StringUtils.equals(subject, other.subject) &&
-                StringUtils.equals(oid, other.oid) &&
+                Strings.CS.equals(issuer, other.issuer) &&
+                Strings.CS.equals(subject, other.subject) &&
+                Strings.CS.equals(oid, other.oid) &&
                 audience.equals(other.audience) &&
-                StringUtils.equals(preferredUsername, other.preferredUsername) &&
-                StringUtils.equals(name, other.name) &&
-                StringUtils.equals(email, other.email) &&
+                Strings.CS.equals(preferredUsername, other.preferredUsername) &&
+                Strings.CS.equals(name, other.name) &&
+                Strings.CS.equals(email, other.email) &&
                 emailVerified == other.emailVerified &&
                 roles.equals(other.roles);
     }

@@ -15,6 +15,15 @@ package org.cesecore.certificates.certificate;
 import java.io.Serializable;
 import java.util.Objects;
 
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.Strings;
+import org.apache.log4j.Logger;
+import org.cesecore.dbprotection.DatabaseProtectionException;
+import org.cesecore.dbprotection.ProtectionStringBuilder;
+
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
+
 import jakarta.persistence.ColumnResult;
 import jakarta.persistence.Entity;
 import jakarta.persistence.PostLoad;
@@ -24,15 +33,6 @@ import jakarta.persistence.SqlResultSetMapping;
 import jakarta.persistence.SqlResultSetMappings;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
-
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
-import org.cesecore.dbprotection.DatabaseProtectionException;
-import org.cesecore.dbprotection.ProtectionStringBuilder;
-
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Representation of a revoked throw-away certificate and related information.
@@ -590,7 +590,7 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
                 return false;
             }
         }
-        if (!ObjectUtils.defaultIfNull(crlPartitionIndex, 0).equals(ObjectUtils.defaultIfNull(certificateData.crlPartitionIndex, 0))) {
+        if (!ObjectUtils.getIfNull(crlPartitionIndex, 0).equals(ObjectUtils.getIfNull(certificateData.crlPartitionIndex, 0))) {
             return false;
         }
         if (updateTime != certificateData.updateTime) {
@@ -605,7 +605,7 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
                 return false;
             }
         }
-        if (!StringUtils.equals(certificateRequest, certificateData.certificateRequest)) {
+        if (!Strings.CS.equals(certificateRequest, certificateData.certificateRequest)) {
             return false;
         }
         return true;

@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.HashID;
 import org.junit.BeforeClass;
@@ -239,7 +239,7 @@ public class CaCertificateCacheUnitTest {
 	            X509Certificate cert = cache.findLatestBySubjectDN(HashID.getFromDNString(dn));
 	            // The cache tests will not return any CV Certificates because this OCSP cache 
 	            // only handles X.509 Certificates.
-	            if (!StringUtils.contains(dn, "CVCTest")) {
+	            if (!Strings.CS.contains(dn, "CVCTest")) {
 	                cert.getSubjectX500Principal(); // just to see that we did receive a cert, will throw NPE if no cert was returned              
 	            }
 	        }               

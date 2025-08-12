@@ -28,11 +28,9 @@ import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.certificate.DnComponents;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
@@ -43,6 +41,9 @@ import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Implementation of the CLI command <code>./ejbca.sh ca importcertsms</code>.
@@ -202,7 +203,7 @@ public class CaImportMsCaCertificates extends BaseCaAdminCommand {
             int skippedCount = 0;
             final long startTime = System.currentTimeMillis();
             for (String line; (line = reader.readLine()) != null; ) {
-                if (StringUtils.startsWith(line, "Row")) {
+                if (Strings.CS.startsWith(line, "Row")) {
                     final int rowNumber = getRowNumber(line);
                     final ImportResult importResult = importEntry(parameters, reader, rowNumber);
                     if (importResult.getStatus() == ImportResult.Status.ERROR) {
@@ -274,7 +275,7 @@ public class CaImportMsCaCertificates extends BaseCaAdminCommand {
 
     private int getRowNumber(final String line) throws IOException {
         try {
-            final String rowNumber = StringUtils.remove(StringUtils.substringAfter(line, "Row "), ":");
+            final String rowNumber = Strings.CS.remove(StringUtils.substringAfter(line, "Row "), ":");
             return Integer.parseInt(rowNumber);
         } catch (final NumberFormatException e) {
             throw new IOException("Cannot extract row number from line '" + line + "'.");
@@ -341,7 +342,7 @@ public class CaImportMsCaCertificates extends BaseCaAdminCommand {
             return null;
         }
         final String beginCertificate = reader.readLine();
-        if (!StringUtils.equals(beginCertificate, CertTools.BEGIN_CERTIFICATE)) {
+        if (!Strings.CS.equals(beginCertificate, CertTools.BEGIN_CERTIFICATE)) {
             throw new IOException("Expected BEGIN_CERTIFICATE but read '" + beginCertificate + "'.");
         }
         final StringBuilder pem = new StringBuilder();
@@ -349,7 +350,7 @@ public class CaImportMsCaCertificates extends BaseCaAdminCommand {
         for (String nextLine; (nextLine = reader.readLine()) != null;) {
             pem.append("\n");
             pem.append(nextLine);
-            if (StringUtils.equals(nextLine, CertTools.END_CERTIFICATE)) {
+            if (Strings.CS.equals(nextLine, CertTools.END_CERTIFICATE)) {
                 return pem.toString();
             }
         }
@@ -363,7 +364,7 @@ public class CaImportMsCaCertificates extends BaseCaAdminCommand {
 
     private String parseCertificateTemplate(final BufferedReader reader) throws IOException {
         final String line = parseProperty(reader, "Certificate Template");
-        final String lineWithoutProperty = StringUtils.removeStart(line, "Certificate Template:");
+        final String lineWithoutProperty = Strings.CS.removeStart(line, "Certificate Template:");
         final String[] parts = StringUtils.trim(lineWithoutProperty).split(" ");
         if (parts.length == 1) {
             // Format is either 'Certificate Template: "<OID>" or Certificate Template: "<NAME>"'
@@ -398,20 +399,20 @@ public class CaImportMsCaCertificates extends BaseCaAdminCommand {
             return certificate.getSerialNumber().toString();
         }
         for (final String eeUsernameField : parameters.get(EE_USERNAME).split(",")) {
-            if (StringUtils.equals(eeUsernameField, "SERIAL_NUMBER")) {
+            if (Strings.CS.equals(eeUsernameField, "SERIAL_NUMBER")) {
                 return certificate.getSerialNumber().toString();
             }
-            if (StringUtils.equals(eeUsernameField, "SERIAL_NUMBER_HEX")) {
+            if (Strings.CS.equals(eeUsernameField, "SERIAL_NUMBER_HEX")) {
                 return certificate.getSerialNumber().toString(16);
             }
-            if (StringUtils.equals(eeUsernameField, "DN")) {
+            if (Strings.CS.equals(eeUsernameField, "DN")) {
                 final String subjectDn = CertTools.getSubjectDN(certificate);
                 if (StringUtils.isEmpty(subjectDn)) {
                     continue;
                 }
                 return subjectDn;
             }
-            if (StringUtils.equals(eeUsernameField, "CN")) {
+            if (Strings.CS.equals(eeUsernameField, "CN")) {
                 final String subjectDn = CertTools.getSubjectDN(certificate);
                 final String cn = DnComponents.getPartFromDN(subjectDn, "CN");
                 if (StringUtils.isEmpty(cn)) {
@@ -419,7 +420,7 @@ public class CaImportMsCaCertificates extends BaseCaAdminCommand {
                 }
                 return cn;
             }
-            if (StringUtils.equals(eeUsernameField, "O")) {
+            if (Strings.CS.equals(eeUsernameField, "O")) {
                 final String subjectDn = CertTools.getSubjectDN(certificate);
                 final String o = DnComponents.getPartFromDN(subjectDn, "O");
                 if (StringUtils.isEmpty(o)) {
@@ -427,7 +428,7 @@ public class CaImportMsCaCertificates extends BaseCaAdminCommand {
                 }
                 return o;
             }
-            if (StringUtils.equals(eeUsernameField, "OU")) {
+            if (Strings.CS.equals(eeUsernameField, "OU")) {
                 final String subjectDn = CertTools.getSubjectDN(certificate);
                 final String ou = DnComponents.getPartFromDN(subjectDn, "OU");
                 if (StringUtils.isEmpty(ou)) {
@@ -435,13 +436,13 @@ public class CaImportMsCaCertificates extends BaseCaAdminCommand {
                 }
                 return ou;
             }
-            if (StringUtils.equals(eeUsernameField, "UPN")) {
-                if (StringUtils.equals(upn, "EMPTY")) {
+            if (Strings.CS.equals(eeUsernameField, "UPN")) {
+                if (Strings.CS.equals(upn, "EMPTY")) {
                     continue;
                 }
                 return upn;
             }
-            if (StringUtils.equals(eeUsernameField, "universalPrincipalName")) {
+            if (Strings.CS.equals(eeUsernameField, "universalPrincipalName")) {
                 final String upnFromCertificate = DnComponents.getPartFromDN(DnComponents.getSubjectAlternativeName(certificate), DnComponents.UPN);
                 if (StringUtils.isEmpty(upnFromCertificate)) {
                     continue;

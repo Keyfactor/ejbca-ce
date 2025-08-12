@@ -22,6 +22,7 @@ import jakarta.faces.event.AjaxBehaviorEvent;
 import jakarta.faces.model.SelectItem;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.LdapPublisher.ConnectionSecurity;
@@ -375,7 +376,7 @@ public final class LdapPublisherMBData implements Serializable {
         for (final int fieldId : publisher.getUseFieldInLdapDN()) {
             if (sb.length() != 0) sb.append(',');
             final String component = DNFieldExtractor.getFieldComponent(fieldId, DNFieldExtractor.TYPE_SUBJECTDN);
-            sb.append(StringUtils.removeEnd(component, "="));
+            sb.append(Strings.CS.removeEnd(component, "="));
         }
         return sb.toString();
     }

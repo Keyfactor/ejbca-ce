@@ -40,6 +40,7 @@ import java.util.Set;
 import javax.security.auth.x500.X500Principal;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.CaTestUtils;
@@ -91,7 +92,6 @@ import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueProxySessionRemote;
@@ -931,13 +931,13 @@ public class EndEntityManagementSessionSystemTest extends CaTestCase {
                 endEntityManagementSession.addUser(adminTokenNoAuth, userdata, false);
                 fail("should throw");
             } catch (AuthorizationDeniedException e) {
-                assertTrue("Wrong auth denied message: "+e.getMessage(), StringUtils.startsWith(e.getMessage(), "Administrator not authorized to CA"));
+                assertTrue("Wrong auth denied message: "+e.getMessage(), Strings.CS.startsWith(e.getMessage(), "Administrator not authorized to CA"));
             }
             try {
                 endEntityManagementSession.changeUser(adminTokenNoAuth, userdata, true);
                 fail("should throw");
             } catch (AuthorizationDeniedException e) {
-                assertTrue("Wrong auth denied message: "+e.getMessage(), StringUtils.startsWith(e.getMessage(), "Administrator not authorized to CA"));
+                assertTrue("Wrong auth denied message: "+e.getMessage(), Strings.CS.startsWith(e.getMessage(), "Administrator not authorized to CA"));
             }
             endEntityManagementSession.addUser(admin, userdata, false);
             try {
@@ -945,13 +945,13 @@ public class EndEntityManagementSessionSystemTest extends CaTestCase {
                 log.debug("Rename result: " + result);
                 fail("should throw");
             } catch (AuthorizationDeniedException e) {
-                assertTrue("Wrong auth denied message: "+e.getMessage(), StringUtils.startsWith(e.getMessage(), "Administrator not authorized to CA"));
+                assertTrue("Wrong auth denied message: "+e.getMessage(), Strings.CS.startsWith(e.getMessage(), "Administrator not authorized to CA"));
             }
             try {
                 endEntityManagementSession.deleteUser(adminTokenNoAuth, authUsername);
                 fail("should throw");
             } catch (AuthorizationDeniedException e) {
-                assertTrue("Wrong auth denied message: "+e.getMessage(), StringUtils.startsWith(e.getMessage(), "Administrator not authorized to CA"));
+                assertTrue("Wrong auth denied message: "+e.getMessage(), Strings.CS.startsWith(e.getMessage(), "Administrator not authorized to CA"));
             }
             // Now add the administrator to a role that has access to /ca/* but not ee profiles
             final Role oldRole = roleSession.getRole(admin, null, testRole);
@@ -979,13 +979,13 @@ public class EndEntityManagementSessionSystemTest extends CaTestCase {
                 endEntityManagementSession.changeUser(adminTokenNoAuth, userdata, false);
                 fail("should throw");
             } catch (AuthorizationDeniedException e) {
-                assertTrue("Wrong auth denied message: "+e.getMessage(), StringUtils.startsWith(e.getMessage(), "Administrator not authorized to end entity profile"));
+                assertTrue("Wrong auth denied message: "+e.getMessage(), Strings.CS.startsWith(e.getMessage(), "Administrator not authorized to end entity profile"));
             }
             try {
                 endEntityManagementSession.renameEndEntity(adminTokenNoAuth, authUsername, authUsername+"_renamed");
                 fail("should throw");
             } catch (AuthorizationDeniedException e) {
-                assertTrue("Wrong auth denied message: "+e.getMessage(), StringUtils.startsWith(e.getMessage(), "Administrator not authorized to end entity profile"));
+                assertTrue("Wrong auth denied message: "+e.getMessage(), Strings.CS.startsWith(e.getMessage(), "Administrator not authorized to end entity profile"));
             }
         } finally {
         	if (eelimitation!=null) {

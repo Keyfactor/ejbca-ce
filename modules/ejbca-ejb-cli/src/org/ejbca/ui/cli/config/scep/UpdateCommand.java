@@ -15,7 +15,7 @@ package org.ejbca.ui.cli.config.scep;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CaSessionRemote;
@@ -67,12 +67,12 @@ public class UpdateCommand extends BaseScepConfigCommand {
         ScepConfiguration scepConfig = getScepConfiguration();
         List<String> bkeys = ScepConfiguration.SCEP_BOOLEAN_KEYS;
         
-        if(StringUtils.equals(key, ScepConfiguration.SCEP_RAMODE_OLD) || StringUtils.equals(key, ScepConfiguration.SCEP_OPERATIONMODE)) {
+        if(Strings.CS.equals(key, ScepConfiguration.SCEP_RAMODE_OLD) || Strings.CS.equals(key, ScepConfiguration.SCEP_OPERATIONMODE)) {
             key = alias + "." + ScepConfiguration.SCEP_OPERATIONMODE;
-            value = !StringUtils.equalsIgnoreCase(value, "ra") ? "ca" : "ra";
+            value = !Strings.CI.equals(value, "ra") ? "ca" : "ra";
         } else {
             if (bkeys.contains(key)) {
-                value = Boolean.toString(StringUtils.equalsIgnoreCase(value, "true"));
+                value = Boolean.toString(Strings.CI.equals(value, "true"));
             }
             key = alias + "." + key;
         }

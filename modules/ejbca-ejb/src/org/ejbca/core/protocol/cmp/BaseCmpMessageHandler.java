@@ -13,7 +13,6 @@
 
 package org.ejbca.core.protocol.cmp;
 
-import jakarta.ejb.EJBTransactionRolledbackException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -21,7 +20,7 @@ import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -45,6 +44,8 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+
+import jakarta.ejb.EJBTransactionRolledbackException;
 
 /**
  * Base class for CMP message handlers that require RA mode secret verification.
@@ -95,7 +96,7 @@ public class BaseCmpMessageHandler {
 	protected int getUsedCaId(final String keyId, final int eeProfileId) throws CADoesntExistsException, AuthorizationDeniedException {
 		int ret = 0;
 		final String caName = cmpConfiguration.getRACAName(this.confAlias);
-		if (StringUtils.equals(caName, "ProfileDefault")) {
+		if (Strings.CS.equals(caName, "ProfileDefault")) {
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Using default CA from End Entity Profile CA when adding users in RA mode.");
 			}
@@ -109,7 +110,7 @@ public class BaseCmpMessageHandler {
 					LOG.debug("Using CA with id: "+ret);
 				}
 			}
-		} else if (StringUtils.equals(caName, CmpConfiguration.PROFILE_USE_KEYID)) {
+		} else if (Strings.CS.equals(caName, CmpConfiguration.PROFILE_USE_KEYID)) {
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Using keyId as CA name when adding users in RA mode: "+keyId);
 			}
@@ -145,7 +146,7 @@ public class BaseCmpMessageHandler {
 	protected int getUsedEndEntityProfileId(final String keyId) throws EndEntityProfileNotFoundException {
         final int eeProfileId;
         final String eeProfile = this.cmpConfiguration.getRAEEProfile(this.confAlias);
-        if (StringUtils.equals(CmpConfiguration.PROFILE_USE_KEYID, eeProfile)) {
+        if (Strings.CS.equals(CmpConfiguration.PROFILE_USE_KEYID, eeProfile)) {
             eeProfileId = endEntityProfileSession.getEndEntityProfileId(keyId);
         } else {
             eeProfileId = Integer.parseInt(eeProfile);
@@ -160,7 +161,7 @@ public class BaseCmpMessageHandler {
 	protected String getUsedCertProfileName(final String keyId, final int eeProfileId) throws NotFoundException {
 	    // Get the configured string, may be a profile name or 'KeyId' or 'ProfileDefault'
 		String certificateProfile = cmpConfiguration.getRACertProfile(this.confAlias);
-		if (StringUtils.equals(certificateProfile, "ProfileDefault")) {
+		if (Strings.CS.equals(certificateProfile, "ProfileDefault")) {
             // get default certificate profile id from end entity profile
             final EndEntityProfile eeProfile = endEntityProfileSession.getEndEntityProfileNoClone(eeProfileId);
             if (eeProfile == null) {
@@ -172,7 +173,7 @@ public class BaseCmpMessageHandler {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Using default certificate profile from End Entity Profile: " + certificateProfile);
             }
-		} else if (StringUtils.equals(certificateProfile, CmpConfiguration.PROFILE_USE_KEYID)) {
+		} else if (Strings.CS.equals(certificateProfile, CmpConfiguration.PROFILE_USE_KEYID)) {
 		    if(keyId != null) {
 		        if (LOG.isDebugEnabled()) {
 		            LOG.debug("Using Certificate Profile with same name as KeyId in request: " + keyId);

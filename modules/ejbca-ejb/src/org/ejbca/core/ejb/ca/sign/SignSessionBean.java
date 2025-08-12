@@ -41,6 +41,7 @@ import java.util.Map;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1Integer;
@@ -724,8 +725,8 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                         }
                     }
                     boolean verifiedOuter = false; // So we can throw an error if we could not verify
-                    if (StringUtils.equals(holderReference.getMnemonic(), caReferenceField.getMnemonic())
-                            && StringUtils.equals(holderReference.getCountry(), caReferenceField.getCountry())) {
+                    if (Strings.CS.equals(holderReference.getMnemonic(), caReferenceField.getMnemonic())
+                            && Strings.CS.equals(holderReference.getCountry(), caReferenceField.getCountry())) {
                         if (log.isDebugEnabled()) {
                             log.debug("Authenticated request is self signed, we will try to verify it using user's old certificate.");
                         }
@@ -793,7 +794,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                         }
                         // If there are no old certificates, continue processing as usual, using the sent in username/password hoping the
                         // status is NEW and password is correct.
-                    } else { // if (StringUtils.equals(holderRef, caRef))
+                    } else { // if (Strings.CS.equals(holderRef, caRef))
                         // Subject and issuerDN is CN=Mnemonic,C=Country
                         final String dn = "CN=" + caReferenceField.getMnemonic() + ",C=" + caReferenceField.getCountry();
                         if (log.isDebugEnabled()) {

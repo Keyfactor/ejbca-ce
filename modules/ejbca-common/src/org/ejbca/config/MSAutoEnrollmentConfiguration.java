@@ -26,6 +26,7 @@ import java.util.UUID;
 
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.config.InvalidConfigurationException;
 import org.cesecore.config.MSAutoEnrollmentSettingsTemplate;
@@ -306,7 +307,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     public boolean isUseSSL(String alias) {
         String key = alias + "." + IS_USE_SSL;
         String value = getValue(key, alias);
-        return StringUtils.equals(value, "true");
+        return Strings.CS.equals(value, "true");
     }
 
     public void setIsUseSsl(String alias, final boolean isUseSsl) {
@@ -328,7 +329,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     public boolean isFollowLdapReferral(String alias) {
         String key = alias + "." + IS_FOLLOW_LDAP_REFERRAL;
         String value = getValue(key, alias);
-        return StringUtils.equals(value, "true");
+        return Strings.CS.equals(value, "true");
     }
 
     public void setFollowLdapReferral(String alias, final boolean followLdapReferral) {
@@ -611,7 +612,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
         while(itr.hasNext()) {
             String oldkey = itr.next();
             String newkey = oldkey;
-            newkey = StringUtils.replace(newkey, oldAlias + ".", newAlias + ".");
+            newkey = Strings.CS.replace(newkey, oldAlias + ".", newAlias + ".");
             Object value = data.get(oldkey);
             data.put(newkey, value);
         }
@@ -647,7 +648,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
 
         for (String originalKey : getAllAliasKeys(originAlias)) {
             String cloneKey = originalKey;
-            cloneKey = StringUtils.replace(cloneKey, originAlias + ".", cloneAlias + ".");
+            cloneKey = Strings.CS.replace(cloneKey, originAlias + ".", cloneAlias + ".");
 
             final Object value = clonedDataMap.get(originalKey);
             data.put(cloneKey, value);

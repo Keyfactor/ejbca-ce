@@ -18,13 +18,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.cert.X509Certificate;
 
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.cmp.PKIHeader;
@@ -42,6 +36,12 @@ import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.EjbBridgeSessionLocal;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Message handler for certificate request confirmation message.
@@ -91,13 +91,13 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
 			cresp.setSender(cmpRequestMessage.getRecipient());
 			cresp.setRecipient(cmpRequestMessage.getSender());
 			cresp.setTransactionId(cmpRequestMessage.getTransactionId());
-			if (StringUtils.equals(responseProtection, "pbe")) {
+			if (Strings.CS.equals(responseProtection, "pbe")) {
 			    try {
                     setPbeParameters(cresp, cmpRequestMessage, authenticated);
                 } catch (InvalidCmpProtectionException e) {
                     throw new IllegalArgumentException(e);
                 }
-			} else if (StringUtils.equals(responseProtection, "signature")) {
+			} else if (Strings.CS.equals(responseProtection, "signature")) {
 			    signResponse(cresp, cmpRequestMessage);
 			}
             try {
@@ -116,7 +116,7 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
 	private void setPbeParameters(final BaseCmpMessage cmpResponseMessage, final BaseCmpMessage cmpRequestMessage, final boolean authenticated) throws InvalidCmpProtectionException {
         final String keyId = CmpMessageHelper.getStringFromOctets(cmpRequestMessage.getHeader().getSenderKID());
         String sharedSecret = cmpConfiguration.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_HMAC, confAlias);
-        if(StringUtils.equals(sharedSecret, "-")) {
+        if(Strings.CS.equals(sharedSecret, "-")) {
             try {
                 final X509CAInfo cainfo = getCAInfo(cmpRequestMessage.getRecipient().getName().toString());
                 sharedSecret = cainfo.getCmpRaAuthSecret();

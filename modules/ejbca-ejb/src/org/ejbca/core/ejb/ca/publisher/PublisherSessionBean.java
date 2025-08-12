@@ -13,9 +13,6 @@
 
 package org.ejbca.core.ejb.ca.publisher;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.security.cert.CRLException;
 import java.security.cert.X509CRL;
 import java.util.ArrayList;
@@ -47,6 +44,7 @@ import jakarta.persistence.PersistenceContext;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.IntegerRange;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.AuditRecordStorageException;
@@ -76,7 +74,6 @@ import org.cesecore.repository.util.XmlUtil;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.ProfileID;
-import org.cesecore.util.SecureXMLDecoder;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
@@ -537,15 +534,15 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     
     private boolean isOcspResponsePublisher(final BasePublisher publisher) {
         return (publisher instanceof CustomPublisherContainer) && 
-        StringUtils.contains(((CustomPublisherContainer) publisher).getClassPath(), "PeerPublisher") ||
-        StringUtils.contains(((CustomPublisherContainer) publisher).getClassPath(), "EnterpriseValidationAuthorityPublisher");
+                Strings.CS.contains(((CustomPublisherContainer) publisher).getClassPath(), "PeerPublisher") ||
+                Strings.CS.contains(((CustomPublisherContainer) publisher).getClassPath(), "EnterpriseValidationAuthorityPublisher");
     }
 
 
     private boolean isStoreCrlPropertyUsed(final BasePublisher publisher) {
         return (publisher instanceof CustomPublisherContainer) && (
-        StringUtils.contains(((CustomPublisherContainer) publisher).getClassPath(), "PeerPublisher") ||
-        StringUtils.contains(((CustomPublisherContainer) publisher).getClassPath(), "ValidationAuthorityPublisher"));
+                Strings.CS.contains(((CustomPublisherContainer) publisher).getClassPath(), "PeerPublisher") ||
+                Strings.CS.contains(((CustomPublisherContainer) publisher).getClassPath(), "ValidationAuthorityPublisher"));
     }
     
     
@@ -965,7 +962,6 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         return map;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public List<PublisherData> findAll() {
         return repository.findAll();

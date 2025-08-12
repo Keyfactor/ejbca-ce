@@ -12,10 +12,27 @@
  *************************************************************************/
 package org.ejbca.ra;
 
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import static org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND_CERT_PROP;
+import static org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.io.StringWriter;
+import java.math.BigInteger;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.TimeZone;
+import java.util.stream.Collectors;
+
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
@@ -33,27 +50,13 @@ import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+
 import jakarta.faces.context.ExternalContext;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.model.SelectItem;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.Serializable;
-import java.io.StringWriter;
-import java.math.BigInteger;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.TimeZone;
-import java.util.stream.Collectors;
-
-import static org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND_CERT_PROP;
-import static org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP;
 
 /**
  * UI representation of a result set item from the back end.
@@ -260,7 +263,7 @@ public class RaEndEntityDetails implements Serializable {
         for (String ipv6: this.extendedInformation.getSshPrincipalsIpv6()) {
             principals = principals.replace(ipv6.replace(":", "_"), ipv6);
         }
-        if (StringUtils.endsWith(principals, ", ")) {
+        if (Strings.CS.endsWith(principals, ", ")) {
             principals = principals.substring(0, principals.length() - 2);
         }
         return principals;

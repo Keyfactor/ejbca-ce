@@ -16,15 +16,7 @@ import java.io.File;
 import java.util.List;
 import java.util.Properties;
 
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.keys.token.BaseCryptoToken;
-import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
-import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
-
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -44,6 +36,14 @@ import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
+
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.keys.token.BaseCryptoToken;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
+import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
 
 /**
  * CryptoToken EJB CLI command. See {@link #getDescription()} implementation.
@@ -315,7 +315,7 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
                     }
                     getLogger().info("Do you want to continue anyhow? [yes/no]: ");
                     String yes = System.console().readLine();
-                    if (!StringUtils.equalsIgnoreCase("yes", yes)) {
+                    if (!Strings.CI.equals("yes", yes)) {
                         getLogger().info("Exiting...");
                         return CommandResult.CLI_FAILURE;
                     }
@@ -325,7 +325,7 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
                 getLogger().info("There is an error creating the Crypto Token: "+e.getMessage());
                 getLogger().info("Do you want to continue anyhow? [yes/no]: ");
                 String yes = System.console().readLine();
-                if (!StringUtils.equalsIgnoreCase("yes", yes)) {
+                if (!Strings.CI.equals("yes", yes)) {
                     getLogger().info("Exiting...");
                     return CommandResult.CLI_FAILURE;
                 }

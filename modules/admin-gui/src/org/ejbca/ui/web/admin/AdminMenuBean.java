@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.control.CryptoTokenRules;
@@ -255,7 +255,7 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
     public String getAdminWebUrl() {
         String url = getEjbcaWebBean().getBaseUrl() + getGlobalConfiguration().getAdminWebPath();
         // This most likely always ends with a / but make damn sure
-        if (!StringUtils.endsWith(url, "/")) {
+        if (!Strings.CS.endsWith(url, "/")) {
             url += "/";
         }
         return url;

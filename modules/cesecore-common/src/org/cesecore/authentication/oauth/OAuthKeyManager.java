@@ -17,7 +17,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 
 /**
@@ -80,7 +80,7 @@ public class OAuthKeyManager implements Serializable {
     public boolean canAdd(final OAuthKeyInfo oauthKey) {
         for (OAuthKeyInfo existing : oauthKeys) {
             final boolean hasSameInternalId = Objects.equals(existing.getInternalId(), oauthKey.getInternalId());
-            final boolean hasSameLabel = StringUtils.equals(existing.getLabel(), oauthKey.getLabel());
+            final boolean hasSameLabel = Strings.CS.equals(existing.getLabel(), oauthKey.getLabel());
             if (hasSameInternalId || hasSameLabel) {
                 return false;
             }
@@ -100,7 +100,7 @@ public class OAuthKeyManager implements Serializable {
      */
      public boolean canEdit(final OAuthKeyInfo oauthKey, final String newLabel) {
          for (OAuthKeyInfo existing : oauthKeys) {
-             final boolean hasSameLabel = StringUtils.equals(existing.getLabel(), newLabel);
+             final boolean hasSameLabel = Strings.CS.equals(existing.getLabel(), newLabel);
              final boolean hasSameInternalId = Objects.equals(existing.getInternalId(), oauthKey.getInternalId());
              if (hasSameLabel && !hasSameInternalId) {
                  return false;

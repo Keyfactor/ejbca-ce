@@ -21,7 +21,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
@@ -152,7 +152,7 @@ public class CaRenewCACommand extends BaseCaAdminCommand {
             }
 
             final String explicitEcc = (parameters.get(EXPLICIT_ECC_KEY) != null ? Boolean.TRUE.toString() : Boolean.FALSE.toString());
-            if (StringUtils.equalsIgnoreCase(explicitEcc, "true")) {
+            if (Strings.CI.equals(explicitEcc, "true")) {
                 // Set if we should use explicit ECC parameters of not. On Java 6 this renders the created CA certificate not serializable
                 getLogger().info("Explicit ECC public key parameters: " + explicitEcc);
                 final int cryptoTokenId = cainfo.getCAToken().getCryptoTokenId();

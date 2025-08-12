@@ -29,7 +29,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -150,7 +150,7 @@ public class CrmfRAPbeMultipleKeyIdRequestSystemTest extends CmpTestCase {
             Iterator<Certificate> certiter = certs.iterator();
             Certificate cert = certiter.next();
             String subject = CertTools.getSubjectDN(cert);
-            if (StringUtils.equals(subject, cainfo.getSubjectDN())) {
+            if (Strings.CS.equals(subject, cainfo.getSubjectDN())) {
                 // Make sure we have a BC certificate
                 this.cacert1 = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
             } else {
@@ -166,7 +166,7 @@ public class CrmfRAPbeMultipleKeyIdRequestSystemTest extends CmpTestCase {
             Iterator<Certificate> certiter = certs.iterator();
             Certificate cert = certiter.next();
             String subject = CertTools.getSubjectDN(cert);
-            if (StringUtils.equals(subject, cainfo.getSubjectDN())) {
+            if (Strings.CS.equals(subject, cainfo.getSubjectDN())) {
                 // Make sure we have a BC certificate
                 this.cacert2 = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
             } else {

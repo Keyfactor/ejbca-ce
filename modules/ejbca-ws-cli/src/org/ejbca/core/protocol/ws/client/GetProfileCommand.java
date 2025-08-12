@@ -16,7 +16,7 @@ package org.ejbca.core.protocol.ws.client;
 import java.io.File;
 import java.io.FileOutputStream;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -45,7 +45,7 @@ public class GetProfileCommand extends EJBCAWSRABaseCommand implements IAdminCom
            
            // Read and validate the profile type
            String profiletype = args[ARG_PROFILE_TYPE];
-           if(!StringUtils.equalsIgnoreCase(profiletype, "eep") && !StringUtils.equalsIgnoreCase(profiletype, "cp")) {
+           if(!Strings.CI.equals(profiletype, "eep") && !Strings.CI.equals(profiletype, "cp")) {
                getPrintStream().println("Error: Unknown profile type. Accepted types are 'eep' for end entity profiles and 'cp' for certificate profiles.");
                return;
            }

@@ -18,19 +18,20 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.security.cert.X509Certificate;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
+import org.apache.log4j.Logger;
+import org.cesecore.certificates.ca.internal.CaCertificateCache;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.ejbca.config.VAConfiguration;
+import org.ejbca.util.HTMLTools;
+
 import jakarta.ejb.EJB;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
-import org.cesecore.certificates.ca.internal.CaCertificateCache;
-import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
-import org.ejbca.config.VAConfiguration;
-import org.ejbca.util.HTMLTools;
 
 /**
  * Base class for servlets (CRL or Certificate) implementing rfc4378
@@ -200,7 +201,7 @@ public abstract class StoreServletBase extends HttpServlet {
 	private boolean performReload(HttpServletRequest req, HttpServletResponse resp) {
 		// We have a command to force reloading of the certificate cache that can only be run from localhost
         // http://localhost:8080/ejbca/publicweb/crls/search.cgi?reloadcache=true
-		final boolean doReload = StringUtils.equals(req.getParameter("reloadcache"), "true");
+		final boolean doReload = Strings.CS.equals(req.getParameter("reloadcache"), "true");
 		if ( !doReload ) {
 			return false;
 		}
@@ -228,7 +229,7 @@ public abstract class StoreServletBase extends HttpServlet {
 	private boolean checkIfAutorizedIP(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		final String remote = req.getRemoteAddr();
 		// localhost in either ipv4 and ipv6
-		if ( StringUtils.equals(remote, "127.0.0.1") || StringUtils.equals(remote, "0:0:0:0:0:0:0:1") ) {
+		if ( Strings.CS.equals(remote, "127.0.0.1") || Strings.CS.equals(remote, "0:0:0:0:0:0:0:1") ) {
 			return true;
 		}
 		log.info("Got reloadcache command from unauthorized ip: "+remote);

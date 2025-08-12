@@ -20,7 +20,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 /**
  * This class is responsible for managing a list of CT logs. The CT logs backed by
@@ -167,8 +167,8 @@ public class CtLogManager implements Serializable {
     public boolean canAdd(final CTLogInfo ctLog) {
         for (CTLogInfo existing : ctLogs) {
             final boolean hasSameId = existing.getLogId() == ctLog.getLogId();
-            final boolean urlExistsInCtLogGroup = StringUtils.equals(existing.getUrl(), ctLog.getUrl())
-                    && StringUtils.equals(existing.getLabel(), ctLog.getLabel());
+            final boolean urlExistsInCtLogGroup = Strings.CS.equals(existing.getUrl(), ctLog.getUrl())
+                    && Strings.CS.equals(existing.getLabel(), ctLog.getLabel());
             if (hasSameId || urlExistsInCtLogGroup) {
                 return false;
             }

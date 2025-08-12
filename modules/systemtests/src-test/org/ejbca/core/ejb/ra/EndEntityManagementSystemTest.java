@@ -29,7 +29,6 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.config.EjbcaConfiguration;
-import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.EjbcaAuditorTestSessionRemote;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.ca.CaTestCase;

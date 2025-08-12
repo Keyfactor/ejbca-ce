@@ -22,7 +22,7 @@ import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1BitString;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -66,7 +66,7 @@ public class CmpPbeVerifyer implements CmpMessageProtectionVerifyer {
 		protection = msg.getProtection();
 		pAlg = head.getProtectionAlg();
 		final ASN1ObjectIdentifier algId = pAlg.getAlgorithm();
-		if (!StringUtils.equals(algId.getId(), CMPObjectIdentifiers.passwordBasedMac.getId())) {
+		if (!Strings.CS.equals(algId.getId(), CMPObjectIdentifiers.passwordBasedMac.getId())) {
             final String errMsg = "Protection algorithm id expected '"+CMPObjectIdentifiers.passwordBasedMac.getId()+"' (passwordBasedMac) but was '"+algId.getId()+"'.";
             throw new InvalidCmpProtectionException(errMsg);   
 		}

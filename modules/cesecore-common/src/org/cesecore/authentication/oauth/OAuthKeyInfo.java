@@ -25,6 +25,7 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import com.google.common.base.Preconditions;
 import com.keyfactor.util.StringTools;
@@ -339,7 +340,7 @@ public final class OAuthKeyInfo implements Serializable {
         }
 
         final OAuthKeyInfo oauthKeyInfo = (OAuthKeyInfo) o;
-        return StringUtils.equals(label, oauthKeyInfo.getLabel()) &&
+        return Strings.CS.equals(label, oauthKeyInfo.getLabel()) &&
                 internalId == oauthKeyInfo.getInternalId() &&
                 (keys == oauthKeyInfo.getKeys() || // also true if both are null
                     (keys != null && keys.equals(oauthKeyInfo.getKeys())));

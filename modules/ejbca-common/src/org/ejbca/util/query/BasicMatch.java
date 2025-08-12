@@ -14,7 +14,7 @@ package org.ejbca.util.query;
 
 import java.io.Serializable;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 
 /**
@@ -44,7 +44,7 @@ public abstract class BasicMatch implements Serializable {
         if (matchValue == null) {
             return null;
         }
-        return StringUtils.replace(matchValue, "'", "''");
+        return Strings.CS.replace(matchValue, "'", "''");
     }
     
     /**

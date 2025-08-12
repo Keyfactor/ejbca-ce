@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -141,7 +142,7 @@ public class RaRequestPreview {
         if (!altName.contains(specifiedDnTypeValueFromCn)) {
             return false;
         } else {
-            int indexOfNextChar = StringUtils.indexOf(altName, specifiedDnTypeValueFromCn) + specifiedDnTypeValueFromCn.length();
+            int indexOfNextChar = Strings.CS.indexOf(altName, specifiedDnTypeValueFromCn) + specifiedDnTypeValueFromCn.length();
             return indexOfNextChar == altName.length() || altName.charAt(indexOfNextChar) == ',';
         }
     }

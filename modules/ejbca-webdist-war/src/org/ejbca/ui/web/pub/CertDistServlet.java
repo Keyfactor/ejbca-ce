@@ -32,15 +32,9 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
-import jakarta.ejb.EJB;
-import jakarta.ejb.EJBException;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.cms.CMSException;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
@@ -66,6 +60,13 @@ import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.DnComponents;
+
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Servlet used to distribute certificates and CRLs.<br>
@@ -228,7 +229,7 @@ public class CertDistServlet extends HttpServlet {
                 final String filename = getCrlFilename(dn, crlPartitionIndex, command.equalsIgnoreCase(COMMAND_DELTACRL));
                 res.setHeader("Content-disposition", "attachment; filename=\"" + StringTools.stripFilename(filename) + "\"");                
                 res.setContentType("application/pkix-crl");
-                if (StringUtils.equals(format, "PEM")) {
+                if (Strings.CS.equals(format, "PEM")) {
                     RequestHelper.sendNewB64File(Base64.encode(crl, true), res, filename, RequestHelper.BEGIN_CRL_WITH_NL, RequestHelper.END_CRL_WITH_NL);
                 } else {
                     res.setContentLength(crl.length);
@@ -558,9 +559,9 @@ public class CertDistServlet extends HttpServlet {
         String ending;
         if (certcert instanceof CardVerifiableCertificate) {
             ending = ".cvcert";
-        } else if (StringUtils.equals(format, "PEM") || StringUtils.equals(format, "chain")) {
+        } else if (Strings.CS.equals(format, "PEM") || Strings.CS.equals(format, "chain")) {
             ending = ".pem";
-        } else if (StringUtils.equals(format, "PKCS7")) {
+        } else if (Strings.CS.equals(format, "PKCS7")) {
             ending = ".p7b";
         } else {
             ending = ".crt";
@@ -575,16 +576,16 @@ public class CertDistServlet extends HttpServlet {
             res.setHeader("Content-disposition", "attachment; filename=\"" +  StringTools.stripFilename(filename)+"\"");
             res.setContentType("application/octet-stream");
         }
-        if (StringUtils.equals(format, "PEM")) {
+        if (Strings.CS.equals(format, "PEM")) {
             RequestHelper.sendNewB64File(Base64.encode(cert, true), res, filename, CertTools.BEGIN_CERTIFICATE_WITH_NL, CertTools.END_CERTIFICATE_WITH_NL);
-        } else if (StringUtils.equals(format, "PKCS7")) {
+        } else if (Strings.CS.equals(format, "PKCS7")) {
             try {
                 final byte[] pkcs7 = CertTools.createCertsOnlyCMS(CertTools.convertCertificateChainToX509Chain(getFullChainOfCertificate(certcert)));
                 RequestHelper.sendNewB64File(Base64.encode(pkcs7, true), res, filename, RequestHelper.BEGIN_PKCS7_WITH_NL, RequestHelper.END_PKCS7_WITH_NL);
             } catch (ClassCastException | CMSException e) {
                 throw new CertificateEncodingException("Unable to create certs-only PKCS#7 / CMS.");
             }
-        } else if (StringUtils.equals(format, "chain")) {
+        } else if (Strings.CS.equals(format, "chain")) {
             final byte[] chainbytes = CertTools.getPemFromCertificateChain(getFullChainOfCertificate(certcert));
             RequestHelper.sendNewB64File(chainbytes, res, filename, "", ""); // chain includes begin/end already
         } else {
@@ -630,7 +631,7 @@ public class CertDistServlet extends HttpServlet {
 
 				byte[] outbytes = new byte[0];
 				// Encode and send back
-				if ((format == null) || StringUtils.equalsIgnoreCase(format, "pem")) {
+				if ((format == null) || Strings.CI.equals(format, "pem")) {
 					outbytes = CertTools.getPemFromCertificateChain(Arrays.asList(chain));
 				} else {
 					// Create a JKS truststore with the CA certificates in

@@ -25,7 +25,7 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.ejbca.ui.web.RequestHelper;
 
@@ -57,7 +57,7 @@ public class EncodingFilter implements Filter {
             final Enumeration<String> params = httpreq.getParameterNames();
             while (params.hasMoreElements()) {
                 final String param = (String) params.nextElement();
-                if (StringUtils.contains(param, "button")) {
+                if (Strings.CS.contains(param, "button")) {
                     // It is an action to a JSP page clicking a button, i.e. trying to perform some action not just viewing the page
                     // for performing actions we require POST, so disallow this
                     log.warn("Refusing HTTP GET request containing parameter named '" + param + "'. Requests with parameters matching *button* must be done with HTTP POST.");

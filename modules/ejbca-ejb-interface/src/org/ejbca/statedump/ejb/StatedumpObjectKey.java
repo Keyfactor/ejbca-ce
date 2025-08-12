@@ -14,7 +14,7 @@ package org.ejbca.statedump.ejb;
 
 import java.io.Serializable;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 /**
  * Identifies an object in EJBCA.
@@ -56,8 +56,8 @@ public final class StatedumpObjectKey implements Serializable {
     public boolean equals(final Object o) {
         if (o instanceof StatedumpObjectKey) {
             final StatedumpObjectKey sc = (StatedumpObjectKey)o;
-            return StringUtils.equals(sc.getType(), type) &&
-                    StringUtils.equals(sc.getName(), name) &&
+            return Strings.CS.equals(sc.getType(), type) &&
+                    Strings.CS.equals(sc.getName(), name) &&
                     sc.getId() == id;
         }
         return false;

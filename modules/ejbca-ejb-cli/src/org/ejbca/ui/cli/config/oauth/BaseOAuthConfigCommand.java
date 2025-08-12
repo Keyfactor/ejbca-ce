@@ -19,7 +19,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -73,7 +73,7 @@ public abstract class BaseOAuthConfigCommand extends ConfigBaseCommand {
     protected boolean canAdd(final OAuthKeyInfo oauthKey) {
         for (OAuthKeyInfo existingKeyInfo : getOAuthConfiguration().getOauthKeys().values()) {
             final boolean hasSameInternalId = Objects.equals(existingKeyInfo.getInternalId(), oauthKey.getInternalId());
-            final boolean hasSameLabel = StringUtils.equals(existingKeyInfo.getLabel(), oauthKey.getLabel());
+            final boolean hasSameLabel = Strings.CS.equals(existingKeyInfo.getLabel(), oauthKey.getLabel());
             if (hasSameInternalId || hasSameLabel) {
                 return false;
             }
@@ -83,7 +83,7 @@ public abstract class BaseOAuthConfigCommand extends ConfigBaseCommand {
     
     protected boolean canEditLabel(final String label) {
         for (OAuthKeyInfo existingKeyInfo : getOAuthConfiguration().getOauthKeys().values()) {
-            final boolean hasSameLabel = StringUtils.equals(existingKeyInfo.getLabel(), label);
+            final boolean hasSameLabel = Strings.CS.equals(existingKeyInfo.getLabel(), label);
             if (hasSameLabel) {
                 return false;
             }

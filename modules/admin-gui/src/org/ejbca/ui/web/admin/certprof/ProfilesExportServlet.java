@@ -26,13 +26,7 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import jakarta.ejb.EJB;
-import jakarta.servlet.ServletConfig;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationSessionLocal;
@@ -49,6 +43,12 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.ui.web.admin.cainterface.BaseAdminServlet;
 
 import com.keyfactor.util.StringTools;
+
+import jakarta.ejb.EJB;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Servlet used to export certificate profiles and end entity profiles in a downloadable zip file.<br>
@@ -93,8 +93,8 @@ public class ProfilesExportServlet extends BaseAdminServlet {
         final AuthenticationToken admin = getAuthenticationToken(request);
         final String profileId = request.getParameter("profileId");
         final String type = request.getParameter("profileType");
-        final boolean exportCertificateProfiles = StringUtils.equalsIgnoreCase(type, "cp");
-        final boolean exportEndEntityProfiles = StringUtils.equalsIgnoreCase(type, "eep");
+        final boolean exportCertificateProfiles = Strings.CI.equals(type, "cp");
+        final boolean exportEndEntityProfiles = Strings.CI.equals(type, "eep");
         String zipfilename = null;
         int exportedprofiles = 0;
         int totalprofiles = 0;

@@ -15,14 +15,15 @@ package org.ejbca.ui.web.admin;
 
 import java.io.Serializable;
 
-import jakarta.ejb.EJB;
-import jakarta.enterprise.context.SessionScoped;
-import jakarta.inject.Named;
-
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
+
+import jakarta.ejb.EJB;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.inject.Named;
 
 @Named
 @SessionScoped
@@ -53,7 +54,7 @@ public class InitPkiMBean extends BaseManagedBean implements Serializable {
     }
     
     public boolean isInstallExistingPki() {
-        return StringUtils.equals(installationMode, EXISTING_PKI_MODE);
+        return Strings.CS.equals(installationMode, EXISTING_PKI_MODE);
     }
     
     public String actionNext() {

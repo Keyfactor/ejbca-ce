@@ -60,6 +60,7 @@ import java.util.TimeZone;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.log4j.Logger;
@@ -202,6 +203,7 @@ import com.keyfactor.util.CeSecoreNameStyle;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.FileTools;
+import com.keyfactor.util.RandomHelper;
 import com.keyfactor.util.certificate.CertificateImplementationRegistry;
 import com.keyfactor.util.certificate.CertificateWrapper;
 import com.keyfactor.util.certificate.DnComponents;
@@ -210,7 +212,6 @@ import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import com.keyfactor.util.keys.token.KeyGenParams;
-import com.keyfactor.util.RandomHelper;
 
 
 /**
@@ -2673,7 +2674,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
 
             // Check that the default data are different from the data in the profile we want to retrieve
             profile = new EndEntityProfile();
-            assertFalse(StringUtils.equals("TestPrinter", profile.getPrinterName()));
+            assertFalse(Strings.CS.equals("TestPrinter", profile.getPrinterName()));
             assertFalse(profile.getUse(EndEntityProfile.KEYRECOVERABLE, 0));
 
             // Load the data from the retrieved profile and verify that the data is correct
