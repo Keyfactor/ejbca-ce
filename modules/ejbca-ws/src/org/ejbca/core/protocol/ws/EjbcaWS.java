@@ -118,7 +118,6 @@ import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.RaCrlSearchRequest;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
-import org.ejbca.core.model.hardtoken.HardTokenDoesntExistsException;
 import org.ejbca.core.model.hardtoken.HardTokenExistsException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
@@ -493,10 +492,9 @@ public class EjbcaWS implements IEjbcaWS {
      * @param tokenType The type of the cryptotoken. Available types: SoftCryptoToken, PKCS11CryptoToken
      * @param activationPin Pin code for the cryptotoken
      * @param autoActivate Set to true|false to allow|disallow whether cryptotoken should be autoactivated or not
-     * @param cryptoTokenProperties as a List of KeyValuePair objects. See {@link org.ejbca.core.protocol.ws.objects.CryptoTokenConstantsWS}
+     * @param cryptoTokenProperties as a List of KeyValuePair objects.
      * @throws EjbcaException if an error occurred
      * @throws AuthorizationDeniedException if client isn't authorized to request
-     * @see org.ejbca.core.protocol.ws.objects.CryptoTokenConstantsWS
      */
     @WebMethod
     @Action(input="http://ws.protocol.core.ejbca.org/createCryptoToken")
@@ -3038,7 +3036,6 @@ public class EjbcaWS implements IEjbcaWS {
      * @return Hard Tokens are no longer supported. Always throws EjbcaException
      * @throws CADoesntExistsException if a referenced CA does not exist
      * @throws AuthorizationDeniedException if client isn't authorized to request
-     * @throws HardTokenDoesntExistsException if hard token doesn't exist
      * @throws NotFoundException if an object cannot be found in the database
      * @throws ApprovalException if there is already a request waiting for approval.
      * @throws ApprovalRequestExpiredException Throws this exception one time if one of the approvals have expired, once notified it won't throw it anymore.

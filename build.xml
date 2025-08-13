@@ -245,7 +245,6 @@
 			<path refid="lib.log4j.classpath"/>
 			<path refid="lib.servlet.classpath"/>
 			<path refid="lib.commons-lang.classpath"/>
-			<path refid="lib.commons-fileupload.classpath"/>
 			<path refid="lib.jee.classpath"/>
 			<path refid="lib.bouncycastle.classpath"/>
 			<path refid="lib.ldap.classpath"/>
@@ -629,6 +628,7 @@
                 <include name="mpic.jar" />
 	            <include name="unidfnr-ejb.jar" />
 	            <include name="ejbca-ejb.jar" />
+				<include name="ejbca-repository.jar" />
 				<include name="acme-common.jar" />
         		<include name="ejbca-ssh.jar" />
         		<include name="ejbca-cits.jar" />

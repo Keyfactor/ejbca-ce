@@ -10,6 +10,7 @@ dependencies {
     compileOnly(project(":modules:ejbca-entity"))
     compileOnly(project(":modules:ejbca-common"))
     compileOnly(project(":modules:ejbca-common-web"))
+    compileOnly(project(":modules:ejbca-repository"))
     compileOnly(project(":modules:ejbca-ws:common"))
     compileOnly(project(":modules:edition-specific:interface"))
     compileOnly(libs.ejbca.ws.client.gen)
@@ -43,14 +44,18 @@ sourceSets {
     }
 }
 
+// define interfaces that should be used to generate service manifest files
+ext["serviceInterfaces"] = listOf(
+    "org.cesecore.authorization.rules.AccessRulePlugin",
+    "org.cesecore.certificates.ocsp.extension.OCSPExtension",
+    "org.cesecore.certificates.ca.ExtendedUserDataHandler"
+)
+
 tasks.jar {
     from("resources") {
         include("ejb-jar.xml")
         include("jboss-ejb3.xml")
         into("META-INF")
-    }
-    from("resources/META-INF/services") {
-        into("META-INF/services")
     }
     from(sourceSets["main"].output)
 }

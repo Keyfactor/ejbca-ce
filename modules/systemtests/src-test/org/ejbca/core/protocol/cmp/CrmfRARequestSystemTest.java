@@ -83,12 +83,12 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.cesecore.config.GlobalEndEntityProfileConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
-import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
@@ -461,11 +461,11 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
 
     @Test
     public void test03UseKeyID() throws Exception {
+        final GlobalEndEntityProfileConfiguration globalEEPConfiguration = (GlobalEndEntityProfileConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalEndEntityProfileConfiguration.EEP_CONFIGURATION_ID);
 
-        GlobalConfiguration gc = (GlobalConfiguration) globalConfSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        final boolean eelimitation = gc.getEnableEndEntityProfileLimitations();
-        gc.setEnableEndEntityProfileLimitations(true);
-        globalConfSession.saveConfiguration(ADMIN, gc);
+        final boolean eelimitation = globalEEPConfiguration.getEnableEndEntityProfileLimitations();
+        globalEEPConfiguration.setEnableEndEntityProfileLimitations(true);
+        globalConfSession.saveConfiguration(ADMIN, globalEEPConfiguration);
 
         try {
             cmpConfiguration.setRAEEProfile(cmpAlias, CmpConfiguration.PROFILE_USE_KEYID);
@@ -615,8 +615,8 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
                 }
             }
         } finally {
-            gc.setEnableEndEntityProfileLimitations(eelimitation);
-            globalConfSession.saveConfiguration(ADMIN, gc);
+            globalEEPConfiguration.setEnableEndEntityProfileLimitations(eelimitation);
+            globalConfSession.saveConfiguration(ADMIN, globalEEPConfiguration);
         }
 
     }
@@ -1305,10 +1305,10 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
     @Test
     public void testIPv4andIPv6SubjectAltName() throws Exception {
         // Disable end entity profile checks so we don't have to add another IP address to the EE profile
-        GlobalConfiguration gc = (GlobalConfiguration) globalConfSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        final boolean eelimitation = gc.getEnableEndEntityProfileLimitations();
-        gc.setEnableEndEntityProfileLimitations(false);
-        globalConfSession.saveConfiguration(ADMIN, gc);
+        final GlobalEndEntityProfileConfiguration globalEEPConfiguration = (GlobalEndEntityProfileConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalEndEntityProfileConfiguration.EEP_CONFIGURATION_ID);
+        final boolean eelimitation = globalEEPConfiguration.getEnableEndEntityProfileLimitations();
+        globalEEPConfiguration.setEnableEndEntityProfileLimitations(false);
+        globalConfSession.saveConfiguration(ADMIN, globalEEPConfiguration);
 
         String fingerprint = null;
         try {
@@ -1350,8 +1350,8 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
             assertEquals("Second altName should be an iPAddress", 7, name2.get(0));
             assertEquals("IPv6 address was wrong", "2001:db8:0:0:0:0:1234:5678", name2.get(1));
         } finally {
-            gc.setEnableEndEntityProfileLimitations(eelimitation);
-            globalConfSession.saveConfiguration(ADMIN, gc);
+            globalEEPConfiguration.setEnableEndEntityProfileLimitations(eelimitation);
+            globalConfSession.saveConfiguration(ADMIN, globalEEPConfiguration);
             try {
                 endEntityManagementSession.revokeAndDeleteUser(ADMIN, "TestIPAltNameUser", RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
             } catch (NoSuchEndEntityException e) {/*Do nothing*/}

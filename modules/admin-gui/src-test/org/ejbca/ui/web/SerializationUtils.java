@@ -24,7 +24,6 @@ import com.google.common.reflect.ClassPath.ClassInfo;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 
 import jakarta.ejb.EJB;
 import jakarta.faces.annotation.ManagedProperty;
@@ -75,12 +74,7 @@ public class SerializationUtils {
         else if (clazz.isEnum())
             return true;
         else if (clazz.isArray())
-            return isSerializable(clazz.getComponentType());
-
-        // these classes are marked as serializable, but they really aren't.
-        // Generally because they contain AuthenticationTokens
-        else if (CAInterfaceBean.class.isAssignableFrom(clazz))
-            return false;
+            return isSerializable(clazz.getComponentType());        
         else if (AuthenticationToken.class.isAssignableFrom(clazz))
             return false;
 

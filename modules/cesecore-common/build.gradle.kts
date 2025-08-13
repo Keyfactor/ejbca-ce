@@ -17,6 +17,7 @@ dependencies {
     compileOnly(libs.log4j.core)
     compileOnly(libs.commons.lang)
     compileOnly(libs.commons.lang3)
+    compileOnly(libs.commons.text)
     compileOnly(libs.commons.logging)
     compileOnly(libs.commons.codec)
     compileOnly(libs.commons.configuration2)
@@ -66,9 +67,6 @@ sourceSets {
             setSrcDirs(
                 listOf("src")
             )
-            resources {
-                srcDirs("resources")
-            }
         }
     }
     test {
@@ -102,6 +100,21 @@ tasks.withType<Test> {
         "--add-exports", "jdk.crypto.cryptoki/sun.security.pkcs11.wrapper=ALL-UNNAMED"
     )
 }
+
+// define interfaces that should be used to generate service manifest files
+ext["serviceInterfaces"] = listOf(
+    "org.cesecore.certificates.ocsp.extension.OCSPExtension",
+    "org.cesecore.authentication.tokens.AuthenticationTokenMetaData",
+    "org.cesecore.certificates.ca.CvcPlugin",
+    "org.cesecore.authorization.rules.AccessRulePlugin",
+    "org.cesecore.configuration.ConfigurationCache",
+    "org.cesecore.certificates.certificate.certextensions.CustomCertificateExtension",
+    "org.cesecore.keys.validation.Validator",
+    "org.cesecore.certificates.ca.CACommon",
+    "com.keyfactor.util.keys.token.pkcs11.PKCS11SlotListWrapperFactory",
+    "com.keyfactor.util.certificate.CertificateImplementation",
+    "com.keyfactor.util.crypto.provider.CryptoProvider"
+)
 
 tasks.jar {
     from(sourceSets["main"].output)

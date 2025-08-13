@@ -115,7 +115,7 @@ public class PublisherSystemTest extends RoleUsingTestCase {
 	private static final Logger log = Logger.getLogger(PublisherSystemTest.class);
 	private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken("PublisherTest");
 	private static final String commonname = PublisherSystemTest.class.getCanonicalName();
-	private static final Set<String> publisherNames = new HashSet<String>();
+	private static final Set<String> publisherNames = new HashSet<>();
 
 	private final PublisherSessionRemote publisherSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class);
 	private final PublisherProxySessionRemote publisherProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
@@ -236,16 +236,10 @@ public class PublisherSystemTest extends RoleUsingTestCase {
 	 * @throws AuthorizationDeniedException 
 	 */
 	@Test
-	public void test04RenamePublisher() throws AuthorizationDeniedException {
+	public void test04RenamePublisher() throws AuthorizationDeniedException, PublisherExistsException, PublisherDoesntExistsException {
 		log.trace(">test04RenamePublisher()");
-		try {
-			publisherNames.add(newName);
-			this.publisherProxySession.renamePublisher(internalAdmin, orgName, newName);
-		} catch (PublisherExistsException pee) {
-			final String m = "The new name of the publisher does already exist for another publisher.";
-			log.error(m, pee);
-			assertTrue(m, false);
-		}
+		publisherNames.add(newName);
+		this.publisherProxySession.renamePublisher(internalAdmin, orgName, newName);
 		log.trace("<test04RenamePublisher()");
 	}
 
@@ -323,7 +317,22 @@ public class PublisherSystemTest extends RoleUsingTestCase {
 		log.trace("<test08storeCRLToDummy()");
 	}
 
-    @Test
+	/**
+	 * edits publisher's name
+	 * @throws AuthorizationDeniedException
+	 */
+	@Test
+	public void test09EditPublisherName() throws AuthorizationDeniedException {
+		log.trace(">testEditPublisherName()");
+		final BasePublisher publisher = this.publisherSession.getPublisher(cloneName);
+		final String newPublisherName = "TESTEDITPUBLISHERNAME";
+		publisherNames.add(newPublisherName);
+
+		this.publisherSession.changePublisher(internalAdmin, newPublisherName, publisher);
+		log.trace("<testEditPublisherName()");
+	}
+
+	@Test
     public void testParallelPublishing() throws Exception {
         final String TESTNAME = PublisherSystemTest.class.getSimpleName() + "_testParallelPublishing";
         final CustomPublisherContainer publisher = new CustomPublisherContainer();

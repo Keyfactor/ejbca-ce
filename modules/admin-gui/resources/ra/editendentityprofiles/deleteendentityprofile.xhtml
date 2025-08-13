@@ -35,7 +35,7 @@
                     <h:outputLabel for="deletedProfileNameTemplate" value="#{web.text.EE_PROFILE_DELETE_TEMPLATE}"/>
                     <h:outputText id="deletedProfileName" value="#{endEntityProfilesMBean.endEntityProfileName}"/>
                     <h:panelGroup/>
-                    <h:panelGroup>
+                    <h:panelGroup styleClass="action-buttons">
                         <h:commandButton id="deleteProfileSaveButton" name="deleteProfileSaveButton"
                                          action="#{endEntityProfilesMBean.actionDeleteConfirm}" value="#{web.text.DELETE_CONFIRM}"/>
                         <h:commandButton id="deleteProfileCancelbutton" name="deleteProfileCancelbutton"

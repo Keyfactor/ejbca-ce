@@ -1,11 +1,12 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:f="jakarta.faces.core"
-    xmlns:h="jakarta.faces.html"
-    xmlns:ui="jakarta.faces.facelets">
+      xmlns:f="jakarta.faces.core"
+      xmlns:h="jakarta.faces.html"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui">
 <ui:remove>
-	<!--
+    <!--
     /*************************************************************************
      *                                                                       *
      *  EJBCA: The OpenSource Certificate Authority                          *
@@ -21,115 +22,133 @@
      -->
 </ui:remove>
 <ui:composition template="/WEB-INF/include/template.xhtml">
-    <ui:param name="resourceBean" value="#{cryptoTokenMBean}" />
-	<ui:define name="content">
-		<f:metadata>
-	    	<f:viewParam name="initNewPki" value="#{initNewPkiMBean.initNewPkiRedirect}"/>
-	    	<f:event type="preRenderView" listener="#{cryptoTokenMBean.onload}" />
-		</f:metadata>
-		<h1>
-			<h:outputText value="#{web.text.CRYPTOTOKEN_NEW}"
-				rendered="#{cryptoTokenMBean.currentCryptoTokenId == 0}" />
-			<h:outputText
-				value="#{web.text.CRYPTOTOKEN} : #{cryptoTokenMBean.currentCryptoToken.name}"
-				rendered="#{cryptoTokenMBean.currentCryptoTokenId != 0}" />
-		</h1>
-		<h:form id="currentCryptoTokenForm">
-			<h:panelGrid columns="2">
-				<h:panelGroup>
-					<h:outputLink rendered="#{cryptoTokenMBean.paramRef eq 'default'}"
-						value="cryptotokens.jsf">
-						<h:outputText value="#{web.text.CRYPTOTOKEN_NAV_BACK}" />
-					</h:outputLink>
-					<h:outputLink rendered="#{cryptoTokenMBean.paramRef eq 'caactivation'}"
-						value="../ca/caactivation.xhtml">
-						<h:outputText value="#{web.text.CRYPTOTOKEN_NAV_BACK_ACT}" />
-					</h:outputLink>
-					<h:commandLink rendered="#{cryptoTokenMBean.paramRef eq 'initpki'}"
-						value="#{web.text.CRYPTOTOKEN_NAV_BACK_INIT}" action="#{cryptoTokenMBean.actionBackToPkiInstallation}">
-					</h:commandLink>
-				</h:panelGroup>
-				<h:commandButton
-					action="#{cryptoTokenMBean.toggleCurrentCryptoTokenEditMode}"
-					value="#{web.text.CRYPTOTOKEN_NAV_EDIT}"
-					rendered="#{(!cryptoTokenMBean.currentCryptoTokenEditMode) &amp;&amp; cryptoTokenMBean.allowedToModify}" />
-				<h:panelGroup id="placeholder1"
-					rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode || !cryptoTokenMBean.allowedToModify}" />
+    <ui:param name="resourceBean" value="#{cryptoTokenMBean}"/>
+    <ui:define name="content">
+        <f:metadata>
+            <f:viewParam name="initNewPki" value="#{initNewPkiMBean.initNewPkiRedirect}"/>
+            <f:event type="preRenderView" listener="#{cryptoTokenMBean.onload}"/>
+        </f:metadata>
+        <h1>
+            <h:outputText value="#{web.text.CRYPTOTOKEN_NEW}"
+                          rendered="#{cryptoTokenMBean.currentCryptoTokenId == 0}"/>
+            <h:outputText
+                    value="#{web.text.CRYPTOTOKEN}: #{cryptoTokenMBean.currentCryptoToken.name}"
+                    rendered="#{cryptoTokenMBean.currentCryptoTokenId != 0}"/>
+        </h1>
+        <h:form id="currentCryptoTokenForm">
+            <h:inputHidden value="#{cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+            <p:panelGrid columns="2" columnClasses="ui-md-3,ui-md-3">
+                <h:panelGroup>
+                    <h:outputLink rendered="#{cryptoTokenMBean.paramRef eq 'default'}"
+                                  value="cryptotokens.xhtml">
+                        <h:outputText value="#{web.text.CRYPTOTOKEN_NAV_BACK}"/>
+                    </h:outputLink>
+                    <h:outputLink rendered="#{cryptoTokenMBean.paramRef eq 'caactivation'}"
+                                  value="../ca/caactivation.xhtml">
+                        <h:outputText value="#{web.text.CRYPTOTOKEN_NAV_BACK_ACT}"/>
+                    </h:outputLink>
+                    <h:commandLink rendered="#{cryptoTokenMBean.paramRef eq 'initpki'}"
+                                   value="#{web.text.CRYPTOTOKEN_NAV_BACK_INIT}" action="#{cryptoTokenMBean.actionBackToPkiInstallation}">
+                    </h:commandLink>
+                </h:panelGroup>
 
-				<h:outputLabel for="currentCryptoTokenId"
-					value="#{web.text.CRYPTOTOKEN_ID}"
-					rendered="#{cryptoTokenMBean.currentCryptoTokenId != 0}" />
-				<h:outputText id="currentCryptoTokenId"
-					value="#{cryptoTokenMBean.currentCryptoTokenId}"
-					rendered="#{cryptoTokenMBean.currentCryptoTokenId != 0}" />
+                <h:panelGroup id="placeholder1"/>
 
-				<h:outputLabel for="currentCryptoTokenName"
-					value="#{web.text.CRYPTOTOKEN_NAME}" />
-				<h:panelGroup id="currentCryptoTokenName">
-					<h:inputText value="#{cryptoTokenMBean.currentCryptoToken.name}"
-						rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"
-						size="45" title="#{web.text.FORMAT_ID_STR}" 
-						id="currentCryptoTokenNameText"/>
-					<h:outputText value="#{cryptoTokenMBean.currentCryptoToken.name}"
-						rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}" />
-				</h:panelGroup>
+                <!-- Crypto Token ID -->
+                <p:row rendered="#{cryptoTokenMBean.currentCryptoTokenId != 0}">
+                    <p:column>
+                        <h:outputLabel for="currentCryptoTokenId" value="#{web.text.CRYPTOTOKEN_ID}"/>
+                    </p:column>
+                    <p:column>
+                        <h:outputText id="currentCryptoTokenId" value="#{cryptoTokenMBean.currentCryptoTokenId}"/>
+                    </p:column>
+                </p:row>
 
-				<h:outputLabel for="currentCryptoTokenType"
-					value="#{web.text.CRYPTOTOKEN_TYPE}" />
-				<h:panelGroup id="currentCryptoTokenType">
-					<h:panelGroup
-						rendered="#{cryptoTokenMBean.currentCryptoTokenId == 0}">
-						<h:selectOneMenu id="selectOneMenuType"
-							value="#{cryptoTokenMBean.currentCryptoToken.type}"
-							onchange="document.getElementById('currentCryptoTokenForm:selectCryptoTokenType').click();">
-							<f:selectItems
-								value="#{cryptoTokenMBean.availableCryptoTokenTypes}" />
-						</h:selectOneMenu>
-						<h:commandButton id="selectCryptoTokenType"
-							action="#{cryptoTokenMBean.selectCryptoTokenType}" value="Update" />
-						<script>
-							document
-									.getElementById('currentCryptoTokenForm:selectCryptoTokenType').style.display = 'none';
-						</script>
-					</h:panelGroup>
-					<h:outputText value="#{cryptoTokenMBean.currentCryptoToken.type}"
-						rendered="#{cryptoTokenMBean.currentCryptoTokenId != 0}" />
-				</h:panelGroup>
+                <!-- Crypto Token Name -->
+                <p:row>
+                    <p:column>
+                        <h:outputLabel for="currentCryptoTokenName" value="#{web.text.NAME}"/>
+                    </p:column>
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenName">
+                            <h:inputText value="#{cryptoTokenMBean.currentCryptoToken.name}"
+                                         rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"
+                                         size="45" title="#{web.text.FORMAT_ID_STR}"
+                                         id="currentCryptoTokenNameText"/>
+                            <h:outputText value="#{cryptoTokenMBean.currentCryptoToken.name}"
+                                          rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+                        </h:panelGroup>
+                    </p:column>
+                </p:row>
 
-				<h:outputLabel for="currentCryptoTokenReferenced"
-					value="#{web.text.CRYPTOTOKEN_REFDHEAD}"
-					rendered="#{cryptoTokenMBean.currentCryptoTokenId!=0}" />
-				<h:selectBooleanCheckbox id="currentCryptoTokenReferenced"
-					value="#{cryptoTokenMBean.currentCryptoToken.referenced}"
-					disabled="true"
-					rendered="#{cryptoTokenMBean.currentCryptoTokenId!=0}" />
+                <!-- Crypto Token Type -->
+                <p:row>
+                    <p:column>
+                        <h:outputLabel for="currentCryptoTokenType" value="#{web.text.CRYPTOTOKEN_TYPE}"/>
+                    </p:column>
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenType">
+                            <h:panelGroup
+                                    rendered="#{cryptoTokenMBean.currentCryptoTokenId == 0}">
+                                <h:selectOneMenu id="selectOneMenuType"
+                                                 value="#{cryptoTokenMBean.currentCryptoToken.type}"
+                                                 onchange="document.getElementById('currentCryptoTokenForm:selectCryptoTokenType').click();">
+                                    <f:selectItems
+                                            value="#{cryptoTokenMBean.availableCryptoTokenTypes}"/>
+                                </h:selectOneMenu>
+                                <h:commandButton id="selectCryptoTokenType"
+                                                 action="#{cryptoTokenMBean.selectCryptoTokenType}" value="Update"/>
+                                <script>
+                                    document
+                                        .getElementById('currentCryptoTokenForm:selectCryptoTokenType').style.display = 'none';
+                                </script>
+                            </h:panelGroup>
+                            <h:outputText value="#{cryptoTokenMBean.currentCryptoToken.type}"
+                                          rendered="#{cryptoTokenMBean.currentCryptoTokenId != 0}"/>
+                        </h:panelGroup>
+                    </p:column>
+                </p:row>
 
-				<h:outputLabel for="currentCryptoTokenActive"
-					value="#{web.text.CRYPTOTOKEN_ACTIVE}"
-					rendered="#{cryptoTokenMBean.currentCryptoTokenId!=0}" />
-				<h:selectBooleanCheckbox id="currentCryptoTokenActive"
-					value="#{cryptoTokenMBean.currentCryptoToken.active}"
-					disabled="true"
-					rendered="#{cryptoTokenMBean.currentCryptoTokenId!=0}" />
+                <!-- Crypto Token Used -->
+                <p:row rendered="#{cryptoTokenMBean.currentCryptoTokenId!=0}">
+                    <p:column>
+                        <h:outputLabel for="currentCryptoTokenReferenced" value="#{web.text.CRYPTOTOKEN_REFDHEAD}"/>
+                    </p:column>
+                    <p:column>
+                        <p:selectBooleanCheckbox id="currentCryptoTokenReferenced" value="#{cryptoTokenMBean.currentCryptoToken.referenced}" disabled="true"/>
+                    </p:column>
+                </p:row>
 
-				<!-- Securosys Authentication Type - this hides and shows the dependent controls below -->
-				<h:panelGroup rendered="#{cryptoTokenMBean.currentCryptoToken.showSecurosysCryptoToken}">
-					<h:outputLabel for="currentCryptoTokenSecurosysAuthenticationType" value="#{web.text.CRYPTOTOKEN_SECUROSYS_AUTH} "/>
-				</h:panelGroup>
-                <h:panelGroup
-                	id="currentCryptoTokenSecurosysAuthenticationTypePanelGroup"
-                    rendered="#{cryptoTokenMBean.currentCryptoToken.showSecurosysCryptoToken}">
-                    <h:selectOneMenu
-                        value="#{cryptoTokenMBean.currentCryptoToken.securosysAuthenticationType}"
-                        rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"
-                        disabled="#{!cryptoTokenMBean.allowedToModify}">
-                        <f:selectItem
-                            itemValue="TOKEN"
-                            itemLabel="Cloud HSM Bearer Token"/>
-                        <f:selectItem
-                            itemValue="CERT"
-                            itemLabel="Cloud HSM mTLS certificate"/>
-						<f:ajax render="currentCryptoTokenForm:currentCryptoTokenSecurosysBearerSecret1LabelGroup
+                <!-- Crypto Token Used -->
+                <p:row rendered="#{cryptoTokenMBean.currentCryptoTokenId!=0}">
+                    <p:column>
+                        <h:outputLabel for="currentCryptoTokenActive" value="#{web.text.CRYPTOTOKEN_ACTIVE}"/>
+                    </p:column>
+                    <p:column>
+                        <p:selectBooleanCheckbox id="currentCryptoTokenActive" value="#{cryptoTokenMBean.currentCryptoToken.active}" disabled="true"/>
+                    </p:column>
+                </p:row>
+
+                <!-- Securosys Authentication Type - this hides and shows the dependent controls below -->
+                <p:row rendered="#{cryptoTokenMBean.currentCryptoToken.showSecurosysCryptoToken}">
+                    <p:column>
+                        <h:panelGroup>
+                            <h:outputLabel for="currentCryptoTokenSecurosysAuthenticationType" value="#{web.text.CRYPTOTOKEN_SECUROSYS_AUTH} "/>
+                        </h:panelGroup>
+                    </p:column>
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenSecurosysAuthenticationTypePanelGroup">
+                            <h:selectOneMenu
+                                    value="#{cryptoTokenMBean.currentCryptoToken.securosysAuthenticationType}"
+                                    rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"
+                                    disabled="#{!cryptoTokenMBean.allowedToModify}">
+                                <f:selectItem
+                                        itemValue="TOKEN"
+                                        itemLabel="Cloud HSM Bearer Token"/>
+                                <f:selectItem
+                                        itemValue="CERT"
+                                        itemLabel="Cloud HSM mTLS certificate"/>
+                                <f:ajax render="currentCryptoTokenForm:currentCryptoTokenSecurosysBearerSecret1LabelGroup
 										currentCryptoTokenForm:currentCryptoTokenSecurosysBearerSecret1ValueGroup
 										currentCryptoTokenForm:currentCryptoTokenSecurosysBearerSecret2LabelGroup
 										currentCryptoTokenForm:currentCryptoTokenSecurosysBearerSecret2ValueGroup
@@ -139,7 +158,7 @@
 										currentCryptoTokenForm:currentCryptoTokenSecurosysAuthKeySecret2ValueGroup
 										currentCryptoTokenForm:currentCryptoTokenSecurosysRestApiPanelGroup
 										currentCryptoTokenForm:currentCryptoTokenSecurosysRestApiValuePanelVGroup
-										currentCryptoTokenForm:currentCryptoTokenSecurosysAuthCertPanelGroup 
+										currentCryptoTokenForm:currentCryptoTokenSecurosysAuthCertPanelGroup
 										currentCryptoTokenForm:currentCryptoTokenSecurosysAuthCertValuesPanelGroup
 										currentCryptoTokenForm:currentCryptoTokenSecurosysManagementKeyPanelGroup
 										currentCryptoTokenForm:currentCryptoTokenSecurosysManagementKeyValuesPanelGroup
@@ -157,273 +176,220 @@
 										currentCryptoTokenForm:currentCryptoTokenSecurosysBearerSecret1
 										currentCryptoTokenForm:currentCryptoTokenSecurosysBearerSecret2Label
 										currentCryptoTokenForm:currentCryptoTokenSecurosysBearerSecret2"/>
-                    </h:selectOneMenu>
-                    <h:outputText
-                        value="#{cryptoTokenMBean.localize(cryptoTokenMBean.currentCryptoToken.securosysAuthenticationType)}"
-                        rendered="#{not cryptoTokenMBean.currentCryptoTokenEditMode}"/>
-                </h:panelGroup>
+                            </h:selectOneMenu>
+                            <h:outputText
+                                    value="#{cryptoTokenMBean.localize(cryptoTokenMBean.currentCryptoToken.securosysAuthenticationType)}"
+                                    rendered="#{not cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+                        </h:panelGroup>
+                    </p:column>
+                </p:row>
 
-				<!-- Rest API - Securosys only -->
-				<h:panelGroup id="currentCryptoTokenSecurosysRestApiPanelGroup"
-                    rendered="#{cryptoTokenMBean.currentCryptoToken.showSecurosysCryptoToken}">	                
-	                    <h:outputLabel id="currentCryptoTokenSecurosysRestApiLabel"
-	                        for="currentCryptoTokenSecurosysRestApi"
-	                        value="#{web.text.CRYPTOTOKEN_SECUROSYS_REST_API} " />
-                </h:panelGroup>
-                <h:panelGroup id="currentCryptoTokenSecurosysRestApiValuePanelVGroup"
-                    rendered="#{cryptoTokenMBean.currentCryptoToken.showSecurosysCryptoToken}">
-	                    <h:inputText
-	                        value="#{cryptoTokenMBean.currentCryptoToken.securosysRestApi}"
-	                        rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"
-	                        disabled="#{!cryptoTokenMBean.allowedToModify}" />
-	                    <h:outputText
-	                        value="#{cryptoTokenMBean.currentCryptoToken.securosysRestApi}"
-	                        rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}" />
-                </h:panelGroup>
+                <!-- Rest API - Securosys only -->
+                <p:row rendered="#{cryptoTokenMBean.currentCryptoToken.showSecurosysCryptoToken}">
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenSecurosysRestApiPanelGroup">
+                            <h:outputLabel id="currentCryptoTokenSecurosysRestApiLabel"
+                                           for="currentCryptoTokenSecurosysRestApiValuePanelVGroup"
+                                           value="#{web.text.CRYPTOTOKEN_SECUROSYS_REST_API} "/>
+                        </h:panelGroup>
+                    </p:column>
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenSecurosysRestApiValuePanelVGroup">
+                            <h:inputText
+                                    value="#{cryptoTokenMBean.currentCryptoToken.securosysRestApi}"
+                                    rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"
+                                    disabled="#{!cryptoTokenMBean.allowedToModify}"/>
+                            <h:outputText
+                                    value="#{cryptoTokenMBean.currentCryptoToken.securosysRestApi}"
+                                    rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+                        </h:panelGroup>
+                    </p:column>
+                </p:row>
 
-				<!-- Secret Token -->
-				<h:panelGroup id="currentCryptoTokenSecurosysBearerSecret1LabelGroup">
-					<h:outputLabel
-							id="currentCryptoTokenSecurosysBearerSecret1Label"
-							for="currentCryptoTokenSecurosysBearerSecret1"
-							value="#{web.text.CRYPTOTOKEN_SECUROSYS_BEARER_TOKEN}"
-							rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode
-                                    and cryptoTokenMBean.currentCryptoToken.requiresSecret and cryptoTokenMBean.currentCryptoToken.showBearerToken}" />
-				</h:panelGroup>
-				<h:panelGroup id="currentCryptoTokenSecurosysBearerSecret1ValueGroup">
-					<h:panelGroup
-							rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode
-                                    and cryptoTokenMBean.currentCryptoToken.requiresSecret and cryptoTokenMBean.currentCryptoToken.showBearerToken}">
-						<h:inputSecret id="currentCryptoTokenSecurosysBearerSecret1"
-									   value="#{cryptoTokenMBean.currentCryptoToken.secret1}" size="20"
-									   title="#{web.text.CRYPTOTOKEN_SECUROSYS_BEARER_TOKEN}">
-							<f:passThroughAttribute name="autocomplete" value="new-password"/>
-						</h:inputSecret>
-					</h:panelGroup>
-				</h:panelGroup>
+                <!-- Secret Token -->
+                <p:row rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode and cryptoTokenMBean.currentCryptoToken.requiresSecret and cryptoTokenMBean.currentCryptoToken.showBearerToken}">
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenSecurosysBearerSecret1LabelGroup">
+                            <h:outputLabel id="currentCryptoTokenSecurosysBearerSecret1Label" for="currentCryptoTokenSecurosysBearerSecret1" value="#{web.text.CRYPTOTOKEN_SECUROSYS_BEARER_TOKEN}"/>
+                        </h:panelGroup>
+                    </p:column>
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenSecurosysBearerSecret1ValueGroup">
+                            <h:inputSecret id="currentCryptoTokenSecurosysBearerSecret1" value="#{cryptoTokenMBean.currentCryptoToken.secret1}" size="20" title="#{web.text.CRYPTOTOKEN_SECUROSYS_BEARER_TOKEN}">
+                                <f:passThroughAttribute name="autocomplete" value="new-password"/>
+                            </h:inputSecret>
+                        </h:panelGroup>
+                    </p:column>
+                </p:row>
 
-				<!-- Secret Token2 -->
-				<h:panelGroup id="currentCryptoTokenSecurosysBearerSecret2LabelGroup">
-					<h:outputLabel for="currentCryptoTokenSecurosysBearerSecret2"
-								   id="currentCryptoTokenSecurosysBearerSecret2Label"
-								   value="#{web.text.CRYPTOTOKEN_SECUROSYS_BEARER_TOKEN_REPEAT}"
-								   rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode
-                                    and cryptoTokenMBean.currentCryptoToken.requiresSecret and cryptoTokenMBean.currentCryptoToken.showBearerToken}" />
-				</h:panelGroup>
-				<h:panelGroup id="currentCryptoTokenSecurosysBearerSecret2ValueGroup">
-					<h:inputSecret id="currentCryptoTokenSecurosysBearerSecret2"
-								   value="#{cryptoTokenMBean.currentCryptoToken.secret2}"
-								   rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode
-                                    and cryptoTokenMBean.currentCryptoToken.requiresSecret and cryptoTokenMBean.currentCryptoToken.showBearerToken}" size="20"
-								   title="#{web.text.CRYPTOTOKEN_SECUROSYS_BEARER_TOKEN}">
-						<f:passThroughAttribute name="autocomplete" value="new-password"/>
-					</h:inputSecret>
-				</h:panelGroup>
+                <!-- Secret Token2 -->
+                <p:row rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode and cryptoTokenMBean.currentCryptoToken.requiresSecret and cryptoTokenMBean.currentCryptoToken.showBearerToken}">
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenSecurosysBearerSecret2LabelGroup">
+                            <h:outputLabel for="currentCryptoTokenSecurosysBearerSecret2" id="currentCryptoTokenSecurosysBearerSecret2Label" value="#{web.text.CRYPTOTOKEN_SECUROSYS_BEARER_TOKEN_REPEAT}"/>
+                        </h:panelGroup>
+                    </p:column>
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenSecurosysBearerSecret2ValueGroup">
+                            <h:inputSecret id="currentCryptoTokenSecurosysBearerSecret2" value="#{cryptoTokenMBean.currentCryptoToken.secret2}" size="20" title="#{web.text.CRYPTOTOKEN_SECUROSYS_BEARER_TOKEN}">
+                                <f:passThroughAttribute name="autocomplete" value="new-password"/>
+                            </h:inputSecret>
+                        </h:panelGroup>
+                    </p:column>
+                </p:row>
 
-				<!-- Secret Key -->
-				<h:panelGroup id="currentCryptoTokenSecurosysAuthKeySecret1LabelGroup">
-					<h:outputLabel
-							id="currentCryptoTokenSecurosysAuthKeySecret1Label"
-							for="currentCryptoTokenSecurosysAuthKeySecret1"
-							value="#{web.text.CRYPTOTOKEN_SECUROSYS_MTLS_KEY}"
-							rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode
-                                    and cryptoTokenMBean.currentCryptoToken.requiresSecret and cryptoTokenMBean.currentCryptoToken.showKey}" />
-				</h:panelGroup>
-				<h:panelGroup id="currentCryptoTokenSecurosysAuthKeySecret1ValueGroup">
-					<h:panelGroup
-							rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode
-                                    and cryptoTokenMBean.currentCryptoToken.requiresSecret and cryptoTokenMBean.currentCryptoToken.showKey}">
-						<h:inputSecret id="currentCryptoTokenSecurosysAuthKeySecret1"
-									   value="#{cryptoTokenMBean.currentCryptoToken.secret1}" size="20"
-									   title="#{web.text.CRYPTOTOKEN_SECUROSYS_MTLS_KEY}">
-							<f:passThroughAttribute name="autocomplete" value="new-password"/>
-						</h:inputSecret>
-					</h:panelGroup>
-				</h:panelGroup>
+                <!-- Secret Key -->
+                <p:row rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode and cryptoTokenMBean.currentCryptoToken.requiresSecret and cryptoTokenMBean.currentCryptoToken.showKey}">
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenSecurosysAuthKeySecret1LabelGroup">
+                            <h:outputLabel id="currentCryptoTokenSecurosysAuthKeySecret1Label" for="currentCryptoTokenSecurosysAuthKeySecret1" value="#{web.text.CRYPTOTOKEN_SECUROSYS_MTLS_KEY}"/>
+                        </h:panelGroup>
+                    </p:column>
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenSecurosysAuthKeySecret1ValueGroup">
+                            <h:inputSecret id="currentCryptoTokenSecurosysAuthKeySecret1" value="#{cryptoTokenMBean.currentCryptoToken.secret1}" size="20" title="#{web.text.CRYPTOTOKEN_SECUROSYS_MTLS_KEY}">
+                                <f:passThroughAttribute name="autocomplete" value="new-password"/>
+                            </h:inputSecret>
+                        </h:panelGroup>
+                    </p:column>
+                </p:row>
 
-				<!-- Secret Key2 -->
-				<h:panelGroup id="currentCryptoTokenSecurosysAuthKeySecret2LabelGroup">
-					<h:outputLabel for="currentCryptoTokenSecurosysAuthKeySecret2"
-								   id="currentCryptoTokenSecurosysAuthKeySecret2Label"
-								   value="#{web.text.CRYPTOTOKEN_SECUROSYS_MTLS_KEY_REPEAT}"
-								   rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode
-                                    and cryptoTokenMBean.currentCryptoToken.requiresSecret and cryptoTokenMBean.currentCryptoToken.showKey}" />
-				</h:panelGroup>
-				<h:panelGroup id="currentCryptoTokenSecurosysAuthKeySecret2ValueGroup">
-					<h:inputSecret id="currentCryptoTokenSecurosysAuthKeySecret2"
-								   value="#{cryptoTokenMBean.currentCryptoToken.secret2}"
-								   rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode
-                                    and cryptoTokenMBean.currentCryptoToken.requiresSecret and cryptoTokenMBean.currentCryptoToken.showKey}" size="20"
-								   title="#{web.text.CRYPTOTOKEN_SECUROSYS_MTLS_KEY}">
-						<f:passThroughAttribute name="autocomplete" value="new-password"/>
-					</h:inputSecret>
-				</h:panelGroup>
+                <!-- Secret Key2 -->
+                <p:row rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode and cryptoTokenMBean.currentCryptoToken.requiresSecret and cryptoTokenMBean.currentCryptoToken.showKey}">
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenSecurosysAuthKeySecret2LabelGroup">
+                            <h:outputLabel for="currentCryptoTokenSecurosysAuthKeySecret2" id="currentCryptoTokenSecurosysAuthKeySecret2Label" value="#{web.text.CRYPTOTOKEN_SECUROSYS_MTLS_KEY_REPEAT}"/>
+                        </h:panelGroup>
+                    </p:column>
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenSecurosysAuthKeySecret2ValueGroup">
+                            <h:inputSecret id="currentCryptoTokenSecurosysAuthKeySecret2" value="#{cryptoTokenMBean.currentCryptoToken.secret2}" size="20" title="#{web.text.CRYPTOTOKEN_SECUROSYS_MTLS_KEY}">
+                                <f:passThroughAttribute name="autocomplete" value="new-password"/>
+                            </h:inputSecret>
+                        </h:panelGroup>
+                    </p:column>
+                </p:row>
 
-				<!-- mTLS Certificate - Securosys only and not shown when using TOKEN -->
-				<h:panelGroup id="currentCryptoTokenSecurosysAuthCertPanelGroup"
-                    rendered="#{cryptoTokenMBean.currentCryptoToken.showSecurosysCryptoToken}">
-	                <h:panelGroup rendered="#{cryptoTokenMBean.currentCryptoToken.showCert and cryptoTokenMBean.currentCryptoTokenEditMode}">
-	                    <h:outputLabel id="currentCryptoTokenSecurosysAuthCertLabel"
-	                        for="currentCryptoTokenSecurosysAuthCert"
-	                        value="#{web.text.CRYPTOTOKEN_SECUROSYS_MTLS_CERTIFICATE} " />
-	                    <h:outputText id="currentCryptoTokenSecurosysAuthCert" value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
-	                </h:panelGroup>
-                </h:panelGroup>
-                <h:panelGroup id="currentCryptoTokenSecurosysAuthCertValuesPanelGroup"
-                    rendered="#{cryptoTokenMBean.currentCryptoToken.showSecurosysCryptoToken}">
-                    <h:panelGroup rendered="#{cryptoTokenMBean.currentCryptoToken.showCert and cryptoTokenMBean.currentCryptoTokenEditMode}">
-	                    <h:inputText
-	                        value="#{cryptoTokenMBean.currentCryptoToken.securosysAuthCert}"
-	                        rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"
-	                        disabled="#{!cryptoTokenMBean.allowedToModify}" />
-	                    <h:outputText
-	                        value="#{cryptoTokenMBean.currentCryptoToken.securosysAuthCert}"
-	                        rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}" />
-                    </h:panelGroup>
-                </h:panelGroup>
+                <!-- mTLS Certificate - Securosys only and not shown when using TOKEN -->
+                <p:row rendered="#{cryptoTokenMBean.currentCryptoToken.showSecurosysCryptoToken}">
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenSecurosysAuthCertPanelGroup" rendered="#{cryptoTokenMBean.currentCryptoToken.showCert and cryptoTokenMBean.currentCryptoTokenEditMode}">
+                            <h:outputLabel id="currentCryptoTokenSecurosysAuthCertLabel" for="currentCryptoTokenSecurosysAuthCert" value="#{web.text.CRYPTOTOKEN_SECUROSYS_MTLS_CERTIFICATE} "/>
+                            <h:outputText id="currentCryptoTokenSecurosysAuthCert" value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
+                        </h:panelGroup>
+                    </p:column>
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenSecurosysAuthCertValuesPanelGroup" rendered="#{cryptoTokenMBean.currentCryptoToken.showCert and cryptoTokenMBean.currentCryptoTokenEditMode}">
+                            <h:inputText value="#{cryptoTokenMBean.currentCryptoToken.securosysAuthCert}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}" disabled="#{!cryptoTokenMBean.allowedToModify}"/>
+                            <h:outputText value="#{cryptoTokenMBean.currentCryptoToken.securosysAuthCert}" rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+                        </h:panelGroup>
+                    </p:column>
+                </p:row>
 
-				<!-- Management Key - Securosys only and not shown when using TOKEN -->
-				<h:panelGroup id="currentCryptoTokenSecurosysManagementKeyPanelGroup"
-                    rendered="#{cryptoTokenMBean.currentCryptoToken.showSecurosysCryptoToken}">
-	                <h:panelGroup rendered="#{cryptoTokenMBean.currentCryptoToken.showManagementKey and cryptoTokenMBean.currentCryptoTokenEditMode}">
-	                    <h:outputLabel id="currentCryptoTokenSecurosysManagementKeyLabel"
-	                        for="currentCryptoTokenSecurosysManagementKey"
-	                        value="#{web.text.CRYPTOTOKEN_SECUROSYS_MANAGEMENT_KEY} " />
-	                </h:panelGroup>
-                </h:panelGroup>
-                <h:panelGroup id="currentCryptoTokenSecurosysManagementKeyValuesPanelGroup"
-                    rendered="#{cryptoTokenMBean.currentCryptoToken.showSecurosysCryptoToken}">
-                    <h:panelGroup rendered="#{cryptoTokenMBean.currentCryptoToken.showManagementKey and cryptoTokenMBean.currentCryptoTokenEditMode}">
-	                    <h:inputText
-	                        value="#{cryptoTokenMBean.currentCryptoToken.securosysManagementKey}"
-	                        rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"
-	                        disabled="#{!cryptoTokenMBean.allowedToModify}" />
-	                    <h:outputText
-	                        value="#{cryptoTokenMBean.currentCryptoToken.securosysManagementKey}"
-	                        rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}" />
-                    </h:panelGroup>
-                </h:panelGroup>
+                <!-- Management Key - Securosys only and not shown when using TOKEN -->
+                <p:row rendered="#{cryptoTokenMBean.currentCryptoToken.showSecurosysCryptoToken}">
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenSecurosysManagementKeyPanelGroup" rendered="#{cryptoTokenMBean.currentCryptoToken.showManagementKey and cryptoTokenMBean.currentCryptoTokenEditMode}">
+                            <h:outputLabel id="currentCryptoTokenSecurosysManagementKeyLabel" for="currentCryptoTokenSecurosysManagementKeyValuesPanelGroup" value="#{web.text.CRYPTOTOKEN_SECUROSYS_MANAGEMENT_KEY} "/>
+                        </h:panelGroup>
+                    </p:column>
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenSecurosysManagementKeyValuesPanelGroup" rendered="#{cryptoTokenMBean.currentCryptoToken.showManagementKey and cryptoTokenMBean.currentCryptoTokenEditMode}">
+                            <h:inputText value="#{cryptoTokenMBean.currentCryptoToken.securosysManagementKey}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}" disabled="#{!cryptoTokenMBean.allowedToModify}"/>
+                            <h:outputText value="#{cryptoTokenMBean.currentCryptoToken.securosysManagementKey}" rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+                        </h:panelGroup>
+                    </p:column>
+                </p:row>
 
-				<!-- Operation Key - Securosys only and not shown when using TOKEN -->
-				<h:panelGroup id="currentCryptoTokenSecurosysOperationKeyPanelGroup"
-                    rendered="#{cryptoTokenMBean.currentCryptoToken.showSecurosysCryptoToken}">
-	                <h:panelGroup rendered="#{cryptoTokenMBean.currentCryptoToken.showOperationKey and cryptoTokenMBean.currentCryptoTokenEditMode}">
-	                    <h:outputLabel id="currentCryptoTokenSecurosysOperationKeyLabel"
-	                        for="currentCryptoTokenSecurosysOperationKey"
-	                        value="#{web.text.CRYPTOTOKEN_SECUROSYS_OPERATION_KEY} " />
-	                </h:panelGroup>
-                </h:panelGroup>
-                <h:panelGroup id="currentCryptoTokenSecurosysOperationKeyValuesPanelGroup"
-                    rendered="#{cryptoTokenMBean.currentCryptoToken.showSecurosysCryptoToken}">
-                    <h:panelGroup rendered="#{cryptoTokenMBean.currentCryptoToken.showOperationKey and cryptoTokenMBean.currentCryptoTokenEditMode}">
-	                    <h:inputText
-	                        value="#{cryptoTokenMBean.currentCryptoToken.securosysOperationKey}"
-	                        rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"
-	                        disabled="#{!cryptoTokenMBean.allowedToModify}" />
-	                    <h:outputText
-	                        value="#{cryptoTokenMBean.currentCryptoToken.securosysOperationKey}"
-	                        rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}" />
-                    </h:panelGroup>
-                </h:panelGroup>
+                <!-- Operation Key - Securosys only and not shown when using TOKEN -->
+                <p:row rendered="#{cryptoTokenMBean.currentCryptoToken.showSecurosysCryptoToken}">
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenSecurosysOperationKeyPanelGroup" rendered="#{cryptoTokenMBean.currentCryptoToken.showOperationKey and cryptoTokenMBean.currentCryptoTokenEditMode}">
+                            <h:outputLabel id="currentCryptoTokenSecurosysOperationKeyLabel" for="currentCryptoTokenSecurosysOperationKeyValuesPanelGroup" value="#{web.text.CRYPTOTOKEN_SECUROSYS_OPERATION_KEY} "/>
+                        </h:panelGroup>
+                    </p:column>
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenSecurosysOperationKeyValuesPanelGroup" rendered="#{cryptoTokenMBean.currentCryptoToken.showOperationKey and cryptoTokenMBean.currentCryptoTokenEditMode}">
+                            <h:inputText value="#{cryptoTokenMBean.currentCryptoToken.securosysOperationKey}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}" disabled="#{!cryptoTokenMBean.allowedToModify}"/>
+                            <h:outputText value="#{cryptoTokenMBean.currentCryptoToken.securosysOperationKey}" rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+                        </h:panelGroup>
+                    </p:column>
+                </p:row>
 
-				<!-- Service Key - Securosys only and not shown when using TOKEN -->
-				<h:panelGroup id="currentCryptoTokenSecurosysServiceKeyPanelGroup"
-                    rendered="#{cryptoTokenMBean.currentCryptoToken.showSecurosysCryptoToken}">
-	                <h:panelGroup rendered="#{cryptoTokenMBean.currentCryptoToken.showServiceKey and cryptoTokenMBean.currentCryptoTokenEditMode}">
-	                    <h:outputLabel id="currentCryptoTokenSecurosysServiceKeyLabel"
-	                        for="currentCryptoTokenSecurosysServiceKey"
-	                        value="#{web.text.CRYPTOTOKEN_SECUROSYS_SERVICE_KEY} " />
-	                </h:panelGroup>
-                </h:panelGroup>
-                <h:panelGroup id="currentCryptoTokenSecurosysServiceKeyValuesPanelGroup"
-                    rendered="#{cryptoTokenMBean.currentCryptoToken.showSecurosysCryptoToken}">
-                    <h:panelGroup rendered="#{cryptoTokenMBean.currentCryptoToken.showServiceKey and cryptoTokenMBean.currentCryptoTokenEditMode}">
-	                    <h:inputText
-	                        value="#{cryptoTokenMBean.currentCryptoToken.securosysServiceKey}"
-	                        rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"
-	                        disabled="#{!cryptoTokenMBean.allowedToModify}" />
-	                    <h:outputText
-	                        value="#{cryptoTokenMBean.currentCryptoToken.securosysServiceKey}"
-	                        rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}" />
-                    </h:panelGroup>
-                </h:panelGroup>
+                <!-- Service Key - Securosys only and not shown when using TOKEN -->
+                <p:row rendered="#{cryptoTokenMBean.currentCryptoToken.showSecurosysCryptoToken}">
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenSecurosysServiceKeyPanelGroup" rendered="#{cryptoTokenMBean.currentCryptoToken.showServiceKey and cryptoTokenMBean.currentCryptoTokenEditMode}">
+                            <h:outputLabel id="currentCryptoTokenSecurosysServiceKeyLabel" for="currentCryptoTokenSecurosysServiceKeyValuesPanelGroup" value="#{web.text.CRYPTOTOKEN_SECUROSYS_SERVICE_KEY} "/>
+                        </h:panelGroup>
+                    </p:column>
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenSecurosysServiceKeyValuesPanelGroup" rendered="#{cryptoTokenMBean.currentCryptoToken.showServiceKey and cryptoTokenMBean.currentCryptoTokenEditMode}">
+                            <h:inputText value="#{cryptoTokenMBean.currentCryptoToken.securosysServiceKey}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}" disabled="#{!cryptoTokenMBean.allowedToModify}"/>
+                            <h:outputText value="#{cryptoTokenMBean.currentCryptoToken.securosysServiceKey}" rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+                        </h:panelGroup>
+                    </p:column>
+                </p:row>
 
-				<!-- Approval Timeout - Securosys only -->
-				<h:panelGroup id="currentCryptoTokenSecurosysApprovalTimeoutPanelGroup"
-							  rendered="#{cryptoTokenMBean.currentCryptoToken.showSecurosysCryptoToken}">
-					<h:panelGroup rendered="#{cryptoTokenMBean.currentCryptoToken.showApprovalTimeout and cryptoTokenMBean.currentCryptoTokenEditMode}">
-						<h:outputLabel id="currentCryptoTokenSecurosysApprovalTimeoutLabel"
-									   for="currentCryptoTokenSecurosysApprovalTimeout"
-									   value="#{web.text.CRYPTOTOKEN_SECUROSYS_APPROVAL_TIMEOUT} " />
-						<h:outputText id="currentCryptoTokenSecurosysApprovalTimeout" value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
-					</h:panelGroup>
-				</h:panelGroup>
-				<h:panelGroup id="currentCryptoTokenSecurosysApprovalTimeoutValuesPanelGroup"
-							  rendered="#{cryptoTokenMBean.currentCryptoToken.showSecurosysCryptoToken}">
-					<h:panelGroup rendered="#{cryptoTokenMBean.currentCryptoToken.showApprovalTimeout and cryptoTokenMBean.currentCryptoTokenEditMode}">
-						<h:inputText
-								value="#{cryptoTokenMBean.currentCryptoToken.securosysApprovalTimeout}"
-								rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"
-								disabled="#{!cryptoTokenMBean.allowedToModify}" />
-						<h:outputText
-								value="#{cryptoTokenMBean.currentCryptoToken.securosysApprovalTimeout}"
-								rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}" />
-					</h:panelGroup>
-				</h:panelGroup>
+                <!-- Approval Timeout - Securosys only -->
+                <p:row rendered="#{cryptoTokenMBean.currentCryptoToken.showSecurosysCryptoToken}">
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenSecurosysApprovalTimeoutPanelGroup" rendered="#{cryptoTokenMBean.currentCryptoToken.showApprovalTimeout and cryptoTokenMBean.currentCryptoTokenEditMode}">
+                            <h:outputLabel id="currentCryptoTokenSecurosysApprovalTimeoutLabel" for="currentCryptoTokenSecurosysApprovalTimeoutValuesPanelGroup" value="#{web.text.CRYPTOTOKEN_SECUROSYS_APPROVAL_TIMEOUT} "/>
+                            <h:outputText id="currentCryptoTokenSecurosysApprovalTimeout" value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
+                        </h:panelGroup>
+                    </p:column>
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenSecurosysApprovalTimeoutValuesPanelGroup" rendered="#{cryptoTokenMBean.currentCryptoToken.showApprovalTimeout and cryptoTokenMBean.currentCryptoTokenEditMode}">
+                            <h:inputText value="#{cryptoTokenMBean.currentCryptoToken.securosysApprovalTimeout}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}" disabled="#{!cryptoTokenMBean.allowedToModify}"/>
+                            <h:outputText value="#{cryptoTokenMBean.currentCryptoToken.securosysApprovalTimeout}" rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+                        </h:panelGroup>
+                    </p:column>
+                </p:row>
 
-				<!-- Authentication Type - this hides and shows the dependent controls below -->
-				<h:panelGroup rendered="#{cryptoTokenMBean.currentCryptoToken.showAzureCryptoToken}">
-					<h:outputLabel for="currentCryptoTokenAuthenticationType" value="#{web.text.CRYPTOTOKEN_KEYVAULT_AUTH} "/>
-                    <h:outputText id="currentCryptoTokenAuthenticationTypeHelp" value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
-				</h:panelGroup>
-                <h:panelGroup
-                	id="currentCryptoTokenAuthenticationTypePanelGroup"
-                    rendered="#{cryptoTokenMBean.currentCryptoToken.showAzureCryptoToken}">
-                    <h:selectOneMenu
-                        value="#{cryptoTokenMBean.currentCryptoToken.azureAuthenticationType}"
-                        rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"
-                        disabled="#{!cryptoTokenMBean.allowedToModify}">
-                        <f:selectItems 
-                        	value="#{cryptoTokenMBean.currentCryptoToken.azureAuthenticationTypes}"
-                        	var="azureAuthenticationType"
-                        	itemValue="#{azureAuthenticationType}"
-                        	itemLabel="#{cryptoTokenMBean.localize('AZUREAUTHENTICATIONTYPE.' += azureAuthenticationType)}"/>
-						<f:ajax render="currentCryptoTokenForm:currentCryptoTokenSecret1LabelGroup
+                <!-- Azure - Authentication Type - this hides and shows the dependent controls below -->
+                <p:row rendered="#{cryptoTokenMBean.currentCryptoToken.showAzureCryptoToken}">
+                    <p:column>
+                        <h:panelGroup>
+                            <h:outputLabel for="currentCryptoTokenAuthenticationType" value="#{web.text.CRYPTOTOKEN_KEYVAULT_AUTH} "/>
+                            <h:outputText id="currentCryptoTokenAuthenticationTypeHelp" value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
+                        </h:panelGroup>
+                    </p:column>
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenAuthenticationTypePanelGroup">
+                            <h:selectOneMenu value="#{cryptoTokenMBean.currentCryptoToken.azureAuthenticationType}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}" disabled="#{!cryptoTokenMBean.allowedToModify}">
+                                <f:selectItems value="#{cryptoTokenMBean.currentCryptoToken.azureAuthenticationTypes}" var="azureAuthenticationType" itemValue="#{azureAuthenticationType}" itemLabel="#{cryptoTokenMBean.localize('AZUREAUTHENTICATIONTYPE.' += azureAuthenticationType)}"/>
+                                <f:ajax render="currentCryptoTokenForm:currentCryptoTokenSecret1LabelGroup
 										currentCryptoTokenForm:currentCryptoTokenSecret1ValueGroup
 										currentCryptoTokenForm:currentCryptoTokenSecret2LabelGroup
 										currentCryptoTokenForm:currentCryptoTokenSecret2ValueGroup
 										currentCryptoTokenForm:currentCryptoTokenKeyVaultClientIDPanelGroup
 										currentCryptoTokenForm:currentCryptoTokenKeyVaultClientIDValuePanelVGroup
-										currentCryptoTokenForm:currentCryptoTokenKeyVaultKeyBindingPanelGroup 
+										currentCryptoTokenForm:currentCryptoTokenKeyVaultKeyBindingPanelGroup
 										currentCryptoTokenForm:currentCryptoTokenKeyVaultKeyBindingValuesPanelGroup
 										currentCryptoTokenForm:currentCryptoTokenSecret1Label
 										currentCryptoTokenForm:currentCryptoTokenSecret1
 										currentCryptoTokenForm:currentCryptoTokenSecret2Label
 										currentCryptoTokenForm:currentCryptoTokenSecret2"/>
-                    </h:selectOneMenu>
-                    <h:outputText
-                        value="#{cryptoTokenMBean.localize('AZUREAUTHENTICATIONTYPE.' += cryptoTokenMBean.currentCryptoToken.azureAuthenticationType)}"
-                        rendered="#{not cryptoTokenMBean.currentCryptoTokenEditMode}"/>
-                </h:panelGroup>
+                            </h:selectOneMenu>
+                            <h:outputText value="#{cryptoTokenMBean.localize('AZUREAUTHENTICATIONTYPE.' += cryptoTokenMBean.currentCryptoToken.azureAuthenticationType)}" rendered="#{not cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+                        </h:panelGroup>
+                    </p:column>
+                </p:row>
 
-				<!-- AWS Authentication Type - this hides and shows the dependent controls below -->
-				<h:panelGroup rendered="#{cryptoTokenMBean.currentCryptoToken.showAWSKMSCryptoToken}">
-					<h:outputLabel for="currentCryptoTokenAwsAuthenticationType" value="#{web.text.CRYPTOTOKEN_AWSKMS_AUTH} "/>
-                    <h:outputText id="currentCryptoTokenAwsAuthenticationTypeHelp" value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
-				</h:panelGroup>
-                <h:panelGroup
-                	id="currentCryptoTokenAwsAuthenticationTypePanelGroup"
-                    rendered="#{cryptoTokenMBean.currentCryptoToken.showAWSKMSCryptoToken}">
-                    <h:selectOneMenu
-                        value="#{cryptoTokenMBean.currentCryptoToken.awsKmsAuthenticationType}"
-                        rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"
-                        disabled="#{!cryptoTokenMBean.allowedToModify}">
-                        <f:selectItems 
-                        	value="#{cryptoTokenMBean.currentCryptoToken.awsKmsAuthenticationTypes}"
-                        	var="awsKmsAuthenticationType"
-                        	itemValue="#{awsKmsAuthenticationType}"
-                        	itemLabel="#{cryptoTokenMBean.localize('AWSKMSAUTHENTICATIONTYPE.' += awsKmsAuthenticationType)}"/>
-						<f:ajax render="currentCryptoTokenForm:currentCryptoTokenSecret1LabelGroup
+                <!-- AWS KMS - AWS Authentication Type - this hides and shows the dependent controls below -->
+                <p:row rendered="#{cryptoTokenMBean.currentCryptoToken.showAWSKMSCryptoToken}">
+                    <p:column>
+                        <h:panelGroup>
+                            <h:outputLabel for="currentCryptoTokenAwsAuthenticationType" value="#{web.text.CRYPTOTOKEN_AWSKMS_AUTH} "/>
+                            <h:outputText id="currentCryptoTokenAwsAuthenticationTypeHelp" value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
+                        </h:panelGroup>
+                    </p:column>
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenAwsAuthenticationTypePanelGroup">
+                            <h:selectOneMenu value="#{cryptoTokenMBean.currentCryptoToken.awsKmsAuthenticationType}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}" disabled="#{!cryptoTokenMBean.allowedToModify}">
+                                <f:selectItems value="#{cryptoTokenMBean.currentCryptoToken.awsKmsAuthenticationTypes}" var="awsKmsAuthenticationType" itemValue="#{awsKmsAuthenticationType}" itemLabel="#{cryptoTokenMBean.localize('AWSKMSAUTHENTICATIONTYPE.' += awsKmsAuthenticationType)}"/>
+                                <f:ajax render="currentCryptoTokenForm:currentCryptoTokenSecret1LabelGroup
 										currentCryptoTokenForm:currentCryptoTokenSecret1ValueGroup
 										currentCryptoTokenForm:currentCryptoTokenSecret2LabelGroup
 										currentCryptoTokenForm:currentCryptoTokenSecret2ValueGroup
@@ -433,521 +399,485 @@
 										currentCryptoTokenForm:currentCryptoTokenSecret1
 										currentCryptoTokenForm:currentCryptoTokenSecret2Label
 										currentCryptoTokenForm:currentCryptoTokenSecret2"/>
-                    </h:selectOneMenu>
-                    <h:outputText
-                        value="#{cryptoTokenMBean.localize('AWSKMSAUTHENTICATIONTYPE.' += cryptoTokenMBean.currentCryptoToken.awsKmsAuthenticationType)}"
-                        rendered="#{not cryptoTokenMBean.currentCryptoTokenEditMode}"/>
-                </h:panelGroup>
-
-				<!-- Client ID - Azure only and not shown when using Managed Identity -->
-                <h:panelGroup id="currentCryptoTokenKeyVaultClientIDPanelGroup"
-                    rendered="#{cryptoTokenMBean.currentCryptoToken.showAzureCryptoToken}">
-	                <h:panelGroup rendered="#{cryptoTokenMBean.currentCryptoToken.showClientId}">
-	                    <h:outputLabel id="currentCryptoTokenKeyVaultClientIDLabel"
-	                        for="currentCryptoTokenKeyVaultClientID"
-	                        value="#{web.text.CRYPTOTOKEN_KEYVAULT_CLIENTID} " />
-	                    <h:outputText id="currentCryptoTokenKeyVaultClientID" value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
-	                </h:panelGroup>
-                </h:panelGroup>
-                <h:panelGroup id="currentCryptoTokenKeyVaultClientIDValuePanelVGroup"
-                    rendered="#{cryptoTokenMBean.currentCryptoToken.showAzureCryptoToken}">
-                    <h:panelGroup rendered="#{cryptoTokenMBean.currentCryptoToken.showClientId}">
-	                    <h:inputText
-	                        value="#{cryptoTokenMBean.currentCryptoToken.keyVaultClientID}"
-	                        rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"
-	                        disabled="#{!cryptoTokenMBean.allowedToModify}" />
-	                    <h:outputText
-	                        value="#{cryptoTokenMBean.currentCryptoToken.keyVaultClientID}"
-	                        rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}" />
-                    </h:panelGroup>
-                </h:panelGroup>
-				
-				<!-- Key Binding -->
-                <h:panelGroup id="currentCryptoTokenKeyVaultKeyBindingPanelGroup"
-                    rendered="#{cryptoTokenMBean.currentCryptoToken.showAzureCryptoToken}">
-                    <h:outputLabel id="currentCryptoTokenKeyVaultKeyBindingLabel"
-                        for="currentCryptoTokenKeyVaultKeyBinding"
-                        value="#{web.text.CRYPTOTOKEN_KEYVAULT_BINDING} "
-                        rendered="#{cryptoTokenMBean.currentCryptoToken.showKeyBinding}" />
-                    <h:outputText id="currentCryptoTokenKeyVaultKeyBinding"
-                    	value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}"
-                    	escape="false"
-                    	rendered="#{cryptoTokenMBean.currentCryptoToken.showKeyBinding}" />
-                </h:panelGroup>
-                <h:panelGroup
-                	id="currentCryptoTokenKeyVaultKeyBindingValuesPanelGroup"
-                    rendered="#{cryptoTokenMBean.currentCryptoToken.showAzureCryptoToken}">
-
-                    <h:selectOneMenu
-                        value="#{cryptoTokenMBean.currentCryptoToken.keyVaultKeyBinding}"
-                        rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode and cryptoTokenMBean.currentCryptoToken.showKeyBinding}"
-                        disabled="#{!cryptoTokenMBean.allowedToModify}">
-                        <f:selectItems value="#{cryptoTokenMBean.internalKeyBindings}"/>
-                    </h:selectOneMenu>
-                    <h:outputText
-                        value="#{cryptoTokenMBean.currentCryptoToken.keyVaultKeyBindingName}"
-                        rendered="#{not cryptoTokenMBean.currentCryptoTokenEditMode and cryptoTokenMBean.currentCryptoToken.showKeyBinding}"/>
-                </h:panelGroup>
-                
-				<h:outputLabel for="currentCryptoTokenAutoActivate"
-					value="#{web.text.CRYPTOTOKEN_AUTO}" />
-				<h:panelGroup>
-					<h:selectBooleanCheckbox id="currentCryptoTokenAutoActivate"
-						value="#{cryptoTokenMBean.currentCryptoToken.autoActivate}"
-						disabled="#{!cryptoTokenMBean.currentCryptoTokenEditMode}" />
-					<h:outputLabel for="currentCryptoTokenAutoActivate"
-						value="#{web.text.USE}"
-						rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}" />
-				</h:panelGroup>
-
-				<h:panelGroup id="allowExplicitParameters">
-					<h:outputLabel id="allowExplicitParametersLabel"
-						for="currentCryptoTokenAllowExplicitParameters"
-						value="#{web.text.CRYPTOTOKEN_USEEXPLICITKEYPARAMETERS} " />
-					<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
-				</h:panelGroup>
-				<h:panelGroup>
-					<h:selectBooleanCheckbox
-						id="currentCryptoTokenAllowExplicitParameters"
-						value="#{cryptoTokenMBean.currentCryptoToken.allowExplicitParameters}"
-						disabled="#{!cryptoTokenMBean.currentCryptoTokenEditMode}" />
-					<h:outputLabel for="currentCryptoTokenAllowExplicitParameters"
-						value="#{web.text.USE}"
-						rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}" />
-				</h:panelGroup>
-
-				<h:panelGroup id="currentCryptoTokenAllowExportPrivateKeyPanelGroup"
-					rendered="#{cryptoTokenMBean.currentCryptoToken.showSoftCryptoToken}">
-					<h:outputLabel id="currentCryptoTokenAllowExportPrivateKeyLabel"
-						for="currentCryptoTokenAllowExportPrivateKey"
-						value="#{web.text.CRYPTOTOKEN_ALLOWEXPORT} " />
-					<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
-				</h:panelGroup>
-				<h:panelGroup
-					rendered="#{cryptoTokenMBean.currentCryptoToken.showSoftCryptoToken}">
-					<h:selectBooleanCheckbox
-						id="currentCryptoTokenAllowExportPrivateKey"
-						value="#{cryptoTokenMBean.currentCryptoToken.allowExportPrivateKey}"
-						disabled="#{!cryptoTokenMBean.currentCryptoTokenEditMode}" />
-					<h:outputLabel for="currentCryptoTokenAllowExportPrivateKey"
-						value="#{web.text.ALLOW}"
-						rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}" />
-				</h:panelGroup>
-
-				<h:outputLabel id="currentCryptoTokenP11LibraryLabel"
-					for="currentCryptoTokenP11Library"
-					rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken}"
-					value="#{web.text.CRYPTOTOKEN_TYPE_P11} : #{web.text.CRYPTOTOKEN_LIBRARY}" />
-				<h:panelGroup id="currentCryptoTokenP11Library"
-					rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken}">
-					<h:selectOneMenu
-						value="#{cryptoTokenMBean.currentCryptoToken.p11Library}"
-						rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}">
-						<f:selectItems
-							value="#{cryptoTokenMBean.availableCryptoTokenP11Libraries}" />
-					</h:selectOneMenu>
-					<h:outputText
-						value="#{cryptoTokenMBean.currentCryptoToken.p11LibraryAlias}"
-						rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}" />
-				</h:panelGroup>
-
-				<h:outputLabel id="currentCryptoTokenP11SlotLabelTypeLabel"
-					for="currentCryptoTokenP11SlotLabelType"
-					rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken}"
-					value="#{web.text.CRYPTOTOKEN_TYPE_P11} : #{web.text.CRYPTOTOKEN_LABEL_TYPE}" />
-				<h:panelGroup id="currentCryptoTokenP11SlotLabelType"
-					rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken}">
-					<h:panelGroup
-						rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}">
-						<h:selectOneMenu
-							value="#{cryptoTokenMBean.currentCryptoToken.p11SlotLabelType}"
-							onchange="document.getElementById('currentCryptoTokenForm:selectCryptoTokenP11SlotLabelTypeLabel').click();"
-							disabled="#{!cryptoTokenMBean.allowedToModify}">
-							<f:selectItems
-								value="#{cryptoTokenMBean.availableCryptoTokenP11SlotLabelTypes}" />
-						</h:selectOneMenu>
-						<h:commandButton id="selectCryptoTokenP11SlotLabelTypeLabel"
-							action="#{cryptoTokenMBean.selectCryptoTokenLabelType}"
-							value="Update" disabled="#{!cryptoTokenMBean.allowedToModify}" />
-						<script>
-							document
-									.getElementById('currentCryptoTokenForm:selectCryptoTokenP11SlotLabelTypeLabel').style.display = 'none';
-						</script>
-					</h:panelGroup>
-					<h:outputText
-						value="#{cryptoTokenMBean.currentCryptoToken.p11SlotLabelTypeText}"
-						rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}" />
-				</h:panelGroup>
-
-				<h:outputLabel id="currentCryptoTokenP11SlotLabel"
-					for="currentCryptoTokenP11Slot"
-					rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken}"
-					value="#{web.text.CRYPTOTOKEN_TYPE_P11} : #{web.text.CRYPTOTOKEN_SLOT}" />
-				<h:panelGroup id="currentCryptoTokenP11Slot"
-					rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken}">
-					<h:panelGroup
-						rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}">
-						<h:selectOneMenu
-							value="#{cryptoTokenMBean.currentCryptoToken.p11Slot}"
-							rendered="#{cryptoTokenMBean.currentCryptoToken.slotOfTokenLabelType}"
-							disabled="#{!cryptoTokenMBean.allowedToModify}">
-							<f:selectItems
-								value="#{cryptoTokenMBean.availableCryptoTokenP11SlotTokenLabels}" />
-						</h:selectOneMenu>
-						<h:inputText
-							value="#{cryptoTokenMBean.currentCryptoToken.p11Slot}"
-							rendered="#{!cryptoTokenMBean.currentCryptoToken.slotOfTokenLabelType}"
-							disabled="#{!cryptoTokenMBean.allowedToModify}" />
-					</h:panelGroup>
-					<h:outputText
-						value="#{cryptoTokenMBean.currentCryptoToken.p11Slot}"
-						rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}" />
-				</h:panelGroup>
-
-				<h:outputLabel id="currentCryptoTokenP11AttributeFileLabel"
-					for="currentCryptoTokenP11AttributeFile"
-					rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken}"
-					value="#{web.text.CRYPTOTOKEN_TYPE_P11} : #{web.text.CRYPTOTOKEN_ATTRFILE}" />
-				<h:panelGroup id="currentCryptoTokenP11AttributeFile"
-					rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken}">
-					<h:selectOneMenu
-						value="#{cryptoTokenMBean.currentCryptoToken.p11AttributeFile}"
-						rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"
-						disabled="#{!cryptoTokenMBean.allowedToModify}">
-						<f:selectItems
-							value="#{cryptoTokenMBean.availableCryptoTokenP11AttributeFiles}" />
-					</h:selectOneMenu>
-					<h:outputText
-						value="#{cryptoTokenMBean.currentCryptoToken.p11AttributeFileAlias}"
-						rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}" />
-				</h:panelGroup>
-				
-                <h:panelGroup id="currentCryptoTokenAWSKMSRegionPanelGroup"
-                    rendered="#{cryptoTokenMBean.currentCryptoToken.showAWSKMSCryptoToken}"> 
-                    <h:outputText id="currentCryptoTokenAWSKMSRegionLabel"
-                        for="currentCryptoTokenAWSKMSRegion"
-                        value="#{web.text.CRYPTOTOKEN_AWSKMS_REGION} " />
-                    <h:outputText id="currentCryptoTokenAWSKMSRegion" value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
-                </h:panelGroup>
-                <h:panelGroup
-                    rendered="#{cryptoTokenMBean.currentCryptoToken.showAWSKMSCryptoToken}">
-                    <h:inputText
-                        value="#{cryptoTokenMBean.currentCryptoToken.AWSKMSRegion}"
-                        rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"
-                        disabled="#{!cryptoTokenMBean.allowedToModify}" />
-                    <h:outputText
-                        value="#{cryptoTokenMBean.currentCryptoToken.AWSKMSRegion}"
-                        rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}" />
-                </h:panelGroup>
-                <h:panelGroup id="currentCryptoTokenAWSKMSAccessKeyIDPanelGroup"
-                    rendered="#{cryptoTokenMBean.currentCryptoToken.showAWSKMSCryptoToken}">
-	                <h:panelGroup rendered="#{cryptoTokenMBean.currentCryptoToken.requiresSecret}">
-	                    <h:outputLabel id="currentCryptoTokenAWSKMSAccessKeyIDLabel"
-	                        for="currentCryptoTokenAWSKMSAccessKeyID"
-	                        value="#{web.text.CRYPTOTOKEN_AWSKMS_ACCESSKEYID} " />
-	                    <h:outputText id="currentCryptoTokenAWSKMSAccessKeyID" value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
-                    </h:panelGroup>
-                </h:panelGroup>
-                <h:panelGroup id="currentCryptoTokenAWSKMSAccessKeyIDValuePanelGroup"
-                    rendered="#{cryptoTokenMBean.currentCryptoToken.showAWSKMSCryptoToken}">
-                    <h:panelGroup rendered="#{cryptoTokenMBean.currentCryptoToken.requiresSecret}">
-	                    <h:inputText
-	                        value="#{cryptoTokenMBean.currentCryptoToken.AWSKMSAccessKeyID}"
-	                        rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"
-	                        disabled="#{!cryptoTokenMBean.allowedToModify}" />
-	                    <h:outputText
-	                        value="#{cryptoTokenMBean.currentCryptoToken.AWSKMSAccessKeyID}"
-	                        rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}" />
-                    </h:panelGroup>
-                </h:panelGroup>
-
-                <h:panelGroup id="currentCryptoTokenKeyVaultTypePanelGroup"
-                    rendered="#{cryptoTokenMBean.currentCryptoToken.showAzureCryptoToken}">
-                    <h:outputLabel id="currentCryptoTokenKeyVaultTypeLabel"
-                        for="currentCryptoTokenKeyVaultType"
-                        value="#{web.text.CRYPTOTOKEN_KEYVAULT_TYPE} " />
-                    <h:outputText id="currentCryptoTokenKeyVaultType" value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
-                </h:panelGroup>
-                <h:panelGroup
-                    rendered="#{cryptoTokenMBean.currentCryptoToken.showAzureCryptoToken}">
-
-                    <h:selectOneMenu
-                        value="#{cryptoTokenMBean.currentCryptoToken.keyVaultType}"
-                        rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"
-                        disabled="#{!cryptoTokenMBean.allowedToModify}">
-                        <f:selectItem
-                            itemValue="standard"
-                            itemLabel="Standard"/>
-                        <f:selectItem
-                            itemValue="premium"
-                            itemLabel="Premium"/>
-                    </h:selectOneMenu>
-                    <h:outputText
-                        value="#{cryptoTokenMBean.currentCryptoToken.keyVaultType}"
-                        rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}" />
-                </h:panelGroup>
-
-                <h:panelGroup id="currentCryptoTokenKeyVaultNamePanelGroup"
-                    rendered="#{cryptoTokenMBean.currentCryptoToken.showAzureCryptoToken}">
-                    <h:outputLabel id="currentCryptoTokenKeyVaultNameLabel"
-                        for="currentCryptoTokenKeyVaultName"
-                        value="#{web.text.CRYPTOTOKEN_KEYVAULT_NAME} " />
-                    <h:outputText id="currentCryptoTokenKeyVaultName" value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
-                </h:panelGroup>
-                <h:panelGroup
-                    rendered="#{cryptoTokenMBean.currentCryptoToken.showAzureCryptoToken}">
-                    <h:inputText
-                        value="#{cryptoTokenMBean.currentCryptoToken.keyVaultName}"
-                        rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"
-                        disabled="#{!cryptoTokenMBean.allowedToModify}" />
-                    <h:outputText
-                        value="#{cryptoTokenMBean.currentCryptoToken.keyVaultName}"
-                        rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}" />
-                </h:panelGroup>
-
-				<!-- Fortanix Base URL -->
-                <h:panelGroup id="currentCryptoTokenFortanixBaseAddressPanelGroup"
-                    rendered="#{cryptoTokenMBean.currentCryptoToken.showFortanixCryptoToken}">
-                    <h:outputLabel id="currentCryptoTokenFortanixBaseAddressLabel"
-                        for="currentCryptoTokenFortanixBaseAddress"
-                        value="#{web.text.CRYPTOTOKEN_FORTANIX_BASE_ADDRESS} " />
-                    <h:outputText id="currentCryptoTokenFortanixBaseAddress" value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
-                </h:panelGroup>
-                <h:panelGroup
-                    rendered="#{cryptoTokenMBean.currentCryptoToken.showFortanixCryptoToken}">
-                    <h:inputText
-                        value="#{cryptoTokenMBean.currentCryptoToken.fortanixBaseAddress}"
-                        rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"
-                        disabled="#{!cryptoTokenMBean.allowedToModify}" />
-                    <h:outputText
-                        value="#{cryptoTokenMBean.currentCryptoToken.fortanixBaseAddress}"
-                        rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}" />
-                </h:panelGroup>
-
-                <!-- Secret 1 -->
-                <h:panelGroup id="currentCryptoTokenSecret1LabelGroup">
-                    <h:outputLabel 
-                        id="currentCryptoTokenSecret1Label"
-                        for="currentCryptoTokenSecret1"
-                        value="#{web.text.CRYPTOTOKEN_PIN}"
-                        rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode 
-                                    and cryptoTokenMBean.currentCryptoToken.requiresSecret and !cryptoTokenMBean.currentCryptoToken.showSecurosysCryptoToken}" />
-                </h:panelGroup>
-                <h:panelGroup id="currentCryptoTokenSecret1ValueGroup">
-                    <h:panelGroup
-                        rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode
-                                    and cryptoTokenMBean.currentCryptoToken.requiresSecret and !cryptoTokenMBean.currentCryptoToken.showSecurosysCryptoToken}">
-                        <h:inputSecret id="currentCryptoTokenSecret1"
-                            value="#{cryptoTokenMBean.currentCryptoToken.secret1}" size="20"
-                                title="#{web.text.CRYPTOTOKEN_PIN}">
-                            	<f:passThroughAttribute name="autocomplete" value="new-password"/>
-                            </h:inputSecret>
-                        <h:panelGroup styleClass="help">
-                            <h:outputText value=" #{web.text.CRYPTOTOKEN_PIN_NOTICE}"
-                                rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken}" />
+                            </h:selectOneMenu>
+                            <h:outputText value="#{cryptoTokenMBean.localize('AWSKMSAUTHENTICATIONTYPE.' += cryptoTokenMBean.currentCryptoToken.awsKmsAuthenticationType)}" rendered="#{not cryptoTokenMBean.currentCryptoTokenEditMode}"/>
                         </h:panelGroup>
-                    </h:panelGroup>
-                </h:panelGroup>
-                
-                <!-- Secret 2 -->
-                <h:panelGroup id="currentCryptoTokenSecret2LabelGroup">
-                    <h:outputLabel for="currentCryptoTokenSecret2"
-                        id="currentCryptoTokenSecret2Label"
-                        value="#{web.text.CRYPTOTOKEN_PIN_REPEAT}"
-                        rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode
-                                    and cryptoTokenMBean.currentCryptoToken.requiresSecret and !cryptoTokenMBean.currentCryptoToken.showSecurosysCryptoToken}" />
-                </h:panelGroup>
-                <h:panelGroup id="currentCryptoTokenSecret2ValueGroup">
-                    <h:inputSecret id="currentCryptoTokenSecret2"
-                        value="#{cryptoTokenMBean.currentCryptoToken.secret2}"
-                        rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode 
-                                    and cryptoTokenMBean.currentCryptoToken.requiresSecret and !cryptoTokenMBean.currentCryptoToken.showSecurosysCryptoToken}" size="20"
-                                        title="#{web.text.CRYPTOTOKEN_PIN}">
-                                    	<f:passThroughAttribute name="autocomplete" value="new-password"/>
-                                    </h:inputSecret>
-                </h:panelGroup>
-				
-				<h:panelGroup />
-				<h:panelGroup styleClass="margin-top">
-                    <ui:remove>
-                    <!-- Three cases of the Save button. 
-                    "Save" with slot-check if we are creating a new crypto token, will check if slot is already in use by another crypto token. 
-                    "Confirm Save" without slot-check if we are creating a new crypto token, and need to confirm that we are re-using the same slot. 
-                    "Save" without slot-check if we are editing an existing new crypto token (currentCryptoTokenId != 0). 
-                    -->
-                    </ui:remove>
-					<h:commandButton
-						action="#{cryptoTokenMBean.saveCurrentCryptoTokenWithCheck}"
-						value="#{web.text.SAVE}"
-						rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode and !cryptoTokenMBean.p11SlotUsed and cryptoTokenMBean.currentCryptoTokenId == 0 
-                            and cryptoTokenMBean.currentCryptoToken.type != 'Pkcs11NgCryptoToken'}" 
-						onclick="return checkFieldNotEmpty(document.getElementById('currentCryptoTokenForm:currentCryptoTokenNameText'),'The name of crypto token is mandatory!');"/>
-                    <h:commandButton
-                        action="#{cryptoTokenMBean.saveCurrentCryptoToken}"
-                        value="#{web.text.CRYPTOTOKEN_SAVE_CONFIRM}"
-                        rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode and cryptoTokenMBean.p11SlotUsed}" 
-                        onclick="return checkFieldNotEmpty(document.getElementById('currentCryptoTokenForm:currentCryptoTokenNameText'),'The name of crypto token is mandatory!');"/>
-                    <h:commandButton
-                        action="#{cryptoTokenMBean.saveCurrentCryptoToken}"
-                        value="#{web.text.SAVE}"
-                        rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode 
-                            and (cryptoTokenMBean.currentCryptoTokenId != 0 or cryptoTokenMBean.currentCryptoToken.type == 'Pkcs11NgCryptoToken')}" 
-                        onclick="return checkFieldNotEmpty(document.getElementById('currentCryptoTokenForm:currentCryptoTokenNameText'),'The name of crypto token is mandatory!');"/>
-					<h:commandButton
-							action="#{cryptoTokenMBean.cancelCurrentCryptoToken}"
-							value="#{web.text.CANCEL}"
-							rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode and cryptoTokenMBean.currentCryptoTokenId != 0}" />
-					<h:button value="#{web.text.CANCEL}" outcome="cryptotokens.xhtml?faces-redirect=true" immediate="true" rendered="#{cryptoTokenMBean.paramRef eq 'cryptotokens'}"/>
-				</h:panelGroup>
-			</h:panelGrid>
-		</h:form>
+                    </p:column>
+                </p:row>
 
-		<h:outputText value="#{web.text.CRYPTOTOKEN_KPM_NA}"
-			rendered="#{!cryptoTokenMBean.currentCryptoToken.active &amp;&amp; cryptoTokenMBean.currentCryptoTokenId!=0}" />
-		<h:form id="currentCryptoTokenAliasesForm" rendered="#{cryptoTokenMBean.currentCryptoToken.active}">
-			<h:dataTable value="#{cryptoTokenMBean.keyPairGuiList}"
-				var="keyPairGuiInfo"
-				rendered="#{!cryptoTokenMBean.keyPairGuiListEmpty}"
-				styleClass="grid"
-				style="border-collapse: collapse; right: auto; left: auto"
-				columnClasses=",,gridCenter,gridCenter,,">
-				<h:column>
-					<h:selectBooleanCheckbox value="#{keyPairGuiInfo.selected}"
-						disabled="#{!cryptoTokenMBean.allowedToModify}" />
-				</h:column>
-				<h:column>
-					<f:facet name="header">
-						<h:outputText value="#{web.text.CRYPTOTOKEN_KPM_ALIAS}" />
-					</f:facet>
-					<h:outputText value="#{keyPairGuiInfo.alias}" />
-				</h:column>
-				<h:column>
-					<f:facet name="header">
-						<h:outputText value="#{web.text.CRYPTOTOKEN_KPM_ALGO}" />
-					</f:facet>
-					<h:outputText value="#{keyPairGuiInfo.keyAlgorithm}" />
-				</h:column>
-				<h:column>
-					<f:facet name="header">
-						<h:outputText value="#{web.text.CRYPTOTOKEN_KPM_SPEC}" />
-					</f:facet>
-					<h:outputText value="#{keyPairGuiInfo.keySpecification}" />
-				</h:column>
-				<h:column>
-					<f:facet name="header">
-						<h:outputText value="#{web.text.CRYPTOTOKEN_KPM_SKID}" />
-					</f:facet>
-					<h:outputText style="font-family: monospace;"
-						value="#{keyPairGuiInfo.subjectKeyID}"
-						rendered="#{!keyPairGuiInfo.placeholder}" />
-					<h:outputText value="#{web.text.CRYPTOTOKEN_KPM_NOTGENERATED}"
-						rendered="#{keyPairGuiInfo.placeholder}" />
-				</h:column>
-                <h:column rendered="#{cryptoTokenMBean.currentCryptoToken.showAuthorizationInfo}">
+                <!-- Azure - Client ID - Azure only and not shown when using Managed Identity -->
+                <p:row rendered="#{cryptoTokenMBean.currentCryptoToken.showAzureCryptoToken}">
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenKeyVaultClientIDPanelGroup" rendered="#{cryptoTokenMBean.currentCryptoToken.showClientId}">
+                            <h:outputLabel id="currentCryptoTokenKeyVaultClientIDLabel" for="currentCryptoTokenKeyVaultClientID" value="#{web.text.CRYPTOTOKEN_KEYVAULT_CLIENTID} "/>
+                            <h:outputText id="currentCryptoTokenKeyVaultClientID" value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
+                        </h:panelGroup>
+                    </p:column>
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenKeyVaultClientIDValuePanelVGroup" rendered="#{cryptoTokenMBean.currentCryptoToken.showClientId}">
+                            <h:inputText value="#{cryptoTokenMBean.currentCryptoToken.keyVaultClientID}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}" disabled="#{!cryptoTokenMBean.allowedToModify}"/>
+                            <h:outputText value="#{cryptoTokenMBean.currentCryptoToken.keyVaultClientID}" rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+                        </h:panelGroup>
+                    </p:column>
+                </p:row>
+
+                <!-- Azure - Key Binding -->
+                <p:row rendered="#{cryptoTokenMBean.currentCryptoToken.showAzureCryptoToken}">
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenKeyVaultKeyBindingPanelGroup">
+                            <h:outputLabel id="currentCryptoTokenKeyVaultKeyBindingLabel" for="currentCryptoTokenKeyVaultKeyBinding" value="#{web.text.CRYPTOTOKEN_KEYVAULT_BINDING} " rendered="#{cryptoTokenMBean.currentCryptoToken.showKeyBinding}"/>
+                            <h:outputText id="currentCryptoTokenKeyVaultKeyBinding" value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false" rendered="#{cryptoTokenMBean.currentCryptoToken.showKeyBinding}"/>
+                        </h:panelGroup>
+                    </p:column>
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenKeyVaultKeyBindingValuesPanelGroup">
+                            <h:selectOneMenu value="#{cryptoTokenMBean.currentCryptoToken.keyVaultKeyBinding}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode and cryptoTokenMBean.currentCryptoToken.showKeyBinding}" disabled="#{!cryptoTokenMBean.allowedToModify}">
+                                <f:selectItems value="#{cryptoTokenMBean.internalKeyBindings}"/>
+                            </h:selectOneMenu>
+                            <h:outputText value="#{cryptoTokenMBean.currentCryptoToken.keyVaultKeyBindingName}" rendered="#{not cryptoTokenMBean.currentCryptoTokenEditMode and cryptoTokenMBean.currentCryptoToken.showKeyBinding}"/>
+                        </h:panelGroup>
+                    </p:column>
+                </p:row>
+
+                <!-- Crypto Token Autoactivation -->
+                <p:row>
+                    <p:column>
+                        <h:outputLabel for="currentCryptoTokenAutoActivate" value="#{web.text.CRYPTOTOKEN_AUTO}"/>
+                    </p:column>
+                    <p:column>
+                        <p:selectBooleanCheckbox id="currentCryptoTokenAutoActivate" value="#{cryptoTokenMBean.currentCryptoToken.autoActivate}" disabled="#{!cryptoTokenMBean.currentCryptoTokenEditMode}" itemLabel="#{web.text.USE}"/>
+                    </p:column>
+                </p:row>
+
+                <!-- Crypto Token Allow Explicit Parameters -->
+                <p:row>
+                    <p:column>
+                        <h:panelGroup id="allowExplicitParameters">
+                            <h:outputLabel id="allowExplicitParametersLabel" for="currentCryptoTokenAllowExplicitParameters" value="#{web.text.CRYPTOTOKEN_USEEXPLICITKEYPARAMETERS} "/>
+                            <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
+                        </h:panelGroup>
+                    </p:column>
+                    <p:column>
+                        <p:selectBooleanCheckbox id="currentCryptoTokenAllowExplicitParameters" value="#{cryptoTokenMBean.currentCryptoToken.allowExplicitParameters}" disabled="#{!cryptoTokenMBean.currentCryptoTokenEditMode}" itemLabel="#{web.text.USE}"/>
+                    </p:column>
+                </p:row>
+
+                <!-- Crypto Token Allow Export Private Keys -->
+                <p:row rendered="#{cryptoTokenMBean.currentCryptoToken.showSoftCryptoToken}">
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenAllowExportPrivateKeyPanelGroup">
+                            <h:outputLabel id="currentCryptoTokenAllowExportPrivateKeyLabel" for="currentCryptoTokenAllowExportPrivateKey" value="#{web.text.CRYPTOTOKEN_ALLOWEXPORT} "/>
+                            <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
+                        </h:panelGroup>
+                    </p:column>
+                    <p:column>
+                        <p:selectBooleanCheckbox id="currentCryptoTokenAllowExportPrivateKey" value="#{cryptoTokenMBean.currentCryptoToken.allowExportPrivateKey}" disabled="#{!cryptoTokenMBean.currentCryptoTokenEditMode}" itemLabel="#{web.text.ALLOW}"/>
+                    </p:column>
+                </p:row>
+
+                <!-- P11 - Library -->
+                <p:row rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken}">
+                    <p:column>
+                        <h:outputLabel id="currentCryptoTokenP11LibraryLabel" for="currentCryptoTokenP11Library" value="#{web.text.CRYPTOTOKEN_TYPE_P11} : #{web.text.CRYPTOTOKEN_LIBRARY}"/>
+                    </p:column>
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenP11Library">
+                            <h:selectOneMenu value="#{cryptoTokenMBean.currentCryptoToken.p11Library}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}">
+                                <f:selectItems value="#{cryptoTokenMBean.availableCryptoTokenP11Libraries}"/>
+                            </h:selectOneMenu>
+                            <h:outputText value="#{cryptoTokenMBean.currentCryptoToken.p11LibraryAlias}" rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+                        </h:panelGroup>
+                    </p:column>
+                </p:row>
+
+                <!-- P11 - Slot Label Type -->
+                <p:row rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken}">
+                    <p:column>
+                        <h:outputLabel id="currentCryptoTokenP11SlotLabelTypeLabel" for="currentCryptoTokenP11SlotLabelType" value="#{web.text.CRYPTOTOKEN_TYPE_P11} : #{web.text.CRYPTOTOKEN_LABEL_TYPE}"/>
+                    </p:column>
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenP11SlotLabelType">
+                            <h:panelGroup rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}">
+                                <h:selectOneMenu value="#{cryptoTokenMBean.currentCryptoToken.p11SlotLabelType}" onchange="document.getElementById('currentCryptoTokenForm:selectCryptoTokenP11SlotLabelTypeLabel').click();" disabled="#{!cryptoTokenMBean.allowedToModify}">
+                                    <f:selectItems value="#{cryptoTokenMBean.availableCryptoTokenP11SlotLabelTypes}"/>
+                                </h:selectOneMenu>
+                                <h:commandButton id="selectCryptoTokenP11SlotLabelTypeLabel" action="#{cryptoTokenMBean.selectCryptoTokenLabelType}" value="Update" disabled="#{!cryptoTokenMBean.allowedToModify}"/>
+                                <script>
+                                    document
+                                        .getElementById('currentCryptoTokenForm:selectCryptoTokenP11SlotLabelTypeLabel').style.display = 'none';
+                                </script>
+                            </h:panelGroup>
+                            <h:outputText value="#{cryptoTokenMBean.currentCryptoToken.p11SlotLabelTypeText}" rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+                        </h:panelGroup>
+                    </p:column>
+                </p:row>
+
+                <!-- P11 - Slot Label -->
+                <p:row rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken}">
+                    <p:column>
+                        <h:outputLabel id="currentCryptoTokenP11SlotLabel" value="#{web.text.CRYPTOTOKEN_TYPE_P11} : #{web.text.CRYPTOTOKEN_SLOT}"/>
+                    </p:column>
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenP11Slot">
+                            <h:panelGroup rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}">
+                                <h:selectOneMenu value="#{cryptoTokenMBean.currentCryptoToken.p11Slot}" rendered="#{cryptoTokenMBean.currentCryptoToken.slotOfTokenLabelType}" disabled="#{!cryptoTokenMBean.allowedToModify}">
+                                    <f:selectItems value="#{cryptoTokenMBean.availableCryptoTokenP11SlotTokenLabels}"/>
+                                </h:selectOneMenu>
+                                <h:inputText value="#{cryptoTokenMBean.currentCryptoToken.p11Slot}" rendered="#{!cryptoTokenMBean.currentCryptoToken.slotOfTokenLabelType}" disabled="#{!cryptoTokenMBean.allowedToModify}"/>
+                            </h:panelGroup>
+                            <h:outputText value="#{cryptoTokenMBean.currentCryptoToken.p11Slot}" rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+                        </h:panelGroup>
+                    </p:column>
+                </p:row>
+
+                <!-- P11 - Attribute File -->
+                <p:row rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken}">
+                    <p:column>
+                        <h:outputLabel id="currentCryptoTokenP11AttributeFileLabel" for="currentCryptoTokenP11AttributeFile" value="#{web.text.CRYPTOTOKEN_TYPE_P11} : #{web.text.CRYPTOTOKEN_ATTRFILE}"/>
+                    </p:column>
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenP11AttributeFile">
+                            <h:selectOneMenu value="#{cryptoTokenMBean.currentCryptoToken.p11AttributeFile}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}" disabled="#{!cryptoTokenMBean.allowedToModify}">
+                                <f:selectItems value="#{cryptoTokenMBean.availableCryptoTokenP11AttributeFiles}"/>
+                            </h:selectOneMenu>
+                            <h:outputText value="#{cryptoTokenMBean.currentCryptoToken.p11AttributeFileAlias}" rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+                        </h:panelGroup>
+                    </p:column>
+                </p:row>
+
+                <!-- AWS KMS - Region -->
+                <p:row rendered="#{cryptoTokenMBean.currentCryptoToken.showAWSKMSCryptoToken}">
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenAWSKMSRegionPanelGroup">
+                            <h:outputText id="currentCryptoTokenAWSKMSRegionLabel" for="currentCryptoTokenAWSKMSRegion" value="#{web.text.CRYPTOTOKEN_AWSKMS_REGION} "/>
+                            <h:outputText id="currentCryptoTokenAWSKMSRegion" value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
+                        </h:panelGroup>
+                    </p:column>
+                    <p:column>
+                        <h:inputText value="#{cryptoTokenMBean.currentCryptoToken.AWSKMSRegion}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}" disabled="#{!cryptoTokenMBean.allowedToModify}"/>
+                        <h:outputText value="#{cryptoTokenMBean.currentCryptoToken.AWSKMSRegion}" rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+                    </p:column>
+                </p:row>
+
+                <!-- AWS KMS - Access Key ID -->
+                <p:row rendered="#{cryptoTokenMBean.currentCryptoToken.showAWSKMSCryptoToken}">
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenAWSKMSAccessKeyIDPanelGroup">
+                            <h:panelGroup rendered="#{cryptoTokenMBean.currentCryptoToken.requiresSecret}">
+                                <h:outputLabel id="currentCryptoTokenAWSKMSAccessKeyIDLabel" for="currentCryptoTokenAWSKMSAccessKeyID" value="#{web.text.CRYPTOTOKEN_AWSKMS_ACCESSKEYID} "/>
+                                <h:outputText id="currentCryptoTokenAWSKMSAccessKeyID" value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
+                            </h:panelGroup>
+                        </h:panelGroup>
+                    </p:column>
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenAWSKMSAccessKeyIDValuePanelGroup">
+                            <h:panelGroup rendered="#{cryptoTokenMBean.currentCryptoToken.requiresSecret}">
+                                <h:inputText value="#{cryptoTokenMBean.currentCryptoToken.AWSKMSAccessKeyID}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}" disabled="#{!cryptoTokenMBean.allowedToModify}"/>
+                                <h:outputText value="#{cryptoTokenMBean.currentCryptoToken.AWSKMSAccessKeyID}" rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+                            </h:panelGroup>
+                        </h:panelGroup>
+                    </p:column>
+                </p:row>
+
+                <!-- Azure - Vault Type -->
+                <p:row rendered="#{cryptoTokenMBean.currentCryptoToken.showAzureCryptoToken}">
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenKeyVaultTypePanelGroup">
+                            <h:outputLabel id="currentCryptoTokenKeyVaultTypeLabel" for="currentCryptoTokenKeyVaultType" value="#{web.text.CRYPTOTOKEN_KEYVAULT_TYPE} "/>
+                            <h:outputText id="currentCryptoTokenKeyVaultType" value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
+                        </h:panelGroup>
+                    </p:column>
+                    <p:column>
+                        <h:selectOneMenu value="#{cryptoTokenMBean.currentCryptoToken.keyVaultType}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}" disabled="#{!cryptoTokenMBean.allowedToModify}">
+                            <f:selectItem itemValue="standard" itemLabel="Standard"/>
+                            <f:selectItem itemValue="premium" itemLabel="Premium"/>
+                        </h:selectOneMenu>
+                        <h:outputText value="#{cryptoTokenMBean.currentCryptoToken.keyVaultType}" rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+                    </p:column>
+                </p:row>
+
+                <!-- Azure - Vault Name -->
+                <p:row rendered="#{cryptoTokenMBean.currentCryptoToken.showAzureCryptoToken}">
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenKeyVaultNamePanelGroup">
+                            <h:outputLabel id="currentCryptoTokenKeyVaultNameLabel" for="currentCryptoTokenKeyVaultName" value="#{web.text.CRYPTOTOKEN_KEYVAULT_NAME} "/>
+                            <h:outputText id="currentCryptoTokenKeyVaultName" value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
+                        </h:panelGroup>
+                    </p:column>
+                    <p:column>
+
+                        <h:inputText value="#{cryptoTokenMBean.currentCryptoToken.keyVaultName}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}" disabled="#{!cryptoTokenMBean.allowedToModify}"/>
+                        <h:outputText value="#{cryptoTokenMBean.currentCryptoToken.keyVaultName}" rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+                    </p:column>
+                </p:row>
+
+                <!-- Fortanix Base URL -->
+                <p:row rendered="#{cryptoTokenMBean.currentCryptoToken.showFortanixCryptoToken}">
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenFortanixBaseAddressPanelGroup">
+                            <h:outputLabel id="currentCryptoTokenFortanixBaseAddressLabel" for="currentCryptoTokenFortanixBaseAddress" value="#{web.text.CRYPTOTOKEN_FORTANIX_BASE_ADDRESS} "/>
+                            <h:outputText id="currentCryptoTokenFortanixBaseAddress" value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
+                        </h:panelGroup>
+                    </p:column>
+                    <p:column>
+                        <h:inputText value="#{cryptoTokenMBean.currentCryptoToken.fortanixBaseAddress}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}" disabled="#{!cryptoTokenMBean.allowedToModify}"/>
+                        <h:outputText value="#{cryptoTokenMBean.currentCryptoToken.fortanixBaseAddress}" rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+                    </p:column>
+                </p:row>
+
+                <!-- Crypto Token - Secret 1 -->
+                <p:row rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode and cryptoTokenMBean.currentCryptoToken.requiresSecret and !cryptoTokenMBean.currentCryptoToken.showSecurosysCryptoToken}">
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenSecret1LabelGroup">
+                            <h:outputLabel id="currentCryptoTokenSecret1Label" for="currentCryptoTokenSecret1" value="#{web.text.CRYPTOTOKEN_PIN}"/>
+                            <h:outputText value=" #{web.text.CRYPTOTOKEN_PIN_NOTICE}" rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken}"/>
+                        </h:panelGroup>
+                    </p:column>
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenSecret1ValueGroup">
+                            <h:panelGroup>
+                                <h:inputSecret id="currentCryptoTokenSecret1" value="#{cryptoTokenMBean.currentCryptoToken.secret1}" size="20" title="#{web.text.CRYPTOTOKEN_PIN}">
+                                    <f:passThroughAttribute name="autocomplete" value="new-password"/>
+                                </h:inputSecret>
+                            </h:panelGroup>
+                        </h:panelGroup>
+                    </p:column>
+                </p:row>
+
+                <!-- Crypto Token - Secret 2 -->
+                <p:row rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode and cryptoTokenMBean.currentCryptoToken.requiresSecret and !cryptoTokenMBean.currentCryptoToken.showSecurosysCryptoToken}">
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenSecret2LabelGroup">
+                            <h:outputLabel for="currentCryptoTokenSecret2" id="currentCryptoTokenSecret2Label" value="#{web.text.CRYPTOTOKEN_PIN_REPEAT}"/>
+                        </h:panelGroup>
+                    </p:column>
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenSecret2ValueGroup">
+                            <h:inputSecret id="currentCryptoTokenSecret2" value="#{cryptoTokenMBean.currentCryptoToken.secret2}" size="20" title="#{web.text.CRYPTOTOKEN_PIN}">
+                                <f:passThroughAttribute name="autocomplete" value="new-password"/>
+                            </h:inputSecret>
+                        </h:panelGroup>
+                    </p:column>
+                </p:row>
+
+                <p:row rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}">
+                    <p:column>
+                        <ui:remove>
+                            <!-- Three cases of the Save button.
+                            "Save" with slot-check if we are creating a new crypto token, will check if slot is already in use by another crypto token.
+                            "Confirm Save" without slot-check if we are creating a new crypto token, and need to confirm that we are re-using the same slot.
+                            "Save" without slot-check if we are editing an existing new crypto token (currentCryptoTokenId != 0).
+                            -->
+                        </ui:remove>
+                        <div class="action-buttons">
+                            <h:commandButton
+                                    action="#{cryptoTokenMBean.saveCurrentCryptoTokenWithCheck}"
+                                    value="#{web.text.SAVE}"
+                                    rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode and !cryptoTokenMBean.p11SlotUsed and cryptoTokenMBean.currentCryptoTokenId == 0
+                            and cryptoTokenMBean.currentCryptoToken.type != 'Pkcs11NgCryptoToken'}"
+                                    onclick="return checkFieldNotEmpty(document.getElementById('currentCryptoTokenForm:currentCryptoTokenNameText'),'The name of crypto token is mandatory!');"/>
+                            <h:commandButton
+                                    action="#{cryptoTokenMBean.saveCurrentCryptoToken}"
+                                    value="#{web.text.CRYPTOTOKEN_SAVE_CONFIRM}"
+                                    rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode and cryptoTokenMBean.p11SlotUsed}"
+                                    onclick="return checkFieldNotEmpty(document.getElementById('currentCryptoTokenForm:currentCryptoTokenNameText'),'The name of crypto token is mandatory!');"/>
+                            <h:commandButton
+                                    action="#{cryptoTokenMBean.saveCurrentCryptoToken}"
+                                    value="#{web.text.SAVE}"
+                                    rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode
+                            and (cryptoTokenMBean.currentCryptoTokenId != 0 or cryptoTokenMBean.currentCryptoToken.type == 'Pkcs11NgCryptoToken')}"
+                                    onclick="return checkFieldNotEmpty(document.getElementById('currentCryptoTokenForm:currentCryptoTokenNameText'),'The name of crypto token is mandatory!');"/>
+                            <h:button value="#{web.text.CANCEL}" outcome="cryptotokens.xhtml?faces-redirect=true" immediate="true"
+                                      rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+                        </div>
+                    </p:column>
+                    <p:column/>
+                </p:row>
+            </p:panelGrid>
+        </h:form>
+
+        <ui:fragment rendered="#{cryptoTokenMBean.currentCryptoTokenId!=0}">
+            <h3 class="padding-top-1-rem">
+                <h:outputText value="#{web.text.MANAGE_KEY_PAIRS}"/>
+            </h3>
+        </ui:fragment>
+
+        <ui:fragment rendered="#{!cryptoTokenMBean.currentCryptoToken.active &amp;&amp; cryptoTokenMBean.currentCryptoTokenId!=0}">
+            <p:staticMessage severity="info" detail="#{web.text.CRYPTOTOKEN_KPM_NA}"
+                             styleClass="no-summary no-margin margin-top-1-rem"/>
+        </ui:fragment>
+
+        <h:form id="currentCryptoTokenAliasesForm" rendered="#{cryptoTokenMBean.currentCryptoToken.active}">
+            <p:dataTable value="#{cryptoTokenMBean.keyPairGuiList}"
+                         id="keyPairList"
+                         var="keyPairGuiInfo"
+                         rendered="#{!cryptoTokenMBean.keyPairGuiListEmpty}"
+                         styleClass="grid table-layout-auto vertical-padding-1"
+                         stripedRows="true"
+                         showGridlines="true">
+
+                <p:column rendered="#{cryptoTokenMBean.allowedToKeyRemoval and cryptoTokenMBean.currentCryptoTokenEditMode}">
+                    <p:selectBooleanCheckbox id="kpCheckbox" value="#{keyPairGuiInfo.selected}"
+                                             disabled="#{not cryptoTokenMBean.allowedToModify}"/>
+                </p:column>
+                <p:column styleClass="table-title-column">
+                    <f:facet name="header">
+                        <h:outputText value="#{web.text.CRYPTOTOKEN_KPM_ALIAS}"/>
+                    </f:facet>
+                    <h:outputText id="kpAlias" value="#{keyPairGuiInfo.alias}"/>
+                </p:column>
+                <p:column styleClass="text-align-center">
+                    <f:facet name="header">
+                        <h:outputText value="#{web.text.CRYPTOTOKEN_KPM_ALGO}"/>
+                    </f:facet>
+                    <h:outputText id="kpKeyAlgorithm" value="#{keyPairGuiInfo.keyAlgorithm}"/>
+                </p:column>
+                <p:column styleClass="text-align-center">
+                    <f:facet name="header">
+                        <h:outputText value="#{web.text.CRYPTOTOKEN_KPM_SPEC}"/>
+                    </f:facet>
+                    <h:outputText id="kpKeySpecification" value="#{keyPairGuiInfo.keySpecification}"/>
+                </p:column>
+                <p:column styleClass="text-align-center">
+                    <f:facet name="header">
+                        <h:outputText value="#{web.text.CRYPTOTOKEN_KPM_SKID}"/>
+                    </f:facet>
+                    <h:outputText id="kpSubjectKeyId" style="font-family: monospace;"
+                                  value="#{keyPairGuiInfo.subjectKeyID}"
+                                  rendered="#{!keyPairGuiInfo.placeholder}"/>
+                    <h:outputText value="#{web.text.CRYPTOTOKEN_KPM_NOTGENERATED}"
+                                  rendered="#{keyPairGuiInfo.placeholder}"/>
+                </p:column>
+                <p:column rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken and cryptoTokenMBean.anyKeyUsagePresent}" styleClass="text-align-center">
+                    <f:facet name="header">
+                        <h:outputText value="#{web.text.CRYPTOTOKEN_KPM_KEY_USAGE}"/>
+                    </f:facet>
+                    <h:outputText id="kpKeyUsage" value="#{keyPairGuiInfo.keyUsage}"/>
+                </p:column>
+                <p:column rendered="#{cryptoTokenMBean.currentCryptoToken.showAuthorizationInfo}" styleClass="text-align-center">
                     <f:facet name="header">
                         <h:outputText value="#{web.text.CRYPTOTOKEN_KPM_PADDING_SCHEME}"/>
                     </f:facet>
                     <h:selectOneMenu id="selectPaddingSchemeMenu" value="#{keyPairGuiInfo.selectedPaddingScheme}">
                         <f:selectItems value="#{keyPairGuiInfo.availablePaddingSchemes}"/>
                     </h:selectOneMenu>
-                </h:column>
-				<h:column rendered="#{cryptoTokenMBean.currentCryptoToken.showAuthorizationInfo}">
-					<f:facet name="header">
-						<h:outputText value="Key Authorization Key"/>
-					</f:facet>
-					<h:selectOneMenu value="#{keyPairGuiInfo.selectedKakCryptoTokenId}">
-						<f:selectItems value="#{cryptoTokenMBean.availableCryptoTokens}"/>
-						<f:ajax render="selectKakAliasMenu"/>
-					</h:selectOneMenu>
-					<h:selectOneMenu id="selectKakAliasMenu" value="#{keyPairGuiInfo.selectedKakKeyAlias}">
-						<f:selectItems value="#{keyPairGuiInfo.availableKeyAliases}"/>
-						<f:ajax render="selectKakAliasMenu"/>
-					</h:selectOneMenu>
-				</h:column>
-				<h:column>
-					<f:facet name="header">
-						<h:outputText value="#{web.text.CRYPTOTOKEN_KPM_ACTION}" />
-					</f:facet>
-					<h:commandButton value="#{web.text.CRYPTOTOKEN_KPM_INIT}"
-						action="#{cryptoTokenMBean.initializeKey}"
-						rendered="#{cryptoTokenMBean.currentCryptoToken.showAuthorizationInfo}"
-						disabled="#{keyPairGuiInfo.placeholder or keyPairGuiInfo.initialized}"/>
-					<h:commandButton value="#{web.text.CRYPTOTOKEN_KPM_AUTH}"
-							action="#{cryptoTokenMBean.actionAuthorizeStart}"
-							rendered="#{cryptoTokenMBean.currentCryptoToken.showAuthorizationInfo}"
-							disabled="#{keyPairGuiInfo.placeholder}">
-						<f:ajax execute="@this selectPaddingSchemeMenu" render=":modalBlockContainer"/>
-					</h:commandButton>
-					<h:commandButton value="#{web.text.CRYPTOTOKEN_KPM_TEST}"
-						action="#{cryptoTokenMBean.testKeyPair}"
-						rendered="#{cryptoTokenMBean.allowedToKeyTest}"
-						disabled="#{keyPairGuiInfo.placeholder}" />
-					<h:commandButton value="#{web.text.CRYPTOTOKEN_KPM_REMOVE}"
-						action="#{cryptoTokenMBean.removeKeyPair}"
-						rendered="#{cryptoTokenMBean.allowedToKeyRemoval}"
-						onclick="return confirm('#{web.text.CRYPTOTOKEN_KPM_CONF_REM}')" />
-					<h:commandButton
-						value="#{web.text.CRYPTOTOKEN_KPM_GENFROMTEMPLATE}"
-						action="#{cryptoTokenMBean.generateFromTemplate}"
-						rendered="#{keyPairGuiInfo.placeholder &amp;&amp; cryptoTokenMBean.allowedToKeyGeneration}" />
-					<h:outputLink
-						value="cryptoTokenDownloads?cryptoTokenId=#{cryptoTokenMBean.currentCryptoTokenId}&amp;alias=#{keyPairGuiInfo.alias}"
-						rendered="#{!keyPairGuiInfo.placeholder}">
-						<h:outputText value="#{web.text.CRYPTOTOKEN_KPM_DOWNPUB}" />
-					</h:outputLink>
-				</h:column>
-			</h:dataTable>
-			<h:panelGroup rendered="#{cryptoTokenMBean.keyPairGuiListFailed}">
-				<div class="message">
-					<table>
-						<tr>
-							<td class="alert"><h:outputText
-									value="#{cryptoTokenMBean.keyPairGuiListError}" /></td>
-						</tr>
-					</table>
-				</div>
-			</h:panelGroup>
-			<h:outputText value="#{web.text.CRYPTOTOKEN_KPM_NOPAIRS}"
-				rendered="#{cryptoTokenMBean.keyPairGuiListEmpty &amp;&amp; !cryptoTokenMBean.keyPairGuiListFailed}" />
-			<h:panelGrid columns="3">
-				<h:panelGroup
-					rendered="#{!cryptoTokenMBean.keyPairGuiListEmpty &amp;&amp; cryptoTokenMBean.allowedToKeyRemoval}" />
-				<h:panelGroup
-					rendered="#{!cryptoTokenMBean.keyPairGuiListEmpty &amp;&amp; cryptoTokenMBean.allowedToKeyRemoval}" />
-				<h:commandButton value="#{web.text.CRYPTOTOKEN_KPM_REMOVESEL}"
-					action="#{cryptoTokenMBean.removeSelectedKeyPairs}"
-					rendered="#{!cryptoTokenMBean.keyPairGuiListEmpty &amp;&amp; cryptoTokenMBean.allowedToKeyRemoval}"
-					onclick="return confirm('#{web.text.CRYPTOTOKEN_KPM_CONF_REMS}')" />
-				<h:inputText id="genNewKeyPairAlias" value="#{cryptoTokenMBean.newKeyPairAlias}"
-					rendered="#{cryptoTokenMBean.allowedToKeyGeneration}" size="30"
-					title="#{web.text.FORMAT_ALIAS}">
-					<f:validator validatorId="legalCharsValidator" />
-				</h:inputText>
-				<h:selectOneMenu id="genNewKeyPairSpec" value="#{cryptoTokenMBean.newKeyPairSpec}"
-					rendered="#{cryptoTokenMBean.allowedToKeyGeneration}">
-					<f:selectItems value="#{cryptoTokenMBean.availableKeySpecs}" />
-				</h:selectOneMenu>
-				<h:selectOneMenu id="genNewKeyPairUsage" value="#{cryptoTokenMBean.keyUsage}" 
-					disabled="#{!cryptoTokenMBean.currentCryptoToken.canGenerateKey}"
-					rendered="#{cryptoTokenMBean.allowedToKeyGeneration and cryptoTokenMBean.currentCryptoToken.showP11NGCryptoToken}">
-					<f:selectItems value="#{cryptoTokenMBean.availableKeyUsages}"/>
-				</h:selectOneMenu>
-				<h:commandButton id="genNewKeyPairButton" value="#{web.text.CRYPTOTOKEN_KPM_GENNEW}"
-					action="#{cryptoTokenMBean.generateNewKeyPair}"
-					disabled="#{!cryptoTokenMBean.currentCryptoToken.canGenerateKey}"
-					rendered="#{cryptoTokenMBean.allowedToKeyGeneration}" />
-				<h:panelGroup
-					rendered="#{!cryptoTokenMBean.currentCryptoToken.canGenerateKey}" />
-				<h:panelGroup
-					rendered="#{!cryptoTokenMBean.currentCryptoToken.canGenerateKey}" />
-				<h:outputText
-					value="#{cryptoTokenMBean.currentCryptoToken.canGenerateKeyMsg}"
-					rendered="#{!cryptoTokenMBean.currentCryptoToken.canGenerateKey}" />
-			</h:panelGrid>
-		</h:form>
-	</ui:define>
-	
-	<ui:remove><!-- Template will render this when element ":modalBlockContainer" is rendered and "renderModal" param is true. --></ui:remove>
+                </p:column>
+                <p:column rendered="#{cryptoTokenMBean.currentCryptoToken.showAuthorizationInfo}" styleClass="text-align-center">
+                    <f:facet name="header">
+                        <h:outputText value="Key Authorization Key"/>
+                    </f:facet>
+                    <h:selectOneMenu value="#{keyPairGuiInfo.selectedKakCryptoTokenId}">
+                        <f:selectItems value="#{cryptoTokenMBean.availableCryptoTokens}"/>
+                        <f:ajax render="selectKakAliasMenu"/>
+                    </h:selectOneMenu>
+                    <h:selectOneMenu id="selectKakAliasMenu" value="#{keyPairGuiInfo.selectedKakKeyAlias}">
+                        <f:selectItems value="#{keyPairGuiInfo.availableKeyAliases}"/>
+                        <f:ajax render="selectKakAliasMenu"/>
+                    </h:selectOneMenu>
+                </p:column>
+                <p:column styleClass="text-align-left">
+                    <f:facet name="header">
+                        <h:outputText value="#{web.text.CRYPTOTOKEN_KPM_ACTION}"/>
+                    </f:facet>
+                    <div class="action-buttons">
+                        <h:commandButton value="#{web.text.CRYPTOTOKEN_KPM_INIT}"
+                                         action="#{cryptoTokenMBean.initializeKey}"
+                                         rendered="#{cryptoTokenMBean.currentCryptoToken.showAuthorizationInfo}"
+                                         disabled="#{keyPairGuiInfo.placeholder or keyPairGuiInfo.initialized}"/>
+                        <h:commandButton value="#{web.text.CRYPTOTOKEN_KPM_AUTH}"
+                                         action="#{cryptoTokenMBean.actionAuthorizeStart}"
+                                         rendered="#{cryptoTokenMBean.currentCryptoToken.showAuthorizationInfo}"
+                                         disabled="#{keyPairGuiInfo.placeholder}">
+                            <f:ajax execute="@this selectPaddingSchemeMenu" render=":modalBlockContainer"/>
+                        </h:commandButton>
+                        <h:commandButton id="test" value="#{web.text.CRYPTOTOKEN_KPM_TEST}"
+                                         action="#{cryptoTokenMBean.testKeyPair}"
+                                         rendered="#{cryptoTokenMBean.allowedToKeyTest}"
+                                         disabled="#{keyPairGuiInfo.placeholder}"/>
+                        <h:commandButton id="remove" value="#{web.text.CRYPTOTOKEN_KPM_REMOVE}"
+                                         action="#{cryptoTokenMBean.prepareDeleteKey(keyPairGuiInfo.alias)}"
+                                         rendered="#{cryptoTokenMBean.allowedToKeyRemoval and cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+                        <h:commandButton
+                                id="genFromTemplate"
+                                value="#{web.text.CRYPTOTOKEN_KPM_GENFROMTEMPLATE}"
+                                action="#{cryptoTokenMBean.generateFromTemplate}"
+                                rendered="#{keyPairGuiInfo.placeholder &amp;&amp; cryptoTokenMBean.allowedToKeyGeneration}"/>
+                        <h:commandButton
+                                id="downPub"
+                                value="#{web.text.CRYPTOTOKEN_KPM_DOWNPUB}"
+                                rendered="#{!keyPairGuiInfo.placeholder}"
+                                action="#{cryptoTokenMBean.prepareDownloadKey(cryptoTokenMBean.currentCryptoTokenId, keyPairGuiInfo.alias)}"/>
+                    </div>
+                </p:column>
+            </p:dataTable>
+
+            <h:panelGroup rendered="#{cryptoTokenMBean.keyPairGuiListFailed}">
+                <div class="message">
+                    <table>
+                        <tr>
+                            <td class="alert">
+                                <h:outputText
+                                        value="#{cryptoTokenMBean.keyPairGuiListError}"/>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </h:panelGroup>
+
+            <ui:fragment rendered="#{cryptoTokenMBean.keyPairGuiListEmpty &amp;&amp; !cryptoTokenMBean.keyPairGuiListFailed}">
+                <p:staticMessage severity="info" detail="#{web.text.CRYPTOTOKEN_KPM_NOPAIRS}"
+                                 styleClass="no-summary no-margin margin-top-1-rem"/>
+            </ui:fragment>
+
+            <h:panelGrid columns="3" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}" styleClass="no-padding">
+                <h:commandButton id="removeSelected" value="#{web.text.CRYPTOTOKEN_KPM_REMOVESEL}"
+                                 action="#{cryptoTokenMBean.prepareDeleteKey(cryptoTokenMBean.selectedKeyPairs)}"
+                                 rendered="#{!cryptoTokenMBean.keyPairGuiListEmpty &amp;&amp; cryptoTokenMBean.allowedToKeyRemoval}"/>
+                <h:panelGroup
+                        rendered="#{!cryptoTokenMBean.keyPairGuiListEmpty &amp;&amp; cryptoTokenMBean.allowedToKeyRemoval}"/>
+                <h:panelGroup
+                        rendered="#{!cryptoTokenMBean.keyPairGuiListEmpty &amp;&amp; cryptoTokenMBean.allowedToKeyRemoval}"/>
+            </h:panelGrid>
+
+            <ui:fragment rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}">
+                <h3 class="padding-bottom-1-rem padding-top-1-rem">
+                    <h:outputText value="#{web.text.CRYPTOTOKEN_KPM_GENNEW}"/>
+                </h3>
+            </ui:fragment>
+
+            <h:panelGrid columns="3" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}" styleClass="no-left-padding-1st-column">
+
+                <h:inputText id="genNewKeyPairAlias" value="#{cryptoTokenMBean.newKeyPairAlias}"
+                             rendered="#{cryptoTokenMBean.allowedToKeyGeneration}" size="30"
+                             title="#{web.text.FORMAT_ALIAS}">
+                    <f:validator validatorId="legalCharsValidator"/>
+                </h:inputText>
+                <h:selectOneMenu id="genNewKeyPairSpec" value="#{cryptoTokenMBean.newKeyPairSpec}"
+                                 rendered="#{cryptoTokenMBean.allowedToKeyGeneration}">
+                    <f:selectItems value="#{cryptoTokenMBean.availableKeySpecs}"/>
+                </h:selectOneMenu>
+                <h:selectOneMenu id="genNewKeyPairUsage" value="#{cryptoTokenMBean.keyUsage}"
+                                 disabled="#{!cryptoTokenMBean.currentCryptoToken.canGenerateKey}"
+                                 rendered="#{cryptoTokenMBean.allowedToKeyGeneration and cryptoTokenMBean.currentCryptoToken.showP11NGCryptoToken}">
+                    <f:selectItems value="#{cryptoTokenMBean.availableKeyUsages}"/>
+                </h:selectOneMenu>
+                <h:commandButton id="genNewKeyPairButton" value="#{web.text.CRYPTOTOKEN_KPM_GENERATE}"
+                                 action="#{cryptoTokenMBean.generateNewKeyPair}"
+                                 disabled="#{!cryptoTokenMBean.currentCryptoToken.canGenerateKey}"
+                                 rendered="#{cryptoTokenMBean.allowedToKeyGeneration}"/>
+                <h:panelGroup
+                        rendered="#{!cryptoTokenMBean.currentCryptoToken.canGenerateKey}"/>
+                <h:panelGroup
+                        rendered="#{!cryptoTokenMBean.currentCryptoToken.canGenerateKey}"/>
+                <h:outputText
+                        value="#{cryptoTokenMBean.currentCryptoToken.canGenerateKeyMsg}"
+                        rendered="#{!cryptoTokenMBean.currentCryptoToken.canGenerateKey}"/>
+            </h:panelGrid>
+
+        </h:form>
+    </ui:define>
+
+    <ui:remove><!-- Template will render this when element ":modalBlockContainer" is rendered and "renderModal" param is true. --></ui:remove>
     <ui:param name="renderModal" value="#{cryptoTokenMBean.authorizeInProgress}"/>
     <ui:define name="modal">
         <h:form id="modal">
@@ -955,33 +885,35 @@
             <h:outputText escape="false" value="&lt;input name='jakarta.faces.ViewState' type='hidden' value='#{facesContext.application.stateManager.getViewState(facesContext)}'/&gt;"/>
 
             <h:panelGroup id="authorize" rendered="#{cryptoTokenMBean.authorizeInProgress}">
-                <h2><h:outputText value="#{web.text.CRYPTOTOKEN_KPM_AUTH_KEY}"/></h2>
-				<h:outputText value="#{web.text.CRYPTOTOKEN_KPM_KEY_OPERATION_COUNT}" style="margin-right: 2px;"/>
-				<br/><br/>
-				<h:panelGrid columns="2">
-					<h:selectBooleanCheckbox id="unlimitedOperations" value="#{cryptoTokenMBean.unlimitedOperations}">
-						<f:ajax render="maxNrOfOperations"/>
-					</h:selectBooleanCheckbox>
-					<h:outputLabel value="#{web.text.UNLIMITED}"/>
-					<h:inputText id="maxNrOfOperations" size="19" style="margin-left: 2px; margin-right: 2px;"
-					  	value="#{cryptoTokenMBean.maxOperationCount}"
-					  	disabled="#{cryptoTokenMBean.unlimitedOperations}" 
-					  	label="Max Operation Count">
-						<f:validateLongRange minimum="0" maximum="9223372036854775807" /> 
-					</h:inputText>
-					<h:outputLabel value="Allowed operations"/>
-				</h:panelGrid>
-				<br/>
-               	<h:panelGroup styleClass="fullwidth" layout="block">
+                <h2>
+                    <h:outputText value="#{web.text.CRYPTOTOKEN_KPM_AUTH_KEY}"/>
+                </h2>
+                <h:outputText value="#{web.text.CRYPTOTOKEN_KPM_KEY_OPERATION_COUNT}" style="margin-right: 2px;"/>
+                <br/><br/>
+                <h:panelGrid columns="2">
+                    <h:selectBooleanCheckbox id="unlimitedOperations" value="#{cryptoTokenMBean.unlimitedOperations}">
+                        <f:ajax render="maxNrOfOperations"/>
+                    </h:selectBooleanCheckbox>
+                    <h:outputLabel value="#{web.text.UNLIMITED}"/>
+                    <h:inputText id="maxNrOfOperations" size="19" style="margin-left: 2px; margin-right: 2px;"
+                                 value="#{cryptoTokenMBean.maxOperationCount}"
+                                 disabled="#{cryptoTokenMBean.unlimitedOperations}"
+                                 label="Max Operation Count">
+                        <f:validateLongRange minimum="0" maximum="9223372036854775807"/>
+                    </h:inputText>
+                    <h:outputLabel value="Allowed operations"/>
+                </h:panelGrid>
+                <br/>
+                <h:panelGroup styleClass="fullwidth" layout="block">
                     <h:commandButton value="#{web.text.CANCEL}" action="#{cryptoTokenMBean.actionAuthorizeCancel}" immediate="true">
                         <f:ajax execute="@this" render=":modalBlockContainer"/>
                     </h:commandButton>
                     <h:commandButton id="confirmAuthorizeButton" value="#{web.text.CRYPTOTOKEN_KPM_AUTH}" action="#{cryptoTokenMBean.authorizeKey}">
                     </h:commandButton>
-               	</h:panelGroup>
+                </h:panelGroup>
             </h:panelGroup>
         </h:form>
     </ui:define>
-	
+
 </ui:composition>
 </html>

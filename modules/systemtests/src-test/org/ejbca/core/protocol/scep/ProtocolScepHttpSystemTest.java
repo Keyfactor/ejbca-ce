@@ -13,11 +13,13 @@
 
 package org.ejbca.core.protocol.scep;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -36,8 +38,7 @@ import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
-import org.apache.commons.fileupload.util.Streams;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.http.HttpResponse;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -281,7 +282,15 @@ public class ProtocolScepHttpSystemTest extends ScepTestBase {
         int ret = con.getResponseCode();
         log.debug("HTTP response code: "+ret);
         if ( ret == 200 ) {
-            log.debug(Streams.asString(con.getInputStream())); 
+            StringBuilder stringBuilder = new StringBuilder();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    stringBuilder.append(line);
+                }
+            }
+            final String content = stringBuilder.toString();
+            log.debug(content); 
         }
         con.disconnect();
         
@@ -965,7 +974,7 @@ public class ProtocolScepHttpSystemTest extends ScepTestBase {
             err.read(errB);
             err.close();
             String response = new String(errB);
-            assertTrue("Response does not contain the correct error message", StringUtils.contains(response, expectedErrMsg));
+            assertTrue("Response does not contain the correct error message", Strings.CS.contains(response, expectedErrMsg));
         } finally {
             if(extractedAlias != null) {
                 if(scepConfig.aliasExists("backUpAlias" + extractedAlias + "ForAliasTesting001122334455")) {

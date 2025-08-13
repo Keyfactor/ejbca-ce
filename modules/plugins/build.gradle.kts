@@ -19,6 +19,7 @@ dependencies {
     compileOnly(libs.json.simple)
     compileOnly(libs.log4j.v12.api)
     compileOnly(libs.x509.common.util)
+    compileOnly(libs.snakeyaml)
     testCompileOnly(project(":modules:systemtests:common"))
     testImplementation(project(":modules:cesecore-entity"))
     testImplementation(project(":modules:cesecore-x509ca"))
@@ -35,11 +36,14 @@ sourceSets {
         java {
             setSrcDirs(listOf("src"))
         }
-        resources {
-            srcDirs("resources")
-        }
     }
 }
+
+// define interfaces that should be used to generate service manifest files
+ext["serviceInterfaces"] = listOf(
+    "org.ejbca.core.model.ca.publisher.ICustomPublisher",
+    "org.ejbca.core.model.services.IWorker"
+)
 
 tasks.jar {
     from(sourceSets["main"].output)

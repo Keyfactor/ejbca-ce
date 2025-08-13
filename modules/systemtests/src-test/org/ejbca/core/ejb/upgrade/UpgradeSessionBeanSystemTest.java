@@ -14,12 +14,10 @@ package org.ejbca.core.ejb.upgrade;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.cert.CertificateParsingException;
@@ -61,6 +59,8 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
+import org.cesecore.certificates.certificatetransparency.GoogleCtPolicy;
+import org.cesecore.certificates.certificatetransparency.PolicyBreakpoint;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
@@ -69,6 +69,8 @@ import org.cesecore.certificates.ocsp.OcspTestUtils;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.GlobalCaConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
+import org.cesecore.config.GlobalCtConfiguration;
+import org.cesecore.config.GlobalEndEntityProfileConfiguration;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
@@ -85,7 +87,6 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
-import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberDataProxySessionRemote;
@@ -104,7 +105,6 @@ import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
-import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.unidfnr.UnidFnrHandlerMock;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
@@ -113,9 +113,6 @@ import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.GeneralPurposeCustomPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.protocol.ocsp.extension.certhash.OcspCertHashExtension;
 import org.ejbca.core.protocol.ocsp.extension.unid.OCSPUnidExtension;
 import org.junit.After;
@@ -150,7 +147,6 @@ public class UpgradeSessionBeanSystemTest {
     private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     private EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-    private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
     private GlobalConfigurationSessionRemote globalConfigSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private GlobalConfigurationProxySessionRemote globalConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private PublisherSessionRemote publisherSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class);
@@ -207,141 +203,7 @@ public class UpgradeSessionBeanSystemTest {
         globalConfigSession.saveConfiguration(alwaysAllowtoken, gucBackup);
         globalConfigSession.saveConfiguration(alwaysAllowtoken, gcBackup);
     }
-       
-   /**
-    * This test checks that an upgrade to 6.6.0 adds view/edit access to approval profiles if you have view/edit access to certificate profiles. 
-    */
-   @Test
-   public void testUpgradeTo660ApprovalRules() throws RoleExistsException, AuthorizationDeniedException, RoleNotFoundException {
-       final String testRoleName = TESTCLASS + " TestRole"; 
-       // Test view (auditor) access
-       try {
-           final List<AccessRuleData> oldAccessRules = Arrays.asList(
-                   new AccessRuleData(testRoleName, StandardRules.CERTIFICATEPROFILEVIEW.resource(), AccessRuleState.RULE_ACCEPT, false)
-                   );
-           final List<AccessUserAspectData> oldAccessUserAspectDatas = Arrays.asList(
-                   new AccessUserAspectData(testRoleName, 1, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASEINS, "CN=foo")
-                   );
-           upgradeTestSession.createRole(testRoleName, oldAccessRules, oldAccessUserAspectDatas);
-           upgradeSession.upgrade(null, "6.5.1", false);
-           final List<AccessRuleData> upgradedAccessRules = upgradeTestSession.getAccessRuleDatas(testRoleName);
-           assertAccessRuleDataIsPresent(upgradedAccessRules, testRoleName, StandardRules.APPROVALPROFILEVIEW.resource(), false);
-       } finally {
-           upgradeTestSession.deleteRole(testRoleName);
-           deleteRole(null, testRoleName);
-       }
-       // Test edit access
-       try {
-           final List<AccessRuleData> oldAccessRules = Arrays.asList(
-                   new AccessRuleData(testRoleName, StandardRules.CERTIFICATEPROFILEEDIT.resource(), AccessRuleState.RULE_ACCEPT, false)
-                   );
-           final List<AccessUserAspectData> oldAccessUserAspectDatas = Arrays.asList(
-                   new AccessUserAspectData(testRoleName, 1, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASEINS, "CN=foo")
-                   );
-           upgradeTestSession.createRole(testRoleName, oldAccessRules, oldAccessUserAspectDatas);
-           upgradeSession.upgrade(null, "6.5.1", false);
-           final List<AccessRuleData> upgradedAccessRules = upgradeTestSession.getAccessRuleDatas(testRoleName);
-           assertAccessRuleDataIsPresent(upgradedAccessRules, testRoleName, StandardRules.APPROVALPROFILEEDIT.resource(), false);
-       } finally {
-           upgradeTestSession.deleteRole(testRoleName);
-           deleteRole(null, testRoleName);
-       }
-   }
-   
-    /**
-    * This test verifies that CAs and Certificate Profiles using approvals are automatically assigned approval profiles at upgrade. 
-    */
-   @Test
-   public void testUpgradeTo660Approvals() throws CAExistsException, AuthorizationDeniedException, CertificateProfileExistsException, CADoesntExistsException, CertificateParsingException, CryptoTokenOfflineException, OperatorCreationException, IOException {       
-       //This CA should not be assigned an approval profile on account of lacking approvals
-       List<Integer> approvalRequirements = new ArrayList<>();
-       approvalRequirements.add(ApprovalRequestType.ACTIVATECA.getIntegerValue());
-
-       //This CA should not be assigned an approval profile on account of lacking any actions
-       X509CA noActionsCa =  CaTestUtils.createTestX509CA("CN=NoActions", "foo123".toCharArray(), false);
-       noActionsCa.setNumOfRequiredApprovals(2);
-       noActionsCa.setApprovalProfile(-1);
-       caSession.addCA(alwaysAllowtoken, noActionsCa);
-       
-       //This CA should be assigned a profile on with two approvals 
-       X509CA twoApprovalsCa =  CaTestUtils.createTestX509CA("CN=TwoApprovals", "foo123".toCharArray(), false);
-       twoApprovalsCa.setNumOfRequiredApprovals(2);
-       twoApprovalsCa.setApprovalSettings(approvalRequirements);
-       caSession.addCA(alwaysAllowtoken, twoApprovalsCa);
-       
-       //This CA should be assigned a profile on with three approvals 
-       X509CA threeApprovalsCa = CaTestUtils.createTestX509CA("CN=ThreeApprovals", "foo123".toCharArray(), false);
-       threeApprovalsCa.setNumOfRequiredApprovals(3);
-       threeApprovalsCa.setApprovalSettings(approvalRequirements);
-       caSession.addCA(alwaysAllowtoken, threeApprovalsCa);
-       
-       //This certificate profile has approvals set, but nothing to approve. 
-       String noActionsCertificateProfileName = "NoActionsCertificateProfile";
-       CertificateProfile noActionsCertificateProfile = new CertificateProfile();
-       noActionsCertificateProfile.setNumOfReqApprovals(2);
-       certificateProfileSession.addCertificateProfile(alwaysAllowtoken, noActionsCertificateProfileName, noActionsCertificateProfile);    
-              
-       //This certificate profile should require two approvals, and should reuse the one from the CA
-       CertificateProfile twoProfilesCertificateProfile = new CertificateProfile();
-       twoProfilesCertificateProfile.setNumOfReqApprovals(2);
-       twoProfilesCertificateProfile.setApprovalSettings(Arrays.asList(ApprovalRequestType.ADDEDITENDENTITY.getIntegerValue()));
-       String certificateProfileName = "TwoApprovalsCertificateProfile";
-       certificateProfileSession.addCertificateProfile(alwaysAllowtoken, certificateProfileName, twoProfilesCertificateProfile);      
-     
-       int twoApprovalProfileId = -1;
-       int threeApprovalProfileId = -1;
-       int noActionProfileId = -1;
-       int noActionCertificateProfileId = -1;
-       
-       try {
-           upgradeSession.upgrade(null, "6.5.1", false);
-           
-           CAInfo retrievedNoActionsCa = caSession.getCAInfo(alwaysAllowtoken, noActionsCa.getCAId());
-           noActionProfileId = retrievedNoActionsCa.getApprovalProfile();
-           assertEquals("Approval profile was created for CA with no approvals set.", -1, noActionProfileId);
-           
-           CAInfo retrievedTwoApprovalsCa = caSession.getCAInfo(alwaysAllowtoken, twoApprovalsCa.getCAId());
-           twoApprovalProfileId = retrievedTwoApprovalsCa.getApprovalProfile();
-           assertNotEquals("No approval profile was set for two approvals CA", -1, twoApprovalProfileId);
-           AccumulativeApprovalProfile twoApprovalProfile = (AccumulativeApprovalProfile) approvalProfileSession.getApprovalProfile(twoApprovalProfileId);
-           assertEquals("Correct number of approvals was not set in profile during upgrade.", 2, twoApprovalProfile.getNumberOfApprovalsRequired());
-           
-           CAInfo retrievedThreeApprovalsCa = caSession.getCAInfo(alwaysAllowtoken, threeApprovalsCa.getCAId());
-           threeApprovalProfileId = retrievedThreeApprovalsCa.getApprovalProfile();
-           AccumulativeApprovalProfile threeApprovalProfile = (AccumulativeApprovalProfile) approvalProfileSession.getApprovalProfile(threeApprovalProfileId);
-           assertEquals("Correct number of approvals was not set in profile during upgrade.", 3, threeApprovalProfile.getNumberOfApprovalsRequired());
-           
-           CertificateProfile retrievedCertificateProfile = certificateProfileSession.getCertificateProfile(certificateProfileName);
-           assertEquals("Two approvals profile was not reused for certificate profile.", twoApprovalProfileId,
-                    retrievedCertificateProfile.getApprovalProfileID());
-            
-            CertificateProfile retrievedNoActionCertificateProfile = certificateProfileSession.getCertificateProfile(noActionsCertificateProfileName);
-            noActionCertificateProfileId = retrievedNoActionCertificateProfile.getApprovalProfileID();
-            assertEquals("Approval profile was set for certificate profile lacking actions.", -1, noActionCertificateProfileId
-                    );
-            
-        } finally {          
-            if (twoApprovalProfileId != -1) {
-                approvalProfileSession.removeApprovalProfile(alwaysAllowtoken, twoApprovalProfileId);
-            }
-            if (threeApprovalProfileId != -1) {
-                approvalProfileSession.removeApprovalProfile(alwaysAllowtoken, threeApprovalProfileId);
-            }
-            if (noActionProfileId != -1) {
-                approvalProfileSession.removeApprovalProfile(alwaysAllowtoken, noActionProfileId);
-            }
-            if (noActionCertificateProfileId != -1) {
-                approvalProfileSession.removeApprovalProfile(alwaysAllowtoken, noActionCertificateProfileId);
-            }
-            CaTestUtils.removeCa(alwaysAllowtoken, noActionsCa.getCAInfo());
-            CaTestUtils.removeCa(alwaysAllowtoken, twoApprovalsCa.getCAInfo());
-            CaTestUtils.removeCa(alwaysAllowtoken, threeApprovalsCa.getCAInfo());
-            certificateProfileSession.removeCertificateProfile(alwaysAllowtoken, certificateProfileName);
-            certificateProfileSession.removeCertificateProfile(alwaysAllowtoken, noActionsCertificateProfileName);
-            
-       }
-   }
-   
+        
    /** Basic test that Statedump defaults to being disabled. The actual upgrade is to be tested manually in ECAQA-82 */
    @SuppressWarnings("unchecked")
    @Test
@@ -370,44 +232,7 @@ public class UpgradeSessionBeanSystemTest {
         upgradeMethod.setAccessible(true);
         return (Boolean) upgradeMethod.invoke(UpgradeSessionBean.class.newInstance(), firstVersion, secondVersion);
     }
-    
         
-    /**
-     * This test verifies that CMP aliases which refer to EEPs as names will refer to them by ID afterwards. 
-     */
-    @Test
-    public void testUpgradeCmpConfigurationTo651()
-            throws AuthorizationDeniedException, EndEntityProfileExistsException, EndEntityProfileNotFoundException {
-        String aliasName = "testUpgradeCmpConfigurationTo651";
-        String profileName = "testUpgradeCmpConfigurationTo651_EE_Profile";
-        CmpConfiguration cmpConfiguration = (CmpConfiguration) globalConfigSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
-        endEntityProfileSession.addEndEntityProfile(alwaysAllowtoken, profileName, new EndEntityProfile());
-        int endEntityProfileId = endEntityProfileSession.getEndEntityProfileId(profileName);
-        try {
-            cmpConfiguration.addAlias(aliasName);
-            cmpConfiguration.setValue(aliasName + "." + CmpConfiguration.CONFIG_RA_ENDENTITYPROFILEID, null, aliasName);
-            cmpConfiguration.setValue(aliasName + "." + CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, profileName, aliasName);
-            globalConfigSession.saveConfiguration(alwaysAllowtoken, cmpConfiguration);
-            //Perform upgrade. 
-            upgradeSession.upgrade(null, "6.5.0", false);
-            //Confirm that the new value has been set.
-            cmpConfiguration = (CmpConfiguration) globalConfigSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
-            assertEquals("End Entity Profile ID was not set during upgrade.", Integer.toString(endEntityProfileId),
-                    cmpConfiguration.getRAEEProfile(aliasName));
-            //Confirm that the old value was unchanged
-            assertEquals("End Entity Profile ID was not set during upgrade.", profileName,
-                    cmpConfiguration.getValue(aliasName + "." + CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, aliasName));
-
-        } finally {
-            cmpConfiguration = (CmpConfiguration) globalConfigSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
-            if (cmpConfiguration.aliasExists(aliasName)) {
-                cmpConfiguration.removeAlias(aliasName);
-                globalConfigSession.saveConfiguration(alwaysAllowtoken, cmpConfiguration);
-            }
-            endEntityProfileSession.removeEndEntityProfile(alwaysAllowtoken, profileName);
-        }
-    }
-    
     @Test
     public void upgradeTo680RoleMembers() throws AuthorizationDeniedException {
         final String roleName = TESTCLASS + " upgradeTo680RoleMembers";
@@ -517,7 +342,7 @@ public class UpgradeSessionBeanSystemTest {
         // Attempt with version installed earlier than EJBCA 6.6.0 and upgraded from 6.7.0
         upgradeTestSession.createRole(roleName3, oldAcccessRules3, null);
 
-        guc.setUpgradedFromVersion("6.5.0");
+        guc.setUpgradedFromVersion("6.5.1");
         globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
         try {
             upgradeSession.upgrade(null, "6.7.0", false);
@@ -561,7 +386,7 @@ public class UpgradeSessionBeanSystemTest {
         caSession.addCA(alwaysAllowtoken, caWithApprovalsSet);
         
         GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
-        guc.setUpgradedFromVersion("6.5.0");
+        guc.setUpgradedFromVersion("6.5.1");
         globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
         try {
             upgradeSession.upgrade(null, "6.7.0", false);
@@ -608,7 +433,7 @@ public class UpgradeSessionBeanSystemTest {
         certificateProfileSession.addCertificateProfile(alwaysAllowtoken, withApprovalsName, withApprovals);
 
         GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
-        guc.setUpgradedFromVersion("6.5.0");
+        guc.setUpgradedFromVersion("6.5.1");
         globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
         try {
             upgradeSession.upgrade(null, "6.7.0", false);
@@ -1458,6 +1283,88 @@ public class UpgradeSessionBeanSystemTest {
             globalConfigurationProxySession.saveConfiguration(alwaysAllowtoken, globalOcspConfiguration);
         }
     }
+
+    @Test
+    public void testOcspCleanupSchedule940() throws AuthorizationDeniedException {
+        final GlobalOcspConfiguration currentGlobalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        final boolean originalOcspCleanUp = currentGlobalOcspConfiguration.getOcspCleanupUse();
+        final String originalOcspCleanUpSchedule = currentGlobalOcspConfiguration.getOcspCleanupSchedule();
+        final String originalOcspCleanUpUnit = currentGlobalOcspConfiguration.getOcspCleanupScheduleUnit();
+
+        try {
+            // Set up deprecated values in GlobalConfiguration
+            GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            globalConfiguration.setOcspCleanupUse(true);
+            globalConfiguration.setOcspCleanupSchedule("66");
+            globalConfiguration.setOcspCleanupScheduleUnit("MINUTES");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, globalConfiguration);
+
+            //Set up EJBCA in a pre-upgrade state
+            final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            guc.setUpgradedToVersion("9.3.0");
+            guc.setPostUpgradedToVersion("9.3.0");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+
+            // Perform upgrade, without post upgrade
+            upgradeSession.upgrade(null, "9.3.0", false);
+
+            // Verify migration
+            final GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            assertTrue("ocsp.cleanup.use was not migrated.", globalOcspConfiguration.getOcspCleanupUse());
+            assertEquals("ocsp.cleanup.schedule was not migrated", "66", globalOcspConfiguration.getOcspCleanupSchedule());
+            assertEquals("ocsp.cleanup.schedule_unit was not migrated", "MINUTES", globalOcspConfiguration.getOcspCleanupScheduleUnit());
+
+            // Perform post-upgrade and verify old values are cleared from database.
+            upgradeSession.upgrade(null, "9.3.0", true);
+            globalConfiguration = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            LinkedHashMap<Object, Object> data = globalConfiguration.getRawData();
+            assertFalse("ocsp.cleanup.use was not cleared from database.", data.containsKey("ocsp.cleanup.use"));
+            assertFalse("ocsp.cleanup.schedule was not cleared from database.", data.containsKey("ocsp.cleanup.schedule"));
+            assertFalse("ocsp.cleanup.schedule_unit was not cleared from database.", data.containsKey("ocsp.cleanup.schedule_unit"));
+        } finally {
+            //Set values to back to current
+            final GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            globalOcspConfiguration.setOcspCleanupUse(originalOcspCleanUp);
+            globalOcspConfiguration.setOcspCleanupSchedule(originalOcspCleanUpSchedule);
+            globalOcspConfiguration.setOcspCleanupScheduleUnit(originalOcspCleanUpUnit);
+            globalConfigurationProxySession.saveConfiguration(alwaysAllowtoken, globalOcspConfiguration);
+        }
+    }
+
+    @Test
+    public void testEEPLimitationsMigration940() throws AuthorizationDeniedException {
+        GlobalEndEntityProfileConfiguration globalEEPConfiguration = (GlobalEndEntityProfileConfiguration) globalConfigSession.getCachedConfiguration(GlobalEndEntityProfileConfiguration.EEP_CONFIGURATION_ID);
+        final boolean originalEEPLimitations = globalEEPConfiguration.getEnableEndEntityProfileLimitations();
+
+        try {
+            // Have GC a different value for EEP Limitations
+            GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            globalConfiguration.setEnableEndEntityProfileLimitations(!originalEEPLimitations);
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, globalConfiguration);
+
+            final GlobalUpgradeConfiguration globalUpgradeConfiguration = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            globalUpgradeConfiguration.setUpgradedToVersion("9.3.0");
+            globalUpgradeConfiguration.setPostUpgradedToVersion("9.3.0");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, globalUpgradeConfiguration);
+
+            // Perform upgrade
+            upgradeSession.upgrade(null, "9.3.0", false);
+            globalEEPConfiguration = (GlobalEndEntityProfileConfiguration) globalConfigSession.getCachedConfiguration(GlobalEndEntityProfileConfiguration.EEP_CONFIGURATION_ID);
+            assertEquals("endentityprofilelimitations value was not migrated.", !originalEEPLimitations, globalEEPConfiguration.getEnableEndEntityProfileLimitations());
+
+            // Perform post-upgrade
+            upgradeSession.upgrade(/* database */ null, /* upgrade from */ "9.3.0", /* post upgrade? */ true);
+            globalConfiguration = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            LinkedHashMap<Object, Object> data = globalConfiguration.getRawData();
+            assertFalse("endentityprofilelimitations was not removed from GlobalConfigData in post-upgrade.", data.containsKey("endentityprofilelimitations"));
+
+        } finally {
+            //Restore the original value
+            globalEEPConfiguration.setEnableEndEntityProfileLimitations(originalEEPLimitations);
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, globalEEPConfiguration);
+
+        }
+    }
     
     @Test
     public void testMigrateOcspNonExistingValuesGlobal_9_4_0_Good() throws AuthorizationDeniedException {
@@ -1643,6 +1550,61 @@ public class UpgradeSessionBeanSystemTest {
             
         }
     }
+    
+    @Test
+    public void testMigrateCtConfiguration9_4_0() throws AuthorizationDeniedException {
+        //Stash the original values
+        final GlobalCtConfiguration originalGlobalCtConfiguration = (GlobalCtConfiguration) globalConfigSession.getCachedConfiguration(GlobalCtConfiguration.CT_CONFIGURATION_ID);
+        try {
+            //Set some non-default values 
+            GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+            globalCesecoreConfiguration.setCtCacheEnabled(false);
+            globalCesecoreConfiguration.setCtCacheCleanupInterval(1);
+            globalCesecoreConfiguration.setCtCacheSize(2);
+            globalCesecoreConfiguration.setCtCacheFastFailEnabled(false);
+            globalCesecoreConfiguration.setCtCacheFastFailBackoff(3);
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, globalCesecoreConfiguration);
+            GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            GoogleCtPolicy googleCtPolicy = new GoogleCtPolicy();
+            List<PolicyBreakpoint> breakpoints = new ArrayList<>();
+            breakpoints.add(new PolicyBreakpoint(0, 12, 11));
+            googleCtPolicy.setBreakpoints(breakpoints);
+            globalConfiguration.setGoogleCtPolicy(googleCtPolicy);
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, globalConfiguration);
+            //Set the upgrade-from version 
+            final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            guc.setUpgradedToVersion("9.3.0");
+            guc.setPostUpgradedToVersion("9.3.0");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+            //Perform upgrade
+            upgradeSession.upgrade(/* database */ null, /* upgrade from */ "9.3.0", /* post upgrade? */ false);
+            //Verify upgrade
+            GlobalCtConfiguration globalCtConfiguration = (GlobalCtConfiguration) globalConfigSession.getCachedConfiguration(GlobalCtConfiguration.CT_CONFIGURATION_ID);
+            assertEquals("Google CT policy was not migrated from GlobalConfiguration", googleCtPolicy, globalCtConfiguration.getGoogleCtPolicy());
+            assertEquals("Value was not migrated from GlobalCesecoreConfiguration", false, globalCtConfiguration.getCtCacheEnabled());
+            assertEquals("Value was not migrated from GlobalCesecoreConfiguration", 1, globalCtConfiguration.getCtCacheCleanupInterval());
+            assertEquals("Value was not migrated from GlobalCesecoreConfiguration", 2, globalCtConfiguration.getCtCacheSize());
+            assertEquals("Value was not migrated from GlobalCesecoreConfiguration", false, globalCtConfiguration.getCtCacheFastFailEnabled());
+            assertEquals("Value was not migrated from GlobalCesecoreConfiguration", 3, globalCtConfiguration.getCtCacheFastFailBackoff());
+            //Perform post-upgrade and verify that the values are removed from globalconfigdata 
+            upgradeSession.upgrade(/* database */ null, /* upgrade from */ "9.3.0", /* post upgrade? */ true);
+            globalConfiguration = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            LinkedHashMap<Object, Object> globalConfigData = globalConfiguration.getRawData();
+            assertFalse("google_ct_policy was not removed from GlobalConfiguration in post-upgrade.", globalConfigData.containsKey("google_ct_policy"));
+            globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+            LinkedHashMap<Object, Object> globalCesecoreConfigData = globalCesecoreConfiguration.getRawData();
+            assertFalse("ct_cache_enabled was not removed from GlobalConfiguration in post-upgrade.", globalCesecoreConfigData.containsKey("ct_cache_enabled"));
+            assertFalse("ct_cache_size was not removed from GlobalConfiguration in post-upgrade.", globalCesecoreConfigData.containsKey("ct_cache_size"));
+            assertFalse("ct_cache_cleanup_interval was not removed from GlobalConfiguration in post-upgrade.", globalCesecoreConfigData.containsKey("ct_cache_cleanup_interval"));
+            assertFalse("ct_cache_fast_fail_enabled was not removed from GlobalConfiguration in post-upgrade.", globalCesecoreConfigData.containsKey("ct_cache_fast_fail_enabled"));
+            assertFalse("ct_cache_fast_fail_backoff was not removed from GlobalConfiguration in post-upgrade.", globalCesecoreConfigData.containsKey("ct_cache_fast_fail_backoff"));
+            
+        } finally {
+            //Restore original value
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, originalGlobalCtConfiguration);
+        }
+    }
 
     private EndEntityInformation makeEndEntityInfo(final String username, final String startTime, final String endTime) {
         final ExtendedInformation extInfo = new ExtendedInformation();
@@ -1676,10 +1638,6 @@ public class UpgradeSessionBeanSystemTest {
         } catch (AuthorizationDeniedException e) {
             log.debug(e.getMessage());
         }
-    }
-    
-    private void assertAccessRuleDataIsPresent(final List<AccessRuleData> accessRules, final String roleName, final String rule, final boolean recursive) {
-        assertTrue("Role was not upgraded with rule " + rule, accessRules.contains(new AccessRuleData(roleName, rule, AccessRuleState.RULE_ACCEPT, recursive)));
     }
 
 }

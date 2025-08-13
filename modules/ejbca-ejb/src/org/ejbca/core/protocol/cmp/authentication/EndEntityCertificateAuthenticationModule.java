@@ -15,10 +15,8 @@ package org.ejbca.core.protocol.cmp.authentication;
 
 import java.lang.reflect.InvocationTargetException;
 import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.CertPathBuilderException;
 import java.security.cert.CertPathValidatorException;
@@ -47,7 +45,6 @@ import org.bouncycastle.asn1.crmf.CertTemplate;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -478,14 +475,11 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         }
 
         //-------------------------------------------------------------
-        //Begin the signature verification process.
-        //Verify the signature of msg using the public key of extraCert
+        // Begin the signature verification process.
+        // Verify the signature of msg using the public key of extraCert
         //-------------------------------------------------------------
         try {
-            final Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
-            sig.initVerify(extraCert.getPublicKey());
-            sig.update(CmpMessageHelper.getProtectedBytes(msg));
-            if (sig.verify(msg.getProtection().getBytes())) {
+            if (CmpMessageHelper.verifySignature(msg, extraCert.getPublicKey())) {
                 if (password == null) {
                     // If not set earlier
                     password = genRandomPwd();
@@ -494,7 +488,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                 this.errorMessage = "Failed to verify the signature in the PKIMessage";
                 return false;
             }
-        } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException | SignatureException e) {
+        } catch ( SignatureException e) {
             if(log.isDebugEnabled()) {
                 log.debug(e.getLocalizedMessage());
             }

@@ -16,8 +16,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.TreeMap;
 
 import jakarta.enterprise.context.SessionScoped;
@@ -42,6 +42,7 @@ import org.ejbca.core.model.services.IAction;
 import org.ejbca.core.model.services.IInterval;
 import org.ejbca.core.model.services.IWorker;
 import org.ejbca.core.model.services.ServiceConfiguration;
+import org.ejbca.core.model.services.ServiceExistsException;
 import org.ejbca.core.model.services.workers.CRLDownloadWorker;
 import org.ejbca.core.model.services.workers.CRLUpdateWorker;
 import org.ejbca.core.model.services.workers.CertificateExpirationNotifierWorker;
@@ -90,7 +91,9 @@ public class EditServiceManagedBean extends BaseManagedBean {
 
     private ServiceConfigurationView serviceConfigurationView;
     private String serviceName = StringUtils.EMPTY;
-    
+    private String originalServiceName = StringUtils.EMPTY;
+    private boolean viewOnly = true;
+
     private transient EjbLocalHelper ejb = new EjbLocalHelper();
 
     public boolean isActionClassPathTextFieldDisabled() {
@@ -150,6 +153,17 @@ public class EditServiceManagedBean extends BaseManagedBean {
         this.serviceName = serviceName;
     }
 
+    /** @return the original name of the service that is being edited */
+    public String getOriginalServiceName() {
+        return originalServiceName;
+    }
+
+    /** @param originalServiceName the name of the service that is being edited */
+    public void setOriginalServiceName(final String originalServiceName) {
+        this.originalServiceName = originalServiceName;
+        this.serviceName = originalServiceName;
+    }
+
     /** @return the serviceConfigurationView */
     public ServiceConfigurationView getServiceConfigurationView() {
         return serviceConfigurationView;
@@ -159,34 +173,70 @@ public class EditServiceManagedBean extends BaseManagedBean {
         this.serviceConfigurationView = new ServiceConfigurationView(serviceConfiguration, isAuthorizedToDbMaintenanceService());
     }
 
+    private boolean isNewService() {
+        return StringUtils.isEmpty(originalServiceName);
+    }
+
+    private boolean wasServiceRenamed() {
+        return !isNewService() && !Objects.equals(originalServiceName, serviceName);
+    }
+
+    public boolean isServiceNameInvalid(final String serviceNameToCheck){
+        if (StringUtils.isEmpty(StringUtils.trim(serviceNameToCheck))) {
+            addErrorMessage("YOUHAVETOENTERASERVICE");
+            return true;
+        } else if (StringUtils.contains(serviceNameToCheck, ";")) {
+            addErrorMessage("THECHARACTERSARENTALLOWED");
+            return true;
+        }
+        return false;
+    }
+
     public String save() {
-        ArrayList<String> errorMessages = new ArrayList<>();
+        final ArrayList<String> errorMessages = new ArrayList<>();
+
+        if (isServiceNameInvalid(serviceName)) {
+            return StringUtils.EMPTY;
+        }
+
+        if (wasServiceRenamed()) {
+            try {
+                getEjb().getServiceSession().renameService(getAdmin(), originalServiceName, serviceName);
+            } catch (ServiceExistsException e) {
+                addErrorMessage("SERVICENAMEALREADYEXISTS");
+                return StringUtils.EMPTY;
+            }
+        }
+
         try {
-            serviceConfigurationView.getServiceConfiguration(errorMessages);
+            final ServiceConfiguration newServiceConfiguration = serviceConfigurationView.getServiceConfiguration(errorMessages);
             if (errorMessages.isEmpty()) {
-                getEjb().getServiceSession().changeService(getAdmin(), serviceName, serviceConfigurationView.getServiceConfiguration(errorMessages),
-                        false);
+                if (isNewService()) {
+                    getEjb().getServiceSession().addService(getAdmin(), serviceName, newServiceConfiguration);
+                }
+                else {
+                    getEjb().getServiceSession().changeService(getAdmin(), serviceName, newServiceConfiguration, false);
+                }
                 getEjb().getServiceSession().activateServiceTimer(getAdmin(), serviceName);
-                return "listservices";
+                return "done";
             } else {
-                Iterator<String> iter = errorMessages.iterator();
-                while (iter.hasNext()) {
-                    addErrorMessage(iter.next());
+                for (String errorMessage : errorMessages) {
+                    addErrorMessage(errorMessage);
                 }
                 return StringUtils.EMPTY;
             }
         } catch (IOException e) {
             addNonTranslatedErrorMessage(EjbcaJSFHelper.getBean().getText().get("ERROREDITINGSERVICE") + " " + e.getMessage());
             return StringUtils.EMPTY;
+        } catch (ServiceExistsException e) {
+            // we should not end here, as the renaming check ought to catch this preemptively
+            addErrorMessage("SERVICENAMEALREADYEXISTS");
+            return StringUtils.EMPTY;
         }
     }
 
     public String cancel() {
-        return "listservices";
-    }
-
-    public String update() {
-        return "editservice";
+        return "done";
     }
 
     /** Help method used to edit data in the custom worker type. */
@@ -208,7 +258,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
      * @return true if admin has access to /services/edit
      */
     public boolean getHasEditRights() {
-        return getEjb().getAuthorizationSession().isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.SERVICES_EDIT);
+        return !isViewOnly() && getEjb().getAuthorizationSession().isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.SERVICES_EDIT);
     }
 
     /**
@@ -362,9 +412,9 @@ public class EditServiceManagedBean extends BaseManagedBean {
                 availableCANames.add(new SelectItem(caid.toString(), getEjb().getCaSession().getCAInfoInternal(caid).getName()));
             
         }
-        
+
         availableCANames.sort(Comparator.comparing(SelectItem::getLabel, String.CASE_INSENSITIVE_ORDER));
-        
+
         return availableCANames;
     }
 
@@ -396,7 +446,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
                 log.debug("Not authorized to CA: " + caid);
             }
         }
-        
+
         availableCANames.sort(Comparator.comparing(SelectItem::getLabel, String.CASE_INSENSITIVE_ORDER));
 
         // Add Any CA first in the list
@@ -424,7 +474,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
 
         final CertificateProfileSessionLocal certificateProfileSession = getEjb().getCertificateProfileSession();
         for (Integer certificateProfileType : certificateProfileTypes) {
-            
+
             Collection<Integer> profiles = certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(), certificateProfileType);
             for (Integer certificateProfile : profiles) {
                 String profileName = certificateProfileSession.getCertificateProfileName(certificateProfile);
@@ -440,7 +490,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
             // Display it in the list as "PublisherName (publisherId)" with publisherId as the value sent
             availablePublisherNames.add(new SelectItem(String.valueOf(next), getEjb().getPublisherSession().getPublisherName(next) + " (" + next + ")"));
         }
-        
+
         availablePublisherNames.sort(Comparator.comparing(SelectItem::getLabel, String.CASE_INSENSITIVE_ORDER));
 
         return availablePublisherNames;
@@ -483,8 +533,17 @@ public class EditServiceManagedBean extends BaseManagedBean {
     }
 
     public EjbLocalHelper getEjb() {
-        if (ejb == null)
+        if (ejb == null) {
             ejb = new EjbLocalHelper();
+        }
         return ejb;
+    }
+
+    public boolean isViewOnly() {
+        return this.viewOnly;
+    }
+
+    public void setViewOnly(boolean viewOnly) {
+        this.viewOnly = viewOnly;
     }
 }

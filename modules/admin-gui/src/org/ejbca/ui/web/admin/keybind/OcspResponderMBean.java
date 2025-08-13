@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.Set;
 
@@ -40,6 +41,7 @@ import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.cert.ocsp.OCSPReqBuilder;
@@ -256,7 +258,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
             } catch (AuthorizationDeniedException e) {
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
             }
-        } else if (!StringUtils.equals(defaultResponderTarget, globalConfiguration.getOcspDefaultResponderReference())) {
+        } else if (!Strings.CS.equals(defaultResponderTarget, globalConfiguration.getOcspDefaultResponderReference())) {
             globalConfiguration.setOcspDefaultResponderReference(defaultResponderTarget);
             try {
                 globalConfigurationSession.saveConfiguration(getAuthenticationToken(), globalConfiguration);
@@ -1011,6 +1013,13 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
                 for (final DynamicUiProperty<? extends Serializable> property : internalKeyBindingProperties) {
                     dataMap.put(property.getName(), property.getValue());
                 }
+                //Make sure we have a name
+                if(StringUtils.isEmpty(getCurrentName())) {
+                    FacesContext.getCurrentInstance().addMessage(null,
+                            new FacesMessage(FacesMessage.SEVERITY_ERROR, "Cannot create an OCSP responder with a blank name", null));
+                    return;
+                }
+                
                 setCurrentInternalKeybindingId(String.valueOf(internalKeyBindingSession.createInternalKeyBinding(getAuthenticationToken(),
                         getSelectedInternalKeyBindingType(), getCurrentName(), InternalKeyBindingStatus.DISABLED, null,
                         getCurrentCryptoToken(), getCurrentKeyPairAlias(), getCurrentSignatureAlgorithm(), dataMap,
@@ -1050,7 +1059,14 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
         try {
             final InternalKeyBinding internalKeyBinding = internalKeyBindingSession.getInternalKeyBinding(getAuthenticationToken(),
                     Integer.parseInt(getCurrentInternalKeyBindingId()));
-            internalKeyBinding.setName(getCurrentName());
+            //Make sure we have a name
+            if(StringUtils.isEmpty(getCurrentName())) {
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR, "Cannot create an OCSP responder with a blank name", null));
+                return;
+            } else {
+                internalKeyBinding.setName(getCurrentName());
+            }
             if (isCryptoTokenActive()) {
                 final int loadedCryptoTokenId = internalKeyBinding.getCryptoTokenId();
                 final String loadedKeyPairAlias = internalKeyBinding.getKeyPairAlias();
@@ -1069,19 +1085,20 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
             }
             internalKeyBinding.setTrustedCertificateReferences((List<InternalKeyBindingTrustEntry>) getTrustedCertificates().getWrappedData());
             final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBinding;
-            ocspKeyBinding.setOcspExtensions(ocspExtensionsList);
+            ocspKeyBinding.setOcspExtensions((List<String>) ocspExtensions.getWrappedData());
             if (retentionPeriod != null) {
                 ocspKeyBinding.setRetentionPeriod(retentionPeriod);
             }
             if (useIssuerNotBeforeAsArchiveCutoff != null) {
                 ocspKeyBinding.setUseIssuerNotBeforeAsArchiveCutoff(useIssuerNotBeforeAsArchiveCutoff);
             }
-            
-            if (signOcspResponseForCasList != null) {
-                ocspKeyBinding.setSignOcspResponseOnBehalf(signOcspResponseForCasList);
+            List<InternalKeyBindingTrustEntry> signOcspResponseForCas = null;
+            if (!Objects.isNull(this.signOcspResponseForCas.getWrappedData())) {
+                signOcspResponseForCas = (List<InternalKeyBindingTrustEntry>) this.signOcspResponseForCas.getWrappedData();
             } else {
-                ocspKeyBinding.setSignOcspResponseOnBehalf(new ArrayList<>());
+                signOcspResponseForCas = new ArrayList<>();
             }
+            ocspKeyBinding.setSignOcspResponseOnBehalf(signOcspResponseForCas);
             if (ocspKeyBinding.getIncludeCertChain()) {
                 ocspKeyBinding.setCaGeneration(currentCaGeneration);
             }

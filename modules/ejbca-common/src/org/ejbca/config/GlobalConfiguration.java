@@ -61,7 +61,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     // Path added to baseurl used as default value in DeltaCRLDistributionPointURI field in Certificate Profile definitions.
     private static final  String   DEFAULTDELTACRLDISTURIPATH  = "publicweb/webdist/certdist?cmd=deltacrl&issuer=";
 
-    // Path added to baseurl used as default value in CRLDistributionPointURI field in Certificate Profile definitions.
+    // DN added to baseurl used as default value in CRLDistributionPointURI field in Certificate Profile definitions.
     private static final  String   DEFAULTCRLDISTURIPATHDN  = "CN=TestCA,O=AnaTom,C=SE";
 
     // Path added to baseurl used as default value in OCSP Service Locator URI field in Certificate Profile definitions.
@@ -76,13 +76,20 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final  String   DEFAULTEJBCATITLE             = InternalConfiguration.getAppNameCapital() + " Administration";
 
     // OCSP Cleanup
+    @Deprecated(since = "9.4.0")
     private static final String OCSP_CLEANUP_USE = "ocsp.cleanup.use";
+    @Deprecated(since = "9.4.0")
     private static final boolean OCSP_CLEANUP_USE_DEFAULT = false;
 
+    @Deprecated(since = "9.4.0")
     private static final String OCSP_CLEANUP_SCHEDULE = "ocsp.cleanup.schedule";
+    @Deprecated(since = "9.4.0")
     private static final String OCSP_CLEANUP_SCHEDULE_DEFAULT = "5";
 
+    @Deprecated(since = "9.4.0")
     private static final String OCSP_CLEANUP_SCHEDULE_UNIT = "ocsp.cleanup.schedule_unit";
+
+    @Deprecated(since = "9.4.0")
     private static final String OCSP_CLEANUP_SCHEDULE_UNIT_DEFAULT = TimeUnit.HOURS.toString();
 
     /** Default value for Enable Command Line Interface. */
@@ -135,7 +142,10 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final   String HEADLOGO         = "headlogo";
 
       // Other configuration.
+
+    @Deprecated(since = "9.4.0")
     private static final   String ENABLEEEPROFILELIMITATIONS   = "endentityprofilelimitations";
+
     private static final   String ENABLEAUTHENTICATEDUSERSONLY = "authenticatedusersonly";
     private static final   String ENABLEKEYRECOVERY            = "enablekeyrecovery";
     private static final   String LOCALKEYRECOVERY             = "localkeyrecovery";
@@ -144,10 +154,6 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
 
     @Deprecated(since = "9.4.0")
     private static final   String ENABLEICAOCANAMECHANGE       = "enableicaocanamechange";
-
-    private static final   String USEAPPROVALNOTIFICATIONS     = "useapprovalnotifications";
-    private static final   String APPROVALADMINEMAILADDRESS    = "approvaladminemailaddress";
-    private static final   String APPROVALNOTIFICATIONFROMADDR = "approvalnotificationfromaddr";
 
     private static final   String NODESINCLUSTER               = "nodesincluster";
 
@@ -160,6 +166,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
 
     private static final   String STATEDUMP_LOCKDOWN  = "statedump_lockdown";
 
+    @Deprecated(since = "9.4.0")
     private static final String GOOGLE_CT_POLICY = "google_ct_policy";
     private static final String EXTERNAL_SCRIPTS_WHITELIST = "external_scripts_whitelist";
     private static final String IS_EXTERNAL_SCRIPTS_WHITELIST_ENABLED = "is_external_scripts_whitelist_enabled";
@@ -168,14 +175,14 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final String ENABLESESSIONTIMEOUT = "use_session_timeout";
     private static final String SESSIONTIMEOUTTIME = "session_timeout_time";
     private static final String VA_STATUS_TIME_CONSTRAINT_KEY = "va_status_time_constraint";
-    
+
     /** Creates a new instance of GlobalConfiguration */
     public GlobalConfiguration()  {
        super();
        setEjbcaTitle(DEFAULTEJBCATITLE);
        setHeadBannerLogo(DEFAULT_HEADER_LOGO);
     }
-    
+
     public byte[] initHeadBannerLogo(String path) {
         try {
             Path logoPath = Paths.get(path);
@@ -199,7 +206,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     public void initializeAdminWeb() {
         initialize("default_theme.css,second_theme.css", "" + WebConfiguration.getPublicHttpPort(), "" + WebConfiguration.getPrivateHttpsPort());
     }
-    
+
     public void initializeRaWeb() {
         initialize("default_theme.css,second_theme.css", "" + WebConfiguration.getPublicHttpPort(), "" + WebConfiguration.getPrivateHttpsPort());
     }
@@ -252,7 +259,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     public String getAdminWebPath() {
         return "adminweb/";
     }
-    
+
     public String getRaWebPath() {
         return "ra/";
     }
@@ -265,8 +272,12 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
         return getBaseUrlPublic() + DEFAULTCRLDISTURIPATH;
     }
 
+    /** This MUST be omitted when the CRL issuer is also the cert issuer, which is the only mode EJBCA supports
+    * https://www.rfc-editor.org/rfc/rfc5280.html#section-4.2.1.13
+    * A value would be a DN like 'CN=TestCA,O=AnaTom,C=SE'
+    */
     public String getStandardCRLIssuer() {
-    	return DEFAULTCRLDISTURIPATHDN;
+    	return null;
     }
 
     public String getStandardDeltaCRLDistributionPointURI(){
@@ -302,11 +313,11 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     public String getDefaultAvailableTheme(){
       return getAvailableThemes()[0];
     }
-    
+
     public byte[] getHeadBannerLogo() {
         return (byte[]) data.get(HEADLOGO);
     }
-    
+
     public void setHeadBannerLogo(byte[] logo) {
         data.put(HEADLOGO, logo);
     }
@@ -336,7 +347,10 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
 
     public   String getAvailableThemesAsString(){return (String) data.get(AVAILABLETHEMES);}
 
+    @Deprecated(since = "9.4.0")
     public boolean getEnableEndEntityProfileLimitations() { return getBoolean(ENABLEEEPROFILELIMITATIONS, true); }
+
+    @Deprecated(since = "9.4.0")
     public void setEnableEndEntityProfileLimitations(final boolean value) { putBoolean(ENABLEEEPROFILELIMITATIONS, value); }
 
     public boolean getEnableAuthenticatedUsersOnly() { return getBoolean(ENABLEAUTHENTICATEDUSERSONLY, false);}
@@ -361,34 +375,42 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
      */
     @Deprecated(since = "9.4.0")
     public void setEnableIcaoCANameChange(final boolean value) { putBoolean(ENABLEICAOCANAMECHANGE, value);}
-    
-    /** @return true of email notification of requested approvals should be sent (default false) */
-     @Deprecated // Used during upgrade to EJBCA 6.6.0
-     public boolean getUseApprovalNotifications() { return getBoolean(USEAPPROVALNOTIFICATIONS, false); }
-     /**
-      * Returns the email address to the administrators that should recieve notification emails
-      * should be an alias to all approval administrators default "" never null
-      */
-     @Deprecated // Used during upgrade to EJBCA 6.6.0
-     public String getApprovalAdminEmailAddress() {
-         final Object value = data.get(APPROVALADMINEMAILADDRESS);
-         return value == null ? "" : (String) value;
-     }
-     /** @return the email address used in the from field of approval notification emails */
-     @Deprecated // Used during upgrade to EJBCA 6.6.0
-     public String getApprovalNotificationFromAddress() {
-         final Object value = data.get(APPROVALNOTIFICATIONFROMADDR);
-         return value == null ? "" : (String) value;
-     }
 
-       public void setOcspCleanupUse(final boolean value) { putBoolean(OCSP_CLEANUP_USE, value);}
-       public boolean getOcspCleanupUse() {return getBoolean(OCSP_CLEANUP_USE, OCSP_CLEANUP_USE_DEFAULT); }
+    /**
+     * @deprecated this value has been shifted to GlobalOcspConfiguration in 9.4.0 and only remains for 100% uptime and upgrade
+     */
+    @Deprecated(since = "9.4.0")
+    public void setOcspCleanupUse(final boolean value) { putBoolean(OCSP_CLEANUP_USE, value);}
 
-       public void setOcspCleanupSchedule(final String value) { data.put(OCSP_CLEANUP_SCHEDULE, value); }
-       public String getOcspCleanupSchedule() { return getString(OCSP_CLEANUP_SCHEDULE, OCSP_CLEANUP_SCHEDULE_DEFAULT); }
+    /**
+     * @deprecated this value has been shifted to GlobalOcspConfiguration in 9.4.0 and only remains for 100% uptime and upgrade
+     */
+    @Deprecated(since = "9.4.0")
+    public boolean getOcspCleanupUse() {return getBoolean(OCSP_CLEANUP_USE, OCSP_CLEANUP_USE_DEFAULT); }
 
-        public void setOcspCleanupScheduleUnit(final String value) { data.put(OCSP_CLEANUP_SCHEDULE_UNIT, value); }
-        public String getOcspCleanupScheduleUnit() { return getString(OCSP_CLEANUP_SCHEDULE_UNIT, OCSP_CLEANUP_SCHEDULE_UNIT_DEFAULT); }
+    /**
+     * @deprecated this value has been shifted to GlobalOcspConfiguration in 9.4.0 and only remains for 100% uptime and upgrade
+     */
+    @Deprecated(since = "9.4.0")
+    public void setOcspCleanupSchedule(final String value) { data.put(OCSP_CLEANUP_SCHEDULE, value); }
+
+    /**
+     * @deprecated this value has been shifted to GlobalOcspConfiguration in 9.4.0 and only remains for 100% uptime and upgrade
+     */
+    @Deprecated(since = "9.4.0")
+    public String getOcspCleanupSchedule() { return getString(OCSP_CLEANUP_SCHEDULE, OCSP_CLEANUP_SCHEDULE_DEFAULT); }
+
+    /**
+     * @deprecated this value has been shifted to GlobalOcspConfiguration in 9.4.0 and only remains for 100% uptime and upgrade
+     */
+    @Deprecated(since = "9.4.0")
+    public void setOcspCleanupScheduleUnit(final String value) { data.put(OCSP_CLEANUP_SCHEDULE_UNIT, value); }
+
+    /**
+     * @deprecated this value has been shifted to GlobalOcspConfiguration in 9.4.0 and only remains for 100% uptime and upgrade
+     */
+    @Deprecated(since = "9.4.0")
+    public String getOcspCleanupScheduleUnit() { return getString(OCSP_CLEANUP_SCHEDULE_UNIT, OCSP_CLEANUP_SCHEDULE_UNIT_DEFAULT); }
 
        public void setNodesInCluster(final Set<String> nodes) { data.put(NODESINCLUSTER, nodes); }
        @SuppressWarnings("unchecked")
@@ -460,7 +482,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
             return vaStatusTimeConstraint;
         }
     }
-   
+
     public void setVaStatusTimeConstraint(final int vaStatusTimeConstraint) {
         data.put(VA_STATUS_TIME_CONSTRAINT_KEY, vaStatusTimeConstraint);
     }
@@ -488,6 +510,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
         setCTLogs(logs);
     }
 
+    @Deprecated(since = "9.4.0")
     public GoogleCtPolicy getGoogleCtPolicy() {
         final GoogleCtPolicy googleCtPolicy = (GoogleCtPolicy) data.get(GOOGLE_CT_POLICY);
         if (googleCtPolicy == null) {
@@ -496,6 +519,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
         return googleCtPolicy;
     }
 
+    @Deprecated(since = "9.4.0")
     public void setGoogleCtPolicy(final GoogleCtPolicy value) {
         data.put(GOOGLE_CT_POLICY, value);
     }

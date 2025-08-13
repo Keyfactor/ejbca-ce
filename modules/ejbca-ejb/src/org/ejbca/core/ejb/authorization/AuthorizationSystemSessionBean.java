@@ -47,6 +47,7 @@ import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.config.GlobalEndEntityProfileConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
@@ -124,7 +125,9 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
         final Map<Integer, String> eepIdToNameMap = endEntityProfileSession.getEndEntityProfileIdToNameMap();
         final Map<Integer,String> cryptoTokenIdToNameMap = cryptoTokenSession.getCryptoTokenIdToNameMap();
         final GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        final boolean endEntityProfileLimitationsEnabled = ignoreLimitations || globalConfiguration.getEnableEndEntityProfileLimitations();
+        final GlobalEndEntityProfileConfiguration globalEEPConfiguration = (GlobalEndEntityProfileConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalEndEntityProfileConfiguration.EEP_CONFIGURATION_ID);
+
+        final boolean endEntityProfileLimitationsEnabled = ignoreLimitations || globalEEPConfiguration.getEnableEndEntityProfileLimitations();
         final boolean keyRecoveryEnabled = ignoreLimitations || globalConfiguration.getEnableKeyRecovery();
         final Map<String, Map<String,String>> categorizedAccessRules = getAllResourceAndResourceNamesByCategory(
                 endEntityProfileLimitationsEnabled, keyRecoveryEnabled,
@@ -143,7 +146,8 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
         final Map<Integer, String> eepIdToNameMap = endEntityProfileSession.getEndEntityProfileIdToNameMap();
         final Map<Integer,String> cryptoTokenIdToNameMap = cryptoTokenSession.getCryptoTokenIdToNameMap();
         final GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        final boolean endEntityProfileLimitationsEnabled = globalConfiguration.getEnableEndEntityProfileLimitations();
+        final GlobalEndEntityProfileConfiguration globalEEPConfiguration = (GlobalEndEntityProfileConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalEndEntityProfileConfiguration.EEP_CONFIGURATION_ID);
+        final boolean endEntityProfileLimitationsEnabled = globalEEPConfiguration.getEnableEndEntityProfileLimitations();
         final boolean keyRecoveryEnabled = globalConfiguration.getEnableKeyRecovery();
         return getAllResourceAndResourceNamesByCategory(
                 endEntityProfileLimitationsEnabled, keyRecoveryEnabled, Arrays.asList(EjbcaConfiguration.getCustomAvailableAccessRules()), 

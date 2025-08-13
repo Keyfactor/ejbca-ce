@@ -36,6 +36,7 @@ import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.keys.KeyStoreCipher;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields;
@@ -825,7 +826,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 
     public boolean getSshVerifyRequired() {
         final String value = getValue(SSH_CRITICAL_OPTION_VERIFY_REQUIRED, 0);
-        return StringUtils.equals(value, TRUE) ? true : false;
+        return Strings.CS.equals(value, TRUE) ? true : false;
     }
 
     public void setSshVerifyRequired(final boolean value) {
@@ -1360,6 +1361,14 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 
     public void setIssuanceRevocationReasonModifiable(final boolean use) {
         setModifyable(ISSUANCEREVOCATIONREASON, 0, use);
+    }
+    
+    public boolean isIssuanceRevocationReasonDefault() {
+        return isRequired(ISSUANCEREVOCATIONREASON, 0);
+    }
+
+    public void setIssuanceRevocationReasonDefault(final boolean use) {
+        setRequired(ISSUANCEREVOCATIONREASON, 0, use);
     }
 
     /**
@@ -2065,7 +2074,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	}
     	if (getUse(ISSUANCEREVOCATIONREASON, 0) && !isModifyable(ISSUANCEREVOCATIONREASON, 0)) {
     		final String value = getValue(ISSUANCEREVOCATIONREASON, 0);
-    		if (!StringUtils.equals(issuanceRevReason, value)) {
+    		if (!Strings.CS.equals(issuanceRevReason, value)) {
     			throw new EndEntityProfileValidationException("Issuance revocation reason '"+issuanceRevReason+"' does not match required value '"+value+"'.");
     		}
     	}
@@ -2366,7 +2375,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
                 } else {
                     // Check that postalAddress has #der_encoding_in_hex format, i.e. a full der sequence in hex format
                     if (DnComponents.POSTALADDRESS.equals(DnComponents.dnIdToProfileName(dnId))) {
-                        if (!StringUtils.startsWith(fieldValue, "#30")) {
+                        if (!Strings.CS.startsWith(fieldValue, "#30")) {
                             throw new EndEntityProfileValidationException(DnComponents.dnIdToProfileName(dnId) + " (" + fieldValue + ") does not seem to be in #der_encoding_in_hex format. See \"End_Entity_Profiles.html\" for more information about the postalAddress (2.5.4.16) field.");
                         }
                     }
