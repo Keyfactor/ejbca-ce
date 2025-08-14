@@ -3908,7 +3908,7 @@
             "format": "int32",
             "example": 1
           },
-          "invalidityDate": {
+          "invalidity_date": {
             "type": "integer",
             "description": "Invalidity date",
             "format": "int64",

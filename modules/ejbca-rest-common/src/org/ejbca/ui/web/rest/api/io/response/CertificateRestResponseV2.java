@@ -146,6 +146,7 @@ public class CertificateRestResponseV2 {
     private Integer crlPartitionIndex;
 
     @Schema(description = "Invalidity date", example = "-1")
+    @JsonProperty("invalidity_date")
     private Long invalidityDate;
 
     private CertificateRestResponseV2(final CertificateRestResponseBuilderV2 builder) {
