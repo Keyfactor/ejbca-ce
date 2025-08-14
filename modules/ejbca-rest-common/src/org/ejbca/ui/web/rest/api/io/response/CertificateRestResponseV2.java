@@ -16,12 +16,15 @@ package org.ejbca.ui.web.rest.api.io.response;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * A class representing general information about a certificate and its CertificateData 
  * for the usage as REST response.
  */
+@JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 @JsonPropertyOrder({ "fingerprint", "cAFingerprint", "certificateProfileId", "endEntityProfileId",
     "expireDate", "issuerDN", "notBefore", "revocationDate", "revocationReason", "serialNumber", 
     "status", "subjectAltName", "subjectDN", "subjectKeyId", "tag", "type", "updateTime", "username", 
