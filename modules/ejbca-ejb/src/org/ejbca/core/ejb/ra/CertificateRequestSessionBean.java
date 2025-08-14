@@ -349,24 +349,34 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
     }
 
     /**
-     * Builds a well formatted DN from request message   
-     * @param requestX500Name
-     * @return the string containing the DN
+     * Builds a formatted Distinguished Name (DN) from the X.500 name in the request.
+     * This method processes each Relative Distinguished Name (RDN) from the input
+     * and constructs a new DN using BouncyCastle's X500NameBuilder with BCStyle formatting.
+     *
+     * @param requestX500Name the X500Name object containing the DN information from the request
+     * @return a properly formatted DN string containing all valid RDNs from the request
+     * @see org.bouncycastle.asn1.x500.X500Name
      */
+
     private String updateUserDNFromRequest(final X500Name requestX500Name) {
+        try {
+            X500NameBuilder builder = new X500NameBuilder(BCStyle.INSTANCE);
 
-        X500NameBuilder builder = new X500NameBuilder(BCStyle.INSTANCE);
-
-        // Add RDNs from request
-        for (final RDN rdn : requestX500Name.getRDNs()) {
-            AttributeTypeAndValue atv = rdn.getFirst();
-            if (atv != null) {
-                builder.addRDN(atv);
+            for (final RDN rdn : requestX500Name.getRDNs()) {
+                AttributeTypeAndValue atv = rdn.getFirst();
+                if (atv != null) {
+                    builder.addRDN(atv);
+                }
             }
-        }
-        //Return the merged DN
-        return builder.build().toString();
+            return builder.build().toString();
 
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid RDN format in X500Name: " + LogRedactionUtils.getRedactedMessage(requestX500Name.toString()));
+            throw LogRedactionUtils.getRedactedException(e);
+        } catch (NullPointerException e) {
+            log.error("Unexpected null value while processing X500Name: " + LogRedactionUtils.getRedactedMessage(requestX500Name.toString()));
+            throw LogRedactionUtils.getRedactedException(e);
+        }
     }
 
     /**
