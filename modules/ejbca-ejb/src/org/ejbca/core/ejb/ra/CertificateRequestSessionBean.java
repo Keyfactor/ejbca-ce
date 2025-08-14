@@ -190,8 +190,10 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
                     ExtendedUserDataHandler extendedUserDataHandler = (ExtendedUserDataHandler) Class.forName(preProcessorClass).getDeclaredConstructor().newInstance();
                     requestMessage = extendedUserDataHandler.processRequestMessage(requestMessage, certificateProfileSession.getCertificateProfileName(userdata.getCertificateProfileId()));
                     
-                    final String mergedDN = mergeDnFromRequestWithUserDataDN(requestMessage.getRequestX500Name(), userdata.getDN());
-                    userdata.setDN(mergedDN);
+                    final X500Name x500NameFromRequest = requestMessage.getRequestX500Name(); 
+                    if (x500NameFromRequest != null && x500NameFromRequest.getRDNs().length != 0) {
+                        userdata.setDN(updateUserDNFromRequest(x500NameFromRequest));
+                    }
                     
                 } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | IllegalArgumentException
                         | InvocationTargetException | NoSuchMethodException | SecurityException e) {
@@ -309,8 +311,10 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
                     ExtendedUserDataHandler extendedUserDataHandler = (ExtendedUserDataHandler) Class.forName(preProcessorClass).getDeclaredConstructor().newInstance();
                     req = extendedUserDataHandler.processRequestMessage(req, certificateProfileSession.getCertificateProfileName(userdata.getCertificateProfileId()));
                     
-                    final String mergedDN = mergeDnFromRequestWithUserDataDN(req.getRequestX500Name(), userdata.getDN());
-                    userdata.setDN(mergedDN);
+                    final X500Name x500NameFromRequest = req.getRequestX500Name(); 
+                    if (x500NameFromRequest != null && x500NameFromRequest.getRDNs().length != 0) {
+                        userdata.setDN(updateUserDNFromRequest(x500NameFromRequest));
+                    }
                     
                 } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | IllegalArgumentException
                         | InvocationTargetException | NoSuchMethodException | SecurityException e) {
@@ -345,53 +349,24 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
     }
 
     /**
-     * Merging a DN from request (if any) + DN already included in the userDN (if any)
+     * Builds a well formatted DN from request message   
      * @param requestX500Name
-     * @param userDn
-     * @return the string containing the merged DN
+     * @return the string containing the DN
      */
-    private String mergeDnFromRequestWithUserDataDN(X500Name requestX500Name, String userDn) {
-        
+    private String updateUserDNFromRequest(final X500Name requestX500Name) {
+
         X500NameBuilder builder = new X500NameBuilder(BCStyle.INSTANCE);
 
         // Add RDNs from request
-        if (requestX500Name != null && requestX500Name.getRDNs().length != 0) {
-            for (RDN rdn : requestX500Name.getRDNs()) {
-                AttributeTypeAndValue atv = rdn.getFirst();
-                if (atv != null) {
-                    builder.addRDN(atv);
-                }
+        for (final RDN rdn : requestX500Name.getRDNs()) {
+            AttributeTypeAndValue atv = rdn.getFirst();
+            if (atv != null) {
+                builder.addRDN(atv);
             }
         }
-
-        // Add RDNs from user DN
-        if (userDn != null && !userDn.trim().isEmpty()) {
-            try {
-                X500Name toAdd = new X500Name(userDn);
-                for (RDN rdn : toAdd.getRDNs()) {
-                    AttributeTypeAndValue atv = rdn.getFirst();
-                    if (atv != null && !containsRDN(builder.build(), atv)) {
-                        builder.addRDN(atv);
-                    }
-                }
-            } catch (Exception e) {
-                throw new IllegalArgumentException("Invalid user DN string: " + userDn, e);
-            }
-        }
-
         //Return the merged DN
         return builder.build().toString();
 
-    }
-
-    private boolean containsRDN(X500Name name, AttributeTypeAndValue atv) {
-        for (RDN rdn : name.getRDNs()) {
-            AttributeTypeAndValue existingAtv = rdn.getFirst();
-            if (existingAtv != null && existingAtv.getType().equals(atv.getType())) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
