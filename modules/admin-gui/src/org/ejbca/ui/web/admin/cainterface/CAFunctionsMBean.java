@@ -16,6 +16,8 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import jakarta.ejb.EJB;
+import jakarta.faces.context.ExternalContext;
+import jakarta.faces.context.FacesContext;
 import jakarta.faces.model.SelectItem;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
@@ -74,7 +76,9 @@ import java.util.stream.Collectors;
 public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(CAFunctionsMBean.class);
-    /** Don't spend more than 5 minutes on archiving expired certificates here. */
+    /**
+     * Don't spend more than 5 minutes on archiving expired certificates here.
+     */
     private static final long MAX_CRL_ARCHIVAL_SECS = 5 * 60;
 
     @EJB
@@ -301,8 +305,11 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
         return caGuiInfos;
     }
 
-    /** Record for caching CRL entries **/
-    record CRLKey(String subject, int partitionIndex) {}
+    /**
+     * Record for caching CRL entries
+     **/
+    record CRLKey(String subject, int partitionIndex) {
+    }
 
     private void refreshCaGuiInfos() {
         caGuiInfos = new ArrayList<>();
@@ -406,12 +413,32 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
         return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getCaPath() + "/cacert";
     }
 
+    public void prepareDownloadCertificate(final String type, final int level, final String issuer) {
+        final String certificateLinkUrl = String.format("?cmd=%s&level=%s&issuer=%s", type, level, issuer);
+        redirect(getDownloadCertificateLink() + certificateLinkUrl);
+    }
+
+    public void prepareDownloadSshPublicKey(final int level, final String name) {
+        final String sshPublicKeyLinkUrl = String.format("?level=%s&name=%s", level, name);
+        redirect(getSshPublicKeyLink() + sshPublicKeyLinkUrl);
+    }
+
     public String getSshPublicKeyLink() {
         return getEjbcaWebBean().getBaseUrl() + "ssh";
     }
 
     public String getDownloadCrlLink() {
         return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getCaPath() + "/getcrl/getcrl";
+    }
+
+    public void prepareDownloadCrlLink(final String issuer) {
+        final String downloadCrlLinkUrl = String.format("?cmd=crl&issuer=%s", issuer);
+        redirect(getDownloadCrlLink() + downloadCrlLinkUrl);
+    }
+
+    public void prepareDownloadCrlLinkPartition(final String issuer, final String partition) {
+        final String downloadCrlLinkUrl = String.format("?cmd=crl&issuer=%s&partition=%s", issuer, partition);
+        redirect(getDownloadCrlLink() + downloadCrlLinkUrl);
     }
 
     public void showJksDownloadForm(final CAGuiInfo caGuiInfo, final int index) {
