@@ -40,10 +40,10 @@ gradle.allprojects {
 dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
-            library("bcprov", ":bcprov:jdk18on-1.80")
-            library("bcpkix", ":bcpkix:jdk18on-1.80")
-            library("bctls", ":bctls:jdk18on-1.80")
-            library("bcutil", ":bcutil:jdk18on-1.80")
+            library("bcprov", ":bcprov:jdk18on-1.80.1")
+            library("bcpkix", ":bcpkix:jdk18on-1.80.1")
+            library("bctls", ":bctls:jdk18on-1.80.1")
+            library("bcutil", ":bcutil:jdk18on-1.80.1")
             library("ejbca-ws-client-gen", ":ejbca-ws-client-gen:1")
             library("caffeine", ":caffeine:3.1.6")
             library("jakartaee-api", ":jakarta.jakartaee-api:10.0.0")
@@ -116,13 +116,13 @@ dependencyResolutionManagement {
             library("slf4j.api", ":slf4j-api:2.0.16")
             library("slf4j.reload4j", ":slf4j-reload4j:2.0.16")
             // soapclient
-            library("cxf.core", ":cxf-core:4.1.1")
-            library("cxf.rt.bindings.soap", ":cxf-rt-bindings-soap:4.1.1")
-            library("cxf.rt.databinding.jaxb", ":cxf-rt-databinding-jaxb:4.1.1")
-            library("cxf.rt.frontend.jaxws", ":cxf-rt-frontend-jaxws:4.1.1")
-            library("cxf.rt.frontend.simple", ":cxf-rt-frontend-simple:4.1.1")
-            library("cxf.rt.transports.http", ":cxf-rt-transports-http:4.1.1")
-            library("cxf.rt.wsdl", ":cxf-rt-wsdl:4.1.1")
+            library("cxf.core", ":cxf-core:4.1.3")
+            library("cxf.rt.bindings.soap", ":cxf-rt-bindings-soap:4.1.3")
+            library("cxf.rt.databinding.jaxb", ":cxf-rt-databinding-jaxb:4.1.3")
+            library("cxf.rt.frontend.jaxws", ":cxf-rt-frontend-jaxws:4.1.3")
+            library("cxf.rt.frontend.simple", ":cxf-rt-frontend-simple:4.1.3")
+            library("cxf.rt.transports.http", ":cxf-rt-transports-http:4.1.3")
+            library("cxf.rt.wsdl", ":cxf-rt-wsdl:4.1.3")
             library("gmbal.api", ":gmbal-api-only:4.0.3")
             library("istack-commons-runtime", ":istack-commons-runtime:3.0.11")
             library("jaxws.rt", ":jaxws-rt:4.0.1")
@@ -399,6 +399,7 @@ include(
     "modules:clientToolBox",
     "modules:ejbca-repository",
     "modules:ejbca-repository-generator",
+    "modules:cmpclient",
 )
 
 fun loadPropertiesFromFiles(vararg filePaths: String): Properties {
