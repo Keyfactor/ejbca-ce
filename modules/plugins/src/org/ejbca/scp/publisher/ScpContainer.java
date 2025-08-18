@@ -114,7 +114,7 @@ public class ScpContainer extends UpgradeableDataHashMap implements Serializable
     }
     
     public long getUpdateTime() {
-        return (long) data.get(UPDATE_TIME);
+        return (long) data.getOrDefault(UPDATE_TIME, 0L);
     }
     
     public ScpContainer setUpdateTime(final long updateTime) {
@@ -141,7 +141,7 @@ public class ScpContainer extends UpgradeableDataHashMap implements Serializable
     }
     
     public int getCertificateType() {
-        return (int) data.get(CERTIFICATE_TYPE);
+        return (int) data.getOrDefault(CERTIFICATE_TYPE, 0);
     }
     
     public ScpContainer setCertificateProfile(final int certificateProfile) {
@@ -150,7 +150,7 @@ public class ScpContainer extends UpgradeableDataHashMap implements Serializable
     }
     
     public int getCertificateProfile() {
-        return (int) data.get(CERTIFICATE_PROFILE);
+        return (int) data.getOrDefault(CERTIFICATE_PROFILE, 0);
     }
     
     
