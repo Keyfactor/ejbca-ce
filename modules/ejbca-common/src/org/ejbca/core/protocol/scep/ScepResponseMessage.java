@@ -151,7 +151,7 @@ public class ScepResponseMessage implements CertificateResponseMessage {
     /** Default digest algorithm for SCEP response message, can be overridden */
     private transient String digestAlg = CMSSignedDataGenerator.DIGEST_SHA256;
     /** Default content encryption algorithm, can be overridden by request message */
-    private transient ASN1ObjectIdentifier contentEncAlg = SMIMECapability.dES_CBC;
+    private transient ASN1ObjectIdentifier contentEncAlg = SMIMECapability.aES256_CBC;
     /** Default key encryption algorithm, can be overridden by request message */
     private transient ASN1ObjectIdentifier keyEncAlg = PKCSObjectIdentifiers.rsaEncryption;
     
