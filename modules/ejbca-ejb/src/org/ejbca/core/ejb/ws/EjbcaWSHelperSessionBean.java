@@ -235,6 +235,7 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
             String customEndTime = userData.getEndTime();
             try {
                 if (customEndTime.length() > 0 && !customEndTime.matches("^\\d+:\\d?\\d:\\d?\\d$")) {
+                    customEndTime = customEndTime.replace("Z", "+00:00");
                     if (!customEndTime.matches("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}.\\d{2}:\\d{2}$")) {
                         // We use the old absolute time format, so we need to upgrade and log deprecation info
                         final DateFormat oldDateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US);
@@ -253,7 +254,7 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
             } catch (ParseException e) {
                 log.info("WS client supplied invalid endTime in userData. endTime for this request was ignored. Supplied SubjectDN was \""
                         + LogRedactionUtils.getSubjectDnLogSafe(userData.getSubjectDN()) + "\"");
-                throw new EjbcaException(ErrorCode.FIELD_VALUE_NOT_VALID, "Invalid date format in EndTime.");
+                throw new EjbcaException(ErrorCode.FIELD_VALUE_NOT_VALID, "Invalid date format in EndTime, was: " + customEndTime, e);
             }
         }
         if (userData.getCertificateSerialNumber() != null) {
@@ -380,17 +381,13 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
         final ExtendedInformation ei = endEntityInformation.getExtendedInformation();
         if (ei != null) {
             String startTime = ei.getCustomData(ExtendedInformation.CUSTOM_STARTTIME);
-            if (startTime != null && startTime.length() > 0 && !startTime.matches("^\\d+:\\d?\\d:\\d?\\d$")) {
+            if (startTime != null && startTime.length() > 0 && !startTime.matches("^\\d+:\\d?\\d:\\d?\\d$")) { //hh:mm:ss
                 try {
                     // Always respond with the time formatted in a neutral time zone
                     startTime = ValidityDate.getISO8601FromImpliedUTC(startTime, ValidityDate.TIMEZONE_UTC);
                 } catch (ParseException e) {
                     log.info("Failed to convert " + ExtendedInformation.CUSTOM_STARTTIME + " to ISO8601 format.");
                 }
-            }
-            //On upgrading from commons-lang to commons-lang3 (9.4), the timezone marker was added to the timestamp. Remove it to preserve legacy behavior.
-            if (startTime != null) {
-                startTime = startTime.replace("Z", "+00:00");
             }
             dataWS.setStartTime(startTime);
             String endTime = ei.getCustomData(ExtendedInformation.CUSTOM_ENDTIME);
@@ -401,9 +398,6 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
                 } catch (ParseException e) {
                     log.info("Failed to convert " + ExtendedInformation.CUSTOM_ENDTIME + " to ISO8601 format.");
                 }
-            }
-            if (endTime != null) {
-                endTime = endTime.replace("Z", "+00:00");
             }
             dataWS.setEndTime(endTime);
             // Fill custom data in extended information
