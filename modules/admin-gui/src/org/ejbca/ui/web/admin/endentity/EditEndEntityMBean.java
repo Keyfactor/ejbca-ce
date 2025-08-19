@@ -133,7 +133,6 @@ public class EditEndEntityMBean extends EndEntityBaseManagedBean implements Seri
     private int numberOfRequests = 1;
     private int revocationStatus = RevokedCertInfo.NOT_REVOKED;
     private boolean sendNotification;
-    private boolean usePrinting;
     private boolean useKeyRecovery = false;
     private MutablePair<Boolean, Boolean> keyRecoveryCheckboxStatus = new MutablePair<>();
 
@@ -1092,8 +1091,7 @@ public class EditEndEntityMBean extends EndEntityBaseManagedBean implements Seri
 
     public boolean isRenderOtherDataSection() {
         return eeProfile.getUse(EndEntityProfile.ALLOWEDREQUESTS, 0) || useKeyRecovery
-                || eeProfile.getUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0) || eeProfile.getUse(EndEntityProfile.SENDNOTIFICATION, 0)
-                || eeProfile.getUsePrinting();
+                || eeProfile.getUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0) || eeProfile.getUse(EndEntityProfile.SENDNOTIFICATION, 0);
     }
 
     public boolean isAllowedRequestsUsed() {
@@ -1202,23 +1200,7 @@ public class EditEndEntityMBean extends EndEntityBaseManagedBean implements Seri
     public void setSendNotification(boolean sendNotification) {
         this.sendNotification = sendNotification;
     }
-
-    public boolean isUsePrintingEnabled() {
-        return eeProfile.getUsePrinting();
-    }
-
-    public boolean isPrintingRequired() {
-        return userData.getPrintUserData();
-    }
-
-    public boolean isUsePrinting() {
-        return eeProfile.getPrintingDefault();
-    }
-
-    public void setUsePrinting(boolean usePrinting) {
-        this.usePrinting = usePrinting;
-    }
-
+    
     public boolean isRenderCSRSection() {
         return userData.getExtendedInformation() != null && (userData.getExtendedInformation().getCertificateRequest() != null
                 || userData.getExtendedInformation().getKeyStoreAlgorithmType() != null);
@@ -1704,7 +1686,6 @@ public class EditEndEntityMBean extends EndEntityBaseManagedBean implements Seri
 
         newUserView.setKeyRecoverable(keyRecoveryCheckboxStatus.left);
         newUserView.setSendNotification(sendNotification);
-        newUserView.setPrintUserData(usePrinting);
         newUserView = checkAndSetMainCertificateData(newUserView);
 
         // Issuance revocation reason, what state a newly issued certificate will have
