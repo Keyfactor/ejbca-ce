@@ -862,7 +862,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
     
     /** Method used to retrieve the content encryption algorithm that was used to encrypt the SCEP request
      * 
-     * @return ASN1ObjectOdentifier, typically SMIMECapability.dES_CBC or SMIMECapability.dES_EDE3_CBC
+     * @return ASN1ObjectOdentifier, typically SMIMECapability.aES256_CBC or SMIMECapability.dES_EDE3_CBC
      */
     public ASN1ObjectIdentifier getContentEncAlg() {
         return contentEncAlg;

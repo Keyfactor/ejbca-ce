@@ -352,7 +352,7 @@ public class ScepCaRollOverSystemTest extends ScepTestBase {
         byte[] retMsg = sendScep(false, msgBytes);
         assertNotNull(retMsg);
         checkScepResponse(retMsg, ROLLOVER_USER_DN, -1L, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, false, subcaCurrentCert,
-                keyTestRollover, PKCSObjectIdentifiers.rsaEncryption, SMIMECapability.dES_CBC);
+                keyTestRollover, PKCSObjectIdentifiers.rsaEncryption, SMIMECapability.aES256_CBC);
 
         // Clean up
         try {
@@ -368,7 +368,7 @@ public class ScepCaRollOverSystemTest extends ScepTestBase {
         byte[] retMsg2 = sendScep(false, msgBytes2);
         assertNotNull(retMsg2);
         checkScepResponse(retMsg2, ROLLOVER_USER_DN, rolloverStartTime, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA256, false,
-                subcaRolloverCert, keyTestRollover, PKCSObjectIdentifiers.rsaEncryption, SMIMECapability.dES_CBC);
+                subcaRolloverCert, keyTestRollover, PKCSObjectIdentifiers.rsaEncryption, SMIMECapability.aES256_CBC);
 
     }
 
@@ -396,7 +396,7 @@ public class ScepCaRollOverSystemTest extends ScepTestBase {
                 .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
                 .generateCertificate(); 
         final byte[] msgBytes = gen.generateCertReq(userDN, "foo123", transId, caRolloverCert, senderCertificate, keyTestRollover.getPrivate(),
-                PKCSObjectIdentifiers.rsaEncryption, SMIMECapability.dES_CBC);
+                PKCSObjectIdentifiers.rsaEncryption, SMIMECapability.aES256_CBC);
         assertNotNull(msgBytes);
         senderNonce = gen.getSenderNonce();
         byte[] nonceBytes = Base64.decode(senderNonce.getBytes());

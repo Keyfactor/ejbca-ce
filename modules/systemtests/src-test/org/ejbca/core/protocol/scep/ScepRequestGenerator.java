@@ -39,6 +39,7 @@ import org.bouncycastle.asn1.cms.IssuerAndSerialNumber;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.RSAESOAEPparams;
+import org.bouncycastle.asn1.smime.SMIMECapability;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.Extension;
@@ -188,7 +189,7 @@ public class ScepRequestGenerator {
     }
     
     /**
-     * @param encryptionAlg SMIMECapability.dES_CBC (DES), SMIMECapability.dES_EDE3_CBC (3DES), SMIMECapability.AES256_CBC (AES256)
+     * @param encryptionAlg SMIMECapability.dES_EDE3_CBC (3DES), SMIMECapability.AES256_CBC (AES256)
      * @param wrappingAlg PKCSObjectIdentifiers.rsaEncryption (RSA/ECB/PKCS), PKCSObjectIdentifiers.id_RSAES_OAEP (RSA/OAEP) 
      */
     private CMSEnvelopedData envelope(CMSTypedData envThis, ASN1ObjectIdentifier wrappingAlg, ASN1ObjectIdentifier encryptionAlg) throws CMSException, CertificateEncodingException {
