@@ -67,6 +67,7 @@ import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
+import java.io.UnsupportedEncodingException;
 
 @Named
 @ViewScoped
@@ -152,30 +153,38 @@ public class EditEndEntityMBean extends EndEntityBaseManagedBean implements Seri
 
     // Authentication check and audit log page access request
     @PostConstruct
-    public void initialize() throws EndEntityException {
+    public void initialize() {
 
         try {
             if (!getEjbcaWebBean().isAuthorizedNoLogSilent(AccessRulesConstants.ROLE_ADMINISTRATOR)) {
                 throw new AuthorizationDeniedException("You are not authorized to view this page.");
             }
             initializeBaseData();
-        } catch (Exception e) {
-            throw new EndEntityException("Error while initializing the class " + this.getClass().getCanonicalName(), e);
+        } catch (EndEntityException | EndEntityProfileNotFoundException |
+                 AuthorizationDeniedException | UnsupportedEncodingException e) {
+            throw new IllegalStateException("Error while initializing the class " + this.getClass().getCanonicalName(), e);
         }
 
     }
 
-    private void initializeBaseData() throws Exception {
+    private void initializeBaseData() throws EndEntityException,
+                                             EndEntityProfileNotFoundException,
+                                             AuthorizationDeniedException,
+                                             UnsupportedEncodingException {
         try {
             initData();
-        } catch (Exception e) {
+        } catch (EndEntityException | EndEntityProfileNotFoundException |
+                 AuthorizationDeniedException | UnsupportedEncodingException e) {
             addNonTranslatedErrorMessage(e.getMessage());
             throw e;
         }
     }
 
     // Initialize environment.
-    private void initData() throws Exception {
+    private void initData() throws EndEntityException,
+                                   EndEntityProfileNotFoundException,
+                                   AuthorizationDeniedException,
+                                   UnsupportedEncodingException {
         final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
         userName = request.getParameter(USER_PARAMETER);
         RequestHelper.setDefaultCharacterEncoding(request);
