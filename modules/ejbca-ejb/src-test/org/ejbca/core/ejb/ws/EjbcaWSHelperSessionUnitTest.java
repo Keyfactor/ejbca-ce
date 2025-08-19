@@ -151,8 +151,8 @@ public class EjbcaWSHelperSessionUnitTest {
         final UserDataVOWS userdata = ejbcaWsHelper.convertEndEntityInformation(endEntityInfo,
                 TEST_CANAME, TEST_EEPNAME, TEST_CPNAME, UserDataVOWS.TOKEN_TYPE_USERGENERATED);
         // Then
-        assertEquals("2019-06-30 17:53:59+00:00", userdata.getStartTime());
-        assertEquals("2019-07-31 21:15:34+00:00", userdata.getEndTime());
+        assertEquals("2019-06-30 17:53:59Z", userdata.getStartTime());
+        assertEquals("2019-07-31 21:15:34Z", userdata.getEndTime());
         log.trace("<convertToUserDataWithSeconds");
     }
 
