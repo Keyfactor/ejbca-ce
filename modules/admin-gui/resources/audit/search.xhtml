@@ -182,7 +182,7 @@
 					<h:commandButton action="#{auditor.reorderDescByCustomId}" value="▲" styleClass="sortButton"/>
 				</h:panelGroup>
 			</f:facet>
-		    <h:outputLink value="#{web.ejbcaBaseURL}#{GlobalConfiguration.ADMIN_WEB_PATH}viewcertificate.xhtml?caid=#{auditLogEntry.customId}&amp;returnTo=0" rendered="#{auditor.caIdToName[(auditLogEntry.customId)] != null}"><h:outputText value="#{auditor.caIdToName[(auditLogEntry.customId)]}"/></h:outputLink>
+		    <h:outputLink value="#{web.ejbcaBaseURL}adminweb/viewcertificate.xhtml?caid=#{auditLogEntry.customId}&amp;returnTo=0" rendered="#{auditor.caIdToName[(auditLogEntry.customId)] != null}"><h:outputText value="#{auditor.caIdToName[(auditLogEntry.customId)]}"/></h:outputLink>
 		    <h:outputText value="#{auditLogEntry.customId}" title="#{web.text.UNKNOWNCAID}" rendered="#{auditor.caIdToName[(auditLogEntry.customId)] == null}"/>
 		</h:column>
 		<h:column>
@@ -193,7 +193,7 @@
 					<h:commandButton action="#{auditor.reorderDescBySearchDetail1}" value="▲" styleClass="sortButton"/>
 				</h:panelGroup>
 			</f:facet>
-		    <h:outputLink value="#{web.ejbcaBaseURL}#{GlobalConfiguration.ADMIN_WEB_PATH}viewcertificate.xhtml?serno=#{auditLogEntry.searchDetail1}&amp;caid=#{auditLogEntry.customId}&amp;returnTo=0" rendered="#{not empty auditor.caIdToName[(auditLogEntry.customId)]}"><h:outputText value="#{auditLogEntry.searchDetail1}"/></h:outputLink>
+		    <h:outputLink value="#{web.ejbcaBaseURL}adminweb/viewcertificate.xhtml?serno=#{auditLogEntry.searchDetail1}&amp;caid=#{auditLogEntry.customId}&amp;returnTo=0" rendered="#{not empty auditor.caIdToName[(auditLogEntry.customId)]}"><h:outputText value="#{auditLogEntry.searchDetail1}"/></h:outputLink>
 		    <h:outputText value="#{auditLogEntry.searchDetail1}" rendered="#{empty auditor.caIdToName[(auditLogEntry.customId)]}"/>
 		</h:column>
 		<h:column>
@@ -204,7 +204,7 @@
 					<h:commandButton action="#{auditor.reorderDescBySearchDetail2}" value="▲" styleClass="sortButton"/>
 				</h:panelGroup>
 			</f:facet>
-		    <h:outputLink value="#{web.ejbcaBaseURL}#{GlobalConfiguration.ADMIN_WEB_PATH}viewcertificate.xhtml?username=#{auditLogEntry.searchDetail2}&amp;returnTo=0"><h:outputText value="#{auditLogEntry.searchDetail2}"/></h:outputLink>
+		    <h:outputLink value="#{web.ejbcaBaseURL}adminweb/viewcertificate.xhtml?username=#{auditLogEntry.searchDetail2}&amp;returnTo=0"><h:outputText value="#{auditLogEntry.searchDetail2}"/></h:outputLink>
 		</h:column>
 		<h:column>
 			<f:facet name="header">
@@ -220,7 +220,7 @@
 			<f:facet name="header">
 				<h:outputText value="#{auditor.nameFromColumn['additionalDetails']}"/>
 			</f:facet>
-			<h:outputLink rendered="#{auditor.stringTooLong[(auditLogEntry.mapAdditionalDetails)] > 50}" value="#{web.ejbcaBaseURL}#{GlobalConfiguration.ADMIN_WEB_PATH}audit/search.xhtml#" styleClass="expandOnClick" onclick="return false">
+			<h:outputLink rendered="#{auditor.stringTooLong[(auditLogEntry.mapAdditionalDetails)] > 50}" value="#{web.ejbcaBaseURL}adminweb/audit/search.xhtml#" styleClass="expandOnClick" onclick="return false">
 				<h:outputText value="#{auditLogEntry.mapAdditionalDetails}" title="#{auditor.mapToString(auditLogEntry.mapAdditionalDetails)}"><f:converter converterId="mapToStringConverter"/></h:outputText>
 			</h:outputLink>
 			<h:outputText rendered="#{auditor.stringTooLong[(auditLogEntry.mapAdditionalDetails)] le 50}" value="#{auditLogEntry.mapAdditionalDetails}"><f:converter converterId="mapToStringConverter"/></h:outputText>
