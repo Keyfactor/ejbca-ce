@@ -42,6 +42,7 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
@@ -153,7 +154,12 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
 
     @Deprecated(since = "9.4.0")
     public boolean getNonExistingGood() {
-        return (Boolean) getProperty(PROPERTY_NON_EXISTING_GOOD).getValue();
+        DynamicUiProperty<? extends Serializable> property = getProperty(PROPERTY_NON_EXISTING_GOOD);
+        if (property != null) {
+            return (Boolean) property.getValue();
+        } else {
+            return false;
+        }
     }
     
     @Deprecated(since = "9.4.0")
@@ -163,7 +169,12 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     
     @Deprecated(since = "9.4.0")
     public boolean getNonExistingRevoked() {
-        return (Boolean) getProperty(PROPERTY_NON_EXISTING_REVOKED).getValue();
+        DynamicUiProperty<? extends Serializable> property = getProperty(PROPERTY_NON_EXISTING_REVOKED);
+        if (property != null) {
+            return (Boolean) property.getValue();
+        } else {
+            return false;
+        }
     }
     
     @Deprecated(since = "9.4.0")
@@ -173,10 +184,12 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     
     @Deprecated(since = "9.4.0")
     public boolean getNonExistingUnauthorized() {
-        if(getProperty(PROPERTY_NON_EXISTING_UNAUTHORIZED) == null) {
-            setNonExistingUnauthorized(false);
+        DynamicUiProperty<? extends Serializable> property = getProperty(PROPERTY_NON_EXISTING_UNAUTHORIZED);
+        if (property != null) {
+            return (Boolean) property.getValue();
+        } else {
+            return false;
         }
-        return (Boolean) getProperty(PROPERTY_NON_EXISTING_UNAUTHORIZED).getValue();
     }
     
     @Deprecated(since = "9.4.0")

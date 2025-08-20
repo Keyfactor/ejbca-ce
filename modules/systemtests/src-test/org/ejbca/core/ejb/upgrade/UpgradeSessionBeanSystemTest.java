@@ -79,7 +79,6 @@ import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingNameInUseException;
-import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keybind.impl.OcspNonExistingBehavior;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
@@ -127,7 +126,6 @@ import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-import com.keyfactor.util.keys.token.KeyGenParams;
 
 /**
  * System tests for the upgrade session bean. 
@@ -1504,9 +1502,24 @@ public class UpgradeSessionBeanSystemTest {
         final String responderName = "testUpgradeOcspResponders9_4_0";
         OcspKeyBinding ocspKeyBinding = new OcspKeyBinding();
         ocspKeyBinding.setName(responderName);
+        //Set up ocsp-responder in a pre-upgrade state
+        ocspKeyBinding.setNonExistingGood(true);
+        ocspKeyBinding.setNonExistingRevoked(false);
+        ocspKeyBinding.setNonExistingUnauthorized(false);
         int keyBindingId = internalKeyBindingSession.persistInternalKeyBinding(alwaysAllowtoken, ocspKeyBinding);
         try {
-            asdsada
+            //Set up EJBCA in a pre-upgrade state
+            final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            guc.setUpgradedToVersion("9.3.0");
+            guc.setPostUpgradedToVersion("9.3.0");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+            //Perform upgrade
+            upgradeSession.upgrade(/* database */ null, /* upgrade from */ "9.3.0", /* post upgrade? */ false);
+            //Retrieve responder, verify that upgrade was performed
+            OcspKeyBinding upgradedResponder = (OcspKeyBinding) internalKeyBindingSession.getInternalKeyBinding(alwaysAllowtoken, keyBindingId);
+            assertEquals("OCSP Responder was not upgraded to 9.4.0 standard", OcspNonExistingBehavior.GOOD, upgradedResponder.getOcspNonExistingBehavior());
+            
         } finally {
             internalKeyBindingSession.deleteInternalKeyBinding(alwaysAllowtoken, keyBindingId);
         }

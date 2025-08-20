@@ -904,12 +904,14 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
             try {
                 final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingSession.getInternalKeyBinding(getAuthenticationToken(),
                         Integer.parseInt(getCurrentInternalKeyBindingId()));
-                    currentUnknownResponse = ocspKeyBinding.getOcspNonExistingBehavior();                
+                if (ocspKeyBinding != null) {
+                    currentUnknownResponse = ocspKeyBinding.getOcspNonExistingBehavior();
+                }
             } catch (NumberFormatException | AuthorizationDeniedException e) {
                 addNonTranslatedErrorMessage(e);
                 return null;
             }
-        }     
+        }
         return currentUnknownResponse;
     }
     
