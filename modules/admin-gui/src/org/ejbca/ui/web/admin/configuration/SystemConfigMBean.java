@@ -500,12 +500,13 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     @PostConstruct
-    void checkPermissions() throws AuthorizationDeniedException {
+    void checkPermissions() {
         // do this in PostConstruct instead of the ctor because it needs the app to be initialized
         if (!authorizationSession.isAuthorized(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource()) &&
                 !authorizationSession.isAuthorized(getAdmin(), StandardRules.EKUCONFIGURATION_VIEW.resource()) &&
                 !authorizationSession.isAuthorized(getAdmin(), StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource())) {
-            throw new AuthorizationDeniedException("Administrator was not authorized to any configuration.");
+            throw new IllegalStateException("Error while initializing the class " + this.getClass().getCanonicalName(),
+                                        new AuthorizationDeniedException("Administrator was not authorized to any configuration."));
         }
     }
 

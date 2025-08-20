@@ -312,7 +312,7 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
                     EventTypes.ACCESS_CONTROL, EventStatus.FAILURE,
                     EjbcaModuleTypes.RA, ServiceTypes.CORE,
                     authenticationToken.toString(),
-                    String.valueOf(caId), null, null,
+                    String.valueOf(endEntityProfileId), null, null,
                     SecurityEventProperties.builder().withMsg(msg).build().toMap()
             );
             throw new AuthorizationDeniedException(msg);

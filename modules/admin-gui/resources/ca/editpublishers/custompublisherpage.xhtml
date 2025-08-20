@@ -76,7 +76,10 @@
 			<h:outputText rendered="#{editPublisher.renderCustomHelp(property)}">
 				<br />
 			</h:outputText>
-			<h:outputText value="#{editPublisher.getCustomHelpText(property)}" styleClass="smallHelp" rendered="#{editPublisher.renderCustomHelp(property)}"/>
+                <h:panelGroup rendered="#{editPublisher.renderCustomHelp(property)}">
+                    <br/>
+                    <h:outputText value="#{editPublisher.getCustomHelpText(property)}" styleClass="smallHelp"/>
+                </h:panelGroup>
 			</h:panelGroup>
 		</c:forEach>
 
