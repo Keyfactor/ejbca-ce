@@ -2236,10 +2236,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     public List<SelectItem> getPossibleEntriesPerPage() {
-        final GlobalConfiguration globalConfig = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         final List<SelectItem> ret = new ArrayList<>();
-        final String[] possibleValues = globalConfig.getPossibleEntiresPerPage();
-        for(String value : possibleValues) {
+        for(String value : GlobalConfiguration.DEFAULT_POSSIBLE_ENTRIES_PER_PAGE) {
             ret.add(new SelectItem(Integer.parseInt(value), value));
         }
         return ret;

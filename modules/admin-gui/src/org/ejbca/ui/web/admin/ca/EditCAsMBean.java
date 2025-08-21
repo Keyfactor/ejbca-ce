@@ -348,7 +348,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     @PostConstruct
     public void initialize() {
         EditCaUtil.navigateToManageCaPageIfNotPostBack();
-        GlobalConfiguration globalconfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
         try {
             caBean = SessionBeans.getCaBean(request);
@@ -365,7 +364,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         initPageVariables(requestMap);
         viewOnly = (boolean) requestMap.getOrDefault("viewonly", false);
 
-        viewCertLink = getEjbcaWebBean().getBaseUrl() + globalconfiguration.getAdminWebPath() + "viewcertificate.xhtml";
+        viewCertLink = getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH + "viewcertificate.xhtml";
 
         try {
             cainfo = getCaBean().getCAInfo(caid).getCAInfo();
@@ -373,8 +372,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             log.error("Error while trying to get the ca info!", e);
         }
 
-        CRYPTO_TOKEN_LINK = getEjbcaWebBean().getBaseUrl() + globalconfiguration.getAdminWebPath()
-        + "cryptotoken/cryptotoken.xhtml?cryptoTokenId=";
+        CRYPTO_TOKEN_LINK = getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH + "cryptotoken/cryptotoken.xhtml?cryptoTokenId=";
 
         // Init include health check
         caInfoDto.setIncludeInHealthCheck(cainfo == null || cainfo.getIncludeInHealthCheck());
@@ -1417,7 +1415,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 }
             } else {
                 return true;
-            }
+            }     
         }
     }
 
@@ -1904,7 +1902,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public String getDownloadCertLink(){
-        return getEjbcaWebBean().getBaseUrl() + getEjbcaWebBean().getGlobalConfiguration().getCaPath() + "/cacert";
+        return getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.CA_PATH + "/cacert";
     }
 
     /**
