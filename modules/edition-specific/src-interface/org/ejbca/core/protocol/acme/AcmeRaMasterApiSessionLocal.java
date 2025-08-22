@@ -76,6 +76,9 @@ public interface AcmeRaMasterApiSessionLocal {
     /** @see org.ejbca.ui.web.protocol.acme.storage.AcmeOrderDataSessionBean#getAcmeOrderById(String) */
     AcmeOrder getAcmeOrder(String orderId);
 
+    /** @see org.ejbca.ui.web.protocol.acme.storage.AcmeOrderDataSessionBean#getIfReadyAcmeOrder(String) */
+    AcmeOrder getIfReadyAcmeOrder(String orderId);
+
     /** @see org.ejbca.ui.web.protocol.acme.storage.AcmeOrderDataSessionBean#getAcmeOrdersByAccountId(String) */
     Set<AcmeOrder> getAcmeOrdersByAccountId(String accountId);
     

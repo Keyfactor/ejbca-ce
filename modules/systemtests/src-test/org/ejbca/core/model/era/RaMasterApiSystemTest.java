@@ -227,7 +227,8 @@ public class RaMasterApiSystemTest {
             new MethodApiDescriptor("findUsernameByIssuerDnAndSerialNumber", "java.lang.String", Arrays.asList("java.lang.String", "java.lang.String"), "980858d82ee7"),
             new MethodApiDescriptor(EjbcaVersion.EJBCA_8_3_0, "generateOrKeyRecoverTokenV2", "[B", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "org.ejbca.core.model.era.GenerateOrKeyRecoverTokenRequest"), "c3c6329c0edc"),
             new MethodApiDescriptor(EjbcaVersion.EJBCA_9_3_0,"keyImportV2", "java.util.List", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "org.cesecore.keys.keyimport.KeyImportRequestData"), "a3c0246f2655"),
-            new MethodApiDescriptor("getCertificateCount", "java.lang.Long", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "java.lang.Boolean"), "940551e8dbe3")
+            new MethodApiDescriptor("getCertificateCount", "java.lang.Long", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "java.lang.Boolean"), "940551e8dbe3"),
+            new MethodApiDescriptor("getIfReadyAcmeOrder", "org.ejbca.core.protocol.acme.AcmeOrder", Arrays.asList("java.lang.String"), "287251acd17a")
     // @formatter:on
     );
 
