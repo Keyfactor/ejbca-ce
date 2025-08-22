@@ -275,9 +275,16 @@ public class CustomCertExtensionMBean extends BaseManagedBean implements Seriali
         
     @SuppressWarnings("unchecked")
     public void saveCurrentExtension() {
-        if (StringUtils.isEmpty(currentExtensionGUIInfo.getOid())) {
+        final String currentExtensionOid = currentExtensionGUIInfo.getOid();
+
+        if (StringUtils.isEmpty(currentExtensionOid)) {
             FacesContext.getCurrentInstance()
-            .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "No CustomCertificateExtension OID is set.", null));
+            .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Custom Certificate Extension OID is not set.", null));
+            return;
+        }
+        if (!OidUtils.isOidNumericalOnly(currentExtensionOid)) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Custom Certificate Extension OID contains non-numerical values.", null));
             return;
         }
         if (StringUtils.isEmpty(currentExtensionGUIInfo.getDisplayName())) {

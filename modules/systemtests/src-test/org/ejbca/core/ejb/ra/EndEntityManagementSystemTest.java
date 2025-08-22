@@ -29,7 +29,6 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.config.EjbcaConfiguration;
-import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.EjbcaAuditorTestSessionRemote;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -66,7 +65,6 @@ import static org.junit.Assert.fail;
 /**
  * Tests the EndEntityInformation entity bean and some parts of EndEntityManagementSession.
  *
- * @version $Id$
  */
 public class EndEntityManagementSystemTest extends CaTestCase {
 
@@ -633,10 +631,10 @@ public class EndEntityManagementSystemTest extends CaTestCase {
     public void testEndEntityProfileMappings() throws Exception {
         // Add a couple of profiles and verify that the mappings and get functions work
         EndEntityProfile profile1 = new EndEntityProfile();
-        profile1.setPrinterName("foo");
+        profile1.setDefaultCA(123);
         endEntityProfileSession.addEndEntityProfile(admin, PROFILE_CACHE_NAME_1, profile1);
         EndEntityProfile profile2 = new EndEntityProfile();
-        profile2.setPrinterName("bar");
+        profile2.setDefaultCA(234);
         endEntityProfileSession.addEndEntityProfile(admin, PROFILE_CACHE_NAME_2, profile2);
         int pid = endEntityProfileSession.getEndEntityProfileId(PROFILE_CACHE_NAME_1);
         String name = endEntityProfileSession.getEndEntityProfileName(pid);
@@ -645,16 +643,16 @@ public class EndEntityManagementSystemTest extends CaTestCase {
         assertEquals(pid, pid1);
         assertEquals(name, name1);
         EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(pid);
-        assertEquals("foo", profile.getPrinterName());
+        assertEquals(123, profile.getDefaultCA());
         profile = endEntityProfileSession.getEndEntityProfile(name);
-        assertEquals("foo", profile.getPrinterName());
+        assertEquals(123, profile.getDefaultCA());
 
         int pid2 = endEntityProfileSession.getEndEntityProfileId(PROFILE_CACHE_NAME_2);
         String name2 = endEntityProfileSession.getEndEntityProfileName(pid2);
         profile = endEntityProfileSession.getEndEntityProfile(pid2);
-        assertEquals("bar", profile.getPrinterName());
+        assertEquals(234, profile.getDefaultCA());
         profile = endEntityProfileSession.getEndEntityProfile(name2);
-        assertEquals("bar", profile.getPrinterName());
+        assertEquals(234, profile.getDefaultCA());
 
         // flush caches and make sure it is read correctly again
         endEntityProfileSession.flushProfileCache();
@@ -664,18 +662,18 @@ public class EndEntityManagementSystemTest extends CaTestCase {
         assertEquals(pid1, pid3);
         assertEquals(name1, name3);
         profile = endEntityProfileSession.getEndEntityProfile(pid3);
-        assertEquals("foo", profile.getPrinterName());
+        assertEquals(123, profile.getDefaultCA());
         profile = endEntityProfileSession.getEndEntityProfile(name3);
-        assertEquals("foo", profile.getPrinterName());
+        assertEquals(123, profile.getDefaultCA());
 
         int pid4 = endEntityProfileSession.getEndEntityProfileId(PROFILE_CACHE_NAME_2);
         String name4 = endEntityProfileSession.getEndEntityProfileName(pid4);
         assertEquals(pid2, pid4);
         assertEquals(name2, name4);
         profile = endEntityProfileSession.getEndEntityProfile(pid4);
-        assertEquals("bar", profile.getPrinterName());
+        assertEquals(234, profile.getDefaultCA());
         profile = endEntityProfileSession.getEndEntityProfile(name4);
-        assertEquals("bar", profile.getPrinterName());
+        assertEquals(234, profile.getDefaultCA());
 
         // Remove a profile and make sure it is not cached still
         endEntityProfileSession.removeEndEntityProfile(admin, PROFILE_CACHE_NAME_1);
@@ -694,9 +692,9 @@ public class EndEntityManagementSystemTest extends CaTestCase {
         assertEquals(pid2, pid6);
         assertEquals(name2, name6);
         profile = endEntityProfileSession.getEndEntityProfile(pid6);
-        assertEquals("bar", profile.getPrinterName());
+        assertEquals(234, profile.getDefaultCA());
         profile = endEntityProfileSession.getEndEntityProfile(name6);
-        assertEquals("bar", profile.getPrinterName());
+        assertEquals(234, profile.getDefaultCA());
     } // test07EndEntityProfileMappings
 
     /**
@@ -706,7 +704,7 @@ public class EndEntityManagementSystemTest extends CaTestCase {
     @Test
     public void testEndEntityProfileCache() throws Exception {
         EndEntityProfile profile2 = new EndEntityProfile();
-        profile2.setPrinterName("bar");
+        profile2.setDefaultCA(234);
         endEntityProfileSession.addEndEntityProfile(admin, PROFILE_CACHE_NAME_2, profile2);
 
         // First a check that we have the correct configuration, i.e. default

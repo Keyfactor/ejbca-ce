@@ -182,13 +182,21 @@
 						<h:inputTextarea cols="45" rows="2" value="#{editPublisher.publisherDescription}" disabled="#{editPublisher.readOnly}"/>
 					</h:panelGroup>
 					
-					<h:panelGroup> 
-						<h:outputText value="#{web.text.SCPPUBLISHERAUTHPUBLICKEY}" rendered="#{editPublisher.renderedScpPublisherAuthPublicKey}"/>
+					<h:panelGroup rendered="#{editPublisher.manageScpPublisher}">
+						<h:outputText value="#{web.text.SCPPUBLISHER_AUTH_PUBLIC_KEY}"/>
 					</h:panelGroup>
-					<h:panelGroup>
-						<h:inputTextarea cols="80" rows="4" value="#{editPublisher.scpPublisherAuthPublicKey}" disabled="true" 
-						                                                rendered="#{editPublisher.renderedScpPublisherAuthPublicKey}"/>
-					</h:panelGroup>
+                    <h:panelGroup rendered="#{editPublisher.manageScpPublisher}">
+                        <h:panelGroup rendered="#{editPublisher.renderedScpPublisherAuthPublicKey}">
+                            <h:inputTextarea value="#{editPublisher.scpPublisherAuthPublicKey}"
+                                             cols="80" rows="4" disabled="true"/>
+                            <br/>
+                            <h:outputText value="#{web.text.SCPPUBLISHER_AUTH_PUBLIC_KEY_HELP_TEXT_1}"
+                                          styleClass="smallHelp"/>
+                        </h:panelGroup>
+                        <h:outputText value="#{web.text.SCPPUBLISHER_AUTH_PUBLIC_KEY_HELP_TEXT_2}"
+                                      rendered="#{!editPublisher.renderedScpPublisherAuthPublicKey}"
+                                      styleClass="help"/>
+                    </h:panelGroup>
 				</h:panelGrid>
 
 				<h:panelGrid styleClass="edit-top" width="100%" columns="2"

@@ -131,7 +131,7 @@ public class SystemConfigMBeanUnitTest {
 
 		// Expect
 		assertEquals(FacesMessage.SEVERITY_ERROR, messageCapture.getValue().getSeverity());
-		assertEquals("No CustomCertificateExtension OID is set.", messageCapture.getValue().getSummary());
+		assertEquals("Custom Certificate Extension OID is not set.", messageCapture.getValue().getSummary());
 
 		verify(ejbcaWebBean, facesContext);
 	}
@@ -160,7 +160,7 @@ public class SystemConfigMBeanUnitTest {
 
 		// Expect
 		assertEquals(FacesMessage.SEVERITY_ERROR, messageCapture.getValue().getSeverity());
-		assertEquals("OID A.B.C.D contains non-numerical values.", messageCapture.getValue().getSummary());
+		assertEquals("Custom Certificate Extension OID contains non-numerical values.", messageCapture.getValue().getSummary());
 
 		verify(ejbcaWebBean, facesContext);
 	}
