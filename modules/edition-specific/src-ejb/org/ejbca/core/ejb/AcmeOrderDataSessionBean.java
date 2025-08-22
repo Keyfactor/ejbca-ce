@@ -48,6 +48,12 @@ public class AcmeOrderDataSessionBean implements AcmeOrderDataSessionRemote, Acm
     }
 
     @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public AcmeOrder getIfReadyAcmeOrder(String orderId) {
+        throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
+    }
+
+    @Override
     public Set<AcmeOrder> getAcmeOrdersByAccountId(String accountId) {
         throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
     }

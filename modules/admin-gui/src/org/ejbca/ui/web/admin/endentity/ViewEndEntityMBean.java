@@ -60,11 +60,15 @@ public class ViewEndEntityMBean extends EndEntityBaseManagedBean implements Seri
     private static final long serialVersionUID = 1L;
     
     @PostActivate
-    protected void restoreUnserializedState() throws Exception {
-        if (!getEjbcaWebBean().isAuthorizedNoLogSilent(AccessRulesConstants.ROLE_ADMINISTRATOR)) {
-            throw new AuthorizationDeniedException("You are not authorized to view this page.");
+    protected void restoreUnserializedState() {
+        try {
+            if (!getEjbcaWebBean().isAuthorizedNoLogSilent(AccessRulesConstants.ROLE_ADMINISTRATOR)) {
+                throw new AuthorizationDeniedException("You are not authorized to view this page.");
+            }
+            initData();
+        } catch (Exception e) {
+            throw new IllegalStateException("Error while restored unserialized state " + this.getClass().getCanonicalName(), e);
         }
-        initData();
     }
     
     @Override
@@ -131,14 +135,14 @@ public class ViewEndEntityMBean extends EndEntityBaseManagedBean implements Seri
 
     // Authentication check and audit log page access request
     @PostConstruct
-    public void initialize() throws EndEntityException {
+    public void initialize() {
         try {
             if (!getEjbcaWebBean().isAuthorizedNoLogSilent(AccessRulesConstants.ROLE_ADMINISTRATOR)) {
                 throw new AuthorizationDeniedException("You are not authorized to view this page.");
             }
             initData();
         } catch (Exception e) {
-            throw new EndEntityException("Error while initializing the class " + this.getClass().getCanonicalName(), e);
+            throw new IllegalStateException("Error while initializing the class " + this.getClass().getCanonicalName(), e);
         }
     }
 
@@ -593,8 +597,7 @@ public class ViewEndEntityMBean extends EndEntityBaseManagedBean implements Seri
     public boolean isRenderOtherData() {
         return (eeProfile.getUse(EndEntityProfile.ALLOWEDREQUESTS, 0)
                 || (eeProfile.getUse(EndEntityProfile.KEYRECOVERABLE, 0) && globalConfiguration.getEnableKeyRecovery())
-                || eeProfile.getUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0) || eeProfile.getUse(EndEntityProfile.SENDNOTIFICATION, 0)
-                || eeProfile.getUsePrinting());
+                || eeProfile.getUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0) || eeProfile.getUse(EndEntityProfile.SENDNOTIFICATION, 0));
     }
     
     public boolean isRenderAllowedRequests() {
@@ -698,19 +701,7 @@ public class ViewEndEntityMBean extends EndEntityBaseManagedBean implements Seri
             return ejbcaWebBean.getText("NO");
         }
     }    
-    
-    public boolean isRenderPrintUserdata() {
-        return eeProfile.getUsePrinting();
-    }
-    
-    public String getPrintUserdata() {
-        if (userData.getPrintUserData()) {
-            return ejbcaWebBean.getText("YES");
-        } else {
-            return ejbcaWebBean.getText("NO");
-        }
-    }   
-    
+        
     public boolean isRenderCsrSection() {
         return userData.getExtendedInformation() != null && 
                 (userData.getExtendedInformation().getCertificateRequest() != null || userData.getExtendedInformation().getKeyStoreAlgorithmType() != null);
