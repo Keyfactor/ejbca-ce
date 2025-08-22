@@ -23,6 +23,8 @@
 		<path refid="lib.commons-collections4.classpath"/>
 		<path refid="lib.caffeine.classpath"/>
 		<path refid="lib.guava.classpath"/>
+		<path refid="lib.jaxb.classpath"/>
+		<path refid="lib.hibernate.validator"/>
 		<path location="${mod.caa.lib}"/>
 		<path location="${mod.cesecore-ejb.lib}"/>
 		<path location="${mod.ejbca-entity.lib}"/>
