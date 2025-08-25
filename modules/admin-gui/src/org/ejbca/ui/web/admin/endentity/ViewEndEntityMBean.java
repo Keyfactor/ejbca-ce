@@ -597,8 +597,7 @@ public class ViewEndEntityMBean extends EndEntityBaseManagedBean implements Seri
     public boolean isRenderOtherData() {
         return (eeProfile.getUse(EndEntityProfile.ALLOWEDREQUESTS, 0)
                 || (eeProfile.getUse(EndEntityProfile.KEYRECOVERABLE, 0) && globalConfiguration.getEnableKeyRecovery())
-                || eeProfile.getUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0) || eeProfile.getUse(EndEntityProfile.SENDNOTIFICATION, 0)
-                || eeProfile.getUsePrinting());
+                || eeProfile.getUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0) || eeProfile.getUse(EndEntityProfile.SENDNOTIFICATION, 0));
     }
     
     public boolean isRenderAllowedRequests() {
@@ -702,19 +701,7 @@ public class ViewEndEntityMBean extends EndEntityBaseManagedBean implements Seri
             return ejbcaWebBean.getText("NO");
         }
     }    
-    
-    public boolean isRenderPrintUserdata() {
-        return eeProfile.getUsePrinting();
-    }
-    
-    public String getPrintUserdata() {
-        if (userData.getPrintUserData()) {
-            return ejbcaWebBean.getText("YES");
-        } else {
-            return ejbcaWebBean.getText("NO");
-        }
-    }   
-    
+        
     public boolean isRenderCsrSection() {
         return userData.getExtendedInformation() != null && 
                 (userData.getExtendedInformation().getCertificateRequest() != null || userData.getExtendedInformation().getKeyStoreAlgorithmType() != null);

@@ -140,7 +140,7 @@ public class CustomCertExtensionMBeanUnitTest {
 
 		// Expect
 		assertEquals(FacesMessage.SEVERITY_ERROR, messageCapture.getValue().getSeverity());
-		assertEquals("No CustomCertificateExtension OID is set.", messageCapture.getValue().getSummary());
+		assertEquals("Custom Certificate Extension OID is not set.", messageCapture.getValue().getSummary());
 
 		verify(ejbcaWebBean, facesContext);
 	}
@@ -176,6 +176,41 @@ public class CustomCertExtensionMBeanUnitTest {
 		// Expect
 		assertEquals(FacesMessage.SEVERITY_ERROR, messageCapture.getValue().getSeverity());
 		assertEquals("No CustomCertificateExtension Label is set.", messageCapture.getValue().getSummary());
+
+		verify(ejbcaWebBean, facesContext);
+	}
+
+        @Test
+	public void testSaveCurrentExtensionWithNonNumericOid() throws Exception {
+		// Given
+		final Capture<FacesMessage> messageCapture = EasyMock.newCapture();
+
+		cceConfig.addCustomCertExtension(1, "1.2.3.4.foo", "Invalid", BasicCertificateExtension.class.getName(), true, true, null);
+
+		expect(ejbcaWebBean.getEjb()).andReturn(ejbBridgeSession).anyTimes();
+		expect(ejbcaWebBean.getAvailableCustomCertExtensionsConfiguration()).andReturn(cceConfig).anyTimes();
+		expect(ejbcaWebBean.getText(anyString())).andAnswer(() -> (String) EasyMock.getCurrentArguments()[0]).anyTimes();
+
+		expect(facesContext.getExternalContext()).andReturn(externalContext).anyTimes();
+		expect(facesContext.getApplication()).andReturn(application).anyTimes();
+		facesContext.addMessage(isNull(), capture(messageCapture));
+		EasyMock.expectLastCall().once();
+
+		expect(systemConfigMBean.getSelectedCustomCertExtensionID()).andReturn(1).anyTimes();
+
+		replay(ejbcaWebBean, facesContext, systemConfigMBean);
+
+		customCertExtensionMBean = new CustomCertExtensionMBean();
+		customCertExtensionMBean.setSystemConfigMBean(systemConfigMBean);
+		customCertExtensionMBean.getCurrentExtensionGUIInfo(); // populate
+		customCertExtensionMBean.getCurrentExtensionPropertiesList(); // populate
+
+		// When
+		customCertExtensionMBean.saveCurrentExtension();
+
+		// Expect
+		assertEquals(FacesMessage.SEVERITY_ERROR, messageCapture.getValue().getSeverity());
+		assertEquals("Custom Certificate Extension OID contains non-numerical values.", messageCapture.getValue().getSummary());
 
 		verify(ejbcaWebBean, facesContext);
 	}

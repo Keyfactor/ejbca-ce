@@ -15,14 +15,7 @@ package org.ejbca.ui.web.admin.ca;
 import java.io.Serializable;
 import java.util.Map;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.faces.context.FacesContext;
-import jakarta.faces.view.ViewScoped;
-import jakarta.inject.Named;
-import jakarta.servlet.http.HttpServletRequest;
-
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAInfo;
 import org.ejbca.config.GlobalConfiguration;
@@ -30,6 +23,11 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.attribute.AttributeMapping.SESSION;
 import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
+
+import jakarta.annotation.PostConstruct;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Named;
 
 /**
  * 
@@ -41,9 +39,7 @@ import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 public class DisplayResultMBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    private static final Logger log = Logger.getLogger(DisplayResultMBean.class);
 
-    private GlobalConfiguration globalconfiguration;
     private String headline;
     
     private String[] headlines = {"CERTREQGEN","CERTIFICATEGENERATED"};
@@ -63,13 +59,6 @@ public class DisplayResultMBean extends BaseManagedBean implements Serializable 
     @PostConstruct
     public void init() {
         EditCaUtil.navigateToManageCaPageIfNotPostBack();
-        
-        final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-        try {
-            globalconfiguration = getEjbcaWebBean().initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
-        } catch (Exception e) {
-            log.error("Error while initializing the global configuration!", e);
-        }
 
         final Map<String, Object> requestMap = FacesContext.getCurrentInstance().getExternalContext().getRequestMap();
         
@@ -77,7 +66,7 @@ public class DisplayResultMBean extends BaseManagedBean implements Serializable 
         caName = (String) requestMap.get("caname");
         final CAInterfaceBean caBean = (CAInterfaceBean) requestMap.get(SESSION.CA_INTERFACE_BEAN);
         final int caType = (Integer) requestMap.get("caType");
-        final String filePath = getEjbcaWebBean().getBaseUrl() + globalconfiguration.getCaPath();
+        final String filePath = getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.CA_PATH;
 
         if (filemode == EditCaUtil.CERTGENMODE) {
             try {
