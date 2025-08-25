@@ -90,18 +90,14 @@ public class LicenseVerifierEnterpriseSessionBean {
     @EJB
     private AuthorizationSessionLocal authorizationSession;
     
-    private static LicenseState licenseState = LicenseState.MISSING;
     private static int startUpCountDown = 3;
-    
-    public static LicenseState getLicenseState() {
-        return licenseState;
-    }
-    
+        
     @Schedule(hour = "*", minute = "*/1", persistent = false)
     public void runEveryMinute() {
         startUpCountDown--;
         log.info("EJBCA license check timer triggered: " + java.time.LocalDateTime.now());
         if (!EjbcaConfiguration.getIsInProductionMode() || startUpCountDown>0) {
+        //if(startUpCountDown>0) {
             return;
         }
         
@@ -139,7 +135,7 @@ public class LicenseVerifierEnterpriseSessionBean {
     }
     
     private static void prepareFailureAction(LicenseState licenseState) {
-        LicenseVerifierEnterpriseSessionBean.licenseState = licenseState;
+        LicenseStateContainer.setLicenseState(licenseState);
         if (licenseState!=LicenseState.VALID) {
             decorateLicenseErrorMessage("EJBCA license " + licenseState.getStatusMessage() 
                                             + ". Please contact xxxx@keyfactor.com to renew license.");
@@ -148,18 +144,20 @@ public class LicenseVerifierEnterpriseSessionBean {
     
     private static void executeFailureFunction() {
         if (System.getenv("SHOOT_MY_FOOT")!=null && 
-                LicenseVerifierEnterpriseSessionBean.licenseState == LicenseState.EXPIRED_LONG_BACK) {
+                LicenseStateContainer.getLicenseState() == LicenseState.EXPIRED_LONG_BACK) {
             decorateLicenseErrorMessage("EJBCA license is expired more than 3 months ago. Shutting down...");
             System.exit(1);
         }
     }
     
     private static void decorateLicenseErrorMessage(String message) {
-        
+        StringBuilder sb = new StringBuilder();
         final String banner = "###########################################################################";
-        List.of(banner, banner, banner, "", message, "", banner, banner, banner).forEach(log::error);
-        
+        List.of(banner, banner, banner, "", message, "", banner, banner, banner).forEach(x -> {log.error(x); sb.append(x + "<br>");} );
+        LicenseStateContainer.setLicenseInvalidWarning(sb.toString());
     }
+    
+
     
     protected void validateLicense(String licenseContent) {
         byte[] licenseBytes = licenseContent.getBytes(StandardCharsets.UTF_8);
@@ -185,7 +183,7 @@ public class LicenseVerifierEnterpriseSessionBean {
         Period soonToExpireCheck = Period.between(ZonedDateTime.now().plusDays(SOON_TO_EXPIRE_DAYS).toLocalDate(),
                                                                 license.getLicense().getExpirationDate().toLocalDate());
         if (violations.isEmpty()) {
-            licenseState = LicenseState.VALID;
+            LicenseStateContainer.setLicenseState(LicenseState.VALID);
             if (soonToExpireCheck.isNegative()) {
                 prepareFailureAction(LicenseState.TO_BE_EXPIRED);
             }

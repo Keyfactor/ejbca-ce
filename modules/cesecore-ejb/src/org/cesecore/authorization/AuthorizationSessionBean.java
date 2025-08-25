@@ -143,7 +143,17 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
 
     private boolean isAuthorized(final AuthenticationToken authenticationToken, final boolean doLogging, final String... resources) {
         try {
-            final HashMap<String, Boolean> accessRules = getAccessAvailableToAuthenticationToken(authenticationToken);
+            HashMap<String, Boolean> accessRules = null;
+            // condition check will change: always use auth if License is present
+            // no license => crash
+            // no license + NO_LICENSE_PUBLIC_ACCESS=true => everyone is superadmin
+            if (System.getenv("NO_LICENSE_PUBLIC_ACCESS")==null) { 
+                accessRules = getAccessAvailableToAuthenticationToken(authenticationToken);
+            } else {
+                //log.info("Enabled public access with lack of license:" + System.getenv("NO_LICENSE_PUBLIC_ACCESS"));
+                accessRules = new HashMap<String, Boolean>();
+                accessRules.put("/", true);
+            }
             final Map<String, Object> details = doLogging ? new LinkedHashMap<>() : null;
             for (int i=0; i<resources.length; i++) {
                 final String resource = resources[i];

@@ -31,31 +31,31 @@ public class LicenseVerifierUnitTest {
     @Test
     public void test() throws EjbcaException, JAXBException {
         new LicenseVerifierEnterpriseSessionBean().validateLicense(VALID_LICENSE);
-        assertEquals(LicenseVerifierEnterpriseSessionBean.getLicenseState(), LicenseState.VALID);
+        assertEquals(LicenseStateContainer.getLicenseState(), LicenseState.VALID);
     }
     
     @Test
     public void test2() throws EjbcaException, JAXBException {
         new LicenseVerifierEnterpriseSessionBean().validateLicense(INVALID_LICENSE);
-        assertEquals(LicenseVerifierEnterpriseSessionBean.getLicenseState(), LicenseState.INVALID);
+        assertEquals(LicenseStateContainer.getLicenseState(), LicenseState.INVALID);
     }
     
     @Test
     public void test3() throws EjbcaException, JAXBException {
         new LicenseVerifierEnterpriseSessionBean().validateLicense(OTHER_PRODUCT_LICENSE);
-        assertEquals(LicenseVerifierEnterpriseSessionBean.getLicenseState(), LicenseState.INVALID);
+        assertEquals(LicenseStateContainer.getLicenseState(), LicenseState.INVALID);
     }
     
     @Test
     public void test4() throws EjbcaException, JAXBException {
         new LicenseVerifierEnterpriseSessionBean().validateLicense(INVALID_XML_LICENSE);
-        assertEquals(LicenseVerifierEnterpriseSessionBean.getLicenseState(), LicenseState.INVALID);
+        assertEquals(LicenseStateContainer.getLicenseState(), LicenseState.INVALID);
     }
     
     @Test
     public void test5() throws EjbcaException, JAXBException {
         new LicenseVerifierEnterpriseSessionBean().validateLicense(EXPIRED_LICENSE);
-        assertEquals(LicenseVerifierEnterpriseSessionBean.getLicenseState(), LicenseState.EXPIRED_LONG_BACK);
+        assertEquals(LicenseStateContainer.getLicenseState(), LicenseState.EXPIRED_LONG_BACK);
     }
 
 }
