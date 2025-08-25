@@ -33,6 +33,7 @@ dependencies {
     runtimeOnly(libs.commons.beanutils)
     runtimeOnly(libs.commons.codec)
     runtimeOnly(libs.commons.collections4)
+    runtimeOnly(libs.commons.fileupload2)
     runtimeOnly(libs.commons.fileupload2.core)
     runtimeOnly(libs.commons.io)
     runtimeOnly(libs.commons.lang)
@@ -43,7 +44,7 @@ dependencies {
     runtimeOnly(libs.cryptotokens.impl.ee)
     runtimeOnly(libs.fastInfoset)
     runtimeOnly(libs.hibernate.commons.annotations)
-    runtimeOnly(libs.istack.commons.runtime)
+    runtimeOnly(libs.istack.commons.runtime.old)
     runtimeOnly(libs.jacknji11)
     runtimeOnly(libs.jackson.jakarta.rs.base)
     runtimeOnly(libs.jackson.jakarta.rs.json.provider)
@@ -101,9 +102,6 @@ sourceSets {
         java {
             setSrcDirs(listOf("../src-cli"))
         }
-        resources {
-            srcDirs("../resources")
-        }
     }
 }
 
@@ -115,8 +113,13 @@ ext["serviceInterfaces"] = listOf(
 
 tasks.jar {
     archiveFileName.set("ejbca-db-cli.jar")
-    exclude("run.sh")
-    exclude("run.bat")
+
+    from("${project.rootDir}/modules/ejbca-entity/resources/") {
+        exclude("log4j*", "*-template.xml")
+        include("*.xml")
+        into("META-INF")
+    }
+
 
     manifest {
         val versionString = project.extra["ejbcaVersionString"] as String
@@ -153,11 +156,18 @@ tasks.register<Copy>("packageCliDistributionFiles") {
         rename("log4j-cli.xml", "log4j.xml")
     }
 
+    from("${project.rootDir}/modules/ejbca-entity/resources/persistence-cli-template.xml") {
+        into("META-INF")
+        rename { "persistence.xml" }
+    }
+
     // extra properties and configuration files
     from("${project.rootDir}/conf") {
         include("databaseprotection.properties")
         into("conf")
     }
+
+    mkdir("${distDir}/endorsed")
 
     into(distDir)
 }
