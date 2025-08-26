@@ -15,6 +15,7 @@ package org.ejbca.core.model.ra;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -35,6 +36,23 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
  */
 public class RAAuthorization implements Serializable {
 
+    /**
+     * Compare strings without case to start, then case sensitive.  Needs to be serializable
+     * since views keep the related TreeMap as member variables.
+     */
+    static public class CaseInsensitiveFirst implements Comparator<String>, Serializable {
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public int compare(String o1, String o2) {
+            int result = o1.compareToIgnoreCase(o2);
+            if (result == 0) {
+                result = o1.compareTo(o2);
+            }
+            return result;
+        }
+    }
+    
     private static final long serialVersionUID = -3195162814492440326L;
     private String authendentityprofilestring = null;
     private TreeMap<String, String> authprofilenames = null;
@@ -151,13 +169,7 @@ public class RAAuthorization implements Serializable {
 
     public TreeMap<String, String> getAuthorizedEndEntityProfileNames(final String endentityAccessRule) {
     	if (authprofilenames==null){
-            authprofilenames = new TreeMap<>((o1, o2) -> {
-                int result = o1.compareToIgnoreCase(o2);
-                if (result == 0) {
-                    result = o1.compareTo(o2);
-                }
-                return result;
-            });
+            authprofilenames = new TreeMap<>(new CaseInsensitiveFirst());
     		final Map<Integer, String> idtonamemap = endEntityProfileSession.getEndEntityProfileIdToNameMap();
     		for (final Integer id : endEntityProfileSession.getAuthorizedEndEntityProfileIds(admin, endentityAccessRule)) {
                 authprofilenames.put(idtonamemap.get(id), String.valueOf(id));

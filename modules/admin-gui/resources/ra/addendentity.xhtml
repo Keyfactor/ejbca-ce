@@ -751,19 +751,7 @@
      <h:outputLabel value="#{web.text.ACTIVATE}"
       for="useSendNotification" />
     </h:panelGroup>
-
-    <h:panelGroup rendered="#{resourceBean.usePrintingEnabled}">
-     <h:outputLabel id="usePrintingLabel"
-      value="#{web.text.PRINTUSERDATA}" style="font-size:1.2em;" />
-    </h:panelGroup>
-    <h:panelGroup rendered="#{resourceBean.usePrintingEnabled}">
-     <h:selectBooleanCheckbox id="usePrinting"
-      value="#{resourceBean.usePrinting}"
-      disabled="#{resourceBean.printingRequired}" />
-     <h:outputLabel value="#{web.text.PRINT}" for="usePrinting" />
-    </h:panelGroup>
    </h:panelGrid>
-
    <!-- Form buttons  -->
 
    <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"

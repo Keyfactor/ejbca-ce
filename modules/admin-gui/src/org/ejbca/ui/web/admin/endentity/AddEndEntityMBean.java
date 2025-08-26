@@ -133,7 +133,6 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     private int numberOfRequests = 1;
     private int revocationStatus = RevokedCertInfo.NOT_REVOKED;
     private boolean sendNotification;
-    private boolean usePrinting;
     private boolean useKeyRecovery = false;
     private String customSerialNumber;
     private List<SubjectDnFieldData> subjectDnFieldDatas;
@@ -288,7 +287,6 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
         this.cabfOrganizationIdentifier = selectedEeProfile.getCabfOrganizationIdentifier();
         this.numberOfRequests = selectedEeProfile.getAllowedRequests();
         this.setSendNotification(selectedEeProfile.getValue(EndEntityProfile.SENDNOTIFICATION,0).equals(EndEntityProfile.TRUE));
-        this.setUsePrinting(selectedEeProfile.getPrintingDefault());
         this.useKeyRecovery = getGlobalConfiguration().getEnableKeyRecovery()
                 && getEjbcaWebBean().isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_KEYRECOVERY)
                 && selectedEeProfile.getUse(EndEntityProfile.KEYRECOVERABLE, 0);
@@ -688,8 +686,7 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
         return selectedEeProfile.getUse(EndEntityProfile.ALLOWEDREQUESTS, 0) 
                 || useKeyRecovery
                 || selectedEeProfile.getUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0)
-                || selectedEeProfile.getUse(EndEntityProfile.SENDNOTIFICATION, 0) 
-                || selectedEeProfile.getUsePrinting();
+                || selectedEeProfile.getUse(EndEntityProfile.SENDNOTIFICATION, 0);
     }    
     
     
@@ -784,22 +781,6 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     public void setSendNotification(boolean sendNotification) {
         this.sendNotification = sendNotification;
     }
-
-    public boolean isUsePrintingEnabled() {
-        return selectedEeProfile.getUsePrinting();
-    }
-    
-    public boolean isPrintingRequired() {
-        return selectedEeProfile.getPrintingRequired();
-    }
-
-    public boolean isUsePrinting() {
-        return usePrinting;
-    }
-
-    public void setUsePrinting(boolean usePrinting) {
-        this.usePrinting = usePrinting;
-    }
     
     /**
      * Adds endentity using the parameters set in the GUI and if all the checks pass.
@@ -850,7 +831,6 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
         newUserView = checkAndSetMaxNumberOfRequests(newUserView);
         newUserView.setKeyRecoverable(keyRecoveryCheckboxStatus.left);
         newUserView.setSendNotification(sendNotification);
-        newUserView.setPrintUserData(usePrinting);
         newUserView = checkAndSetRevokationReason(newUserView);
         newUserView = checkAndSetValidityTimes(newUserView);
         newUserView = checkAndSetPsd2QcStatement(newUserView);
@@ -931,11 +911,11 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     }
 
     public String getViewEndEntityPopupLink(final String username) {
-        return getEjbcaWebBean().getBaseUrl() + getGlobalConfiguration().getAdminWebPath() + "ra/viewendentity.xhtml?username=" + username;
+        return getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH + "ra/viewendentity.xhtml?username=" + username;
     }
 
     public String getEditEndEntityPopupLink(final String username) {
-        return getEjbcaWebBean().getBaseUrl() + getGlobalConfiguration().getAdminWebPath() + "ra/editendentity.xhtml?username=" + username;
+        return getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH + "ra/editendentity.xhtml?username=" + username;
     }
 
     public void setConfirmPasswordFieldValue(String confirmPasswordFieldValue) {
@@ -1041,7 +1021,6 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
         this.keyRecoveryCheckboxStatus.setRight(selectedEeProfile.isRequired(EndEntityProfile.KEYRECOVERABLE,0));
         
         this.setSendNotification(selectedEeProfile.getValue(EndEntityProfile.SENDNOTIFICATION,0).equals(EndEntityProfile.TRUE));
-        this.setUsePrinting(selectedEeProfile.getPrintingDefault());
 
         composeSubjectDnFieldsAndData();
         composeSubjectAltNameFieldAndData();

@@ -1657,7 +1657,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "No ExtendedKeyUsage OID is set.", null));
             return;
         }
-        if (!isOidNumericalOnly(currentEKUOid)) {
+        if (!OidUtils.isOidNumericalOnly(currentEKUOid)) {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "OID " + currentEKUOid + " contains non-numerical values.", null));
             return;
@@ -1738,22 +1738,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             sb.append(" and " + (nrOfProfiles-nrOfdisplayedProfiles) + " more certificate profiles.");
         }
         return sb.toString();
-    }
-
-    private boolean isOidNumericalOnly(String oid) {
-        String[] oidParts = oid.split("\\.");
-        for(int i=0; i < oidParts.length ; i++) {
-            if (oidParts[i].equals("*")) {
-                // Allow wildcard characters
-                continue;
-            }
-            try {
-                Integer.parseInt(oidParts[i]);
-            } catch (NumberFormatException e) {
-                return false;
-            }
-        }
-        return true;
     }
 
     // ----------------------------------------------------
@@ -2026,12 +2010,12 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         String newOID = getNewOID();
         if (StringUtils.isEmpty(newOID)) {
             FacesContext.getCurrentInstance()
-            .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "No CustomCertificateExtension OID is set.", null));
+            .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Custom Certificate Extension OID is not set.", null));
             return;
         }
-        if (!isOidNumericalOnly(newOID)) {
+        if (!OidUtils.isOidNumericalOnly(newOID)) {
             FacesContext.getCurrentInstance()
-                    .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "OID " + newOID + " contains non-numerical values.", null));
+                    .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Custom Certificate Extension OID contains non-numerical values.", null));
             return;
         }
 
@@ -2237,10 +2221,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     public List<SelectItem> getPossibleEntriesPerPage() {
-        final GlobalConfiguration globalConfig = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         final List<SelectItem> ret = new ArrayList<>();
-        final String[] possibleValues = globalConfig.getPossibleEntiresPerPage();
-        for(String value : possibleValues) {
+        for(String value : GlobalConfiguration.DEFAULT_POSSIBLE_ENTRIES_PER_PAGE) {
             ret.add(new SelectItem(Integer.parseInt(value), value));
         }
         return ret;

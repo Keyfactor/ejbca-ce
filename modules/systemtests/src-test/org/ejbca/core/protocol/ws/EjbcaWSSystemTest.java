@@ -2659,7 +2659,6 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
             certificateProfileSession.removeCertificateProfile(intAdmin, profilename);
         }
         EndEntityProfile profile = new EndEntityProfile();
-        profile.setPrinterName("TestPrinter");
         profile.addField(DnComponents.COMMONNAME);
         profile.setUse(EndEntityProfile.KEYRECOVERABLE, 0, true);
         profile.setValue(EndEntityProfile.KEYRECOVERABLE, 0, EndEntityProfile.TRUE);
@@ -2674,12 +2673,10 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
 
             // Check that the default data are different from the data in the profile we want to retrieve
             profile = new EndEntityProfile();
-            assertFalse(Strings.CS.equals("TestPrinter", profile.getPrinterName()));
             assertFalse(profile.getUse(EndEntityProfile.KEYRECOVERABLE, 0));
 
             // Load the data from the retrieved profile and verify that the data is correct
             profile.loadData(h);
-            assertEquals("TestPrinter", profile.getPrinterName());
             assertTrue(profile.getUse(EndEntityProfile.KEYRECOVERABLE, 0));
 
         } finally {
