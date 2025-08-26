@@ -42,7 +42,6 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
@@ -154,47 +153,18 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
 
     @Deprecated(since = "9.4.0")
     public boolean getNonExistingGood() {
-        DynamicUiProperty<? extends Serializable> property = getProperty(PROPERTY_NON_EXISTING_GOOD);
-        if (property != null) {
-            return (Boolean) property.getValue();
-        } else {
-            return false;
-        }
-    }
-    
-    @Deprecated(since = "9.4.0")
-    public void setNonExistingGood(boolean nonExistingGood) {
-        setProperty(PROPERTY_NON_EXISTING_GOOD, nonExistingGood);
+        return getData(PROPERTY_NON_EXISTING_GOOD, false);
     }
     
     @Deprecated(since = "9.4.0")
     public boolean getNonExistingRevoked() {
-        DynamicUiProperty<? extends Serializable> property = getProperty(PROPERTY_NON_EXISTING_REVOKED);
-        if (property != null) {
-            return (Boolean) property.getValue();
-        } else {
-            return false;
-        }
+        return getData(PROPERTY_NON_EXISTING_REVOKED, false);
     }
     
-    @Deprecated(since = "9.4.0")
-    public void setNonExistingRevoked(boolean nonExistingRevoked) {
-        setProperty(PROPERTY_NON_EXISTING_REVOKED, nonExistingRevoked);
-    }
     
     @Deprecated(since = "9.4.0")
     public boolean getNonExistingUnauthorized() {
-        DynamicUiProperty<? extends Serializable> property = getProperty(PROPERTY_NON_EXISTING_UNAUTHORIZED);
-        if (property != null) {
-            return (Boolean) property.getValue();
-        } else {
-            return false;
-        }
-    }
-    
-    @Deprecated(since = "9.4.0")
-    public void setNonExistingUnauthorized(boolean nonExistingUnauthorized) {
-        setProperty(PROPERTY_NON_EXISTING_UNAUTHORIZED, nonExistingUnauthorized);
+        return getData(PROPERTY_NON_EXISTING_UNAUTHORIZED, false);
     }
     
     public OcspNonExistingBehavior getOcspNonExistingBehavior() {

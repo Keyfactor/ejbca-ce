@@ -42,7 +42,6 @@ import static org.junit.Assert.assertTrue;
 /**
  * System tests for InternalKeyBindingCreateCommand
  * 
- * @version $Id$
  *
  */
 public class InternalKeyBindingCreateCommandSystemTest {
@@ -51,7 +50,7 @@ public class InternalKeyBindingCreateCommandSystemTest {
     private static final String KEYBINDING_NAME = "CliTest";
     private static final String KEY_PAIR_ALIAS = "CliTest";
     private static final String[] STANDARD_ARGS = { KEYBINDING_NAME, "OcspKeyBinding", "DISABLED", "null", TESTCLASSNAME, KEY_PAIR_ALIAS,
-            "SHA256WithRSA", "-nonexistingisgood=false", "-maxAge=0", "-nonexistingisrevoked=true", "-requireTrustedSignature=true", "-untilNextUpdate=0",
+            "SHA256WithRSA", "-maxAge=0", "-requireTrustedSignature=true", "-untilNextUpdate=0",
             "-responderidtype=NAME", "-includecertchain=false" };
 
     private static final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(TESTCLASSNAME));

@@ -18,6 +18,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.cert.CertificateParsingException;
@@ -51,6 +52,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.X509CA;
+import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
@@ -79,6 +81,8 @@ import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingNameInUseException;
+import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
+import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keybind.impl.OcspNonExistingBehavior;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
@@ -1476,6 +1480,9 @@ public class UpgradeSessionBeanSystemTest {
     public void testMigrateOcspNonExistingValuesGlobal_9_4_0_failOnMultiple() throws AuthorizationDeniedException {
         GlobalOcspConfiguration currentGlobalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
         OcspNonExistingBehavior originalValue = currentGlobalOcspConfiguration.getOcspNonExistingBehavior();
+        String nonexistingisgood = cesecoreConfigSession.getConfigurationValue("ocsp.nonexistingisgood");
+        String nonexistingisrevoked = cesecoreConfigSession.getConfigurationValue("ocsp.nonexistingisrevoked");
+        String nonexistingisunauthorized = cesecoreConfigSession.getConfigurationValue("ocsp.nonexistingisunauthorized");
         try {
             //Set up EJBCA in a pre-upgrade state
             final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
@@ -1494,19 +1501,25 @@ public class UpgradeSessionBeanSystemTest {
             GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
             globalOcspConfiguration.setOcspNonExistingBehavior(originalValue);
             globalConfigSession.saveConfiguration(alwaysAllowtoken, globalOcspConfiguration);
+            cesecoreConfigSession.setConfigurationValue("ocsp.nonexistingisgood", nonexistingisgood);
+            cesecoreConfigSession.setConfigurationValue("ocsp.nonexistingisrevoked", nonexistingisrevoked);
+            cesecoreConfigSession.setConfigurationValue("ocsp.nonexistingisunauthorized", nonexistingisunauthorized);
         }    
     }
      
     @Test
-    public void testUpgradeOcspResponders9_4_0() throws InternalKeyBindingNameInUseException, AuthorizationDeniedException {
+    public void testUpgradeOcspResponders9_4_0() throws InternalKeyBindingNameInUseException, AuthorizationDeniedException, CryptoTokenOfflineException, InvalidAlgorithmException, InternalKeyBindingNonceConflictException {
         final String responderName = "testUpgradeOcspResponders9_4_0";
-        OcspKeyBinding ocspKeyBinding = new OcspKeyBinding();
-        ocspKeyBinding.setName(responderName);
-        //Set up ocsp-responder in a pre-upgrade state
-        ocspKeyBinding.setNonExistingGood(true);
-        ocspKeyBinding.setNonExistingRevoked(false);
-        ocspKeyBinding.setNonExistingUnauthorized(false);
-        int keyBindingId = internalKeyBindingSession.persistInternalKeyBinding(alwaysAllowtoken, ocspKeyBinding);
+        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(alwaysAllowtoken, "foo123".toCharArray(), true, false, responderName,
+                "1024", "1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);     
+        
+        final Map<String, Serializable> dataMap = new LinkedHashMap<>();
+        dataMap.put("nonexistingisgood", Boolean.TRUE);
+        int keyBindingId = internalKeyBindingSession.createInternalKeyBinding(alwaysAllowtoken, OcspKeyBinding.IMPLEMENTATION_ALIAS, responderName, InternalKeyBindingStatus.ACTIVE, null,
+                cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS,  AlgorithmConstants.SIGALG_SHA1_WITH_RSA, dataMap, null);
+        
+        OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingSession.getInternalKeyBinding(alwaysAllowtoken, keyBindingId);
+        assertEquals(true, ocspKeyBinding.getNonExistingGood());
         try {
             //Set up EJBCA in a pre-upgrade state
             final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
@@ -1522,6 +1535,7 @@ public class UpgradeSessionBeanSystemTest {
             
         } finally {
             internalKeyBindingSession.deleteInternalKeyBinding(alwaysAllowtoken, keyBindingId);
+            CryptoTokenTestUtils.removeCryptoToken(alwaysAllowtoken, cryptoTokenId);
         }
     }
     
