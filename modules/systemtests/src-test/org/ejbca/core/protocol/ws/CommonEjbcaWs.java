@@ -1238,7 +1238,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         final CertReqMsg certReqMsg = CertReqMsg.getInstance(certificateRequestMessage.getEncoded());
         // Sanity check the created request
         if (useProofOfPossession && publicKeyMacPassword!=null) {
-            final POPOSigningKey popoSigningKey = POPOSigningKey.getInstance(certReqMsg.getPopo().getObject());
+            final POPOSigningKey popoSigningKey = POPOSigningKey.getInstance(certReqMsg.getPop().getObject());
             assertNotNull("PublicKeyMAC was null in request!", popoSigningKey.getPoposkInput().getPublicKeyMAC());
             assertNull("Subject should not be set.", certReqMsg.getCertReq().getCertTemplate().getSubject());
         }
