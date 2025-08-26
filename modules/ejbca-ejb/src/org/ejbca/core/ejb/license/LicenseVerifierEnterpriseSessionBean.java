@@ -143,7 +143,7 @@ public class LicenseVerifierEnterpriseSessionBean {
     }
     
     private static void executeFailureFunction() {
-        if (System.getenv("SHOOT_MY_FOOT")!=null && 
+        if (System.getenv("SHOOT_MY_FOOT")!=null && System.getenv("NO_LICENSE_PUBLIC_ACCESS")==null &&
                 LicenseStateContainer.getLicenseState() == LicenseState.EXPIRED_LONG_BACK) {
             decorateLicenseErrorMessage("EJBCA license is expired more than 3 months ago. Shutting down...");
             System.exit(1);
