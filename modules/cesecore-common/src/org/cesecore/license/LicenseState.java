@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.license;
+package org.cesecore.license;
 
 public enum LicenseState {
     // Not expired and license is for EJBCA. No capacity check done.

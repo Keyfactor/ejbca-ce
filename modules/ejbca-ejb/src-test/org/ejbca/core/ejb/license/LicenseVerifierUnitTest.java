@@ -11,6 +11,8 @@ package org.ejbca.core.ejb.license;
 
 import static org.junit.Assert.assertEquals;
 
+import org.cesecore.license.LicenseState;
+import org.cesecore.license.LicenseStateContainer;
 import org.ejbca.core.EjbcaException;
 import org.junit.Test;
 

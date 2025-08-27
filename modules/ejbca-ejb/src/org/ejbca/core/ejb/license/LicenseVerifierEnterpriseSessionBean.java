@@ -44,6 +44,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
 import org.cesecore.authorization.AuthorizationSessionLocal;
+import org.cesecore.license.LicenseState;
+import org.cesecore.license.LicenseStateContainer;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.license.model.License;
 import org.ejbca.core.ejb.license.model.LicenseData;
@@ -95,7 +97,7 @@ public class LicenseVerifierEnterpriseSessionBean {
     @Schedule(hour = "*", minute = "*/1", persistent = false)
     public void runEveryMinute() {
         startUpCountDown--;
-        log.info("EJBCA license check timer triggered: " + java.time.LocalDateTime.now());
+        log.debug("EJBCA license check timer triggered: " + java.time.LocalDateTime.now());
         if (!EjbcaConfiguration.getIsInProductionMode() || startUpCountDown>0) {
         //if(startUpCountDown>0) {
             return;
@@ -103,14 +105,14 @@ public class LicenseVerifierEnterpriseSessionBean {
         
         boolean publicAccessEnabled = 
                 authorizationSession.isAuthorizedNoLogging(new PublicAccessAuthenticationToken("LicenseVerifier", true), "/");
-        log.info("EJBCA license check publicAccessEnabled: " + publicAccessEnabled);
+        log.debug("EJBCA license check publicAccessEnabled: " + publicAccessEnabled);
         
         String licenseContent = readLicenseFile();
         if (licenseContent!=null) {
             validateLicense(licenseContent);
         }
         
-        if (!publicAccessEnabled) {
+        if (!publicAccessEnabled) { // high chance of new installation
             executeFailureFunction();
         }
     }
@@ -143,17 +145,19 @@ public class LicenseVerifierEnterpriseSessionBean {
     }
     
     private static void executeFailureFunction() {
-        if (System.getenv("SHOOT_MY_FOOT")!=null && System.getenv("NO_LICENSE_PUBLIC_ACCESS")==null &&
-                LicenseStateContainer.getLicenseState() == LicenseState.EXPIRED_LONG_BACK) {
-            decorateLicenseErrorMessage("EJBCA license is expired more than 3 months ago. Shutting down...");
-            System.exit(1);
-        }
+        // commented out as definitely not part of 9.4.0
+//        if (System.getenv("SHOOT_MY_FOOT")!=null && System.getenv("NO_LICENSE_PUBLIC_ACCESS")==null &&
+//                LicenseStateContainer.getLicenseState() == LicenseState.EXPIRED_LONG_BACK) {
+//            decorateLicenseErrorMessage("EJBCA license is expired more than 3 months ago. Shutting down...");
+//            System.exit(1);
+//        }
     }
     
     private static void decorateLicenseErrorMessage(String message) {
         StringBuilder sb = new StringBuilder();
         final String banner = "###########################################################################";
-        List.of(banner, banner, banner, "", message, "", banner, banner, banner).forEach(x -> {log.error(x); sb.append(x + "<br>");} );
+        List.of(banner, banner, banner, "", message, "", banner, banner, banner).forEach(log::error);
+        List.of(banner, "", message, "", banner ).forEach(x -> sb.append(x + "<br>"));
         LicenseStateContainer.setLicenseInvalidWarning(sb.toString());
     }
     
