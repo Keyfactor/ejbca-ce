@@ -12,7 +12,7 @@ dependencies {
     compileOnly(libs.bcprov)
     compileOnly(libs.bctls)
     compileOnly(libs.bcutil)
-    compileOnly(libs.commons.lang)
+    compileOnly(libs.commons.lang3)
     compileOnly(libs.commons.fileupload2)
     compileOnly(libs.commons.fileupload2.core)
     compileOnly(libs.commons.io)

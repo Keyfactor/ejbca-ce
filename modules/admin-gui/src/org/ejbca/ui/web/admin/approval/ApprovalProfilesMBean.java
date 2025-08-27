@@ -26,7 +26,7 @@ import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.model.ListDataModel;
 import jakarta.inject.Named;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAInfo;

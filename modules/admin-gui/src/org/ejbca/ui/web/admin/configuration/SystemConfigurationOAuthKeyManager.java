@@ -31,7 +31,7 @@ import java.util.function.Supplier;
 import jakarta.servlet.http.Part;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Base64;

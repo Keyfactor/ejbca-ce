@@ -12,7 +12,11 @@
  *************************************************************************/
 package org.ejbca.ui.cli.config.est;
 
-import org.apache.commons.lang.StringUtils;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CaSessionRemote;
@@ -29,10 +33,6 @@ import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Update command for EST configuration.
@@ -70,7 +70,7 @@ public class UpdateCommand extends BaseEstConfigCommand {
         List<String> bkeys = EstConfiguration.EST_BOOLEAN_KEYS;
 
         if (bkeys.contains(key)) {
-            value = Boolean.toString(StringUtils.equalsIgnoreCase(value, "true"));
+            value = Boolean.toString(Strings.CI.equals(value, "true"));
         }
 
         key = alias + "." + key;

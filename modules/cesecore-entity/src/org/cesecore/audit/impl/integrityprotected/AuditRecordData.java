@@ -22,7 +22,7 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.cesecore.audit.AuditLogEntry;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventType;

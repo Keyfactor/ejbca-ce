@@ -25,7 +25,6 @@ import jakarta.faces.context.FacesContext;
 import jakarta.inject.Named;
 
 import org.apache.commons.lang3.StringUtils;
-import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;

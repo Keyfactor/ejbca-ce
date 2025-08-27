@@ -20,7 +20,7 @@ import java.security.PublicKey;
 import java.security.cert.CertificateParsingException;
 import java.text.ParseException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.oauth.OAuthPublicKey;

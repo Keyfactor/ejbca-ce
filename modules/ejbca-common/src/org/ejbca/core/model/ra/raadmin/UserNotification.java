@@ -18,7 +18,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 
 import com.keyfactor.util.StringTools;
@@ -179,11 +180,11 @@ public class UserNotification implements Serializable, Cloneable {
             return ret;
         }
         UserNotification o = (UserNotification)obj;
-        if ( StringUtils.equals(this.getNotificationSender(), o.getNotificationSender()) &&
-        	 StringUtils.equals(this.getNotificationRecipient(), o.getNotificationRecipient()) &&
-        	 StringUtils.equals(this.getNotificationSubject(), o.getNotificationSubject()) &&
-        	 StringUtils.equals(this.getNotificationMessage(), o.getNotificationMessage()) &&
-        	 StringUtils.equals(this.getNotificationEvents(), o.getNotificationEvents()) ) {
+        if ( Strings.CS.equals(this.getNotificationSender(), o.getNotificationSender()) &&
+        	 Strings.CS.equals(this.getNotificationRecipient(), o.getNotificationRecipient()) &&
+        	 Strings.CS.equals(this.getNotificationSubject(), o.getNotificationSubject()) &&
+        	 Strings.CS.equals(this.getNotificationMessage(), o.getNotificationMessage()) &&
+        	 Strings.CS.equals(this.getNotificationEvents(), o.getNotificationEvents()) ) {
         	ret = true;
         }
         return ret;

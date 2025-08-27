@@ -17,8 +17,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.math.IntRange;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.IntegerRange;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -100,7 +100,7 @@ public class CaGetCrlCommand extends BaseCaAdminCommand {
                 throw new CADoesntExistsException();
             }
             final String issuerDN = caInfo.getSubjectDN();
-            final IntRange allCrlPartitionIndexes = caInfo.getAllCrlPartitionIndexes();
+            final IntegerRange allCrlPartitionIndexes = caInfo.getAllCrlPartitionIndexes();
             int crlPartitionIndex = CertificateConstants.NO_CRL_PARTITION;
             String crlPartitionOutputString = "";
             if(allCrlPartitionIndexes == null) {

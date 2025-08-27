@@ -12,8 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.Strings;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.control.CryptoTokenRules;
@@ -47,7 +46,6 @@ import java.io.Serializable;
 public class AdminMenuBean extends BaseManagedBean implements Serializable {
     
     private static final long serialVersionUID = 1L;
-    private static final Logger log = Logger.getLogger(AdminMenuBean.class);
     
     @EJB
     private AuthorizationSessionLocal authorizationSession;
@@ -259,7 +257,7 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
         showBadLicenseInvalidMessage();
         String url = getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH;
         // This most likely always ends with a / but make damn sure
-        if (!StringUtils.endsWith(url, "/")) {
+        if (!Strings.CS.endsWith(url, "/")) {
             url += "/";
         }
         return url;

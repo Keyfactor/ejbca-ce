@@ -21,7 +21,7 @@ import java.util.Locale;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Transient;
 
-import org.apache.commons.lang.ClassUtils;
+import org.apache.commons.lang3.ClassUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;

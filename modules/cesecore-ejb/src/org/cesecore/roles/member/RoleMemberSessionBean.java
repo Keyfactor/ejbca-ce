@@ -19,12 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import jakarta.ejb.EJB;
-import jakarta.ejb.Stateless;
-import jakarta.ejb.TransactionAttribute;
-import jakarta.ejb.TransactionAttributeType;
-
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventType;
@@ -43,6 +38,11 @@ import org.cesecore.internal.InternalResources;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleDataSessionLocal;
 import org.cesecore.roles.management.RoleSessionLocal;
+
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 
 /**
  * @see RoleMemberSessionRemote
@@ -157,7 +157,7 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
         if (addedRoleMember || oldRoleMember.getTokenMatchOperator()!=persistedRoleMember.getTokenMatchOperator()) {
             details.put("tokenMatchOperator", persistedRoleMember.getAccessMatchType().name() + " (" + persistedRoleMember.getTokenMatchOperator()+ ")");
         }
-        if (addedRoleMember || !StringUtils.equals(oldRoleMember.getTokenMatchValue(), persistedRoleMember.getTokenMatchValue())) {
+        if (addedRoleMember || !Strings.CS.equals(oldRoleMember.getTokenMatchValue(), persistedRoleMember.getTokenMatchValue())) {
             details.put("tokenMatchValue", persistedRoleMember.getTokenMatchValue());
         }
         if (addedRoleMember || oldRoleMember.getRoleId()!=persistedRoleMember.getRoleId()) {
@@ -165,7 +165,7 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
             details.put("nameSpace", role.getNameSpace());
             details.put("roleName", role.getRoleName());
         }
-        if (addedRoleMember || !StringUtils.equals(oldRoleMember.getDescription(), persistedRoleMember.getDescription())) {
+        if (addedRoleMember || !Strings.CS.equals(oldRoleMember.getDescription(), persistedRoleMember.getDescription())) {
             details.put("description", persistedRoleMember.getDescription());
         }
         final EventType eventType = addedRoleMember ? EventTypes.ROLE_ACCESS_USER_ADDITION : EventTypes.ROLE_ACCESS_USER_CHANGE;
@@ -245,7 +245,7 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
                     current.getTokenIssuerId()==roleMember.getTokenIssuerId() &&
                     current.getTokenMatchKey()==roleMember.getTokenMatchKey() &&
                     current.getTokenMatchOperator()==roleMember.getTokenMatchOperator() &&
-                    StringUtils.equals(current.getTokenMatchValue(), roleMember.getTokenMatchValue())) {
+                    Strings.CS.equals(current.getTokenMatchValue(), roleMember.getTokenMatchValue())) {
                 count++;
             }
         }

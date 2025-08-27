@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jcajce.provider.asymmetric.util.EC5Util;
 import org.bouncycastle.math.ec.ECPoint;
@@ -83,7 +83,7 @@ public class EccKeyValidator extends KeyValidatorBase {
     }
 
     @Override
-    @SuppressWarnings({"serial", "unchecked"})
+    @SuppressWarnings({"unchecked"})
     public void initDynamicUiModel() {
         super.initDynamicUiModel();
         final DynamicUiProperty<Integer> settingsTemplate = new DynamicUiProperty<>(Integer.class, SETTINGS_TEMPLATE, getSettingsTemplate(), KeyValidatorSettingsTemplate.types());

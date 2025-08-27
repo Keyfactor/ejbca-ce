@@ -15,7 +15,7 @@ package org.ejbca.ui.cli.config.cmp;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -65,12 +65,12 @@ public class UpdateCommand extends BaseCmpConfigCommand {
         String value = parameters.get(VALUE_KEY);
         List<String> bkeys = CmpConfiguration.CMP_BOOLEAN_KEYS;
 
-        if (StringUtils.equals(key, CmpConfiguration.CONFIG_OPERATIONMODE)) {
-            if (!StringUtils.equalsIgnoreCase(value, "ra")) {
+        if (Strings.CS.equals(key, CmpConfiguration.CONFIG_OPERATIONMODE)) {
+            if (!Strings.CI.equals(value, "ra")) {
                 value = "client";
             }
         } else if (bkeys.contains(key)) {
-            value = Boolean.toString(StringUtils.equalsIgnoreCase(value, "true"));
+            value = Boolean.toString(Strings.CI.equals(value, "true"));
         }
 
         key = alias + "." + key;
