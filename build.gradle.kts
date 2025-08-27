@@ -617,6 +617,7 @@ val moduleShortcuts = mapOf(
     "cmpclient" to ":modules:cmpclient:build",
     "ejbca-caa-cli" to ":modules:caa:cli:build",
     "ejbca-ejb-cli" to ":modules:ejbca-ejb-cli:build",
+    "p11ng-cli" to ":modules:p11ng-cli:build",
 )
 
 moduleShortcuts.forEach { (shortcut, fullPath) ->
