@@ -126,16 +126,6 @@ public class UpgradeBean extends BaseManagedBean implements Serializable {
         return isPostUpgradeRequired() && !isPostUpgradeInProgress() && postUpgradeStarted!=0L && postUpgradeStarted+60000L<=System.currentTimeMillis();
     }
 
-    /** @return true is there is specific post-upgrade instructions that should be rendered */
-    public boolean isRenderPostUpgradeInfoNotes() {
-        return isRenderPostUpgradeInfoTo680();
-    }
-
-    /** @return true is this post-upgrade will include an upgrade to EJBCA 6.8.0 */
-    public boolean isRenderPostUpgradeInfoTo680() {
-        return upgradeSession.isLesserThan(getLastPostUpgradedToVersion(), "6.8.0");
-    }
-
     /** @return info logged by the upgrade code */
     public List<LogEvent> getLogged() {
         final List<LogEvent> ret = new ArrayList<>();
