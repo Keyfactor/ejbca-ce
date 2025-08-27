@@ -911,11 +911,11 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     }
 
     public String getViewEndEntityPopupLink(final String username) {
-        return getEjbcaWebBean().getBaseUrl() + getGlobalConfiguration().getAdminWebPath() + "ra/viewendentity.xhtml?username=" + username;
+        return getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH + "ra/viewendentity.xhtml?username=" + username;
     }
 
     public String getEditEndEntityPopupLink(final String username) {
-        return getEjbcaWebBean().getBaseUrl() + getGlobalConfiguration().getAdminWebPath() + "ra/editendentity.xhtml?username=" + username;
+        return getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH + "ra/editendentity.xhtml?username=" + username;
     }
 
     public void setConfirmPasswordFieldValue(String confirmPasswordFieldValue) {

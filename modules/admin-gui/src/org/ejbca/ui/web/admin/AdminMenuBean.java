@@ -257,7 +257,7 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
      */
     public String getAdminWebUrl() {
         showBadLicenseInvalidMessage();
-        String url = getEjbcaWebBean().getBaseUrl() + getGlobalConfiguration().getAdminWebPath();
+        String url = getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH;
         // This most likely always ends with a / but make damn sure
         if (!StringUtils.endsWith(url, "/")) {
             url += "/";
