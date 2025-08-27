@@ -16,7 +16,7 @@ import java.security.cert.Certificate;
 import java.util.Date;
 import java.util.HashMap;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.util.dn.DNFieldsUtil;

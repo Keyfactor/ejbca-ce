@@ -21,7 +21,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Optional;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.KeyEncryptionPaddingAlgorithm;
 import org.cesecore.certificates.ca.CA;
@@ -155,7 +156,7 @@ public class KeyRecoveryCAService extends ExtendedCAService implements Serializa
 						log.debug("Decryption with alias '"+keyAlias+"' failed, trying defaultAlias: ", e);
 					}
 					// Did we use the wrong key alias? Try with the default one, if we din't do that already
-					if (!StringUtils.equals(keyAlias, defaultAlias)) {
+					if (!Strings.CS.equals(keyAlias, defaultAlias)) {
 						if (log.isDebugEnabled()) {
 							log.debug("Trying to decrypt using default alias '"+defaultAlias+"' from crypto token "+cryptoToken.getId());
 						}

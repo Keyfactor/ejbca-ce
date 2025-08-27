@@ -16,7 +16,7 @@ import jakarta.validation.Constraint;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import jakarta.validation.Payload;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.ejbca.ui.web.rest.api.io.request.KeyImportRestRequestV2;
 import org.ejbca.ui.web.rest.api.io.request.KeystoreRestRequestComponent;
 

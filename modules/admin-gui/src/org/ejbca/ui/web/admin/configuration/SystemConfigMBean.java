@@ -43,7 +43,8 @@ import java.util.zip.ZipInputStream;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.tokens.OAuth2AuthenticationToken;
@@ -62,9 +63,9 @@ import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.EABConfiguration;
 import org.cesecore.config.GlobalCaConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
-import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.GlobalCtConfiguration;
 import org.cesecore.config.GlobalEndEntityProfileConfiguration;
+import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.InvalidConfigurationException;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.config.RaStyleInfo;
@@ -1622,7 +1623,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 int length = Math.min(oidFirst.length, oidSecond.length);
                 try {
                     for(int i=0; i<length ; i++) {
-                        if(!StringUtils.equals(oidFirst[i], oidSecond[i])) {
+                        if(!Strings.CS.equals(oidFirst[i], oidSecond[i])) {
                             if(Integer.parseInt(oidFirst[i]) < Integer.parseInt(oidSecond[i])) {
                                 return -1;
                             }

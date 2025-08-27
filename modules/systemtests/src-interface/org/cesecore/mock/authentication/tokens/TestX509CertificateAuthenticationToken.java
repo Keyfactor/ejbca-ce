@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
 
 import javax.security.auth.x500.X500Principal;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.InvalidAuthenticationTokenException;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
@@ -92,7 +92,7 @@ public class TestX509CertificateAuthenticationToken extends X509CertificateAuthe
         int parameter;
         int size = 0;
         String[] clientstrings = null;
-        if (StringUtils.equals(getMetaData().getTokenType(), accessUser.getTokenType())) {
+        if (Strings.CS.equals(getMetaData().getTokenType(), accessUser.getTokenType())) {
             // First check that issuers match.
             if (accessUser.getCaId()!=null && accessUser.getCaId().intValue() == adminCaId) {
                 // Determine part of certificate to match with.

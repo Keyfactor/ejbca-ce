@@ -122,7 +122,6 @@ dependencies {
     earlib(libs.commons.fileupload2)
     earlib(libs.commons.fileupload2.core)
     earlib(libs.commons.io)
-    earlib(libs.commons.lang)
     earlib(libs.commons.lang3)
     earlib(libs.commons.logging)
     earlib(libs.commons.text)

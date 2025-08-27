@@ -9,7 +9,7 @@ dependencies {
     compileOnly(project(":modules:ejbca-common"))
     compileOnly(project(":modules:ejbca-ejb-interface"))
     compileOnly(libs.jakartaee.api)
-    compileOnly(libs.commons.lang)
+    compileOnly(libs.commons.lang3)
     compileOnly(libs.log4j.v12.api)
 }
 

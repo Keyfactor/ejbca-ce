@@ -20,7 +20,7 @@ import java.security.cert.CertificateParsingException;
 import java.util.Date;
 
 import java.util.regex.Pattern;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.cvc.AlgorithmUtil;
 import org.ejbca.cvc.AuthorizationRole;

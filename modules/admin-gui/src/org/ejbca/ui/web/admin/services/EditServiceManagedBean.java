@@ -27,7 +27,8 @@ import jakarta.faces.event.ValueChangeEvent;
 import jakarta.faces.model.SelectItem;
 import jakarta.inject.Named;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
@@ -185,7 +186,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
         if (StringUtils.isEmpty(StringUtils.trim(serviceNameToCheck))) {
             addErrorMessage("YOUHAVETOENTERASERVICE");
             return true;
-        } else if (StringUtils.contains(serviceNameToCheck, ";")) {
+        } else if (Strings.CS.contains(serviceNameToCheck, ";")) {
             addErrorMessage("THECHARACTERSARENTALLOWED");
             return true;
         }

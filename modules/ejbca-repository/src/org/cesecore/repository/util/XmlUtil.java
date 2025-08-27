@@ -13,20 +13,17 @@
 
 package org.cesecore.repository.util;
 
-import org.cesecore.util.Base64GetHashMap;
-import org.cesecore.util.Base64PutHashMap;
-import org.cesecore.util.SecureXMLDecoder;
-
-import java.beans.XMLDecoder;
-import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import org.cesecore.util.Base64GetHashMap;
+import org.cesecore.util.Base64PutHashMap;
+import org.cesecore.util.SecureXMLDecoder;
 
 public final class XmlUtil {
 

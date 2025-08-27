@@ -34,7 +34,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.x509.Extensions;

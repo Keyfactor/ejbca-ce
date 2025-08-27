@@ -21,7 +21,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang.math.NumberUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -66,7 +66,7 @@ public class CryptoTokenDownloadServlet extends BaseAdminServlet {
         log.trace(">doGet()");
         final AuthenticationToken admin = getAuthenticationToken(request);
         final String cryptoTokenIdParam = request.getParameter("cryptoTokenId");
-        if (!NumberUtils.isNumber(cryptoTokenIdParam)) {
+        if (!NumberUtils.isCreatable(cryptoTokenIdParam)) {
             if (log.isDebugEnabled()) {
                 log.debug("No crypto token with id: " + cryptoTokenIdParam);                
             }

@@ -14,13 +14,13 @@ package org.ejbca.util.query;
 
 import java.io.Serializable;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.Strings;
+
 
 /**
  * A base class used by Query class to build a query. Inherited by UserMatch, TimeMatch and
  * LogMatch. Main function is getQueryString which is abstract and must be overloaded.
  *
- * @version $Id$
  */
 public abstract class BasicMatch implements Serializable {
     
@@ -41,7 +41,10 @@ public abstract class BasicMatch implements Serializable {
 
     /** Escape single quotes as double quotes */
     public String escapeSql(final String matchValue) {
-        return StringEscapeUtils.escapeSql(matchValue);
+        if (matchValue == null) {
+            return null;
+        }
+        return Strings.CS.replace(matchValue, "'", "''");
     }
     
     /**

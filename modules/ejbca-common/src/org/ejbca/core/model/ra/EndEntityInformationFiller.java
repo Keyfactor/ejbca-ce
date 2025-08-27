@@ -25,7 +25,8 @@ import java.util.Set;
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.Rdn;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
@@ -276,7 +277,7 @@ public class EndEntityInformationFiller {
                     DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]),
                     entityType.equals(SUBJECT_DN) ? 
                     DNFieldExtractor.TYPE_SUBJECTDN : DNFieldExtractor.TYPE_SUBJECTALTNAME);
-            parameter = StringUtils.replace(parameter, "=", "");
+            parameter = Strings.CS.replace(parameter, "=", "");
             
             if(StringUtils.isNotEmpty(value) && value.contains(";")) {
                 // we need to address DN values with multiple valid choices
