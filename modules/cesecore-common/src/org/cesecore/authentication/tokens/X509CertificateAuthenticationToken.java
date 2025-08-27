@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
 
 import javax.security.auth.x500.X500Principal;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.user.AccessUserAspect;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
@@ -125,7 +125,7 @@ public class X509CertificateAuthenticationToken extends NestableAuthenticationTo
         boolean returnvalue = false;
         int parameter;
         int size = 0;
-        if (StringUtils.equals(getMetaData().getTokenType(), accessUser.getTokenType())) {
+        if (Strings.CS.equals(getMetaData().getTokenType(), accessUser.getTokenType())) {
             // First check that issuers match.
             if (accessUser.getCaId() == adminCaId) {
                 X500PrincipalAccessMatchValue matchValue = (X500PrincipalAccessMatchValue) getMatchValueFromDatabaseValue(accessUser.getMatchWith());

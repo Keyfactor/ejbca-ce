@@ -15,7 +15,7 @@ package org.cesecore.authentication.tokens;
 import java.util.Collections;
 import java.util.Objects;
 
-import org.apache.commons.codec.binary.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authorization.user.AccessUserAspect;
@@ -65,7 +65,7 @@ public class OAuth2AuthenticationToken extends NestableAuthenticationToken {
         if (!super.isCreatedInThisJvm()) {
             return false;
         } 
-        if (!StringUtils.equals(getMetaData().getTokenType(), accessUser.getTokenType())) {
+        if (!Strings.CS.equals(getMetaData().getTokenType(), accessUser.getTokenType())) {
             log.debug("Role token type does not match.");
             return false;
         }
@@ -112,8 +112,8 @@ public class OAuth2AuthenticationToken extends NestableAuthenticationToken {
             return false;
         }
         final OAuth2AuthenticationToken other = (OAuth2AuthenticationToken) obj;
-        return StringUtils.equals(other.encodedAccessToken, encodedAccessToken) &&
-                StringUtils.equals(other.encodedIdToken, encodedIdToken);
+        return Strings.CS.equals(other.encodedAccessToken, encodedAccessToken) &&
+                Strings.CS.equals(other.encodedIdToken, encodedIdToken);
     }
 
     @Override

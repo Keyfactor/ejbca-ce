@@ -25,7 +25,7 @@ import java.util.Map.Entry;
 
 import com.keyfactor.CesecoreException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 /**

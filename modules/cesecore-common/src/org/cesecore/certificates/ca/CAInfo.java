@@ -28,7 +28,7 @@ import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.CertificateWrapper;
 import com.keyfactor.util.certificate.DnComponents;
 
-import org.apache.commons.lang.math.IntRange;
+import org.apache.commons.lang3.IntegerRange;
 import org.cesecore.certificates.KeyEncryptionPaddingAlgorithm;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
@@ -602,7 +602,7 @@ public abstract class CAInfo implements Serializable {
      * Returns the CRL partitions' indexes for a given CA, or null if the CRL is not partitioned or the CA type does not support CRLs (e.g. CVC CA).
      * This includes suspended partitions, suspended partitions will just not have new certificates assigned to them.
      */
-    public IntRange getAllCrlPartitionIndexes() {
+    public IntegerRange getAllCrlPartitionIndexes() {
         return null;
     }
 

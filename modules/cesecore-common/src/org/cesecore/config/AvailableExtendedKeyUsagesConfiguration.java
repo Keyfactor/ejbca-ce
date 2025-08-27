@@ -22,7 +22,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.cesecore.configuration.ConfigurationBase;
 
 /**
@@ -162,7 +162,7 @@ public class AvailableExtendedKeyUsagesConfiguration extends ConfigurationBase i
         Set<Object> keyset = data.keySet();
         ArrayList<String> keys = new ArrayList<>();
         for(Object k : keyset) {
-            if(!StringUtils.equalsIgnoreCase((String) k, "version")) {
+            if(!Strings.CI.equals((String) k, "version")) {
                 keys.add( (String) k );
             }
         }

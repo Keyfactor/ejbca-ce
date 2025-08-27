@@ -19,7 +19,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.cert.X509Certificate;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Enumerated;
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -251,7 +252,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		rresp.setFailText(failText);
 		rresp.setStatus(status);
 
-		if (StringUtils.equals(responseProtection, "pbe")) {
+		if (Strings.CS.equals(responseProtection, "pbe")) {
 		    // The revocation message may have had an empty recipient, in which case we got the recipient from the CMP configuration (see above)
 		    // see https://datatracker.ietf.org/doc/html/rfc9483#section-3.1 for reasoning about the choice of the sender information
 		    if (StringUtils.isEmpty(msg.getRecipient().getName().toString())) {
@@ -290,7 +291,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 					rresp.setPbmac1Parameters(keyId, cmpRaAuthSecret, prfAlg, macAlg, iterationCount, dkLen);
 				}
 			}
-		} else if (StringUtils.equals(responseProtection, "signature")) {
+		} else if (Strings.CS.equals(responseProtection, "signature")) {
 		    try {
 				// see https://datatracker.ietf.org/doc/html/rfc9483#section-3.1 for reasoning about the choice of the sender information
 				// be aware that the sender field of the CMP message is of type GeneralName and not RDNSequence as the subject field of the certificate

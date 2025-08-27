@@ -21,7 +21,7 @@ import java.security.PublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.List;
 
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.cesecore.keys.util.CvcKeyTools;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.Certificate;
@@ -127,7 +127,7 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 					String country = DnComponents.getPartFromDN(dn, "C");
 					String mnemonic = DnComponents.getPartFromDN(dn, "CN");
 					if (sequence.equalsIgnoreCase("null")) {
-						sequence = RandomStringUtils.randomNumeric(5);
+						sequence = RandomStringUtils.secure().nextNumeric(5);
 						getPrintStream().println("No sequence given, using random 5 number sequence: "+sequence);
 					}
 					if (country == null) {

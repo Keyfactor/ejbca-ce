@@ -22,7 +22,7 @@ dependencies {
     compileOnly(libs.commons.codec)
     compileOnly(libs.commons.collections4)
     compileOnly(libs.commons.io)
-    compileOnly(libs.commons.lang)
+    compileOnly(libs.commons.lang3)
     compileOnly(libs.commons.text)
     compileOnly(libs.guava)
     compileOnly(libs.cert.cvc)

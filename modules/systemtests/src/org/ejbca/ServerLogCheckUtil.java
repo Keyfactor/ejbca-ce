@@ -22,7 +22,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.util.LogRedactionUtils;
 import org.json.simple.JSONArray;
@@ -273,6 +273,7 @@ public class ServerLogCheckUtil {
         loadWhiteListPiiConfiguration(config);
     }
     
+    @SuppressWarnings("unchecked")
     protected void loadWhiteListPiiConfiguration(String config) {
         
         if (config==null) {

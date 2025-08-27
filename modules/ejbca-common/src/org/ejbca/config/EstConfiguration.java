@@ -13,15 +13,6 @@
 
 package org.ejbca.config;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.cmc.CMCObjectIdentifiers;
-import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
-import org.cesecore.certificates.endentity.EndEntityConstants;
-import org.cesecore.configuration.ConfigurationBase;
-import org.ejbca.core.model.UsernameGenerateMode;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,6 +25,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
+import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.cmc.CMCObjectIdentifiers;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.configuration.ConfigurationBase;
+import org.ejbca.core.model.UsernameGenerateMode;
 
 
 /**
@@ -199,7 +200,7 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     public String getOperationMode(String alias) {
         String key = alias + "." + CONFIG_OPERATIONMODE;
         String value = getValue(key, alias);
-        if (StringUtils.equalsIgnoreCase(value, EstConfiguration.OPERATION_MODE_CLIENT)) {
+        if (Strings.CI.equals(value, EstConfiguration.OPERATION_MODE_CLIENT)) {
             return EstConfiguration.OPERATION_MODE_CLIENT;
         }
         return EstConfiguration.OPERATION_MODE_RA;
@@ -208,7 +209,7 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     public boolean getVendorMode(String alias) {
         String key = alias + "." + CONFIG_VENDORCERTIFICATEMODE;
         String value = getValue(key, alias);
-        return StringUtils.equalsIgnoreCase(value, "true");
+        return Strings.CI.equals(value, "true");
     }
 
     public void setVendorMode(String alias, boolean vendormode) {
@@ -219,7 +220,7 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     public boolean getAllowChangeSubjectName(String alias) {
         String key = alias + "." + CONFIG_ALLOWCHANGESUBJECTNAME;
         String value = getValue(key, alias);
-        return StringUtils.equalsIgnoreCase(value, "true");
+        return Strings.CI.equals(value, "true");
     }
 
     public void setAllowChangeSubjectName(String alias, boolean changeSubjectName) {
@@ -354,7 +355,7 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
      */
     public boolean getCert(String alias) {
         String key = alias + "." + CONFIG_REQCERT;
-        return StringUtils.equalsIgnoreCase(getValue(key, alias), "true");
+        return Strings.CI.equals(getValue(key, alias), "true");
     }
 
     /**
@@ -419,7 +420,7 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     public boolean getKurAllowSameKey(String alias) {
         String key = alias + "." + CONFIG_ALLOWUPDATEWITHSAMEKEY;
         String value = getValue(key, alias);
-        return StringUtils.equalsIgnoreCase(value, "true");
+        return Strings.CI.equals(value, "true");
     }
 
     /**
@@ -572,7 +573,7 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
         while (itr.hasNext()) {
             String oldkey = itr.next();
             String newkey = oldkey;
-            newkey = StringUtils.replace(newkey, oldAlias, newAlias);
+            newkey = Strings.CS.replace(newkey, oldAlias, newAlias);
             Object value = data.get(oldkey);
             data.put(newkey, value);
         }
@@ -607,7 +608,7 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
         while (itr.hasNext()) {
             String originalKey = itr.next();
             String cloneKey = originalKey;
-            cloneKey = StringUtils.replace(cloneKey, originAlias, cloneAlias);
+            cloneKey = Strings.CS.replace(cloneKey, originAlias, cloneAlias);
             Object value = data.get(originalKey);
             data.put(cloneKey, value);
         }
@@ -794,7 +795,7 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
         if (value == null) {
             value = DEFAULT_SUPPORT_PROXY_CA;
         }
-        return StringUtils.equalsIgnoreCase(value, "true");
+        return Strings.CI.equals(value, "true");
     }
 
     /**
@@ -820,7 +821,7 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
         if (value == null) {
             value = DEFAULT_SERVER_KEYGEN_ENABLED;
         }
-        return StringUtils.equalsIgnoreCase(value, "true");
+        return Strings.CI.equals(value, "true");
     }
 
     /**

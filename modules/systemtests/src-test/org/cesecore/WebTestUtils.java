@@ -39,7 +39,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -199,7 +199,7 @@ public final class WebTestUtils {
         assertEquals("Wrong response code (Message is: " + resp.getStatusLine().getReasonPhrase() + ")", 200, resp.getStatusLine().getStatusCode());
         assertNotNull("No response body was sent", resp.getEntity());
         final String contentType = resp.getEntity().getContentType().getValue();
-        assertTrue("Wrong content type: " + contentType, StringUtils.startsWith(contentType, expectedContentType));
+        assertTrue("Wrong content type: " + contentType, Strings.CS.startsWith(contentType, expectedContentType));
         final Header header = resp.getFirstHeader("Content-disposition");
         assertNotNull("Missing Content-disposition header.", header);
         assertEquals("attachment; filename=\"" + expectedFilename + "\"", header.getValue());

@@ -14,7 +14,7 @@ dependencies {
     compileOnly(libs.bcutil)
     compileOnly(libs.log4j.v12.api)
     compileOnly(libs.x509.common.util)
-    compileOnly(libs.commons.lang)
+    compileOnly(libs.commons.lang3)
 }
 
 sourceSets {
