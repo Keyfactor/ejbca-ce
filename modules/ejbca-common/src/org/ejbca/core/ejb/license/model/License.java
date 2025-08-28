@@ -20,7 +20,6 @@ import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.time.ZonedDateTime;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-
 public class License {
     
     public static final String LICENSE_EXPIRED = "LICENSE_EXPIRED";

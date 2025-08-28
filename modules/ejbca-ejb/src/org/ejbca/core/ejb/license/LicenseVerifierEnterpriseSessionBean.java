@@ -54,6 +54,9 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
+import com.keyfactor.util.CertTools;
 
 import jakarta.ejb.EJB;
 import jakarta.ejb.Schedule;
@@ -81,11 +84,10 @@ public class LicenseVerifierEnterpriseSessionBean {
                     + "V9Ut0N7UfSlgV2rE1QRhIkkMivXUaz6od7ZjQMQ7+OrKuffCspJ3y5eiSR6QVYrk\n"
                     + "MwIDAQAB\n"
                     + "-----END PUBLIC KEY-----";
-    
+        
+    private static PublicKey licenseVerificationKey;
     private static final String LICENCE_FILE_PATH = "/mnt/licence/ejbca-licence";
-    
-    private static final PublicKey LICENSE_VERIFIER_KEY = getPublicKeyFromPem();
-    
+        
     private static final int SOON_TO_EXPIRE_DAYS = 90;
     private static final int EXPIRED_TOO_LONG_DAYS = 100;
     
@@ -95,17 +97,16 @@ public class LicenseVerifierEnterpriseSessionBean {
     private static int startUpCountDown = 3;
         
     @Schedule(hour = "*", minute = "*/1", persistent = false)
-    public void runEveryMinute() {
+    public void validateLicenseInBackground() {
         startUpCountDown--;
         log.debug("EJBCA license check timer triggered: " + java.time.LocalDateTime.now());
         if (!EjbcaConfiguration.getIsInProductionMode() || startUpCountDown>0) {
         //if(startUpCountDown>0) {
             return;
         }
-        
+                
         boolean publicAccessEnabled = 
                 authorizationSession.isAuthorizedNoLogging(new PublicAccessAuthenticationToken("LicenseVerifier", true), "/");
-        log.debug("EJBCA license check publicAccessEnabled: " + publicAccessEnabled);
         
         String licenseContent = readLicenseFile();
         if (licenseContent!=null) {
@@ -164,6 +165,11 @@ public class LicenseVerifierEnterpriseSessionBean {
 
     
     protected void validateLicense(String licenseContent) {
+        
+        if (licenseVerificationKey==null) {
+            readPublicKeyFromPem();
+        }
+        
         byte[] licenseBytes = licenseContent.getBytes(StandardCharsets.UTF_8);
         Element doc;
         LicenseData license = null;
@@ -236,7 +242,7 @@ public class LicenseVerifierEnterpriseSessionBean {
         Document doc;
         try {
             doc = builder.parse(xml);
-        } catch (Exception e) {
+        } catch (SAXException | IOException e) {
             log.info("Could not parse xml", e);
             prepareFailureAction(LicenseState.INVALID);
             return null;
@@ -260,11 +266,11 @@ public class LicenseVerifierEnterpriseSessionBean {
         return null;
     }
     
-    private static PublicKey getPublicKeyFromPem() {
+    private static void readPublicKeyFromPem() {
         
         String keyPem = LICENCE_VERIFIER_KEY_PEM
-                .replace("-----BEGIN PUBLIC KEY-----", "")
-                .replace("-----END PUBLIC KEY-----", "")
+                .replace(CertTools.BEGIN_PUBLIC_KEY, "")
+                .replace(CertTools.END_PUBLIC_KEY, "")
                 .replaceAll("\\s", "");
         
         byte[] encoded = Base64.getDecoder().decode(keyPem);
@@ -273,14 +279,12 @@ public class LicenseVerifierEnterpriseSessionBean {
         KeyFactory keyFactory;
         try {
             keyFactory = KeyFactory.getInstance("RSA");
-            return keyFactory.generatePublic(keySpec);
+            licenseVerificationKey = keyFactory.generatePublic(keySpec);
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-            // Ignore
+            log.info("Unable to parse license verification key.");
+            prepareFailureAction(LicenseState.EJBCA_SETUP_INVALID);
         }
         
-        log.info("Unable to parse license verification key.");
-        prepareFailureAction(LicenseState.EJBCA_SETUP_INVALID);
-        return null;
     }
 
     private boolean isValid(Node node, XMLSignatureFactory factory) {
@@ -288,7 +292,7 @@ public class LicenseVerifierEnterpriseSessionBean {
             DOMValidateContext valContext = new DOMValidateContext(new KeySelector() {
                 @Override
                 public KeySelectorResult select(KeyInfo keyInfo, Purpose purpose, AlgorithmMethod method, XMLCryptoContext context) {
-                    return () -> LICENSE_VERIFIER_KEY;
+                    return () -> licenseVerificationKey;
                 }
             }, node);
             valContext.setProperty("org.jcp.xml.dsig.secureValidation", Boolean.TRUE);

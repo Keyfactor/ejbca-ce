@@ -13,7 +13,7 @@ import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 
 public class BooleanAdapter extends XmlAdapter<String, Boolean> {
     @Override
-    public Boolean unmarshal(String v) throws Exception {
+    public Boolean unmarshal(String v) {
         if (v == null) {
             return null;
         }
@@ -21,7 +21,7 @@ public class BooleanAdapter extends XmlAdapter<String, Boolean> {
     }
 
     @Override
-    public String marshal(Boolean v) throws Exception {
+    public String marshal(Boolean v) {
         if (v == null) {
             return null;
         }
