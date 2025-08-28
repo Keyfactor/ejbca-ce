@@ -27,21 +27,21 @@ import com.fasterxml.jackson.annotation.JsonInclude;
  *
  */
 public class RevokeStatusRestResponse {
-    @Schema(name = "Issuer Distinguished Name", example = "CN=ExampleCA")
+    @Schema(description = "Issuer Distinguished Name", example = "CN=ExampleCA")
     private String issuerDn;
-    @Schema(name = "Hex Serial Number", example = "1234567890ABCDEF")
+    @Schema(description = "Hex Serial Number", example = "1234567890ABCDEF")
     private String serialNumber;
-    @Schema(name = "Revokation status", example = "true")
+    @Schema(description = "Revocation status", example = "true")
     private boolean isRevoked;
-    @Schema(name = "RFC5280 revokation reason", example = "KEY_COMPROMISE")
+    @Schema(description = "RFC5280 revocation reason", example = "KEY_COMPROMISE")
     private String revocationReason;
-    @Schema(name = "Revokation date", example = "1970-01-01T00:00:00Z")
+    @Schema(description = "Revocation date", example = "1970-01-01T00:00:00Z")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Date revocationDate;
-    @Schema(name = "Invalidity date", example = "1970-01-01T00:00:00Z")
+    @Schema(description = "Invalidity date", example = "1970-01-01T00:00:00Z")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Date invalidityDate;
-    @Schema(name = "Message", example = "Successfully revoked")
+    @Schema(description = "Message", example = "Successfully revoked")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String message;
 
