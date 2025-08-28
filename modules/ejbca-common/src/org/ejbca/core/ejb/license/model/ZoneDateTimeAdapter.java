@@ -14,7 +14,9 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 
-import static java.time.temporal.ChronoField.*;
+import static java.time.temporal.ChronoField.HOUR_OF_DAY;
+import static java.time.temporal.ChronoField.MINUTE_OF_HOUR;
+import static java.time.temporal.ChronoField.SECOND_OF_MINUTE;
 
 public class ZoneDateTimeAdapter extends XmlAdapter<String, ZonedDateTime> {
     private static final DateTimeFormatter FORMATTER = new DateTimeFormatterBuilder().parseCaseInsensitive()
