@@ -1,6 +1,5 @@
 /*************************************************************************
  *                                                                       *
-
  *  EJBCA: The OpenSource Certificate Authority                          *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
