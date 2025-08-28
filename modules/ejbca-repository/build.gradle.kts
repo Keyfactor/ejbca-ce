@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-    compileOnly(libs.commons.lang)
+    compileOnly(libs.commons.lang3)
     compileOnly(libs.commons.configuration2)
     implementation(libs.jakartaee.api)
     implementation(libs.log4j.api)

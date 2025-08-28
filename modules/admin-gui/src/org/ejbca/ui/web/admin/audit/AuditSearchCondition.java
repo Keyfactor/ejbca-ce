@@ -17,7 +17,7 @@ import java.util.List;
 
 import jakarta.faces.model.SelectItem;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.cesecore.audit.AuditLogEntry;
 
 /**
@@ -72,7 +72,7 @@ public class AuditSearchCondition implements Serializable {
 	public void setValue(String value) {
 	    //The details column is XML-encoded, so escape any sensitive characters
         if (column.equals(AuditLogEntry.FIELD_ADDITIONAL_DETAILS)) {
-            this.value = StringEscapeUtils.escapeXml(value);
+            this.value = StringEscapeUtils.escapeXml11(value);
         } else {
             this.value = value;
         }

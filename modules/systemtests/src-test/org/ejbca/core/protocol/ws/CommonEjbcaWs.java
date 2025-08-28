@@ -57,10 +57,9 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
-import jakarta.xml.bind.DatatypeConverter;
 import javax.xml.namespace.QName;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -199,12 +198,14 @@ import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.RandomHelper;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-import com.keyfactor.util.RandomHelper;
+
+import jakarta.xml.bind.DatatypeConverter;
 
 
 public abstract class CommonEjbcaWs extends CaTestCase {
@@ -576,11 +577,11 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         boolean foundrevreason = false;
         boolean founddirattrs = false;
         for (ExtendedInformationWS item : userei) {
-            if (StringUtils.equals(item.getName(), ExtendedInformation.CUSTOMDATA + ExtendedInformation.CUSTOM_REVOCATIONREASON)) {
+            if (Strings.CS.equals(item.getName(), ExtendedInformation.CUSTOMDATA + ExtendedInformation.CUSTOM_REVOCATIONREASON)) {
                 assertEquals(Integer.toString(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD), item.getValue());
                 foundrevreason = true;
             }
-            if (StringUtils.equals(item.getName(), ExtendedInformation.SUBJECTDIRATTRIBUTES)) {
+            if (Strings.CS.equals(item.getName(), ExtendedInformation.SUBJECTDIRATTRIBUTES)) {
                 assertEquals("DATEOFBIRTH=19761123", item.getValue());
                 founddirattrs = true;
             }
@@ -604,11 +605,11 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         foundrevreason = false;
         founddirattrs = false;
         for (ExtendedInformationWS item : userei) {
-            if (StringUtils.equals(item.getName(), ExtendedInformation.CUSTOMDATA + ExtendedInformation.CUSTOM_REVOCATIONREASON)) {
+            if (Strings.CS.equals(item.getName(), ExtendedInformation.CUSTOMDATA + ExtendedInformation.CUSTOM_REVOCATIONREASON)) {
                 assertEquals(Integer.toString(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD), item.getValue());
                 foundrevreason = true;
             }
-            if (StringUtils.equals(item.getName(), ExtendedInformation.SUBJECTDIRATTRIBUTES)) {
+            if (Strings.CS.equals(item.getName(), ExtendedInformation.SUBJECTDIRATTRIBUTES)) {
                 assertEquals("DATEOFBIRTH=19761123", item.getValue());
                 founddirattrs = true;
             }
@@ -1924,7 +1925,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
             boolean certfound = false;
             for (final Certificate expirewscert : certs) {
                 java.security.cert.Certificate expirecert = CertificateHelper.getCertificate(expirewscert.getCertificateData());
-                if (StringUtils.equalsIgnoreCase(CertTools.getSubjectDN(cert1), CertTools.getSubjectDN(expirecert))) {
+                if (Strings.CI.equals(CertTools.getSubjectDN(cert1), CertTools.getSubjectDN(expirecert))) {
                     certfound = true;
                     break;
                 }
@@ -1970,10 +1971,10 @@ public abstract class CommonEjbcaWs extends CaTestCase {
             boolean foundcert2 = false;
             for(Certificate expirewscert : certs) {
                 java.security.cert.Certificate expirecert = CertificateHelper.getCertificate(expirewscert.getCertificateData());
-                if(StringUtils.equalsIgnoreCase(CertTools.getSubjectDN(cert1), CertTools.getSubjectDN(expirecert)) && StringUtils.equalsIgnoreCase(CertTools.getIssuerDN(cert1), CertTools.getIssuerDN(expirecert))) {
+                if(Strings.CI.equals(CertTools.getSubjectDN(cert1), CertTools.getSubjectDN(expirecert)) && Strings.CI.equals(CertTools.getIssuerDN(cert1), CertTools.getIssuerDN(expirecert))) {
                     foundcert1 = true;
                 }
-                if(StringUtils.equalsIgnoreCase(CertTools.getSubjectDN(cert2), CertTools.getSubjectDN(expirecert)) && StringUtils.equalsIgnoreCase(CertTools.getIssuerDN(cert2), CertTools.getIssuerDN(expirecert))) {
+                if(Strings.CI.equals(CertTools.getSubjectDN(cert2), CertTools.getSubjectDN(expirecert)) && Strings.CI.equals(CertTools.getIssuerDN(cert2), CertTools.getIssuerDN(expirecert))) {
                     foundcert2 = true;
                 }
             }
@@ -1988,10 +1989,10 @@ public abstract class CommonEjbcaWs extends CaTestCase {
             foundcert2 = false;
             for(Certificate expirewscert : certs) {
                 java.security.cert.Certificate expirecert = CertificateHelper.getCertificate(expirewscert.getCertificateData());
-                if(StringUtils.equalsIgnoreCase(CertTools.getSubjectDN(cert1), CertTools.getSubjectDN(expirecert)) && StringUtils.equalsIgnoreCase(CertTools.getIssuerDN(cert1), CertTools.getIssuerDN(expirecert))) {
+                if(Strings.CI.equals(CertTools.getSubjectDN(cert1), CertTools.getSubjectDN(expirecert)) && Strings.CI.equals(CertTools.getIssuerDN(cert1), CertTools.getIssuerDN(expirecert))) {
                     foundcert1 = true;
                 }
-                if(StringUtils.equalsIgnoreCase(CertTools.getSubjectDN(cert2), CertTools.getSubjectDN(expirecert)) && StringUtils.equalsIgnoreCase(CertTools.getIssuerDN(cert2), CertTools.getIssuerDN(expirecert))) {
+                if(Strings.CI.equals(CertTools.getSubjectDN(cert2), CertTools.getSubjectDN(expirecert)) && Strings.CI.equals(CertTools.getIssuerDN(cert2), CertTools.getIssuerDN(expirecert))) {
                     foundcert2 = true;
                 }
             }

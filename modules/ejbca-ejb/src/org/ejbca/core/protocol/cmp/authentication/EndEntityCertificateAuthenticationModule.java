@@ -31,7 +31,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.DEROctetString;
@@ -436,7 +437,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                         extraCertUsername += fix;
                     }
                 }
-                if (!StringUtils.equals(username, extraCertUsername)) {
+                if (!Strings.CS.equals(username, extraCertUsername)) {
                     this.errorMessage = "The End Entity certificate attached to the PKIMessage in the extraCert field does not belong to user '"+username+"'";
                     if(log.isDebugEnabled()) {
                         // Use a different debug message, as not to reveal too much information
@@ -617,7 +618,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             final String eepname;
             try {
                 final String configuredId = this.cmpConfiguration.getRAEEProfile(this.confAlias);
-                if (StringUtils.equals(CmpConfiguration.PROFILE_USE_KEYID, configuredId)) {
+                if (Strings.CS.equals(CmpConfiguration.PROFILE_USE_KEYID, configuredId)) {
                     eepname = CmpMessageHelper.getStringFromOctets(msg.getHeader().getSenderKID());
                     eeprofid = eeProfileSession.getEndEntityProfileId(eepname);
                 } else {
@@ -810,7 +811,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
     private int getRaCaId(final DEROctetString keyId, final EndEntityProfile eep) {
 
         String caname = this.cmpConfiguration.getRACAName(this.confAlias);
-        if (StringUtils.equals(caname, CmpConfiguration.PROFILE_DEFAULT)) {
+        if (Strings.CS.equals(caname, CmpConfiguration.PROFILE_DEFAULT)) {
             final int caid = eep.getDefaultCA();
             if (log.isDebugEnabled()) {
                 log.debug("Using EndEntity profile's default CA with ID: "+caid);
@@ -818,7 +819,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             return caid;
         }
 
-        if (StringUtils.equals(caname, CmpConfiguration.PROFILE_USE_KEYID) && (keyId != null)) {
+        if (Strings.CS.equals(caname, CmpConfiguration.PROFILE_USE_KEYID) && (keyId != null)) {
             caname = CmpMessageHelper.getStringFromOctets(keyId);
             if (log.isDebugEnabled()) {
                 log.debug("Using CA with same name as KeyId in request: "+caname);
@@ -831,13 +832,13 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
     private CertificateProfile getCertificateProfileFromCrmf(final EndEntityProfile eep, final ASN1OctetString keyId) {
         CertificateProfile profile = null;
         String cpname = this.cmpConfiguration.getRACertProfile(this.confAlias);
-        if (StringUtils.equals(cpname, CmpConfiguration.PROFILE_DEFAULT)) {
+        if (Strings.CS.equals(cpname, CmpConfiguration.PROFILE_DEFAULT)) {
             final int cpid = eep.getDefaultCertificateProfile();
             profile = certProfileSession.getCertificateProfile(cpid);
             if(log.isDebugEnabled()) {
                 log.debug("Using EndEntityProfile's default CertificateProfile: " + cpid);
             }
-        } else if (StringUtils.equals(cpname, CmpConfiguration.PROFILE_USE_KEYID) && (keyId != null)) {
+        } else if (Strings.CS.equals(cpname, CmpConfiguration.PROFILE_USE_KEYID) && (keyId != null)) {
             cpname = CmpMessageHelper.getStringFromOctets(keyId);
             profile = certProfileSession.getCertificateProfile(cpname);
             if(log.isDebugEnabled()) {

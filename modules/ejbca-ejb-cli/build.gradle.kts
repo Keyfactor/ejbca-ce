@@ -22,7 +22,6 @@ dependencies {
     implementation(libs.commons.collections4)
     implementation(libs.commons.configuration2)
     implementation(libs.commons.io)
-    implementation(libs.commons.lang)
     implementation(libs.commons.lang3)
     implementation(libs.bundles.cryptotokens)
     implementation(libs.jakartaee.api)

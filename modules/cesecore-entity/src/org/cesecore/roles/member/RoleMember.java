@@ -14,7 +14,7 @@ package org.cesecore.roles.member;
 
 import java.io.Serializable;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.roles.Role;
 
@@ -173,8 +173,8 @@ public class RoleMember implements Serializable, Comparable<RoleMember> {
                 && this.getTokenProviderId() == roleMember.getTokenProviderId()
                 && this.getTokenMatchKey() == roleMember.getTokenMatchKey()
                 && this.getTokenMatchOperator() == roleMember.getTokenMatchOperator()
-                && StringUtils.equals(this.getTokenMatchValue(), roleMember.getTokenMatchValue())
-                && StringUtils.equals(this.getTokenType(), roleMember.getTokenType());
+                && Strings.CS.equals(this.getTokenMatchValue(), roleMember.getTokenMatchValue())
+                && Strings.CS.equals(this.getTokenType(), roleMember.getTokenType());
     }
 
     @Override

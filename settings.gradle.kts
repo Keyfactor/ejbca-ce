@@ -53,15 +53,14 @@ dependencyResolutionManagement {
             library("log4j-v12-api", ":log4j-1.2-api:2.20.0")
             library("log4j-api", ":log4j-api:2.20.0")
             library("log4j-core", ":log4j-core:2.20.0")
-            library("commons-lang", ":commons-lang:2.6")
             library("commons-lang3", ":commons-lang3:3.18.0")
             library("commons-configuration2", ":commons-configuration2:2.11.0")
             library("commons-collections4", ":commons-collections4:4.5.0")
             library("nimbus-jose-jwt", ":nimbus-jose-jwt:9.37.3")
-            library("x509-common-util", ":x509-common-util:5.3.5")
-            library("cryptotokens-api", ":cryptotokens-api:3.3.1")
-            library("cryptotokens-impl", ":cryptotokens-impl:3.3.1")
-            library("cryptotokens-impl-ee", ":cryptotokens-impl-ee:3.3.1")
+            library("x509-common-util", ":x509-common-util:5.3.6")
+            library("cryptotokens-api", ":cryptotokens-api:3.3.2")
+            library("cryptotokens-impl", ":cryptotokens-impl:3.3.2")
+            library("cryptotokens-impl-ee", ":cryptotokens-impl-ee:3.3.2")
             library("adsddl", ":adsddl:1.9")
             library("jakarta.jws-api", ":jakarta.jws-api:3.0.0")
             library("jakarta.xml.soap-api", ":jakarta.xml.soap-api:3.0.2")
@@ -244,7 +243,6 @@ dependencyResolutionManagement {
             bundle(
                 "utils",
                 listOf(
-                    "commons-lang",
                     "commons-lang3",
                     "commons-configuration2",
                     "commons-collections4",

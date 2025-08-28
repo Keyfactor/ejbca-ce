@@ -19,7 +19,7 @@ import jakarta.validation.Payload;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.ejbca.ui.web.rest.api.io.request.EnrollCertificateWithEntityRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.RequestType;
 

@@ -28,7 +28,7 @@ import jakarta.faces.context.FacesContext;
 import jakarta.faces.model.ListDataModel;
 import jakarta.inject.Named;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;

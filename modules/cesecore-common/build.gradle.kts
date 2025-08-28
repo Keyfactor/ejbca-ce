@@ -15,7 +15,6 @@ dependencies {
     compileOnly(libs.log4j.v12.api)
     compileOnly(libs.log4j.api)
     compileOnly(libs.log4j.core)
-    compileOnly(libs.commons.lang)
     compileOnly(libs.commons.lang3)
     compileOnly(libs.commons.text)
     compileOnly(libs.commons.logging)

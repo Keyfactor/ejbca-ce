@@ -181,10 +181,10 @@
 	<classpathentry kind="lib" path="lib/jee/soapclient/saaj-impl-3.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/gmbal-api-only-4.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/ejbca-ws-client-gen.jar"/>
-	<classpathentry kind="lib" path="lib/x509-common-util-5.3.5.jar" sourcepath="/x509-common-util"/>
-	<classpathentry kind="lib" path="lib/cryptotokens-api-3.3.1.jar"/>
-	<classpathentry kind="lib" path="lib/cryptotokens-impl-3.3.1.jar"/>
-	<classpathentry kind="lib" path="lib/cryptotokens-impl-ee-3.3.1.jar"/>
+	<classpathentry kind="lib" path="lib/x509-common-util-5.3.6.jar" sourcepath="/x509-common-util"/>
+	<classpathentry kind="lib" path="lib/cryptotokens-api-3.3.2.jar"/>
+	<classpathentry kind="lib" path="lib/cryptotokens-impl-3.3.2.jar"/>
+	<classpathentry kind="lib" path="lib/cryptotokens-impl-ee-3.3.2.jar"/>
 	<classpathentry kind="lib" path="lib/primefaces/primefaces-15.0.3-jakarta.jar"/>
 	<classpathentry kind="lib" path="lib/p11ng-0.25.7-20250719-9ea9aa2.jar" sourcepath="/p11ng"/>
 	<classpathentry kind="var" path="APPSRV_HOME/bin/client/jboss-client.jar"/>
@@ -197,7 +197,6 @@
 	<classpathentry kind="lib" path="lib/ext/slf4j-api-2.0.16.jar"/>
 	<classpathentry kind="lib" path="lib/ext/slf4j-reload4j-2.0.16.jar"/>
 	<classpathentry kind="lib" path="lib/jee/myfaces-api-4.0.2.jar"/>
-	<classpathentry kind="lib" path="lib/commons-lang-2.6.jar"/>
 	<classpathentry kind="lib" path="lib/jee/jakarta.xml.bind-api-4.0.2.jar"/>
 	<classpathentry kind="lib" path="lib/commons-collections4-4.5.0.jar"/>
 	<classpathentry kind="lib" path="lib/snakeyaml-2.0.jar"/>
