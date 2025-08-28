@@ -194,7 +194,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
      *  Defaults to SMIMECapability.aES256_CBC for SCEP messages. If SCEP request is 
      * encrypted with dES_EDE3_CBC it is set to this though. This is only for backwards compatibility issues, as specified in a SCEP draft.
      */
-    private transient ASN1ObjectIdentifier contentEncAlg = SMIMECapability.aES256_CBC;
+    private transient ASN1ObjectIdentifier contentEncAlg = SMIMECapability.aES128_CBC;
     /** preferred key encryption algorithm to use in replies, if applicable.
      *  Defaults to PKCSObjectIdentifiers.rsaEncryption for SCEP messages. If SCEP request content encryption key is 
      * encrypted with RSAES_OAEP it is set to this though.

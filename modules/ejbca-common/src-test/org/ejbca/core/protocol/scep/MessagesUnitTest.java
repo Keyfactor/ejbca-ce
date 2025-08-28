@@ -676,7 +676,7 @@ public class MessagesUnitTest {
                 .setLdapOrder(true)
                 .generateCertificate();      
         return gen.generateCertReq(userDN, "foo123", transactionId, issuerCertificate, senderCertificate, keyPair.getPrivate(),
-                SMIMECapability.aES256_CBC);
+                SMIMECapability.aES128_CBC);
     }
     
     /**
