@@ -34,7 +34,7 @@ import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.apache.commons.codec.binary.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.junit.BeforeClass;
@@ -74,7 +74,7 @@ public class CaHierarchyUnitTest {
     @Test(expected = IllegalArgumentException.class)
     public void testCaHierarchyWithoutRoot() {
         final BiPredicate<String, String> isSignedBy = (ca1, ca2) -> {
-            if (StringUtils.equals(ca1, "rootCa") && StringUtils.equals(ca2, "issuingCa")) {
+            if (Strings.CS.equals(ca1, "rootCa") && Strings.CS.equals(ca2, "issuingCa")) {
                 return true;
             }
             return false;
@@ -89,13 +89,13 @@ public class CaHierarchyUnitTest {
     @Test(expected = IllegalArgumentException.class)
     public void testCaHierarchyWithLoop() {
         final BiPredicate<String, String> isSignedBy = (ca1, ca2) -> {
-            if (StringUtils.equals(ca1, "rootCa") && StringUtils.equals(ca2, "issuingCa1")) {
+            if (Strings.CS.equals(ca1, "rootCa") && Strings.CS.equals(ca2, "issuingCa1")) {
                 return true;
             }
-            if (StringUtils.equals(ca1, "issuingCa1") && StringUtils.equals(ca2, "issuingCa2")) {
+            if (Strings.CS.equals(ca1, "issuingCa1") && Strings.CS.equals(ca2, "issuingCa2")) {
                 return true;
             }
-            if (StringUtils.equals(ca1, "issuingCa2") && StringUtils.equals(ca2, "rootCa")) {
+            if (Strings.CS.equals(ca1, "issuingCa2") && Strings.CS.equals(ca2, "rootCa")) {
                 return true;
             }
             return false;
@@ -405,22 +405,22 @@ public class CaHierarchyUnitTest {
     @Test
     public void testTwoIntermediariesAndThreeIssuingCas() {
         final BiPredicate<String, String> isSignedBy = (ca1, ca2) -> {
-            if (StringUtils.equals(ca1, "rootCa") && StringUtils.equals(ca2, "rootCa")) {
+            if (Strings.CS.equals(ca1, "rootCa") && Strings.CS.equals(ca2, "rootCa")) {
                 return true;
             }
-            if (StringUtils.equals(ca1, "rootCa") && StringUtils.equals(ca2, "intermediary1")) {
+            if (Strings.CS.equals(ca1, "rootCa") && Strings.CS.equals(ca2, "intermediary1")) {
                 return true;
             }
-            if (StringUtils.equals(ca1, "rootCa") && StringUtils.equals(ca2, "intermediary2")) {
+            if (Strings.CS.equals(ca1, "rootCa") && Strings.CS.equals(ca2, "intermediary2")) {
                 return true;
             }
-            if (StringUtils.equals(ca1, "intermediary1") && StringUtils.equals(ca2, "issuingCa1")) {
+            if (Strings.CS.equals(ca1, "intermediary1") && Strings.CS.equals(ca2, "issuingCa1")) {
                 return true;
             }
-            if (StringUtils.equals(ca1, "intermediary2") && StringUtils.equals(ca2, "issuingCa2")) {
+            if (Strings.CS.equals(ca1, "intermediary2") && Strings.CS.equals(ca2, "issuingCa2")) {
                 return true;
             }
-            if (StringUtils.equals(ca1, "intermediary2") && StringUtils.equals(ca2, "issuingCa3")) {
+            if (Strings.CS.equals(ca1, "intermediary2") && Strings.CS.equals(ca2, "issuingCa3")) {
                 return true;
             }
             return false;
@@ -443,19 +443,19 @@ public class CaHierarchyUnitTest {
     @Test
     public void testCrossSignFromRootCa() {
         final BiPredicate<String, String> isSignedBy = (ca1, ca2) -> {
-            if (StringUtils.equals(ca1, "rootCa1") && StringUtils.equals(ca2, "rootCa1")) {
+            if (Strings.CS.equals(ca1, "rootCa1") && Strings.CS.equals(ca2, "rootCa1")) {
                 return true;
             }
-            if (StringUtils.equals(ca1, "rootCa1") && StringUtils.equals(ca2, "issuingCa1")) {
+            if (Strings.CS.equals(ca1, "rootCa1") && Strings.CS.equals(ca2, "issuingCa1")) {
                 return true;
             }
-            if (StringUtils.equals(ca1, "rootCa1") && StringUtils.equals(ca2, "issuingCa2")) {
+            if (Strings.CS.equals(ca1, "rootCa1") && Strings.CS.equals(ca2, "issuingCa2")) {
                 return true;
             }
-            if (StringUtils.equals(ca1, "rootCa2") && StringUtils.equals(ca2, "rootCa2")) {
+            if (Strings.CS.equals(ca1, "rootCa2") && Strings.CS.equals(ca2, "rootCa2")) {
                 return true;
             }
-            if (StringUtils.equals(ca1, "rootCa2") && StringUtils.equals(ca2, "issuingCa2")) {
+            if (Strings.CS.equals(ca1, "rootCa2") && Strings.CS.equals(ca2, "issuingCa2")) {
                 return true;
             }
             return false;
@@ -477,19 +477,19 @@ public class CaHierarchyUnitTest {
     @Test
     public void testCrossSignFromIssuingCa() {
         final BiPredicate<String, String> isSignedBy = (ca1, ca2) -> {
-            if (StringUtils.equals(ca1, "rootCa1") && StringUtils.equals(ca2, "rootCa1")) {
+            if (Strings.CS.equals(ca1, "rootCa1") && Strings.CS.equals(ca2, "rootCa1")) {
                 return true;
             }
-            if (StringUtils.equals(ca1, "rootCa1") && StringUtils.equals(ca2, "issuingCa1")) {
+            if (Strings.CS.equals(ca1, "rootCa1") && Strings.CS.equals(ca2, "issuingCa1")) {
                 return true;
             }
-            if (StringUtils.equals(ca1, "rootCa2") && StringUtils.equals(ca2, "rootCa2")) {
+            if (Strings.CS.equals(ca1, "rootCa2") && Strings.CS.equals(ca2, "rootCa2")) {
                 return true;
             }
-            if (StringUtils.equals(ca1, "rootCa2") && StringUtils.equals(ca2, "issuingCa2")) {
+            if (Strings.CS.equals(ca1, "rootCa2") && Strings.CS.equals(ca2, "issuingCa2")) {
                 return true;
             }
-            if (StringUtils.equals(ca1, "issuingCa1") && StringUtils.equals(ca2, "issuingCa2")) {
+            if (Strings.CS.equals(ca1, "issuingCa1") && Strings.CS.equals(ca2, "issuingCa2")) {
                 return true;
             }
             return false;
@@ -511,28 +511,28 @@ public class CaHierarchyUnitTest {
     @Test
     public void testDeepCaHierarchy() {
         final BiPredicate<String, String> isSignedBy = (ca1, ca2) -> {
-            if (StringUtils.equals(ca1, "rootCa") && StringUtils.equals(ca2, "rootCa")) {
+            if (Strings.CS.equals(ca1, "rootCa") && Strings.CS.equals(ca2, "rootCa")) {
                 return true;
             }
-            if (StringUtils.equals(ca1, "rootCa") && StringUtils.equals(ca2, "civilCa")) {
+            if (Strings.CS.equals(ca1, "rootCa") && Strings.CS.equals(ca2, "civilCa")) {
                 return true;
             }
-            if (StringUtils.equals(ca1, "rootCa") && StringUtils.equals(ca2, "govCa")) {
+            if (Strings.CS.equals(ca1, "rootCa") && Strings.CS.equals(ca2, "govCa")) {
                 return true;
             }
-            if (StringUtils.equals(ca1, "govCa") && StringUtils.equals(ca2, "finCa")) {
+            if (Strings.CS.equals(ca1, "govCa") && Strings.CS.equals(ca2, "finCa")) {
                 return true;
             }
-            if (StringUtils.equals(ca1, "govCa") && StringUtils.equals(ca2, "secCa")) {
+            if (Strings.CS.equals(ca1, "govCa") && Strings.CS.equals(ca2, "secCa")) {
                 return true;
             }
-            if (StringUtils.equals(ca1, "govCa") && StringUtils.equals(ca2, "govSerCa")) {
+            if (Strings.CS.equals(ca1, "govCa") && Strings.CS.equals(ca2, "govSerCa")) {
                 return true;
             }
-            if (StringUtils.equals(ca1, "govSerCa") && StringUtils.equals(ca2, "issuingCa")) {
+            if (Strings.CS.equals(ca1, "govSerCa") && Strings.CS.equals(ca2, "issuingCa")) {
                 return true;
             }
-            if (StringUtils.equals(ca1, "govSerCa") && StringUtils.equals(ca2, "etsiIssuingCa")) {
+            if (Strings.CS.equals(ca1, "govSerCa") && Strings.CS.equals(ca2, "etsiIssuingCa")) {
                 return true;
             }
             return false;
@@ -557,22 +557,22 @@ public class CaHierarchyUnitTest {
     @Test
     public void testStarCaHierarchy() {
         final BiPredicate<String, String> isSignedBy = (ca1, ca2) -> {
-            if (StringUtils.equals(ca1, "rootCa1") && StringUtils.equals(ca2, "rootCa1")) {
+            if (Strings.CS.equals(ca1, "rootCa1") && Strings.CS.equals(ca2, "rootCa1")) {
                 return true;
             }
-            if (StringUtils.equals(ca1, "rootCa1") && StringUtils.equals(ca2, "center")) {
+            if (Strings.CS.equals(ca1, "rootCa1") && Strings.CS.equals(ca2, "center")) {
                 return true;
             }
-            if (StringUtils.equals(ca1, "rootCa2") && StringUtils.equals(ca2, "rootCa2")) {
+            if (Strings.CS.equals(ca1, "rootCa2") && Strings.CS.equals(ca2, "rootCa2")) {
                 return true;
             }
-            if (StringUtils.equals(ca1, "rootCa2") && StringUtils.equals(ca2, "center")) {
+            if (Strings.CS.equals(ca1, "rootCa2") && Strings.CS.equals(ca2, "center")) {
                 return true;
             }
-            if (StringUtils.equals(ca1, "center") && StringUtils.equals(ca2, "bottom1")) {
+            if (Strings.CS.equals(ca1, "center") && Strings.CS.equals(ca2, "bottom1")) {
                 return true;
             }
-            if (StringUtils.equals(ca1, "center") && StringUtils.equals(ca2, "bottom2")) {
+            if (Strings.CS.equals(ca1, "center") && Strings.CS.equals(ca2, "bottom2")) {
                 return true;
             }
             return false;
@@ -590,19 +590,19 @@ public class CaHierarchyUnitTest {
     @Test
     public void testInvertedStarCaHierarchy() {
         final BiPredicate<String, String> isSignedBy = (ca1, ca2) -> {
-            if (StringUtils.equals(ca1, "rootCa") && StringUtils.equals(ca2, "rootCa")) {
+            if (Strings.CS.equals(ca1, "rootCa") && Strings.CS.equals(ca2, "rootCa")) {
                 return true;
             }
-            if (StringUtils.equals(ca1, "rootCa") && StringUtils.equals(ca2, "intermediate1")) {
+            if (Strings.CS.equals(ca1, "rootCa") && Strings.CS.equals(ca2, "intermediate1")) {
                 return true;
             }
-            if (StringUtils.equals(ca1, "rootCa") && StringUtils.equals(ca2, "intermediate2")) {
+            if (Strings.CS.equals(ca1, "rootCa") && Strings.CS.equals(ca2, "intermediate2")) {
                 return true;
             }
-            if (StringUtils.equals(ca1, "intermediate1") && StringUtils.equals(ca2, "issuingCa")) {
+            if (Strings.CS.equals(ca1, "intermediate1") && Strings.CS.equals(ca2, "issuingCa")) {
                 return true;
             }
-            if (StringUtils.equals(ca1, "intermediate2") && StringUtils.equals(ca2, "issuingCa")) {
+            if (Strings.CS.equals(ca1, "intermediate2") && Strings.CS.equals(ca2, "issuingCa")) {
                 return true;
             }
             return false;
@@ -621,10 +621,10 @@ public class CaHierarchyUnitTest {
     @Test
     public void testIterator() {
         final BiPredicate<String, String> isSignedBy = (ca1, ca2) -> {
-            if (StringUtils.equals(ca1, "rootCa") && StringUtils.equals(ca2, "rootCa")) {
+            if (Strings.CS.equals(ca1, "rootCa") && Strings.CS.equals(ca2, "rootCa")) {
                 return true;
             }
-            if (StringUtils.equals(ca1, "rootCa") && StringUtils.equals(ca2, "issuingCa")) {
+            if (Strings.CS.equals(ca1, "rootCa") && Strings.CS.equals(ca2, "issuingCa")) {
                 return true;
             }
             return false;

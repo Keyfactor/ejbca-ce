@@ -17,12 +17,7 @@ import java.io.IOException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 
-import jakarta.ejb.EJB;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -48,6 +43,11 @@ import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.DnComponents;
+
+import jakarta.ejb.EJB;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Servlet used to handle certificate requests between CAs.<br>
@@ -157,7 +157,7 @@ public class CACertReqServlet extends BaseAdminServlet {
                 }
                 int length = request.length;
                 byte[] outbytes = request;
-            	if (!StringUtils.equals(format, "binary")) {
+            	if (!Strings.CS.equals(format, "binary")) {
             		String begin = RequestHelper.BEGIN_CERTIFICATE_REQUEST_WITH_NL;
             		String end = RequestHelper.END_CERTIFICATE_REQUEST_WITH_NL;
             		if (isx509cert) {
@@ -204,7 +204,7 @@ public class CACertReqServlet extends BaseAdminServlet {
 		if (command.equalsIgnoreCase(COMMAND_CERT)) {
 			 try {
 			 	Certificate cert = caBean.getProcessedCertificate();
-            	if (!StringUtils.equals(format, "binary")) {
+            	if (!Strings.CS.equals(format, "binary")) {
     				byte[] b64cert = Base64.encode(cert.getEncoded());	
     				RequestHelper.sendNewB64Cert(b64cert, res, CertTools.BEGIN_CERTIFICATE_WITH_NL, CertTools.END_CERTIFICATE_WITH_NL);
             	} else {

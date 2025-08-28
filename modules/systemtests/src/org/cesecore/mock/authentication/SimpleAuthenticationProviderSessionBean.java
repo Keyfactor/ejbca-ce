@@ -21,7 +21,7 @@ import java.util.Set;
 
 import javax.security.auth.x500.X500Principal;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -77,7 +77,7 @@ public class SimpleAuthenticationProviderSessionBean implements SimpleAuthentica
     		Object o = usercredentials.iterator().next();
     		if (o instanceof String) {
 				String str = (String) o;
-				if (StringUtils.equals("fail", str)) {
+				if (Strings.CS.equals("fail", str)) {
 				    if (log.isDebugEnabled()) {
 				        log.debug("Found a 'fail' credential, returning null");
 				    }

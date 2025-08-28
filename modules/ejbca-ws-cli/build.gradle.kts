@@ -13,7 +13,7 @@ dependencies {
     implementation(libs.bcutil)
     implementation(libs.cert.cvc)
     implementation(libs.ejbca.ws.client.gen)
-    implementation(libs.commons.lang)
+    implementation(libs.commons.lang3)
     implementation(libs.x509.common.util)
     implementation(libs.bundles.cryptotokens)
     implementation(libs.istack.commons.runtime)

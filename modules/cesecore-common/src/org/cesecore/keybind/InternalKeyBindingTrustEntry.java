@@ -15,7 +15,7 @@ package org.cesecore.keybind;
 import java.io.Serializable;
 import java.math.BigInteger;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * (JavaBean-) XML Serializable representation of a trust anchor (CA Id) or trusted certificate (CA Id and certificate serialnumber)

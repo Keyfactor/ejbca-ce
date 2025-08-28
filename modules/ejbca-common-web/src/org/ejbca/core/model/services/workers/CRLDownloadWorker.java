@@ -22,7 +22,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.math.IntRange;
+import org.apache.commons.lang3.IntegerRange;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAConstants;
@@ -109,7 +109,7 @@ public class CRLDownloadWorker extends BaseWorker {
                     continue;
                 }
                 final Date now = new Date();
-                IntRange crlPartitionIndexes = caInfo.getAllCrlPartitionIndexes();
+                IntegerRange crlPartitionIndexes = caInfo.getAllCrlPartitionIndexes();
                 try {
                     getCrlAndUpdateIfNeeded(caInfo, caCertificate, url, CertificateConstants.NO_CRL_PARTITION, now, crlStoreSession,
                             importCrlSession);
@@ -118,7 +118,7 @@ public class CRLDownloadWorker extends BaseWorker {
                     failedCas.add(caInfo.getName());
                 }
                 if (crlPartitionIndexes != null) {
-                    for (int i = crlPartitionIndexes.getMinimumInteger(); i <= crlPartitionIndexes.getMaximumInteger(); i++) {
+                    for (int i = crlPartitionIndexes.getMinimum(); i <= crlPartitionIndexes.getMaximum(); i++) {
                         final URL partitionUrl = NetworkTools.getValidHttpUrl(((X509CAInfo) caInfo).getCrlPartitionUrl(cdp, i));
                         try {
                             getCrlAndUpdateIfNeeded(caInfo, caCertificate, partitionUrl, i, now, crlStoreSession, importCrlSession);

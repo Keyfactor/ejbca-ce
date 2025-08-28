@@ -12,12 +12,14 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import io.swagger.v3.core.converter.ModelConverters;
+import io.swagger.v3.core.jackson.ModelResolver;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import org.apache.log4j.Logger;
 import org.ejbca.config.EjbcaConfiguration;
 
-import org.ejbca.util.swagger.SnakeCaseConverter;
 import org.reflections.Reflections;
 
 import jakarta.ws.rs.ApplicationPath;
@@ -35,7 +37,10 @@ public class RestApiApplication extends Application {
 
     public RestApiApplication() {
         if (!EjbcaConfiguration.getIsInProductionMode()) {
-            ModelConverters.getInstance().addConverter(new SnakeCaseConverter());
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+
+            ModelConverters.getInstance().addConverter(new ModelResolver(mapper));
         }
     }
 

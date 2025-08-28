@@ -11,7 +11,7 @@ dependencies {
     compileOnly(project(":modules:ejbca-entity"))
     compileOnly(project(":modules:ejbca-ws:common"))
     compileOnly(libs.jakartaee.api)
-    compileOnly(libs.commons.lang)
+    compileOnly(libs.commons.lang3)
     compileOnly(libs.log4j.v12.api)
     compileOnly(libs.x509.common.util)
     testRuntimeOnly(libs.bundles.resteasy.jaxrs)

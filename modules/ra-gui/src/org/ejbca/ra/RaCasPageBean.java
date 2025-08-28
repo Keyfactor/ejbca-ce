@@ -29,7 +29,7 @@ import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -208,7 +208,7 @@ public class RaCasPageBean implements Serializable {
                     caAndCrl.x509 = true;
                     final int numberOfPartitions = caInfo.getAllCrlPartitionIndexes() == null
                             ? 0
-                            : caInfo.getAllCrlPartitionIndexes().getMaximumInteger();
+                            : caInfo.getAllCrlPartitionIndexes().getMaximum();
                     for (int currentPartitionIndex = 0;
                             currentPartitionIndex <= numberOfPartitions; currentPartitionIndex++) {
 

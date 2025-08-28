@@ -13,9 +13,6 @@
 
 package org.ejbca.core.ejb.ca.publisher;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.security.cert.CRLException;
 import java.security.cert.X509CRL;
 import java.util.ArrayList;
@@ -45,8 +42,9 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.math.IntRange;
+import org.apache.commons.lang3.IntegerRange;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.AuditRecordStorageException;
@@ -76,7 +74,6 @@ import org.cesecore.repository.util.XmlUtil;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.ProfileID;
-import org.cesecore.util.SecureXMLDecoder;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
@@ -537,23 +534,23 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     
     private boolean isOcspResponsePublisher(final BasePublisher publisher) {
         return (publisher instanceof CustomPublisherContainer) && 
-        StringUtils.contains(((CustomPublisherContainer) publisher).getClassPath(), "PeerPublisher") ||
-        StringUtils.contains(((CustomPublisherContainer) publisher).getClassPath(), "EnterpriseValidationAuthorityPublisher");
+                Strings.CS.contains(((CustomPublisherContainer) publisher).getClassPath(), "PeerPublisher") ||
+                Strings.CS.contains(((CustomPublisherContainer) publisher).getClassPath(), "EnterpriseValidationAuthorityPublisher");
     }
 
 
     private boolean isStoreCrlPropertyUsed(final BasePublisher publisher) {
         return (publisher instanceof CustomPublisherContainer) && (
-        StringUtils.contains(((CustomPublisherContainer) publisher).getClassPath(), "PeerPublisher") ||
-        StringUtils.contains(((CustomPublisherContainer) publisher).getClassPath(), "ValidationAuthorityPublisher"));
+                Strings.CS.contains(((CustomPublisherContainer) publisher).getClassPath(), "PeerPublisher") ||
+                Strings.CS.contains(((CustomPublisherContainer) publisher).getClassPath(), "ValidationAuthorityPublisher"));
     }
     
     
     @Override
-    public boolean republishCrl(final AuthenticationToken admin, final Collection<Integer> publisherids, final String caFingerprint, final String issuerDn, final IntRange crlPartitionIndeces) throws AuthorizationDeniedException {
+    public boolean republishCrl(final AuthenticationToken admin, final Collection<Integer> publisherids, final String caFingerprint, final String issuerDn, final IntegerRange crlPartitionIndeces) throws AuthorizationDeniedException {
         boolean result = true;
         if(crlPartitionIndeces != null) {
-            for (int crlPartitionIndex = crlPartitionIndeces.getMinimumInteger(); crlPartitionIndex <= crlPartitionIndeces.getMaximumInteger(); crlPartitionIndex++) {
+            for (int crlPartitionIndex = crlPartitionIndeces.getMinimum(); crlPartitionIndex <= crlPartitionIndeces.getMaximum(); crlPartitionIndex++) {
                 result &= republishCrlPartition(admin, publisherids, caFingerprint, issuerDn, crlPartitionIndex);
             }
             result &=  republishCrlPartition(admin, publisherids, caFingerprint, issuerDn, CertificateConstants.NO_CRL_PARTITION);
@@ -858,8 +855,8 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
      */
     private void checkPublisherInUse(final String name) throws ReferencesToItemExistException {
         final List<String> inUseBy = new ArrayList<>();
-        Integer publisherId = getPublisherId(name);
-        if (publisherId == null) {
+        int publisherId = getPublisherId(name);
+        if (publisherId == 0) {
             return;
         }
         if (caAdminSession.exitsPublisherInCAs(publisherId)) {
@@ -965,7 +962,6 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         return map;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public List<PublisherData> findAll() {
         return repository.findAll();
@@ -1113,19 +1109,6 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     private int findFreePublisherId() {
         final ProfileID.DB db = (id) -> repository.findById(id) == null;
         return ProfileID.getNotUsedID(db);
-    }
-
-    private HashMap<?, ?> parseDataMapFromPublisher(final PublisherData dto) {
-        final var xml = new PublisherDataConverter().toBean(dto).getData();
-        try (SecureXMLDecoder decoder = new SecureXMLDecoder(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)))) {
-            return (HashMap<?, ?>) decoder.readObject();
-        } catch (IOException e) {
-            final String msg = "Failed to parse PublisherData data map in database: " + e.getMessage();
-            if (log.isDebugEnabled()) {
-                log.debug(msg + ". Data:\n" + dto.data());
-            }
-            throw new IllegalStateException(msg, e);
-        }
     }
 
     private BasePublisher getPublisher(final PublisherData dto) {

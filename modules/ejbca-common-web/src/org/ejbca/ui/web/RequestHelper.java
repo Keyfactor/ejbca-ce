@@ -18,7 +18,8 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.Certificate;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.cvc.CAReferenceField;
@@ -190,7 +191,7 @@ public abstract class RequestHelper {
 
     public static String getFileNameFromCertNoEnding(Certificate cacert, String defaultname) throws NoSuchFieldException {
     	String dnpart = null;
-    	if (StringUtils.equals(cacert.getType(), "CVC")) {
+    	if (Strings.CS.equals(cacert.getType(), "CVC")) {
     		CardVerifiableCertificate cvccert = (CardVerifiableCertificate) cacert;
     		String car = "car";
     		CAReferenceField carf = cvccert.getCVCertificate().getCertificateBody().getAuthorityReference();

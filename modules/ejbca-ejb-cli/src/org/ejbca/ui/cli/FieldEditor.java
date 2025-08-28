@@ -20,8 +20,8 @@ import org.apache.commons.beanutils.ConvertingWrapDynaBean;
 import org.apache.commons.beanutils.DynaBean;
 import org.apache.commons.beanutils.DynaProperty;
 import org.apache.commons.beanutils.WrapDynaBean;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.math.NumberUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -128,7 +128,7 @@ public class FieldEditor {
             if (t.countTokens() > 1) {
                 logger.info("Found an array, separated by ';', checking if it's all the same type...");
                 String s = t.nextToken();
-                if (NumberUtils.isNumber(s)) {
+                if (NumberUtils.isCreatable(s)) {
                     logger.info("using Integer value: "+s);
                     arr.add(Integer.valueOf(s));
                 } else {
@@ -136,15 +136,15 @@ public class FieldEditor {
                     logger.info("using String value: "+s);
                     arr.add(s);
                 }
-                boolean isInt = NumberUtils.isNumber(s);
+                boolean isInt = NumberUtils.isCreatable(s);
                 while (t.hasMoreTokens()) {
                     s = t.nextToken();
-                    if (NumberUtils.isNumber(s) && !isInt) {
+                    if (NumberUtils.isCreatable(s) && !isInt) {
                         logger.info("Values are not of the same type, can not split up as array...");
                         isSame = false;
                         break;
                     }
-                    if (NumberUtils.isNumber(s)) {
+                    if (NumberUtils.isCreatable(s)) {
                         logger.info("using Integer value: "+s);
                         arr.add(Integer.valueOf(s));
                     } else {
@@ -157,7 +157,7 @@ public class FieldEditor {
             if ((arr.size() == 0) || !isSame) {
                 arr = new ArrayList<Object>();
                 logger.info("Setting as single value...");
-                if (NumberUtils.isNumber(value)) {
+                if (NumberUtils.isCreatable(value)) {
                     logger.info("using Integer value: "+value);
                     arr.add(Integer.valueOf(value));
                 } else if (StringUtils.isNotEmpty(value)) {

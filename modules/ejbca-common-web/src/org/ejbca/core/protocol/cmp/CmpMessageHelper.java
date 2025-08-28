@@ -38,14 +38,7 @@ import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.RandomHelper;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-
-import com.keyfactor.util.crypto.algorithm.SignatureParameter;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1BitString;
 import org.bouncycastle.asn1.ASN1Encodable;
@@ -115,6 +108,13 @@ import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.model.InternalEjbcaResources;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.RandomHelper;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.crypto.algorithm.SignatureParameter;
 
 /**
  * Helper class to create different standard parts of CMP messages
@@ -541,7 +541,7 @@ public class CmpMessageHelper {
         cresp.setRequestId(requestId);
         cresp.setRequestType(requestType);
         // Set all protection parameters, this is another message than if we generated a cert above
-        if (verifyer != null && StringUtils.equals(responseProt, "pbe") && verifyer instanceof CmpPbeVerifyer) {
+        if (verifyer != null && Strings.CS.equals(responseProt, "pbe") && verifyer instanceof CmpPbeVerifyer) {
             CmpPbeVerifyer pbeVerifyer = (CmpPbeVerifyer) verifyer;
             final String pbeDigestAlg = pbeVerifyer.getOwfOid();
             final String pbeMacAlg = pbeVerifyer.getMacOid();
@@ -550,7 +550,7 @@ public class CmpMessageHelper {
             if ((pbeDigestAlg != null) && (pbeMacAlg != null) && (raAuthSecret != null)) {
                 cresp.setPbeParameters(keyId, raAuthSecret, pbeDigestAlg, pbeMacAlg, pbeIterationCount);
             }
-        } else if (verifyer != null && StringUtils.equals(responseProt, "pbe") && verifyer instanceof CmpPbmac1Verifyer) {
+        } else if (verifyer != null && Strings.CS.equals(responseProt, "pbe") && verifyer instanceof CmpPbmac1Verifyer) {
             CmpPbmac1Verifyer pbmac1Verifyer = (CmpPbmac1Verifyer) verifyer;
             final String pbmac1PrfAlg = pbmac1Verifyer.getPrfOid();
             final String pbmac1MacAlg = pbmac1Verifyer.getMacOid();

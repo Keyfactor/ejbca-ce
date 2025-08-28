@@ -20,7 +20,8 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Properties;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.endentity.ExtendedInformation;
@@ -167,7 +168,7 @@ public class CertSernoCustomLdapPublisher extends LdapPublisher implements ICust
         String snfromuser = DnComponents.getPartFromDN(userDN, "UID");
         if (StringUtils.isNotEmpty(snfromuser)) {
             log.info("User '"+username+"' aready has a UID in DN, this will be replaced by Cert Serial No: "+snfromuser);
-            StringUtils.replace(userDN, snfromuser, certSerNo);
+            Strings.CS.replace(userDN, snfromuser, certSerNo);
         } else {
             if (StringUtils.isEmpty(userDN)) {
                 userDN = "UID="+certSerNo;

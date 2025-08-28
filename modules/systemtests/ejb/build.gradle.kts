@@ -17,7 +17,7 @@ dependencies {
     if (project.extra["edition"] == "ee") {
         compileOnly(project(":modules:peerconnector:common"))
     }
-    compileOnly(libs.commons.lang)
+    compileOnly(libs.commons.lang3)
     compileOnly(libs.log4j.v12.api)
     compileOnly(libs.x509.common.util)
     compileOnly(libs.bundles.cryptotokens)

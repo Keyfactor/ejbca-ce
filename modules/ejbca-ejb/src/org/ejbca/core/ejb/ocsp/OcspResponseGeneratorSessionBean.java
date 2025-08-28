@@ -55,7 +55,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
@@ -545,7 +545,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         try {
             for (String keyAlias : cryptoToken.getAliases()) {
                 String subjectKeyId = new String(Hex.encode(KeyTools.createSubjectKeyId(cryptoToken.getPublicKey(keyAlias)).getKeyIdentifier()));
-                if (StringUtils.equals(subjectKeyId, new String(Hex.encode(certificateSubjectKeyId)))) {
+                if (Strings.CS.equals(subjectKeyId, new String(Hex.encode(certificateSubjectKeyId)))) {
                     return keyAlias;
                 }
             }
@@ -2246,7 +2246,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                 final byte[] certificateFromRequestSubjectKeyId = getSubjectKeyIdentifier((X509Certificate) cert);
 
                                 try {
-                                    if (StringUtils.equals(new String(Hex.encode(certificateFromRequestSubjectKeyId)),
+                                    if (Strings.CS.equals(new String(Hex.encode(certificateFromRequestSubjectKeyId)),
                                             new String(Hex.encode(currentIssuingCertSubjectKeyId)))
                                             && certId.matchesIssuer(new JcaX509CertificateHolder(issuingCertificate), new BcDigestCalculatorProvider())) {
                                         //We found it! Unless it's not active, or something else was wrong with it. 

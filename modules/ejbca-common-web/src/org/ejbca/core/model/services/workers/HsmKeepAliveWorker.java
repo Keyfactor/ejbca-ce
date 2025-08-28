@@ -18,7 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.log.InternalSecurityEventsLoggerSessionLocal;
 import org.cesecore.dbprotection.DatabaseProtectionException;
@@ -81,7 +82,7 @@ public class HsmKeepAliveWorker extends BaseWorker {
                         List<String> aliases = token.getAliases();
                         boolean tested = false;
                         for (final String alias : aliases) {
-                            if (StringUtils.containsIgnoreCase(alias, "testKey")) {
+                            if (Strings.CI.contains(alias, "testKey")) {
                                 if (log.isDebugEnabled()) {
                                     log.debug("Keepalive testing crypto token '" + info.getName() + "' with id " + info.getCryptoTokenId());
                                 }

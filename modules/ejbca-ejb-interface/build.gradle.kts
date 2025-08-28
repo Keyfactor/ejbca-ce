@@ -19,7 +19,6 @@ dependencies {
     compileOnly(libs.bcutil)
     compileOnly(libs.cert.cvc)
     compileOnly(libs.log4j.v12.api)
-    compileOnly(libs.commons.lang)
     compileOnly(libs.commons.lang3)
     compileOnly(libs.x509.common.util)
     compileOnly(libs.bundles.cryptotokens)

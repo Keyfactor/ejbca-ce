@@ -9,7 +9,6 @@ dependencies {
     compileOnly(libs.bctls)
     compileOnly(libs.bcutil)
     compileOnly(libs.log4j.v12.api)
-    compileOnly(libs.commons.lang)
     compileOnly(libs.commons.lang3)
     compileOnly(libs.commons.collections4)
     compileOnly(libs.x509.common.util)

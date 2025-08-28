@@ -15,7 +15,7 @@ dependencies {
     compileOnly(libs.bcprov)
     compileOnly(libs.bctls)
     compileOnly(libs.bcutil)
-    compileOnly(libs.commons.lang)
+    compileOnly(libs.commons.lang3)
     compileOnly(libs.jakarta.jws.api)
     compileOnly(libs.cert.cvc)
     compileOnly(libs.log4j.v12.api)

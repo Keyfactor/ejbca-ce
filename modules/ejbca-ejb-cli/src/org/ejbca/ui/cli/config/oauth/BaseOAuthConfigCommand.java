@@ -15,11 +15,11 @@ package org.ejbca.ui.cli.config.oauth;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -72,8 +72,8 @@ public abstract class BaseOAuthConfigCommand extends ConfigBaseCommand {
     
     protected boolean canAdd(final OAuthKeyInfo oauthKey) {
         for (OAuthKeyInfo existingKeyInfo : getOAuthConfiguration().getOauthKeys().values()) {
-            final boolean hasSameInternalId = ObjectUtils.equals(existingKeyInfo.getInternalId(), oauthKey.getInternalId());
-            final boolean hasSameLabel = StringUtils.equals(existingKeyInfo.getLabel(), oauthKey.getLabel());
+            final boolean hasSameInternalId = Objects.equals(existingKeyInfo.getInternalId(), oauthKey.getInternalId());
+            final boolean hasSameLabel = Strings.CS.equals(existingKeyInfo.getLabel(), oauthKey.getLabel());
             if (hasSameInternalId || hasSameLabel) {
                 return false;
             }
@@ -83,7 +83,7 @@ public abstract class BaseOAuthConfigCommand extends ConfigBaseCommand {
     
     protected boolean canEditLabel(final String label) {
         for (OAuthKeyInfo existingKeyInfo : getOAuthConfiguration().getOauthKeys().values()) {
-            final boolean hasSameLabel = StringUtils.equals(existingKeyInfo.getLabel(), label);
+            final boolean hasSameLabel = Strings.CS.equals(existingKeyInfo.getLabel(), label);
             if (hasSameLabel) {
                 return false;
             }

@@ -122,7 +122,6 @@ dependencies {
     earlib(libs.commons.fileupload2)
     earlib(libs.commons.fileupload2.core)
     earlib(libs.commons.io)
-    earlib(libs.commons.lang)
     earlib(libs.commons.lang3)
     earlib(libs.commons.logging)
     earlib(libs.commons.text)
@@ -617,6 +616,7 @@ val moduleShortcuts = mapOf(
     "cmpclient" to ":modules:cmpclient:build",
     "ejbca-caa-cli" to ":modules:caa:cli:build",
     "ejbca-ejb-cli" to ":modules:ejbca-ejb-cli:build",
+    "p11ng-cli" to ":modules:p11ng-cli:build",
 )
 
 moduleShortcuts.forEach { (shortcut, fullPath) ->

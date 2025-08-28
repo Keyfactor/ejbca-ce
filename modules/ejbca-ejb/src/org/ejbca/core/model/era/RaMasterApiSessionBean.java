@@ -50,7 +50,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -1928,8 +1929,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         final RaRoleSearchResponse searchResponse = new RaRoleSearchResponse();
         final String searchString = request.getGenericSearchString();
         for (final Role role : authorizedRoles) {
-            if (searchString == null || StringUtils.containsIgnoreCase(role.getRoleName(), searchString) ||
-                    (role.getNameSpace() != null && StringUtils.containsIgnoreCase(role.getNameSpace(), searchString))) {
+            if (searchString == null || Strings.CI.contains(role.getRoleName(), searchString) ||
+                    (role.getNameSpace() != null && Strings.CI.contains(role.getNameSpace(), searchString))) {
                 searchResponse.getRoles().add(role);
             }
         }

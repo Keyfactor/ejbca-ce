@@ -23,7 +23,7 @@ import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.PredicateUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.cesecore.util.QueryParameterException;
 import org.cesecore.util.query.clauses.Order;
 import org.cesecore.util.query.elems.LogicOperator;
