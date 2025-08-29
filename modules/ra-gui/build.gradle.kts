@@ -18,7 +18,6 @@ dependencies {
     compileOnly(libs.commons.codec)
     compileOnly(libs.commons.collections4)
     compileOnly(libs.commons.io)
-    compileOnly(libs.commons.lang)
     compileOnly(libs.jldap)
     compileOnly(libs.cert.cvc)
     compileOnly(libs.commons.lang3)

@@ -13,6 +13,10 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
 import java.security.KeyPair;
@@ -21,8 +25,9 @@ import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1OutputStream;
@@ -50,10 +55,6 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * System tests for handling CRMF messages requests with custom certificate 
@@ -106,7 +107,7 @@ public class CrmfRARequestCustomSerialNoSystemTest extends CmpTestCase {
             Iterator<Certificate> caIter = certs.iterator();
             Certificate cert = caIter.next();
             String subject = CertTools.getSubjectDN(cert);
-            if (StringUtils.equals(subject, caInfo.getSubjectDN())) {
+            if (Strings.CS.equals(subject, caInfo.getSubjectDN())) {
                 // Make sure we have a BC certificate
                 try {
                     this.cacert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
@@ -211,7 +212,7 @@ public class CrmfRARequestCustomSerialNoSystemTest extends CmpTestCase {
     	final X500Name userDN1 = new X500Name("C=SE,O=PrimeKey,CN=" + userName1);
     	try {
     		// check that several certificates could be created for one user and one key.
-    		long serialNumber = RandomUtils.nextLong();
+    		long serialNumber = RandomUtils.insecure().randomLong();
     		BigInteger bigInteger = BigInteger.valueOf(serialNumber);
             // First it should fail because the CMP RA does not even look for, or parse, requested custom certificate serial numbers
             // Actually it does not fail here, but returns good answer

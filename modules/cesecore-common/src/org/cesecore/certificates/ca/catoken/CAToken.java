@@ -22,7 +22,8 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Properties;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.internal.UpgradeableDataHashMap;
 
@@ -289,7 +290,7 @@ public class CAToken extends UpgradeableDataHashMap {
             try {
                 // If the input string contains \ (backslash on windows) we must convert it to \\
                 // Otherwise properties.load will parse it as an escaped character, and that is not good
-                final String propertyStrAdjusted = StringUtils.replace(propertyStr, "\\", "\\\\");
+                final String propertyStrAdjusted = Strings.CS.replace(propertyStr, "\\", "\\\\");
                 prop.load(new StringReader(propertyStrAdjusted));
                 // Trim whitespace in values
                 for (final Object keyObj : prop.keySet()) {
@@ -400,7 +401,7 @@ public class CAToken extends UpgradeableDataHashMap {
         }
         // Generate a key alias based on the new key sequence
         final String currentCertSignKeyLabel = keyStrings.getAlias(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
-        final String newCertSignKeyLabel = StringUtils.removeEnd(currentCertSignKeyLabel, currentKeySequence) + newKeySequence;
+        final String newCertSignKeyLabel = Strings.CS.removeEnd(currentCertSignKeyLabel, currentKeySequence) + newKeySequence;
         if (log.isDebugEnabled()) {
             log.debug("Current sign key alias: " + currentCertSignKeyLabel + "  New sign key alias: " + newCertSignKeyLabel);
         }
@@ -423,9 +424,9 @@ public class CAToken extends UpgradeableDataHashMap {
         
         // Generate a key alias based on the new key sequence
         final String currentCertSignKeyLabel = keyStrings.getAlias(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
-        final String newCertSignKeyLabel = StringUtils.removeEnd(currentCertSignKeyLabel, currentKeySequence) + newKeySequence;
+        final String newCertSignKeyLabel = Strings.CS.removeEnd(currentCertSignKeyLabel, currentKeySequence) + newKeySequence;
         final String currentDefaultKeyLabel = keyStrings.getAlias(CATokenConstants.CAKEYPURPOSE_DEFAULT);
-        final String newDefaultKeyLabel = StringUtils.removeEnd(currentDefaultKeyLabel, currentKeySequence) + newKeySequence;
+        final String newDefaultKeyLabel = Strings.CS.removeEnd(currentDefaultKeyLabel, currentKeySequence) + newKeySequence;
         log.info("Current sign key alias: " + currentCertSignKeyLabel + "  New sign key alias: " + newCertSignKeyLabel);
         log.info("Current default key alias: " + currentDefaultKeyLabel + "  New default key alias: " + newDefaultKeyLabel);
 
@@ -518,7 +519,7 @@ public class CAToken extends UpgradeableDataHashMap {
                 log.debug("CERTSIGN:      " + currentCertSignKeyLabel);
                 log.debug("CRLSIGN:       " + currentCrlSignKeyLabel);
             }
-            if (StringUtils.equals(currentCertSignKeyLabel, currentCrlSignKeyLabel)) {
+            if (Strings.CS.equals(currentCertSignKeyLabel, currentCrlSignKeyLabel)) {
                 log.info("Setting CRL signing key alias to: " + nextCertSignKeyLabel);
                 caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, nextCertSignKeyLabel);
             }
@@ -526,7 +527,7 @@ public class CAToken extends UpgradeableDataHashMap {
             caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_PREVIOUS, currentCertSignKeyLabel);
             caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, nextCertSignKeyLabel);
             caTokenProperties.remove(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_NEXT);
-            swichedSigningKey = !StringUtils.equals(nextCertSignKeyLabel, currentCertSignKeyLabel);
+            swichedSigningKey = !Strings.CS.equals(nextCertSignKeyLabel, currentCertSignKeyLabel);
         }
         // Replace key sequence (if present)
         final String nextKeySequence = caTokenProperties.getProperty(CATokenConstants.NEXT_SEQUENCE_PROPERTY);

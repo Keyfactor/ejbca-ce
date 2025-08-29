@@ -14,7 +14,7 @@ package org.cesecore.certificates.endentity;
 
 import java.io.Serializable;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 /**
  * Contains a single RoleOfPSP/roleOfPspName pair of a RolesOfPSP statement (ETSI TS 119 495). 
@@ -58,7 +58,7 @@ public final class PSD2RoleOfPSPStatement implements Serializable, Cloneable {
     public boolean equals(final Object other) {
         if (other instanceof PSD2RoleOfPSPStatement) {
             final PSD2RoleOfPSPStatement o = (PSD2RoleOfPSPStatement) other;
-            return StringUtils.equals(oid, o.getOid()) && StringUtils.equals(name, o.getName());
+            return Strings.CS.equals(oid, o.getOid()) && Strings.CS.equals(name, o.getName());
         } else {
             return false;
         }

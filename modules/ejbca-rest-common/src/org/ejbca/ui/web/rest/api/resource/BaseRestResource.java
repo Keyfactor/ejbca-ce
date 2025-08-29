@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.resource;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.config.GlobalConfiguration;
@@ -22,7 +22,6 @@ import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
 import org.ejbca.util.HttpTools;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Validator;
 import jakarta.ws.rs.core.Response;
 import java.security.cert.X509Certificate;
 
@@ -30,9 +29,6 @@ import java.security.cert.X509Certificate;
  * Base class for common methods used across all REST resources.
  */
 public abstract class BaseRestResource {
-
-    private static volatile Validator validator = null;
-    private static Object mutex = new Object();
 
     private static final String RESOURCE_STATUS = "OK";
     public static final String RESOURCE_VERSION = "1.0";

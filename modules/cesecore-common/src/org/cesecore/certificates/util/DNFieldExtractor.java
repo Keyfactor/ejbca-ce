@@ -23,7 +23,7 @@ import java.util.Locale;
 import com.keyfactor.util.CeSecoreNameStyle;
 import com.keyfactor.util.certificate.DnComponents;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x500.AttributeTypeAndValue;

@@ -41,7 +41,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
@@ -187,7 +187,7 @@ class SCEPTest extends ClientToolBox {
                     StressTest.this.performanceTest.getLog().error("Response code not 200: " + con.getResponseCode());
                     return false;
                 }
-                if (!StringUtils.equals(con.getContentType(), mimetype)) {
+                if (!Strings.CS.equals(con.getContentType(), mimetype)) {
                     StressTest.this.performanceTest.getLog().error("Content type not " + mimetype + ": " + con.getContentType());
                     return false;
                 }
@@ -378,7 +378,7 @@ class SCEPTest extends ClientToolBox {
                     StressTest.this.performanceTest.getLog().error("Response code not 200: " + con.getResponseCode());
                     return null;
                 }
-                if (!StringUtils.equals(con.getContentType(), "application/x-pki-message")) {
+                if (!Strings.CS.equals(con.getContentType(), "application/x-pki-message")) {
                     StressTest.this.performanceTest.getLog().error("Content type not application/x-pki-message: " + con.getContentType());
                     return null;
                 }
@@ -424,7 +424,7 @@ class SCEPTest extends ClientToolBox {
                 Iterator<?> iter = col.iterator();
                 SignerInformation signerInfo = (SignerInformation) iter.next();
                 // Check that the message is signed with the correct digest alg
-                if (!StringUtils.equals(digestOid, signerInfo.getDigestAlgOID())) {
+                if (!Strings.CS.equals(digestOid, signerInfo.getDigestAlgOID())) {
                     StressTest.this.performanceTest.getLog().error("Digest algorithms do not match: " + digestOid + ", " + signerInfo.getDigestAlgOID());
                     return false;
                 }
@@ -432,7 +432,7 @@ class SCEPTest extends ClientToolBox {
                 // Check that the signer is the expected CA
                 String raCertIssuer = DnComponents.stringToBCDNString(this.sessionData.certchain[0].getIssuerX500Principal().getName());
                 String sinfoIssuer = DnComponents.stringToBCDNString(sinfo.getIssuer().toString());
-                if (!StringUtils.equals(raCertIssuer, sinfoIssuer)) {
+                if (!Strings.CS.equals(raCertIssuer, sinfoIssuer)) {
                     StressTest.this.performanceTest.getLog().error("Issuers does not match: " + raCertIssuer + ", " + sinfoIssuer);
                     return false;
                 }
@@ -469,7 +469,7 @@ class SCEPTest extends ClientToolBox {
                 }
                 ASN1String str = ASN1PrintableString.getInstance((values.getObjectAt(0)));
                 String messageType = str.getString();
-                if (!StringUtils.equals(messageType, "3")) {
+                if (!Strings.CS.equals(messageType, "3")) {
                     StressTest.this.performanceTest.getLog().error("MessageType should be 3: " + messageType);
                     return false;
                 }
@@ -486,7 +486,7 @@ class SCEPTest extends ClientToolBox {
                 }
                 str = ASN1PrintableString.getInstance((values.getObjectAt(0)));
                 String responsestatus = str.getString();
-                if (!StringUtils.equals(expectedResponseStatus.getStringValue(), responsestatus)) {
+                if (!Strings.CS.equals(expectedResponseStatus.getStringValue(), responsestatus)) {
                     StressTest.this.performanceTest.getLog().error("ResponseStatus should be " + expectedResponseStatus.getValue() + " but was: " + responsestatus);
                     return false;
                 }
@@ -521,7 +521,7 @@ class SCEPTest extends ClientToolBox {
                 octstr = ASN1OctetString.getInstance(values.getObjectAt(0));
                 // recipient nonce should be the same as we sent away as sender nonce
                 String nonce = new String(Base64.encode(octstr.getOctets()));
-                if (!StringUtils.equals(senderNonce, nonce)) {
+                if (!Strings.CS.equals(senderNonce, nonce)) {
                     StressTest.this.performanceTest.getLog().error("RecipientNonce should be " + senderNonce + " but was: " + nonce);
                     return false;
                 }
@@ -538,7 +538,7 @@ class SCEPTest extends ClientToolBox {
                 }
                 str = ASN1PrintableString.getInstance((values.getObjectAt(0)));
                 // transid should be the same as the one we sent
-                if (!StringUtils.equals(transId, str.getString())) {
+                if (!Strings.CS.equals(transId, str.getString())) {
                     StressTest.this.performanceTest.getLog().error("TransId should be " + transId + " but was: " + str.getString());
                     return false;
                 }
@@ -591,7 +591,7 @@ class SCEPTest extends ClientToolBox {
                     //                            fos.close();
                     //                        } catch (Exception e) {}
                     // check the returned CRL
-                    if (!StringUtils.equals(this.sessionData.certchain[1].getSubjectX500Principal().getName(), retCrl.getIssuerX500Principal().getName())) {
+                    if (!Strings.CS.equals(this.sessionData.certchain[1].getSubjectX500Principal().getName(), retCrl.getIssuerX500Principal().getName())) {
                         StressTest.this.performanceTest.getLog().error("CRL issuerDN should be " + this.sessionData.certchain[1].getSubjectX500Principal().getName() + " but was: " + retCrl.getIssuerX500Principal().getName());
                         return false;
                     }
@@ -646,7 +646,7 @@ class SCEPTest extends ClientToolBox {
                 }
                 if (cacert != null) {
                     // ca certificate
-                    if (!StringUtils.equals(this.sessionData.certchain[1].getSubjectX500Principal().getName(), cacert.getSubjectX500Principal().getName())) {
+                    if (!Strings.CS.equals(this.sessionData.certchain[1].getSubjectX500Principal().getName(), cacert.getSubjectX500Principal().getName())) {
                         StressTest.this.performanceTest.getLog().error("CA certs subejctDN should be " + this.sessionData.certchain[1].getSubjectX500Principal().getName() + " but was: " + usercert.getSubjectX500Principal().getName());
                         return false;
                     }

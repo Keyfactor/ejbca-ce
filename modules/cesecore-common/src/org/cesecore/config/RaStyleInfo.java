@@ -14,11 +14,16 @@
 package org.cesecore.config;
 
 import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.bouncycastle.jcajce.provider.digest.SHA3;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 /**
  * Represents an individual RA Style Archive. May or may not contain logo files, mulitple CSS files

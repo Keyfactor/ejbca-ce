@@ -42,11 +42,14 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
 
 import javax.security.auth.x500.X500Principal;
+
+import org.apache.commons.lang3.Strings;
 
 import com.keyfactor.util.CeSecoreNameStyle;
 import com.keyfactor.util.CertTools;
@@ -60,8 +63,6 @@ import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
@@ -865,7 +866,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
                     } catch (InvalidKeyException | CertificateException | NoSuchAlgorithmException | NoSuchProviderException | SignatureException e) {
                         // NOPMD: expected
                     }
-                    assertFalse("presign public key should not be same as certificate public key", ArrayUtils.isEquals(pubK.getEncoded(), certificate.getPublicKey().getEncoded()));
+                    assertFalse("presign public key should not be same as certificate public key", Objects.deepEquals(pubK.getEncoded(), certificate.getPublicKey().getEncoded()));
                     // presign certificate should have presign key authority key identifier
                     byte[] certAuthKeyID = CertTools.getAuthorityKeyId(certificate);
                     JcaX509ExtensionUtils extensionUtils = new JcaX509ExtensionUtils(SHA1DigestCalculator.buildSha1Instance());

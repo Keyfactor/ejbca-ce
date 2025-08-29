@@ -20,7 +20,7 @@
 
 package org.owasp.filters;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.ejbca.config.WebConfiguration;
 
 import jakarta.servlet.Filter;

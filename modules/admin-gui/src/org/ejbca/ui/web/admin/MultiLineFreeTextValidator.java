@@ -20,7 +20,7 @@ import jakarta.faces.validator.FacesValidator;
 import jakarta.faces.validator.Validator;
 import jakarta.faces.validator.ValidatorException;
 
-import org.apache.commons.lang.CharSetUtils;
+import org.apache.commons.lang3.CharSetUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 

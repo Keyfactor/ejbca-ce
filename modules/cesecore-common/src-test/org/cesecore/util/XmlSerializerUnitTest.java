@@ -33,9 +33,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 
-import org.apache.commons.lang.ArrayUtils;
+
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificateprofile.PKIDisclosureStatement;
 import org.cesecore.certificates.endentity.EndEntityApprovalRequest;
@@ -189,7 +190,7 @@ public class XmlSerializerUnitTest {
         assertEquals("The Fast output XML is not equal to the expected one", expectedXmlSerializerXmlString, xmlSerializerXmlString);
 
         // Byte for byte, It should be exactly equals
-        assertTrue("Fast encoded XML vs XMLEncoder was not byte-for-byte the same", ArrayUtils.isEquals(xmlSerializerXmlString.getBytes(StandardCharsets.UTF_8), xmlEncoderXmlString.getBytes(StandardCharsets.UTF_8)));
+        assertTrue("Fast encoded XML vs XMLEncoder was not byte-for-byte the same", Objects.deepEquals(xmlSerializerXmlString.getBytes(StandardCharsets.UTF_8), xmlEncoderXmlString.getBytes(StandardCharsets.UTF_8)));
         
 	}
 
@@ -212,7 +213,7 @@ public class XmlSerializerUnitTest {
             encoder.writeObject(b64DataMapUnhandled);
         }
         final String handledByXMLEncoder = os1.toString("UTF-8");
-        assertTrue("Fall back encodeSimpleMapFast vs XMLEncoder was not byte-for-byte the same", ArrayUtils.isEquals(handledByXMLEncoder.getBytes(StandardCharsets.UTF_8), unhandled.getBytes(StandardCharsets.UTF_8)));
+        assertTrue("Fall back encodeSimpleMapFast vs XMLEncoder was not byte-for-byte the same", Objects.deepEquals(handledByXMLEncoder.getBytes(StandardCharsets.UTF_8), unhandled.getBytes(StandardCharsets.UTF_8)));
 	}
     
     // Test adding something that fails with IllegalArgumentException

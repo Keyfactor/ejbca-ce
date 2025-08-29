@@ -34,7 +34,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.http.HttpResponse;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROctetString;
