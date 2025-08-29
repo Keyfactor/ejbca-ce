@@ -43,6 +43,8 @@ public class RaEndEntitySearchRequest implements Serializable, Comparable<RaEndE
     private long modifiedBefore = Long.MAX_VALUE;
     private List<Integer> statuses = new ArrayList<>();
     private int pageNumber = 0;
+    
+    private boolean exactLetterCaseSearch;
 
     /** Default constructor */
     public RaEndEntitySearchRequest() {}
@@ -63,6 +65,8 @@ public class RaEndEntitySearchRequest implements Serializable, Comparable<RaEndE
         modifiedAfter = request.modifiedAfter;
         modifiedBefore = request.modifiedBefore;
         statuses.addAll(request.statuses);
+        
+        exactLetterCaseSearch = request.exactLetterCaseSearch;
     }
 
     public int getMaxResults() { return maxResults; }
@@ -107,6 +111,9 @@ public class RaEndEntitySearchRequest implements Serializable, Comparable<RaEndE
 
     public List<Integer> getStatuses() { return statuses; }
     public void setStatuses(final List<Integer> statuses) { this.statuses = statuses; }
+
+    public boolean isExactLetterCaseSearch() { return exactLetterCaseSearch; }
+    public void setExactLetterCaseSearch(boolean exactLetterCaseSearch) { this.exactLetterCaseSearch = exactLetterCaseSearch; }
 
     @Override
     public int hashCode() {

@@ -188,6 +188,16 @@ public class SearchEndEntitiesRestRequestV2 {
                         raEndEntitySearchRequest.setUsernameSearchString(criteriaValue);
                         break;
                     }
+                    case USERNAME: {
+                        raEndEntitySearchRequest.setUsernameSearchExact(criteriaOperation == SearchEndEntityCriteriaRestRequest.CriteriaOperation.EQUAL);
+                        raEndEntitySearchRequest.setExactLetterCaseSearch(criteriaOperation == SearchEndEntityCriteriaRestRequest.CriteriaOperation.EQUAL_CASE_SENSITIVE);
+                        raEndEntitySearchRequest.setUsernameSearchString(criteriaValue);
+                    }
+                    case SUBJECT_DN: {
+                        raEndEntitySearchRequest.setSubjectDnSearchExact(criteriaOperation == SearchEndEntityCriteriaRestRequest.CriteriaOperation.EQUAL);
+                        raEndEntitySearchRequest.setExactLetterCaseSearch(criteriaOperation == SearchEndEntityCriteriaRestRequest.CriteriaOperation.EQUAL_CASE_SENSITIVE);
+                        raEndEntitySearchRequest.setSubjectDnSearchString(criteriaValue);
+                    }
                     case END_ENTITY_PROFILE: {
                         raEndEntitySearchRequest.getEepIds().add(searchEndEntityCriteriaRestRequest.getIdentifier());
                         break;

@@ -1739,6 +1739,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             AuthenticationToken authenticationToken, RaEndEntitySearchRequest request, int currentQueryOffset,
             String sortingOperation, String additionalConstraintQuery, int additionalConstraintParam) {
         final RaEndEntitySearchResponse response = new RaEndEntitySearchResponse();
+        searchUserByExactMatchIfPossible(authenticationToken, request, response);
+        if (!response.getEndEntities().isEmpty()) {
+            return response;
+        }
         final List<Integer> authorizedLocalCaIds = new ArrayList<>(caSession.getAuthorizedCaIds(authenticationToken));
         // Only search a subset of the requested CAs if requested
         if (!request.getCaIds().isEmpty()) {
@@ -1920,6 +1924,70 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             response.setMightHaveMoreResults(true);
         }
         return response;
+    }
+    
+    private void searchUserByExactMatchIfPossible(AuthenticationToken authenticationToken, RaEndEntitySearchRequest request,
+            RaEndEntitySearchResponse response) {
+        
+        if (!request.isExactLetterCaseSearch() || request.getPageNumber()!=1) {
+            log.debug("Either not a exact letter case match search or page number more than 1");
+            return;
+        }
+        
+        if (!(request.getCaIds().size() <= 1 
+                && request.getEepIds().isEmpty() && request.getCpIds().isEmpty() 
+                && request.getSubjectAnSearchString().isBlank()
+                && (request.getSubjectDnSearchString().isBlank() && !request.getUsernameSearchString().isBlank())
+                && (!request.getSubjectDnSearchString().isBlank() && request.getUsernameSearchString().isBlank()))) {
+            log.debug("Exact search may only be performed if: ");
+            log.debug(" - [Match type is EQUAL_CASE_SENSITIVE]");
+            log.debug(" - [Search Criteria type is USERNAME or SUBJECTDN]");
+            log.debug(" - [Only USERNAME or SUBJECTDN is mentioned]");
+            log.debug(" - [At most one CA is mentioned and only with SUBJECTDN]");
+            log.debug(" - [No other criteria e.g. certificate or end entity profile, status, dates etc may be used]");
+            return;
+        }
+        
+        if (request.getCaIds().size()==1 
+                && request.isSubjectDnSearchExact() && !request.getSubjectDnSearchString().isBlank()
+                ) {
+            try {
+                response.getEndEntities().addAll(
+                        endEntityAccessSession.findUserBySubjectAndIssuerDN(authenticationToken, 
+                            request.getSubjectDnSearchString(), 
+                            caSession.findById(request.getCaIds().get(0)).getSubjectDN()));
+            } catch (AuthorizationDeniedException e) {
+                // ignore
+            }
+        }
+        
+        if (request.getCaIds().size()==0 
+                && request.isSubjectDnSearchExact() && !request.getSubjectDnSearchString().isBlank()
+                ) {
+            try {
+                response.getEndEntities().addAll(
+                        endEntityAccessSession.findUserBySubjectDN(authenticationToken, request.getSubjectDnSearchString()));
+            } catch (AuthorizationDeniedException e) {
+             // ignore
+            }
+        }
+        
+        if (request.getCaIds().size()==0 
+                && request.isUsernameSearchExact() && !request.getUsernameSearchString().isBlank()
+                ) {
+            try {
+                response.getEndEntities().add(
+                        endEntityAccessSession.findUser(authenticationToken, request.getUsernameSearchString()));
+            } catch (AuthorizationDeniedException e) {
+                // ignore
+            }
+        }
+        
+        if (!response.getEndEntities().isEmpty()) {
+            //TODO: response.getEndEntities().sort(null);
+            response.setMightHaveMoreResults(false);
+        }
+        
     }
 
     @Override

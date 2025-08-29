@@ -48,7 +48,7 @@ public class SearchEndEntityCriteriaRestRequest {
     private String value;
 
     @Schema(description = "An operation for property on inserted value. 'EQUALS' for string, 'LIKE' for string value ('QUERY')",
-            allowableValues = {"EQUAL", "LIKE"},
+            allowableValues = {"EQUAL", "LIKE", "EQUAL_CASE_SENSITIVE"},
             type = "string")
     private String operation;
 
@@ -96,6 +96,8 @@ public class SearchEndEntityCriteriaRestRequest {
      */
     public enum CriteriaProperty {
     	QUERY,
+    	USERNAME,
+    	SUBJECT_DN,
         END_ENTITY_PROFILE,
         CERTIFICATE_PROFILE,
         CA,
@@ -135,7 +137,8 @@ public class SearchEndEntityCriteriaRestRequest {
      */
     public enum CriteriaOperation {
         EQUAL,
-        LIKE;
+        LIKE,
+        EQUAL_CASE_SENSITIVE;
 
         /**
          * Resolves the CriteriaOperation using its name or returns null.
