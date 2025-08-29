@@ -124,6 +124,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public static final String DEFAULT_RA_NAME_GENERATION_PREFIX = "";
     public static final String DEFAULT_RA_NAME_GENERATION_POSTFIX = "";
     public static final String DEFAULT_RETURN_CA_CHAIN_IN_GETCACERT = Boolean.TRUE.toString();
+    public static final String DEFAULT_AAD_USE_KEYBINDING = Boolean.FALSE.toString();
 
 
     /**
@@ -165,7 +166,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         data.put(alias + AUTH_AUTHORITY, "");
         data.put(alias + AAD_APP_ID, "");
         data.put(alias + AAD_APP_KEY, "");
-        data.put(alias + AAD_USE_KEY_BINDING, Boolean.FALSE.toString());
+        data.put(alias + AAD_USE_KEY_BINDING, DEFAULT_AAD_USE_KEYBINDING);
         data.put(alias + AAD_APP_KEY_BINDING, "");
         data.put(alias + TENANT, "");
         data.put(alias + INTUNE_RESOURCE_URL, "");
