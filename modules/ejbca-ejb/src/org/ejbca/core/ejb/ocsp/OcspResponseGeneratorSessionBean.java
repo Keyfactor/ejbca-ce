@@ -1587,7 +1587,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         String statusName = "UnknownStatus";
                         int statusLogCode = OCSPResponseItem.OCSP_UNKNOWN;
                         if (defaultKeyBind != null) {
-                            if (defaultKeyBind.getOcspNonExistingBehavior().equals(OcspNonExistingBehavior.REVOKED)) {
+                            if (OcspNonExistingBehavior.REVOKED.equals(defaultKeyBind.getOcspNonExistingBehavior())) {
                                 // See NonExistingRevoked handling below for an explanation.
                                 // We return certificateHold just to be safe, in case the CA certificate is not yet available for some reason.
                                 status = new RevokedStatus(new RevokedInfo(new ASN1GeneralizedTime(new Date(0)),
