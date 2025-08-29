@@ -46,7 +46,9 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
@@ -66,6 +68,7 @@ import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.ASN1String;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERNull;
@@ -80,6 +83,8 @@ import org.bouncycastle.asn1.pkcs.CertificationRequestInfo;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x500.X500NameBuilder;
+import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.CRLReason;
@@ -1918,6 +1923,71 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         ASN1Encodable params = pkinfo.getAlgorithm().getParameters();
         assertNotNull("AlgorithmID parameters must not be null for an RSA public key, see RFC3279", params);
         assertEquals("Params should be DERNull", DERNull.INSTANCE, params);
+    }
+
+    /**
+     * Test if the DN attributes such as CN which has printable sting format inside 
+     * CSR preserve their formatting in the final generated cert or not.
+     * Note that for this to pass "Allow Subject DN Override by CSR" must be selected in the associated CP and
+     * in the used CA there must be the option of "PrintableString encoding in DN" enabled.
+     * @throws Exception
+     */
+    @Test
+    public void testPrintableStringInCSRShouldBePreservedAfterCertificateGeneration() throws Exception {
+        final String algName = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
+        final CryptoToken cryptoToken = getNewCryptoToken();
+        final X509CA x509ca = createTestCA(cryptoToken, CADN, algName, null, null);
+        x509ca.setUsePrintableStringSubjectDN(true);
+
+        // Create a pkcs10 certificate request
+        KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+
+        // Building DN with CN and C elements of PrintableString type and O of UTF8String type
+        X500NameBuilder builder = new X500NameBuilder(BCStyle.INSTANCE);
+        builder.addRDN(BCStyle.CN, new DERPrintableString("RequestMessageCn"));
+        builder.addRDN(BCStyle.O, "PrimeKey");
+        builder.addRDN(BCStyle.C, new DERPrintableString("SE"));
+        X500Name x509dn = builder.build();
+
+        PKCS10CertificationRequest certificationRequest = CertTools.genPKCS10CertificationRequest(algName, x509dn, keyPair.getPublic(), null, keyPair.getPrivate(), BouncyCastleProvider.PROVIDER_NAME);
+        PKCS10RequestMessage requestMessage = new PKCS10RequestMessage(new JcaPKCS10CertificationRequest(certificationRequest));
+        assertEquals("CN=RequestMessageCn,O=PrimeKey,C=SE", requestMessage.getRequestDN());
+
+        EndEntityInformation endEntityInformation = new EndEntityInformation("username", "CN=EndEntityInformationCn,O=PrimeKey,C=SE", 666, null, "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
+
+        //Create CP and generate certificate
+        CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        cp.setAllowDNOverride(true);
+
+        Certificate usercert = x509ca.generateCertificate(cryptoToken, endEntityInformation, requestMessage, keyPair.getPublic(), 0, null, null, cp, null, "00000", cceConfig);
+        assertNotNull(usercert);
+
+
+        X509Certificate x509cert = (X509Certificate) usercert;
+        X500Name certSubject = X500Name.getInstance(x509cert.getSubjectX500Principal().getEncoded());
+
+        // Extract and compare
+        Map<String, String> csrEncodings = extractEncodings(x509dn);
+        Map<String, String> certEncodings = extractEncodings(certSubject);
+
+        assertEquals("Encoding mismatch between CSR and Certificate subjects!",
+                csrEncodings, certEncodings);
+    }
+
+    private static Map<String, String> extractEncodings(X500Name name) throws Exception {
+        Map<String, String> encodings = new LinkedHashMap<>();
+        for (RDN rdn : name.getRDNs()) {
+            ASN1Primitive primitive = rdn.getFirst().getValue().toASN1Primitive();
+            String displayName = BCStyle.INSTANCE.oidToDisplayName(rdn.getFirst().getType());
+
+            String type = primitive.getClass().getSimpleName(); // e.g. DERUTF8String, DERPrintableString
+            String value = (primitive instanceof ASN1String)
+                    ? ((ASN1String) primitive).getString()
+                    : primitive.toString();
+
+            encodings.put(displayName + "=" + value, type);
+        }
+        return encodings;
     }
 
     /**
