@@ -332,7 +332,7 @@ public class CustomPublisherContainer extends BasePublisher {
 				@SuppressWarnings("unchecked")
                 Class<? extends ICustomPublisher> implClass = (Class<? extends ICustomPublisher>) Class.forName( classPath );
 				this.custompublisher =  implClass.getDeclaredConstructor().newInstance();
-				this.custompublisher.init(getProperties());				
+				this.custompublisher.init(getProperties());
             } catch (ClassNotFoundException e) {
                 // Probably means that we have not built in our custom publisher here in EJBCA, or it's an Enterprise only 
                 // publisher configured (Peer publisher for example)
