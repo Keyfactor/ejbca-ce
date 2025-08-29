@@ -1594,7 +1594,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                         CRLReason.lookup(CRLReason.certificateHold)));
                                 statusName = "RevokedStatus";
                                 statusLogCode = OCSPResponseItem.OCSP_REVOKED;
-                            } else if (defaultKeyBind.getOcspNonExistingBehavior().equals(OcspNonExistingBehavior.UNAUTHORIZED)) {
+                            } else if (OcspNonExistingBehavior.UNAUTHORIZED.equals(defaultKeyBind.getOcspNonExistingBehavior())) {
                                 // In order to save on cycles and mitigate the chances of a DOS attack, we'll return a unsigned unauthorized reply. 
                                 ocspResponse = responseGenerator.build(OCSPRespBuilder.UNAUTHORIZED, null);
                                 if (!isPreSigning && auditLogger.isEnabled()) {
@@ -2592,18 +2592,18 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         }
         //Handle overrides – this signifies URLs from to a specific answer should always be sent. 
         //Always send back GOOD for a match
-        Pattern nonExistingIsGoodOverideRegex = OcspConfiguration.getNonExistingIsGoodOverideRegex() != null ? Pattern.compile(OcspConfiguration.getNonExistingIsGoodOverideRegex()) : null;
-        if(isRegexFulFilled(url, nonExistingIsGoodOverideRegex)) {
+        Pattern nonExistingIsGoodOverrideRegex = OcspConfiguration.getNonExistingIsGoodOverrideRegex() != null ? Pattern.compile(OcspConfiguration.getNonExistingIsGoodOverrideRegex()) : null;
+        if(isRegexFulFilled(url, nonExistingIsGoodOverrideRegex)) {
             return OcspNonExistingBehavior.GOOD;
         } 
         //Always send back UNKNOWN for a match
-        Pattern nonExistingIsBadOverideRegex =  OcspConfiguration.getNonExistingIsBadOverideRegex() != null ? Pattern.compile(OcspConfiguration.getNonExistingIsBadOverideRegex()) : null;
-        if(isRegexFulFilled(url, nonExistingIsBadOverideRegex)) {
+        Pattern nonExistingIsBadOverrideRegex =  OcspConfiguration.getNonExistingIsBadOverrideRegex() != null ? Pattern.compile(OcspConfiguration.getNonExistingIsBadOverrideRegex()) : null;
+        if(isRegexFulFilled(url, nonExistingIsBadOverrideRegex)) {
             return OcspNonExistingBehavior.UNKNOWN;
         }
         //Always send back REVOKED for a match
-        Pattern nonExistingIsRevokedOverideRegex =  OcspConfiguration.getNonExistingIsRevokedOverideRegex() != null ? Pattern.compile(OcspConfiguration.getNonExistingIsRevokedOverideRegex()) : null;
-        if(isRegexFulFilled(url, nonExistingIsRevokedOverideRegex)) {
+        Pattern nonExistingIsRevokedOverrideRegex =  OcspConfiguration.getNonExistingIsRevokedOverrideRegex() != null ? Pattern.compile(OcspConfiguration.getNonExistingIsRevokedOverrideRegex()) : null;
+        if(isRegexFulFilled(url, nonExistingIsRevokedOverrideRegex)) {
             return OcspNonExistingBehavior.REVOKED;
         }
         

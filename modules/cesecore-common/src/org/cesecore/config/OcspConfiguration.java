@@ -202,7 +202,7 @@ public class OcspConfiguration {
      * even if {@link #getNonExistingIsGood()} return false.
      * @return the regex
      */
-    public static String getNonExistingIsGoodOverideRegex() {
+    public static String getNonExistingIsGoodOverrideRegex() {
     	return getRegex(NON_EXISTING_IS_GOOD_URI);
     }
 
@@ -211,7 +211,7 @@ public class OcspConfiguration {
      * even if {@link #getNonExistingIsGood()} return true.
      * @return the regex
      */
-    public static String getNonExistingIsBadOverideRegex() {
+    public static String getNonExistingIsBadOverrideRegex() {
     	return getRegex(NON_EXISTING_IS_BAD_URI);
     }
     
@@ -220,7 +220,7 @@ public class OcspConfiguration {
      * even if {@link #getNonExistingIsGood()} return true.
      * @return the regex
      */
-    public static String getNonExistingIsRevokedOverideRegex() {
+    public static String getNonExistingIsRevokedOverrideRegex() {
         return getRegex(NON_EXISTING_IS_REVOKED_URI);
     }
 

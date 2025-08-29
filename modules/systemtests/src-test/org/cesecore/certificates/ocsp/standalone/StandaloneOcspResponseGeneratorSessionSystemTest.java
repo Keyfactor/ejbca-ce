@@ -1140,8 +1140,8 @@ public class StandaloneOcspResponseGeneratorSessionSystemTest {
                 internalCertificateStoreSession.removeCertificate(externalCaCertificate);
             }
         } finally {
-            GlobalOcspConfiguration restorelOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-            restorelOcspConfiguration.setOcspNonExistingBehavior(originalNoneExisting);
+            GlobalOcspConfiguration restoreOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            restoreOcspConfiguration.setOcspNonExistingBehavior(originalNoneExisting);
             globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);
         }
     }
@@ -1230,8 +1230,8 @@ public class StandaloneOcspResponseGeneratorSessionSystemTest {
                 internalCertificateStoreSession.removeCertificate(externalCaCertificate);
             }
         } finally {
-            GlobalOcspConfiguration restorelOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-            restorelOcspConfiguration.setOcspNonExistingBehavior(originalNoneExisting);
+            GlobalOcspConfiguration restoreOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            restoreOcspConfiguration.setOcspNonExistingBehavior(originalNoneExisting);
             globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);
         }
     }

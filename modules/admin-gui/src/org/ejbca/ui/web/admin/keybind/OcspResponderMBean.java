@@ -1026,7 +1026,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
                         getCurrentCryptoToken(), getCurrentKeyPairAlias(), getCurrentSignatureAlgorithm(), dataMap,
                         (List<InternalKeyBindingTrustEntry>) getTrustedCertificates().getWrappedData())));
 
-                final InternalKeyBinding internalKeyBinding = internalKeyBindingSession.getInternalKeyBinding(getAuthenticationToken(),
+                final OcspKeyBinding internalKeyBinding = (OcspKeyBinding) internalKeyBindingSession.getInternalKeyBinding(getAuthenticationToken(),
                         Integer.parseInt(getCurrentInternalKeyBindingId()));
 
                 if (ocspExtensionsList != null && ocspExtensionsList.isEmpty()) {
@@ -1039,6 +1039,8 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
                 } else {
                     internalKeyBinding.setSignOcspResponseOnBehalf(new ArrayList<>());
                 }
+                
+                internalKeyBinding.setOcspNonExistingBehavior(currentUnknownResponse);
                 
                 // we save an empty list for sign on behalf of CAs
                 setCurrentInternalKeybindingId(
