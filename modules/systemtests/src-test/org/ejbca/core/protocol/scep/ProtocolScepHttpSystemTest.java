@@ -369,13 +369,13 @@ public class ProtocolScepHttpSystemTest extends ScepTestBase {
         
         // Make user that we know...
         createScepUser(userName1, userDN1);
-
-        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA1, userDN1, SMIMECapability.aES128_CBC);
+        // We will remove support for DES-CBC in the near future and we should then handle any request using DES-CBC properly
+        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA1, userDN1, SMIMECapability.dES_CBC);
         // Send message with GET
         byte[] retMsg = sendScep(false, msgBytes);
         assertNotNull(retMsg);
         //With legacy digest algorithm not allowed, response should default to SHA256
-        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA256, false, SMIMECapability.aES128_CBC, key1);
+        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA256, false, SMIMECapability.dES_CBC, key1);
     }
 
     @Test
@@ -446,7 +446,7 @@ public class ProtocolScepHttpSystemTest extends ScepTestBase {
         // Make user that we know...
         createScepUser(userName1, userDN1);
 
-        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_MD5, userDN1, SMIMECapability.aES256_CBC);
+        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_MD5, userDN1, SMIMECapability.aES128_CBC);
         // Send message with GET
         byte[] retMsg = sendScep(false, msgBytes);
         assertNotNull(retMsg);
