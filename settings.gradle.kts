@@ -185,6 +185,12 @@ dependencyResolutionManagement {
             library("jakarta.mail", ":jakarta.mail:2.0.3")
             library("jaxb.core", ":jaxb-core:4.0.2")
             library("jaxb.impl", ":jaxb-impl:4.0.2")
+            // jaxb license validation
+            library("istack-commons-runtime-jaxb", ":istack-commons-runtime:4.1.2")
+            library("jaxb.core-jaxb", ":jaxb-core:4.0.5")
+            library("jaxb.impl-jaxb", ":jaxb-impl:4.0.5")
+            library("txw2-jaxb", ":txw2:4.0.5")
+            
 
             if (!isProductionMode) {
                 library("jboss.client", ":jboss:client")
