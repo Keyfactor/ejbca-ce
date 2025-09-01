@@ -101,7 +101,6 @@ public class LicenseVerifierEnterpriseSessionBean {
         startUpCountDown--;
         log.debug("EJBCA license check timer triggered: " + java.time.LocalDateTime.now());
         if (!EjbcaConfiguration.getIsInProductionMode() || startUpCountDown>0) {
-        //if(startUpCountDown>0) {
             return;
         }
                 
@@ -158,7 +157,7 @@ public class LicenseVerifierEnterpriseSessionBean {
         StringBuilder sb = new StringBuilder();
         final String banner = "###########################################################################";
         List.of(banner, banner, banner, "", message, "", banner, banner, banner).forEach(log::error);
-        List.of(banner, "", message, "", banner ).forEach(x -> sb.append(x + "<br>"));
+        List.of(banner, "", message, "", banner ).forEach(x -> sb.append("<b>" + x + "</b><br>"));
         LicenseStateContainer.setLicenseInvalidWarning(sb.toString());
     }
     

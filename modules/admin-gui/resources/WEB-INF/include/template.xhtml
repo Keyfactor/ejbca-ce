@@ -65,11 +65,12 @@
           </div>
         </div>
       </h:panelGroup>
-      <h:panelGroup>
-        <!--<div class="ui-messages-error">
-             <h:outputText value="#{adminMenuBean.licenseInvalidMessage}" styleClass="ui-messages-error-summary"/>-->
-             <p:messages severity="error,fatal" globalOnly="false" id="badLicenseMessage" for="badLicenseMessage" escape="false" showDetail="true" showSummary="true" skipDetailIfEqualsSummary="true" showIcon="false"/>
-        <!--</div>-->
+      <h:panelGroup rendered="#{not empty adminMenuBean.badLicenseInvalidMessage}">
+            <div class="ui-messages">
+               <div class="ui-messages-error">
+                  <h:outputText value="#{adminMenuBean.badLicenseInvalidMessage}" escape="false"/>
+               </div>
+            </div>
         </h:panelGroup>
       </p:panelGrid>
       </h:panelGroup>
@@ -130,7 +131,7 @@
             <h:panelGroup layout="block" id="messagesBlock">
                 <p:messages severity="info" globalOnly="false" id="infoMessage" showDetail="true" showSummary="true" skipDetailIfEqualsSummary="true"/>
                 <p:messages severity="warn" globalOnly="false" id="warnMessage" showDetail="true" showSummary="true" skipDetailIfEqualsSummary="true"/>
-                <p:messages severity="error,fatal" globalOnly="false" id="errorMessage" for="error" showDetail="true" showSummary="true" skipDetailIfEqualsSummary="true"/>
+                <p:messages severity="error,fatal" globalOnly="false" id="errorMessage" showDetail="true" showSummary="true" skipDetailIfEqualsSummary="true"/>
             </h:panelGroup>
     
             <h:panelGroup layout="block" id="contentBlock" styleClass="contentBlock">
