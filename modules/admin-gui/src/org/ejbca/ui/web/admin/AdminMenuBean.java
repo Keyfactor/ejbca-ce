@@ -19,7 +19,6 @@ import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingRules;
-import org.cesecore.license.LicenseStateContainer;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.InternalConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -29,7 +28,6 @@ import org.primefaces.model.StreamedContent;
 
 import jakarta.ejb.EJB;
 import jakarta.enterprise.context.RequestScoped;
-import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
 import jakarta.inject.Named;
 import jakarta.servlet.ServletContext;
@@ -37,6 +35,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.ByteArrayInputStream;
 import java.io.Serializable;
+
 
 /**
  * Backing bean for the menu on the left (in the default theme) in the AdminWeb.
@@ -254,23 +253,12 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
      * @return the URL to EJBCA Admin UI, i.e. https://hostname:8443/ejbca/adminweb/, always ends with a '/'
      */
     public String getAdminWebUrl() {
-        showBadLicenseInvalidMessage();
         String url = getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH;
         // This most likely always ends with a / but make damn sure
         if (!Strings.CS.endsWith(url, "/")) {
             url += "/";
         }
         return url;
-    }
-    
-    private void showBadLicenseInvalidMessage() {
-        String message = LicenseStateContainer.getLicenseInvalidWarning();
-        if (!message.isBlank()) {
-            FacesContext ctx = FacesContext.getCurrentInstance();
-            if (ctx.getMessageList("badLicenseMessage").isEmpty()) {
-                ctx.addMessage("badLicenseMessage", new FacesMessage(FacesMessage.SEVERITY_ERROR, message, message));
-            }
-        }
     }
     
     private transient StreamedContent headerLogoImage;
