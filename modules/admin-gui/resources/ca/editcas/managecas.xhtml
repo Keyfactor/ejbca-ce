@@ -26,17 +26,19 @@
 <ui:composition template="/WEB-INF/include/template.xhtml">
     <ui:param name="resourceBean" value="#{manageCAsMBean}"/>
     <ui:define name="content">
-        <h1>
-            <h:outputText value="#{web.text.MANAGECAS}"/>
-            <h:outputText
-                    value="#{web.ejbcaWebBean.getHelpReference('/Managing_CAs.html')}"
-                    escape="false" styleClass="helpReference"/>
-        </h1>
+        
+        <p:tabView id="tabs" dynamic="true" activeIndex="#{manageCAsMBean.lastActiveTab}">
+        <p:ajax event="tabChange" listener="#{manageCAsMBean.onTabChange}"/>
+
+        <p:tab title="#{web.text.MANAGECAS}" >
 
         <h:form id="managecas" enctype="multipart/form-data">
             <h:panelGroup>
                 <h3>
                     <h:outputText value="#{web.text.LISTOFCAS}"/>
+                     <h:outputText
+                        value="#{web.ejbcaWebBean.getHelpReference('/Managing_CAs.html')}"
+                        escape="false" styleClass="helpReference"/>
                 </h3>
                 <p:dataTable id="calist" value="#{manageCAsMBean.canames}" var="caname"
                              rendered="#{!manageCAsMBean.caListEmpty}"
@@ -130,6 +132,32 @@
                 </h:inputFile>
             </h:panelGroup>
         </h:form>
+        </p:tab>
+        <p:tab title="#{web.text.CONFIGURATION}" >
+            <h:form id="globalCaSettings" style="display: block;">
+                <h:panelGrid columns="4" styleClass="ui-panelgrid-blank">
+                    <!-- ICAO Name Change -->
+	                <h:panelGroup>
+	                    <h:outputText value="#{web.text.ENABLEICAOCANAMECHANGE}"/>              
+                    </h:panelGroup>
+                    <h:selectBooleanCheckbox id="enableicaocanamechange" value="#{manageCAsMBean.globalCaConfiguration.enableIcaoCANameChange}"
+                        disabled="#{!manageCAsMBean.allowedToEditSystemConfiguration}">
+                    </h:selectBooleanCheckbox>
+                    <h:outputLabel for="enableicaocanamechange" value="#{web.text.ACTIVATE}" />
+                    <h:outputText value="#{web.text.CA_ICAO_NAME_CHANGE_HELP}" styleClass="help" style="font-size: smaller"/>
+                    
+                    <h:panelGroup layout="block">
+                        <h:commandButton action="#{manageCAsMBean.saveGlobalCaSettings}"
+                                 rendered="#{manageCAsMBean.allowedToEditSystemConfiguration}"
+                                 disabled="#{manageCAsMBean.configurationUnchanged}"
+                                 value="#{web.text.SAVE}" >
+                        </h:commandButton>
+                    </h:panelGroup>
+                    
+                </h:panelGrid>
+            </h:form>
+        </p:tab>
+        </p:tabView>
     </ui:define>
 </ui:composition>
 </html>
