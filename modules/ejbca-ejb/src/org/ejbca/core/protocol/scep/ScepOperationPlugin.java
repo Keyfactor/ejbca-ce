@@ -20,7 +20,6 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 /**
  * Interface for SCEP plugins which perform operations
  * 
- * @version $Id$
  *
  */
 public interface ScepOperationPlugin {
@@ -33,7 +32,7 @@ public interface ScepOperationPlugin {
      * @param scepConfig the SCEP configuration, if required
      * @param alias alias of the SCEP configuration
      * @return true if the operation succeeded 
-     * @throws AuthorizationDeniedException if request was denied due to authorization error
+     * @throws AuthorizationDeniedException if the request was sent to the wrong CA, the current token does not have access to that CA, or the RA password being used was incorrect
      * @throws WaitingForApprovalException if the request was processed but requires approval
      */
     boolean performOperation(AuthenticationToken authenticationToken, ScepRequestMessage reqmsg, final ScepConfiguration scepConfig,
