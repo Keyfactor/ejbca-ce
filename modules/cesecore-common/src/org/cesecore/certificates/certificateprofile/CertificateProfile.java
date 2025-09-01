@@ -198,17 +198,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String USEDCERTIFICATEEXTENSIONS = "usedcertificateextensions";
     protected static final String DESCRIPTION = "description";
     protected static final String EABNAMESPACES = "eabnamespaces";
-    /**
-     * @deprecated since 6.8.0, where approval settings and profiles became interlinked.
-     */
-    @Deprecated
-    protected static final String APPROVALSETTINGS = "approvalsettings";
 
-    /**
-     * @deprecated since 6.8.0, where approval settings and profiles became interlinked.
-     */
-    @Deprecated
-    protected static final String APPROVALPROFILE = "approvalProfile";
     protected static final String APPROVALS = "approvals";
 
     protected static final String SIGNATUREALGORITHM = "signaturealgorithm";
@@ -2559,56 +2549,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         return ret;
     }
 
-    /**
-     * @return a List of Integers (CAInfo.REQ_APPROVAL_ constants) of which action that requires approvals, default none, never null
-     *
-     * @deprecated since 6.8.0. Use getApprovals() instead;
-     */
-    @SuppressWarnings("unchecked")
-    @Deprecated
-    public List<Integer> getApprovalSettings() {
-        List<Integer> approvalSettings = (List<Integer>) data.get(APPROVALSETTINGS);
-        if (approvalSettings != null) {
-            return approvalSettings;
-        } else {
-            return new ArrayList<>();
-        }
-    }
-
-    /**
-     * List of Integers (CAInfo.REQ_APPROVAL_ constants) of which action that requires approvals
-     *
-     * @deprecated since 6.8.0. Use setApprovals() instead;
-     */
-    @Deprecated
-    public void setApprovalSettings(List<Integer> approvalSettings) {
-        data.put(APPROVALSETTINGS, approvalSettings);
-    }
-
-    /**
-     * @return the id of the approval profile. ID -1 means  that no approval profile was set
-     *
-     * @deprecated since 6.8.0. Use getApprovals() instead;
-     */
-    @Deprecated
-    public int getApprovalProfileID() {
-        Integer approvalProfileId = (Integer) data.get(APPROVALPROFILE);
-        if(approvalProfileId != null) {
-            return approvalProfileId;
-        } else {
-            return -1;
-        }
-    }
-
-    /**
-     * Sets the ID of an approval profile
-     * @deprecated since 6.8.0. Use setApprovals() instead;
-     */
-    @Deprecated
-    public void setApprovalProfileID(int approvalProfileID) {
-        data.put(APPROVALPROFILE, approvalProfileID);
-    }
-
+    
     public void setApprovals(Map<ApprovalRequestType, Integer> approvals) {
         if(approvals == null) {
             approvals = new LinkedHashMap<>();
@@ -2622,16 +2563,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     @SuppressWarnings("unchecked")
     public Map<ApprovalRequestType, Integer> getApprovals() {
-        if (data.get(APPROVALS) == null) {
-            Map<ApprovalRequestType, Integer> approvals = new LinkedHashMap<>();
-            int approvalProfileId = getApprovalProfileID();
-            if(approvalProfileId != -1) {
-                for(int approvalSetting : getApprovalSettings()) {
-                    approvals.put(ApprovalRequestType.getFromIntegerValue(approvalSetting), approvalProfileId);
-                }
-            }
-            setApprovals(approvals);
-        }
         return (Map<ApprovalRequestType, Integer>) data.get(APPROVALS);
     }
 

@@ -13,7 +13,6 @@
 package org.cesecore.roles.member;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import jakarta.ejb.Remote;
@@ -31,14 +30,12 @@ public interface RoleMemberDataProxySessionRemote {
     /**
      * Saves a RoleMemberData object to the database, either overwriting an existing one with the same primary key or editing an existing instance.
      * 
-     * @param accessUserAspectData the AccessUserAspectData to persist.
      */
     int createOrEdit(final RoleMember roleMember);
     
     /**
      * Saves a RoleMemberData object to the database, either overwriting an existing one with the same primary key or editing an existing instance.
      * 
-     * @param accessUserAspectData the AccessUserAspectData to persist.
      */
     int createOrEdit(final RoleMemberData roleMember);
     
@@ -70,12 +67,7 @@ public interface RoleMemberDataProxySessionRemote {
      */
     List<RoleMember> findRoleMemberByRoleId(int roleId);
 
-    /** @return true if the EJBCA 6.8.0 union of access rules from multiple matched roles is in use */
-    boolean isNewAuthorizationPatternMarkerPresent();
-    
     /** @see {@link org.cesecore.roles.member.RoleMemberDataSessionLocal#getRoleIdsMatchingAuthenticationTokenOrFail(AuthenticationToken)} */
     Set<Integer> getRoleIdsMatchingAuthenticationTokenOrFail(AuthenticationToken authenticationToken) throws AuthenticationFailedException;
     
-    /** @see {@link org.cesecore.roles.member.RoleMemberDataSessionBean#getRoleIdsAndTokenMatchKeysMatchingAuthenticationToken(AuthenticationToken)} */
-    Map<Integer,Integer> getRoleIdsAndTokenMatchKeysMatchingAuthenticationToken(AuthenticationToken authenticationToken) throws AuthenticationFailedException;
 }

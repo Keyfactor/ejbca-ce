@@ -23,7 +23,6 @@ import org.cesecore.internal.InternalResources;
 import org.cesecore.profiles.Profile;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleInformation;
-import org.cesecore.roles.member.RoleMember;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.cesecore.util.ui.PositiveIntegerValidator;
 import org.cesecore.util.ui.PropertyValidationException;
@@ -42,7 +41,7 @@ public class AccumulativeApprovalProfile extends ApprovalProfileBase {
     
     private static final InternalResources intres = InternalResources.getInstance();
     
-    public static final RoleInformation ANYBODY = RoleInformation.fromRoleMembers(-1, null, "Anybody", new ArrayList<RoleMember>());
+    public static final RoleInformation ANYBODY = new RoleInformation(-1, null, "Anybody");
 
 
     /**

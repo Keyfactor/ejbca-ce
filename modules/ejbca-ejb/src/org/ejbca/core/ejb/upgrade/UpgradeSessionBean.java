@@ -16,7 +16,6 @@ package org.ejbca.core.ejb.upgrade;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -25,14 +24,11 @@ import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
@@ -43,17 +39,9 @@ import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
-import org.cesecore.authorization.rules.AccessRuleData;
-import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.AccessUserAspectData;
-import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
-import org.cesecore.certificates.ca.ApprovalRequestType;
-import org.cesecore.certificates.ca.CACommon;
 import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
@@ -84,13 +72,10 @@ import org.cesecore.keybind.InternalKeyBindingNameInUseException;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.roles.AccessRulesHelper;
-import org.cesecore.roles.AccessRulesMigrator;
-import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.management.RoleDataSessionLocal;
 import org.cesecore.roles.management.RoleSessionLocal;
-import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberDataSessionLocal;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.SecureXMLDecoder;
@@ -99,15 +84,11 @@ import org.ejbca.config.AvailableProtocolsConfiguration;
 import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.DatabaseConfiguration;
-import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.EstConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.InternalConfiguration;
 import org.ejbca.config.MSAutoEnrollmentConfiguration;
-import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ServiceLocatorException;
-import org.ejbca.core.ejb.authentication.cli.CliAuthenticationTokenMetaData;
-import org.ejbca.core.ejb.authentication.cli.CliUserAccessMatchValue;
 import org.ejbca.core.ejb.authorization.AuthorizationSystemSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.config.GlobalUpgradeConfiguration;
@@ -184,9 +165,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private PublisherSessionLocal publisherSession;
     @EJB
     private RoleDataSessionLocal roleDataSession;
-    @SuppressWarnings("deprecation")
-    @EJB
-    private LegacyRoleManagementSessionLocal legacyRoleManagementSession;
     @EJB
     private RoleMemberDataSessionLocal roleMemberDataSession;
     @EJB
@@ -230,10 +208,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         } catch (AuthorizationDeniedException e) {
             throw new IllegalStateException(e);
         }
-    }
-
-    private String getUpgradedFromVersion() {
-        return getGlobalUpgradeConfiguration().getUpgradedFromVersion();
     }
 
     private void setLastPostUpgradedToVersion(final String version) {
@@ -420,18 +394,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     private boolean upgrade(String dbtype, String oldVersion) {
     	log.debug(">upgrade from version: "+oldVersion+", with dbtype: "+dbtype);
-        if (isLesserThan(oldVersion, "6.6.0")) {
-            log.error(
-                    "Upgrading from EJBCA prior to version 6.6.0 is forbidden. Read the EJBCA Upgrade Guide for more information.");
-            return false;
-        }
         if (isLesserThan(oldVersion, "6.8.0")) {
-            try {
-                upgradeSession.migrateDatabase680();
-            } catch (UpgradeFailedException e) {
-                return false;
-            }
-            setLastUpgradedToVersion("6.8.0");
+            log.error(
+                    "Upgrading from EJBCA prior to version 6.8.0 is forbidden. Read the EJBCA Upgrade Guide for more information.");
+            return false;
         }
         if (isLesserThan(oldVersion, "6.10.1")) {
             try {
@@ -554,16 +520,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     private boolean postUpgrade(String oldVersion, String dbtype) {
         log.debug(">post-upgrade from version: "+oldVersion);
-        if (isLesserThan(oldVersion, "6.4.0")) {
-            log.error(
-                    "Post-upgrade from EJBCA prior to version 6.4.0 is forbidden. Read the EJBCA Upgrade Guide for more information.");
-            return false;
-        }
         if (isLesserThan(oldVersion, "6.8.0")) {
-            if (!postMigrateDatabase680()) {
-                return false;
-            }
-            setLastPostUpgradedToVersion("6.8.0");
+            log.error(
+                    "Post-upgrade from EJBCA prior to version 6.8.0 is forbidden. Read the EJBCA Upgrade Guide for more information.");
+            return false;
         }
         if (isLesserThan(oldVersion, "6.10.1")) {
             if (!postMigrateDatabase6101()) {
@@ -990,193 +950,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     }
 
     /**
-     * EJBCA 6.8.0:
-     *
-     * 1.   Converts AdminGroupData, AccessRuleData and AdminEntityData to RoleData and RoleMemberData
-     * 2.   Migrates /ca_functionality/basic_functions and /ca_functionality/basic_functions/activate_ca
-     *      to a single rule: /ca_functionality/activate_ca
-     * 3.   Remove no longer used rules
-     * 4.   Upgrades CAs and Certificate Profiles to go from having one approval profile for all approval types to having one for each
-     *
-     * @throws UpgradeFailedException if upgrade fails (rolls back)
-     */
-    @SuppressWarnings("deprecation")
-    @Override
-    public void migrateDatabase680() throws UpgradeFailedException {
-        log.debug("migrateDatabase680: Upgrading roles, rules and role members.");
-        // Get largest possible list of all access rules on this system
-        final Set<String> allResourcesInUseOnThisInstallation = authorizationSystemSession.getAllResources(true).keySet();
-        // Migrate one AdminGroupData at the time
-        final AccessRulesMigrator accessRulesMigrator = new AccessRulesMigrator(allResourcesInUseOnThisInstallation);
-        final Collection<AdminGroupData> adminGroupDatas = legacyRoleManagementSession.getAllRoles();
-        final boolean isInstalledOn660OrLater = !isLesserThan(getUpgradedFromVersion(), "6.6.0");
-        for (final AdminGroupData adminGroupData : adminGroupDatas) {
-            // Convert AdminGroupData and linked AccessRuleDatas to RoleData
-            final String roleName = adminGroupData.getRoleName();
-            final Collection<AccessRuleData> oldAccessRules = legacyRoleManagementSession.getAccessRules(adminGroupData.getPrimaryKey());
-            HashMap<String, Boolean> newAccessRules = accessRulesMigrator.toNewAccessRules(oldAccessRules, roleName);
-            //Migrate rules & rule states changed in 6.8.0.
-            newAccessRules = migrate680Rules(newAccessRules, isInstalledOn660OrLater);
-            Role role = new Role(null, roleName, newAccessRules);
-            // Keep AdminGroupData.primaryKey as RoleData.roleId so HardTokenIssuerData.adminGroupId still works during upgrade
-            // (and use direct DB access since the EJB API wont allow us to assign roleId)
-            final int roleId = adminGroupData.getPrimaryKey().intValue();
-            role.setRoleId(roleId);
-            if (roleDataSession.getRole(roleId)!=null) {
-                log.info("RoleData '" + role.getRoleName() + "' (" + role.getRoleId() + ") already exists. Will perform merge old role members into this role and overwrite configured access rules.");
-            }
-            role.normalizeAccessRules();
-            role.minimizeAccessRules();
-            roleDataSession.persistRole(role);
-            // Convert the linked AccessUserAspectDatas to RoleMemberDatas
-            List<AccessUserAspectData> accessUsers = legacyRoleManagementSession.getAccessUsers(adminGroupData.getPrimaryKey());
-            // Each AccessUserAspectData belongs to one and only one role, so retrieving them this way may be considered safe.
-            for (final AccessUserAspectData accessUserAspect : accessUsers) {
-                final String tokenType = accessUserAspect.getTokenType();
-                // Only the X509CertificateAuthenticationToken actually uses the CA Id, so leave it unset for the rest
-                final int tokenIssuerId;
-                if (X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE.equals(tokenType) && accessUserAspect.getCaId()!=null) {
-                    tokenIssuerId = accessUserAspect.getCaId().intValue();
-                } else {
-                    tokenIssuerId = RoleMember.NO_ISSUER;
-                }
-                final int tokenMatchKey = accessUserAspect.getMatchWith();
-                int tokenMatchOperator = accessUserAspect.getMatchType();
-                String tokenMatchValue = accessUserAspect.getMatchValue();
-                String description = "";
-                // Straighten out comparison operators that don't make sense, since previous versions of EJBCA might have allowed such configuration
-                if (X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE.equals(tokenType)) {
-                    if (tokenMatchKey == X500PrincipalAccessMatchValue.NONE.getNumericValue() ||
-                            tokenMatchOperator == AccessMatchType.TYPE_NONE.getNumericValue()) {
-                        // This will never match anything, drop it
-                        log.info("Admin in role '" + roleName + "' of type " + tokenType + " with match key " + tokenMatchKey +
-                                " match operator " + tokenMatchOperator + " and match value '" + tokenMatchValue +
-                                "' will be dropped since it will never grant any access.");
-                        continue;
-                    }
-                    if (tokenMatchKey == X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue()) {
-                        final String serialNumberUppercase = StringUtils.defaultString(tokenMatchValue).toUpperCase(Locale.ROOT).replaceFirst("^0+", "");
-                        if (!serialNumberUppercase.equals(tokenMatchValue)) {
-                            log.info("Admin in role '" + roleName + "' of type " + tokenType + " has serial number match value '" + tokenMatchValue +
-                                    "'. In 6.8.0 all serial numbers are converted to uppercase without leading zeros and match as case sensitive.");
-                        } else if (log.isDebugEnabled() && tokenMatchOperator == AccessMatchType.TYPE_EQUALCASEINS.getNumericValue()) {
-                            log.debug("Admin in role '" + roleName + "' of type " + tokenType + " has case insensitive serial number match value '" + tokenMatchValue +
-                                    "'. In 6.8.0 all serial numbers are converted to uppercase and match as case sensitive.");
-                        }
-                        tokenMatchOperator = AccessMatchType.TYPE_EQUALCASE.getNumericValue();
-                        tokenMatchValue = serialNumberUppercase;
-                        // If the certificate is present in the local database, we try to find a human readable description from the certificate
-                        try {
-                            final CAInfo caInfo = caSession.getCAInfoInternal(tokenIssuerId);
-                            if (caInfo == null) {
-                                log.info("Admin in role '" + roleName + "' of type " + tokenType + " with serial number match value '"
-                                        + tokenMatchValue + "' is issued by a CA with ID " + tokenIssuerId
-                                        + " that is unknown to this system. Migrating admin anyway.");
-                            } else {
-                                final String issuerDn = caInfo.getSubjectDN();
-                                final Certificate certificate = certificateStoreSession.findCertificateByIssuerAndSerno(issuerDn,
-                                        new BigInteger(tokenMatchValue, 16));
-                                if (certificate != null) {
-                                    final List<String> commonNames = DnComponents.getPartsFromDN(CertTools.getSubjectDN(certificate), "CN");
-                                    if (!commonNames.isEmpty()) {
-                                        // Use the first found CN of the mapped certificate
-                                        description = commonNames.get(0);
-                                    }
-                                } else {
-                                    description = "external client certificate";
-                                    // Since we made the database lookup, take the chance to inform about meaningless configuration
-                                    if (WebConfiguration.getRequireAdminCertificateInDatabase()) {
-                                        log.info("Admin in role '" + roleName + "' of type " + tokenType + " with serial number match value '"
-                                                + tokenMatchValue + "' does match a local certificate even though this is required by the '"
-                                                + WebConfiguration.CONFIG_REQCERTINDB + "' setting." + "Migrating admin anyway.");
-                                    }
-                                }
-                            }
-                        } catch (NumberFormatException e) {
-                            log.warn("Admin in role '" + roleName + "' of type " + tokenType + " with serial number match value '" + tokenMatchValue
-                                    + "' could not be interpreted as a hex value. Admin will not be migrated.");
-                        }
-                    }
-                    if (tokenMatchOperator == AccessMatchType.TYPE_NOT_EQUALCASE.getNumericValue() ||
-                            tokenMatchOperator == AccessMatchType.TYPE_NOT_EQUALCASEINS.getNumericValue()) {
-                        log.warn("Admin in role '" + roleName + "' of type " + tokenType + " with match key=" + tokenMatchKey +
-                                " match operator " + tokenMatchOperator + " and match value='"+tokenMatchValue +
-                                "' is most likely misconfigured. This will grant role access to anything not matching the value!");
-                    }
-                } else if (CliAuthenticationTokenMetaData.TOKEN_TYPE.equals(tokenType) || "UsernameBasedAuthenticationToken".equals(tokenType)) {
-                    if (tokenMatchOperator != AccessMatchType.TYPE_EQUALCASE.getNumericValue()) {
-                        // The implementation always does case sensitive compare
-                        if (log.isDebugEnabled()) {
-                            log.debug("Admin in role '" + roleName + "' of type " + tokenType + " with match key " + CliUserAccessMatchValue.USERNAME.name() +
-                                    " match operator " + tokenMatchOperator + " with and match value '" + tokenMatchValue +
-                                    "'. Changing match operator type to defacto operator TYPE_EQUALCASE.");
-                        }
-                        tokenMatchOperator = AccessMatchType.TYPE_EQUALCASE.getNumericValue();
-                    }
-                } else {
-                    // None of the other known tokens when writing this upgrade use any operator
-                    tokenMatchOperator = AccessMatchType.TYPE_UNUSED.getNumericValue();
-                }
-                // Assign upgraded role members the same ID as the old AdminEndEntity.primaryKey so members are merged in case this runs several times (like in tests)
-                // In 6.7.x we did not support OAuth provider authentication, so we set that to NO_PROVIDER
-                roleMemberDataSession.persistRoleMember(new RoleMember(accessUserAspect.getPrimaryKey(), tokenType,
-                        tokenIssuerId, RoleMember.NO_PROVIDER, tokenMatchKey, tokenMatchOperator, tokenMatchValue, roleId, description));
-            }
-        }
-        // Note that this has to happen here and not in X509CA or CvcCA due to the fact that this step has to happen after approval profiles have
-        // been created in previous upgrade steps.
-        log.debug("migrateDatabase680: Converting Certificate Authorities from using one approval profile for all request types "
-                + "to using one profile per request type.");
-        try {
-            for (int caId : caSession.getAllCaIds()) {
-                CACommon ca = caSession.getCAForEdit(authenticationToken, caId);
-                //If approvals map is null or empty, then this CA may be in an unupgraded state.
-                if(ca.getApprovals() == null || ca.getApprovals().isEmpty()) {
-                	Map<ApprovalRequestType, Integer> approvals = new LinkedHashMap<>();
-                    int approvalProfile = ca.getApprovalProfile();
-                    if (approvalProfile != -1) {
-                        for (int approvalSetting : ca.getApprovalSettings()) {
-                            approvals.put(ApprovalRequestType.getFromIntegerValue(approvalSetting), approvalProfile);
-                        }
-                    }
-                    ca.setApprovals(approvals);
-                    caSession.editCA(authenticationToken, ca, true);
-                }
-            }
-        } catch (AuthorizationDeniedException e) {
-            throw new IllegalStateException("Always allow token was denied access.", e);
-        } catch (CADoesntExistsException e) {
-            throw new IllegalStateException("CA doesn't exist in spite of just being retrieved", e);
-        }
-        // Note that this has to happen here and not in CertificateProfile due to the fact that this step has to happen after approval profiles have
-        // been created in previous upgrade steps.
-        log.debug("migrateDatabase680: Converting Certificate Profiles from using one approval profile for all request types "
-                + "to using one profile per request type.");
-        Map<Integer, CertificateProfile> certificateProfiles = certProfileSession.getAllCertificateProfiles();
-        for (Integer profileId : certificateProfiles.keySet()) {
-            CertificateProfile certificateProfile = certificateProfiles.get(profileId);
-            String certificateProfileName = certProfileSession.getCertificateProfileName(profileId);
-            Map<ApprovalRequestType, Integer> approvals = new LinkedHashMap<>();
-            int approvalProfile = certificateProfile.getApprovalProfileID();
-            if (approvalProfile != -1) {
-                for (int approvalSetting : certificateProfile.getApprovalSettings()) {
-                    approvals.put(ApprovalRequestType.getFromIntegerValue(approvalSetting), approvalProfile);
-                }
-            }
-            certificateProfile.setApprovals(approvals);
-            try {
-                certProfileSession.changeCertificateProfile(authenticationToken, certificateProfileName, certificateProfile);
-            } catch (AuthorizationDeniedException e) {
-                throw new IllegalStateException("Always allow token was denied access.", e);
-            }
-
-        }
-
-        log.error("(This is not an error) Completed upgrade procedure to 6.8.0");
-    }
-
-
-    /**
      * Upgrade to EJBCA 6.10.1. 
      * Upgrading System configuration and certificate profiles with CT log label system
      */
@@ -1587,70 +1360,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
         log.info("Post upgrade to 6.10.1 complete.");
         return true;
-    }
-
-
-    @SuppressWarnings("deprecation")
-    private boolean postMigrateDatabase680() {
-        log.info("Starting post upgrade to 6.8.0.");
-        // Verify that there are no TYPE_NOT_EQUALCASE* still in use
-        log.info("Verifying that there are no TYPE_NOT_EQUALCASE or TYPE_NOT_EQUALCASEINS token match operators still in use.");
-        boolean hasNotEquals = false;
-        for (final Role role : roleSession.getAuthorizedRoles(authenticationToken)) {
-            for (final RoleMember roleMember : roleMemberDataSession.findRoleMemberByRoleId(role.getRoleId())) {
-                final int tokenMatchOperator = roleMember.getTokenMatchOperator();
-                if (AccessMatchType.TYPE_NOT_EQUALCASE.getNumericValue()==tokenMatchOperator ||
-                        AccessMatchType.TYPE_NOT_EQUALCASEINS.getNumericValue()==tokenMatchOperator) {
-                    log.error("Role '" + role.getRoleNameFull() + "' has a member with a 'not equals' match operator. Post-upgrade cannot complete until this is corrected.");
-                    hasNotEquals = true;
-                    break;
-                }
-            }
-        }
-        if (hasNotEquals) {
-            return false;
-        }
-        // Change to use union role access rules instead of enum priority matching
-        accessTreeUpdateSession.setNewAuthorizationPatternMarker();
-        log.info("Admins belonging to multiple roles will now be granted the combined access when cache expires.");
-        // Empty the legacy AdminEntityData, AdmingGroupData and AccessRulesData tables.
-        if (EjbcaConfiguration.getIsInProductionMode()) {
-            log.info("Cleaning up legacy roles and rules.");
-            legacyRoleManagementSession.deleteAllRoles(authenticationToken);
-        } else {
-            log.warn("This EJBCA installation is not running in production mode, so the tables AdminEntityData, AdmingGroupData and AccessRulesData will not be emptied.");
-        }
-        log.info("Post upgrade to 6.8.0 complete.");
-        return true;
-    }
-
-    /**
-     * Since EJBCA 6.8.0, some rules are either removed or have a changed scope.
-     * If Role had access to /ca_functionality/basic_functions or /ca_functionality/basic_functions/activate_ca,
-     * grant access to new rule /ca_functionality/activate_ca
-     *
-     * If upgrading from 6.6.0 or later, grant access to /ca_functionality/view_certificate for roles with access
-     * to ra_functionality/view_end_entity
-     * @param newAccessRules HashMap of access rules to migrate
-     * @param isInstalledOn660OrLater if upgrading from 6.6.0 or later
-     * @return HashMap with migrated rule states
-     */
-    private HashMap<String, Boolean> migrate680Rules(HashMap<String, Boolean> newAccessRules, boolean isInstalledOn660OrLater) {
-        Boolean isAllowedActivateCa = AccessRulesHelper.hasAccessToResource(newAccessRules, REGULAR_ACTIVATECA_OLD);
-        Boolean isAllowedViewEndEntity = AccessRulesHelper.hasAccessToResource(newAccessRules, AccessRulesConstants.REGULAR_VIEWENDENTITY);
-        if(isAllowedActivateCa) {
-            newAccessRules.put(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_ACTIVATECA), Role.STATE_ALLOW);
-        } else {
-            newAccessRules.put(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_ACTIVATECA), Role.STATE_DENY);
-        }
-        //Remove deprecated rules
-        newAccessRules.remove(AccessRulesHelper.normalizeResource(REGULAR_CABASICFUNCTIONS_OLD));
-        newAccessRules.remove(AccessRulesHelper.normalizeResource(ROLE_PUBLICWEBUSER));
-        newAccessRules.remove(AccessRulesHelper.normalizeResource(REGULAR_ACTIVATECA_OLD));
-        if(isInstalledOn660OrLater && isAllowedViewEndEntity) {
-            newAccessRules.put(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_VIEWCERTIFICATE), Role.STATE_ALLOW);
-        }
-        return newAccessRules;
     }
 
     /**

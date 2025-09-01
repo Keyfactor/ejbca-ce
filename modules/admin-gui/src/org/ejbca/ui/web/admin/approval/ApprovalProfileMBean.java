@@ -529,8 +529,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
                     for (final Role role : allAuthorizedRoles) {
                         if (AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVEENDENTITY)
                                 || AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVECAACTION)) {
-                            roleRepresentations.add(RoleInformation.fromRoleMembers(role.getRoleId(), role.getNameSpace(), role.getRoleName(), 
-                                    new ArrayList<>()));
+                            roleRepresentations.add(new RoleInformation(role.getRoleId(), role.getNameSpace(), role.getRoleName()));
                         }
                     }
                     if (!roleRepresentations.contains(propertyClone.getDefaultValue())) {
@@ -547,8 +546,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
                         if (AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_VIEWAPPROVALS)
                                 || AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVEENDENTITY)
                                 || AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVECAACTION)) {
-                            viewingRoleRepresentations.add(RoleInformation.fromRoleMembers(role.getRoleId(), role.getNameSpace(), role.getRoleName(), 
-                                    new ArrayList<>()));
+                            viewingRoleRepresentations.add(new RoleInformation(role.getRoleId(), role.getNameSpace(), role.getRoleName()));
                         }
                     }
                     if (!viewingRoleRepresentations.contains(propertyClone.getDefaultValue())) {

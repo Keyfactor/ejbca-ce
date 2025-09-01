@@ -40,7 +40,6 @@ import org.junit.Test;
 /**
  * Test of RoleMemberSessionBean.
  * 
- * @version $Id$
  */
 public class RoleMemberSessionBeanSystemTest extends RoleUsingTestCase {
 
@@ -66,7 +65,7 @@ public class RoleMemberSessionBeanSystemTest extends RoleUsingTestCase {
         //Create a new role used for tests only, makes cleanup easier
         role = new Role(null, "TestMembersRole");
         persistedTestRole = roleSessionRemote.persistRole(authenticationToken, role);       
-        roleMember = new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, RoleMember.NO_ISSUER, RoleMember.NO_PROVIDER, 0, 0, "",
+        roleMember = new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, RoleMember.NO_ISSUER, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(), "foo",
                                     persistedTestRole.getRoleId(), "TestValue");
     }
     
