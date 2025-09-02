@@ -1937,7 +1937,6 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         final String algName = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
         final CryptoToken cryptoToken = getNewCryptoToken();
         final X509CA x509ca = createTestCA(cryptoToken, CADN, algName, null, null);
-        x509ca.setUsePrintableStringSubjectDN(true);
 
         // Create a pkcs10 certificate request
         KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
