@@ -188,7 +188,7 @@ public class ScepRequestGenerator {
     }
     
     /**
-     * @param encryptionAlg SMIMECapability.dES_CBC (DES), SMIMECapability.dES_EDE3_CBC (3DES), SMIMECapability.AES256_CBC (AES256)
+     * @param encryptionAlg SMIMECapability.dES_EDE3_CBC (3DES), SMIMECapability.AES128_CBC (AES128)
      * @param wrappingAlg PKCSObjectIdentifiers.rsaEncryption (RSA/ECB/PKCS), PKCSObjectIdentifiers.id_RSAES_OAEP (RSA/OAEP) 
      */
     private CMSEnvelopedData envelope(CMSTypedData envThis, ASN1ObjectIdentifier wrappingAlg, ASN1ObjectIdentifier encryptionAlg) throws CMSException, CertificateEncodingException {
