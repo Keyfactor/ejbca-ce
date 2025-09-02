@@ -13,7 +13,6 @@
 package org.cesecore.roles.member;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import jakarta.ejb.EJB;
@@ -63,23 +62,10 @@ public class RoleMemberDataProxySessionBean implements RoleMemberDataProxySessio
     public List<RoleMember> findRoleMemberByRoleId(int roleId) {
         return roleMemberDataSession.findRoleMemberByRoleId(roleId);
     }
-
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    @Override
-    public boolean isNewAuthorizationPatternMarkerPresent() {
-        return accessTreeUpdateSession.isNewAuthorizationPatternMarkerPresent();
-    }
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public Set<Integer> getRoleIdsMatchingAuthenticationTokenOrFail(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
         return roleMemberDataSession.getRoleIdsMatchingAuthenticationTokenOrFail(authenticationToken);
-    }
-    
-    @SuppressWarnings("deprecation")
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    @Override
-    public Map<Integer,Integer> getRoleIdsAndTokenMatchKeysMatchingAuthenticationToken(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
-        return roleMemberDataSession.getRoleIdsAndTokenMatchKeysMatchingAuthenticationToken(authenticationToken);
     }
 }

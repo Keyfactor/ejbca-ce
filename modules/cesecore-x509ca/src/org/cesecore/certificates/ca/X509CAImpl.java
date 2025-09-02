@@ -371,9 +371,6 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 .build();
         info.setExternalCdp(getExternalCdp());
         info.setNameChanged(getNameChanged());
-        //These to settings were deprecated in 6.8.0, but are still set for upgrade reasons
-        info.setApprovalProfile(getApprovalProfile());
-        info.setApprovalSettings(getApprovalSettings());
         super.setCAInfo(info);
         setCAId(caId);
     }

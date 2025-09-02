@@ -16,7 +16,6 @@ allprojects {
             dirs(rootProject.projectDir.resolve("lib/xstream"))
             dirs(rootProject.projectDir.resolve("lib/jee/soapclient"))
             dirs(rootProject.projectDir.resolve("lib/ext/jackson2"))
-            dirs(rootProject.projectDir.resolve("lib/ext/jaxb"))
             dirs(rootProject.projectDir.resolve("lib/swagger"))
             dirs(rootProject.projectDir.resolve("lib/ext/swagger"))
             dirs(rootProject.projectDir.resolve("lib/primefaces"))

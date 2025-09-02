@@ -36,16 +36,8 @@ import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.authorization.rules.AccessRuleData;
-import org.cesecore.authorization.rules.AccessRuleState;
-import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.AccessUserAspectData;
-import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
-import org.cesecore.certificates.ca.ApprovalRequestType;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
@@ -85,14 +77,10 @@ import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.management.RoleSessionRemote;
-import org.cesecore.roles.member.RoleMember;
-import org.cesecore.roles.member.RoleMemberDataProxySessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.EstConfiguration;
 import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.core.ejb.approval.ApprovalProfileExistsException;
-import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
@@ -103,8 +91,6 @@ import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.unidfnr.UnidFnrHandlerMock;
-import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
-import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.GeneralPurposeCustomPublisher;
@@ -137,7 +123,6 @@ public class UpgradeSessionBeanSystemTest {
     private static final String TEST_ENDENTITY2 = UpgradeSessionBeanSystemTest.class.getSimpleName() + "2";
     private static final String TESTCA = UpgradeSessionBeanSystemTest.class.getSimpleName() + "CA";
     
-    private ApprovalProfileSessionRemote approvalProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalProfileSessionRemote.class);
     private static CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private static CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
@@ -148,9 +133,7 @@ public class UpgradeSessionBeanSystemTest {
     private PublisherSessionRemote publisherSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class);
     private PublisherProxySessionRemote publisherProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
-    private RoleMemberDataProxySessionRemote roleMemberProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberDataProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private UpgradeSessionRemote upgradeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UpgradeSessionRemote.class);
-    private UpgradeTestSessionRemote upgradeTestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UpgradeTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private CesecoreConfigurationProxySessionRemote cesecoreConfigSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private InternalKeyBindingMgmtSessionRemote internalKeyBindingSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
         
@@ -229,225 +212,6 @@ public class UpgradeSessionBeanSystemTest {
         return (Boolean) upgradeMethod.invoke(UpgradeSessionBean.class.newInstance(), firstVersion, secondVersion);
     }
         
-    @Test
-    public void upgradeTo680RoleMembers() throws AuthorizationDeniedException {
-        final String roleName = TESTCLASS + " upgradeTo680RoleMembers";
-        final List<AccessUserAspectData> oldAccessUserAspectDatas = Arrays.asList(
-                new AccessUserAspectData(roleName, 4711, X500PrincipalAccessMatchValue.WITH_COUNTRY, AccessMatchType.TYPE_EQUALCASE, "SE"),
-                new AccessUserAspectData(roleName, 4712, X500PrincipalAccessMatchValue.WITH_SERIALNUMBER, AccessMatchType.TYPE_EQUALCASEINS, "0123abcDEF")
-                );
-        upgradeTestSession.createRole(roleName, null, oldAccessUserAspectDatas);
-        try {
-            upgradeSession.upgrade(null, "6.7.0", false);
-            // Post upgrade, there should exist a new RoleData object with the given rolename
-            final Role newRole = roleSession.getRole(alwaysAllowtoken, null, roleName);
-            final List<RoleMember> newRoleMembers = roleMemberProxySession.findRoleMemberByRoleId(newRole.getRoleId());
-            assertEquals("Wrong number of role members", 2, newRoleMembers.size());
-            for (final RoleMember newRoleMember : newRoleMembers) {
-                assertEquals("Match value token type was not upgraded properly." , X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, newRoleMember.getTokenType());
-                if (newRoleMember.getTokenIssuerId() == 4711)  {
-                    assertEquals("Match value key was not upgraded properly." , X500PrincipalAccessMatchValue.WITH_COUNTRY.getNumericValue(), newRoleMember.getTokenMatchKey());
-                    assertEquals("Match value operator was not upgraded properly." , AccessMatchType.TYPE_EQUALCASE.getNumericValue(), newRoleMember.getTokenMatchOperator());
-                    assertEquals("Match value value was not upgraded properly." , "SE", newRoleMember.getTokenMatchValue());
-                } else {
-                    // Check that the serial number is normalized
-                    assertEquals("Match value key was not upgraded properly." , X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue(), newRoleMember.getTokenMatchKey());
-                    assertEquals("Match value operator was not upgraded properly." , AccessMatchType.TYPE_EQUALCASE.getNumericValue(), newRoleMember.getTokenMatchOperator());
-                    assertEquals("Match value value was not upgraded properly." , "123ABCDEF", newRoleMember.getTokenMatchValue());
-                }
-            }
-        } finally {
-            //Clean up (remove legacy roles and new roles)
-            upgradeTestSession.deleteRole(roleName);
-            deleteRole(null, roleName);
-        }
-    }
-
-    /**
-     * Verifies the migration and removal of access rules. Roles with access to 
-     * to /ca_functionality/basic_functions or /ca_functionality/basic_functions/activate_ca should be granted
-     * corresponding access in the new rule /ca_functionality/activate_ca.
-     * 
-     * If upgrading from 6.6.0 or later, roles with access to /ra_functionality/view_end_entity should be granted
-     * access to /ca_functionality/view_certificate.
-     * 
-     * Old (deprecated) rules should be removed.
-     * @throws AuthorizationDeniedException
-     */
-    @Test
-    public void testUpgradeTo680MigrateRules() throws AuthorizationDeniedException {
-        final String roleName = TESTCLASS + " upgradeTo680MigrateRules";
-        final String roleName2 = TESTCLASS + " upgradeTo680MigrateRules2";
-        final String roleName3 = TESTCLASS + " upgradeTo680MigrateRules3";
-        final String roleName4 = TESTCLASS + " upgradeTo680MigrateRules4";
-        final List<AccessRuleData> oldAccessRules = Arrays.asList(
-                new AccessRuleData(roleName, UpgradeSessionRemote.REGULAR_CABASICFUNCTIONS_OLD, AccessRuleState.RULE_ACCEPT, true),
-                new AccessRuleData(roleName, UpgradeSessionRemote.ROLE_PUBLICWEBUSER, AccessRuleState.RULE_ACCEPT, true),
-                new AccessRuleData(roleName, AccessRulesConstants.REGULAR_RAFUNCTIONALITY, AccessRuleState.RULE_DECLINE, true),
-                new AccessRuleData(roleName, AccessRulesConstants.REGULAR_VIEWENDENTITY, AccessRuleState.RULE_ACCEPT, true));
-        final List<AccessRuleData> oldAccessRules2 = Arrays.asList(
-                new AccessRuleData(roleName2, StandardRules.CAFUNCTIONALITY.resource(), AccessRuleState.RULE_ACCEPT, true),
-                new AccessRuleData(roleName2, UpgradeSessionRemote.REGULAR_ACTIVATECA_OLD, AccessRuleState.RULE_DECLINE, true));
-        final List<AccessRuleData> oldAcccessRules3 = Arrays.asList(
-                new AccessRuleData(roleName3, UpgradeSessionRemote.REGULAR_CABASICFUNCTIONS_OLD, AccessRuleState.RULE_ACCEPT, true),
-                new AccessRuleData(roleName3, UpgradeSessionRemote.REGULAR_ACTIVATECA_OLD, AccessRuleState.RULE_DECLINE, true),
-                new AccessRuleData(roleName3, AccessRulesConstants.REGULAR_RAFUNCTIONALITY, AccessRuleState.RULE_ACCEPT, true));
-        final List<AccessRuleData> oldAccessRules4 = Arrays.asList(
-                new AccessRuleData(roleName4, AccessRulesConstants.REGULAR_RAFUNCTIONALITY, AccessRuleState.RULE_ACCEPT, true),
-                new AccessRuleData(roleName4, AccessRulesConstants.REGULAR_VIEWENDENTITY, AccessRuleState.RULE_DECLINE, true));
-        upgradeTestSession.createRole(roleName, oldAccessRules, null);
-        upgradeTestSession.createRole(roleName2, oldAccessRules2, null);
-        upgradeTestSession.createRole(roleName3, oldAcccessRules3, null);
-        upgradeTestSession.createRole(roleName4, oldAccessRules4, null);
-        GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
-        guc.setUpgradedFromVersion("6.7.0");
-        globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
-        try {
-            upgradeSession.upgrade(null, "6.7.0", false);
-            final Role newRole = roleSession.getRole(alwaysAllowtoken, null, roleName);
-            final Role newRole2 = roleSession.getRole(alwaysAllowtoken, null, roleName2);
-            final Role newRole3 = roleSession.getRole(alwaysAllowtoken, null, roleName3);
-            final Role newRole4 = roleSession.getRole(alwaysAllowtoken, null, roleName4);
-            assertNotNull("Unable to retrieve role from databse", newRole);
-            assertNotNull("Unable to retrieve role from databse", newRole2);
-            assertNotNull("Unable to retrieve role from databse", newRole3);
-            assertNotNull("Unable to retrieve role from databse", newRole4);
-            // Expect normalization and minimization to do its work
-            assertEquals("Unexpected number of access rules", 1, newRole.getAccessRules().size());
-            assertEquals("Unexpected number of access rules", 2, newRole2.getAccessRules().size());
-            assertEquals("Unexpected number of access rules", 2, newRole3.getAccessRules().size());
-            assertEquals("Unexpected number of access rules", 2, newRole4.getAccessRules().size());
-            // Expect the state of the deprecated rule to be unchanged in the replacing rule
-            assertEquals("Unexpected access rule state", Role.STATE_ALLOW, AccessRulesHelper.hasAccessToResource(newRole.getAccessRules(),  AccessRulesConstants.REGULAR_ACTIVATECA));
-            assertEquals("Unexpected access rule state", Role.STATE_DENY,  AccessRulesHelper.hasAccessToResource(newRole.getAccessRules(),  AccessRulesConstants.REGULAR_VIEWCERTIFICATE));
-            assertEquals("Unexpected access rule state", Role.STATE_DENY,  AccessRulesHelper.hasAccessToResource(newRole2.getAccessRules(), AccessRulesConstants.REGULAR_ACTIVATECA));
-            assertEquals("Unexpected access rule state", Role.STATE_DENY,  AccessRulesHelper.hasAccessToResource(newRole3.getAccessRules(), AccessRulesConstants.REGULAR_ACTIVATECA));
-            assertEquals("Unexpected access rule state", Role.STATE_ALLOW, AccessRulesHelper.hasAccessToResource(newRole3.getAccessRules(), AccessRulesConstants.REGULAR_VIEWCERTIFICATE));
-            assertEquals("Unexpected access rule state", Role.STATE_DENY,  AccessRulesHelper.hasAccessToResource(newRole4.getAccessRules(), AccessRulesConstants.REGULAR_VIEWCERTIFICATE));
-        } finally {
-            //Clean up (remove legacy roles and new roles)
-            upgradeTestSession.deleteRole(roleName);
-            upgradeTestSession.deleteRole(roleName2);
-            upgradeTestSession.deleteRole(roleName3);
-            upgradeTestSession.deleteRole(roleName4);
-            deleteRole(null, roleName);
-            deleteRole(null, roleName2);
-            deleteRole(null, roleName3);
-            deleteRole(null, roleName4);
-        }
-        // Attempt with version installed earlier than EJBCA 6.6.0 and upgraded from 6.7.0
-        upgradeTestSession.createRole(roleName3, oldAcccessRules3, null);
-
-        guc.setUpgradedFromVersion("6.5.1");
-        globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
-        try {
-            upgradeSession.upgrade(null, "6.7.0", false);
-            final Role newRole3 = roleSession.getRole(alwaysAllowtoken, null, roleName3);
-            assertNotNull("Unable to retrieve role from databse", newRole3);
-            //Since upgrade is performed from version < 6.6.0, rule state should NOT be migrated from REGULAR_VIEWENDENTITY to REGULAR_VIEWCERTIFICATE
-            assertEquals("Unexpected access rule state", Role.STATE_DENY, AccessRulesHelper.hasAccessToResource(newRole3.getAccessRules(), AccessRulesConstants.REGULAR_VIEWCERTIFICATE));
-        } finally {
-            //Clean up (remove legacy role and new role)
-            upgradeTestSession.deleteRole(roleName3);
-            deleteRole(null, roleName3);
-        }
-    }
-
-    /**
-     * Test upgrading CAs to the 6.8.0 form of approvals, i.e. using one approval profile per approval action instead of one
-     * profile for all actions. Expected behavior is that the upgraded CA should have a map containing all actions mapped to the same (previously)
-     * set profile, and any entities
-     * @throws CertIOException 
-     * 
-     */
-    @Test
-    public void testUpgradeCaTo680Approvals() throws CertificateParsingException, CryptoTokenOfflineException, OperatorCreationException,
-            CAExistsException, AuthorizationDeniedException, ApprovalProfileExistsException, CADoesntExistsException, CertIOException {
-        //This CA should not be assigned an approval profile on account of lacking any actions
-        X509CA noActionsCa = CaTestUtils.createTestX509CA("CN=NoActions", "foo123".toCharArray(), false);
-        noActionsCa.setApprovals(null);
-        noActionsCa.setApprovalProfile(-1);
-        noActionsCa.setApprovalSettings(new ArrayList<Integer>());
-        caSession.addCA(alwaysAllowtoken, noActionsCa);
-
-        ApprovalProfile requireTwoApprovals = new AccumulativeApprovalProfile("testUpgradeTo680Approvals");
-        int requireTwoApprovalsId = approvalProfileSession.addApprovalProfile(alwaysAllowtoken, requireTwoApprovals);
-        
-        //This CA should be assigned a profile, and a couple of actions.  
-        X509CA caWithApprovalsSet = CaTestUtils.createTestX509CA("CN=caWithApprovalsSet", "foo123".toCharArray(), false);
-        caWithApprovalsSet.setApprovals(null);
-        caWithApprovalsSet.setApprovalProfile(requireTwoApprovalsId);
-        List<Integer> approvalSettings = new ArrayList<>(Arrays.asList(ApprovalRequestType.ACTIVATECA.getIntegerValue(), ApprovalRequestType.KEYRECOVER.getIntegerValue()));
-        caWithApprovalsSet.setApprovalSettings(approvalSettings);
-        caSession.addCA(alwaysAllowtoken, caWithApprovalsSet);
-        
-        GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
-        guc.setUpgradedFromVersion("6.5.1");
-        globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
-        try {
-            upgradeSession.upgrade(null, "6.7.0", false);
-            //Verify that the CA without approval set merely returns an empty map
-            CAInfo upgradedNoActionCa = caSession.getCAInfo(alwaysAllowtoken, noActionsCa.getCAId());
-            assertTrue("CA without approvals was upgraded to have approvals", upgradedNoActionCa.getApprovals().isEmpty());
-            CAInfo upgradedApprovalsCA = caSession.getCAInfo(alwaysAllowtoken, caWithApprovalsSet.getCAId());
-            Map<ApprovalRequestType, Integer> approvals = upgradedApprovalsCA.getApprovals();
-            assertEquals("CA with approvals for two actions did not get any approvals set.", 2, approvals.size());
-            assertEquals("Approval profile was not set for action during upgrade.", Integer.valueOf(requireTwoApprovalsId), approvals.get(ApprovalRequestType.ACTIVATECA));
-            assertEquals("Approval profile was not set for action during upgrade.", Integer.valueOf(requireTwoApprovalsId), approvals.get(ApprovalRequestType.KEYRECOVER));
-        } finally {
-            CaTestUtils.removeCa(alwaysAllowtoken, noActionsCa.getCAInfo());
-            CaTestUtils.removeCa(alwaysAllowtoken, caWithApprovalsSet.getCAInfo());
-            approvalProfileSession.removeApprovalProfile(alwaysAllowtoken, requireTwoApprovalsId);
-        }
-    }
-
-    /**
-     * Test upgrading Certificate Profiles to the 6.8.0 form of approvals, i.e. using one approval profile per approval action instead of one
-     * profile for all actions. Expected behavior is that the upgraded CP should have a map containing all actions mapped to the same (previously)
-     * set profile, and any entities
-     * 
-     */
-    @Test
-    public void testUpgradCertificateProfileTo680Approvals() throws AuthorizationDeniedException, CertificateProfileExistsException, ApprovalProfileExistsException {
-        //This Certificate profile should not be assigned an approval profile on account of lacking any actions
-        CertificateProfile noApprovals = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-        final String noApprovalsName = "noApprovals";
-        certificateProfileSession.removeCertificateProfile(alwaysAllowtoken, noApprovalsName); // clean up from previous aborted tests
-        certificateProfileSession.addCertificateProfile(alwaysAllowtoken, noApprovalsName, noApprovals);
-
-        ApprovalProfile requireTwoApprovals = new AccumulativeApprovalProfile("testUpgradeTo680Approvals");
-        int requireTwoApprovalsId = approvalProfileSession.addApprovalProfile(alwaysAllowtoken, requireTwoApprovals);
-        
-        //This Certificate Profile should be assigned a profile, and a couple of actions.  
-        CertificateProfile withApprovals = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-        withApprovals.setApprovals(null);
-        withApprovals.setApprovalProfileID(requireTwoApprovalsId);
-        List<Integer> approvalSettings = new ArrayList<>(Arrays.asList(ApprovalRequestType.ACTIVATECA.getIntegerValue(), ApprovalRequestType.KEYRECOVER.getIntegerValue()));
-        withApprovals.setApprovalSettings(approvalSettings);
-        final String withApprovalsName = "withApprovals";
-        certificateProfileSession.removeCertificateProfile(alwaysAllowtoken, withApprovalsName);
-        certificateProfileSession.addCertificateProfile(alwaysAllowtoken, withApprovalsName, withApprovals);
-
-        GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
-        guc.setUpgradedFromVersion("6.5.1");
-        globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
-        try {
-            upgradeSession.upgrade(null, "6.7.0", false);
-            //Verify that the CA without approval set merely returns an empty map
-            CertificateProfile upgradedNoApprovals = certificateProfileSession.getCertificateProfile(noApprovalsName);
-            assertTrue("Certificate Profile without approvals was upgraded to have approvals", upgradedNoApprovals.getApprovals().isEmpty());
-
-            CertificateProfile upgradedWithApprovals = certificateProfileSession.getCertificateProfile(withApprovalsName);
-            Map<ApprovalRequestType, Integer> approvals = upgradedWithApprovals.getApprovals();
-            assertEquals("Certificate Profile  with approvals for two actions did not get any approvals set.", 2, approvals.size());
-            assertEquals("Approval profile was not set for action during upgrade.", Integer.valueOf(requireTwoApprovalsId), approvals.get(ApprovalRequestType.ACTIVATECA));
-            assertEquals("Approval profile was not set for action during upgrade.", Integer.valueOf(requireTwoApprovalsId), approvals.get(ApprovalRequestType.KEYRECOVER));
-        } finally {
-            certificateProfileSession.removeCertificateProfile(alwaysAllowtoken, noApprovalsName);
-            certificateProfileSession.removeCertificateProfile(alwaysAllowtoken, withApprovalsName);
-            approvalProfileSession.removeApprovalProfile(alwaysAllowtoken, requireTwoApprovalsId);
-        }
-    }
 
     /**
      * Tests upgrade from 6.9.0 to 6.10.1.

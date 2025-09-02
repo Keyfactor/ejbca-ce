@@ -23,8 +23,6 @@
 		<path refid="lib.commons-collections4.classpath"/>
 		<path refid="lib.caffeine.classpath"/>
 		<path refid="lib.guava.classpath"/>
-		<path refid="lib.jaxb.classpath"/>
-		<path refid="lib.hibernate.validator"/>
 		<path location="${mod.caa.lib}"/>
 		<path location="${mod.cesecore-ejb.lib}"/>
 		<path location="${mod.ejbca-entity.lib}"/>
@@ -79,7 +77,6 @@
 		<path location="${mod.ejbca-ejb-interface.lib}"/>
 		<path refid="compile-test.classpath"/>
 		<path refid="lib.junit.classpath"/>
-		<path refid="lib.jboss-logging.classpath"/>
 	</path>
 
 	<condition property="exclude.ee-ejbbridge-implementation" value="org/ejbca/core/ejb/EnterpriseEditionEjbBridgeSessionBean.java" else="exclude.ee-ejbbridge-implementation.nonexistingvalue">

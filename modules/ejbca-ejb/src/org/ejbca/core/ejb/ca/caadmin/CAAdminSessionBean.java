@@ -435,19 +435,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             }
         }
 
-        // Update Approval Profiles
-        final Map<Integer, String> approvalProfiles = approvalProfileSession.getApprovalProfileIdToNameMap();
-        for (int appProfId : approvalProfiles.keySet()) {
-            final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfile(appProfId);
-            if (approvalProfile.updateCAIds(fromId, toId, toDN)) {
-                String name = approvalProfile.getProfileName();
-                if (log.isDebugEnabled()) {
-                    log.debug("Changing CA Ids in Approval Profile " + name);
-                }
-                approvalProfileSession.changeApprovalProfile(authenticationToken, approvalProfile);
-            }
-        }
-
         // Update End-Entities
         final Collection<EndEntityInformation> endEntities = endEntityAccessSession.findAllUsersByCaIdNoAuth(fromId);
         for (EndEntityInformation endEntityInfo : endEntities) {

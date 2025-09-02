@@ -111,16 +111,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
     protected static final String DO_PRE_PRODUCE_INDIVIDUAL_OCSP_RESPONSES = "dopreproduceocspresponsesuponissuanceandrevocation";
     private static final String LATESTLINKCERTIFICATE = "latestLinkCertificate";
     protected static final String KEY_ENCRYPTION_PADDING_ALGORITHM = "keyencryptionpaddingalgorithm";
-    /**
-     * @deprecated since 6.8.0, replaced by the approvals Action:ApprovalProfile mapping
-     */
-    @Deprecated
-    protected static final String APPROVALSETTINGS = "approvalsettings";
-    /**
-     * @deprecated since 6.8.0, replaced by the approvals Action:ApprovalProfile mapping
-     */
-    @Deprecated
-    protected static final String APPROVALPROFILE = "approvalprofile";
+    
     private static final String APPROVALS = "approvals";
      
     private CAInfo cainfo = null;
@@ -706,35 +697,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
     @Override
     public void setCRLPublishers(Collection<Integer> crlpublishers) {
         data.put(CRLPUBLISHERS, crlpublishers);
-    }
-        
-    /**
-     * @return a collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which action that requires approvals,
-     * default none and never null.
-     *
-     * @deprecated since 6.8.0, see getApprovals()
-     */
-    @Override
-    @Deprecated
-    @SuppressWarnings("unchecked")
-    public Collection<Integer> getApprovalSettings() {
-        if (data.get(APPROVALSETTINGS) == null) {
-            return new ArrayList<>();
-        }
-        return (Collection<Integer>) data.get(APPROVALSETTINGS);
-    }
-
-    /**
-     * Collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which action that requires approvals
-     *
-     * @deprecated since 6.8.0, see setApprovals()
-     */
-    @Override
-    @Deprecated
-    public void setApprovalSettings(Collection<Integer> approvalSettings) {
-        data.put(APPROVALSETTINGS, approvalSettings);
-    }
-    
+    }    
     
     /**
      * @return A 1:1 mapping between Approval Action:Approval Profile ID
@@ -750,32 +713,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
         // We must store this as a predictable order map in the database, in order for databaseprotection to work
         data.put(APPROVALS, approvals != null ? new LinkedHashMap<>(approvals) : new LinkedHashMap<>());
     }
-    
-    /**
-     * @return the id of the approval profile. Defult -1 (= none)
-     *
-     * @deprecated since 6.8.0, see getApprovals()
-     */
-    @Override
-    @Deprecated
-    public int getApprovalProfile() {
-        if (data.get(APPROVALPROFILE) == null) {
-            return -1;
-        }
-        return (int) data.get(APPROVALPROFILE);
-    }
-
-    /**
-     * The id of the approval profile.
-     *
-     * @deprecated since 6.8.0, see setApprovals()
-     */
-    @Override
-    @Deprecated
-    public void setApprovalProfile(final int approvalProfileID) {
-        data.put(APPROVALPROFILE, approvalProfileID);
-    }
-    
+        
     protected ExtendedCAService getExtendedCAService(int type) {
         ExtendedCAService returnval = null;
         try {
