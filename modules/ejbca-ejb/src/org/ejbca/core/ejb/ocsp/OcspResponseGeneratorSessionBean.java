@@ -591,6 +591,11 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     + CertTools.getNotAfter(caCertificate) + ".");
         }
     }
+    
+    private void logAndCacheKeyBindingIgnoreReason(String reason) {
+        OcspSigningCache.INSTANCE.stagingAddIgnoreReason(reason);
+        log.warn(reason);
+    }
 
     /**
      * Constructs an OcspSigningCacheEntry from the given parameters.
@@ -607,7 +612,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         }
         final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(ocspKeyBinding.getCryptoTokenId());
         if (cryptoToken == null) {
-            log.warn("Referenced CryptoToken with id " + ocspKeyBinding.getCryptoTokenId() + " does not exist. Ignoring OcspKeyBinding with id "
+            logAndCacheKeyBindingIgnoreReason("Referenced CryptoToken with id " + ocspKeyBinding.getCryptoTokenId() + " does not exist. Ignoring OcspKeyBinding with id "
                     + ocspKeyBinding.getId());
             return null;
         }
@@ -615,11 +620,11 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         try {
             privateKey = cryptoToken.getPrivateKey(ocspKeyBinding.getKeyPairAlias());
         } catch (CryptoTokenOfflineException e) {
-            log.warn("Referenced private key with alias " + ocspKeyBinding.getKeyPairAlias() + " could not be used. CryptoToken is off-line for OcspKeyBinding with id "+ocspKeyBinding.getId()+": " + e.getMessage());
+            logAndCacheKeyBindingIgnoreReason("Referenced private key with alias " + ocspKeyBinding.getKeyPairAlias() + " could not be used. CryptoToken is off-line for OcspKeyBinding with id "+ocspKeyBinding.getId()+": " + e.getMessage());
             return null;
         }
         if (privateKey == null) {
-            log.warn("Referenced private key with alias " + ocspKeyBinding.getKeyPairAlias() + " does not exist. Ignoring OcspKeyBinding with id "+ ocspKeyBinding.getId());
+            logAndCacheKeyBindingIgnoreReason("Referenced private key with alias " + ocspKeyBinding.getKeyPairAlias() + " does not exist. Ignoring OcspKeyBinding with id "+ ocspKeyBinding.getId());
             return null;
         }
         final String signatureProviderName = cryptoToken.getSignProviderName();
@@ -767,7 +772,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 caCertificateSerialNumber = null;
             }
             if (currentLevelCertificate == null) {
-                log.warn("Unable to build certificate chain for OCSP signing certificate with Subject DN '" +
+                logAndCacheKeyBindingIgnoreReason("Unable to build certificate chain for OCSP signing certificate with Subject DN '" +
                         CertTools.getSubjectDN(leafCertificate) + "'. CA with Subject DN '" + issuerDn + "' is missing in the database.");
                 return Collections.emptyList();
             }
@@ -801,14 +806,14 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 if (current instanceof X509Certificate) {
                     caCertificateChain.add((X509Certificate) current);
                 } else {
-                    log.warn("Unable to build certificate chain for OCSP signing certificate with Subject DN '" +
+                    logAndCacheKeyBindingIgnoreReason("Unable to build certificate chain for OCSP signing certificate with Subject DN '" +
                             CertTools.getSubjectDN(leafCertificate) + "' and Issuer DN '" + CertTools.getIssuerDN(leafCertificate) +
                             "'. CA certificate chain contains non-X509 certificates.");
                     return Collections.emptyList();
                 }
             }
             if (caCertificateChain.isEmpty()) {
-                log.warn("Unable to build certificate chain for OCSP signing certificate with Subject DN '" +
+                logAndCacheKeyBindingIgnoreReason("Unable to build certificate chain for OCSP signing certificate with Subject DN '" +
                         CertTools.getSubjectDN(leafCertificate) + "' and Issuer DN '" + CertTools.getIssuerDN(leafCertificate) +
                         "''. CA certificate(s) are missing in the database.");
                 return Collections.emptyList();
@@ -816,7 +821,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             try {
                 CertTools.verify(leafCertificate, caCertificateChain, new Date(), new EkuPKIXCertPathChecker(KeyPurposeId.id_kp_OCSPSigning.getId()));
             } catch (Exception e2) {
-                log.warn("Unable to build certificate chain for OCSP signing certificate with Subject DN '" +
+                logAndCacheKeyBindingIgnoreReason("Unable to build certificate chain for OCSP signing certificate with Subject DN '" +
                         CertTools.getSubjectDN(leafCertificate) + "' and Issuer DN '" + CertTools.getIssuerDN(leafCertificate) +
                         "''. Found CA certificate(s) cannot be used for validation: " + e2.getMessage());
                 return Collections.emptyList();
@@ -2484,7 +2489,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     }
     
     @Override
-    public String healthCheck() {
+    public String healthCheck(boolean reportIgnoredKeyBindings) {
         final StringBuilder sb = new StringBuilder();
         // Check that there are no ACTIVE OcspKeyBindings that are not in the cache before checking usability..
         for (InternalKeyBindingInfo internalKeyBindingInfo : internalKeyBindingMgmtSession
@@ -2574,6 +2579,13 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     }
                 }
             }
+            
+            if (reportIgnoredKeyBindings) {
+                for (String ignoreReason: OcspSigningCache.INSTANCE.getIgnoredKeyBindingReasons()) {
+                    sb.append('\n').append(ignoreReason);
+                }
+            }
+            
         } catch (Exception e) {
             final String errMsg = intres.getLocalizedMessage("ocsp.errorloadsigningcerts");
             log.error(errMsg, e);
