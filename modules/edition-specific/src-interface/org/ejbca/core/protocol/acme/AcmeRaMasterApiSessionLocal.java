@@ -18,8 +18,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import jakarta.ejb.Local;
-
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -31,10 +29,12 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.configuration.ConfigurationBase;
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;  
 import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.era.IdNameHashMap;
+import org.ejbca.core.model.era.RaApprovalRequestInfo;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
@@ -42,6 +42,8 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 
 import com.keyfactor.util.certificate.CertificateWrapper;
+
+import jakarta.ejb.Local;
 /**
  * Proxy for identifying all calls that are needed in the RaMasterApi to fully support ACME.
  *
@@ -73,6 +75,9 @@ public interface AcmeRaMasterApiSessionLocal {
 
     /** @see org.ejbca.ui.web.protocol.acme.storage.AcmeOrderDataSessionBean#getAcmeOrderById(String) */
     AcmeOrder getAcmeOrder(String orderId);
+
+    /** @see org.ejbca.ui.web.protocol.acme.storage.AcmeOrderDataSessionBean#getIfReadyAcmeOrder(String) */
+    AcmeOrder getIfReadyAcmeOrder(String orderId);
 
     /** @see org.ejbca.ui.web.protocol.acme.storage.AcmeOrderDataSessionBean#getAcmeOrdersByAccountId(String) */
     Set<AcmeOrder> getAcmeOrdersByAccountId(String accountId);
@@ -163,5 +168,17 @@ public interface AcmeRaMasterApiSessionLocal {
     boolean isPeerAuthorizedAcme();
 
     List<CertificateWrapper> searchForCertificateChain(AuthenticationToken authenticationToken, String fingerprint, String rootSubjectDnHash);
+    
+    /** @see org.ejbca.core.model.era.RaMasterApi#createApprovalRequest(AuthenticationToken authenticationToken, int approvalType, int approvalProfileId, int endEntityProfileId, String accountId) */
+    Integer createApprovalRequest(AuthenticationToken authenticationToken, int approvalType, int approvalProfileId, int endEntityProfileId, String acmeAccountId) throws AuthorizationDeniedException, ApprovalException;
+    
+    /** @see org.ejbca.core.model.era.RaMasterApi#getRemainingNumberOfApprovals(AuthenticationToken authenticationToken, int requestId) */
+    Integer getRemainingNumberOfApprovals(AuthenticationToken authenticationToken, int requestId) throws AuthorizationDeniedException, ApprovalException, ApprovalRequestExpiredException;
+    
+    /** @see org.ejbca.core.model.era.RaMasterApi#getApprovalRequest(AuthenticationToken authenticationToken, int requestId) */
+    RaApprovalRequestInfo getApprovalRequest(AuthenticationToken authenticationToken, int requestId);
+    
+    /** @see org.ejbca.core.model.era.RaMasterApi#extendApprovalRequest(AuthenticationToken authenticationToken, int requestId, long extendForMillis) */
+    void extendApprovalRequest(AuthenticationToken authenticationToken, int requestId, long extendForMillis) throws AuthorizationDeniedException;
 
 }

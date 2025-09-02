@@ -66,4 +66,11 @@ public interface AcmeOrderDataSession {
      *
      */
     void removeAll(final List<String> orderIds);
+
+    /**
+     * @param orderId the ID of the order
+     * @return the sought pending order, or null if not found, or the status is not pending
+     */
+    AcmeOrder getIfReadyAcmeOrder(final String orderId);
+
 }

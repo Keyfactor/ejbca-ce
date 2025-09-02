@@ -141,12 +141,12 @@ public class RaCasPageBean implements Serializable {
 
     /** View Scoped variables to load once and use in the UI */
     private List<CaAndCrl> casAndCrlItems = null;
-    private Boolean atLeastOneCrlLinkPresent = null;
+    private Boolean atLeastOneCrlLinkPresent = false;
     private Boolean isAuthorized = null;
 
     /** @return true if at least one of the CAs available via #loadCasAndCrlItems() has CRLs present on this system. */
     public boolean isAtLeastOneCrlLinkPresent() {
-        if (atLeastOneCrlLinkPresent == null) {
+        if (atLeastOneCrlLinkPresent == false) {
             getCasAndCrlItems();
         }
         return atLeastOneCrlLinkPresent;

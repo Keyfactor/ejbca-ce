@@ -17,10 +17,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import jakarta.ejb.Stateless;
-import jakarta.ejb.TransactionAttribute;
-import jakarta.ejb.TransactionAttributeType;
-
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -34,8 +30,10 @@ import org.cesecore.configuration.ConfigurationBase;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.era.IdNameHashMap;
+import org.ejbca.core.model.era.RaApprovalRequestInfo;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
@@ -50,6 +48,10 @@ import org.ejbca.core.protocol.acme.AcmeProblemException;
 import org.ejbca.core.protocol.acme.AcmeRaMasterApiSessionLocal;
 
 import com.keyfactor.util.certificate.CertificateWrapper;
+
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 
 /**
  * Proxy for identifying all calls that are needed in the RaMasterApi to fully support ACME.
@@ -102,6 +104,11 @@ public class AcmeRaMasterApiSessionBean implements AcmeRaMasterApiSessionLocal {
 
     @Override
     public AcmeOrder getAcmeOrder(final String orderId) {
+        throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
+    }
+
+    @Override
+    public AcmeOrder getIfReadyAcmeOrder(String orderId) {
         throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
     }
 
@@ -253,6 +260,28 @@ public class AcmeRaMasterApiSessionBean implements AcmeRaMasterApiSessionLocal {
 
     @Override
     public List<CertificateWrapper> searchForCertificateChain(AuthenticationToken authenticationToken, String fingerprint, String rootSubjectDnHash) {
+        throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
+    }
+    
+    @Override
+    public Integer createApprovalRequest(final AuthenticationToken authenticationToken, final int approvalType, final int approvalProfileId, final int endEntityProfileId, final String accountId) 
+            throws AuthorizationDeniedException, ApprovalException {
+        throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
+    }
+
+    @Override
+    public Integer getRemainingNumberOfApprovals(final AuthenticationToken authenticationToken, final int requestId)
+            throws AuthorizationDeniedException, ApprovalException, ApprovalRequestExpiredException {
+        throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
+    }
+
+    @Override
+    public RaApprovalRequestInfo getApprovalRequest(final AuthenticationToken authenticationToken, final int requestId) {
+        throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
+    }
+
+    @Override
+    public void extendApprovalRequest(final AuthenticationToken authenticationToken, final int requestId, final long extendForMillis) throws AuthorizationDeniedException {
         throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
     }
 }

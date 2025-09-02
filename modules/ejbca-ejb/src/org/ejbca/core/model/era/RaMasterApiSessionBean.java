@@ -381,9 +381,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
      * <tr><th>18<td>=<td>8.3.0
      * <tr><th>19<td>=<td>9.2.0
      * <tr><th>20<td>=<td>9.3.0
+     * <tr><th>21<td>=<td>9.4.0
      * </table>
      */
-    private static final int RA_MASTER_API_VERSION = 20;
+    private static final int RA_MASTER_API_VERSION = 21;
 
     /**
      * Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time
@@ -3575,6 +3576,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public AcmeOrder getAcmeOrderById(final String orderId) {
         return acmeOrderDataSession.getAcmeOrder(orderId);
+    }
+
+    @Override
+    public AcmeOrder getIfReadyAcmeOrder(final String orderId) {
+        return acmeOrderDataSession.getIfReadyAcmeOrder(orderId);
     }
 
     @Override

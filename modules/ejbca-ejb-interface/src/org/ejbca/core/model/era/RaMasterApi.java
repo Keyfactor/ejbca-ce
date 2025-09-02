@@ -1555,6 +1555,14 @@ public interface RaMasterApi {
    AcmeOrder getAcmeOrderById(String orderId);
 
    /**
+    * Get AcmeOrder by orderId if the status is pending.
+    * This ensures only one method to access this at time.
+    * @param orderId order id
+    * @return the sought AcmeOrder or null if not found, or if not pending
+    */
+   AcmeOrder getIfReadyAcmeOrder(String orderId);
+
+   /**
     * Get AcmeOrders by accountId.
     * @param accountId a related account id
     * @return the collection of sought AcmeOrders or null if not found
