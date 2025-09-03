@@ -85,6 +85,7 @@ import org.ejbca.config.AvailableProtocolsConfiguration;
 import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.GlobalCustomCssConfiguration;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ocsp.OcspResponseCleanupSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -519,6 +520,69 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private List<OAuthKeyInfo> oauthKeys = null;
     private String defaultOauthKeyLabel = null;
 
+    private List<String> oauthProvidersAllowlist = null;
+
+    /**
+     * Gets the OAuth providers allowlist as a newline-separated string for the textarea
+     * @return String with one hostname per line
+     */
+    public String getCurrentOauthProvidersAllowlist() {
+
+        final String[] allowedHosts = getOAuthConfiguration().getAllowedOauthHosts();
+        if (allowedHosts == null) {
+            oauthProvidersAllowlist = Collections.emptyList();
+        } else {
+            oauthProvidersAllowlist = Arrays.asList(allowedHosts);
+        }
+
+        if (oauthProvidersAllowlist.isEmpty()) {
+            return WebConfiguration.getHostName();
+        } else {
+            return String.join("\n", oauthProvidersAllowlist);
+        }
+
+    }
+
+    /**
+     * Sets the OAuth providers allowlist from a newline-separated string
+     * @param allowlist String containing hostnames separated by newlines
+     */
+    public void setCurrentOauthProvidersAllowlist(final String allowlist) {
+        if (allowlist == null || allowlist.trim().isEmpty()) {
+            oauthProvidersAllowlist = new ArrayList<>();
+            return;
+        }
+
+        // Split on newlines and filter out empty lines
+        oauthProvidersAllowlist = Arrays.stream(allowlist.split("\\R"))  // splits on all types of newlines
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Validates a hostname
+     * @param hostname The hostname to validate
+     * @return true if valid, false otherwise
+     */
+    private boolean isValidHostname(final String hostname) {
+        // Basic hostname validation - you might want to make this more sophisticated
+        String hostnameRegex = "^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$";
+        return hostname != null && hostname.matches(hostnameRegex);
+    }
+
+    /**
+     * Filters the provided list of hostnames and returns a new list containing only the valid hostnames.
+     *
+     * @param allowlist the list of hostnames to be filtered
+     * @return a list of hostnames that are valid, according to the validation criteria in the isValidHostname() method
+     */
+    private List<String> filterValidHostnames(List<String> allowlist) {
+        return allowlist.stream()
+                .filter(this::isValidHostname)
+                .collect(Collectors.toList());
+    }
+
     public List<OAuthKeyInfo> getOauthKeys() {
         if (oauthKeys == null) {
             this.oauthKeys = new ArrayList<>(getOAuthConfiguration().getOauthKeys().values());
@@ -601,6 +665,19 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 addErrorMessage("OAUTHKEYTAB_EDITDEFAULTKEYNOTPOSSIBLE");
             }
 
+            getEjbcaWebBean().saveOAuthConfiguration(oAuthConfiguration);
+        } catch (AuthorizationDeniedException e) {
+            String msg = "Cannot save System Configuration. " + e.getLocalizedMessage();
+            log.info(msg);
+            super.addNonTranslatedErrorMessage(msg);
+        }
+        flushCache();
+    }
+
+    public void saveAllowedOauthHosts() {
+        filterValidHostnames(oauthProvidersAllowlist); // Validate the OAuth allowlist before saving
+        getOAuthConfiguration().setAllowedOauthHosts(oauthProvidersAllowlist.toArray(new String[0]));
+        try {
             getEjbcaWebBean().saveOAuthConfiguration(oAuthConfiguration);
         } catch (AuthorizationDeniedException e) {
             String msg = "Cannot save System Configuration. " + e.getLocalizedMessage();

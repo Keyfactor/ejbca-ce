@@ -554,6 +554,27 @@
 			<h:commandButton action="#{systemConfigMBean.saveOAuthConfig}" value="#{web.text.OAUTHKEYCONFIGURATION_SAVE}"/>
 		</h:panelGrid>
 	</h:form>
+
+	<h:form id="oauthprovidersallowlist" enctype="multipart/form-data">
+
+			<h4>
+				<h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_ALLOW_LIST}"/>
+			</h4>
+			<h:panelGroup>
+				<h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_ALLOW_LIST_HELP}"/>
+			</h:panelGroup>
+			<br/>
+			<br/>
+			<h:inputTextarea id="oauthprovidersallowlistTextArea"
+							 disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"
+							 value="#{systemConfigMBean.currentOauthProvidersAllowlist}" cols="40" rows="4"/>
+			<br/>
+
+			<h:commandButton action="#{systemConfigMBean.saveAllowedOauthHosts}"
+							 value="#{web.text.OAUTHKEYCONFIGURATION_SAVE}"/>
+
+	</h:form>
+	
 	<h:form id="oauthkeysform" enctype="multipart/form-data">
 		<div class="section-label">
             <h4>
