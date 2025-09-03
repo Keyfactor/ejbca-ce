@@ -35,11 +35,14 @@ public class OcspConfiguration {
     public static final String SIGNATUREREQUIRED = "ocsp.signaturerequired";
     public static final String CARD_PASSWORD = "ocsp.keys.cardPassword";
     public static final String WARNING_BEFORE_EXPERATION_TIME = "ocsp.warningBeforeExpirationTime";
+    @Deprecated(since = "9.4.0")
     public static final String NON_EXISTING_IS_GOOD = "ocsp.nonexistingisgood";
     public static final String NON_EXISTING_IS_GOOD_URI = NON_EXISTING_IS_GOOD+".uri.";
     public static final String NON_EXISTING_IS_BAD_URI = "ocsp.nonexistingisbad.uri.";
+    @Deprecated(since = "9.4.0")
     public static final String NON_EXISTING_IS_REVOKED = "ocsp.nonexistingisrevoked";
     public static final String NON_EXISTING_IS_REVOKED_URI = NON_EXISTING_IS_REVOKED+".uri.";
+    @Deprecated(since = "9.4.0")
     public static final String NON_EXISTING_IS_UNAUTHORIZED = "ocsp.nonexistingisunauthorized";
 
     @Deprecated(since = "8.3.0") //Only used for upgrades to 8.3.0 and beyond
@@ -145,6 +148,7 @@ public class OcspConfiguration {
     /**
      * @return true if a certificate that does not exist in the database, but is issued by a CA the responder handles will be treated as not revoked.
      */
+    @Deprecated(since = "9.4.0")
     public static boolean getNonExistingIsGood() {
         String value = ConfigurationHolder.getString(NON_EXISTING_IS_GOOD);
         return "true".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value);
@@ -153,6 +157,7 @@ public class OcspConfiguration {
     /**
      * @return true if a certificate that does not exist in the database, but is issued by a CA the responder handles will be treated as revoked.
      */
+    @Deprecated(since = "9.4.0")
     public static boolean getNonExistingIsRevoked() {
         String value = ConfigurationHolder.getString(NON_EXISTING_IS_REVOKED);
         return "true".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value);
@@ -163,6 +168,7 @@ public class OcspConfiguration {
      * @return true if a certificate that does not exist in the database, but is issued by a CA the responder handles will be responded to with an
      * unsigned "Unauthorized" response. 
      */
+    @Deprecated(since = "9.4.0")
     public static boolean getNonExistingIsUnauthorized() {
         String value = ConfigurationHolder.getString(NON_EXISTING_IS_UNAUTHORIZED);
         return "true".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value);
@@ -196,7 +202,7 @@ public class OcspConfiguration {
      * even if {@link #getNonExistingIsGood()} return false.
      * @return the regex
      */
-    public static String getNonExistingIsGoodOverideRegex() {
+    public static String getNonExistingIsGoodOverrideRegex() {
     	return getRegex(NON_EXISTING_IS_GOOD_URI);
     }
 
@@ -205,7 +211,7 @@ public class OcspConfiguration {
      * even if {@link #getNonExistingIsGood()} return true.
      * @return the regex
      */
-    public static String getNonExistingIsBadOverideRegex() {
+    public static String getNonExistingIsBadOverrideRegex() {
     	return getRegex(NON_EXISTING_IS_BAD_URI);
     }
     
@@ -214,7 +220,7 @@ public class OcspConfiguration {
      * even if {@link #getNonExistingIsGood()} return true.
      * @return the regex
      */
-    public static String getNonExistingIsRevokedOverideRegex() {
+    public static String getNonExistingIsRevokedOverrideRegex() {
         return getRegex(NON_EXISTING_IS_REVOKED_URI);
     }
 

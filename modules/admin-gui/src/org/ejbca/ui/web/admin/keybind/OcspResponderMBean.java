@@ -70,6 +70,7 @@ import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 import org.cesecore.keybind.impl.OcspKeyBinding;
+import org.cesecore.keybind.impl.OcspNonExistingBehavior;
 import org.cesecore.keybind.impl.OcspKeyBinding.ResponderIdType;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.util.SimpleTime;
@@ -130,6 +131,8 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
 
     private Integer currentCertificateAuthorityOcspRespToSign = null;
     private String currentTrustEntryDescriptionOcspRespToSign = null;
+    private OcspNonExistingBehavior currentUnknownResponse = null;
+    private OcspNonExistingBehavior currentGlobalUnknownResponse = null;
     
     //Serial number of the CA generation to use
     private String currentCaGeneration = null;
@@ -165,6 +168,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
         useMaxValidityForExpiration = globalConfiguration.getUseMaxValidityForExpiration();
         includeSigningCertificate = globalConfiguration.getIncludeSigningCertificate();
         includeCertificateChain = globalConfiguration.getIncludeCertificateChain();
+        currentGlobalUnknownResponse = globalConfiguration.getOcspNonExistingBehavior();
     }
 
     @Override
@@ -231,6 +235,18 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
         flushCurrentCache();
     }
 
+    public void saveCurrentGlobalUnknownResponse() {
+        GlobalOcspConfiguration globalConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        globalConfiguration.setOcspNonExistingBehavior(currentGlobalUnknownResponse);
+        try {
+            globalConfigurationSession.saveConfiguration(getAuthenticationToken(), globalConfiguration);
+        } catch (AuthorizationDeniedException e) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+        }
+
+    }
+    
     public void saveDefaultResponder() {
         GlobalOcspConfiguration globalConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
                 .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
@@ -802,7 +818,16 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
         }
         return result;
     }
-
+    public List<SelectItem> getAvailableUnknownResponses() {
+        List<SelectItem> availableUnknownResponses = new ArrayList<>();
+        final String localizationPrefix = "INTERNALKEYBINDING_OCSPKEYBINDING_RESPONSE_";
+        for(OcspNonExistingBehavior ocspNonExistingBehavior : OcspNonExistingBehavior.values()) {
+            String label = getEjbcaWebBean().getText(localizationPrefix + ocspNonExistingBehavior.getLabel().toUpperCase());
+            availableUnknownResponses.add(new SelectItem(ocspNonExistingBehavior, label));
+        }
+        return availableUnknownResponses;
+    }
+    
     public List<SelectItem> getAvailableOcspExtensions() {
         final List<SelectItem> ocspExtensionItems = new ArrayList<>();
         ServiceLoader<OCSPExtension> serviceLoader = ServiceLoader.load(OCSPExtension.class);
@@ -871,6 +896,34 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
     
     public void setCurrentTrustEntryDescriptionOcspRespToSign(String description) {
         this.currentTrustEntryDescriptionOcspRespToSign = description;
+    }
+    
+    public OcspNonExistingBehavior getCurrentUnknownResponse() {
+        if (currentUnknownResponse == null) {
+            try {
+                final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingSession.getInternalKeyBinding(getAuthenticationToken(),
+                        Integer.parseInt(getCurrentInternalKeyBindingId()));
+                if (ocspKeyBinding != null) {
+                    currentUnknownResponse = ocspKeyBinding.getOcspNonExistingBehavior();
+                }
+            } catch (NumberFormatException | AuthorizationDeniedException e) {
+                addNonTranslatedErrorMessage(e);
+                return null;
+            }
+        }
+        return currentUnknownResponse;
+    }
+    
+    public void setCurrentUnknownResponse(final OcspNonExistingBehavior ocspNonExistingBehavior) {
+        this.currentUnknownResponse = ocspNonExistingBehavior;
+    }
+    
+    public OcspNonExistingBehavior getCurrentGlobalUnknownResponse() {
+        return currentGlobalUnknownResponse;
+    }
+    
+    public void setCurrentGlobalUnknownResponse(final OcspNonExistingBehavior ocspNonExistingBehavior) {
+        this.currentGlobalUnknownResponse = ocspNonExistingBehavior;
     }
     
     public String getSignOcspResponseForCasCaName() {
@@ -973,7 +1026,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
                         getCurrentCryptoToken(), getCurrentKeyPairAlias(), getCurrentSignatureAlgorithm(), dataMap,
                         (List<InternalKeyBindingTrustEntry>) getTrustedCertificates().getWrappedData())));
 
-                final InternalKeyBinding internalKeyBinding = internalKeyBindingSession.getInternalKeyBinding(getAuthenticationToken(),
+                final OcspKeyBinding internalKeyBinding = (OcspKeyBinding) internalKeyBindingSession.getInternalKeyBinding(getAuthenticationToken(),
                         Integer.parseInt(getCurrentInternalKeyBindingId()));
 
                 if (ocspExtensionsList != null && ocspExtensionsList.isEmpty()) {
@@ -986,6 +1039,8 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
                 } else {
                     internalKeyBinding.setSignOcspResponseOnBehalf(new ArrayList<>());
                 }
+                
+                internalKeyBinding.setOcspNonExistingBehavior(currentUnknownResponse);
                 
                 // we save an empty list for sign on behalf of CAs
                 setCurrentInternalKeybindingId(
@@ -1050,6 +1105,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
             if (ocspKeyBinding.getIncludeCertChain()) {
                 ocspKeyBinding.setCaGeneration(currentCaGeneration);
             }
+            ocspKeyBinding.setOcspNonExistingBehavior(currentUnknownResponse);
             
             final List<DynamicUiProperty<? extends Serializable>> internalKeyBindingProperties = (List<DynamicUiProperty<? extends Serializable>>) getInternalKeyBindingPropertyList()
                     .getWrappedData();

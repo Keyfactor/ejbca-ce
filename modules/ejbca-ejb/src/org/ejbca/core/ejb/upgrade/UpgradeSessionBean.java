@@ -68,9 +68,11 @@ import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
+import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingNameInUseException;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 import org.cesecore.keybind.impl.OcspKeyBinding;
+import org.cesecore.keybind.impl.OcspNonExistingBehavior;
 import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
@@ -92,6 +94,7 @@ import org.ejbca.core.ejb.ServiceLocatorException;
 import org.ejbca.core.ejb.authorization.AuthorizationSystemSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.config.GlobalUpgradeConfiguration;
+import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
@@ -161,6 +164,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
     private InternalKeyBindingDataSessionLocal internalKeyBindingDataSession;
+    @EJB
+    private InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession;
+    @EJB
+    private OcspResponseGeneratorSessionLocal ocspResponseGeneratorSession;
     @EJB
     private PublisherSessionLocal publisherSession;
     @EJB
@@ -682,11 +689,13 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     
     private boolean postMigrateDatabase940() {
         log.info("Starting post upgrade to 9.4.0");
+
         try {
             removeEnableIcaoNameChangeFromGlobalConfiguration940();
             removeOldCtValues940();
             removeOcspCleanupFromGlobalConfiguration940();
             removeEEPLimitationsFromGlobalConfiguration940();
+            removeOldOcspNonExistingValues_9_4_0();
         } catch (AuthorizationDeniedException e) {
             log.error("Administrator was not authorized to perform post-upgrade.");
             return false;
@@ -750,6 +759,23 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             } catch (AuthorizationDeniedException e) {
                 throw new IllegalStateException("Always allow token was denied access to global configuration.", e);
             }
+        }     
+    }
+    
+    private void removeOldOcspNonExistingValues_9_4_0() throws AuthorizationDeniedException {
+        //Remove old data from OCSP Responders 
+        for(int id : internalKeyBindingDataSession.getIds(OcspKeyBinding.IMPLEMENTATION_ALIAS)) {
+            OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingDataSession.getInternalKeyBindingForEdit(id);
+            LinkedHashMap<Object, Object> data = ocspKeyBinding.getDataMapToPersist();
+            data.remove("nonexistingisgood");
+            data.remove("nonexistingisrevoked");
+            data.remove("nonexistingisunauthorized");
+            ocspKeyBinding.loadData(data);
+            try {
+                internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, ocspKeyBinding);
+            } catch (InternalKeyBindingNameInUseException e) {
+                throw new IllegalStateException("Internal keybinding with name " + ocspKeyBinding.getName() + " was modified, but for some reason the system thinks it was created.", e);
+            } 
         }
     }
 
@@ -789,7 +815,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
         globalCesecoreConfiguration.loadData(globalCesecoreConfigData);
         globalConfigurationSession.saveConfiguration(authenticationToken, globalCesecoreConfiguration);
-
     }
     
     /**
@@ -948,6 +973,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     public boolean isPostUpgradeNeeded() {
         return isLesserThan(getLastPostUpgradedToVersion(), "9.4.0");
     }
+
 
     /**
      * Upgrade to EJBCA 6.10.1. 
@@ -1966,7 +1992,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
     }
 
-    @Override
     public void migrateDatabase933() throws UpgradeFailedException {
         migrateUseSSL933();
     }
@@ -1997,7 +2022,9 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     public void migrateDatabase940() throws UpgradeFailedException {
         log.info("Starting upgrade to 9.4.0");
         //Move ocsp.includecertchain and ocsp.includesignercert from the properties files and into the database configuration
-        migrateOcspOptions940();
+        migrateOcspOptions940();        
+        //Migrate non-existing values in ocsp responders to the new single value 
+        upgradeOcspKeybindings_9_4_0();
         //Move enableIcaoNameChange from GlobalConfiguration to the new GlobalCaConfiguration row
         migrateCaConfigurationFromGlobalConfig940();
         //Move various CT settings from GlobalConfiguration and CesecoreGlobalConfiguration into the new GlobalCtConfiguration
@@ -2031,6 +2058,25 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         globalOcspConfiguration.setIncludeSigningCertificate(OcspConfiguration.getIncludeSignCert());
         globalOcspConfiguration.setIncludeCertificateChain(OcspConfiguration.getIncludeCertChain());
         
+        boolean nonExistingIsGood = OcspConfiguration.getNonExistingIsGood();
+        boolean nonExistingIsRevoked = OcspConfiguration.getNonExistingIsRevoked();
+        boolean nonExistingIsUnauthorized = OcspConfiguration.getNonExistingIsUnauthorized();
+        //Verify that max one option is true
+        if((!nonExistingIsGood && !nonExistingIsRevoked && !nonExistingIsUnauthorized) || (nonExistingIsGood ^ nonExistingIsRevoked ^ nonExistingIsUnauthorized)) {
+            if(nonExistingIsGood) {
+                globalOcspConfiguration.setOcspNonExistingBehavior(OcspNonExistingBehavior.GOOD);
+            } else if(nonExistingIsRevoked) {
+                globalOcspConfiguration.setOcspNonExistingBehavior(OcspNonExistingBehavior.REVOKED);
+            } else if(nonExistingIsUnauthorized) {
+                globalOcspConfiguration.setOcspNonExistingBehavior(OcspNonExistingBehavior.UNAUTHORIZED);
+            } else {
+                globalOcspConfiguration.setOcspNonExistingBehavior(OcspNonExistingBehavior.UNKNOWN);
+            }
+        } else {
+            throw new UpgradeFailedException("More than one value of ocsp.nonexistingisgood, ocsp.nonexistingisrevoked and ocsp.nonexistingisunauthorized is true at the same time. This is an error state. "
+                    + "Please modify ocsp.properties to set only one or none of these values to be true.");
+        }
+        
         try {
             globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);
         } catch (AuthorizationDeniedException e) {
@@ -2039,7 +2085,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             throw new UpgradeFailedException(msg, e);
         }
     }  
-    
+
     @SuppressWarnings("deprecation")
     private void migrateCaConfigurationFromGlobalConfig940() throws UpgradeFailedException {
         log.info("Upgrade: Migrating CA configuration");
@@ -2074,6 +2120,30 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             log.error(msg, e);
             throw new UpgradeFailedException(msg, e);
         }  
+    }
+    
+    /**
+     * In 9.4 the behavior for ocsp keybindings in regards to unknown certs was changed from being three booleans to being a single value.
+     */
+    @SuppressWarnings("deprecation")
+    private void upgradeOcspKeybindings_9_4_0() throws UpgradeFailedException {
+        for(int id : internalKeyBindingDataSession.getIds(OcspKeyBinding.IMPLEMENTATION_ALIAS)) {
+            OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingDataSession.getInternalKeyBindingForEdit(id);
+            if(ocspKeyBinding.getNonExistingGood()) {
+                ocspKeyBinding.setOcspNonExistingBehavior(OcspNonExistingBehavior.GOOD);
+            } else if(ocspKeyBinding.getNonExistingRevoked()) {
+                ocspKeyBinding.setOcspNonExistingBehavior(OcspNonExistingBehavior.REVOKED);
+            } else if(ocspKeyBinding.getNonExistingUnauthorized()) {
+                ocspKeyBinding.setOcspNonExistingBehavior(OcspNonExistingBehavior.UNAUTHORIZED);
+            } else {
+                ocspKeyBinding.setOcspNonExistingBehavior(OcspNonExistingBehavior.UNKNOWN);
+            }
+            try {
+                internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, ocspKeyBinding);
+            } catch (InternalKeyBindingNameInUseException | AuthorizationDeniedException e) {
+                throw new UpgradeFailedException("Failure when upgrading OCSP responder.", e);
+            }
+        }
     }
 
     @SuppressWarnings("deprecation")

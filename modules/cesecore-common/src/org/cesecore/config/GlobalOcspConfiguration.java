@@ -19,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keybind.impl.OcspKeyBinding.ResponderIdType;
+import org.cesecore.keybind.impl.OcspNonExistingBehavior;
 
 import com.keyfactor.util.certificate.DnComponents;
 
@@ -49,6 +50,7 @@ public class GlobalOcspConfiguration extends ConfigurationBase implements Serial
     private static final String PROPERTY_OCSP_USE_MAX_AGE_FOR_EXPIRATION = "useMaxValidityForExpiration";
     private static final String INCLUDE_SIGNING_CERTIFICATE = "includeSigningCertificate";
     private static final String INCLUDE_CERTIFICATE_CHAIN = "includeCertificateChain";
+    private static final String NON_EXISTING_BEHAVIOR = "nonExistingBehavior";
     
     public boolean getIncludeSigningCertificate() {
         if(data.get(INCLUDE_SIGNING_CERTIFICATE) == null) {
@@ -325,4 +327,19 @@ public class GlobalOcspConfiguration extends ConfigurationBase implements Serial
         data.put(PROPERTY_OCSP_USE_MAX_AGE_FOR_EXPIRATION, useMaxValidityForExpiration);
     }
 
+    /**
+     * @return an enum describing how the CAs should (on a global level) react to being queried for a non-existent serial number
+     */
+    public OcspNonExistingBehavior getOcspNonExistingBehavior() {
+        if(data.get(NON_EXISTING_BEHAVIOR) == null) {
+            return OcspNonExistingBehavior.UNKNOWN;
+        } else {
+            return OcspNonExistingBehavior.fromLabel((String) data.get(NON_EXISTING_BEHAVIOR));
+        }
+    }
+    
+    public void setOcspNonExistingBehavior(final OcspNonExistingBehavior ocspNonExistingBehavior) {
+        data.put(NON_EXISTING_BEHAVIOR, ocspNonExistingBehavior.getLabel());
+    }
+    
 }
