@@ -1093,7 +1093,5 @@ public class ProtocolScepHttpSystemTest extends ScepTestBase {
     protected X509Certificate getCaCertificate() {
         return cacert;
     }
-    
-   
 
 }
