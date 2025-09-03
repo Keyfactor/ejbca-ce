@@ -27,6 +27,11 @@
     <ui:param name="resourceBean" value="#{manageCAsMBean}"/>
     <ui:define name="content">
         
+        
+        <h1>
+        <h:outputText value="#{web.text.CA_PAGE_TITLE}"/>
+    </h1>
+        
         <p:tabView id="tabs" dynamic="true" activeIndex="#{manageCAsMBean.lastActiveTab}">
         <p:ajax event="tabChange" listener="#{manageCAsMBean.onTabChange}"/>
 
@@ -149,7 +154,6 @@
                     <h:panelGroup layout="block">
                         <h:commandButton action="#{manageCAsMBean.saveGlobalCaSettings}"
                                  rendered="#{manageCAsMBean.allowedToEditSystemConfiguration}"
-                                 disabled="#{manageCAsMBean.configurationUnchanged}"
                                  value="#{web.text.SAVE}" >
                         </h:commandButton>
                     </h:panelGroup>
