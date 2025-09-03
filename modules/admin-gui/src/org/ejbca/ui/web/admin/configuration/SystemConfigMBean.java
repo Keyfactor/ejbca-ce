@@ -61,7 +61,6 @@ import org.cesecore.certificates.certificatetransparency.CertificateTransparency
 import org.cesecore.certificates.certificatetransparency.GoogleCtPolicy;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.EABConfiguration;
-import org.cesecore.config.GlobalCaConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.config.GlobalCtConfiguration;
 import org.cesecore.config.GlobalEndEntityProfileConfiguration;
@@ -199,7 +198,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         private boolean localKeyRecovery;
         private int localKeyRecoveryCryptoTokenId;
         private String localKeyRecoveryKeyAlias;
-        private boolean enableIcaoCANameChange;
         private boolean issueHardwareToken;
 
         private Set<String> nodesInCluster;
@@ -240,7 +238,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         private GuiInfo(AdminPreference adminPreference) {
             final GlobalConfiguration globalConfig = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
             final GlobalCtConfiguration globalCtConfiguration = (GlobalCtConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCtConfiguration.CT_CONFIGURATION_ID);
-            final GlobalCaConfiguration globalCaConfiguration = (GlobalCaConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCaConfiguration.CA_CONFIGURATION_ID);
             final GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
             final GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
             final GlobalEndEntityProfileConfiguration globalEEPConfiguration = (GlobalEndEntityProfileConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalEndEntityProfileConfiguration.EEP_CONFIGURATION_ID);
@@ -259,7 +256,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 this.enableSessionTimeout = globalConfig.getUseSessionTimeout();
                 this.sessionTimeoutTime = globalConfig.getSessionTimeoutTime();
                 this.vaStatusTimeConstraint = globalConfig.getVaStatusTimeConstraint();
-                this.enableIcaoCANameChange =  globalCaConfiguration.getEnableIcaoCANameChange();
                 this.ctLogs = new ArrayList<>(globalConfig.getCTLogs().values());
                 this.ocspCleanupUse = globalOcspConfiguration.getOcspCleanupUse();
                 this.ocspCleanupSchedule = globalOcspConfiguration.getOcspCleanupSchedule();
@@ -325,9 +321,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public void setSessionTimeoutTime(int sessionTimeoutTime) {this.sessionTimeoutTime = sessionTimeoutTime;}
         public int getVaStatusTimeConstraint() { return vaStatusTimeConstraint; }
         public void setVaStatusTimeConstraint(final int vaStatusTimeConstraint) { this.vaStatusTimeConstraint = vaStatusTimeConstraint; }
-
-        public boolean getEnableIcaoCANameChange() {return enableIcaoCANameChange;}
-        public void setEnableIcaoCANameChange(boolean enableIcaoCANameChange) {this.enableIcaoCANameChange = enableIcaoCANameChange;}
 
         // OCSP Options: Cleanup Job
         public boolean getOcspCleanupUse() { return ocspCleanupUse; }
@@ -1149,17 +1142,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 log.info(msg);
                 super.addNonTranslatedErrorMessage(msg);
             }
-
-            GlobalCaConfiguration globalCaConfiguration = (GlobalCaConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCaConfiguration.CA_CONFIGURATION_ID);
-            globalCaConfiguration.setEnableIcaoCANameChange(currentConfig.getEnableIcaoCANameChange());
-            try {
-                globalConfigurationSession.saveConfiguration(getAdmin(), globalCaConfiguration);
-            } catch (AuthorizationDeniedException e) {
-                String msg = "Cannot save Global CA Configuration. " + e.getLocalizedMessage();
-                log.info(msg);
-                super.addNonTranslatedErrorMessage(msg);
-            }
-
+            
             final GlobalEndEntityProfileConfiguration globalEEPConfiguration = (GlobalEndEntityProfileConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalEndEntityProfileConfiguration.EEP_CONFIGURATION_ID);
             globalEEPConfiguration.setEnableEndEntityProfileLimitations(currentConfig.getEnableEndEntityProfileLimitations());
             try {
