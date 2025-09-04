@@ -270,6 +270,18 @@
 			<include name="jackson-module-jaxb-annotations-2.*.jar"/>
 		</fileset>
 	</path>
+	
+	<path id="lib.jaxb.classpath">
+	  <fileset dir="${ejbca.home}/lib/ext/jaxb">
+			<include name="istack-commons-runtime-*.jar"/>
+      <include name="jakarta.activation-api-*.jar"/>
+      <include name="jakarta.xml.bind-api-*.jar"/>
+      <include name="jaxb-core-*.jar"/>
+      <include name="jaxb-runtime-*.jar"/>
+      <include name="jaxb-impl-*.jar"/>
+      <include name="txw2-*.jar"/>
+		</fileset>
+	</path>
 
 	<mkdir dir="${ejbca.home}/lib/ext/swagger"/> <!-- Avoid failure when this directory is excluded from a release. -->
 	<path id="lib.swagger.classpath">
