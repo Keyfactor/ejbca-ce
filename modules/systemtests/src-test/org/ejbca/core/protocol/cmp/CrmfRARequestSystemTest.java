@@ -352,7 +352,7 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
             crmfHttpUserTest(
                     new X500Name("CN=SameDNUser,O=EJBCA Sample,C=SE"),
                     key4,
-                    "User 'SameDNUser' is not allowed to use same subject DN as the user(s) 'samednuser1' is/are using while issued by the same CA (even if CN postfix is used). See setting for 'Enforce unique DN' in the section Certification Authorities.",
+                    "User 'SameDNUser' is not allowed to use same subject DN as the user(s) 'samednuser1' is/are using while issued by the same CA (even if CN postfix is used). See setting for 'Enforce unique DN' in the section Certificate Authorities.",
                     null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), cacert, ISSUER_DN);
 
         } finally {
