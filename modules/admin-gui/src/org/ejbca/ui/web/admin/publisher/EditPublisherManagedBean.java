@@ -476,7 +476,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     }    
     
     //Actions
-    public String savePublisher() throws AuthorizationDeniedException {
+    private String doSavePublisher() throws AuthorizationDeniedException {
         try {
             prepareForSave();
         } catch (PublisherDoesntExistsException | PublisherExistsException | PublisherException | ParameterException e) {
@@ -496,14 +496,36 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
             return StringUtils.EMPTY;
         }
 
-		return "listpublishers?faces-redirect=true";
+        return "listpublishers?faces-redirect=true";
+    }
+
+    public void savePublisher() throws AuthorizationDeniedException {
+        doSavePublisher();
+        validateInput();
     }
     
     public void savePublisherAndTestConnection() throws AuthorizationDeniedException {
-
-        savePublisher();
-
+        doSavePublisher();
         testConnection();
+    }
+
+    public boolean validateInput() throws AuthorizationDeniedException {
+        try {
+            if (isManageScpPublisher()) {
+                boolean result = populateScpPublisherPublicKeyField();
+                if (!result) {
+                    return false;
+                }
+            }
+            publisherSession.validateInput(publisherId);
+            addInfoMessage("CONTESTEDSUCESSFULLY");
+            return true;
+        }
+        catch (PublisherException e) {
+            log.error("Error validating the publisher " + getPublisherName(), e);
+            addErrorMessage("ERRORCONNECTINGTOPUB", getPublisherName(), e.getMessage());
+            return false;
+        }
     }
 
     public void testConnection() throws AuthorizationDeniedException {

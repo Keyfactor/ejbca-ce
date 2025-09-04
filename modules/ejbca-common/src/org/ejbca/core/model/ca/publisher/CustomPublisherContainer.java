@@ -299,7 +299,15 @@ public class CustomPublisherContainer extends BasePublisher {
     public boolean storeCRL(AuthenticationToken admin, byte[] incrl, String cafp, int number, String userDN) throws PublisherException{
 		return this.getCustomPublisher().storeCRL(admin,incrl,cafp,number,userDN);		
 	}
-	
+
+    @Override
+    public void validateInput() throws PublisherException {
+        if (this.getCustomPublisher() == null) {
+            throw new PublisherException("Custom Publisher is null. Initialization may have failed due to faulty configuration.");
+        }
+        this.getCustomPublisher().validateInput();
+    }
+
 	/**
 	 * @throws PublisherConnectionException if the destination couldn't be connected to
 	 * @throws FatalPublisherConnectionException if this CA is unable to publish to internal errors.
