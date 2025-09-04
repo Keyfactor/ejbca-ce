@@ -68,6 +68,19 @@
                             </h:inputText>
                         </h:panelGroup>
                         
+                        <h:panelGroup id="parentSelectSearchType" styleClass="pure-u-1">
+                                <h:panelGroup id="selectSearchTermScope">
+                                    <h:selectOneMenu id="selectSearchTermScopeOptions" styleClass="radio-button-table"
+                                        value="#{raSearchEesBean.selectSearchTermScope}" style="display: inline-block;">
+                                        <f:selectItems value="#{raSearchEesBean.availableSearchScopes}" 
+                                        	itemDescription="#{raSearchEesBean.availableSearchScopes.description}"/>
+                                        <f:validateRequired/>
+                                        <f:ajax event="change" execute="@this" render=":contentForm:pageButtons :contentForm:filteredResults"/>
+                                    </h:selectOneMenu>
+                                    <h:message for="selectSearchTermScope" id="selectSearchTermScopeMessage" styleClass="showErrorMessage"/>
+                                </h:panelGroup>
+                        </h:panelGroup>
+                        
                         <noscript>
                             <h:panelGroup id="parentGenericSearchButton" styleClass="pure-u-1 parentCriteriaDropdown">
                                 <h:commandButton action="#{raSearchEesBean.searchAndFilterAction}" value="#{msg.search_ees_page_search_command}" styleClass="pure-button pure-button-primary searchButton jsHide"/>

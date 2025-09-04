@@ -137,6 +137,11 @@ public class RaEndEntitySearchRequest implements Serializable, Comparable<RaEndE
         if (other==null) {
             return 1;
         }
+        if (isExactLetterCaseSearch()!=other.isExactLetterCaseSearch()) {
+            // there can be considerable difference for narrowing i.e. case in-sensitive to case sensitve
+            // as more results would fit within the same page
+            return 1;
+        }
         // First check if there is any there is any indication that this does not contain the whole other
         if (maxResults>other.maxResults ||
                 isWider(eepIds, other.eepIds) || isWider(cpIds, other.cpIds) || isWider(caIds, other.caIds) ||
@@ -214,12 +219,14 @@ public class RaEndEntitySearchRequest implements Serializable, Comparable<RaEndE
     /** @return true if the username is matched by this search. */
     public boolean matchUsername(final String username) {
         return username != null && ((!usernameSearchExact && username.toUpperCase().contains(usernameSearchString.toUpperCase())) ||
-                                    (usernameSearchExact && username.equalsIgnoreCase(usernameSearchString)));
+                                    (usernameSearchExact && !exactLetterCaseSearch && username.equalsIgnoreCase(usernameSearchString)) ||
+                                    (usernameSearchExact && exactLetterCaseSearch && username.equals(usernameSearchString)));
     }
     /** @return true if the subjectDn is matched by this search. */
     public boolean matchSubjectDn(final String subjectDn) {
         return subjectDn != null && ((!subjectDnSearchExact && subjectDn.toUpperCase().contains(subjectDnSearchString.toUpperCase())) ||
-                                    (subjectDnSearchExact && subjectDn.equalsIgnoreCase(subjectDnSearchString)));
+                                    (subjectDnSearchExact && !exactLetterCaseSearch && subjectDn.equalsIgnoreCase(subjectDnSearchString)) ||
+                                    (subjectDnSearchExact && exactLetterCaseSearch && subjectDn.equals(subjectDnSearchString)) );
     }
     /** @return true if the subjectAn is matched by this search. */
     public boolean matchSubjectAn(final String subjectAn) {

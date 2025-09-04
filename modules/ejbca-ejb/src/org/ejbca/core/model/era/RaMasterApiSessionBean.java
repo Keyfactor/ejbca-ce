@@ -1789,7 +1789,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             sb.append(" AND (");
             boolean firstAppended = false;
             if (!subjectDnSearchString.isEmpty()) {
-                sb.append("UPPER(a.subjectDN) LIKE :subjectDN");
+                if (request.isExactLetterCaseSearch()) {
+                    sb.append("a.subjectDN LIKE :subjectDN");
+                } else {
+                    sb.append("UPPER(a.subjectDN) LIKE :subjectDN");
+                }
                 firstAppended = true;
             }
             if (!subjectAnSearchString.isEmpty()) {
@@ -1798,13 +1802,18 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 } else {
                     firstAppended = true;
                 }
+                // subjectAltName is not UPPERed
                 sb.append("a.subjectAltName LIKE :subjectAltName");
             }
             if (!usernameSearchString.isEmpty()) {
                 if (firstAppended) {
                     sb.append(" OR ");
                 }
-                sb.append("UPPER(a.username) LIKE :username");
+                if (request.isExactLetterCaseSearch()) {
+                    sb.append("a.username LIKE :username");
+                } else {
+                    sb.append("UPPER(a.username) LIKE :username");
+                }
             }
             sb.append(")");
         }
@@ -1852,7 +1861,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         if (!subjectDnSearchString.isEmpty()) {
             if (request.isSubjectDnSearchExact()) {
-                query.setParameter("subjectDN", subjectDnSearchString.toUpperCase());
+                if (request.isExactLetterCaseSearch()) {
+                    query.setParameter("subjectDN", subjectDnSearchString);
+                } else {
+                    query.setParameter("subjectDN", subjectDnSearchString.toUpperCase());
+                }
             } else {
                 query.setParameter("subjectDN", "%" + subjectDnSearchString.toUpperCase() + "%");
             }
@@ -1866,7 +1879,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         if (!usernameSearchString.isEmpty()) {
             if (request.isUsernameSearchExact()) {
-                query.setParameter("username", usernameSearchString.toUpperCase());
+                if (request.isExactLetterCaseSearch()) {
+                    query.setParameter("username", usernameSearchString);
+                } else {
+                    query.setParameter("username", usernameSearchString.toUpperCase());
+                }
             } else {
                 query.setParameter("username", "%" + usernameSearchString.toUpperCase() + "%");
             }
@@ -1934,11 +1951,18 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             return;
         }
         
+        log.debug("request: ");
+        log.debug("ca: " + request.getCaIds());
+        log.debug("eep: " + request.getEepIds());
+        log.debug("cp: " + request.getCpIds());
+        log.debug("username: " + request.getUsernameSearchString());
+        log.debug("subjectdn: " + request.getSubjectDnSearchString());
+        log.debug("san: " + request.getSubjectAnSearchString());
         if (!(request.getCaIds().size() <= 1 
                 && request.getEepIds().isEmpty() && request.getCpIds().isEmpty() 
                 && request.getSubjectAnSearchString().isBlank()
-                && (request.getSubjectDnSearchString().isBlank() && !request.getUsernameSearchString().isBlank())
-                && (!request.getSubjectDnSearchString().isBlank() && request.getUsernameSearchString().isBlank()))) {
+                && ((request.getSubjectDnSearchString().isBlank() && !request.getUsernameSearchString().isBlank())
+                || (!request.getSubjectDnSearchString().isBlank() && request.getUsernameSearchString().isBlank())))) {
             log.debug("Exact search may only be performed if: ");
             log.debug(" - [Match type is EQUAL_CASE_SENSITIVE]");
             log.debug(" - [Search Criteria type is USERNAME or SUBJECTDN]");
