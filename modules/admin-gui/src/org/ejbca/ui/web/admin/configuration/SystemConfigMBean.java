@@ -675,8 +675,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     public void saveAllowedOauthHosts() {
-        filterValidHostnames(oauthProvidersAllowlist); // Validate the OAuth allowlist before saving
-        getOAuthConfiguration().setAllowedOauthHosts(oauthProvidersAllowlist.toArray(new String[0]));
+        final String[] allowedOAuthHostFinalList = filterValidHostnames(oauthProvidersAllowlist).toArray(new String[0]); // Validate the OAuth allowlist before saving
+        getOAuthConfiguration().setAllowedOauthHosts(allowedOAuthHostFinalList);
         try {
             getEjbcaWebBean().saveOAuthConfiguration(oAuthConfiguration);
         } catch (AuthorizationDeniedException e) {
