@@ -178,13 +178,9 @@ public class RaAuthenticationBean implements Serializable {
     }
 
     private String getRedirectUri() {
-        GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        String baseUrl = globalConfiguration.getBaseUrl(
-                "https",
-                WebConfiguration.getHostName(),
-                WebConfiguration.getPublicHttpsPort()
-        ) + "ra/";
-        return baseUrl + "logout.xhtml";
+        HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance()
+                .getExternalContext().getRequest();
+        return request.getRequestURL().toString();
     }
 
     public String getUserRemoteAddr() {

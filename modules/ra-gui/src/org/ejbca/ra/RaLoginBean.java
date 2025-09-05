@@ -201,14 +201,9 @@ public class RaLoginBean implements Serializable {
     }
     
     private String getRedirectUri() {
-        if (globalConfiguration == null) {
-            initGlobalConfiguration();
-        }
-        String baseUrl = globalConfiguration.getBaseUrl("https", WebConfiguration.getHostName(), WebConfiguration.getPublicHttpsPort()) + "ra/";
-        if (!baseUrl.endsWith("/")) {
-            baseUrl += "/";
-        }
-        return baseUrl +"login.xhtml";
+        HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance()
+                .getExternalContext().getRequest();
+        return request.getRequestURL().toString();
     }
     
     private void initGlobalConfiguration() {

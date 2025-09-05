@@ -16,6 +16,7 @@ import java.io.IOException;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
+import jakarta.faces.context.FacesContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServlet;
@@ -132,11 +133,8 @@ public class LogOutServlet extends HttpServlet {
     }
 
     private String getRedirectUri() {
-        String baseUrl = globalConfiguration.getBaseUrl(
-                "https",
-                WebConfiguration.getHostName(),
-                WebConfiguration.getPublicHttpsPort()
-        ) + "ra/";
-        return baseUrl + "logout.xhtml";
+        HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance()
+                .getExternalContext().getRequest();
+        return request.getRequestURL().toString();
     }
 }
