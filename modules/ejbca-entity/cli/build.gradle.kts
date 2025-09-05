@@ -156,6 +156,14 @@ tasks.register<Copy>("packageCliDistributionFiles") {
     }
 
     from("${project.rootDir}/modules/ejbca-entity/resources/persistence-cli-template.xml") {
+        filter { line: String ->
+            line.replace(Regex("""\$\{([a-zA-Z0-9_.-]+)\}""")) { matchResult ->
+                val key = matchResult.groupValues[1]
+                project.findProperty(key)?.toString() ?: matchResult.value
+            }
+        }
+        filteringCharset = "UTF-8"
+
         into("META-INF")
         rename { "persistence.xml" }
     }
