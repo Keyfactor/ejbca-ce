@@ -61,12 +61,31 @@ public class OAuthConfiguration extends ConfigurationBase implements Serializabl
         return (OAuthKeyInfo)data.get(DEFAULT_OAUTH_KEY);
     }
 
+    public void setDefaultOauthKey(OAuthKeyInfo defaultKey) {
+        data.put(DEFAULT_OAUTH_KEY, defaultKey);
+    }
+
+    // Methods used by configdump
     public String getDefaultOauthKeyLabel() {
         return getDefaultOauthKey() == null ? null : getDefaultOauthKey().getLabel();
     }
 
-    public void setDefaultOauthKey(OAuthKeyInfo defaultKey) {
-        data.put(DEFAULT_OAUTH_KEY, defaultKey);
+    public void setDefaultOauthKeyLabel(final String label) {
+        if (!label.isBlank()) {
+            final Map<String, OAuthKeyInfo> oAuthKeyInfoMap = getOauthKeys();
+
+            if (oAuthKeyInfoMap != null && !oAuthKeyInfoMap.isEmpty()) {
+                final OAuthKeyInfo defaultOauthKey = oAuthKeyInfoMap.get(label);
+                if (defaultOauthKey != null) {
+                    setDefaultOauthKey(defaultOauthKey);
+                } else {
+                    throw new IllegalArgumentException("No OAuth key with label " + label + " found.");
+                }
+            } else {
+                throw new IllegalArgumentException("No OAuth keys found.");
+            }
+
+        }
     }
 
     public String[] getAllowedOauthHosts() {
