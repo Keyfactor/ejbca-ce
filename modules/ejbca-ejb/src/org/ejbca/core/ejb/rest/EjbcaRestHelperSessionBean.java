@@ -18,9 +18,11 @@ import java.text.ParseException;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import com.keyfactor.util.StringTools;
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.x509.Extension;
@@ -207,6 +209,7 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
 
         EndEntityProfile endEntityProfile = getEndEntityProfile(endEntityProfileId);
         String altName = getSubjectAltName(pkcs10CertificateRequest);
+        validateEmailsInSubjectAltName(altName);
         endEntityInformation.setSubjectAltName(altName);
 
         endEntityInformation.setType(new EndEntityType(EndEntityTypes.ENDUSER));
@@ -286,5 +289,14 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
     private int getCertificateProfileId(String certificateProfileName) {
         int certificateProfileId = certificateProfileSessionBean.getCertificateProfileId(certificateProfileName);
         return certificateProfileId;
+    }
+
+    private static void validateEmailsInSubjectAltName(String altName) throws EjbcaException {
+        List<String> sanEmails = DnComponents.getEmailFromDN(altName);
+        for (String email : sanEmails) {
+            if (!StringTools.isValidEmail(email)) {
+                throw new EjbcaException("Invalid email address in certificate request");
+            }
+        }
     }
 }
