@@ -29,9 +29,7 @@ public class OAuthConfiguration extends ConfigurationBase implements Serializabl
     private static final   String OAUTH_KEYS          = "oauthkeys";
     // Default OAuth Keys
     private static final   String DEFAULT_OAUTH_KEY   = "defaultoauthkey";
-
     private static final String ALLOWED_OAUTH_HOSTS = "allowedoauthhosts";
-
 
     public Map<String,OAuthKeyInfo> getOauthKeys() {
         @SuppressWarnings("unchecked")
@@ -61,6 +59,10 @@ public class OAuthConfiguration extends ConfigurationBase implements Serializabl
 
     public OAuthKeyInfo getDefaultOauthKey() {
         return (OAuthKeyInfo)data.get(DEFAULT_OAUTH_KEY);
+    }
+
+    public String getDefaultOauthKeyLabel() {
+        return getDefaultOauthKey() == null ? null : getDefaultOauthKey().getLabel();
     }
 
     public void setDefaultOauthKey(OAuthKeyInfo defaultKey) {
