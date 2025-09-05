@@ -93,7 +93,18 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     @Override
+    public EndEntityInformation authenticateUserWithoutPasswordCheck(final AuthenticationToken admin, final String username)
+            throws AuthStatusException, AuthLoginException, NoSuchEndEntityException {
+        return authenticateUserInternal(admin, username, null, false);
+    }
+
+    @Override
     public EndEntityInformation authenticateUser(final AuthenticationToken admin, final String username, final String password)
+        throws AuthStatusException, AuthLoginException, NoSuchEndEntityException {
+        return authenticateUserInternal(admin, username, password, true);
+    }
+
+    private EndEntityInformation authenticateUserInternal(final AuthenticationToken admin, final String username, final String password, final boolean checkPassword)
         throws AuthStatusException, AuthLoginException, NoSuchEndEntityException {
     	if (log.isTraceEnabled()) {
             log.trace(">authenticateUser(" + username + ", hiddenpwd)");
@@ -114,7 +125,7 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
             	if (log.isDebugEnabled()) {
             		log.debug("Trying to authenticate user: username="+username+", dn="+ LogRedactionUtils.getSubjectDnLogSafe(data.getSubjectDnNeverNull())+", email="+data.getSubjectEmail()+", status="+status+", type="+data.getType());
             	}
-                if (!data.comparePassword(password)) {
+                if (checkPassword && !data.comparePassword(password)) {
                 	final String msg = intres.getLocalizedMessage("authentication.invalidpwd", username);            	
                     final Map<String, Object> details = new LinkedHashMap<>();
                     details.put("msg", msg);
