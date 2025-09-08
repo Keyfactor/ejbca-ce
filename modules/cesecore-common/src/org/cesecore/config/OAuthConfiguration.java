@@ -14,6 +14,7 @@
 package org.cesecore.config;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -93,7 +94,8 @@ public class OAuthConfiguration extends ConfigurationBase implements Serializabl
     }
 
     public void setAllowedOauthHosts(String[] allowedOauthHosts) {
-        data.put(ALLOWED_OAUTH_HOSTS, allowedOauthHosts);
+        final String[] allowedOAuthHostFinalList = filterValidHostnames(allowedOauthHosts); // Validate the OAuth allowlist before saving
+        data.put(ALLOWED_OAUTH_HOSTS, allowedOAuthHostFinalList);
     }
 
     public OAuthKeyInfo getOauthKeyByLabel(String label){
@@ -121,4 +123,29 @@ public class OAuthConfiguration extends ConfigurationBase implements Serializabl
     public String getConfigurationId() {
         return OAUTH_CONFIGURATION_ID;
     }
+
+    /**
+     * Filters the provided list of hostnames and returns a new list containing only the valid hostnames.
+     *
+     * @param allowlist the string array of hostnames to be filtered
+     * @return a string array of hostnames that are valid, according to the validation criteria in the isValidHostname() method
+     */
+    private String[] filterValidHostnames(String[] allowlist) {
+        return Arrays.stream(allowlist)
+                .filter(this::isValidHostname)
+                .toArray(String[]::new);
+
+    }
+
+    /**
+     * Validates a hostname
+     * @param hostname The hostname to validate
+     * @return true if valid, false otherwise
+     */
+    private boolean isValidHostname(final String hostname) {
+        // Basic hostname validation - you might want to make this more sophisticated
+        String hostnameRegex = "^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$";
+        return hostname != null && hostname.matches(hostnameRegex);
+    }
+
 }

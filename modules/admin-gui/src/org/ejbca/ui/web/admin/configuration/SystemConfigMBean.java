@@ -560,29 +560,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Validates a hostname
-     * @param hostname The hostname to validate
-     * @return true if valid, false otherwise
-     */
-    private boolean isValidHostname(final String hostname) {
-        // Basic hostname validation - you might want to make this more sophisticated
-        String hostnameRegex = "^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$";
-        return hostname != null && hostname.matches(hostnameRegex);
-    }
-
-    /**
-     * Filters the provided list of hostnames and returns a new list containing only the valid hostnames.
-     *
-     * @param allowlist the list of hostnames to be filtered
-     * @return a list of hostnames that are valid, according to the validation criteria in the isValidHostname() method
-     */
-    private List<String> filterValidHostnames(List<String> allowlist) {
-        return allowlist.stream()
-                .filter(this::isValidHostname)
-                .collect(Collectors.toList());
-    }
-
     public List<OAuthKeyInfo> getOauthKeys() {
         if (oauthKeys == null) {
             this.oauthKeys = new ArrayList<>(getOAuthConfiguration().getOauthKeys().values());
@@ -675,8 +652,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     public void saveAllowedOauthHosts() {
-        final String[] allowedOAuthHostFinalList = filterValidHostnames(oauthProvidersAllowlist).toArray(new String[0]); // Validate the OAuth allowlist before saving
-        getOAuthConfiguration().setAllowedOauthHosts(allowedOAuthHostFinalList);
+        getOAuthConfiguration().setAllowedOauthHosts(oauthProvidersAllowlist.toArray(new String[0]));
         try {
             getEjbcaWebBean().saveOAuthConfiguration(oAuthConfiguration);
         } catch (AuthorizationDeniedException e) {
