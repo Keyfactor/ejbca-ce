@@ -30,7 +30,7 @@ public interface OcspResponseGeneratorSessionLocal extends OcspResponseGenerator
 
     String healthCheck();
 
-    /** @see org.cesecore.certificates.ocsp.cache.OcspRequestSignerStatusCache#flush() */
+    /** @see org.cesecore.certificates.ocsp.cache.OcspRequestSignerStatusCacheSingletonBean#flush() */
     void clearOcspRequestSignerRevocationStatusCache();
 
     /**

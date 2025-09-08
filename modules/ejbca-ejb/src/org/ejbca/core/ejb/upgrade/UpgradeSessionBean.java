@@ -2021,7 +2021,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @Override
     public void migrateDatabase940() throws UpgradeFailedException {
         log.info("Starting upgrade to 9.4.0");
-        //Move ocsp.includecertchain and ocsp.includesignercert from the properties files and into the database configuration
+        //Move various setting from ocsp.properties into the database configuration
         migrateOcspOptions940();        
         //Migrate non-existing values in ocsp responders to the new single value 
         upgradeOcspKeybindings_9_4_0();
@@ -2076,6 +2076,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             throw new UpgradeFailedException("More than one value of ocsp.nonexistingisgood, ocsp.nonexistingisrevoked and ocsp.nonexistingisunauthorized is true at the same time. This is an error state. "
                     + "Please modify ocsp.properties to set only one or none of these values to be true.");
         }
+        
+        globalOcspConfiguration.setRequestSignserRevocationStatusCacheTime(OcspConfiguration.getRequestSigningCertRevocationCacheTimeMs());
         
         try {
             globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);

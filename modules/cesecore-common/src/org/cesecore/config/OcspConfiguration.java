@@ -30,6 +30,7 @@ public class OcspConfiguration {
     private static final Logger log = Logger.getLogger(OcspConfiguration.class);
 
     public static final String SIGNING_CERTD_VALID_TIME = "ocsp.signingCertsValidTime";
+    @Deprecated(since = "9.4.0")
     public static final String REQUEST_SIGNING_CERT_REVOCATION_CACHE_TIME = "ocsp.reqsigncertrevcachetime";
     public static final String SIGNING_TRUSTSTORE_VALID_TIME = "ocsp.signtrustvalidtime";
     public static final String SIGNATUREREQUIRED = "ocsp.signaturerequired";
@@ -83,16 +84,17 @@ public class OcspConfiguration {
     /**
      * The interval on which new OCSP signing certificates are loaded in milliseconds
      */
+    @Deprecated(since = "9.4.0")
     public static long getRequestSigningCertRevocationCacheTimeMs() {
-        long timeInSeconds;
-        final long defaultTimeInSeconds = 60*1000L; // 1 minute
+        long timeInMilliseconds;
+        final long defaultTimeInMilliseconds = 60*1000L; // 1 minute
         try {
-            timeInSeconds = Long.parseLong(ConfigurationHolder.getString(REQUEST_SIGNING_CERT_REVOCATION_CACHE_TIME));
+            timeInMilliseconds = Long.parseLong(ConfigurationHolder.getString(REQUEST_SIGNING_CERT_REVOCATION_CACHE_TIME));
         } catch (NumberFormatException e) {
-            timeInSeconds = defaultTimeInSeconds;
-            log.warn(REQUEST_SIGNING_CERT_REVOCATION_CACHE_TIME + " is not a decimal long. Using default "+defaultTimeInSeconds+" ms.");
+            timeInMilliseconds = defaultTimeInMilliseconds;
+            log.warn(REQUEST_SIGNING_CERT_REVOCATION_CACHE_TIME + " is not a decimal long. Using default "+defaultTimeInMilliseconds+" ms.");
         }
-        return timeInSeconds;
+        return timeInMilliseconds;
     }
 
     /**
