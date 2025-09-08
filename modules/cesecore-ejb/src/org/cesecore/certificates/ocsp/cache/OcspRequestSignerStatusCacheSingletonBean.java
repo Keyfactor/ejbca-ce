@@ -38,7 +38,7 @@ import jakarta.ejb.TransactionManagementType;
 @DependsOn("StartupSingletonBean")
 @ConcurrencyManagement(ConcurrencyManagementType.BEAN)  
 @TransactionManagement(TransactionManagementType.BEAN)  
-public class OcspRequestSignerStatusCacheSingletonBean implements OcpsRequestSignerStatusCacheSingletonLocal {
+public class OcspRequestSignerStatusCacheSingletonBean implements OcspRequestSignerStatusCacheSingletonLocal {
    
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;

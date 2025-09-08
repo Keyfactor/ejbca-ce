@@ -19,7 +19,7 @@ import org.cesecore.certificates.certificate.CertificateStatus;
 import jakarta.ejb.Local;
 
 @Local
-public interface OcpsRequestSignerStatusCacheSingletonLocal {
+public interface OcspRequestSignerStatusCacheSingletonLocal {
 
     /**
      * Create a cache lookup key with very low probability of collision.

@@ -15,7 +15,7 @@ package org.cesecore.certificates.ocsp;
 import java.math.BigInteger;
 
 import org.cesecore.certificates.certificate.CertificateStatus;
-import org.cesecore.certificates.ocsp.cache.OcpsRequestSignerStatusCacheSingletonLocal;
+import org.cesecore.certificates.ocsp.cache.OcspRequestSignerStatusCacheSingletonLocal;
 
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
@@ -27,7 +27,7 @@ import jakarta.ejb.TransactionAttributeType;
 public class OcspRequestSignerStatusTestSessionBean implements OcspRequestSignerStatusTestSessionRemote {
 
     @EJB
-    private OcpsRequestSignerStatusCacheSingletonLocal ocspRequestSignerStatusCache;
+    private OcspRequestSignerStatusCacheSingletonLocal ocspRequestSignerStatusCache;
     
     @Override
     public void flush() {

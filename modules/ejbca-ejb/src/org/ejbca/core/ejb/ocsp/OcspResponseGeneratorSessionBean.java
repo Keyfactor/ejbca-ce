@@ -119,7 +119,7 @@ import org.cesecore.certificates.certificate.HashID;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparency;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.certificates.ocsp.cache.OcpsRequestSignerStatusCacheSingletonLocal;
+import org.cesecore.certificates.ocsp.cache.OcspRequestSignerStatusCacheSingletonLocal;
 import org.cesecore.certificates.ocsp.cache.OcspDataConfigCache;
 import org.cesecore.certificates.ocsp.cache.OcspDataConfigCacheEntry;
 import org.cesecore.certificates.ocsp.cache.OcspExtensionsCache;
@@ -225,7 +225,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     @EJB
     private OcspDataSessionLocal ocspDataSession;
     @EJB
-    private OcpsRequestSignerStatusCacheSingletonLocal ocspRequestSignerStatusCache;
+    private OcspRequestSignerStatusCacheSingletonLocal ocspRequestSignerStatusCache;
     
     @EJB
     private PublisherSessionLocal publisherSession;
@@ -240,6 +240,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     protected void setMockedGlobalConfigurationSession(final GlobalConfigurationSessionLocal globalConfigurationSession) { this.globalConfigurationSession = globalConfigurationSession; }
     protected void setMockedTimerService(final TimerService timerService) { this.timerService = timerService; }
     protected void setOcspDataSessionLocal(final OcspDataSessionLocal ocspDataSession) { this.ocspDataSession = ocspDataSession; }
+    protected void setocspRequestSignerStatusCache(final OcspRequestSignerStatusCacheSingletonLocal ocspRequestSignerStatusCache) { this.ocspRequestSignerStatusCache = ocspRequestSignerStatusCache; }
+
 
     @PostConstruct
     public void init() {
