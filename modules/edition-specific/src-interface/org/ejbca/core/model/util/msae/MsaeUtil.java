@@ -60,4 +60,16 @@ public final class MsaeUtil {
         return msaeConfig;
     }
 
+       /**
+     * Fetch configuration only from the local cache, without remote/peer fallback.
+     */
+    public static MSAutoEnrollmentConfiguration fetchMSAEConfigLocalOnly(String alias) {
+        if (log.isDebugEnabled()) {
+            log.debug("Fetching MSAE config locally for alias " + alias);
+        }
+        final EjbLocalHelper ejbLocalHelper = new EjbLocalHelper();
+        return (MSAutoEnrollmentConfiguration) ejbLocalHelper.getGlobalConfigurationSession()
+                .getCachedConfiguration(MSAutoEnrollmentConfiguration.CONFIGURATION_ID);
+    }
+
 }
