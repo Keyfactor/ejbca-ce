@@ -111,19 +111,22 @@ public class RaRenewBean implements Serializable {
         if (log.isDebugEnabled()) {
             log.debug("Checking certificate details for '" + admin + "'");
         }
-        if(admin instanceof PublicAccessAuthenticationToken || admin instanceof X509CertificateAuthenticationToken) {
-            final X509Certificate x509Cert = raAuthenticationBean.getX509CertificateFromRequest();
-            if (x509Cert!=null) {
-                currentSubjectDn = CertTools.getSubjectDN(x509Cert);
-                final Date notAfter = CertTools.getNotAfter(x509Cert);
-                if (notAfter != null) {
-                    currentExpirationDate = ValidityDate.formatAsISO8601ServerTZ(notAfter.getTime(), TimeZone.getDefault());
-                } else {
-                    log.warn("Existing admin certificate has no expiration date.");
-                }
-                currentIssuerDn = CertTools.getIssuerDN(x509Cert);
-                currentSerialNumber = CertTools.getSerialNumber(x509Cert);
+        // Previously, this `if` allowed PublicAccessAuthenticationToken (added in ECA-10747 / EJBCA 7.10.0), but in order to
+        // prevent mis-configuration, and for security hardening in the backend, it has been disabled again in ECA-13858 / EJBCA 9.3.4.
+        if (admin instanceof X509CertificateAuthenticationToken) {
+            final X509Certificate x509Cert = ((X509CertificateAuthenticationToken) admin).getCertificate();
+            if (x509Cert == null) { // should never happen, but guard against it to be sure.
+                throw new IllegalStateException("X509CertificateAuthenticationToken without certificate!");
             }
+            currentSubjectDn = CertTools.getSubjectDN(x509Cert);
+            final Date notAfter = CertTools.getNotAfter(x509Cert);
+            if (notAfter != null) {
+                currentExpirationDate = ValidityDate.formatAsISO8601ServerTZ(notAfter.getTime(), TimeZone.getDefault());
+            } else {
+                log.warn("Existing admin certificate has no expiration date.");
+            }
+            currentIssuerDn = CertTools.getIssuerDN(x509Cert);
+            currentSerialNumber = CertTools.getSerialNumber(x509Cert);
         }
     }
 
