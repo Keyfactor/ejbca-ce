@@ -37,7 +37,6 @@ import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.IllegalNameException;
@@ -93,7 +92,6 @@ public class RaMasterApiSessionUnitTest {
     private static final char[] MOCKED_PASSWORD_CHARS = MOCKED_PASSWORD.toCharArray();
     private static final int MOCKED_CAID = 222;
     private static final int MOCKED_CERTPROFILE_ID = 333;
-    private static final int MOCKED_ROLE_ID = 444;
 
     private RaMasterApiSessionBean raMasterApi;
     private AuthenticationToken adminMock = EasyMock.createStrictMock(AuthenticationToken.class);
@@ -268,7 +266,7 @@ public class RaMasterApiSessionUnitTest {
      */
     @Test
     public void selfRenewalFinalizationHappyPath() throws Exception {
-        expectSelfRenewalChecks(MOCKED_CAID);
+        expectSelfRenewalChecks(KeyPurposeId.id_kp_clientAuth);
         expectSelfRenewalPreparations();
         expectGenerateKeyStoreWithoutViewEndEntityAccessRule();
         replay(allMocks);
@@ -284,12 +282,13 @@ public class RaMasterApiSessionUnitTest {
     }
 
     /**
-     * Simulates a compromised RA, that attempts to "self-renew" a certificate from a CA that
-     * is not used for client certificate authentication. Such requests should be blocked at the CA side.
+     * Simulates a compromised RA, that attempts to "self-renew" a certificate that is not a
+     * client certificate (in this case, a code signing certificate). That should be rejected
+     * as a security precaution.
      */
     @Test
     public void selfRenewalFinalizationNotPartOfRole() throws Exception {
-        expectSelfRenewalChecks(999); // This CA ID is not part of any administrator roles
+        expectSelfRenewalChecks(KeyPurposeId.id_kp_codeSigning); // Not a client certificate
         replay(allMocks);
         final RaSelfRenewCertificateData renewalData = new RaSelfRenewCertificateData();
         renewalData.setClientIPAddress("192.0.2.123");
@@ -302,12 +301,12 @@ public class RaMasterApiSessionUnitTest {
             raMasterApi.selfRenewCertificate(renewalData);
             fail("Should fail");
         } catch (AuthorizationDeniedException e) {
-            assertEquals("Cannot self-renew with CA (ID " + MOCKED_CAID + ") that is not used in any role", e.getMessage());
+            assertEquals("Self-renewal requires certificate profile to have Extended Key Usage with clientAuthentication", e.getMessage());
         }
         verify(allMocks);
     }
 
-    private void expectSelfRenewalChecks(int caIdInRole)
+    private void expectSelfRenewalChecks(final KeyPurposeId extendedKeyUsage)
             throws AuthStatusException, AuthLoginException, NoSuchEndEntityException, AuthorizationDeniedException {
         expect(endEntityAuthenticationSessionMock.authenticateUserWithoutPasswordCheck(anyObject(), eq(MOCKED_USERNAME))).andReturn(endEntityMock);
         expect(endEntityMock.getCertificateProfileId()).andReturn(MOCKED_CERTPROFILE_ID);
@@ -315,14 +314,7 @@ public class RaMasterApiSessionUnitTest {
         expect(certificateProfileMock.isTypeEndEntity()).andReturn(true);
         expect(certificateProfileMock.getKeyUsage(CertificateConstants.DIGITALSIGNATURE)).andReturn(true);
         expect(certificateProfileMock.getKeyUsage()).andReturn(new boolean[]{true,false,false});
-        expect(certificateProfileMock.getExtendedKeyUsageOids()).andReturn(new ArrayList<>(Arrays.asList(KeyPurposeId.id_kp_clientAuth.getId())));
-        expect(roleSessionMock.getAuthorizedRoles(anyObject())).andReturn(Arrays.asList(roleMock));
-        expect(roleMock.getRoleId()).andReturn(MOCKED_ROLE_ID);
-        expect(roleMemberSessionMock.getRoleMembersByRoleId(anyObject(), eq(MOCKED_ROLE_ID))).andReturn(Arrays.asList(roleMemberMock));
-        expect(roleMemberMock.getTokenType()).andReturn(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE);
-        expect(roleMemberMock.getTokenIssuerId()).andReturn(caIdInRole);
-        // On error, the CA ID will be read one more time to include it in the exception message
-        expect(endEntityMock.getCAId()).andReturn(MOCKED_CAID).times(caIdInRole == MOCKED_CAID ? 1 : 2);
+        expect(certificateProfileMock.getExtendedKeyUsageOids()).andReturn(new ArrayList<>(Arrays.asList(extendedKeyUsage.getId())));
     }
 
     private void expectSelfRenewalPreparations() throws Exception {
