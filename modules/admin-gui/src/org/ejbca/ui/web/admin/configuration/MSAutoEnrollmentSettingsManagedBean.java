@@ -509,7 +509,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         try {
             final AutoEnrollmentDTO dto = getDto();
             final String alias = dto.getAlias();
-            final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = MsaeUtil.fetchMSAEConfig(alias);
+            final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = MsaeUtil.fetchMSAEConfigLocalOnly(alias);
             
             if (!getEjbcaWebBean().getAutoenrollConfiguration().aliasExists(alias)) {
                 getEjbcaWebBean().addAutoenrollAlias(alias);
@@ -541,7 +541,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         try {
             final AutoEnrollmentDTO dto = getDto();
             final String alias = dto.getAlias();
-            final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = MsaeUtil.fetchMSAEConfig(alias);
+            final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = MsaeUtil.fetchMSAEConfigLocalOnly(alias);
 
             if (!getEjbcaWebBean().getAutoenrollConfiguration().aliasExists(alias)) {
                 getEjbcaWebBean().addAutoenrollAlias(alias);
@@ -641,7 +641,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
 
             final AutoEnrollmentDTO dto = getDto();
             final String alias = dto.getAlias();
-            final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = MsaeUtil.fetchMSAEConfig(alias);
+            final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = MsaeUtil.fetchMSAEConfigLocalOnly(alias);
             
             // MSAE Kerberos Settings
             autoEnrollmentConfiguration.setMsaeForestRoot(alias, dto.getMsaeForestRoot());
