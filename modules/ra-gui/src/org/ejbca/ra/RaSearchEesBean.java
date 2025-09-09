@@ -38,8 +38,6 @@ import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -188,7 +186,8 @@ public class RaSearchEesBean implements Serializable {
             }
             filterTransformSort();
             // Check if there are sufficient results to fill screen and search for more
-            if (resultsFiltered.size()<lastExecutedRequest.getMaxResults() && lastExecutedResponse.isMightHaveMoreResults()) {
+            if (resultsFiltered.size()==0 ||
+                    (resultsFiltered.size()<lastExecutedRequest.getMaxResults() && lastExecutedResponse.isMightHaveMoreResults())) {
                 if (log.isDebugEnabled()) {
                     log.debug("Trying to load more results since filter left too few results → Query");
                 }
