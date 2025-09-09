@@ -122,7 +122,7 @@ public class EditOAuthProviderCommand extends BaseOAuthConfigCommand {
                 }
             }
         }
-            log.info("No Trusted OAuth Provider with given label: " + label + " exists!");
+        log.info("No Trusted OAuth Provider with given label: " + label + " exists!");
         return CommandResult.FUNCTIONAL_FAILURE;
     }
 

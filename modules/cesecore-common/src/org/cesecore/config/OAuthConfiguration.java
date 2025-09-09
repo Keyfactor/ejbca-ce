@@ -130,7 +130,7 @@ public class OAuthConfiguration extends ConfigurationBase implements Serializabl
      * @param allowlist the string array of hostnames to be filtered
      * @return a string array of hostnames that are valid, according to the validation criteria in the isValidHostname() method
      */
-    private String[] filterValidHostnames(String[] allowlist) {
+    private String[] filterValidHostnames(final String[] allowlist) {
         return Arrays.stream(allowlist)
                 .filter(this::isValidHostname)
                 .toArray(String[]::new);
@@ -143,7 +143,7 @@ public class OAuthConfiguration extends ConfigurationBase implements Serializabl
      * @return true if valid, false otherwise
      */
     private boolean isValidHostname(final String hostname) {
-        // Basic hostname validation - you might want to make this more sophisticated
+        // Basic hostname validation
         String hostnameRegex = "^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$";
         return hostname != null && hostname.matches(hostnameRegex);
     }
