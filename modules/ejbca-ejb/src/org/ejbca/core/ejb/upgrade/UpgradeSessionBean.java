@@ -26,7 +26,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
@@ -46,9 +45,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
-import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
-import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.certificatetransparency.GoogleCtPolicy;
 import org.cesecore.certificates.ocsp.logging.AuditLogger;
 import org.cesecore.certificates.ocsp.logging.GuidHolder;
@@ -401,18 +398,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     private boolean upgrade(String dbtype, String oldVersion) {
     	log.debug(">upgrade from version: "+oldVersion+", with dbtype: "+dbtype);
-        if (isLesserThan(oldVersion, "6.8.0")) {
-            log.error(
-                    "Upgrading from EJBCA prior to version 6.8.0 is forbidden. Read the EJBCA Upgrade Guide for more information.");
-            return false;
-        }
         if (isLesserThan(oldVersion, "6.10.1")) {
-            try {
-                upgradeSession.migrateDatabase6101();
-            } catch (UpgradeFailedException e) {
-                return false;
-            }
-            setLastUpgradedToVersion("6.10.1");
+            log.error(
+                    "Upgrading from EJBCA prior to version 6.10.1 is forbidden. Read the EJBCA Upgrade Guide for more information.");
+            return false;
         }
         if (isLesserThan(oldVersion, "6.11.0")) {
             try {
@@ -527,16 +516,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     private boolean postUpgrade(String oldVersion, String dbtype) {
         log.debug(">post-upgrade from version: "+oldVersion);
-        if (isLesserThan(oldVersion, "6.8.0")) {
-            log.error(
-                    "Post-upgrade from EJBCA prior to version 6.8.0 is forbidden. Read the EJBCA Upgrade Guide for more information.");
-            return false;
-        }
         if (isLesserThan(oldVersion, "6.10.1")) {
-            if (!postMigrateDatabase6101()) {
-                return false;
-            }
-            setLastPostUpgradedToVersion("6.10.1");
+            log.error(
+                    "Post-upgrade from EJBCA prior to version 6.10.1 is forbidden. Read the EJBCA Upgrade Guide for more information.");
+            return false;
         }
         if (isLesserThan(oldVersion, "7.2.0")) {
             if (!postMigrateDatabase720()) {
@@ -974,105 +957,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         return isLesserThan(getLastPostUpgradedToVersion(), "9.4.0");
     }
 
-
-    /**
-     * Upgrade to EJBCA 6.10.1. 
-     * Upgrading System configuration and certificate profiles with CT log label system
-     */
-    @SuppressWarnings("deprecation")
-    @Override
-    public void migrateDatabase6101() throws UpgradeFailedException {
-        log.debug("migrateDatabase6100: Upgrading CT logs");
-        final GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        final Map<Integer, CertificateProfile> allCertProfiles = certProfileSession.getAllCertificateProfiles();
-        final LinkedHashMap<Integer, CTLogInfo> allCtLogs = gc.getCTLogs();
-        LinkedHashMap<Integer, CTLogInfo> updatedCtLogs = new LinkedHashMap<>();
-
-        /* Determine new label for each log...
-         * If Google log or previously set to mandatory (6.10), place log under label 'Mandatory'.
-         * Gather remaining logs under the label 'Unlabeled'.
-         */
-        for (Map.Entry<Integer, CTLogInfo> ctLogInfo : allCtLogs.entrySet()) {
-            CTLogInfo ctLog = ctLogInfo.getValue();
-            if (ctLog.getUrl().contains("ct.googleapis.com") || ctLog.isMandatory()) {
-                ctLog.setLabel("Mandatory");
-            } else {
-                ctLog.setLabel("Unlabeled");
-            }
-            updatedCtLogs.put(ctLog.getLogId(), ctLog);
-        }
-
-        // Save CT logs with new labels set
-        gc.setCTLogs(updatedCtLogs);
-        try {
-            globalConfigurationSession.saveConfiguration(authenticationToken, gc);
-        } catch (AuthorizationDeniedException e) {
-            throw new IllegalStateException("Always allow token was denied access.", e);
-        }
-
-        // Set CT labels corresponding to previously set CT logs in each cert profile
-        for (Integer profileId : allCertProfiles.keySet()) {
-            CertificateProfile certProfile = allCertProfiles.get(profileId);
-            if (certProfile.isUseCertificateTransparencyInCerts() || certProfile.isUseCertificateTransparencyInOCSP() || certProfile.isUseCertificateTransparencyInPublishers()) {
-                LinkedHashSet<String> labelsToSelect = new LinkedHashSet<>();
-                final String certProfileName = certProfileSession.getCertificateProfileName(profileId);
-                for (Integer ctLog : certProfile.getEnabledCTLogs()) {
-                    if (updatedCtLogs.containsKey(ctLog)) {
-                        labelsToSelect.add(updatedCtLogs.get(ctLog).getLabel());
-                    }
-                }
-                certProfile.setEnabledCtLabels(labelsToSelect);
-                
-                // This means there were some mandatory- or Google logs selected before upgrade, i.e. it would be ideal to comply to Chrome CT policy
-                if (labelsToSelect.size() > 1) {
-                    certProfile.setNumberOfSctByValidity(true);
-                    certProfile.setMaxNumberOfSctByValidity(true);
-                    certProfile.setNumberOfSctByCustom(false);
-                    certProfile.setMaxNumberOfSctByCustom(false);
-                } else {
-                    certProfile.setNumberOfSctByValidity(false);
-                    certProfile.setMaxNumberOfSctByValidity(false);
-                    certProfile.setNumberOfSctByCustom(true);
-                    certProfile.setMaxNumberOfSctByCustom(true);
-                    // Migrate old values...
-                    // With the new label system, at least one log from each label will be written to, hence allowing a maximum / minimum
-                    // lower than number of labels would lock out issuance.
-                    if (certProfile.getCtMaxNonMandatoryScts() < labelsToSelect.size()) {
-                        certProfile.setCtMaxScts(labelsToSelect.size());
-                    } else {
-                        certProfile.setCtMaxScts(certProfile.getCtMaxNonMandatoryScts());
-                    }
-                    if (certProfile.getCtMaxNonMandatorySctsOcsp() < labelsToSelect.size()) {
-                        certProfile.setCtMaxSctsOcsp(labelsToSelect.size());
-                    } else {
-                        certProfile.setCtMaxSctsOcsp(certProfile.getCtMaxNonMandatorySctsOcsp());
-                    }
-                    if (certProfile.getCtMinNonMandatoryScts() < labelsToSelect.size()) {
-                        certProfile.setCtMinScts(labelsToSelect.size());
-                    } else {
-                        certProfile.setCtMinScts(certProfile.getCtMinNonMandatoryScts());
-                    }
-                    if (certProfile.getCtMaxNonMandatorySctsOcsp() < labelsToSelect.size()) {
-                        certProfile.setCtMaxSctsOcsp(labelsToSelect.size());
-                    } else {
-                        certProfile.setCtMaxSctsOcsp(certProfile.getCtMaxNonMandatorySctsOcsp());
-                    }
-                    if (certProfile.getCtMinNonMandatorySctsOcsp() < labelsToSelect.size()) {
-                        certProfile.setCtMinSctsOcsp(labelsToSelect.size());
-                    } else {
-                        certProfile.setCtMinSctsOcsp(certProfile.getCtMinNonMandatorySctsOcsp());
-                    }
-                }
-                
-                try {
-                    certProfileSession.changeCertificateProfile(authenticationToken, certProfileName, certProfile);
-                } catch (AuthorizationDeniedException e) {
-                    throw new IllegalStateException("Always allow token was denied access.", e);
-                }
-            }
-        }
-    }
-
     /**
      * Upgrade to EJBCA 6.11.0 
      * Provides all current Peer connector roles with the new set of rules, controlling access to protocols
@@ -1368,25 +1252,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
         log.info("Post upgrade to 7.11.0 complete.");
         return true;
-    }
-    
-    private boolean postMigrateDatabase6101() {
-        log.info("Starting post upgrade to 6.10.1.");
-        final Map<Integer, CertificateProfile> allCertProfiles = certProfileSession.getAllCertificateProfiles();
-
-        for (Integer profileId : allCertProfiles.keySet()) {
-            CertificateProfile certProfile = allCertProfiles.get(profileId);
-            final String certProfileName = certProfileSession.getCertificateProfileName(profileId);
-            certProfile.removeLegacyCtData();
-            try {
-                certProfileSession.changeCertificateProfile(authenticationToken, certProfileName, certProfile);
-            } catch (AuthorizationDeniedException e) {
-                throw new IllegalStateException("Always allow token was denied access.", e);
-            }
-        }
-        log.info("Post upgrade to 6.10.1 complete.");
-        return true;
-    }
+    }    
 
     /**
      * The configuration files <code>certstore.properties</code> and <code>crlstore.properties</code> are removed as of EJBCA 7.2.
