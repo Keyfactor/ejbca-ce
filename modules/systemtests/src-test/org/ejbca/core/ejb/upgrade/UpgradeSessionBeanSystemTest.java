@@ -1027,13 +1027,15 @@ public class UpgradeSessionBeanSystemTest {
             //Set the values to non-default. 
             cesecoreConfigSession.setConfigurationValue("ocsp.includesignercert", "false");
             cesecoreConfigSession.setConfigurationValue("ocsp.includecertchain", "false");
+            cesecoreConfigSession.setConfigurationValue("ocsp.reqsigncertrevcachetime", "30000");
             
             //Perform upgrade
             upgradeSession.upgrade(/* database */ null, /* upgrade from */ "9.3.0", /* post upgrade? */ false);
             //Retrieve config and verify upgrade
             GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-            assertFalse("ocsp.includesignercert wasn't upgraded.", globalOcspConfiguration.getIncludeSigningCertificate());
-            assertFalse("ocsp.includecertchain wasn't upgraded.", globalOcspConfiguration.getIncludeCertificateChain());
+            assertFalse("ocsp.includesignercert was not migrated.", globalOcspConfiguration.getIncludeSigningCertificate());
+            assertFalse("ocsp.includecertchain was not migrated.", globalOcspConfiguration.getIncludeCertificateChain());
+            assertEquals("ocsp.reqsigncertrevcachetime was not migrated", 30000L, globalOcspConfiguration.getRequestSignserRevocationStatusCacheTime());
             
         } finally {
                        

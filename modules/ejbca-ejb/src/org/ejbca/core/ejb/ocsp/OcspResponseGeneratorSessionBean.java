@@ -119,10 +119,10 @@ import org.cesecore.certificates.certificate.HashID;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparency;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.ocsp.cache.OcspRequestSignerStatusCacheSingletonLocal;
 import org.cesecore.certificates.ocsp.cache.OcspDataConfigCache;
 import org.cesecore.certificates.ocsp.cache.OcspDataConfigCacheEntry;
 import org.cesecore.certificates.ocsp.cache.OcspExtensionsCache;
-import org.cesecore.certificates.ocsp.cache.OcspRequestSignerStatusCache;
 import org.cesecore.certificates.ocsp.cache.OcspSigningCache;
 import org.cesecore.certificates.ocsp.cache.OcspSigningCacheEntry;
 import org.cesecore.certificates.ocsp.exception.CryptoProviderException;
@@ -224,6 +224,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
     private OcspDataSessionLocal ocspDataSession;
+    @EJB
+    private OcspRequestSignerStatusCacheSingletonLocal ocspRequestSignerStatusCache;
     
     @EJB
     private PublisherSessionLocal publisherSession;
@@ -238,6 +240,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     protected void setMockedGlobalConfigurationSession(final GlobalConfigurationSessionLocal globalConfigurationSession) { this.globalConfigurationSession = globalConfigurationSession; }
     protected void setMockedTimerService(final TimerService timerService) { this.timerService = timerService; }
     protected void setOcspDataSessionLocal(final OcspDataSessionLocal ocspDataSession) { this.ocspDataSession = ocspDataSession; }
+    protected void setocspRequestSignerStatusCache(final OcspRequestSignerStatusCacheSingletonLocal ocspRequestSignerStatusCache) { this.ocspRequestSignerStatusCache = ocspRequestSignerStatusCache; }
+
 
     @PostConstruct
     public void init() {
@@ -273,7 +277,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     @Override
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void clearOcspRequestSignerRevocationStatusCache() {
-        OcspRequestSignerStatusCache.INSTANCE.flush();
+        ocspRequestSignerStatusCache.flush();
     }
 
     @Override
@@ -1068,11 +1072,11 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             }
             if (enforceRequestSigning) {
                 // If it verifies OK, check if it is revoked
-                final String cacheLookupKey = OcspRequestSignerStatusCache.INSTANCE.createCacheLookupKey(signercertIssuerName, signercertSerNo);
-                CertificateStatus status = OcspRequestSignerStatusCache.INSTANCE.getCachedCertificateStatus(cacheLookupKey);
+                final String cacheLookupKey = ocspRequestSignerStatusCache.createCacheLookupKey(signercertIssuerName, signercertSerNo);
+                CertificateStatus status = ocspRequestSignerStatusCache.getCachedCertificateStatus(cacheLookupKey);
                 if (status==null) {
                     status = certificateStoreSession.getStatus(signercertIssuerName, signercertSerNo);
-                    OcspRequestSignerStatusCache.INSTANCE.updateCachedCertificateStatus(cacheLookupKey, status);
+                    ocspRequestSignerStatusCache.updateCachedCertificateStatus(cacheLookupKey, status);
                 }
                 /*
                  * CertificateStatus.NOT_AVAILABLE means that the certificate does not exist in database. We treat this as ok, because it may be so that only revoked

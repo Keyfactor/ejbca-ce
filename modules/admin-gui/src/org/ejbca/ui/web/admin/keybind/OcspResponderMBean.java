@@ -117,6 +117,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
     private long defaultResponseValidityTime;
     private long defaultResponseMaxAge;
     private boolean useMaxValidityForExpiration;
+    private long requestSignerCertificateRevocationCacheTime;
 
     private String currentOcspExtension = null;
     
@@ -153,7 +154,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
     private OcspResponseGeneratorSessionLocal ocspResponseGeneratorSession;
 
     @PostConstruct
-    public void loadOcspLoggingSettings() {
+    public void loadGlobalValues() {
         final GlobalOcspConfiguration globalConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
                 .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
         isOcspTransactionLoggingEnabled = globalConfiguration.getIsOcspTransactionLoggingEnabled();
@@ -169,6 +170,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
         includeSigningCertificate = globalConfiguration.getIncludeSigningCertificate();
         includeCertificateChain = globalConfiguration.getIncludeCertificateChain();
         currentGlobalUnknownResponse = globalConfiguration.getOcspNonExistingBehavior();
+        this.requestSignerCertificateRevocationCacheTime = globalConfiguration.getRequestSignserRevocationStatusCacheTime();
     }
 
     @Override
@@ -293,11 +295,20 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
         }
     }
 
-    public void saveEnableOcspSigningCacheUpdate() {
+    public void saveCacheSettings() {
         GlobalOcspConfiguration globalConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
                 .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        boolean modified = false;
         if (!ocspSigningCacheUpdate.equals(globalConfiguration.getOcspSigningCacheUpdateEnabled())) {
             globalConfiguration.setOcspSigningCacheUpdateEnabled(ocspSigningCacheUpdate);
+            modified = true;
+        }
+        if(requestSignerCertificateRevocationCacheTime != globalConfiguration.getRequestSignserRevocationStatusCacheTime()) {
+            globalConfiguration.setRequestSignserRevocationStatusCacheTime(requestSignerCertificateRevocationCacheTime);
+            modified = true;
+        }
+        
+        if (modified) {
             try {
                 globalConfigurationSession.saveConfiguration(getAuthenticationToken(), globalConfiguration);
             } catch (AuthorizationDeniedException e) {
@@ -379,6 +390,14 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
         this.cacheHeaderUnauthorizedResponses = cacheHeaderUnauthorizedResponses;
     }
 
+    public long getRequestSignerCertificateRevocationCacheTime() {
+        return requestSignerCertificateRevocationCacheTime;      
+    }
+    
+    public void setRequestSignerCertificateRevocationCacheTime(long requestSignerCertificateRevocationCacheTime) {
+        this.requestSignerCertificateRevocationCacheTime = requestSignerCertificateRevocationCacheTime;
+    }
+    
     public void saveOcspLoggingConfiguration() throws AuthorizationDeniedException {
         final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
                 .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
