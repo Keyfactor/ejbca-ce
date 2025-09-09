@@ -72,7 +72,7 @@ public class OAuthConfiguration extends ConfigurationBase implements Serializabl
     }
 
     public void setDefaultOauthKeyLabel(final String label) {
-        if (!label.isBlank()) {
+        if (!label.isBlank() && !label.equalsIgnoreCase("None")) {
             final Map<String, OAuthKeyInfo> oAuthKeyInfoMap = getOauthKeys();
 
             if (oAuthKeyInfoMap != null && !oAuthKeyInfoMap.isEmpty()) {
@@ -86,6 +86,8 @@ public class OAuthConfiguration extends ConfigurationBase implements Serializabl
                 throw new IllegalArgumentException("No OAuth keys found.");
             }
 
+        } else {
+            setDefaultOauthKey(null);
         }
     }
 
