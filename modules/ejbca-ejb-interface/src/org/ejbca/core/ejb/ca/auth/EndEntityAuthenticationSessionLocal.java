@@ -27,17 +27,17 @@ import jakarta.ejb.Local;
 public interface EndEntityAuthenticationSessionLocal extends EndEntityAuthenticationSession {
 
     /**
-     * Authenticates a user to the user database and returns the user DN. Unlike the {EndEntityAuthenticationSession{@link #authenticateUser(AuthenticationToken, String, String)}
-     * method, this methods bypasses the password check (e.g. for self-renewal of a client certificate)
+     * Checks that a user is allowed to enroll. This works like {@link #authenticateUser(AuthenticationToken, String, String)
+     * except that this methods bypasses the password check (e.g. for self-renewal of a client certificate).
+     * <p>
+     * Note: There's no point in calling both authenticateUser() and this method.
      *
-     * @param username unique username within the instance
-     * @param password password for the user
+     * @param username username of end entity
      * @return EndEntityInformation, never returns null
      * @throws NoSuchEndEntityException if the user does not exist.
      * @throws AuthStatusException      if the end entity's status is not one of NEW, FAILED, IN_PROCESS or KEY_RECOVERY
-     * @throws AuthLoginException       If the password is incorrect.
      */
-    EndEntityInformation authenticateUserWithoutPasswordCheck(AuthenticationToken admin, String username)
-            throws AuthStatusException, AuthLoginException, NoSuchEndEntityException;
+    EndEntityInformation checkAllowedToEnroll(AuthenticationToken admin, String username)
+            throws AuthStatusException, NoSuchEndEntityException;
 
 }

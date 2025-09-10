@@ -3907,7 +3907,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         // certificate that is used for some external service (but issued by EJBCA).
         AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new WebPrincipal(
                 "RenewSelfCertificate", renewCertificateData.getClientIPAddress()));
-        final EndEntityInformation userData = endEntityAuthenticationSession.authenticateUserWithoutPasswordCheck(admin, renewCertificateData.getUsername());
+        final EndEntityInformation userData = endEntityAuthenticationSession.checkAllowedToEnroll(admin, renewCertificateData.getUsername());
         requireClientAuthProfileAndCa(userData);
         if (userData.getType().contains(EndEntityTypes.SENDNOTIFICATION)) {
             EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(userData.getEndEntityProfileId());

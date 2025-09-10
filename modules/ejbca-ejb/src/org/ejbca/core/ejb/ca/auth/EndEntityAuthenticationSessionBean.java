@@ -93,9 +93,13 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     @Override
-    public EndEntityInformation authenticateUserWithoutPasswordCheck(final AuthenticationToken admin, final String username)
-            throws AuthStatusException, AuthLoginException, NoSuchEndEntityException {
-        return authenticateUserInternal(admin, username, null, false);
+    public EndEntityInformation checkAllowedToEnroll(final AuthenticationToken admin, final String username)
+            throws AuthStatusException, NoSuchEndEntityException {
+        try {
+            return authenticateUserInternal(admin, username, null, false);
+        } catch (AuthLoginException e) { // Should not happen when no password authentication happens
+            throw new IllegalStateException(e);
+        }
     }
 
     @Override
