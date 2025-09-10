@@ -307,8 +307,8 @@ public class RaMasterApiSessionUnitTest {
     }
 
     private void expectSelfRenewalChecks(final KeyPurposeId extendedKeyUsage)
-            throws AuthStatusException, AuthLoginException, NoSuchEndEntityException, AuthorizationDeniedException {
-        expect(endEntityAuthenticationSessionMock.authenticateUserWithoutPasswordCheck(anyObject(), eq(MOCKED_USERNAME))).andReturn(endEntityMock);
+            throws AuthStatusException, NoSuchEndEntityException, AuthorizationDeniedException {
+        expect(endEntityAuthenticationSessionMock.checkAllowedToEnroll(anyObject(), eq(MOCKED_USERNAME))).andReturn(endEntityMock);
         expect(endEntityMock.getCertificateProfileId()).andReturn(MOCKED_CERTPROFILE_ID);
         expect(certificateProfileSessionMock.getCertificateProfile(MOCKED_CERTPROFILE_ID)).andReturn(certificateProfileMock);
         expect(certificateProfileMock.isTypeEndEntity()).andReturn(true);
