@@ -118,6 +118,8 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
             // Find the user with username username, or throw ObjectNotFoundException
             final UserData data = endEntityAccessSession.findByUsername(username);
             if (data == null) {
+                final String msg = intres.getLocalizedMessage("authentication.usernotfound", username);
+                log.info(msg);
             	throw new NoSuchEndEntityException("Could not find username " + username);
             }
             // Decrease the remaining login attempts. When zero, the status is set to STATUS_GENERATED
@@ -165,13 +167,7 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
                 log.info(msg);
                 throw new AuthStatusException(msg);
             }
-        } catch (NoSuchEndEntityException oe) {
-        	final String msg = intres.getLocalizedMessage("authentication.usernotfound", username);
-        	log.info(msg);
-            throw oe;
-        } catch (AuthStatusException | AuthLoginException se) {
-            throw se;
-        }  catch (Exception e) {
+        }  catch (RuntimeException | NoSuchAlgorithmException e) {
             log.error(intres.getLocalizedMessage("error.unknown"), LogRedactionUtils.getRedactedException(e));
             throw new EJBException(LogRedactionUtils.getRedactedException(e));
         }
