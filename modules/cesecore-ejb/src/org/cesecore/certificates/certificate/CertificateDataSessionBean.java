@@ -15,7 +15,7 @@ package org.cesecore.certificates.certificate;
 import static java.util.stream.Collectors.toList;
 import static org.cesecore.authorization.control.StandardRules.SYSTEMCONFIGURATION_VIEW;
 
-import org.apache.commons.lang.time.FastDateFormat;
+import org.apache.commons.lang3.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;

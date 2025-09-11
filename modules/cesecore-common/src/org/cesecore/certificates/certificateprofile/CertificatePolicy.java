@@ -14,7 +14,8 @@ package org.cesecore.certificates.certificateprofile;
 
 import java.io.Serializable;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.bouncycastle.asn1.x509.PolicyQualifierId;
 
 
@@ -149,19 +150,19 @@ public class CertificatePolicy implements Serializable, Cloneable {
         boolean policyEqual = false;
         if (StringUtils.isEmpty(policy.getPolicyID()) && StringUtils.isEmpty(this.policyID)) {
             policyEqual = true;
-        } else if (StringUtils.equals(policy.getPolicyID(), this.policyID)) {
+        } else if (Strings.CS.equals(policy.getPolicyID(), this.policyID)) {
             policyEqual = true;
         }
         boolean qualifierIdsEqual = false;
         if (StringUtils.isEmpty(policy.getQualifierId()) && StringUtils.isEmpty(this.qualifierId)) {
             qualifierIdsEqual = true;
-        } else if (StringUtils.equals(policy.getQualifierId(), this.qualifierId)) {
+        } else if (Strings.CS.equals(policy.getQualifierId(), this.qualifierId)) {
             qualifierIdsEqual = true;
         }
         boolean qualifiersEqual = false;
         if (StringUtils.isEmpty(policy.getQualifier()) && StringUtils.isEmpty(this.qualifier)) {
             qualifiersEqual = true;
-        } else if (StringUtils.equals(policy.getQualifier(), this.qualifier)) {
+        } else if (Strings.CS.equals(policy.getQualifier(), this.qualifier)) {
             qualifiersEqual = true;
         }
         return policyEqual && qualifierIdsEqual && qualifiersEqual; 

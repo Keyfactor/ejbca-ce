@@ -158,6 +158,23 @@
 				<h:commandButton action="#{ocspResponderMBean.saveDefaultResponder}" rendered="#{ocspResponderMBean.allowedToEdit}" value="#{web.text.INTERNALKEYBINDING_SET}"/>
 			</h:panelGrid>
 		</h:form>
+		
+		<h:form id="globalUnknownResponse">
+		  <h3>
+            <h:outputText value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_NONEXISTINGRESPONSE_GLOBAL}" />
+            <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/OCSP_Responders.html')}" escape="false"/>
+          </h3>
+		  <h:panelGrid columns="2">
+		      <h:selectOneMenu value="#{ocspResponderMBean.currentGlobalUnknownResponse}" disabled="#{!ocspResponderMBean.inEditMode}">
+                <f:selectItems value="#{ocspResponderMBean.availableUnknownResponses}"/>
+              </h:selectOneMenu>
+              <h:commandButton action="#{ocspResponderMBean.saveCurrentGlobalUnknownResponse}" rendered="#{ocspResponderMBean.allowedToEdit}" value="#{web.text.INTERNALKEYBINDING_SET}"/>
+		  </h:panelGrid>
+		
+		 
+		</h:form>
+		
+		
 		<h:form id="includeFromCA" style="display: block;">
 		    <h3>
                 <h:outputText value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_RESPONSE_FORMAT}" />
@@ -201,18 +218,37 @@
 			</h:panelGrid>
 		</h:form>
 
-		<h:form id="enableOcspSigningCacheUpdate">
+		<h:form id="cacheSettings">
 			<h3>
-				<h:outputText value="#{web.text.INTERNALKEYBINDING_ENABLE_OCSP_SIGNING_CACHE_UPDATE}" rendered="#{ocspResponderMBean.forbiddenToEdit}"/>
-				<h:outputText value="#{web.text.INTERNALKEYBINDING_SET_ENABLE_OCSP_SIGNING_CACHE_UPDATE}" rendered="#{!ocspResponderMBean.forbiddenToEdit}"/>
+				<h:outputText value="#{web.text.INTERNALKEYBINDING_ENABLE_OCSP_SIGNING_CACHE_SETTINGS}"/>
 				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/OCSP_Responders.html')}" escape="false"/>
 			</h3>
-			<h:panelGrid columns="2">
+			<h:panelGrid columns="3">
+			    <!-- Enable OCSP Signing Cache Update -->
+			    <h:panelGroup>
+			         <h:outputText value="#{web.text.INTERNALKEYBINDING_ENABLE_OCSP_SIGNING_CACHE_UPDATE}"/>                     
+			    </h:panelGroup> 
 				<h:panelGroup>
 					<h:selectBooleanCheckbox id="globallyEnableOcspSigningCacheUpdate" disabled="#{ocspResponderMBean.forbiddenToEdit}" value="#{ocspResponderMBean.globallyEnableOcspSigningCacheUpdate}"/>
-					<h:outputLabel for="globallyEnableOcspSigningCacheUpdate" value="#{web.text.USE}"/>
 				</h:panelGroup>
-				<h:commandButton action="#{ocspResponderMBean.saveEnableOcspSigningCacheUpdate}" rendered="#{ocspResponderMBean.allowedToEdit}" value="#{web.text.INTERNALKEYBINDING_SAVE}"/>
+				<h:panelGroup>
+				    &nbsp; 
+				</h:panelGroup>
+				<!-- Signer Certificate Revocation Check Cache Time -->
+				<h:panelGroup>
+                     <h:outputText value="#{web.text.INTERNALKEYBINDING_REQUEST_SIGNER_REVOCATION_CHECK_CACHE_TIME}"/>                     
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:inputText disabled="#{not ocspResponderMBean.allowedToEdit}" value="#{ocspResponderMBean.requestSignerCertificateRevocationCacheTime}"
+                        onchange="this.form.submit()">
+                            <f:converter converterId="jakarta.faces.Long"/>
+                    </h:inputText>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="#{web.text.INTERNALKEYBINDING_REQUEST_SIGNER_REVOCATION_CHECK_CACHE_TIME_HELP}" styleClass="smallHelp"/>
+                </h:panelGroup>
+                <!-- Save button -->
+				<h:commandButton action="#{ocspResponderMBean.saveCacheSettings}" rendered="#{ocspResponderMBean.allowedToEdit}" value="#{web.text.INTERNALKEYBINDING_SAVE}"/>
 			</h:panelGrid>
 		</h:form>
 

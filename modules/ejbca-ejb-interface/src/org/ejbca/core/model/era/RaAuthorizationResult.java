@@ -18,7 +18,6 @@ import java.util.HashMap;
 /**
  * Result of an authorization request from RA.
  * 
- * @version $Id$
  * @since RaMasterApi version 1
  */
 public class RaAuthorizationResult implements Serializable {
@@ -35,4 +34,32 @@ public class RaAuthorizationResult implements Serializable {
     
     public HashMap<String, Boolean> getAccessRules() { return accessRules; }
     public int getUpdateNumber() { return updateNumber; }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((accessRules == null) ? 0 : accessRules.hashCode());
+        result = prime * result + updateNumber;
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        RaAuthorizationResult other = (RaAuthorizationResult) obj;
+        if (accessRules == null) {
+            if (other.accessRules != null)
+                return false;
+        } else if (!accessRules.equals(other.accessRules))
+            return false;
+        if (updateNumber != other.updateNumber)
+            return false;
+        return true;
+    }
 }

@@ -21,7 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
@@ -78,7 +78,7 @@ public class CreateCACommand extends EJBCAWSRABaseCommand implements IAdminComma
             String cadn = args[ARG_CADN];
             String catype = args[ARG_CATYPE];
             String validityString = args[ARG_VALIDITY_IN_DAYS];
-            String certprofile = StringUtils.equalsIgnoreCase(args[ARG_CERT_PROFILE], "null")? null : args[ARG_CERT_PROFILE];
+            String certprofile = Strings.CI.equals(args[ARG_CERT_PROFILE], "null")? null : args[ARG_CERT_PROFILE];
             String signalg = args[ARG_SIGN_ALG];
             int signedByCAId = Integer.parseInt(args[ARG_SIGNED_BY_CAID]);
             String cryptotokenName = args[ARG_CRYPTOTOKEN_NAME];

@@ -676,7 +676,7 @@ public class MessagesUnitTest {
                 .setLdapOrder(true)
                 .generateCertificate();      
         return gen.generateCertReq(userDN, "foo123", transactionId, issuerCertificate, senderCertificate, keyPair.getPrivate(),
-                SMIMECapability.dES_CBC);
+                SMIMECapability.aES128_CBC);
     }
     
     /**
@@ -770,7 +770,7 @@ public class MessagesUnitTest {
         }
         
         /**
-         * @param encryptionAlg SMIMECapability.dES_CBC (DES) or SMIMECapability.dES_EDE3_CBC (3DES)
+         * @param encryptionAlg SMIMECapability.aES256_CBC (DES) or SMIMECapability.dES_EDE3_CBC (3DES)
          */
         private CMSEnvelopedData envelope(CMSTypedData envThis, ASN1ObjectIdentifier encryptionAlg) throws CMSException, CertificateEncodingException {
             CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();

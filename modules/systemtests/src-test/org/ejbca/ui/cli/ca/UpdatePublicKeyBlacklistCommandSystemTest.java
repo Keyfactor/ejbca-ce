@@ -36,7 +36,9 @@ import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.FileTools;
@@ -58,6 +60,9 @@ public class UpdatePublicKeyBlacklistCommandSystemTest {
     /** Class logger. */
     private static final Logger log = Logger.getLogger(UpdatePublicKeyBlacklistCommandSystemTest.class);
 
+    @ClassRule
+    public static TemporaryFolder tempdir = new TemporaryFolder();
+    
     // Directory and file constants (see ${project.dir}/resources)
     private static File emptyFolder;
     private static final String TEST_RESOURCE_ADD_REMOVE_PUBLIC_KEYS = "publickey/rsa2048.pub.pem";
@@ -83,8 +88,7 @@ public class UpdatePublicKeyBlacklistCommandSystemTest {
         removePublicKeyFingerprintsFromBlacklist(TEST_RESOURCE_ADD_REMOVE_FINGERPINTS);
         removePublicKeysFromBlacklist(TEST_RESOURCE_ADD_REMOVE_PUBLIC_KEYS);
         
-        emptyFolder = FileTools.createTempDirectory();
-        emptyFolder.deleteOnExit();
+        emptyFolder = tempdir.newFolder();
 
         log.trace("<beforeClass()");
     }
@@ -96,9 +100,6 @@ public class UpdatePublicKeyBlacklistCommandSystemTest {
         // Remove test entries from blacklist.
         removePublicKeyFingerprintsFromBlacklist(TEST_RESOURCE_ADD_REMOVE_FINGERPINTS);
         removePublicKeysFromBlacklist(TEST_RESOURCE_ADD_REMOVE_PUBLIC_KEYS);
-        if (emptyFolder.exists()) {
-            emptyFolder.delete();
-        }
 
         log.trace("<afterClass()");
     }

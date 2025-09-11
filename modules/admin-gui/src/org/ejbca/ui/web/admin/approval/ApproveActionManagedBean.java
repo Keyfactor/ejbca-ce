@@ -561,8 +561,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
                     for (final Role role : allAuthorizedRoles) {
                         if (AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVEENDENTITY)
                                 || AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVECAACTION)) {
-                            roleRepresentations.add(RoleInformation.fromRoleMembers(role.getRoleId(), role.getNameSpace(), role.getRoleName(), 
-                                    new ArrayList<>()));
+                            roleRepresentations.add(new RoleInformation(role.getRoleId(), role.getNameSpace(), role.getRoleName()));
                         }
                     }
                     if (!roleRepresentations.contains(propertyClone.getDefaultValue())) {
@@ -685,7 +684,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
             if (role.getRoleId() == roleToUpdate.getIdentifier()
                     && (AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVEENDENTITY)
                             || AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVECAACTION))) {
-                roleRepresentations.add(RoleInformation.fromRoleMembers(role.getRoleId(), role.getNameSpace(), role.getRoleName(), new ArrayList<>()));
+                roleRepresentations.add(new RoleInformation(role.getRoleId(), role.getNameSpace(), role.getRoleName()));
             }
         }
         return roleRepresentations;

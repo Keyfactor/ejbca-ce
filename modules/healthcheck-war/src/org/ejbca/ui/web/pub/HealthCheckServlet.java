@@ -35,8 +35,8 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.dbprotection.DatabaseProtectionException;
@@ -81,6 +81,7 @@ public class HealthCheckServlet extends HttpServlet {
         final private String[] caNames;
         final private boolean checkAllCas;
         final private boolean checkOcsp;
+        final private boolean checkOcspReportIgnoredKeyBindings;
         final private boolean checkPublishers;
         final private Map<String, String> cryptoTokensAndKeys;
 
@@ -92,6 +93,7 @@ public class HealthCheckServlet extends HttpServlet {
             this.caNames = caNames;
             checkAllCas = caNames.length == 0;
             checkOcsp = safeGetParameter(request, "ocsp", true);
+            checkOcspReportIgnoredKeyBindings = safeGetParameter(request, "ocspDetailed", false);
             checkPublishers = safeGetParameter(request, "publishers", EjbcaConfiguration.getHealthCheckPublisherConnections());
             cryptoTokensAndKeys = collectTokenAndKeyParameters(request);
         }
@@ -344,7 +346,7 @@ public class HealthCheckServlet extends HttpServlet {
                 if (log.isDebugEnabled()) {
                     log.debug("Checking OcspKeyBindings.");
                 }
-                sb.append(ocspResponseGeneratorSession.healthCheck());
+                sb.append(ocspResponseGeneratorSession.healthCheck(queryParameters.checkOcspReportIgnoredKeyBindings));
             }
             try {
                 if(log.isDebugEnabled()) {

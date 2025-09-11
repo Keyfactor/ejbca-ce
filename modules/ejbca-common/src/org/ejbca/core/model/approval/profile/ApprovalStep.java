@@ -25,7 +25,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleInformation;
 import org.cesecore.util.LookAheadObjectInputStream;
@@ -45,7 +44,6 @@ import com.keyfactor.util.Base64;
  *
  * Steps are stored in the ApprovalProfile without order, but instead track their own order in the form of a doubly linked list.
  */
-@SuppressWarnings("deprecation")
 public class ApprovalStep implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -90,7 +88,7 @@ public class ApprovalStep implements Serializable {
             ois.setEnabledMaxObjects(false);
             ois.setAcceptedClasses(Arrays.asList(ApprovalStep.class, ApprovalPartition.class, LinkedHashMap.class, HashMap.class,
                     DynamicUiProperty.class, DynamicUiPropertyCallback.class, Enum.class, ArrayList.class, DynamicUiPropertyValidator.class,
-                    RoleInformation.class, HashSet.class, AccessUserAspectData.class, AccessMatchType.class, RoleData.class, RadioButton.class, MultiLineString.class, 
+                    RoleInformation.class, HashSet.class, AccessMatchType.class, RoleData.class, RadioButton.class, MultiLineString.class, 
                     UrlString.class));
             ois.setEnabledInterfaceImplementations(true, "org.cesecore.util.ui");
             final ApprovalStep step = (ApprovalStep) ois.readObject();

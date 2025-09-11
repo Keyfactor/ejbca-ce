@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.math.IntRange;
+import org.apache.commons.lang3.IntegerRange;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
 import org.bouncycastle.asn1.x509.Extension;
@@ -222,9 +222,9 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                             log.info(msg);
                         } else {
                             boolean result = createCrlForActiveCa(admin, ca, cacert, CertificateConstants.NO_CRL_PARTITION, addToCrlOverlapTime, params);
-                            final IntRange crlPartitions = cainfo.getAllCrlPartitionIndexes();
+                            final IntegerRange crlPartitions = cainfo.getAllCrlPartitionIndexes();
                             if (crlPartitions != null) {
-                                for (int crlPartitionIndex = crlPartitions.getMinimumInteger(); crlPartitionIndex <= crlPartitions.getMaximumInteger(); crlPartitionIndex++) {
+                                for (int crlPartitionIndex = crlPartitions.getMinimum(); crlPartitionIndex <= crlPartitions.getMaximum(); crlPartitionIndex++) {
                                     result &= createCrlForActiveCa(admin, ca, cacert, crlPartitionIndex, addToCrlOverlapTime, params);
                                 }
                             }
@@ -348,9 +348,9 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                                 log.info(msg);
                             } else {
                                 boolean result = createDeltaCrlForActiveCa(admin, ca, cacert, CertificateConstants.NO_CRL_PARTITION, now, addToCrlOverlapTime);
-                                final IntRange crlPartitions = cainfo.getAllCrlPartitionIndexes();
+                                final IntegerRange crlPartitions = cainfo.getAllCrlPartitionIndexes();
                                 if (crlPartitions != null) {
-                                    for (int crlPartitionIndex = crlPartitions.getMinimumInteger(); crlPartitionIndex <= crlPartitions.getMaximumInteger(); crlPartitionIndex++) {
+                                    for (int crlPartitionIndex = crlPartitions.getMinimum(); crlPartitionIndex <= crlPartitions.getMaximum(); crlPartitionIndex++) {
                                         result &= createDeltaCrlForActiveCa(admin, ca, cacert, crlPartitionIndex, now, addToCrlOverlapTime);
                                     }
                                 }
@@ -430,7 +430,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
     }
 
     /** Returns the CRL partitions' indexes for a given CA, or null if the CRL is not partitioned. */
-    private IntRange getAllCrlPartitionIndexes(final AuthenticationToken admin, final int caId) throws AuthorizationDeniedException {
+    private IntegerRange getAllCrlPartitionIndexes(final AuthenticationToken admin, final int caId) throws AuthorizationDeniedException {
         final CAInfo caInfo = caSession.getCAInfo(admin, caId);
         return caInfo != null ? caInfo.getAllCrlPartitionIndexes() : null;
     }
@@ -449,9 +449,9 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
         
         params.setValidFrom(new Date());
         result &= forceCRL(admin, caId, CertificateConstants.NO_CRL_PARTITION, params); // Always generate a main CRL
-        final IntRange crlPartitions = getAllCrlPartitionIndexes(admin, caId);
+        final IntegerRange crlPartitions = getAllCrlPartitionIndexes(admin, caId);
         if (crlPartitions != null) {
-            for (int crlPartitionIndex = crlPartitions.getMinimumInteger(); crlPartitionIndex <= crlPartitions.getMaximumInteger(); crlPartitionIndex++) {
+            for (int crlPartitionIndex = crlPartitions.getMinimum(); crlPartitionIndex <= crlPartitions.getMaximum(); crlPartitionIndex++) {
                 params.setValidFrom(new Date());
                 result &= forceCRL(admin, caId, crlPartitionIndex, params);
             }
@@ -466,9 +466,9 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
             return false;
         }
         result &= forceDeltaCRL(admin, caId, CertificateConstants.NO_CRL_PARTITION); // Always generate a main CRL
-        final IntRange crlPartitions = getAllCrlPartitionIndexes(admin, caId);
+        final IntegerRange crlPartitions = getAllCrlPartitionIndexes(admin, caId);
         if (crlPartitions != null) {
-            for (int crlPartitionIndex = crlPartitions.getMinimumInteger(); crlPartitionIndex <= crlPartitions.getMaximumInteger(); crlPartitionIndex++) {
+            for (int crlPartitionIndex = crlPartitions.getMinimum(); crlPartitionIndex <= crlPartitions.getMaximum(); crlPartitionIndex++) {
                 result &= forceDeltaCRL(admin, caId, crlPartitionIndex);
             }
         }

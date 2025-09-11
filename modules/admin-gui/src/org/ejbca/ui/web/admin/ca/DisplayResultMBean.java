@@ -15,7 +15,12 @@ package org.ejbca.ui.web.admin.ca;
 import java.io.Serializable;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import jakarta.annotation.PostConstruct;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Named;
+
+import org.apache.commons.lang3.StringUtils;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAInfo;
 import org.ejbca.config.GlobalConfiguration;
@@ -24,10 +29,6 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.attribute.AttributeMapping.SESSION;
 import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.faces.context.FacesContext;
-import jakarta.faces.view.ViewScoped;
-import jakarta.inject.Named;
 
 /**
  * 

@@ -31,8 +31,8 @@ import jakarta.faces.event.AjaxBehaviorEvent;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -496,7 +496,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
             return StringUtils.EMPTY;
         }
 
-        return "listpublishers?faces-redirect=true";
+		return "listpublishers?faces-redirect=true";
     }
 
     public void savePublisherAndTestConnection() throws AuthorizationDeniedException {
@@ -584,8 +584,8 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     
     // This is ugly but could not find a better way for it
     public boolean isPublisherSupportingOcspResponses() {
-        return StringUtils.contains(selectedPublisherType, "PeerPublisher")
-                || StringUtils.contains(selectedPublisherType, "EnterpriseValidationAuthorityPublisher");
+        return Strings.CS.contains(selectedPublisherType, "PeerPublisher")
+                || Strings.CS.contains(selectedPublisherType, "EnterpriseValidationAuthorityPublisher");
     }
     
     private void prepareForSave() throws PublisherDoesntExistsException, PublisherExistsException, PublisherException, ParameterException {

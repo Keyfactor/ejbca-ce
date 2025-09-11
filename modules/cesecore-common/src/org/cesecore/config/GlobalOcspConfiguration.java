@@ -19,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keybind.impl.OcspKeyBinding.ResponderIdType;
+import org.cesecore.keybind.impl.OcspNonExistingBehavior;
 
 import com.keyfactor.util.certificate.DnComponents;
 
@@ -49,6 +50,24 @@ public class GlobalOcspConfiguration extends ConfigurationBase implements Serial
     private static final String PROPERTY_OCSP_USE_MAX_AGE_FOR_EXPIRATION = "useMaxValidityForExpiration";
     private static final String INCLUDE_SIGNING_CERTIFICATE = "includeSigningCertificate";
     private static final String INCLUDE_CERTIFICATE_CHAIN = "includeCertificateChain";
+    private static final String NON_EXISTING_BEHAVIOR = "nonExistingBehavior";
+    private static final String REQUEST_SIGNER_REVOCATION_STATUS_CACHE_TIME = "ocspRequestSignerRevocationStatusCacheTime";
+    
+    /**
+     * 
+     * @return the revocation status cache time, in milliseconds. 0 means no caching is performed.
+     */
+    public long getRequestSignserRevocationStatusCacheTime() {
+        if(data.get(REQUEST_SIGNER_REVOCATION_STATUS_CACHE_TIME) == null) {
+            //60 was the default value prior to this value being moved into the database in 9.4
+            setRequestSignserRevocationStatusCacheTime(60000);
+        }
+        return (long) data.get(REQUEST_SIGNER_REVOCATION_STATUS_CACHE_TIME);
+    }
+    
+    public void setRequestSignserRevocationStatusCacheTime(long cacheTimeInSeconds) {
+        data.put(REQUEST_SIGNER_REVOCATION_STATUS_CACHE_TIME, cacheTimeInSeconds);
+    }
     
     public boolean getIncludeSigningCertificate() {
         if(data.get(INCLUDE_SIGNING_CERTIFICATE) == null) {
@@ -325,4 +344,19 @@ public class GlobalOcspConfiguration extends ConfigurationBase implements Serial
         data.put(PROPERTY_OCSP_USE_MAX_AGE_FOR_EXPIRATION, useMaxValidityForExpiration);
     }
 
+    /**
+     * @return an enum describing how the CAs should (on a global level) react to being queried for a non-existent serial number
+     */
+    public OcspNonExistingBehavior getOcspNonExistingBehavior() {
+        if(data.get(NON_EXISTING_BEHAVIOR) == null) {
+            return OcspNonExistingBehavior.UNKNOWN;
+        } else {
+            return OcspNonExistingBehavior.fromLabel((String) data.get(NON_EXISTING_BEHAVIOR));
+        }
+    }
+    
+    public void setOcspNonExistingBehavior(final OcspNonExistingBehavior ocspNonExistingBehavior) {
+        data.put(NON_EXISTING_BEHAVIOR, ocspNonExistingBehavior.getLabel());
+    }
+    
 }

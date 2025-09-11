@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.validator;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.ejbca.ui.web.rest.api.io.request.EndEntityStatus;
 import org.ejbca.ui.web.rest.api.io.request.SearchEndEntityCriteriaRestRequest;
 

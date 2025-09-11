@@ -23,7 +23,8 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -218,7 +219,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
             }
         }
 
-        if (StringUtils.isEmpty(email) || StringUtils.equalsIgnoreCase(email, "null")) {
+        if (StringUtils.isEmpty(email) || Strings.CI.equals(email, "null")) {
             email = DnComponents.getEMailAddress(certificate);
         }
 

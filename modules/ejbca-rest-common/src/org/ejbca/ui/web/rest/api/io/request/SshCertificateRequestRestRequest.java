@@ -13,7 +13,7 @@
 package org.ejbca.ui.web.rest.api.io.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.cesecore.certificates.certificate.ssh.SshKeyException;
 import org.cesecore.certificates.certificate.ssh.SshKeyFactory;
 import org.cesecore.certificates.certificate.ssh.SshPublicKey;

@@ -17,7 +17,6 @@ import org.cesecore.audit.enums.EventType;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -191,24 +190,6 @@ public interface RaMasterApi {
      * @since RA Master API version 1 (EJBCA 6.8.0)
      */
     RaAuthorizationResult getAuthorization(AuthenticationToken authenticationToken) throws AuthenticationFailedException;
-
-    /**
-     * Returns an AccessSet containing the access rules that are allowed for the given authentication token.
-     * Note that AccessSets do not support deny rules.
-     * @since Initial RA Master API version (EJBCA 6.6.0)
-     * @deprecated RA Master API version 1 (EJBCA 6.8.0). Use {@link #getAuthorization(AuthenticationToken)} instead.
-     */
-    @Deprecated
-    AccessSet getUserAccessSet(AuthenticationToken authenticationToken) throws AuthenticationFailedException;
-
-    /**
-     * Gets multiple access sets at once. Returns them in the same order as in the parameter.
-     * Note that AccessSets do not support deny rules.
-     * @since Initial RA Master API version (EJBCA 6.6.0)
-     * @deprecated RA Master API version 1 (EJBCA 6.8.0). Use {@link #getAuthorization(AuthenticationToken)} instead.
-     */
-    @Deprecated
-    List<AccessSet> getUserAccessSets(List<AuthenticationToken> authenticationTokens);
 
     /**
      * @return a list with information about non-external CAs that the caller is authorized to see.

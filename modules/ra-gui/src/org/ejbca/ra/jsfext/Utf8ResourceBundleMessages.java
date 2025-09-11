@@ -20,7 +20,8 @@ import java.util.ResourceBundle;
 
 import jakarta.faces.context.FacesContext;
 
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.JavaVersion;
+import org.apache.commons.lang3.SystemUtils;
 
 /**
  * Special handling for our resource bundles, so we can store messages keys as UTF-8.
@@ -56,7 +57,7 @@ public class Utf8ResourceBundleMessages extends ResourceBundle {
             }
             value = fallBackResourceBundle.getObject(key);
         }
-        if (value instanceof String && !SystemUtils.isJavaVersionAtLeast(9_00)) {
+        if (value instanceof String && !SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9)) {
             /*
              *  The resource String is actually stored as UTF-8, but in Java 8 the PropertyResourceBundle reads it
              *  using ISO-8859-1, so we need to reinterpret it with the correct encoding.
