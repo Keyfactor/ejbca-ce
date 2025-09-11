@@ -286,14 +286,7 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
      * the OCSP response publishing.
      */
     public abstract boolean storeOcspResponseData(OcspResponseData ocspResponseData) throws PublisherException;
-
-    /**
-     * Validates the values in the input form.
-     * @throws PublisherException If any value is wrong.
-     */
-    public void validateInput() throws PublisherException {
-    }
-
+    
     /**
      * Method used to test the connection to a publisher.
      * 

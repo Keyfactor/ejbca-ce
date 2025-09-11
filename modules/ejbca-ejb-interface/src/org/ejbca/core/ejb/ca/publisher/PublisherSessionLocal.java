@@ -24,7 +24,6 @@ import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
-import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.dto.PublisherData;
 
 /**
@@ -38,13 +37,7 @@ public interface PublisherSessionLocal extends PublisherSession {
      * Makes sure that no Publishers are cached to ensure that we read from database
      * next time we try to access it.
      */
-    void flushPublisherCache();
-
-    /**
-     * @param publisherId The ID of the publisher.
-     * @throws PublisherException If the validation fails.
-     */
-    void validateInput(int publisherId) throws PublisherException;
+    void flushPublisherCache(); 
 
     /**
      * Test the connection to of a publisher

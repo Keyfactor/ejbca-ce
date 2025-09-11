@@ -19,7 +19,6 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
-import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 
 import java.util.Map;
@@ -86,14 +85,7 @@ public interface PublisherProxySessionRemote {
      * @throws AuthorizationDeniedException 
      */
     void renamePublisher(AuthenticationToken admin, String oldname, String newname) throws PublisherExistsException, AuthorizationDeniedException, PublisherDoesntExistsException;
-
-    /**
-     * Validates the input parameters for a publisher.
-     * @param publisherId The ID of the publisher
-     * @throws PublisherException If the validation fails.
-     */
-    void validateInput(int publisherId) throws PublisherException;
-
+    
     /**
      * Test the connection to of a publisher
      * 
