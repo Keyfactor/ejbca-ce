@@ -25,7 +25,6 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
-import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 
 import java.util.Map;
@@ -82,11 +81,6 @@ public class PublisherProxySessionBean implements PublisherProxySessionRemote {
     public void renamePublisher(AuthenticationToken admin, String oldname, String newname) throws PublisherExistsException, AuthorizationDeniedException, PublisherDoesntExistsException {
         publisherSession.renamePublisher(admin, oldname, newname);
 
-    }
-
-    @Override
-    public void validateInput(int publisherId) throws PublisherException {
-        publisherSession.validateInput(publisherId);
     }
 
     @Override
