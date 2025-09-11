@@ -24,7 +24,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -46,7 +46,6 @@ import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 import com.keyfactor.ErrorCode;
-import com.keyfactor.util.CertTools;
 
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
@@ -56,8 +55,6 @@ import jakarta.ejb.TransactionAttributeType;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.Certificate;
-import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -287,15 +284,12 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
                 final long maximumExpirationDate = System.currentTimeMillis() + (long)eep.getRenewDaysBeforeExpiration() *24*60*60*1000;
                 Date maxDate = new Date(maximumExpirationDate);
                 final Date now = new Date();
-                final Collection<Certificate> certs = certificateStoreSession.findCertificatesByUsernameAndStatusAfterExpireDate(
-                        username, CertificateConstants.CERT_ACTIVE, now.getTime());
-                for (final Certificate cert : certs) {
-                    if (maxDate.after(CertTools.getNotAfter(cert))) {
-                        return true;
-                    }
+                final CertificateData certData = certificateStoreSession.findLastExpiringActiveCertByUsername(username, now);
+                if (certData != null && maxDate.getTime() >= certData.getExpireDate()) {
+                    return true;
                 }
                 if (log.isDebugEnabled()) {
-                    if (certs.isEmpty()) {
+                    if (certData == null) {
                         log.debug("End entity is in status GENERATED but has no certificates. Not allowing renewal. Username: " + username);
                     } else {
                         log.debug("Certificates of end entity will expire after allowed period. Not allowing renewal. Username: " + username);
