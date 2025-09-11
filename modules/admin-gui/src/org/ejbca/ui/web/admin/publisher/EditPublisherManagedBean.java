@@ -504,25 +504,6 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         testConnection();
     }
 
-    public boolean validateInput() throws AuthorizationDeniedException {
-        try {
-            if (isManageScpPublisher()) {
-                boolean result = populateScpPublisherPublicKeyField();
-                if (!result) {
-                    return false;
-                }
-            }
-            publisherSession.validateInput(publisherId);
-            addInfoMessage("CONTESTEDSUCESSFULLY");
-            return true;
-        }
-        catch (PublisherException e) {
-            log.error("Error validating the publisher " + getPublisherName(), e);
-            addErrorMessage("ERRORCONNECTINGTOPUB", getPublisherName(), e.getMessage());
-            return false;
-        }
-    }
-
     public void testConnection() throws AuthorizationDeniedException {
         try {
             
