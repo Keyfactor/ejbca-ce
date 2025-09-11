@@ -476,7 +476,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     }    
     
     //Actions
-    private String doSavePublisher() throws AuthorizationDeniedException {
+    public String savePublisher() throws AuthorizationDeniedException {
         try {
             prepareForSave();
         } catch (PublisherDoesntExistsException | PublisherExistsException | PublisherException | ParameterException e) {
@@ -499,13 +499,8 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         return "listpublishers?faces-redirect=true";
     }
 
-    public void savePublisher() throws AuthorizationDeniedException {
-        doSavePublisher();
-        validateInput();
-    }
-    
     public void savePublisherAndTestConnection() throws AuthorizationDeniedException {
-        doSavePublisher();
+        savePublisher();
         testConnection();
     }
 
