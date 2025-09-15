@@ -94,9 +94,6 @@ import org.ejbca.core.ejb.config.GlobalUpgradeConfiguration;
 import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.ca.publisher.BasePublisher;
-import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
-import org.ejbca.core.model.ca.publisher.GeneralPurposeCustomPublisher;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.util.JDBCUtil;
@@ -398,18 +395,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     private boolean upgrade(String dbtype, String oldVersion) {
     	log.debug(">upgrade from version: "+oldVersion+", with dbtype: "+dbtype);
-        if (isLesserThan(oldVersion, "6.10.1")) {
-            log.error(
-                    "Upgrading from EJBCA prior to version 6.10.1 is forbidden. Read the EJBCA Upgrade Guide for more information.");
-            return false;
-        }
         if (isLesserThan(oldVersion, "6.11.0")) {
-            try {
-                upgradeSession.migrateDatabase6110();
-            } catch (UpgradeFailedException e) {
-                return false;
-            }
-            setLastUpgradedToVersion("6.11.0");
+            log.error(
+                    "Upgrading from EJBCA prior to version 6.11.0 is forbidden. Read the EJBCA Upgrade Guide for more information.");
+            return false;
         }
         if (isLesserThan(oldVersion, "6.12.0")) {
             try {
@@ -956,56 +945,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     public boolean isPostUpgradeNeeded() {
         return isLesserThan(getLastPostUpgradedToVersion(), "9.4.0");
     }
-
-    /**
-     * Upgrade to EJBCA 6.11.0 
-     * Provides all current Peer connector roles with the new set of rules, controlling access to protocols
-     * on remote RA instances. All should be allowed by default to not cause any regressions. The rules are
-     * only relevant for RA Peer connector roles.
-     */
-    @Override
-    public void migrateDatabase6110() throws UpgradeFailedException {
-        log.debug("migrateDatabase6110: Adding new rules for protocol access on remote RA instances.");
-        List<Role> allRoles = roleDataSession.getAllRoles();
-        for (Role role : allRoles) {
-            boolean isRaRequestRole = role.hasAccessToResource(AccessRulesConstants.REGULAR_PEERCONNECTOR_INVOKEAPI);
-            if (isRaRequestRole) {
-                role.getAccessRules().put(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_CMP), Role.STATE_ALLOW);
-                role.getAccessRules().put(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_EST), Role.STATE_ALLOW);
-                role.getAccessRules().put(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_WS), Role.STATE_ALLOW);
-                roleDataSession.persistRole(role);
-            }
-        }
-        
-        log.debug("migrateDatabase6110: Checking if external scripts should remain enabled.");
-        boolean enableScripts = false;
-        final Map<Integer, BasePublisher> publishers = publisherSession.getAllPublishersInternal();
-        for (final BasePublisher publisher : publishers.values()) {
-            if (log.isDebugEnabled()) {
-                log.debug("Checking publisher: " + publisher.getName());
-            }
-            if (GeneralPurposeCustomPublisher.class.getName().equals(publisher.getRawData().get(CustomPublisherContainer.CLASSPATH))) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Found General Purpose Custom Publisher: " + publisher.getName());
-                }
-                enableScripts = true;
-                break;
-            }
-        }
-        if (enableScripts) {
-            log.info("External scripts will remain enabled, since there's at least one General Purpose Custom Publisher.");
-            final GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-            gc.setEnableExternalScripts(true);
-            try {
-                globalConfigurationSession.saveConfiguration(authenticationToken, gc);
-            } catch (AuthorizationDeniedException e) {
-                throw new IllegalStateException("Always allow token was denied access.", e);
-            }
-        } else {
-            log.info("External scripts will be disabled, since there are no General Purpose Custom Publishers. The setting can be changed under the 'System Configuration' page.");
-        }
-    }
-    
     
     /**
      * Upgrades to EJBCA 6.12.0
