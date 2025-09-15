@@ -17,20 +17,24 @@ public enum LicenseState {
     VALID("valid"),
     
     // License file is not found/mounted to container.
-    MISSING("not provided"),
+    MISSING("EJBCA license is not provided"),
     
     // License is invalid. It does not matter why.
-    INVALID("is invalid"),
+    INVALID("EJBCA license is invalid"),
     
-    // Useful to start showing warning message
-    TO_BE_EXPIRED("to be expired soon"),
+    // show warning messages
+    TO_BE_EXPIRED_60_DAYS("EJBCA license is to be expired within 60 days"),
+    
+    TO_BE_EXPIRED_30_DAYS("EJBCA license is to be expired within 30 days"),
+    
+    TO_BE_EXPIRED_5_DAYS("EJBCA license is to be expired within 5 days"),
     
     // Expired
-    EXPIRED("is expired"),
-    EXPIRED_LONG_BACK("has long expired"),
+    EXPIRED("EJBCA license has expired and considered out of compliance"),
+    EXPIRED_LONG_BACK("EJBCA license has long expired"),
     
     // Customer is doing something bad e.g. removing libraries or providing their own implementation.
-    EJBCA_SETUP_INVALID("ejbca environment misconfigured"); 
+    EJBCA_SETUP_INVALID("Ejbca environment is misconfigured."); 
     
     private String statusMessage;
 

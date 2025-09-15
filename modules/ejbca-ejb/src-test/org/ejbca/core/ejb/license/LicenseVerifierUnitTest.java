@@ -59,5 +59,5 @@ public class LicenseVerifierUnitTest {
         new LicenseVerifierEnterpriseSessionBean().validateLicense(EXPIRED_LICENSE);
         assertEquals(LicenseStateContainer.getLicenseState(), LicenseState.EXPIRED_LONG_BACK);
     }
-
+    
 }

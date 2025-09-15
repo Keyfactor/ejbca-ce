@@ -42,8 +42,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
-import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.license.LicenseState;
 import org.cesecore.license.LicenseStateContainer;
 import org.ejbca.config.EjbcaConfiguration;
@@ -58,7 +56,7 @@ import org.xml.sax.SAXException;
 
 import com.keyfactor.util.CertTools;
 
-import jakarta.ejb.EJB;
+import jakarta.annotation.PostConstruct;
 import jakarta.ejb.Schedule;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
@@ -84,53 +82,62 @@ public class LicenseVerifierEnterpriseSessionBean {
                     + "V9Ut0N7UfSlgV2rE1QRhIkkMivXUaz6od7ZjQMQ7+OrKuffCspJ3y5eiSR6QVYrk\n"
                     + "MwIDAQAB\n"
                     + "-----END PUBLIC KEY-----";
+    
+    // see GenerateExampleLicense
+    protected static String LICENCE_VERIFIER_KEY_PEM_NON_PRODUCTION = "-----BEGIN PUBLIC KEY-----\n"
+            + "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3cmMoNUCZ8ibP+znRrzH\n"
+            + "rb/3gwsjH+6qs7yx4ctp/wARkyEUJycBBAoRjzDtTRjsQ5630LLtwPtBAzoSHgn5\n"
+            + "jHQdOQmKo07VZVORKAeseLSbXemtIfgn7jEwTDw6i+fN7gzcY5VpUMGsPANZMfdn\n"
+            + "4tQipResD37IC36/N4K3Y3dWmWOKtE8iGR+Phh85+q9WHTKe95TiyVVsSznh4CG2\n"
+            + "IDmuqZZZniauM+Fd0BR7QGbZFwiBLAgikjodTjouDyyjL3piL4JgUN6csqFeaHwv\n"
+            + "hr+/UcuU56g/wo14wrch1hbtIeiF3xOmxwC5KmCzrlPUGwRLiabjuY4XAlufIK0A\n"
+            + "cwIDAQAB\n"
+            + "-----END PUBLIC KEY-----";
         
     private static PublicKey licenseVerificationKey;
-    private static final String LICENCE_FILE_PATH = "/mnt/licence/ejbca-licence";
-        
-    private static final int SOON_TO_EXPIRE_DAYS = 90;
+    private static final String LICENCE_FILE_PATH = "/mnt/license/ejbca-license";
+            
     private static final int EXPIRED_TOO_LONG_DAYS = 100;
     
-    @EJB
-    private AuthorizationSessionLocal authorizationSession;
-    
-    private static int startUpCountDown = 3;
+    private static final String LICENSE_MISSING_MESSAGE = "No license file is provided. Shutting down EJBCA...";
+     
+    @PostConstruct
+    public void init() {
+        // Run immediately at startup
+        log.debug("EJBCA license check timer triggered immediate: " + java.time.LocalDateTime.now());
+        validateLicenseInBackground();
+    }
         
     @Schedule(hour = "*", minute = "*/1", persistent = false)
     public void validateLicenseInBackground() {
-        startUpCountDown--;
         log.debug("EJBCA license check timer triggered: " + java.time.LocalDateTime.now());
-        if (!EjbcaConfiguration.getIsInProductionMode() || startUpCountDown>0) {
-            return;
-        }
-                
-        boolean publicAccessEnabled = 
-                authorizationSession.isAuthorizedNoLogging(new PublicAccessAuthenticationToken("LicenseVerifier", true), "/");
         
         String licenseContent = readLicenseFile();
         if (licenseContent!=null) {
             validateLicense(licenseContent);
+        } else {
+            if (!EjbcaConfiguration.getIsInProductionMode()) {
+                log.debug("EJBCA license is missing in non-production mode. ignoring...");
+                return;
+            }
+            decorateLicenseErrorMessage(LICENSE_MISSING_MESSAGE);
+            System.exit(1);
         }
         
-        if (!publicAccessEnabled) { // high chance of new installation
-            executeFailureFunction();
-        }
     }
     
     private static String readLicenseFile() {
         Path path = Paths.get(LICENCE_FILE_PATH);
         if (!Files.exists(path)) {
-            prepareFailureAction(LicenseState.MISSING);
             return null;
         }
         String content = null;
         try {
             content = Files.readString(path); // assume UTF-8
         } catch (IOException e) {
-            log.error("File ", e);
+            log.info("File could not be read", e);
         }
         if (content==null || content.length() < 100) {
-            prepareFailureAction(LicenseState.MISSING);
             return null;
         } 
         return content;
@@ -139,18 +146,9 @@ public class LicenseVerifierEnterpriseSessionBean {
     private static void prepareFailureAction(LicenseState licenseState) {
         LicenseStateContainer.setLicenseState(licenseState);
         if (licenseState!=LicenseState.VALID) {
-            decorateLicenseErrorMessage("EJBCA license " + licenseState.getStatusMessage() 
+            decorateLicenseErrorMessage(licenseState.getStatusMessage() 
                                             + ". Please contact xxxx@keyfactor.com to renew license.");
         }
-    }
-    
-    private static void executeFailureFunction() {
-        // commented out as definitely not part of 9.4.0
-//        if (System.getenv("SHOOT_MY_FOOT")!=null && System.getenv("NO_LICENSE_PUBLIC_ACCESS")==null &&
-//                LicenseStateContainer.getLicenseState() == LicenseState.EXPIRED_LONG_BACK) {
-//            decorateLicenseErrorMessage("EJBCA license is expired more than 3 months ago. Shutting down...");
-//            System.exit(1);
-//        }
     }
     
     private static void decorateLicenseErrorMessage(String message) {
@@ -161,14 +159,16 @@ public class LicenseVerifierEnterpriseSessionBean {
         LicenseStateContainer.setLicenseInvalidWarning(sb.toString());
     }
     
-
-    
     protected void validateLicense(String licenseContent) {
         
         if (licenseVerificationKey==null) {
-            readPublicKeyFromPem();
+            if (EjbcaConfiguration.getIsInProductionMode()) {
+                readPublicKeyFromPem(LICENCE_VERIFIER_KEY_PEM);
+            } else {
+                readPublicKeyFromPem(LICENCE_VERIFIER_KEY_PEM_NON_PRODUCTION);
+            }
         }
-        
+                
         byte[] licenseBytes = licenseContent.getBytes(StandardCharsets.UTF_8);
         Element doc;
         LicenseData license = null;
@@ -189,13 +189,21 @@ public class LicenseVerifierEnterpriseSessionBean {
 
         Validator validator = factory.getValidator();
         Set<ConstraintViolation<LicenseData>> violations = validator.validate(license);
-        Period soonToExpireCheck = Period.between(ZonedDateTime.now().plusDays(SOON_TO_EXPIRE_DAYS).toLocalDate(),
-                                                                license.getLicense().getExpirationDate().toLocalDate());
+        
         if (violations.isEmpty()) {
-            LicenseStateContainer.setLicenseState(LicenseState.VALID);
-            if (soonToExpireCheck.isNegative()) {
-                prepareFailureAction(LicenseState.TO_BE_EXPIRED);
+            Period soonToExpireCheck = Period.between(ZonedDateTime.now().toLocalDate(),
+                    license.getLicense().getExpirationDate().toLocalDate());
+            
+            if (soonToExpireCheck.getDays() < 5) {
+                prepareFailureAction(LicenseState.TO_BE_EXPIRED_5_DAYS);
+            } else if (soonToExpireCheck.getDays() < 30) {
+                prepareFailureAction(LicenseState.TO_BE_EXPIRED_30_DAYS);
+            } else if (soonToExpireCheck.getDays() < 60) {
+                prepareFailureAction(LicenseState.TO_BE_EXPIRED_60_DAYS);
+            } else {
+                LicenseStateContainer.setLicenseState(LicenseState.VALID);
             }
+
             return;
         }
         
@@ -219,7 +227,7 @@ public class LicenseVerifierEnterpriseSessionBean {
             context = JAXBContext.newInstance(LicenseData.class);
             return (LicenseData) context.createUnmarshaller().unmarshal(node);
         } catch (JAXBException e) {
-            log.error("Could not create xml parser", e);
+            log.info("Could not create xml parser", e);
             prepareFailureAction(LicenseState.EJBCA_SETUP_INVALID);
             return null;
         }
@@ -265,9 +273,9 @@ public class LicenseVerifierEnterpriseSessionBean {
         return null;
     }
     
-    private static void readPublicKeyFromPem() {
+    private static void readPublicKeyFromPem(String pemContent) {
         
-        String keyPem = LICENCE_VERIFIER_KEY_PEM
+        String keyPem = pemContent
                 .replace(CertTools.BEGIN_PUBLIC_KEY, "")
                 .replace(CertTools.END_PUBLIC_KEY, "")
                 .replaceAll("\\s", "");
