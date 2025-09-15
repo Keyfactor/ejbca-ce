@@ -55,7 +55,6 @@ ejbca:
     METRICS_ENABLED: false
     ## Global OCSP configurations
     OCSP_CHECK_SIGN_CERT_VALIDITY: true
-    OCSP_NON_EXISTING_IS_GOOD: false
     ## SMTP configuration
     # Specify the FQDN or IP Address of the SMTP host for EJBCA to send email notifications.
     SMTP_DESTINATION: "localhost"

@@ -55,6 +55,8 @@
     <ui:insert name="banner">
       
       <h:panelGroup layout="block" styleClass="banner-container" >
+      <p:panelGrid columns="2">
+      <h:panelGroup>
         <div id="header">
           <div id="banner">
             <h:outputLink value="#{adminMenuBean.adminWebUrl}">
@@ -62,6 +64,15 @@
             </h:outputLink>
           </div>
         </div>
+      </h:panelGroup>
+      <h:panelGroup rendered="#{not empty adminMenuBean.badLicenseInvalidMessage}">
+            <div class="ui-messages">
+               <div class="ui-messages-error">
+                  <h:outputText value="#{adminMenuBean.badLicenseInvalidMessage}" escape="false"/>
+               </div>
+            </div>
+        </h:panelGroup>
+      </p:panelGrid>
       </h:panelGroup>
       
     </ui:insert>

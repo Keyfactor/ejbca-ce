@@ -39,6 +39,8 @@ public enum OcspSigningCache {
 
     private Map<Integer, OcspSigningCacheEntry> cache = new HashMap<>();
     private Map<Integer, OcspSigningCacheEntry> staging = new HashMap<>();
+    private List<String> ignoredKeyBindingReasons = new ArrayList<>();
+    private List<String> ignoredKeyBindingReasonsStaging = new ArrayList<>();
     private OcspSigningCacheEntry defaultResponderCacheEntry = null;
     private final ReentrantLock lock = new ReentrantLock(false);
     private final static Logger log = Logger.getLogger(OcspSigningCache.class);
@@ -65,6 +67,7 @@ public enum OcspSigningCache {
     public void stagingStart() {
         lock.lock();
         staging = new HashMap<>();
+        ignoredKeyBindingReasonsStaging = new ArrayList<>();
     }
 
     public void stagingAdd(OcspSigningCacheEntry ocspSigningCacheEntry) {
@@ -79,6 +82,14 @@ public enum OcspSigningCache {
                 staging.put(cacheId, ocspSigningCacheEntry);
             }
         }
+    }
+    
+    public void stagingAddIgnoreReason(String reason) {
+        ignoredKeyBindingReasonsStaging.add(reason);
+    }
+    
+    public List<String> getIgnoredKeyBindingReasons() {
+        return ignoredKeyBindingReasons;
     }
 
     public void stagingCommit(final GlobalOcspConfiguration globalOcspConfiguration) {
@@ -125,6 +136,7 @@ public enum OcspSigningCache {
         }
         logDefaultResponderChanges(defaultResponderCacheEntry, stagedDefaultResponder, defaultResponderSubjectDn);
         cache = staging;
+        ignoredKeyBindingReasons = ignoredKeyBindingReasonsStaging;
         defaultResponderCacheEntry = stagedDefaultResponder;
         if (log.isDebugEnabled()) {
             log.debug("Committing the following to OCSP cache:");

@@ -16,7 +16,7 @@ dependencies {
     implementation(libs.commons.lang3)
     implementation(libs.x509.common.util)
     implementation(libs.bundles.cryptotokens)
-    implementation(libs.istack.commons.runtime)
+    implementation(libs.istack.commons.runtime.soap.client)
     implementation(libs.jakarta.xml.bind.api)
     implementation(libs.saaj.impl)
     implementation(libs.streambuffer)

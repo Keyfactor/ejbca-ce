@@ -18,6 +18,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.cert.CertificateParsingException;
@@ -26,7 +27,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -43,14 +43,11 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.X509CA;
+import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
-import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
-import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
-import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
-import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.certificatetransparency.GoogleCtPolicy;
 import org.cesecore.certificates.certificatetransparency.PolicyBreakpoint;
 import org.cesecore.certificates.endentity.EndEntityConstants;
@@ -70,7 +67,11 @@ import org.cesecore.configuration.GlobalConfigurationProxySessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
+import org.cesecore.keybind.InternalKeyBindingNameInUseException;
+import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
+import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.impl.OcspKeyBinding;
+import org.cesecore.keybind.impl.OcspNonExistingBehavior;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.AccessRulesHelper;
@@ -105,10 +106,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
@@ -125,7 +124,6 @@ public class UpgradeSessionBeanSystemTest {
     
     private static CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private static CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
-    private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     private EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private GlobalConfigurationSessionRemote globalConfigSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
@@ -211,153 +209,7 @@ public class UpgradeSessionBeanSystemTest {
         upgradeMethod.setAccessible(true);
         return (Boolean) upgradeMethod.invoke(UpgradeSessionBean.class.newInstance(), firstVersion, secondVersion);
     }
-        
 
-    /**
-     * Tests upgrade from 6.9.0 to 6.10.1.
-     * The tests expects all previous CT log selections in certificate profiles to be changed into corresponding CT Labels.
-     * Additionally Each CT log should get a label set during upgrade. Previous Google logs 
-     * should get the label "Mandatory", remaining logs should get the label "Unlabeled"
-     * @throws CertificateProfileExistsException
-     * @throws AuthorizationDeniedException
-     */
-    @Test
-    public void testUpgradeCtLogsTo6101() throws CertificateProfileExistsException, AuthorizationDeniedException {
-        final String UNUSED_LABEL = "Unlabeled";
-        final String MANDATORY_LABEL = "Mandatory";
-        GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
-        GlobalConfiguration gc = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        final String CTLOG_PUBKEY =
-                "-----BEGIN PUBLIC KEY-----\n"+
-                "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEAnXBeTH4xcl2c8VBZqtfgCTa+5sc\n"+
-                "wV+deHQeaRJQuM5DBYfee9TQn+mvBfYPCTbKEnMGeoYq+BpLCBYgaqV6hw==\n"+
-                "-----END PUBLIC KEY-----\n";
-        final byte[] pubKeyBytes = KeyTools.getBytesFromPEM(CTLOG_PUBKEY, CertTools.BEGIN_PUBLIC_KEY, CertTools.END_PUBLIC_KEY);
-        // Create some logs
-        List<CTLogInfo> ctLogsPreUpgrade = new ArrayList<>();
-        final CTLogInfo log1 = new CTLogInfo("https://one.upgradetest.com/ct/v1/", pubKeyBytes, null, 5000);
-        final CTLogInfo log2 = new CTLogInfo("https://two.upgradetest.com/ct/v1/", pubKeyBytes, null, 5000);
-        final CTLogInfo log3 = new CTLogInfo("https://three.upgradetest.com/ct/v1/", pubKeyBytes, null, 5000);
-        final CTLogInfo log4 = new CTLogInfo("https://four.upgradetest.com/ct/v1/", pubKeyBytes, null, 5000);
-        final CTLogInfo logGoogle = new CTLogInfo("https://ct.googleapis.com/upgradetest/ct/v1/", pubKeyBytes, null, 5000);
-        ctLogsPreUpgrade.addAll(Arrays.asList(log1, log2, log3, log4, logGoogle));
-        gc.addCTLog(log1);
-        gc.addCTLog(log2);
-        gc.addCTLog(log3);
-        gc.addCTLog(log4);
-        gc.addCTLog(logGoogle);
-        globalConfigSession.saveConfiguration(alwaysAllowtoken, gc);
-        final int numberOfCtLogsPreUpgrade = gc.getCTLogs().size();
-        // Create certificate profile using CT Logs
-        CertificateProfile profileUseCt = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-        final String profileUseCtName = "profileUseCt";
-        profileUseCt.setUseCertificateTransparencyInCerts(true);
-        profileUseCt.setEnabledCTLogs(new LinkedHashSet<Integer>(Arrays.asList(log1.getLogId(), log2.getLogId(), logGoogle.getLogId())));
-        certificateProfileSession.addCertificateProfile(alwaysAllowtoken, profileUseCtName, profileUseCt);
-        
-        CertificateProfile profileUseCt2 = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-        final String profileUseCtName2 = "profileUseCt2";
-        profileUseCt2.setUseCertificateTransparencyInCerts(true);
-        profileUseCt2.setEnabledCTLogs(new LinkedHashSet<Integer>(Arrays.asList(log1.getLogId(), log2.getLogId(), log3.getLogId())));
-        profileUseCt2.setCtMinNonMandatoryScts(0);
-        profileUseCt2.setCtMaxNonMandatoryScts(3);
-        certificateProfileSession.addCertificateProfile(alwaysAllowtoken, profileUseCtName2, profileUseCt2);
-        
-        guc.setUpgradedFromVersion("6.9.0"); 
-        globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
-        try {
-            // Perform upgrade 6.9.0 --> 6.10.1
-            upgradeSession.upgrade(null, "6.9.0", false);
-            GlobalConfiguration gcUpgraded = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-            LinkedHashMap<Integer, CTLogInfo> upgradedCtLogs = gcUpgraded.getCTLogs();
-            // Check if all CT Logs survived upgrade
-            assertEquals("Unexpected number of CT logs. Some CT log(s) were lost during upgrade", numberOfCtLogsPreUpgrade, gc.getCTLogs().size());
-            // Check if labels were translated properly
-            assertEquals("Unexpected label set for CT log during upgrade", UNUSED_LABEL, upgradedCtLogs.get(log1.getLogId()).getLabel());
-            assertEquals("Unexpected label set for CT log during upgrade", UNUSED_LABEL, upgradedCtLogs.get(log2.getLogId()).getLabel());
-            assertEquals("Unexpected label set for CT log during upgrade", UNUSED_LABEL, upgradedCtLogs.get(log3.getLogId()).getLabel());
-            assertEquals("Unexpected label set for CT log during upgrade", UNUSED_LABEL, upgradedCtLogs.get(log4.getLogId()).getLabel());
-            assertEquals("Unexpected label set for CT log during upgrade", MANDATORY_LABEL, upgradedCtLogs.get(logGoogle.getLogId()).getLabel());
-            // Verify that CT logs selected in certificate profile were translated to selected CT Labels
-            CertificateProfile upgradedProfileUseCtName = certificateProfileSession.getCertificateProfile(profileUseCtName);
-            CertificateProfile upgradedProfileUseCtName2 = certificateProfileSession.getCertificateProfile(profileUseCtName2);
-            assertTrue("CT Log selected in cert profile was unselected after upgrade", upgradedProfileUseCtName.getEnabledCtLabels().contains(UNUSED_LABEL));
-            assertTrue("CT Log selected in cert profile was unselected after upgrade", upgradedProfileUseCtName.getEnabledCtLabels().contains(MANDATORY_LABEL));
-            assertTrue("CT Log selected in cert profile was unselected after upgrade", upgradedProfileUseCtName2.getEnabledCtLabels().contains(UNUSED_LABEL));
-            assertFalse("Invalid CT label selected after upgrade", upgradedProfileUseCtName2.getEnabledCtLabels().contains(MANDATORY_LABEL));
-            // Verify new SCT min / max value
-            assertTrue("Minimum number of SCTs was not set to 'By validity'", upgradedProfileUseCtName.isNumberOfSctByValidity());
-            assertTrue("Maximum number of SCTs was not set to 'By validity'", upgradedProfileUseCtName.isMaxNumberOfSctByValidity());
-            assertTrue("Minimum number of SCTs was not set to 'By custom'", upgradedProfileUseCtName2.isNumberOfSctByCustom());
-            assertTrue("Maximum number of SCTs was not set to 'By custom'", upgradedProfileUseCtName2.isMaxNumberOfSctByCustom());
-            assertEquals("Minimum number of SCTs was set lower than number of selected labels after upgrade", 1, upgradedProfileUseCtName2.getCtMinScts());
-            assertEquals("Maximum number of SCTs was should not have been changed during upgrade", 3, upgradedProfileUseCtName2.getCtMaxScts());
-        } finally {
-            // Clean up (CT logs are removed in @After)
-            certificateProfileSession.removeCertificateProfile(alwaysAllowtoken, profileUseCtName);
-            certificateProfileSession.removeCertificateProfile(alwaysAllowtoken, profileUseCtName2);
-        }
-    }
-
-    /**
-     * Tests upgrade to 6.11.0. Expected behavior is roles with access to /ra_master/invoke_api before upgrade
-     * should be granted 'Allow' access to the new set of rules controlling protocol access of remote RA 
-     * instances.
-     * @throws RoleExistsException
-     * @throws AuthorizationDeniedException
-     */
-    @Test
-    public void testUpgradeProtocolAccess6110() throws RoleExistsException, AuthorizationDeniedException {
-        GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
-        String roleNameInvokeApi = "roleInvokeApi";
-        String roleNameSuperAdmin = "roleSuperAdmin";
-        String roleNameLowAccess = "roleLowAccess";
-        Role roleInvokeApiPreUpgrade = new Role(null, roleNameInvokeApi);
-        Role roleSuperAdminPreUpgrade = new Role(null, roleNameSuperAdmin);
-        Role roleLowAccessPreUpgrade = new Role(null, roleNameLowAccess);
-        roleInvokeApiPreUpgrade.getAccessRules().put(AccessRulesConstants.REGULAR_PEERCONNECTOR_INVOKEAPI, Role.STATE_ALLOW);
-        roleSuperAdminPreUpgrade.getAccessRules().put(StandardRules.ROLE_ROOT.resource(), Role.STATE_ALLOW);
-        roleLowAccessPreUpgrade.getAccessRules().put(AccessRulesConstants.REGULAR_RAFUNCTIONALITY, Role.STATE_ALLOW);
-        try {
-            Role roleInvokeApiPersisted = roleSession.persistRole(alwaysAllowtoken, roleInvokeApiPreUpgrade);
-            Role roleSuperAdminPersisted = roleSession.persistRole(alwaysAllowtoken, roleSuperAdminPreUpgrade);
-            Role roleLowAccessPersisted = roleSession.persistRole(alwaysAllowtoken, roleLowAccessPreUpgrade);
-            // Perform upgrade 6.10.1 --> 6.11.0
-            guc.setUpgradedFromVersion("6.10.1");
-            globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
-            upgradeSession.upgrade(null, "6.10.1", false);
-            
-            Role roleInvokeApiPostUpgrade = roleSession.getRole(alwaysAllowtoken, roleInvokeApiPersisted.getRoleId());
-            Role roleSuperAdminPostUpgrade = roleSession.getRole(alwaysAllowtoken, roleSuperAdminPersisted.getRoleId());
-            Role roleLowAccessPostUpgrade = roleSession.getRole(alwaysAllowtoken, roleLowAccessPersisted.getRoleId());
-            // Make sure roles survived upgrade at all
-            assertNotNull("Role vanished during upgrade", roleInvokeApiPostUpgrade);
-            assertNotNull("Role vanished during upgrade", roleSuperAdminPostUpgrade);
-            assertNotNull("Role vanished during upgrade", roleLowAccessPostUpgrade);
-            // Verify new and old access rules
-            assertTrue("Role lost old access rules during upgrade", roleInvokeApiPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERCONNECTOR_INVOKEAPI));
-            assertTrue("Denied access to new access rules", roleInvokeApiPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_CMP));
-            assertTrue("Denied access to new access rules", roleInvokeApiPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_EST));
-            assertTrue("Denied access to new access rules", roleInvokeApiPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_WS));
-            
-            assertTrue("Role lost old access rules during upgrade", roleSuperAdminPostUpgrade.hasAccessToResource(StandardRules.ROLE_ROOT.resource()));
-            assertTrue("Denied access to new access rules", roleSuperAdminPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_EST));
-            assertTrue("Denied access to new access rules", roleSuperAdminPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_CMP));
-            assertTrue("Denied access to new access rules", roleSuperAdminPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_WS));
-            
-            assertTrue("Role lost old access rules during upgrade", roleLowAccessPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_RAFUNCTIONALITY));
-            assertFalse("Unexpected rule allowed", roleLowAccessPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_CMP));
-            assertFalse("Unexpected rule allowed", roleLowAccessPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_EST));
-            assertFalse("Unexpected rule allowed", roleLowAccessPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_WS));
-        } finally {
-            // Clean up
-            deleteRole(null, roleNameInvokeApi);
-            deleteRole(null, roleNameSuperAdmin);
-            deleteRole(null, roleNameLowAccess);
-        }     
-    }
-    
-    
     @Test
     public void testUpgradeOcspExtensions6120() throws Exception {
         GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
@@ -1021,13 +873,15 @@ public class UpgradeSessionBeanSystemTest {
             //Set the values to non-default. 
             cesecoreConfigSession.setConfigurationValue("ocsp.includesignercert", "false");
             cesecoreConfigSession.setConfigurationValue("ocsp.includecertchain", "false");
+            cesecoreConfigSession.setConfigurationValue("ocsp.reqsigncertrevcachetime", "30000");
             
             //Perform upgrade
             upgradeSession.upgrade(/* database */ null, /* upgrade from */ "9.3.0", /* post upgrade? */ false);
             //Retrieve config and verify upgrade
             GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-            assertFalse("ocsp.includesignercert wasn't upgraded.", globalOcspConfiguration.getIncludeSigningCertificate());
-            assertFalse("ocsp.includecertchain wasn't upgraded.", globalOcspConfiguration.getIncludeCertificateChain());
+            assertFalse("ocsp.includesignercert was not migrated.", globalOcspConfiguration.getIncludeSigningCertificate());
+            assertFalse("ocsp.includecertchain was not migrated.", globalOcspConfiguration.getIncludeCertificateChain());
+            assertEquals("ocsp.reqsigncertrevcachetime was not migrated", 30000L, globalOcspConfiguration.getRequestSignserRevocationStatusCacheTime());
             
         } finally {
                        
@@ -1123,6 +977,177 @@ public class UpgradeSessionBeanSystemTest {
             globalEEPConfiguration.setEnableEndEntityProfileLimitations(originalEEPLimitations);
             globalConfigSession.saveConfiguration(alwaysAllowtoken, globalEEPConfiguration);
 
+        }
+    }
+    
+    @Test
+    public void testMigrateOcspNonExistingValuesGlobal_9_4_0_Good() throws AuthorizationDeniedException {
+        GlobalOcspConfiguration currentGlobalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        OcspNonExistingBehavior originalValue = currentGlobalOcspConfiguration.getOcspNonExistingBehavior();
+        try {
+            //Set up EJBCA in a pre-upgrade state
+            final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            guc.setUpgradedToVersion("9.3.0");
+            guc.setPostUpgradedToVersion("9.3.0");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+            //Set the values to something non-default
+            cesecoreConfigSession.setConfigurationValue("ocsp.nonexistingisgood", "true");
+            cesecoreConfigSession.setConfigurationValue("ocsp.nonexistingisrevoked", "false");
+            cesecoreConfigSession.setConfigurationValue("ocsp.nonexistingisunauthorized", "false");
+            //Perform upgrade
+            upgradeSession.upgrade(/* database */ null, /* upgrade from */ "9.3.0", /* post upgrade? */ false);
+            //Check the value
+            GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            assertEquals("ocsp.nonexistingisgood=true was not upgraded.", OcspNonExistingBehavior.GOOD, globalOcspConfiguration.getOcspNonExistingBehavior());
+        } finally {
+            GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            globalOcspConfiguration.setOcspNonExistingBehavior(originalValue);
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, globalOcspConfiguration);
+        }    
+    }
+    
+    @Test
+    public void testMigrateOcspNonExistingValuesGlobal_9_4_0_Unknown() throws AuthorizationDeniedException {
+        GlobalOcspConfiguration currentGlobalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        OcspNonExistingBehavior originalValue = currentGlobalOcspConfiguration.getOcspNonExistingBehavior();
+        try {
+            //Set up EJBCA in a pre-upgrade state
+            final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            guc.setUpgradedToVersion("9.3.0");
+            guc.setPostUpgradedToVersion("9.3.0");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+            //Set the values to something non-default
+            cesecoreConfigSession.setConfigurationValue("ocsp.nonexistingisgood", "false");
+            cesecoreConfigSession.setConfigurationValue("ocsp.nonexistingisrevoked", "false");
+            cesecoreConfigSession.setConfigurationValue("ocsp.nonexistingisunauthorized", "false");
+            //Perform upgrade
+            upgradeSession.upgrade(/* database */ null, /* upgrade from */ "9.3.0", /* post upgrade? */ false);
+            //Check the value
+            GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            assertEquals("ocsp.nonexistingis unkown status was not upgraded.", OcspNonExistingBehavior.UNKNOWN, globalOcspConfiguration.getOcspNonExistingBehavior());
+        } finally {
+            GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            globalOcspConfiguration.setOcspNonExistingBehavior(originalValue);
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, globalOcspConfiguration);
+        }   
+    }
+    
+    @Test
+    public void testMigrateOcspNonExistingValuesGlobal_9_4_0_Revoked() throws AuthorizationDeniedException {
+        GlobalOcspConfiguration currentGlobalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        OcspNonExistingBehavior originalValue = currentGlobalOcspConfiguration.getOcspNonExistingBehavior();
+        try {
+            //Set up EJBCA in a pre-upgrade state
+            final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            guc.setUpgradedToVersion("9.3.0");
+            guc.setPostUpgradedToVersion("9.3.0");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+            //Set the values to something non-default
+            cesecoreConfigSession.setConfigurationValue("ocsp.nonexistingisgood", "false");
+            cesecoreConfigSession.setConfigurationValue("ocsp.nonexistingisrevoked", "true");
+            cesecoreConfigSession.setConfigurationValue("ocsp.nonexistingisunauthorized", "false");
+            //Perform upgrade
+            upgradeSession.upgrade(/* database */ null, /* upgrade from */ "9.3.0", /* post upgrade? */ false);
+            //Check the value
+            GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            assertEquals("ocsp.nonexistingisrevoked=true was not upgraded.", OcspNonExistingBehavior.REVOKED, globalOcspConfiguration.getOcspNonExistingBehavior());
+        } finally {
+            GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            globalOcspConfiguration.setOcspNonExistingBehavior(originalValue);
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, globalOcspConfiguration);
+        }    
+    }
+    
+    @Test
+    public void testMigrateOcspNonExistingValuesGlobal_9_4_0_Unauthorized() throws AuthorizationDeniedException {
+        GlobalOcspConfiguration currentGlobalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        OcspNonExistingBehavior originalValue = currentGlobalOcspConfiguration.getOcspNonExistingBehavior();
+        try {
+            //Set up EJBCA in a pre-upgrade state
+            final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            guc.setUpgradedToVersion("9.3.0");
+            guc.setPostUpgradedToVersion("9.3.0");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+            //Set the values to something non-default
+            cesecoreConfigSession.setConfigurationValue("ocsp.nonexistingisgood", "false");
+            cesecoreConfigSession.setConfigurationValue("ocsp.nonexistingisrevoked", "false");
+            cesecoreConfigSession.setConfigurationValue("ocsp.nonexistingisunauthorized", "true");
+            //Perform upgrade
+            upgradeSession.upgrade(/* database */ null, /* upgrade from */ "9.3.0", /* post upgrade? */ false);
+            //Check the value
+            GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            assertEquals("ocsp.nonexistingisunauthorized=true was not upgraded.", OcspNonExistingBehavior.UNAUTHORIZED, globalOcspConfiguration.getOcspNonExistingBehavior());
+        } finally {
+            GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            globalOcspConfiguration.setOcspNonExistingBehavior(originalValue);
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, globalOcspConfiguration);
+        }    
+    }
+    
+    @Test
+    public void testMigrateOcspNonExistingValuesGlobal_9_4_0_failOnMultiple() throws AuthorizationDeniedException {
+        GlobalOcspConfiguration currentGlobalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        OcspNonExistingBehavior originalValue = currentGlobalOcspConfiguration.getOcspNonExistingBehavior();
+        String nonexistingisgood = cesecoreConfigSession.getConfigurationValue("ocsp.nonexistingisgood");
+        String nonexistingisrevoked = cesecoreConfigSession.getConfigurationValue("ocsp.nonexistingisrevoked");
+        String nonexistingisunauthorized = cesecoreConfigSession.getConfigurationValue("ocsp.nonexistingisunauthorized");
+        try {
+            //Set up EJBCA in a pre-upgrade state
+            final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            guc.setUpgradedToVersion("9.3.0");
+            guc.setPostUpgradedToVersion("9.3.0");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+            //Set the values to something non-default
+            cesecoreConfigSession.setConfigurationValue("ocsp.nonexistingisgood", "true");
+            cesecoreConfigSession.setConfigurationValue("ocsp.nonexistingisrevoked", "true");
+            cesecoreConfigSession.setConfigurationValue("ocsp.nonexistingisunauthorized", "false");
+            //Perform upgrade
+            boolean result = upgradeSession.upgrade(/* database */ null, /* upgrade from */ "9.3.0", /* post upgrade? */ false);
+            assertFalse("Upgrade should have failed if multiple values were set to true", result);
+        } finally {
+            GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            globalOcspConfiguration.setOcspNonExistingBehavior(originalValue);
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, globalOcspConfiguration);
+            cesecoreConfigSession.setConfigurationValue("ocsp.nonexistingisgood", nonexistingisgood);
+            cesecoreConfigSession.setConfigurationValue("ocsp.nonexistingisrevoked", nonexistingisrevoked);
+            cesecoreConfigSession.setConfigurationValue("ocsp.nonexistingisunauthorized", nonexistingisunauthorized);
+        }    
+    }
+     
+    @Test
+    public void testUpgradeOcspResponders9_4_0() throws InternalKeyBindingNameInUseException, AuthorizationDeniedException, CryptoTokenOfflineException, InvalidAlgorithmException, InternalKeyBindingNonceConflictException {
+        final String responderName = "testUpgradeOcspResponders9_4_0";
+        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(alwaysAllowtoken, "foo123".toCharArray(), true, false, responderName,
+                "1024", "1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);     
+        
+        final Map<String, Serializable> dataMap = new LinkedHashMap<>();
+        dataMap.put("nonexistingisgood", Boolean.TRUE);
+        int keyBindingId = internalKeyBindingSession.createInternalKeyBinding(alwaysAllowtoken, OcspKeyBinding.IMPLEMENTATION_ALIAS, responderName, InternalKeyBindingStatus.ACTIVE, null,
+                cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS,  AlgorithmConstants.SIGALG_SHA1_WITH_RSA, dataMap, null);
+        
+        OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingSession.getInternalKeyBinding(alwaysAllowtoken, keyBindingId);
+        assertEquals(true, ocspKeyBinding.getNonExistingGood());
+        try {
+            //Set up EJBCA in a pre-upgrade state
+            final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            guc.setUpgradedToVersion("9.3.0");
+            guc.setPostUpgradedToVersion("9.3.0");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+            //Perform upgrade
+            upgradeSession.upgrade(/* database */ null, /* upgrade from */ "9.3.0", /* post upgrade? */ false);
+            //Retrieve responder, verify that upgrade was performed
+            OcspKeyBinding upgradedResponder = (OcspKeyBinding) internalKeyBindingSession.getInternalKeyBinding(alwaysAllowtoken, keyBindingId);
+            assertEquals("OCSP Responder was not upgraded to 9.4.0 standard", OcspNonExistingBehavior.GOOD, upgradedResponder.getOcspNonExistingBehavior());
+            
+        } finally {
+            internalKeyBindingSession.deleteInternalKeyBinding(alwaysAllowtoken, keyBindingId);
+            CryptoTokenTestUtils.removeCryptoToken(alwaysAllowtoken, cryptoTokenId);
         }
     }
     
