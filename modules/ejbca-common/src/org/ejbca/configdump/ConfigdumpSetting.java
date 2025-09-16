@@ -49,6 +49,7 @@ public class ConfigdumpSetting implements Serializable {
         APPROVALPROFILE("approval-profiles", "Approval Profile"),
         CERTPROFILE("certificate-profiles", "CERTPROFILE"),
         EEPROFILE("end-entity-profiles", "EEPROFILE"),
+        EEPROFILECONFIG("end-entity-profiles", "EEPROFILECONFIG"),
         SERVICE("services", "Services"),
         ROLE("admin-roles", "ROLE"),
         KEYBINDING("internal-key-bindings", "KEYBINDING"),
