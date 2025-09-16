@@ -60,6 +60,7 @@ public class ConfigdumpSetting implements Serializable {
         ESTCONFIG("est-config", "ESTCONFIG"),
         VALIDATOR("validators", "Validator"),
         CTLOG("ct-logs", "CT Log"),
+        CTCONFIG("ct-logs", "Global CT Configuration"),
         EXTENDEDKEYUSAGE("extended-key-usage", "EXTENDEDKEYUSAGE"),
         CERTEXTENSION("custom-certificate-extensions", "CERTEXTENSION"),
         OAUTHKEY("trusted-oauth-providers", "OAUTHKEY"),
