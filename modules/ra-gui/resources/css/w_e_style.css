@@ -575,15 +575,15 @@ textarea#enrollWithRequestIdForm\:certificateRequest {
 }
 
 #contentForm\:parentSelectSearchType {
-    width: 83%;
-    margin: 1% 1% 0% 0;
+    width: 91%;
+    margin: 1% 1% 0 0;
 }
 
-#contentForm\:selectSearchTermScope
+#contentForm\:selectSearchTermScope,
 #contentForm\:selectSearchTermScopeOptions {
    display: block;
-   width: 100%;
-   margin: 0%
+   width: 100% !important;
+   margin: 0
 }
 
 .parentCriteriaCheckbox {

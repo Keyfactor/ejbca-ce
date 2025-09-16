@@ -68,10 +68,10 @@
                             </h:inputText>
                         </h:panelGroup>
                         
-                        <h:panelGroup id="parentSelectSearchType" styleClass="pure-u-1">
-                                <h:panelGroup id="selectSearchTermScope">
-                                    <h:selectOneMenu id="selectSearchTermScopeOptions" styleClass="radio-button-table"
-                                        value="#{raSearchEesBean.selectSearchTermScope}" style="display: inline-block;">
+                        <h:panelGroup id="parentSelectSearchType">
+                                <h:panelGroup id="selectSearchTermScope" styleClass="pure-u-1 pure-u-lg-4-5">
+                                    <h:selectOneMenu id="selectSearchTermScopeOptions"
+                                        value="#{raSearchEesBean.selectSearchTermScope}">
                                         <f:selectItems value="#{raSearchEesBean.availableSearchScopes}" 
                                         	itemDescription="#{raSearchEesBean.availableSearchScopes.description}"/>
                                         <f:validateRequired/>
