@@ -21,8 +21,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
-import java.time.Period;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.List;
 import java.util.Set;
@@ -85,19 +85,19 @@ public class LicenseVerifierEnterpriseSessionBean {
     
     // see GenerateExampleLicense
     protected static String LICENCE_VERIFIER_KEY_PEM_NON_PRODUCTION = "-----BEGIN PUBLIC KEY-----\n"
-            + "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3cmMoNUCZ8ibP+znRrzH\n"
-            + "rb/3gwsjH+6qs7yx4ctp/wARkyEUJycBBAoRjzDtTRjsQ5630LLtwPtBAzoSHgn5\n"
-            + "jHQdOQmKo07VZVORKAeseLSbXemtIfgn7jEwTDw6i+fN7gzcY5VpUMGsPANZMfdn\n"
-            + "4tQipResD37IC36/N4K3Y3dWmWOKtE8iGR+Phh85+q9WHTKe95TiyVVsSznh4CG2\n"
-            + "IDmuqZZZniauM+Fd0BR7QGbZFwiBLAgikjodTjouDyyjL3piL4JgUN6csqFeaHwv\n"
-            + "hr+/UcuU56g/wo14wrch1hbtIeiF3xOmxwC5KmCzrlPUGwRLiabjuY4XAlufIK0A\n"
-            + "cwIDAQAB\n"
+            + "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsRP8KJ5tgi2XXTyZ5zEM\n"
+            + "EAmWFe9AFQxEejOpSaZw4o+kQ0aaEWb3GgUxl1fFyBOdi0T5D20FAbupzaulOC5L\n"
+            + "N4R4uZphUdFrFc0XFwX9ZsfeXi2PiGay1kLv2lxdrYLLj3bv6OpwSD221shp3itX\n"
+            + "twiLkriA1+uB5/fiZr0R74G9/PHk4uEGSWq1F7i0igR71hu/++w9W8tKSl1YUj6g\n"
+            + "plNFNyd+uvE0NESvgq3TRKhqwBSTl3Sg3fBtwho4PbVZUZVDbUSyi4lpjEcZdgCs\n"
+            + "O35VPSaNvMEFesYmotiQcl+OQgteK8prJkxFuq53plQ3TY78fgsGNlvovYfLo2JS\n"
+            + "4wIDAQAB\n"
             + "-----END PUBLIC KEY-----";
         
     private static PublicKey licenseVerificationKey;
     private static final String LICENCE_FILE_PATH = "/mnt/license/ejbca-license";
             
-    private static final int EXPIRED_TOO_LONG_DAYS = 100;
+    private static final int EXPIRED_TOO_LONG_DAYS = 90;
     
     private static final String LICENSE_MISSING_MESSAGE = "No license file is provided. Shutting down EJBCA...";
      
@@ -107,8 +107,9 @@ public class LicenseVerifierEnterpriseSessionBean {
         log.debug("EJBCA license check timer triggered immediate: " + java.time.LocalDateTime.now());
         validateLicenseInBackground();
     }
-        
-    @Schedule(hour = "*", minute = "*/1", persistent = false)
+     
+    @Schedule(hour = "*/1", persistent = false)
+    //@Schedule(hour = "*", minute = "*/1", persistent = false)
     public void validateLicenseInBackground() {
         log.debug("EJBCA license check timer triggered: " + java.time.LocalDateTime.now());
         
@@ -144,18 +145,30 @@ public class LicenseVerifierEnterpriseSessionBean {
     }
     
     private static void prepareFailureAction(LicenseState licenseState) {
+        prepareFailureAction(licenseState, licenseState.getStatusMessage());
+    }
+    
+    private static void prepareFailureActionForExpiry(LicenseState licenseState, long days) {
+        prepareFailureAction(licenseState, licenseState.getStatusMessage()
+                    .replace(LicenseState.TO_BE_EXPIRE_DAYS_TEMPLATE, "" + days));
+    }
+    
+    private static void prepareFailureAction(LicenseState licenseState, String message) {
         LicenseStateContainer.setLicenseState(licenseState);
         if (licenseState!=LicenseState.VALID) {
-            decorateLicenseErrorMessage(licenseState.getStatusMessage() 
-                                            + ". Please contact xxxx@keyfactor.com to renew license.");
+            decorateLicenseErrorMessage(message + ". Please contact xxxx@keyfactor.com to renew license.");
+        }
+        if (licenseState==LicenseState.EJBCA_SETUP_INVALID || licenseState==LicenseState.INVALID
+                || licenseState==LicenseState.EXPIRED_LONG_BACK ) {
+            System.exit(1);
         }
     }
     
     private static void decorateLicenseErrorMessage(String message) {
         StringBuilder sb = new StringBuilder();
-        final String banner = "###########################################################################";
+        final String banner = "###############################################################################";
         List.of(banner, banner, banner, "", message, "", banner, banner, banner).forEach(log::error);
-        List.of(banner, "", message, "", banner ).forEach(x -> sb.append("<b>" + x + "</b><br>"));
+        List.of("", message, "").forEach(x -> sb.append("<b>" + x + "</b><br>"));
         LicenseStateContainer.setLicenseInvalidWarning(sb.toString());
     }
     
@@ -191,15 +204,15 @@ public class LicenseVerifierEnterpriseSessionBean {
         Set<ConstraintViolation<LicenseData>> violations = validator.validate(license);
         
         if (violations.isEmpty()) {
-            Period soonToExpireCheck = Period.between(ZonedDateTime.now().toLocalDate(),
+            long daysToExpiry = ChronoUnit.DAYS.between(ZonedDateTime.now().toLocalDate(),
                     license.getLicense().getExpirationDate().toLocalDate());
-            
-            if (soonToExpireCheck.getDays() < 5) {
-                prepareFailureAction(LicenseState.TO_BE_EXPIRED_5_DAYS);
-            } else if (soonToExpireCheck.getDays() < 30) {
-                prepareFailureAction(LicenseState.TO_BE_EXPIRED_30_DAYS);
-            } else if (soonToExpireCheck.getDays() < 60) {
-                prepareFailureAction(LicenseState.TO_BE_EXPIRED_60_DAYS);
+                        
+            if (daysToExpiry < 5) {
+                prepareFailureActionForExpiry(LicenseState.TO_BE_EXPIRED_5_DAYS, daysToExpiry);
+            } else if (daysToExpiry < 30) {
+                prepareFailureActionForExpiry(LicenseState.TO_BE_EXPIRED_30_DAYS, daysToExpiry);
+            } else if (daysToExpiry < 60) {
+                prepareFailureActionForExpiry(LicenseState.TO_BE_EXPIRED_60_DAYS, daysToExpiry);
             } else {
                 LicenseStateContainer.setLicenseState(LicenseState.VALID);
             }
@@ -208,12 +221,15 @@ public class LicenseVerifierEnterpriseSessionBean {
         }
         
         if (violations.stream().anyMatch(v -> v.getMessage().equals(License.LICENSE_EXPIRED))) {
-            Period expireLongBackCheck = Period.between(ZonedDateTime.now().minusDays(EXPIRED_TOO_LONG_DAYS).toLocalDate(),
-                    license.getLicense().getExpirationDate().toLocalDate());
-            if (expireLongBackCheck.isNegative()) {
-                prepareFailureAction(LicenseState.EXPIRED_LONG_BACK);
+            
+            long expiredSince = ChronoUnit.DAYS.between(
+                                                license.getLicense().getExpirationDate().toLocalDate(), 
+                                                ZonedDateTime.now().toLocalDate());
+            
+            if (expiredSince > EXPIRED_TOO_LONG_DAYS) {
+                prepareFailureActionForExpiry(LicenseState.EXPIRED_LONG_BACK, EXPIRED_TOO_LONG_DAYS);
             } else {
-                prepareFailureAction(LicenseState.EXPIRED);
+                prepareFailureActionForExpiry(LicenseState.EXPIRED, EXPIRED_TOO_LONG_DAYS - expiredSince);
             }
         } else {
             prepareFailureAction(LicenseState.INVALID);
@@ -288,7 +304,7 @@ public class LicenseVerifierEnterpriseSessionBean {
             keyFactory = KeyFactory.getInstance("RSA");
             licenseVerificationKey = keyFactory.generatePublic(keySpec);
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-            log.info("Unable to parse license verification key.");
+            log.info("Unable to parse license verification key.", e);
             prepareFailureAction(LicenseState.EJBCA_SETUP_INVALID);
         }
         

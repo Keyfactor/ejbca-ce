@@ -23,18 +23,20 @@ public enum LicenseState {
     INVALID("EJBCA license is invalid"),
     
     // show warning messages
-    TO_BE_EXPIRED_60_DAYS("EJBCA license is to be expired within 60 days"),
+    TO_BE_EXPIRED_60_DAYS("EJBCA license expires within _days_ days"),
     
-    TO_BE_EXPIRED_30_DAYS("EJBCA license is to be expired within 30 days"),
+    TO_BE_EXPIRED_30_DAYS("EJBCA license expires within _days_ days"),
     
-    TO_BE_EXPIRED_5_DAYS("EJBCA license is to be expired within 5 days"),
+    TO_BE_EXPIRED_5_DAYS("EJBCA license expires within _days_ days"),
     
     // Expired
-    EXPIRED("EJBCA license has expired and considered out of compliance"),
-    EXPIRED_LONG_BACK("EJBCA license has long expired"),
+    EXPIRED("EJBCA license has expired and will shut down after _days_ days"),
+    EXPIRED_LONG_BACK("EJBCA license has expired since _days_ days. Shutting down."),
     
     // Customer is doing something bad e.g. removing libraries or providing their own implementation.
     EJBCA_SETUP_INVALID("Ejbca environment is misconfigured."); 
+    
+    public static final String TO_BE_EXPIRE_DAYS_TEMPLATE = "_days_";
     
     private String statusMessage;
 

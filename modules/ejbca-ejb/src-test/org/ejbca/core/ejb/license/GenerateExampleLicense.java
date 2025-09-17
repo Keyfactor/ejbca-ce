@@ -154,6 +154,16 @@ public class GenerateExampleLicense {
     public void expire5DaysLicense() throws Exception {
         prepareExampleLicense(ZonedDateTime.now().plusDays(4), "expires-in-5-days.xml");
     }
+    
+    @Test
+    public void expiredAlready5DaysBackLicense() throws Exception {
+        prepareExampleLicense(ZonedDateTime.now().minusDays(5), "expired-5-days-ago.xml");
+    }
+    
+    @Test
+    public void expiredAlready90DaysBackLicense() throws Exception {
+        prepareExampleLicense(ZonedDateTime.now().minusDays(91), "expired-91-days-ago.xml");
+    }
         
     private void prepareExampleLicense(ZonedDateTime expiryDate, String outputFileName) throws Exception {
         
