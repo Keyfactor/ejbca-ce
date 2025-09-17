@@ -582,6 +582,32 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     }
 
     @Override
+    public void validateInput(int publisherId) throws PublisherException {
+        if (log.isTraceEnabled()) {
+            log.trace(">validateInput(id: " + publisherId + ")");
+        }
+        final var dto = repository.findById(publisherId);
+        if (dto == null) {
+            String msg = intres.getLocalizedMessage("publisher.nopublisher", publisherId);
+            log.info(msg);
+        }
+        else {
+            try {
+                getPublisher(dto).validateInput();
+                String msg = intres.getLocalizedMessage("publisher.validateinput", dto.name());
+                log.info(msg);
+            } catch (PublisherException e) {
+                String msg = intres.getLocalizedMessage("publisher.errorvalidateinputpublisher", dto.name());
+                log.info(msg);
+                throw e;
+            }
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("<validateInput(id: " + publisherId + ")");
+        }
+    }
+
+    @Override
     public void testConnection(int publisherId) throws PublisherConnectionException { // NOPMD: this is not a JUnit test
         if (log.isTraceEnabled()) {
             log.trace(">testConnection(id: " + publisherId + ")");
