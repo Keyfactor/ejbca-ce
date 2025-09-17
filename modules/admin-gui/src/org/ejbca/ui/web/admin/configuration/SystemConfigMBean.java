@@ -520,25 +520,25 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private List<OAuthKeyInfo> oauthKeys = null;
     private String defaultOauthKeyLabel = null;
 
-    private List<String> oauthProvidersAllowlist = null;
+    private List<String> oauthHostnamesAllowlist = null;
 
     /**
      * Gets the OAuth providers allowlist as a newline-separated string for the textarea
      * @return String with one hostname per line
      */
-    public String getCurrentOauthProvidersAllowlist() {
+    public String getCurrentOauthHostnamesAllowlist() {
 
         final String[] allowedHosts = getOAuthConfiguration().getAllowedOauthHosts();
         if (allowedHosts == null) {
-            oauthProvidersAllowlist = Collections.emptyList();
+            oauthHostnamesAllowlist = Collections.emptyList();
         } else {
-            oauthProvidersAllowlist = Arrays.asList(allowedHosts);
+            oauthHostnamesAllowlist = Arrays.asList(allowedHosts);
         }
 
-        if (oauthProvidersAllowlist.isEmpty()) {
+        if (oauthHostnamesAllowlist.isEmpty()) {
             return WebConfiguration.getHostName();
         } else {
-            return String.join("\n", oauthProvidersAllowlist);
+            return String.join("\n", oauthHostnamesAllowlist);
         }
 
     }
@@ -547,14 +547,14 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
      * Sets the OAuth providers allowlist from a newline-separated string
      * @param allowlist String containing hostnames separated by newlines
      */
-    public void setCurrentOauthProvidersAllowlist(final String allowlist) {
+    public void setCurrentOauthHostnamesAllowlist(final String allowlist) {
         if (allowlist == null || allowlist.trim().isEmpty()) {
-            oauthProvidersAllowlist = new ArrayList<>();
+            oauthHostnamesAllowlist = new ArrayList<>();
             return;
         }
 
         // Split on newlines and filter out empty lines
-        oauthProvidersAllowlist = Arrays.stream(allowlist.split("\\R"))  // splits on all types of newlines
+        oauthHostnamesAllowlist = Arrays.stream(allowlist.split("\\R"))  // splits on all types of newlines
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
                 .collect(Collectors.toList());
@@ -651,8 +651,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         flushCache();
     }
 
-    public void saveAllowedOauthHosts() {
-        getOAuthConfiguration().setAllowedOauthHosts(oauthProvidersAllowlist.toArray(new String[0]));
+    public void saveAllowedOauthHostnames() {
+        getOAuthConfiguration().setAllowedOauthHosts(oauthHostnamesAllowlist.toArray(new String[0]));
         try {
             getEjbcaWebBean().saveOAuthConfiguration(oAuthConfiguration);
         } catch (AuthorizationDeniedException e) {

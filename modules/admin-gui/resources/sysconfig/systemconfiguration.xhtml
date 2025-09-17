@@ -555,7 +555,7 @@
 		</h:panelGrid>
 	</h:form>
 
-	<h:form id="oauthprovidersallowlist" enctype="multipart/form-data">
+	<h:form id="oauthhostnamesallowlist" enctype="multipart/form-data">
 
 			<h4>
 				<h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_ALLOW_LIST}"/>
@@ -565,12 +565,12 @@
 			</h:panelGroup>
 			<br/>
 			<br/>
-			<h:inputTextarea id="oauthprovidersallowlistTextArea"
+			<h:inputTextarea id="oauthhostnamesallowlistTextArea"
 							 disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"
-							 value="#{systemConfigMBean.currentOauthProvidersAllowlist}" cols="40" rows="4"/>
+							 value="#{systemConfigMBean.currentOauthHostnamesAllowlist}" cols="40" rows="4"/>
 			<br/>
 
-			<h:commandButton action="#{systemConfigMBean.saveAllowedOauthHosts}"
+			<h:commandButton action="#{systemConfigMBean.saveAllowedOauthHostnames}"
 							 value="#{web.text.OAUTHKEYCONFIGURATION_SAVE}"/>
 
 	</h:form>
