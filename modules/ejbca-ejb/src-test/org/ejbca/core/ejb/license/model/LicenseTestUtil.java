@@ -32,7 +32,7 @@ public class LicenseTestUtil {
         ejbca.setDisplayName("ejbca container");
         ejbca.setId(UUID.randomUUID().toString());
         ejbca.setMajorRev(9);
-        ejbca.setMajorRev(4);
+        ejbca.setMinorRev(4);
         
         Feature feature = new Feature();
         feature.setDisplayName("core functionality");
