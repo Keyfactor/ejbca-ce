@@ -170,7 +170,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
         includeSigningCertificate = globalConfiguration.getIncludeSigningCertificate();
         includeCertificateChain = globalConfiguration.getIncludeCertificateChain();
         currentGlobalUnknownResponse = globalConfiguration.getOcspNonExistingBehavior();
-        this.requestSignerCertificateRevocationCacheTime = globalConfiguration.getRequestSignserRevocationStatusCacheTime();
+        requestSignerCertificateRevocationCacheTime = globalConfiguration.getRequestSignserRevocationStatusCacheTime();
     }
 
     @Override
@@ -237,74 +237,86 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
         flushCurrentCache();
     }
 
-    public void saveCurrentGlobalUnknownResponse() {
+    public void saveGlobalCaSettings() {
         GlobalOcspConfiguration globalConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
                 .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-        globalConfiguration.setOcspNonExistingBehavior(currentGlobalUnknownResponse);
-        try {
-            globalConfigurationSession.saveConfiguration(getAuthenticationToken(), globalConfiguration);
-        } catch (AuthorizationDeniedException e) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+        boolean modified = false;
+
+        if (!currentGlobalUnknownResponse.equals(globalConfiguration.getOcspNonExistingBehavior())) {
+            globalConfiguration.setOcspNonExistingBehavior(currentGlobalUnknownResponse);
+            modified = true;
+        }
+        
+        
+        if(globalConfiguration.getIncludeSigningCertificate() != this.includeSigningCertificate) {
+            globalConfiguration.setIncludeSigningCertificate(includeSigningCertificate);
+            modified = true;
+        }
+        
+        if(globalConfiguration.getIncludeCertificateChain() != this.includeCertificateChain) {
+            globalConfiguration.setIncludeCertificateChain(includeCertificateChain);
+            modified = true;
+        }
+        
+        if (!nonceEnabled.equals(globalConfiguration.getNonceEnabled())) {
+            globalConfiguration.setNonceEnabled(nonceEnabled);
+            modified = true;
+        }
+        
+        if (!responderIdType.equals(globalConfiguration.getOcspResponderIdType())) {
+            globalConfiguration.setOcspResponderIdType(responderIdType);
+            modified = true;
+        }
+        
+        if(defaultResponseValidityTime != globalConfiguration.getDefaultValidityTime()) {
+            globalConfiguration.setDefaultValidityTime(defaultResponseValidityTime);
+            modified = true;
+        }
+        
+        if(defaultResponseMaxAge != globalConfiguration.getDefaultResponseMaxAge()) {
+            globalConfiguration.setDefaultResponseMaxAge(defaultResponseMaxAge);
+            modified = true;
+        }
+        
+        if(useMaxValidityForExpiration != globalConfiguration.getUseMaxValidityForExpiration()) {
+            globalConfiguration.setUseMaxValidityForExpiration(this.useMaxValidityForExpiration);
+            modified = true;
+        }
+        
+        if (modified) {
+            try {
+                globalConfigurationSession.saveConfiguration(getAuthenticationToken(), globalConfiguration);
+            } catch (AuthorizationDeniedException e) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+            }
         }
 
     }
     
-    public void saveDefaultResponder() {
-        GlobalOcspConfiguration globalConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
-                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-        if (StringUtils.isEmpty(defaultResponderTarget) && StringUtils.isNotEmpty(globalConfiguration.getOcspDefaultResponderReference())) {
-            globalConfiguration.setOcspDefaultResponderReference("");
-            try {
-                globalConfigurationSession.saveConfiguration(getAuthenticationToken(), globalConfiguration);
-            } catch (AuthorizationDeniedException e) {
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
-            }
-        } else if (!Strings.CS.equals(defaultResponderTarget, globalConfiguration.getOcspDefaultResponderReference())) {
-            globalConfiguration.setOcspDefaultResponderReference(defaultResponderTarget);
-            try {
-                globalConfigurationSession.saveConfiguration(getAuthenticationToken(), globalConfiguration);
-            } catch (AuthorizationDeniedException e) {
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
-            }
-        }
-    }
-
-    public void saveNonceEnabled() {
-        GlobalOcspConfiguration globalConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
-                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-        if (!nonceEnabled.equals(globalConfiguration.getNonceEnabled())) {
-            globalConfiguration.setNonceEnabled(nonceEnabled);
-            try {
-                globalConfigurationSession.saveConfiguration(getAuthenticationToken(), globalConfiguration);
-            } catch (AuthorizationDeniedException e) {
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
-            }
-        }
-    }
-
-    public void saveResponderIdType() {
-        GlobalOcspConfiguration globalConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
-                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-        if (!responderIdType.equals(globalConfiguration.getOcspResponderIdType())) {
-            globalConfiguration.setOcspResponderIdType(responderIdType);
-            try {
-                globalConfigurationSession.saveConfiguration(getAuthenticationToken(), globalConfiguration);
-            } catch (AuthorizationDeniedException e) {
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
-            }
-        }
-    }
-
-    public void saveCacheSettings() {
+    public void saveGlobalOcspConfiguration() {
         GlobalOcspConfiguration globalConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
                 .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
         boolean modified = false;
+
+        if (StringUtils.isEmpty(defaultResponderTarget) && StringUtils.isNotEmpty(globalConfiguration.getOcspDefaultResponderReference())) {
+            globalConfiguration.setOcspDefaultResponderReference("");
+            modified = true;
+        } else if (!Strings.CS.equals(defaultResponderTarget, globalConfiguration.getOcspDefaultResponderReference())) {
+            globalConfiguration.setOcspDefaultResponderReference(defaultResponderTarget);
+            modified = true;
+        }
+        
         if (!ocspSigningCacheUpdate.equals(globalConfiguration.getOcspSigningCacheUpdateEnabled())) {
             globalConfiguration.setOcspSigningCacheUpdateEnabled(ocspSigningCacheUpdate);
             modified = true;
         }
         if(requestSignerCertificateRevocationCacheTime != globalConfiguration.getRequestSignserRevocationStatusCacheTime()) {
             globalConfiguration.setRequestSignserRevocationStatusCacheTime(requestSignerCertificateRevocationCacheTime);
+            modified = true;
+        }
+        
+        if (!cacheHeaderUnauthorizedResponses.equals(globalConfiguration.getExplicitNoCacheUnauthorizedResponsesEnabled())) {
+            globalConfiguration.setExplicitNoCacheUnauthorizedResponsesEnabled(cacheHeaderUnauthorizedResponses);
             modified = true;
         }
         
@@ -316,34 +328,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
             }
         }
     }
-
-    public void saveEnableExplicitNoCacheUnauthorizedResponses() {
-        GlobalOcspConfiguration globalConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
-                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-        if (!cacheHeaderUnauthorizedResponses.equals(globalConfiguration.getExplicitNoCacheUnauthorizedResponsesEnabled())) {
-            globalConfiguration.setExplicitNoCacheUnauthorizedResponsesEnabled(cacheHeaderUnauthorizedResponses);
-            try {
-                globalConfigurationSession.saveConfiguration(getAuthenticationToken(), globalConfiguration);
-            } catch (AuthorizationDeniedException e) {
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
-            }
-        }
-    }
     
-    public void saveGlobalIncludeValues() {
-        GlobalOcspConfiguration globalConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
-                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-        if(globalConfiguration.getIncludeSigningCertificate() != this.includeSigningCertificate || globalConfiguration.getIncludeCertificateChain() != this.includeSigningCertificate) {
-            globalConfiguration.setIncludeSigningCertificate(includeSigningCertificate);
-            globalConfiguration.setIncludeCertificateChain(includeCertificateChain);
-            try {
-                globalConfigurationSession.saveConfiguration(getAuthenticationToken(), globalConfiguration);
-            } catch (AuthorizationDeniedException e) {
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
-            }
-        }
-    }
-
     public boolean getGloballyEnableNonce() {
         GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
                 .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
@@ -454,21 +439,6 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
     
     public void setDefaultResponseMaxAge(final long defaultResponseMaxAge) {
         this.defaultResponseMaxAge = defaultResponseMaxAge;
-    }
-
-    public void saveGlobalResponseValues() {
-        GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
-                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-        configuration.setDefaultValidityTime(this.defaultResponseValidityTime);
-        configuration.setDefaultResponseMaxAge(this.defaultResponseMaxAge);
-        configuration.setUseMaxValidityForExpiration(this.useMaxValidityForExpiration);
-
-        try {
-            globalConfigurationSession.saveConfiguration(getAdmin(), configuration);
-        } catch (AuthorizationDeniedException e) {
-            FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Current administrator not authorized to modify global OCSP configuration.", null));
-        }
     }
     
     public boolean isValiditiesUnchanged() {
