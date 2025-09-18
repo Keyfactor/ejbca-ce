@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -1739,7 +1740,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             AuthenticationToken authenticationToken, RaEndEntitySearchRequest request, int currentQueryOffset,
             String sortingOperation, String additionalConstraintQuery, int additionalConstraintParam) {
         final RaEndEntitySearchResponse response = new RaEndEntitySearchResponse();
-        searchUserByExactMatchIfPossible(authenticationToken, request, response);
+        if (StringUtils.isBlank(sortingOperation)) {
+            searchUserByExactMatchIfPossible(authenticationToken, request, response);
+        }
         if (!response.getEndEntities().isEmpty()) {
             return response;
         }
@@ -1943,6 +1946,14 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return response;
     }
     
+    // the 2 key difference between the SQL query we make in caller function and in this method is
+    //
+    // we do not use authorized CA, CP and EEP IDs in the SQL query(relevant only if non-superadmin, so most prod case)
+    // we do the authorization check after the result is fetched instead
+    // result: less no of columns involved but possibility of large result which is limited by equality check instead of like
+    //
+    // the whole row is fetched instead of only the username(s) and then N queries for each user
+    // once again bad idea for large result but works for small one
     private void searchUserByExactMatchIfPossible(AuthenticationToken authenticationToken, RaEndEntitySearchRequest request,
             RaEndEntitySearchResponse response) {
         
@@ -1951,24 +1962,19 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             return;
         }
         
-        log.debug("request: ");
-        log.debug("ca: " + request.getCaIds());
-        log.debug("eep: " + request.getEepIds());
-        log.debug("cp: " + request.getCpIds());
-        log.debug("username: " + request.getUsernameSearchString());
-        log.debug("subjectdn: " + request.getSubjectDnSearchString());
-        log.debug("san: " + request.getSubjectAnSearchString());
         if (!(request.getCaIds().size() <= 1 
                 && request.getEepIds().isEmpty() && request.getCpIds().isEmpty() 
                 && request.getSubjectAnSearchString().isBlank()
                 && ((request.getSubjectDnSearchString().isBlank() && !request.getUsernameSearchString().isBlank())
                 || (!request.getSubjectDnSearchString().isBlank() && request.getUsernameSearchString().isBlank())))) {
-            log.debug("Exact search may only be performed if: ");
-            log.debug(" - [Match type is EQUAL_CASE_SENSITIVE]");
-            log.debug(" - [Search Criteria type is USERNAME or SUBJECTDN]");
-            log.debug(" - [Only USERNAME or SUBJECTDN is mentioned]");
-            log.debug(" - [At most one CA is mentioned and only with SUBJECTDN]");
-            log.debug(" - [No other criteria e.g. certificate or end entity profile, status, dates etc may be used]");
+            if (log.isTraceEnabled()) {
+                log.trace("Exact search may only be performed if: ");
+                log.trace(" - [Match type is EQUAL_CASE_SENSITIVE]");
+                log.trace(" - [Search Criteria type is USERNAME or SUBJECTDN]");
+                log.trace(" - [Only USERNAME or SUBJECTDN is mentioned]");
+                log.trace(" - [At most one CA is mentioned and only with SUBJECTDN]");
+                log.trace(" - [No other criteria e.g. certificate or end entity profile, status, dates etc may be used]");
+            }
             return;
         }
         
@@ -2000,17 +2006,22 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 && request.isUsernameSearchExact() && !request.getUsernameSearchString().isBlank()
                 ) {
             try {
-                response.getEndEntities().add(
-                        endEntityAccessSession.findUser(authenticationToken, request.getUsernameSearchString()));
+                EndEntityInformation user = endEntityAccessSession.findUser(authenticationToken, request.getUsernameSearchString());
+                if (user!=null) {
+                    response.getEndEntities().add(user);
+                }
             } catch (AuthorizationDeniedException e) {
                 // ignore
             }
         }
         
-        if (!response.getEndEntities().isEmpty()) {
-            //TODO: response.getEndEntities().sort(null);
-            response.setMightHaveMoreResults(false);
+        if (response.getEndEntities().isEmpty()) {
+            return;
         }
+        
+        response.setMightHaveMoreResults(false);
+        // always sort by username
+        response.getEndEntities().sort(Comparator.comparing(EndEntityInformation::getUsername, Comparator.nullsFirst(String::compareTo)));
         
     }
 

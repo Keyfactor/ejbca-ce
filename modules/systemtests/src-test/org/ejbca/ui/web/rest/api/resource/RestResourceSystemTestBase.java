@@ -364,7 +364,7 @@ public class RestResourceSystemTestBase {
     }
 
     public static String getBaseUrl() {
-        return "https://"+ "localhost" +":" + HTTPS_PORT + "/ejbca/ejbca-rest-api";
+        return "https://"+ HTTPS_HOST +":" + HTTPS_PORT + "/ejbca/ejbca-rest-api";
     }
 
     protected static KeyStore initJksKeyStore(final String keyStoreFilePath) throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
