@@ -72,7 +72,7 @@ public class OAuthConfiguration extends ConfigurationBase implements Serializabl
     }
 
     public void setDefaultOauthKeyLabel(final String label) {
-        if (!label.isBlank() && !label.equalsIgnoreCase("None")) {
+        if (label != null && !label.isBlank() && !"none".equalsIgnoreCase(label)) {
             final Map<String, OAuthKeyInfo> oAuthKeyInfoMap = getOauthKeys();
 
             if (oAuthKeyInfoMap != null && !oAuthKeyInfoMap.isEmpty()) {
