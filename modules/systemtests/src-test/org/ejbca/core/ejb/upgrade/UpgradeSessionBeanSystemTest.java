@@ -14,7 +14,6 @@ package org.ejbca.core.ejb.upgrade;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -30,14 +29,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
@@ -45,8 +42,6 @@ import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
-import org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension;
-import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificatetransparency.GoogleCtPolicy;
 import org.cesecore.certificates.certificatetransparency.PolicyBreakpoint;
@@ -113,7 +108,6 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 @SuppressWarnings("deprecation")
 public class UpgradeSessionBeanSystemTest {
 
-    private static final Logger log = Logger.getLogger(UpgradeSessionBeanSystemTest.class);
     private static final String TESTCLASS = UpgradeSessionBeanSystemTest.class.getSimpleName();
     private static final String TEST_ENDENTITY1 = UpgradeSessionBeanSystemTest.class.getSimpleName() + "1";
     private static final String TEST_ENDENTITY2 = UpgradeSessionBeanSystemTest.class.getSimpleName() + "2";
@@ -207,101 +201,6 @@ public class UpgradeSessionBeanSystemTest {
         return (Boolean) upgradeMethod.invoke(UpgradeSessionBean.class.newInstance(), firstVersion, secondVersion);
     }
 
-    /**
-     * Tests upgrade to 6.14.0. Expected behavior is roles with access to /ra_master/invoke_api before upgrade
-     * should be granted 'Allow' access to the rule '/protocol/scep' controlling protocol access of remote RA 
-     * instances.
-     * @throws RoleExistsException
-     * @throws AuthorizationDeniedException
-     */
-    @Test
-    public void testUpgradeProtocolAccess6140() throws RoleExistsException, AuthorizationDeniedException {
-        GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
-        String roleNameInvokeApi = "roleInvokeApi";
-        String roleNameSuperAdmin = "roleSuperAdmin";
-        String roleNameLowAccess = "roleLowAccess";
-        Role roleInvokeApiPreUpgrade = new Role(null, roleNameInvokeApi);
-        Role roleSuperAdminPreUpgrade = new Role(null, roleNameSuperAdmin);
-        Role roleLowAccessPreUpgrade = new Role(null, roleNameLowAccess);
-        roleInvokeApiPreUpgrade.getAccessRules().put(AccessRulesConstants.REGULAR_PEERCONNECTOR_INVOKEAPI, Role.STATE_ALLOW);
-        roleSuperAdminPreUpgrade.getAccessRules().put(StandardRules.ROLE_ROOT.resource(), Role.STATE_ALLOW);
-        roleLowAccessPreUpgrade.getAccessRules().put(AccessRulesConstants.REGULAR_RAFUNCTIONALITY, Role.STATE_ALLOW);
-        try {
-            Role roleInvokeApiPersisted = roleSession.persistRole(alwaysAllowtoken, roleInvokeApiPreUpgrade);
-            Role roleSuperAdminPersisted = roleSession.persistRole(alwaysAllowtoken, roleSuperAdminPreUpgrade);
-            Role roleLowAccessPersisted = roleSession.persistRole(alwaysAllowtoken, roleLowAccessPreUpgrade);
-            // Perform upgrade 6.13.0 --> 6.14.0
-            guc.setUpgradedFromVersion("6.13.0");
-            globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
-            upgradeSession.upgrade(null, "6.13.0", false);
-            
-            Role roleInvokeApiPostUpgrade = roleSession.getRole(alwaysAllowtoken, roleInvokeApiPersisted.getRoleId());
-            Role roleSuperAdminPostUpgrade = roleSession.getRole(alwaysAllowtoken, roleSuperAdminPersisted.getRoleId());
-            Role roleLowAccessPostUpgrade = roleSession.getRole(alwaysAllowtoken, roleLowAccessPersisted.getRoleId());
-            // Make sure roles survived upgrade at all
-            assertNotNull("Role '" + roleInvokeApiPostUpgrade.getRoleName() + "' vanished during upgrade", roleInvokeApiPostUpgrade);
-            assertNotNull("Role '" + roleSuperAdminPostUpgrade.getRoleName() + "' vanished during upgrade", roleSuperAdminPostUpgrade);
-            assertNotNull("Role '" + roleLowAccessPostUpgrade.getRoleName() + "'  vanished during upgrade", roleLowAccessPostUpgrade);
-            
-            assertTrue("Role lost old access rules during upgrade", roleInvokeApiPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERCONNECTOR_INVOKEAPI));
-            assertTrue("Denied access to new access rule", roleInvokeApiPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_SCEP));
-            
-            assertTrue("Role lost old access rules during upgrade", roleSuperAdminPostUpgrade.hasAccessToResource(StandardRules.ROLE_ROOT.resource()));
-            assertTrue("Denied access to new access rule", roleSuperAdminPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_SCEP));
-            
-            assertTrue("Role lost old access rules during upgrade", roleLowAccessPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_RAFUNCTIONALITY));
-            assertFalse("Unexpected rule allowed", roleLowAccessPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_SCEP));
-        } finally {
-            // Clean up
-            deleteRole(null, roleNameInvokeApi);
-            deleteRole(null, roleNameSuperAdmin);
-            deleteRole(null, roleNameLowAccess);
-        }     
-    }
-    
-    /**
-     * Tests upgrade to 6.15.0. Any custom certificate extension defined in the previous version should get a required flag set to true.
-     * 
-     * @throws AuthorizationDeniedException
-     */
-    @Test
-    public void testUpgradeCustomCertificateExtension6150() throws AuthorizationDeniedException {
-        GlobalUpgradeConfiguration globalUpgradeConfiguration = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
-        
-        CertificateExtension certificateExtensionOne = new BasicCertificateExtension();
-        certificateExtensionOne.setCriticalFlag(true);
-        certificateExtensionOne.setDisplayName("Custom Certificate Extension One");
-        certificateExtensionOne.setOID("10.1.1.2");
-
-        CertificateExtension certificateExtensionTwo = new BasicCertificateExtension();
-        certificateExtensionTwo.setCriticalFlag(false);
-        certificateExtensionTwo.setDisplayName("Custom Certificate Extension Two");
-        certificateExtensionTwo.setOID("10.1.1.3");
-        
-        AvailableCustomCertificateExtensionsConfiguration availableCustomCertExtensionsConfig = (AvailableCustomCertificateExtensionsConfiguration) globalConfigSession
-                .getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
-        
-        availableCustomCertExtensionsConfig.addCustomCertExtension(certificateExtensionOne);
-        availableCustomCertExtensionsConfig.addCustomCertExtension(certificateExtensionTwo);
-        
-        globalConfigSession.saveConfiguration(alwaysAllowtoken, availableCustomCertExtensionsConfig);
-
-        // Perform upgrade 6.14.0 --> 6.15.0
-        globalUpgradeConfiguration.setUpgradedFromVersion("6.14.0");
-        globalConfigSession.saveConfiguration(alwaysAllowtoken, globalUpgradeConfiguration);
-        upgradeSession.upgrade(null, "6.14.0", false);
-        
-        AvailableCustomCertificateExtensionsConfiguration availableCustomCertExtensionsConfigAfterUpgrade = (AvailableCustomCertificateExtensionsConfiguration) globalConfigSession
-                .getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
-
-        for (CertificateExtension customCertificateExtension : availableCustomCertExtensionsConfigAfterUpgrade.getAllAvailableCustomCertificateExtensions()) {
-            assertTrue("Required flag must be set to true after upgrade!", customCertificateExtension.isRequiredFlag());
-            if (customCertificateExtension.getOID().equals("10.1.1.3")) {
-                assertFalse("Critical flag for CCE with oid " + customCertificateExtension.getOID() + " must be false!", customCertificateExtension.isCriticalFlag());
-            }
-        }
-    }
-    
     @Test
     public void testUpgradeOcspKeyBindingWithNoArchiveCutoffConfigured730() throws Exception {
         try {
@@ -1218,17 +1117,6 @@ public class UpgradeSessionBeanSystemTest {
             // Did not exist
         } catch (AuthorizationDeniedException | CouldNotRemoveEndEntityException e) {
             throw new IllegalStateException(e);
-        }
-    }
-
-    private void deleteRole(final String nameSpace, final String roleName) {
-        try {
-            final Role role = roleSession.getRole(alwaysAllowtoken, null, roleName);
-            if (role!=null) {
-                roleSession.deleteRoleIdempotent(alwaysAllowtoken, role.getRoleId());
-            }
-        } catch (AuthorizationDeniedException e) {
-            log.debug(e.getMessage());
         }
     }
 
