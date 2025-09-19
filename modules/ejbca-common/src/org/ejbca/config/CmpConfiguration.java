@@ -87,11 +87,6 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
      */
     @Deprecated
     public static final String CONFIG_CERTREQHANDLER_CLASS = "certreqhandler.class";
-    /**
-     * @deprecated since 6.12.0. No longer used, and can no longer be set. The datasource is now hard-coded to be UnidDS
-     */
-    @Deprecated
-    public static final String CONFIG_UNIDDATASOURCE = "uniddatasource";
 
     public static final String PROFILE_USE_KEYID = "KeyId";
     public static final String PROFILE_DEFAULT = "ProfileDefault";
@@ -772,8 +767,6 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
         for (String key : getAllAliasKeys(alias)) {
             data.remove(key);
         }
-        // remove old keys from previous versions of EJBCA
-        data.remove(CONFIG_UNIDDATASOURCE);
         aliases.remove(alias);
         data.put(ALIAS_LIST, aliases);
     }

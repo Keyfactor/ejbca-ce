@@ -13,10 +13,6 @@
 
 package org.cesecore.config;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.ex.ConversionException;
 import org.apache.log4j.Logger;
@@ -57,14 +53,6 @@ public class OcspConfiguration {
     public static final String INCLUDE_SIGNING_CERT = "ocsp.includesignercert";
     @Deprecated(since = "9.4.0") //only used to allow for upgrades to 9.4.0
     public static final String INCLUDE_CERT_CHAIN = "ocsp.includecertchain";
-    
-    @Deprecated //Remove this value once upgrading to 6.7.0 has been dropped
-    public static final String RESPONDER_ID_TYPE = "ocsp.responderidtype";
-    
-    @Deprecated //Remove this value once upgrading to 6.7.0 has been dropped
-    public static final int RESPONDERIDTYPE_NAME = 1;
-    @Deprecated //Remove this value once upgrading to 6.7.0 has been dropped
-    public static final int RESPONDERIDTYPE_KEYHASH = 2;
         
     /**
      * The interval on which new OCSP signing certificates are loaded in milliseconds
@@ -130,21 +118,6 @@ public class OcspConfiguration {
             return true; //Default value is true
         }
         return "true".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value);
-    }
-
-    /**
-     * If set to name the OCSP responses will use the Name ResponseId type, if set to keyhash the KeyHash type will be used.
-     * 
-     * @return one of OCSPUtil.RESPONDERIDTYPE_NAME and OCSPUtil.RESPONDERIDTYPE_KEYHASH
-     * 
-     * @deprecated no longer used, as responder ID type is instead set individually for each keybinding and CA
-     */
-    @Deprecated
-    public static int getResponderIdType() {
-        if ("name".equalsIgnoreCase(ConfigurationHolder.getString(RESPONDER_ID_TYPE))) {
-            return RESPONDERIDTYPE_NAME;
-        }
-        return RESPONDERIDTYPE_KEYHASH;
     }
 
     /**
@@ -225,58 +198,7 @@ public class OcspConfiguration {
     public static String getNonExistingIsRevokedOverrideRegex() {
         return getRegex(NON_EXISTING_IS_REVOKED_URI);
     }
-
-    /**
-     * Specifies OCSP extension OIDs that will result in a call to an extension class, separate multiple entries with ';'.
-     * For any entry that should be always used, preface with '*' (e.g. *2.16.578.1.16.3.2)
-     * 
-     * Deprecated: May still be required for 6.12 upgrades
-     * 
-     * @return a List<String> of extension OIDs, an empty list if none are found.
-     */
-    @Deprecated
-    public static List<String> getExtensionOids() {
-        String value = ConfigurationHolder.getString("ocsp.extensionoid");
-        if ("".equals(value)) {
-            return new ArrayList<>();
-        }
-        return Arrays.asList(value.split(";"));
-    }
-
-    /**
-     * Specifies classes implementing OCSP extensions matching OIDs in getExtensionOid(), separate multiple entries with ';'.
-     * 
-     * @deprecated since 6.12. May still be required for upgrades.
-     * 
-     * @return a List<String> of extension classes
-     */
-    @Deprecated
-    public static List<String> getExtensionClasses() {
-        String value = ConfigurationHolder.getString("ocsp.extensionclass");
-        if ("".equals(value)) {
-            return new ArrayList<>();
-        }
-        return Arrays.asList(value.split(";"));
-    }
-
-    /**
-     * Directory containing certificates of trusted entities allowed to query for Fnrs.
-     * @deprecated since 6.12. May still be required for upgrades. CA+serial of trusted certificates are now stored in the database, in internal key bindings.
-     */
-    @Deprecated
-    public static String getUnidTrustDir() {
-        return ConfigurationHolder.getString("ocsp.unidtrustdir");
-    }
-
-    /**
-     * File containing the CA-certificate, in PEM format, that signed the trusted clients.
-     * @deprecated since 6.12. May still be required for upgrades. CA+serial of trusted certificates are now stored in the database, in internal key bindings.
-     */
-    @Deprecated
-    public static String getUnidCaCert() {
-        return ConfigurationHolder.getString("ocsp.unidcacert");
-    }
-
+    
     /**
      * @return true if UnidFnr is enabled in ocsp.properties
      */

@@ -318,8 +318,7 @@ public class LdapPublisher extends BasePublisher {
     			connectionFailed = false;
     			String currentServer = servers.next();
     			try {
-    				TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getConnectionTimeOut());	// Avoid waiting for halfdead-servers
-    				lc.connect(currentServer, Integer.parseInt(getPort()));
+					probeAndConnectLdapServer(currentServer, lc);
     				// Execute a STARTTLS handshake if it was requested.
     				if (getConnectionSecurity() == ConnectionSecurity.STARTTLS) {
                         if (log.isDebugEnabled()) {
@@ -540,9 +539,7 @@ public class LdapPublisher extends BasePublisher {
 			connectionFailed = false;
 			String currentServer = servers.next();
 			try {
-				TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getConnectionTimeOut());	// Avoid waiting for halfdead-servers
-				// connect to the server
-				lc.connect(currentServer, Integer.parseInt(getPort()));
+				probeAndConnectLdapServer(currentServer, lc);
 				// Execute a STARTTLS handshake if it was requested.
 				if (getConnectionSecurity() == ConnectionSecurity.STARTTLS) {
                     if (log.isDebugEnabled()) {
@@ -654,11 +651,11 @@ public class LdapPublisher extends BasePublisher {
 			if (oldEntry != null) {          
 				if (removecert) {
 					// Don't try to remove the cert if there does not exist any
-					LDAPAttribute oldAttr = oldEntry.getAttribute(getUserCertAttribute());
+					LDAPAttribute attr = new LDAPAttribute(getUserCertAttribute());
+					LDAPAttribute oldAttr = oldEntry.getAttribute(attr.getBaseName());
 					if (oldAttr != null) {
 						modSet = getModificationSet(oldEntry, certdn, null, false, true, null, cert);
-						LDAPAttribute attr = new LDAPAttribute(getUserCertAttribute());
-						modSet.add(new LDAPModification(LDAPModification.DELETE, attr));                    
+						modSet.add(new LDAPModification(LDAPModification.DELETE, attr));
 					} else {
 						String msg = intres.getLocalizedMessage("publisher.inforevokenocert");
 						log.info(msg);
@@ -689,8 +686,7 @@ public class LdapPublisher extends BasePublisher {
 				log.debug("currentServer: "+currentServer);
 			}
 			try {
-				TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getConnectionTimeOut());	// Avoid waiting for halfdead-servers
-				lc.connect(currentServer, Integer.parseInt(getPort()));
+				probeAndConnectLdapServer(currentServer, lc);
 				// Execute a STARTTLS handshake if it was requested.
 				if (getConnectionSecurity() == ConnectionSecurity.STARTTLS) {
                     if (log.isDebugEnabled()) {
@@ -764,9 +760,7 @@ public class LdapPublisher extends BasePublisher {
 			}
 			final String ldapdn = constructLDAPDN(certDN, userDN);
 			try {
-				TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getConnectionTimeOut());	// Avoid waiting for halfdead-servers
-				// connect to the server
-				lc.connect(currentServer, Integer.parseInt(getPort()));
+				probeAndConnectLdapServer(currentServer, lc);
 				// Execute a STARTTLS handshake if it was requested.
 				if (getConnectionSecurity() == ConnectionSecurity.STARTTLS) {
                     if (log.isDebugEnabled()) {
@@ -830,9 +824,7 @@ public class LdapPublisher extends BasePublisher {
 			String currentServer = servers.next();
 			LDAPEntry entry = null;
 			try {
-				TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getConnectionTimeOut());	// Avoid waiting for halfdead-servers
-				// connect to the server
-				lc.connect(currentServer, Integer.parseInt(getPort()));
+				probeAndConnectLdapServer(currentServer, lc);
 				// Execute a STARTTLS handshake if it was requested.
 				if (getConnectionSecurity() == ConnectionSecurity.STARTTLS) {
                     if (log.isDebugEnabled()) {
@@ -907,6 +899,12 @@ public class LdapPublisher extends BasePublisher {
 
 		lc.setConstraints(ldapConnectionConstraints);
 		return lc;
+	}
+
+	protected void probeAndConnectLdapServer(final String currentServer, final LDAPConnection lc) throws LDAPException {
+		TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getConnectionTimeOut());	// Avoid waiting for halfdead-servers
+		// connect to the server
+		lc.connect(currentServer, Integer.parseInt(getPort()));
 	}
 
 	/**

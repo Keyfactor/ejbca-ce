@@ -19,15 +19,26 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.security.cert.X509Certificate;
 import java.util.Collections;
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
 import org.cesecore.CaTestUtils;
 import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.ocsp.OcspTestUtils;
+import org.cesecore.config.OcspConfiguration;
+import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
+import org.cesecore.junit.util.PKCS12TestRunner;
+import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
+import org.cesecore.keybind.InternalKeyBindingStatus;
+import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keys.token.CryptoTokenManagementProxySessionRemote;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
@@ -46,17 +57,22 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.KeyGenParams;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * System tests for the health check servlet.
  */
 public class HealthCheckSystemTest {
     
+    private static final Logger log = Logger.getLogger(HealthCheckSystemTest.class);
     private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("HealthCheckTest"));
 
 
@@ -70,7 +86,14 @@ public class HealthCheckSystemTest {
             EnterpriseEditionEjbBridgeProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private static final PublisherProxySessionRemote PUBLISHER_PROXY_SESSION = EjbRemoteHelper.INSTANCE.getRemoteSession(
             PublisherProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-
+    
+    private final CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(
+            CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
+            InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private final InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
+   
     private static final String HTTP_HOST = SystemTestsConfiguration.getRemoteHost(CONFIG_SESSION.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME));
     private static final String HTTP_PORT = SystemTestsConfiguration.getRemotePortHttp(CONFIG_SESSION.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP));
     private static final String HTTP_REQ_PATH = "http://" + HTTP_HOST + ":" + HTTP_PORT + "/ejbca/publicweb/healthcheck/ejbcahealth";
@@ -190,6 +213,89 @@ public class HealthCheckSystemTest {
         } finally {
             CryptoTokenTestUtils.removeCryptoToken(admin, tokenId1);
             CryptoTokenTestUtils.removeCryptoToken(admin, tokenId2);
+        }
+    }
+    
+    @Test
+    public void testHealthOcsp() throws Exception {
+        String tokenName1 = "healthCheckTestOcsp";
+        int tokenId1=0;
+        int internalKeyBindingId=0;
+        PKCS12TestRunner pkcs12TestRunner =new PKCS12TestRunner();
+        X509Certificate caCertificate=null, ocspSigningCertificate=null;
+        
+        try {
+            tokenId1 = CryptoTokenTestUtils.createSoftCryptoToken(admin, tokenName1);
+            CRYPTO_TOKEN_MANAGEMENT_SESSION.createKeyPair(admin, tokenId1, "ocspKey", KeyGenParams.builder("RSA2048").build());
+            X509CAInfo x509ca = pkcs12TestRunner.createX509Ca("CN="+this.getClass().getSimpleName(), this.getClass().getSimpleName());
+            //Make sure timers don't run while we debug
+            cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNING_TRUSTSTORE_VALID_TIME, Integer.toString(Integer.MAX_VALUE/1000));
+            //Create an independent cryptotoken
+            internalKeyBindingId = OcspTestUtils.createInternalKeyBinding(admin, tokenId1, OcspKeyBinding.IMPLEMENTATION_ALIAS,
+                                                                          "OcspHealthCheckTest", "RSA2048", AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
+            
+            String signerDN = "CN=ocspTestSigner";
+            caCertificate = (X509Certificate) x509ca.getCertificateChain().get(0);
+            ocspSigningCertificate = OcspTestUtils.createOcspSigningCertificate(admin, OcspTestUtils.OCSP_END_USER_NAME, signerDN, internalKeyBindingId, x509ca.getCAId());
+            cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNATUREREQUIRED, "false");
+            
+            final String ocspSigningCertificateFingerprint = internalKeyBindingMgmtSession.updateCertificateForInternalKeyBinding(admin,
+                    internalKeyBindingId);
+            if (!CertTools.getFingerprintAsString(ocspSigningCertificate).equals(ocspSigningCertificateFingerprint)) {
+                throw new IllegalStateException("Wrong certificate was found for InternalKeyBinding");
+            }
+            OcspTestUtils.setInternalKeyBindingStatus(admin, internalKeyBindingId, InternalKeyBindingStatus.ACTIVE);
+            clearCache();
+            
+            HttpURLConnection response = performHealthCheckGetRequestWithParams("ocspDetailed=true");
+            assertEquals("Response code was not 200", 200, response.getResponseCode());
+            
+            response = performHealthCheckGetRequest();
+            assertEquals("Response code was not 200", 200, response.getResponseCode());
+            
+            CRYPTO_TOKEN_MANAGEMENT_SESSION.deleteCryptoToken(admin, tokenId1);
+            response = performHealthCheckGetRequestWithParams("ocspDetailed=true");
+            assertEquals("Response code was 200", 200, response.getResponseCode());
+            
+            response = performHealthCheckGetRequest();
+            assertEquals("Response code was not 200", 200, response.getResponseCode());
+            
+            clearCache();
+            response = performHealthCheckGetRequestWithParams("ocspDetailed=true");
+            assertNotEquals("Response code was 200", 200, response.getResponseCode());
+            String responseErrorMessage = new String(response.getErrorStream().readAllBytes());
+            assertTrue(responseErrorMessage.contains("Referenced CryptoToken with id"));
+            assertTrue(responseErrorMessage.contains("does not exist. Ignoring OcspKeyBinding with id"));
+            
+            response = performHealthCheckGetRequest();
+            assertEquals("Response code was not 200", 200, response.getResponseCode());
+            
+        } finally {
+            CryptoTokenTestUtils.removeCryptoToken(admin, tokenId1);
+            pkcs12TestRunner.cleanUp();
+            if (internalKeyBindingId!=0) {
+                internalKeyBindingMgmtSession.deleteInternalKeyBinding(admin, internalKeyBindingId);
+            }
+            if (ocspSigningCertificate!=null) {
+                internalCertificateStoreSession.removeCertificate(ocspSigningCertificate);
+            }
+            if (caCertificate!=null) {
+                internalCertificateStoreSession.removeCertificate(caCertificate);
+            }
+        }
+        
+    }
+    
+    private void clearCache() {
+        final String clearCacheUrl = "http://" + HTTP_HOST + ":" + HTTP_PORT + "/ejbca/clearcache/?command=clearcaches";
+        try {
+            HttpURLConnection con = (HttpURLConnection) new URL(clearCacheUrl).openConnection();
+            int responseCode = con.getResponseCode(); // trigger a connection
+            con.disconnect();
+            assertEquals("Failed to clear cache with status not ok", responseCode, 200);
+        } catch (Exception e) {
+            log.error("Error during cache clear: ", e);
+            fail("Failed to clear cache");
         }
     }
     

@@ -56,15 +56,7 @@
 	<target name="ejbca-status.war" depends="ejbca-status-compile" if="${status.war.enabled}">
 		<war destfile="${mod.status.war}" webxml="${va.resources.dir}/WEB-INF/web-status-ejbca.xml" basedir="${va.build-status.dir}"/>
 	</target>
-	
-	<condition property="use.ocsp.extensionclass">
-			<not>
-				<equals arg1="${ocsp.extensionclass}" arg2=""/>
-			</not>
-	</condition>
-	<target name="use-ocsp-extensionclass" if="use.ocsp.extensionclass">
-		<echo>Compiling ocsp.extensionclass ${ocsp.extensionclass}, if it exists.</echo>
-	</target>
+
 	
 	<target name="extensions-build">
 		<buildservicemanifest interface="org.cesecore.certificates.ocsp.extension.OCSPExtension" file="${va.build-status.dir}/WEB-INF/classes" classpath="compile-ejbca.classpath"/>
@@ -75,7 +67,7 @@
 		</jar>
 	</target>
 			
-	<target name="ejbca-status-compile" depends="use-ocsp-extensionclass">
+	<target name="ejbca-status-compile">
     	<mkdir dir="${va.build-status.dir}/WEB-INF/classes" />
         <javac destdir="${va.build-status.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
 			classpathref="compile-ejbca.classpath">

@@ -28,7 +28,7 @@ public interface OcspResponseGeneratorSessionLocal extends OcspResponseGenerator
 
     void initTimers();
 
-    String healthCheck();
+    String healthCheck(boolean reportIgnoredKeyBindings);
 
     /** @see org.cesecore.certificates.ocsp.cache.OcspRequestSignerStatusCacheSingletonBean#flush() */
     void clearOcspRequestSignerRevocationStatusCache();
