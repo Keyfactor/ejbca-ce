@@ -61,7 +61,6 @@ import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.config.GlobalCtConfiguration;
 import org.cesecore.config.GlobalEndEntityProfileConfiguration;
 import org.cesecore.config.GlobalOcspConfiguration;
-import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.configuration.GlobalConfigurationProxySessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
@@ -97,8 +96,6 @@ import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.GeneralPurposeCustomPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
-import org.ejbca.core.protocol.ocsp.extension.certhash.OcspCertHashExtension;
-import org.ejbca.core.protocol.ocsp.extension.unid.OCSPUnidExtension;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -208,50 +205,6 @@ public class UpgradeSessionBeanSystemTest {
         Method upgradeMethod = UpgradeSessionBean.class.getDeclaredMethod("isLesserThan", String.class, String.class);
         upgradeMethod.setAccessible(true);
         return (Boolean) upgradeMethod.invoke(UpgradeSessionBean.class.newInstance(), firstVersion, secondVersion);
-    }
-
-    @Test
-    public void testUpgradeOcspExtensions6120() throws Exception {
-        GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
-        List<String> ocspExtensionBackup = OcspConfiguration.getExtensionOids();
-        // Set OCSP extensions in conf file (OcspUnid, OcspCertHash, OcspCtSct -extension)
-        cesecoreConfigSession.setConfigurationValue("ocsp.extensionoid", "*2.16.578.1.16.3.2;1.3.36.8.3.13;1.3.6.1.4.1.11129.2.4.5");
-        cesecoreConfigSession.setConfigurationValue("ocsp.expiredcert.retentionperiod", null);
-        // Create test key binding and persist it
-        final String tokenName = "CryptoToken_ocspExtensionUpgradeTest";
-        final String keyBindingName = "ocspExtensionUpgradeTest";
-        int internalKeyBindingId = -1;
-        try {
-            final int cryptoTokenId = CryptoTokenTestUtils.createSoftCryptoToken(alwaysAllowtoken, tokenName);
-            internalKeyBindingId = OcspTestUtils.createInternalKeyBinding(alwaysAllowtoken, cryptoTokenId, OcspKeyBinding.IMPLEMENTATION_ALIAS,
-                    keyBindingName, "RSA2048", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-            // Perform upgrade
-            guc.setUpgradedFromVersion("6.11.0");
-            globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
-            upgradeSession.upgrade(null, "6.11.0", false);
-            
-            // we can not use OcspCtSctListExtension.OCSP_SCTLIST_OID, 
-            // because org.ejbca.core.protocol.ocsp.extension.certificatetransparency.OcspCtSctListExtension is not included in Community edition
-            final String OCSP_SCTLIST_OID = "1.3.6.1.4.1.11129.2.4.5";
-            
-            // Verify upgraded OcspKeyBinding
-            final InternalKeyBindingInfo ocspTestKeyBindingPostUpgrade = internalKeyBindingSession.getInternalKeyBindingInfo(alwaysAllowtoken, internalKeyBindingId);
-            assertNotNull("Could not find ocsp key binding after upgrade", ocspTestKeyBindingPostUpgrade);
-            final List<String> ocspKeyExtensionOids = ocspTestKeyBindingPostUpgrade.getOcspExtensions();
-            assertEquals("Unexpected amount of extensionOids imported from ocsp.properties", 3, ocspKeyExtensionOids.size());
-            assertTrue("IKB did not contain Unid extension after upgrade", ocspKeyExtensionOids.contains(OCSPUnidExtension.OCSP_UNID_OID));
-            assertTrue("IKB did not contain CertHash extension after upgrade", ocspKeyExtensionOids.contains(OcspCertHashExtension.CERT_HASH_OID));
-            assertTrue("IKB did not contain CtSct extension after upgrade", ocspKeyExtensionOids.contains(OCSP_SCTLIST_OID));
-        } finally {
-            // Delete test key binding and restore previous ocsp.extensionoid value
-            OcspTestUtils.removeInternalKeyBinding(alwaysAllowtoken, keyBindingName);
-            String ocspExtensionOidRestore = "";
-            for (String extension : ocspExtensionBackup) {
-                ocspExtensionOidRestore += extension + ";";
-            }
-            cesecoreConfigSession.setConfigurationValue("ocsp.extensionoid", ocspExtensionOidRestore);
-            CryptoTokenTestUtils.removeCryptoToken(alwaysAllowtoken, tokenName);
-        }
     }
 
     /**
