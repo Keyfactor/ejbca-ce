@@ -29,7 +29,6 @@ import com.keyfactor.util.keys.KeyTools;
 /**
  * Represents a Certificate Transparency log
  *
- * @version $Id$
  */
 public final class CTLogInfo implements Serializable {
 
@@ -104,6 +103,12 @@ public final class CTLogInfo implements Serializable {
 
     public byte[] getPublicKeyBytes() {
         return publicKeyBytes;
+    }
+
+    // Used by Configdump
+    public void setPublicKeyBytes(final byte[] publicKeyBytes) {
+        this.publicKeyBytes = publicKeyBytes;
+        this.publicKey = null;
     }
 
     public void setLogPublicKey(final byte[] publicKeyBytes) {
