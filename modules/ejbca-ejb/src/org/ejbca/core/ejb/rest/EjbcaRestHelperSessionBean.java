@@ -209,7 +209,6 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
 
         EndEntityProfile endEntityProfile = getEndEntityProfile(endEntityProfileId);
         String altName = getSubjectAltName(pkcs10CertificateRequest);
-        validateEmailsInSubjectAltName(altName);
         endEntityInformation.setSubjectAltName(altName);
 
         endEntityInformation.setType(new EndEntityType(EndEntityTypes.ENDUSER));
@@ -289,14 +288,5 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
     private int getCertificateProfileId(String certificateProfileName) {
         int certificateProfileId = certificateProfileSessionBean.getCertificateProfileId(certificateProfileName);
         return certificateProfileId;
-    }
-
-    private static void validateEmailsInSubjectAltName(String altName) throws EjbcaException {
-        List<String> sanEmails = DnComponents.getEmailFromDN(altName);
-        for (String email : sanEmails) {
-            if (!StringTools.isValidEmail(email)) {
-                throw new EjbcaException("Invalid email address in certificate request");
-            }
-        }
     }
 }
