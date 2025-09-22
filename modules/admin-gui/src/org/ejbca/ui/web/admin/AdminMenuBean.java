@@ -19,6 +19,7 @@ import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingRules;
+import org.cesecore.license.LicenseStateContainer;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.InternalConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -35,7 +36,6 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.ByteArrayInputStream;
 import java.io.Serializable;
-
 
 /**
  * Backing bean for the menu on the left (in the default theme) in the AdminWeb.
@@ -259,6 +259,10 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
             url += "/";
         }
         return url;
+    }
+    
+    public String getBadLicenseInvalidMessage() {
+        return LicenseStateContainer.getLicenseInvalidWarning();
     }
     
     private transient StreamedContent headerLogoImage;

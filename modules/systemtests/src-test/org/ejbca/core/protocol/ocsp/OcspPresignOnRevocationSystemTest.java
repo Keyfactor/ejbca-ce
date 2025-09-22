@@ -72,11 +72,11 @@ import org.cesecore.certificates.ocsp.logging.GuidHolder;
 import org.cesecore.certificates.ocsp.logging.TransactionCounter;
 import org.cesecore.certificates.ocsp.logging.TransactionLogger;
 import org.cesecore.config.GlobalOcspConfiguration;
-import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.junit.util.CryptoTokenRunner;
 import org.cesecore.junit.util.PKCS12TestRunner;
 import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
+import org.cesecore.keybind.impl.OcspNonExistingBehavior;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.oscp.OcspResponseData;
@@ -137,8 +137,6 @@ public class OcspPresignOnRevocationSystemTest {
 
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
-    private CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
@@ -182,8 +180,11 @@ public class OcspPresignOnRevocationSystemTest {
         ocspCertificate = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(internalAdmin, user, req,
                 X509ResponseMessage.class, signSession.fetchCertGenParams())).getCertificate());
         // Modify the default value
-        originalDefaultResponder = setOcspDefaultResponderReference(CertTools.getSubjectDN(caCertificate));
-        cesecoreConfigurationProxySession.setConfigurationValue("ocsp.nonexistingisgood", "false");
+        originalDefaultResponder = setOcspDefaultResponderReference(CertTools.getSubjectDN(caCertificate));        
+        GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        globalOcspConfiguration.setOcspNonExistingBehavior(OcspNonExistingBehavior.UNKNOWN);
+        globalConfigurationSession.saveConfiguration(internalAdmin, globalOcspConfiguration);
+        
         originalNextUpdateTime = setOcspDefaultNextUpdateTime(nextUpdateTime);
         
         //Set up the CA to use pre produced responses

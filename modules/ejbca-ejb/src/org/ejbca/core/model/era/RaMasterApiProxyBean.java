@@ -59,7 +59,6 @@ import org.cesecore.audit.enums.EventType;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -416,47 +415,6 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             combinedResult = new RaAuthorizationResult(null, 0);
         }
         return combinedResult;
-    }
-
-    @Override
-    @Deprecated
-    public AccessSet getUserAccessSet(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
-        AccessSet merged = new AccessSet(new HashSet<>());
-        for (final RaMasterApi raMasterApi : raMasterApis) {
-            if (raMasterApi.isBackendAvailable()) {
-                try {
-                    AccessSet as = raMasterApi.getUserAccessSet(authenticationToken);
-                    merged = new AccessSet(merged, as);
-                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
-                    // Just try next implementation
-                }
-            }
-        }
-        return merged;
-    }
-
-    @Override
-    @Deprecated
-    public List<AccessSet> getUserAccessSets(final List<AuthenticationToken> authenticationTokens) {
-        final List<AuthenticationToken> tokens = new ArrayList<>(authenticationTokens);
-        final AccessSet[] merged = new AccessSet[authenticationTokens.size()];
-        for (final RaMasterApi raMasterApi : raMasterApis) {
-            if (raMasterApi.isBackendAvailable()) {
-                try {
-                    final List<AccessSet> accessSets = raMasterApi.getUserAccessSets(tokens);
-                    for (int i = 0; i < accessSets.size(); i++) {
-                        if (merged[i] == null) {
-                            merged[i] = accessSets.get(i);
-                        } else {
-                            merged[i] = new AccessSet(accessSets.get(i), merged[i]);
-                        }
-                    }
-                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
-                    // Just try next implementation
-                }
-            }
-        }
-        return Arrays.asList(merged);
     }
 
     @Override

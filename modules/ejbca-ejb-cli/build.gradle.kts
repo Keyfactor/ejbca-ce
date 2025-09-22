@@ -46,7 +46,7 @@ dependencies {
     runtimeOnly(libs.httpcore)
     runtimeOnly(libs.httpclient)
     runtimeOnly(libs.httpmime)
-    runtimeOnly(libs.istack.commons.runtime.old)
+    runtimeOnly(libs.istack.commons.runtime.hibernate)
     runtimeOnly(libs.jakarta.activation.api)
     runtimeOnly(libs.jakarta.persistence.api)
     runtimeOnly(libs.jakarta.xml.bind.api)

@@ -191,10 +191,10 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
     private transient String originalDigestAlgorithm = CMSSignedGenerator.DIGEST_SHA256; 
     
     /** preferred content encryption algorithm to use in replies, if applicable.
-     *  Defaults to SMIMECapability.dES_CBC for SCEP messages. If SCEP request is 
+     *  Defaults to SMIMECapability.aES128_CBC for SCEP messages. If SCEP request is 
      * encrypted with dES_EDE3_CBC it is set to this though. This is only for backwards compatibility issues, as specified in a SCEP draft.
      */
-    private transient ASN1ObjectIdentifier contentEncAlg = SMIMECapability.dES_CBC;
+    private transient ASN1ObjectIdentifier contentEncAlg = SMIMECapability.aES128_CBC;
     /** preferred key encryption algorithm to use in replies, if applicable.
      *  Defaults to PKCSObjectIdentifiers.rsaEncryption for SCEP messages. If SCEP request content encryption key is 
      * encrypted with RSAES_OAEP it is set to this though.
@@ -408,6 +408,11 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
                         envData = EnvelopedData.getInstance(ASN1Sequence.getInstance(envEncData.getContent()));
                         ASN1Set recipientInfos = envData.getRecipientInfos();
                         Enumeration<?> e = recipientInfos.getObjects();
+                        // If we have a getcrl request, we must set contentEncAlg, the ScepMessageDispatcherSessionBean will call getContentEncAlg()
+                        // and if we don't set it here, the algorithm will default even if the client wants it overridden.
+                        if (messageType == ScepRequestMessage.SCEP_TYPE_GETCRL) {
+                            contentEncAlg = envData.getEncryptedContentInfo().getContentEncryptionAlgorithm().getAlgorithm();
+                        }
                         while (e.hasMoreElements()) {
                             RecipientInfo ri = RecipientInfo.getInstance(e.nextElement());
                             KeyTransRecipientInfo recipientInfo = KeyTransRecipientInfo.getInstance(ri.getInfo());
@@ -857,7 +862,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
     
     /** Method used to retrieve the content encryption algorithm that was used to encrypt the SCEP request
      * 
-     * @return ASN1ObjectOdentifier, typically SMIMECapability.dES_CBC or SMIMECapability.dES_EDE3_CBC
+     * @return ASN1ObjectOdentifier, typically SMIMECapability.aES256_CBC or SMIMECapability.dES_EDE3_CBC
      */
     public ASN1ObjectIdentifier getContentEncAlg() {
         return contentEncAlg;

@@ -47,6 +47,7 @@ public final class XmlUtil {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public static Map<Object, Object> fromXml(final String xml) {
         if (xml == null) {
             return Map.of();
@@ -55,7 +56,6 @@ public final class XmlUtil {
             try (SecureXMLDecoder decoder = new SecureXMLDecoder(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)))) {
                 final Map<?, ?> map = (Map<?, ?>)decoder.readObject();
                 // Handle Base64 encoded string values
-                @SuppressWarnings("unchecked")
                 final var base64GetHashMap = new Base64GetHashMap(map);
                 return base64GetHashMap;
             } catch (IOException e) {

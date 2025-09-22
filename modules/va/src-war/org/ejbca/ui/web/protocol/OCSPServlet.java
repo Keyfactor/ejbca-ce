@@ -21,7 +21,6 @@ import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.cert.ocsp.OCSPResp;
 import org.bouncycastle.cert.ocsp.OCSPRespBuilder;
-import org.cesecore.certificates.ocsp.cache.OcspConfigurationCache;
 import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
 import org.cesecore.certificates.ocsp.logging.AuditLogger;
 import org.cesecore.certificates.ocsp.logging.GuidHolder;
@@ -108,13 +107,11 @@ public class OCSPServlet extends HttpServlet {
                     ConfigurationHolder.updateConfiguration(aConfig[i].substring(0, separatorIx),
                             aConfig[i].substring(separatorIx + 1, aConfig[i].length()));
                 }
-                OcspConfigurationCache.INSTANCE.reloadConfiguration();
                 log.info("Call from " + remote + " to update configuration");
                 return;
             }
             if (doRestoreConfig) {
                 ConfigurationHolder.restoreConfiguration();
-                OcspConfigurationCache.INSTANCE.reloadConfiguration();
                 log.info("Call from " + remote + " to restore configuration.");
                 return;
             }

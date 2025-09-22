@@ -754,8 +754,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
                   PositiveIntegerValidator.class, IntegerValidator.class, StringValidator.class, RadioButton.class, ArrayList.class, Enum.class, 
                   Collections.emptyList().getClass().asSubclass(Serializable.class), 
                   Class.forName("org.cesecore.roles.RoleInformation").asSubclass(Serializable.class),
-                  Class.forName("org.cesecore.roles.RoleData").asSubclass(Serializable.class),
-                  Class.forName("org.cesecore.authorization.user.AccessUserAspectData").asSubclass(Serializable.class)));
+                  Class.forName("org.cesecore.roles.RoleData").asSubclass(Serializable.class)));
             lookAheadObjectInputStream.setEnabledMaxObjects(false);
             lookAheadObjectInputStream.setEnabledSubclassing(false);
             lookAheadObjectInputStream.setEnabledInterfaceImplementations(false);

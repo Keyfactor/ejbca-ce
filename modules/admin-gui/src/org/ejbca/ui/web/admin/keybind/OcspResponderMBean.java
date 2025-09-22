@@ -70,6 +70,7 @@ import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 import org.cesecore.keybind.impl.OcspKeyBinding;
+import org.cesecore.keybind.impl.OcspNonExistingBehavior;
 import org.cesecore.keybind.impl.OcspKeyBinding.ResponderIdType;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.util.SimpleTime;
@@ -116,6 +117,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
     private long defaultResponseValidityTime;
     private long defaultResponseMaxAge;
     private boolean useMaxValidityForExpiration;
+    private long requestSignerCertificateRevocationCacheTime;
 
     private String currentOcspExtension = null;
     
@@ -130,6 +132,8 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
 
     private Integer currentCertificateAuthorityOcspRespToSign = null;
     private String currentTrustEntryDescriptionOcspRespToSign = null;
+    private OcspNonExistingBehavior currentUnknownResponse = null;
+    private OcspNonExistingBehavior currentGlobalUnknownResponse = null;
     
     //Serial number of the CA generation to use
     private String currentCaGeneration = null;
@@ -150,7 +154,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
     private OcspResponseGeneratorSessionLocal ocspResponseGeneratorSession;
 
     @PostConstruct
-    public void loadOcspLoggingSettings() {
+    public void loadGlobalValues() {
         final GlobalOcspConfiguration globalConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
                 .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
         isOcspTransactionLoggingEnabled = globalConfiguration.getIsOcspTransactionLoggingEnabled();
@@ -165,6 +169,8 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
         useMaxValidityForExpiration = globalConfiguration.getUseMaxValidityForExpiration();
         includeSigningCertificate = globalConfiguration.getIncludeSigningCertificate();
         includeCertificateChain = globalConfiguration.getIncludeCertificateChain();
+        currentGlobalUnknownResponse = globalConfiguration.getOcspNonExistingBehavior();
+        requestSignerCertificateRevocationCacheTime = globalConfiguration.getRequestSignserRevocationStatusCacheTime();
     }
 
     @Override
@@ -231,70 +237,90 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
         flushCurrentCache();
     }
 
-    public void saveDefaultResponder() {
+    public void saveGlobalCaSettings() {
         GlobalOcspConfiguration globalConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
                 .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-        if (StringUtils.isEmpty(defaultResponderTarget) && StringUtils.isNotEmpty(globalConfiguration.getOcspDefaultResponderReference())) {
-            globalConfiguration.setOcspDefaultResponderReference("");
-            try {
-                globalConfigurationSession.saveConfiguration(getAuthenticationToken(), globalConfiguration);
-            } catch (AuthorizationDeniedException e) {
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
-            }
-        } else if (!Strings.CS.equals(defaultResponderTarget, globalConfiguration.getOcspDefaultResponderReference())) {
-            globalConfiguration.setOcspDefaultResponderReference(defaultResponderTarget);
-            try {
-                globalConfigurationSession.saveConfiguration(getAuthenticationToken(), globalConfiguration);
-            } catch (AuthorizationDeniedException e) {
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
-            }
-        }
-    }
+        boolean modified = false;
 
-    public void saveNonceEnabled() {
-        GlobalOcspConfiguration globalConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
-                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        if (!currentGlobalUnknownResponse.equals(globalConfiguration.getOcspNonExistingBehavior())) {
+            globalConfiguration.setOcspNonExistingBehavior(currentGlobalUnknownResponse);
+            modified = true;
+        }
+        
+        
+        if(globalConfiguration.getIncludeSigningCertificate() != this.includeSigningCertificate) {
+            globalConfiguration.setIncludeSigningCertificate(includeSigningCertificate);
+            modified = true;
+        }
+        
+        if(globalConfiguration.getIncludeCertificateChain() != this.includeCertificateChain) {
+            globalConfiguration.setIncludeCertificateChain(includeCertificateChain);
+            modified = true;
+        }
+        
         if (!nonceEnabled.equals(globalConfiguration.getNonceEnabled())) {
             globalConfiguration.setNonceEnabled(nonceEnabled);
-            try {
-                globalConfigurationSession.saveConfiguration(getAuthenticationToken(), globalConfiguration);
-            } catch (AuthorizationDeniedException e) {
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
-            }
+            modified = true;
         }
-    }
-
-    public void saveResponderIdType() {
-        GlobalOcspConfiguration globalConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
-                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        
         if (!responderIdType.equals(globalConfiguration.getOcspResponderIdType())) {
             globalConfiguration.setOcspResponderIdType(responderIdType);
+            modified = true;
+        }
+        
+        if(defaultResponseValidityTime != globalConfiguration.getDefaultValidityTime()) {
+            globalConfiguration.setDefaultValidityTime(defaultResponseValidityTime);
+            modified = true;
+        }
+        
+        if(defaultResponseMaxAge != globalConfiguration.getDefaultResponseMaxAge()) {
+            globalConfiguration.setDefaultResponseMaxAge(defaultResponseMaxAge);
+            modified = true;
+        }
+        
+        if(useMaxValidityForExpiration != globalConfiguration.getUseMaxValidityForExpiration()) {
+            globalConfiguration.setUseMaxValidityForExpiration(this.useMaxValidityForExpiration);
+            modified = true;
+        }
+        
+        if (modified) {
             try {
                 globalConfigurationSession.saveConfiguration(getAuthenticationToken(), globalConfiguration);
             } catch (AuthorizationDeniedException e) {
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
             }
         }
-    }
 
-    public void saveEnableOcspSigningCacheUpdate() {
+    }
+    
+    public void saveGlobalOcspConfiguration() {
         GlobalOcspConfiguration globalConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
                 .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        boolean modified = false;
+
+        if (StringUtils.isEmpty(defaultResponderTarget) && StringUtils.isNotEmpty(globalConfiguration.getOcspDefaultResponderReference())) {
+            globalConfiguration.setOcspDefaultResponderReference("");
+            modified = true;
+        } else if (!Strings.CS.equals(defaultResponderTarget, globalConfiguration.getOcspDefaultResponderReference())) {
+            globalConfiguration.setOcspDefaultResponderReference(defaultResponderTarget);
+            modified = true;
+        }
+        
         if (!ocspSigningCacheUpdate.equals(globalConfiguration.getOcspSigningCacheUpdateEnabled())) {
             globalConfiguration.setOcspSigningCacheUpdateEnabled(ocspSigningCacheUpdate);
-            try {
-                globalConfigurationSession.saveConfiguration(getAuthenticationToken(), globalConfiguration);
-            } catch (AuthorizationDeniedException e) {
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
-            }
+            modified = true;
         }
-    }
-
-    public void saveEnableExplicitNoCacheUnauthorizedResponses() {
-        GlobalOcspConfiguration globalConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
-                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        if(requestSignerCertificateRevocationCacheTime != globalConfiguration.getRequestSignserRevocationStatusCacheTime()) {
+            globalConfiguration.setRequestSignserRevocationStatusCacheTime(requestSignerCertificateRevocationCacheTime);
+            modified = true;
+        }
+        
         if (!cacheHeaderUnauthorizedResponses.equals(globalConfiguration.getExplicitNoCacheUnauthorizedResponsesEnabled())) {
             globalConfiguration.setExplicitNoCacheUnauthorizedResponsesEnabled(cacheHeaderUnauthorizedResponses);
+            modified = true;
+        }
+        
+        if (modified) {
             try {
                 globalConfigurationSession.saveConfiguration(getAuthenticationToken(), globalConfiguration);
             } catch (AuthorizationDeniedException e) {
@@ -303,20 +329,6 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
         }
     }
     
-    public void saveGlobalIncludeValues() {
-        GlobalOcspConfiguration globalConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
-                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-        if(globalConfiguration.getIncludeSigningCertificate() != this.includeSigningCertificate || globalConfiguration.getIncludeCertificateChain() != this.includeSigningCertificate) {
-            globalConfiguration.setIncludeSigningCertificate(includeSigningCertificate);
-            globalConfiguration.setIncludeCertificateChain(includeCertificateChain);
-            try {
-                globalConfigurationSession.saveConfiguration(getAuthenticationToken(), globalConfiguration);
-            } catch (AuthorizationDeniedException e) {
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
-            }
-        }
-    }
-
     public boolean getGloballyEnableNonce() {
         GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
                 .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
@@ -363,6 +375,14 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
         this.cacheHeaderUnauthorizedResponses = cacheHeaderUnauthorizedResponses;
     }
 
+    public long getRequestSignerCertificateRevocationCacheTime() {
+        return requestSignerCertificateRevocationCacheTime;      
+    }
+    
+    public void setRequestSignerCertificateRevocationCacheTime(long requestSignerCertificateRevocationCacheTime) {
+        this.requestSignerCertificateRevocationCacheTime = requestSignerCertificateRevocationCacheTime;
+    }
+    
     public void saveOcspLoggingConfiguration() throws AuthorizationDeniedException {
         final GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
                 .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
@@ -419,21 +439,6 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
     
     public void setDefaultResponseMaxAge(final long defaultResponseMaxAge) {
         this.defaultResponseMaxAge = defaultResponseMaxAge;
-    }
-
-    public void saveGlobalResponseValues() {
-        GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
-                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-        configuration.setDefaultValidityTime(this.defaultResponseValidityTime);
-        configuration.setDefaultResponseMaxAge(this.defaultResponseMaxAge);
-        configuration.setUseMaxValidityForExpiration(this.useMaxValidityForExpiration);
-
-        try {
-            globalConfigurationSession.saveConfiguration(getAdmin(), configuration);
-        } catch (AuthorizationDeniedException e) {
-            FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Current administrator not authorized to modify global OCSP configuration.", null));
-        }
     }
     
     public boolean isValiditiesUnchanged() {
@@ -802,7 +807,16 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
         }
         return result;
     }
-
+    public List<SelectItem> getAvailableUnknownResponses() {
+        List<SelectItem> availableUnknownResponses = new ArrayList<>();
+        final String localizationPrefix = "INTERNALKEYBINDING_OCSPKEYBINDING_RESPONSE_";
+        for(OcspNonExistingBehavior ocspNonExistingBehavior : OcspNonExistingBehavior.values()) {
+            String label = getEjbcaWebBean().getText(localizationPrefix + ocspNonExistingBehavior.getLabel().toUpperCase());
+            availableUnknownResponses.add(new SelectItem(ocspNonExistingBehavior, label));
+        }
+        return availableUnknownResponses;
+    }
+    
     public List<SelectItem> getAvailableOcspExtensions() {
         final List<SelectItem> ocspExtensionItems = new ArrayList<>();
         ServiceLoader<OCSPExtension> serviceLoader = ServiceLoader.load(OCSPExtension.class);
@@ -871,6 +885,34 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
     
     public void setCurrentTrustEntryDescriptionOcspRespToSign(String description) {
         this.currentTrustEntryDescriptionOcspRespToSign = description;
+    }
+    
+    public OcspNonExistingBehavior getCurrentUnknownResponse() {
+        if (currentUnknownResponse == null) {
+            try {
+                final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingSession.getInternalKeyBinding(getAuthenticationToken(),
+                        Integer.parseInt(getCurrentInternalKeyBindingId()));
+                if (ocspKeyBinding != null) {
+                    currentUnknownResponse = ocspKeyBinding.getOcspNonExistingBehavior();
+                }
+            } catch (NumberFormatException | AuthorizationDeniedException e) {
+                addNonTranslatedErrorMessage(e);
+                return null;
+            }
+        }
+        return currentUnknownResponse;
+    }
+    
+    public void setCurrentUnknownResponse(final OcspNonExistingBehavior ocspNonExistingBehavior) {
+        this.currentUnknownResponse = ocspNonExistingBehavior;
+    }
+    
+    public OcspNonExistingBehavior getCurrentGlobalUnknownResponse() {
+        return currentGlobalUnknownResponse;
+    }
+    
+    public void setCurrentGlobalUnknownResponse(final OcspNonExistingBehavior ocspNonExistingBehavior) {
+        this.currentGlobalUnknownResponse = ocspNonExistingBehavior;
     }
     
     public String getSignOcspResponseForCasCaName() {
@@ -973,7 +1015,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
                         getCurrentCryptoToken(), getCurrentKeyPairAlias(), getCurrentSignatureAlgorithm(), dataMap,
                         (List<InternalKeyBindingTrustEntry>) getTrustedCertificates().getWrappedData())));
 
-                final InternalKeyBinding internalKeyBinding = internalKeyBindingSession.getInternalKeyBinding(getAuthenticationToken(),
+                final OcspKeyBinding internalKeyBinding = (OcspKeyBinding) internalKeyBindingSession.getInternalKeyBinding(getAuthenticationToken(),
                         Integer.parseInt(getCurrentInternalKeyBindingId()));
 
                 if (ocspExtensionsList != null && ocspExtensionsList.isEmpty()) {
@@ -986,6 +1028,8 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
                 } else {
                     internalKeyBinding.setSignOcspResponseOnBehalf(new ArrayList<>());
                 }
+                
+                internalKeyBinding.setOcspNonExistingBehavior(currentUnknownResponse);
                 
                 // we save an empty list for sign on behalf of CAs
                 setCurrentInternalKeybindingId(
@@ -1050,6 +1094,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
             if (ocspKeyBinding.getIncludeCertChain()) {
                 ocspKeyBinding.setCaGeneration(currentCaGeneration);
             }
+            ocspKeyBinding.setOcspNonExistingBehavior(currentUnknownResponse);
             
             final List<DynamicUiProperty<? extends Serializable>> internalKeyBindingProperties = (List<DynamicUiProperty<? extends Serializable>>) getInternalKeyBindingPropertyList()
                     .getWrappedData();

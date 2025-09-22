@@ -69,6 +69,7 @@ import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.ocsp.cache.OcspDataConfigCache;
 import org.cesecore.certificates.ocsp.cache.OcspDataConfigCacheEntry;
+import org.cesecore.certificates.ocsp.cache.OcspRequestSignerStatusCacheSingletonLocal;
 import org.cesecore.certificates.ocsp.cache.OcspSigningCache;
 import org.cesecore.certificates.ocsp.cache.OcspSigningCacheEntry;
 import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
@@ -283,6 +284,7 @@ public class OcspResponseGeneratorSessionUnitTest {
     private GlobalConfigurationSessionLocal globalConfigurationSessionMock = EasyMock.createNiceMock(GlobalConfigurationSessionLocal.class);
     private TimerService timerServiceMock = EasyMock.createStrictMock(TimerService.class);
     private OcspDataSessionLocal ocspDataSessionMock = EasyMock.createStrictMock(OcspDataSessionLocal.class);
+    private OcspRequestSignerStatusCacheSingletonLocal ocspRequestSignerStatusCache = EasyMock.createNiceMock(OcspRequestSignerStatusCacheSingletonLocal.class);
     private CertificateStatus status;
     
     
@@ -297,6 +299,7 @@ public class OcspResponseGeneratorSessionUnitTest {
         ocspResponseGeneratorSession.setMockedGlobalConfigurationSession(globalConfigurationSessionMock);
         ocspResponseGeneratorSession.setMockedTimerService(timerServiceMock);
         ocspResponseGeneratorSession.setOcspDataSessionLocal(ocspDataSessionMock);
+        ocspResponseGeneratorSession.setocspRequestSignerStatusCache(ocspRequestSignerStatusCache);
         // Clear caches from previous test runs
         ocspResponseGeneratorSession.clearOcspRequestSignerRevocationStatusCache();
         OcspSigningCache.INSTANCE.stagingStart();
@@ -757,5 +760,7 @@ public class OcspResponseGeneratorSessionUnitTest {
         protected void setMockedTimerService(final TimerService timerService) { super.setMockedTimerService(timerService); }
         @Override
         protected void setOcspDataSessionLocal(final OcspDataSessionLocal ocspDataSessionLocal) { super.setOcspDataSessionLocal(ocspDataSessionLocal); }
+        @Override
+        protected void setocspRequestSignerStatusCache(final OcspRequestSignerStatusCacheSingletonLocal ocspRequestSignerStatusCache) { super.setocspRequestSignerStatusCache(ocspRequestSignerStatusCache); }
     }
 }

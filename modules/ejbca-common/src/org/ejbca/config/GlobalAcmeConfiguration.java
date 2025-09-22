@@ -150,6 +150,22 @@ public class GlobalAcmeConfiguration extends ConfigurationBase implements Serial
         final ArrayList<String> replayNonceSharedSecrets = getReplayNonceSharedSecrets(hmacOid);
         return Hex.decode(replayNonceSharedSecrets.get(replayNonceSharedSecrets.size()-1));
     }
+    
+    /** @return the latest replay-nonce secret in hex for the specified algorithm that have been configured, Used by configdump only. */
+    public String getReplayNonceSharedSecretCurrentHex() throws IllegalArgumentException, IllegalStateException {
+        final ArrayList<String> replayNonceSharedSecrets = getReplayNonceSharedSecrets(PKCSObjectIdentifiers.id_hmacWithSHA256.getId());
+        return replayNonceSharedSecrets.get(replayNonceSharedSecrets.size()-1);
+    }
+    /** Import the latest replay-nonce secret in hex. Used by configdump only. */
+    public void setReplayNonceSharedSecretCurrentHex(final String secret) throws IllegalArgumentException, IllegalStateException {
+        final ArrayList<String> replayNonceSharedSecrets = getReplayNonceSharedSecrets(PKCSObjectIdentifiers.id_hmacWithSHA256.getId());
+        // There should be only 1.
+        if (replayNonceSharedSecrets.size() == 1) {
+            replayNonceSharedSecrets.set(0, secret);
+        } else {
+            replayNonceSharedSecrets.add(secret);
+        }
+    }
 
     /** Add a new replay-nonce secret for the specified algorithm to use for all new generated replay-nonces */
     public void addReplayNonceSharedSecret(final String hmacOid, byte[] secret) throws IllegalArgumentException, IllegalStateException {
