@@ -30,7 +30,7 @@ public enum LicenseState {
     TO_BE_EXPIRED_5_DAYS("EJBCA license expires within _days_ days"),
     
     // Expired
-    EXPIRED("EJBCA license has expired and will shut down after _days_ days"),
+    EXPIRED("EJBCA license has expired and will shut down in _days_ days"),
     EXPIRED_LONG_BACK("EJBCA license has expired since _days_ days. Shutting down."),
     
     // Customer is doing something bad e.g. removing libraries or providing their own implementation.
