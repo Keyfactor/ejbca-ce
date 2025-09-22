@@ -937,7 +937,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (getSelectedKeyPairGenerationEnum() != null && KeyPairGeneration.PROVIDED_BY_USER.equals(getSelectedKeyPairGenerationEnum()) && algorithmFromCsr != null) {
             final RequestMessage certRequest = RequestMessageUtils.parseRequestMessage(getCertificateRequest().getBytes(StandardCharsets.UTF_8));
             if (certRequest.getRequestX500Name() != null) {
-                populateRequestFields(RequestFieldType.DN, certRequest.getRequestX500Name().toString(), getSubjectDn().getFieldInstances());
+                populateRequestFields(DnComponentsHelper.RequestFieldType.DN, certRequest.getRequestX500Name().toString(), getSubjectDn().getFieldInstances());
                 getSubjectDn().update();
             }
             this.subjectAlternativeName = null;
@@ -947,7 +947,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             if (pkcs10CertificateRequest != null) {
                 final Extension sanExtension = CertTools.getExtension(pkcs10CertificateRequest, Extension.subjectAlternativeName.getId());
                 if (sanExtension != null) {
-                    populateRequestFields(RequestFieldType.AN, DnComponents.getAltNameStringFromExtension(sanExtension), getSubjectAlternativeName().getFieldInstances());
+                    populateRequestFields(DnComponentsHelper.RequestFieldType.AN, DnComponents.getAltNameStringFromExtension(sanExtension), getSubjectAlternativeName().getFieldInstances());
                     getSubjectAlternativeName().update();
                 }
                 final Extension subjectDirectoryAttributes = CertTools.getExtension(pkcs10CertificateRequest, Extension.subjectDirectoryAttributes.getId());
@@ -955,7 +955,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                     ASN1Primitive parsedValue = (ASN1Primitive) subjectDirectoryAttributes.getParsedValue();
                     try {
                         final String subjectDirectoryAttributeString = SubjectDirAttrExtension.getSubjectDirectoryAttribute(parsedValue);
-                        populateRequestFields(RequestFieldType.DIRATTR, subjectDirectoryAttributeString, getSubjectDirectoryAttributes().getFieldInstances());
+                        populateRequestFields(DnComponentsHelper.RequestFieldType.DIRATTR, subjectDirectoryAttributeString, getSubjectDirectoryAttributes().getFieldInstances());
                         getSubjectDirectoryAttributes().update();
                     } catch (ParseException | IllegalArgumentException e) {
                         log.debug("Invalid Subject Directory Attributes Extension: " + e.getMessage());
@@ -967,17 +967,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
     }
 
-    // enum to make type selection for populateRequestFields easy and fixed, with good toString() value for debug log
-    enum RequestFieldType {
-        DN,
-        AN,
-        DIRATTR
-    }
-
     /**
      * Populate the fieldInstances parameter with values from the CSR when the instances are modifiable
      */
-    private void populateRequestFields(final RequestFieldType type, final String subject, final Collection<FieldInstance> fieldInstances) {
+    private void populateRequestFields(final DnComponentsHelper.RequestFieldType type,
+                                       final String subject,
+                                       final Collection<FieldInstance> fieldInstances) {
         final List<String> subjectFieldsFromParsedCsr = DnComponents.getX500NameComponents(subject);
 
         final int eepId = getEndEntityInformation().getEndEntityProfileId();
@@ -985,9 +980,9 @@ public class EnrollMakeNewRequestBean implements Serializable {
         bothLoops:
         for (final String subjectField : subjectFieldsFromParsedCsr) {
             if (log.isDebugEnabled()) {
-                if (RequestFieldType.DN.equals(type)) {
+                if (DnComponentsHelper.RequestFieldType.DN.equals(type)) {
                     log.debug("Parsing the subject " + type + " field '" + LogRedactionUtils.getSubjectDnLogSafe(subjectField, eepId) + "'...");
-                } else if (RequestFieldType.AN.equals(type)) {
+                } else if (DnComponentsHelper.RequestFieldType.AN.equals(type)) {
                     log.debug("Parsing the subject " + type + " field '" + LogRedactionUtils.getSubjectAltNameLogSafe(subjectField, eepId) + "'...");
                 } else {
                     log.debug("Parsing the subject " + type + " field '" + subjectField + "'...");
@@ -996,18 +991,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
             // Fields may contain equal signs, so treat everything after the first one as the value
             final String[] nameValue = subjectField.split("=", 2);
             if (nameValue != null && nameValue.length >= 2) {
-                Integer dnId = null;
-                switch (type) {
-                    case DN:
-                        dnId = DnComponents.getDnIdFromDnName(nameValue[0]);
-                        break;
-                    case AN:
-                        dnId = DnComponents.getDnIdFromAltName(nameValue[0]);
-                        break;
-                    case DIRATTR:
-                        dnId = DnComponents.getDnIdFromDirAttr(nameValue[0]);
-                        break;
-                }
+                final String name = nameValue[0];
+                final Integer dnId =
+                        DnComponentsHelper.getDnIdFromTypeAndName(type, name);
+
                 if (log.isDebugEnabled()) {
                     log.debug(" dnId=" + dnId);
                 }
@@ -1045,10 +1032,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 }
             }
             if (log.isDebugEnabled()) {
-                if (RequestFieldType.DN.equals(type)) {
+                if (DnComponentsHelper.RequestFieldType.DN.equals(type)) {
                     log.debug("Unparsable subject " + type + " field '" + LogRedactionUtils.getSubjectDnLogSafe(subjectField, eepId)
                             + "' from CSR, field is invalid or not a modifiable option in the end entity profile.");
-                } else if (RequestFieldType.AN.equals(type)) {
+                } else if (DnComponentsHelper.RequestFieldType.AN.equals(type)) {
                     log.debug("Unparsable subject " + type + " field '" + LogRedactionUtils.getSubjectAltNameLogSafe(subjectField, eepId)
                             + "' from CSR, field is invalid or not a modifiable option in the end entity profile.");
                 } else {
@@ -1059,11 +1046,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
     }
 
-    private void logRedactedInfo(final RequestFieldType type, final int eepId, final FieldInstance fieldInstance) {
-        if (RequestFieldType.DN.equals(type)) {
+    private void logRedactedInfo(final DnComponentsHelper.RequestFieldType type, final int eepId, final FieldInstance fieldInstance) {
+        if (DnComponentsHelper.RequestFieldType.DN.equals(type)) {
             log.debug(" fieldInstance.value=" + LogRedactionUtils.getSubjectDnLogSafe(fieldInstance.getValue(), eepId)
                     + " fieldInstance.defaultValue=" + LogRedactionUtils.getSubjectDnLogSafe(fieldInstance.getDefaultValue(), eepId));
-        } else if (RequestFieldType.AN.equals(type)) {
+        } else if (DnComponentsHelper.RequestFieldType.AN.equals(type)) {
             log.debug(" fieldInstance.value=" + LogRedactionUtils.getSubjectAltNameLogSafe(fieldInstance.getValue(), eepId)
                     + " fieldInstance.defaultValue=" + LogRedactionUtils.getSubjectAltNameLogSafe(fieldInstance.getDefaultValue(), eepId));
         } else {
