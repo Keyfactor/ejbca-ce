@@ -951,6 +951,7 @@
 		    	<exclude name="bin/backup/**" />
 		    	<exclude name="tmp/**" />
 		    	<exclude name="dist/**" />
+                <exclude name="build/**" />
 		    	<exclude name="out/**" />
 		    	<exclude name="p12*/**" />
 		    	<exclude name="**/*.class" />
@@ -969,17 +970,10 @@
 		    	<exclude name="modules/statedump/**" />
 		    	<exclude name="container/" />
 		    	<exclude name="Dockerfile" />
-				<exclude name="preview/" />
 				<exclude name="charts/" />
-				<exclude name=".lighthouse/" />
-				<exclude name=".jx/" />
 				<exclude name=".github/" />
+				<exclude name=".gitlab/" />
 				<exclude name=".gitlab-ci.yml" />
-				<exclude name="OWNERS" />
-				<exclude name="OWNERS_ALIASES" />
-				<exclude name="SEMVER" />
-				<exclude name="VERSION" />
-				<exclude name="TAGS" />
 				<exclude name="src/ci/" />
 				<exclude name="src/package/" />
 				<exclude name="lib/coverage/**" />
@@ -1044,7 +1038,6 @@
 				<exclude name="src/ci/**" />
 				<exclude name="modules/statedump/**" />
 				<exclude name="container/**" />
-				<exclude name=".jx/**" />
 		    </zipfileset>
 		</zip>
         <antcall target="signjar">
