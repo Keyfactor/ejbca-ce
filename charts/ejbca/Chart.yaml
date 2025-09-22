@@ -10,7 +10,7 @@ version: "0.0.0"
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "latest"
+appVersion: "0.0.0"
 home: https://www.ejbca.org
 icon: https://raw.githubusercontent.com/Keyfactor/ejbca-ce/main/.github/images/community-ejbca-icon.png
 keywords: ["pki", "security", "encryption", "certificates", "management", "automation", "infrastructure", "pqc", "protocol", "tls"]
