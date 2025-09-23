@@ -20,9 +20,9 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
-public class AddAllowedOAuthHostnames extends BaseOAuthConfigCommand{
+public class UpdateAllowedOAuthHostnames extends BaseOAuthConfigCommand{
 
-    private static final Logger log = Logger.getLogger(AddAllowedOAuthHostnames.class);
+    private static final Logger log = Logger.getLogger(UpdateAllowedOAuthHostnames.class);
 
     private static final String ALLOWED_OAUTH_HOST_NAMES = "--allowedoauthhostnames";
 
@@ -71,11 +71,11 @@ public class AddAllowedOAuthHostnames extends BaseOAuthConfigCommand{
 
     @Override
     public String getMainCommand() {
-        return "addallowedoauthhostnames";
+        return "updateallowedoauthhostnames";
     }
 
     @Override
     public String getCommandDescription() {
-        return "Add allowed OAuth hostnames to the OAuth configuration. Separate the list with;. Note that the already existing hostnames will be overwritten.";
+        return "Update allowed OAuth hostnames of the OAuth configuration. Separate the list with;. Note that the already existing hostnames will be overwritten.";
     }
 }
