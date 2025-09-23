@@ -76,6 +76,6 @@ public class UpdateAllowedOAuthHostnames extends BaseOAuthConfigCommand{
 
     @Override
     public String getCommandDescription() {
-        return "Update allowed OAuth hostnames of the OAuth configuration. Separate the list with;. Note that the already existing hostnames will be overwritten.";
+        return "Update allowed OAuth hostnames of the OAuth configuration. Separate the list with semicolon. Note that the already existing hostnames will be overwritten.";
     }
 }
