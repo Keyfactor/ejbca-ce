@@ -486,7 +486,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             }
         } finally {
             // Schedule a new timer of this type
-            addTimer(OcspConfiguration.getSigningCertsValidTimeInMilliseconds(), TIMERID_OCSPSIGNINGCACHE);
+            GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            addTimer(globalOcspConfiguration.getSigningCertificateValidityTimeMilliseconds(), TIMERID_OCSPSIGNINGCACHE);
         }
     }
     

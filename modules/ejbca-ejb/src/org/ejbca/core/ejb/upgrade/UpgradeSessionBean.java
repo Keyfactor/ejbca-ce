@@ -54,6 +54,7 @@ import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.config.GlobalCtConfiguration;
 import org.cesecore.config.GlobalEndEntityProfileConfiguration;
 import org.cesecore.config.GlobalOcspConfiguration;
+import org.cesecore.config.InvalidConfigurationException;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
@@ -1713,6 +1714,19 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
         
         globalOcspConfiguration.setRequestSignserRevocationStatusCacheTime(OcspConfiguration.getRequestSigningCertRevocationCacheTimeMs());
+        
+        int signingCertificateValidTime = OcspConfiguration.getSigningCertsValidTimeInMilliseconds();
+        if(signingCertificateValidTime < 0) {
+            //normalize negative values to 0;
+            signingCertificateValidTime = 0;
+        }
+        try {
+            globalOcspConfiguration.setSigningCertificateValidityTimeMilliseconds(signingCertificateValidTime);
+        } catch (InvalidConfigurationException e) {
+            //Only negative values would cause the setter to fail, which shouldn't be able to happen according to the above. 
+            throw new UpgradeFailedException(e);
+        }
+        
         
         try {
             globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);
