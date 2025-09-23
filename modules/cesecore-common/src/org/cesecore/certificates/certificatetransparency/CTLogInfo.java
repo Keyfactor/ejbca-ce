@@ -107,8 +107,7 @@ public final class CTLogInfo implements Serializable {
 
     // Used by Configdump
     public void setPublicKeyBytes(final byte[] publicKeyBytes) {
-        this.publicKeyBytes = publicKeyBytes;
-        this.publicKey = null;
+        setLogPublicKey(publicKeyBytes);
     }
 
     public void setLogPublicKey(final byte[] publicKeyBytes) {
