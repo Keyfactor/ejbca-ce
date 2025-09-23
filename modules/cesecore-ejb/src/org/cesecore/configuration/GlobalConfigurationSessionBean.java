@@ -139,7 +139,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
             final Map<Object, Object> diff = UpgradeableDataHashMap.diffMaps(orgmap, newmap);
             // Make security audit log record, but first have the object itself filter out any sensitive information
             conf.filterDiffMapForLogging(diff);
-            final String msg = intres.getLocalizedMessage("globalconfig.savedconf", gcdata.getConfigurationId());
+            final String msg = "Saved global configuration with id " + gcdata.getConfigurationId() + ".";
             final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             for (Map.Entry<Object, Object> entry : diff.entrySet()) {
@@ -170,7 +170,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
                 GlobalConfigurationData gcd = new GlobalConfigurationData(configID, conf);
                 entityManager.persist(gcd);
                 GlobalConfigurationCacheHolder.INSTANCE.updateConfiguration(conf, configID);
-                final String msg = intres.getLocalizedMessage("globalconfig.createdconf", configID);
+                final String msg = "Global configuration with id " + configID + " created.";
                 auditSession.log(EventTypes.SYSTEMCONF_CREATE, EventStatus.SUCCESS, ModuleTypes.GLOBALCONF, ServiceTypes.CORE,
                         authenticationToken.toString(), null, null, null, msg);
             } catch (Exception e) {
