@@ -228,8 +228,6 @@ public class HealthCheckSystemTest {
             tokenId1 = CryptoTokenTestUtils.createSoftCryptoToken(admin, tokenName1);
             CRYPTO_TOKEN_MANAGEMENT_SESSION.createKeyPair(admin, tokenId1, "ocspKey", KeyGenParams.builder("RSA2048").build());
             X509CAInfo x509ca = pkcs12TestRunner.createX509Ca("CN="+this.getClass().getSimpleName(), this.getClass().getSimpleName());
-            //Make sure timers don't run while we debug
-            cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNING_TRUSTSTORE_VALID_TIME, Integer.toString(Integer.MAX_VALUE/1000));
             //Create an independent cryptotoken
             internalKeyBindingId = OcspTestUtils.createInternalKeyBinding(admin, tokenId1, OcspKeyBinding.IMPLEMENTATION_ALIAS,
                                                                           "OcspHealthCheckTest", "RSA2048", AlgorithmConstants.SIGALG_SHA256_WITH_RSA);

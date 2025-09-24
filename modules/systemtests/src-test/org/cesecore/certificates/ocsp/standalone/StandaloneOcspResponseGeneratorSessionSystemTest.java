@@ -158,8 +158,6 @@ public class StandaloneOcspResponseGeneratorSessionSystemTest {
     private static final String TESTCLASSNAME = StandaloneOcspResponseGeneratorSessionSystemTest.class.getSimpleName();
     private static final Logger log = Logger.getLogger(StandaloneOcspResponseGeneratorSessionSystemTest.class);
 
-    private String originalSigningTruststoreValidTime;
-
     private final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private final CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE
@@ -220,9 +218,6 @@ public class StandaloneOcspResponseGeneratorSessionSystemTest {
         assumeTrue("Test with runner " + cryptoTokenRunner.getSimpleName() + " cannot run on this platform.", cryptoTokenRunner.canRun());
         if (cryptoTokenRunner.canRun()) {
             x509ca = cryptoTokenRunner.createX509Ca("CN="+testName.getMethodName(), testName.getMethodName());
-            originalSigningTruststoreValidTime = cesecoreConfigurationProxySession.getConfigurationValue(OcspConfiguration.SIGNING_TRUSTSTORE_VALID_TIME);
-            //Make sure timers don't run while we debug
-            cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNING_TRUSTSTORE_VALID_TIME, Integer.toString(Integer.MAX_VALUE/1000));
             //Create an independent cryptotoken
             cryptoTokenId = cryptoTokenRunner.createCryptoToken("StandaloneOcspResponseGeneratorTestCryptoToken");
             internalKeyBindingId = OcspTestUtils.createInternalKeyBinding(authenticationToken, cryptoTokenId, OcspKeyBinding.IMPLEMENTATION_ALIAS,
@@ -260,8 +255,6 @@ public class StandaloneOcspResponseGeneratorSessionSystemTest {
             } catch (Exception e) {
                 //Ignore any failures.
             }
-            internalKeyBindingMgmtSession.deleteInternalKeyBinding(authenticationToken, internalKeyBindingId);
-            cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNING_TRUSTSTORE_VALID_TIME, originalSigningTruststoreValidTime);
             // Make sure default responder is restored
             setOcspDefaultResponderReference(originalDefaultResponder);
             // All CAs that are created with cryptoTokenRunner.createX509Ca are removed by cryptoTokenRunner.cleanUp();
