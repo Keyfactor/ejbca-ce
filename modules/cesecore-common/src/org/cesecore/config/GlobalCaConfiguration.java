@@ -26,6 +26,7 @@ public class GlobalCaConfiguration extends ConfigurationBase implements Serializ
     private static final long serialVersionUID = 1L;
     
     private static final String ENABLE_ICAO_CA_NAME_CHANGE = "enableIcaoCaNameChange";
+    private static final String CA_CERTIFICATE_CACHE_TIME = "caCertificateCacheTimeMillis";
     
     public GlobalCaConfiguration() {
         super();
@@ -44,6 +45,33 @@ public class GlobalCaConfiguration extends ConfigurationBase implements Serializ
     
     public void setEnableIcaoCANameChange(final boolean value) {
         putBoolean(ENABLE_ICAO_CA_NAME_CHANGE, value);
+    }
+    
+    public long getCaCertificateCacheTimeMillis() {
+        if(data.get(CA_CERTIFICATE_CACHE_TIME) == null) {
+            //set the default
+            try {
+                setCaCertificateCacheTimeMillis(300*1000);
+            } catch (InvalidConfigurationException e) {    
+                throw new IllegalStateException("Default value of 300000 was somehow negative.", e);
+            }  
+        }
+        return (long) data.get(CA_CERTIFICATE_CACHE_TIME);
+    }
+    
+    public void setCaCertificateCacheTimeMillis(final long caCertificateCacheTimeMillis) throws InvalidConfigurationException {
+        if(caCertificateCacheTimeMillis < 0) {
+            throw new InvalidConfigurationException("Validity time must be a greater than or equal to 0, was " + caCertificateCacheTimeMillis);
+        }
+        data.put(CA_CERTIFICATE_CACHE_TIME, caCertificateCacheTimeMillis);
+    }
+    
+    public void setCaCertificateCacheTimeSeconds(final long caCertificateCacheTimeSeconds) throws InvalidConfigurationException {
+        setCaCertificateCacheTimeMillis(caCertificateCacheTimeSeconds * 1000);
+    }
+    
+    public long getCaCertificateCacheTimeSeconds() {
+        return getCaCertificateCacheTimeMillis()/1000;
     }
     
     @Override

@@ -28,6 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.HashID;
+import org.cesecore.certificates.certificate.internal.CaCertificateCacheLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.ejbca.core.protocol.crlstore.CRLCache;
 import org.ejbca.util.HTMLTools;
@@ -55,14 +56,15 @@ public class CRLStoreServlet extends StoreServletBase {
 	private static final String PARAM_PARTITION = "partition";
 
 	@EJB
+	private CaCertificateCacheLocal caCertificateCache;
+	@EJB
 	private CrlStoreSessionLocal crlStoreSession;
-	
+	@EJB
 	private CRLCache crlCache;
 
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
-		this.crlCache = CRLCache.getInstance(crlStoreSession, certCache);		
 	}
 
 	@Override
@@ -150,7 +152,7 @@ public class CRLStoreServlet extends StoreServletBase {
                 printInfo(cert, indent, pw);
                 pw.println();
             }
-            final X509Certificate[] issuedCerts = this.certCache.findLatestByIssuerDN(HashID.getFromSubjectDN(cert));
+            final X509Certificate[] issuedCerts = caCertificateCache.findLatestByIssuerDN(HashID.getFromSubjectDN(cert));
             if (ArrayUtils.isEmpty(issuedCerts)) {
                 continue;
             }

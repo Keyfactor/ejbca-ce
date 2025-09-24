@@ -111,7 +111,7 @@ import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
-import org.cesecore.certificates.ca.internal.CaCertificateCache;
+import org.cesecore.certificates.ca.internal.CaCertificateCacheTestSessionRemote;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.HashID;
 import org.cesecore.certificates.certificate.IllegalKeyException;
@@ -261,6 +261,7 @@ public class ProtocolOcspHttpSystemTest extends ProtocolOcspTestBase {
             .getBytes());
 
     private final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+    private final CaCertificateCacheTestSessionRemote caCertificateCacheTestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaCertificateCacheTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private static final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private final RevocationSessionRemote revocationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RevocationSessionRemote.class);
@@ -429,9 +430,8 @@ public class ProtocolOcspHttpSystemTest extends ProtocolOcspTestBase {
             // First test with a signed OCSP request that can be verified
             Collection<Certificate> cacerts = new ArrayList<>();
             cacerts.add(cacert);
-            CaCertificateCache certcache = CaCertificateCache.INSTANCE;
-            certcache.loadCertificates(cacerts);
-            X509Certificate signer = checkRequestSignature(LOOPBACK_IP, req, certcache);
+            caCertificateCacheTestSession.loadCertificates(cacerts);
+            X509Certificate signer = checkRequestSignature(LOOPBACK_IP, req);
             assertNotNull(signer);
             assertEquals(ocspTestCert.getSerialNumber().toString(16), signer.getSerialNumber().toString(16));
 
@@ -439,7 +439,7 @@ public class ProtocolOcspHttpSystemTest extends ProtocolOcspTestBase {
             req = gen.build();
             boolean caught = false;
             try {
-                checkRequestSignature(LOOPBACK_IP, req, certcache);
+                checkRequestSignature(LOOPBACK_IP, req);
             } catch (SignRequestException e) {
                 caught = true;
             }
@@ -458,7 +458,7 @@ public class ProtocolOcspHttpSystemTest extends ProtocolOcspTestBase {
             // throw an SignRequestSignatureException
             caught = false;
             try {
-                checkRequestSignature(LOOPBACK_IP, req, certcache);
+                checkRequestSignature(LOOPBACK_IP, req);
             } catch (SignRequestSignatureException e) {
                 caught = true;
             }
@@ -477,7 +477,7 @@ public class ProtocolOcspHttpSystemTest extends ProtocolOcspTestBase {
             // throw an SignRequestSignatureException
             caught = false;
             try {
-                checkRequestSignature(LOOPBACK_IP, req, certcache);
+                checkRequestSignature(LOOPBACK_IP, req);
             } catch (SignRequestSignatureException e) {
                 caught = true;
             }
@@ -1843,7 +1843,6 @@ Content-Type: text/html; charset=iso-8859-1
      *
      * @param clientRemoteAddr The ip address or hostname of the remote client that sent the request, can be null.
      * @param req The signed OCSPReq
-     * @param cacerts a CertificateCache of Certificates, the authorized CA-certificates. The signer certificate must be issued by one of these.
      * @return X509Certificate which is the certificate that signed the OCSP request
      * @throws SignRequestSignatureException if signature verification fail, or if the signing certificate is not authorized
      * @throws SignRequestException if there is no signature on the OCSPReq
@@ -1854,7 +1853,7 @@ Content-Type: text/html; charset=iso-8859-1
      * @throws InvalidKeyException if the certificate, or CA key is invalid
      * @throws OperatorCreationException
      */
-    public static X509Certificate checkRequestSignature(String clientRemoteAddr, OCSPReq req, CaCertificateCache cacerts) throws SignRequestException,
+    public X509Certificate checkRequestSignature(String clientRemoteAddr, OCSPReq req) throws SignRequestException,
             OCSPException, NoSuchProviderException, CertificateException, NoSuchAlgorithmException, InvalidKeyException,
             SignRequestSignatureException, OperatorCreationException {
 
@@ -1887,7 +1886,7 @@ Content-Type: text/html; charset=iso-8859-1
                 verifyOK = true;
                 // Also check that the signer certificate can be verified by one of the CA-certificates
                 // that we answer for
-                X509Certificate signerca = cacerts.findLatestBySubjectDN(HashID.getFromIssuerDN(certs[i]));
+                X509Certificate signerca = caCertificateCacheTestSession.findLatestBySubjectDN(HashID.getFromIssuerDN(certs[i]));
                 String subject = signer;
                 String issuer = signerissuer;
                 if (signerca != null) {
