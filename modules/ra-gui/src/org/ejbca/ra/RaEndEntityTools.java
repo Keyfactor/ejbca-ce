@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
 
 import jakarta.faces.component.UIComponent;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -55,6 +55,7 @@ public class RaEndEntityTools {
         RaCertificateSearchResponse response = raMasterApiProxyBean.searchForCertificatesByUsername(authenticationToken, username);
         List<RaCertificateDetails> certificates = new ArrayList<>();
         RaCertificateDetails.Callbacks callbacks = new RaCertificateDetails.Callbacks() {
+            private static final long serialVersionUID = 1L;
             @Override
             public RaLocaleBean getRaLocaleBean() {
                 return raLocaleBean;

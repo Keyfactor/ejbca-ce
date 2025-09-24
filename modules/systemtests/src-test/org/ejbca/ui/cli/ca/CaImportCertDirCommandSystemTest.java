@@ -48,12 +48,13 @@ import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.EJBTools;
-import com.keyfactor.util.FileTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -61,7 +62,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 /**
- * @version $Id$
  *
  */
 public class CaImportCertDirCommandSystemTest {
@@ -91,6 +91,9 @@ public class CaImportCertDirCommandSystemTest {
     private File certificateFile;
     private File tempDirectory;
     private BigInteger certificateSerialNumber;
+    
+    @Rule
+    public TemporaryFolder tempdir = new TemporaryFolder();
 
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -99,7 +102,7 @@ public class CaImportCertDirCommandSystemTest {
 
     @Before
     public void setup() throws Exception {
-        tempDirectory = FileTools.createTempDirectory();
+        tempDirectory = tempdir.newFolder();
         //Creates a CA with AlgorithmConstants.SIGALG_SHA256_WITH_RSA
         ca = CaTestUtils.createTestX509CA(CA_DN, null, false);
         caSession.addCA(authenticationToken, ca);
@@ -133,9 +136,6 @@ public class CaImportCertDirCommandSystemTest {
     public void tearDown() throws Exception {
         if (ca != null) {
             CaTestUtils.removeCa(authenticationToken, ca.getCAInfo());
-        }
-        if (tempDirectory.exists()) {
-            FileTools.delete(tempDirectory);
         }
         if (endEntityAccessSession.findUser(authenticationToken, USERNAME) != null) {
             endEntityManagementSession.deleteUser(authenticationToken, USERNAME);

@@ -14,7 +14,6 @@
 package org.ejbca.core.protocol.est;
 
 import java.net.URL;
-import java.security.SecureRandom;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -22,7 +21,7 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSession;

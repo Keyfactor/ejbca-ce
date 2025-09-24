@@ -120,6 +120,18 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     public static final String TEST_MLDSA44_CA_NAME = "TESTMLDSA44";
     public static final String TEST_MLDSA65_CA_NAME = "TESTMLDSA65";
     public static final String TEST_MLDSA87_CA_NAME = "TESTMLDSA87";
+    public static final String TEST_SLHDSASHA2_128S_CA_NAME = "TESTSLHDSASHA2_128S";
+    public static final String TEST_SLHDSASHAKE_128S_CA_NAME = "TESTSLHDSASHAKE_128S";
+    public static final String TEST_SLHDSASHA2_128F_CA_NAME = "TESTSLHDSASHA2_128F";
+    public static final String TEST_SLHDSASHAKE_128F_CA_NAME = "TESTSLHDSASHAKE_128F";
+    public static final String TEST_SLHDSASHA2_192S_CA_NAME = "TESTSLHDSASHA2_192S";
+    public static final String TEST_SLHDSASHAKE_192S_CA_NAME = "TESTSLHDSASHAKE_192S";
+    public static final String TEST_SLHDSASHA2_192F_CA_NAME = "TESTSLHDSASHA2_192F";
+    public static final String TEST_SLHDSASHAKE_192F_CA_NAME = "TESTSLHDSASHAKE_192F";
+    public static final String TEST_SLHDSASHA2_256S_CA_NAME = "TESTSLHDSASHA2_256S";
+    public static final String TEST_SLHDSASHAKE_256S_CA_NAME = "TESTSLHDSASHAKE_256S";
+    public static final String TEST_SLHDSASHA2_256F_CA_NAME = "TESTSLHDSASHA2_256F";
+    public static final String TEST_SLHDSASHAKE_256F_CA_NAME = "TESTSLHDSASHAKE_256F";
     public static final String TEST_SHA256_WITH_MFG1_CA_NAME = "TESTSha256WithMGF1";
     public static final String TEST_SHA256_WITH_MFG1_CA_DN = "CN="+TEST_SHA256_WITH_MFG1_CA_NAME;
     public static final String TEST_RSA_REVSERSE_CA_DN = DnComponents.stringToBCDNString("CN=TESTRSAReverse,O=FooBar,OU=BarFoo,C=SE");
@@ -164,8 +176,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         log.trace(">CaTestCase.setUp()");
         CryptoProviderTools.installBCProviderIfNotAvailable();
         super.setUpAuthTokenAndRole(getRoleName()+"Base");
-        removeTestCA(); // We can't be sure this CA was not left over from
-        createTestCA();
+        createTestCA(); // Create also removes any old left over CA
         addDefaultRole();
     }
 
@@ -207,7 +218,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
      */
     public static boolean createTestCA() throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException,
             CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
-        removeTestCA(); // We cant be sure this CA was not left over from
+        removeTestCA(); // We can't be sure this CA was not left over from
         return createTestCA(getTestCAName(), 1024);
     }
 
@@ -289,6 +300,19 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         return result != CA_CREATION_FAIL;
     }
 
+    public static boolean createTestCAWithLdapDnOrder(
+            String caName, int keyStrength, String dn, int signedBy, Collection<Certificate> certificateChain, boolean useLdapDnOrder)
+            throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException,
+            CryptoTokenAuthenticationFailedException {
+        if(dn.hashCode()==-CA_CREATION_FAIL)
+            throw new IllegalArgumentException("subjectDN hash code calculates to "
+                    + CA_CREATION_FAIL + ". Please use alternate subjectDN.");
+        int result = createTestCA(caName, keyStrength, dn, signedBy, certificateChain,
+                signedBy == CAInfo.SELFSIGNED ? CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA
+                        : CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, null, null, false, false, null, null, useLdapDnOrder);
+        return result != CA_CREATION_FAIL;
+    }
+
     public static int createTestCA(String caName, int keyStrength, String dn, int signedBy,
             int certificateProfileId, List<Integer> validators)
         throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException,
@@ -331,12 +355,23 @@ public abstract class CaTestCase extends RoleUsingTestCase {
             CryptoTokenAuthenticationFailedException {
         return createTestCA(caName, keyStrength, dn, signedBy, certificateChain,
                 certificateProfileId, nameConstraintPermitted, nameConstraintExcluded,
-                relaxUniquenessSubjectDN, relaxUniquenessPublicKey, validators, null);
+                relaxUniquenessSubjectDN, relaxUniquenessPublicKey, validators, null, true);
     }
 
     public static int createTestCA(String caName, int keyStrength, String dn, int signedBy, Collection<Certificate> certificateChain,
             int certificateProfileId, List<String> nameConstraintPermitted, List<String> nameConstraintExcluded,
             boolean relaxUniquenessSubjectDN, boolean relaxUniquenessPublicKey, List<Integer> validators, String subjectAltName)
+            throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException,
+            CryptoTokenAuthenticationFailedException {
+        return createTestCA(caName, keyStrength, dn, signedBy, certificateChain,
+                certificateProfileId, nameConstraintPermitted, nameConstraintExcluded,
+                relaxUniquenessSubjectDN, relaxUniquenessPublicKey, validators, subjectAltName, true);
+    }
+
+    public static int createTestCA(String caName, int keyStrength, String dn, int signedBy, Collection<Certificate> certificateChain,
+            int certificateProfileId, List<String> nameConstraintPermitted, List<String> nameConstraintExcluded,
+            boolean relaxUniquenessSubjectDN, boolean relaxUniquenessPublicKey, List<Integer> validators, String subjectAltName,
+            boolean useLdapDnOrder)
             throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException,
             CryptoTokenAuthenticationFailedException {
         log.trace(">createTestCA("+caName+", "+dn+")");
@@ -390,6 +425,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         log.info("setting validators: " + validators);
         cainfo.setValidators(validators);
         cainfo.setSubjectAltName(subjectAltName);
+        cainfo.setUseLdapDnOrder(useLdapDnOrder);
 
         try {
             caAdminSession.createCA(internalAdmin, cainfo);

@@ -13,7 +13,7 @@
 package org.ejbca.ui.web.rest.api.io.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateCriteriaRestRequest;
+import org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateSortRestRequest;
 
 
 
@@ -45,7 +45,7 @@ import org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateCriteriaRestReq
         "ASC \n" +
         "DESC \n"
 )
-@ValidSearchCertificateCriteriaRestRequest
+@ValidSearchCertificateSortRestRequest
 public class SearchCertificateSortRestRequest {
 
     @Schema(description = "Sorted by",

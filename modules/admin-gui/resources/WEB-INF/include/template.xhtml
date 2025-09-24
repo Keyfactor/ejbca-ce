@@ -51,9 +51,12 @@
 	        window.onload=resetTimer("#{ejbcawebbean.sessionTimeoutTime}");
 	        document.onkeypress=resetTimer("#{ejbcawebbean.sessionTimeoutTime}");
         </h:outputScript>
+    <div id="page-content-wrapper">
     <ui:insert name="banner">
       
       <h:panelGroup layout="block" styleClass="banner-container" >
+      <p:panelGrid columns="2">
+      <h:panelGroup>
         <div id="header">
           <div id="banner">
             <h:outputLink value="#{adminMenuBean.adminWebUrl}">
@@ -61,6 +64,15 @@
             </h:outputLink>
           </div>
         </div>
+      </h:panelGroup>
+      <h:panelGroup rendered="#{not empty adminMenuBean.badLicenseInvalidMessage}">
+            <div class="ui-messages">
+               <div class="ui-messages-error">
+                  <h:outputText value="#{adminMenuBean.badLicenseInvalidMessage}" escape="false"/>
+               </div>
+            </div>
+        </h:panelGroup>
+      </p:panelGrid>
       </h:panelGroup>
       
     </ui:insert>
@@ -81,7 +93,6 @@
 			<p:menuitem id="raAddendentity" url="#{adminMenuBean.adminWebUrl}ra/addendentity.xhtml" rendered="#{adminMenuBean.authorizedToCreateEndEntity}" value="#{web.text.NAV_ADDENDENTITY}"/>
        		<p:menuitem id="raEditendentityprofiles" url="#{adminMenuBean.adminWebUrl}ra/editendentityprofiles/editendentityprofiles.xhtml" rendered="#{adminMenuBean.authorizedToViewEndEntityProfiles}" value="#{web.text.NAV_ENDENTITYPROFILES}"/>
        		<p:menuitem id="raListendentities" url="#{adminMenuBean.adminWebUrl}ra/searchendentities.xhtml" rendered="#{adminMenuBean.authorizedToViewEndEntity}" value="#{web.text.NAV_SEARCHENDENTITIES}"/>
-       		<p:menuitem id="raEdituserdatasources" url="#{adminMenuBean.adminWebUrl}ra/edituserdatasources/userdatasourcespage.xhtml" rendered="#{adminMenuBean.authorizedToEditUserDataSources}" value="#{web.text.NAV_USERDATASOURCES}"/>         
         </p:submenu>
         <p:submenu id="mainVaFunctions" label="#{web.text.NAV_VAFUNCTIONS}" icon="pi pi-fw pi-book" rendered="#{adminMenuBean.authorizedToViewVAHeader}">
            	<p:menuitem id="vaOcspResonders" url="#{adminMenuBean.adminWebUrl}keybind/ocspresponders.xhtml" rendered="#{adminMenuBean.authorizedViewInternalKeyBindings}" value="#{web.text.NAV_OCSPRESPONDERS}"/>   	
@@ -118,7 +129,9 @@
     <h:panelGroup layout="block" styleClass="container">
         <h:panelGroup layout="block" id="messagesAndContent">
             <h:panelGroup layout="block" id="messagesBlock">
-                <h:messages id="messages" styleClass="globalMessages" errorClass="errorMessage" warnClass="warnMessage" infoClass="infoMessage" layout="list" globalOnly="false"/>
+                <p:messages severity="info" globalOnly="false" id="infoMessage" showDetail="true" showSummary="true" skipDetailIfEqualsSummary="true"/>
+                <p:messages severity="warn" globalOnly="false" id="warnMessage" showDetail="true" showSummary="true" skipDetailIfEqualsSummary="true"/>
+                <p:messages severity="error,fatal" globalOnly="false" id="errorMessage" showDetail="true" showSummary="true" skipDetailIfEqualsSummary="true"/>
             </h:panelGroup>
     
             <h:panelGroup layout="block" id="contentBlock" styleClass="contentBlock">
@@ -128,14 +141,6 @@
             </h:panelGroup>
         </h:panelGroup>
         
-        </h:panelGroup>
-
-        <h:panelGroup layout="block" id="footerBlock" styleClass="footerBlock">
-            <ui:insert name="footer">
-                <h:panelGroup layout="block" id="footerInner" styleClass="footerInner">
-                    <h:outputText value="© 2002–#{web.currentYear}. EJBCA® is a registered trademark."/>
-                </h:panelGroup>
-            </ui:insert>
         </h:panelGroup>
 
         <h:panelGroup id="modalBlockContainer">
@@ -149,6 +154,14 @@
         </h:panelGroup>
         </h:panelGroup>
         
+    </h:panelGroup>
+    </div>
+    <h:panelGroup layout="block" id="footerBlock" styleClass="footerBlock">
+        <ui:insert name="footer">
+            <h:panelGroup layout="block" id="footerInner" styleClass="footerInner">
+                <h:outputText value="© 2002–#{web.currentYear}. EJBCA® is a registered trademark."/>
+            </h:panelGroup>
+        </ui:insert>
     </h:panelGroup>
     </h:body>
     </f:view>

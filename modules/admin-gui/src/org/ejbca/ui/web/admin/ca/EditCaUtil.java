@@ -19,7 +19,7 @@ import java.util.List;
 import jakarta.faces.FacesException;
 import jakarta.faces.context.FacesContext;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificate.ca.its.region.CircularRegion;
 import org.cesecore.certificate.ca.its.region.IdentifiedRegionCountryRegions;
@@ -38,6 +38,7 @@ public final class EditCaUtil {
     private static final Logger log = Logger.getLogger(EditCaUtil.class);
 
     public static final String MANAGE_CA_NAV = "managecas";
+    public static final String DELETE_CA_NAV = "deletecapage";
     public static final String EDIT_CA_NAV = "editcapage";
     public static final String SIGN_CERT_REQ_NAV = "recievefile";
     public static final String DISPLAY_RESULT_NAV = "displayresult";

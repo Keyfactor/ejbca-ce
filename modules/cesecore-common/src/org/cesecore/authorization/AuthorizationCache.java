@@ -28,17 +28,15 @@ import org.cesecore.util.ValidityDate;
 
 /**
  * Cache of the authorization granted to different AuthenticationTokens.
- * 
+ *
  * Features:
  * - Concurrent cache misses for the same AuthenticationToken will only lead to a single call-back while the other threads wait
  * - Never return stale entries (when signaled that newer data might be available)
  * - Supports background reload via the rebuild(...) method which also purges unused entries
- * 
- * @version $Id$
  */
 public enum AuthorizationCache {
     INSTANCE, RAINSTANCE;
-    
+
     // Logger is not static since static initializers run after the constructor for enums.
     private final Logger log = Logger.getLogger(AuthorizationCache.class);
 
@@ -55,19 +53,19 @@ public enum AuthorizationCache {
         public HashMap<String, Boolean> getAccessRules() { return accessRules; }
         public int getUpdateNumeber() { return updateNumber; }
     }
-    
+
     /** Call-back interface for loading access rules on cache miss */
     public interface AuthorizationCacheCallback {
         /** @return the access rules and corresponding update number for the specified authenticationToken  */
         AuthorizationResult loadAuthorization(AuthenticationToken authenticationToken) throws AuthenticationFailedException;
-        
+
         /** @return the number of milliseconds to keep cache entries for after an authentication token was last seen */
         long getKeepUnusedEntriesFor();
 
         /** Invoked by cache on first cache miss to start listening to authorization updates */
         void subscribeToAuthorizationCacheReload(AuthorizationCacheReloadListener authorizationCacheReloadListener);
     }
-    
+
     private class AuthorizationCacheEntry {
         HashMap<String, Boolean> accessRules;
         int updateNumber = 0;
@@ -75,7 +73,7 @@ public enum AuthorizationCache {
         AuthenticationToken authenticationToken;
         final CountDownLatch countDownLatch = new CountDownLatch(1);
     }
-    
+
     private ConcurrentHashMap<String, AuthorizationCacheEntry> cacheMap = new ConcurrentHashMap<>();
     private AtomicInteger latestUpdateNumber = new AtomicInteger(0);
 
@@ -90,7 +88,7 @@ public enum AuthorizationCache {
             return AuthorizationCache.class.getSimpleName();
         }
     };
-    
+
     public void clear(final int updateNumber) {
         setUpdateNumberIfLower(updateNumber);
         cacheMap.clear();
@@ -133,7 +131,7 @@ public enum AuthorizationCache {
                             try {
                                 get(entry.authenticationToken, authorizationCacheCallback);
                             } catch (AuthenticationFailedException e) {
-                                log.debug("Unexpected failure during refresh if authroization cache: " + e.getMessage());
+                                log.debug("Unexpected failure during refresh of authorization cache: " + e.getMessage());
                             }
                         }
                     }
@@ -157,7 +155,7 @@ public enum AuthorizationCache {
     /** @return the access rules granted to the specified authenticationToken and corresponding update number using the callback to load them if needed. Never null.  */
     public AuthorizationResult getAuthorizationResult(final AuthenticationToken authenticationToken, final AuthorizationCacheCallback authorizationCacheCallback) throws AuthenticationFailedException {
         if (authenticationToken==null || authorizationCacheCallback==null) {
-            return new AuthorizationResult(new HashMap<String,Boolean>(), 0);
+            return new AuthorizationResult(new HashMap<>(), 0);
         }
         final String key = authenticationToken.getUniqueId();
         final AuthorizationCacheEntry authorizationCacheEntry = new AuthorizationCacheEntry();
@@ -205,18 +203,18 @@ public enum AuthorizationCache {
                 }
                 return getAuthorizationResult(authenticationToken, authorizationCacheCallback);
             }
-            // Don't care about last time of use here, just be happy that it was found if it was found 
+            // Don't care about last time of use here, just be happy that it was found if it was found
         }
         // Weak indication of last use, so rebuild can eventually purge unused entries
         ret.timeOfLastUse = System.currentTimeMillis();
         return new AuthorizationResult(ret.accessRules, ret.updateNumber);
     }
-    
+
     public int getLastUpdateNumber() {
         return latestUpdateNumber.get();
     }
 
-    /** 
+    /**
      * Non-blocking atomic update of the last known update number.
      * @return true if the number was updated, false if it was already set
      */

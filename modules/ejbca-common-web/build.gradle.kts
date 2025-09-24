@@ -16,7 +16,7 @@ dependencies {
     compileOnly(libs.bcutil)
     compileOnly(libs.cert.cvc)
     compileOnly(libs.log4j.v12.api)
-    compileOnly(libs.commons.lang)
+    compileOnly(libs.commons.lang3)
     compileOnly(libs.commons.collections4)
     compileOnly(libs.commons.io)
     compileOnly(libs.httpclient)
@@ -36,11 +36,14 @@ sourceSets {
         java {
             setSrcDirs(listOf("src"))
         }
-        resources {
-            srcDirs("resources")
-        }
     }
 }
+
+// define interfaces that should be used to generate service manifest files
+ext["serviceInterfaces"] = listOf(
+    "org.ejbca.core.model.ca.publisher.ICustomPublisher",
+    "org.cesecore.keys.validation.Validator"
+)
 
 tasks.jar {
     from(sourceSets["main"].output)

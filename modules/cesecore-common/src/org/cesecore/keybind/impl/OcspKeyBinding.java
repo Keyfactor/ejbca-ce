@@ -98,9 +98,13 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     }
 
     public static final String IMPLEMENTATION_ALIAS = "OcspKeyBinding"; // This should not change, even if we rename the class in EJBCA 5.3+..
-    public static final String PROPERTY_NON_EXISTING_GOOD = "nonexistingisgood";
-    public static final String PROPERTY_NON_EXISTING_REVOKED = "nonexistingisrevoked";
-    public static final String PROPERTY_NON_EXISTING_UNAUTHORIZED = "nonexistingisunauthorized";
+    @Deprecated(since = "9.4.0")
+    private static final String PROPERTY_NON_EXISTING_GOOD = "nonexistingisgood";
+    @Deprecated(since = "9.4.0")
+    private static final String PROPERTY_NON_EXISTING_REVOKED = "nonexistingisrevoked";
+    @Deprecated(since = "9.4.0")
+    private static final String PROPERTY_NON_EXISTING_UNAUTHORIZED = "nonexistingisunauthorized";
+    public static final String PROPERTY_NON_EXISTING_BEHAVIOR = "nonExistingBehavior";
     public static final String PROPERTY_INCLUDE_CERT_CHAIN = "includecertchain";
     public static final String PROPERTY_INCLUDE_SIGN_CERT = "includesigncert";
     public static final String PROPERTY_RESPONDER_ID_TYPE = "responderidtype";  // keyhash, name
@@ -111,11 +115,10 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     public static final String PROPERTY_OMIT_REASON_CODE_WHEN_REVOCATION_REASON_UNSPECIFIED = "omitreasoncodewhenrevocationreasonunspecified"; 
     public static final String PROPERTY_USE_ISSUER_NOTBEFORE_AS_ARCHIVE_CUTOFF = "useIssuerNotBeforeAsArchiveCutoff";
     public static final String PROPERTY_RETENTION_PERIOD = "retentionPeriod";
+    //this property denotes if a previous cert chain is to be returned instead of the current one, identified by its serial number. if null, the current chain should be used. 
+    public static final String PROPERTY_CA_GENERATION = "certChainGeneration";
     
     {
-        addProperty(new DynamicUiProperty<>(PROPERTY_NON_EXISTING_GOOD, Boolean.FALSE));
-        addProperty(new DynamicUiProperty<>(PROPERTY_NON_EXISTING_REVOKED, Boolean.FALSE));
-        addProperty(new DynamicUiProperty<>(PROPERTY_NON_EXISTING_UNAUTHORIZED, Boolean.FALSE));
         addProperty(new DynamicUiProperty<>(PROPERTY_INCLUDE_CERT_CHAIN, Boolean.TRUE));
         addProperty(new DynamicUiProperty<>(PROPERTY_INCLUDE_SIGN_CERT, Boolean.TRUE));
         addProperty(new DynamicUiProperty<>(PROPERTY_RESPONDER_ID_TYPE, ResponderIdType.KEYHASH.name(),
@@ -125,7 +128,6 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
         addProperty(new DynamicUiProperty<>(PROPERTY_MAX_AGE, 0L));
         addProperty(new DynamicUiProperty<>(PROPERTY_ENABLE_NONCE, Boolean.TRUE));
         addProperty(new DynamicUiProperty<>(PROPERTY_OMIT_REASON_CODE_WHEN_REVOCATION_REASON_UNSPECIFIED, Boolean.TRUE));
-
     }
 
     
@@ -141,7 +143,7 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
 
     @Override
     protected void upgrade(float latestVersion, float currentVersion) {
-        // Nothing to do
+
     }
     
     @Override
@@ -149,30 +151,37 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
         assertCertificateCompatabilityInternal(certificate, ekuConfig);
     }
 
+    @Deprecated(since = "9.4.0")
     public boolean getNonExistingGood() {
-        return (Boolean) getProperty(PROPERTY_NON_EXISTING_GOOD).getValue();
+        return getData(PROPERTY_NON_EXISTING_GOOD, false);
     }
-    public void setNonExistingGood(boolean nonExistingGood) {
-        setProperty(PROPERTY_NON_EXISTING_GOOD, nonExistingGood);
-    }
+    
+    @Deprecated(since = "9.4.0")
     public boolean getNonExistingRevoked() {
-        return (Boolean) getProperty(PROPERTY_NON_EXISTING_REVOKED).getValue();
+        return getData(PROPERTY_NON_EXISTING_REVOKED, false);
     }
-    public void setNonExistingRevoked(boolean nonExistingRevoked) {
-        setProperty(PROPERTY_NON_EXISTING_REVOKED, nonExistingRevoked);
-    }
+    
+    
+    @Deprecated(since = "9.4.0")
     public boolean getNonExistingUnauthorized() {
-        if(getProperty(PROPERTY_NON_EXISTING_UNAUTHORIZED) == null) {
-            setNonExistingUnauthorized(false);
+        return getData(PROPERTY_NON_EXISTING_UNAUTHORIZED, false);
+    }
+    
+    public OcspNonExistingBehavior getOcspNonExistingBehavior() {
+        if(getData(PROPERTY_NON_EXISTING_BEHAVIOR, null) == null) {
+            setOcspNonExistingBehavior(OcspNonExistingBehavior.UNKNOWN);
         }
-        return (Boolean) getProperty(PROPERTY_NON_EXISTING_UNAUTHORIZED).getValue();
+        return OcspNonExistingBehavior.fromLabel(getData(PROPERTY_NON_EXISTING_BEHAVIOR, null));
     }
-    public void setNonExistingUnauthorized(boolean nonExistingUnauthorized) {
-        setProperty(PROPERTY_NON_EXISTING_UNAUTHORIZED, nonExistingUnauthorized);
+    
+    public void setOcspNonExistingBehavior(final OcspNonExistingBehavior ocspNonExistingBehavior) {
+        putData(PROPERTY_NON_EXISTING_BEHAVIOR, ocspNonExistingBehavior.getLabel());
     }
+    
     public boolean getIncludeCertChain() {
         return (Boolean) getProperty(PROPERTY_INCLUDE_CERT_CHAIN).getValue();
     }
+    
     public void setIncludeCertChain(boolean includeCertChain) {
         setProperty(PROPERTY_INCLUDE_CERT_CHAIN, includeCertChain);
     }
@@ -228,7 +237,7 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     /** @return true if the revocation reason to be omitted if specified */
     public boolean isOmitReasonCodeEnabled() {
         if(getProperty(PROPERTY_OMIT_REASON_CODE_WHEN_REVOCATION_REASON_UNSPECIFIED) == null) {
-            setNonceEnabled(true);
+            setOmitReasonCodeEnabled(true);
         }
         return (Boolean) getProperty(PROPERTY_OMIT_REASON_CODE_WHEN_REVOCATION_REASON_UNSPECIFIED).getValue();
     }
@@ -340,6 +349,19 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
         } catch (CertificateParsingException e) {
             throw new CertificateImportException(e.getMessage(), e);
         }
+    }
+    
+    /**
+     * Used if and when an older chain than the current one should be used
+     * 
+     * @return the issuing CA's serial number, or null if the current chain should be used
+     */
+    public String getCaGeneration() {
+        return getData(PROPERTY_CA_GENERATION, null);
+    }
+    
+    public void setCaGeneration(final String issuerSerialNumber) {
+        putData(PROPERTY_CA_GENERATION, issuerSerialNumber);
     }
 
     @Override

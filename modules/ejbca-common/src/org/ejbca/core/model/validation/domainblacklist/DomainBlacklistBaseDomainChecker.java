@@ -14,7 +14,7 @@ package org.ejbca.core.model.validation.domainblacklist;
 
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Removes subdomain one by one, and checks if subdomain is present in the blacklist

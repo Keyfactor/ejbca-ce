@@ -1,0 +1,3 @@
+# Ensure that all Unix shell scripts use appropriate line endings
+*.sh eol=lf
+src/ci/git-hooks/* eol=lf

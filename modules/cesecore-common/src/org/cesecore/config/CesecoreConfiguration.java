@@ -98,20 +98,6 @@ public final class CesecoreConfiguration {
         return ConfigurationHolder.getExpandedString("certificate.validityoffset");
     }
 
-    /**
-     * The language that should be used internally for logging, exceptions and approval notifications.
-     */
-    public static String getInternalResourcesPreferredLanguage() {
-        return ConfigurationHolder.getExpandedString("intresources.preferredlanguage");
-    }
-
-    /**
-     * The language used internally if a resource not found in the preferred language
-     */
-    public static String getInternalResourcesSecondaryLanguage() {
-        return ConfigurationHolder.getExpandedString("intresources.secondarylanguage");
-    }
-
     /** Parameter to specify if retrieving CAInfo and CA from CAAdminSession should be cached, and in that case for how long. */
     public static long getCacheCaTimeInCaSession() {
         // Cache for 10 seconds is the default (Changed 2013-02-14 under ECA-2801.)

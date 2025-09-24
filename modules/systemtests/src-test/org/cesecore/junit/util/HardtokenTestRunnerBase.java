@@ -23,6 +23,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.EjbRemoteHelper;
 
 import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
@@ -51,6 +52,28 @@ public abstract class HardtokenTestRunnerBase extends CryptoTokenRunner {
         caSession.removeCA(alwaysAllowToken, DnComponents.stringToBCDNString(subjectDn).hashCode());
         X509CAInfo x509ca = createTestX509Ca(caName, subjectDn, SystemTestsConfiguration.getPkcs11SlotPin(DEFAULT_TOKEN_PIN), true,
                 getTokenImplementation(), CAInfo.SELFSIGNED, "1024", "3650d");
+
+        setCaForRemoval(x509ca.getCAId(), x509ca);
+        
+        return x509ca;
+    }
+    
+    @Override
+    public X509CAInfo createX509CaMsCompatible(String subjectDn, String caName) throws Exception {
+        caSession.removeCA(alwaysAllowToken, DnComponents.stringToBCDNString(subjectDn).hashCode());
+        X509CAInfo x509ca = createTestX509Ca(caName, subjectDn, SystemTestsConfiguration.getPkcs11SlotPin(DEFAULT_TOKEN_PIN), true,
+                getTokenImplementation(), CAInfo.SELFSIGNED, "1024", "3650d", AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
+
+        setCaForRemoval(x509ca.getCAId(), x509ca);
+        
+        return x509ca;
+    }
+    
+    @Override
+    public X509CAInfo createX509CaMsCompatible(String subjectDn, String caName, int signedBy) throws Exception {
+        caSession.removeCA(alwaysAllowToken, DnComponents.stringToBCDNString(subjectDn).hashCode());
+        X509CAInfo x509ca = createTestX509Ca(caName, subjectDn, SystemTestsConfiguration.getPkcs11SlotPin(DEFAULT_TOKEN_PIN), true,
+                getTokenImplementation(), signedBy, "1024", "3650d", AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
 
         setCaForRemoval(x509ca.getCAId(), x509ca);
         

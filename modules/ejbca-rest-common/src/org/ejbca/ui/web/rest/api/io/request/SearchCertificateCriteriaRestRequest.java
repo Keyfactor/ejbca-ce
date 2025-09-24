@@ -12,12 +12,15 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
+import java.util.EnumSet;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.swagger.v3.oas.annotations.media.Schema;
+
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateCriteriaRestRequest;
-import java.util.EnumSet;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * JSON input for certificate search containing a single search criteria.
@@ -60,7 +63,7 @@ import java.util.EnumSet;
 public class SearchCertificateCriteriaRestRequest {
 
     @Schema(description = "A search property", example = "CERTIFICATE_PROFILE",
-            allowableValues = "QUERY, SERIAL_NUMBER, USERNAME, SUBJECT_DN, SUBJECT_ALT_NAME, EXTERNAL_ACCOUNT_BINDING_ID, END_ENTITY_PROFILE, CERTIFICATE_PROFILE, EXTERNAL_ACCOUNT_BINDING_ID, CA, STATUS, ISSUED_DATE, EXPIRE_DATE, REVOCATION_DATE")
+            allowableValues = "QUERY, SERIAL_NUMBER, USERNAME, SUBJECT_DN, SUBJECT_ALT_NAME, END_ENTITY_PROFILE, CERTIFICATE_PROFILE, EXTERNAL_ACCOUNT_BINDING_ID, CA, STATUS, ISSUED_DATE, EXPIRE_DATE, REVOCATION_DATE")
     private String property;
 
     @Schema(description = "A search value. This could be sting value, ISO 8601 Date string, an appropriate string name of End Entity Profile or Certificate Profile or CA",

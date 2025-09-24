@@ -52,8 +52,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.math.IntRange;
+import org.apache.commons.lang3.IntegerRange;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.its.ITSCertificate;
 import org.bouncycastle.jce.X509KeyUsage;
@@ -140,6 +141,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.ocsp.exception.NotSupportedException;
 import org.cesecore.certificates.util.dn.DNFieldsUtil;
+import org.cesecore.config.GlobalCaConfiguration;
 import org.cesecore.config.InvalidConfigurationException;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.CertificateImportException;
@@ -162,7 +164,6 @@ import org.cesecore.util.ValidityDate;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.EjbcaConfiguration;
-import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
@@ -177,7 +178,6 @@ import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
-import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -195,7 +195,6 @@ import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
-import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
 import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.util.CAIdTools;
@@ -286,8 +285,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     private SecurityEventsLoggerSessionLocal auditSession;
     @EJB
     private ServiceSessionLocal serviceSession;
-    @EJB
-    private UserDataSourceSessionLocal userDataSourceSession;
 
     @Resource
     private SessionContext sessionContext;
@@ -438,19 +435,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             }
         }
 
-        // Update Approval Profiles
-        final Map<Integer, String> approvalProfiles = approvalProfileSession.getApprovalProfileIdToNameMap();
-        for (int appProfId : approvalProfiles.keySet()) {
-            final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfile(appProfId);
-            if (approvalProfile.updateCAIds(fromId, toId, toDN)) {
-                String name = approvalProfile.getProfileName();
-                if (log.isDebugEnabled()) {
-                    log.debug("Changing CA Ids in Approval Profile " + name);
-                }
-                approvalProfileSession.changeApprovalProfile(authenticationToken, approvalProfile);
-            }
-        }
-
         // Update End-Entities
         final Collection<EndEntityInformation> endEntities = endEntityAccessSession.findAllUsersByCaIdNoAuth(fromId);
         for (EndEntityInformation endEntityInfo : endEntities) {
@@ -461,19 +445,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 endEntityManagementSession.updateCAId(authenticationToken, endEntityInfo.getUsername(), toId);
             } catch (NoSuchEndEntityException e) {
                 log.error("End entity " + endEntityInfo.getUsername() + " could no longer be found", e);
-            }
-        }
-
-        // Update Data Sources
-        final Map<Integer, String> dataSources = userDataSourceSession.getUserDataSourceIdToNameMap(authenticationToken);
-        for (Integer dataSourceId : dataSources.keySet()) {
-            final BaseUserDataSource dataSource = userDataSourceSession.getUserDataSource(authenticationToken, dataSourceId);
-            if (CAIdTools.updateCAIds(dataSource, fromId, toId, toDN)) {
-                String name = dataSources.get(dataSourceId);
-                if (log.isDebugEnabled()) {
-                    log.debug("Changing CA Ids in User Data Source " + name);
-                }
-                userDataSourceSession.changeUserDataSource(authenticationToken, name, dataSource);
             }
         }
 
@@ -1389,7 +1360,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 // Before importing the certificate we want to make sure that the public key matches the CAs private key
                 PublicKey caCertPublicKey = cacert.getPublicKey();
                 // If it is a DV certificate signed by a CVCA, enrich the public key for EC parameters from the CVCA's certificate
-                if (StringUtils.equals(cacert.getType(), "CVC")) {
+                if (Strings.CS.equals(cacert.getType(), "CVC")) {
                     if (caCertPublicKey.getAlgorithm().equals("ECDSA")) {
                         CardVerifiableCertificate cvccert = (CardVerifiableCertificate) cacert;
                         try {
@@ -1939,7 +1910,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 x509cainfo.setSubjectAltName(subjectaltname);
                 x509cainfo.setPolicies(policies);
                 cainfo = x509cainfo;
-            } else if (StringUtils.equals(caCertificate.getType(), "CVC")) {
+            } else if (Strings.CS.equals(caCertificate.getType(), "CVC")) {
                 cainfo = new CVCCAInfo(subjectdn, caname, CAConstants.CA_EXTERNAL, certprofileid, validityString, signedby, null, null);
             } else {
                 throw new CertificateImportException("Certificate was of an unknown type: " + caCertificate.getType());
@@ -2230,9 +2201,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             String newCAName = null;
             boolean subjectDNWillBeChanged = newSubjectDN != null && !newSubjectDN.isEmpty();
             if (subjectDNWillBeChanged) {
-                GlobalConfiguration globalConfig = (GlobalConfiguration) globalConfigurationSession
-                        .getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-                if (!globalConfig.getEnableIcaoCANameChange()) {
+                GlobalCaConfiguration globalCaConfiguration = (GlobalCaConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCaConfiguration.CA_CONFIGURATION_ID);
+                if (!globalCaConfiguration.getEnableIcaoCANameChange()) {
                     final String errorMessage = "The \"Enable ICAO CA Name Change\" feature is disabled by administrator. Aborting CA Name Change renewal!";
                     log.error(errorMessage);
                     throw new IllegalStateException(errorMessage);
@@ -3584,9 +3554,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         final String caDataDn = caInfo.getSubjectDN();
         final boolean doPublishDeltaCRL = caInfo.getDeltaCRLPeriod() > 0;
         publishCrlPartition(admin, caCertFingerprint, caCertDn, CertificateConstants.NO_CRL_PARTITION, publisherIds, caDataDn, doPublishDeltaCRL);
-        final IntRange crlPartitions = caInfo.getAllCrlPartitionIndexes();
+        final IntegerRange crlPartitions = caInfo.getAllCrlPartitionIndexes();
         if (crlPartitions != null) {
-            for (int crlPartitionIndex = crlPartitions.getMinimumInteger(); crlPartitionIndex <= crlPartitions.getMaximumInteger(); crlPartitionIndex++) {
+            for (int crlPartitionIndex = crlPartitions.getMinimum(); crlPartitionIndex <= crlPartitions.getMaximum(); crlPartitionIndex++) {
                 publishCrlPartition(admin, caCertFingerprint, caCertDn, crlPartitionIndex, publisherIds, caDataDn, doPublishDeltaCRL);
             }
         }
@@ -3814,7 +3784,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             // therefore we need to make a more complex match, checking if keySigAlgs contains the part,
             // ignoring case so that SHA256WITHRSA matches SHA256WithRSA, and ECDSA matches SHA1WithECDSA (or SHA256WithECDSA)
             // But SHA1WithECDSA, or ECDSA does not match SHA1WithRSA, or Ed448, or... 
-            boolean containsAlg = keySigAlgs.stream().anyMatch(x -> StringUtils.containsIgnoreCase(x, certSigAlg));
+            boolean containsAlg = keySigAlgs.stream().anyMatch(x -> Strings.CI.contains(x, certSigAlg));
             if (certSigAlg == null || !containsAlg) {
                 if (log.isDebugEnabled()) {
                     log.info("Not trying to verify certificate signed with algorithm " + certSigAlg + " because key is only suitable for " + keySigAlgs);

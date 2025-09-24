@@ -35,8 +35,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.regex.Pattern;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.keys.validation.DnsNameValidator;
@@ -112,6 +112,8 @@ public class DomainAllowlistValidator extends ValidatorBase implements DnsNameVa
     @Override
     public void initDynamicUiModel() {
         uiModel = new DynamicUiModel(data, getFilteredDataMapForLogging()) {
+            private static final long serialVersionUID = 1L;
+
             @Override
             public Map<String, Object> getRawData() throws CesecoreException {
                 final Map<String, Object> rawData = super.getRawData();
@@ -208,7 +210,7 @@ public class DomainAllowlistValidator extends ValidatorBase implements DnsNameVa
         try {
             final String text = intres.getLocalizedMessage("validator.domainallowlist.info_text",
                     CollectionUtils.size(getWhitelist()), ValidityDate.formatAsUTC(blacklistDate), getWhitelistSha256());
-            final String html = StringEscapeUtils.escapeHtml(text).replace("|", "<br />");
+            final String html = StringEscapeUtils.escapeHtml4(text).replace("|", "<br />");
             uiProperty.setValue(html);
         } catch (PropertyValidationException e) {
             throw new IllegalStateException(e);
@@ -238,6 +240,7 @@ public class DomainAllowlistValidator extends ValidatorBase implements DnsNameVa
         testButton.setRenderingHint(DynamicUiProperty.RENDER_BUTTON);
         testButton.setTransientValue(true);
         testButton.setActionCallback(new DynamicUiActionCallback() {
+            private static final long serialVersionUID = 1L;
             @Override
             public void action(final Object parameter) throws DynamicUiCallbackException, CesecoreException {
                 final DynamicUiProperty<?> domainEntryProperty = uiModel.getProperties().get(TEST_DOMAINENTRY_KEY);
@@ -309,7 +312,7 @@ public class DomainAllowlistValidator extends ValidatorBase implements DnsNameVa
         }
         final Entry<Boolean,List<String>> result = validate(null, null, domain.trim());
         if (result.getKey()) {
-            return StringEscapeUtils.escapeHtml(intres.getLocalizedMessage("validator.domainallowlist.validation_successful", getProfileName()));
+            return StringEscapeUtils.escapeHtml4(intres.getLocalizedMessage("validator.domainallowlist.validation_successful", getProfileName()));
         } else if (CollectionUtils.isEmpty(result.getValue())) {
             return "Failed to check domain"; // Bug. Should never happen
         } else {
@@ -318,7 +321,7 @@ public class DomainAllowlistValidator extends ValidatorBase implements DnsNameVa
                 if (sb.length() != 0) {
                     sb.append("<br />");
                 }
-                sb.append(StringEscapeUtils.escapeHtml(message));
+                sb.append(StringEscapeUtils.escapeHtml4(message));
             }
             return sb.toString();
         }
@@ -360,4 +363,9 @@ public class DomainAllowlistValidator extends ValidatorBase implements DnsNameVa
         putData(WHITELIST_SHA256_KEY, sha256);
     }
 
+    @Override
+    public boolean isValidatorAlwaysApplicable() {
+        return true;
+    }
+    
 }

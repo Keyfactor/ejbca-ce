@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.cesecore.authorization.cache;
 
-import jakarta.ejb.EJBException;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
@@ -23,7 +22,6 @@ import org.apache.log4j.Logger;
 import org.cesecore.authorization.access.AuthorizationCacheReload;
 import org.cesecore.authorization.access.AuthorizationCacheReloadListener;
 import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.internal.InternalResources;
 
 /**
  * Bean to handle the AccessTreeUpdateData entity.
@@ -54,16 +52,10 @@ public class AccessTreeUpdateSessionBean implements AccessTreeUpdateSessionLocal
         AccessTreeUpdateData accessTreeUpdateData = entityManager.find(AccessTreeUpdateData.class, AccessTreeUpdateData.AUTHORIZATIONTREEUPDATEDATA);
         if (accessTreeUpdateData==null) {
             // We need to create the database row and incremented the value directly since this is an call to update it
-            try {
-                accessTreeUpdateData = new AccessTreeUpdateData();
-                accessTreeUpdateData.setAccessTreeUpdateNumber(AccessTreeUpdateData.DEFAULTACCESSTREEUPDATENUMBER+1);
-                entityManager.persist(accessTreeUpdateData);
-                // Additionally we set the marker that this (new) installation should use the new union access rule pattern
-                setNewAuthorizationPatternMarker();
-            } catch (Exception e) {
-                LOG.error(InternalResources.getInstance().getLocalizedMessage("authorization.errorcreateauthtree"), e);
-                throw new EJBException(e);
-            }
+            accessTreeUpdateData = new AccessTreeUpdateData();
+            accessTreeUpdateData.setAccessTreeUpdateNumber(AccessTreeUpdateData.DEFAULTACCESSTREEUPDATENUMBER + 1);
+            entityManager.persist(accessTreeUpdateData);
+
         } else {
             accessTreeUpdateData.setAccessTreeUpdateNumber(accessTreeUpdateData.getAccessTreeUpdateNumber() + 1);
         }
@@ -76,25 +68,5 @@ public class AccessTreeUpdateSessionBean implements AccessTreeUpdateSessionLocal
     @Override
     public void addReloadEvent(final AuthorizationCacheReloadListener observer) {
         AuthorizationCacheReloadListeners.INSTANCE.addListener(observer);
-    }
-
-    @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public boolean isNewAuthorizationPatternMarkerPresent() {
-        return entityManager.find(AccessTreeUpdateData.class, AccessTreeUpdateData.NEW_AUTHORIZATION_PATTERN_MARKER)!=null;
-    }
-
-    @Override
-    @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public void setNewAuthorizationPatternMarker() {
-        /*
-         * Use a row in this table as a marker, since it is already a dependency from AuthorizationSessionBean.
-         * (Otherwise we would have to depend on reading configuration which in turn depends back on authorization.)
-         */
-        if (!isNewAuthorizationPatternMarkerPresent()) {
-            final AccessTreeUpdateData marker = new AccessTreeUpdateData();
-            marker.setPrimaryKey(AccessTreeUpdateData.NEW_AUTHORIZATION_PATTERN_MARKER);
-            entityManager.persist(marker);
-        }
     }
 }

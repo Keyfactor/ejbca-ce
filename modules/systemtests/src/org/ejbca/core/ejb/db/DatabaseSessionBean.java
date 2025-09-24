@@ -18,8 +18,6 @@ import jakarta.ejb.TransactionAttributeType;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.cesecore.authorization.cache.AccessTreeUpdateData;
-import org.cesecore.authorization.rules.AccessRuleData;
-import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.certificate.Base64CertData;
 import org.cesecore.certificates.certificate.CertificateData;
@@ -34,7 +32,6 @@ import org.cesecore.keybind.InternalKeyBindingData;
 import org.cesecore.keys.token.CryptoTokenData;
 import org.cesecore.oscp.OcspResponseData;
 import org.cesecore.profiles.ProfileData;
-import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.member.RoleMemberData;
 import org.ejbca.acme.AcmeAccountData;
@@ -42,7 +39,6 @@ import org.ejbca.acme.AcmeAuthorizationData;
 import org.ejbca.acme.AcmeNonceData;
 import org.ejbca.acme.AcmeOrderData;
 import org.ejbca.core.ejb.approval.ApprovalData;
-import org.ejbca.core.ejb.ca.publisher.PublisherData;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueData;
 import org.ejbca.core.ejb.ca.store.CertReqHistoryData;
 import org.ejbca.core.ejb.ca.validation.BlacklistData;
@@ -51,9 +47,9 @@ import org.ejbca.core.ejb.keyrecovery.KeyRecoveryData;
 import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData;
-import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceData;
 import org.ejbca.core.ejb.services.ServiceData;
 import org.ejbca.core.model.util.EjbLocalHelper;
+import org.ejbca.dto.PublisherDataBean;
 import org.ejbca.peerconnector.PeerData;
 
 import java.util.List;
@@ -88,15 +84,13 @@ public class DatabaseSessionBean implements DatabaseSessionRemote {
 
     @Override
     public DatabaseContent clearTables(boolean clearProtectedTables) {
+        @SuppressWarnings("deprecation")
         var databaseContent = new DatabaseContent(
-                clearTable(AccessRuleData.class, true),
                 clearTable(AccessTreeUpdateData.class, true),
-                clearTable(AccessUserAspectData.class, true),
                 clearTable(AcmeAccountData.class, true),
                 clearTable(AcmeAuthorizationData.class, true),
                 clearTable(AcmeNonceData.class, true),
                 clearTable(AcmeOrderData.class, true),
-                clearTable(AdminGroupData.class, true),
                 clearTable(AdminPreferencesData.class, true),
                 clearTable(ApprovalData.class, true),
                 clearTable(Base64CertData.class, true),
@@ -116,14 +110,13 @@ public class DatabaseSessionBean implements DatabaseSessionRemote {
                 clearTable(OcspResponseData.class, true),
                 clearTable(PeerData.class, true),
                 clearTable(ProfileData.class, true),
-                clearTable(PublisherData.class, true),
+                clearTable(PublisherDataBean.class, true),
                 clearTable(PublisherQueueData.class, true),
                 clearTable(RoleData.class, clearProtectedTables),
                 clearTable(RoleMemberData.class, clearProtectedTables),
                 clearTable(SctData.class, true),
                 clearTable(ServiceData.class, true),
-                clearTable(UserData.class, clearProtectedTables),
-                clearTable(UserDataSourceData.class, true)
+                clearTable(UserData.class, clearProtectedTables)
         );
         entityManager.flush();
         getClearCacheSessionLocal().clearCaches(false);
@@ -132,14 +125,11 @@ public class DatabaseSessionBean implements DatabaseSessionRemote {
 
     @Override
     public void restoreTables(DatabaseContent databaseContent) {
-        databaseContent.accessRuleData().forEach(entityManager::persist);
         databaseContent.accessTreeUpdateData().forEach(entityManager::persist);
-        databaseContent.accessUserAspectData().forEach(entityManager::persist);
         databaseContent.acmeAccountData().forEach(entityManager::persist);
         databaseContent.acmeAuthorizationData().forEach(entityManager::persist);
         databaseContent.acmeNonceData().forEach(entityManager::persist);
         databaseContent.acmeOrderData().forEach(entityManager::persist);
-        databaseContent.adminGroupData().forEach(entityManager::persist);
         databaseContent.adminPreferencesData().forEach(entityManager::persist);
         databaseContent.approvalData().forEach(entityManager::persist);
         databaseContent.base64CertData().forEach(entityManager::persist);
@@ -166,7 +156,6 @@ public class DatabaseSessionBean implements DatabaseSessionRemote {
         databaseContent.sctData().forEach(entityManager::persist);
         databaseContent.serviceData().forEach(entityManager::persist);
         databaseContent.userData().forEach(entityManager::persist);
-        databaseContent.userDataSourceData().forEach(entityManager::persist);
         getClearCacheSessionLocal().clearCaches(false);
         entityManager.flush();
     }

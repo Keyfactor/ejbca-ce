@@ -42,7 +42,7 @@ import jakarta.faces.convert.IntegerConverter;
 import jakarta.faces.model.SelectItem;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.util.ui.DynamicUiModel;
 import org.cesecore.util.ui.DynamicUiModelException;

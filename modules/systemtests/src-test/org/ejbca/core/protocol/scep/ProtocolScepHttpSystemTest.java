@@ -13,11 +13,13 @@
 
 package org.ejbca.core.protocol.scep;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -36,8 +38,7 @@ import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
-import org.apache.commons.fileupload.util.Streams;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.http.HttpResponse;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -281,7 +282,15 @@ public class ProtocolScepHttpSystemTest extends ScepTestBase {
         int ret = con.getResponseCode();
         log.debug("HTTP response code: "+ret);
         if ( ret == 200 ) {
-            log.debug(Streams.asString(con.getInputStream())); 
+            StringBuilder stringBuilder = new StringBuilder();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    stringBuilder.append(line);
+                }
+            }
+            final String content = stringBuilder.toString();
+            log.debug(content); 
         }
         con.disconnect();
         
@@ -343,11 +352,11 @@ public class ProtocolScepHttpSystemTest extends ScepTestBase {
         // Make user that we know...
         createScepUser(userName1, userDN1);
 
-        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA1, userDN1, SMIMECapability.dES_CBC);
+        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA1, userDN1, SMIMECapability.aES128_CBC);
         // Send message with GET
         byte[] retMsg = sendScep(false, msgBytes);
         assertNotNull(retMsg);
-        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, false, SMIMECapability.dES_CBC, key1);
+        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, false, SMIMECapability.aES128_CBC, key1);
     }
     
     @Test
@@ -360,7 +369,7 @@ public class ProtocolScepHttpSystemTest extends ScepTestBase {
         
         // Make user that we know...
         createScepUser(userName1, userDN1);
-
+        // We will remove support for DES-CBC in the near future and we should then handle any request using DES-CBC properly
         byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA1, userDN1, SMIMECapability.dES_CBC);
         // Send message with GET
         byte[] retMsg = sendScep(false, msgBytes);
@@ -375,11 +384,11 @@ public class ProtocolScepHttpSystemTest extends ScepTestBase {
         globalConfigSession.saveConfiguration(admin, scepConfiguration);        
         // Make user that we know...
         createScepUser(userName1, userDN1);
-        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA256, userDN1, SMIMECapability.dES_CBC);
+        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA256, userDN1, SMIMECapability.aES128_CBC);
         // Send message with GET
         byte[] retMsg = sendScep(false, msgBytes);
         assertNotNull(retMsg);
-        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA256, false, SMIMECapability.dES_CBC, key1);
+        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA256, false, SMIMECapability.aES128_CBC, key1);
     }
 
     @Test
@@ -418,11 +427,11 @@ public class ProtocolScepHttpSystemTest extends ScepTestBase {
         globalConfigSession.saveConfiguration(admin, scepConfiguration);        
         // Make user that we know...
         createScepUser(userName1, userDN1);
-        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA512, userDN1, SMIMECapability.dES_CBC);
+        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA512, userDN1, SMIMECapability.aES128_CBC);
         // Send message with GET
         byte[] retMsg = sendScep(false, msgBytes);
         assertNotNull(retMsg);
-        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA512, false, SMIMECapability.dES_CBC, key1);
+        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA512, false, SMIMECapability.aES128_CBC, key1);
     }
 
     @Test
@@ -437,11 +446,11 @@ public class ProtocolScepHttpSystemTest extends ScepTestBase {
         // Make user that we know...
         createScepUser(userName1, userDN1);
 
-        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_MD5, userDN1, SMIMECapability.dES_CBC);
+        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_MD5, userDN1, SMIMECapability.aES128_CBC);
         // Send message with GET
         byte[] retMsg = sendScep(false, msgBytes);
         assertNotNull(retMsg);
-        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_MD5, false, SMIMECapability.dES_CBC, key1);
+        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_MD5, false, SMIMECapability.aES128_CBC, key1);
         
     }
 
@@ -454,11 +463,11 @@ public class ProtocolScepHttpSystemTest extends ScepTestBase {
         
         createScepUser(userName1, userDN1);
 
-        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA256, userDN1, SMIMECapability.dES_CBC);
+        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA256, userDN1, SMIMECapability.aES128_CBC);
         // Send message with POST
         byte[] retMsg = sendScep(true, msgBytes);
         assertNotNull(retMsg);
-        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA256, false, SMIMECapability.dES_CBC, key1);
+        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA256, false, SMIMECapability.aES128_CBC, key1);
         
         // Send a message that is larger than LimitLengthASN1Reader.MAX_REQUEST_SIZE with POST
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -479,11 +488,11 @@ public class ProtocolScepHttpSystemTest extends ScepTestBase {
         
         createScepUser(userName1, userDN1);
 
-        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA256, userDN1, SMIMECapability.dES_CBC);
+        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA256, userDN1, SMIMECapability.aES128_CBC);
         // Send message with GET
         byte[] retMsg = sendScep(true, msgBytes);
         assertNotNull(retMsg);
-        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA256, true, SMIMECapability.dES_CBC, key1);
+        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA256, true, SMIMECapability.aES128_CBC, key1);
         
     }
 
@@ -752,11 +761,11 @@ public class ProtocolScepHttpSystemTest extends ScepTestBase {
         scepConfiguration.setAllowLegacyDigestAlgorithm(scepAlias, true);
         globalConfigSession.saveConfiguration(admin, scepConfiguration);
         publishingCrlSession.forceCRL(admin, x509ca.getCAId(), new CrlCreationParams());
-        byte[] msgBytes = genScepRequest(true, CMSSignedGenerator.DIGEST_SHA1, userDN1, SMIMECapability.dES_CBC);
+        byte[] msgBytes = genScepRequest(true, CMSSignedGenerator.DIGEST_SHA1, userDN1, SMIMECapability.aES128_CBC);
         // Send message with GET
         byte[] retMsg = sendScep(false, msgBytes);
         assertNotNull(retMsg);
-        checkScepResponse(retMsg, userDN1, senderNonce, transId, true, CMSSignedGenerator.DIGEST_SHA1, false, SMIMECapability.dES_CBC, key1);
+        checkScepResponse(retMsg, userDN1, senderNonce, transId, true, CMSSignedGenerator.DIGEST_SHA1, false, SMIMECapability.aES128_CBC, key1);
     }
     
     @Test
@@ -764,12 +773,12 @@ public class ProtocolScepHttpSystemTest extends ScepTestBase {
         scepConfiguration.setIncludeCA(scepAlias, false);
         globalConfigSession.saveConfiguration(admin, scepConfiguration);
         publishingCrlSession.forceCRL(admin, x509ca.getCAId(), new CrlCreationParams());
-        byte[] msgBytes = genScepRequest(true, CMSSignedGenerator.DIGEST_SHA1, userDN1, SMIMECapability.dES_CBC);
+        byte[] msgBytes = genScepRequest(true, CMSSignedGenerator.DIGEST_SHA1, userDN1, SMIMECapability.aES128_CBC);
         // Send message with GET
         byte[] retMsg = sendScep(false, msgBytes);
         assertNotNull(retMsg);
         //With legacy digest algorithm not allowed, response should default to SHA256
-        checkScepResponse(retMsg, userDN1, senderNonce, transId, true, CMSSignedGenerator.DIGEST_SHA256, false, SMIMECapability.dES_CBC, key1);
+        checkScepResponse(retMsg, userDN1, senderNonce, transId, true, CMSSignedGenerator.DIGEST_SHA256, false, SMIMECapability.aES128_CBC, key1);
     }
 
     @Test
@@ -777,11 +786,11 @@ public class ProtocolScepHttpSystemTest extends ScepTestBase {
         scepConfiguration.setIncludeCA(scepAlias, false);
         globalConfigSession.saveConfiguration(admin, scepConfiguration);
         publishingCrlSession.forceCRL(admin, x509ca.getCAId(), new CrlCreationParams());
-        byte[] msgBytes = genScepRequest(true, CMSSignedGenerator.DIGEST_SHA256, userDN1, SMIMECapability.dES_CBC);
+        byte[] msgBytes = genScepRequest(true, CMSSignedGenerator.DIGEST_SHA256, userDN1, SMIMECapability.aES128_CBC);
         // Send message with GET
         byte[] retMsg = sendScep(false, msgBytes);
         assertNotNull(retMsg);
-        checkScepResponse(retMsg, userDN1, senderNonce, transId, true, CMSSignedGenerator.DIGEST_SHA256, false, SMIMECapability.dES_CBC, key1);
+        checkScepResponse(retMsg, userDN1, senderNonce, transId, true, CMSSignedGenerator.DIGEST_SHA256, false, SMIMECapability.aES128_CBC, key1);
     }
 
     @Test
@@ -801,14 +810,14 @@ public class ProtocolScepHttpSystemTest extends ScepTestBase {
         
         //Create the initial user
         createScepUser(userName1, userDN1);
-        final byte[] msgBytesUser1 = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA256, userDN1, SMIMECapability.dES_CBC);
+        final byte[] msgBytesUser1 = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA256, userDN1, SMIMECapability.aES128_CBC);
         // Send message with GET
         sendScep(true, msgBytesUser1, HttpServletResponse.SC_OK);
         
         // create new which is going to reuse the same key. 
         createScepUser(userName2, userDN2);
         
-        final byte[] msgBytesUser2 = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA256, userDN2, SMIMECapability.dES_CBC);
+        final byte[] msgBytesUser2 = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA256, userDN2, SMIMECapability.aES128_CBC);
         // Send message with GET
         final byte[] retMsgUser2 = sendScep(true, msgBytesUser2, HttpServletResponse.SC_BAD_REQUEST);
 
@@ -835,13 +844,13 @@ public class ProtocolScepHttpSystemTest extends ScepTestBase {
         try {
             createScepUser(first, firstUserDn);
             final byte[] firstMessage = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA256, firstUserDn, key1, BouncyCastleProvider.PROVIDER_NAME,
-                    PKCSObjectIdentifiers.rsaEncryption, SMIMECapability.dES_CBC);
+                    PKCSObjectIdentifiers.rsaEncryption, SMIMECapability.aES128_CBC);
             sendScep(true, firstMessage, HttpServletResponse.SC_OK);
             createScepUser(second, secondUserDn);
             changeScepUser(second, firstUserDn, x509ca.getCAId());
 
             final byte[] secondMessage = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA256, secondUserDn, key2, BouncyCastleProvider.PROVIDER_NAME,
-                    PKCSObjectIdentifiers.rsaEncryption, SMIMECapability.dES_CBC);
+                    PKCSObjectIdentifiers.rsaEncryption, SMIMECapability.aES128_CBC);
             // Send message with GET
             final byte[] retMsg = sendScep(true, secondMessage, HttpServletResponse.SC_BAD_REQUEST);
             String returnMessageString = new String(retMsg);
@@ -889,7 +898,7 @@ public class ProtocolScepHttpSystemTest extends ScepTestBase {
         // Create a user from a different CA than the one called from genScepRequest below
         createScepUser(username, subjectDn, differentCa.getCAId());
         try {
-            byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA256, subjectDn, SMIMECapability.dES_CBC);
+            byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA256, subjectDn, SMIMECapability.aES128_CBC);
             // Send message with GET, we're expecting a 400 back since the CA's were mismatched.
             byte[] retMsg = sendScep(false, msgBytes, HttpServletResponse.SC_BAD_REQUEST);
             assertNotNull("Response message was null", retMsg);
@@ -965,7 +974,7 @@ public class ProtocolScepHttpSystemTest extends ScepTestBase {
             err.read(errB);
             err.close();
             String response = new String(errB);
-            assertTrue("Response does not contain the correct error message", StringUtils.contains(response, expectedErrMsg));
+            assertTrue("Response does not contain the correct error message", Strings.CS.contains(response, expectedErrMsg));
         } finally {
             if(extractedAlias != null) {
                 if(scepConfig.aliasExists("backUpAlias" + extractedAlias + "ForAliasTesting001122334455")) {
@@ -1040,21 +1049,13 @@ public class ProtocolScepHttpSystemTest extends ScepTestBase {
         }
 
         private void setupResources() {
-            String primaryLanguage = PREFEREDINTERNALRESOURCES.toLowerCase();
-            String secondaryLanguage = SECONDARYINTERNALRESOURCES.toLowerCase();
 
             InputStream primaryStream = null;
-            InputStream secondaryStream = null;
-
-            primaryLanguage = "en";
-            secondaryLanguage = "se";
             try {
-                primaryStream = new FileInputStream("src/intresources/intresources." + primaryLanguage + ".properties");
-                secondaryStream = new FileInputStream("src/intresources/intresources." + secondaryLanguage + ".properties");
+                primaryStream = new FileInputStream("src/intresources/intresources.en.properties");
 
                 try {
                     primaryEjbcaResource.load(primaryStream);
-                    secondaryEjbcaResource.load(secondaryStream);
                 } catch (IOException e) {
                     log.error("Error reading internal resourcefile", e);
                 }
@@ -1066,9 +1067,6 @@ public class ProtocolScepHttpSystemTest extends ScepTestBase {
                 try {
                     if (primaryStream != null) {
                         primaryStream.close();
-                    }
-                    if (secondaryStream != null) {
-                        secondaryStream.close();
                     }
                 } catch (IOException e) {
                     log.error("Error closing internal resources language streams: ", e);
@@ -1095,7 +1093,5 @@ public class ProtocolScepHttpSystemTest extends ScepTestBase {
     protected X509Certificate getCaCertificate() {
         return cacert;
     }
-    
-   
 
 }

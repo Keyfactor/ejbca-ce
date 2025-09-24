@@ -33,7 +33,7 @@ import jakarta.faces.model.SelectItem;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
@@ -42,9 +42,6 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
  * JavaServer Faces Managed Bean for managing the configuration of a single CustomCertificateExtension
- * 
- * 
- *
  */
 @Named
 @SessionScoped
@@ -137,8 +134,9 @@ public class CustomCertExtensionMBean extends BaseManagedBean implements Seriali
         
     }
     
-    public class CustomExtensionPropertyGUIInfo {
+    public class CustomExtensionPropertyGUIInfo implements Serializable {
        
+        private static final long serialVersionUID = 1L;
         private final String key;
         private final String label;
         private String value;
@@ -203,7 +201,7 @@ public class CustomCertExtensionMBean extends BaseManagedBean implements Seriali
     }
         
         
-    private final AuthorizationSessionLocal authorizationSession = getEjbcaWebBean().getEjb().getAuthorizationSession();
+    private transient AuthorizationSessionLocal authorizationSession;
     
     @Inject
     private SystemConfigMBean systemConfigMBean;
@@ -212,7 +210,8 @@ public class CustomCertExtensionMBean extends BaseManagedBean implements Seriali
     private Map<String, CustomCertificateExtension> availableCertificateExtensions = null;
     private List<SelectItem> availableCertificateExtensionsList = null;
     private CurrentExtensionGUIInfo currentExtensionGUIInfo = null;
-    private ListDataModel<CustomExtensionPropertyGUIInfo> currentExtensionProperties = null;
+    private transient ListDataModel<CustomExtensionPropertyGUIInfo> currentExtensionProperties = null;
+    private List<CustomExtensionPropertyGUIInfo> currentExtensionPropertiesList = null;
     private int currentExtensionId = 0;
     
     public CustomCertExtensionMBean() {
@@ -224,6 +223,7 @@ public class CustomCertExtensionMBean extends BaseManagedBean implements Seriali
         currentExtensionId = 0;
         currentExtensionGUIInfo = null;
         currentExtensionProperties = null;
+        currentExtensionPropertiesList = null;
     }
     
 
@@ -275,9 +275,16 @@ public class CustomCertExtensionMBean extends BaseManagedBean implements Seriali
         
     @SuppressWarnings("unchecked")
     public void saveCurrentExtension() {
-        if (StringUtils.isEmpty(currentExtensionGUIInfo.getOid())) {
+        final String currentExtensionOid = currentExtensionGUIInfo.getOid();
+
+        if (StringUtils.isEmpty(currentExtensionOid)) {
             FacesContext.getCurrentInstance()
-            .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "No CustomCertificateExtension OID is set.", null));
+            .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Custom Certificate Extension OID is not set.", null));
+            return;
+        }
+        if (!OidUtils.isOidNumericalOnly(currentExtensionOid)) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Custom Certificate Extension OID contains non-numerical values.", null));
             return;
         }
         if (StringUtils.isEmpty(currentExtensionGUIInfo.getDisplayName())) {
@@ -290,13 +297,24 @@ public class CustomCertExtensionMBean extends BaseManagedBean implements Seriali
             .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "No CustomCertificateExtension is set.", null));
             return;
         }
-        
+
         Properties properties = new Properties();
-        for(CustomExtensionPropertyGUIInfo extensionProperty :  (List<CustomExtensionPropertyGUIInfo>) currentExtensionProperties.getWrappedData()) {
+        for(CustomExtensionPropertyGUIInfo extensionProperty :  (List<CustomExtensionPropertyGUIInfo>) getCurrentExtensionProperties().getWrappedData()) {
             properties.put(extensionProperty.getKey(), extensionProperty.getValue());
         }
         
         AvailableCustomCertificateExtensionsConfiguration cceConfig = getAvailableExtensionsConfig();
+
+        if (!isOidUnique(cceConfig)) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "CustomCertificateExtension OID '" + currentExtensionGUIInfo.getOid() + "' already exists in the database.", null));
+            return;
+        }
+
+        if (!isDisplayNameUnique(cceConfig)) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "CustomCertificateExtension Label '" + currentExtensionGUIInfo.getDisplayName()  + "' already exists in the database.", null));
+            return;
+        }
+
         try {
             cceConfig.addCustomCertExtension(currentExtensionGUIInfo.getId(), currentExtensionGUIInfo.getOid(), currentExtensionGUIInfo.getDisplayName(), 
                     currentExtensionGUIInfo.getClassPath(), currentExtensionGUIInfo.isCritical(), currentExtensionGUIInfo.isRequired(), properties);
@@ -309,13 +327,30 @@ public class CustomCertExtensionMBean extends BaseManagedBean implements Seriali
         flushCurrentExtension();
     }
 
+    protected boolean isOidUnique(final AvailableCustomCertificateExtensionsConfiguration cceConfig) {
+        final String newOid = getCurrentExtensionGUIInfo().getOid();
+
+        return cceConfig.getAllAvailableCustomCertificateExtensions().stream()
+                .filter(ce -> ce.getId() != getCurrentExtensionGUIInfo().getId())
+                .noneMatch(ce -> ce.getOID().equals(newOid));
+    }
+
+    protected boolean isDisplayNameUnique(final AvailableCustomCertificateExtensionsConfiguration cceConfig) {
+        final String newDisplayName = getCurrentExtensionGUIInfo().getDisplayName();
+
+        return cceConfig.getAllAvailableCustomCertificateExtensions().stream()
+                .filter(ce -> ce.getId() != getCurrentExtensionGUIInfo().getId())
+                .noneMatch(ce -> ce.getDisplayName().equals(newDisplayName));
+    }
+
     // -------------------------------------------------------------
     //              Current Extension Properties
     // ------------------------------------------------------------    
     public ListDataModel<CustomExtensionPropertyGUIInfo> getCurrentExtensionPropertiesList() {
-        currentExtensionProperties = new ListDataModel<>(new ArrayList<>(getCurrentExtensionGUIInfo()
-                .getExtensionProperties().values()));
-        return currentExtensionProperties;
+        // this always refreshes the list
+        currentExtensionProperties = null;
+        currentExtensionPropertiesList = null;
+        return getCurrentExtensionProperties();
     }
        
     public String update(){
@@ -325,13 +360,30 @@ public class CustomCertExtensionMBean extends BaseManagedBean implements Seriali
     public void updateExtension(ValueChangeEvent e){
         String extensionClass = (String) e.getNewValue();  
         currentExtensionGUIInfo.setClassPath(extensionClass); 
-        currentExtensionProperties.setWrappedData(null);
+        getCurrentExtensionProperties().setWrappedData(null);
         currentExtensionProperties = null;
     }
     
     /** @return true if admin may create new or modify existing Custom Certificate Extensions. */
     public boolean isAllowedToEditCustomCertificateExtension() {
-        return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_EDIT.resource()) && !systemConfigMBean.getCustomCertificateExtensionViewMode();
+        return getAuthorizationSession().isAuthorizedNoLogging(getAdmin(), StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_EDIT.resource()) && !systemConfigMBean.getCustomCertificateExtensionViewMode();
+    }
+
+    public AuthorizationSessionLocal getAuthorizationSession() {
+        if (authorizationSession == null)
+            authorizationSession = getEjbcaWebBean().getEjb().getAuthorizationSession();
+        return authorizationSession;
+    }
+
+    public ListDataModel<CustomExtensionPropertyGUIInfo> getCurrentExtensionProperties() {
+        if (currentExtensionProperties == null) {
+            if (currentExtensionPropertiesList == null) {
+                currentExtensionPropertiesList = new ArrayList<>(getCurrentExtensionGUIInfo()
+                        .getExtensionProperties().values());
+            }
+            currentExtensionProperties = new ListDataModel<>(currentExtensionPropertiesList);
+        }
+        return currentExtensionProperties;
     }
    
 }

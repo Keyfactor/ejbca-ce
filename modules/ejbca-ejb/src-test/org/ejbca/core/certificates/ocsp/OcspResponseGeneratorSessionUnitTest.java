@@ -28,7 +28,6 @@ import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
 import java.security.PrivateKey;
-import java.security.SecureRandom;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -70,13 +69,13 @@ import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.ocsp.cache.OcspDataConfigCache;
 import org.cesecore.certificates.ocsp.cache.OcspDataConfigCacheEntry;
+import org.cesecore.certificates.ocsp.cache.OcspRequestSignerStatusCacheSingletonLocal;
 import org.cesecore.certificates.ocsp.cache.OcspSigningCache;
 import org.cesecore.certificates.ocsp.cache.OcspSigningCacheEntry;
 import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
 import org.cesecore.certificates.ocsp.logging.AuditLogger;
 import org.cesecore.certificates.ocsp.logging.TransactionCounter;
 import org.cesecore.certificates.ocsp.logging.TransactionLogger;
-import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
@@ -95,7 +94,6 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import com.keyfactor.util.CertTools;
-import com.keyfactor.util.RandomHelper;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoToken;
@@ -286,6 +284,7 @@ public class OcspResponseGeneratorSessionUnitTest {
     private GlobalConfigurationSessionLocal globalConfigurationSessionMock = EasyMock.createNiceMock(GlobalConfigurationSessionLocal.class);
     private TimerService timerServiceMock = EasyMock.createStrictMock(TimerService.class);
     private OcspDataSessionLocal ocspDataSessionMock = EasyMock.createStrictMock(OcspDataSessionLocal.class);
+    private OcspRequestSignerStatusCacheSingletonLocal ocspRequestSignerStatusCache = EasyMock.createNiceMock(OcspRequestSignerStatusCacheSingletonLocal.class);
     private CertificateStatus status;
     
     
@@ -300,10 +299,11 @@ public class OcspResponseGeneratorSessionUnitTest {
         ocspResponseGeneratorSession.setMockedGlobalConfigurationSession(globalConfigurationSessionMock);
         ocspResponseGeneratorSession.setMockedTimerService(timerServiceMock);
         ocspResponseGeneratorSession.setOcspDataSessionLocal(ocspDataSessionMock);
+        ocspResponseGeneratorSession.setocspRequestSignerStatusCache(ocspRequestSignerStatusCache);
         // Clear caches from previous test runs
         ocspResponseGeneratorSession.clearOcspRequestSignerRevocationStatusCache();
         OcspSigningCache.INSTANCE.stagingStart();
-        OcspSigningCache.INSTANCE.stagingCommit(null);
+        OcspSigningCache.INSTANCE.stagingCommit(new GlobalOcspConfiguration());
     }
 
     @Test
@@ -691,7 +691,7 @@ public class OcspResponseGeneratorSessionUnitTest {
         ocspKeyBinding.setUntilNextUpdate(3600);
         ocspKeyBinding.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
         OcspSigningCache.INSTANCE.addSingleEntry(new OcspSigningCacheEntry(issuerCert, CertificateStatus.OK, Collections.singletonList(issuerCert), issuerCert,
-                getIssuerPrivKey(), BouncyCastleProvider.PROVIDER_NAME, ocspKeyBinding, ResponderIdType.KEYHASH));
+                getIssuerPrivKey(), BouncyCastleProvider.PROVIDER_NAME, ocspKeyBinding, ResponderIdType.KEYHASH, new GlobalOcspConfiguration()));
     }
 
     private byte[] makeOcspRequest(final X509Certificate issuerCert, final BigInteger serialNumber, final ASN1ObjectIdentifier digestAlgo, byte[] nonce) {
@@ -760,5 +760,7 @@ public class OcspResponseGeneratorSessionUnitTest {
         protected void setMockedTimerService(final TimerService timerService) { super.setMockedTimerService(timerService); }
         @Override
         protected void setOcspDataSessionLocal(final OcspDataSessionLocal ocspDataSessionLocal) { super.setOcspDataSessionLocal(ocspDataSessionLocal); }
+        @Override
+        protected void setocspRequestSignerStatusCache(final OcspRequestSignerStatusCacheSingletonLocal ocspRequestSignerStatusCache) { super.setocspRequestSignerStatusCache(ocspRequestSignerStatusCache); }
     }
 }

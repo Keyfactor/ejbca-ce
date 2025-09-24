@@ -13,15 +13,17 @@
 
 package org.ejbca.config;
 
-import com.keyfactor.util.StringTools;
-import org.apache.commons.lang.StringUtils;
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.ejbca.util.SlotList;
 import org.ejbca.util.URIUtil;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
+import com.keyfactor.util.StringTools;
 
 /**
  * This file handles configuration from web.properties
@@ -227,7 +229,7 @@ public class WebConfiguration {
                         }
                         boolean canGenerateKey = true;
                         String canGenerateKeyStr = EjbcaConfigurationHolder.getString("cryptotoken.p11.lib." + i + ".canGenerateKey");
-                        if (StringUtils.equalsIgnoreCase("false", canGenerateKeyStr)) {
+                        if (Strings.CI.equals("false", canGenerateKeyStr)) {
                             canGenerateKey = false; // make really sure it's true by default
                         }
                         String canGenerateKeyMsg = EjbcaConfigurationHolder.getString("cryptotoken.p11.lib." + i + ".canGenerateKeyMsg");

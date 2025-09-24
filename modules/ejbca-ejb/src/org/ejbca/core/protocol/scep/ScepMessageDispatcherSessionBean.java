@@ -21,7 +21,6 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
-import java.security.SecureRandom;
 import java.security.SignatureException;
 import java.security.cert.CRLException;
 import java.security.cert.Certificate;
@@ -35,6 +34,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
@@ -43,7 +43,7 @@ import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import javax.security.auth.x500.X500Principal;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -112,6 +112,7 @@ import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.era.ScepResponseInfo;
 import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
+import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.ui.web.protocol.CertificateRenewalException;
 
@@ -121,7 +122,7 @@ import com.keyfactor.util.RandomHelper;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 /** Implements processing of SCEP requests.
  */
@@ -818,7 +819,10 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 log.debug("Authenticating to Intune using token " + token.getTokenName());
                 try {
                     PrivateKey privateKey = token.getPrivateKey(keyBindingInfo.getKeyPairAlias());
-                    builder = builder.withClientCertificate((X509Certificate) certificate);
+                    final CAInfo caInfo = new EjbLocalHelper().getCaSession().getCAInfoInternal(CertTools.getIssuerDN(certificate).hashCode());
+                    final List<X509Certificate> chain = caInfo.getCertificateChain().stream().map(element -> (X509Certificate) element)
+                            .collect(Collectors.toList());
+                    builder = builder.withClientCertificate((X509Certificate) certificate, chain);
                     builder = builder.withClientKey(privateKey);
                 } catch (CryptoTokenOfflineException e) {
                     log.debug("Crypto token " + token.getTokenName() + " offline.", e);

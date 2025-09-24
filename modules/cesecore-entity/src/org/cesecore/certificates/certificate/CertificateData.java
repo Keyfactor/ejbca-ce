@@ -17,15 +17,12 @@ import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.util.Date;
-import java.util.List;
 
 import jakarta.persistence.ColumnResult;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EntityManager;
 import jakarta.persistence.PostLoad;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Query;
 import jakarta.persistence.SqlResultSetMapping;
 import jakarta.persistence.SqlResultSetMappings;
 import jakarta.persistence.Table;
@@ -38,7 +35,7 @@ import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.keys.KeyTools;
 
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.ssh.SshCertificate;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -676,7 +673,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
         if (!fingerprint.equals(certificateData.fingerprint)) {
             return false;
         }
-        if (!StringUtils.equals(cAFingerprint, certificateData.cAFingerprint)) {
+        if (!Strings.CS.equals(cAFingerprint, certificateData.cAFingerprint)) {
             return false;
         }
         if (!equalsStatus(certificateData, strictStatus)) {
@@ -700,7 +697,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
         if (expireDate != certificateData.expireDate) {
             return false;
         }
-        if (!ObjectUtils.defaultIfNull(invalidityDate, -1L).equals(ObjectUtils.defaultIfNull(certificateData.invalidityDate, -1L))) {
+        if (!ObjectUtils.getIfNull(invalidityDate, -1L).equals(ObjectUtils.getIfNull(certificateData.invalidityDate, -1L))) {
             return false;
         }
         if (revocationDate != certificateData.revocationDate) {
@@ -709,10 +706,10 @@ public class CertificateData extends BaseCertificateData implements Serializable
         if (revocationReason != certificateData.revocationReason) {
             return false;
         }
-        if (!StringUtils.equals(username, certificateData.username)) {
+        if (!Strings.CS.equals(username, certificateData.username)) {
             return false;
         }
-        if (!StringUtils.equals(tag, certificateData.tag)) {
+        if (!Strings.CS.equals(tag, certificateData.tag)) {
             return false;
         }
         if (certificateProfileId == null && certificateData.certificateProfileId != null) {
@@ -730,19 +727,19 @@ public class CertificateData extends BaseCertificateData implements Serializable
                 return false;
             }
         }
-        if (!ObjectUtils.defaultIfNull(crlPartitionIndex, 0).equals(ObjectUtils.defaultIfNull(certificateData.crlPartitionIndex, 0))) {
+        if (!ObjectUtils.getIfNull(crlPartitionIndex, 0).equals(ObjectUtils.getIfNull(certificateData.crlPartitionIndex, 0))) {
             return false;
         }
         if (updateTime != certificateData.updateTime) {
             return false;
         }
-        if (!StringUtils.equals(subjectAltName, certificateData.subjectAltName)) {
+        if (!Strings.CS.equals(subjectAltName, certificateData.subjectAltName)) {
             return false;
         }
-        if (!StringUtils.equals(certificateRequest, certificateData.certificateRequest)) {
+        if (!Strings.CS.equals(certificateRequest, certificateData.certificateRequest)) {
             return false;
         }
-        if (!StringUtils.equals(accountBindingId, certificateData.accountBindingId)) {
+        if (!Strings.CS.equals(accountBindingId, certificateData.accountBindingId)) {
             return false;
         }
         return true;
@@ -753,49 +750,6 @@ public class CertificateData extends BaseCertificateData implements Serializable
         return fingerprint.hashCode() * 11;
     }
 
-    //
-    // Search functions (deprecated, use methods in CertificateDataSession instead)
-    //
-
-    /** @deprecated Since 6.13.0. Use method in CertificateDataSession instead */
-    @Deprecated
-    public static CertificateData findByFingerprint(EntityManager entityManager, String fingerprint) {
-        return entityManager.find(CertificateData.class, fingerprint);
-    }
-
-    /**
-     * Get next batchSize row ordered by fingerprint. Used by OcspMonitoringTool.
-     *
-     * @param certificateProfileId
-     * @param currentFingerprint
-     * @param batchSize
-     * @return List of certificates
-     */
-    @SuppressWarnings("unchecked")
-    public static List<CertificateData> getNextBatch(EntityManager entityManager, int certificateProfileId, String currentFingerprint, int batchSize) {
-        final Query query = entityManager
-                .createQuery("SELECT a FROM CertificateData a WHERE a.fingerprint>:currentFingerprint AND a.certificateProfileId=:certificateProfileId ORDER BY a.fingerprint ASC");
-        query.setParameter("certificateProfileId", certificateProfileId);
-        query.setParameter("currentFingerprint", currentFingerprint);
-        query.setMaxResults(batchSize);
-        return query.getResultList();
-    }
-
-    /** Returns the number of entries with the given certificate profile. Used by OcspMonitoringTool. */
-    public static long getCount(EntityManager entityManager, int certificateProfileId) {
-        final Query countQuery = entityManager
-                .createQuery("SELECT COUNT(a) FROM CertificateData a WHERE a.certificateProfileId=:certificateProfileId");
-        countQuery.setParameter("certificateProfileId", certificateProfileId);
-        return ((Long) countQuery.getSingleResult()).longValue(); // Always returns a result
-    }
-
-    /** Returns a list of Certificate Profile IDs that are used in certificates. Used by OcspMonitoringTool. */
-    @SuppressWarnings("unchecked")
-    public static List<Integer> getUsedCertificateProfileIds(EntityManager entityManager) {
-        final Query query = entityManager.createQuery("SELECT DISTINCT a.certificateProfileId FROM CertificateData a ORDER BY a.certificateProfileId");
-        return query.getResultList();
-    } 
-    
     //
     // Start Database integrity protection methods
     //

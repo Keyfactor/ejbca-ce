@@ -12,13 +12,10 @@
  *************************************************************************/
 package org.ejbca.core.model.ra.raadmin;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.util.Collections;
 import java.util.Map;
+
+import com.keyfactor.util.certificate.DnComponents;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -31,12 +28,13 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.ejbca.core.model.SecConst;
 import org.junit.Test;
 
-import com.keyfactor.util.certificate.DnComponents;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Unit tests for the EndEntityProfile class.
- *
- *
  */
 public class EndEntityProfileUnitTest {
 
@@ -53,7 +51,7 @@ public class EndEntityProfileUnitTest {
         Map<Object, Object> diff = foo.diff(bar);
         assertFalse(diff.isEmpty());
     }
-    
+
     @Test
     public void testProfileValuesEE() {
         EndEntityProfile profile = new EndEntityProfile();
@@ -70,20 +68,20 @@ public class EndEntityProfileUnitTest {
         profile.setUse(EndEntityProfile.CLEARTEXTPASSWORD, 0, true);
         profile.setUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, true);
         profile.setValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, "" + RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
-        
+
         assertTrue(profile.getUse(DnComponents.ORGANIZATION, 0));
         assertFalse(profile.getUse("Foo", 0));
 
     }
-    
+
     @Test
     public void testUserFulfillEndEntityProfile() {
         final EndEntityProfile profile = new EndEntityProfile();
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
-        
+
         // First an end entity without subjectDN. It's uncommon, but the RFC supports certificates with only altName and no subjectDN
         // we need to unset the default required DN component in order to pass with empty DN
-        profile.setRequired(DnComponents.COMMONNAME,0,false); 
+        profile.setRequired(DnComponents.COMMONNAME,0,false);
         EndEntityInformation userdata = new EndEntityInformation("foo", "", 123, "", "", new EndEntityType(EndEntityTypes.ENDUSER),
                 123, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                 SecConst.TOKEN_SOFT_PEM, null);
@@ -118,8 +116,8 @@ public class EndEntityProfileUnitTest {
         } catch (EndEntityProfileValidationException e) {
             fail("cardnumber was in and should be ok: "+e.getMessage());
         }
-        
-        // Test that email address can be required as well, and that it does not require an @ sign in it 
+
+        // Test that email address can be required as well, and that it does not require an @ sign in it
         // (see ECA-5650 about Cisco ISE using the rfc822Name field for MAC address)
         profile.addField(DnComponents.RFC822NAME);
         profile.setRequired(DnComponents.RFC822NAME, 0, true);
@@ -174,7 +172,7 @@ public class EndEntityProfileUnitTest {
             fail("Country should be ok now: "+e.getMessage());
         }
     }
-    
+
     @Test
     public void testUserFulfillEndEntityProfileMultiValueRDN() {
         EndEntityProfile profile = new EndEntityProfile();
@@ -230,7 +228,7 @@ public class EndEntityProfileUnitTest {
         } catch (EndEntityProfileValidationException e) {
             assertEquals("Error message was not the expected", "Subject DN is illegal.", e.getMessage());
         }
-        
+
     }
 
     @Test(expected = EndEntityProfileValidationException.class)
@@ -313,7 +311,7 @@ public class EndEntityProfileUnitTest {
         userdata.getExtendedInformation().setQCEtsiPSD2NcaName("SomePsd2NCName");
         profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);
     }
-    
+
     @Test
     public void testUserFulfillEndEntityProfilePsd2QcStatementAssertSuccess() throws EndEntityProfileValidationException {
         EndEntityProfile profile = new EndEntityProfile();
@@ -332,7 +330,7 @@ public class EndEntityProfileUnitTest {
             throw e;
         }
     }
-    
+
     @Test
     public void testUserEepCpExtensionsMatch() throws EndEntityProfileValidationException {
         log.trace(">testUserEepCpExtensionsMatch");
@@ -349,7 +347,7 @@ public class EndEntityProfileUnitTest {
         profile.doesUserFulfillEndEntityProfile(userdata, certProfileWithExt, false, null);
         log.trace("<testUserEepCpExtensionsMatch");
     }
-    
+
     @Test
     public void testUserEepCpExtensionsNoMatch() {
         log.trace(">testUserEepCpExtensionsNoMatch");
@@ -391,6 +389,31 @@ public class EndEntityProfileUnitTest {
 
         Map<Object, Object> diff = foo.diff(bar);
         assertEquals(1, diff.size());
+    }
+
+    @Test
+    public void testUserFulfillEndEntityProfilePasswordBotLength() throws EndEntityProfileValidationException {
+        final EndEntityProfile profile = new EndEntityProfile();
+        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+        final EndEntityInformation userdata = new EndEntityInformation("foo", "CN=foo", 123, "", "", new EndEntityType(EndEntityTypes.ENDUSER),
+                123, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                SecConst.TOKEN_SOFT_PEM, null);
+        userdata.setPassword("foobar123"); // 9 characters should be 55 bits
+        profile.setMinPwdStrength(55); // should pass
+        profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);
+        profile.setMinPwdStrength(54); // should pass
+        profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);
+        profile.setMinPwdStrength(56); // should fail
+        try {
+            profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);
+            fail("9 character password should fail when 56 bits required");
+        } catch (EndEntityProfileValidationException e) {
+            assertEquals("Validation message incorrect",
+                    "Generated password is not strong enough (~55 bits in specific password < 56 bits required by end entity profile).",
+                    e.getMessage());
+        }
+        userdata.setPassword("foobar123!"); // 10 characters should be 61 bits, so should pass again
+        profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);
     }
 
 }

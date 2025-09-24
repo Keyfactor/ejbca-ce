@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.model.validation.domainblacklist;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

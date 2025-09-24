@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.Extension;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -124,9 +124,6 @@ public class GeneralPurposeCustomPublisher extends CustomPublisherUiBase impleme
      * @param type
      *            The certificate type
      * 
-     * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#storeCertificate(org.ejbca.core.model.log.Admin,
-     *      java.security.cert.Certificate, java.lang.String, java.lang.String,
-     *      int, int)
      */
     @Override
     public boolean storeCertificate(AuthenticationToken admin, Certificate incert, String username, String password, String userDN, String cafp, int status, int type, long revocationDate,
@@ -175,8 +172,6 @@ public class GeneralPurposeCustomPublisher extends CustomPublisherUiBase impleme
      * thrown if the external command returns with an errorlevel or outputs to
      * stderr.
      * 
-     * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#storeCRL(org.ejbca.core.model.log.Admin,
-     *      byte[], java.lang.String, int)
      */
     @Override
     public boolean storeCRL(AuthenticationToken admin, byte[] incrl, String cafp, int number, String userDN) throws PublisherException {

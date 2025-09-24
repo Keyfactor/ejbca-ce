@@ -13,8 +13,10 @@
 package org.ejbca.configdump;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -26,24 +28,24 @@ public final class ConfigdumpImportResult extends ConfigdumpResult {
     private static final long serialVersionUID = 1L;
 
     private final List<ConfigdumpItem<?>> problematicItems;
-    private final List<ConfigdumpItem<?>> itemsRequiringPassword;
+    private final Map<ConfigdumpItem<?>, Collection<String>> itemsRequiringPassword;
     
     public ConfigdumpImportResult(
             final List<String> reportedErrors,
             final List<String> reportedWarnings,
             final Set<ConfigdumpItem<?>> problematicItems,
-            final Set<ConfigdumpItem<?>> itemsRequiringPassword
+            final Map<ConfigdumpItem<?>, Collection<String>> itemsRequiringPassword
     ) {
         super(reportedErrors, reportedWarnings);
         this.problematicItems = Collections.unmodifiableList(new ArrayList<>(problematicItems));
-        this.itemsRequiringPassword = Collections.unmodifiableList(new ArrayList<>(itemsRequiringPassword));
+        this.itemsRequiringPassword = Collections.unmodifiableMap(itemsRequiringPassword);
     }
 
     public List<ConfigdumpItem<?>> getProblematicItems() {
         return problematicItems;
     }
     
-    public List<ConfigdumpItem<?>> getItemsRequiringPassword() {
+    public Map<ConfigdumpItem<?>, Collection<String>> getItemsRequiringPassword() {
         return itemsRequiringPassword;
     }
 }

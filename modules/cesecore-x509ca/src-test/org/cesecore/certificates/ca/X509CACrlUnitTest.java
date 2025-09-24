@@ -54,7 +54,7 @@ public class X509CACrlUnitTest extends X509CAUnitTestBase {
      * Tests the extension CRL Distribution Point on CRLs
      */
     @Test
-    public void testCRLDistPointOnCRL() throws Exception {
+    public void testCRLDistPointOnCrl() throws Exception {
         final CryptoToken cryptoToken = getNewCryptoToken();
         final X509CA ca = createTestCA(cryptoToken, CADN);
 
@@ -73,14 +73,15 @@ public class X509CACrlUnitTest extends X509CAUnitTestBase {
         byte[] cdpDER = xcrl.getExtensionValue(Extension.issuingDistributionPoint.getId());
         assertNotNull("CRL has no distribution points", cdpDER);
 
-        ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(cdpDER));
-        final ASN1OctetString octs = ASN1OctetString.getInstance(aIn.readObject());
-        aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
-        IssuingDistributionPoint cdp = IssuingDistributionPoint.getInstance(aIn.readObject());
-        DistributionPointName distpoint = cdp.getDistributionPoint();
-
-        assertEquals("CRL distribution point is different", cdpURL, ((DERIA5String) ((GeneralNames) distpoint.getName()).getNames()[0].getName()).getString());
-
+        try (ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(cdpDER))) {
+            final ASN1OctetString octs = ASN1OctetString.getInstance(aIn.readObject());
+            try (ASN1InputStream octetInputStream = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()))) {
+                IssuingDistributionPoint cdp = IssuingDistributionPoint.getInstance(octetInputStream.readObject());
+                DistributionPointName distpoint = cdp.getDistributionPoint();
+                assertEquals("CRL distribution point is different", cdpURL,
+                        ((DERIA5String) ((GeneralNames) distpoint.getName()).getNames()[0].getName()).getString());
+            }
+        }
         cainfo.setUseCrlDistributionPointOnCrl(false);
         cainfo.setDefaultCRLDistPoint(null);
         ca.updateCA(cryptoToken, cainfo, cceConfig);
@@ -117,16 +118,16 @@ public class X509CACrlUnitTest extends X509CAUnitTestBase {
         byte[] cFreshestDpDER = xcrl.getExtensionValue(Extension.freshestCRL.getId());
         assertNotNull("CRL has no Freshest Distribution Point", cFreshestDpDER);
 
-        ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(cFreshestDpDER));
-        final ASN1OctetString octs = ASN1OctetString.getInstance(aIn.readObject());
-        aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
-        CRLDistPoint cdp = CRLDistPoint.getInstance(aIn.readObject());
-        DistributionPoint[] distpoints = cdp.getDistributionPoints();
-
-        assertEquals("More CRL Freshest distributions points than expected", 1, distpoints.length);
-        assertEquals("Freshest CRL distribution point is different", freshestCdpURL, ((DERIA5String) ((GeneralNames) distpoints[0].getDistributionPoint()
-                .getName()).getNames()[0].getName()).getString());
-
+        try (ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(cFreshestDpDER))) {
+            final ASN1OctetString octs = ASN1OctetString.getInstance(aIn.readObject());
+            try (ASN1InputStream octetInputStream = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()))) {
+                CRLDistPoint cdp = CRLDistPoint.getInstance(octetInputStream.readObject());
+                DistributionPoint[] distpoints = cdp.getDistributionPoints();
+                assertEquals("More CRL Freshest distributions points than expected", 1, distpoints.length);
+                assertEquals("Freshest CRL distribution point is different", freshestCdpURL,
+                        ((DERIA5String) ((GeneralNames) distpoints[0].getDistributionPoint().getName()).getNames()[0].getName()).getString());
+            }
+        }
         cainfo.setUseCrlDistributionPointOnCrl(false);
         cainfo.setDefaultCRLDistPoint(null);
         cainfo.setCADefinedFreshestCRL(null);
@@ -152,7 +153,7 @@ public class X509CACrlUnitTest extends X509CAUnitTestBase {
      * Tests the extension CRL Distribution Point on a partitioned CRL
      */
     @Test
-    public void testPartitionedCRLDistPointOnCRL() throws Exception {
+    public void testPartitionedCRLDistPointOnCrl() throws Exception {
         final CryptoToken cryptoToken = getNewCryptoToken();
         final X509CA ca = createTestCA(cryptoToken, CADN);
 
@@ -373,6 +374,37 @@ public class X509CACrlUnitTest extends X509CAUnitTestBase {
         caInfo.setDefaultCRLDistPoint(" http://example.com/CA*.crl ; http://crl*.example.net/CA*.crl ");
         assertEquals("Test with multiple CRL DPs with CRL partitioning failed.", 5, caInfo.determineCrlPartitionIndex("http://crl5.example.net/CA5.crl"));
         log.trace("<determineCrlPartitionIndexMultipleCrlDpsWithPartitions");
+    }
+
+    /** Tests the determineCrlPartitionIndex method, with multiple logs, CRL partitions and a quoted URI */
+    @Test
+    public void determineCrlPartitionIndexMultipleCrlDpsQuotedUriWithPartitions() throws Exception {
+        log.trace(">determineCrlPartitionIndexMultipleCrlDpsQuotedUriWithPartitions");
+        final X509CAInfo caInfo = createTestCaWithPartitionedCrl();
+        caInfo.setDefaultCRLDistPoint("\"http://example.com/CA*.crl\";http://crl.example.net/CA*.crl");
+        assertEquals("Test with multiple CRL DPs with a quoted URI and with CRL partitioning failed.", 5, caInfo.determineCrlPartitionIndex("http://example.com/CA5.crl"));
+        log.trace("<determineCrlPartitionIndexMultipleCrlDpsQuotedUriWithPartitions");
+    }
+
+    /** Tests the determineCrlPartitionIndex method, with multiple logs, CRL partitions and a semicolon in a URI between quotes */
+    @Test
+    public void determineCrlPartitionIndexMultipleCrlDpsQuotedSemicolonInUriWithPartitions() throws Exception {
+        log.trace(">determineCrlPartitionIndexMultipleCrlDpsQuotedSemicolonInUriWithPartitions");
+        final X509CAInfo caInfo = createTestCaWithPartitionedCrl();
+        caInfo.setDefaultCRLDistPoint(" http://example.com/CA*.crl ;\"http://crl.example.net/a;b/CA*.crl\"");
+        assertEquals("Test with multiple CRL DPs with a quoted semicolon in the URI and with CRL partitioning failed.", 5, caInfo.determineCrlPartitionIndex("http://crl.example.net/a;b/CA5.crl"));
+        log.trace("<determineCrlPartitionIndexMultipleCrlDpsQuotedSemicolonInUriWithPartitions");
+    }
+
+    /** Tests the determineCrlPartitionIndex method, with multiple logs, CRL partitions and a semicolon in a URI which is not between quotes */
+    @Test
+    public void determineCrlPartitionIndexMultipleCrlDpsUnquotedSemicolonInUriWithPartitions() throws Exception {
+        log.trace(">determineCrlPartitionIndexMultipleCrlDpsUnquotedSemicolonInUriWithPartitions");
+        final X509CAInfo caInfo = createTestCaWithPartitionedCrl();
+        caInfo.setDefaultCRLDistPoint(" http://example.com/CA*.crl ;http://crl.example.net/a;b/CA*.crl");
+        assertEquals("Test with multiple CRL DPs with an unquoted semicolon in the URI and with CRL partitioning failed.", CertificateConstants.NO_CRL_PARTITION,
+                caInfo.determineCrlPartitionIndex("http://crl.example.net/a;b/CA5.crl"));
+        log.trace("<determineCrlPartitionIndexMultipleCrlDpsUnquotedSemicolonInUriWithPartitions");
     }
 
     /** Test implementation of Authority Information Access CRL Extension according to RFC 4325 */

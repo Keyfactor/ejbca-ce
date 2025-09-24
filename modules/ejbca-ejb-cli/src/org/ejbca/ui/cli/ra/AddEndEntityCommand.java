@@ -31,6 +31,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
@@ -276,8 +277,11 @@ public class AddEndEntityCommand extends BaseRaCommand {
             getLogger().info("Certificate profile: " + certificatetypeid);
             getLogger().info("End entity profile: " + endEntityProfileId);
             try {
-                EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).addUser(getAuthenticationToken(), username,
-                        password, dn, subjectaltname, email, false, endEntityProfileId, certificatetypeid, type, tokenid, caid);
+                EndEntityInformation endEntityInformation = new EndEntityInformation(username, dn, caid, subjectaltname, email, type,
+                        endEntityProfileId, certificatetypeid, tokenid, null);
+                endEntityInformation.setPassword(password);
+                EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).addUser(getAuthenticationToken(), endEntityInformation, false);
+                
                 getLogger().info("User '" + username + "' has been added.");
                 getLogger().info("Note: If batch processing should be possible, also use 'ra setclearpwd " + username + " <pwd>'.");
                 return CommandResult.SUCCESS;

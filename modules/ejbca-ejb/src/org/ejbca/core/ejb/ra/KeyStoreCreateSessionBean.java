@@ -453,7 +453,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             }
         }
         // Make a certificate chain from the certificate and the CA-certificate
-        X509Certificate[] cachain = signSession.getCertificateChain(caid).toArray(new X509Certificate[0]);
+        X509Certificate[] cachain = caSession.getCertificateChain(caid).toArray(new X509Certificate[0]);
         // Verify CA-certificate
         Certificate rootcert = cachain[cachain.length - 1];
         if (CertTools.isSelfSigned(rootcert)) {

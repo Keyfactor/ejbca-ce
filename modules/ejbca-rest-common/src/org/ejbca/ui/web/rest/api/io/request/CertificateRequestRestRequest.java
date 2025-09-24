@@ -17,6 +17,8 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.keyfactor.util.CertTools;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.ws.rs.core.Response;
+import java.util.Objects;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 
@@ -111,30 +113,37 @@ public class CertificateRequestRestRequest {
          */
         public EnrollPkcs10CertificateRequest toEnrollPkcs10CertificateRequest(final CertificateRequestRestRequest certificateRequestRestRequest) throws RestException {
             return new EnrollPkcs10CertificateRequest.Builder()
-                    .certificateRequest(getFormatedRequestString(certificateRequestRestRequest))
+                    .certificateRequest(getFormatedRequestString(certificateRequestRestRequest.getCertificateRequest(), certificateRequestRestRequest.certificateRequestType))
                     .username(certificateRequestRestRequest.getUsername())
                     .password(certificateRequestRestRequest.getPassword())
                     .includeChain(certificateRequestRestRequest.getIncludeChain())
                     .certificateAuthorityName(certificateRequestRestRequest.getCertificateAuthorityName())
-                    .requestType(certificateRequestRestRequest.getCertificateRequestType())
+                    .requestType(getRequestTypeCode(certificateRequestRestRequest.getCertificateRequestType()))
                     .build();
         }
 
-        private static String getFormatedRequestString(CertificateRequestRestRequest certificateRequestRestRequest) throws RestException {
-            if (certificateRequestRestRequest.getCertificateRequestType() != null) {
-                String certificateRequestData = switch (certificateRequestRestRequest.getCertificateRequestType()) {
-                    case "PUBLICKEY", "CRMF" -> certificateRequestRestRequest.certificateRequest;
-                    case "SPKAC" -> certificateRequestRestRequest.certificateRequest.replace("SPKAC=", "");
-                    case "CVC" -> certificateRequestRestRequest.certificateRequest
+        public static String getFormatedRequestString(String request, String requestType) throws RestException {
+            if (requestType != null) {
+                return switch (requestType) {
+                    case "PUBLICKEY", "CRMF" -> request;
+                    case "SPKAC" -> request.replace("SPKAC=", "");
+                    case "CVC" -> request
                             .replace("-----BEGIN CERTIFICATE-----", "")
                             .replace("-----END CERTIFICATE-----", "");
-                    case "PKCS10" -> CertTools.encapsulateCsr(certificateRequestRestRequest.getCertificateRequest());
-                    default -> throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "An unsupported certificate request type has been passed: " + certificateRequestRestRequest.getCertificateRequestType());
+                    case "PKCS10" -> CertTools.encapsulateCsr(request);
+                    default -> throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "An unsupported certificate request type has been passed: " + requestType);
                 };
-                return certificateRequestData;
             } else {
-                return CertTools.encapsulateCsr(certificateRequestRestRequest.getCertificateRequest());
+                return CertTools.encapsulateCsr(request);
             }
+        }
+
+        private static int getRequestTypeCode(String requestTypeName) {
+            if (requestTypeName == null) {
+               return CertificateConstants.CERT_REQ_TYPE_PKCS10;
+            }
+            RequestType requestType = RequestType.resolveRequestTypeStatusByName(requestTypeName);
+            return Objects.requireNonNullElse(requestType, RequestType.PKCS10).getRequestTypeValue();
         }
     }
 }

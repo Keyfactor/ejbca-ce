@@ -23,8 +23,18 @@
         https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd">
 
     <display-name>SCEP</display-name>
-    
-   	<filter>
+
+    <filter>
+        <filter-name>RequestIdFilter</filter-name>
+        <filter-class>org.ejbca.util.RequestIdFilter</filter-class>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>RequestIdFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <filter>
 		<filter-name>ServiceControlFilter</filter-name>
 		<filter-class>org.ejbca.util.ServiceControlFilter</filter-class>
 		<init-param>  

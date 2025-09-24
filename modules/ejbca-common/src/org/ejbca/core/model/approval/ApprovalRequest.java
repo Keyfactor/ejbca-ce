@@ -12,38 +12,25 @@
  *************************************************************************/
 package org.ejbca.core.model.approval;
 
-import java.io.ByteArrayInputStream;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.security.auth.x500.X500Principal;
-
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.LocalJvmOnlyAuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.keys.validation.ValidationResult;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationToken;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationTokenReferenceRegistry;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
-import org.ejbca.core.model.log.Admin;
 
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.CertTools;
 
 /**
  * Abstract Base class representing one approval request created when an administrator performs an action that requires an approval.
@@ -58,7 +45,6 @@ import com.keyfactor.util.CertTools;
  *
  */
 // Suppressing deprecation due to backwards compatibility
-@SuppressWarnings("deprecation")
 public abstract class ApprovalRequest implements Externalizable {
 
     private static final long serialVersionUID = -1L;
@@ -84,11 +70,7 @@ public abstract class ApprovalRequest implements Externalizable {
     private AuthenticationToken requestAdmin = null;
     private String requestSignature = null;
     private int approvalRequestType = REQUESTTYPE_SIMPLE;
-    /**
-     * @deprecated since 6.6.0 kept only for 100% uptime reasons.
-     */
-    @Deprecated
-    private int numOfRequiredApprovals = 0;
+
     private int cAId = 0;
     private int endEntityProfileId = 0;
     private boolean[] approvalSteps = { false };
@@ -228,13 +210,6 @@ public abstract class ApprovalRequest implements Externalizable {
      * Should return one of the ApprovalDataVO.APPROVALTYPE_ constants
      */
     public abstract int getApprovalType();
-
-    /**
-     * Method returning the number of required approvals in order to execute the request.
-     */
-    public int getNumOfRequiredApprovals() {
-        return numOfRequiredApprovals;
-    }
 
 
     public ApprovalProfile getApprovalProfile() {
@@ -381,7 +356,6 @@ public abstract class ApprovalRequest implements Externalizable {
         out.writeObject(this.requestAdmin);
         out.writeObject(this.requestSignature);
         out.writeInt(this.approvalRequestType);
-        out.writeInt(this.numOfRequiredApprovals);
         out.writeInt(this.cAId);
         out.writeInt(this.endEntityProfileId);
         out.writeInt(this.approvalSteps.length);
@@ -398,105 +372,10 @@ public abstract class ApprovalRequest implements Externalizable {
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         final int version = in.readInt();
-        if (version == 1) {
-            final String requestAdminCert = (String) in.readObject();
-            final byte[] certbuf = Base64.decode(requestAdminCert.getBytes());
-            final CertificateFactory cf = CertTools.getCertificateFactory();
-            X509Certificate x509cert = null;
-            try {
-                x509cert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(certbuf));
-            } catch (CertificateException e) {
-                log.error(e);
-            }
-            this.requestAdmin = new X509CertificateAuthenticationToken(x509cert);
-            this.requestSignature = (String) in.readObject();
-            this.approvalRequestType = in.readInt();
-            this.numOfRequiredApprovals = in.readInt();
-            this.cAId = in.readInt();
-            this.endEntityProfileId = in.readInt();
-            this.approvalSteps = new boolean[1];
-        }
-        if (version == 2) {
-            final Admin admin = (Admin) in.readObject();
-            final X509Certificate x509cert = (X509Certificate)admin.getAdminInformation().getX509Certificate();
-            AuthenticationToken token = null;
-            if (x509cert == null) {
-            	if (admin.getAdminInformation().isSpecialUser() && (admin.getUsername() != null)) {
-            		token = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(admin.getUsername()));
-            	}
-            } else {
-                token = new X509CertificateAuthenticationToken(x509cert);
-            }
-            this.requestAdmin = token;
-            this.requestAdmin = null;
-            this.requestSignature = (String) in.readObject();
-            this.approvalRequestType = in.readInt();
-            this.numOfRequiredApprovals = in.readInt();
-            this.cAId = in.readInt();
-            this.endEntityProfileId = in.readInt();
-            this.approvalSteps = new boolean[1];
-        }
-        if (version == 3) {
-        	// Version 2 and 3 only care about the certificate from the old Admin object
-            final Admin admin = (Admin) in.readObject();
-            final X509Certificate x509cert = (X509Certificate)admin.getAdminInformation().getX509Certificate();
-            AuthenticationToken token = null;
-            if (x509cert == null) {
-            	if (admin.getAdminInformation().isSpecialUser() && (admin.getUsername() != null)) {
-            		token = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(admin.getUsername()));
-            	}
-            } else {
-            	final Set<X509Certificate> credentials = new HashSet<>();
-                credentials.add(x509cert);
-                final Set<X500Principal> principals = new HashSet<>();
-                principals.add(x509cert.getSubjectX500Principal());
-                token = new X509CertificateAuthenticationToken(principals, credentials);
-            }
-            this.requestAdmin = token;
-            this.requestSignature = (String) in.readObject();
-            this.approvalRequestType = in.readInt();
-            this.numOfRequiredApprovals = in.readInt();
-            this.cAId = in.readInt();
-            this.endEntityProfileId = in.readInt();
-            final int stepSize = in.readInt();
-            this.approvalSteps = new boolean[stepSize];
-            for (int i = 0; i < approvalSteps.length; i++) {
-                approvalSteps[i] = in.readBoolean();
-            }
-        }
-        if (version == 4) {
-        	// Version 4 after conversion to CESeCore where Admin was deprecated.
-            this.requestAdmin = (AuthenticationToken) in.readObject();
-            if (log.isTraceEnabled()) {
-                log.trace("ApprovalRequest has a requestAdmin token of type: "+this.requestAdmin.getClass().getName());
-            }
-            if (this.requestAdmin instanceof LocalJvmOnlyAuthenticationToken) {
-                if (log.isTraceEnabled()) {
-                	log.trace("It was a LocalJvmOnlyAuthenticationToken so we will re-init it with local random token.");
-                }
-				LocalJvmOnlyAuthenticationToken localtoken = (LocalJvmOnlyAuthenticationToken) this.requestAdmin;
-				localtoken.initRandomToken();
-            } else if (this.requestAdmin instanceof CliAuthenticationToken) {
-                // A Cli authentication token was probably used already and must thus be "re-registered"
-                CliAuthenticationToken ctok = (CliAuthenticationToken)this.requestAdmin;
-                CliAuthenticationTokenReferenceRegistry.INSTANCE.registerToken(ctok);
-            }
-            this.requestSignature = (String) in.readObject();
-            this.approvalRequestType = in.readInt();
-            this.numOfRequiredApprovals = in.readInt();
-            this.cAId = in.readInt();
-            this.endEntityProfileId = in.readInt();
-            final int stepSize = in.readInt();
-            if (log.isTraceEnabled()) {
-                log.trace("ApprovalRequest have "+stepSize+" approval steps.");
-            }
-            this.approvalSteps = new boolean[stepSize];
-            for (int i = 0; i < approvalSteps.length; i++) {
-                approvalSteps[i] = in.readBoolean();
-            }
-            if (log.isDebugEnabled()) {
-                log.debug("ApprovalRequest (version 4) of type "+getApprovalType()+" read.");
-            }
+        if (version < 5) {
+            final String msg = "Incompatible approval request found (version < 5). Please clean from database to continue.";
+            log.error(msg);
+            throw new IllegalStateException(msg);
         }
         if (version >= 5) {
             // Version 5 after introducing approval profiles
@@ -517,7 +396,6 @@ public abstract class ApprovalRequest implements Externalizable {
             }
             this.requestSignature = (String) in.readObject();
             this.approvalRequestType = in.readInt();
-            this.numOfRequiredApprovals = in.readInt();
             this.cAId = in.readInt();
             this.endEntityProfileId = in.readInt();
             final int stepSize = in.readInt();
@@ -534,6 +412,7 @@ public abstract class ApprovalRequest implements Externalizable {
                 log.debug("ApprovalRequest (version 5) of type "+getApprovalType()+" read.");
             }
         }
+
         if (version >= 6) {
             this.validationResults = (List<ValidationResult>) in.readObject();
             if (log.isDebugEnabled()) {

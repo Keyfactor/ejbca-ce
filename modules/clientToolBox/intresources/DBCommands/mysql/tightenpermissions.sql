@@ -8,7 +8,6 @@ grant LOCK TABLES on ${url.path}.* to '${database.username}'@'${url.host}' ident
 
 grant SELECT,INSERT,UPDATE,DELETE,INDEX on ${url.path}.AccessRulesData to '${database.username}'@'${url.host}';
 grant SELECT,INSERT,UPDATE,DELETE,INDEX on ${url.path}.AdminEntityData to '${database.username}'@'${url.host}';
-grant SELECT,INSERT,UPDATE,DELETE,INDEX on ${url.path}.AdminGroupData to '${database.username}'@'${url.host}';
 grant SELECT,INSERT,UPDATE,DELETE,INDEX on ${url.path}.AdminPreferencesData to '${database.username}'@'${url.host}';
 grant SELECT,INSERT,UPDATE,DELETE,INDEX on ${url.path}.ApprovalData to '${database.username}'@'${url.host}';
 grant SELECT,INSERT,UPDATE,DELETE,INDEX on ${url.path}.AuthorizationTreeUpdateData to '${database.username}'@'${url.host}';
@@ -26,7 +25,6 @@ grant SELECT,INSERT,UPDATE,DELETE,INDEX on ${url.path}.PublisherData to '${datab
 grant SELECT,INSERT,UPDATE,DELETE,INDEX on ${url.path}.PublisherQueueData to '${database.username}'@'${url.host}';
 grant SELECT,INSERT,UPDATE,DELETE,INDEX on ${url.path}.ServiceData to '${database.username}'@'${url.host}';
 grant SELECT,INSERT,UPDATE,DELETE,INDEX on ${url.path}.UserData to '${database.username}'@'${url.host}';
-grant SELECT,INSERT,UPDATE,DELETE,INDEX on ${url.path}.UserDataSourceData to '${database.username}'@'${url.host}';
 
 grant SELECT,INSERT on ${url.path}.LogEntryData to '${database.username}'@'${url.host}';
 

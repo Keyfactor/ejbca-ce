@@ -17,7 +17,7 @@ dependencies {
     if (project.extra["edition"] == "ee") {
         compileOnly(project(":modules:peerconnector:common"))
     }
-    compileOnly(libs.commons.lang)
+    compileOnly(libs.commons.lang3)
     compileOnly(libs.log4j.v12.api)
     compileOnly(libs.x509.common.util)
     compileOnly(libs.bundles.cryptotokens)
@@ -43,11 +43,13 @@ sourceSets {
             exclude("org/ejbca/ui/web/rest/api/resource/RestResourceSystemTestBase.java")
 			exclude("com/widget/WidgetCustomExtension.java")
         }
-        resources {
-            srcDirs("resources")
-        }
     }
 }
+
+// define interfaces that should be used to generate service manifest files
+ext["serviceInterfaces"] = listOf(
+    "org.cesecore.certificates.certificate.certextensions.CustomCertificateExtension"
+)
 
 tasks.jar {
     from(sourceSets["main"].output)

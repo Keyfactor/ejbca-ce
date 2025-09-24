@@ -27,7 +27,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.CAInfo;
@@ -114,7 +114,7 @@ public class CACertServlet extends BaseAdminServlet {
             final int level = Integer.parseInt(lev);
             // Root CA is level 0, next below root level 1 etc etc
             try {
-                Certificate[] chain = signSession.getCertificateChain(issuerDn.hashCode()).toArray(new Certificate[0]);
+                Certificate[] chain = caSessionBean.getCertificateChain(issuerDn.hashCode()).toArray(new Certificate[0]);
                                                             
                 // chain.length-1 is last cert in chain (root CA)
                 if ( (chain.length-1-level) < 0 ) {

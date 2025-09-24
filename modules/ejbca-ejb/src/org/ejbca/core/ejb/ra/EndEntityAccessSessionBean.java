@@ -25,18 +25,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.Resource;
-import jakarta.ejb.EJB;
-import jakarta.ejb.Stateless;
-import jakarta.ejb.TransactionAttribute;
-import jakarta.ejb.TransactionAttributeType;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.TypedQuery;
-import jakarta.transaction.TransactionSynchronizationRegistry;
-
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -51,9 +40,9 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.config.GlobalCesecoreConfiguration;
+import org.cesecore.config.GlobalEndEntityProfileConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.util.LogRedactionUtils;
-import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -72,6 +61,17 @@ import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.CertificateWrapper;
 import com.keyfactor.util.certificate.DnComponents;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
+import jakarta.transaction.TransactionSynchronizationRegistry;
+
 /**
  * An {@link EndEntityInformation} Data Access Object (DAO).
  */
@@ -79,7 +79,7 @@ import com.keyfactor.util.certificate.DnComponents;
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, EndEntityAccessSessionRemote {
 
-    private static final String USER_DATA_NATIVE_QUERY = "SELECT username, subjectDN, caId, subjectAltName, cardNumber, subjectEmail, "
+    private static final String USER_DATA_NATIVE_QUERY = "SELECT username, subjectDN, cAId, subjectAltName, cardNumber, subjectEmail, "
             + "status, type, clearPassword, passwordHash, timeCreated, timeModified, endEntityProfileId, certificateProfileId, "
             + "tokenType, extendedInformationData, hardTokenIssuerId, keyStorePassword, rowVersion, rowProtection "
             + "FROM UserData";
@@ -114,6 +114,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         perTransactionData = new PerTransactionData(registry);
     }
 
+    @SuppressWarnings("deprecation")
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public AbstractMap.SimpleEntry<String, SupportedPasswordHashAlgorithm> getPasswordAndHashAlgorithmForUser(String username)
@@ -125,6 +126,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
             return new AbstractMap.SimpleEntry<>(user.getPasswordHash(), user.findHashAlgorithm());
         }
     }
+
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
@@ -294,8 +296,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
             boolean isAuthorizedToEndEntityProfile = authorizedToEndEntityProfile(admin,
                     data.getEndEntityProfileId(), AccessRulesConstants.VIEW_END_ENTITY);
 
-            if (((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID))
-                    .getEnableEndEntityProfileLimitations()) {
+            if (getGlobalEEPConfiguration().getEnableEndEntityProfileLimitations()) {
                 // Check if administrator is authorized to view user.
                 if (!isAuthorizedToEndEntityProfile) {
                     continue;
@@ -320,8 +321,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
      */
     private EndEntityInformation convertUserDataToEndEntityInformation(final AuthenticationToken admin, final UserData data,
         final String requestedUsername, boolean authorizationPrecondition) throws AuthorizationDeniedException {
-        if (((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID))
-                .getEnableEndEntityProfileLimitations() && (!authorizationPrecondition)) {
+        if (getGlobalEEPConfiguration().getEnableEndEntityProfileLimitations() && (!authorizationPrecondition)) {
             final String msg;
             if (requestedUsername == null) {
                 msg = intres.getLocalizedMessage("ra.errorauthprofile", data.getEndEntityProfileId(), admin.toString());
@@ -561,18 +561,16 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
 
         String whereClause = constructInitial(StringUtils.EMPTY, query);
 
-        GlobalConfiguration globalconfiguration = getGlobalConfiguration();
+        final GlobalEndEntityProfileConfiguration globalEEPConfiguration = getGlobalEEPConfiguration();
 
 		String caAuth = getCaAuth(caAuthorizationStripped, endEntityProfileStripped, admin);
-
-		String endEntityAuth = getEndEntityAuth(caAuthorizationStripped, endEntityProfileStripped, admin,
-				globalconfiguration, endEntityAccessRule);
+		String endEntityAuth = getEndEntityAuth(caAuthorizationStripped, endEntityProfileStripped, admin, globalEEPConfiguration, endEntityAccessRule);
 
 		if (!StringUtils.isBlank(caAuth)) {
 			whereClause = appendIfNotBlank(whereClause, caAuth);
 		}
 
-		return appendResultingQuery(authorizedToAnyProfile, whereClause, endEntityAuth, globalconfiguration);
+		return appendResultingQuery(authorizedToAnyProfile, whereClause, endEntityAuth, globalEEPConfiguration);
 	}
 
     private String constructInitial(String empty, Query query) {
@@ -584,9 +582,9 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
     }
 
     private UserDataQueryResult appendResultingQuery(boolean authorizedToAnyProfile, String whereClause,
-            String endEntityAuth, GlobalConfiguration globalConfiguration) {
+            String endEntityAuth, GlobalEndEntityProfileConfiguration globalEEPConfiguration) {
 
-        if (globalConfiguration.getEnableEndEntityProfileLimitations()) {
+        if (globalEEPConfiguration.getEnableEndEntityProfileLimitations()) {
             if (endEntityAuth == null || StringUtils.isBlank(endEntityAuth)) {
                 authorizedToAnyProfile = false;
             } else {
@@ -599,10 +597,10 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
     }
 
     private String getEndEntityAuth(String caAuthorizationStripped, String endEntityProfileStripped,
-			AuthenticationToken admin, GlobalConfiguration globalconfiguration, String endEntityAccessRule) {
+			AuthenticationToken admin, GlobalEndEntityProfileConfiguration globalEEPConfiguration, String endEntityAccessRule) {
         if (caAuthorizationStripped == null || endEntityProfileStripped == null) {
             RAAuthorization raAuthorization = getRaAuthorization(admin);
-            return getEndEntityAuth(endEntityAccessRule, globalconfiguration, raAuthorization);
+            return getEndEntityAuth(endEntityAccessRule, globalEEPConfiguration, raAuthorization);
         }
         return endEntityProfileStripped;
     }
@@ -620,9 +618,8 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
                 endEntityProfileSession);
     }
 
-    private String getEndEntityAuth(String endEntityAccessRule,
-            GlobalConfiguration globalconfiguration, RAAuthorization raAuthorization) {
-        if (globalconfiguration.getEnableEndEntityProfileLimitations()) {
+    private String getEndEntityAuth(String endEntityAccessRule, GlobalEndEntityProfileConfiguration globalEEPConfiguration, RAAuthorization raAuthorization) {
+        if (globalEEPConfiguration.getEnableEndEntityProfileLimitations()) {
             return raAuthorization.getEndEntityProfileAuthorizationString(true, endEntityAccessRule);
         }
         return StringUtils.EMPTY;
@@ -661,9 +658,8 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         return (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
     }
 
-    /** Gets the Global Configuration from ra admin session bean */
-    private GlobalConfiguration getGlobalConfiguration() {
-        return (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+    private GlobalEndEntityProfileConfiguration getGlobalEEPConfiguration() {
+        return (GlobalEndEntityProfileConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalEndEntityProfileConfiguration.EEP_CONFIGURATION_ID);
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -799,6 +795,4 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         }
         return result;
     }
-
-
 }

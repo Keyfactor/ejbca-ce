@@ -170,14 +170,6 @@ public class UserView implements Serializable, Comparable<UserView> {
         return userdata.getSendNotification();
     }
 
-    public void setPrintUserData(boolean printUserData) {
-        userdata.setPrintUserData(printUserData);
-    }
-
-    public boolean getPrintUserData() {
-        return userdata.getPrintUserData();
-    }
-
     public void setEndEntityProfileId(int profileid) {
         userdata.setEndEntityProfileId(profileid);
     }

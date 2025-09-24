@@ -253,7 +253,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
                 .setUseCertificateStorage(cainfo.isUseCertificateStorage())
                 .setAcceptRevocationNonExistingEntry(cainfo.isAcceptRevocationNonExistingEntry())
                 .setCmpRaAuthSecret(null)
-                .setKeepExpiredCertsOnCRL(cainfo.getKeepExpiredCertsOnCRL())
+                .setKeepExpiredCertsOnCrl(cainfo.getKeepExpiredCertsOnCrl())
                 .setDefaultCertProfileId(-1)
                 .setUseNoConflictCertificateData(false)
                 .setUsePartitionedCrl(cainfo.getUsePartitionedCrl())

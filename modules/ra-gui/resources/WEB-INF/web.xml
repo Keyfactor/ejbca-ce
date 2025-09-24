@@ -24,6 +24,8 @@
 
     <description><![CDATA[EJBCA RA GUI]]></description>
 
+    <distributable />
+    
     <!-- Set to "Development" for debugging.
         "Production" also implies jakarta.faces.FACELETS_REFRESH_PERIOD=-1 which means pages are never recompiled.
         TODO: Set automatically when ejbca.productionmode=false
@@ -32,6 +34,16 @@
         <param-name>jakarta.faces.PROJECT_STAGE</param-name>
         <param-value>Production</param-value>
     </context-param>
+
+    <filter>
+        <filter-name>RequestIdFilter</filter-name>
+        <filter-class>org.ejbca.util.RequestIdFilter</filter-class>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>RequestIdFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
 
     <filter> 
         <filter-name>ServiceControlFilter</filter-name>

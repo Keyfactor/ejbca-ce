@@ -24,9 +24,9 @@ import java.security.cert.X509CRLEntry;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.util.Date;
+import java.util.Objects;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Enumerated;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
@@ -119,7 +119,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
             final String caname = parameters.get(CA_NAME_KEY);
             final String crl_file = parameters.get(CRL_FILE_KEY);
             final String operationsMode = parameters.get(OPERATION_KEY);
-            final int crlPartitionIndex = Integer.parseInt(StringUtils.defaultString(parameters.get(PARTITIONINDEX_KEY), "0"));
+            final int crlPartitionIndex = Integer.parseInt(Objects.toString(parameters.get(PARTITIONINDEX_KEY), "0"));
             final boolean strict = operationsMode.equalsIgnoreCase(STRICT_OP);
             final boolean adaptive = operationsMode.equalsIgnoreCase(ADAPTIVE_OP);
             if (!strict && !adaptive && !operationsMode.equalsIgnoreCase(LENIENT_OP)) {

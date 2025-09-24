@@ -21,13 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import jakarta.ejb.EJB;
-import jakarta.ejb.Stateless;
-import jakarta.ejb.TransactionAttribute;
-import jakarta.ejb.TransactionAttributeType;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
@@ -55,6 +48,13 @@ import org.cesecore.util.ValidityDate;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.DnComponents;
+
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 /**
  * These methods call CertificateStoreSession for certificates that are plain CertificateData entities.
@@ -202,8 +202,7 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
     }
     
     @Override
-    public Collection<RevokedCertInfo> listRevokedCertInfo(String issuerDN, boolean deltaCrl, int crlPartitionIndex, long lastBaseCrlDate, boolean keepExpiredCertsOnCrl, 
-            boolean allowInvalidityDate) {
+    public Collection<RevokedCertInfo> listRevokedCertInfo(String issuerDN, boolean deltaCrl, int crlPartitionIndex, long lastBaseCrlDate, boolean keepExpiredCertsOnCrl, boolean allowInvalidityDate) {
         if (log.isTraceEnabled()) {
             log.trace(">listRevokedCertInfo('" + issuerDN + "', " + deltaCrl + ", " + crlPartitionIndex + ", " + lastBaseCrlDate + ", " + keepExpiredCertsOnCrl + ", "
                     + allowInvalidityDate + ")");

@@ -23,6 +23,9 @@ import java.security.PrivateKey;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.cesecore.azure.IntuneRestApi.Builder;
 import org.junit.Test;
@@ -67,8 +70,11 @@ public class IntuneRestApiUnitTest {
         X509Certificate certificate = (X509Certificate) keystore.getCertificate(alias);
         PrivateKey key = (PrivateKey) keystore.getKey(alias, password.toCharArray());
 
+        final List<X509Certificate> chain = Arrays.asList(keystore.getCertificateChain(password)).stream().map(element -> (X509Certificate) element)
+                .collect(Collectors.toList());
+        
         Builder builder = new IntuneRestApi.Builder(tenantId, applicationId, "unittest");
-        IntuneRestApi intune = builder.withClientCertificate(certificate).withClientKey(key).build();
+        IntuneRestApi intune = builder.withClientCertificate(certificate, chain).withClientKey(key).build();
         intune.downloadRevocationRequests(50, null);
     }
 

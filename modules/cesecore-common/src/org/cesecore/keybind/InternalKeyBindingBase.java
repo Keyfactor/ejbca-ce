@@ -17,6 +17,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,11 +25,14 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.util.ui.DynamicUiProperty;
+
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 
 /**
  * Holder of general InternalKeyBinding relevant properties.
@@ -46,9 +50,10 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     public static final String BASECLASS_PREFIX = "BASECLASS_";
     public static final String SUBCLASS_PREFIX = "SUBCLASS_";
     
-    public static final Set<String> ACCEPTED_SIGNATURE_ALGORITHMS = new TreeSet<>(
-            Arrays.asList("SHA256WithRSA", "SHA256withRSAandMGF1", "SHA384WithRSA", "SHA512WithRSA", "SHA224withECDSA", "SHA256withECDSA",
-                    "SHA384withECDSA", "SHA512withECDSA", "Ed25519", "Ed448", "ML-DSA-44", "ML-DSA-65", "ML-DSA-87"));
+    private static final Set<String> INSECURE_SIGNING_ALGORITHMS = new HashSet<>(Arrays.asList(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA_AND_MGF1, AlgorithmConstants.SIGALG_MD5_WITH_RSA));
+    
+    public static final Set<String> ACCEPTED_SIGNATURE_ALGORITHMS = new TreeSet<>(Arrays.asList(AlgorithmConstants.AVAILABLE_SIGALGS)).stream()
+            .filter(alg -> !INSECURE_SIGNING_ALGORITHMS.contains(alg)).collect(Collectors.toCollection(TreeSet::new));
     
     private int internalKeyBindingId;
     private String name;
@@ -94,9 +99,13 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     @Override
     public DynamicUiProperty<? extends Serializable> getProperty(final String propertyName) {
         DynamicUiProperty<? extends Serializable> property = propertyTemplates.get(propertyName);
-        property = new DynamicUiProperty<>(property);
-        property.setValueGeneric(getData(propertyName, property.getDefaultValue()));
-        return property;
+        if (property == null) {
+            return null;
+        } else {
+            property = new DynamicUiProperty<>(property);
+            property.setValueGeneric(getData(propertyName, property.getDefaultValue()));
+            return property;
+        }
     }
 
     @Override

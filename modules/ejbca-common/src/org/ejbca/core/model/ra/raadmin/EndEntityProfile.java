@@ -13,14 +13,28 @@
 
 package org.ejbca.core.model.ra.raadmin;
 
-import com.keyfactor.util.Base64;
+import java.io.Serializable;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.keys.KeyStoreCipher;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.DateUtils;
-import org.apache.commons.lang.time.FastDateFormat;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields;
@@ -40,25 +54,6 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.raadmin.validators.RegexFieldValidator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
-
-import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 import static org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND;
 import static org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND_FIELD_NUMBER;
@@ -175,8 +170,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     private static final String MINPWDSTRENGTH    = "MINPWDSTRENGTH";
 
     /** CA/B Forum Organization Identifier extension */
-    private static final String CABFORGANIZATIONIDENTIFIER = "CABFORGANIZATIONIDENTIFIER";    
-    
+    private static final String CABFORGANIZATIONIDENTIFIER = "CABFORGANIZATIONIDENTIFIER";
+
     // Default values
     // These must be in a strict order that can never change
     // Custom values configurable in a properties file (profilemappings.properties)
@@ -272,27 +267,12 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     private static final String ALLOW_MERGEDN_WEBSERVICES = "ALLOW_MERGEDN_WEBSERVICES";
     private static final String ALLOW_MERGEDN = "ALLOW_MERGEDN";
     private static final String ALLOW_MULTI_VALUE_RDNS = "ALLOW_MULTI_VALUE_RDNS";
-    
+
     /** Redact SubjectDn and SAN from server and audit log*/
     public static final String REDACTPII   = "REDACTPII";
 
-    @Deprecated //Since 8.0.0
-    private static final String PRINTINGUSE            = "PRINTINGUSE";
-    @Deprecated //Since 8.0.0
-    private static final String PRINTINGDEFAULT        = "PRINTINGDEFAULT";
-    @Deprecated //Since 8.0.0
-    private static final String PRINTINGREQUIRED       = "PRINTINGREQUIRED";
-    @Deprecated //Since 8.0.0
-    private static final String PRINTINGCOPIES         = "PRINTINGCOPIES";
-    @Deprecated //Since 8.0.0
-    private static final String PRINTINGPRINTERNAME    = "PRINTINGPRINTERNAME";
-    @Deprecated //Since 8.0.0
-    private static final String PRINTINGSVGFILENAME    = "PRINTINGSVGFILENAME";
-    @Deprecated //Since 8.0.0
-    private static final String PRINTINGSVGDATA        = "PRINTINGSVGDATA";
-
     private static final String PSD2QCSTATEMENT    = "PSD2QCSTATEMENT";
-    
+
     private static final String PROFILETYPE        = "PROFILETYPE";
     public static final int PROFILE_TYPE_DEFAULT = 1;
     public static final int PROFILE_TYPE_SSH = 2;
@@ -345,10 +325,10 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         final List<Integer> numberOfFields = new ArrayList<>(DATA_CONSTANTS_MAX_VALUE);
         Collections.fill(numberOfFields, 0);
         data.put(NUMBERARRAY, numberOfFields);
-        data.put(SUBJECTDNFIELDORDER, new ArrayList<Integer>());
-        data.put(SUBJECTALTNAMEFIELDORDER, new ArrayList<Integer>());
-        data.put(SUBJECTDIRATTRFIELDORDER, new ArrayList<Integer>());
-        data.put(SSH_FIELD_ORDER, new ArrayList<Integer>());
+        data.put(SUBJECTDNFIELDORDER, new ArrayList<>());
+        data.put(SUBJECTALTNAMEFIELDORDER, new ArrayList<>());
+        data.put(SUBJECTDIRATTRFIELDORDER, new ArrayList<>());
+        data.put(SSH_FIELD_ORDER, new ArrayList<>());
         setProfileType(PROFILE_TYPE_DEFAULT);
 
         if (emptyProfile) {
@@ -399,8 +379,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         	setUse(NAMECONSTRAINTS_EXCLUDED,0,false);
         	setUse(CABFORGANIZATIONIDENTIFIER,0,false);
             setUse(RENEWDAYSBEFOREEXPIRATION,0,false);
-           
-            
+
+
         } else {
         	// initialize profile data
         	addFieldWithDefaults(USERNAME, "", Boolean.TRUE, Boolean.TRUE, Boolean.TRUE);
@@ -428,9 +408,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         	addFieldWithDefaults(NAMECONSTRAINTS_EXCLUDED, "", Boolean.FALSE, Boolean.FALSE, Boolean.TRUE);
         	addFieldWithDefaults(CABFORGANIZATIONIDENTIFIER, "", Boolean.FALSE, Boolean.FALSE, Boolean.TRUE);
             addFieldWithDefaults(RENEWDAYSBEFOREEXPIRATION, String.valueOf(RENEWDAYSBEFOREEXPIRATION_DEFAULT), Boolean.FALSE, Boolean.FALSE, Boolean.FALSE);
-            
+
         }
-        
+
         setModifyable(SSH_CRITICAL_OPTION_FORCE_COMMAND, 0, true);
         setModifyable(SSH_CRITICAL_OPTION_SOURCE_ADDRESS, 0, true);
         setModifyable(SSH_CRITICAL_OPTION_VERIFY_REQUIRED, 0, true);
@@ -456,7 +436,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	addField(parameter, getParameter(parameter));
     }
 
-    /** Add a field with value="", required=false, use=true, modifyable=true, copy =false  
+    /** Add a field with value="", required=false, use=true, modifyable=true, copy =false
      * For RFC822, checkbox is unchecked when added, use=false
      */
     private void addField(final int parameter, final String parameterName) {
@@ -481,7 +461,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	data.put(getFieldTypeBoundary(USE) + offset, use);
     	data.put(getFieldTypeBoundary(MODIFYABLE) + offset, modifyable);
     	data.put(getFieldTypeBoundary(COPY) + offset, copy);
-    	
+
     	if (validation != null) {
     	    // validation should be a map of a validator class name (excluding package name) and a validator-specific object.
     	    data.put(getFieldTypeBoundary(VALIDATION) + offset, validation);
@@ -829,7 +809,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 
     public boolean getSshVerifyRequired() {
         final String value = getValue(SSH_CRITICAL_OPTION_VERIFY_REQUIRED, 0);
-        return StringUtils.equals(value, TRUE) ? true : false;
+        return Strings.CS.equals(value, TRUE) ? true : false;
     }
 
     public void setSshVerifyRequired(final boolean value) {
@@ -843,7 +823,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     public void setSshVerifyRequiredModifiable(final boolean modifiable) {
         setModifyable(SSH_CRITICAL_OPTION_VERIFY_REQUIRED, 0, modifiable);
     }
-    
+
     public boolean isSshVerifyRequiredRequired() {
         return isRequired(SSH_CRITICAL_OPTION_VERIFY_REQUIRED, 0);
     }
@@ -1179,7 +1159,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 
     /** @return strength in bits = log2(possible chars) * number of chars rounded down */
     private int getPasswordStrength(int numerOfDifferentChars, int passwordLength) {
-    	return (int) (Math.floor(Math.log(numerOfDifferentChars)/Math.log(2)) * passwordLength);
+    	return (int) Math.floor((Math.log(numerOfDifferentChars)/Math.log(2)) * passwordLength);
     }
 
     /** @return the minimum strength that a password is allowed to have in bits */
@@ -1364,6 +1344,14 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 
     public void setIssuanceRevocationReasonModifiable(final boolean use) {
         setModifyable(ISSUANCEREVOCATIONREASON, 0, use);
+    }
+    
+    public boolean isIssuanceRevocationReasonDefault() {
+        return isRequired(ISSUANCEREVOCATIONREASON, 0);
+    }
+
+    public void setIssuanceRevocationReasonDefault(final boolean use) {
+        setRequired(ISSUANCEREVOCATIONREASON, 0, use);
     }
 
     /**
@@ -1555,29 +1543,29 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	}
     	return l;
     }
-    
+
     public int getProfileType() {
         if (data.get(PROFILETYPE) == null) {
             setProfileType(PROFILE_TYPE_DEFAULT);
         }
         return (int) data.get(PROFILETYPE);
     }
-    
+
     public void setProfileType(int profileType) {
         if (PROFILE_TYPE_DEFAULT!=profileType && PROFILE_TYPE_SSH!=profileType) {
             throw new IllegalArgumentException("Invalid value for EndEntity ProfileType");
         }
         data.put(PROFILETYPE, profileType);
     }
-    
+
     public boolean isProfileTypeSsh() {
         return getProfileType() == PROFILE_TYPE_SSH;
     }
-    
+
     public void initializeSshPlaceholderFields() {
         setModifyable(DnComponents.COMMONNAME, 0, true);
         setRequired(DnComponents.COMMONNAME, 0, false);
-        
+
         final Field field = this.new Field(DnComponents.DNSNAME);
         if (field.getInstances().size() < 1) {
             addFieldWithDefaults(DnComponents.DNSNAME, "", Boolean.FALSE, Boolean.FALSE, Boolean.TRUE);
@@ -1590,30 +1578,30 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             setRequired(DnComponents.RFC822NAME, 0, false);
         }
     }
-    
+
     public void setP12Cipher(final KeyStoreCipher cipher) {
         data.put(P12_CIPHER, cipher.getLabel());
     }
-    
+
     public KeyStoreCipher getP12Cipher() {
         if (data.get(P12_CIPHER) == null) {
             setP12Cipher(KeyStoreCipher.PKCS12_3DES_3DES);
         }
         return KeyStoreCipher.fromLabel((String) data.get(P12_CIPHER));
     }
-    
+
 
     @SuppressWarnings("unchecked")
     public void addUserNotification(final UserNotification notification) {
     	if (data.get(USERNOTIFICATIONS) == null) {
-    		setUserNotifications(new ArrayList<UserNotification>(0));
+    		setUserNotifications(new ArrayList<>(0));
     	}
     	((List<UserNotification>) data.get(USERNOTIFICATIONS)).add(notification);
     }
 
     public void setUserNotifications(final List<UserNotification> notifications) {
     	if (notifications == null) {
-    		data.put(USERNOTIFICATIONS, new ArrayList<UserNotification>(0));
+    		data.put(USERNOTIFICATIONS, new ArrayList<>(0));
     	} else {
     		data.put(USERNOTIFICATIONS, notifications);
     	}
@@ -1643,7 +1631,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     public void setReverseFieldChecks(final boolean reverse){
     	data.put(REVERSEFFIELDCHECKS, reverse);
     }
-    
+
     /** @return true if profile DN should be merged with DN in added user or uploaded CSR across all interfaces. Default is false. */
     public boolean getAllowMergeDn(){
         return getValueDefaultFalse(ALLOW_MERGEDN);
@@ -1652,12 +1640,12 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     public void setAllowMergeDn(final boolean merge){
         data.put(ALLOW_MERGEDN, merge);
     }
-    
-    
+
+
     public boolean isRedactPii() {
         return getValueDefaultFalse(REDACTPII);
     }
-    
+
     public void setRedactPii(final boolean redactPii) {
         data.put(REDACTPII, redactPii);
     }
@@ -1669,141 +1657,6 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 
     public void setAllowMultiValueRDNs(final boolean allow){
         data.put(ALLOW_MULTI_VALUE_RDNS, allow);
-    }
-
-    /** @return true if printing of userdata should be done. default is false. 
-     * @deprecated Printing support was removed in 8.0.0 
-     */
-    @Deprecated
-    public boolean getUsePrinting(){
-    	return getValueDefaultFalse(PRINTINGUSE);
-    }
-
-    /**
-     * 
-     * @deprecated Printing support was removed in 8.0.0
-     */
-    @Deprecated
-    public void setUsePrinting(final boolean use){
-    	data.put(PRINTINGUSE, use);
-    }
-
-    /** @return true if printing of userdata should be done. default is false. 
-     * @deprecated Printing support was removed in 8.0.0
-     */
-    @Deprecated
-    public boolean getPrintingDefault(){
-    	return getValueDefaultFalse(PRINTINGDEFAULT);
-    }
-
-    /**
-     * @deprecated Printing support was removed in 8.0.0
-     */
-    @Deprecated
-    public void setPrintingDefault(final boolean printDefault){
-    	data.put(PRINTINGDEFAULT, printDefault);
-    }
-
-    /** @return true if printing of userdata should be done. default is false. 
-     *
-     * @deprecated Printing support was removed in 8.0.0
-     */
-    @Deprecated
-    public boolean getPrintingRequired(){
-    	return getValueDefaultFalse(PRINTINGREQUIRED);
-    }
-
-    /**
-     * 
-     * @deprecated Printing support was removed in 8.0.0
-     */
-    @Deprecated
-    public void setPrintingRequired(final boolean printRequired){
-    	data.put(PRINTINGREQUIRED, printRequired);
-    }
-
-    /**
-     *  @return the number of copies that should be printed. Default is 1. 
-     * @deprecated Printing support was removed in 8.0.0 
-     */
-    @Deprecated
-    public int getPrintedCopies(){
-    	if (data.get(PRINTINGCOPIES) == null) {
-    		return 1;
-    	}
-    	return (int) data.get(PRINTINGCOPIES);
-    }
-
-    /**
-     * 
-     * @deprecated Printing support was removed in 8.0.0
-     */
-    @Deprecated
-    public void setPrintedCopies(int copies){
-    	data.put(PRINTINGCOPIES, copies);
-    }
-
-    /** @return the name of the printer that should be used
-     *  
-     *   
-     * @deprecated Used for the SVGPrinter, no longer in use since 8.0.0 
-     */
-    @Deprecated
-    public String getPrinterName(){
-    	return getValueDefaultEmpty(PRINTINGPRINTERNAME);
-    }
-
-    /**
-     * 
-     * @deprecated Used for the SVGPrinter, no longer in use since 8.0.0 
-     */
-    @Deprecated
-    public void setPrinterName(final String printerName){
-    	data.put(PRINTINGPRINTERNAME, printerName);
-    }
-
-    /** @return filename of the uploaded 
-     * @deprecated Used for the SVGPrinter, no longer in use since 8.0.0  
-     */
-    @Deprecated
-    public String getPrinterSVGFileName(){
-    	return getValueDefaultEmpty(PRINTINGSVGFILENAME);
-    }
-
-    /**
-     * 
-     * @deprecated Used for the SVGPrinter, no longer in use since 8.0.0 
-     */
-    @Deprecated
-    public void setPrinterSVGFileName(final String printerSVGFileName){
-    	data.put(PRINTINGSVGFILENAME, printerSVGFileName);
-    }
-
-    /**
-     * @return the data of the SVG file, if no content have been uploaded null is returned
-     * 
-     * @deprecated Used for the SVGPrinter, no longer in use since 8.0.0 
-     */
-    @Deprecated
-    public String getPrinterSVGData(){
-        final String value = (String) data.get(PRINTINGSVGDATA);
-    	if (StringUtils.isBlank(value)) {
-    		return null;
-    	}
-    	return new String(Base64.decode(value.getBytes(StandardCharsets.US_ASCII)));
-    }
-
-    /**
-     * 
-     * @deprecated Used for the SVGPrinter, no longer in use since 8.0.0 
-     */
-    @Deprecated
-    public void setPrinterSVGData(final String svgData) {
-        if (StringUtils.isBlank(svgData)) {
-            data.remove(PRINTINGSVGDATA);
-        } else {
-            data.put(PRINTINGSVGDATA, new String(Base64.encode(svgData.getBytes())));
-        }
     }
 
     /** @return the boolean value or false if null. Note: Some keys need translating to integer first (e.g. those with use/value/required flags) */
@@ -1895,7 +1748,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	if (certProfile == null) {
             throw new EndEntityProfileValidationException("Certificate Profile ID " + certificateProfileId + ", referenced by End Entity, does not exist");
         }
-    	
+
     	if(getProfileType()==PROFILE_TYPE_DEFAULT) {
     	    validateDefaultProfileData(username, dn, subjectAltName, subjectDirAttr, email);
     	} else {
@@ -1912,7 +1765,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	checkIfDomainFulfillProfile(EMAIL, 0, email, "Email");
     	// Make sure that every value has a corresponding field in the entity profile
 
-        
+
     	// Check for keyrecoverable flag.
     	if (!getUse(KEYRECOVERABLE, 0) && keyRecoverable) {
     		throw new EndEntityProfileValidationException("Key Recoverable cannot be used.");
@@ -2069,7 +1922,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	}
     	if (getUse(ISSUANCEREVOCATIONREASON, 0) && !isModifyable(ISSUANCEREVOCATIONREASON, 0)) {
     		final String value = getValue(ISSUANCEREVOCATIONREASON, 0);
-    		if (!StringUtils.equals(issuanceRevReason, value)) {
+    		if (!Strings.CS.equals(issuanceRevReason, value)) {
     			throw new EndEntityProfileValidationException("Issuance revocation reason '"+issuanceRevReason+"' does not match required value '"+value+"'.");
     		}
     	}
@@ -2102,7 +1955,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             log.trace("<doesUserFulfillEndEntityProfileWithoutPassword()");
         }
     }
-    
+
     private void checkStartEndTimeIfEqualsOrModifiable(String profileTimeString, String timeString, String type) throws EndEntityProfileValidationException {
         if (timeString != null && !profileTimeString.equals(timeString) && !isModifyable(type,0)) {
             throw new EndEntityProfileValidationException("Field " + type + " data didn't match requirement of end entity profile. Not modifiable");
@@ -2120,7 +1973,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         timeDate = new Date(nowOrStartTime.getTime() + relative);
         return timeDate;
     }
-    
+
     private void validateDefaultProfileData(final String username, final String dn, final String subjectAltName, final String subjectDirAttr,
             String email) throws EndEntityProfileValidationException {
         // get a DNFieldExtractor used to validate DN fields. Multi-value RDNs are "converted" into non-multi-value RDNs
@@ -2136,7 +1989,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         final DNFieldExtractor subjectAltNames = new DNFieldExtractor(subjectAltName, DNFieldExtractor.TYPE_SUBJECTALTNAME);
         if (subjectAltNames.isIllegal()) {
             throw new EndEntityProfileValidationException("Subject alt names are illegal.");
-        }       
+        }
         final DNFieldExtractor subjectDirAttrs = new DNFieldExtractor(subjectDirAttr, DNFieldExtractor.TYPE_SUBJECTDIRATTR);
         if (subjectDirAttrs.isIllegal()) {
             throw new EndEntityProfileValidationException("Subject directory attributes are illegal.");
@@ -2157,10 +2010,10 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         checkIfForIllegalNumberOfFields(subjectDnFields, subjectAltNames, subjectDirAttrs);
         // Check that all fields pass the validators (e.g. regex), if any
         checkWithValidators(subjectDnFields, subjectAltNames);
-        
+
         checkIfFieldsMatch(subjectDnFields, DNFieldExtractor.TYPE_SUBJECTDN, email, null);
         final String commonName = subjectDnFields.getField(DNFieldExtractor.CN, 0);
-        
+
         checkIfFieldsMatch(subjectAltNames, DNFieldExtractor.TYPE_SUBJECTALTNAME, email, commonName);
         // Check contents of Subject Directory Attributes fields.
         final HashMap<Integer,Integer> subjectDirAttrNumbers = subjectDirAttrs.getNumberOfFields();
@@ -2193,16 +2046,16 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     private void validateSshCertificateData(String subjectAlternateName, ExtendedInformation ei) throws EndEntityProfileValidationException {
         String[] principals = null;
         String allPrincipals = null;
-        
+
         int requiredFields = 0;
         final Field field = this.new Field(SshEndEntityProfileFields.SSH_PRINCIPAL);
-       
+
         for (final EndEntityProfile.FieldInstance fieldInstance : field.getInstances()) {
             if(fieldInstance.isRequired()) {
                 requiredFields++;
             }
         }
-        
+
         if(log.isDebugEnabled()) {
             log.debug("SSH principals count: " + field.getInstances().size());
             log.debug("SSH principals required: " + requiredFields);
@@ -2226,7 +2079,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
                 }
                 principals = allPrincipals.split(":");
                 for (final EndEntityProfile.FieldInstance fieldInstance : field.getInstances()) {
-                    if(fieldInstance.isRequired() && !fieldInstance.isModifiable() 
+                    if(fieldInstance.isRequired() && !fieldInstance.isModifiable()
                         && (
                                ( !fieldInstance.getValue().contains(":") && !allPrincipals.contains(fieldInstance.getValue()))
                             || ( fieldInstance.getValue().contains(":") && !allPrincipals.contains(fieldInstance.getValue().replace(":", "_")))
@@ -2237,48 +2090,48 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
                     }
                     // TODO: add validator support
                 }
-            }            
+            }
         }
-        
+
         int principalCount = principals!=null ? principals.length : 0;
         if(principalCount < requiredFields) {
             throw new EndEntityProfileValidationException("SSH principals do not contain all required fields.");
         }
-        
+
         if(principals!=null && principals.length > field.getInstances().size()) {
             throw new EndEntityProfileValidationException("SSH principals contain too many values.");
         }
-        
+
         Map<String, String> criticalOptions = ei.getSshCriticalOptions();
         if(isSshSourceAddressRequired()) {
-            if(criticalOptions==null || 
+            if(criticalOptions==null ||
                     !criticalOptions.containsKey(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP)) {
                 throw new EndEntityProfileValidationException("SSH critical option source-address is absent.");
             }
         }
-        
-        if(!isSshSourceAddressModifiable() && criticalOptions!=null && 
+
+        if(!isSshSourceAddressModifiable() && criticalOptions!=null &&
                 criticalOptions.containsKey(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP)) {
             // overwrite and if present
-            criticalOptions.put(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP, 
+            criticalOptions.put(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP,
                                                     getSshSourceAddress());
         }
-        
+
         if(isSshForceCommandRequired()) {
-            if(criticalOptions==null || 
+            if(criticalOptions==null ||
                     !criticalOptions.containsKey(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND_CERT_PROP)) {
                 throw new EndEntityProfileValidationException("SSH critical option force-command is absent.");
             }
-            
+
         }
-        
-        if(!isSshForceCommandModifiable() && criticalOptions!=null && 
+
+        if(!isSshForceCommandModifiable() && criticalOptions!=null &&
                 criticalOptions.containsKey(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND_CERT_PROP)) {
-            criticalOptions.put(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND_CERT_PROP, 
+            criticalOptions.put(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND_CERT_PROP,
                     getSshForceCommand());
         }
 
-        if (!isSshVerifyRequiredModifiable() && criticalOptions != null && 
+        if (!isSshVerifyRequiredModifiable() && criticalOptions != null &&
                 !criticalOptions.containsKey(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_VERIFY_REQUIRED_CERT_PROP) &&
                 getSshVerifyRequired()) {
             criticalOptions.put(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_VERIFY_REQUIRED_CERT_PROP, null);
@@ -2290,7 +2143,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
                     criticalOptions.remove(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_VERIFY_REQUIRED_CERT_PROP);
         }
         // TODO: additional extension validation later
-                
+
     }
 
     /**
@@ -2362,7 +2215,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
                 if (DnComponents.RFC822NAME.equals(DnComponents.dnIdToProfileName(dnId)) || DnComponents.DNEMAILADDRESS.equals(DnComponents.dnIdToProfileName(dnId)) || DnComponents.UPN.equals(DnComponents.dnIdToProfileName(dnId))) {
                     //Don't split RFC822NAME addresses.
                     if (!DnComponents.RFC822NAME.equals(DnComponents.dnIdToProfileName(dnId))) {
-                        if (!StringUtils.contains(fieldValue, '@')) { 
+                        if (!StringUtils.contains(fieldValue, '@')) {
                             throw new EndEntityProfileValidationException("Field value DNEMAIL and UPN must contain an @ character: " + fieldValue);
                         }
                         fieldValue = fieldValue.split("@")[1];
@@ -2370,7 +2223,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
                 } else {
                     // Check that postalAddress has #der_encoding_in_hex format, i.e. a full der sequence in hex format
                     if (DnComponents.POSTALADDRESS.equals(DnComponents.dnIdToProfileName(dnId))) {
-                        if (!StringUtils.startsWith(fieldValue, "#30")) {
+                        if (!Strings.CS.startsWith(fieldValue, "#30")) {
                             throw new EndEntityProfileValidationException(DnComponents.dnIdToProfileName(dnId) + " (" + fieldValue + ") does not seem to be in #der_encoding_in_hex format. See \"End_Entity_Profiles.html\" for more information about the postalAddress (2.5.4.16) field.");
                         }
                     }
@@ -2473,7 +2326,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
                         if (subjectsToProcess[m] != null && profileCrossOffList[l] != matchedField) {
                             if (getCopy(profileID, l)) {
                                 String expectedValue = commonName;
-                                if(DnComponents.UPN.equalsIgnoreCase(fieldName) && 
+                                if(DnComponents.UPN.equalsIgnoreCase(fieldName) &&
                                         StringUtils.isNotBlank(getValue(profileID, l))) {
                                     expectedValue += "@" + getValue(profileID, l);
                                 }
@@ -2491,7 +2344,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
                 }
             }
         }
-    }    
+    }
 
     public void doesPasswordFulfillEndEntityProfile(String password, boolean clearPwd) throws EndEntityProfileValidationException {
 		boolean fulfillsProfile = true;
@@ -2524,7 +2377,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     public Object clone() {
     	final EndEntityProfile clone = new EndEntityProfile(0);
     	// We need to make a deep copy of the hashmap here
-    	clone.data = new LinkedHashMap<>((int)Math.ceil(data.size()/MAP_LOAD_FACTOR)); 
+    	clone.data = new LinkedHashMap<>((int)Math.ceil(data.size()/MAP_LOAD_FACTOR));
     	for (final Entry<Object,Object> entry : data.entrySet()) {
     		Object value = entry.getValue();
     		if (value instanceof ArrayList<?>) {
@@ -2548,211 +2401,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         log.trace(">upgrade");
     	if (Float.compare(LATEST_VERSION, getVersion()) != 0) {
 			String msg = intres.getLocalizedMessage("ra.eeprofileupgrade", getVersion());
-            log.info(msg);
-            // New version of the class, upgrade
-            if (getVersion() < 1) {
-                @SuppressWarnings("unchecked")
-                ArrayList<Integer> numberArray = (ArrayList<Integer>) data.get(NUMBERARRAY);
-                while (numberArray.size() < 37) {
-                   numberArray.add(0);
-                }
-                data.put(NUMBERARRAY, numberArray);
-            }
-            if (getVersion() < 2) {
-                @SuppressWarnings("unchecked")
-                ArrayList<Integer> numberArray = (ArrayList<Integer>) data.get(NUMBERARRAY);
-                while (numberArray.size() < 39) {
-                   numberArray.add(0);
-                }
-                data.put(NUMBERARRAY, numberArray);
-                addField(AVAILCAS);
-                addField(DEFAULTCA);
-                setRequired(AVAILCAS, 0, true);
-                setRequired(DEFAULTCA, 0, true);
-            }
-            if (getVersion() < 3) {
-            	// These fields have been removed in version 8, no need for this upgrade
-                //setNotificationSubject("");
-                //setNotificationSender("");
-                //setNotificationMessage("");
-            }
-            if (getVersion() < 4) {
-                @SuppressWarnings("unchecked")
-                ArrayList<Integer> numberOfFields = (ArrayList<Integer>) data.get(NUMBERARRAY);
-                for (int i = numberOfFields.size(); i < DATA_CONSTANTS.size(); i++) {
-                  numberOfFields.add(0);
-                }
-                data.put(NUMBERARRAY, numberOfFields);
-            }
-            // Support for DirectoryName altname field in profile version 5
-            if (getVersion() < 5) {
-                addField(DnComponents.DIRECTORYNAME);
-                setValue(DnComponents.DIRECTORYNAME, 0, "");
-                setRequired(DnComponents.DIRECTORYNAME, 0, false);
-                setUse(DnComponents.DIRECTORYNAME,0 , true);
-                setModifyable(DnComponents.DIRECTORYNAME, 0, true);
-            }
-            // Support for Subject Directory Attributes field in profile version 6
-            if (getVersion() < 6) {
-                @SuppressWarnings("unchecked")
-                ArrayList<Integer> numberOfFields = (ArrayList<Integer>) data.get(NUMBERARRAY);
-                for(int i = numberOfFields.size(); i < DATA_CONSTANTS.size(); i++){
-                  numberOfFields.add(0);
-                }
-                data.put(NUMBERARRAY,numberOfFields);
-                data.put(SUBJECTDIRATTRFIELDORDER, new ArrayList<Integer>());
-
-                for (int i = getParameterNumber(DnComponents.DATEOFBIRTH); i <= getParameterNumber(DnComponents.COUNTRYOFRESIDENCE); i++){
-                	addField(getParameter(i));
-                	setValue(getParameter(i), 0, "");
-                	setRequired(getParameter(i), 0, false);
-                	setUse(getParameter(i), 0, false);
-                	setModifyable(getParameter(i), 0, true);
-                }
-            }
-            // Support for Start Time and End Time field in profile version 7
-            if (getVersion() < 7) {
-                @SuppressWarnings("unchecked")
-                ArrayList<Integer> numberOfFields = (ArrayList<Integer>) data.get(NUMBERARRAY);
-                for (int i = numberOfFields.size(); i < DATA_CONSTANTS.size(); i++){
-                	numberOfFields.add(0);
-                }
-                data.put(NUMBERARRAY, numberOfFields);
-                addField(STARTTIME);
-                setValue(STARTTIME, 0, "");
-                setRequired(STARTTIME, 0, false);
-                setUse(STARTTIME, 0, false);
-                setModifyable(STARTTIME, 0, true);
-                addField(ENDTIME);
-                setValue(ENDTIME, 0, "");
-                setRequired(ENDTIME, 0, false);
-                setUse(ENDTIME, 0, false);
-                setModifyable(ENDTIME, 0, true);
-            }
-            // Notifications is now a more general mechanism in version 8
-            if (getVersion() < 8) {
-            	log.debug("Upgrading User Notifications");
-            	if (data.get(UserNotification.NOTIFICATIONSENDER) != null) {
-            		UserNotification not = new UserNotification();
-            		not.setNotificationSender((String)data.get(UserNotification.NOTIFICATIONSENDER));
-            		if (data.get(UserNotification.NOTIFICATIONSUBJECT) != null) {
-                		not.setNotificationSubject((String)data.get(UserNotification.NOTIFICATIONSUBJECT));
-            		}
-            		if (data.get(UserNotification.NOTIFICATIONMESSAGE) != null) {
-                		not.setNotificationMessage((String)data.get(UserNotification.NOTIFICATIONMESSAGE));
-            		}
-            		// Add the statuschanges we used to send notifications about
-            		String events = UserNotification.EVENTS_EDITUSER;
-            		not.setNotificationEvents(events);
-            		// The old recipients where always the user
-            		not.setNotificationRecipient(UserNotification.RCPT_USER);
-            		addUserNotification(not);
-            	}
-            }
-            // Support for allowed requests in profile version 9
-            if (getVersion() < 9) {
-                @SuppressWarnings("unchecked")
-                ArrayList<Integer> numberoffields = (ArrayList<Integer>) data.get(NUMBERARRAY);
-                for (int i = numberoffields.size(); i < DATA_CONSTANTS.size(); i++) {
-                	numberoffields.add(0);
-                }
-                data.put(NUMBERARRAY,numberoffields);
-                addField(ALLOWEDREQUESTS);
-                setValue(ALLOWEDREQUESTS, 0, "");
-                setRequired(ALLOWEDREQUESTS, 0, false);
-                setUse(ALLOWEDREQUESTS, 0, false);
-                setModifyable(ALLOWEDREQUESTS, 0, true);
-            }
-            // Support for merging DN from WS-API with default values in profile, in profile version 10
-            if (getVersion() < 10) {
-                setAllowMergeDn(false);
-            }
-            // Support for issuance revocation status in profile version 11
-            if (getVersion() < 11) {
-                setRequired(ISSUANCEREVOCATIONREASON, 0, false);
-                setUse(ISSUANCEREVOCATIONREASON, 0, false);
-                setModifyable(ISSUANCEREVOCATIONREASON, 0, true);
-                setValue(ISSUANCEREVOCATIONREASON, 0, "" + RevokedCertInfo.NOT_REVOKED);
-                setRequired(CARDNUMBER, 0, false);
-                setUse(CARDNUMBER, 0, false);
-                setModifyable(CARDNUMBER, 0, true);
-            }
-            // Support for maximum number of failed login attempts in profile version 12
-            if (getVersion() < 12) {
-            	setRequired(MAXFAILEDLOGINS, 0, false);
-            	setUse(MAXFAILEDLOGINS, 0, false);
-            	setModifyable(MAXFAILEDLOGINS, 0, true);
-            	setValue(MAXFAILEDLOGINS, 0, Integer.toString(ExtendedInformation.DEFAULT_MAXLOGINATTEMPTS));
-            }
-            /* In EJBCA 4.0.0 we changed the date format to ISO 8601.
-             * In the Admin GUI the example was:
-             *     DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ejbcawebbean.getLocale())
-             * but the only absolute format that could have worked is the same enforced by the
-             * doesUserFulfillEndEntityProfile check and this is what need to upgrade from:
-             * 	   DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US)
-             */
-        	if (getVersion() < 13) {
-        		final DateFormat oldDateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US);
-        		final FastDateFormat newDateFormat = FastDateFormat.getInstance("yyyy-MM-dd HH:mm");
-        		try {
-        			final String oldStartTime = getValue(STARTTIME, 0);
-        			if (!isEmptyOrRelative(oldStartTime)) {
-        				// We use an absolute time format, so we need to upgrade
-            			final String newStartTime = newDateFormat.format(oldDateFormat.parse(oldStartTime));
-    					setValue(STARTTIME, 0, newStartTime);
-    					if (log.isDebugEnabled()) {
-    						log.debug("Upgraded " + STARTTIME + " from \"" + oldStartTime + "\" to \"" + newStartTime + "\" in EndEntityProfile.");
-    					}
-        			}
-				} catch (ParseException e) {
-					log.error("Unable to upgrade " + STARTTIME + " in EndEntityProfile! Manual interaction is required (edit and verify).", e);
-				}
-        		try {
-        			final String oldEndTime = getValue(ENDTIME, 0);
-        			if (!isEmptyOrRelative(oldEndTime)) {
-        				// We use an absolute time format, so we need to upgrade
-            			final String newEndTime = newDateFormat.format(oldDateFormat.parse(oldEndTime));
-    					setValue(ENDTIME, 0, newEndTime);
-    					if (log.isDebugEnabled()) {
-    						log.debug("Upgraded " + ENDTIME + " from \"" + oldEndTime + "\" to \"" + newEndTime + "\" in EndEntityProfile.");
-    					}
-        			}
-				} catch (ParseException e) {
-					log.error("Unable to upgrade " + ENDTIME + " in EndEntityProfile! Manual interaction is required (edit and verify).", e);
-				}
-        	}
-        	/*
-        	 * In version 13 we converted some dates to the "yyyy-MM-dd HH:mm" format using default Locale.
-        	 * These needs to be converted to the same format but should be stored in UTC, so we always know what the times are.
-        	 */
-        	if (getVersion() < 14) {
-        		final String[] timePatterns = {"yyyy-MM-dd HH:mm"};
-    			final String oldStartTime = getValue(STARTTIME, 0);
-    			if (!isEmptyOrRelative(oldStartTime)) {
-            		try {
-            			final String newStartTime = ValidityDate.formatAsUTC(DateUtils.parseDateStrictly(oldStartTime, timePatterns));
-    					setValue(STARTTIME, 0, newStartTime);
-    					if (log.isDebugEnabled()) {
-    						log.debug("Upgraded " + STARTTIME + " from \"" + oldStartTime + "\" to \"" + newStartTime + "\" in EndEntityProfile.");
-    					}
-					} catch (ParseException e) {
-						log.error("Unable to upgrade " + STARTTIME + " to UTC in EndEntityProfile! Manual interaction is required (edit and verify).", e);
-					}
-    			}
-    			final String oldEndTime = getValue(ENDTIME, 0);
-    			if (!isEmptyOrRelative(oldEndTime)) {
-    				// We use an absolute time format, so we need to upgrade
-					try {
-						final String newEndTime = ValidityDate.formatAsUTC(DateUtils.parseDateStrictly(oldEndTime, timePatterns));
-						setValue(ENDTIME, 0, newEndTime);
-						if (log.isDebugEnabled()) {
-							log.debug("Upgraded " + ENDTIME + " from \"" + oldEndTime + "\" to \"" + newEndTime + "\" in EndEntityProfile.");
-						}
-					} catch (ParseException e) {
-						log.error("Unable to upgrade " + ENDTIME + " to UTC in EndEntityProfile! Manual interaction is required (edit and verify).", e);
-					}
-    			}
-        	}
+            log.info(msg);   	
         	// In version 15 (EJBCA 7.0) we included ability for multi-value RDNs
             if (getVersion() < 15) {
                 setAllowMultiValueRDNs(false);
@@ -2778,11 +2427,6 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             data.put(VERSION, LATEST_VERSION);
         }
         log.trace("<upgrade");
-    }
-
-    /** @return true if argument is null, empty or in the relative time format. */
-    private boolean isEmptyOrRelative(final String time) {
-    	return (time == null || time.isEmpty() || time.matches(RELATIVE_TIME_FORMAT));
     }
 
     public static boolean isFieldImplemented(final int field) {
@@ -3030,7 +2674,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     			}
     		}
     	}
-    	
+
     	if(subjectAltNames!=null) {
         	// Check if all required subject alternate name fields exists.
         	final List<String> altNameFields = DnComponents.getAltNameFields();
@@ -3422,7 +3066,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         }
         public String getValue(){ return value; }
         public void setValue(String value) { this.value = value; }
-        
+
         public String getUpnRfcEmailNonModifiableField() {
             final List<String> list = getSelectableValuesUpnRfc();
             if (list.size() > 0) {
@@ -3431,7 +3075,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             return "";
         }
         public void setUpnRfcEmailNonModifiableField(String value) {} // NOOP
-        
+
         public String getDefaultValue() { return defaultValue; }
         public void setDefaultValue(String value) { this.defaultValue = value; }
 		public boolean isUseDataFromEmailField() { return useDataFromEmailField; }

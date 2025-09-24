@@ -12,8 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.HttpURLConnection;
@@ -31,10 +29,19 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.keyfactor.CesecoreException;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.KeyGenParams;
+
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -65,7 +72,6 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.config.OcspConfiguration;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
@@ -74,6 +80,7 @@ import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 import org.cesecore.keybind.impl.OcspKeyBinding;
+import org.cesecore.keybind.impl.OcspNonExistingBehavior;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.util.EjbRemoteHelper;
@@ -82,18 +89,12 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.junit.Assert;
 
-import com.keyfactor.CesecoreException;
-import com.keyfactor.util.EJBTools;
-import com.keyfactor.util.certificate.SimpleCertGenerator;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.keys.KeyTools;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-import com.keyfactor.util.keys.token.KeyGenParams;
+import static org.junit.Assert.assertEquals;
 
 public final class OcspTestUtils {
 
     private static final String FOO123_PASSWORD = "foo123";
-    private static final String PROPERTY_ALIAS = OcspKeyBinding.PROPERTY_NON_EXISTING_GOOD;
+    private static final String PROPERTY_ALIAS = OcspKeyBinding.PROPERTY_NON_EXISTING_BEHAVIOR;
     public static final String OCSP_END_USER_NAME = "OcspSigningUser";
     private static final String CLIENTSSL_END_USER_NAME = "ClientSSLUser";
     private static final String CLIENTSSL_END_USER_DN = "CN=clientSSLUser";
@@ -107,7 +108,7 @@ public final class OcspTestUtils {
             deleteCa(authenticationToken, (X509CAInfo) x509ca.getCAInfo());
         }
     }
-    
+
     public static void deleteCa(AuthenticationToken authenticationToken, X509CAInfo x509ca) throws AuthorizationDeniedException {
         if (x509ca != null) {
             CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
@@ -128,13 +129,13 @@ public final class OcspTestUtils {
      * @param keyspec keyspec for new key binding crypto token, i. "RSA2048", "secp256r1"
      * @param signAlg  is the signature algorithm that this InternalKeyBinding will use for signatures (if applicable), i.e. AlgorithmConstants.SIGALG_SHA1_WITH_RSA
      * @return internalKeyBindingId
-     * @throws AuthorizationDeniedException 
-     * @throws InvalidAlgorithmParameterException 
-     * @throws CryptoTokenOfflineException 
-     * @throws InvalidKeyException 
-     * @throws InternalKeyBindingNonceConflictException 
-     * @throws InvalidAlgorithmException 
-     * @throws InternalKeyBindingNameInUseException 
+     * @throws AuthorizationDeniedException
+     * @throws InvalidAlgorithmParameterException
+     * @throws CryptoTokenOfflineException
+     * @throws InvalidKeyException
+     * @throws InternalKeyBindingNonceConflictException
+     * @throws InvalidAlgorithmException
+     * @throws InternalKeyBindingNameInUseException
      */
     public static int createInternalKeyBinding(AuthenticationToken authenticationToken, int cryptoTokenId, String type, String testName,
             String keyspec, String signAlg)
@@ -151,27 +152,13 @@ public final class OcspTestUtils {
         }
         // Create a new InternalKeyBinding with a implementation specific property and bind it to the previously generated key
         final Map<String, Serializable> dataMap = new LinkedHashMap<>();
-        dataMap.put(PROPERTY_ALIAS, Boolean.FALSE);
+        dataMap.put(PROPERTY_ALIAS, OcspNonExistingBehavior.UNKNOWN.getLabel());
         return internalKeyBindingMgmtSession.createInternalKeyBinding(authenticationToken, type, testName, InternalKeyBindingStatus.ACTIVE, null,
                 cryptoTokenId, testName, signAlg, dataMap, null);
     }
 
-    public static void updateInternalKeyBindingProperty(AuthenticationToken authenticationToken, int internalKeyBindinId, String nonExistingGood,
-            String nonExistingRevoked, String nonExistingUnauth) throws AuthorizationDeniedException, InternalKeyBindingNameInUseException {
-        InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE
-                .getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
-
-        // Create a new InternalKeyBinding with a implementation specific property and bind it to the previously generated key
-        InternalKeyBinding internalKeyBinding = internalKeyBindingMgmtSession.getInternalKeyBinding(authenticationToken, internalKeyBindinId);
-        internalKeyBinding.setProperty(OcspConfiguration.NON_EXISTING_IS_GOOD, nonExistingGood);
-        internalKeyBinding.setProperty(OcspConfiguration.NON_EXISTING_IS_REVOKED, nonExistingRevoked);
-        internalKeyBinding.setProperty(OcspConfiguration.NON_EXISTING_IS_UNAUTHORIZED, nonExistingUnauth);
-
-        internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, internalKeyBinding);
-    }
-
-    /** Adds signOnBehalfEntries to a previously created OCSP key binding 
-     * @throws AuthorizationDeniedException 
+    /** Adds signOnBehalfEntries to a previously created OCSP key binding
+     * @throws AuthorizationDeniedException
      * @throws InternalKeyBindingNameInUseException */
     public static void addSignOnBehalfEntries(AuthenticationToken authenticationToken, int internalKeyBindinId,
             List<InternalKeyBindingTrustEntry> signOcspResponseOnBehalf) throws AuthorizationDeniedException, InternalKeyBindingNameInUseException {
@@ -355,15 +342,17 @@ public final class OcspTestUtils {
     }
 
     public static void clearOcspSigningCache() {
+        final String urlString = "http://localhost:" + SystemTestsConfiguration.getRemotePortHttp("8080") +
+                "/ejbca/clearcache?command=clearcaches&excludeactivects=true";
         try {
-            final URL url = new URL("http://localhost:8080/ejbca/clearcache?command=clearcaches&excludeactivects=true");
+            final URL url = new URL(urlString);
             final HttpURLConnection con = (HttpURLConnection) url.openConnection();
             if (con.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                Assert.fail("Failed to clear caches using URL: http://localhost:8080/ejbca/clearcache?command=clearcaches&excludeactivects=true"
+                Assert.fail("Failed to clear caches using URL: " + urlString
                         + ". The response code was: " + con.getResponseCode());
             }
         } catch (IOException e) {
-            Assert.fail("Failed to clear caches using URL: http://localhost:8080/ejbca/clearcache?command=clearcaches&excludeactivects=true"
+            Assert.fail("Failed to clear caches using URL: " + urlString
                     + ". The error was: " + e.getMessage());
         }
     }
@@ -382,7 +371,7 @@ public final class OcspTestUtils {
                 .setEntityPubKey(caKeyPair.getPublic())
                 .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
                 .setProvider(BouncyCastleProvider.PROVIDER_NAME)
-                .generateCertificate();           
+                .generateCertificate();
 
         List<Certificate> certs = new ArrayList<>();
         certs.add(cert);
@@ -393,7 +382,7 @@ public final class OcspTestUtils {
 
     public static Certificate createCertByExternalCa(final KeyPair caKeyPair, String userDn, int validity)
             throws InvalidAlgorithmParameterException, OperatorCreationException, CertificateException, CertIOException {
-        KeyPair userKeyPair = KeyTools.genKeys("2048", "RSA");        
+        KeyPair userKeyPair = KeyTools.genKeys("2048", "RSA");
         // The Issuer DN (which is set to an incorrect value here) is not used because there's SKID and AKID in the cert.
         return SimpleCertGenerator.forTESTLeafCert()
                 .setSubjectDn(userDn)
@@ -404,7 +393,7 @@ public final class OcspTestUtils {
                 .setEntityPubKey(userKeyPair.getPublic())
                 .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
                 .setProvider(BouncyCastleProvider.PROVIDER_NAME)
-                .generateCertificate();  
+                .generateCertificate();
     }
 
 }

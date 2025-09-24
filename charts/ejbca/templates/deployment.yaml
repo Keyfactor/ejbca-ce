@@ -34,7 +34,7 @@ spec:
       serviceAccountName: {{ include "ejbca.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
-      {{- if or (.Values.nginx.enabled) (.Values.httpd.enabled) (.Values.ejbca.initContainers) }}
+      {{- if or (.Values.nginx.enabled) (.Values.httpd.enabled) (.Values.ejbca.initContainers) (.Values.hsm.enabled) }}
       initContainers:
         {{- $proxyType := "" }}
         {{- $proxyMntPath := "" }}
@@ -82,6 +82,19 @@ spec:
           - name: ejbca-config-conf-files
             mountPath: /opt/keyfactor/ejbca/conf/
           {{- end }}
+        {{- end }}
+        {{- if .Values.hsm.enabled }}
+        - name: hsm-driver-init
+          image: {{ include "ejbca.hsmImage" . }}
+          command:
+            [
+              "sh",
+              "-c",
+              "cp --preserve --recursive /opt/keyfactor/p11proxy-client/* /mnt/driver/",
+            ]
+          volumeMounts:
+            - name: p11proxy-client
+              mountPath: /mnt/driver/
         {{- end }}
         {{- if .Values.ejbca.initContainers }}
           {{- toYaml .Values.ejbca.initContainers | nindent 8 }}
@@ -169,8 +182,6 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: {{ include "ejbca.imageRepository" . }}:{{ .Values.image.tag | default .Chart.AppVersion }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
           env: {{- include "ejbca.ejbcaDeploymentParameters" . | nindent 12 }}
             {{- if or (.Values.services.proxyAJP.enabled) (.Values.httpd.enabled) }}
             - name: PROXY_AJP_BIND
@@ -261,6 +272,10 @@ spec:
             - name: ejbca-config-external-cas
               mountPath: /mnt/external/secrets/tls/cas/
             {{- end }}
+            {{- if .Values.ejbca.importJvmTruststore }}
+            - name: ejbca-config-jvm-truststore
+              mountPath: /mnt/external/secrets/ca/ts/
+            {{- end }}
             {{- if .Values.ejbca.importAppserverKeystore }}
             - name: ejbca-config-appserver-keystore
               mountPath: /mnt/external/secrets/tls/ks/
@@ -281,9 +296,31 @@ spec:
             - name: ejbca-config-configdump-initialize
               mountPath: /opt/keyfactor/configdump/initialize.d/
             {{- end }}
+            {{- if .Values.hsm.enabled }}
+            - name: p11proxy-client
+              mountPath: /opt/keyfactor/p11proxy-client
+            {{- end }}
             {{- if .Values.ejbca.volumeMounts }}
               {{- toYaml .Values.ejbca.volumeMounts | nindent 12 }}
             {{- end }}
+        {{- if .Values.hsm.softhsm.enabled }}
+          {{ include "ejbca.hsm.sidecar.softhsm" . | nindent 8 }}
+        {{- end }}
+        {{- if .Values.hsm.luna.enabled }}
+          {{ include "ejbca.hsm.sidecar.luna" . | nindent 8 }}
+        {{- end }}
+        {{- if .Values.hsm.dpod.enabled }}
+          {{ include "ejbca.hsm.sidecar.dpod" . | nindent 8 }}
+        {{- end }}
+        {{- if .Values.hsm.utimaco.enabled }}
+          {{ include "ejbca.hsm.sidecar.utimaco" . | nindent 8 }}
+        {{- end }}
+        {{- if .Values.hsm.nshield.enabled }}
+          {{ include "ejbca.hsm.sidecar.nshield" . | nindent 8 }}
+        {{- end }}
+        {{- if .Values.hsm.awsCloudHsm.enabled }}
+          {{ include "ejbca.hsm.sidecar.awsCloudHsm" . | nindent 8 }}
+        {{- end }}
         {{- if .Values.ejbca.sidecarContainers }}
           {{- toYaml .Values.ejbca.sidecarContainers | nindent 8 }}
         {{- end }}
@@ -321,6 +358,11 @@ spec:
         - name: ejbca-config-external-cas
           secret:
             secretName: {{ .Values.ejbca.externalCasSecret }}
+        {{- end }}
+        {{- if .Values.ejbca.importJvmTruststore }}
+        - name: ejbca-config-jvm-truststore
+          secret:
+            secretName: {{ .Values.ejbca.jvmTruststoreSecret }}
         {{- end }}
         {{- if .Values.ejbca.importAppserverKeystore }}
         - name: ejbca-config-appserver-keystore
@@ -368,6 +410,25 @@ spec:
               - key: "configdump.json"
               {{- end }}
                 path: "configdump.json"
+        {{- end }}
+        {{- if .Values.hsm.enabled }}
+        - name: p11proxy-client
+          emptyDir: {}
+        {{- end }}
+        {{- if .Values.hsm.softhsm.tokenPersistentVolumeClaim }}
+          {{ include "ejbca.hsm.volume.softhsm" . | nindent 8 }}
+        {{- end }}
+        {{- if .Values.hsm.luna.enabled }}
+          {{ include "ejbca.hsm.volume.luna" . | nindent 8 }}
+        {{- end }}
+        {{- if .Values.hsm.dpod.enabled }}
+          {{ include "ejbca.hsm.volume.dpod" . | nindent 8 }}
+        {{- end }}
+        {{- if .Values.hsm.utimaco.enabled }}
+          {{ include "ejbca.hsm.volume.utimaco" . | nindent 8 }}
+        {{- end }}
+        {{- if .Values.hsm.awsCloudHsm.enabled }}
+          {{ include "ejbca.hsm.volume.awsCloudHsm" . | nindent 8 }}
         {{- end }}
         {{- if .Values.ejbca.volumes }}
           {{- toYaml .Values.ejbca.volumes | nindent 8 }}

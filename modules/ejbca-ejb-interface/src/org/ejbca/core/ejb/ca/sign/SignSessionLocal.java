@@ -263,15 +263,12 @@ public interface SignSessionLocal extends SignSession {
      /**
       * Signs data as per IEEE 1609.2 section 5.3.1 by a crypto-token corresponding to an ECA.
       *  
-      * @param data
+      * @param signedDataBuilder
       * @param eca
       * @return
       * @throws CryptoTokenOfflineException
       * @throws SignRequestSignatureException
       */
-     byte[] signItsPayload(byte[] data, ECA eca)
-            throws CryptoTokenOfflineException, SignRequestSignatureException;
-
     byte[] signItsPayload(ETSISignedDataBuilder signedDataBuilder, ECA eca) 
             throws CryptoTokenOfflineException, SignRequestSignatureException;
 

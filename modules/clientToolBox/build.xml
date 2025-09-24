@@ -140,6 +140,7 @@
 			<fileset dir="${clientToolBox.dir}/resources">
 				<include name="ejbcaClientToolBox.bat"/>
 				<include name="ejbcaClientToolBox.sh"/>
+				<include name="java-util-logging.properties"/>
 				<include name="README"/>
 				<include name="properties/**/*.*"/>
 			</fileset>

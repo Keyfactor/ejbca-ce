@@ -19,9 +19,12 @@ import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Optional;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.KeyEncryptionPaddingAlgorithm;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAService;
@@ -124,8 +127,11 @@ public class KeyRecoveryCAService extends ExtendedCAService implements Serializa
 	            } catch (Exception e) { // NOPMD: we catch wide here because we do not want this to cause a transaction failure
 	                log.warn("Error creating subjectKeyId for key recovery, cryptoToken: " + cryptoToken.getId() + ", keyAlias: " + keyAlias, e);
 	            }
+				final KeyEncryptionPaddingAlgorithm keyEncryptionPaddingAlgorithm =
+						Optional.ofNullable(getCa().getKeyEncryptionPaddingAlgorithm())
+								.orElse(KeyEncryptionPaddingAlgorithm.PKCS_1_5);
 				returnval = new KeyRecoveryCAServiceResponse(KeyRecoveryCAServiceResponse.TYPE_ENCRYPTKEYSRESPONSE, 
-                        CryptoTools.encryptKeys((X509Certificate) getCa().getCACertificate(), cryptoToken, keyAlias, serviceReq.getKeyPair()),
+                        CryptoTools.encryptKeys((X509Certificate) getCa().getCACertificate(), cryptoToken, keyAlias, serviceReq.getKeyPair(), keyEncryptionPaddingAlgorithm),
                         cryptoToken.getId(), keyAlias, keyId);
 			} catch(Exception e) {
 				throw new IllegalExtendedCAServiceRequestException(e);
@@ -150,7 +156,7 @@ public class KeyRecoveryCAService extends ExtendedCAService implements Serializa
 						log.debug("Decryption with alias '"+keyAlias+"' failed, trying defaultAlias: ", e);
 					}
 					// Did we use the wrong key alias? Try with the default one, if we din't do that already
-					if (!StringUtils.equals(keyAlias, defaultAlias)) {
+					if (!Strings.CS.equals(keyAlias, defaultAlias)) {
 						if (log.isDebugEnabled()) {
 							log.debug("Trying to decrypt using default alias '"+defaultAlias+"' from crypto token "+cryptoToken.getId());
 						}
@@ -185,7 +191,8 @@ public class KeyRecoveryCAService extends ExtendedCAService implements Serializa
 				}
 				final PrivateKey decryptionKey = cryptoToken.getPrivateKey(keyAlias);
 				final MsKeyArchivalRequestMessage msKeyArchivalRequestMessage = serviceReq.getMsKeyArchivalRequestMessage();
-				msKeyArchivalRequestMessage.decryptPrivateKey("BC", decryptionKey);
+				// Here we need to pass the corresponding encryption provider name instead of simply BC, cause the private key might be from real hardware HSM. See ECA-13119 for more info 
+				msKeyArchivalRequestMessage.decryptPrivateKey(cryptoToken.getEncProviderName(), decryptionKey);
 				returnval = new KeyRecoveryCAServiceResponse(KeyRecoveryCAServiceResponse.TYPE_DECRYPTKEYSRESPONSE,
 						msKeyArchivalRequestMessage.getKeyPairToArchive(), cryptoToken.getId(), keyAlias, null);
 			} catch (CryptoTokenOfflineException | CertificateCreateException e) {

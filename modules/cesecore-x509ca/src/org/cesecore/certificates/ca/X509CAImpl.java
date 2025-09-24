@@ -48,10 +48,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.naming.NamingException;
-import javax.naming.ldap.LdapName;
-import javax.naming.ldap.Rdn;
-
 import com.keyfactor.ErrorCode;
 import com.keyfactor.util.CeSecoreNameStyle;
 import com.keyfactor.util.CertTools;
@@ -69,6 +65,7 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
@@ -212,6 +209,8 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     protected static final String SUSPENDEDCRLPARTITIONS = "suspendedcrlpartitions";
     protected static final String REQUESTPREPROCESSOR = "requestpreprocessor";
     protected static final String ALTERNATECHAINS = "alternatechains";
+    protected static final String KEEP_EXPIRED_CERTS_ON_CRL_FORMAT = "keepExpiredCertsOnCRLFormat";
+    protected static final String KEEP_EXPIRED_CERTS_ON_CRL_DATE = "keepExpiredCertsOnCRLDate";
 
     private static final CertificateTransparency ct = CertificateTransparencyFactory.getInstance();
 
@@ -251,7 +250,9 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         setUseLdapDNOrder(cainfo.getUseLdapDnOrder());
         setUseCrlDistributionPointOnCrl(cainfo.getUseCrlDistributionPointOnCrl());
         setCrlDistributionPointOnCrlCritical(cainfo.getCrlDistributionPointOnCrlCritical());
-        setKeepExpiredCertsOnCRL(cainfo.getKeepExpiredCertsOnCRL());
+        setKeepExpiredCertsOnCrl(cainfo.getKeepExpiredCertsOnCrl());
+        setKeepExpiredCertsOnCrlFormat(cainfo.getKeepExpiredCertsOnCrlFormat());
+        setKeepExpiredCertsOnCrlDate(cainfo.getKeepExpiredCertsOnCrlDate());
         setCmpRaAuthSecret(cainfo.getCmpRaAuthSecret());
         // CA Issuer URI to put in CRLs (RFC5280 section 5.2.7, not the URI to put in certs
         setAuthorityInformationAccess(cainfo.getAuthorityInformationAccess());
@@ -260,12 +261,14 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         setNameConstraintsExcluded(cainfo.getNameConstraintsExcluded());
         setCaSerialNumberOctetSize(cainfo.getCaSerialNumberOctetSize());
         setDoPreProduceOcspResponses(cainfo.isDoPreProduceOcspResponses());
+        setAddCompromisedKeysToBlockList(cainfo.isAddCompromisedKeysToBlockList());
         setDoStoreOcspResponsesOnDemand(cainfo.isDoStoreOcspResponsesOnDemand());
         setDoPreProduceOcspResponseUponIssuanceAndRevocation(cainfo.isDoPreProduceOcspResponseUponIssuanceAndRevocation());
         setUsePartitionedCrl(cainfo.getUsePartitionedCrl());
         setCrlPartitions(cainfo.getCrlPartitions());
         setSuspendedCrlPartitions(cainfo.getSuspendedCrlPartitions());
         setRequestPreProcessor(cainfo.getRequestPreProcessor());
+        setKeyEncryptionPaddingAlgorithm(cainfo.getKeyEncryptionPaddingAlgorithm());
     }
 
     /**
@@ -279,10 +282,9 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                                    // EJBCA 3.6.1 and earlier.
         final List<ExtendedCAServiceInfo> externalcaserviceinfos = new ArrayList<>();
         for (final Integer type : getExternalCAServiceTypes()) {
-            // TYPE_OCSPEXTENDEDSERVICE type was removed in 6.0.0.
             // TYPE_HARDTOKENENCEXTENDEDSERVICE type was removed in 7.1.0.
-            // They are removed from the database in the upgrade method in this class, but need to be ignored for instantiation.
-            if (type != ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE && type != ExtendedCAServiceTypes.TYPE_HARDTOKENENCEXTENDEDSERVICE) {
+            // It's removed from the database in the upgrade method in this class, but needs to be ignored for instantiation.
+            if (type != ExtendedCAServiceTypes.TYPE_HARDTOKENENCEXTENDEDSERVICE) {
                 ExtendedCAServiceInfo info = this.getExtendedCAServiceInfo(type);
                 if (info != null) {
                     externalcaserviceinfos.add(info);
@@ -348,22 +350,23 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 .setDoEnforceUniqueSubjectDNSerialnumber(isDoEnforceUniqueSubjectDNSerialnumber())
                 .setUseCertReqHistory(isUseCertReqHistory())
                 .setUseUserStorage(isUseUserStorage())
+                .setAddCompromisedKeysToBlockList(isAddCompromisedKeysToBlockList())
                 .setUseCertificateStorage(isUseCertificateStorage())
                 .setAcceptRevocationNonExistingEntry(isAcceptRevocationNonExistingEntry())
                 .setCmpRaAuthSecret(getCmpRaAuthSecret())
-                .setKeepExpiredCertsOnCRL(getKeepExpiredCertsOnCRL())
+                .setKeepExpiredCertsOnCrl(getKeepExpiredCertsOnCrl())
+                .setKeepExpiredCertsOnCrlFormat(getKeepExpiredCertsOnCrlFormat())
+                .setKeepExpiredCertsOnCrlDate(getKeepExpiredCertsOnCrlDate())
                 .setUsePartitionedCrl(getUsePartitionedCrl())
                 .setCrlPartitions(getCrlPartitions())
                 .setSuspendedCrlPartitions(getSuspendedCrlPartitions())
                 .setRequestPreProcessor(getRequestPreProcessor())
                 .setMsCaCompatible(isMsCaCompatible())
                 .setAlternateCertificateChains(getAlternateCertificateChains())
+                .setKeyEncryptionPaddingAlgorithm(getKeyEncryptionPaddingAlgorithm())
                 .build();
         info.setExternalCdp(getExternalCdp());
         info.setNameChanged(getNameChanged());
-        //These to settings were deprecated in 6.8.0, but are still set for upgrade reasons
-        info.setApprovalProfile(getApprovalProfile());
-        info.setApprovalSettings(getApprovalSettings());
         super.setCAInfo(info);
         setCAId(caId);
     }
@@ -794,8 +797,25 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     }
 
     /* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.X509CA#setDoPreProduceOcspResponses(boolean)
+     * @see org.cesecore.certificates.ca.X509CA#setAddCompromisedKeysToBlockList(boolean)
      */
+    @Override
+    public void setAddCompromisedKeysToBlockList(boolean addCompromisedKeysToBlockList) {
+        data.put(ADD_COMPROMISED_KEYS_TO_BLOCK_LIST, addCompromisedKeysToBlockList);
+    }
+
+    @Override
+    public boolean isAddCompromisedKeysToBlockList() {
+        final Boolean addCompromisedKeysToBlockList = (Boolean) data.get(ADD_COMPROMISED_KEYS_TO_BLOCK_LIST);
+        // Make false the default option
+        if (addCompromisedKeysToBlockList == null) {
+            data.put(ADD_COMPROMISED_KEYS_TO_BLOCK_LIST, false);
+            return false;
+        }
+        return addCompromisedKeysToBlockList;
+
+    }
+
     @Override
     public void setDoPreProduceOcspResponses(boolean doPreProduceOcspResponses) {
         data.put(DO_PRE_PRODUCE_OCSP_RESPONSES, doPreProduceOcspResponses);
@@ -841,6 +861,26 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         data.put(ALTERNATECHAINS, alternateCertificateChains);
     }
 
+    @Override
+    public int getKeepExpiredCertsOnCrlFormat() {
+        return getInt(KEEP_EXPIRED_CERTS_ON_CRL_FORMAT, KeepExpiredCertsOnCrlFormat.CA_DATE.getValue());
+    }
+
+    @Override
+    public void setKeepExpiredCertsOnCrlFormat(int keepExpiredCertsOnCrlFormat) {
+        data.put(KEEP_EXPIRED_CERTS_ON_CRL_FORMAT, keepExpiredCertsOnCrlFormat);
+    }
+
+    @Override
+    public long getKeepExpiredCertsOnCrlDate() {
+        return getLong(KEEP_EXPIRED_CERTS_ON_CRL_DATE, 0L);
+    }
+
+    @Override
+    public void setKeepExpiredCertsOnCrlDate(long keepExpiredCertsOnCrlDate) {
+        data.put(KEEP_EXPIRED_CERTS_ON_CRL_DATE, keepExpiredCertsOnCrlDate);
+    }
+
     /* (non-Javadoc)
      * @see org.cesecore.certificates.ca.X509CA#updateCA(com.keyfactor.util.keys.token.CryptoToken, org.cesecore.certificates.ca.CAInfo, org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration)
      */
@@ -879,6 +919,9 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         setSuspendedCrlPartitions(info.getSuspendedCrlPartitions());
         setRequestPreProcessor(info.getRequestPreProcessor());
         setAlternateCertificateChains(info.getAlternateCertificateChains());
+        setKeepExpiredCertsOnCrl(info.getKeepExpiredCertsOnCrl());
+        setKeepExpiredCertsOnCrlFormat(info.getKeepExpiredCertsOnCrlFormat());
+        setKeepExpiredCertsOnCrlDate(info.getKeepExpiredCertsOnCrlDate());
     }
 
     /* (non-Javadoc)
@@ -892,9 +935,6 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         data.put(POLICIES, info.getPolicies());
     }
 
-    /* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.X509CA#createPKCS7(om.keyfactor.util.keys.token.CryptoToken, java.security.cert.X509Certificate, boolean)
-     */
     @Override
     public byte[] createPKCS7(CryptoToken cryptoToken, X509Certificate cert, boolean includeChain) throws SignRequestSignatureException {
         // First verify that we signed this certificate
@@ -1230,32 +1270,36 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 certGenParams, cceConfig, /*linkCertificate=*/false, /*caNameChange=*/false);
     }
 
-    
+
     /**
-     * Combines the LDAP names coming from the user's registered one and those from the EEP
-     * @param dn1
-     * @param dn2
-     * @return combined LDAP names
+     * Combine two X500Names while preserving ASN.1 string encodings.
+     * dn1 (CSR) takes precedence; dn2 adds only missing attributes.
      */
-    private static String combineLdapNames(LdapName dn1, LdapName dn2) {
+    private static X500Name combineLdapNames(final X500Name dn1, final X500Name dn2) {
 
-        // Create a new LdapName to hold the combined RDNs
-        LdapName combinedLdapName = (LdapName) dn1.clone();
+        final RDN[] rdns1 = dn1.getRDNs();
+        final RDN[] rdns2 = dn2.getRDNs();
 
-        Set<String> existingAttributes = new HashSet<>();
-        for (Rdn rdn : dn1.getRdns()) {
-            existingAttributes.add(rdn.getType());
+        // Track existing attribute types
+        final Set<String> existing = new HashSet<>();
+        for (RDN rdn : rdns1) {
+            existing.add(rdn.getFirst().getType().getId());
         }
 
-        for (Rdn rdn : dn2.getRdns()) {
-            if (!existingAttributes.contains(rdn.getType())) {
-                combinedLdapName.add(rdn);
+        // Add missing RDNs from dn2
+        final List<RDN> combined = new ArrayList<>();
+        for (RDN rdn : rdns1) {
+            combined.add(rdn); // keep CSR attributes as-is
+        }
+        for (RDN rdn : rdns2) {
+            String oid = rdn.getFirst().getType().getId();
+            if (!existing.contains(oid)) {
+                combined.add(rdn); // preserve original encoding from dn2
             }
         }
-        
-        return combinedLdapName.toString();
+        return new X500Name(combined.toArray(new RDN[0]));
     }
-    
+
     /**
      * Sequence is ignored by X509CA. The ctParams argument will NOT be kept after the function call returns,
      * and is allowed to contain references to session beans.
@@ -1303,7 +1347,11 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
 
         // ECA-11391 and "Forbid encryption usage for ECC keys" flag in Certificate Profile allow creating certificates
         // using the same Certificate Profile (relevant key usages) where for example both RSA and ECDSA key algorithms are selected in the profile.
-        if (publicKey.getAlgorithm().equals(AlgorithmConstants.KEYALGORITHM_ECDSA) && certProfile.getKeyUsageForbidEncryptionUsageForECC()) {
+        final String keyAlg = AlgorithmTools.getKeyAlgorithm(publicKey);
+        if (Strings.CS.startsWith(keyAlg, "EC")
+                || Strings.CS.startsWith(keyAlg, "Ed")
+                || AlgorithmTools.isPQC(keyAlg) && !AlgorithmTools.isKEM(keyAlg)
+                && certProfile.getKeyUsageForbidEncryptionUsageForECC()) {
             certProfile.setKeyUsage(CertificateConstants.KEYENCIPHERMENT, false);
             certProfile.setKeyUsage(CertificateConstants.DATAENCIPHERMENT, false);
         }
@@ -1405,17 +1453,10 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 if (log.isDebugEnabled()) {
                     log.debug("Using X509Name from request instead of user's registered.");
                 }
-                LdapName dn2 = null;
-                LdapName dn1 = null;
-                try {
-                    dn2 = new LdapName(dn);
-                    dn1 = new LdapName(request.getRequestX500Name().toString());
+                final X500Name csrName = request.getRequestX500Name();
+                final X500Name ldapName = new X500Name(dn);
 
-                } catch (NamingException e) {
-                    log.error("Exception while trying to construct LDAP names." + LogRedactionUtils.getRedactedException(e));
-                }
-
-                subjectDNName = new X500Name(combineLdapNames(dn1, dn2));
+                subjectDNName = combineLdapNames(csrName, ldapName);
             }
 
         } else {
@@ -2151,16 +2192,16 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             // Look for DNS name
             if (generalName.getTagNo() == 2) {
                 final String str = DnComponents.getGeneralNameString(2, generalName.getName());
-                if(StringUtils.contains(str, "(") && StringUtils.contains(str, ")") ) { // if it contains parts that should be redacted
+                if(Strings.CS.contains(str, "(") && Strings.CS.contains(str, ")") ) { // if it contains parts that should be redacted
                     // Remove the parentheses from the SubjectAltName that will end up on the certificate
-                    String certBuilderDNSValue = StringUtils.remove(str, "dNSName=");
+                    String certBuilderDNSValue = Strings.CS.remove(str, "dNSName=");
                     certBuilderDNSValue = StringUtils.remove(certBuilderDNSValue, '(');
                     certBuilderDNSValue = StringUtils.remove(certBuilderDNSValue, ')');
                     // Replace the old value with the new
                     gns[j] = new GeneralName(2, new DERIA5String(certBuilderDNSValue));
                     sanEdited = true;
                     if (publishToCT) {
-                        String redactedLable = StringUtils.substring(str, StringUtils.indexOf(str, "("), StringUtils.lastIndexOf(str, ")")+1); // tex. (top.secret).domain.se => redactedLable = (top.secret) aka. including the parentheses
+                        String redactedLable = StringUtils.substring(str, Strings.CS.indexOf(str, "("), Strings.CS.lastIndexOf(str, ")")+1); // tex. (top.secret).domain.se => redactedLable = (top.secret) aka. including the parentheses
                         nrOfRecactedLables.add(new ASN1Integer(StringUtils.countMatches(redactedLable, ".")+1));
                     }
                 } else {
@@ -2170,9 +2211,9 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             // Look for rfc822Name
             if(generalName.getTagNo() == 1) {
                 final String str = DnComponents.getGeneralNameString(1, generalName.getName());
-                if(StringUtils.contains(str, "\\+") ) { // if it contains a '+' character that should be unescaped
+                if(Strings.CS.contains(str, "\\+") ) { // if it contains a '+' character that should be unescaped
                     // Remove '\' from the email that will end up on the certificate
-                    String certBuilderEmailValue = StringUtils.remove(str, "rfc822name=");
+                    String certBuilderEmailValue = Strings.CS.remove(str, "rfc822name=");
                     certBuilderEmailValue = StringUtils.remove(certBuilderEmailValue, '\\');
                     // Replace the old value with the new
                     gns[j] = new GeneralName(1, new DERIA5String(certBuilderEmailValue));
@@ -2209,9 +2250,9 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             }
             if(generalName.getTagNo() == 1) {
                 final String str = DnComponents.getGeneralNameString(1, generalName.getName());
-                if(StringUtils.contains(str, "\\+") ) { // if it contains a '+' character that should be unescaped
+                if(Strings.CS.contains(str, "\\+") ) { // if it contains a '+' character that should be unescaped
                     // Remove '\' from the email that will end up on the certificate
-                    String certBuilderEmailValue = StringUtils.remove(str, "rfc822name=");
+                    String certBuilderEmailValue = Strings.CS.remove(str, "rfc822name=");
                     certBuilderEmailValue = StringUtils.remove(certBuilderEmailValue, '\\');
                     // Replace the old value with the new
                     gns[j] = new GeneralName(1, new DERIA5String(certBuilderEmailValue));
@@ -2344,27 +2385,32 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             crlgen.addExtension(Extension.cRLNumber, this.getCRLNumberCritical(), crlnum);
         }
 
-        // ExpiredCertsOnCRL extension (is always specified as not critical)
+        // ExpiredCertsOnCrl extension (is always specified as not critical)
         // Date format to be used is: yyyyMMddHHmmss
         // https://www.itu.int/ITU-T/formal-language/itu-t/x/x509/2005/CertificateExtensions.html
         //
-        // expiredCertsOnCRL EXTENSION ::= {
-        //   SYNTAX         ExpiredCertsOnCRL
-        //   IDENTIFIED BY  id-ce-expiredCertsOnCRL
+        // expiredCertsOnCrl EXTENSION ::= {
+        //   SYNTAX         ExpiredCertsOnCrl
+        //   IDENTIFIED BY  id-ce-expiredCertsOnCrl
         // }
-        // ExpiredCertsOnCRL ::= GeneralizedTime
-        // The ExpiredCertsOnCRL CRL extension is not specified by IETF-PKIX. It is defined by the ITU-T Recommendation X.509 and
+        // ExpiredCertsOnCrl ::= GeneralizedTime
+        // The ExpiredCertsOnCrl CRL extension is not specified by IETF-PKIX. It is defined by the ITU-T Recommendation X.509 and
         // indicates that a CRL containing this extension will include revocation status information for certificates that have
-        // been already expired. When used, the ExpiredCertsOnCRL contains the date on which the CRL starts to keep revocation
+        // been already expired. When used, the ExpiredCertsOnCrl contains the date on which the CRL starts to keep revocation
         // status information for expired certificates (i.e. revocation entries are not removed from the CRL for any certificates
-        // that expire at or after the date contained in the ExpiredCertsOnCRL extension).
-        final ASN1ObjectIdentifier ExpiredCertsOnCRL = new ASN1ObjectIdentifier("2.5.29.60");
-        boolean keepexpiredcertsoncrl = getKeepExpiredCertsOnCRL();
-        if(keepexpiredcertsoncrl) {
+        // that expire at or after the date contained in the ExpiredCertsOnCrl extension).
+        final ASN1ObjectIdentifier expiredCertsOnCrl = new ASN1ObjectIdentifier("2.5.29.60");
+        boolean keepExpiredCertsOnCrl = getKeepExpiredCertsOnCrl();
+        if(keepExpiredCertsOnCrl) {
             // For now force parameter with date equals NotBefore of CA certificate, or now
             final DERGeneralizedTime keepDate;
             if (cacert != null) {
-                keepDate = new DERGeneralizedTime(cacert.getNotBefore());
+                if (getKeepExpiredCertsOnCrlFormat() == KeepExpiredCertsOnCrlFormat.CA_DATE.getValue()) {
+                    keepDate = new DERGeneralizedTime(cacert.getNotBefore());
+                }
+                else {
+                    keepDate = new DERGeneralizedTime(new Date(getKeepExpiredCertsOnCrlDate()));
+                }
             } else {
                 // Copied from org.bouncycastle.asn1.x509.Time to get right format of GeneralizedTime (no fractional seconds)
                 SimpleDateFormat dateF = new SimpleDateFormat("yyyyMMddHHmmss");
@@ -2372,9 +2418,9 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 String d = dateF.format(new Date()) + "Z";
                 keepDate = new DERGeneralizedTime(d);
             }
-            crlgen.addExtension(ExpiredCertsOnCRL, false, keepDate);
+            crlgen.addExtension(expiredCertsOnCrl, false, keepDate);
             if (log.isDebugEnabled()) {
-                log.debug("ExpiredCertsOnCRL extension added to CRL. Keep date: " + keepDate.getTime());
+                log.debug("ExpiredCertsOnCrl extension added to CRL. Keep date: " + keepDate.getTime());
             }
         }
 
@@ -2481,7 +2527,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         try {
             for (String keyAlias : cryptoToken.getAliases()) {
                 String subjectKeyId = new String(Hex.encode(KeyTools.createSubjectKeyId(cryptoToken.getPublicKey(keyAlias)).getKeyIdentifier()));
-                if (StringUtils.equals(subjectKeyId, new String(Hex.encode(crlSubjectKeyIdentifier)))) {
+                if (Strings.CS.equals(subjectKeyId, new String(Hex.encode(crlSubjectKeyIdentifier)))) {
                     if (log.isDebugEnabled()) {
                         log.debug("Using key alias: '" + keyAlias + "' to sign CRL");
                     }

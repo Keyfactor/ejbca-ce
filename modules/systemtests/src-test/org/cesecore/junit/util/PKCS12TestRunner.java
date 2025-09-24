@@ -55,6 +55,28 @@ public class PKCS12TestRunner extends CryptoTokenRunner {
     }
     
     @Override
+    public X509CAInfo createX509CaMsCompatible(String subjectDn, String caName) throws Exception {
+        caSession.removeCA(alwaysAllowToken, DnComponents.stringToBCDNString(subjectDn).hashCode());
+        X509CAInfo x509ca = createTestX509Ca(caName, subjectDn, DEFAULT_TOKEN_PIN.toCharArray(), true,
+                getTokenImplementation(), CAInfo.SELFSIGNED, "1024", "3650d", 
+                AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
+
+        setCaForRemoval(x509ca.getCAId(), x509ca);
+        return x509ca;
+    }
+    
+    @Override
+    public X509CAInfo createX509CaMsCompatible(String subjectDn, String caName, int signedby) throws Exception {
+        caSession.removeCA(alwaysAllowToken, DnComponents.stringToBCDNString(subjectDn).hashCode());
+        X509CAInfo x509ca = createTestX509Ca(caName, subjectDn, DEFAULT_TOKEN_PIN.toCharArray(), true,
+                getTokenImplementation(), signedby, "1024", "3650d", 
+                AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
+
+        setCaForRemoval(x509ca.getCAId(), x509ca);
+        return x509ca;
+    }
+    
+    @Override
     public X509CAInfo createX509Ca(String subjectDn, String issuerDn, String caName, String validity) throws Exception {
         return createX509Ca(subjectDn, issuerDn, caName, validity, "1024", AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
     }

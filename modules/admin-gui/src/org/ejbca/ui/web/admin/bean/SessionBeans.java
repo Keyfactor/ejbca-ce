@@ -68,7 +68,7 @@ public class SessionBeans {
                 caBean = getBeanInstance(CAInterfaceBean.class);
             }
             try {
-                caBean.forceInitialization(getEjbcaWebBean(httpServletRequest));
+                caBean.initialize(getEjbcaWebBean(httpServletRequest));
             } catch (Exception e) {
                 throw new ServletException("Error initializing CACertReqServlet");
             }
@@ -92,7 +92,7 @@ public class SessionBeans {
                 raBean = getBeanInstance(RAInterfaceBean.class);
             }
             try {
-                raBean.forceInitialization(getEjbcaWebBean(httpServletRequest));
+                raBean.initialize(getEjbcaWebBean(httpServletRequest));
             } catch (Exception e) {
                 throw new ServletException("Cannot initialize RAInterfaceBean", e);
             }

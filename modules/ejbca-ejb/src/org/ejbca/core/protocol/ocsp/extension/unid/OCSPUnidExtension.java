@@ -100,7 +100,9 @@ public class OCSPUnidExtension implements OCSPExtension {
         }
         
         // The Unid is in the DN component serialNumber
-        serialNumber = DnComponents.getPartFromDN(cert.getSubjectX500Principal().getName(), "SN");
+        serialNumber = DnComponents.getPartFromDN(cert.getSubjectDN().getName(), "SN") != null
+                ? DnComponents.getPartFromDN(cert.getSubjectDN().getName(), "SN")
+                : DnComponents.getPartFromDN(cert.getSubjectDN().getName(), "SERIALNUMBER");
         if (serialNumber != null) {
             if (log.isDebugEnabled()) {
                 log.debug("Found serialNumber: " + serialNumber);

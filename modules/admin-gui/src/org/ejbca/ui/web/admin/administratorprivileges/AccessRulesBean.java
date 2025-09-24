@@ -35,7 +35,7 @@ import jakarta.faces.model.SelectItem;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
 
-import org.apache.commons.lang.math.NumberUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -44,6 +44,8 @@ import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.config.GlobalEndEntityProfileConfiguration;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingRules;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.roles.AccessRulesHelper;
@@ -276,6 +278,8 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
     private KeyValidatorSessionLocal keyValidatorSession;
     @EJB
     private RoleSessionLocal roleSession;
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
 
     private Map<Integer, String> caIdToNameMap;
     private Map<Integer, String> eepIdToNameMap;
@@ -351,7 +355,7 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
 
     /** @return an authorized existing role based on the roleId HTTP param or null if no such role was found. */
     public Role getRole() {
-        if (role==null && NumberUtils.isNumber(roleIdParam)) {
+        if (role==null && NumberUtils.isCreatable(roleIdParam)) {
             try {
                 role = roleSession.getRole(getAdmin(), Integer.parseInt(roleIdParam));
                 if (role==null && log.isDebugEnabled()) {
@@ -604,7 +608,6 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
                     // Not part of basic mode
                     //new SelectItem(AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES, super.getEjbcaWebBean().getText("EDITENDENTITYPROFILES")),
                     //new SelectItem(AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES, super.getEjbcaWebBean().getText("VIEWENDENTITYPROFILES")),
-                    //new SelectItem(AccessRulesConstants.REGULAR_EDITUSERDATASOURCES, super.getEjbcaWebBean().getText("EDITUSERDATASOURCES")),
                     new SelectItem(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_APPROVEENDENTITY), super.getEjbcaWebBean().getText("APPROVEENDENTITYRULE")),
                     new SelectItem(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_REVOKEENDENTITY), super.getEjbcaWebBean().getText("REVOKEENDENTITYRULE")),
                     new SelectItem(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_VIEWENDENTITY), super.getEjbcaWebBean().getText("VIEWENDENTITYRULE")),
@@ -744,7 +747,8 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
 
     /** @return true if this installation is configured to use EndEntityProfileLimitations */
     private boolean isEnableEndEntityProfileLimitations() {
-        return super.getEjbcaWebBean().getGlobalConfiguration().getEnableEndEntityProfileLimitations();
+        final GlobalEndEntityProfileConfiguration globalEEPConfiguration = (GlobalEndEntityProfileConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalEndEntityProfileConfiguration.EEP_CONFIGURATION_ID);
+        return globalEEPConfiguration.getEnableEndEntityProfileLimitations();
     }
 
     /** @return true if this installation is configured to perform key recovery */
@@ -871,7 +875,6 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
                     accessRuleItem.setState(AccessRuleState.toAccessRuleState(rolesAccesssRules.get(accessRuleItem.getResource())).name());
                 } else {
                     // Note that for EEPs you are only "really" authorized to it if you also are authorized to all the CAs in it
-                    // Similar goes for UserDataSources which is super-inefficient to check..
                     // BUT if the current admin is authorized to a rule he is also authorized to give the same access to others
                     allAccessRuleItems.remove(accessRuleItem);
                 }

@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 
 import javax.net.ssl.HostnameVerifier;
@@ -52,7 +53,6 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
@@ -306,7 +306,7 @@ public class OCSPUnidClient {
         	ASN1InputStream ain = new ASN1InputStream(noncerep);
         	ASN1OctetString oct = ASN1OctetString.getInstance(ain.readObject());
         	ain.close();
-        	boolean eq = ArrayUtils.isEquals(this.nonce, oct.getOctets());    		
+        	boolean eq = Objects.deepEquals(this.nonce, oct.getOctets());    		
             if (!eq) {
             	ret.setErrorCode(OCSPUnidResponse.ERROR_INVALID_NONCE);
             	return ret;
@@ -399,10 +399,14 @@ public class OCSPUnidClient {
         if (fnrrep == null) {
             return null;            
         }
-        ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(fnrrep.getExtnValue().getEncoded()));
-        final ASN1OctetString octs = ASN1OctetString.getInstance(aIn.readObject());
-        aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
-        final FnrFromUnidExtension fnrobj = FnrFromUnidExtension.getInstance(aIn.readObject());
+        final ASN1OctetString octs;
+        try(ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(fnrrep.getExtnValue().getEncoded()))) {
+            octs = ASN1OctetString.getInstance(aIn.readObject());
+        }
+        final FnrFromUnidExtension fnrobj;
+        try(ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()))) {
+            fnrobj = FnrFromUnidExtension.getInstance(aIn.readObject());
+        }
         return fnrobj.getFnr();
     }
 

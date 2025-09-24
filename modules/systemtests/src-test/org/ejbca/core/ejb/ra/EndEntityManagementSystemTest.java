@@ -23,12 +23,12 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.config.GlobalEndEntityProfileConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.config.EjbcaConfiguration;
-import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.EjbcaAuditorTestSessionRemote;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -65,7 +65,6 @@ import static org.junit.Assert.fail;
 /**
  * Tests the EndEntityInformation entity bean and some parts of EndEntityManagementSession.
  *
- * @version $Id$
  */
 public class EndEntityManagementSystemTest extends CaTestCase {
 
@@ -99,13 +98,14 @@ public class EndEntityManagementSystemTest extends CaTestCase {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        // Global configuration must have "Enable End Entity Profile Limitations" set to true in order for
+        // Global EEP Configuration must have "Enable End Entity Profile Limitations" set to true in order for
         // the request counter tests to pass, we check if we are allowed to set this value or not
         // The value is reset to whatever it was from the beginning in the last "clean up" test.
-        GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        gcEELimitations = gc.getEnableEndEntityProfileLimitations();
-        gc.setEnableEndEntityProfileLimitations(true);
-        globalConfigurationSession.saveConfiguration(admin, gc);
+        final GlobalEndEntityProfileConfiguration globalEEPConfiguration = (GlobalEndEntityProfileConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalEndEntityProfileConfiguration.EEP_CONFIGURATION_ID);
+        gcEELimitations = globalEEPConfiguration.getEnableEndEntityProfileLimitations();
+
+        globalEEPConfiguration.setEnableEndEntityProfileLimitations(true);
+        globalConfigurationSession.saveConfiguration(admin, globalEEPConfiguration);
         createNewUser();
     }
 
@@ -115,20 +115,16 @@ public class EndEntityManagementSystemTest extends CaTestCase {
         super.tearDown();
 
         // Reset the value of "EnableEndEntityProfileLimitations" to whatever it was before we ran test00SetEnableEndEntityProfileLimitations
-        GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        gc.setEnableEndEntityProfileLimitations(gcEELimitations);
-        globalConfigurationSession.saveConfiguration(admin, gc);
+        final GlobalEndEntityProfileConfiguration globalEEPConfiguration = (GlobalEndEntityProfileConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalEndEntityProfileConfiguration.EEP_CONFIGURATION_ID);
+
+        globalEEPConfiguration.setEnableEndEntityProfileLimitations(gcEELimitations);
+        globalConfigurationSession.saveConfiguration(admin, globalEEPConfiguration);
 
         // Delete test users we created
-
         endEntityManagementSession.deleteUser(admin, username);
-
         endEntityProfileSession.removeEndEntityProfile(admin, "TESTREQUESTCOUNTER");
-
         endEntityProfileSession.removeEndEntityProfile(admin, PROFILE_CACHE_NAME_1);
-
         endEntityProfileSession.removeEndEntityProfile(admin, PROFILE_CACHE_NAME_2);
-
     }
 
     @Override
@@ -139,8 +135,13 @@ public class EndEntityManagementSystemTest extends CaTestCase {
     public void createNewUser() throws Exception {
         username = genRandomUserName();
         pwd = genRandomPwd();
-        endEntityManagementSession.addUser(admin, username, pwd, "C=SE,O=AnaTom,CN=" + username, null, null, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.INVALID.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, caid);
+        
+        EndEntityInformation endEntityInformation = new EndEntityInformation(username, "C=SE,O=AnaTom,CN=" + username, caid,
+                null, null, EndEntityTypes.INVALID.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                SecConst.TOKEN_SOFT_PEM, null);
+        endEntityInformation.setPassword(pwd);
+        endEntityManagementSession.addUser(admin, endEntityInformation, false);
+        
     }
 
     @Test
@@ -165,12 +166,14 @@ public class EndEntityManagementSystemTest extends CaTestCase {
             final int profileId = endEntityProfileSession.getEndEntityProfileId(eepName);
 
             // User
-            endEntityManagementSession.addUser(admin, username, password, "CN=" + username, null, null, false,
-                                               profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                                               EndEntityTypes.INVALID.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, caid);
-
+            EndEntityInformation endEntityInformation = new EndEntityInformation(username,"CN=" + username, caid,
+                    null, null, EndEntityTypes.INVALID.toEndEntityType(), profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                    SecConst.TOKEN_SOFT_PEM, null);
+            endEntityInformation.setPassword(password);
+            endEntityManagementSession.addUser(admin, endEntityInformation, false);
+            
             // SAN Updated
-            EndEntityInformation endEntityInformation = endEntityAccessSession.findUser(admin, username);
+            endEntityInformation = endEntityAccessSession.findUser(admin, username);
             endEntityInformation.setPassword(password);
             endEntityInformation.setSubjectAltName(san);
 
@@ -628,10 +631,10 @@ public class EndEntityManagementSystemTest extends CaTestCase {
     public void testEndEntityProfileMappings() throws Exception {
         // Add a couple of profiles and verify that the mappings and get functions work
         EndEntityProfile profile1 = new EndEntityProfile();
-        profile1.setPrinterName("foo");
+        profile1.setDefaultCA(123);
         endEntityProfileSession.addEndEntityProfile(admin, PROFILE_CACHE_NAME_1, profile1);
         EndEntityProfile profile2 = new EndEntityProfile();
-        profile2.setPrinterName("bar");
+        profile2.setDefaultCA(234);
         endEntityProfileSession.addEndEntityProfile(admin, PROFILE_CACHE_NAME_2, profile2);
         int pid = endEntityProfileSession.getEndEntityProfileId(PROFILE_CACHE_NAME_1);
         String name = endEntityProfileSession.getEndEntityProfileName(pid);
@@ -640,16 +643,16 @@ public class EndEntityManagementSystemTest extends CaTestCase {
         assertEquals(pid, pid1);
         assertEquals(name, name1);
         EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(pid);
-        assertEquals("foo", profile.getPrinterName());
+        assertEquals(123, profile.getDefaultCA());
         profile = endEntityProfileSession.getEndEntityProfile(name);
-        assertEquals("foo", profile.getPrinterName());
+        assertEquals(123, profile.getDefaultCA());
 
         int pid2 = endEntityProfileSession.getEndEntityProfileId(PROFILE_CACHE_NAME_2);
         String name2 = endEntityProfileSession.getEndEntityProfileName(pid2);
         profile = endEntityProfileSession.getEndEntityProfile(pid2);
-        assertEquals("bar", profile.getPrinterName());
+        assertEquals(234, profile.getDefaultCA());
         profile = endEntityProfileSession.getEndEntityProfile(name2);
-        assertEquals("bar", profile.getPrinterName());
+        assertEquals(234, profile.getDefaultCA());
 
         // flush caches and make sure it is read correctly again
         endEntityProfileSession.flushProfileCache();
@@ -659,18 +662,18 @@ public class EndEntityManagementSystemTest extends CaTestCase {
         assertEquals(pid1, pid3);
         assertEquals(name1, name3);
         profile = endEntityProfileSession.getEndEntityProfile(pid3);
-        assertEquals("foo", profile.getPrinterName());
+        assertEquals(123, profile.getDefaultCA());
         profile = endEntityProfileSession.getEndEntityProfile(name3);
-        assertEquals("foo", profile.getPrinterName());
+        assertEquals(123, profile.getDefaultCA());
 
         int pid4 = endEntityProfileSession.getEndEntityProfileId(PROFILE_CACHE_NAME_2);
         String name4 = endEntityProfileSession.getEndEntityProfileName(pid4);
         assertEquals(pid2, pid4);
         assertEquals(name2, name4);
         profile = endEntityProfileSession.getEndEntityProfile(pid4);
-        assertEquals("bar", profile.getPrinterName());
+        assertEquals(234, profile.getDefaultCA());
         profile = endEntityProfileSession.getEndEntityProfile(name4);
-        assertEquals("bar", profile.getPrinterName());
+        assertEquals(234, profile.getDefaultCA());
 
         // Remove a profile and make sure it is not cached still
         endEntityProfileSession.removeEndEntityProfile(admin, PROFILE_CACHE_NAME_1);
@@ -689,9 +692,9 @@ public class EndEntityManagementSystemTest extends CaTestCase {
         assertEquals(pid2, pid6);
         assertEquals(name2, name6);
         profile = endEntityProfileSession.getEndEntityProfile(pid6);
-        assertEquals("bar", profile.getPrinterName());
+        assertEquals(234, profile.getDefaultCA());
         profile = endEntityProfileSession.getEndEntityProfile(name6);
-        assertEquals("bar", profile.getPrinterName());
+        assertEquals(234, profile.getDefaultCA());
     } // test07EndEntityProfileMappings
 
     /**
@@ -701,7 +704,7 @@ public class EndEntityManagementSystemTest extends CaTestCase {
     @Test
     public void testEndEntityProfileCache() throws Exception {
         EndEntityProfile profile2 = new EndEntityProfile();
-        profile2.setPrinterName("bar");
+        profile2.setDefaultCA(234);
         endEntityProfileSession.addEndEntityProfile(admin, PROFILE_CACHE_NAME_2, profile2);
 
         // First a check that we have the correct configuration, i.e. default
@@ -745,11 +748,18 @@ public class EndEntityManagementSystemTest extends CaTestCase {
         String username1 = rnd.toLowerCase();
         String username2 = rnd.toUpperCase();
         final String pwd = genRandomPwd();
-        endEntityManagementSession.addUser(admin, username1, pwd, "C=SE,O=EJBCA Sample,CN=" + username1, null, null, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.INVALID.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, caid);
+        EndEntityInformation firstUser = new EndEntityInformation(username1, "C=SE,O=EJBCA Sample,CN=" + username1, caid,
+                null, null, EndEntityTypes.INVALID.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                SecConst.TOKEN_SOFT_PEM, null);
+        firstUser.setPassword(pwd);
+        endEntityManagementSession.addUser(admin, firstUser, false);
+        
         try {
-            endEntityManagementSession.addUser(admin, username2, pwd, "C=SE,O=EJBCA Sample,CN=" + username2, null, null, false,
-                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.INVALID.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, caid);
+            EndEntityInformation secondUser = new EndEntityInformation(username2, "C=SE,O=EJBCA Sample,CN=" + username2, caid,
+                    null, null, EndEntityTypes.INVALID.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                    SecConst.TOKEN_SOFT_PEM, null);
+            secondUser.setPassword(pwd);
+            endEntityManagementSession.addUser(admin, secondUser, false);
         } catch (Exception e) {
             endEntityManagementSession.deleteUser(admin, username1);
             assertTrue("Database (mapping) is not case sensitive!", false);
@@ -768,12 +778,20 @@ public class EndEntityManagementSystemTest extends CaTestCase {
     public void testVerifySameUserName() throws Exception {
         String username = "sameun" + genRandomUserName();
         String pwd = genRandomPwd();
-        endEntityManagementSession.addUser(admin, username, pwd, "C=SE,O=EJBCA Sample,CN=" + username, null, null, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.INVALID.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, caid);
+        EndEntityInformation firstUser = new EndEntityInformation(username, "C=SE,O=EJBCA Sample,CN=" + username, caid,
+                null, null, EndEntityTypes.INVALID.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                SecConst.TOKEN_SOFT_PEM, null);
+        firstUser.setPassword(pwd);
+        endEntityManagementSession.addUser(admin, firstUser, false);
+        
         boolean ok = true;
         try {
-            endEntityManagementSession.addUser(admin, username, pwd, "C=SE,O=EJBCA Sample,CN=" + username, null, null, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.INVALID.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, caid);
+            EndEntityInformation secondUser = new EndEntityInformation(username, "C=SE,O=EJBCA Sample,CN=" + username, caid,
+                    null, null, EndEntityTypes.INVALID.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                    SecConst.TOKEN_SOFT_PEM, null);
+            secondUser.setPassword(pwd);
+            endEntityManagementSession.addUser(admin, secondUser, false);
+            
             ok = false;
         } catch (Exception e) {
         }

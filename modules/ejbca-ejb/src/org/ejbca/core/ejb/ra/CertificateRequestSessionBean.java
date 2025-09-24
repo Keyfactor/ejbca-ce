@@ -43,8 +43,13 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
+import org.bouncycastle.asn1.x500.RDN;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x500.X500NameBuilder;
+import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.util.Properties;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -98,6 +103,7 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceRe
 import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.ssh.SshRequestMessage;
 import org.ejbca.cvc.exception.ConstructionException;
@@ -171,25 +177,36 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             throw new EjbcaException(ErrorCode.FIELD_VALUE_NOT_VALID, LogRedactionUtils.getRedactedException(e));
         }
         CAInfo cainfo = caSession.getCAInfoInternal(userdata.getCAId());
+        if (cainfo == null) {
+            throw new CADoesntExistsException("CA with id " + userdata.getCAId() + " does not exist.");
+        }
         if (cainfo.isUseUserStorage() && username != null) {
             endEntityManagementSession.initializeEndEntityTransaction(username);
         }
-        if(cainfo.getCAType() == CAInfo.CATYPE_X509) {
+        if (cainfo.getCAType() == CAInfo.CATYPE_X509) {
             String preProcessorClass = ((X509CAInfo) cainfo).getRequestPreProcessor();
             if (!StringUtils.isEmpty(preProcessorClass)) {
                 try {
                     ExtendedUserDataHandler extendedUserDataHandler = (ExtendedUserDataHandler) Class.forName(preProcessorClass).getDeclaredConstructor().newInstance();
                     requestMessage = extendedUserDataHandler.processRequestMessage(requestMessage, certificateProfileSession.getCertificateProfileName(userdata.getCertificateProfileId()));
-                    userdata.setDN(requestMessage.getRequestX500Name().toString());
+                    
+                    final X500Name x500NameFromRequest = requestMessage.getRequestX500Name(); 
+                    if (x500NameFromRequest != null && x500NameFromRequest.getRDNs().length != 0) {
+                        userdata.setDN(updateUserDNFromRequest(x500NameFromRequest));
+                    }
+                    
                 } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | IllegalArgumentException
                         | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-                    throw new IllegalStateException("Request Preprocessor implementation " + preProcessorClass + " could not be instansiated.");
+                    throw new IllegalStateException("Request Preprocessor implementation " + preProcessorClass + " could not be instantiated.");
                 }
 
             }
         }
         
         EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(userdata.getEndEntityProfileId());
+        if (profile == null) {
+            throw new EndEntityProfileNotFoundException("End Entity Profile with id " + userdata.getEndEntityProfileId() + " does not exist.");
+        }
         boolean isClearPwd = profile.isClearTextPasswordUsed() && profile.isClearTextPasswordDefault();
 
         // This is the secret sauce, do the end entity handling automagically here before we get the cert
@@ -293,7 +310,12 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
                 try {
                     ExtendedUserDataHandler extendedUserDataHandler = (ExtendedUserDataHandler) Class.forName(preProcessorClass).getDeclaredConstructor().newInstance();
                     req = extendedUserDataHandler.processRequestMessage(req, certificateProfileSession.getCertificateProfileName(userdata.getCertificateProfileId()));
-                    userdata.setDN(req.getRequestX500Name().toString());
+                    
+                    final X500Name x500NameFromRequest = req.getRequestX500Name(); 
+                    if (x500NameFromRequest != null && x500NameFromRequest.getRDNs().length != 0) {
+                        userdata.setDN(updateUserDNFromRequest(x500NameFromRequest));
+                    }
+                    
                 } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | IllegalArgumentException
                         | InvocationTargetException | NoSuchMethodException | SecurityException e) {
                     throw new IllegalStateException("Request Preprocessor implementation " + preProcessorClass + " could not be instansiated.");
@@ -325,8 +347,37 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
         }
         return retval;
     }
-    
-    
+
+    /**
+     * Builds a formatted Distinguished Name (DN) from the X.500 name in the request.
+     * This method processes each Relative Distinguished Name (RDN) from the input
+     * and constructs a new DN using BouncyCastle's X500NameBuilder with BCStyle formatting.
+     *
+     * @param requestX500Name the X500Name object containing the DN information from the request
+     * @return a properly formatted DN string containing all valid RDNs from the request
+     * @see org.bouncycastle.asn1.x500.X500Name
+     */
+
+    private String updateUserDNFromRequest(final X500Name requestX500Name) {
+        try {
+            X500NameBuilder builder = new X500NameBuilder(BCStyle.INSTANCE);
+
+            for (final RDN rdn : requestX500Name.getRDNs()) {
+                AttributeTypeAndValue atv = rdn.getFirst();
+                if (atv != null) {
+                    builder.addRDN(atv);
+                }
+            }
+            return builder.build().toString();
+
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid RDN format in X500Name: " + LogRedactionUtils.getRedactedMessage(requestX500Name.toString()));
+            throw LogRedactionUtils.getRedactedException(e);
+        } catch (NullPointerException e) {
+            log.error("Unexpected null value while processing X500Name: " + LogRedactionUtils.getRedactedMessage(requestX500Name.toString()));
+            throw LogRedactionUtils.getRedactedException(e);
+        }
+    }
 
     /**
      * @throws CADoesntExistsException if userdata.caId is not a valid caid. This is checked in editUser or addUserFromWS

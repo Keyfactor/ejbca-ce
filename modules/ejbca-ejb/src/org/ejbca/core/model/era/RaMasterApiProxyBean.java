@@ -48,7 +48,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -59,7 +59,6 @@ import org.cesecore.audit.enums.EventType;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -87,6 +86,8 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.keys.keyimport.KeyImportFailure;
+import org.cesecore.keys.keyimport.KeyImportRequestData;
 import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
@@ -190,7 +191,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
      * For example certificate issuance you want to always happen as far in as possible (the CA), while
      * key recovery you want as far out as possible (i.e. customer have a satellite RA to do local escrow/key recovery if possible)
      * 
-     * Wether a node (raMasterApi implementation) is usable or not is determined by calling isBackendAvailable() on the api implementation
+     * Whether a node (raMasterApi implementation) is usable or not is determined by calling isBackendAvailable() on the api implementation
      * being tried. In RaMasterAPISessionBean, isBackendAvailable() is implemented so that a node is available for API processing if there 
      * is any _active_ CA available locally. Normally this is only available farthest in, on the CA.
      * But for the local key recovery use case the customer will add a local CA (with keys and signing cert) on the satellite RA 
@@ -414,47 +415,6 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             combinedResult = new RaAuthorizationResult(null, 0);
         }
         return combinedResult;
-    }
-
-    @Override
-    @Deprecated
-    public AccessSet getUserAccessSet(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
-        AccessSet merged = new AccessSet(new HashSet<>());
-        for (final RaMasterApi raMasterApi : raMasterApis) {
-            if (raMasterApi.isBackendAvailable()) {
-                try {
-                    AccessSet as = raMasterApi.getUserAccessSet(authenticationToken);
-                    merged = new AccessSet(merged, as);
-                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
-                    // Just try next implementation
-                }
-            }
-        }
-        return merged;
-    }
-
-    @Override
-    @Deprecated
-    public List<AccessSet> getUserAccessSets(final List<AuthenticationToken> authenticationTokens) {
-        final List<AuthenticationToken> tokens = new ArrayList<>(authenticationTokens);
-        final AccessSet[] merged = new AccessSet[authenticationTokens.size()];
-        for (final RaMasterApi raMasterApi : raMasterApis) {
-            if (raMasterApi.isBackendAvailable()) {
-                try {
-                    final List<AccessSet> accessSets = raMasterApi.getUserAccessSets(tokens);
-                    for (int i = 0; i < accessSets.size(); i++) {
-                        if (merged[i] == null) {
-                            merged[i] = accessSets.get(i);
-                        } else {
-                            merged[i] = new AccessSet(accessSets.get(i), merged[i]);
-                        }
-                    }
-                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
-                    // Just try next implementation
-                }
-            }
-        }
-        return Arrays.asList(merged);
     }
 
     @Override
@@ -1918,6 +1878,34 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         if (authorizationDeniedException != null) {
             throw authorizationDeniedException;
+        }
+        return null;
+    }
+
+    @Override
+    public byte[] createCertificateWithEntity(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, String req, int reqType, int responseType)
+            throws EjbcaException, AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException, ApprovalException {
+        EjbcaException ejbcaException = null;
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 20) {
+                if (log.isDebugEnabled()) {
+                    log.debug("raMasterApi calling createCertificateWithEntity: " + raMasterApi.getApiVersion() + ", " + raMasterApi.isBackendAvailable() + ", " + raMasterApi.getClass());
+                }
+                try {
+                    return raMasterApi.createCertificateWithEntity(authenticationToken, endEntityInformation, req, reqType, responseType);
+                } catch (ApprovalException e) {
+                    // we want to catch other EjbcaExceptions and try on another ejbca instance, but approval exception should be thrown
+                    throw e;
+                }
+                catch (EjbcaException e) {
+                    ejbcaException =  e;
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        if (ejbcaException != null) {
+            throw ejbcaException;
         }
         return null;
     }
@@ -3558,6 +3546,20 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
+    public AcmeOrder getIfReadyAcmeOrder(String orderId) {
+        for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 21) {
+                try {
+                    return raMasterApi.getIfReadyAcmeOrder(orderId);
+                }  catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
     public AcmeAuthorization getAcmeAuthorizationById(String authorizationId) {
         for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 5) {
@@ -4057,6 +4059,46 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         if (caDoesntExistException != null) {
             throw caDoesntExistException;
         }
+        return null;
+    }
+
+    @Override
+    public List<KeyImportFailure> keyImportV2(final AuthenticationToken authenticationToken, final KeyImportRequestData keyImportRequestData)
+            throws AuthorizationDeniedException, EjbcaException, CADoesntExistsException {
+        CADoesntExistsException caDoesntExistException = null;
+        EjbcaException ejbcaException = null;
+
+        for (RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 20) {
+                if (log.isDebugEnabled()) {
+                    log.debug("raMasterApi calling keyImportV2: " + raMasterApi.getApiVersion() + ", " + raMasterApi.isBackendAvailable() + ", " + raMasterApi.getClass());
+                }
+                try {
+                    return raMasterApi.keyImportV2(authenticationToken, keyImportRequestData);
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                } catch (CADoesntExistsException e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("CA for proxied request could not be found: " + e.getMessage());
+                    }
+                    caDoesntExistException = e;
+                } catch (EjbcaException e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Error during Key Import: " + e.getMessage());
+                    }
+                    ejbcaException = e;
+                }
+            }
+        }
+
+        if (caDoesntExistException != null) {
+            throw caDoesntExistException;
+        }
+
+        if (ejbcaException != null) {
+            throw ejbcaException;
+        }
+
         return null;
     }
 

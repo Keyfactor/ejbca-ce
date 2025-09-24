@@ -450,7 +450,7 @@ CREATE TABLE AcmeAuthorizationData (
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
 CREATE TABLE SctData (
-	pk VARCHAR(250) BINARY NOT NULL,
+    pk VARCHAR(250) BINARY NOT NULL,
     logId INT(11) NOT NULL,
     fingerprint VARCHAR(256) BINARY NOT NULL,
     certificateExpirationDate BIGINT NOT NULL,

@@ -50,6 +50,22 @@
             <to-view-id>/ca/editcas/managecas.xhtml</to-view-id>
         </navigation-case>
     </navigation-rule>
+    
+    <navigation-rule>
+        <from-view-id>/ra/editendentityprofiles/cloneendentityprofile.xhtml</from-view-id>
+        <navigation-case>
+            <from-outcome>cancel</from-outcome>
+            <to-view-id>/ra/editendentityprofiles/editendentityprofiles.xhtml</to-view-id>
+        </navigation-case>
+    </navigation-rule>
+    
+    <navigation-rule>
+        <from-view-id>/ra/editendentityprofiles/deleteendentityprofile.xhtml</from-view-id>
+        <navigation-case>
+            <from-outcome>cancel</from-outcome>
+            <to-view-id>/ra/editendentityprofiles/editendentityprofiles.xhtml</to-view-id>
+        </navigation-case>
+    </navigation-rule>
 
     <navigation-rule>
         <from-view-id>/initnewpki.xhtml</from-view-id>
@@ -418,23 +434,6 @@
     </navigation-rule>
 
     <navigation-rule>
-        <from-view-id>/ra/edituserdatasources/userdatasourcespage.xhtml</from-view-id>
-        <navigation-case>
-            <from-action>#{userDatasoucesMBean.actionEdit}</from-action>
-            <from-outcome>edit</from-outcome>
-            <to-view-id>/ra/edituserdatasources/edituserdatasource.xhtml</to-view-id>
-            <redirect include-view-params="true"></redirect>
-        </navigation-case>
-    </navigation-rule>
-    <navigation-rule>
-        <from-view-id>/ra/edituserdatasources/edituserdatasource.xhtml</from-view-id>
-        <navigation-case>
-            <from-outcome>done</from-outcome>
-            <to-view-id>/ra/edituserdatasources/userdatasourcespage.xhtml</to-view-id>
-        </navigation-case>
-    </navigation-rule>
-
-    <navigation-rule>
         <from-view-id>/sysconfig/systemconfiguration.xhtml</from-view-id>
         <navigation-case>
             <from-outcome>edit</from-outcome>
@@ -473,23 +472,43 @@
     <navigation-rule>
         <from-view-id>/services/listservices.xhtml</from-view-id>
         <navigation-case>
-            <from-outcome>listservices</from-outcome>
-            <to-view-id>/services/listservices.xhtml</to-view-id>
+            <from-outcome>edit</from-outcome>
+            <to-view-id>/services/editservice.xhtml</to-view-id>
+            <redirect/>
         </navigation-case>
         <navigation-case>
-            <from-outcome>editservice</from-outcome>
-            <to-view-id>/services/editservice.xhtml</to-view-id>
+            <from-outcome>clone</from-outcome>
+            <to-view-id>/services/cloneservice.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>delete</from-outcome>
+            <to-view-id>/services/deleteservice.xhtml</to-view-id>
+            <redirect/>
         </navigation-case>
     </navigation-rule>
     <navigation-rule>
         <from-view-id>/services/editservice.xhtml</from-view-id>
         <navigation-case>
-            <from-outcome>listservices</from-outcome>
+            <from-outcome>done</from-outcome>
             <to-view-id>/services/listservices.xhtml</to-view-id>
+            <redirect/>
         </navigation-case>
+    </navigation-rule>
+    <navigation-rule>
+        <from-view-id>/services/cloneservice.xhtml</from-view-id>
         <navigation-case>
-            <from-outcome>editservice</from-outcome>
-            <to-view-id>/services/editservice.xhtml</to-view-id>
+            <from-outcome>done</from-outcome>
+            <to-view-id>/services/listservices.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+    </navigation-rule>
+    <navigation-rule>
+        <from-view-id>/services/deleteservice.xhtml</from-view-id>
+        <navigation-case>
+            <from-outcome>done</from-outcome>
+            <to-view-id>/services/listservices.xhtml</to-view-id>
+            <redirect/>
         </navigation-case>
     </navigation-rule>
 

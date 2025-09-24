@@ -26,9 +26,12 @@ import org.ejbca.core.protocol.acme.AcmeIdentifier.AcmeIdentifierTypes;
  * PROCESSING constant in AcmeChallengeStatus ENUM is a requirement by 
  * <a href="https://www.rfc-editor.org/rfc/rfc8555.html#section-7.1.6">RFC8555 ch. 7.1.6</a>, whereas the challenge retry 
  * by the ACME server is optional.
+ *
+ * Additionally, the challenge in the referenced draft `dns-account-01` is considered.
  * 
  * Includes <a href="https://www.rfc-editor.org/rfc/rfc8737.html">RFC8737 Automated Certificate Management Environment (ACME) IP Identifier Validation Extension</a>
  * Includes <a href="https://www.rfc-editor.org/rfc/rfc8738.html">RFC8738 Automated Certificate Management Environment (ACME) TLS Application‑Layer Protocol Negotiation (ALPN) Challenge Extension</a>
+ * Includes <a href="https://datatracker.ietf.org/doc/draft-ietf-acme-dns-account-label/">DRAFT Automated Certificate Management Environment (ACME) DNS Labeled With ACME Account ID Challenge </a>
  */
 public interface AcmeChallenge {
 
@@ -74,6 +77,7 @@ public interface AcmeChallenge {
 
         DNS_HTTP_01(AcmeIdentifierTypes.DNS, "http-01"),
         DNS_DNS_01(AcmeIdentifierTypes.DNS, "dns-01"),
+        DNS_DNS_ACCOUNT_01(AcmeIdentifierTypes.DNS, "dns-account-01"),
         DNS_TLS_ALPN_01(AcmeIdentifierTypes.DNS, "tls-alpn-01"),
         IP_HTTP_01(AcmeIdentifierTypes.IP, "http-01");
 

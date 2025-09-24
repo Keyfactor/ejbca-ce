@@ -21,7 +21,7 @@ import java.util.TimeZone;
 
 import jakarta.faces.model.SelectItem;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
@@ -57,7 +57,8 @@ public class ApprovalRequestGUIInfo implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(ApprovalRequestGUIInfo.class);
     
-    public static final class ApprovalGuiObject {
+    public static final class ApprovalGuiObject implements Serializable {
+        private static final long serialVersionUID = 1L;
         private Approval approval;
         
         public ApprovalGuiObject(Approval approval) {
@@ -331,6 +332,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
         if (endEntityInformation != null) {
             final EndEntityProfile endEntityProfile = request.getEndEntityProfile();
             final RaEndEntityDetails.Callbacks callbacks = new RaEndEntityDetails.Callbacks() {
+                private static final long serialVersionUID = 1L;
                 @Override
                 public RaLocaleBean getRaLocaleBean() { return raLocaleBean; }
                 @Override

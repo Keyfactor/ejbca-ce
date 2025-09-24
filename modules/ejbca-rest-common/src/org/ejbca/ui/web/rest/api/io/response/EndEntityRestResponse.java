@@ -13,6 +13,7 @@
 package org.ejbca.ui.web.rest.api.io.response;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.cesecore.certificates.endentity.EndEntityConstants;
@@ -47,7 +48,11 @@ public class EndEntityRestResponse {
         this.email = email;
         this.status = status;
         this.token = token;
-        this.extensionData = extensionData;
+        this.extensionData = extensionData == null ?
+                null :
+                extensionData.stream()
+                .filter(component->!component.isInternalName())
+                .collect(Collectors.toUnmodifiableList());
     }
 
     /**

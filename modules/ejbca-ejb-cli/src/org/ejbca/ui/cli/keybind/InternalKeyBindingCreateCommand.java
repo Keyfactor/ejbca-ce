@@ -17,7 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
@@ -41,7 +41,6 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 /**
  * See getDescription().
  * 
- * @version $Id$
  */
 public class InternalKeyBindingCreateCommand extends BaseInternalKeyBindingCommand {
 
@@ -162,7 +161,7 @@ public class InternalKeyBindingCreateCommand extends BaseInternalKeyBindingComma
     @Override
     public String getFullHelpText() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getCommandDescription() + "\n\nOptional Type specific properties are listed below and are written as -propertyname=value, e.g. \"-nonexistingisgood=true\". \n");
+        sb.append(getCommandDescription() + "\n\nOptional Type specific properties are listed below and are written as -propertyname=value, e.g. \"-includesigncert=true\". \n");
         sb.append(showTypesProperties() + "\n");
         sb.append(showStatuses() + "\n");
         sb.append(showSigAlgs() + "\n");

@@ -28,7 +28,7 @@ import jakarta.faces.model.SelectItem;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
@@ -74,7 +74,7 @@ public class RolesBean extends BaseManagedBean implements Serializable {
     private String editRoleName;
     private int selectedStyle;
     private List<SelectItem> raStyleList;
-    private ListDataModel<Role> rolesAvailable;
+    private transient ListDataModel<Role> rolesAvailable;
     private List<String> nameSpacesAvailable;
     private boolean onlyEmptyNameSpaceInUse = true;
 

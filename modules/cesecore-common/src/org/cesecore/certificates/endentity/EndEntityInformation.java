@@ -148,8 +148,7 @@ public class EndEntityInformation implements Serializable {
     }
 
     /**
-     * Creates new EndEntityInformation. This constructor should only be used from UserDataSource
-     * implementations. Status and dates aren't used in these cases.
+     * Creates new EndEntityInformation. Status and dates aren't used in these cases.
      *
      * @param username the unique username.
      * @param dn the DN the subject is given in his certificate.

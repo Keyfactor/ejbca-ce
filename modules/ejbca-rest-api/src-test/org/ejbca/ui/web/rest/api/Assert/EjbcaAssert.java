@@ -43,12 +43,7 @@ public class EjbcaAssert {
     //
     private static final JSONParser jsonParser = new JSONParser();
 
-    /**
-     * Asserts that a content-type is 'application/json'. If it is not it throws an AssertionError.
-     *
-     * @param response Response object.
-     */
-    public static void assertJsonContentType(final Response response) {
+    private static void assertContentType(final Response response, final String contentType) {
         if(response == null) {
             throw new AssertionError("Response is null.");
         }
@@ -60,7 +55,7 @@ public class EjbcaAssert {
         for(String headerName : headersMap.keySet()) {
             if(HEADER_CONTENT_TYPE.equalsIgnoreCase(headerName)) {
                 final String actualContentType = headersMap.getFirst(headerName).toString();
-                assertEquals("", MediaType.APPLICATION_JSON, actualContentType);
+                assertEquals("", contentType, actualContentType);
                 foundContentTypeHeader = true;
                 break;
             }
@@ -68,6 +63,24 @@ public class EjbcaAssert {
         if(!foundContentTypeHeader) {
             throw new AssertionError("Content-type is not defined.");
         }
+    }
+
+    /**
+     * Asserts that a content-type is 'application/json'. If it is not it throws an AssertionError.
+     *
+     * @param response Response object.
+     */
+    public static void assertJsonContentType(final Response response) {
+        assertContentType(response, MediaType.APPLICATION_JSON);
+    }
+
+    /**
+     * Asserts that a content-type is 'application/zip'. If it is not it throws an AssertionError.
+     *
+     * @param response Response object.
+     */
+    public static void assertZipContentType(final Response response) {
+        assertContentType(response, "application/zip");
     }
 
     /**

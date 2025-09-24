@@ -20,9 +20,9 @@ import java.util.Date;
 import java.util.TimeZone;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.DateUtils;
-import org.apache.commons.lang.time.FastDateFormat;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
+import org.apache.commons.lang3.time.FastDateFormat;
 import org.apache.log4j.Logger;
 
 /**
@@ -133,64 +133,6 @@ public class ValidityDate {
 	public static String getISO8601FromImpliedUTC(final String dateString, final TimeZone timeZone) throws ParseException {
 		return formatAsISO8601(parseAsUTC(dateString), timeZone);
 	}
-	
-	/**
-	 * Encoding of the validity for a CA or certificate profile. Either delta time or end date.
-	 * @param validity *y *mo *d or absolute date in the form "yyyy-MM-dd HH:mm:ssZZ"
-	 * @return delta time in days if h*m*d*; milliseconds since epoch if valid absolute date; -1 if neither
-	 * @throws IllegalArgumentException if the argument is null
-	 */
-	@Deprecated
-	public static long encodeBeforeVersion661(final String validity) {
-		long result = -1;
-        try {
-            // parse ISO8601 time stamp, i.e 'yyyy-MM-dd HH:mm:ssZZ'.
-            result = parseAsIso8601(validity).getTime();
-        } catch (ParseException e) {
-            try {
-                // parse SimpleTime string with format '*y *mo *d ...'.
-                final long days = SimpleTime.getDaysFormat().parseMillis(validity) / (1000 * 60 * 60 *24);
-                if (days > 0) {
-                    if (isDeltaTimeBeforeVersion661(days)) {
-                        result = days;
-                    } else {
-                        result = Integer.MAX_VALUE-1;
-                        log.info(validity + " is relative time format, but too far in the future. Limiting to " + result + " days.");
-                    }
-                }
-            } catch(NumberFormatException nfe) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Cannot decode '" + validity + "' as ISO8601 date or relative time format ('3y 6mo 10d').");
-                }
-            }
-        }
-		return result;
-	}
-
-	/**
-	 * Decodes encoded value to string in the form "yyyy-MM-dd HH:mm:ssZZ" or "1234d" (relative days).
-	 * @param lEncoded If this is below Integer.MAX_VALUE it is interpreted as a number of days to firstDate, otherwise an unix timestamp.
-	 */
-	@Deprecated
-	public static String getStringBeforeVersion661(final long lEncoded) {
-		if (isDeltaTimeBeforeVersion661(lEncoded)) {
-			return SimpleTime.toString(lEncoded * 24 * 60 * 60 * 1000, SimpleTime.TYPE_DAYS);
-		}
-		return formatAsISO8601ServerTZ(lEncoded, TIMEZONE_SERVER);		
-	}
-	
-	/**
-	 * Decodes encoded value to Date.
-	 * @param lEncoded encoded value. If this is below Integer.MAX_VALUE it is interpreted as a number of days to firstDate, otherwise an unix timestamp.
-	 * @param firstDate date to be used if encoded value is a delta time. Can never be null.
-	 */
-	@Deprecated
-	public static Date getDateBeforeVersion661(final long lEncoded, final Date firstDate) {
-		if (isDeltaTimeBeforeVersion661(lEncoded) ) {
-			return new Date(firstDate.getTime() + (lEncoded * 24 * 60 * 60 * 1000) - 1000);
-		}
-		return new Date(lEncoded);
-	}
     
 	/**
      * Decodes encoded value to Date.
@@ -232,12 +174,6 @@ public class ValidityDate {
 	            return null;
 	        }
 	    }
-	}
-
-	/** If below the integer capacity we have stored a relative date in days, otherwise it is an absolute time in milliseconds. */
-	@Deprecated
-	public static boolean isDeltaTimeBeforeVersion661(final long lEncoded) {
-		return lEncoded < Integer.MAX_VALUE;	// This could probably be <= instead??
 	}
 		
 	/**

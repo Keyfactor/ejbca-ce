@@ -26,8 +26,9 @@ import java.util.Collection;
 
 import com.keyfactor.util.CertTools;
 
+import com.keyfactor.util.crypto.algorithm.SignatureParameter;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -172,7 +173,8 @@ public class CmpRevokeResponseMessage extends BaseCmpMessage implements Response
             }
 		    myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
             try {
-                responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, signCertChain, signKey, signAlg, digestAlg, provider);
+				SignatureParameter signatureParameter = determineSignatureParameterFromRequest();
+                responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, signCertChain, signKey, signAlg, digestAlg, provider, signatureParameter);
             } catch (CertificateEncodingException | SecurityException | SignatureException e) {
                 log.error("Failed to sign CMPRevokeResponseMessage");
                 log.error(e.getLocalizedMessage(), e);

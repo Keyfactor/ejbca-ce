@@ -61,7 +61,6 @@ public class PartitionedApprovalProfileUnitTest {
     }
     
     @Test
-    @SuppressWarnings("deprecation")
     public void testCanApproveSuccess() throws PropertyValidationException {
         PartitionedApprovalProfile approvalProfile = new PartitionedApprovalProfile("PartitionedApprovalProfile");
         approvalProfile.initialize();
@@ -92,7 +91,6 @@ public class PartitionedApprovalProfileUnitTest {
     }
     
     @Test
-    @SuppressWarnings("deprecation")
     public void testCanApproveFail() throws PropertyValidationException {
         PartitionedApprovalProfile approvalProfile = new PartitionedApprovalProfile("PartitionedApprovalProfile");
         approvalProfile.initialize();
@@ -122,7 +120,6 @@ public class PartitionedApprovalProfileUnitTest {
     }
 
     @Test
-    @SuppressWarnings("deprecation")
     public void testCanViewSuccess() throws PropertyValidationException {
         PartitionedApprovalProfile approvalProfile = new PartitionedApprovalProfile("PartitionedApprovalProfile");
         approvalProfile.initialize();
@@ -153,7 +150,6 @@ public class PartitionedApprovalProfileUnitTest {
     }
     
     @Test
-    @SuppressWarnings("deprecation")
     public void testCanViewSuccessWithoutViewRights() throws PropertyValidationException {
         //Create a profile with two steps, two partitions in each. 
         PartitionedApprovalProfile approvalProfile = new PartitionedApprovalProfile("PartitionedApprovalProfile");
@@ -190,7 +186,6 @@ public class PartitionedApprovalProfileUnitTest {
     }
     
     @Test
-    @SuppressWarnings("deprecation")
     public void testCanViewFail() throws PropertyValidationException {
         //Create a profile with two steps, two partitions in each. 
         PartitionedApprovalProfile approvalProfile = new PartitionedApprovalProfile("PartitionedApprovalProfile");

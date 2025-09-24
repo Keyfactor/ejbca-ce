@@ -12,14 +12,9 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.sign;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
@@ -34,9 +29,21 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.RFC4683Tools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1Encoding;
@@ -103,7 +110,6 @@ import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeProxySessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
-import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertReqHistoryProxySessionRemote;
 import org.ejbca.core.ejb.db.DatabaseContentRule;
 import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
@@ -131,19 +137,17 @@ import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runners.MethodSorters;
 
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.RFC4683Tools;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.certificate.SimpleCertGenerator;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.KeyTools;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Test class for tests based on an RSA
@@ -212,7 +216,6 @@ public class SignSessionWithRsaSystemTest extends SignSessionCommon {
     private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
     private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
             InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private PublisherSessionRemote publisherSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class);
     private PublisherProxySessionRemote publisherProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private final EnterpriseEditionEjbBridgeProxySessionRemote enterpriseEjbBridgeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EnterpriseEditionEjbBridgeProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
@@ -220,6 +223,9 @@ public class SignSessionWithRsaSystemTest extends SignSessionCommon {
     private static KeyPair rsakeys;
     private static int rsacaid;
 
+    @Rule
+    public TemporaryFolder tempFolder = new TemporaryFolder();
+    
     @ClassRule
     public static DatabaseContentRule databaseContentRule = new DatabaseContentRule();
 
@@ -859,15 +865,21 @@ public class SignSessionWithRsaSystemTest extends SignSessionCommon {
             CertificateCreateException, CryptoTokenOfflineException, SignRequestSignatureException, IllegalNameException, CertificateRevokeException,
             CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CertificateExtensionException,
             PublisherExistsException, NoSuchEndEntityException, SignRequestException, EndEntityExistsException, EndEntityProfileValidationException,
-            WaitingForApprovalException, EjbcaException, EndEntityProfileExistsException, EndEntityProfileNotFoundException {
+            WaitingForApprovalException, EjbcaException, EndEntityProfileExistsException, EndEntityProfileNotFoundException, FileNotFoundException, ClassNotFoundException, IOException {
         final String profileName = "testSingleActiveCertificateConstraintPublishing";
         final String publisherName = "testSingleActiveCertificateConstraintPublishing";
         final String username = "testSingleActiveCertificateConstraintPublishing";
+        
         //Set up a mock publisher
         final CustomPublisherContainer publisher = new CustomPublisherContainer();
         publisher.setClassPath(DummyCustomPublisher.class.getName());
         publisher.setDescription("Used in Junit Test 'testSingleActiveCertificateConstraintPublishing'. Remove this one.");
+        Properties properties = new Properties();
+        String tempCertificatePath = new File(tempFolder.getRoot(), "publishedCertificate").getAbsolutePath();
+        properties.setProperty("savedCertificatePath", tempCertificatePath);
+        publisher.setProperties(properties);
         int publisherId = publisherProxySession.addPublisher(internalAdmin, publisherName, publisher);
+        
         BigInteger certificatoriginalCertificateeSerialNumber = null;
         BigInteger newCertificateSerialNumber = null;
         try {
@@ -905,9 +917,9 @@ public class SignSessionWithRsaSystemTest extends SignSessionCommon {
                     certificateStoreSession.getStatus(testCaSubjectDn, newCertificateSerialNumber));
             assertEquals("Old certificate was not revoked.", CertificateStatus.REVOKED,
                     certificateStoreSession.getStatus(testCaSubjectDn, certificatoriginalCertificateeSerialNumber));
-            DummyCustomPublisher mockPublisher = (DummyCustomPublisher) ((CustomPublisherContainer) publisherSession.getPublisher(publisherId))
-                    .getCustomPublisher();
-            assertNotNull("Certificate was not sent to publisher", mockPublisher.getStoredCertificate());
+            
+            assertNotNull("Certificate was not sent to publisher", 
+                    DummyCustomPublisher.readCertificateFromFile(tempCertificatePath).getCertificate());
         } finally {
 
             certificateProfileSession.removeCertificateProfile(internalAdmin, profileName);
@@ -1075,9 +1087,12 @@ public class SignSessionWithRsaSystemTest extends SignSessionCommon {
         int rsacaid = caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId();
         if (!endEntityManagementSession.existsUser(username)) {
             // We use unicode encoding for the three Swedish character åäö
-            endEntityManagementSession.addUser(internalAdmin, username, "foo123", "C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6", null, username
-                    + "@anatom.se", false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                    new EndEntityType(EndEntityTypes.ENDUSER), SecConst.TOKEN_SOFT_PEM, rsacaid);
+            EndEntityInformation endEntityInformation = new EndEntityInformation(username, "C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6", rsacaid, null,
+                    username + "@anatom.se", EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_PEM, null);
+            endEntityInformation.setPassword("foo123");
+            endEntityManagementSession.addUser(internalAdmin, endEntityInformation, false);
+            
             log.debug("created user: " + username + ", foo123, C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6");
         } else {
             log.debug("user " + username + " already exists: " + username + ", foo123, C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6");
@@ -1190,8 +1205,12 @@ public class SignSessionWithRsaSystemTest extends SignSessionCommon {
         caAdminSession.editCA(internalAdmin, cainfo);
         // New random username and create cert
         String username = genRandomUserName();
-        endEntityManagementSession.addUser(internalAdmin, username, "foo123", "C=SE,O=AnaTom,CN=" + username, null, "foo@anatom.se", false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new EndEntityType(EndEntityTypes.ENDUSER), SecConst.TOKEN_SOFT_PEM, rsacaid);
+        EndEntityInformation endEntityInformation1 = new EndEntityInformation(username, "C=SE,O=AnaTom,CN=" + username, rsacaid, null,
+                username + "@anatom.se", EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_PEM, null);
+        endEntityInformation1.setPassword("foo123");
+        endEntityManagementSession.addUser(internalAdmin, endEntityInformation1, false);
+        
         X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, username, "foo123", new PublicKeyWrapper(rsakeys.getPublic()));
         assertNotNull("Failed to create certificate", cert);
         // Check that certreq history was created
@@ -1203,8 +1222,12 @@ public class SignSessionWithRsaSystemTest extends SignSessionCommon {
         caAdminSession.editCA(internalAdmin, cainfo);
         // New random username and create cert
         username = genRandomUserName();
-        endEntityManagementSession.addUser(internalAdmin, username, "foo123", "C=SE,O=AnaTom,CN=" + username, null, "foo@anatom.se", false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new EndEntityType(EndEntityTypes.ENDUSER), SecConst.TOKEN_SOFT_PEM, rsacaid);
+        EndEntityInformation endEntityInformation2 = new EndEntityInformation(username, "C=SE,O=AnaTom,CN=" + username, rsacaid, null,
+                username + "@anatom.se", EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_PEM, null);
+        endEntityInformation2.setPassword("foo123");
+        endEntityManagementSession.addUser(internalAdmin, endEntityInformation2, false);
+
         cert = (X509Certificate) signSession.createCertificate(internalAdmin, username, "foo123", new PublicKeyWrapper(rsakeys.getPublic()));
         assertNotNull("Failed to create certificate", cert);
         // Check that certreq history was not created

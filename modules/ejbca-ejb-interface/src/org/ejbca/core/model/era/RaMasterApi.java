@@ -17,7 +17,6 @@ import org.cesecore.audit.enums.EventType;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -45,6 +44,8 @@ import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.configuration.ConfigurationBase;
+import org.cesecore.keys.keyimport.KeyImportFailure;
+import org.cesecore.keys.keyimport.KeyImportRequestData;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.member.RoleMember;
@@ -189,24 +190,6 @@ public interface RaMasterApi {
      * @since RA Master API version 1 (EJBCA 6.8.0)
      */
     RaAuthorizationResult getAuthorization(AuthenticationToken authenticationToken) throws AuthenticationFailedException;
-
-    /**
-     * Returns an AccessSet containing the access rules that are allowed for the given authentication token.
-     * Note that AccessSets do not support deny rules.
-     * @since Initial RA Master API version (EJBCA 6.6.0)
-     * @deprecated RA Master API version 1 (EJBCA 6.8.0). Use {@link #getAuthorization(AuthenticationToken)} instead.
-     */
-    @Deprecated
-    AccessSet getUserAccessSet(AuthenticationToken authenticationToken) throws AuthenticationFailedException;
-
-    /**
-     * Gets multiple access sets at once. Returns them in the same order as in the parameter.
-     * Note that AccessSets do not support deny rules.
-     * @since Initial RA Master API version (EJBCA 6.6.0)
-     * @deprecated RA Master API version 1 (EJBCA 6.8.0). Use {@link #getAuthorization(AuthenticationToken)} instead.
-     */
-    @Deprecated
-    List<AccessSet> getUserAccessSets(List<AuthenticationToken> authenticationTokens);
 
     /**
      * @return a list with information about non-external CAs that the caller is authorized to see.
@@ -379,7 +362,7 @@ public interface RaMasterApi {
      * @since Initial RA Master API version (EJBCA 6.6.0)
      */
     CertificateDataWrapper searchForCertificate(AuthenticationToken authenticationToken, String fingerprint);
-
+    
     /**
      * Searches for a certificate. If present locally, then the data (revocation status etc.) from the local database will be returned.
      * Returns a certificate and its Ca chain
@@ -754,7 +737,7 @@ public interface RaMasterApi {
      * Enrolls a new end entity or updates it and creates an SSH certificate according to the profiles defined for that end entity
      *
      * @param authenticationToken an authentication token
-     * @param EndEntityInformation a object describing the end entity to be created
+     * @param endEntityInformation a object describing the end entity to be created
      * @param sshRequestMessage a {@link SshRequestMessage} container with the request details
      *
      * @return an SSH encoded certificate
@@ -769,17 +752,35 @@ public interface RaMasterApi {
             SshRequestMessage sshRequestMessage) throws AuthorizationDeniedException, EjbcaException, EndEntityProfileValidationException;
 
     /**
-     * Generates a certificate. This variant is used from the REST Service interface.
-     * @param authenticationToken authentication token.
-     * @param enrollCertificateRequest input data object for enrolling a certificate
-     * @throws CertificateProfileDoesNotExistException if no profile was found
-     * @throws CADoesntExistsException if the CA doesn't exist
+     * Edits or adds a user and generates a certificate for that user in a single transaction.
+     *
+     * @param authenticationToken is the requesting administrator
+     * @param endEntityInformation contains information about the user that is about to get a certificate
+     * @param req is the certificate request, base64 encoded binary request, in the format specified in the reqType parameter
+     * @param reqType is one of SecConst.CERT_REQ_TYPE_..
+     * @param responseType is one of SecConst.CERT_RES_TYPE_...
+     * @return a encoded certificate of the type specified in responseType
      * @throws AuthorizationDeniedException if not authorized
-     * @throws EndEntityProfileNotFoundException if EEP not found
      * @throws EjbcaException if an EJBCA exception with an error code has occurred during the process
      * @throws EndEntityProfileValidationException if End Entity doesn't match profile
-     * @since RA Master API version 4 (EJBCA 6.14.0)
+     * @throws WaitingForApprovalException if operation required approval (expected to be thrown with approvals enabled). The request ID will be included as a field in this exception.
+     * @throws ApprovalException if an approval is already pending to recover this certificate
      */
+    public byte[] createCertificateWithEntity(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, String req, int reqType, int responseType)
+            throws EjbcaException, AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException, ApprovalException;
+
+        /**
+         * Generates a certificate. This variant is used from the REST Service interface.
+         * @param authenticationToken authentication token.
+         * @param enrollCertificateRequest input data object for enrolling a certificate
+         * @throws CertificateProfileDoesNotExistException if no profile was found
+         * @throws CADoesntExistsException if the CA doesn't exist
+         * @throws AuthorizationDeniedException if not authorized
+         * @throws EndEntityProfileNotFoundException if EEP not found
+         * @throws EjbcaException if an EJBCA exception with an error code has occurred during the process
+         * @throws EndEntityProfileValidationException if End Entity doesn't match profile
+         * @since RA Master API version 4 (EJBCA 6.14.0)
+         */
     byte[] createCertificateRest(AuthenticationToken authenticationToken, EnrollPkcs10CertificateRequest enrollCertificateRequest)
             throws CertificateProfileDoesNotExistException, CADoesntExistsException, AuthorizationDeniedException, EndEntityProfileNotFoundException,
             EjbcaException, EndEntityProfileValidationException;
@@ -1535,6 +1536,14 @@ public interface RaMasterApi {
    AcmeOrder getAcmeOrderById(String orderId);
 
    /**
+    * Get AcmeOrder by orderId if the status is pending.
+    * This ensures only one method to access this at time.
+    * @param orderId order id
+    * @return the sought AcmeOrder or null if not found, or if not pending
+    */
+   AcmeOrder getIfReadyAcmeOrder(String orderId);
+
+   /**
     * Get AcmeOrders by accountId.
     * @param accountId a related account id
     * @return the collection of sought AcmeOrders or null if not found
@@ -1751,10 +1760,18 @@ public interface RaMasterApi {
 
     byte[] generateOrKeyRecoverTokenV2(AuthenticationToken authenticationToken, GenerateOrKeyRecoverTokenRequest request)
             throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException;
-    
+
+    /**
+     * @param authenticationToken  The authentication token
+     * @param keyImportRequestData All data required to perform key import of all the supplied keys
+     * @return A list of all the failed imports along with failure reasons
+     */
+    List<KeyImportFailure> keyImportV2(AuthenticationToken authenticationToken, KeyImportRequestData keyImportRequestData)
+            throws AuthorizationDeniedException, EjbcaException, CADoesntExistsException;
+
     /**
      * Return total count of certificates in database
-     * 
+     *
      * @param authenticationToken
      * @param isActive only count the active certificates
      * @return

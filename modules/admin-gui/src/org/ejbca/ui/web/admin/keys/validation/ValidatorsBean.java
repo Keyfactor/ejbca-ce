@@ -13,6 +13,7 @@
 
 package org.ejbca.ui.web.admin.keys.validation;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -27,7 +28,7 @@ import jakarta.faces.context.FacesContext;
 import jakarta.faces.model.ListDataModel;
 import jakarta.inject.Named;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
@@ -69,7 +70,8 @@ public class ValidatorsBean extends BaseManagedBean {
     private boolean cloned = false;
 
     /** Validators list to render. */
-    private ListDataModel<ValidatorItem> validatorItems = null;
+    private transient ListDataModel<ValidatorItem> validatorItems = null;
+    private List<ValidatorItem> validatorItemsList = null;
 
     @EJB
     private CaSessionLocal caSession;
@@ -122,6 +124,7 @@ public class ValidatorsBean extends BaseManagedBean {
      */
     public String getResetValidatorsTrigger() {
         validatorItems = null;
+        validatorItemsList = null;
         return StringUtils.EMPTY;
     }
     
@@ -136,8 +139,9 @@ public class ValidatorsBean extends BaseManagedBean {
     /**
      * Internal class for key validator items rendered as table.
      */
-    public class ValidatorItem {
+    public class ValidatorItem implements Serializable {
 
+        private static final long serialVersionUID = 1L;
         private final int id;
         private final String name;
         private final String implementationLabel;
@@ -168,33 +172,36 @@ public class ValidatorsBean extends BaseManagedBean {
     }
 
     /**
-     * Gets the available key validators taking into account access rules. The admin need access to view vlidators, and to all certificate profiles
+     * Gets the available key validators taking into account access rules. The admin need access to view validators, and to all certificate profiles
      * referenced by the Validator.
      * @return ListDataModel<ValidatorItem>
      */
     public ListDataModel<ValidatorItem> getAvailableValidators() {
         if (validatorItems == null) {
-            final List<ValidatorItem> items = new ArrayList<>();
-            final Collection<Integer> validatorIds = keyValidatorSession.getAuthorizedKeyValidatorIds(getAdmin(), AccessRulesConstants.REGULAR_VIEWVALIDATOR);
-            for (Integer id : validatorIds) {
-            	final Validator validator = keyValidatorSession.getValidator(id);
-                final String accessRule = StandardRules.VALIDATORACCESS.resource() + validator.getProfileId();
-                if (isAuthorizedTo(accessRule)) {
-                    items.add(new ValidatorItem(id, validator.getProfileName(), validator.getLabel()));
-                } else {
-                    if (log.isDebugEnabled()) {
-                        log.debug("User with token " + getAdmin().getUniqueId() + " is not authorized to access rule "
-                                + StandardRules.VALIDATORACCESS.resource() + validator.getProfileName() + " ("+validator.getProfileId()+").");
+            if (validatorItemsList == null) {
+                validatorItemsList = new ArrayList<>();
+                final Collection<Integer> validatorIds = keyValidatorSession.getAuthorizedKeyValidatorIds(getAdmin(),
+                        AccessRulesConstants.REGULAR_VIEWVALIDATOR);
+                for (Integer id : validatorIds) {
+                    final Validator validator = keyValidatorSession.getValidator(id);
+                    final String accessRule = StandardRules.VALIDATORACCESS.resource() + validator.getProfileId();
+                    if (isAuthorizedTo(accessRule)) {
+                        validatorItemsList.add(new ValidatorItem(id, validator.getProfileName(), validator.getLabel()));
+                    } else {
+                        if (log.isDebugEnabled()) {
+                            log.debug("User with token " + getAdmin().getUniqueId() + " is not authorized to access rule "
+                                    + StandardRules.VALIDATORACCESS.resource() + validator.getProfileName() + " (" + validator.getProfileId() + ").");
+                        }
                     }
                 }
+                Collections.sort(validatorItemsList, new Comparator<ValidatorItem>() {
+                    @Override
+                    public int compare(ValidatorItem o1, ValidatorItem o2) {
+                        return o1.getName().compareToIgnoreCase(o2.getName());
+                    }
+                });
             }
-            Collections.sort(items, new Comparator<ValidatorItem>() {
-                @Override
-                public int compare(ValidatorItem o1, ValidatorItem o2) {
-                    return o1.getName().compareToIgnoreCase(o2.getName());
-                }
-            });
-            validatorItems = new ListDataModel<>(items);
+            validatorItems = new ListDataModel<>(validatorItemsList);
         }
         return validatorItems;
     }
@@ -315,6 +322,7 @@ public class ValidatorsBean extends BaseManagedBean {
     public void actionCancel() {
         deleteInProgress = false;
         validatorItems = null;
+        validatorItemsList = null;
         validatorId = null;
         validatorName = null;
         cloned = false;
@@ -322,6 +330,7 @@ public class ValidatorsBean extends BaseManagedBean {
     
     public void savedFromTemplate() {
         validatorItems = null;
+        validatorItemsList = null;
         validatorId = null;
         validatorName = null;
         cloned = false;
@@ -347,5 +356,13 @@ public class ValidatorsBean extends BaseManagedBean {
     
     public boolean wasCloned() {
         return cloned;
+    }
+
+    public ListDataModel<ValidatorItem> getValidatorItems() {
+        // must have been deserialized on another VM.  Reinitialize the ListDataModel
+        if (validatorItems == null && validatorItemsList != null) {
+            validatorItems = new ListDataModel<>(validatorItemsList);
+        }
+        return validatorItems;
     }
 }

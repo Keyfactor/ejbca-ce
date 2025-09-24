@@ -36,6 +36,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.cmp.CMPCertificate;
@@ -242,10 +243,10 @@ public class CmpServlet extends HttpServlet {
             log.trace(">doGet()");
         }
         boolean ok = false;
-        final boolean clearCache = StringUtils.equals(request.getParameter("clearcache"), "true");
+        final boolean clearCache = Strings.CS.equals(request.getParameter("clearcache"), "true");
         if (clearCache) {
             final String ip = request.getRemoteAddr();
-            if (StringUtils.equals(ip, "127.0.0.1") || StringUtils.equals(ip, "::1")) { // IPv4 and IPv6
+            if (Strings.CS.equals(ip, "127.0.0.1") || Strings.CS.equals(ip, "::1")) { // IPv4 and IPv6
                 log.info("Clearing caches in CMP servlet.");
                 extraCertIssuerCache.clear();
                 extraCertIssuerCacheByCaId.clear();
@@ -381,15 +382,13 @@ public class CmpServlet extends HttpServlet {
             validateCertificateStatus(extraCertificate, messageInformation);
 
             try {
-                sig.initVerify(extraCertificate.getPublicKey());
-                sig.update(CmpMessageHelper.getProtectedBytes(pkimsg));
-                if (!sig.verify(pkimsg.getProtection().getBytes())) {
+                if (!CmpMessageHelper.verifySignature(pkimsg, extraCertificate.getPublicKey())) {
                     // - if verification fails, return a CMP error message
                     String msg = intres.getLocalizedMessage("cmp.errorauthmessage", "Verification of signature failed. " + messageInformation);
                     log.info(msg);
                     throw new CmpServletValidationError(msg);
                 }
-            } catch (InvalidKeyException | SignatureException e) {
+            } catch (SignatureException e) {
                 String msg = intres.getLocalizedMessage("cmp.errorauthmessage", "Signature defined in CMP message could not be initialized. " + messageInformation, e);
                 log.info(msg);
                 throw new CmpServletValidationError(msg);
@@ -434,16 +433,16 @@ public class CmpServlet extends HttpServlet {
             // Is the secret specified in the CMP alias? (Formerly specified in cmpProxy.properties)
             passwd = cmpConfiguration.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_HMAC, alias);
             if (StringUtils.isEmpty(passwd) || "-".equals(passwd)) {
-                final boolean isRaCaNameKeyId = StringUtils.equals(cmpConfiguration.getRACAName(alias), CmpConfiguration.PROFILE_USE_KEYID);
-                final boolean isRaEEPKeyId = StringUtils.equals(cmpConfiguration.getRAEEProfile(alias), CmpConfiguration.PROFILE_USE_KEYID);
-                final boolean isRaCPKeyId = StringUtils.equals(cmpConfiguration.getRACertProfile(alias), CmpConfiguration.PROFILE_USE_KEYID);
+                final boolean isRaCaNameKeyId = Strings.CS.equals(cmpConfiguration.getRACAName(alias), CmpConfiguration.PROFILE_USE_KEYID);
+                final boolean isRaEEPKeyId = Strings.CS.equals(cmpConfiguration.getRAEEProfile(alias), CmpConfiguration.PROFILE_USE_KEYID);
+                final boolean isRaCPKeyId = Strings.CS.equals(cmpConfiguration.getRACertProfile(alias), CmpConfiguration.PROFILE_USE_KEYID);
                 final String caName;
                 if (isRaCaNameKeyId && (isRaEEPKeyId || isRaCPKeyId)) {
                     // If true, then senderKeyId has caname... get CA CMP RA Shared Secret
                     caName = CmpMessageHelper.getStringFromOctets(pkiMessage.getHeader().getSenderKID());
                     passwd = getCaSecretFromCaUsingCaName(caName);
                     // If not from sender KID, try RA CA Name configuration in alias to get CA and secret... 
-                } else if (!StringUtils.equals(cmpConfiguration.getRACAName(alias), CmpConfiguration.PROFILE_DEFAULT)) {
+                } else if (!Strings.CS.equals(cmpConfiguration.getRACAName(alias), CmpConfiguration.PROFILE_DEFAULT)) {
                     caName = cmpConfiguration.getRACAName(alias);
                     passwd = getCaSecretFromCaUsingCaName(caName);
                 } else {

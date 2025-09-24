@@ -16,6 +16,7 @@
 		<path refid="lib.bouncycastle.classpath"/>
 		<path refid="lib.log4j.classpath"/> 
 		<path refid="lib.commons-lang.classpath"/>
+		<path refid="lib.commons-text.classpath"/>
 		<path refid="lib.commons-config.classpath"/>
 		<path refid="lib.commons-collections4.classpath"/>
 		<path refid="lib.commons-logging.classpath"/>
@@ -185,7 +186,6 @@
 		<copy file="${log4j.test.file}" tofile="${ejbca-common.build-test.dir}/log4j.xml" failonerror="true"/>
 		<copy todir="${ejbca-common.build-test.dir}" failonerror="true">
 			<fileset dir="${ejbca.home}/src" includes="intresources/**"/>
-			<fileset dir="${ejbca.home}" includes="conf/extendedkeyusage.properties"/>
 		</copy>
 		<!-- systemtests.properties needs to be in the classpath, if it exists for targeting non-default environment-->
 		<copy file="${systemtests.properties.file}" todir="${ejbca-common.build-test.dir}" failonerror="false"/>

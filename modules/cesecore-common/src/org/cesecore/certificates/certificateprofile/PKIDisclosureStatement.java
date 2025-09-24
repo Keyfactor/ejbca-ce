@@ -14,7 +14,7 @@ package org.cesecore.certificates.certificateprofile;
 
 import java.io.Serializable;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 /**
  * Contains a single URI/language pair of a PKI disclosure statement. 
@@ -62,7 +62,7 @@ public final class PKIDisclosureStatement implements Serializable, Cloneable {
     public boolean equals(final Object other) {
         if (other instanceof PKIDisclosureStatement) {
             final PKIDisclosureStatement o = (PKIDisclosureStatement) other;
-            return StringUtils.equals(url, o.getUrl()) && StringUtils.equals(language, o.getLanguage());
+            return Strings.CS.equals(url, o.getUrl()) && Strings.CS.equals(language, o.getLanguage());
         } else {
             return false;
         }

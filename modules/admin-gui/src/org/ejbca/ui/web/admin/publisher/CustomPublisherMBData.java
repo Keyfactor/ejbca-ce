@@ -17,10 +17,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import jakarta.faces.model.SelectItem;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.CustomPublisherProperty;
@@ -38,6 +39,8 @@ public final class CustomPublisherMBData implements Serializable {
 
     // This will be used in the gui to guide the user that he/she has already set a password
     public static final String PASSWORD_PLACEHOLDER = "placeholder";
+
+    private static final String SFTP_KNOWN_HOSTS_CONTENT_PROPERTY_NAME = "scp.knownhosts.content";
 
     private String customPublisherPropertyData;
     private String customPublisherCurrentClass;
@@ -73,7 +76,11 @@ public final class CustomPublisherMBData implements Serializable {
             final StringBuilder sb = new StringBuilder();
             for (final CustomPublisherProperty customPublisherProperty : publisher.getCustomUiPropertyList(EjbcaJSFHelper.getBean().getAdmin())) {
                 final String name = customPublisherProperty.getName();
-                final Object value = customPublisherPropertyValues.get(name);
+                Object value = customPublisherPropertyValues.get(name);
+
+                if (SFTP_KNOWN_HOSTS_CONTENT_PROPERTY_NAME.equals(name) && value != null && value.toString().contains("\n")) {
+                    value = value.toString().lines().collect(Collectors.joining(","));
+                }
 
                 if (renderCustomCheckbox(customPublisherProperty)) {
                     sb.append(name).append('=').append((Boolean) value ? "true" : "false").append('\n');
@@ -99,6 +106,10 @@ public final class CustomPublisherMBData implements Serializable {
 
     public boolean renderCustomTextInput(final CustomPublisherProperty customPublisherProperty) {
         return customPublisherProperty.getType() == CustomPublisherProperty.UI_TEXTINPUT;
+    }
+    
+    public boolean renderCustomTextInputArea(final CustomPublisherProperty customPublisherProperty) {
+        return customPublisherProperty.getType() == CustomPublisherProperty.UI_TEXTINPUT_AREA;
     }
 
     public boolean renderCustomSelectOneMenu(final CustomPublisherProperty customPublisherProperty) {

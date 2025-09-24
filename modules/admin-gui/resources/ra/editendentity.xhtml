@@ -862,16 +862,6 @@
       for="useSendNotification" />
     </h:panelGroup>
 
-    <h:panelGroup rendered="#{resourceBean.usePrintingEnabled}">
-     <h:outputLabel id="usePrintingLabel"
-      value="#{web.text.PRINTUSERDATA}" style="font-size:1.2em;" />
-    </h:panelGroup>
-    <h:panelGroup rendered="#{resourceBean.usePrintingEnabled}">
-     <h:selectBooleanCheckbox id="usePrinting"
-      value="#{resourceBean.usePrinting}"
-      disabled="#{resourceBean.printingRequired}" />
-     <h:outputLabel value="#{web.text.PRINT}" for="usePrinting" />
-    </h:panelGroup>
    </h:panelGrid>
 
    <!-- ********** CSR ******************** -->
@@ -887,30 +877,28 @@
     </h:panelGroup>
     <h:panelGroup />
 
-    <h:panelGroup rendered="#{resourceBean.renderCSRSection}" />
-
-    <h:panelGroup rendered="#{resourceBean.renderCSRSection}">
+    <h:panelGroup rendered="#{resourceBean.renderCsr}">
      <h:outputLabel value="#{web.text.CSR}" />
     </h:panelGroup>
-    <h:panelGroup rendered="#{resourceBean.renderCSRSection}">
+    <h:panelGroup rendered="#{resourceBean.renderCsr}">
      <h:outputLabel value="#{resourceBean.csr}" />
     </h:panelGroup>
 
     <h:panelGroup
-     rendered="#{resourceBean.renderKeyAlgType and resourceBean.renderCSRSection}">
+     rendered="#{resourceBean.renderKeyAlgType}">
      <h:outputLabel value="#{web.text.REQKSALGTYPE}" />
     </h:panelGroup>
     <h:panelGroup
-     rendered="#{resourceBean.renderKeyAlgType and resourceBean.renderCSRSection}">
+     rendered="#{resourceBean.renderKeyAlgType}">
      <h:outputLabel value="#{resourceBean.keyAlgType}" />
     </h:panelGroup>
 
     <h:panelGroup
-     rendered="#{resourceBean.renderKeyAlgType and resourceBean.renderCSRSection}">
+     rendered="#{resourceBean.renderKeyAlgType}">
      <h:outputLabel value="#{web.text.REQKSALGSUBTYPE}" />
     </h:panelGroup>
     <h:panelGroup
-     rendered="#{resourceBean.renderKeyAlgType and resourceBean.renderCSRSection}">
+     rendered="#{resourceBean.renderKeyAlgType}">
      <h:outputLabel value="#{resourceBean.keyAlgSubType}" />
     </h:panelGroup>
 

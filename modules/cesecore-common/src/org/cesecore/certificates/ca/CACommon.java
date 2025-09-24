@@ -30,7 +30,6 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Interface containing common methods for all CA implementations
- * @version $Id$
  *
  */
 public interface CACommon extends IUpgradeableData {
@@ -72,8 +71,6 @@ public interface CACommon extends IUpgradeableData {
 
     void setValidators(Collection<Integer> validators);
     
-    long getValidity();
-
     /**
      * Gets the validity.
      * @return the validity as ISO8601 date or relative time.
@@ -189,55 +186,6 @@ public interface CACommon extends IUpgradeableData {
     Map<ApprovalRequestType, Integer> getApprovals();
 
     void setApprovals(Map<ApprovalRequestType, Integer> approvals);
-
-    /**
-     * @return a collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which action that requires approvals,
-     * default none and never null.
-     *
-     * @deprecated since 6.8.0, see getApprovals()
-     */
-    @Deprecated
-    Collection<Integer> getApprovalSettings();
-
-    /**
-     * Collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which action that requires approvals
-     *
-     * @deprecated since 6.8.0, see setApprovals()
-     */
-    @Deprecated
-    void setApprovalSettings(Collection<Integer> approvalSettings);
-
-    /**
-     * @return the number of different administrators that needs to approve an action, default 1.
-     * @deprecated since 6.6.0, use the appropriate approval profile instead.
-     * Needed in order to be able to upgrade from 6.5 and earlier
-     */
-    @Deprecated
-    int getNumOfRequiredApprovals();
-
-    /**
-     * The number of different administrators that needs to approve
-     * @deprecated since 6.6.0, use the appropriate approval profile instead.
-     * Needed in order to be able to upgrade from 6.5 and earlier
-     */
-    @Deprecated
-    void setNumOfRequiredApprovals(int numOfReqApprovals);
-
-    /**
-     * @return the id of the approval profile. Defult -1 (= none)
-     *
-     * @deprecated since 6.8.0, see getApprovals()
-     */
-    @Deprecated
-    int getApprovalProfile();
-
-    /**
-     * The id of the approval profile.
-     *
-     * @deprecated since 6.8.0, see setApprovals()
-     */
-    @Deprecated
-    void setApprovalProfile(int approvalProfileID);
     
     void updateCA(CryptoToken cryptoToken, CAInfo cainfo, AvailableCustomCertificateExtensionsConfiguration cceConfig)
             throws InvalidAlgorithmException;

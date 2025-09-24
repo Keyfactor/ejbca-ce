@@ -42,11 +42,12 @@
                           styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
                           style="color: black"
                           rendered="#{cc.attrs.raCertificateDetails.preCertificate}"/>
-            <h:outputLabel for="caname" value="#{msg.component_certdetails_field_caname}"
-                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputLabel for="caname"
+                           value="#{cc.attrs.raCertificateDetails.tag eq 'IMPORTED' ? msg.component_certdetails_field_caname_tag_imported : msg.component_certdetails_field_caname}"
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
             <h:outputText id="caname" value="#{cc.attrs.raCertificateDetails.caName}"
                           styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputLabel for="issuerdn" value="#{msg.component_certdetails_field_issuerdn}"
+            <h:outputLabel for="issuerdn" value="#{cc.attrs.raCertificateDetails.tag eq 'IMPORTED' ? msg.component_certdetails_field_issuerdn_tag_imported : msg.component_certdetails_field_issuerdn}"
                            styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText id="issuerdn" value="#{cc.attrs.raCertificateDetails.issuerDn}"
                           styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace"/>

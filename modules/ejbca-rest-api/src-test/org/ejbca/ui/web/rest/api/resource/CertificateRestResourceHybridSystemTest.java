@@ -43,6 +43,7 @@ import org.bouncycastle.cert.CertException;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.jcajce.spec.MLDSAParameterSpec;
+import org.bouncycastle.jcajce.spec.SLHDSAParameterSpec;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -222,7 +223,19 @@ public class CertificateRestResourceHybridSystemTest extends RestResourceSystemT
                 MLDSAParameterSpec.ml_dsa_44, 
                 AlgorithmConstants.SIGALG_MLDSA44);
     }
-    
+
+
+    @Test
+    public void testCertificateRequestWithEcAndSlhdsaKeys() throws Exception {
+        testCertificateRequest(
+                AlgorithmConstants.KEYALGORITHM_EC,
+                "P-256",
+                AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA,
+                AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F,
+                SLHDSAParameterSpec.slh_dsa_sha2_128f,
+                AlgorithmConstants.SIGALG_SLHDSA_SHA2_128F);
+    }
+
     @Test
     public void testCertificateRequestWithEcAndFalconKeys() throws Exception {
         testCertificateRequest(
@@ -243,6 +256,17 @@ public class CertificateRestResourceHybridSystemTest extends RestResourceSystemT
                 AlgorithmConstants.KEYALGORITHM_MLDSA, 
                 MLDSAParameterSpec.ml_dsa_44, 
                 AlgorithmConstants.SIGALG_MLDSA44);
+    }
+
+    @Test
+    public void testPkcs10RequestWithEcAndSlhdsaKeys() throws Exception {
+        testPkcs10Request(
+                AlgorithmConstants.KEYALGORITHM_EC,
+                "P-256",
+                AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA,
+                AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F,
+                SLHDSAParameterSpec.slh_dsa_sha2_128f,
+                AlgorithmConstants.SIGALG_SLHDSA_SHA2_128F);
     }
     
     @Test

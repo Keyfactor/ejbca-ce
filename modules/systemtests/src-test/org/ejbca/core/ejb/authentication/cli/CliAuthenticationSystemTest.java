@@ -52,7 +52,6 @@ import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
-import org.ejbca.util.crypto.CryptoTools;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -119,25 +118,9 @@ public class CliAuthenticationSystemTest {
         AuthenticationSubject subject = new AuthenticationSubject(principals, null);
         CliAuthenticationToken authenticationToken =  (CliAuthenticationToken) cliAuthenticationProvider.authenticate(subject);
         // Set hashed value anew in order to send back
-        authenticationToken.setSha1HashFromCleartextPassword(CliAuthenticationSystemTestHelperSessionRemote.PASSWORD);
+        authenticationToken.setHashFromCleartextPassword(CliAuthenticationSystemTestHelperSessionRemote.PASSWORD);
         assertTrue(authorizationSession.isAuthorized(authenticationToken, StandardRules.ROLE_ROOT.resource()));
         log.trace("<testInstallCliAuthenticationWithBCrypt");
-    }
-
-    @Test
-    public void testInstallCliAuthenticationWithOldHash() {
-        log.trace(">testInstallCliAuthenticationWithOldHash");
-        configurationSession.updateProperty("ejbca.passwordlogrounds", "0");
-        cliAuthenticationSystemTestHelperSession.createUser(CliAuthenticationSystemTestHelperSessionRemote.USERNAME, CliAuthenticationSystemTestHelperSessionRemote.PASSWORD);
-        Set<Principal> principals = new HashSet<Principal>();
-        principals.add(new UsernamePrincipal(CliAuthenticationSystemTestHelperSessionRemote.USERNAME));
-        AuthenticationSubject subject = new AuthenticationSubject(principals, null);
-        CliAuthenticationToken authenticationToken = (CliAuthenticationToken) cliAuthenticationProvider.authenticate(subject);
-        // Set hashed value anew in order to send back
-        authenticationToken.setSha1HashFromCleartextPassword(CliAuthenticationSystemTestHelperSessionRemote.PASSWORD);
-        assertFalse("Old-style hash value was not used (BCrypt prefix detected).", authenticationToken.getSha1Hash().startsWith(CryptoTools.BCRYPT_PREFIX));
-        assertTrue(authorizationSession.isAuthorized(authenticationToken, StandardRules.ROLE_ROOT.resource()));
-        log.trace("<testInstallCliAuthenticationWithOldHash");
     }
     
     /**
@@ -181,7 +164,7 @@ public class CliAuthenticationSystemTest {
         AuthenticationSubject subject = new AuthenticationSubject(principals, null);
         CliAuthenticationToken authenticationToken =  (CliAuthenticationToken) cliAuthenticationProvider.authenticate(subject);
         // Set hashed value anew in order to send back
-        authenticationToken.setSha1HashFromCleartextPassword("monkeys");
+        authenticationToken.setHashFromCleartextPassword("monkeys");
         assertNotNull("Authentication token was not returned for incorrect password", authenticationToken);
         assertFalse("Authentication token was authorized despite incorrect password", authorizationSession.isAuthorized(authenticationToken, StandardRules.ROLE_ROOT.resource()));
         //Examine the last log entry

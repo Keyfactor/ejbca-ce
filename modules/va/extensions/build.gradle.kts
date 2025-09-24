@@ -14,7 +14,7 @@ dependencies {
     compileOnly(libs.bctls)
     compileOnly(libs.bcutil)
     compileOnly(libs.log4j.v12.api)
-    compileOnly(libs.commons.lang)
+    compileOnly(libs.commons.lang3)
     compileOnly(libs.x509.common.util)
 }
 
@@ -25,6 +25,11 @@ sourceSets {
         }
     }
 }
+
+// define interfaces that should be used to generate service manifest files
+ext["serviceInterfaces"] = listOf(
+    "org.cesecore.certificates.ocsp.extension.OCSPExtension"
+)
 
 tasks.jar {
     from("../resources/WEB-INF/META-INF") {

@@ -5,7 +5,8 @@
       xmlns:fn="jakarta.tags.functions"
       xmlns:h="jakarta.faces.html"
       xmlns:ui="jakarta.faces.facelets"
-      xmlns:c="jakarta.tags.core">
+      xmlns:c="jakarta.tags.core"
+      xmlns:p="http://primefaces.org/ui">
 <ui:remove>
     <!--
     /*************************************************************************
@@ -31,11 +32,9 @@
             <h:outputText value="#{editCAsMBean.editCAPageTitle}"/>
         </h2>
         <h3>
-            <h:outputText value="#{web.text.CANAME}"/>
+            <h:outputText value="#{web.text.CANAME} : "/>
             <h:outputText value="#{editCAsMBean.editCaName}"
                           rendered="#{editCAsMBean.editCA}"/>
-            <h:outputText value="#{editCAsMBean.createCaNameTitle}"
-                          rendered="#{not editCAsMBean.editCA}"/>
         </h3>
 
         <h:form id="editcapage" enctype="multipart/form-data">
@@ -49,6 +48,18 @@
                 <h:outputLink value="managecas.xhtml">
                     <h:outputText value="#{web.text.BACKTOCAS}"/>
                 </h:outputLink>
+                
+                <h:panelGroup>
+                    <h:outputLabel for="getcanamegroup" value="#{web.text.CANAME}"/>
+                </h:panelGroup>
+                <h:panelGroup id="getcanamegroup">
+                    <h:outputText id="getcaname" value="#{editCAsMBean.caName}" rendered="#{not editCAsMBean.hasEditRight}"/>
+                    <h:inputText id="textfieldcaname" name="setcanameinput" size="45"
+                                 value="#{editCAsMBean.caName}"
+                                 rendered="#{editCAsMBean.hasEditRight}">
+                      <f:ajax event="change" render="@form"/>
+                    </h:inputText>
+                </h:panelGroup>
 
                 <h:panelGroup>
                     <h:outputLabel for="getcaid" value="#{web.text.CAID}"
@@ -214,7 +225,7 @@
 					<h:panelGroup
 						rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable}">
 						<h:outputLabel for="getAlternativeSigningAlgorithm"
-							value="#{web.text.ALTERNATIVESIGNINGALGORITHM}"
+							value="#{web.text.SIGNINGALGORITHM_ALTERNATIVE}"
 							style="font-weight: bold;" />
 					</h:panelGroup>
 					<h:panelGroup
@@ -226,7 +237,7 @@
 
 					<h:panelGroup
 						rendered="#{not editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable}">
-						<h:outputLabel value="#{web.text.ALTERNATIVESIGNINGALGORITHM}"
+						<h:outputLabel value="#{web.text.SIGNINGALGORITHM_ALTERNATIVE}"
 							style="font-weight: bold;" />
 					</h:panelGroup>
 					<h:panelGroup
@@ -417,7 +428,21 @@
                             <f:selectItems value="#{editCAsMBean.getKeyAliasesListWithDefault('testKey')}"/>
                         </h:selectOneMenu>
                     </h:panelGroup>
-
+                    <h:panelGroup
+                            rendered="#{not editCAsMBean.editCA or editCAsMBean.currentCaCryptoTokenPresent and not editCAsMBean.renderCvcAvailable}">
+                        <h:outputLabel for="keyEncryptionPaddingAlgorithm" value="#{web.text.KEY_ENCRYPTION_PADDING_ALGORITHM}"/>
+                        <h:outputText
+                                value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Key_Encryption_Padding_Algorithm')}"
+                                escape="false" styleClass="helpReference"/>
+                    </h:panelGroup>
+                    <h:panelGroup
+                            rendered="#{not editCAsMBean.editCA or editCAsMBean.currentCaCryptoTokenPresent and not editCAsMBean.renderCvcAvailable}">
+                        <h:selectOneMenu id="keyEncryptionPaddingAlgorithm"
+                                         value="#{editCAsMBean.caInfoDto.keyEncryptionPaddingAlgorithm}"
+                                         disabled="#{not editCAsMBean.hasEditRight}">
+                            <f:selectItems value="#{editCAsMBean.keyEncryptionPaddingAlgorithmList}"/>
+                        </h:selectOneMenu>
+                    </h:panelGroup>
                     <h:panelGroup
                             rendered="#{not editCAsMBean.editCA or editCAsMBean.currentCaCryptoTokenPresent and not editCAsMBean.renderCvcAvailable}">
                         <h:outputLabel for="keysequenceformat"
@@ -434,7 +459,6 @@
                             <f:selectItems value="#{editCAsMBean.keySequenceFormatList}"/>
                         </h:selectOneMenu>
                     </h:panelGroup>
-
                     <h:panelGroup
                             rendered="#{not editCAsMBean.editCA or editCAsMBean.currentCaCryptoTokenPresent and not editCAsMBean.renderCvcAvailable}">
                         <h:outputLabel for="keysequence" value="#{web.text.KEYSEQUENCE}"/>
@@ -886,6 +910,23 @@
                     <h:outputLabel for="checkboxpreproduceocspresponses"
                                    value="#{editCAsMBean.checkboxUseCollapsedText}"/>
                 </h:panelGroup>
+				
+				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.caTypeX509 or editCAsMBean.caInfoDto.caTypeCVC}">
+				    <h:outputLabel for="checkboxaddCompromisedKeysToBlockList"
+				                   value="#{web.text.ADDCOMPROMISEDKEYSTOBLOCKLIST}"/>
+				    <h:outputText
+				            value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Add_Compromised_Keys_To_Block_List')}"
+				            escape="false" styleClass="helpReference"/>
+				</h:panelGroup>
+
+				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.caTypeX509 or editCAsMBean.caInfoDto.caTypeCVC}">
+				    <h:selectBooleanCheckbox id="checkboxaddCompromisedKeysToBlockList"
+				                             value="#{editCAsMBean.caInfoDto.addCompromisedKeysToBlockList}"
+				                             disabled="#{not editCAsMBean.hasEditRight}">
+					</h:selectBooleanCheckbox>				 
+				    <h:outputLabel for="checkboxaddCompromisedKeysToBlockList"
+				                   value="#{web.text.USE}"/>
+				</h:panelGroup>
 
             </h:panelGrid>
 
@@ -1533,12 +1574,45 @@
                             value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Keep_Expired_Certificates_on_CRL')}"
                             escape="false" styleClass="helpReference"/>
                 </h:panelGroup>
-                <h:panelGroup rendered="#{not editCAsMBean.caExternal}">
+                <h:panelGroup rendered="#{not editCAsMBean.caExternal}">                   
                     <h:selectBooleanCheckbox id="checkboxkeepexpiredoncrl"
-                                             value="#{editCAsMBean.caInfoDto.keepExpiredOnCrl}"
-                                             disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}"/>
+                                             value="#{editCAsMBean.caInfoDto.keepExpiredCertsOnCrl}"
+                                             disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}" >
+                        <f:ajax render=":editcapage:keepExpiredCrlFormatPanel :editcapage:keepExpiredCrlFormatInput :editcapage:keepExpiredCrlFormatLabel :editcapage:expiredCrlFormat"
+                                onevent="function (ev) { if (ev.status == 'success') { ejbca.adminweb.hideShowCellsByClass('keepExpiredCellContents', ev.source.checked) } }" />
+                    </h:selectBooleanCheckbox>
                     <h:outputLabel for="checkboxkeepexpiredoncrl"
                                    value="#{web.text.USE}"/>
+                    <h:outputScript rendered="${not editCAsMBean.keepExpiredCertsOnCrlChecked}">
+                        if (document.readyState != 'complete') {
+                            document.addEventListener('DOMContentLoaded', function () {
+                                ejbca.adminweb.hideShowCellsByClass('keepExpiredCellContents', false);
+                            });
+                        } else {
+                            ejbca.adminweb.hideShowCellsByClass('keepExpiredCellContents', false);
+                        }
+                    </h:outputScript>
+                </h:panelGroup>
+                <!-- Keep Expired CRL date format -->
+                <h:panelGroup rendered="#{not editCAsMBean.caExternal}" >
+                    <h:panelGroup id="keepExpiredCrlFormatPanel" styleClass="keepExpiredCellContents">
+                        <h:outputText id="keepExpiredCrlFormatLabel" value="#{web.text.KEEPEXPIREDONCRL_FORMAT}"/>
+                    </h:panelGroup>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{not editCAsMBean.caExternal}" >
+                    <h:panelGroup id="keepExpiredCrlFormatInput" styleClass="keepExpiredCellContents">
+                        <h:selectOneRadio id="expiredCrlFormat" value="#{editCAsMBean.caInfoDto.keepExpiredCertsOnCrlFormat}" layout="pageDirection" disabled="#{not editCAsMBean.hasEditRight}">
+                            <f:selectItem itemLabel="#{web.text.KEEPEXPIREDONCRL_CA_DATE}" itemValue="0"/>
+                            <f:selectItem itemLabel="#{web.text.KEEPEXPIREDONCRL_ARBITRARY_DATE}" itemValue="1"/>
+                            <f:ajax event="change" render="arbitraryDate" />
+                        </h:selectOneRadio>
+                        <p:datePicker id="arbitraryDate" value="#{editCAsMBean.caInfoDto.keepExpiredCertsOnCrlDateAsLocalDateTime}" showIcon="true" showTime="true" showButtonBar="true"
+			             pattern="yyyy-MM-dd, HH:mm:ss" mask="true" showOnFocus="false" disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caInfoDto.keepExpiredCertsOnCrlFormat==0}" utc="false"/>
+                        <br/>
+                        #{web.text.KEEPEXPIREDONCRL_ARBITRARY_DATE_HELP_TEXT}
+                        <br/>
+                        #{web.text.KEEPEXPIREDONCRL_ARBITRARY_DATE_TIMEZONE} #{editCAsMBean.caInfoDto.currentTimezone}.
+		           </h:panelGroup>
                 </h:panelGroup>
 
                 <!-- Use CRL Partitions -->
@@ -2495,67 +2569,69 @@
                 <h:outputLabel/>
 
                 <h:panelGroup rendered="#{not editCAsMBean.caExternal}">
+                    <div class="action-buttons">
+                        <h:commandButton id="buttonsave"
+                                         value="#{web.text.SAVE}"
+                                         action="#{editCAsMBean.saveCa}"
+                                         rendered="#{editCAsMBean.editCaNotUninitializedHasEditRights}"/>
 
-                    <h:commandButton id="buttonsave"
-                                     value="#{web.text.SAVE}"
-                                     action="#{editCAsMBean.saveCa}"
-                                     rendered="#{editCAsMBean.editCaNotUninitializedHasEditRights}"/>
+                        <h:commandButton name="buttonsave"
+                                         value="#{web.text.SAVE}"
+                                         rendered="#{editCAsMBean.editCaUninitializedHasEditRights and editCAsMBean.cryptoTokenIdParamNotNull}"
+                                         action="#{editCAsMBean.saveCa}"/>
 
-                    <h:commandButton name="buttonsave"
-                                     value="#{web.text.SAVE}"
-                                     rendered="#{editCAsMBean.editCaUninitializedHasEditRights and editCAsMBean.cryptoTokenIdParamNotNull}"
-                                     action="#{editCAsMBean.saveCa}"/>
+                        <h:commandButton id="buttoninitialize"
+                                         value="#{web.text.SAVE_AND_INITIALIZE}"
+                                         rendered="#{editCAsMBean.editCaUninitializedHasEditRights and editCAsMBean.cryptoTokenIdParamNotNull}"
+                                         action="#{editCAsMBean.initializeCa}"/>
 
-                    <h:commandButton id="buttoninitialize"
-                                     value="#{web.text.SAVE_AND_INITIALIZE}"
-                                     rendered="#{editCAsMBean.editCaUninitializedHasEditRights and editCAsMBean.cryptoTokenIdParamNotNull}"
-                                     action="#{editCAsMBean.initializeCa}"/>
+                        <h:outputText
+                                value="#{web.text.CRYPTOTOKEN_DOESNT_EXIST_CANT_INITIALIZE}"
+                                style="font-weight: bold;"
+                                rendered="#{editCAsMBean.editCaUninitializedHasEditRights and not editCAsMBean.cryptoTokenIdParamNotNull and editCAsMBean.caUninitialized}"/>
+                        <ui:fragment
+                                rendered="#{editCAsMBean.editCaUninitializedHasEditRights and not editCAsMBean.cryptoTokenIdParamNotNull and editCAsMBean.caUninitialized}">
+                            <br/>
+                            <br/>
+                        </ui:fragment>
 
-                    <h:outputText
-                            value="#{web.text.CRYPTOTOKEN_DOESNT_EXIST_CANT_INITIALIZE}"
-                            style="font-weight: bold;"
-                            rendered="#{editCAsMBean.editCaUninitializedHasEditRights and not editCAsMBean.cryptoTokenIdParamNotNull and editCAsMBean.caUninitialized}"/>
-                    <ui:fragment
-                            rendered="#{editCAsMBean.editCaUninitializedHasEditRights and not editCAsMBean.cryptoTokenIdParamNotNull and editCAsMBean.caUninitialized}">
-                        <br/>
-                        <br/>
-                    </ui:fragment>
+                        <h:commandButton name="buttonsave"
+                                         value="#{web.text.SAVE}"
+                                         action="#{editCAsMBean.saveCa}"
+                                         rendered="#{editCAsMBean.editCaUninitializedHasEditRights and not editCAsMBean.cryptoTokenIdParamNotNull and editCAsMBean.caUninitialized}"/>
 
-                    <h:commandButton name="buttonsave"
-                                     value="#{web.text.SAVE}"
-                                     action="#{editCAsMBean.saveCa}"
-                                     rendered="#{editCAsMBean.editCaUninitializedHasEditRights and not editCAsMBean.cryptoTokenIdParamNotNull and editCAsMBean.caUninitialized}"/>
+                        <h:outputText
+                                value="#{web.text.CRYPTOTOKEN_DOESNT_EXIST_CANT_SAVE}"
+                                style="font-weight: bold;"
+                                rendered="#{editCAsMBean.editCaUninitializedHasEditRights and not editCAsMBean.cryptoTokenIdParamNotNull and not editCAsMBean.caUninitialized}"/>
 
-                    <h:outputText
-                            value="#{web.text.CRYPTOTOKEN_DOESNT_EXIST_CANT_SAVE}"
-                            style="font-weight: bold;"
-                            rendered="#{editCAsMBean.editCaUninitializedHasEditRights and not editCAsMBean.cryptoTokenIdParamNotNull and not editCAsMBean.caUninitialized}"/>
+                        <h:commandButton id="buttoncreate"
+                                         value="#{web.text.CREATE}"
+                                         action="#{editCAsMBean.createCa}"
+                                         rendered="#{not editCAsMBean.editCA and editCAsMBean.hasEditRight and editCAsMBean.hasCreateRight}"
+                                         disabled="#{editCAsMBean.signedByExternal}"/>
 
-                    <h:commandButton id="buttoncreate"
-                                     value="#{web.text.CREATE}"
-                                     action="#{editCAsMBean.createCa}"
-                                     rendered="#{not editCAsMBean.editCA and editCAsMBean.hasEditRight and editCAsMBean.hasCreateRight}"
-                                     disabled="#{editCAsMBean.signedByExternal}"/>
-                    &nbsp;&nbsp;&nbsp;
-                    <h:button
-                            name="buttoncancel"
-                            value="#{web.text.CANCEL}"
-                            outcome="managecas.xhtml?faces-redirect=true"/>
-
+                        <h:button
+                                name="buttoncancel"
+                                value="#{web.text.CANCEL}"
+                                outcome="managecas.xhtml?faces-redirect=true"/>
+                    </div>
                 </h:panelGroup>
 
                 <h:panelGroup rendered="#{editCAsMBean.caExternal}">
-                    <h:commandButton name="buttonsaveexternalca"
-                                     value="#{web.text.SAVE}"
-                                     rendered="#{editCAsMBean.renderSaveExternalCa}"
-                                     action="#{editCAsMBean.saveExternalCA}"/>
-                    &nbsp;&nbsp;&nbsp;
-                    <h:button name="buttoncancel" value="#{web.text.CANCEL}"
-                              rendered="#{editCAsMBean.renderSaveExternalCa}"
-                              outcome="managecas.xhtml?faces-redirect=true"/>
-                    <h:button name="buttoncancel" value="#{web.text.BACK}"
-                              rendered="#{not editCAsMBean.renderSaveExternalCa}"
-                              outcome="managecas.xhtml?faces-redirect=true"/>
+                    <div class="action-buttons">
+                        <h:commandButton name="buttonsaveexternalca"
+                                         value="#{web.text.SAVE}"
+                                         rendered="#{editCAsMBean.renderSaveExternalCa}"
+                                         action="#{editCAsMBean.saveExternalCA}"/>
+
+                        <h:button name="buttoncancel" value="#{web.text.CANCEL}"
+                                  rendered="#{editCAsMBean.renderSaveExternalCa}"
+                                  outcome="managecas.xhtml?faces-redirect=true"/>
+                        <h:button name="buttoncancel" value="#{web.text.BACK}"
+                                  rendered="#{not editCAsMBean.renderSaveExternalCa}"
+                                  outcome="managecas.xhtml?faces-redirect=true"/>
+                    </div>
                 </h:panelGroup>
 
             </h:panelGrid>

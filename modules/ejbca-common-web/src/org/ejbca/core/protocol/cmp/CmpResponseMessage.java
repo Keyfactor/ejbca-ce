@@ -34,8 +34,9 @@ import java.util.List;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 
+import com.keyfactor.util.crypto.algorithm.SignatureParameter;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
@@ -71,6 +72,7 @@ import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.cert.cmp.CMSProcessableCMPCertificate;
 import org.bouncycastle.cert.crmf.CRMFException;
 import org.bouncycastle.cert.crmf.jcajce.JceCRMFEncryptorBuilder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.cms.CMSAlgorithm;
 import org.bouncycastle.cms.CMSEnvelopedData;
 import org.bouncycastle.cms.CMSEnvelopedDataGenerator;
@@ -271,25 +273,38 @@ public class CmpResponseMessage implements CertificateResponseMessage {
     public boolean create() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
         boolean ret = false;
         // Some general stuff, common for all types of messages
-        String issuer = null;
-        String subject = null;
+        GeneralName issuerName = null;
+        GeneralName subjectName = null;
         Certificate signCert = null;
         if (CollectionUtils.isNotEmpty(signCertChain)) {
             signCert = signCertChain.iterator().next();
         }
         if (cert != null) {
-            final X509Certificate x509cert = (X509Certificate) cert;
-            issuer = x509cert.getIssuerX500Principal().getName();
-            subject = x509cert.getSubjectX500Principal().getName();
+            JcaX509CertificateHolder certHolder;
+            try {
+                certHolder = new JcaX509CertificateHolder((X509Certificate)cert);
+            } catch (CertificateEncodingException e) {
+                log.debug("Failed to decode issued certificate", e);
+                throw new IllegalStateException(e);
+            }
+            issuerName = new GeneralName(certHolder.getIssuer());
+            subjectName = new GeneralName(certHolder.getSubject());
         } else if (signCert != null) {
-            issuer = ((X509Certificate) signCert).getSubjectX500Principal().getName();
-            subject = reqMsg.getRequestDN() != null ? reqMsg.getRequestDN() : "CN=fooSubject";
+            JcaX509CertificateHolder certHolder;
+            try {
+                certHolder = new JcaX509CertificateHolder((X509Certificate)signCert);
+            } catch (CertificateEncodingException e) {
+                log.debug("Failed to decode signing certificate", e);
+                throw new IllegalStateException(e);
+            }
+            issuerName = new GeneralName(certHolder.getIssuer());
+            subjectName = reqMsg.getRequestX500Name() != null ? 
+                    new GeneralName(reqMsg.getRequestX500Name()) : new GeneralName(new X500Name("CN=fooSubject"));
         } else {
-            issuer = reqMsg.getIssuerDN() != null ? reqMsg.getIssuerDN() : "CN=fooIssuer";
+            String issuer = reqMsg.getIssuerDN() != null ? reqMsg.getIssuerDN() : "CN=fooIssuer";
+            issuerName = new GeneralName(new X500Name(issuer));
         }
 
-		final GeneralName issuerName = new GeneralName(new X500Name(issuer));
-		final GeneralName subjectName = new GeneralName(new X500Name(subject));
 		final PKIHeaderBuilder myPKIHeader = CmpMessageHelper.createPKIHeaderBuilder(issuerName, subjectName, senderNonce, recipientNonce, transactionId);
 		PKIBody myPKIBody = null;
 		final PKIMessage myPKIMessage;
@@ -455,8 +470,8 @@ public class CmpResponseMessage implements CertificateResponseMessage {
                 myPKIBody = new PKIBody(23, myErrorContent); // 23 = error
             }
 
-            final boolean pbeProtected = (pbeKeyId != null) && (pbeKey != null) && (pbeDigestAlg != null) && (pbeMacAlg != null);
-            final boolean pbmac1Protected = (pbmac1KeyId != null) && (pbmac1Key != null) && (pbmac1PrfAlg != null) && (pbmac1MacAlg != null);
+            final boolean pbeProtected = (pbeKey != null) && (pbeDigestAlg != null) && (pbeMacAlg != null);
+            final boolean pbmac1Protected = (pbmac1Key != null) && (pbmac1PrfAlg != null) && (pbmac1MacAlg != null);
             if (pbeProtected) {
                 myPKIHeader.setProtectionAlg(new AlgorithmIdentifier(CMPObjectIdentifiers.passwordBasedMac));
                 PKIHeader header = myPKIHeader.build();
@@ -498,7 +513,18 @@ public class CmpResponseMessage implements CertificateResponseMessage {
                     }
                 }
                 myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
-                responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, extraCertsList, signKey, signAlg, digest, provider);
+                SignatureParameter signatureParameter = SignatureParameter.NONE;
+
+                // Check if the request message is of type CrmfRequestMessage or P10CrCertificationRequestMessage
+                // and extract the protection algorithm from the header of the PKI message
+                if (reqMsg != null) {
+                    if (reqMsg instanceof CrmfRequestMessage || reqMsg instanceof P10CrCertificationRequestMessage) {
+                        // Use the BaseCmpMessage method to determine the signature parameter from the request
+                        signatureParameter = ((BaseCmpMessage) reqMsg).determineSignatureParameterFromRequest();
+                    }
+                }
+
+                responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, extraCertsList, signKey, signAlg, digest, provider, signatureParameter);
             }
 
             ret = true;

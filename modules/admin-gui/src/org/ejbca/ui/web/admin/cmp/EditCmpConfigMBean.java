@@ -26,6 +26,7 @@ import com.keyfactor.util.StringTools;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -339,15 +340,15 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
 
     public void actionRemoveRaNameSchemeDnPart() {
         String currentNameGenParam = getCmpDto().getRaNameGenParams();
-        if (StringUtils.contains(currentNameGenParam, getSelectedRaNameSchemeDnPart())) {
+        if (Strings.CS.contains(currentNameGenParam, getSelectedRaNameSchemeDnPart())) {
             String[] params = currentNameGenParam.split(";");
             if (params.length == 1) {
                 currentNameGenParam = "";
             } else {
-                if (StringUtils.equals(params[0], getSelectedRaNameSchemeDnPart())) {
-                    currentNameGenParam = StringUtils.remove(currentNameGenParam, getSelectedRaNameSchemeDnPart() + ";");
+                if (Strings.CS.equals(params[0], getSelectedRaNameSchemeDnPart())) {
+                    currentNameGenParam = Strings.CS.remove(currentNameGenParam, getSelectedRaNameSchemeDnPart() + ";");
                 } else {
-                    currentNameGenParam = StringUtils.remove(currentNameGenParam, ";" + getSelectedRaNameSchemeDnPart());
+                    currentNameGenParam = Strings.CS.remove(currentNameGenParam, ";" + getSelectedRaNameSchemeDnPart());
                 }
             }
             getCmpDto().setRaNameGenParams(currentNameGenParam);

@@ -72,7 +72,7 @@ public final class ConfigurationHolder {
 
     /** cesecore.properties must be first in this file, because CONFIGALLOWEXTERNAL is defined in there.
      * NOTE: diff between EJBCA and CESeCore*/
-    private static final String[] CONFIG_FILES = { "cesecore.properties", "extendedkeyusage.properties",
+    private static final String[] CONFIG_FILES = { "cesecore.properties",
             "cache.properties", "database.properties", "databaseprotection.properties", "backup.properties", "va.properties", "ocsp.properties"};
 
     /** Configuration property that enables dynamic reading of properties from the file system. This is not allowed by default for security reasons. */
@@ -508,7 +508,6 @@ public final class ConfigurationHolder {
      * CryptoProviderConfigurationCache:
      * - pkcs11.disableHashingSignMechanisms
      * - cryptotoken.keystorecache
-     * - ca.doPermitExtractablePrivateKeys
      * 
      * @param properties the reloaded properties.
      */
@@ -538,10 +537,7 @@ public final class ConfigurationHolder {
             } else if ("cryptotoken.keystorecache".equals(key) && !Boolean.valueOf(value).equals(CryptoProviderConfigurationCache.INSTANCE.isKeystoreCacheEnabled())) {
                 CryptoProviderConfigurationCache.INSTANCE.setKeystoreCacheEnabled(Boolean.parseBoolean(value));
                 updated.add(key);
-            } else if ("ca.doPermitExtractablePrivateKeys".equals(key) && !Boolean.valueOf(value).equals(CryptoProviderConfigurationCache.INSTANCE.isPermitExtractablePrivateKeys())) {
-                CryptoProviderConfigurationCache.INSTANCE.setPermitExtractablePrivateKeys(Boolean.parseBoolean(value));
-                updated.add(key);
-            }
+            } 
         }
         
         if (log.isTraceEnabled() && updated.size() > 0) {

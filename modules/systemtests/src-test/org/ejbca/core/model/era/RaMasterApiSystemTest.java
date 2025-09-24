@@ -54,7 +54,8 @@ public class RaMasterApiSystemTest {
     private static final Logger log = Logger.getLogger(RaMasterApiSystemTest.class);
 
     private enum EjbcaVersion implements ApiVersion {
-        EJBCA_8_3_0("classes_in_8_3_0.txt");
+        EJBCA_8_3_0("classes_in_8_3_0.txt"),
+        EJBCA_9_3_0("classes_in_9_3_0.txt");
 
         private final String classListFilename;
 
@@ -114,7 +115,6 @@ public class RaMasterApiSystemTest {
             new MethodApiDescriptor("getRoleMember", "org.cesecore.roles.member.RoleMember", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "int"), "0bebd3925cce"),
             new MethodApiDescriptor("getAcmeAccountByPublicKeyStorageId", "org.ejbca.core.protocol.acme.AcmeAccount", Arrays.asList("java.lang.String"), "429313b0326a"),
             new MethodApiDescriptor("editUserWs", "boolean", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "org.ejbca.core.protocol.ws.objects.UserDataVOWS"), "4f4a08e50dd1"),
-            new MethodApiDescriptor("getUserAccessSet", "org.cesecore.authorization.access.AccessSet", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken"), "8305be49e91c"),
             new MethodApiDescriptor("searchForCertificatesV2", "org.ejbca.core.model.era.RaCertificateSearchResponseV2", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "org.ejbca.core.model.era.RaCertificateSearchRequestV2"), "9303c4a4fe7d"),
             new MethodApiDescriptor("getLastCertChain", "java.util.List", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "java.lang.String"), "4b862c27ad99"),
             new MethodApiDescriptor("getCertificatesByExpirationTime", "java.util.Collection", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "long", "int", "int"), "2887073cea92"),
@@ -140,6 +140,7 @@ public class RaMasterApiSystemTest {
             new MethodApiDescriptor("searchForCertificate", "org.cesecore.certificates.certificate.CertificateDataWrapper", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "java.lang.String"), "05b89f2f3579"),
             new MethodApiDescriptor("getAuthorizedRoles", "java.util.List", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken"), "3c69ec7af15a"),
             new MethodApiDescriptor("getCertificateDataForRenew", "org.ejbca.core.model.era.RaCertificateDataOnRenew", Arrays.asList("java.math.BigInteger", "java.lang.String"), "b9766620c18a"),
+            new MethodApiDescriptor("createCertificateWithEntity", "[B", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "org.cesecore.certificates.endentity.EndEntityInformation", "java.lang.String","int", "int"), "500f51d12feb"),
             new MethodApiDescriptor("createCertificateRest", "[B", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest"), "dc7a418e6186"),
             new MethodApiDescriptor("getAvailableCustomRaStyles", "java.util.List", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "int"), "e47a77fe1f6e"),
             new MethodApiDescriptor("softTokenRequest", "[B", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "org.ejbca.core.protocol.ws.objects.UserDataVOWS", "java.lang.String", "java.lang.String", "boolean"), "a49c92128e0e"),
@@ -153,7 +154,6 @@ public class RaMasterApiSystemTest {
             new MethodApiDescriptor("persistAcmeOrder", "java.lang.String", Arrays.asList("org.ejbca.core.protocol.acme.AcmeOrder"), "f5f2f689dfe0"),
             new MethodApiDescriptor("addUser", "boolean", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "org.cesecore.certificates.endentity.EndEntityInformation", "boolean"), "84b5ab85c400"),
             new MethodApiDescriptor("getCertificateChain", "java.util.Collection", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "int"), "60488a031426"),
-            new MethodApiDescriptor("getUserAccessSets", "java.util.List", Arrays.asList("java.util.List"), "f6dfaed51aba"),
             new MethodApiDescriptor("searchForRoleMembers", "org.ejbca.core.model.era.RaRoleMemberSearchResponse", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "org.ejbca.core.model.era.RaRoleMemberSearchRequest"), "f99f39ce58f5"),
             new MethodApiDescriptor("editUser", "boolean", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "org.cesecore.certificates.endentity.EndEntityInformation", "boolean", "java.lang.String"), "bd2b47d27cb9"),
             new MethodApiDescriptor("searchForEndEntities", "org.ejbca.core.model.era.RaEndEntitySearchResponse", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "org.ejbca.core.model.era.RaEndEntitySearchRequest"), "3477940a21ea"),
@@ -224,7 +224,9 @@ public class RaMasterApiSystemTest {
             new MethodApiDescriptor("getGlobalConfigurationLocalFirst", "org.cesecore.configuration.ConfigurationBase", Arrays.asList("java.lang.Class"), "d48ed5d749db"),
             new MethodApiDescriptor("findUsernameByIssuerDnAndSerialNumber", "java.lang.String", Arrays.asList("java.lang.String", "java.lang.String"), "980858d82ee7"),
             new MethodApiDescriptor(EjbcaVersion.EJBCA_8_3_0, "generateOrKeyRecoverTokenV2", "[B", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "org.ejbca.core.model.era.GenerateOrKeyRecoverTokenRequest"), "c3c6329c0edc"),
-            new MethodApiDescriptor("getCertificateCount", "java.lang.Long", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "java.lang.Boolean"), "940551e8dbe3")
+            new MethodApiDescriptor(EjbcaVersion.EJBCA_9_3_0,"keyImportV2", "java.util.List", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "org.cesecore.keys.keyimport.KeyImportRequestData"), "a3c0246f2655"),
+            new MethodApiDescriptor("getCertificateCount", "java.lang.Long", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "java.lang.Boolean"), "940551e8dbe3"),
+            new MethodApiDescriptor("getIfReadyAcmeOrder", "org.ejbca.core.protocol.acme.AcmeOrder", Arrays.asList("java.lang.String"), "287251acd17a")
     // @formatter:on
     );
 

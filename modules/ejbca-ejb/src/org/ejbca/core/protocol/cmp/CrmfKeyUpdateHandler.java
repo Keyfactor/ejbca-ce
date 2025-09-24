@@ -22,7 +22,7 @@ import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.bouncycastle.asn1.crmf.CertReqMsg;
@@ -136,7 +136,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                         LOG.debug("CRMF request message (update) header has protection alg: " + crmfreq.getHeader().getProtectionAlg().getAlgorithm().getId());
                     }
                     // We don't need a default digest algorithm, if setPreferredDigestAlg is null, the sender cert's algorithm will be used
-                    crmfreq.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(crmfreq.getHeader().getProtectionAlg().getAlgorithm().getId(), null));
+                    crmfreq.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlgAndHandleParameters(crmfreq.getHeader().getProtectionAlg(), null));
                 } else if (LOG.isDebugEnabled()) {
                     LOG.debug("CRMF request message (update) header has no protection alg, using default alg in response.");
                 }

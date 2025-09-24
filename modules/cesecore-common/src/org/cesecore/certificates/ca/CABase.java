@@ -27,7 +27,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 
-import org.apache.commons.lang.StringUtils;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
@@ -43,6 +47,7 @@ import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.PKIXNameConstraintValidator;
 import org.bouncycastle.jce.provider.PKIXNameConstraintValidatorException;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.cesecore.certificates.KeyEncryptionPaddingAlgorithm;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAService;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceNotActiveException;
@@ -60,10 +65,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.util.ValidityDate;
-
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * CA is a base class that should be inherited by all CA types
@@ -88,7 +89,7 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
     private static final String USE_CERTREQ_HISTORY = "useCertreqHistory";
     private static final String USE_CERTIFICATE_STORAGE = "useCertificateStorage";
     private static final String ACCEPT_REVOCATION_NONEXISTING_ENTRY = "acceptRevocationNonExistingEntry";
-    private static final String KEEPEXPIREDCERTSONCRL = "keepExpiredCertsOnCRL";
+    private static final String KEEP_EXPIRED_CERTS_ON_CRL = "keepExpiredCertsOnCRL"; // Keep the CRL in uppercase for backward compatibility
 
     protected static final String INCLUDEINHEALTHCHECK = "includeinhealthcheck";
     private static final String USE_USER_STORAGE = "useUserStorage";
@@ -120,7 +121,6 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         setUseUserStorage(cainfo.isUseUserStorage());
         setUseCertificateStorage(cainfo.isUseCertificateStorage());
         setAcceptRevocationNonExistingEntry(cainfo.isAcceptRevocationNonExistingEntry());
-        setKeepExpiredCertsOnCRL(cainfo.getKeepExpiredCertsOnCRL());
         setCRLPeriod(cainfo.getCRLPeriod());
         setCRLIssueInterval(cainfo.getCRLIssueInterval());
         setCRLOverlapTime(cainfo.getCRLOverlapTime());
@@ -128,6 +128,8 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         setGenerateCrlUponRevocation(cainfo.isGenerateCrlUponRevocation());
         setAllowChangingRevocationReason(cainfo.isAllowChangingRevocationReason());
         setAllowInvalidityDate(cainfo.isAllowInvalidityDate());
+        setKeyEncryptionPaddingAlgorithm(cainfo.getKeyEncryptionPaddingAlgorithm());
+        setAddCompromisedKeysToBlockList(cainfo.isAddCompromisedKeysToBlockList());
 
         List<Integer> extendedservicetypes = new ArrayList<>();
         if (cainfo.getExtendedCAServiceInfos() != null) {
@@ -165,7 +167,6 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         if (cainfo.getDefaultCertificateProfileId() > 0 && !cainfo.isUseCertificateStorage()) {
             data.put(DEFAULTCERTIFICATEPROFILEID, cainfo.getDefaultCertificateProfileId());
         }
-        setKeepExpiredCertsOnCRL(cainfo.getKeepExpiredCertsOnCRL());
         setFinishUser(cainfo.getFinishUser());
         setIncludeInHealthCheck(cainfo.getIncludeInHealthCheck());
         setDoEnforceUniquePublicKeys(cainfo.isDoEnforceUniquePublicKeys());
@@ -176,6 +177,8 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         setUseUserStorage(cainfo.isUseUserStorage());
         setUseCertificateStorage(cainfo.isUseCertificateStorage());
         setAcceptRevocationNonExistingEntry(cainfo.isAcceptRevocationNonExistingEntry());
+        setAddCompromisedKeysToBlockList(cainfo.isAddCompromisedKeysToBlockList());
+        setKeyEncryptionPaddingAlgorithm(cainfo.getKeyEncryptionPaddingAlgorithm());
         // Update or create extended CA services
         final Collection<ExtendedCAServiceInfo> infos = cainfo.getExtendedCAServiceInfos();
         if (infos != null) {
@@ -209,6 +212,50 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         }
     }
 
+    /** 
+     * Sets the padding algorithm used for PKCS#12 encryption
+     * 
+     * @param keyEncryptionPaddingAlgorithm one of CAInfo.KEY_ENCRYPT_ALGORITHM_RSA_PKCS_1_5, etc
+     */
+    public void setKeyEncryptionPaddingAlgorithm(final KeyEncryptionPaddingAlgorithm keyEncryptionPaddingAlgorithm) {
+        if(keyEncryptionPaddingAlgorithm == null) {
+            //null check – if this value is being passed as null, it's by a non-X509 CA-
+            data.put(KEY_ENCRYPTION_PADDING_ALGORITHM, null);        
+        } else {  
+            //This was originally written as a serialized object (9.3.0) instead of a string (9.3.2), which originally 
+            //cause 100% uptime issues. To not cause further upgrade issues for users upgrading from 9.3.0, we need to
+            //write the same object to the database as is written, while the changeover is handled in post-upgrade      
+            Object currentPadding = data.get(KEY_ENCRYPTION_PADDING_ALGORITHM);
+            if (currentPadding instanceof KeyEncryptionPaddingAlgorithm) {
+                data.put(KEY_ENCRYPTION_PADDING_ALGORITHM, keyEncryptionPaddingAlgorithm);
+            } else {
+                data.put(KEY_ENCRYPTION_PADDING_ALGORITHM, keyEncryptionPaddingAlgorithm.getName());
+            }
+        }
+    }
+
+    /**
+     * @return padding algorithm chosen for PKCS#12 encryption
+     */
+    @Override
+    public KeyEncryptionPaddingAlgorithm getKeyEncryptionPaddingAlgorithm() {
+        Object algorithm = data.get(KEY_ENCRYPTION_PADDING_ALGORITHM);
+        if (algorithm == null) {
+            //Return PKCS#1.5 as default 
+            return KeyEncryptionPaddingAlgorithm.PKCS_1_5;
+        } else {
+            // For 9.3 the enum object was serialized, but this was changed in 9.3.2 to a string to not cause issues during upgrade.
+            // Thus we have a soft fail here if we encounter the serialized object.
+            // TODO: Mainly here to not cause issues in dev environments – can be removed later in the 9.4 cycle
+            if(algorithm instanceof KeyEncryptionPaddingAlgorithm) {
+                return (KeyEncryptionPaddingAlgorithm) algorithm;
+            } else {
+                return KeyEncryptionPaddingAlgorithm.getByName((String) algorithm);
+            }
+        }
+        
+    }
+
     @Override
     public long getCRLPeriod() {
         return (long) data.get(CRLPERIOD);
@@ -240,6 +287,15 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
     @Override
     public void setGenerateCrlUponRevocation(boolean generate) {
         data.put(GENERATECRLUPONREVOCATION, generate);
+    }
+
+    public void setAddCompromisedKeysToBlockList(boolean addCompromisedKeysBlockList) {
+        data.put(ADD_COMPROMISED_KEYS_TO_BLOCK_LIST, addCompromisedKeysBlockList);
+    }
+
+    @Override
+    public boolean isAddCompromisedKeysToBlockList() {
+        return getBoolean(ADD_COMPROMISED_KEYS_TO_BLOCK_LIST, false);
     }
 
     @Override
@@ -290,7 +346,17 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         }
         return 0;
     }
-    
+
+    @Override
+    public boolean getKeepExpiredCertsOnCrl() {
+        return getBoolean(KEEP_EXPIRED_CERTS_ON_CRL, false);
+    }
+
+    @Override
+    public void setKeepExpiredCertsOnCrl(boolean keepExpiredCertsOnCrl) {
+        data.put(KEEP_EXPIRED_CERTS_ON_CRL, keepExpiredCertsOnCrl);
+    }
+
     private void createExtendedCAService(ExtendedCAServiceInfo info) {
         // Create implementation using reflection
         try {
@@ -434,22 +500,11 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         return getBoolean(ACCEPT_REVOCATION_NONEXISTING_ENTRY, false);
     }
 
-    @Override
-    public boolean getKeepExpiredCertsOnCRL() {
-        return getBoolean(KEEPEXPIREDCERTSONCRL, false);
-    }
-
-    @Override
-    public void setKeepExpiredCertsOnCRL(boolean keepexpiredcertsoncrl) {
-        data.put(KEEPEXPIREDCERTSONCRL, keepexpiredcertsoncrl);
-    }
-    
     /** whether users should be stored or not, default true as was the case before 3.10.x */
     @Override
     public boolean isUseUserStorage() {
         return getBoolean(USE_USER_STORAGE, true);
     }
-
 
     /**
      *

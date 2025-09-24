@@ -441,7 +441,7 @@ CREATE TABLE AcmeAuthorizationData (
 );
 
 CREATE TABLE SctData (
-	pk VARCHAR(256) NOT NULL,
+    pk VARCHAR(256) NOT NULL,
     logId INTEGER NOT NULL,
     fingerprint VARCHAR(256) NOT NULL,
     certificateExpirationDate BIGINT NOT NULL,

@@ -335,12 +335,7 @@ public class ServiceConfigurationView implements Serializable{
 			}
 		}
 		// Sort by label
-		retval.sort(new Comparator<SelectItem>() {
-			@Override
-			public int compare(SelectItem arg0, SelectItem arg1) {
-				return arg0.getLabel().compareTo(arg1.getLabel());
-			}
-		});
+		retval.sort(Comparator.comparing(SelectItem::getLabel));
 		return retval;
 	}
 	

@@ -548,6 +548,240 @@ public class CAsSystemTest extends CaTestCase {
 
     }
 
+    /** Adds a CA Using SLHDSA keys to the database. It also checks that the CA is stored correctly. */
+    @Test
+    public void testAddSLHDSACA() throws Exception {
+        try {
+            createPQCCa(TEST_SLHDSASHA2_128S_CA_NAME, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128S, AlgorithmConstants.SIGALG_SLHDSA_SHA2_128S);
+            CAInfo info = caSession.getCAInfo(admin, TEST_SLHDSASHA2_128S_CA_NAME);
+            X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
+            String sigAlg = AlgorithmTools.getSignatureAlgorithm(cert);
+            assertTrue(AlgorithmConstants.SIGALG_SLHDSA_SHA2_128S.startsWith(sigAlg));
+            assertTrue("Error in created ca certificate", cert.getSubjectX500Principal().toString().equals("CN=" + TEST_SLHDSASHA2_128S_CA_NAME));
+            assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=" + TEST_SLHDSASHA2_128S_CA_NAME));
+            // Make BC cert instead to make sure the public key is BC provider type (to make our test below easier)
+            X509Certificate bccert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
+            PublicKey pk = bccert.getPublicKey();
+            final String keySpec = AlgorithmTools.getKeySpecification(pk);
+            assertEquals("Standard keySpec should be SLH-DSA-SHA2-128S", "SLH-DSA-SHA2-128S", keySpec);
+        } catch (CAExistsException pee) {
+            log.info("CA exists.");
+            fail("Creating SLH-DSA-SHA2-128S CA failed because CA exists.");
+        } finally {
+            removeOldCa(TEST_SLHDSASHA2_128S_CA_NAME);
+        }
+        try {
+            createPQCCa(TEST_SLHDSASHAKE_128S_CA_NAME, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_128S, AlgorithmConstants.SIGALG_SLHDSA_SHAKE_128S);
+            CAInfo info = caSession.getCAInfo(admin, TEST_SLHDSASHAKE_128S_CA_NAME);
+            X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
+            String sigAlg = AlgorithmTools.getSignatureAlgorithm(cert);
+            assertTrue(AlgorithmConstants.SIGALG_SLHDSA_SHAKE_128S.startsWith(sigAlg));
+            assertTrue("Error in created ca certificate", cert.getSubjectX500Principal().toString().equals("CN=" + TEST_SLHDSASHAKE_128S_CA_NAME));
+            assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=" + TEST_SLHDSASHAKE_128S_CA_NAME));
+            // Make BC cert instead to make sure the public key is BC provider type (to make our test below easier)
+            X509Certificate bccert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
+            PublicKey pk = bccert.getPublicKey();
+            final String keySpec = AlgorithmTools.getKeySpecification(pk);
+            assertEquals("Standard keySpec should be SLH-DSA-SHAKE-128S", "SLH-DSA-SHAKE-128S", keySpec);
+        } catch (CAExistsException pee) {
+            log.info("CA exists.");
+            fail("Creating SLH-DSA-SHAKE-128S CA failed because CA exists.");
+        } finally {
+            removeOldCa(TEST_SLHDSASHAKE_128S_CA_NAME);
+        }
+        try {
+            createPQCCa(TEST_SLHDSASHA2_128F_CA_NAME, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F, AlgorithmConstants.SIGALG_SLHDSA_SHA2_128F);
+            CAInfo info = caSession.getCAInfo(admin, TEST_SLHDSASHA2_128F_CA_NAME);
+            X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
+            String sigAlg = AlgorithmTools.getSignatureAlgorithm(cert);
+            assertTrue(AlgorithmConstants.SIGALG_SLHDSA_SHA2_128F.startsWith(sigAlg));
+            assertTrue("Error in created ca certificate", cert.getSubjectX500Principal().toString().equals("CN=" + TEST_SLHDSASHA2_128F_CA_NAME));
+            assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=" + TEST_SLHDSASHA2_128F_CA_NAME));
+            // Make BC cert instead to make sure the public key is BC provider type (to make our test below easier)
+            X509Certificate bccert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
+            PublicKey pk = bccert.getPublicKey();
+            final String keySpec = AlgorithmTools.getKeySpecification(pk);
+            assertEquals("Standard keySpec should be SLH-DSA-SHA2-128F", "SLH-DSA-SHA2-128F", keySpec);
+        } catch (CAExistsException pee) {
+            log.info("CA exists.");
+            fail("Creating SLH-DSA-SHA2-128F CA failed because CA exists.");
+        } finally {
+            removeOldCa(TEST_SLHDSASHA2_128F_CA_NAME);
+        }
+        try {
+            createPQCCa(TEST_SLHDSASHAKE_128F_CA_NAME, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_128F, AlgorithmConstants.SIGALG_SLHDSA_SHAKE_128F);
+            CAInfo info = caSession.getCAInfo(admin, TEST_SLHDSASHAKE_128F_CA_NAME);
+            X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
+            String sigAlg = AlgorithmTools.getSignatureAlgorithm(cert);
+            assertTrue(AlgorithmConstants.SIGALG_SLHDSA_SHAKE_128F.startsWith(sigAlg));
+            assertTrue("Error in created ca certificate", cert.getSubjectX500Principal().toString().equals("CN=" + TEST_SLHDSASHAKE_128F_CA_NAME));
+            assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=" + TEST_SLHDSASHAKE_128F_CA_NAME));
+            // Make BC cert instead to make sure the public key is BC provider type (to make our test below easier)
+            X509Certificate bccert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
+            PublicKey pk = bccert.getPublicKey();
+            final String keySpec = AlgorithmTools.getKeySpecification(pk);
+            assertEquals("Standard keySpec should be SLH-DSA-SHAKE-128F", "SLH-DSA-SHAKE-128F", keySpec);
+        } catch (CAExistsException pee) {
+            log.info("CA exists.");
+            fail("Creating SLH-DSA-SHAKE-128F CA failed because CA exists.");
+        } finally {
+            removeOldCa(TEST_SLHDSASHAKE_128F_CA_NAME);
+        }
+        try {
+            createPQCCa(TEST_SLHDSASHA2_192S_CA_NAME, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_192S, AlgorithmConstants.SIGALG_SLHDSA_SHA2_192S);
+            CAInfo info = caSession.getCAInfo(admin, TEST_SLHDSASHA2_192S_CA_NAME);
+            X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
+            String sigAlg = AlgorithmTools.getSignatureAlgorithm(cert);
+            assertTrue(AlgorithmConstants.SIGALG_SLHDSA_SHA2_192S.startsWith(sigAlg));
+            assertTrue("Error in created ca certificate", cert.getSubjectX500Principal().toString().equals("CN=" + TEST_SLHDSASHA2_192S_CA_NAME));
+            assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=" + TEST_SLHDSASHA2_192S_CA_NAME));
+            // Make BC cert instead to make sure the public key is BC provider type (to make our test below easier)
+            X509Certificate bccert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
+            PublicKey pk = bccert.getPublicKey();
+            final String keySpec = AlgorithmTools.getKeySpecification(pk);
+            assertEquals("Standard keySpec should be SLH-DSA-SHA2-192S", "SLH-DSA-SHA2-192S", keySpec);
+        } catch (CAExistsException pee) {
+            log.info("CA exists.");
+            fail("Creating SLH-DSA-SHA2-192S CA failed because CA exists.");
+        } finally {
+            removeOldCa(TEST_SLHDSASHA2_192S_CA_NAME);
+        }
+        try {
+            createPQCCa(TEST_SLHDSASHAKE_192S_CA_NAME, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_192S, AlgorithmConstants.SIGALG_SLHDSA_SHAKE_192S);
+            CAInfo info = caSession.getCAInfo(admin, TEST_SLHDSASHAKE_192S_CA_NAME);
+            X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
+            String sigAlg = AlgorithmTools.getSignatureAlgorithm(cert);
+            assertTrue(AlgorithmConstants.SIGALG_SLHDSA_SHAKE_192S.startsWith(sigAlg));
+            assertTrue("Error in created ca certificate", cert.getSubjectX500Principal().toString().equals("CN=" + TEST_SLHDSASHAKE_192S_CA_NAME));
+            assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=" + TEST_SLHDSASHAKE_192S_CA_NAME));
+            // Make BC cert instead to make sure the public key is BC provider type (to make our test below easier)
+            X509Certificate bccert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
+            PublicKey pk = bccert.getPublicKey();
+            final String keySpec = AlgorithmTools.getKeySpecification(pk);
+            assertEquals("Standard keySpec should be SLH-DSA-SHAKE-192S", "SLH-DSA-SHAKE-192S", keySpec);
+        } catch (CAExistsException pee) {
+            log.info("CA exists.");
+            fail("Creating SLH-DSA-SHAKE-192S CA failed because CA exists.");
+        } finally {
+            removeOldCa(TEST_SLHDSASHAKE_192S_CA_NAME);
+        }
+        try {
+            createPQCCa(TEST_SLHDSASHA2_192F_CA_NAME, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_192F, AlgorithmConstants.SIGALG_SLHDSA_SHA2_192F);
+            CAInfo info = caSession.getCAInfo(admin, TEST_SLHDSASHA2_192F_CA_NAME);
+            X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
+            String sigAlg = AlgorithmTools.getSignatureAlgorithm(cert);
+            assertTrue(AlgorithmConstants.SIGALG_SLHDSA_SHA2_192F.startsWith(sigAlg));
+            assertTrue("Error in created ca certificate", cert.getSubjectX500Principal().toString().equals("CN=" + TEST_SLHDSASHA2_192F_CA_NAME));
+            assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=" + TEST_SLHDSASHA2_192F_CA_NAME));
+            // Make BC cert instead to make sure the public key is BC provider type (to make our test below easier)
+            X509Certificate bccert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
+            PublicKey pk = bccert.getPublicKey();
+            final String keySpec = AlgorithmTools.getKeySpecification(pk);
+            assertEquals("Standard keySpec should be SLH-DSA-SHA2-192F", "SLH-DSA-SHA2-192F", keySpec);
+        } catch (CAExistsException pee) {
+            log.info("CA exists.");
+            fail("Creating SLH-DSA-SHA2-192F CA failed because CA exists.");
+        } finally {
+            removeOldCa(TEST_SLHDSASHA2_192F_CA_NAME);
+        }
+        try {
+            createPQCCa(TEST_SLHDSASHAKE_192F_CA_NAME, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_192F, AlgorithmConstants.SIGALG_SLHDSA_SHAKE_192F);
+            CAInfo info = caSession.getCAInfo(admin, TEST_SLHDSASHAKE_192F_CA_NAME);
+            X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
+            String sigAlg = AlgorithmTools.getSignatureAlgorithm(cert);
+            assertTrue(AlgorithmConstants.SIGALG_SLHDSA_SHAKE_192F.startsWith(sigAlg));
+            assertTrue("Error in created ca certificate", cert.getSubjectX500Principal().toString().equals("CN=" + TEST_SLHDSASHAKE_192F_CA_NAME));
+            assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=" + TEST_SLHDSASHAKE_192F_CA_NAME));
+            // Make BC cert instead to make sure the public key is BC provider type (to make our test below easier)
+            X509Certificate bccert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
+            PublicKey pk = bccert.getPublicKey();
+            final String keySpec = AlgorithmTools.getKeySpecification(pk);
+            assertEquals("Standard keySpec should be SLH-DSA-SHAKE-192F", "SLH-DSA-SHAKE-192F", keySpec);
+        } catch (CAExistsException pee) {
+            log.info("CA exists.");
+            fail("Creating SLH-DSA-SHAKE-192F CA failed because CA exists.");
+        } finally {
+            removeOldCa(TEST_SLHDSASHAKE_192F_CA_NAME);
+        }
+        try {
+            createPQCCa(TEST_SLHDSASHA2_256S_CA_NAME, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_256S, AlgorithmConstants.SIGALG_SLHDSA_SHA2_256S);
+            CAInfo info = caSession.getCAInfo(admin, TEST_SLHDSASHA2_256S_CA_NAME);
+            X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
+            String sigAlg = AlgorithmTools.getSignatureAlgorithm(cert);
+            assertTrue(AlgorithmConstants.SIGALG_SLHDSA_SHA2_256S.startsWith(sigAlg));
+            assertTrue("Error in created ca certificate", cert.getSubjectX500Principal().toString().equals("CN=" + TEST_SLHDSASHA2_256S_CA_NAME));
+            assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=" + TEST_SLHDSASHA2_256S_CA_NAME));
+            // Make BC cert instead to make sure the public key is BC provider type (to make our test below easier)
+            X509Certificate bccert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
+            PublicKey pk = bccert.getPublicKey();
+            final String keySpec = AlgorithmTools.getKeySpecification(pk);
+            assertEquals("Standard keySpec should be SLH-DSA-SHA2-256S", "SLH-DSA-SHA2-256S", keySpec);
+        } catch (CAExistsException pee) {
+            log.info("CA exists.");
+            fail("Creating SLH-DSA-SHA2-256S CA failed because CA exists.");
+        } finally {
+            removeOldCa(TEST_SLHDSASHA2_256S_CA_NAME);
+        }
+        try {
+            createPQCCa(TEST_SLHDSASHAKE_256S_CA_NAME, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_256S, AlgorithmConstants.SIGALG_SLHDSA_SHAKE_256S);
+            CAInfo info = caSession.getCAInfo(admin, TEST_SLHDSASHAKE_256S_CA_NAME);
+            X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
+            String sigAlg = AlgorithmTools.getSignatureAlgorithm(cert);
+            assertTrue(AlgorithmConstants.SIGALG_SLHDSA_SHAKE_256S.startsWith(sigAlg));
+            assertTrue("Error in created ca certificate", cert.getSubjectX500Principal().toString().equals("CN=" + TEST_SLHDSASHAKE_256S_CA_NAME));
+            assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=" + TEST_SLHDSASHAKE_256S_CA_NAME));
+            // Make BC cert instead to make sure the public key is BC provider type (to make our test below easier)
+            X509Certificate bccert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
+            PublicKey pk = bccert.getPublicKey();
+            final String keySpec = AlgorithmTools.getKeySpecification(pk);
+            assertEquals("Standard keySpec should be SLH-DSA-SHAKE-256S", "SLH-DSA-SHAKE-256S", keySpec);
+        } catch (CAExistsException pee) {
+            log.info("CA exists.");
+            fail("Creating SLH-DSA-SHAKE-256S CA failed because CA exists.");
+        } finally {
+            removeOldCa(TEST_SLHDSASHAKE_256S_CA_NAME);
+        }
+        try {
+            createPQCCa(TEST_SLHDSASHA2_256F_CA_NAME, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_256F, AlgorithmConstants.SIGALG_SLHDSA_SHA2_256F);
+            CAInfo info = caSession.getCAInfo(admin, TEST_SLHDSASHA2_256F_CA_NAME);
+            X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
+            String sigAlg = AlgorithmTools.getSignatureAlgorithm(cert);
+            assertTrue(AlgorithmConstants.SIGALG_SLHDSA_SHA2_256F.startsWith(sigAlg));
+            assertTrue("Error in created ca certificate", cert.getSubjectX500Principal().toString().equals("CN=" + TEST_SLHDSASHA2_256F_CA_NAME));
+            assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=" + TEST_SLHDSASHA2_256F_CA_NAME));
+            // Make BC cert instead to make sure the public key is BC provider type (to make our test below easier)
+            X509Certificate bccert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
+            PublicKey pk = bccert.getPublicKey();
+            final String keySpec = AlgorithmTools.getKeySpecification(pk);
+            assertEquals("Standard keySpec should be SLH-DSA-SHA2-256F", "SLH-DSA-SHA2-256F", keySpec);
+        } catch (CAExistsException pee) {
+            log.info("CA exists.");
+            fail("Creating SLH-DSA-SHA2-256F CA failed because CA exists.");
+        } finally {
+            removeOldCa(TEST_SLHDSASHA2_256F_CA_NAME);
+        }
+        try {
+            createPQCCa(TEST_SLHDSASHAKE_256F_CA_NAME, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_256F, AlgorithmConstants.SIGALG_SLHDSA_SHAKE_256F);
+            CAInfo info = caSession.getCAInfo(admin, TEST_SLHDSASHAKE_256F_CA_NAME);
+            X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
+            String sigAlg = AlgorithmTools.getSignatureAlgorithm(cert);
+            assertTrue(AlgorithmConstants.SIGALG_SLHDSA_SHAKE_256F.startsWith(sigAlg));
+            assertTrue("Error in created ca certificate", cert.getSubjectX500Principal().toString().equals("CN=" + TEST_SLHDSASHAKE_256F_CA_NAME));
+            assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=" + TEST_SLHDSASHAKE_256F_CA_NAME));
+            // Make BC cert instead to make sure the public key is BC provider type (to make our test below easier)
+            X509Certificate bccert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
+            PublicKey pk = bccert.getPublicKey();
+            final String keySpec = AlgorithmTools.getKeySpecification(pk);
+            assertEquals("Standard keySpec should be SLH-DSA-SHAKE-256F", "SLH-DSA-SHAKE-256F", keySpec);
+        } catch (CAExistsException pee) {
+            log.info("CA exists.");
+            fail("Creating SLH-DSA-SHAKE-256F CA failed because CA exists.");
+        } finally {
+            removeOldCa(TEST_SLHDSASHAKE_256F_CA_NAME);
+        }
+
+    }
+
     /** Adds a CA using RSA keys to the database. It also checks that the CA is stored correctly. */
     @Test
     public void test06AddRSASha256WithMGF1CA() throws Exception {

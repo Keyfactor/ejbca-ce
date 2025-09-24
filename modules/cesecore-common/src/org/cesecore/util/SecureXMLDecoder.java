@@ -12,11 +12,11 @@
  *************************************************************************/
 package org.cesecore.util;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.ClassUtils;
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.PKIDisclosureStatement;
@@ -741,7 +741,7 @@ public class SecureXMLDecoder implements AutoCloseable {
 
     // Only supports String value
     private Object parseMutablePair(final XmlPullParser parser) throws XmlPullParserException, IOException {
-        MutablePair pair = new MutablePair();
+        MutablePair<String, String> pair = new MutablePair<String, String>();
         final String clazz = parser.getAttributeValue(null, "class");
         final String method = parser.getAttributeValue(null, "method");
         if(nonNull(clazz) && nonNull(method) && clazz.equals("org.apache.commons.lang3.tuple.MutablePair") && method.equals("getField")) {

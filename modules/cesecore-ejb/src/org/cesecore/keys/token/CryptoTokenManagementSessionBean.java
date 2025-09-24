@@ -12,7 +12,33 @@
  *************************************************************************/
 package org.cesecore.keys.token;
 
-import org.apache.commons.lang.StringUtils;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyPair;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.Provider;
+import java.security.PublicKey;
+import java.security.Security;
+import java.security.cert.CertificateException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Random;
+import java.util.Set;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.audit.enums.EventStatus;
@@ -25,6 +51,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.CryptoTokenRules;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
@@ -51,31 +78,6 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.KeyPair;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.Provider;
-import java.security.PublicKey;
-import java.security.SecureRandom;
-import java.security.Security;
-import java.security.cert.CertificateException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Random;
-import java.util.Set;
 
 /**
  * @see CryptoTokenManagementSession
@@ -92,6 +94,8 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
 
     @EJB
     private AuthorizationSessionLocal authorizationSession;
+    @EJB
+    private CaSessionLocal caSession;
     @EJB
     private SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
     @EJB
@@ -202,7 +206,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
                     if (log.isDebugEnabled()) {
                         log.debug("isCryptoTokenUsed: Checking installed provider: "+installedProviderName);
                     }
-                    if (StringUtils.equals(providerNameToCheck, installedProviderName)) {
+                    if (Strings.CS.equals(providerNameToCheck, installedProviderName)) {
                         // We found a match, but don't add duplicates
                         if (!providers.contains(installedProviderName)) {
                             log.debug("isCryptoTokenUsed: Found a match between "+providerNameToCheck+" and installed provider "+installedProviderName+", which was not already listed, must be a database protection token.");
@@ -221,7 +225,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     private boolean isP11SlotSame(String tokenP11Lib, String providerNameToCheck, String ctiP11lib, String ctiProviderName, String ctiName) throws NoSuchSlotException {
         boolean ret = false;
         if (StringUtils.isNotEmpty(ctiP11lib)) {
-            if (StringUtils.equalsIgnoreCase(tokenP11Lib, ctiP11lib)) {
+            if (Strings.CI.equals(tokenP11Lib, ctiP11lib)) {
                 // We have a match on the library, watch out...check if we are using the same slot as well
                 // Now it gets exciting, since you can address the slot through different things (slotID, slotName, p11Config)
                 // it is really hard to check easily, we need to create the provider and see if the provider name is the same
@@ -229,7 +233,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
                     log.debug("isCryptoTokenUsed: Provider for token we check for: "+providerNameToCheck);
                     log.debug("isCryptoTokenUsed Provider for existing token: "+ctiProviderName);
                 }
-                if (StringUtils.equals(providerNameToCheck, ctiProviderName)) {
+                if (Strings.CS.equals(providerNameToCheck, ctiProviderName)) {
                     // We had a match, the caller knows the crypto token name
                     ret = true;
                 }
@@ -248,7 +252,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         CryptoToken cryptoToken;
         if (className.equals(AzureCryptoToken.class.getName())) {
             cryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, null, -1, tokenName, false,
-                    new KeyBindingFinder(internalKeyBindingSession, certificateStoreSession, cryptoTokenManagementSession));
+                    new KeyBindingFinder(internalKeyBindingSession, certificateStoreSession, cryptoTokenManagementSession, caSession));
         } else {
             cryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, null, -1, tokenName, false);
         }
@@ -398,7 +402,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         // special case - azure crypto token can do public key authentication
         if (className.equals(AzureCryptoToken.class.getName())) {
             cryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, data, cryptoTokenId.intValue(), tokenName, false,
-                    new KeyBindingFinder(internalKeyBindingSession, certificateStoreSession, this));
+                    new KeyBindingFinder(internalKeyBindingSession, certificateStoreSession, cryptoTokenManagementSession, caSession));
         }
 
         // Standard crypto token initialization
@@ -517,7 +521,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
             if (className.equals(AzureCryptoToken.class.getName())) {
                 // special case - pass in an object that can find the authentication key binding
                 newCryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, tokendata, cryptoTokenId, tokenName, 
-                        new KeyBindingFinder(internalKeyBindingSession, certificateStoreSession, this));
+                        new KeyBindingFinder(internalKeyBindingSession, certificateStoreSession, cryptoTokenManagementSession, caSession));
             } else {
                 newCryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, tokendata, cryptoTokenId, tokenName);
             }

@@ -13,10 +13,9 @@
 package org.cesecore.authentication.tokens;
 
 import java.security.Principal;
-import java.security.SecureRandom;
+import java.util.Objects;
 import java.util.Set;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.config.CesecoreConfiguration;
 
@@ -49,7 +48,7 @@ public abstract class LocalJvmOnlyAuthenticationToken extends AuthenticationToke
 	
 	/** @return true if this */
 	protected final boolean isCreatedInThisJvm() {
-		boolean isCreatedInThisJvm = ArrayUtils.isEquals(authToken, RANDOM_TOKEN);
+		boolean isCreatedInThisJvm = Objects.deepEquals(authToken, RANDOM_TOKEN);
 		if (log.isTraceEnabled()) {
 			log.trace("isCreatedInThisJvm: "+isCreatedInThisJvm);
 		}

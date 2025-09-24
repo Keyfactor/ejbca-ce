@@ -32,8 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAService;
@@ -43,7 +43,6 @@ import org.cesecore.certificates.certificate.certextensions.AvailableCustomCerti
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
-import org.cesecore.util.ValidityDate;
 
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
@@ -68,8 +67,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
     private static final Set<String> deprecatedServiceImplementations = new HashSet<>(Arrays.asList("org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAService"));
     
     public static final String CATYPE = "catype";
-    @Deprecated
-    protected static final String VALIDITY = "validity";
+
     protected static final String ENCODED_VALIDITY = "encodedvalidity";
     protected static final String EXPIRETIME = "expiretime";
     protected static final String SIGNEDBY = "signedby";
@@ -108,28 +106,14 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
     protected static final String USENOCONFLICTCERTIFICATEDATA = "usenoconflictcertificatedata";
     protected static final String SERIALNUMBEROCTETSIZE = "serialnumberoctetsize";
     protected static final String DO_PRE_PRODUCE_OCSP_RESPONSES = "dopreproduceocspresponses";
+    protected static final String ADD_COMPROMISED_KEYS_TO_BLOCK_LIST = "addCompromisedKeysToBlockList";
     protected static final String DO_STORE_OCSP_ON_DEMAND = "dostoreocspondemand";
     protected static final String DO_PRE_PRODUCE_INDIVIDUAL_OCSP_RESPONSES = "dopreproduceocspresponsesuponissuanceandrevocation";
     private static final String LATESTLINKCERTIFICATE = "latestLinkCertificate";
-    /**
-     * @deprecated since 6.8.0, replaced by the approvals Action:ApprovalProfile mapping
-     */
-    @Deprecated
-    protected static final String APPROVALSETTINGS = "approvalsettings";
-    /**
-     * @deprecated since 6.8.0, replaced by the approvals Action:ApprovalProfile mapping
-     */
-    @Deprecated
-    protected static final String APPROVALPROFILE = "approvalprofile";
+    protected static final String KEY_ENCRYPTION_PADDING_ALGORITHM = "keyencryptionpaddingalgorithm";
+    
     private static final String APPROVALS = "approvals";
-    
-    /**
-     * @deprecated since 6.6.0, use the appropriate approval profile instead
-     * Needed in order to be able to upgrade from 6.5 and earlier
-     */
-    @Deprecated
-    protected static final String NUMBEROFREQAPPROVALS = "numberofreqapprovals";
-    
+     
     private CAInfo cainfo = null;
     private CAToken caToken = null;
     private ArrayList<Certificate> requestcertchain = null;
@@ -241,25 +225,14 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
         data.put(VALIDATORS, validators);
     }
     
-    @Override
-    @Deprecated
-    public long getValidity() {
-        return ((Number) data.get(VALIDITY)).longValue();
-    }
-    
     /**
      * Gets the validity.
      * @return the validity as ISO8601 date or relative time.
      * @See {@link org.cesecore.util.ValidityDate ValidityDate}
      */
     @Override
-    @SuppressWarnings("deprecation")
     public String getEncodedValidity() {
-        String result = (String) data.get(ENCODED_VALIDITY);
-        if (StringUtils.isBlank(result)) {
-            result = ValidityDate.getStringBeforeVersion661(getValidity());
-        }
-        return result;
+        return (String) data.get(ENCODED_VALIDITY);
     }
     
     /**
@@ -724,60 +697,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
     @Override
     public void setCRLPublishers(Collection<Integer> crlpublishers) {
         data.put(CRLPUBLISHERS, crlpublishers);
-    }
-    
-    /**
-     * The number of different administrators that needs to approve
-     * @deprecated since 6.6.0, use the appropriate approval profile instead.
-     * Needed in order to be able to upgrade from 6.5 and earlier
-     */
-    @Override
-    @Deprecated
-    public void setNumOfRequiredApprovals(int numOfReqApprovals) {
-        data.put(NUMBEROFREQAPPROVALS, numOfReqApprovals);
-    }
-    
-    
-    /**
-     * @return a collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which action that requires approvals,
-     * default none and never null.
-     *
-     * @deprecated since 6.8.0, see getApprovals()
-     */
-    @Override
-    @Deprecated
-    @SuppressWarnings("unchecked")
-    public Collection<Integer> getApprovalSettings() {
-        if (data.get(APPROVALSETTINGS) == null) {
-            return new ArrayList<>();
-        }
-        return (Collection<Integer>) data.get(APPROVALSETTINGS);
-    }
-
-    /**
-     * Collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which action that requires approvals
-     *
-     * @deprecated since 6.8.0, see setApprovals()
-     */
-    @Override
-    @Deprecated
-    public void setApprovalSettings(Collection<Integer> approvalSettings) {
-        data.put(APPROVALSETTINGS, approvalSettings);
-    }
-    
-    /**
-     * @return the number of different administrators that needs to approve an action, default 1.
-     * @deprecated since 6.6.0, use the appropriate approval profile instead.
-     * Needed in order to be able to upgrade from 6.5 and earlier
-     */
-    @Override
-    @Deprecated
-    public int getNumOfRequiredApprovals() {
-        if (data.get(NUMBEROFREQAPPROVALS) == null) {
-            return 1;
-        }
-        return (int) data.get(NUMBEROFREQAPPROVALS);
-    }
+    }    
     
     /**
      * @return A 1:1 mapping between Approval Action:Approval Profile ID
@@ -793,32 +713,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
         // We must store this as a predictable order map in the database, in order for databaseprotection to work
         data.put(APPROVALS, approvals != null ? new LinkedHashMap<>(approvals) : new LinkedHashMap<>());
     }
-    
-    /**
-     * @return the id of the approval profile. Defult -1 (= none)
-     *
-     * @deprecated since 6.8.0, see getApprovals()
-     */
-    @Override
-    @Deprecated
-    public int getApprovalProfile() {
-        if (data.get(APPROVALPROFILE) == null) {
-            return -1;
-        }
-        return (int) data.get(APPROVALPROFILE);
-    }
-
-    /**
-     * The id of the approval profile.
-     *
-     * @deprecated since 6.8.0, see setApprovals()
-     */
-    @Override
-    @Deprecated
-    public void setApprovalProfile(final int approvalProfileID) {
-        data.put(APPROVALPROFILE, approvalProfileID);
-    }
-    
+        
     protected ExtendedCAService getExtendedCAService(int type) {
         ExtendedCAService returnval = null;
         try {
@@ -948,22 +843,6 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
     public void upgrade() {
         if (Float.compare(LATEST_VERSION, getVersion()) != 0) {
             // New version of the class, upgrade
-
-            // v20, remove XKMS CA service
-            if (data.get(EXTENDEDCASERVICES) != null) {
-                @SuppressWarnings("unchecked")
-                Collection<Integer> types = (Collection<Integer>)data.get(EXTENDEDCASERVICES);
-                // Remove type 2, which is XKMS
-                types.remove(2);
-                data.put(EXTENDEDCASERVICES, types);
-                // Remove any data if it exists
-                data.remove(EXTENDEDCASERVICE+2);
-            }
-
-            // v22, 'encodedValidity' is derived by the former long value!
-            if (null == data.get(ENCODED_VALIDITY)  && null != data.get(VALIDITY)) {
-                setEncodedValidity(getEncodedValidity());
-            }
             // v23 'keyValidators' new empty list.
             if (null == data.get(VALIDATORS)) {
                 setValidators(new ArrayList<Integer>());

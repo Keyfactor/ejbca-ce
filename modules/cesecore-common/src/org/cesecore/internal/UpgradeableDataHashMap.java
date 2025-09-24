@@ -23,7 +23,6 @@ import java.util.Map.Entry;
 import org.cesecore.util.Base64GetHashMap;
 
 
-
 /**
  * UpgradeableDataHashMap is an class implementing the IUpgradeableData intended to be extended by
  * classes saving it's data to a database in BLOB/CLOB form.
@@ -49,7 +48,7 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
     public static final String VERSION = "version";
 
     protected static final float MAP_LOAD_FACTOR = 0.75f; // expected initial capacity/loadFactor, avoiding the unnecessary resize while copy
-    
+
 	/**
      * Creates a new UpgradeableDataHashMap object.
      */
@@ -228,6 +227,22 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
             return defaultValue;
         }
         return (Boolean) object;
+    }
+
+    protected long getLong(final String key, final long defaultValue) {
+        final Object object = data.get(key);
+        if (!(object instanceof Long)) {
+            return defaultValue;
+        }
+        return (Long) object;
+    }
+
+    protected int getInt(final String key, final int defaultValue) {
+        final Object object = data.get(key);
+        if (!(object instanceof Integer)) {
+            return defaultValue;
+        }
+        return (Integer) object;
     }
 
     /**

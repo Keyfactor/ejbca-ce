@@ -34,7 +34,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.AltSignatureAlgorithm;
 import org.bouncycastle.asn1.x509.Extension;
@@ -46,6 +46,7 @@ import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.edec.BCEdDSAPublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.mldsa.BCMLDSAPublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.mlkem.BCMLKEMPublicKey;
+import org.bouncycastle.jcajce.provider.asymmetric.slhdsa.BCSLHDSAPublicKey;
 import org.bouncycastle.pqc.crypto.falcon.FalconPublicKeyParameters;
 import org.bouncycastle.pqc.crypto.util.PublicKeyFactory;
 import org.bouncycastle.pqc.jcajce.provider.falcon.BCFalconPublicKey;
@@ -404,6 +405,9 @@ public class CertificateView implements Serializable {
             hex = hex.toUpperCase();
         } else if (publicKey instanceof BCMLDSAPublicKey) {
             hex = "" + Hex.toHexString(((BCMLDSAPublicKey) publicKey).getPublicData());
+            hex = hex.toUpperCase();
+        } else if (publicKey instanceof BCSLHDSAPublicKey) {
+            hex = "" + Hex.toHexString(((BCSLHDSAPublicKey) publicKey).getPublicData());
             hex = hex.toUpperCase();
         } else if (publicKey instanceof BCMLKEMPublicKey) {
             hex = "" + Hex.toHexString(((BCMLKEMPublicKey) publicKey).getPublicData());

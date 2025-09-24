@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.configuration.ConfigurationBase;
@@ -149,6 +149,22 @@ public class GlobalAcmeConfiguration extends ConfigurationBase implements Serial
     public byte[] getReplayNonceSharedSecretCurrent(final String hmacOid) throws IllegalArgumentException, IllegalStateException {
         final ArrayList<String> replayNonceSharedSecrets = getReplayNonceSharedSecrets(hmacOid);
         return Hex.decode(replayNonceSharedSecrets.get(replayNonceSharedSecrets.size()-1));
+    }
+    
+    /** @return the latest replay-nonce secret in hex for the specified algorithm that have been configured, Used by configdump only. */
+    public String getReplayNonceSharedSecretCurrentHex() throws IllegalArgumentException, IllegalStateException {
+        final ArrayList<String> replayNonceSharedSecrets = getReplayNonceSharedSecrets(PKCSObjectIdentifiers.id_hmacWithSHA256.getId());
+        return replayNonceSharedSecrets.get(replayNonceSharedSecrets.size()-1);
+    }
+    /** Import the latest replay-nonce secret in hex. Used by configdump only. */
+    public void setReplayNonceSharedSecretCurrentHex(final String secret) throws IllegalArgumentException, IllegalStateException {
+        final ArrayList<String> replayNonceSharedSecrets = getReplayNonceSharedSecrets(PKCSObjectIdentifiers.id_hmacWithSHA256.getId());
+        // There should be only 1.
+        if (replayNonceSharedSecrets.size() == 1) {
+            replayNonceSharedSecrets.set(0, secret);
+        } else {
+            replayNonceSharedSecrets.add(secret);
+        }
     }
 
     /** Add a new replay-nonce secret for the specified algorithm to use for all new generated replay-nonces */

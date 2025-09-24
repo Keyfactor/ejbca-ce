@@ -15,21 +15,12 @@ package org.ejbca.core.ejb.authorization;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ServiceLoader;
-import java.util.Set;
 
-import jakarta.ejb.EJB;
-import jakarta.ejb.Stateless;
-import jakarta.ejb.TransactionAttribute;
-import jakarta.ejb.TransactionAttributeType;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -38,7 +29,6 @@ import org.cesecore.authentication.tokens.PublicAccessMatchValue;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
-import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRulePlugin;
@@ -47,6 +37,7 @@ import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.config.GlobalEndEntityProfileConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
@@ -63,8 +54,14 @@ import org.ejbca.core.ejb.authentication.cli.CliAuthenticationTokenMetaData;
 import org.ejbca.core.ejb.authentication.cli.CliUserAccessMatchValue;
 import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
-import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 /**
  * This session bean handles high level authorization system tasks.
@@ -96,8 +93,6 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
     private RoleMemberSessionLocal roleMemberSession;
     @EJB
     private RoleMemberDataSessionLocal roleMemberDataSession;
-    @EJB
-    private UserDataSourceSessionLocal userDataSourceSession;
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
@@ -125,14 +120,15 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
         final Map<Integer, String> caIdToNameMap = caSession.getCAIdToNameMap();
         final Map<Integer, String> kvIdToNameMap = keyValidatorSession.getKeyValidatorIdToNameMap();
         final Map<Integer, String> eepIdToNameMap = endEntityProfileSession.getEndEntityProfileIdToNameMap();
-        final Map<Integer, String> userDataSourceIdToNameMap = userDataSourceSession.getUserDataSourceIdToNameMap();
         final Map<Integer,String> cryptoTokenIdToNameMap = cryptoTokenSession.getCryptoTokenIdToNameMap();
         final GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        final boolean endEntityProfileLimitationsEnabled = ignoreLimitations || globalConfiguration.getEnableEndEntityProfileLimitations();
+        final GlobalEndEntityProfileConfiguration globalEEPConfiguration = (GlobalEndEntityProfileConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalEndEntityProfileConfiguration.EEP_CONFIGURATION_ID);
+
+        final boolean endEntityProfileLimitationsEnabled = ignoreLimitations || globalEEPConfiguration.getEnableEndEntityProfileLimitations();
         final boolean keyRecoveryEnabled = ignoreLimitations || globalConfiguration.getEnableKeyRecovery();
         final Map<String, Map<String,String>> categorizedAccessRules = getAllResourceAndResourceNamesByCategory(
                 endEntityProfileLimitationsEnabled, keyRecoveryEnabled,
-                Arrays.asList(EjbcaConfiguration.getCustomAvailableAccessRules()), eepIdToNameMap, userDataSourceIdToNameMap, cryptoTokenIdToNameMap, caIdToNameMap, kvIdToNameMap);
+                Arrays.asList(EjbcaConfiguration.getCustomAvailableAccessRules()), eepIdToNameMap, cryptoTokenIdToNameMap, caIdToNameMap, kvIdToNameMap);
         final Map<String,String> ret = new HashMap<>();
         for (final Map<String,String> acessRuleMap : categorizedAccessRules.values()) {
             ret.putAll(acessRuleMap);
@@ -145,18 +141,18 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
         final Map<Integer, String> caIdToNameMap = caSession.getCAIdToNameMap();
         final Map<Integer, String> kvIdToNameMap = keyValidatorSession.getKeyValidatorIdToNameMap();
         final Map<Integer, String> eepIdToNameMap = endEntityProfileSession.getEndEntityProfileIdToNameMap();
-        final Map<Integer, String> userDataSourceIdToNameMap = userDataSourceSession.getUserDataSourceIdToNameMap();
         final Map<Integer,String> cryptoTokenIdToNameMap = cryptoTokenSession.getCryptoTokenIdToNameMap();
         final GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        final boolean endEntityProfileLimitationsEnabled = globalConfiguration.getEnableEndEntityProfileLimitations();
+        final GlobalEndEntityProfileConfiguration globalEEPConfiguration = (GlobalEndEntityProfileConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalEndEntityProfileConfiguration.EEP_CONFIGURATION_ID);
+        final boolean endEntityProfileLimitationsEnabled = globalEEPConfiguration.getEnableEndEntityProfileLimitations();
         final boolean keyRecoveryEnabled = globalConfiguration.getEnableKeyRecovery();
         return getAllResourceAndResourceNamesByCategory(
                 endEntityProfileLimitationsEnabled, keyRecoveryEnabled, Arrays.asList(EjbcaConfiguration.getCustomAvailableAccessRules()), 
-                eepIdToNameMap, userDataSourceIdToNameMap, cryptoTokenIdToNameMap, caIdToNameMap, kvIdToNameMap);
+                eepIdToNameMap, cryptoTokenIdToNameMap, caIdToNameMap, kvIdToNameMap);
     }
 
     private Map<String,Map<String,String>> getAllResourceAndResourceNamesByCategory(boolean endEntityProfileLimitationsEnabled,
-            boolean keyRecoveryEnabled, Collection<String> customAccessRules, Map<Integer,String> eepIdToNameMap, Map<Integer, String> userDataSourceIdToNameMap,
+            boolean keyRecoveryEnabled, Collection<String> customAccessRules, Map<Integer,String> eepIdToNameMap,
             Map<Integer,String> cryptoTokenIdToNameMap, Map<Integer,String> caIdToNameMap, Map<Integer,String> kvIdToNameMap) {
         final Map<String,Map<String,String>> ret = new LinkedHashMap<>();
         // Role based access rules
@@ -245,20 +241,7 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
             }
         }
         ret.put("CRYPTOTOKENACCESSRULES", accessRulesCtAccess);
-        // Insert User data source access rules
-        final Map<String,String> accessRulesUdsAccess = new LinkedHashMap<>();
-        accessRulesUdsAccess.put(AccessRulesConstants.USERDATASOURCEBASE, AccessRulesConstants.USERDATASOURCEBASE);
-        for (final int userDataSourceId : userDataSourceIdToNameMap.keySet()) {
-            String userDataSourceName = userDataSourceIdToNameMap.get(userDataSourceId);
-            if (userDataSourceName==null) {
-                userDataSourceName = String.valueOf(userDataSourceId);
-            }
-            accessRulesUdsAccess.put(AccessRulesConstants.USERDATASOURCEPREFIX + userDataSourceId + AccessRulesConstants.UDS_FETCH_RIGHTS,
-                    AccessRulesConstants.USERDATASOURCEPREFIX + userDataSourceName + AccessRulesConstants.UDS_FETCH_RIGHTS);
-            accessRulesUdsAccess.put(AccessRulesConstants.USERDATASOURCEPREFIX + userDataSourceId + AccessRulesConstants.UDS_REMOVE_RIGHTS,
-                    AccessRulesConstants.USERDATASOURCEPREFIX + userDataSourceName + AccessRulesConstants.UDS_REMOVE_RIGHTS);
-        }
-        ret.put("USERDATASOURCEACCESSRULES", accessRulesUdsAccess);
+        
         // Insert plugin rules
         for (final AccessRulePlugin accessRulePlugin : ServiceLoader.load(AccessRulePlugin.class)) {
             Map<String,String> accessRulesInCategory = ret.get(accessRulePlugin.getCategory());
@@ -342,17 +325,6 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
                 , Role.STATE_ALLOW);
         roleDataSession.persistRole(publicRole);
         return true;
-    }
-
-    @Override
-    public AccessSet getAccessSetForAuthToken(AuthenticationToken authenticationToken) throws AuthenticationFailedException {
-        final HashMap<String, Boolean> accessRules = authorizationSession.getAccessAvailableToAuthenticationToken(authenticationToken);
-        final Set<String> allResources = new HashSet<>(getAllResources(false).keySet());
-        // Since we no longer support the recursive rule in AccessSets from EJBCA 6.8.0 we also need to include non-configurable access rules
-        // ..but this is kind of theoretical since we currently don't support any of these operations from the RA
-        allResources.add(StandardRules.CAADD.resource());
-        allResources.add(StandardRules.CAREMOVE.resource());
-        return AccessSet.fromAccessRules(accessRules, allResources);
     }
 
     private void initPublicAccessRoleOnFreshInstallation(){

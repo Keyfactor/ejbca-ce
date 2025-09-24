@@ -32,15 +32,9 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
-import jakarta.ejb.EJB;
-import jakarta.ejb.EJBException;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.cms.CMSException;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
@@ -48,6 +42,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.PublicWebPrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStatus;
@@ -65,6 +60,13 @@ import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.DnComponents;
+
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Servlet used to distribute certificates and CRLs.<br>
@@ -113,14 +115,15 @@ public class CertDistServlet extends HttpServlet {
     private static final String ISSUER_PROPERTY = "issuer";
     private static final String SERNO_PROPERTY = "serno";
     private static final String LEVEL_PROPERTY = "level";
-    /* @Deprecated since EJBCA 6.3.0. MOZILLA_PROPERTY can be removed in EJBCA 6.4 or 6.5 */
-    private static final String MOZILLA_PROPERTY = "moz";
+
     private static final String FORMAT_PROPERTY = "format";
     private static final String CRLNUMBER_PROPERTY = "crlnumber";
     private static final String PARTITION_PROPERTY = "partition";
 
     private static final String INSTALLTOBROWSER_PROPERTY = "installtobrowser";
 
+    @EJB
+    private CaSessionLocal caSession;
     @EJB
     private CertificateStoreSessionLocal storesession;
     @EJB
@@ -222,14 +225,11 @@ public class CertDistServlet extends HttpServlet {
                 String dn = CertTools.getIssuerDN(x509crl);
                 // We must remove cache headers for IE
                 ServletUtils.removeCacheHeaders(res);
-                // moz is only kept for backwards compatibility, can be removed in EJBCA 6.4 or 6.5
-                String moz = req.getParameter(MOZILLA_PROPERTY);
+
                 final String filename = getCrlFilename(dn, crlPartitionIndex, command.equalsIgnoreCase(COMMAND_DELTACRL));
-                if ((moz == null) || !moz.equalsIgnoreCase("y")) {
-                    res.setHeader("Content-disposition", "attachment; filename=\"" + StringTools.stripFilename(filename)+"\"");
-                }
+                res.setHeader("Content-disposition", "attachment; filename=\"" + StringTools.stripFilename(filename) + "\"");                
                 res.setContentType("application/pkix-crl");
-                if (StringUtils.equals(format, "PEM")) {
+                if (Strings.CS.equals(format, "PEM")) {
                     RequestHelper.sendNewB64File(Base64.encode(crl, true), res, filename, RequestHelper.BEGIN_CRL_WITH_NL, RequestHelper.END_CRL_WITH_NL);
                 } else {
                     res.setContentLength(crl.length);
@@ -559,9 +559,9 @@ public class CertDistServlet extends HttpServlet {
         String ending;
         if (certcert instanceof CardVerifiableCertificate) {
             ending = ".cvcert";
-        } else if (StringUtils.equals(format, "PEM") || StringUtils.equals(format, "chain")) {
+        } else if (Strings.CS.equals(format, "PEM") || Strings.CS.equals(format, "chain")) {
             ending = ".pem";
-        } else if (StringUtils.equals(format, "PKCS7")) {
+        } else if (Strings.CS.equals(format, "PKCS7")) {
             ending = ".p7b";
         } else {
             ending = ".crt";
@@ -576,16 +576,16 @@ public class CertDistServlet extends HttpServlet {
             res.setHeader("Content-disposition", "attachment; filename=\"" +  StringTools.stripFilename(filename)+"\"");
             res.setContentType("application/octet-stream");
         }
-        if (StringUtils.equals(format, "PEM")) {
+        if (Strings.CS.equals(format, "PEM")) {
             RequestHelper.sendNewB64File(Base64.encode(cert, true), res, filename, CertTools.BEGIN_CERTIFICATE_WITH_NL, CertTools.END_CERTIFICATE_WITH_NL);
-        } else if (StringUtils.equals(format, "PKCS7")) {
+        } else if (Strings.CS.equals(format, "PKCS7")) {
             try {
                 final byte[] pkcs7 = CertTools.createCertsOnlyCMS(CertTools.convertCertificateChainToX509Chain(getFullChainOfCertificate(certcert)));
                 RequestHelper.sendNewB64File(Base64.encode(pkcs7, true), res, filename, RequestHelper.BEGIN_PKCS7_WITH_NL, RequestHelper.END_PKCS7_WITH_NL);
             } catch (ClassCastException | CMSException e) {
                 throw new CertificateEncodingException("Unable to create certs-only PKCS#7 / CMS.");
             }
-        } else if (StringUtils.equals(format, "chain")) {
+        } else if (Strings.CS.equals(format, "chain")) {
             final byte[] chainbytes = CertTools.getPemFromCertificateChain(getFullChainOfCertificate(certcert));
             RequestHelper.sendNewB64File(chainbytes, res, filename, "", ""); // chain includes begin/end already
         } else {
@@ -597,7 +597,7 @@ public class CertDistServlet extends HttpServlet {
     /** @return the full leaf certificate chain of a certificate given that the IssuerDN hashCode fo the leaf will map to an existing CA Id. */
     private List<Certificate> getFullChainOfCertificate(final Certificate certificate) {
         final int caId = CertTools.getIssuerDN(certificate).hashCode();
-        final LinkedList<Certificate> certificateChain = new LinkedList<>(signSession.getCertificateChain(caId));
+        final LinkedList<Certificate> certificateChain = new LinkedList<>(caSession.getCertificateChain(caId));
         certificateChain.addFirst(certificate);
         return certificateChain;
     }
@@ -605,9 +605,9 @@ public class CertDistServlet extends HttpServlet {
 	private Certificate[] getCertificateChain(final int caId, final String issuerDn) {
 		final Certificate[] chain;
 		if (caId != 0) {
-		    chain = signSession.getCertificateChain(caId).toArray(new Certificate[0]);
+		    chain = caSession.getCertificateChain(caId).toArray(new Certificate[0]);
 		} else {
-		    chain = signSession.getCertificateChain(issuerDn.hashCode()).toArray(new Certificate[0]);
+		    chain = caSession.getCertificateChain(issuerDn.hashCode()).toArray(new Certificate[0]);
 		}
 		return chain;
 	}
@@ -631,7 +631,7 @@ public class CertDistServlet extends HttpServlet {
 
 				byte[] outbytes = new byte[0];
 				// Encode and send back
-				if ((format == null) || StringUtils.equalsIgnoreCase(format, "pem")) {
+				if ((format == null) || Strings.CI.equals(format, "pem")) {
 					outbytes = CertTools.getPemFromCertificateChain(Arrays.asList(chain));
 				} else {
 					// Create a JKS truststore with the CA certificates in

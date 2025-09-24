@@ -12,17 +12,10 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ocsp;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.InvalidParameterException;
-import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -30,7 +23,6 @@ import java.security.Principal;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
-import java.security.UnrecoverableEntryException;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
@@ -51,7 +43,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.UUID;
@@ -62,9 +53,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.regex.Pattern;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
@@ -79,7 +71,6 @@ import org.bouncycastle.asn1.ocsp.RevokedInfo;
 import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
-import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.CRLReason;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
@@ -128,11 +119,10 @@ import org.cesecore.certificates.certificate.HashID;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparency;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.certificates.ocsp.cache.OcspConfigurationCache;
+import org.cesecore.certificates.ocsp.cache.OcspRequestSignerStatusCacheSingletonLocal;
 import org.cesecore.certificates.ocsp.cache.OcspDataConfigCache;
 import org.cesecore.certificates.ocsp.cache.OcspDataConfigCacheEntry;
 import org.cesecore.certificates.ocsp.cache.OcspExtensionsCache;
-import org.cesecore.certificates.ocsp.cache.OcspRequestSignerStatusCache;
 import org.cesecore.certificates.ocsp.cache.OcspSigningCache;
 import org.cesecore.certificates.ocsp.cache.OcspSigningCacheEntry;
 import org.cesecore.certificates.ocsp.exception.CryptoProviderException;
@@ -147,28 +137,21 @@ import org.cesecore.certificates.ocsp.logging.PatternLogger;
 import org.cesecore.certificates.ocsp.logging.TransactionCounter;
 import org.cesecore.certificates.ocsp.logging.TransactionLogger;
 import org.cesecore.certificates.util.cert.CertificateUtils;
-import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
-import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBindingBase;
 import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
-import org.cesecore.keybind.InternalKeyBindingNameInUseException;
-import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
-import org.cesecore.keybind.impl.AuthenticationKeyBinding;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keybind.impl.OcspKeyBinding.ResponderIdType;
+import org.cesecore.keybind.impl.OcspNonExistingBehavior;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
-import org.cesecore.keys.token.PKCS11CryptoToken;
-import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.oscp.OcspResponseData;
 import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.ValidityDate;
@@ -183,12 +166,9 @@ import com.keyfactor.util.SHA1DigestCalculator;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.CachingKeyStoreWrapper;
 import com.keyfactor.util.keys.KeyTools;
-import com.keyfactor.util.keys.token.BaseCryptoToken;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
@@ -244,6 +224,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
     private OcspDataSessionLocal ocspDataSession;
+    @EJB
+    private OcspRequestSignerStatusCacheSingletonLocal ocspRequestSignerStatusCache;
     
     @EJB
     private PublisherSessionLocal publisherSession;
@@ -258,6 +240,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     protected void setMockedGlobalConfigurationSession(final GlobalConfigurationSessionLocal globalConfigurationSession) { this.globalConfigurationSession = globalConfigurationSession; }
     protected void setMockedTimerService(final TimerService timerService) { this.timerService = timerService; }
     protected void setOcspDataSessionLocal(final OcspDataSessionLocal ocspDataSession) { this.ocspDataSession = ocspDataSession; }
+    protected void setocspRequestSignerStatusCache(final OcspRequestSignerStatusCacheSingletonLocal ocspRequestSignerStatusCache) { this.ocspRequestSignerStatusCache = ocspRequestSignerStatusCache; }
+
 
     @PostConstruct
     public void init() {
@@ -293,7 +277,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     @Override
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void clearOcspRequestSignerRevocationStatusCache() {
-        OcspRequestSignerStatusCache.INSTANCE.flush();
+        ocspRequestSignerStatusCache.flush();
     }
 
     @Override
@@ -352,14 +336,14 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         
                         if (isMsCaCompatible) {
                             OcspDataConfigCache.INSTANCE.setCaModeCompatiblePresent(true);
-                            List<Certificate> activeCaCertificates = certificateStoreSession.findCertificatesBySubjectAndIssuer(caInfo.getSubjectDN(),
-                                    caInfo.getLatestSubjectDN(), true);
+                            List<Certificate> activeCaCertificates = certificateStoreSession.findCertificatesBySubjectAndIssuer(caInfo.getLatestSubjectDN(),
+                                    CertTools.getIssuerDN(caCertificateChain.get(0)), true);
 
                             for (Certificate cert : activeCaCertificates) {
                                 final PrivateKey privateKey;
                                 String signKeyAlias=null;
                                 try {
-                                    signKeyAlias = getSignKeyAliasFromSubjectKeyId(cryptoToken, getAuthorityKeyIdentifier((X509Certificate) cert));
+                                    signKeyAlias = getSignKeyAliasFromSubjectKeyId(cryptoToken, getSubjectKeyIdentifier((X509Certificate) cert));
                                     privateKey = cryptoToken.getPrivateKey(signKeyAlias);
                                     if (privateKey == null) {
                                         log.warn(
@@ -374,7 +358,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
 
                                 // Replace the current leaf certificate in the ca chain with the corresponding one from DB!
                                 caCertificateChain.remove(0);
-                                caCertificateChain.add((X509Certificate) cert);
+                                caCertificateChain.add(0, (X509Certificate) cert);
                                 
                                 final String signatureProviderName = cryptoToken.getSignProviderName();
                                 if (!caCertificateChain.isEmpty()) {
@@ -436,10 +420,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             log.info("External CA with subject DN '" + CertTools.getSubjectDN(caCertificateChain.get(0)) + "' and serial number "
                                     + CertTools.getSerialNumber(caCertificateChain.get(0)) + " has an expired certificate with expiration date "
                                     + CertTools.getNotAfter(caCertificateChain.get(0)) + ".");
-                        }
+                        }                        
                         //Add an entry with just a chain and nothing else
                         OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificateChain.get(0), caCertificateStatus, null, null,
-                                null, null, null, ocspConfiguration.getOcspResponderIdType()));
+                                null, null, null, ocspConfiguration.getOcspResponderIdType(), ocspConfiguration));
                         OcspDataConfigCache.INSTANCE.stagingAdd(new OcspDataConfigCacheEntry(caCertificateChain.get(0), caId, preProduceOcspResponse,
                                 storeOcspResponseOnDemand, isMsCaCompatible));
                     } else if (caInfo.getStatus() == CAConstants.CA_EXPIRED && preProduceOcspResponse) {
@@ -495,7 +479,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         OcspSigningCache.INSTANCE.stagingAdd(ocspSigningCacheEntry);
                     }
                 }
-                OcspSigningCache.INSTANCE.stagingCommit(ocspConfiguration.getOcspDefaultResponderReference());
+                OcspSigningCache.INSTANCE.stagingCommit(ocspConfiguration);
                 OcspDataConfigCache.INSTANCE.stagingCommit();
             } finally {
                 OcspSigningCache.INSTANCE.stagingRelease();
@@ -554,10 +538,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         }
     }
     
-    private byte[] getAuthorityKeyIdentifier(X509Certificate certificate) {
-        byte[] fullExtValue = certificate.getExtensionValue(Extension.authorityKeyIdentifier.getId());
-        byte[] extValue = ASN1OctetString.getInstance(fullExtValue).getOctets();
-        return AuthorityKeyIdentifier.getInstance(extValue).getKeyIdentifier();
+    // we take the SubjectKeyIdentifier of CA certificate i.e. AuthorityKeyIdentifier of end entity certificates
+    private byte[] getSubjectKeyIdentifier(X509Certificate certificate) {
+        return CertTools.getSubjectKeyId(certificate);
     }
     
     private String getSignKeyAliasFromSubjectKeyId(CryptoToken cryptoToken, byte[] certificateSubjectKeyId) throws CryptoTokenOfflineException {
@@ -567,7 +550,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         try {
             for (String keyAlias : cryptoToken.getAliases()) {
                 String subjectKeyId = new String(Hex.encode(KeyTools.createSubjectKeyId(cryptoToken.getPublicKey(keyAlias)).getKeyIdentifier()));
-                if (StringUtils.equals(subjectKeyId, new String(Hex.encode(certificateSubjectKeyId)))) {
+                if (Strings.CS.equals(subjectKeyId, new String(Hex.encode(certificateSubjectKeyId)))) {
                     return keyAlias;
                 }
             }
@@ -583,7 +566,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         final CertificateStatus caCertificateStatus = getRevocationStatusWhenCasPrivateKeyIsCompromised(caCertificate, false);
 
         OcspSigningCacheEntry signingCacheEntry = new OcspSigningCacheEntry(caCertificate, caCertificateStatus, caCertificateChain, null, privateKey,
-                signatureProviderName, null, ocspConfiguration.getOcspResponderIdType());
+                signatureProviderName, null, ocspConfiguration.getOcspResponderIdType(), ocspConfiguration);
         signingCacheEntry.setCrlSigningAlgorithm(caToken.getSignatureAlgorithm());
         
         OcspSigningCache.INSTANCE.stagingAdd(signingCacheEntry);
@@ -613,6 +596,11 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     + CertTools.getNotAfter(caCertificate) + ".");
         }
     }
+    
+    private void logAndCacheKeyBindingIgnoreReason(String reason) {
+        OcspSigningCache.INSTANCE.stagingAddIgnoreReason(reason);
+        log.warn(reason);
+    }
 
     /**
      * Constructs an OcspSigningCacheEntry from the given parameters.
@@ -622,14 +610,14 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
      * @return an OcspSigningCacheEntry, or null if any error was encountered.
      */
     private OcspSigningCacheEntry makeOcspSigningCacheEntry(X509Certificate ocspSigningCertificate, OcspKeyBinding ocspKeyBinding) {
-        final List<X509Certificate> caCertificateChain = getCaCertificateChain(ocspSigningCertificate);
+        final List<X509Certificate> caCertificateChain = getCaCertificateChain(ocspSigningCertificate, ocspKeyBinding.getCaGeneration());
         if (caCertificateChain.isEmpty()) {
             log.warn("OcspKeyBinding " + ocspKeyBinding.getName() + " ( " + ocspKeyBinding.getId() + ") has a signing certificate, but no chain and will be ignored.");
             return null;
         }
         final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(ocspKeyBinding.getCryptoTokenId());
         if (cryptoToken == null) {
-            log.warn("Referenced CryptoToken with id " + ocspKeyBinding.getCryptoTokenId() + " does not exist. Ignoring OcspKeyBinding with id "
+            logAndCacheKeyBindingIgnoreReason("Referenced CryptoToken with id " + ocspKeyBinding.getCryptoTokenId() + " does not exist. Ignoring OcspKeyBinding with id "
                     + ocspKeyBinding.getId());
             return null;
         }
@@ -637,11 +625,11 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         try {
             privateKey = cryptoToken.getPrivateKey(ocspKeyBinding.getKeyPairAlias());
         } catch (CryptoTokenOfflineException e) {
-            log.warn("Referenced private key with alias " + ocspKeyBinding.getKeyPairAlias() + " could not be used. CryptoToken is off-line for OcspKeyBinding with id "+ocspKeyBinding.getId()+": " + e.getMessage());
+            logAndCacheKeyBindingIgnoreReason("Referenced private key with alias " + ocspKeyBinding.getKeyPairAlias() + " could not be used. CryptoToken is off-line for OcspKeyBinding with id "+ocspKeyBinding.getId()+": " + e.getMessage());
             return null;
         }
         if (privateKey == null) {
-            log.warn("Referenced private key with alias " + ocspKeyBinding.getKeyPairAlias() + " does not exist. Ignoring OcspKeyBinding with id "+ ocspKeyBinding.getId());
+            logAndCacheKeyBindingIgnoreReason("Referenced private key with alias " + ocspKeyBinding.getKeyPairAlias() + " does not exist. Ignoring OcspKeyBinding with id "+ ocspKeyBinding.getId());
             return null;
         }
         final String signatureProviderName = cryptoToken.getSignProviderName();
@@ -655,8 +643,12 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         } else {
             respIdType = OcspKeyBinding.ResponderIdType.KEYHASH;
         }
+        
+        GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        
         return new OcspSigningCacheEntry(caCertificateChain.get(0), certificateStatus, caCertificateChain, ocspSigningCertificate, privateKey,
-                signatureProviderName, ocspKeyBinding, respIdType);
+                signatureProviderName, ocspKeyBinding, respIdType, ocspConfiguration);
     }
     
     /** 
@@ -722,7 +714,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         return false;
     }
     
-    private X509Certificate findIssuerCa(List<Certificate> certificateList, X509Certificate currentLevelCertificate) {
+    private X509Certificate findIssuerCa(final List<Certificate> certificateList, final X509Certificate currentLevelCertificate) {
         List<Certificate> verifiedIssuers = new ArrayList<>();
         Certificate issuer = null;
         final byte[] aki = CertTools.getAuthorityKeyId(currentLevelCertificate);
@@ -740,8 +732,35 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         }
         return (X509Certificate) issuer;
     }
+    
+    /**
+     * Finds the sought ca certificate from a given list that matches the given serial number
+     * 
+     * @param certificateList a list of certificates
+     * @param caCertificateSerialNumber a certificate serial number in string format
+     * @return the sought certificate, or null if none was found
+     */
+    private X509Certificate findIssuerCa(final List<Certificate> certificateList, final String caCertificateSerialNumber) {
+        X509Certificate issuer = null;
+        for (final Certificate certificate : certificateList) {
+            if(CertTools.getSerialNumberAsString(certificate).equals(caCertificateSerialNumber)) {
+                issuer = (X509Certificate) certificate;
+                break;
+            }
+        }
+        return issuer;
+    }
 
-    private List<X509Certificate> getCaCertificateChain(final X509Certificate leafCertificate) {
+    /**
+     * Derive the certificate chain. This method has two modes – if caCertificateSerialNumber is null then the chain is derived by directly
+     * following the leaf certificate. If it's set to a specific serial number, then someone for some ungodly reason wants to return an earlier 
+     * chain than the current one. For the latter functionality, the CA must not have been re-keyed. 
+     * 
+     * @param leafCertificate the OCSP signing certificate
+     * @param caCertificateSerialNumber the serial number of the first issuer cert to follow, or null to simply used the latest one. 
+     * @return the signing certificate's chain
+     */
+    private List<X509Certificate> getCaCertificateChain(final X509Certificate leafCertificate, String caCertificateSerialNumber) {
         final List<X509Certificate> caCertificateChain = new ArrayList<>();
         X509Certificate currentLevelCertificate = leafCertificate;
         final Set<String> includedFingerprint = new HashSet<>();
@@ -750,9 +769,15 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             final String issuerFingerprint = CertTools.getFingerprintAsString(currentLevelCertificate);
             List<Certificate> resultList = new ArrayList<>();
             resultList = certificateStoreSession.findCertificatesBySubject(issuerDn);
-            currentLevelCertificate = findIssuerCa(resultList, currentLevelCertificate);
+            if(caCertificateSerialNumber == null) {
+                currentLevelCertificate = findIssuerCa(resultList, currentLevelCertificate);
+            } else {
+                currentLevelCertificate = findIssuerCa(resultList, caCertificateSerialNumber);
+                //Only the first time around
+                caCertificateSerialNumber = null;
+            }
             if (currentLevelCertificate == null) {
-                log.warn("Unable to build certificate chain for OCSP signing certificate with Subject DN '" +
+                logAndCacheKeyBindingIgnoreReason("Unable to build certificate chain for OCSP signing certificate with Subject DN '" +
                         CertTools.getSubjectDN(leafCertificate) + "'. CA with Subject DN '" + issuerDn + "' is missing in the database.");
                 return Collections.emptyList();
             }
@@ -786,14 +811,14 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 if (current instanceof X509Certificate) {
                     caCertificateChain.add((X509Certificate) current);
                 } else {
-                    log.warn("Unable to build certificate chain for OCSP signing certificate with Subject DN '" +
+                    logAndCacheKeyBindingIgnoreReason("Unable to build certificate chain for OCSP signing certificate with Subject DN '" +
                             CertTools.getSubjectDN(leafCertificate) + "' and Issuer DN '" + CertTools.getIssuerDN(leafCertificate) +
                             "'. CA certificate chain contains non-X509 certificates.");
                     return Collections.emptyList();
                 }
             }
             if (caCertificateChain.isEmpty()) {
-                log.warn("Unable to build certificate chain for OCSP signing certificate with Subject DN '" +
+                logAndCacheKeyBindingIgnoreReason("Unable to build certificate chain for OCSP signing certificate with Subject DN '" +
                         CertTools.getSubjectDN(leafCertificate) + "' and Issuer DN '" + CertTools.getIssuerDN(leafCertificate) +
                         "''. CA certificate(s) are missing in the database.");
                 return Collections.emptyList();
@@ -801,7 +826,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             try {
                 CertTools.verify(leafCertificate, caCertificateChain, new Date(), new EkuPKIXCertPathChecker(KeyPurposeId.id_kp_OCSPSigning.getId()));
             } catch (Exception e2) {
-                log.warn("Unable to build certificate chain for OCSP signing certificate with Subject DN '" +
+                logAndCacheKeyBindingIgnoreReason("Unable to build certificate chain for OCSP signing certificate with Subject DN '" +
                         CertTools.getSubjectDN(leafCertificate) + "' and Issuer DN '" + CertTools.getIssuerDN(leafCertificate) +
                         "''. Found CA certificate(s) cannot be used for validation: " + e2.getMessage());
                 return Collections.emptyList();
@@ -873,19 +898,11 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         if (preferredSigAlgExtension != null) {
             final ASN1Sequence preferredSignatureAlgorithms = ASN1Sequence.getInstance(preferredSigAlgExtension.getParsedValue());
             for (int i=0; i<preferredSignatureAlgorithms.size(); i++) {
-                final ASN1Encodable asn1Encodable = preferredSignatureAlgorithms.getObjectAt(i);
-                final ASN1ObjectIdentifier algorithmOid;
-                if (asn1Encodable instanceof ASN1ObjectIdentifier) {
-                    // Handle client requests that were adapted to EJBCA 6.1.0's implementation
-                    log.info("OCSP request's PreferredSignatureAlgorithms did not contain an PreferredSignatureAlgorithm, but instead an algorithm OID."
-                            + " This will not be supported in a future versions of EJBCA.");
-                    algorithmOid = (ASN1ObjectIdentifier) asn1Encodable;
-                } else {
-                    // Handle client requests that provide a proper AlgorithmIdentifier as specified in RFC 6960 + RFC 5280
-                    final ASN1Sequence preferredSignatureAlgorithm = ASN1Sequence.getInstance(asn1Encodable);
-                    final AlgorithmIdentifier algorithmIdentifier = AlgorithmIdentifier.getInstance(preferredSignatureAlgorithm.getObjectAt(0));
-                    algorithmOid = algorithmIdentifier.getAlgorithm();
-                }
+                final ASN1Encodable asn1Encodable = preferredSignatureAlgorithms.getObjectAt(i);           
+                // Handle client requests that provide a proper AlgorithmIdentifier as specified in RFC 6960 + RFC 5280
+                final ASN1Sequence preferredSignatureAlgorithm = ASN1Sequence.getInstance(asn1Encodable);
+                final AlgorithmIdentifier algorithmIdentifier = AlgorithmIdentifier.getInstance(preferredSignatureAlgorithm.getObjectAt(0));
+                final ASN1ObjectIdentifier algorithmOid = algorithmIdentifier.getAlgorithm();             
                 if (algorithmOid != null) {
                     sigAlg = AlgorithmTools.getAlgorithmNameFromOID(algorithmOid);
                     if (sigAlg!=null && isAcceptedSignatureAlgorithm(sigAlg) && AlgorithmTools.isCompatibleSigAlg(pk, sigAlg)) {
@@ -1060,11 +1077,11 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             }
             if (enforceRequestSigning) {
                 // If it verifies OK, check if it is revoked
-                final String cacheLookupKey = OcspRequestSignerStatusCache.INSTANCE.createCacheLookupKey(signercertIssuerName, signercertSerNo);
-                CertificateStatus status = OcspRequestSignerStatusCache.INSTANCE.getCachedCertificateStatus(cacheLookupKey);
+                final String cacheLookupKey = ocspRequestSignerStatusCache.createCacheLookupKey(signercertIssuerName, signercertSerNo);
+                CertificateStatus status = ocspRequestSignerStatusCache.getCachedCertificateStatus(cacheLookupKey);
                 if (status==null) {
                     status = certificateStoreSession.getStatus(signercertIssuerName, signercertSerNo);
-                    OcspRequestSignerStatusCache.INSTANCE.updateCachedCertificateStatus(cacheLookupKey, status);
+                    ocspRequestSignerStatusCache.updateCachedCertificateStatus(cacheLookupKey, status);
                 }
                 /*
                  * CertificateStatus.NOT_AVAILABLE means that the certificate does not exist in database. We treat this as ok, because it may be so that only revoked
@@ -1579,14 +1596,14 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         String statusName = "UnknownStatus";
                         int statusLogCode = OCSPResponseItem.OCSP_UNKNOWN;
                         if (defaultKeyBind != null) {
-                            if (defaultKeyBind.getNonExistingRevoked()) {
+                            if (OcspNonExistingBehavior.REVOKED.equals(defaultKeyBind.getOcspNonExistingBehavior())) {
                                 // See NonExistingRevoked handling below for an explanation.
                                 // We return certificateHold just to be safe, in case the CA certificate is not yet available for some reason.
                                 status = new RevokedStatus(new RevokedInfo(new ASN1GeneralizedTime(new Date(0)),
                                         CRLReason.lookup(CRLReason.certificateHold)));
                                 statusName = "RevokedStatus";
                                 statusLogCode = OCSPResponseItem.OCSP_REVOKED;
-                            } else if (defaultKeyBind.getNonExistingUnauthorized()) {
+                            } else if (OcspNonExistingBehavior.UNAUTHORIZED.equals(defaultKeyBind.getOcspNonExistingBehavior())) {
                                 // In order to save on cycles and mitigate the chances of a DOS attack, we'll return a unsigned unauthorized reply. 
                                 ocspResponse = responseGenerator.build(OCSPRespBuilder.UNAUTHORIZED, null);
                                 if (!isPreSigning && auditLogger.isEnabled()) {
@@ -1752,16 +1769,16 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                          * we don't actually handle requests for the CA issuing the certificate asked about
                          * then we return unknown 
                          * */
-                        if (OcspConfigurationCache.INSTANCE.isNonExistingGood(requestUrl, ocspSigningCacheEntry.getOcspKeyBinding()) &&
-                                OcspSigningCache.INSTANCE.getEntry(certId) != null) {
+                        if (getOcspNonExistingBehavior(requestUrl, ocspSigningCacheEntry.getOcspKeyBinding(), ocspConfiguration).equals(OcspNonExistingBehavior.GOOD) 
+                                && OcspSigningCache.INSTANCE.getEntry(certId) != null) {
                             sStatus = "good";
                             certStatus = null; // null means "good" in OCSP
                             if (!isPreSigning && transactionLogger.isEnabled()) {
                                 transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_GOOD);
                                 transactionLogger.paramPut(TransactionLogger.REV_REASON, CRLReason.certificateHold);
                             }
-                        } else if (OcspConfigurationCache.INSTANCE.isNonExistingRevoked(requestUrl, ocspSigningCacheEntry.getOcspKeyBinding()) &&
-                                OcspSigningCache.INSTANCE.getEntry(certId) != null) {
+                        } else if (getOcspNonExistingBehavior(requestUrl, ocspSigningCacheEntry.getOcspKeyBinding(), ocspConfiguration).equals(OcspNonExistingBehavior.REVOKED)
+                                 && OcspSigningCache.INSTANCE.getEntry(certId) != null) {
                             sStatus = "revoked";
                             // When answering revoked for unknown (non issued) certificates RFC6960 section 2.2 specifies:
                             // When a responder sends a "revoked" response to a status request for a non-issued certificate, the responder MUST include the extended
@@ -1779,7 +1796,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             }
                             // Unknown certificate, "non issued", add the Extended Revoked Definition, RFC6960 4.4.8
                             addExtendedRevokedExtension = true;
-                        } else if (OcspConfigurationCache.INSTANCE.isNonExistingUnauthorized(ocspSigningCacheEntry.getOcspKeyBinding())
+                        } else if (getOcspNonExistingBehavior(requestUrl, ocspSigningCacheEntry.getOcspKeyBinding(), ocspConfiguration).equals(OcspNonExistingBehavior.UNAUTHORIZED)
                                 && OcspSigningCache.INSTANCE.getEntry(certId) != null) {
                             // In order to save on cycles and mitigate the chances of a DOS attack, we'll return a unsigned unauthorized reply. 
                             ocspResponse = responseGenerator.build(OCSPRespBuilder.UNAUTHORIZED, null);
@@ -2233,13 +2250,13 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             List<Certificate> activeCaCertificates = certificateStoreSession.findCertificatesBySubjectAndIssuer(CertTools.getSubjectDN(issuingCertificate),
                                     CertTools.getIssuerDN(issuingCertificate), true);
                             
-                            final byte[] currentIssuingCertSubjectKeyId = getAuthorityKeyIdentifier(issuingCertificate);
+                            final byte[] currentIssuingCertSubjectKeyId = getSubjectKeyIdentifier(issuingCertificate);
 
                             for(Certificate cert : activeCaCertificates) {
-                                final byte[] certificateFromRequestSubjectKeyId = getAuthorityKeyIdentifier((X509Certificate) cert);
+                                final byte[] certificateFromRequestSubjectKeyId = getSubjectKeyIdentifier((X509Certificate) cert);
 
                                 try {
-                                    if (StringUtils.equals(new String(Hex.encode(certificateFromRequestSubjectKeyId)),
+                                    if (Strings.CS.equals(new String(Hex.encode(certificateFromRequestSubjectKeyId)),
                                             new String(Hex.encode(currentIssuingCertSubjectKeyId)))
                                             && certId.matchesIssuer(new JcaX509CertificateHolder(issuingCertificate), new BcDigestCalculatorProvider())) {
                                         //We found it! Unless it's not active, or something else was wrong with it. 
@@ -2475,321 +2492,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         log.debug("Using signature algorithm for response: " + sigAlg.get());
         return sigAlg.get();
     }
-
-    @Override
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    @Deprecated //Remove this method once upgrading from 5-6 is dropped
-    public void adhocUpgradeFromPre60(char[] activationPassword) {
-        AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
-                OcspResponseGeneratorSessionBean.class.getSimpleName() + ".adhocUpgradeFromPre60"));
-        // Check if there are any OcspKeyBindings already, if so return
-        if (!internalKeyBindingDataSession.getIds(OcspKeyBinding.IMPLEMENTATION_ALIAS).isEmpty()) {
-            return;
-        }
-        // If ocsp.activation.doNotStorePasswordsInMemory=true, new Crypto Tokens should not be auto-actived
-        final boolean globalDoNotStorePasswordsInMemory = OcspConfiguration.getDoNotStorePasswordsInMemory();
-        if (globalDoNotStorePasswordsInMemory && activationPassword == null) {
-            log.info("Postponing conversion of ocsp.properties configuration to OcspKeyBindings since password is not yet available.");
-            return;
-        }
-        log.info("No OcspKeyBindings found. Processing ocsp.properties to see if we need to perform conversion.");
-        final List<InternalKeyBindingTrustEntry> trustDefaults = getOcspKeyBindingTrustDefaults();
-        // Create CryptoTokens and AuthenticationKeyBinding from:
-        //  ocsp.rekeying.swKeystorePath = wsKeyStore.jks
-        //  ocsp.rekeying.swKeystorePassword = foo123
-        //  if "ocsp.rekeying.swKeystorePath" isn't set, search the p11 slot later on for an entry with an SSL certificate and use this
-        final String swKeystorePath = ConfigurationHolder.getString("ocsp.rekeying.swKeystorePath");
-        final String swKeystorePassword = ConfigurationHolder.getString("ocsp.rekeying.swKeystorePassword");
-        if (swKeystorePath != null && (swKeystorePassword != null || activationPassword!=null)) {
-            final String password = swKeystorePassword==null ? new String(activationPassword) : swKeystorePassword;
-            processSoftKeystore(authenticationToken, new File(swKeystorePath), password, password, globalDoNotStorePasswordsInMemory, trustDefaults);
-        }
-        if (OcspConfiguration.getP11Password() != null || activationPassword != null) {
-            log.info(" Processing PKCS#11..");
-            final String p11SharedLibrary = OcspConfiguration.getP11SharedLibrary();
-            final String sunP11ConfigurationFile = OcspConfiguration.getSunP11ConfigurationFile();
-            try {
-                final String p11password = OcspConfiguration.getP11Password() == null ? new String(activationPassword) : OcspConfiguration.getP11Password();
-                String cryptoTokenName = null;
-                final Properties cryptoTokenProperties = new Properties();
-                if (p11SharedLibrary != null && p11SharedLibrary.length()!=0) {
-                    log.info(" Processing PKCS#11 with shared library " + p11SharedLibrary);
-                    final String p11slot = OcspConfiguration.getP11SlotIndex();       
-                    cryptoTokenProperties.put(PKCS11CryptoToken.SHLIB_LABEL_KEY, p11SharedLibrary);
-                    cryptoTokenProperties.put(PKCS11CryptoToken.SLOT_LABEL_VALUE, p11slot);
-                    // Guess label type in order index, number or label 
-                    Pkcs11SlotLabelType type;
-                    if(Pkcs11SlotLabelType.SLOT_NUMBER.validate(p11slot)) {
-                        type = Pkcs11SlotLabelType.SLOT_NUMBER;
-                    } else if(Pkcs11SlotLabelType.SLOT_INDEX.validate(p11slot)) {
-                        type = Pkcs11SlotLabelType.SLOT_INDEX;
-                    } else {
-                        type = Pkcs11SlotLabelType.SLOT_LABEL;
-                    }
-                    cryptoTokenProperties.put(PKCS11CryptoToken.SLOT_LABEL_TYPE, type.getKey());
-                    cryptoTokenName = "PKCS11 slot "+p11slot;
-                } else if (sunP11ConfigurationFile != null && sunP11ConfigurationFile.length()!=0) {
-                    log.info(" Processing PKCS#11 with Sun property file " + sunP11ConfigurationFile);
-                    // The following properties are of interest from this file
-                    // We will bravely ignore attributes.. it wouldn't be to hard for the user to change the CryptoToken's attributes file later on
-                    // name=SafeNet
-                    // library=/opt/PTK/lib/libcryptoki.so
-                    // slot=1
-                    // slotListIndex=1
-                    // attributes(...) = {..} 
-                    // ...
-                    final Properties p11ConfigurationFileProperties = new Properties();
-                    p11ConfigurationFileProperties.load(new FileInputStream(sunP11ConfigurationFile));
-                    String p11slot = p11ConfigurationFileProperties.getProperty("slot");
-                    cryptoTokenProperties.put(PKCS11CryptoToken.SLOT_LABEL_VALUE, p11slot);
-                    // Guess label type in order index, number or label 
-                    Pkcs11SlotLabelType type;
-                    if(Pkcs11SlotLabelType.SLOT_NUMBER.validate(p11slot)) {
-                        type = Pkcs11SlotLabelType.SLOT_NUMBER;
-                    } else if(Pkcs11SlotLabelType.SLOT_INDEX.validate(p11slot)) {
-                        type = Pkcs11SlotLabelType.SLOT_INDEX;
-                    } else {
-                        type = Pkcs11SlotLabelType.SLOT_LABEL;
-                    }
-                    cryptoTokenProperties.put(PKCS11CryptoToken.SLOT_LABEL_TYPE, type.getKey());
-                    
-                    cryptoTokenProperties.put(PKCS11CryptoToken.SHLIB_LABEL_KEY, p11ConfigurationFileProperties.getProperty("library"));
-                    //cryptoTokenProperties.put(PKCS11CryptoToken.ATTRIB_LABEL_KEY, null);
-                    log.warn("Any attributes(..) = { ... } will be ignored and system defaults will be used."+
-                            " You should reconfigure the CryptoToken later if this is not sufficient.");
-                    cryptoTokenName = "PKCS11 slot "+p11ConfigurationFileProperties.getProperty("slot", "i" + p11ConfigurationFileProperties.getProperty("slotListIndex"));
-                }
-                if (cryptoTokenName != null && cryptoTokenManagementSession.getIdFromName(cryptoTokenName) == null) {
-                    if (!globalDoNotStorePasswordsInMemory) {
-                        log.info(" Auto-activation will be used.");
-                        BaseCryptoToken.setAutoActivatePin(cryptoTokenProperties, p11password, true);
-                    } else {
-                        log.info(" Auto-activation will not be used.");
-                    }
-                    final int p11CryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, cryptoTokenName,
-                            PKCS11CryptoToken.class.getName(), cryptoTokenProperties, null, p11password.toCharArray());
-                    // Use reflection to dig out the certificate objects for each alias so we can create an internal key binding for it
-                    final Method m = BaseCryptoToken.class.getDeclaredMethod("getKeyStore");
-                    m.setAccessible(true);
-                    final CachingKeyStoreWrapper cachingKeyStoreWrapper = (CachingKeyStoreWrapper) m.invoke(cryptoTokenManagementSession.getCryptoToken(p11CryptoTokenId));
-                    createInternalKeyBindings(authenticationToken, p11CryptoTokenId, cachingKeyStoreWrapper.getKeyStore(), trustDefaults);
-                }
-            } catch (Exception e) {
-                log.error("", LogRedactionUtils.getRedactedException(e));
-            }
-        }
-        if (OcspConfiguration.getSoftKeyDirectoryName() != null && (OcspConfiguration.getStorePassword() != null || activationPassword != null)) {
-            final String softStorePassword = OcspConfiguration.getStorePassword() == null ? new String(activationPassword) : OcspConfiguration.getStorePassword();
-            final String softKeyPassword = OcspConfiguration.getKeyPassword() == null ? new String(activationPassword) : OcspConfiguration.getKeyPassword();
-            final String dirName = OcspConfiguration.getSoftKeyDirectoryName();
-            if (dirName != null) {
-                final File directory = new File(dirName);
-                if (directory.isDirectory()) {
-                    log.info(" Processing Soft KeyStores..");
-                    for (final File file : directory.listFiles()) {
-                        processSoftKeystore(authenticationToken, file, softStorePassword, softKeyPassword, globalDoNotStorePasswordsInMemory, trustDefaults);
-                    }
-                }
-            }
-        }
-    }
-    
-    @Deprecated //Remove this method as soon as upgrading from 5.0->6.x is dropped
-    private void processSoftKeystore(AuthenticationToken authenticationToken, File file, String softStorePassword, String softKeyPassword,
-            boolean doNotStorePasswordsInMemory, List<InternalKeyBindingTrustEntry> trustDefaults) {
-     KeyStore keyStore;
-        final char[] passwordChars = softStorePassword.toCharArray();
-        // Load keystore (JKS or PKCS#12)
-        try {
-            keyStore = KeyStore.getInstance("JKS");
-            keyStore.load(new FileInputStream(file), passwordChars);
-        } catch (Exception e) {
-            try {
-                keyStore = KeyStore.getInstance("PKCS12", "BC");
-                keyStore.load(new FileInputStream(file), passwordChars);
-            } catch (Exception e2) {
-                try {
-                    log.info("Unable to process " + file.getCanonicalPath() + " as a KeyStore.");
-                } catch (IOException e3) {
-                    log.warn(e3.getMessage());
-                }
-                return;
-            }
-        }
-        
-        // Strip issuer certs, etc. and convert to PKCS#12
-        try {
-            keyStore = makeKeysOnlyP12(keyStore, passwordChars);
-        } catch (Exception e) {
-            throw new RuntimeException("failed to convert keystore to P12 during keybindings upgrade", LogRedactionUtils.getRedactedException(e));
-        }
-        
-        final String name = file.getName();
-        if (cryptoTokenManagementSession.getIdFromName(name) != null) {
-            return; // already upgraded
-        }
-        log.info(" Processing Soft KeyStore '" + name + "' of type " + keyStore.getType());
-        try {
-            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            // Save the store using the same password as the keys are protected with (not the store password)
-            // so we don't have to replace the protection for each key
-            keyStore.store(baos, softKeyPassword.toCharArray());
-            final Properties cryptoTokenProperties = new Properties();
-            if (!doNotStorePasswordsInMemory) {
-                log.info(" Auto-activation will be used.");
-                BaseCryptoToken.setAutoActivatePin(cryptoTokenProperties, softKeyPassword, true);
-            } else {
-                log.info(" Auto-activation will not be used.");
-            }
-            final int softCryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, name,
-                    SoftCryptoToken.class.getName(), cryptoTokenProperties, baos.toByteArray(), softKeyPassword.toCharArray());
-            createInternalKeyBindings(authenticationToken, softCryptoTokenId, keyStore, trustDefaults);
-        } catch (Exception e) {
-            log.warn(e.getMessage());
-        }
-    }
-    
-    /** Creates a PKCS#12 KeyStore with keys only from an JKS file (no issuer certs or trusted certs) */
-    @Deprecated  //Remove this method as soon as upgrading from 5->6 is dropped
-    private KeyStore makeKeysOnlyP12(KeyStore keyStore, char[] password) throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException, NoSuchProviderException, CertificateException, IOException {
-        final KeyStore p12 = KeyStore.getInstance("PKCS12", "BC");
-        final KeyStore.ProtectionParameter protParam =
-            (password != null ? new KeyStore.PasswordProtection(password) : null);
-        p12.load(null, password); // initialize
-        
-        final Enumeration<String> en = keyStore.aliases();
-        while (en.hasMoreElements()) {
-            final String alias = en.nextElement();
-            if (!keyStore.isKeyEntry(alias)) continue;
-            try {
-                KeyStore.PrivateKeyEntry entry = (KeyStore.PrivateKeyEntry)keyStore.getEntry(alias, protParam);
-                Certificate[] chain = new Certificate[] { entry.getCertificate() };
-                p12.setKeyEntry(alias, entry.getPrivateKey(), password, chain);
-            } catch (UnsupportedOperationException uoe) {
-                KeyStore.PrivateKeyEntry entry = (KeyStore.PrivateKeyEntry)keyStore.getEntry(alias, null);
-                Certificate[] chain = new Certificate[] { entry.getCertificate() };
-                p12.setKeyEntry(alias, entry.getPrivateKey(), null, chain);
-            }
-        }
-        return p12;
-    }
-    
-    /** Create InternalKeyBindings for Ocsp signing and SSL client authentication certs during ad-hoc upgrades.
-     * 
-     * TODO: Drop when upgrading from EJBCA 5 to 6 is dropped
-     */
-    @Deprecated(forRemoval = true) //Remove this method as soon as upgrading from 5->6 is dropped
-    private void createInternalKeyBindings(AuthenticationToken authenticationToken, int cryptoTokenId, KeyStore keyStore, List<InternalKeyBindingTrustEntry> trustDefaults) throws KeyStoreException, 
-    CryptoTokenOfflineException, InternalKeyBindingNameInUseException, AuthorizationDeniedException, CertificateEncodingException, CertificateImportException, InvalidAlgorithmException, InternalKeyBindingNonceConflictException {
-        final Enumeration<String> aliases = keyStore.aliases();
-        boolean noAliases = true;
-        while (aliases.hasMoreElements()) {
-            final String keyPairAlias = aliases.nextElement();
-            noAliases = false;
-            log.info("Found alias " + keyPairAlias + ", trying to figure out if this is something we should convert into a new KeyBinding...");
-            final Certificate[] chain = keyStore.getCertificateChain(keyPairAlias);
-            if (chain == null || chain.length==0) {
-                log.info("Alias " + keyPairAlias + " does not contain any certificate and will be ignored.");
-                continue;   // Ignore entry
-            }
-            // Extract the default signature algorithm
-            final String signatureAlgorithm = getSigningAlgFromAlgSelection(chain[0].getPublicKey());
-            if (OcspKeyBinding.isOcspSigningCertificate(chain[0], 
-                    (AvailableExtendedKeyUsagesConfiguration) globalConfigurationSession.getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.CONFIGURATION_ID))) {
-                // Create the actual OcspKeyBinding
-                log.info("Alias " + keyPairAlias + " contains an OCSP certificate and will be converted to an OcspKeyBinding.");
-                int internalKeyBindingId = internalKeyBindingMgmtSession.createInternalKeyBinding(authenticationToken, OcspKeyBinding.IMPLEMENTATION_ALIAS,
-                        "OcspKeyBinding for " + keyPairAlias, InternalKeyBindingStatus.DISABLED, null, cryptoTokenId, keyPairAlias, signatureAlgorithm,
-                        getOcspKeyBindingDefaultProperties(), trustDefaults);
-                internalKeyBindingMgmtSession.importCertificateForInternalKeyBinding(authenticationToken, internalKeyBindingId, chain[0].getEncoded());
-                internalKeyBindingMgmtSession.setStatus(authenticationToken, internalKeyBindingId, InternalKeyBindingStatus.ACTIVE);
-            } else if (AuthenticationKeyBinding.isClientSSLCertificate(chain[0], (AvailableExtendedKeyUsagesConfiguration) globalConfigurationSession.getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.CONFIGURATION_ID))) {
-                log.info("Alias " + keyPairAlias + " contains an SSL client certificate and will be converted to an AuthenticationKeyBinding.");
-                // We are looking for an SSL cert, use this to create an AuthenticationKeyBinding
-                int internalKeyBindingId = internalKeyBindingMgmtSession.createInternalKeyBinding(authenticationToken, AuthenticationKeyBinding.IMPLEMENTATION_ALIAS,
-                        "AuthenticationKeyBinding for " + keyPairAlias, InternalKeyBindingStatus.DISABLED, null, cryptoTokenId, keyPairAlias,
-                        signatureAlgorithm, null, null);
-                internalKeyBindingMgmtSession.importCertificateForInternalKeyBinding(authenticationToken, internalKeyBindingId, chain[0].getEncoded());
-                internalKeyBindingMgmtSession.setStatus(authenticationToken, internalKeyBindingId, InternalKeyBindingStatus.ACTIVE);
-            } else {
-                log.info("Alias " + keyPairAlias + " contains certificate of unknown type and will be ignored.");
-            }
-        }
-        if (noAliases) {
-            log.info("No aliases to process were found in the key store.");
-        }
-    }
-
-    /** @return a list of trusted signers or CAs */
-    @Deprecated //This method is only used for upgrading to version 6
-    private List<InternalKeyBindingTrustEntry> getOcspKeyBindingTrustDefaults() {
-        // Import certificates used to verify OCSP request signatures and add these to each OcspKeyBinding's trust-list
-        //  ocsp.signtrustdir=signtrustdir
-        //  ocsp.signtrustvalidtime should be ignored
-        final List<InternalKeyBindingTrustEntry> trustedCertificateReferences = new ArrayList<>();
-        if (OcspConfiguration.getEnforceRequestSigning() && OcspConfiguration.getRestrictSignatures()) {
-            // Import certificates and configure Issuer+serialnumber in trustlist for each
-            final String dirName = OcspConfiguration.getSignTrustDir();
-            if (dirName != null) {
-                final File directory = new File(dirName);
-                if (directory.isDirectory()) {
-                    for (final File file : directory.listFiles()) {
-                        try {
-                            final List<Certificate> chain = CertTools.getCertsFromPEM(new FileInputStream(file));
-                            if (!chain.isEmpty()) {
-                                final String issuerDn = CertTools.getIssuerDN(chain.get(0));
-                                final String subjectDn = CertTools.getSubjectDN(chain.get(0));
-                                if (OcspConfiguration.getRestrictSignaturesByMethod()==OcspConfiguration.RESTRICTONSIGNER) {
-                                    final int caId = issuerDn.hashCode();
-                                    final BigInteger serialNumber = CertTools.getSerialNumber(chain.get(0));
-                                    if(!caSession.existsCa(caId)) { 
-                                        log.warn("Trusted certificate with serialNumber " + serialNumber.toString(16) +
-                                                " is issued by an unknown CA with subject '" + issuerDn +
-                                                "'. You should import this CA certificate as en external CA to make it known to the system.");
-                                    }
-                                    trustedCertificateReferences.add(new InternalKeyBindingTrustEntry(caId, serialNumber));
-                                } else {
-                                    final int caId = subjectDn.hashCode();
-                                    if(!caSession.existsCa(caId)) { 
-                                        log.warn("Trusted CA certificate with with subject '" + subjectDn +
-                                                "' should be imported as en external CA to make it known to the system.");
-                                    }
-                                    trustedCertificateReferences.add(new InternalKeyBindingTrustEntry(caId, null));
-                                }
-                            }
-                        } catch (CertificateException | FileNotFoundException e) {
-                            log.warn(e.getMessage());
-                        }
-                    }
-                }
-            }
-        }
-        return trustedCertificateReferences;
-    }
-    
-    /** @return OcspKeyBinding properties set to the current file-based configuration (per cert profile config is ignored here) */
-    @SuppressWarnings("deprecation")
-    private Map<String, Serializable> getOcspKeyBindingDefaultProperties() {
-        GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
-                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);        
-        // Use global config as defaults for each new OcspKeyBinding
-        final Map<String, Serializable> dataMap = new HashMap<>();
-        dataMap.put(OcspKeyBinding.PROPERTY_INCLUDE_CERT_CHAIN, OcspConfiguration.getIncludeCertChain());
-        if (OcspConfiguration.getResponderIdType()==OcspConfiguration.RESPONDERIDTYPE_NAME) {
-            dataMap.put(OcspKeyBinding.PROPERTY_RESPONDER_ID_TYPE, ResponderIdType.NAME.name());
-        } else {
-            dataMap.put(OcspKeyBinding.PROPERTY_RESPONDER_ID_TYPE, ResponderIdType.KEYHASH.name());
-        }
-        dataMap.put(OcspKeyBinding.PROPERTY_MAX_AGE, ocspConfiguration.getDefaultResponseMaxAge());
-        dataMap.put(OcspKeyBinding.PROPERTY_NON_EXISTING_GOOD, OcspConfiguration.getNonExistingIsGood());
-        dataMap.put(OcspKeyBinding.PROPERTY_NON_EXISTING_REVOKED, OcspConfiguration.getNonExistingIsRevoked());
-        dataMap.put(OcspKeyBinding.PROPERTY_UNTIL_NEXT_UPDATE, ocspConfiguration.getDefaultValidityTime());
-        dataMap.put(OcspKeyBinding.PROPERTY_REQUIRE_TRUSTED_SIGNATURE, OcspConfiguration.getEnforceRequestSigning());
-        return dataMap;
-    }
     
     @Override
-    public String healthCheck() {
+    public String healthCheck(boolean reportIgnoredKeyBindings) {
         final StringBuilder sb = new StringBuilder();
         // Check that there are no ACTIVE OcspKeyBindings that are not in the cache before checking usability..
         for (InternalKeyBindingInfo internalKeyBindingInfo : internalKeyBindingMgmtSession
@@ -2879,12 +2584,53 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     }
                 }
             }
+            
+            if (reportIgnoredKeyBindings) {
+                for (String ignoreReason: OcspSigningCache.INSTANCE.getIgnoredKeyBindingReasons()) {
+                    sb.append('\n').append(ignoreReason);
+                }
+            }
+            
         } catch (Exception e) {
             final String errMsg = intres.getLocalizedMessage("ocsp.errorloadsigningcerts");
             log.error(errMsg, e);
             sb.append(errMsg).append(": ").append(errMsg);
         }
         return sb.toString();
+    }
+    
+    private OcspNonExistingBehavior getOcspNonExistingBehavior(final StringBuffer url, final OcspKeyBinding ocspKeyBinding, final GlobalOcspConfiguration globalOcspConfiguration) {
+        //Use the CA value as default 
+        OcspNonExistingBehavior result = globalOcspConfiguration.getOcspNonExistingBehavior();
+        //Overwrite with the keybinding if that exists
+        if(ocspKeyBinding != null) {
+            result = ocspKeyBinding.getOcspNonExistingBehavior();
+        }
+        //Handle overrides – this signifies URLs from to a specific answer should always be sent. 
+        //Always send back GOOD for a match
+        Pattern nonExistingIsGoodOverrideRegex = OcspConfiguration.getNonExistingIsGoodOverrideRegex() != null ? Pattern.compile(OcspConfiguration.getNonExistingIsGoodOverrideRegex()) : null;
+        if(isRegexFulFilled(url, nonExistingIsGoodOverrideRegex)) {
+            return OcspNonExistingBehavior.GOOD;
+        } 
+        //Always send back UNKNOWN for a match
+        Pattern nonExistingIsBadOverrideRegex =  OcspConfiguration.getNonExistingIsBadOverrideRegex() != null ? Pattern.compile(OcspConfiguration.getNonExistingIsBadOverrideRegex()) : null;
+        if(isRegexFulFilled(url, nonExistingIsBadOverrideRegex)) {
+            return OcspNonExistingBehavior.UNKNOWN;
+        }
+        //Always send back REVOKED for a match
+        Pattern nonExistingIsRevokedOverrideRegex =  OcspConfiguration.getNonExistingIsRevokedOverrideRegex() != null ? Pattern.compile(OcspConfiguration.getNonExistingIsRevokedOverrideRegex()) : null;
+        if(isRegexFulFilled(url, nonExistingIsRevokedOverrideRegex)) {
+            return OcspNonExistingBehavior.REVOKED;
+        }
+        
+        return result;
+    }
+
+    private boolean isRegexFulFilled(StringBuffer target, Pattern pattern) {
+        if (pattern == null || target == null) {
+            return false;
+        }
+        return pattern.matcher(target.toString()).matches();
     }
 }
 

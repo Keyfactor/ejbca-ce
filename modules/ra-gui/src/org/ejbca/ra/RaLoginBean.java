@@ -14,7 +14,6 @@ package org.ejbca.ra;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
@@ -29,11 +28,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.core.UriBuilder;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.oauth.OauthRequestHelper;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.OAuthConfiguration;
@@ -67,6 +67,8 @@ public class RaLoginBean implements Serializable {
     private String stateInSession = null;
     private String oauthClicked = null;
 
+    @EJB
+    private CaSessionLocal caSession;
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApi;
     @EJB
@@ -130,15 +132,14 @@ public class RaLoginBean implements Serializable {
         OAuthKeyInfo oAuthKeyInfo = oAuthConfiguration.getOauthKeyByLabel(oauthClicked);
         if (oAuthKeyInfo != null) {
             try {
-                OauthRequestHelper oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder(
-                        internalKeyBindings, certificateStoreLocal, cryptoToken));
+                OauthRequestHelper oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder(internalKeyBindings, certificateStoreLocal, cryptoToken, caSession));
                 OAuthGrantResponseInfo token = oauthRequestHelper.sendTokenRequest(oAuthKeyInfo, authCode, getRedirectUri());
                 if (token.compareTokenType(HttpTools.AUTHORIZATION_SCHEME_BEARER)) {
                     servletRequest.getSession(true).setAttribute("ejbca.bearer.token", token.getAccessToken());
                     servletRequest.getSession(true).setAttribute("ejbca.id.token", token.getIdToken());
                     servletRequest.getSession(true).setAttribute("ejbca.refresh.token", token.getRefreshToken());
                     raAuthenticationBean.resetAuthentication();
-                    HttpTools.sendRedirect(FacesContext.getCurrentInstance(), "/index.html");
+                    HttpTools.sendRedirect(FacesContext.getCurrentInstance(), "/index.xhtml");
                 } else {
                     log.info("Received OAuth token of unsupported type '" + token.getTokenType() + "'");
                 }
@@ -203,11 +204,7 @@ public class RaLoginBean implements Serializable {
         if (globalConfiguration == null) {
             initGlobalConfiguration();
         }
-        String baseUrl = globalConfiguration.getBaseUrl(
-                "https",
-                WebConfiguration.getHostName(),
-                WebConfiguration.getPublicHttpsPort()
-        ) + globalConfiguration.getRaWebPath();
+        String baseUrl = globalConfiguration.getBaseUrl("https", WebConfiguration.getHostName(), WebConfiguration.getPublicHttpsPort()) + "ra/";
         if (!baseUrl.endsWith("/")) {
             baseUrl += "/";
         }
@@ -243,4 +240,5 @@ public class RaLoginBean implements Serializable {
         httpResponse.setHeader("Content-Security-Policy", header);
         httpResponse.setHeader("X-Content-Security-Policy", header);
     }
+
 }

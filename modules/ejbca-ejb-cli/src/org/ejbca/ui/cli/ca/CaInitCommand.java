@@ -47,6 +47,7 @@ import com.keyfactor.util.keys.token.KeyGenParams;
 import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAConstants;
@@ -290,7 +291,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             return CommandResult.CLI_FAILURE;
         }
         String catokenpassword = StringTools.passwordDecryption(parameters.get(TOKEN_PASSWORD_KEY), "ca.tokenpassword");
-        if (catokenpassword == null || StringUtils.equals(catokenpassword, "prompt")) {
+        if (catokenpassword == null || Strings.CS.equals(catokenpassword, "prompt")) {
             getLogger().info("Enter CA token password: ");
             catokenpassword = String.valueOf(System.console().readPassword());
             if (StringUtils.isEmpty(catokenpassword)) {
@@ -350,7 +351,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
         }
         int signedByCAId = CAInfo.SELFSIGNED;
         if (parameters.get(SIGNED_BY) != null) {
-            if (StringUtils.equalsIgnoreCase("External", parameters.get(SIGNED_BY))) {
+            if (Strings.CI.equals("External", parameters.get(SIGNED_BY))) {
                 signedByCAId = CAInfo.SIGNEDBYEXTERNALCA;
                 if (extcachainName == null) {
                     log.error("Signing by external CA requires parameter " + EXTERNAL_CHAIN_KEY);
@@ -426,7 +427,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
         getLogger().info("Alternative signature alg: " + altSignAlg);
         getLogger().info("Certificate profile: " + profileName);
         getLogger().info("CA token properties: " + cryptoTokenProperties.toString());
-        if (StringUtils.equalsIgnoreCase(explicitEcc, "true")) {
+        if (Strings.CI.equals(explicitEcc, "true")) {
             // Set if we should use explicit ECC parameters of not. On Java 6 this renders the created CA certificate not serializable
             getLogger().info("Explicit ECC public key parameters: " + explicitEcc);
             cryptoTokenProperties.setProperty(CryptoToken.EXPLICIT_ECC_PUBLICKEY_PARAMETERS, explicitEcc);
@@ -497,7 +498,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             final char[] authenticationCode = catokenpassword.toCharArray();
 
             final String className;
-            if (StringUtils.equalsIgnoreCase(catokentype, "soft")) {
+            if (Strings.CI.equals(catokentype, "soft")) {
                 className = SoftCryptoToken.class.getName();
                 BaseCryptoToken.setAutoActivatePin(cryptoTokenProperties, new String(authenticationCode), true);
             } else {
@@ -645,7 +646,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
                 log.error("Algorithm was not valid: " + e.getMessage());
                 return CommandResult.FUNCTIONAL_FAILURE;
             }
-            if (StringUtils.equalsIgnoreCase(explicitEcc, "true")) {
+            if (Strings.CI.equals(explicitEcc, "true")) {
                 getLogger().info(
                         "Not re-reading CAInfo, since explicit ECC parameters were used, which is not serializable on Java 6. Use Web GUI for further interactions.");
             } else {

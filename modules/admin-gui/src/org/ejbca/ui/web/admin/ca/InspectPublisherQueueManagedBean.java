@@ -15,6 +15,7 @@ package org.ejbca.ui.web.admin.ca;
 
 import static java.util.stream.Collectors.toSet;
 
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -31,9 +32,9 @@ import jakarta.ejb.EJB;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
 
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -104,7 +105,9 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
     /**
      * A publisher queue item, displayed as a row in the GUI.
      */
-    public final class PublisherQueueItem {
+    public final class PublisherQueueItem implements Serializable {
+        private static final long serialVersionUID = 1L;
+
         private final PublisherQueueData publisherQueueData;
 
         private boolean selected;
@@ -156,7 +159,7 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
                 final CRLInfo crlInfo = crlSession.getCRLInfo(getFingerprint());
                 if (isAuthorizedToViewCrl(crlInfo)) {
                     return String.format("%spublicweb/webdist/certdist?cmd=crl&issuer=%s&crlnumber=%d", getEjbcaWebBean().getBaseUrl(),
-                            StringEscapeUtils.escapeHtml(crlInfo.getSubjectDN()), crlInfo.getLastCRLNumber());
+                            StringEscapeUtils.escapeHtml4(crlInfo.getSubjectDN()), crlInfo.getLastCRLNumber());
                 }
             }
             return "#";

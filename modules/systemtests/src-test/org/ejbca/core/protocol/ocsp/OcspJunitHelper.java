@@ -13,11 +13,6 @@
 
 package org.ejbca.core.protocol.ocsp;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigInteger;
@@ -32,6 +27,9 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.Map;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.SHA1DigestCalculator;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
@@ -59,8 +57,10 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.SHA1DigestCalculator;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class OcspJunitHelper {
 
@@ -93,7 +93,7 @@ public class OcspJunitHelper {
 	 * @throws OCSPException
 	 * @throws NoSuchProviderException
 	 * @throws CertificateException on parsing errors.
-	 * @throws OperatorCreationException 
+	 * @throws OperatorCreationException
 	 */
 	protected SingleResp[] sendOCSPPost(byte[] ocspPackage, String nonce, int respCode, int httpCode) throws IOException, OCSPException, NoSuchProviderException, OperatorCreationException, CertificateException {
 		// POST the OCSP request
@@ -137,9 +137,9 @@ public class OcspJunitHelper {
 		SingleResp[] singleResps = brep.getResponses();
 		return singleResps;
 	}
-	
-	protected  BasicOCSPResp sendOCSPGet(byte[] ocspPackage, String nonce, int respCode, int httpCode) 
-	            throws IOException, OCSPException, NoSuchProviderException, NoSuchAlgorithmException, 
+
+	protected  BasicOCSPResp sendOCSPGet(byte[] ocspPackage, String nonce, int respCode, int httpCode)
+	            throws IOException, OCSPException, NoSuchProviderException, NoSuchAlgorithmException,
 	            OperatorCreationException, CertificateException {
 	    return sendOCSPGet(ocspPackage, nonce, respCode, httpCode, true, null);
 	}
@@ -156,10 +156,10 @@ public class OcspJunitHelper {
 	 * @throws NoSuchProviderException
 	 * @throws NoSuchAlgorithmException
 	 * @throws CertificateException on parsing errors.
-	 * @throws OperatorCreationException 
+	 * @throws OperatorCreationException
 	 */
 	protected  BasicOCSPResp sendOCSPGet(byte[] ocspPackage, String nonce, int respCode, int httpCode, boolean shouldIncludeSignCert,
-	            X509Certificate signCert) throws IOException, OCSPException, NoSuchProviderException, NoSuchAlgorithmException, 
+	            X509Certificate signCert) throws IOException, OCSPException, NoSuchProviderException, NoSuchAlgorithmException,
 	            OperatorCreationException, CertificateException {
 		// GET the OCSP request
 		String b64 = new String(Base64.encode(ocspPackage, false));
@@ -184,7 +184,7 @@ public class OcspJunitHelper {
 			return null; // it messes up testing of invalid signatures... but is needed for the unsuccessful responses
 		}
 		BasicOCSPResp brep = (BasicOCSPResp) response.getResponseObject();
-		
+
 		final X509CertificateHolder signCertHolder;
 		if(!shouldIncludeSignCert) {
 		    assertEquals("The signing certificate should not be included in the OCSP response ", 0, brep.getCerts().length);
@@ -194,7 +194,7 @@ public class OcspJunitHelper {
 		    signCertHolder = chain[0];
 		}
 		boolean verify = brep.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(signCertHolder));
-		
+
 		assertTrue("Response failed to verify.", verify);
 		// Check nonce (if we sent one)
 		if (nonce != null) {
@@ -222,8 +222,8 @@ public class OcspJunitHelper {
 	 * @throws NoSuchProviderException
 	 * @throws IOException
 	 * @throws OCSPException
-	 * @throws CertificateException 
-	 * @throws OperatorCreationException 
+	 * @throws CertificateException
+	 * @throws OperatorCreationException
 	 */
 	public void verifyStatusUnknown(int caid, X509Certificate cacert, BigInteger certSerial) throws NoSuchProviderException, IOException, OCSPException, OperatorCreationException, CertificateException {
 		verifyStatus(caid, cacert, certSerial, OCSPRespBuilder.SUCCESSFUL, Status.Unknown, Integer.MIN_VALUE, null);
@@ -237,13 +237,13 @@ public class OcspJunitHelper {
      * @throws NoSuchProviderException
      * @throws IOException
      * @throws OCSPException
-     * @throws CertificateException 
-     * @throws OperatorCreationException 
+     * @throws CertificateException
+     * @throws OperatorCreationException
      */
     public void verifyResponseInternalError(int caid, X509Certificate cacert, BigInteger certSerial) throws NoSuchProviderException, IOException, OCSPException, OperatorCreationException, CertificateException {
         verifyStatus(caid, cacert, certSerial, OCSPRespBuilder.INTERNAL_ERROR, Status.Unknown, Integer.MIN_VALUE, null);
     }
-    
+
     public void verifyResponseUnauthorized(int caid, X509Certificate cacert, BigInteger certSerial) throws NoSuchProviderException, OperatorCreationException, CertificateException, IOException, OCSPException {
         verifyStatus(caid, cacert, certSerial, OCSPRespBuilder.UNAUTHORIZED, Status.Unknown, Integer.MIN_VALUE, null);
     }
@@ -256,8 +256,8 @@ public class OcspJunitHelper {
 	 * @throws NoSuchProviderException
 	 * @throws IOException
 	 * @throws OCSPException
-	 * @throws CertificateException 
-	 * @throws OperatorCreationException 
+	 * @throws CertificateException
+	 * @throws OperatorCreationException
 	 */
 	public void verifyStatusGood(int caid, X509Certificate cacert, BigInteger certSerial) throws NoSuchProviderException, IOException, OCSPException, OperatorCreationException, CertificateException {
 		verifyStatus(caid, cacert, certSerial, OCSPRespBuilder.SUCCESSFUL, Status.Good, Integer.MIN_VALUE, null);
@@ -272,14 +272,14 @@ public class OcspJunitHelper {
 	 * @throws NoSuchProviderException
 	 * @throws IOException
 	 * @throws OCSPException
-	 * @throws CertificateException 
-	 * @throws OperatorCreationException 
+	 * @throws CertificateException
+	 * @throws OperatorCreationException
 	 */
 	public void verifyStatusRevoked(int caid, X509Certificate cacert, BigInteger certSerial, int expectedReason, Date expectedRevTime) throws NoSuchProviderException, IOException, OCSPException, OperatorCreationException, CertificateException {
 		verifyStatus(caid, cacert, certSerial, OCSPRespBuilder.SUCCESSFUL, Status.Revoked, expectedReason, expectedRevTime);
 	}
 
-	private void verifyStatus(int caid, X509Certificate cacert, BigInteger certSerial, int ocspResponseStatus, Status expectedStatus, 
+	private void verifyStatus(int caid, X509Certificate cacert, BigInteger certSerial, int ocspResponseStatus, Status expectedStatus,
 			int expectedReason, Date expectedRevTime) throws NoSuchProviderException, IOException, OCSPException, OperatorCreationException, CertificateException {
 		// And an OCSP request
 		final OCSPReqBuilder gen = new OCSPReqBuilder();
@@ -288,11 +288,11 @@ public class OcspJunitHelper {
 		final String sNonce = "123456789";
 		Extension[] extensions = new Extension[1];
 		// An extensions is wrapped in an octet string, this means that the nonce which is an octet string
-		// is wrapped on another octet string in the extension encoding. Therefore we have to pass it as a byte[], 
+		// is wrapped on another octet string in the extension encoding. Therefore we have to pass it as a byte[],
 		// then BC does the "Extension" wrapping. If we pass in ASN1Encodable, BC thinks it's wrapped and done
 		extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(sNonce.getBytes()).getEncoded());
 		gen.setRequestExtensions(new Extensions(extensions));
-		
+
 		final OCSPReq req = gen.build();
 
 		// Send the request and receive a singleResponse
@@ -301,7 +301,7 @@ public class OcspJunitHelper {
 		if (ocspResponseStatus == OCSPRespBuilder.INTERNAL_ERROR) {
 		    return;
 		}
-		
+
 		if (ocspResponseStatus == OCSPRespBuilder.UNAUTHORIZED) {
             return;
         }
@@ -345,7 +345,7 @@ public class OcspJunitHelper {
 	public void renewAllKeys() throws IOException, URISyntaxException {
 	    servletGetWithParam("renewSigner=all\\&password=foo123");
 	}
-	
+
 	public void alterConfig(final Map<String, String> config) throws IOException, URISyntaxException {
 		if ( config==null || config.size()<1 ) {
 			return;
@@ -370,7 +370,7 @@ public class OcspJunitHelper {
 				*/
         final URI uriWithParam = new URI(
                 this.baseURI.getScheme(), this.baseURI.getUserInfo(), "127.0.0.1",
-                8080, this.baseURI.getPath(), param, this.baseURI.getFragment());
+                this.baseURI.getPort(), this.baseURI.getPath(), param, this.baseURI.getFragment());
 		final URL url = uriWithParam.toURL();
 		final HttpURLConnection con = (HttpURLConnection)url.openConnection();
 		log.debug("Connection to " + url.toExternalForm() + " resulted in HTTP " + con.getResponseCode());

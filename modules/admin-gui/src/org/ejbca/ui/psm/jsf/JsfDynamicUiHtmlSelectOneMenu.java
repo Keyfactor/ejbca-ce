@@ -35,6 +35,8 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
  */
 public class JsfDynamicUiHtmlSelectOneMenu extends HtmlSelectOneMenu implements DynamicUiComponent, PropertyChangeListener {
 
+    private static final long serialVersionUID = 1L;
+
     /** Class logger. */
     private static final Logger log = Logger.getLogger(JsfDynamicUiHtmlSelectOneMenu.class);
 

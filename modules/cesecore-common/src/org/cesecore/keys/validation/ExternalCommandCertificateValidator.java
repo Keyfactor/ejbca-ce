@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.profiles.Profile;
@@ -45,7 +45,6 @@ import com.keyfactor.util.CertTools;
 /**
  * External command certificate validator for multiple platforms.
  *
- * @version $Id$
  */
 public class ExternalCommandCertificateValidator extends CertificateValidatorBase implements DynamicUiModelAware, ExternalScriptCertificateValidator {
 
@@ -148,6 +147,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
         final DynamicUiProperty<String> testButton = new DynamicUiProperty<>(String.class, "testCommand", "testCommand");
         testButton.setRenderingHint(DynamicUiProperty.RENDER_BUTTON);
         testButton.setActionCallback(new DynamicUiActionCallback() {
+            private static final long serialVersionUID = 1L;
             @Override
             @SuppressWarnings("unchecked")
             public void action(final Object parameter) throws DynamicUiCallbackException {
@@ -547,6 +547,11 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
     @Override
     public Class<? extends Validator> getValidatorSubType() {
         return ExternalScriptCertificateValidator.class;
+    }
+
+    @Override
+    public boolean isValidatorAlwaysApplicable() {
+        return false;
     }
 
 }

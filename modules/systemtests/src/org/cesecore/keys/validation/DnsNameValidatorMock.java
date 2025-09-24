@@ -129,4 +129,9 @@ public class DnsNameValidatorMock extends ValidatorBase implements DnsNameValida
         return "";
     }
 
+    @Override
+    public boolean isValidatorAlwaysApplicable() {
+        return true;
+    }
+
 }

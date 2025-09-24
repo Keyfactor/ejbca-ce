@@ -6,13 +6,18 @@ dependencies {
     compileOnly(project(":modules:ejbca-common"))
     compileOnly(project(":modules:cesecore-common"))
     compileOnly(project(":modules:cesecore-entity"))
+    compileOnly(project(":modules:ejbca-repository-generator"))
     compileOnly(libs.jakartaee.api)
     compileOnly(libs.log4j.v12.api)
-    compileOnly(libs.commons.lang)
+    compileOnly(libs.commons.lang3)
     compileOnly(libs.x509.common.util)
 
-    testRuntimeOnly(libs.bundles.xstream)
+    testRuntimeOnly(project(":modules:cesecore-x509ca"))
+    testImplementation(libs.bundles.xstream)
+    testImplementation(libs.bundles.cryptotokens)
     testImplementation(libs.bundles.bouncy.castle)
+    testRuntimeOnly(libs.cert.cvc)
+    testRuntimeOnly(libs.hibernate.core)
 
     if (project.extra["edition"] == "ee") {
         testImplementation(project(":modules:ejbca-entity:cli"))
@@ -55,7 +60,7 @@ tasks.jar {
 
     from(sourceSets["main"].output)
     from("resources") {
-        include("orm-ejbca-mysql.xml")
+        include("orm-ejbca-$databaseName.xml")
         into("META-INF")
     }
     from("resources") {

@@ -12,9 +12,6 @@
  *************************************************************************/
 package org.cesecore;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -36,7 +33,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.KeyGenParams;
+import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
+
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -82,15 +90,8 @@ import org.ejbca.cvc.CertificateGenerator;
 import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.cvc.exception.ConstructionException;
 
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.certificate.SimpleCertGenerator;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-import com.keyfactor.util.keys.token.KeyGenParams;
-import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Common class for test classes which need to create a CA.
@@ -102,6 +103,7 @@ public abstract class CaTestUtils {
     private static final String RSA_1024 = "RSA1024";
     private static final String EC_256 = "prime256v1";
     private static final String ML_DSA_44 = AlgorithmConstants.KEYALGORITHM_MLDSA44;
+    private static final String SLHDSA_SHA2_128F = AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F;
     private static final String FALCON_512 = AlgorithmConstants.KEYALGORITHM_FALCON512;
 
 
@@ -223,7 +225,7 @@ public abstract class CaTestUtils {
     }
 
     /**
-     * Removes a CA, and it's associated certificate and Crypto Token.
+     * Removes a CA, it's associated CA certificate, it's Crypto Token and all certificates it issued.
      * See {@link #removeCa(AuthenticationToken, String, String)}, which is more robust, in case the test got aborted for some reason.
      */
     public static void removeCa(AuthenticationToken authenticationToken, CAInfo caInfo) throws AuthorizationDeniedException {
@@ -237,6 +239,7 @@ public abstract class CaTestUtils {
             if (caInfo.getCAToken() != null) {
                 cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, caInfo.getCAToken().getCryptoTokenId());
             }
+            internalCertificateStoreSession.removeCertificatesByIssuer(caInfo.getSubjectDN());
             internalCertificateStoreSession.removeCertificatesBySubject(caInfo.getSubjectDN());
             internalCertificateStoreSession.removeCRLs(authenticationToken, caInfo.getSubjectDN());
         }
@@ -276,7 +279,7 @@ public abstract class CaTestUtils {
             int keyusage) throws CryptoTokenOfflineException, CertificateParsingException, OperatorCreationException, CertIOException {
         return createTestX509CAOptionalGenKeys(cadn, tokenpin, genKeys, cryptoTokenImplementation, CAInfo.SELFSIGNED, keyspec, keyusage, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
     }
-    
+
     /** Creates a CA object, but does not actually add the CA to EJBCA. */
     public static X509CA createTestX509CAOptionalGenKeys(String cadn, char[] tokenpin, boolean genKeys, String cryptoTokenImplementation, int signedBy, final String keyspec,
             int keyusage, String caSignatureAlg) throws CryptoTokenOfflineException, CertificateParsingException, OperatorCreationException, CertIOException {
@@ -324,7 +327,7 @@ public abstract class CaTestUtils {
                             .setSignatureAlgorithm(caSignatureAlg)
                             .setProvider(cryptoTokenManagementProxySession.getSignProviderName(cryptoTokenId))
                             .setLdapOrder(ldapOrder)
-                            .generateCertificate();                        
+                            .generateCertificate();
             } else {
                 cacert = SimpleCertGenerator.forTESTCaCert()
                             .setSubjectDn(cadn)
@@ -336,7 +339,7 @@ public abstract class CaTestUtils {
                             .setSignatureAlgorithm(caSignatureAlg)
                             .setKeyUsage(keyusage)
                             .setLdapOrder(ldapOrder)
-                            .generateCertificate();      
+                            .generateCertificate();
             }
             cachain.add(cacert);
         }
@@ -462,13 +465,15 @@ public abstract class CaTestUtils {
     public static X509CA createTestX509CA(String cadn, char[] tokenpin, boolean pkcs11, int keyusage, String caSignAlg) throws CertificateParsingException,
             CryptoTokenOfflineException, OperatorCreationException, InvalidAlgorithmException, CertIOException {
         final String keyspec;
-        if (StringUtils.contains(caSignAlg, "RSA")) {
+        if (Strings.CS.contains(caSignAlg, "RSA")) {
             keyspec = RSA_1024;
-        } else if (StringUtils.contains(caSignAlg, "ECDSA")) {
+        } else if (Strings.CS.contains(caSignAlg, "ECDSA")) {
             keyspec = EC_256;
-        } else if (StringUtils.containsIgnoreCase(caSignAlg, "ML-DSA-44")) {
+        } else if (Strings.CI.contains(caSignAlg, "ML-DSA-44")) {
             keyspec = ML_DSA_44;
-        } else if (StringUtils.containsIgnoreCase(caSignAlg, "FALCON-512")) {
+        } else if (Strings.CI.contains(caSignAlg, "SLH-DSA-SHA2-128F")) {
+            keyspec = SLHDSA_SHA2_128F;
+        } else if (Strings.CI.contains(caSignAlg, "FALCON-512")) {
             keyspec = FALCON_512;
         } else {
             throw new InvalidAlgorithmException("Trying to create testCA with invalid signature algorithm: " + caSignAlg);
@@ -540,8 +545,8 @@ public abstract class CaTestUtils {
                 .setIssuerPrivKey(cryptoToken.getPrivateKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)))
                 .setEntityPubKey(cryptoToken.getPublicKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)))
                 .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
-                .generateCertificate();  
-                
+                .generateCertificate();
+
         assertNotNull(cacert);
         List<Certificate> cachain = new ArrayList<>();
         cachain.add(cacert);

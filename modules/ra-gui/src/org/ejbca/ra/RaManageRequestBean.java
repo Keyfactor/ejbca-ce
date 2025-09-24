@@ -28,7 +28,7 @@ import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -679,5 +679,5 @@ public class RaManageRequestBean implements Serializable {
             log.debug("Got exception while trying to " + action + " an approval request: " + t.getMessage());
         }
     }
-
+    
 }

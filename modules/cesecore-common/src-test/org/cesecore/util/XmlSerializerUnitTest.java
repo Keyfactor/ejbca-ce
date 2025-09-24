@@ -12,6 +12,12 @@
  *************************************************************************/
 package org.cesecore.util;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.beans.XMLEncoder;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -27,22 +33,16 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 
-import org.apache.commons.lang.ArrayUtils;
+
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificateprofile.PKIDisclosureStatement;
 import org.cesecore.certificates.endentity.EndEntityApprovalRequest;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * Test that XML serialization works as expected.
@@ -50,9 +50,6 @@ import static org.junit.Assert.fail;
 public class XmlSerializerUnitTest {
 	
 	private static final Logger log = Logger.getLogger(XmlSerializerUnitTest.class);
-
-	@Rule
-    public ExpectedException expectedException = ExpectedException.none();
 
     // We need our own approvalClass since we don't have an impl in CESeCore
     private static class TestApprovalRequest implements EndEntityApprovalRequest {
@@ -193,7 +190,7 @@ public class XmlSerializerUnitTest {
         assertEquals("The Fast output XML is not equal to the expected one", expectedXmlSerializerXmlString, xmlSerializerXmlString);
 
         // Byte for byte, It should be exactly equals
-        assertTrue("Fast encoded XML vs XMLEncoder was not byte-for-byte the same", ArrayUtils.isEquals(xmlSerializerXmlString.getBytes(StandardCharsets.UTF_8), xmlEncoderXmlString.getBytes(StandardCharsets.UTF_8)));
+        assertTrue("Fast encoded XML vs XMLEncoder was not byte-for-byte the same", Objects.deepEquals(xmlSerializerXmlString.getBytes(StandardCharsets.UTF_8), xmlEncoderXmlString.getBytes(StandardCharsets.UTF_8)));
         
 	}
 
@@ -216,20 +213,22 @@ public class XmlSerializerUnitTest {
             encoder.writeObject(b64DataMapUnhandled);
         }
         final String handledByXMLEncoder = os1.toString("UTF-8");
-        assertTrue("Fall back encodeSimpleMapFast vs XMLEncoder was not byte-for-byte the same", ArrayUtils.isEquals(handledByXMLEncoder.getBytes(StandardCharsets.UTF_8), unhandled.getBytes(StandardCharsets.UTF_8)));
+        assertTrue("Fall back encodeSimpleMapFast vs XMLEncoder was not byte-for-byte the same", Objects.deepEquals(handledByXMLEncoder.getBytes(StandardCharsets.UTF_8), unhandled.getBytes(StandardCharsets.UTF_8)));
 	}
     
     // Test adding something that fails with IllegalArgumentException
     @Test
     public void encodeSimpleMapFastWithIllegalArgumentException() {
         // given
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("encodeSimpleMapFast does not handle type: java.io.File");
-        final HashMap<Object, Object> failingMap = new Base64PutHashMap();
-        failingMap.put("longvalue", 123456789L); // this works
-        failingMap.put("unsupported", new File("bad")); // this should fail
-        // when
-        XmlSerializer.encodeSimpleMapFastInternal(failingMap);
+        Throwable throwable =  assertThrows(Throwable.class, () -> {
+            final HashMap<Object, Object> failingMap = new Base64PutHashMap();
+            failingMap.put("longvalue", 123456789L); // this works
+            failingMap.put("unsupported", new File("bad")); // this should fail
+            // when
+            XmlSerializer.encodeSimpleMapFastInternal(failingMap);
+        });
+        assertEquals("Incorrect exception was thrown.", IllegalArgumentException.class, throwable.getClass());
+        assertEquals("Incorrect error message in exception.", "encodeSimpleMapFast does not handle type: java.io.File", throwable.getMessage());        
     }
 
 

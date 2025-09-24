@@ -13,7 +13,36 @@
 
 package org.ejbca.core.protocol.cmp;
 
-import org.apache.commons.lang.StringUtils;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.Principal;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.Signature;
+import java.security.SignatureException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.security.auth.x500.X500Principal;
+
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Primitive;
@@ -109,34 +138,6 @@ import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.string.StringConfigurationCache;
-
-import javax.security.auth.x500.X500Principal;
-import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.Principal;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.Signature;
-import java.security.SignatureException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * This will test the different cmp authentication modules.
@@ -2043,8 +2044,12 @@ public class AuthenticationModulesSystemTest extends CmpTestCase {
                 EndEntityTypes.ENDUSER), eepid, cpid, SecConst.TOKEN_SOFT_PEM, null);
         user.setPassword(password);
         try {
-            this.endEntityManagementSession.addUser(ADMIN, username, password, subjectDN, "rfc822name=" + username + "@primekey.se", username
-                    + "@primekey.se", clearpassword, eepid, cpid, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, _caid);
+            EndEntityInformation endEntityInformation = new EndEntityInformation(username, subjectDN, _caid, "rfc822name=" + username + "@primekey.se", username
+                    + "@primekey.se", EndEntityTypes.ENDUSER.toEndEntityType(),
+                    eepid, cpid, SecConst.TOKEN_SOFT_PEM, null);
+            endEntityInformation.setPassword(password);
+            endEntityManagementSession.addUser(ADMIN, endEntityInformation, clearpassword);
+            
             log.debug("created user: " + username);
         } catch (Exception e) {
             log.debug("User " + username + " already exists. Setting the user status to NEW");
@@ -2096,7 +2101,7 @@ public class AuthenticationModulesSystemTest extends CmpTestCase {
             Object o = usercredentials.iterator().next();
             if (o instanceof String) {
                 String str = (String) o;
-                if (StringUtils.equals("fail", str)) {
+                if (Strings.CS.equals("fail", str)) {
                     return null;
                 }
             }

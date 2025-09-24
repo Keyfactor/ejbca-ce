@@ -14,10 +14,9 @@
 package org.ejbca.core.ejb.ca.publisher;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang.math.IntRange;
+import org.apache.commons.lang3.IntegerRange;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
@@ -29,6 +28,7 @@ import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
+import org.ejbca.dto.PublisherData;
 
 
 /**
@@ -44,7 +44,20 @@ public interface PublisherSession {
      *         
      */
     BasePublisher getPublisher(int id);
-    
+
+    /**
+     * @param id The ID of the PublisherDataRecord.
+     * @return The PublisherDataRecord that is stored in the database. If no such record can be found, then null is returned.
+     */
+    PublisherData getPublisherData(int id);
+
+    /**
+     *
+     * @param name The name of the PublisherDataRecord.
+     * @return The PublisherDataRecord that is stored in the database. If no such record can be found, then null is returned.
+     */
+    PublisherData getPublisherData(final String name);
+
     /**
      * @return a BasePublisher or null if a publisher with the given name does
      *         not exist. Uses cache to get the object as quickly as possible.
@@ -60,13 +73,17 @@ public interface PublisherSession {
      * @return the data hashmap of the publisher with the given id.
      * @throws PublisherDoesntExistsException if there's no publisher with the given id.
      */
-    Map<?, ?> getPublisherData(int id) throws PublisherDoesntExistsException;
+    Map<?, ?> getPublisherDataAsMap(int id) throws PublisherDoesntExistsException;
 
-    /** @return mapping of publisher id (Integer) to publisher name (String). */
-    HashMap<Integer,String> getPublisherIdToNameMap();
+    /**
+     * @return mapping of publisher id (Integer) to publisher name (String).
+     */
+    Map<Integer, String> getPublisherIdToNameMap();
 
-    /** @return mapping of publisher name (String) to publisher id (Integer). */
-    HashMap<String, Integer> getPublisherNameToIdMap();
+    /**
+     * @return mapping of publisher name (String) to publisher id (Integer).
+     */
+    Map<String, Integer> getPublisherNameToIdMap();
 
     /**
      * Adds a publisher to the database. Used for importing and exporting
@@ -117,8 +134,8 @@ public interface PublisherSession {
      * @throws PublisherExistsException if publisher already exists.
      * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_publisher
      */
-    void renamePublisher(AuthenticationToken admin, String oldname, String newname) throws PublisherExistsException, AuthorizationDeniedException;
-    
+    void renamePublisher(AuthenticationToken admin, String oldname, String newname) throws PublisherExistsException, AuthorizationDeniedException, PublisherDoesntExistsException;
+
     /** Updates publisher data.
      *  
      * @param admin AuthenticationToken of admin.
@@ -127,6 +144,16 @@ public interface PublisherSession {
      * 
      * @throws AuthorizationDeniedException */
     void changePublisher(AuthenticationToken admin, String name, BasePublisher publisher) throws AuthorizationDeniedException;
+
+    /** Updates publisher data.
+     *
+     * @param admin AuthenticationToken of admin.
+     * @param id the ID of the publisher to change
+     * @param name the name of the publisher to change.
+     * @param publisher the publisher to be added.
+     *
+     * @throws AuthorizationDeniedException */
+    void changePublisher(AuthenticationToken admin, int id, String name, BasePublisher publisher) throws AuthorizationDeniedException;
 
     /**
      * Removes a publisher. References to the publisher from CA, certificate profiles and Multi Group Publishers
@@ -201,7 +228,7 @@ public interface PublisherSession {
      * @throws AuthorizationDeniedException if access was denied to the CA matching userDN
      * @see org.ejbca.core.model.ca.publisher.BasePublisher
      */
-    boolean republishCrl(AuthenticationToken admin, Collection<Integer> publisherids, String caFingerprint, String issuerDn, IntRange crlPartitionIndeces) throws AuthorizationDeniedException;
+    boolean republishCrl(AuthenticationToken admin, Collection<Integer> publisherids, String caFingerprint, String issuerDn, IntegerRange crlPartitionIndeces) throws AuthorizationDeniedException;
     
 
     /**

@@ -126,16 +126,22 @@ public enum EjbcaEventTypes implements EventType {
     /** Change status of an existing end entity and all the end entity's certificates to revoked. */
     RA_REVOKEDENDENTITY,
     /** Creation of a new user data source. */
+    @Deprecated(since = "9.3")
     RA_USERDATASOURCEADD,
     /** Modification of an existing user data source. */
+    @Deprecated(since = "9.3")
     RA_USERDATASOURCEEDIT,
     /** Retrieval of data through an existing user data source. */
+    @Deprecated(since = "9.3")
     RA_USERDATASOURCEFETCHDATA,
     /** Removal of an existing user data source. */
+    @Deprecated(since = "9.3")
     RA_USERDATASOURCEREMOVE,
     /** Request for removal of data through an existing user data source. */
+    @Deprecated(since = "9.3")
     RA_USERDATASOURCEREMOVEDATA,
     /** Name change of an existing user data source. */
+    @Deprecated(since = "9.3")
     RA_USERDATASOURCERENAME,
     /** Publishing of a certificate and/or related certificate meta data when certificate is activated after being on hold. */
     REVOKE_UNREVOKEPUBLISH,

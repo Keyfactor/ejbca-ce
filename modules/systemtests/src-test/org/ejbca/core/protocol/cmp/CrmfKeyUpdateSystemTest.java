@@ -13,6 +13,12 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -37,18 +43,7 @@ import java.util.Set;
 
 import javax.security.auth.x500.X500Principal;
 
-import com.keyfactor.CesecoreException;
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.certificate.SimpleCertGenerator;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.KeyTools;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-import com.keyfactor.util.string.StringConfigurationCache;
-
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -131,11 +126,16 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import com.keyfactor.CesecoreException;
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.string.StringConfigurationCache;
 
 /**
  * This will test will check performing key updates over CMP.
@@ -1626,7 +1626,7 @@ public class CrmfKeyUpdateSystemTest extends CmpTestCase {
             Object o = usercredentials.iterator().next();
             if (o instanceof String) {
                 String str = (String) o;
-                if (StringUtils.equals("fail", str)) {
+                if (Strings.CS.equals("fail", str)) {
                     return null;
                 }
             }
@@ -1752,10 +1752,12 @@ public class CrmfKeyUpdateSystemTest extends CmpTestCase {
             this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
             final String password = "foo123";
             //--------------- create the user and issue its certificate, expired -----------------
-            endEntityManagementSession.addUser(ADMIN, RENEWAL_USERNAME, password, RENEWAL_USER_DN.toString(), "rfc822name=" + RENEWAL_USERNAME + "@primekey.se",
-                    RENEWAL_USERNAME + "@primekey.se", true, endEntityProfileId, certificateProfileId, EndEntityTypes.ENDUSER.toEndEntityType(),
-                    SecConst.TOKEN_SOFT_PEM, this.caid);
-
+            EndEntityInformation endEntityInformation = new EndEntityInformation(RENEWAL_USERNAME, RENEWAL_USER_DN.toString(), this.caid, "rfc822name=" + RENEWAL_USERNAME + "@primekey.se", RENEWAL_USERNAME + "@primekey.se",
+                    EndEntityTypes.ENDUSER.toEndEntityType(),
+                    endEntityProfileId, certificateProfileId, SecConst.TOKEN_SOFT_PEM, null);
+            endEntityInformation.setPassword(password);
+            endEntityManagementSession.addUser(ADMIN, endEntityInformation, true);      
+            
             KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
             SimpleRequestMessage expiredReq = new SimpleRequestMessage(keys.getPublic(), RENEWAL_USERNAME, password,
                     new Date(System.currentTimeMillis()));
@@ -1819,9 +1821,11 @@ public class CrmfKeyUpdateSystemTest extends CmpTestCase {
         //------------------ create the user and issue his first certificate -------------
         final String password = "foo123";
         //--------------- create the user and issue its certificate, expired -----------------
-        endEntityManagementSession.addUser(ADMIN, RENEWAL_USERNAME, password, RENEWAL_USER_DN.toString(), "rfc822name=" + RENEWAL_USERNAME + "@primekey.se",
-                RENEWAL_USERNAME + "@primekey.se", true, endEntityProfileId, certificateProfileId, EndEntityTypes.ENDUSER.toEndEntityType(),
-                SecConst.TOKEN_SOFT_PEM, this.caid);
+        EndEntityInformation endEntityInformation = new EndEntityInformation(RENEWAL_USERNAME, RENEWAL_USER_DN.toString(), this.caid,
+                "rfc822name=" + RENEWAL_USERNAME + "@primekey.se", RENEWAL_USERNAME + "@primekey.se", EndEntityTypes.ENDUSER.toEndEntityType(),
+                endEntityProfileId, certificateProfileId, SecConst.TOKEN_SOFT_PEM, null);
+        endEntityInformation.setPassword(password);
+        endEntityManagementSession.addUser(ADMIN, endEntityInformation, true);  
 
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         SimpleRequestMessage expiredReq = new SimpleRequestMessage(keys.getPublic(), RENEWAL_USERNAME, password,

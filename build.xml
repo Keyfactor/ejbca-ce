@@ -68,7 +68,7 @@
     <!-- =================================================================== -->
     <!-- Build ALL                                                           -->
     <!-- =================================================================== -->
-    <target name="build" depends="deprecated:check, fail-unless-appserver-detected, testforgnujava, ejbca.ear" description="Builds EJBCA"/>
+    <target name="build" depends="deprecated:check, fail-unless-appserver-detected, testforgnujava, ejbca.ear, configure-git-hooks" description="Builds EJBCA"/>
     
 	<!--
 	  Installs EJBCA by creating an initial CA and generating certs for
@@ -245,7 +245,6 @@
 			<path refid="lib.log4j.classpath"/>
 			<path refid="lib.servlet.classpath"/>
 			<path refid="lib.commons-lang.classpath"/>
-			<path refid="lib.commons-fileupload.classpath"/>
 			<path refid="lib.jee.classpath"/>
 			<path refid="lib.bouncycastle.classpath"/>
 			<path refid="lib.ldap.classpath"/>
@@ -629,6 +628,7 @@
                 <include name="mpic.jar" />
 	            <include name="unidfnr-ejb.jar" />
 	            <include name="ejbca-ejb.jar" />
+				<include name="ejbca-repository.jar" />
 				<include name="acme-common.jar" />
         		<include name="ejbca-ssh.jar" />
         		<include name="ejbca-cits.jar" />
@@ -841,6 +841,7 @@
 		<available file="${ejbca.home}/modules/plugins-ee/build.xml" />
 	</condition>
 	<property name="variant" value=""/> <!-- If we are running on a full EJBCA instance! -->
+    <property name="licensing" value=""/> <!-- If we are should include licensing packages -->
 
 	<!-- This property is used to distinguish if we are running in full EJBCA or on a VA/RA only instance. To exclude parts from ejbca.sh accordingly -->
     <condition property="running.full.ejbca" value="true">
@@ -848,8 +849,8 @@
             <not><equals arg1="${variant}" arg2="ra" casesensitive="false"/></not>
             <not><equals arg1="${variant}" arg2="va" casesensitive="false"/></not>
          </and>
-    </condition>	
-	
+    </condition>
+
 	<!-- Allows overruling the documentation generation for ziprelease. This is needed for Jenkins jobs, because confluence is not accessible from inside Jenkins. 
 	     Default value (when you don't specify the -Ddoc.update flag at all) is TRUE -->
 	<condition property="doc.update.ziprelease" value="true">
@@ -871,11 +872,18 @@
 
 		<antcall target="update-gitrev" /> <!-- update git revision version property -->
 		<antcall target="update-edition" />
-		
+
 		<condition property="build.contains.eidas">
 			<equals arg1="${variant}" arg2="eidas" casesensitive="false"/>
 		</condition>
-		
+
+        <condition property="build.contains.licensing">
+            <and>
+                <not><equals arg1="${edition}" arg2="ce" casesensitive="false"/></not>
+                <istrue value="${licensing}"/>
+            </and>
+        </condition>
+
         <condition property="build.contains.va" value="true">
             <not><equals arg1="${variant}" arg2="ra" casesensitive="false"/></not>
         </condition>
@@ -895,7 +903,7 @@
         <condition property="build.contains.cesecore-cvcca" value="true">
 			<istrue value="${running.full.ejbca}" />
         </condition>
-		
+
 		<condition property="variant.suffix" value="_RA">
             <equals arg1="${variant}" arg2="ra" casesensitive="false"/>
         </condition>
@@ -908,14 +916,14 @@
 			<equals arg1="${variant}" arg2="eidas" casesensitive="false"/>
 		</condition>
 
-		<condition property="variant.suffix" value="_ProxyCA">
+        <condition property="variant.suffix" value="_ProxyCA">
 			<equals arg1="${variant}" arg2="proxy-ca" casesensitive="false"/>
 		</condition>
 
 		<condition property="variant.suffix" value="">
 			<istrue value="${running.full.ejbca}" />
         </condition>
-		
+
         <!-- Pre-configure eIDAS edition only to use P11NG with CP5 additions -->
 	    <copy file="src/java/defaultvalues.properties" tofile="${tmp}/eidas/src/java/defaultvalues.properties" overwrite="true">
 	        <filterchain>
@@ -980,6 +988,7 @@
 				<exclude name="SEMVER" />
 				<exclude name="VERSION" />
 				<exclude name="TAGS" />
+				<exclude name="src/ci/" />
 				<exclude name="src/package/" />
 				<exclude name="lib/coverage/**" />
                 <!-- Exclude directories from release that are built after "clean" as dependency to documentation -->
@@ -1029,7 +1038,13 @@
 	            <exclude name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/ca/**/CaImportProfilesCommand.java" unless="running.full.ejbca"/>
 	            <exclude name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/CreateCertCommand.java" unless="running.full.ejbca"/>
 				<!-- End of the list of subcommands of ejbca.sh that must be hidden when we are running on limited ejbca (va/ra) installation -->
-		    	
+
+                <!-- Exclude Licence Validation files unless otherwise specified-->
+                <exclude unless="build.contains.licensing" name="modules/ejbca-ejb/src/org/ejbca/core/ejb/license/**"/>
+                <exclude unless="build.contains.licensing" name="modules/ejbca-ejb/src-test/org/ejbca/core/ejb/license/**"/>
+                <exclude unless="build.contains.licensing" name="modules/ejbca-common/src/org/ejbca/core/ejb/license/**"/>
+                <!--END: Exclude Licence Validation files -->
+
 		    </zipfileset>
 			
             <!-- Pre-configure eIDAS edition only to use P11NG with CP5 additions -->
@@ -1040,12 +1055,10 @@
 		    <zipfileset dir="." prefix="${basezipfile}" filemode="700" dirmode="700"> 
 		    	<include name="**/*.sh" />
 				<exclude name="bin/backup/**" />
+				<exclude name="src/ci/**" />
 				<exclude name="modules/statedump/**" />
 				<exclude name="container/**" />
 				<exclude name=".jx/**" />
-		    </zipfileset>
-		    <zipfileset dir="." prefix="${basezipfile}" filemode="600" dirmode="700">
-		    	<include name="conf/extendedkeyusage.properties" />		    	
 		    </zipfileset>
 		</zip>
         <antcall target="signjar">
@@ -1317,22 +1330,6 @@ SHA-256 checksum: ${cesecorebinSHA256}
         <signjar keystore="${signjar.keystore}" jar="${signjar.file}"
         	alias="${signjar.keystorealias}" storepass="${signjar.keystorepass}" />
     </target>
-
-	<!-- ("preprocess" is not run from anywhere right now..) -->
-	<target name="preprocess">
-        <!-- 
-          Fix encoding of files for internal (log) internationalization) 
-		  TODO: This looks more like this is something the French language contributor should run before a commit. Should be combined with the diff-script to show missing and redundant translations. 
-        --> 		
-		<delete file="${tmp}/intresources/ejbcaresources.fr.properties"/>
-		<delete file="${tmp}/intresources/intresources.fr.properties"/>
-    	<native2ascii encoding="ISO8859-1" 
-    		src="${tmp}/intresources" 
-    		dest="${tmp}/intresources"
-    		includes="*resources.fr.properties" 
-    	/>
-	</target>
-	
 	
 	<target name="ejbca.ear.module-dependencies">
         <ant dir="modules" target="ejbca.ear.module-dependencies" inheritall="true" inheritrefs="true"/>
@@ -1491,7 +1488,6 @@ SHA-256 checksum: ${cesecorebinSHA256}
         -->
         <copy todir="../cesecore/src/main/java" overwrite="true">
             <fileset dir="src/java">
-                <include name="certextensions.properties"/>
                 <include name="profilemappings.properties"/>
                 <include name="profilemappings_enterprise.properties"/>
             </fileset>
@@ -1523,4 +1519,54 @@ SHA-256 checksum: ${cesecorebinSHA256}
         </copy>
     </target>
 
+	<!-- Git hooks -->
+	<condition property="isWindows">
+		<os family="windows"/>
+	</condition>
+
+	<!-- Verify that required directories are present. -->
+	<target name="check-git-hook-prerequisites">
+		<condition property="git.hooks.available">
+			<and>
+				<available file=".git" type="dir"/> <!-- won't exist in Zip distributions -->
+				<available file="src/ci" type="dir"/> <!-- won't exist in CE -->
+			</and>
+		</condition>
+	</target>
+
+	<!-- Determine if Git hooks need to be configured -->
+	<target name="check-git-hook-config" depends="check-git-hook-prerequisites" if="git.hooks.available">
+		<!-- Get current Git hook path -->
+		<exec executable="git" dir="${ejbca.home}"
+			  outputproperty="git.hooksPath"
+			  resultproperty="git.exitCode"
+			  failonerror="false">
+			<arg value="config"/>
+			<arg value="--local"/>
+			<arg value="--get"/>
+			<arg value="core.hooksPath"/>
+		</exec>
+		<condition property="git.hooks.need.config">
+			<or>
+				<not>
+					<equals arg1="${git.exitCode}" arg2="0"/>
+				</not>
+				<not>
+					<equals arg1="${git.hooksPath}" arg2="src/ci/git-hooks" trim="true"/>
+				</not>
+			</or>
+		</condition>
+	</target>
+
+	<!-- Update the Git hook path if needed -->
+	<target name="configure-git-hooks" depends="check-git-hook-config" if="git.hooks.need.config" unless="isWindows">
+		<exec executable="git" dir="${ejbca.home}" failonerror="true">
+			<arg value="config"/>
+			<arg value="--local"/>
+			<arg value="--replace-all"/>
+			<arg value="core.hooksPath"/>
+			<arg value="src/ci/git-hooks"/>
+		</exec>
+		<echo message="⚙️ Configured Git to use hooks located in 'src/ci/git-hooks'."/>
+	</target>
 </project>

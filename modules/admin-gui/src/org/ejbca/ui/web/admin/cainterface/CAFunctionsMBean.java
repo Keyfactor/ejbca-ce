@@ -23,26 +23,24 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import jakarta.ejb.EJB;
-import jakarta.faces.model.SelectItem;
-import jakarta.faces.view.ViewScoped;
-import jakarta.inject.Named;
-import jakarta.servlet.http.Part;
-
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAConstants;
+import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
@@ -65,6 +63,12 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
+import jakarta.ejb.EJB;
+import jakarta.faces.model.SelectItem;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Named;
+import jakarta.servlet.http.Part;
+
 /**
  * JSF Managed Bean or the ca functions page in the CA UI.
  */
@@ -85,7 +89,6 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
     @EJB
     private PublishingCrlSessionLocal publishingCrlSession;
 
-    private final GlobalConfiguration globalConfiguration;
     private List<CAGuiInfo> caGuiInfos = null;
     private transient Part uploadFile;
     private final List<String> extCaNameList;
@@ -93,7 +96,6 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
 
     public CAFunctionsMBean() {
         super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
-        globalConfiguration = getEjbcaWebBean().getGlobalConfiguration();
         final TreeMap<String, Integer> externalCANames = getEjbcaWebBean().getExternalCANames();
         extCaNameList = new ArrayList<>(externalCANames.keySet());
     }
@@ -216,7 +218,8 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
 
     }
 
-    public class CertificateChainElement {
+    public class CertificateChainElement implements Serializable {
+        private static final long serialVersionUID = 1L;
         private final Certificate cert;
         private final String subjectDN;
 
@@ -246,7 +249,8 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
 
     }
 
-    public class CRLGuiInfo {
+    public class CRLGuiInfo implements Serializable {
+        private static final long serialVersionUID = 1L;
         private final Date createDate;
         private final Date expireDate;
         private final String subjectDn;
@@ -298,9 +302,12 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
         return caGuiInfos;
     }
 
+    /** Record for caching CRL entries **/
+    record CRLKey(String subject, int partitionIndex) {}
+
     private void refreshCaGuiInfos() {
         caGuiInfos = new ArrayList<>();
-        final TreeMap<String, Integer> caNames = caSession.getAuthorizedCaNamesToIds(getAdmin());
+        final TreeMap<String, Integer> caNames = caSession.getAuthorizedCaNamesToIdsWithoutCache(getAdmin());
         final List<String> caNameList = new ArrayList<>(caNames.keySet());
         caNameList.sort(String::compareToIgnoreCase);
         for (final String caName : caNameList) {
@@ -311,10 +318,14 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             }
 
             final List<CRLGuiInfo> crlInfos = new ArrayList<>();
+
+            /** Maps for caching repeating database reads **/
+            final HashMap<String, CRLInfo> deltaCRLInfo = new HashMap<>();
+            final HashMap<String, CAData> caBySubject = new HashMap<>();
             if (cainfo instanceof X509CAInfo) {
                 final int numberOfPartitions = cainfo.getAllCrlPartitionIndexes() == null
-                        ? 1
-                        : cainfo.getAllCrlPartitionIndexes().getMaximumInteger();
+                        ? 0
+                        : cainfo.getAllCrlPartitionIndexes().getMaximum();
                 for (int currentPartitionIndex = 0; currentPartitionIndex <= numberOfPartitions; currentPartitionIndex++) {
                     final CRLInfo currentCrlInfo = crlStoreSession.getLastCRLInfoLightWeight(cainfo.getLatestSubjectDN(), currentPartitionIndex, false);
                     if (currentCrlInfo != null) {
@@ -328,11 +339,12 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
                 }
             }
 
-            final CRLInfo deltacrlinfo = crlStoreSession.getLastCRLInfoLightWeight(cainfo.getLatestSubjectDN(), CertificateConstants.NO_CRL_PARTITION, true);
+            final CRLInfo deltacrlinfo = deltaCRLInfo.computeIfAbsent(cainfo.getLatestSubjectDN(),
+                    s -> crlStoreSession.getLastCRLInfoLightWeight(s, CertificateConstants.NO_CRL_PARTITION, true));
 
             final CAGuiInfo caGuiInfo = new CAGuiInfo(caName, caid, cainfo.getSubjectDN(),
                     cainfo.getCAType() != CAInfo.CATYPE_PROXY
-                            ? getCertificateChain(cainfo.getCertificateChain())
+                            ? getCertificateChain(cainfo.getCertificateChain(), caBySubject)
                             : null,
                     crlInfos, deltacrlinfo, cainfo.getDeltaCRLPeriod() > 0,
                     cainfo.getStatus() == CAConstants.CA_ACTIVE, cainfo.getCaTypeAsString());
@@ -340,13 +352,14 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
         }
     }
 
-    private List<CertificateChainElement> getCertificateChain(final List<Certificate> originalChain) {
+    private List<CertificateChainElement> getCertificateChain(final List<Certificate> originalChain, final Map<String, CAData> caBySubject) {
         final Set<Certificate> missingChainCerts = new HashSet<>();
         final Set<Certificate> certificates = new HashSet<>(originalChain);
 
         certificates.stream()
                 .filter(Objects::nonNull)
-                .map(cert -> caSession.findBySubjectDN(CertTools.getIssuerDN(cert)))
+                .map(cert -> caBySubject.computeIfAbsent(CertTools.getIssuerDN(cert),
+                        issuerDN -> caSession.findBySubjectDN(issuerDN)))
                 .filter(Objects::nonNull)
                 .forEach(caData ->
                         missingChainCerts.add(caData.getCA().getCACertificate())
@@ -383,15 +396,15 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
     }
 
     public String getCertificatePopupLink(final int caid) {
-        return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getAdminWebPath() + "viewcertificate.xhtml?caid=" + caid;
+        return getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH + "viewcertificate.xhtml?caid=" + caid;
     }
 
     public String openCertificateInfoPopup(final int caid) {
-        return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getCaPath() + "/viewcainfo.xhtml?caid=" + caid;
+        return getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.CA_PATH + "/viewcainfo.xhtml?caid=" + caid;
     }
 
     public String getDownloadCertificateLink() {
-        return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getCaPath() + "/cacert";
+        return getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.CA_PATH + "/cacert";
     }
 
     public String getSshPublicKeyLink() {
@@ -399,7 +412,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
     }
 
     public String getDownloadCrlLink() {
-        return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getCaPath() + "/getcrl/getcrl";
+        return getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.CA_PATH + "/getcrl/getcrl";
     }
 
     public void showJksDownloadForm(final CAGuiInfo caGuiInfo, final int index) {
@@ -426,7 +439,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             final X509CRL x509crl = CertTools.getCRLfromByteArray(bytes);
             if (x509crl == null) {
                 addNonTranslatedErrorMessage("Could not parse CRL. It must be in DER format.");
-            } else if (!StringUtils.equals(cainfo.getSubjectDN(), CertTools.getIssuerDN(x509crl))) {
+            } else if (!Strings.CS.equals(cainfo.getSubjectDN(), CertTools.getIssuerDN(x509crl))) {
                 addNonTranslatedErrorMessage("Error: The CRL in the file in not issued by " + crlImportCaName);
             } else {
                 final int crlPartitionIndex = CertificateConstants.NO_CRL_PARTITION; // TODO partitioned CRL import (partition auto-detection) could be added as part of ECA-7961

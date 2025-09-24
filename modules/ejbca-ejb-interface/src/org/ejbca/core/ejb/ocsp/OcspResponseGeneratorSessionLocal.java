@@ -28,12 +28,9 @@ public interface OcspResponseGeneratorSessionLocal extends OcspResponseGenerator
 
     void initTimers();
 
-    /** One-time load and conversion of configured keystores to CryptoTokens and OcspKeyBindings */
-    void adhocUpgradeFromPre60(char[] activationPassword);
+    String healthCheck(boolean reportIgnoredKeyBindings);
 
-    String healthCheck();
-
-    /** @see org.cesecore.certificates.ocsp.cache.OcspRequestSignerStatusCache#flush() */
+    /** @see org.cesecore.certificates.ocsp.cache.OcspRequestSignerStatusCacheSingletonBean#flush() */
     void clearOcspRequestSignerRevocationStatusCache();
 
     /**

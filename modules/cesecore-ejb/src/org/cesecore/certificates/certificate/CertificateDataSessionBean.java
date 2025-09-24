@@ -15,7 +15,7 @@ package org.cesecore.certificates.certificate;
 import static java.util.stream.Collectors.toList;
 import static org.cesecore.authorization.control.StandardRules.SYSTEMCONFIGURATION_VIEW;
 
-import org.apache.commons.lang.time.FastDateFormat;
+import org.apache.commons.lang3.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -80,6 +80,16 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
     @Override
     public CertificateData findByFingerprint(String fingerprint) {
         return entityManager.find(CertificateData.class, fingerprint);
+    }
+
+    /** @return the found entity instance or null if the entity does not exist */
+    @Override
+    public CertificateData findBySubjectKeyId(String subjectKeyId) {
+        final TypedQuery<CertificateData> query = entityManager.createQuery(
+                "SELECT a FROM CertificateData a WHERE a.subjectKeyId=:subjectKeyId",
+                CertificateData.class);
+        query.setParameter("subjectKeyId", subjectKeyId);
+        return query.getSingleResult();
     }
 
     /** @return return the query results as a Set. */

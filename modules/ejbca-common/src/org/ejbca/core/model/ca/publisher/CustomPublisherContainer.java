@@ -29,7 +29,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificate.Base64CertData;
@@ -53,7 +53,13 @@ public class CustomPublisherContainer extends BasePublisher {
 
     private static final Logger log = Logger.getLogger(CustomPublisherContainer.class);
     
-    private ICustomPublisher custompublisher = null; 
+    /**
+     * This is set to true when custompublisher should be reloaded.
+     * Because custompublisher is transient, we can't use its null-ness
+     * as a trigger.
+     */
+    private boolean resetCustomPublisher = false;
+    private transient ICustomPublisher custompublisher = null; 
 	
 	public static final float LATEST_VERSION = 1;
 		
@@ -64,7 +70,6 @@ public class CustomPublisherContainer extends BasePublisher {
     private static final String PROPERTYDATA_PEERID = "peerId";
 		
     public CustomPublisherContainer() {
-    	super();
     	data.put(TYPE, PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER);
     	setClassPath("");
     	try {
@@ -317,7 +322,8 @@ public class CustomPublisherContainer extends BasePublisher {
 	 * @return the custom publisher wrapped by this class, null if none is defined. 
 	 */
 	public ICustomPublisher getCustomPublisher() {
-		if(custompublisher == null){
+		if(resetCustomPublisher || custompublisher == null) {
+		    resetCustomPublisher = false;
 		    final String classPath = getClassPath();
 		    if (classPath==null || classPath.isEmpty()) {
 		        return null;
@@ -379,6 +385,7 @@ public class CustomPublisherContainer extends BasePublisher {
 	@Override
     public Object saveData() {
 		this.custompublisher = null;
+		resetCustomPublisher = true;
 		return super.saveData();
 	}
 

@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.util.ui;
 
+import java.io.Serializable;
 import java.util.List;
 
 import com.keyfactor.CesecoreException;
@@ -21,7 +22,7 @@ import com.keyfactor.CesecoreException;
  * 
  * @version $Id$
  */
-public interface DynamicUiActionCallback {
+public interface DynamicUiActionCallback extends Serializable {
 
     /**
      * Action callback method.

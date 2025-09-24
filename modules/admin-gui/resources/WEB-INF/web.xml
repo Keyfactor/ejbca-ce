@@ -23,6 +23,8 @@
         https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd">
 
     <description><![CDATA[EJBCA Administration web]]></description>
+    
+    <distributable />
 
     <listener>
          <listener-class>org.owasp.csrfguard.CsrfGuardServletContextListener</listener-class>
@@ -52,6 +54,15 @@
         <param-name>jakarta.faces.PROJECT_STAGE</param-name>
         <param-value>Production</param-value>
     </context-param>
+
+    <filter>
+        <filter-name>RequestIdFilter</filter-name>
+        <filter-class>org.ejbca.util.RequestIdFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>RequestIdFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
 
     <!-- When using the CSRFGuard filter below we need to hack in before it to set the correct character
     encoding (i.e. UTF-8) to support intl characters. We do that using a filter that sits before
@@ -195,7 +206,6 @@
     </servlet>
     <servlet-mapping>
         <servlet-name>Faces Servlet</servlet-name>
-        <url-pattern>*.jsf</url-pattern>
         <url-pattern>*.xhtml</url-pattern>
     </servlet-mapping>
 

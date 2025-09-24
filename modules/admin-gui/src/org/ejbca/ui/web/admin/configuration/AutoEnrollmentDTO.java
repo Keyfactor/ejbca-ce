@@ -16,11 +16,13 @@ import com.keyfactor.util.StringTools;
 import org.cesecore.config.MSAutoEnrollmentSettingsTemplate;
 import org.ejbca.config.MSAutoEnrollmentConfiguration;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AutoEnrollmentDTO {
+public class AutoEnrollmentDTO implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     private String alias;
     private String msaeForestRoot;
     private String msaeDomain;
@@ -32,6 +34,7 @@ public class AutoEnrollmentDTO {
     private String krb5ConfFilename;
     private String keyTabFilename;
     private boolean isUseSSL;
+    private String trustManagerType = MSAutoEnrollmentConfiguration.DEFAULT_TRUST_MANAGER;
     private boolean followLdapReferral;
     private int adConnectionPort = MSAutoEnrollmentConfiguration.DEFAULT_AD_CONNECTION_PORT;
     private int ldapReadTimeout = MSAutoEnrollmentConfiguration.DEFAULT_LDAP_READ_TIMEOUT;
@@ -59,6 +62,7 @@ public class AutoEnrollmentDTO {
             krb5ConfFileBytes = autoEnrollmentConfiguration.getMsaeKrb5ConfBytes(alias);
             krb5ConfFilename = autoEnrollmentConfiguration.getMsaeKrb5ConfFilename(alias);
             isUseSSL = autoEnrollmentConfiguration.isUseSSL(alias);
+            trustManagerType = autoEnrollmentConfiguration.getTrustManagerType(alias);
             followLdapReferral = autoEnrollmentConfiguration.isFollowLdapReferral(alias);
             adConnectionPort = autoEnrollmentConfiguration.getADConnectionPort(alias);
             ldapReadTimeout = autoEnrollmentConfiguration.getLdapReadTimeout(alias);
@@ -158,6 +162,14 @@ public class AutoEnrollmentDTO {
 
     public void setUseSSL(boolean useSSL) {
         isUseSSL = useSSL;
+    }
+
+    public String getTrustManagerType() {
+        return trustManagerType;
+    }
+
+    public void setTrustManagerType(String trustManagerType) {
+        this.trustManagerType = trustManagerType;
     }
 
     public boolean isFollowLdapReferral() {

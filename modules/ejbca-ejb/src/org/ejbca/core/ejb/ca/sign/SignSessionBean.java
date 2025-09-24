@@ -39,20 +39,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.keyfactor.CesecoreException;
-import com.keyfactor.ErrorCode;
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.EJBTools;
-import com.keyfactor.util.certificate.CertificateWrapper;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1Integer;
@@ -79,13 +68,11 @@ import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
 import org.bouncycastle.its.ETSISignedData;
 import org.bouncycastle.its.ETSISignedDataBuilder;
 import org.bouncycastle.its.ITSCertificate;
-import org.bouncycastle.its.jcajce.JcaITSContentSigner;
 import org.bouncycastle.its.operator.ITSContentSigner;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.oer.its.ieee1609dot2.CertificateId;
 import org.bouncycastle.oer.its.ieee1609dot2.ToBeSignedCertificate.Builder;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.HashedId8;
-import org.bouncycastle.oer.its.ieee1609dot2.basetypes.Psid;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.PublicVerificationKey;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -100,7 +87,6 @@ import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificate.ca.its.ECA;
-import org.cesecore.certificate.ca.its.ITSApplicationIds;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -146,7 +132,7 @@ import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.config.GlobalCesecoreConfiguration;
+import org.cesecore.config.GlobalCtConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.util.CvcKeyTools;
@@ -191,6 +177,18 @@ import org.ejbca.cvc.PublicKeyEC;
 import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
 import org.ejbca.util.passgen.AllPrintableCharPasswordGenerator;
+
+import com.keyfactor.CesecoreException;
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.certificate.CertificateWrapper;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
@@ -274,29 +272,26 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         }
     }
 
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    @Override
-    public Collection<Certificate> getCertificateChain(int caid) {
-        final CAInfo cainfo = caSession.getCAInfoInternal(caid);
-        if (cainfo != null) {
-            return cainfo.getCertificateChain();
-        } else {
-            return new ArrayList<>();
-        }
-    }
-
     @Override
     public byte[] createPKCS7(AuthenticationToken admin, X509Certificate cert, boolean includeChain)
-            throws CADoesntExistsException, SignRequestSignatureException, AuthorizationDeniedException {
+            throws CADoesntExistsException, AuthorizationDeniedException {
         Integer caid = Integer.valueOf(CertTools.getIssuerDN(cert).hashCode());
-        return createPKCS7(admin, caid.intValue(), cert, includeChain, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
+        try {
+            return createPKCS7(admin, caid.intValue(), cert, includeChain, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
+        } catch (SignRequestSignatureException e) {
+            throw new IllegalStateException("This state should not happen. The CA that issued the certificate was not found, but that should have been thrown as a CADoesntExistsException.");
+        } 
     }
 
     @Override
     public byte[] createPKCS7(AuthenticationToken admin, X509Certificate cert, boolean includeChain, final int eepId)
-            throws CADoesntExistsException, SignRequestSignatureException, AuthorizationDeniedException {
+            throws CADoesntExistsException, AuthorizationDeniedException {
         Integer caid = Integer.valueOf(CertTools.getIssuerDN(cert).hashCode());
-        return createPKCS7(admin, caid.intValue(), cert, includeChain, eepId);
+        try {
+            return createPKCS7(admin, caid.intValue(), cert, includeChain, eepId);
+        } catch (SignRequestSignatureException e) {
+            throw new IllegalStateException("This state should not happen. The CA that issued the certificate was not found, but that should have been thrown as a CADoesntExistsException.");
+        } 
     }
 
     @Override
@@ -330,6 +325,10 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             log.trace(">createPKCS7(" + caId + ", " + CertTools.getIssuerDN(cert) + ")");
         }
         final CA ca = (CA) caSession.getCA(admin, caId);
+        if(ca == null) {
+            throw new CADoesntExistsException("CA with id " + caId + " doesn't exit.");
+        }
+        
         final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
         final byte[] returnval = ca.createPKCS7(cryptoToken, cert, includeChain);
         if (returnval != null) {
@@ -431,35 +430,10 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         try {
             bccert = CertTools.getCertfromByteArray(incert.getEncoded(), Certificate.class);
             bccert.verify(incert.getPublicKey());
-        } catch (CertificateParsingException e) {
-            log.debug("CertificateParsingException verify POPO: ", e);
+        } catch (InvalidKeyException | CertificateException | NoSuchAlgorithmException | NoSuchProviderException | SignatureException e) {
             final String msg = intres.getLocalizedMessage("createcert.popverificationfailed");
             throw new SignRequestSignatureException(msg, e);
-        } catch (CertificateEncodingException e) {
-            log.debug("CertificateEncodingException verify POPO: ", e);
-            final String msg = intres.getLocalizedMessage("createcert.popverificationfailed");
-            throw new SignRequestSignatureException(msg);
-        } catch (InvalidKeyException e) {
-            log.debug("InvalidKeyException verify POPO: ", e);
-            final String msg = intres.getLocalizedMessage("createcert.popverificationfailed");
-            throw new SignRequestSignatureException(msg, e);
-        } catch (CertificateException e) {
-            log.debug("CertificateException verify POPO: ", e);
-            final String msg = intres.getLocalizedMessage("createcert.popverificationfailed");
-            throw new SignRequestSignatureException(msg, e);
-        } catch (NoSuchAlgorithmException e) {
-            log.debug("NoSuchAlgorithmException verify POPO: ", e);
-            final String msg = intres.getLocalizedMessage("createcert.popverificationfailed");
-            throw new SignRequestSignatureException(msg, e);
-        } catch (NoSuchProviderException e) {
-            log.debug("NoSuchProviderException verify POPO: ", e);
-            final String msg = intres.getLocalizedMessage("createcert.popverificationfailed");
-            throw new SignRequestSignatureException(msg, e);
-        } catch (SignatureException e) {
-            log.debug("SignatureException verify POPO: ", e);
-            final String msg = intres.getLocalizedMessage("createcert.popverificationfailed");
-            throw new SignRequestSignatureException(msg, e);
-        }
+        }  
 
         return createCertificate(admin, username, password, incert.getPublicKey(),
                 CertTools.sunKeyUsageToBC(((X509Certificate) incert).getKeyUsage()), null, null);
@@ -751,8 +725,8 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                         }
                     }
                     boolean verifiedOuter = false; // So we can throw an error if we could not verify
-                    if (StringUtils.equals(holderReference.getMnemonic(), caReferenceField.getMnemonic())
-                            && StringUtils.equals(holderReference.getCountry(), caReferenceField.getCountry())) {
+                    if (Strings.CS.equals(holderReference.getMnemonic(), caReferenceField.getMnemonic())
+                            && Strings.CS.equals(holderReference.getCountry(), caReferenceField.getCountry())) {
                         if (log.isDebugEnabled()) {
                             log.debug("Authenticated request is self signed, we will try to verify it using user's old certificate.");
                         }
@@ -820,7 +794,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                         }
                         // If there are no old certificates, continue processing as usual, using the sent in username/password hoping the
                         // status is NEW and password is correct.
-                    } else { // if (StringUtils.equals(holderRef, caRef))
+                    } else { // if (Strings.CS.equals(holderRef, caRef))
                         // Subject and issuerDN is CN=Mnemonic,C=Country
                         final String dn = "CN=" + caReferenceField.getMnemonic() + ",C=" + caReferenceField.getCountry();
                         if (log.isDebugEnabled()) {
@@ -904,7 +878,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             if (user != null) {
                 final int caid = user.getCAId();
                 caSession.verifyExistenceOfCA(caid);
-                result.addAll(getCertificateChain(caid));
+                result.addAll(caSession.getCertificateChain(caid));
             }
             log.trace("<cvcRequest");
             return EJBTools.wrapCertCollection(result);
@@ -1083,43 +1057,6 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             log.trace("<createRequestFailedResponse(IRequestMessage)");
         }
         return ret;
-    }
-
-    @Override
-    public RequestMessage decryptAndVerifyRequest(final AuthenticationToken admin, final RequestMessage req)
-            throws CADoesntExistsException, SignRequestSignatureException, CryptoTokenOfflineException, AuthorizationDeniedException {
-        if (log.isTraceEnabled()) {
-            log.trace(">decryptAndVerifyRequest(IRequestMessage)");
-        }
-        // Get CA that will receive request
-        final CA ca = getCAFromRequest(admin, req, true);
-        try {
-            // See if we need some key material to decrypt request
-            final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
-            setDecryptInfo(cryptoToken, req, ca);
-            // Verify the request
-            if (req.verify() == false) {
-                String msg = intres.getLocalizedMessage("createcert.popverificationfailed");
-                throw new SignRequestSignatureException(msg);
-            }
-        } catch (NoSuchProviderException e) {
-            log.error("NoSuchProvider provider: ", e);
-        } catch (InvalidKeyException e) {
-            log.info("Invalid key in request: " + e.getMessage());
-            if (log.isDebugEnabled()) {
-                log.debug("Invalid key in request: ", e);
-            }
-        } catch (NoSuchAlgorithmException e) {
-            log.error("No such algorithm: ", e);
-        } catch (CryptoTokenOfflineException ctoe) {
-            String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getSubjectDN());
-            log.error(msg, ctoe);
-            throw ctoe;
-        }
-        if (log.isTraceEnabled()) {
-            log.trace("<decryptAndVerifyRequest(IRequestMessage)");
-        }
-        return req;
     }
 
     /**
@@ -1471,15 +1408,14 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         final GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession
                 .getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
 
+        final GlobalCtConfiguration globalCtConfiguration = (GlobalCtConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCtConfiguration.CT_CONFIGURATION_ID);
         final CertificateGenerationParams certGenParams = new CertificateGenerationParams();
         final CTSubmissionConfigParams ctConfig = new CTSubmissionConfigParams();
         ctConfig.setConfiguredCTLogs(globalConfiguration.getCTLogs());
-        ctConfig.setValidityPolicy(globalConfiguration.getGoogleCtPolicy());
+        ctConfig.setValidityPolicy(globalCtConfiguration.getGoogleCtPolicy());
         certGenParams.setCTSubmissionConfigParams(ctConfig);
-        final GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession
-                .getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
-        certGenParams.setCtCacheFastFailEnabled(globalCesecoreConfiguration.getCtCacheFastFailEnabled());
-        certGenParams.setCtCacheFastFailBackoff(globalCesecoreConfiguration.getCtCacheFastFailBackoff());
+        certGenParams.setCtCacheFastFailEnabled(globalCtConfiguration.getCtCacheFastFailEnabled());
+        certGenParams.setCtCacheFastFailBackoff(globalCtConfiguration.getCtCacheFastFailBackoff());
         return certGenParams;
     }
 
@@ -1575,44 +1511,6 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         } catch (CMSException | CertificateEncodingException | IOException | OperatorCreationException e) {
             log.debug("Given payload could not be signed.", e);
             throw new SignRequestSignatureException("Given payload could not be signed.", e);
-        }
-    }
-
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    @Override
-    public byte[] signItsPayload(final byte[] data, final ECA eca)
-            throws CryptoTokenOfflineException, SignRequestSignatureException {
-        if (log.isDebugEnabled()) {
-            log.debug("Attempting to sign ITS payload from CA with ID " + eca.getCAId());
-        }
-
-        final CAToken catoken = eca.getCAToken();
-        final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(catoken.getCryptoTokenId());
-        final PrivateKey privateKey = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
-        if (privateKey == null) {
-            throw new CryptoTokenOfflineException("Could not retrieve private certSignKey from CA with ID " + eca.getCAId());
-        }
-
-        final ITSCertificate ecaCertificate = eca.getItsCACertificate();
-        if (ecaCertificate == null) {
-            throw new IllegalStateException("ECA is not initialized i.e. no certificate.");
-        }
-
-        try {
-            // Psid is same for EC enroll and authorization validation
-            ETSISignedDataBuilder signedDataBuilder = ETSISignedDataBuilder.builder(
-                    new Psid(ITSApplicationIds.SECURED_CERT_REQUEST_SERVICE.getPsId()));
-            signedDataBuilder.setUnsecuredData(data);
-            JcaITSContentSigner dataSigner = new JcaITSContentSigner.Builder()
-                    .setProvider(cryptoToken.getSignProviderName()).build(privateKey, ecaCertificate);
-            HashedId8 hashedCurrentEnrollCredential = ECAUtils.generateHashedId8(ecaCertificate);
-            ETSISignedData etsiSignedData = signedDataBuilder.build(dataSigner, hashedCurrentEnrollCredential);
-
-            return etsiSignedData.getEncoded();
-        } catch (Exception e) {
-            // high level catch block
-            log.debug("ITS payload could not be signed.", e);
-            throw new SignRequestSignatureException("ITS payload could not be signed.", e);
         }
     }
 

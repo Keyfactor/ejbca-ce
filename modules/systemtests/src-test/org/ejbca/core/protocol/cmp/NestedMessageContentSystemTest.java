@@ -13,6 +13,12 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -35,22 +41,13 @@ import java.util.Set;
 
 import javax.security.auth.x500.X500Principal;
 
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.certificate.SimpleCertGenerator;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.KeyTools;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-import com.keyfactor.util.string.StringConfigurationCache;
-
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1OutputStream;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.DERGeneralizedTime;
@@ -72,7 +69,9 @@ import org.bouncycastle.asn1.crmf.CertRequest;
 import org.bouncycastle.asn1.crmf.CertTemplateBuilder;
 import org.bouncycastle.asn1.crmf.OptionalValidity;
 import org.bouncycastle.asn1.crmf.ProofOfPossession;
+import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.RSASSAPSSparams;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.Extension;
@@ -98,16 +97,25 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.CertificateCreateException;
+import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
+import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
+import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
@@ -143,11 +151,15 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runners.MethodSorters;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.string.StringConfigurationCache;
 
 /**
  * This will the the different kind of CMP messages that can be sent as NestedMessageContent and if
@@ -164,11 +176,12 @@ public class NestedMessageContentSystemTest extends CmpTestCase {
     private final EndEntityProfileSession eeProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
     private final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
     private final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
+    private final CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
 
-    private final int caid;
-    private final X509Certificate cacert;
-    private final CA testx509ca;
-    private static final X500Name SUBJECT_DN= DnComponents.stringToBcX500Name("O=  Nested Inc., CN= nestedCMPTest, O=SE");
+    private int caid;
+    private X509Certificate cacert;
+    private CA testx509ca;
+    private static final X500Name SUBJECT_DN= DnComponents.stringToBcX500Name("O=  Nested Inc., CN= nestedCMPTest, C=SE");
     private final String issuerDN;
     private final CmpConfiguration cmpConfiguration;
     private static final String cmpAlias = "NestedMessageContentTstConfAlias";
@@ -209,11 +222,6 @@ public class NestedMessageContentSystemTest extends CmpTestCase {
         this.cmpConfiguration = (CmpConfiguration) this.globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
 
         this.issuerDN = "CN=TestCA";
-
-        int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
-        this.testx509ca = CaTestUtils.createTestX509CA(this.issuerDN, null, false, keyusage);
-        this.caid = this.testx509ca.getCAId();
-        this.cacert = (X509Certificate) this.testx509ca.getCACertificate();
     }
 
     @Override
@@ -221,6 +229,10 @@ public class NestedMessageContentSystemTest extends CmpTestCase {
     public void setUp() throws Exception {
         super.setUp();
 
+        int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
+        this.testx509ca = CaTestUtils.createTestX509CA(this.issuerDN, null, false, keyusage);
+        this.caid = this.testx509ca.getCAId();
+        this.cacert = (X509Certificate) this.testx509ca.getCACertificate();
         this.caSession.addCA(this.admin, this.testx509ca);
 
         // Create a temporary directory to store ra certificates, use JUnits TemporaryFolder that is deleted on exit
@@ -416,7 +428,21 @@ public class NestedMessageContentSystemTest extends CmpTestCase {
             CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException,
             InvalidAlgorithmException, CustomCertificateSerialNumberException, EndEntityProfileValidationException, CouldNotRemoveEndEntityException,
             WaitingForApprovalException, NoSuchEndEntityException, ObjectNotFoundException, jakarta.ejb.ObjectNotFoundException,
-            InvalidCmpProtectionException, CMPException {
+            InvalidCmpProtectionException, CMPException, SignRequestSignatureException, CertificateExtensionException {
+        // Create a certificate that we can revoke later
+        EndEntityInformation user = new EndEntityInformation("NestedMessageContentSystemTest.test03RevReq", SUBJECT_DN.toString(), testx509ca.getCAId(), null,
+                "foo@example.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, certificateProfileSession.getCertificateProfileId(CMPTESTPROFILE),
+                EndEntityConstants.TOKEN_USERGEN, null);
+        user.setStatus(EndEntityConstants.STATUS_NEW);
+        user.setPassword("foo123");
+        KeyPair keys = KeyTools.genKeys("P-256", AlgorithmConstants.KEYALGORITHM_ECDSA);
+        SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), user.getUsername(), user.getPassword());
+        X509ResponseMessage userresp = (X509ResponseMessage) certificateCreateSession.createCertificate(roleMgmgToken, user, req,
+                org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
+        Certificate usercert = userresp.getCertificate();
+        assertNotNull("Failed to create certificate", usercert);
+
+        // Find it and revoke it
         Collection<Certificate> certs = this.certificateStoreSession.findCertificatesBySubjectAndIssuer(SUBJECT_DN.toString(), this.issuerDN);
         log.debug("Found " + certs.size() + " certificates for userDN \"" + SUBJECT_DN + "\"");
         Certificate cert = null;
@@ -813,7 +839,7 @@ public class NestedMessageContentSystemTest extends CmpTestCase {
                 .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA)
                 .setLdapOrder(true)
                 .generateCertificate();
-                
+
         CMPCertificate[] cmpcert = getCMPCert(nonAdminCert);
         crmfMsg = CmpMessageHelper.buildCertBasedPKIProtection(crmfMsg, cmpcert, nonAdminKeys.getPrivate(),
                 AlgorithmTools.getAlgorithmNameFromOID(pAlg.getAlgorithm()), BouncyCastleProvider.PROVIDER_NAME);
@@ -860,6 +886,81 @@ public class NestedMessageContentSystemTest extends CmpTestCase {
         log.debug("Subject DN of created certificate: "+X500Name.getInstance(((X509Certificate)cert).getSubjectX500Principal().getEncoded()));
     }
 
+    @Test
+    public void test10CrmfReqSignedWithPss() throws Exception {
+        byte[] senderNonce = CmpMessageHelper.createSenderNonce();
+        byte[] transactionID = CmpMessageHelper.createSenderNonce();
+        Date nb = new Date((new Date()).getTime() - 31536000000L);
+        Date na = new Date((new Date()).getTime() + 31536000000L);
+        assertNotNull(nb);
+        assertNotNull(na);
+
+        KeyPair keys = KeyTools.genKeys("1024", "RSA");
+        RSASSAPSSparams pssParams = new RSASSAPSSparams(
+                new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256),
+                new AlgorithmIdentifier(PKCSObjectIdentifiers.id_mgf1,
+                        new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256)),
+                new ASN1Integer(32),
+                new ASN1Integer(1)
+        );
+        AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.id_RSASSA_PSS, pssParams);
+        PKIMessage crmfMsg = genCertReq(this.issuerDN, SUBJECT_DN, keys, this.cacert, senderNonce, transactionID, false, null, nb,
+                na, null, pAlg, new DEROctetString(senderNonce));
+
+        String adminName = "cmpTestAdmin";
+        KeyPair admkeys = KeyTools.genKeys("1024", "RSA");
+        AuthenticationToken adminToken = createAdminToken(admkeys, adminName, "CN=" + adminName + ",C=SE");
+        Certificate admCert = getCertFromCredentials(adminToken);
+        CMPCertificate[] cmpcert = getCMPCert(admCert);
+        crmfMsg = CmpMessageHelper.buildCertBasedPKIProtection(crmfMsg, cmpcert, admkeys.getPrivate(),
+                "SHA256withRSAandMGF1", BouncyCastleProvider.PROVIDER_NAME);
+        assertNotNull(crmfMsg);
+        CertReqMessages ir = (CertReqMessages) crmfMsg.getBody().getContent();
+        int reqID = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+
+        //------------------Creating NestedMessageContent
+        String reqSubjectDN = "CN=bogusSubjectNested";
+        final byte[] nonce = CmpMessageHelper.createSenderNonce();
+        final byte[] transid = CmpMessageHelper.createSenderNonce();
+
+        PKIHeaderBuilder pkiHeaderBuilder = new PKIHeaderBuilder(PKIHeader.CMP_2000, new GeneralName(new X500Name(reqSubjectDN)),
+                new GeneralName(new X500Name(this.cacert.getSubjectX500Principal().getName())));
+        pkiHeaderBuilder.setMessageTime(new ASN1GeneralizedTime(new Date()));
+        pkiHeaderBuilder.setSenderNonce(new DEROctetString(nonce));
+        pkiHeaderBuilder.setTransactionID(new DEROctetString(transid));
+
+        ASN1EncodableVector v = new ASN1EncodableVector();
+        v.add( crmfMsg );
+        DERSequence seq = new DERSequence(v);
+        PKIBody pkiBody = new PKIBody(PKIBody.TYPE_NESTED, seq);
+        assertNotNull("Failed to create nested Message PKIBody", pkiBody);
+
+        PKIMessage pkiMessage = new PKIMessage(pkiHeaderBuilder.build(), pkiBody);
+        assertNotNull("Failed to created nested message PKIMessage", pkiMessage);
+        KeyPair raKeys = KeyTools.genKeys("1024", "RSA");
+        assertEquals("RACertPath is suppose to be '" + this.raCertsPath + "', instead it is '" + this.cmpConfiguration.getRACertPath(cmpAlias) + "'.", this.cmpConfiguration.getRACertPath(cmpAlias), this.raCertsPath);
+        createRACertificate("raCrmfSigner", "foo123", this.raCertsPath, cmpAlias, raKeys, null, null, CMPTESTPROFILE, this.caid);
+        pkiMessage = CmpMessageHelper.buildCertBasedPKIProtection(pkiMessage, null, raKeys.getPrivate(),
+                "SHA256withRSAandMGF1", BouncyCastleProvider.PROVIDER_NAME);
+        assertNotNull("Failed to create pkiIHeader", pkiHeaderBuilder);
+        assertNotNull("pkiBody is null", pkiBody);
+        assertNotNull("pkiMessage is null", pkiMessage);
+
+        final byte[] ba = CmpMessageHelper.pkiMessageToByteArray(pkiMessage);
+        // Send request and receive response
+        final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
+
+        checkCmpResponseGeneral(resp, this.issuerDN, SUBJECT_DN, this.cacert, crmfMsg.getHeader().getSenderNonce().getOctets(),
+                crmfMsg.getHeader().getTransactionID().getOctets(), true, null,
+                PKCSObjectIdentifiers.id_RSASSA_PSS.getId(), false);
+        final Certificate cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, SUBJECT_DN, this.cacert, resp, reqID);
+        assertTrue(cert instanceof X509Certificate);
+        log.debug("Subject DN of created certificate: "+X500Name.getInstance(((X509Certificate)cert).getSubjectX500Principal().getEncoded()));
+        assertNotNull("CrmfRequest did not return a certificate", cert);
+
+        removeAuthenticationToken(adminToken, admCert, adminName);
+    }
+
     private static X509Certificate getCertFromCredentials(AuthenticationToken authToken) {
         X509Certificate certificate = null;
         Set<?> inputcreds = authToken.getCredentials();
@@ -898,7 +999,7 @@ public class NestedMessageContentSystemTest extends CmpTestCase {
             Object o = usercredentials.iterator().next();
             if (o instanceof String) {
                 String str = (String) o;
-                if (StringUtils.equals("fail", str)) {
+                if (Strings.CS.equals("fail", str)) {
                     return null;
                 }
             }

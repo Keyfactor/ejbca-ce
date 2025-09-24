@@ -29,7 +29,7 @@ import com.nimbusds.jwt.JWTParser;
 import com.nimbusds.jwt.PlainJWT;
 import com.nimbusds.jwt.SignedJWT;
 import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
@@ -48,6 +48,7 @@ import org.cesecore.authentication.tokens.OAuth2Principal;
 import org.cesecore.authentication.tokens.OAuth2Principal.Builder;
 import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.config.OAuthConfiguration;
@@ -83,7 +84,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  *
@@ -100,17 +103,21 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     @EJB
+    private CaSessionLocal caSession;
+    @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
+    @EJB
+    private CryptoTokenManagementSessionLocal cryptoTokenSession;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
+    private InternalKeyBindingMgmtSessionLocal internalKeyBindingSession;
+    @EJB
     private SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
-    @EJB
-    private InternalKeyBindingMgmtSessionLocal internalKeyBindings;
-    @EJB
-    private CryptoTokenManagementSessionLocal cryptoToken;
 
-    private LoadingCache<CertificateStatusCacheKey, Integer> cache;
+
+
+    private transient LoadingCache<CertificateStatusCacheKey, Integer> cache;
 
     private boolean allowBlankAudience = false;
 
@@ -128,7 +135,6 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     @PostConstruct
     public void initialize() {
         initializeAudienceCheck();
-        initializeCache();
     }
 
     /**
@@ -143,15 +149,6 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
         if (isAllowBlankAudience() && LOG.isDebugEnabled()) {
             LOG.debug("Database not post-upgraded to 7.8.0 yet.  Allowing OAuth logins without checking 'aud' claim.");
         }
-    }
-
-    private void initializeCache() {
-        cache = Caffeine.newBuilder()
-                .maximumSize(10_000)
-                .refreshAfterWrite(12, TimeUnit.SECONDS)
-                .expireAfterAccess(60, TimeUnit.SECONDS)
-                .build(key -> certificateStoreSession.getFirstStatusByIssuerAndSerno(
-                        key.getSubjectDn(), key.getSerialNumber()));
     }
 
     @Override
@@ -263,8 +260,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
 
     private JWTClaimsSet fetchUserInfoAndAddToClaims(final String encodedOauthBearerToken, final OAuthKeyInfo keyInfoFromToken, final JWTClaimsSet tokenClaims,
             final String keyId, final String oauthIdToken) throws ParseException, JOSEException {
-        OauthRequestHelper oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder(
-                internalKeyBindings, certificateStoreSession, cryptoToken));
+        OauthRequestHelper oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder(internalKeyBindingSession, certificateStoreSession, cryptoTokenSession, caSession));
         OAuthUserInfoResponse userInfoResponse;
         try {
             userInfoResponse = oauthRequestHelper.sendUserInfoRequest(keyInfoFromToken, encodedOauthBearerToken);
@@ -507,8 +503,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 return null;
             }
             String redirectUrl = getBaseUrl();
-            OauthRequestHelper oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder(
-                    internalKeyBindings, certificateStoreSession, cryptoToken));
+            OauthRequestHelper oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder(internalKeyBindingSession, certificateStoreSession, cryptoTokenSession, caSession));
             oAuthGrantResponseInfo = oauthRequestHelper.sendRefreshTokenRequest(refreshToken, keyInfo, redirectUrl);
         } catch (ParseException e) {
             LOG.info("Failed to parse OAuth2 JWT: " + e.getMessage(), e);
@@ -591,7 +586,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     }
 
     private int getCachedStatus(X509Certificate certificate) {
-        return cache.get(new CertificateStatusCacheKey(CertTools.getIssuerDN(certificate),
+        return getCache().get(new CertificateStatusCacheKey(CertTools.getIssuerDN(certificate),
                 CertTools.getSerialNumber(certificate)));
     }
 
@@ -608,11 +603,34 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 "https",
                 WebConfiguration.getHostName(),
                 WebConfiguration.getPublicHttpsPort()
-        ) + globalConfiguration.getAdminWebPath();
+        ) + GlobalConfiguration.ADMIN_WEB_PATH;
     }
 
     public boolean isAllowBlankAudience() {
         return allowBlankAudience;
+    }
+
+    public LoadingCache<CertificateStatusCacheKey, Integer> getCache() {
+        // the cache is transient - lazily construct it
+        
+        if (cache == null) {
+            // We need to use a custom execuror service - the default executor will
+            // not work with the app server's Security Manager.
+            var threadNumber = new AtomicInteger();
+            var executor = Executors.newCachedThreadPool(r -> {
+                var t = new Thread(r);
+                t.setDaemon(true);
+                t.setName("certificate-status-cache-" + threadNumber.incrementAndGet());
+                return t;
+            });
+            cache = Caffeine.newBuilder()
+                    .executor(executor)
+                    .maximumSize(10_000)
+                    .refreshAfterWrite(12, TimeUnit.SECONDS)
+                    .expireAfterAccess(60, TimeUnit.SECONDS)
+                    .build(key -> certificateStoreSession.getFirstStatusByIssuerAndSerno(key.getSubjectDn(), key.getSerialNumber()));
+        }
+        return cache;
     }
 
     private static class CertificateStatusCacheKey {

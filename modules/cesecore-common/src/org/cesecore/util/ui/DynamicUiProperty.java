@@ -33,8 +33,8 @@ import java.util.TreeMap;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang.SerializationUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.SerializationUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.util.LookAheadObjectInputStream;
@@ -234,7 +234,6 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
      * Copy constructor for DynamicUiProperty objects
      * @param original the original property
      */
-    @SuppressWarnings("unchecked")
     public DynamicUiProperty(final DynamicUiProperty<T> original) {
         this.name = original.getName();
         this.type = original.getType();
@@ -724,7 +723,6 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
      * Creates a deep clone of this instance.
      * @return the new instance.
      */
-    @SuppressWarnings("unchecked")
     @Override
     public DynamicUiProperty<T> clone() {
         return (DynamicUiProperty<T>) SerializationUtils.clone(this);
@@ -756,8 +754,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
                   PositiveIntegerValidator.class, IntegerValidator.class, StringValidator.class, RadioButton.class, ArrayList.class, Enum.class, 
                   Collections.emptyList().getClass().asSubclass(Serializable.class), 
                   Class.forName("org.cesecore.roles.RoleInformation").asSubclass(Serializable.class),
-                  Class.forName("org.cesecore.roles.RoleData").asSubclass(Serializable.class),
-                  Class.forName("org.cesecore.authorization.user.AccessUserAspectData").asSubclass(Serializable.class)));
+                  Class.forName("org.cesecore.roles.RoleData").asSubclass(Serializable.class)));
             lookAheadObjectInputStream.setEnabledMaxObjects(false);
             lookAheadObjectInputStream.setEnabledSubclassing(false);
             lookAheadObjectInputStream.setEnabledInterfaceImplementations(false);

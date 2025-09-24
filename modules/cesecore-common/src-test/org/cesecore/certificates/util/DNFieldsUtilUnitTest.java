@@ -22,7 +22,7 @@ import static org.junit.Assert.fail;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.cesecore.certificates.util.dn.DNFieldsUtil;
 import org.junit.Test;
 

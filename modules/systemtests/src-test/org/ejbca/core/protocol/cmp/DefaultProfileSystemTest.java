@@ -12,6 +12,9 @@
  *************************************************************************/
 package org.ejbca.core.protocol.cmp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.KeyPair;
@@ -25,14 +28,7 @@ import java.util.Set;
 
 import javax.security.auth.x500.X500Principal;
 
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.KeyTools;
-import com.keyfactor.util.string.StringConfigurationCache;
-
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -92,8 +88,12 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.string.StringConfigurationCache;
 
 /**
  * System tests for when a CMP alias is set to use specific or 
@@ -650,8 +650,12 @@ public class DefaultProfileSystemTest extends CmpTestCase {
                 EndEntityTypes.ENDUSER), eepid, cpid, SecConst.TOKEN_SOFT_PEM, null);
         user.setPassword(password);
         try {
-            endEntityManagementSession.addUser(ADMIN, username, password, subjectDN, "rfc822name=" + username + "@primekey.se", username
-                    + "@primekey.se", clearpassword, eepid, cpid, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, _caid);
+            EndEntityInformation endEntityInformation = new EndEntityInformation(username, subjectDN, _caid,
+                    "rfc822name=" + username + "@primekey.se", username + "@primekey.se", EndEntityTypes.ENDUSER.toEndEntityType(), eepid, cpid,
+                    SecConst.TOKEN_SOFT_PEM, null);
+            endEntityInformation.setPassword(password);
+            endEntityManagementSession.addUser(ADMIN, endEntityInformation, false);
+
             log.debug("created user: " + username);
         } catch (Exception e) {
             log.debug("User " + username + " already exists. Setting the user status to NEW");
@@ -706,7 +710,7 @@ public class DefaultProfileSystemTest extends CmpTestCase {
             Object o = usercredentials.iterator().next();
             if (o instanceof String) {
                 String str = (String) o;
-                if (StringUtils.equals("fail", str)) {
+                if (Strings.CS.equals("fail", str)) {
                     return null;
                 }
             }

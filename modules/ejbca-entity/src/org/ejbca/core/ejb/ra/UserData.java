@@ -17,14 +17,7 @@ import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.PostLoad;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
-
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -40,6 +33,13 @@ import org.ejbca.util.crypto.SupportedPasswordHashAlgorithm;
 
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.DnComponents;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.PostLoad;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 /**
  * Representation of an End Entity, called User for legacy reasons an end entity can be a server, device, or a user.
@@ -90,7 +90,36 @@ public class UserData extends ProtectedData implements Serializable {
     private String rowProtection;
     // Performance optimization within a transaction, to not have to hash the password when comparing internally in the same transaction, saving one BCrypt operation
     private transient String transientPwd;
-    
+
+    /**
+     * Entity Bean holding info about a User. Create by sending in the instance, username, password and subject DN. SubjectEmail, Status and Type are
+     * set to default values (null, STATUS_NEW, USER_INVALID). and should be set using the respective set-methods. Clear text password is not set at
+     * all and must be set using setClearPassword();
+     *
+     * @param username the unique username used for authentication.
+     * @param password the password used for authentication. If clearpwd is false this only sets passwordhash, if clearpwd is true it also sets
+     *            cleartext password.
+     * @param clearpwd true if clear password should be set for CA generated tokens (p12, jks, pem), false otherwise for only storing hashed
+     *            passwords.
+     * @param dn the DN the subject is given in his certificate.
+     * @param cardnumber the number printed on the card.
+     * @param altname string of alternative names, i.e. rfc822name=foo2bar.com,dnsName=foo.bar.com, can be null
+     * @param email user email address, can be null
+     * @param type user type, i.e. EndEntityTypes.USER_ENDUSER etc
+     * @param eeprofileid end entity profile id, can be 0
+     * @param certprofileid certificate profile id, can be 0
+     * @param tokentype token type to issue to the user, i.e. SecConst.TOKEN_SOFT_BROWSERGEN
+     * @param extendedInformation ExtendedInformation object
+     *
+     * @throws NoSuchAlgorithmException
+     */
+    public UserData(String username, String password, boolean clearpwd, String dn, int caid, String cardnumber,
+                    String altname, String email, int type, int eeprofileid, int certprofileid, int tokentype,
+                    ExtendedInformation extendedInformation) {
+        this(username, password, clearpwd, dn, caid, cardnumber, altname, email, type, eeprofileid, certprofileid,
+                tokentype, extendedInformation, false);
+    }
+
     /**
      * Entity Bean holding info about a User. Create by sending in the instance, username, password and subject DN. SubjectEmail, Status and Type are
      * set to default values (null, STATUS_NEW, USER_INVALID). and should be set using the respective set-methods. Clear text password is not set at
@@ -110,11 +139,12 @@ public class UserData extends ProtectedData implements Serializable {
      * @param certprofileid certificate profile id, can be 0
      * @param tokentype token type to issue to the user, i.e. SecConst.TOKEN_SOFT_BROWSERGEN
      * @param extendedInformation ExtendedInformation object
-     * 
+     * @param isForKeyImport true if this userdata is generated as part of the key import process. If yes, status will be set as generated when creating the EE.
+     *
      * @throws NoSuchAlgorithmException
      */
     public UserData(String username, String password, boolean clearpwd, String dn, int caid, String cardnumber, String altname, String email,
-            int type, int eeprofileid, int certprofileid, int tokentype, ExtendedInformation extendedInformation) {
+            int type, int eeprofileid, int certprofileid, int tokentype, ExtendedInformation extendedInformation, boolean isForKeyImport) {
         long time = new Date().getTime();
         setUsername(username);
         if (clearpwd) {
@@ -128,7 +158,11 @@ public class UserData extends ProtectedData implements Serializable {
         setCaId(caid);
         setSubjectAltName(altname);
         setSubjectEmail(email);
-        setStatus(EndEntityConstants.STATUS_NEW);
+        if (isForKeyImport) {
+            setStatus(EndEntityConstants.STATUS_GENERATED);
+        } else {
+            setStatus(EndEntityConstants.STATUS_NEW);
+        }
         setType(type);
         setTimeCreated(time);
         setTimeModified(time);
@@ -511,7 +545,10 @@ public class UserData extends ProtectedData implements Serializable {
     /**
      * 
      * @return which hashing algorithm was used for this UserData object
+     * 
+     * @deprecated only used for allowing cli roles created in EJBCA 5.0
      */
+    @Deprecated(since = "9.4")
     public SupportedPasswordHashAlgorithm findHashAlgorithm() {
         final String hash = getPasswordHash();
         if (StringUtils.startsWith(hash, "$2")) {
@@ -535,17 +572,7 @@ public class UserData extends ProtectedData implements Serializable {
                 ret = transientPwd.equals(password);
             } else {
                 final String hash = getPasswordHash();
-                // Check if it is a new or old style hashing
-                switch (findHashAlgorithm()) {
-                case SHA1_BCRYPT:
-                    // new style with good salt
-                    ret = BCrypt.checkpw(password, hash);
-                    break;
-                case SHA1_OLD:
-                default:
-                    ret = CryptoTools.makeOldPasswordHash(password).equals(getPasswordHash());
-                    break;
-                }
+                ret = BCrypt.checkpw(password, hash);
             }
         }
         if (log.isTraceEnabled()) {

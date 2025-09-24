@@ -13,8 +13,15 @@
 
 package org.ejbca.ui.web.pub;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
+import java.io.IOException;
+import java.util.AbstractMap;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.ejbca.config.EjbcaConfiguration;
@@ -31,11 +38,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.AbstractMap;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * <p>Servlet used to check which VAs are in sync with the CA. Can be used by a load balancer to divert traffic from
@@ -145,6 +147,7 @@ public class VaPeerStatusServlet extends HttpServlet {
         log.debug("The HTTP status code sent to the client was: " + response.getStatus());
     }
 
+    @SuppressWarnings("unchecked")
     private String errorResponseFrom(final String errorMessage) {
         final JSONObject errorResponse = new JSONObject();
         errorResponse.put("error", true);
@@ -168,13 +171,14 @@ public class VaPeerStatusServlet extends HttpServlet {
      *                      the monitoring system is querying for all VAs.
      * @return a JSON object and an HTTP status code to send back to the monitoring system.
      */
+    @SuppressWarnings("unchecked")
     private AbstractMap.SimpleEntry<JSONObject, Integer> createResponse(final String publisherName) {
         boolean atLeastOneVaInSync = false;
         final JSONArray outOfSync = new JSONArray();
         for (final AbstractMap.Entry<Integer, BasePublisher> entry : publisherSession.getAllPublishers().entrySet()) {
             final Integer publisherId = entry.getKey();
             final BasePublisher publisher = entry.getValue();
-            if (StringUtils.equals("ignore", publisher.getDescription())) {
+            if (Strings.CS.equals("ignore", publisher.getDescription())) {
                 // Make it possible to ignore specific publishers if running system tests
                 // on an existing installation
                 continue;
@@ -186,7 +190,7 @@ public class VaPeerStatusServlet extends HttpServlet {
                 atLeastOneVaInSync = true;
                 continue;
             }
-            if (publisherName == null || StringUtils.equals(publisherName, publisher.getName())) {
+            if (publisherName == null || Strings.CS.equals(publisherName, publisher.getName())) {
                 final JSONObject vaOutOfSync = new JSONObject();
                 vaOutOfSync.put("name", publisher.getName());
                 outOfSync.add(vaOutOfSync);
@@ -232,7 +236,7 @@ public class VaPeerStatusServlet extends HttpServlet {
     private boolean isPublishingToVa(final BasePublisher publisher) {
         if (publisher instanceof CustomPublisherContainer) {
             final CustomPublisherContainer customPublisherContainer = (CustomPublisherContainer) publisher;
-            return StringUtils.endsWith(customPublisherContainer.getClassPath(), "PeerPublisher");
+            return Strings.CS.endsWith(customPublisherContainer.getClassPath(), "PeerPublisher");
         }
         return false;
     }

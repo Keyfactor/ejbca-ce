@@ -18,6 +18,9 @@ import com.keyfactor.util.CertTools;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 
+import java.util.LinkedHashMap;
+import java.util.List;
+
 /**
  * A class representing the input for certificate enrollment REST method.
  *
@@ -43,6 +46,14 @@ public class EnrollCertificateRestRequest {
     private String email;
     @Schema(description = "Response Format (DER format is default)", example = "DER")
     private String responseFormat ="DER";
+    @Schema(description = "Overwrite Subject Distinguished Name", example = "CN=John Doe,SURNAME=Doe,GIVENNAME=John,C=SE", required=false)
+    private String subjectDn;
+    private List<ExtendedInformationRestRequestComponent> extensionData;
+    private List<ExtendedInformationRestRequestComponent> customData;
+    @Schema(description = "Valid start time", example = "ISO 8601 Date string, eg. '2023-06-15 14:07:09'", required=false)
+    private String startTime;
+    @Schema(description = "Valid end time", example = "ISO 8601 Date string, eg. '2023-06-15 14:07:09'", required=false)
+    private String endTime;
 
     public EnrollCertificateRestRequest() {
     }
@@ -124,6 +135,46 @@ public class EnrollCertificateRestRequest {
         this.responseFormat = responseFormat;
     }
 
+    public String getSubjectDn() {
+        return subjectDn;
+    }
+
+    public void setSubjectDn(String subjectDn) {
+        this.subjectDn = subjectDn;
+    }
+
+    public List<ExtendedInformationRestRequestComponent> getExtensionData() {
+        return extensionData;
+    }
+
+    public void setExtensionData(List<ExtendedInformationRestRequestComponent> extensionData) {
+        this.extensionData = extensionData;
+    }
+
+    public List<ExtendedInformationRestRequestComponent> getCustomData() {
+        return customData;
+    }
+
+    public void setCustomData(List<ExtendedInformationRestRequestComponent> customData) {
+        this.customData = customData;
+    }
+
+    public String getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(String startTime) {
+        this.startTime = startTime;
+    }
+
+    public String getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(String endTime) {
+        this.endTime = endTime;
+    }
+
     /**
      * Returns a converter instance for this class.
      *
@@ -139,13 +190,29 @@ public class EnrollCertificateRestRequest {
     public static class EnrollCertificateRestRequestConverter {
 
         /**
-         * Converts a EnrollCertificateRestRequest into EnrollCertificateRestRequest.
+         * Converts a EnrollCertificateRestRequest into EnrollPkcs10CertificateRequest.
          *
          * @param enrollCertificateRestRequest input.
          *
-         * @return EnrollCertificateRestRequest instance.
+         * @return EnrollPkcs10CertificateRequest instance.
          */
         public EnrollPkcs10CertificateRequest toEnrollPkcs10CertificateRequest(final EnrollCertificateRestRequest enrollCertificateRestRequest) {
+            final LinkedHashMap<String, String> extendedData = new LinkedHashMap<>();
+            List<ExtendedInformationRestRequestComponent> extensions = enrollCertificateRestRequest.getExtensionData();
+            if (extensions != null && !extensions.isEmpty()) {
+                extensions.forEach(extension -> {
+                    extendedData.put(extension.getName(),extension.getValue());
+                });
+            }
+
+            final LinkedHashMap<String, String> customData = new LinkedHashMap<>();
+            List<ExtendedInformationRestRequestComponent> components = enrollCertificateRestRequest.getCustomData();
+            if (components != null && !components.isEmpty()) {
+                components.forEach(component -> {
+                    customData.put(component.getName(),component.getValue());
+                });
+            }
+
             return new EnrollPkcs10CertificateRequest.Builder()
                     .certificateRequest(CertTools.encapsulateCsr(enrollCertificateRestRequest.getCertificateRequest()))
                     .certificateProfileName(enrollCertificateRestRequest.getCertificateProfileName())
@@ -157,6 +224,11 @@ public class EnrollCertificateRestRequest {
                     .includeChain(enrollCertificateRestRequest.getIncludeChain())
                     .email(enrollCertificateRestRequest.getEmail())
                     .responseFormat(enrollCertificateRestRequest.getResponseFormat())
+                    .subjectDn(enrollCertificateRestRequest.getSubjectDn())
+                    .extendedData(extendedData)
+                    .customData(customData)
+                    .startTime(enrollCertificateRestRequest.getStartTime())
+                    .endTime(enrollCertificateRestRequest.getEndTime())
                     .build();
         }
     }

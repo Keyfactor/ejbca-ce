@@ -17,10 +17,8 @@ import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
@@ -28,6 +26,7 @@ import org.cesecore.authentication.oauth.TokenExpiredException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.PublicAccessAuthenticationTokenMetaData;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
+import org.cesecore.authorization.AuthorizationCache;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.config.OAuthConfiguration;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
@@ -36,6 +35,9 @@ import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.util.HttpTools;
 
 import com.keyfactor.util.CertTools;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Web session authentication helper.
@@ -54,6 +56,7 @@ public class RaAuthenticationHelper implements Serializable {
     private AuthenticationToken authenticationToken = null;
     private String authenticationTokenTlsSessionId = null;
     private String x509AuthenticationTokenFingerprint = null;
+    private int authenticatedAtUpdateNumber = 0;
 
     public RaAuthenticationHelper(final WebAuthenticationProviderSessionLocal webAuthenticationProviderSession, final RaMasterApiProxyBeanLocal raMasterApi) {
         this.webAuthenticationProviderSession = webAuthenticationProviderSession;
@@ -67,7 +70,15 @@ public class RaAuthenticationHelper implements Serializable {
     /** @return the X509CertificateAuthenticationToken if the client has provided a certificate or a PublicAccessAuthenticationToken otherwise. */
     public AuthenticationToken getAuthenticationToken(final HttpServletRequest httpServletRequest, final HttpServletResponse httpServletResponse) {
         final String currentTlsSessionId = getTlsSessionId(httpServletRequest);
-        if (authenticationToken==null || !StringUtils.equals(authenticationTokenTlsSessionId, currentTlsSessionId)) {
+        final int lastUpdateNumber = AuthorizationCache.INSTANCE.getLastUpdateNumber();
+        if (authenticationToken != null && authenticatedAtUpdateNumber != lastUpdateNumber) {
+            if (log.isDebugEnabled()) {
+                log.debug("Roles have been updated. Forcing re-authentication for administrator '" + authenticationToken + "'");
+            }
+            authenticationToken = null;
+            x509AuthenticationTokenFingerprint = null;
+        }
+        if (authenticationToken==null || !Strings.CS.equals(authenticationTokenTlsSessionId, currentTlsSessionId)) {
             if (log.isTraceEnabled()) {
                 log.trace("New TLS session IDs or authenticationToken: currentClientTlsSessionID: "+currentTlsSessionId+", authenticationTokenTlsSessionId: "+authenticationTokenTlsSessionId);
             }
@@ -87,7 +98,7 @@ public class RaAuthenticationHelper implements Serializable {
                 if (log.isTraceEnabled()) {
                     log.trace("currentRequestFingerprint: "+fingerprint+", x509AuthenticationTokenFingerprint: "+x509AuthenticationTokenFingerprint);
                 }
-                if (x509AuthenticationTokenFingerprint != null && !StringUtils.equals(fingerprint, x509AuthenticationTokenFingerprint)) {
+                if (x509AuthenticationTokenFingerprint != null && !Strings.CS.equals(fingerprint, x509AuthenticationTokenFingerprint)) {
                     log.warn("Suspected session hijacking attempt from " + httpServletRequest.getRemoteAddr() +
                             ". RA client presented a different TLS certificate in the same HTTP session." +
                             " new certificate had subject '" + CertTools.getSubjectDN(x509Certificate) + "'.");
@@ -141,6 +152,7 @@ public class RaAuthenticationHelper implements Serializable {
             if (authenticationToken == null) {
                 authenticationToken = webAuthenticationProviderSession.authenticateUsingNothing(httpServletRequest.getRemoteAddr(), httpServletRequest.isSecure());
             }
+            authenticatedAtUpdateNumber = lastUpdateNumber;
         }
         resetUnwantedHttpHeaders(httpServletRequest, httpServletResponse);
         return authenticationToken;

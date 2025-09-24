@@ -15,27 +15,23 @@ package org.cesecore.certificates.endentity;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.text.DateFormat;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.DateUtils;
-import org.apache.commons.lang.time.FastDateFormat;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Base64;
 import org.bouncycastle.util.encoders.DecoderException;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
-import org.cesecore.util.ValidityDate;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
@@ -113,14 +109,17 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
 
     /** Default value for how many of the allowed failed login attempts that are remaining = -1 (unlimited) */
     public static final int DEFAULT_REMAININGLOGINATTEMPTS = -1;
-    
-    public static final String MARKER_FROM_REST_RESOURCE = "__zzz_marker_rest_";
-    public static final String CA_NAME = "__zzz_ca_name";
-    public static final String CERTIFICATE_PROFILE_NAME = "__zzz_cp_name";
-    public static final String END_ENTITY_PROFILE_NAME = "__zzz_eep_name";
+
+    public static final String INTERNAL_KEY_PREFIX       = "___zzz_";
+    public static final String MARKER_FROM_REST_RESOURCE = INTERNAL_KEY_PREFIX+"marker_rest_";
+    public static final String CA_NAME                   = INTERNAL_KEY_PREFIX+"ca_name";
+    public static final String CERTIFICATE_PROFILE_NAME  = INTERNAL_KEY_PREFIX+"cp_name";
+    public static final String END_ENTITY_PROFILE_NAME   = INTERNAL_KEY_PREFIX+"eep_name";
     
     /** Map key for certificate serial number */
-    private  static final String CERTIFICATESERIALNUMBER = "CERTIFICATESERIALNUMBER";
+    public  static final String CERTIFICATESERIALNUMBER = "CERTIFICATESERIALNUMBER";
+    public  static final String CERTIFICATESEQUENCENUMBER = "CERTIFICATESEQUENCENUMBER";
+
     private static final Object NAMECONSTRAINTS_PERMITTED = "nameconstraints_permitted";
     private static final Object NAMECONSTRAINTS_EXCLUDED = "nameconstraints_excluded";
 
@@ -400,6 +399,11 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         final String s = new String(Base64.encode(sn.toByteArray()));
         this.data.put(CERTIFICATESERIALNUMBER, s);
     }
+
+    public String getSequenceNumber() {
+        return (String) this.data.get(CERTIFICATESEQUENCENUMBER);
+    }
+
 
     /**
      * Returns the issuance revocation code configured on the end entity extended information.
@@ -702,6 +706,27 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     }
 
     /**
+     * @return All keys that contains the String "___zzz_"
+     */
+    public Set<Object> getInternalKeys() {
+        return data.keySet()
+                .stream()
+                .filter(key->(""+key).contains(INTERNAL_KEY_PREFIX))
+                .collect(Collectors.toSet());
+    }
+
+    /**
+     * Removes all keys that contains the String "___zzz_"
+     * @return All keys that are removed
+     */
+    public Collection<Object> removeInternalKeys() {
+        var internalKeys = getInternalKeys();
+        internalKeys.stream()
+                .forEach(data::remove);
+        return internalKeys;
+    }
+
+    /**
      * Special method used to set string fields directly, should be used with care, use the specific methods for fields in first hand.
      * When retrieving values, the specific methods are used which may convert the string into a BigInteger for example as in 
      * getCertificateSerialNumber, the string data better match that, or there will be trouble
@@ -747,66 +772,6 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
             if (data.get(REMAININGLOGINATTEMPTS) == null) {
                 setRemainingLoginAttempts(DEFAULT_REMAININGLOGINATTEMPTS);
             }
-            // In EJBCA 4.0.0 we changed the date format
-        	if (getVersion() < 3) {
-        		final DateFormat oldDateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US);
-        		final FastDateFormat newDateFormat = FastDateFormat.getInstance("yyyy-MM-dd HH:mm");
-        		try {
-        			final String oldCustomStartTime = getCustomData(ExtendedInformation.CUSTOM_STARTTIME);
-        			if ( !isEmptyOrRelative(oldCustomStartTime) ) {
-        				// We use an absolute time format, so we need to upgrade
-            			final String newCustomStartTime = newDateFormat.format(oldDateFormat.parse(oldCustomStartTime));
-    					setCustomData(ExtendedInformation.CUSTOM_STARTTIME, newCustomStartTime);
-    					if (log.isDebugEnabled()) {
-    						log.debug("Upgraded " + ExtendedInformation.CUSTOM_STARTTIME + " from \"" + oldCustomStartTime + "\" to \"" + newCustomStartTime + "\" in ExtendedInformation.");
-    					}
-        			}
-				} catch (ParseException e) {
-					log.error("Unable to upgrade " + ExtendedInformation.CUSTOM_STARTTIME + " in extended user information.", e);
-				}
-        		try {
-        			final String oldCustomEndTime = getCustomData(ExtendedInformation.CUSTOM_ENDTIME);
-        			if ( !isEmptyOrRelative(oldCustomEndTime) ) {
-        				// We use an absolute time format, so we need to upgrade
-            			final String newCustomEndTime = newDateFormat.format(oldDateFormat.parse(oldCustomEndTime));
-    					setCustomData(ExtendedInformation.CUSTOM_ENDTIME, newCustomEndTime);
-    					if (log.isDebugEnabled()) {
-    						log.debug("Upgraded " + ExtendedInformation.CUSTOM_ENDTIME + " from \"" + oldCustomEndTime + "\" to \"" + newCustomEndTime + "\" in ExtendedInformation.");
-    					}
-        			}
-				} catch (ParseException e) {
-					log.error("Unable to upgrade " + ExtendedInformation.CUSTOM_ENDTIME + " in extended user information.", e);
-				}
-        	}
-        	// In 4.0.2 we further specify the storage format by saying that UTC TimeZone is implied instead of local server time
-        	if (getVersion() < 4) {
-        		final String[] timePatterns = {"yyyy-MM-dd HH:mm"};
-    			final String oldStartTime = getCustomData(ExtendedInformation.CUSTOM_STARTTIME);
-    			if (!isEmptyOrRelative(oldStartTime)) {
-            		try {
-            			final String newStartTime = ValidityDate.formatAsUTC(DateUtils.parseDateStrictly(oldStartTime, timePatterns));
-    					setCustomData(ExtendedInformation.CUSTOM_STARTTIME, newStartTime);
-    					if (log.isDebugEnabled()) {
-    						log.debug("Upgraded " + ExtendedInformation.CUSTOM_STARTTIME + " from \"" + oldStartTime + "\" to \"" + newStartTime + "\" in EndEntityProfile.");
-    					}
-					} catch (ParseException e) {
-						log.error("Unable to upgrade " + ExtendedInformation.CUSTOM_STARTTIME + " to UTC in EndEntityProfile! Manual interaction is required (edit and verify).", e);
-					}
-    			}
-    			final String oldEndTime = getCustomData(ExtendedInformation.CUSTOM_ENDTIME);
-    			if (!isEmptyOrRelative(oldEndTime)) {
-    				// We use an absolute time format, so we need to upgrade
-					try {
-						final String newEndTime = ValidityDate.formatAsUTC(DateUtils.parseDateStrictly(oldEndTime, timePatterns));
-						setCustomData(ExtendedInformation.CUSTOM_ENDTIME, newEndTime);
-						if (log.isDebugEnabled()) {
-							log.debug("Upgraded " + ExtendedInformation.CUSTOM_ENDTIME + " from \"" + oldEndTime + "\" to \"" + newEndTime + "\" in EndEntityProfile.");
-						}
-					} catch (ParseException e) {
-						log.error("Unable to upgrade " + ExtendedInformation.CUSTOM_ENDTIME + " to UTC in EndEntityProfile! Manual interaction is required (edit and verify).", e);
-					}
-    			}
-        	}
             // In 7.0.0 we added PSD2 Qualified Certificate statements, 
         	// No actual code upgrade needed as empty/null is handled, so we kept the same version number (4)
             if (getVersion() < 4) {
@@ -816,11 +781,6 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
             }
             data.put(VERSION, LATEST_VERSION);
         }
-    }
-
-    /** @return true if argument is null, empty or in the relative time format. */
-    private boolean isEmptyOrRelative(final String time) {
-    	return (time == null || time.length()==0 || time.matches("^\\d+:\\d?\\d:\\d?\\d$"));
     }
 
     /**
@@ -900,6 +860,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         return data.remove(CUSTOM_SSH_DATA + key);
     }
     
+    @SuppressWarnings("unchecked")
     public Map<String, String> getSshCriticalOptions() {
         Object entry = data.get(CUSTOM_SSH_DATA + SSH_CERTIFICATE_CRITICAL_OPTIONS);
         if(entry!=null) {
@@ -913,6 +874,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         setSshCustomData(SSH_CERTIFICATE_CRITICAL_OPTIONS, criticalOptions);
     }
     
+    @SuppressWarnings("unchecked")
     public Map<String, byte[]>  getSshExtensions() {
         Object extensions = data.get(CUSTOM_SSH_DATA + SSH_CERTIFICATE_EXTENSIONS);
         if(extensions!=null) {
@@ -936,6 +898,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         }
     }
     
+    @SuppressWarnings("unchecked")
     public List<String> getSshPrincipalsIpv6() {
         Object entry = data.get(CUSTOM_SSH_DATA + SSH_PRINCIPALS_IPV6);
         if(entry!=null) {

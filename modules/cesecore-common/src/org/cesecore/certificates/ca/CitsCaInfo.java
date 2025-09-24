@@ -114,7 +114,7 @@ public class CitsCaInfo extends CAInfo {
          *  deltacrlperiod;
          *  generateCrlUponRevocation;
          *  crlpublishers;
-         *  keepExpiredCertsOnCRL;
+         *  keepExpiredCertsOnCrl;
          *
          */
 

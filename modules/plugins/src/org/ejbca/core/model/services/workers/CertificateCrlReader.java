@@ -37,7 +37,7 @@ import java.util.Properties;
 
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.TreeBidiMap;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.cert.X509CertificateHolder;
@@ -65,6 +65,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.util.LookAheadObjectInputStream;
+import org.ejbca.core.YamlWriter;
 import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.CustomServiceWorkerProperty;
 import org.ejbca.core.model.services.CustomServiceWorkerUiSupport;
@@ -73,7 +74,10 @@ import org.ejbca.core.model.services.ServiceExecutionResult;
 import org.ejbca.core.model.services.ServiceExecutionResult.Result;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.scp.publisher.ScpContainer;
+import org.ejbca.scp.publisher.ScpContainerSigned;
+import org.ejbca.scp.publisher.ScpContainerWrapper;
 
+import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 
 /**
@@ -191,6 +195,7 @@ public class CertificateCrlReader extends BaseWorker implements CustomServiceWor
             }
             for (final File file : certificateDirectory.listFiles()) {
                 final String fileName = file.getName();
+                final boolean isYaml = fileName.endsWith("yaml");
                 byte[] signedData;
                 try {
                     signedData = getFileFromDisk(file);
@@ -202,7 +207,7 @@ public class CertificateCrlReader extends BaseWorker implements CustomServiceWor
 
                 byte[] data;
                 try {
-                    data = getAndVerifySignedData(signedData, caChain);
+                    data = getAndVerifySignedData(signedData, caChain, isYaml);
                 } catch (SignatureException | CertificateException e) {
                     log.error("Could not get/verify signed certificate file. Certificate saved in file " + fileName, e);
                     failedFiles.add(fileName);
@@ -212,7 +217,7 @@ public class CertificateCrlReader extends BaseWorker implements CustomServiceWor
                     log.debug("File '" + fileName + "' successfully verified");
                 }
                 try {
-                    storeCertificate(ejbs, data);
+                    storeCertificate(ejbs, data, isYaml);
                     readCertificates++;
                     file.delete();
                 } catch (AuthorizationDeniedException e) {
@@ -306,12 +311,18 @@ public class CertificateCrlReader extends BaseWorker implements CustomServiceWor
      * 
      * @param ejbs a map of EJB Session Beans
      * @param data a serialized ScpContainer
+     * @param isYaml ScpContainer was published as YAML
      * @throws AuthorizationDeniedException if the worker was not auhtorized to write to the certificate table
      * @throws ServiceExecutionFailedException if the ScpContainer object couldn't be deserialized
      */
-    private void storeCertificate(final Map<Class<?>, Object> ejbs, final byte[] data)
+    private void storeCertificate(final Map<Class<?>, Object> ejbs, final byte[] data, final boolean isYaml)
             throws AuthorizationDeniedException, ServiceExecutionFailedException {
-        final ScpContainer scpObject = unwrapScpContainer(data);
+        ScpContainer scpObject = null;
+        if (isYaml) {
+            scpObject = unwrapScpContainerYaml(data);
+        } else {
+            scpObject = unwrapScpContainer(data);
+        }
         final CertificateStoreSessionLocal certificateStoreSession = (CertificateStoreSessionLocal) ejbs.get(CertificateStoreSessionLocal.class);
         final CaSessionLocal caSession = (CaSessionLocal) ejbs.get(CaSessionLocal.class);
         final int caId = scpObject.getIssuer().hashCode();
@@ -403,6 +414,16 @@ public class CertificateCrlReader extends BaseWorker implements CustomServiceWor
                     "Couldn't deserialize ScpContainer, possibly due to a signed ScpContainer being processed without a signing CA declared.", e);
         }
     }
+    
+    private ScpContainer unwrapScpContainerYaml(final byte[] data) throws ServiceExecutionFailedException {
+        
+        try {
+            ScpContainerWrapper scpContainerWrapper = YamlWriter.importFromYamlBytes(data, ScpContainerWrapper.class);
+            return scpContainerWrapper.toScpContainer();
+        } catch (Exception e) {
+            throw new ServiceExecutionFailedException("Couldn't deserialize ScpContainer YAML.", e);
+        }
+    }
 
     /**
      * Retrieves a piece of data from within a signed envelope
@@ -413,11 +434,20 @@ public class CertificateCrlReader extends BaseWorker implements CustomServiceWor
      * @throws SignatureException if an issue was found with the signature
      * @throws CertificateException if the certificate couldn't be extracted from signedData
      */
-    private byte[] getAndVerifySignedData(final byte[] signedData, final List<Certificate> signingCertificateChain)
-            throws SignatureException, CertificateException {
+    private byte[] getAndVerifySignedData(byte[] signedData, final List<Certificate> signingCertificateChain, final Boolean isYaml)
+            throws SignatureException, CertificateException, ServiceExecutionFailedException {
         if (signingCertificateChain == null || signingCertificateChain.isEmpty()) {
             //We're going to have to presume that the data wasn't signed at, since no signing CA was provided. 
             return signedData;
+        }
+        
+        if (isYaml) {
+            try {
+                ScpContainerSigned signedScpContainer = YamlWriter.importFromYamlBytes(signedData, ScpContainerSigned.class);
+                signedData = Base64.decode(signedScpContainer.getSignature().getBytes());
+            } catch (Exception e) {
+                throw new ServiceExecutionFailedException("Couldn't deserialize ScpContainer YAML.", e);
+            }
         }
 
         CMSSignedData csd;

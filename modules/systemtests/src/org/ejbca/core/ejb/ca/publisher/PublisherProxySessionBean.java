@@ -57,7 +57,7 @@ public class PublisherProxySessionBean implements PublisherProxySessionRemote {
     }
 
     @Override
-    public int getPublisherId(String name) {
+    public Integer getPublisherId(String name) {
         return publisherSession.getPublisherId(name);
     }
 
@@ -78,7 +78,7 @@ public class PublisherProxySessionBean implements PublisherProxySessionRemote {
     }
 
     @Override
-    public void renamePublisher(AuthenticationToken admin, String oldname, String newname) throws PublisherExistsException, AuthorizationDeniedException {
+    public void renamePublisher(AuthenticationToken admin, String oldname, String newname) throws PublisherExistsException, AuthorizationDeniedException, PublisherDoesntExistsException {
         publisherSession.renamePublisher(admin, oldname, newname);
 
     }
@@ -93,17 +93,4 @@ public class PublisherProxySessionBean implements PublisherProxySessionRemote {
         publisherSession.flushPublisherCache();
     }
 
-    @Override
-    public void internalChangePublisherNoFlushCache(String name, BasePublisher publisher) throws AuthorizationDeniedException {
-        PublisherData htp = PublisherData.findByName(entityManager, name);
-        if (htp != null) {
-            htp.setPublisher(publisher);
-        }
-    }
-
-    @Override
-    public int adhocUpgradeTo6_3_1_1() {
-        return publisherSession.adhocUpgradeTo6_3_1_1();
-    }
-    
 }

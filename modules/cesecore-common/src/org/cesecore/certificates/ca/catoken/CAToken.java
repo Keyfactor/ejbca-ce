@@ -22,13 +22,16 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Properties;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
+import org.apache.log4j.Logger;
+import org.cesecore.internal.UpgradeableDataHashMap;
+
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.cesecore.internal.UpgradeableDataHashMap;
+
 
 /**
  * The CAToken is keeps references to the CA's key aliases and the CryptoToken where the keys are stored.
@@ -55,11 +58,7 @@ public class CAToken extends UpgradeableDataHashMap {
     /** Latest version of the UpgradeableHashMap, this determines if we need to auto-upgrade any data. */
     public static final float LATEST_VERSION = 8;
 
-    @Deprecated // Used by upgrade code
-    public static final String CLASSPATH = "classpath";
     public static final String PROPERTYDATA = "propertydata";
-    @Deprecated // Used by upgrade code
-    public static final String KEYSTORE = "KEYSTORE";
 
     /** The Initial sequence number is 00000-99999 or starts at 00001 according to generated doc 2012-12-03.
      * It is of format StringTools.KEY_SEQUENCE_FORMAT_NUMERIC (1) */
@@ -68,9 +67,6 @@ public class CAToken extends UpgradeableDataHashMap {
     public static final String SOFTPRIVATESIGNKEYALIAS = "signKey";
     public static final String SOFTPRIVATEALTERNATIVESIGNKEYALIAS = "alternativeSignKey";
     public static final String SOFTPRIVATEDECKEYALIAS = "encryptKey";
-    /** These aliases were changed in EJBCA 6.4.1 */
-    private static final String OLDPRIVATESIGNKEYALIAS = "privatesignkeyalias";
-    protected static final String OLDPRIVATEDECKEYALIAS = "privatedeckeyalias";
 
     public static final String ALTERNATE_SOFT_PRIVATE_SIGNKEY_ALIAS = "alternateSignKey";
 
@@ -297,7 +293,7 @@ public class CAToken extends UpgradeableDataHashMap {
             try {
                 // If the input string contains \ (backslash on windows) we must convert it to \\
                 // Otherwise properties.load will parse it as an escaped character, and that is not good
-                final String propertyStrAdjusted = StringUtils.replace(propertyStr, "\\", "\\\\");
+                final String propertyStrAdjusted = Strings.CS.replace(propertyStr, "\\", "\\\\");
                 prop.load(new StringReader(propertyStrAdjusted));
                 // Trim whitespace in values
                 for (final Object keyObj : prop.keySet()) {
@@ -387,52 +383,7 @@ public class CAToken extends UpgradeableDataHashMap {
             // New version of the class, upgrade
             String msg = "Upgrading Crypto Token with version " + getVersion() + ".";
             log.info(msg);
-            // Put upgrade stuff here
-            if (data.get(CAToken.SEQUENCE_FORMAT) == null) { // v7
-                log.info("Adding new sequence format to CA Token data: " + StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
-                data.put(CAToken.SEQUENCE_FORMAT, StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
-            }
-            if (data.get(CAToken.SEQUENCE) == null) { // v7
-                log.info("Adding new default key sequence to CA Token data: " + CAToken.DEFAULT_KEYSEQUENCE);
-                data.put(CAToken.SEQUENCE, CAToken.DEFAULT_KEYSEQUENCE);
-            }
-
-            if (data.get(CAToken.CLASSPATH) != null) { // v8 upgrade of classpaths for CESeCore
-                final String classpath = (String) data.get(CAToken.CLASSPATH);
-                log.info("Upgrading CA token classpath: "+classpath);
-                String newclasspath = classpath;
-                if (StringUtils.equals(classpath, "org.ejbca.core.model.ca.catoken.SoftCAToken")) {
-                	newclasspath = "org.cesecore.keys.token.SoftCryptoToken";
-                	// Upgrade properties to set a default key, also for soft crypto tokens
-                	Properties prop = getProperties();
-                    // A small unfortunate special property that we have to make in order to
-                    // be able to use soft keystores that does not have a specific test or default key
-                    if ((prop.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING) == null) &&
-                    		(prop.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING) == null)) {
-                        // The soft key alias was changed from privatesignkeyalias to signKey in EJBCA 6.4.1, which is long after
-                        // we changed the classpath. So if we come in here, we are upgrading a token that is way before 6.4.1, meaning
-                        // that it uses the old key aliases
-                    	log.info("Setting CAKEYPURPOSE_CERTSIGN_STRING and CAKEYPURPOSE_CRLSIGN_STRING to privatesignkeyalias.");
-                    	prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.OLDPRIVATESIGNKEYALIAS);
-                    	prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.OLDPRIVATESIGNKEYALIAS);
-                    }
-                    if ((prop.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING) == null) &&
-                    		(prop.getProperty(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING) == null)) {
-                        // Same as above regarding key aliases
-                        log.info("Setting CAKEYPURPOSE_DEFAULT_STRING to privatedeckeyalias.");
-                    	prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.OLDPRIVATEDECKEYALIAS);
-                    }
-                    setCATokenPropertyData(storeProperties(prop)); // Stores property string in "data"
-                } else if (StringUtils.equals(classpath, "org.ejbca.core.model.ca.catoken.PKCS11CAToken")) {
-                	newclasspath = "org.cesecore.keys.token.PKCS11CryptoToken";
-                } else if (StringUtils.equals(classpath, "org.ejbca.core.model.ca.catoken.NullCAToken")) {
-                	newclasspath = "org.cesecore.keys.token.NullCryptoToken";
-                } else if (StringUtils.equals(classpath, "org.ejbca.core.model.ca.catoken.NFastCAToken")) {
-                	log.error("Upgrading of NFastCAToken not supported, you need to convert to using PKCS11CAToken before upgrading.");
-                }
-                data.put(CAToken.CLASSPATH, newclasspath);
-            }
-
+            
             data.put(VERSION, LATEST_VERSION);
         }
     }
@@ -453,7 +404,7 @@ public class CAToken extends UpgradeableDataHashMap {
         }
         // Generate a key alias based on the new key sequence
         final String currentCertSignKeyLabel = keyStrings.getAlias(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
-        final String newCertSignKeyLabel = StringUtils.removeEnd(currentCertSignKeyLabel, currentKeySequence) + newKeySequence;
+        final String newCertSignKeyLabel = Strings.CS.removeEnd(currentCertSignKeyLabel, currentKeySequence) + newKeySequence;
         if (log.isDebugEnabled()) {
             log.debug("Current sign key alias: " + currentCertSignKeyLabel + "  New sign key alias: " + newCertSignKeyLabel);
         }
@@ -476,9 +427,9 @@ public class CAToken extends UpgradeableDataHashMap {
 
         // Generate a key alias based on the new key sequence
         final String currentCertSignKeyLabel = keyStrings.getAlias(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
-        final String newCertSignKeyLabel = StringUtils.removeEnd(currentCertSignKeyLabel, currentKeySequence) + newKeySequence;
+        final String newCertSignKeyLabel = Strings.CS.removeEnd(currentCertSignKeyLabel, currentKeySequence) + newKeySequence;
         final String currentDefaultKeyLabel = keyStrings.getAlias(CATokenConstants.CAKEYPURPOSE_DEFAULT);
-        final String newDefaultKeyLabel = StringUtils.removeEnd(currentDefaultKeyLabel, currentKeySequence) + newKeySequence;
+        final String newDefaultKeyLabel = Strings.CS.removeEnd(currentDefaultKeyLabel, currentKeySequence) + newKeySequence;
         log.info("Current sign key alias: " + currentCertSignKeyLabel + "  New sign key alias: " + newCertSignKeyLabel);
         log.info("Current default key alias: " + currentDefaultKeyLabel + "  New default key alias: " + newDefaultKeyLabel);
 
@@ -571,7 +522,7 @@ public class CAToken extends UpgradeableDataHashMap {
                 log.debug("CERTSIGN:      " + currentCertSignKeyLabel);
                 log.debug("CRLSIGN:       " + currentCrlSignKeyLabel);
             }
-            if (StringUtils.equals(currentCertSignKeyLabel, currentCrlSignKeyLabel)) {
+            if (Strings.CS.equals(currentCertSignKeyLabel, currentCrlSignKeyLabel)) {
                 log.info("Setting CRL signing key alias to: " + nextCertSignKeyLabel);
                 caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, nextCertSignKeyLabel);
             }
@@ -579,7 +530,7 @@ public class CAToken extends UpgradeableDataHashMap {
             caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_PREVIOUS, currentCertSignKeyLabel);
             caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, nextCertSignKeyLabel);
             caTokenProperties.remove(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_NEXT);
-            swichedSigningKey = !StringUtils.equals(nextCertSignKeyLabel, currentCertSignKeyLabel);
+            swichedSigningKey = !Strings.CS.equals(nextCertSignKeyLabel, currentCertSignKeyLabel);
         }
         // Replace key sequence (if present)
         final String nextKeySequence = caTokenProperties.getProperty(CATokenConstants.NEXT_SEQUENCE_PROPERTY);

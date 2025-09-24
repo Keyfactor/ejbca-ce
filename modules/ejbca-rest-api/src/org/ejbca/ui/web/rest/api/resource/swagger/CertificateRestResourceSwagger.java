@@ -55,6 +55,7 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.request.*;
 import org.ejbca.ui.web.rest.api.io.response.CertificateRestResponse;
@@ -123,6 +124,26 @@ public class CertificateRestResourceSwagger extends CertificateRestResource {
                                             final EnrollCertificateRestRequest enrollCertificateRestRequest)
             throws RestException, AuthorizationDeniedException {
         return super.enrollPkcs10Certificate(requestContext, enrollCertificateRestRequest);
+    }
+
+
+    @POST
+    @Path("/enroll")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Enrollment with client generated keys. If end entity does not exist, it will be created.",
+            description = "Enroll for a certificate given a PEM encoded  PUBLICKEY, PKCS10, CRMF, SPKAC, or CVC. "
+                    + "\nResponse Format is 'DER' (default when excluded) or 'PKCS7' in base64 encoded PEM format",
+            responses = {
+                    @ApiResponse(responseCode = "200",
+                            description = "Successful operation",
+                            content = @Content(schema = @Schema(implementation = CertificateEnrollmentRestResponse.class))
+                    )
+            })
+    public Response enrollCertificate(@Context HttpServletRequest requestContext,
+                                            final EnrollCertificateWithEntityRestRequest enrollCertificateRestRequest)
+            throws RestException, AuthorizationDeniedException, EjbcaException, CertificateEncodingException, EndEntityProfileValidationException, CADoesntExistsException, WaitingForApprovalException {
+        return super.enrollCertificate(requestContext, enrollCertificateRestRequest);
     }
 
     @POST
