@@ -129,14 +129,8 @@ public class GlobalOcspConfiguration extends ConfigurationBase implements Serial
         data.put(DEFAULT_OCSP_RESPONDER_REFERENCE, reference);
     }
     
-    @SuppressWarnings("deprecation")
     public OcspKeyBinding.ResponderIdType getOcspResponderIdType() {
         OcspKeyBinding.ResponderIdType ocspResponderIdType = (ResponderIdType) data.get(OCSP_RESPONDER_ID_TYPE_REFERENCE);
-        if(ocspResponderIdType == null) {
-            //Lazy upgrade if running from versions prior to 6.7.0
-            ocspResponderIdType = OcspKeyBinding.ResponderIdType.getFromNumericValue(OcspConfiguration.getResponderIdType());
-            setOcspResponderIdType(ocspResponderIdType);
-        }
         return ocspResponderIdType;
     }
     
