@@ -107,7 +107,7 @@ public class InternalKeyBindingMgmtSystemTest {
 
     private static final String TESTCLASSNAME = InternalKeyBindingMgmtSystemTest.class.getSimpleName();
     private static final String KEYBINDING_TYPE_ALIAS = OcspKeyBinding.IMPLEMENTATION_ALIAS;
-    private static final String PROPERTY_ALIAS = OcspKeyBinding.PROPERTY_NON_EXISTING_GOOD;
+    private static final String PROPERTY_ALIAS = OcspKeyBinding.PROPERTY_INCLUDE_SIGN_CERT;
     
     private static final String CERT_PROFILE_OCSP = "OcspCertProfile" + TESTCLASSNAME;
     private static final String CERT_PROFILE_ENDUSER = "EndUserCertProfile" + TESTCLASSNAME;
@@ -200,7 +200,7 @@ public class InternalKeyBindingMgmtSystemTest {
             cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, KEY_PAIR_ALIAS, KeyGenParams.builder("RSA1024").build());
             // Create a new InternalKeyBinding with a implementation specific property and bind it to the previously generated key
             final Map<String, Serializable> dataMap = new LinkedHashMap<String, Serializable>();
-            dataMap.put(PROPERTY_ALIAS, Boolean.FALSE);
+            dataMap.put(PROPERTY_ALIAS, true);
             internalKeyBindingId = internalKeyBindingMgmtSession.createInternalKeyBinding(alwaysAllowToken, KEYBINDING_TYPE_ALIAS,
                     KEY_BINDING_NAME, InternalKeyBindingStatus.ACTIVE, null, cryptoTokenId, KEY_PAIR_ALIAS, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, dataMap, null);
             // Check that the status is not ACTIVE, despite our request (since no certificate reference was provided)
@@ -236,7 +236,7 @@ public class InternalKeyBindingMgmtSystemTest {
             cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, KEY_PAIR_ALIAS, KeyGenParams.builder("RSA1024").build());
             // Create a new InternalKeyBinding with a implementation specific property and bind it to the previously generated key
             final Map<String, Serializable> dataMap = new LinkedHashMap<String, Serializable>();
-            dataMap.put(PROPERTY_ALIAS, Boolean.FALSE);
+            dataMap.put(PROPERTY_ALIAS, true);
             internalKeyBindingId = internalKeyBindingMgmtSession.createInternalKeyBinding(alwaysAllowToken, KEYBINDING_TYPE_ALIAS,
                     KEY_BINDING_NAME, InternalKeyBindingStatus.ACTIVE, null, cryptoTokenId, KEY_PAIR_ALIAS, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, dataMap, null);
             // Get the public key for the key pair currently used in the binding
@@ -290,7 +290,7 @@ public class InternalKeyBindingMgmtSystemTest {
             cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, KEY_PAIR_ALIAS, KeyGenParams.builder("RSA1024").build());
             // Create a new InternalKeyBinding with a implementation specific property and bind it to the previously generated key
             final Map<String, Serializable> dataMap = new LinkedHashMap<String, Serializable>();
-            dataMap.put(PROPERTY_ALIAS, Boolean.FALSE);
+            dataMap.put(PROPERTY_ALIAS, true);
             internalKeyBindingId = internalKeyBindingMgmtSession.createInternalKeyBinding(alwaysAllowToken, KEYBINDING_TYPE_ALIAS,
                     KEY_BINDING_NAME, InternalKeyBindingStatus.ACTIVE, null, cryptoTokenId, KEY_PAIR_ALIAS, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, dataMap, null);
             // Add a user to EJBCA for the renewal later on

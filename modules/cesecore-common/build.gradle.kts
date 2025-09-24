@@ -41,7 +41,7 @@ dependencies {
     compileOnly(libs.hibernate.commons.annotations)
     compileOnly(libs.hibernate.core)
     compileOnly(libs.hibernate.validator)
-    compileOnly(libs.istack.commons.runtime.old)
+    compileOnly(libs.istack.commons.runtime.hibernate)
     compileOnly(libs.jakarta.activation.api)
     compileOnly(libs.jandex)
     compileOnly(libs.jakarta.persistence.api)

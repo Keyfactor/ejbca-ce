@@ -130,6 +130,7 @@ import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.impl.OcspKeyBinding;
+import org.cesecore.keybind.impl.OcspNonExistingBehavior;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -304,15 +305,10 @@ public class ProtocolOcspHttpSystemTest extends ProtocolOcspTestBase {
         log.debug("httpReqPath=" + httpReqPath);
         cacert = (X509Certificate) CaTestCase.getTestCACert();
         caid = CaTestCase.getTestCAId();
-
-        Map<String, String> config = new HashMap<>();
-
-        config.put("ocsp.nonexistingisgood", "false");
-        config.put("ocsp.nonexistingisrevoked", "false");
-        helper.alterConfig(config);
         helper.reloadKeys();
         GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
         ocspConfiguration.setOcspDefaultResponderReference(CertTools.getSubjectDN(CaTestCase.getTestCACert()));
+        ocspConfiguration.setOcspNonExistingBehavior(OcspNonExistingBehavior.UNKNOWN);
         globalConfigurationSession.saveConfiguration(admin, ocspConfiguration);
     }
 
@@ -868,12 +864,15 @@ Content-Type: text/html; charset=iso-8859-1
         final String good2 = "Beautiful";
         {
             final Map<String,String> map = new HashMap<>();
-            map.put(OcspConfiguration.NON_EXISTING_IS_GOOD, "true");
             map.put(OcspConfiguration.NON_EXISTING_IS_BAD_URI+'1', ".*"+bad1+"$");
             map.put(OcspConfiguration.NON_EXISTING_IS_BAD_URI+'2', ".*"+bad2+"$");
             map.put(OcspConfiguration.NON_EXISTING_IS_GOOD_URI+'1', ".*"+good1+"$");
             map.put(OcspConfiguration.NON_EXISTING_IS_GOOD_URI+'2', ".*"+good2+"$");
             this.helper.alterConfig(map);
+            
+            GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            globalOcspConfiguration.setOcspNonExistingBehavior(OcspNonExistingBehavior.GOOD);
+            globalConfigurationSession.saveConfiguration(admin, globalOcspConfiguration);
         }
         this.helper.reloadKeys();
         this.helper.verifyStatusGood( this.caid, this.cacert, BigInteger.valueOf(1) );
@@ -882,9 +881,9 @@ Content-Type: text/html; charset=iso-8859-1
         this.helper.setURLEnding(bad2);
         this.helper.verifyStatusUnknown( this.caid, this.cacert, BigInteger.valueOf(1) );
         {
-            final Map<String,String> map = new HashMap<>();
-            map.put(OcspConfiguration.NON_EXISTING_IS_GOOD, "false");
-            this.helper.alterConfig(map);
+            GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            globalOcspConfiguration.setOcspNonExistingBehavior(OcspNonExistingBehavior.UNKNOWN);
+            globalConfigurationSession.saveConfiguration(admin, globalOcspConfiguration);
         }
         this.helper.setURLEnding("");
         this.helper.verifyStatusUnknown( this.caid, this.cacert, BigInteger.valueOf(1) );
@@ -904,7 +903,10 @@ Content-Type: text/html; charset=iso-8859-1
         final String bad = "MEkwRzBFMEMwQTAJBgUrDgMCGgUABBS6ZiRTm9v22WVorgRHAGsMV3lC+wQUvf1XLZAVhuTwzI8T7SzebIRvwzkCCAIBkFE4Z1MJ";
         {
             final Map<String,String> map = new HashMap<>();
-            map.put(OcspConfiguration.NON_EXISTING_IS_GOOD, "true");
+            GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            globalOcspConfiguration.setOcspNonExistingBehavior(OcspNonExistingBehavior.GOOD);
+            globalConfigurationSession.saveConfiguration(admin, globalOcspConfiguration);
+            
             map.put(OcspConfiguration.NON_EXISTING_IS_BAD_URI+'1', ".*\\?"+bad+"$");
             this.helper.alterConfig(map);
         }
@@ -923,7 +925,9 @@ Content-Type: text/html; charset=iso-8859-1
         final String bad = "MEkwRzBFMEMwQTAJBgUrDgMCGgUABBS6ZiRTm9v22WVorgRHAGsMV3lC+wQUvf1XLZAVhuTwzI8T7SzebIRvwzkCCAIBkFE4Z1MJ";
         {
             final Map<String,String> map = new HashMap<>();
-            map.put(OcspConfiguration.NON_EXISTING_IS_GOOD, "false");
+            GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            globalOcspConfiguration.setOcspNonExistingBehavior(OcspNonExistingBehavior.UNKNOWN);
+            globalConfigurationSession.saveConfiguration(admin, globalOcspConfiguration);
             map.put(OcspConfiguration.NON_EXISTING_IS_BAD_URI+'1', ".*\\?"+bad+"$");
             this.helper.alterConfig(map);
         }
@@ -954,8 +958,10 @@ Content-Type: text/html; charset=iso-8859-1
         final String revoked1 = "Revoked";
         final String revoked2 = "Denied";
         {
+            GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            globalOcspConfiguration.setOcspNonExistingBehavior(OcspNonExistingBehavior.REVOKED);
+            globalConfigurationSession.saveConfiguration(admin, globalOcspConfiguration);
             final Map<String,String> map = new HashMap<>();
-            map.put(OcspConfiguration.NON_EXISTING_IS_REVOKED, "true");
             map.put(OcspConfiguration.NON_EXISTING_IS_BAD_URI+'1', ".*"+bad1+"$");
             map.put(OcspConfiguration.NON_EXISTING_IS_BAD_URI+'2', ".*"+bad2+"$");
             map.put(OcspConfiguration.NON_EXISTING_IS_GOOD_URI+'1', ".*"+good1+"$");
@@ -975,9 +981,9 @@ Content-Type: text/html; charset=iso-8859-1
         this.helper.setURLEnding(good2);
         this.helper.verifyStatusGood( this.caid, this.cacert, BigInteger.valueOf(1) );
         {
-            final Map<String,String> map = new HashMap<>();
-            map.put(OcspConfiguration.NON_EXISTING_IS_REVOKED, "false");
-            this.helper.alterConfig(map);
+            GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            globalOcspConfiguration.setOcspNonExistingBehavior(OcspNonExistingBehavior.UNKNOWN);
+            globalConfigurationSession.saveConfiguration(admin, globalOcspConfiguration);
         }
         this.helper.setURLEnding("");
         this.helper.verifyStatusUnknown( this.caid, this.cacert, BigInteger.valueOf(1) );
@@ -1008,10 +1014,10 @@ Content-Type: text/html; charset=iso-8859-1
         // RFC 6960: id-pkix-ocsp-extended-revoke OBJECT IDENTIFIER ::= {id-pkix-ocsp 9}
         Extension responseExtension = response.getExtension(new ASN1ObjectIdentifier(OCSPObjectIdentifiers.id_pkix_ocsp + ".9"));
         assertNull("Wrong extension sent with reply", responseExtension);
-
-        final Map<String,String> map = new HashMap<>();
-        map.put(OcspConfiguration.NON_EXISTING_IS_REVOKED, "true");
-        this.helper.alterConfig(map);
+        
+        GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        globalOcspConfiguration.setOcspNonExistingBehavior(OcspNonExistingBehavior.REVOKED);
+        globalConfigurationSession.saveConfiguration(admin, globalOcspConfiguration);
 
         gen = new OCSPReqBuilder();
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, BigInteger.valueOf(1) ));

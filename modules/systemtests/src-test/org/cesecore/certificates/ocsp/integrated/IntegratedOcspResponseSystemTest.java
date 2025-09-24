@@ -105,6 +105,7 @@ import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.junit.util.CryptoTokenRunner;
+import org.cesecore.keybind.impl.OcspNonExistingBehavior;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.keys.token.NullCryptoToken;
@@ -205,8 +206,10 @@ public class IntegratedOcspResponseSystemTest {
         ocspCertificate = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(internalAdmin, user, req,
                 X509ResponseMessage.class, signSession.fetchCertGenParams())).getCertificate());
         // Modify the default value
-        originalDefaultResponder = setOcspDefaultResponderReference(CertTools.getSubjectDN(caCertificate));
-        cesecoreConfigurationProxySession.setConfigurationValue("ocsp.nonexistingisgood", "false");
+        originalDefaultResponder = setOcspDefaultResponderReference(CertTools.getSubjectDN(caCertificate));        
+        GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        globalOcspConfiguration.setOcspNonExistingBehavior(OcspNonExistingBehavior.UNKNOWN);
+        globalConfigurationSession.saveConfiguration(internalAdmin, globalOcspConfiguration);
     }
 
     @After
@@ -744,9 +747,12 @@ public class IntegratedOcspResponseSystemTest {
      * Tests with nonexistingisrevoked
      */
     @Test
-    public void testNonExistingIsRevoked() throws Exception {
-        String originalValue = cesecoreConfigurationProxySession.getConfigurationValue(OcspConfiguration.NON_EXISTING_IS_REVOKED);
-        cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.NON_EXISTING_IS_REVOKED, "true");
+    public void testNonExistingIsRevoked() throws Exception {        
+        GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        OcspNonExistingBehavior originalNonExisting = globalOcspConfiguration.getOcspNonExistingBehavior();
+        globalOcspConfiguration.setOcspNonExistingBehavior(OcspNonExistingBehavior.REVOKED);
+        globalConfigurationSession.saveConfiguration(internalAdmin, globalOcspConfiguration);
+        
         try {
             ocspResponseGeneratorTestSession.reloadOcspSigningCache();
             BigInteger randomSerialNumber = BigInteger.valueOf(9);
@@ -799,30 +805,30 @@ public class IntegratedOcspResponseSystemTest {
             CertificateStatus status = singleResponses[0].getCertStatus();
             assertTrue("Status is not RevokedStatus", status instanceof RevokedStatus);
 
-            // Set ocsp.nonexistingisgood=true, veryify that answer comes out okay.
-            String originalNoneExistingIsGood = cesecoreConfigurationProxySession.getConfigurationValue(OcspConfiguration.NON_EXISTING_IS_GOOD);
-            cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.NON_EXISTING_IS_GOOD, "true");
-            try {
-                responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, new StringBuffer("http://foo.com"),
-                        auditLogger, transactionLogger, false, PresignResponseValidity.CONFIGURATION_BASED, false).getOcspResponse();
-                assertNotNull("OCSP responder replied null", responseBytes);
+            // Set non existing to true, veryify that answer comes out okay.
+            globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            globalOcspConfiguration.setOcspNonExistingBehavior(OcspNonExistingBehavior.GOOD);
+            globalConfigurationSession.saveConfiguration(internalAdmin, globalOcspConfiguration);  
+            
+            responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, new StringBuffer("http://foo.com"),
+                    auditLogger, transactionLogger, false, PresignResponseValidity.CONFIGURATION_BASED, false).getOcspResponse();
+            assertNotNull("OCSP responder replied null", responseBytes);
 
-                response = new OCSPResp(responseBytes);
-                assertEquals("Response status not zero.", response.getStatus(), 0);
-                basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
-                assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(
-                        new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caCertificate.getPublicKey())));
-                singleResponses = basicOcspResponse.getResponses();
+            response = new OCSPResp(responseBytes);
+            assertEquals("Response status not zero.", response.getStatus(), 0);
+            basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
+            assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(
+                    new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caCertificate.getPublicKey())));
+            singleResponses = basicOcspResponse.getResponses();
 
-                assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
-                assertEquals("Response cert did not match up with request cert", randomSerialNumber,
-                        singleResponses[0].getCertID().getSerialNumber());
-                assertEquals("Status is not null (good)", null, singleResponses[0].getCertStatus());
-            } finally {
-                cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.NON_EXISTING_IS_GOOD, originalNoneExistingIsGood);
-            }
+            assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
+            assertEquals("Response cert did not match up with request cert", randomSerialNumber, singleResponses[0].getCertID().getSerialNumber());
+            assertEquals("Status is not null (good)", null, singleResponses[0].getCertStatus());
+          
         } finally {
-            cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.NON_EXISTING_IS_REVOKED, originalValue);
+            globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            globalOcspConfiguration.setOcspNonExistingBehavior(originalNonExisting);
+            globalConfigurationSession.saveConfiguration(internalAdmin, globalOcspConfiguration);            
         }
 
     }
@@ -832,8 +838,11 @@ public class IntegratedOcspResponseSystemTest {
      */
     @Test
     public void testNonExistingIsUnauthorizedConfiguration() throws Exception {
-        String originalValue = cesecoreConfigurationProxySession.getConfigurationValue(OcspConfiguration.NON_EXISTING_IS_UNAUTHORIZED);
-        cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.NON_EXISTING_IS_UNAUTHORIZED, "true");
+        GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        OcspNonExistingBehavior originalNonExisting = globalOcspConfiguration.getOcspNonExistingBehavior();
+        globalOcspConfiguration.setOcspNonExistingBehavior(OcspNonExistingBehavior.UNAUTHORIZED);
+        globalConfigurationSession.saveConfiguration(internalAdmin, globalOcspConfiguration);
+        
         try {
             ocspResponseGeneratorTestSession.reloadOcspSigningCache();
             // An OCSP request
@@ -856,7 +865,9 @@ public class IntegratedOcspResponseSystemTest {
             assertEquals("Response status not OCSPRespBuilder.UNAUTHORIZED.", response.getStatus(), OCSPRespBuilder.UNAUTHORIZED);
             assertNull("Response should not have contained a response object.", response.getResponseObject());
         } finally {
-            cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.NON_EXISTING_IS_UNAUTHORIZED, originalValue);
+            globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            globalOcspConfiguration.setOcspNonExistingBehavior(originalNonExisting);
+            globalConfigurationSession.saveConfiguration(internalAdmin, globalOcspConfiguration);    
         }
     }
 
@@ -1005,8 +1016,10 @@ public class IntegratedOcspResponseSystemTest {
                 singleResponses[0].getCertID().getSerialNumber());
 
         // Set that an unknown CA is "good", and redo the test (cache is reloaded automatically)
-        cesecoreConfigurationProxySession.setConfigurationValue("ocsp.nonexistingisgood", "true");
-
+        GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        globalOcspConfiguration.setOcspNonExistingBehavior(OcspNonExistingBehavior.GOOD);
+        globalConfigurationSession.saveConfiguration(internalAdmin, globalOcspConfiguration);
+        
         responseBytes = ocspResponseGeneratorSession
                 .getOcspResponse(req.getEncoded(), null, "", null, new StringBuffer("http://foo.com"), auditLogger, transactionLogger, false, PresignResponseValidity.CONFIGURATION_BASED, false)
                 .getOcspResponse();
@@ -1026,8 +1039,9 @@ public class IntegratedOcspResponseSystemTest {
         // Assert that status is null, i.e. "good"
         assertNull(singleResponses[0].getCertStatus());
 
-        cesecoreConfigurationProxySession.setConfigurationValue("ocsp.nonexistingisgood", "false");
-    }
+        globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        globalOcspConfiguration.setOcspNonExistingBehavior(OcspNonExistingBehavior.UNKNOWN);
+        globalConfigurationSession.saveConfiguration(internalAdmin, globalOcspConfiguration);    }
 
     /**
      * Note that this test is time dependent. Debugging it will create strange behavior.

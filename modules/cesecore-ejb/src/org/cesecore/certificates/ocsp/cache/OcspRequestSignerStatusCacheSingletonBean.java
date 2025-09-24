@@ -17,16 +17,32 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.cesecore.certificates.certificate.CertificateStatus;
-import org.cesecore.config.OcspConfiguration;
+import org.cesecore.config.GlobalOcspConfiguration;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+
+import jakarta.ejb.ConcurrencyManagement;
+import jakarta.ejb.ConcurrencyManagementType;
+import jakarta.ejb.DependsOn;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Startup;
+import jakarta.ejb.TransactionManagement;
+import jakarta.ejb.TransactionManagementType;
 
 /**
  * Cache of revocation status for certificates that signs OCSP requests.
  * 
- * @version $Id$
  */
-public enum OcspRequestSignerStatusCache {
-    INSTANCE;
-
+@Singleton
+@Startup
+@DependsOn("StartupSingletonBean")
+@ConcurrencyManagement(ConcurrencyManagementType.BEAN)  
+@TransactionManagement(TransactionManagementType.BEAN)  
+public class OcspRequestSignerStatusCacheSingletonBean implements OcspRequestSignerStatusCacheSingletonLocal {
+   
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
+    
     /** Cache entry keeping track of a revocation status and when it was last updated. */
     private class OcspSignerStatus {
         long lastUpdate;
@@ -47,18 +63,21 @@ public enum OcspRequestSignerStatusCache {
      * @param signercertSerNo Serial number of the certificate that signed the OCSP request
      * @return a key that can be used for cache lookup
      */
+    @Override
     public String createCacheLookupKey(final String signercertIssuerName, final BigInteger signercertSerNo) {
         return Integer.toHexString(signercertIssuerName.hashCode()) + ";" + signercertSerNo.toString(16);
     }
 
     /** @return a usable CertificateStatus or null of the cache needs an update for this entry. */
+    @Override
     public CertificateStatus getCachedCertificateStatus(final String cacheLookupKey) {
         final OcspSignerStatus ocspSignerStatus = cache.get(cacheLookupKey);
         if (ocspSignerStatus==null) {
             return null;
         }
         final long now = System.currentTimeMillis();
-        final long cacheTime = OcspConfiguration.getRequestSigningCertRevocationCacheTimeMs();
+        GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        final long cacheTime = globalOcspConfiguration.getRequestSignserRevocationStatusCacheTime();
         if (ocspSignerStatus.lastUpdate+cacheTime<=now) {
             // Current thread will be forced to update cache, but the rest will continue with slightly stale data
             ocspSignerStatus.lastUpdate=now;
@@ -68,6 +87,7 @@ public enum OcspRequestSignerStatusCache {
     }
 
     /** Update the cache with an usable CertificateStatus. */
+    @Override
     public void updateCachedCertificateStatus(final String cacheLookupKey, final CertificateStatus certificateStatus) {
         if (certificateStatus==null) {
             cache.remove(cacheLookupKey);
@@ -84,6 +104,7 @@ public enum OcspRequestSignerStatusCache {
     }
 
     /** Clear cache. */
+    @Override
     public void flush() {
         cache.clear();
     }

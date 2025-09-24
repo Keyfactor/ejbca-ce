@@ -13,6 +13,19 @@
 
 package org.ejbca.core.model.services.workers;
 
+import java.security.InvalidKeyException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+
+import org.apache.commons.collections4.SetUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAConstants;
@@ -27,26 +40,12 @@ import org.ejbca.core.model.services.ServiceExecutionFailedException;
 import org.ejbca.core.model.services.ServiceExecutionResult;
 import org.ejbca.core.model.services.ServiceExecutionResult.Result;
 
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-
-import java.security.InvalidKeyException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.collections4.SetUtils;
-
 /**
  * Class managing the updating of CRLs. Loops through the list of CAs to check and generates CRLs and deltaCRLs if needed.
  */
 public class CRLUpdateWorker extends BaseWorker {
 
-    private static final Logger log = Logger.getLogger(CRLUpdateWorker.class);	
+    private static final Logger log = Logger.getLogger(CRLUpdateWorker.class);
 
     /** Semaphore that tries to make sure that this CRL creation job does not run several times on the same machine.
      * Since CRL generation can sometimes take a lot of time, this is needed.
@@ -81,20 +80,20 @@ public class CRLUpdateWorker extends BaseWorker {
                 cryptoTokenSession.testKeyPair(getAdmin(),
                         caInfo.getCAToken().getCryptoTokenId(),
                         caInfo.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN));
-            } catch (AuthorizationDeniedException | InvalidKeyException e) {
+            } catch (AuthorizationDeniedException e) {
                 throw new ServiceExecutionFailedException(e);
-            } catch (CryptoTokenOfflineException e) {
+            } catch (CryptoTokenOfflineException | InvalidKeyException e) {
                 // handled gracefully in publishCrlSessionBean
-                log.warn("Crytotoken is offline for CA with CA id " + caId + ".");
+                log.warn("Crytotoken is offline for CA with CA id " + caId + ": " + e.getMessage());
                 continue;
             }
         }
     }
-	
+
 	/**
 	 * Checks if there are any CRL that needs to be updated, and then does the creation.
 	 * @return a {@link ServiceExecutionResult} containing the result of the execution.
-	 * 
+	 *
 	 * {@see org.ejbca.core.model.services.IWorker#work()}
 	 */
     @Override

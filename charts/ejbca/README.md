@@ -572,7 +572,6 @@ The following lists other variables that provide additional miscellaneous capabi
 |JAVA_OPTS_CUSTOM|Allows you to override the default JAVA_OPTS that are set in the standalone.conf. The default settings will calculate memory automatically. If you specify any one of the options that can be set in standalone.conf, you will set only that value removing the defaults. For example, to set the value for -XX:MaxMetaspaceSize=512m (default is 256), set all values like this: name: JAVA_OPTS_CUSTOM value: -Xms128m -Xmx1558m -Xss256k -XX:MetaspaceSize=160m -XX:MaxMetaspaceSize=512m||
 |ADMINWEB_ACCESS|Set this value to false if you want to disable access to adminweb from the network. Access is only possible if accessing from localhost (127.0.0.1).|true|
 |OCSP_CHECK_SIGN_CERT_VALIDITY|When no OCSP signing certificate is not configured and the CA keys are used for signing OCSP requests set this variable to false. If OCSP signing certificates are used then leave this value as the default true.|true|
-|OCSP_NON_EXISTING_IS_GOOD|Respond with 'good' when receiving OCSP requests for non-existing certificates|false|
 |OCSP_SIGNATUREALGORITHM|Override with custom algorithms specified in variable|SHA256WithRSA; SHA256withRSAandMGF1; SHA384WithRSA; SHA512WithRSA; SHA224withECDSA; SHA256withECDSA; SHA384withECDSA; SHA512withECDSA; SHA1WithDSA; Ed25519; Ed448|
 
 ### Services Parameters

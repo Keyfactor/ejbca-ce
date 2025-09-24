@@ -117,7 +117,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             if (StringUtils.isEmpty(aliasName)) {
                 this.dto = new AutoEnrollmentDTO();
             } else {
-                final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = MsaeUtil.fetchMSAEConfig(aliasName);
+                final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = MsaeUtil.fetchMSAEConfigLocalOnly(aliasName);
                 this.dto = new AutoEnrollmentDTO(aliasName, autoEnrollmentConfiguration);
             }
         }
@@ -483,7 +483,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         }
         if (adLoginPass.equals(HIDDEN_PWD)) {
             // If password field has been reset in GUI, test connection with persisted password
-            final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = MsaeUtil.fetchMSAEConfig(getDto().getAlias());
+            final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = MsaeUtil.fetchMSAEConfigLocalOnly(getDto().getAlias());
             adLoginPass = autoEnrollmentConfiguration.getAdLoginPassword(getDto().getAlias());
             if (StringUtils.isEmpty(adLoginPass)) {
                 addErrorMessage("MSAE_AD_TEST_CONNECTION_FAILURE", "Invalid Credentials");
@@ -509,7 +509,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         try {
             final AutoEnrollmentDTO dto = getDto();
             final String alias = dto.getAlias();
-            final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = MsaeUtil.fetchMSAEConfig(alias);
+            final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = MsaeUtil.fetchMSAEConfigLocalOnly(alias);
             
             if (!getEjbcaWebBean().getAutoenrollConfiguration().aliasExists(alias)) {
                 getEjbcaWebBean().addAutoenrollAlias(alias);
@@ -541,7 +541,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         try {
             final AutoEnrollmentDTO dto = getDto();
             final String alias = dto.getAlias();
-            final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = MsaeUtil.fetchMSAEConfig(alias);
+            final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = MsaeUtil.fetchMSAEConfigLocalOnly(alias);
 
             if (!getEjbcaWebBean().getAutoenrollConfiguration().aliasExists(alias)) {
                 getEjbcaWebBean().addAutoenrollAlias(alias);
@@ -641,7 +641,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
 
             final AutoEnrollmentDTO dto = getDto();
             final String alias = dto.getAlias();
-            final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = MsaeUtil.fetchMSAEConfig(alias);
+            final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = MsaeUtil.fetchMSAEConfigLocalOnly(alias);
             
             // MSAE Kerberos Settings
             autoEnrollmentConfiguration.setMsaeForestRoot(alias, dto.getMsaeForestRoot());

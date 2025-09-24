@@ -540,30 +540,32 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             internalKeyBinding.setStatus(InternalKeyBindingStatus.DISABLED);
             log.info("Preventing activation of Internal Key Binding " + internalKeyBinding.getId() + " since there is no certificate referenced.");
         }
-        // Audit log the result before persistence
-        final InternalKeyBinding originalInternalKeyBinding = internalKeyBindingDataSession.getInternalKeyBinding(internalKeyBinding.getId());
-        final Map<String, Object> details = new LinkedHashMap<>();
-        details.put("msg", "Edited InternalKeyBinding with id " + internalKeyBinding.getId());
-        if (originalInternalKeyBinding.getName().equals(internalKeyBinding.getName())) {
-            details.put("name", internalKeyBinding.getName());
-        } else {
-            putDelta("name", originalInternalKeyBinding.getName(), internalKeyBinding.getName(), details);
+        //Only log delta if keybinding already exists, i.e. id != 0
+        if (internalKeyBinding.getId() != 0) {
+            // Audit log the result before persistence
+            final InternalKeyBinding originalInternalKeyBinding = internalKeyBindingDataSession.getInternalKeyBinding(internalKeyBinding.getId());
+            final Map<String, Object> details = new LinkedHashMap<>();
+            details.put("msg", "Edited InternalKeyBinding with id " + internalKeyBinding.getId());
+            if (originalInternalKeyBinding.getName().equals(internalKeyBinding.getName())) {
+                details.put("name", internalKeyBinding.getName());
+            } else {
+                putDelta("name", originalInternalKeyBinding.getName(), internalKeyBinding.getName(), details);
+            }
+            putDelta("certificateId", originalInternalKeyBinding.getCertificateId(), internalKeyBinding.getCertificateId(), details);
+            putDelta("keyPairAlias", originalInternalKeyBinding.getKeyPairAlias(), internalKeyBinding.getKeyPairAlias(), details);
+            putDelta("nextKeyPairAlias", originalInternalKeyBinding.getNextKeyPairAlias(), internalKeyBinding.getNextKeyPairAlias(), details);
+            putDelta("signatureAlgorithm", originalInternalKeyBinding.getSignatureAlgorithm(), internalKeyBinding.getSignatureAlgorithm(), details);
+            putDelta("cryptoTokenId", String.valueOf(originalInternalKeyBinding.getCryptoTokenId()),
+                    String.valueOf(internalKeyBinding.getCryptoTokenId()), details);
+            putDelta("status", originalInternalKeyBinding.getStatus().name(), internalKeyBinding.getStatus().name(), details);
+            putDelta("trustedCertificateReferences", Arrays.toString(originalInternalKeyBinding.getTrustedCertificateReferences().toArray()),
+                    Arrays.toString(internalKeyBinding.getTrustedCertificateReferences().toArray()), details);
+            putDelta("signOcspResponseOnBehalf", Arrays.toString(originalInternalKeyBinding.getSignOcspResponseOnBehalf().toArray()),
+                    Arrays.toString(internalKeyBinding.getSignOcspResponseOnBehalf().toArray()), details);
+            putDelta(originalInternalKeyBinding.getCopyOfProperties(), internalKeyBinding.getCopyOfProperties(), details);
+            securityEventsLoggerSession.log(EventTypes.INTERNALKEYBINDING_EDIT, EventStatus.SUCCESS, ModuleTypes.INTERNALKEYBINDING,
+                    ServiceTypes.CORE, authenticationToken.toString(), String.valueOf(internalKeyBinding.getId()), null, null, details);
         }
-        putDelta("certificateId", originalInternalKeyBinding.getCertificateId(), internalKeyBinding.getCertificateId(), details);
-        putDelta("keyPairAlias", originalInternalKeyBinding.getKeyPairAlias(), internalKeyBinding.getKeyPairAlias(), details);
-        putDelta("nextKeyPairAlias", originalInternalKeyBinding.getNextKeyPairAlias(), internalKeyBinding.getNextKeyPairAlias(), details);
-        putDelta("signatureAlgorithm", originalInternalKeyBinding.getSignatureAlgorithm(), internalKeyBinding.getSignatureAlgorithm(), details);
-        putDelta("cryptoTokenId", String.valueOf(originalInternalKeyBinding.getCryptoTokenId()), String.valueOf(internalKeyBinding.getCryptoTokenId()), details);
-        putDelta("status", originalInternalKeyBinding.getStatus().name(), internalKeyBinding.getStatus().name(), details);
-        putDelta("trustedCertificateReferences", 
-                Arrays.toString(originalInternalKeyBinding.getTrustedCertificateReferences().toArray()), 
-                Arrays.toString(internalKeyBinding.getTrustedCertificateReferences().toArray()), details);
-        putDelta("signOcspResponseOnBehalf", 
-                Arrays.toString(originalInternalKeyBinding.getSignOcspResponseOnBehalf().toArray()), 
-                Arrays.toString(internalKeyBinding.getSignOcspResponseOnBehalf().toArray()), details);
-        putDelta(originalInternalKeyBinding.getCopyOfProperties(), internalKeyBinding.getCopyOfProperties(), details);
-        securityEventsLoggerSession.log(EventTypes.INTERNALKEYBINDING_EDIT, EventStatus.SUCCESS, ModuleTypes.INTERNALKEYBINDING, ServiceTypes.CORE,
-                authenticationToken.toString(), String.valueOf(internalKeyBinding.getId()), null, null, details);
         return internalKeyBindingDataSession.mergeInternalKeyBinding(internalKeyBinding);
     }
 

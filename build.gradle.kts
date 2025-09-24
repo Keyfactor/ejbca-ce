@@ -16,6 +16,7 @@ allprojects {
             dirs(rootProject.projectDir.resolve("lib/xstream"))
             dirs(rootProject.projectDir.resolve("lib/jee/soapclient"))
             dirs(rootProject.projectDir.resolve("lib/ext/jackson2"))
+            dirs(rootProject.projectDir.resolve("lib/ext/jaxb"))
             dirs(rootProject.projectDir.resolve("lib/swagger"))
             dirs(rootProject.projectDir.resolve("lib/ext/swagger"))
             dirs(rootProject.projectDir.resolve("lib/primefaces"))
@@ -617,6 +618,7 @@ val moduleShortcuts = mapOf(
     "ejbca-caa-cli" to ":modules:caa:cli:build",
     "ejbca-ejb-cli" to ":modules:ejbca-ejb-cli:build",
     "p11ng-cli" to ":modules:p11ng-cli:build",
+    "ejbca-db-cli" to ":modules:ejbca-entity:cli:build",
 )
 
 moduleShortcuts.forEach { (shortcut, fullPath) ->

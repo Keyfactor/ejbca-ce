@@ -151,6 +151,12 @@
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/reactive-streams-1.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/jakarta.servlet-api-6.1.0.jar"/>
 	<classpathentry kind="lib" path="lib/ext/system-rules-1.19.0.jar"/>
+	<classpathentry kind="lib" path="lib/ext/jaxb/istack-commons-runtime-4.1.2.jar"/>
+	<classpathentry kind="lib" path="lib/ext/jaxb/jakarta.xml.bind-api-4.0.2.jar"/>
+	<classpathentry kind="lib" path="lib/ext/jaxb/jaxb-core-4.0.5.jar"/>
+	<classpathentry kind="lib" path="lib/ext/jaxb/jaxb-runtime-4.0.5.jar"/>
+	<classpathentry kind="lib" path="lib/ext/jaxb/jaxb-impl-4.0.5.jar"/>
+	<classpathentry kind="lib" path="lib/ext/jaxb/txw2-4.0.5.jar"/>
 	<classpathentry kind="lib" path="lib/cert-cvc-1.6.2.jar"/>
 	<classpathentry kind="lib" path="lib/commons-configuration2-2.11.0.jar"/>
 	<classpathentry kind="lib" path="lib/xstream/xstream-1.4.21.jar"/>
@@ -190,7 +196,7 @@
 	<classpathentry kind="lib" path="lib/commons-logging-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/ext/slf4j-api-2.0.16.jar"/>
 	<classpathentry kind="lib" path="lib/ext/slf4j-reload4j-2.0.16.jar"/>
-	<classpathentry kind="lib" path="lib/jee/myfaces-api-4.0.2.jar"/>
+	<classpathentry kind="lib" path="lib/jee/myfaces-api-4.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/jee/jakarta.xml.bind-api-4.0.2.jar"/>
 	<classpathentry kind="lib" path="lib/commons-collections4-4.5.0.jar"/>
 	<classpathentry kind="lib" path="lib/snakeyaml-2.0.jar"/>

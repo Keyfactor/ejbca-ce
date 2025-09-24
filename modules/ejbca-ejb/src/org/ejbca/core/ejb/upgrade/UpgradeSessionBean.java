@@ -14,19 +14,14 @@
 package org.ejbca.core.ejb.upgrade;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
@@ -41,20 +36,16 @@ import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
-import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
-import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.certificatetransparency.GoogleCtPolicy;
 import org.cesecore.certificates.ocsp.logging.AuditLogger;
 import org.cesecore.certificates.ocsp.logging.GuidHolder;
 import org.cesecore.certificates.ocsp.logging.PatternLogger;
 import org.cesecore.certificates.ocsp.logging.TransactionLogger;
-import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.ConfigurationHolder;
@@ -66,11 +57,11 @@ import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
+import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingNameInUseException;
-import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 import org.cesecore.keybind.impl.OcspKeyBinding;
+import org.cesecore.keybind.impl.OcspNonExistingBehavior;
 import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
@@ -92,20 +83,14 @@ import org.ejbca.core.ejb.ServiceLocatorException;
 import org.ejbca.core.ejb.authorization.AuthorizationSystemSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.config.GlobalUpgradeConfiguration;
+import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.ca.publisher.BasePublisher;
-import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
-import org.ejbca.core.model.ca.publisher.GeneralPurposeCustomPublisher;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.util.JDBCUtil;
 
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.FileTools;
 import com.keyfactor.util.StringTools;
-import com.keyfactor.util.certificate.DnComponents;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
@@ -161,6 +146,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
     private InternalKeyBindingDataSessionLocal internalKeyBindingDataSession;
+    @EJB
+    private InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession;
+    @EJB
+    private OcspResponseGeneratorSessionLocal ocspResponseGeneratorSession;
     @EJB
     private PublisherSessionLocal publisherSession;
     @EJB
@@ -394,34 +383,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     private boolean upgrade(String dbtype, String oldVersion) {
     	log.debug(">upgrade from version: "+oldVersion+", with dbtype: "+dbtype);
-        if (isLesserThan(oldVersion, "6.8.0")) {
-            log.error(
-                    "Upgrading from EJBCA prior to version 6.8.0 is forbidden. Read the EJBCA Upgrade Guide for more information.");
-            return false;
-        }
-        if (isLesserThan(oldVersion, "6.10.1")) {
-            try {
-                upgradeSession.migrateDatabase6101();
-            } catch (UpgradeFailedException e) {
-                return false;
-            }
-            setLastUpgradedToVersion("6.10.1");
-        }
-        if (isLesserThan(oldVersion, "6.11.0")) {
-            try {
-                upgradeSession.migrateDatabase6110();
-            } catch (UpgradeFailedException e) {
-                return false;
-            }
-            setLastUpgradedToVersion("6.11.0");
-        }
         if (isLesserThan(oldVersion, "6.12.0")) {
-            try {
-                upgradeSession.migrateDatabase6120();
-            } catch (UpgradeFailedException e) {
-                return false;
-            }
-            setLastUpgradedToVersion("6.12.0");
+            log.error(
+                    "Upgrading from EJBCA prior to version 6.12.0 is forbidden. Read the EJBCA Upgrade Guide for more information.");
+            return false;
         }
         if (isLesserThan(oldVersion, "6.14.0")) {
             try {
@@ -520,16 +485,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     private boolean postUpgrade(String oldVersion, String dbtype) {
         log.debug(">post-upgrade from version: "+oldVersion);
-        if (isLesserThan(oldVersion, "6.8.0")) {
-            log.error(
-                    "Post-upgrade from EJBCA prior to version 6.8.0 is forbidden. Read the EJBCA Upgrade Guide for more information.");
-            return false;
-        }
         if (isLesserThan(oldVersion, "6.10.1")) {
-            if (!postMigrateDatabase6101()) {
-                return false;
-            }
-            setLastPostUpgradedToVersion("6.10.1");
+            log.error(
+                    "Post-upgrade from EJBCA prior to version 6.10.1 is forbidden. Read the EJBCA Upgrade Guide for more information.");
+            return false;
         }
         if (isLesserThan(oldVersion, "7.2.0")) {
             if (!postMigrateDatabase720()) {
@@ -682,11 +641,13 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     
     private boolean postMigrateDatabase940() {
         log.info("Starting post upgrade to 9.4.0");
+
         try {
             removeEnableIcaoNameChangeFromGlobalConfiguration940();
             removeOldCtValues940();
             removeOcspCleanupFromGlobalConfiguration940();
             removeEEPLimitationsFromGlobalConfiguration940();
+            removeOldOcspNonExistingValues_9_4_0();
         } catch (AuthorizationDeniedException e) {
             log.error("Administrator was not authorized to perform post-upgrade.");
             return false;
@@ -750,6 +711,23 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             } catch (AuthorizationDeniedException e) {
                 throw new IllegalStateException("Always allow token was denied access to global configuration.", e);
             }
+        }     
+    }
+    
+    private void removeOldOcspNonExistingValues_9_4_0() throws AuthorizationDeniedException {
+        //Remove old data from OCSP Responders 
+        for(int id : internalKeyBindingDataSession.getIds(OcspKeyBinding.IMPLEMENTATION_ALIAS)) {
+            OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingDataSession.getInternalKeyBindingForEdit(id);
+            LinkedHashMap<Object, Object> data = ocspKeyBinding.getDataMapToPersist();
+            data.remove("nonexistingisgood");
+            data.remove("nonexistingisrevoked");
+            data.remove("nonexistingisunauthorized");
+            ocspKeyBinding.loadData(data);
+            try {
+                internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, ocspKeyBinding);
+            } catch (InternalKeyBindingNameInUseException e) {
+                throw new IllegalStateException("Internal keybinding with name " + ocspKeyBinding.getName() + " was modified, but for some reason the system thinks it was created.", e);
+            } 
         }
     }
 
@@ -789,7 +767,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
         globalCesecoreConfiguration.loadData(globalCesecoreConfigData);
         globalConfigurationSession.saveConfiguration(authenticationToken, globalCesecoreConfiguration);
-
     }
     
     /**
@@ -948,166 +925,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     public boolean isPostUpgradeNeeded() {
         return isLesserThan(getLastPostUpgradedToVersion(), "9.4.0");
     }
-
-    /**
-     * Upgrade to EJBCA 6.10.1. 
-     * Upgrading System configuration and certificate profiles with CT log label system
-     */
-    @SuppressWarnings("deprecation")
-    @Override
-    public void migrateDatabase6101() throws UpgradeFailedException {
-        log.debug("migrateDatabase6100: Upgrading CT logs");
-        final GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        final Map<Integer, CertificateProfile> allCertProfiles = certProfileSession.getAllCertificateProfiles();
-        final LinkedHashMap<Integer, CTLogInfo> allCtLogs = gc.getCTLogs();
-        LinkedHashMap<Integer, CTLogInfo> updatedCtLogs = new LinkedHashMap<>();
-
-        /* Determine new label for each log...
-         * If Google log or previously set to mandatory (6.10), place log under label 'Mandatory'.
-         * Gather remaining logs under the label 'Unlabeled'.
-         */
-        for (Map.Entry<Integer, CTLogInfo> ctLogInfo : allCtLogs.entrySet()) {
-            CTLogInfo ctLog = ctLogInfo.getValue();
-            if (ctLog.getUrl().contains("ct.googleapis.com") || ctLog.isMandatory()) {
-                ctLog.setLabel("Mandatory");
-            } else {
-                ctLog.setLabel("Unlabeled");
-            }
-            updatedCtLogs.put(ctLog.getLogId(), ctLog);
-        }
-
-        // Save CT logs with new labels set
-        gc.setCTLogs(updatedCtLogs);
-        try {
-            globalConfigurationSession.saveConfiguration(authenticationToken, gc);
-        } catch (AuthorizationDeniedException e) {
-            throw new IllegalStateException("Always allow token was denied access.", e);
-        }
-
-        // Set CT labels corresponding to previously set CT logs in each cert profile
-        for (Integer profileId : allCertProfiles.keySet()) {
-            CertificateProfile certProfile = allCertProfiles.get(profileId);
-            if (certProfile.isUseCertificateTransparencyInCerts() || certProfile.isUseCertificateTransparencyInOCSP() || certProfile.isUseCertificateTransparencyInPublishers()) {
-                LinkedHashSet<String> labelsToSelect = new LinkedHashSet<>();
-                final String certProfileName = certProfileSession.getCertificateProfileName(profileId);
-                for (Integer ctLog : certProfile.getEnabledCTLogs()) {
-                    if (updatedCtLogs.containsKey(ctLog)) {
-                        labelsToSelect.add(updatedCtLogs.get(ctLog).getLabel());
-                    }
-                }
-                certProfile.setEnabledCtLabels(labelsToSelect);
-                
-                // This means there were some mandatory- or Google logs selected before upgrade, i.e. it would be ideal to comply to Chrome CT policy
-                if (labelsToSelect.size() > 1) {
-                    certProfile.setNumberOfSctByValidity(true);
-                    certProfile.setMaxNumberOfSctByValidity(true);
-                    certProfile.setNumberOfSctByCustom(false);
-                    certProfile.setMaxNumberOfSctByCustom(false);
-                } else {
-                    certProfile.setNumberOfSctByValidity(false);
-                    certProfile.setMaxNumberOfSctByValidity(false);
-                    certProfile.setNumberOfSctByCustom(true);
-                    certProfile.setMaxNumberOfSctByCustom(true);
-                    // Migrate old values...
-                    // With the new label system, at least one log from each label will be written to, hence allowing a maximum / minimum
-                    // lower than number of labels would lock out issuance.
-                    if (certProfile.getCtMaxNonMandatoryScts() < labelsToSelect.size()) {
-                        certProfile.setCtMaxScts(labelsToSelect.size());
-                    } else {
-                        certProfile.setCtMaxScts(certProfile.getCtMaxNonMandatoryScts());
-                    }
-                    if (certProfile.getCtMaxNonMandatorySctsOcsp() < labelsToSelect.size()) {
-                        certProfile.setCtMaxSctsOcsp(labelsToSelect.size());
-                    } else {
-                        certProfile.setCtMaxSctsOcsp(certProfile.getCtMaxNonMandatorySctsOcsp());
-                    }
-                    if (certProfile.getCtMinNonMandatoryScts() < labelsToSelect.size()) {
-                        certProfile.setCtMinScts(labelsToSelect.size());
-                    } else {
-                        certProfile.setCtMinScts(certProfile.getCtMinNonMandatoryScts());
-                    }
-                    if (certProfile.getCtMaxNonMandatorySctsOcsp() < labelsToSelect.size()) {
-                        certProfile.setCtMaxSctsOcsp(labelsToSelect.size());
-                    } else {
-                        certProfile.setCtMaxSctsOcsp(certProfile.getCtMaxNonMandatorySctsOcsp());
-                    }
-                    if (certProfile.getCtMinNonMandatorySctsOcsp() < labelsToSelect.size()) {
-                        certProfile.setCtMinSctsOcsp(labelsToSelect.size());
-                    } else {
-                        certProfile.setCtMinSctsOcsp(certProfile.getCtMinNonMandatorySctsOcsp());
-                    }
-                }
-                
-                try {
-                    certProfileSession.changeCertificateProfile(authenticationToken, certProfileName, certProfile);
-                } catch (AuthorizationDeniedException e) {
-                    throw new IllegalStateException("Always allow token was denied access.", e);
-                }
-            }
-        }
-    }
-
-    /**
-     * Upgrade to EJBCA 6.11.0 
-     * Provides all current Peer connector roles with the new set of rules, controlling access to protocols
-     * on remote RA instances. All should be allowed by default to not cause any regressions. The rules are
-     * only relevant for RA Peer connector roles.
-     */
-    @Override
-    public void migrateDatabase6110() throws UpgradeFailedException {
-        log.debug("migrateDatabase6110: Adding new rules for protocol access on remote RA instances.");
-        List<Role> allRoles = roleDataSession.getAllRoles();
-        for (Role role : allRoles) {
-            boolean isRaRequestRole = role.hasAccessToResource(AccessRulesConstants.REGULAR_PEERCONNECTOR_INVOKEAPI);
-            if (isRaRequestRole) {
-                role.getAccessRules().put(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_CMP), Role.STATE_ALLOW);
-                role.getAccessRules().put(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_EST), Role.STATE_ALLOW);
-                role.getAccessRules().put(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_WS), Role.STATE_ALLOW);
-                roleDataSession.persistRole(role);
-            }
-        }
-        
-        log.debug("migrateDatabase6110: Checking if external scripts should remain enabled.");
-        boolean enableScripts = false;
-        final Map<Integer, BasePublisher> publishers = publisherSession.getAllPublishersInternal();
-        for (final BasePublisher publisher : publishers.values()) {
-            if (log.isDebugEnabled()) {
-                log.debug("Checking publisher: " + publisher.getName());
-            }
-            if (GeneralPurposeCustomPublisher.class.getName().equals(publisher.getRawData().get(CustomPublisherContainer.CLASSPATH))) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Found General Purpose Custom Publisher: " + publisher.getName());
-                }
-                enableScripts = true;
-                break;
-            }
-        }
-        if (enableScripts) {
-            log.info("External scripts will remain enabled, since there's at least one General Purpose Custom Publisher.");
-            final GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-            gc.setEnableExternalScripts(true);
-            try {
-                globalConfigurationSession.saveConfiguration(authenticationToken, gc);
-            } catch (AuthorizationDeniedException e) {
-                throw new IllegalStateException("Always allow token was denied access.", e);
-            }
-        } else {
-            log.info("External scripts will be disabled, since there are no General Purpose Custom Publishers. The setting can be changed under the 'System Configuration' page.");
-        }
-    }
-    
-    
-    /**
-     * Upgrades to EJBCA 6.12.0
-     * @throws InternalKeyBindingNameInUseException 
-     * 
-     */
-    @Override
-    public void migrateDatabase6120() {
-        log.debug("migrateDatabase6120: Importing OCSP extensions from ocsp.properties file and UnidFnr trust dir (if available)");
-        importOcspExtensions();
-        importUnidFnrTrustDir();
-    }
     
     /**
      * Upgrade to EJBCA 6.14.0 
@@ -1151,144 +968,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 } catch (AuthorizationDeniedException e) {
                     log.error("Authorization error while saving the updated configuration!", e);
                 }
-        }
-    }
-
-    /**
-     * From EJBCA 6.12.0, all extensions defined in ocsp.properties are selected for each key binding instead. Since this
-     * setting was global previously, it should be fair to add each extension to every OCSP key binding.
-     */
-    private void importOcspExtensions() {
-        @SuppressWarnings("deprecation")
-        final List<String> ocspExtensionOids = OcspConfiguration.getExtensionOids();
-        if (ocspExtensionOids.isEmpty()) {
-            log.debug("No OCSP extensions for import were found in ocsp.properties");
-            return;
-        }
-        final List<Integer> ocspKbIds = internalKeyBindingDataSession.getIds(OcspKeyBinding.IMPLEMENTATION_ALIAS);
-        for (Integer ocspKbId : ocspKbIds) {
-            InternalKeyBinding ikbToEdit = internalKeyBindingDataSession.getInternalKeyBindingForEdit(ocspKbId);
-            List<String> currentExtensions = ikbToEdit.getOcspExtensions();
-            for (String extension : ocspExtensionOids) {
-                if (!currentExtensions.contains(extension.replaceAll("\\*", ""))) {
-                    currentExtensions.add(extension.replaceAll("\\*", ""));
-                }
-            }
-            ikbToEdit.setOcspExtensions(currentExtensions);
-            try {
-                internalKeyBindingDataSession.mergeInternalKeyBinding(ikbToEdit);
-            } catch (InternalKeyBindingNameInUseException e) {
-                log.info("Could not update internal key binding: " + ikbToEdit.getName() + ". IKB is in use. ");
-            }
-        }
-    }
-    
-    private void importUnidFnrTrustDir() {
-        List<X509Certificate> trustedCerts = new ArrayList<>();
-        Certificate cacert = null;
-        boolean isUnidFnrEnabled = OcspConfiguration.isUnidEnabled();
-        @SuppressWarnings("deprecation")
-        String trustDir = OcspConfiguration.getUnidTrustDir();
-        @SuppressWarnings("deprecation")
-        String cacertfile = OcspConfiguration.getUnidCaCert();
-        if (StringUtils.isEmpty(trustDir)) {
-            // This installation is probably not using UnidFnr at all.
-            log.debug("No UnidFnr Trust directory found. Skipping import (expected for most installations).");
-            if (isUnidFnrEnabled) {
-                log.error("No UnidFnr Trust directory found. Cannot procede import");
-            }
-            return;
-        }
-        
-        // Read all files from trustDir, expect that they are PEM formatted certificates.
-        CryptoProviderTools.installBCProviderIfNotAvailable();
-        File dir = new File(trustDir);
-        try {
-            if (dir == null || dir.isDirectory() == false) {
-                log.error("Could not read UnidFnr Trust Directory: " + dir.getCanonicalPath()+ " is not a directory.\nImport interrupted");
-                return;                
-            }
-            File files[] = dir.listFiles();
-            if (files == null || files.length == 0) {
-                log.info("No files found in UnidFnr Trust directory: " + dir.getCanonicalPath() + ". Skipping import");
-                return;
-            }
-            for (int i=0; i < files.length; i++) {
-                final String fileName = files[i].getCanonicalPath();
-                // Read the file, don't stop completely if one file has errors in it.
-                try {
-                    final byte bytesFromFile[] = FileTools.readFiletoBuffer(fileName);
-                    byte[] bytes;
-                    try {
-                        bytes = FileTools.getBytesFromPEM(bytesFromFile, CertTools.BEGIN_CERTIFICATE, CertTools.END_CERTIFICATE);
-                    } catch (Exception e) {
-                        bytes = bytesFromFile; // assume binary data (.der).
-                    }
-                    final X509Certificate  cert = CertTools.getCertfromByteArray(bytes, X509Certificate.class);
-                    trustedCerts.add(cert);
-                } catch (CertificateException | IOException e) {
-                    log.error("error reading '" + fileName + "' from trustDir: " + e.getMessage(), e);
-                }
-            }
-        } catch (IOException e) {
-            String errMsg = "Error reading files from trustDir: " + e.getMessage();
-            log.error(errMsg, e);
-            // Since the file exists but we can't read it. We should stop here and warn the user
-            throw new IllegalStateException(errMsg);
-        }
-        // Read the CA Certificate file
-        if (StringUtils.isEmpty(cacertfile)) {
-            // Since this MUST be set if UnidFnr Extension is used, we should skip import if not found
-            log.debug("No UnidFnr CA Cert directory found. Skipping import");
-            if (isUnidFnrEnabled) {
-                log.error("No UnidFnr CA Cert directory found. Cannot procede import");
-            }
-            return;
-        }
-        try {
-            byte[] bytes = FileTools.getBytesFromPEM(FileTools
-                    .readFiletoBuffer(cacertfile),
-                    CertTools.BEGIN_CERTIFICATE, CertTools.END_CERTIFICATE);
-            cacert = CertTools.getCertfromByteArray(bytes, Certificate.class);
-        } catch (Exception e) {
-            String errMsg = "Error reading CA Certificate from UnidFnr cacertfile";
-            log.error(errMsg, e);
-            // Since the file exists but we can't read it. We should stop here and warn the user
-            throw new IllegalStateException(errMsg);
-        }
-        
-        if (!CertTools.isCA(cacert)) {
-            log.error(cacertfile + " does not point to a CA Certificate");
-            return;
-        }
-        final String subjectdn = CertTools.getSubjectDN(cacert);
-        
-        final int caid = DnComponents.stringToBCDNString(subjectdn).hashCode();
-        try {
-            caSession.verifyExistenceOfCA(caid);
-        } catch (CADoesntExistsException e) {
-            log.info("Could not add CA to OCSP Key Binding trusted certificates. " + subjectdn + " is not known by EJBCA.");
-            return;
-        }
-        // Add all found certificate serial numbers to the IKB trust entries
-        final List<Integer> ocspKbIds = internalKeyBindingDataSession.getIds(OcspKeyBinding.IMPLEMENTATION_ALIAS);
-        for (Integer ocspKbId : ocspKbIds) {
-            InternalKeyBinding ikbToEdit = internalKeyBindingDataSession.getInternalKeyBindingForEdit(ocspKbId);
-            List<InternalKeyBindingTrustEntry> currentTrustEntries = ikbToEdit.getTrustedCertificateReferences();
-            
-            for (X509Certificate trustedCert : trustedCerts) {
-                final String subjectDn = trustedCert.getSubjectX500Principal().getName();
-                final DNFieldExtractor dnFieldExtractor = new DNFieldExtractor(subjectDn, DNFieldExtractor.TYPE_SUBJECTDN);
-                final String commonName = dnFieldExtractor.getFieldString(DNFieldExtractor.CN);
-                currentTrustEntries.add(new InternalKeyBindingTrustEntry(caid, trustedCert.getSerialNumber(), commonName));
-            }
-            ikbToEdit.setTrustedCertificateReferences(currentTrustEntries);
-            try {
-                internalKeyBindingDataSession.mergeInternalKeyBinding(ikbToEdit);
-            } catch (InternalKeyBindingNameInUseException e) {
-                // Should not happen when merging
-                log.info("Could not edit key binding: " + ikbToEdit.getName() + ". Name already in use");
-            }
         }
     }
     
@@ -1342,25 +1021,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
         log.info("Post upgrade to 7.11.0 complete.");
         return true;
-    }
-    
-    private boolean postMigrateDatabase6101() {
-        log.info("Starting post upgrade to 6.10.1.");
-        final Map<Integer, CertificateProfile> allCertProfiles = certProfileSession.getAllCertificateProfiles();
-
-        for (Integer profileId : allCertProfiles.keySet()) {
-            CertificateProfile certProfile = allCertProfiles.get(profileId);
-            final String certProfileName = certProfileSession.getCertificateProfileName(profileId);
-            certProfile.removeLegacyCtData();
-            try {
-                certProfileSession.changeCertificateProfile(authenticationToken, certProfileName, certProfile);
-            } catch (AuthorizationDeniedException e) {
-                throw new IllegalStateException("Always allow token was denied access.", e);
-            }
-        }
-        log.info("Post upgrade to 6.10.1 complete.");
-        return true;
-    }
+    }    
 
     /**
      * The configuration files <code>certstore.properties</code> and <code>crlstore.properties</code> are removed as of EJBCA 7.2.
@@ -1966,7 +1627,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
     }
 
-    @Override
     public void migrateDatabase933() throws UpgradeFailedException {
         migrateUseSSL933();
     }
@@ -1996,8 +1656,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @Override
     public void migrateDatabase940() throws UpgradeFailedException {
         log.info("Starting upgrade to 9.4.0");
-        //Move ocsp.includecertchain and ocsp.includesignercert from the properties files and into the database configuration
-        migrateOcspOptions940();
+        //Move various setting from ocsp.properties into the database configuration
+        migrateOcspOptions940();        
+        //Migrate non-existing values in ocsp responders to the new single value 
+        upgradeOcspKeybindings_9_4_0();
         //Move enableIcaoNameChange from GlobalConfiguration to the new GlobalCaConfiguration row
         migrateCaConfigurationFromGlobalConfig940();
         //Move various CT settings from GlobalConfiguration and CesecoreGlobalConfiguration into the new GlobalCtConfiguration
@@ -2031,6 +1693,27 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         globalOcspConfiguration.setIncludeSigningCertificate(OcspConfiguration.getIncludeSignCert());
         globalOcspConfiguration.setIncludeCertificateChain(OcspConfiguration.getIncludeCertChain());
         
+        boolean nonExistingIsGood = OcspConfiguration.getNonExistingIsGood();
+        boolean nonExistingIsRevoked = OcspConfiguration.getNonExistingIsRevoked();
+        boolean nonExistingIsUnauthorized = OcspConfiguration.getNonExistingIsUnauthorized();
+        //Verify that max one option is true
+        if((!nonExistingIsGood && !nonExistingIsRevoked && !nonExistingIsUnauthorized) || (nonExistingIsGood ^ nonExistingIsRevoked ^ nonExistingIsUnauthorized)) {
+            if(nonExistingIsGood) {
+                globalOcspConfiguration.setOcspNonExistingBehavior(OcspNonExistingBehavior.GOOD);
+            } else if(nonExistingIsRevoked) {
+                globalOcspConfiguration.setOcspNonExistingBehavior(OcspNonExistingBehavior.REVOKED);
+            } else if(nonExistingIsUnauthorized) {
+                globalOcspConfiguration.setOcspNonExistingBehavior(OcspNonExistingBehavior.UNAUTHORIZED);
+            } else {
+                globalOcspConfiguration.setOcspNonExistingBehavior(OcspNonExistingBehavior.UNKNOWN);
+            }
+        } else {
+            throw new UpgradeFailedException("More than one value of ocsp.nonexistingisgood, ocsp.nonexistingisrevoked and ocsp.nonexistingisunauthorized is true at the same time. This is an error state. "
+                    + "Please modify ocsp.properties to set only one or none of these values to be true.");
+        }
+        
+        globalOcspConfiguration.setRequestSignserRevocationStatusCacheTime(OcspConfiguration.getRequestSigningCertRevocationCacheTimeMs());
+        
         try {
             globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);
         } catch (AuthorizationDeniedException e) {
@@ -2039,7 +1722,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             throw new UpgradeFailedException(msg, e);
         }
     }  
-    
+
     @SuppressWarnings("deprecation")
     private void migrateCaConfigurationFromGlobalConfig940() throws UpgradeFailedException {
         log.info("Upgrade: Migrating CA configuration");
@@ -2074,6 +1757,30 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             log.error(msg, e);
             throw new UpgradeFailedException(msg, e);
         }  
+    }
+    
+    /**
+     * In 9.4 the behavior for ocsp keybindings in regards to unknown certs was changed from being three booleans to being a single value.
+     */
+    @SuppressWarnings("deprecation")
+    private void upgradeOcspKeybindings_9_4_0() throws UpgradeFailedException {
+        for(int id : internalKeyBindingDataSession.getIds(OcspKeyBinding.IMPLEMENTATION_ALIAS)) {
+            OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingDataSession.getInternalKeyBindingForEdit(id);
+            if(ocspKeyBinding.getNonExistingGood()) {
+                ocspKeyBinding.setOcspNonExistingBehavior(OcspNonExistingBehavior.GOOD);
+            } else if(ocspKeyBinding.getNonExistingRevoked()) {
+                ocspKeyBinding.setOcspNonExistingBehavior(OcspNonExistingBehavior.REVOKED);
+            } else if(ocspKeyBinding.getNonExistingUnauthorized()) {
+                ocspKeyBinding.setOcspNonExistingBehavior(OcspNonExistingBehavior.UNAUTHORIZED);
+            } else {
+                ocspKeyBinding.setOcspNonExistingBehavior(OcspNonExistingBehavior.UNKNOWN);
+            }
+            try {
+                internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, ocspKeyBinding);
+            } catch (InternalKeyBindingNameInUseException | AuthorizationDeniedException e) {
+                throw new UpgradeFailedException("Failure when upgrading OCSP responder.", e);
+            }
+        }
     }
 
     @SuppressWarnings("deprecation")
