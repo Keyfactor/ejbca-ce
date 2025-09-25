@@ -38,8 +38,6 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
-import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
-import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.certificatetransparency.GoogleCtPolicy;
 import org.cesecore.certificates.ocsp.logging.AuditLogger;
@@ -384,26 +382,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     private boolean upgrade(String dbtype, String oldVersion) {
     	log.debug(">upgrade from version: "+oldVersion+", with dbtype: "+dbtype);
-        if (isLesserThan(oldVersion, "6.12.0")) {
-            log.error(
-                    "Upgrading from EJBCA prior to version 6.12.0 is forbidden. Read the EJBCA Upgrade Guide for more information.");
-            return false;
-        }
-        if (isLesserThan(oldVersion, "6.14.0")) {
-            try {
-                upgradeSession.migrateDatabase6140();
-            } catch (UpgradeFailedException e) {
-                return false;
-            }
-            setLastUpgradedToVersion("6.14.0");
-        }
         if (isLesserThan(oldVersion, "6.15.0")) {
-            try {
-                upgradeSession.migrateDatabase6150();
-            } catch (UpgradeFailedException e) {
-                return false;
-            }
-            setLastUpgradedToVersion("6.15.0");
+            log.error(
+                    "Upgrading from EJBCA prior to version 6.15.0 is forbidden. Read the EJBCA Upgrade Guide for more information.");
+            return false;
         }
         if (isLesserThan(oldVersion, "7.2.0")) {
             upgradeSession.upgradeCrlStoreAndCertStoreConfiguration720();
@@ -926,52 +908,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     public boolean isPostUpgradeNeeded() {
         return isLesserThan(getLastPostUpgradedToVersion(), "9.4.0");
     }
-    
-    /**
-     * Upgrade to EJBCA 6.14.0 
-     * Provides all current Peer connector roles with the new rules, controlling access to SCEP (same procedure as 
-     * migrateDatabase6110) on remote RA instances. Should be allowed by default to not cause any regressions. 
-     * This rules is only relevant for RA Peer connector roles.
-     */
-    @Override
-    public void migrateDatabase6140() throws UpgradeFailedException {
-        log.debug("migrateDatabase6140: Adding new rule for SCEP protocol access on remote RA instances.");
-        List<Role> allRoles = roleDataSession.getAllRoles();
-        for (Role role : allRoles) {
-            boolean isRaRequestRole = role.hasAccessToResource(AccessRulesConstants.REGULAR_PEERCONNECTOR_INVOKEAPI);
-            if (isRaRequestRole) {
-                role.getAccessRules().put(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_ACME), Role.STATE_ALLOW);
-                role.getAccessRules().put(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_REST), Role.STATE_ALLOW);
-                role.getAccessRules().put(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_SCEP), Role.STATE_ALLOW);
-                roleDataSession.persistRole(role);
-            }
-        }
-    }
-    
-    
-    /**
-     * Upgrade to EJBCA 6.15.0 
-     * 
-     * All the CCE will get a new required flag with the default value set to true.
-     *  
-     */
-    @Override
-    public void migrateDatabase6150() throws UpgradeFailedException {
-        log.debug("migrateDatabase6150: Adding new field (required) for custom certificate extensions.");
         
-        AvailableCustomCertificateExtensionsConfiguration availableCustomCertExtensionsConfig = (AvailableCustomCertificateExtensionsConfiguration) globalConfigurationSession
-                .getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
-        
-        for (CertificateExtension customCertificateExtension : availableCustomCertExtensionsConfig.getAllAvailableCustomCertificateExtensions()) {
-                customCertificateExtension.setRequiredFlag(true);
-                try {
-                    globalConfigurationSession.saveConfiguration(authenticationToken, availableCustomCertExtensionsConfig);
-                } catch (AuthorizationDeniedException e) {
-                    log.error("Authorization error while saving the updated configuration!", e);
-                }
-        }
-    }
-    
     private boolean postMigrateDatabase720() {
         log.info("Starting post upgrade to 7.2.0");
         setCustomCertificateValidityWithSecondsGranularity(true);
