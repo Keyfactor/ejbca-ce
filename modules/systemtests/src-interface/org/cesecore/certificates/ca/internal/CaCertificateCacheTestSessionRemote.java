@@ -13,17 +13,21 @@
 package org.cesecore.certificates.ca.internal;
 
 import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
+import java.security.cert.CertificateEncodingException;
 import java.util.Collection;
 
+import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.cesecore.certificates.certificate.HashID;
+
+import jakarta.ejb.Remote;
 
 /**
  * Allows for system testing of the CaCertificateCache
  */
-
+@Remote
 public interface CaCertificateCacheTestSessionRemote {
 
     void loadCertificates(final Collection<Certificate> certs);
-    X509Certificate findLatestBySubjectDN(final HashID id);
+    
+    JcaX509CertificateHolder findLatestBySubjectDN(final HashID id) throws CertificateEncodingException;
 }

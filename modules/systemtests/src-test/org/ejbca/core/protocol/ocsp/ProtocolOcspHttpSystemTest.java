@@ -1886,7 +1886,15 @@ Content-Type: text/html; charset=iso-8859-1
                 verifyOK = true;
                 // Also check that the signer certificate can be verified by one of the CA-certificates
                 // that we answer for
-                X509Certificate signerca = caCertificateCacheTestSession.findLatestBySubjectDN(HashID.getFromIssuerDN(certs[i]));
+                JcaX509CertificateHolder signercaHolder = caCertificateCacheTestSession.findLatestBySubjectDN(HashID.getFromIssuerDN(certs[i]));
+                final X509Certificate signerca;
+                if(signercaHolder != null) {
+                    final JcaX509CertificateConverter jcaX509CertificateConverter = new JcaX509CertificateConverter();
+                    signerca = jcaX509CertificateConverter.getCertificate(signercaHolder);
+                } else {
+                    signerca = null;
+                }
+                
                 String subject = signer;
                 String issuer = signerissuer;
                 if (signerca != null) {

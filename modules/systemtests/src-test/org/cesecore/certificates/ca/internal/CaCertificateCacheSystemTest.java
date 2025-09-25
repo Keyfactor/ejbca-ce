@@ -19,6 +19,7 @@ import static org.junit.Assert.fail;
 
 import java.security.SignatureException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,6 +27,8 @@ import java.util.Date;
 
 import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.cesecore.certificates.certificate.HashID;
 import org.cesecore.util.EjbRemoteHelper;
 import org.junit.BeforeClass;
@@ -111,6 +114,9 @@ public class CaCertificateCacheSystemTest {
 	                "3GHFTxIySlmZCblZbJzQxO5pRz27B2vPJqicA0cmoBxUQK3NHGO+WyQ+ZpZX5vl/"+
 	        "+xc=").getBytes());
 	
+
+    private static Throwable threadException = null;
+    
     private CaCertificateCacheTestSessionRemote caCertificateCacheTestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaCertificateCacheTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     
 	@BeforeClass
@@ -119,6 +125,7 @@ public class CaCertificateCacheSystemTest {
 	}
 	@Test
 	public void test01CACertificates() throws Exception {
+	    final JcaX509CertificateConverter jcaX509CertificateConverter = new JcaX509CertificateConverter();
 		// Prepare the certificate cache with some test certificates
 		Collection<Certificate> certs = new ArrayList<>();
 		X509Certificate testrootcert = CertTools.getCertfromByteArray(testroot, X509Certificate.class);
@@ -134,26 +141,28 @@ public class CaCertificateCacheSystemTest {
 		caCertificateCacheTestSession.loadCertificates(certs);
 		
 		// Test lookup of not existing cert
-		X509Certificate cert = caCertificateCacheTestSession.findLatestBySubjectDN(HashID.getFromDNString("CN=Foo,C=SE"));
+		JcaX509CertificateHolder cert = caCertificateCacheTestSession.findLatestBySubjectDN(HashID.getFromDNString("CN=Foo,C=SE"));
 		assertNull(cert);
 		// Old root cert should not be found, we only store the latest to be found by subjectDN
-		X509Certificate rootcert = caCertificateCacheTestSession.findLatestBySubjectDN(HashID.getFromSubjectDN(testrootnewcert));
+		JcaX509CertificateHolder rootcert =  caCertificateCacheTestSession.findLatestBySubjectDN(HashID.getFromSubjectDN(testrootnewcert));
+		X509Certificate rootcertX509 = jcaX509CertificateConverter.getCertificate(rootcert);
 		assertNotNull(rootcert);
-		X509Certificate subcert = caCertificateCacheTestSession.findLatestBySubjectDN(HashID.getFromSubjectDN(testsubcert));
+		JcaX509CertificateHolder subcert = caCertificateCacheTestSession.findLatestBySubjectDN(HashID.getFromSubjectDN(testsubcert));
+		X509Certificate subcertX509 = jcaX509CertificateConverter.getCertificate(subcert);
 		// This old subcert should not be possible to verify with the new root cert
 		try {
-			subcert.verify(rootcert.getPublicKey());
+		    subcertX509.verify(rootcertX509.getPublicKey());
 			fail("verification should have failed");
 		} catch (SignatureException e) {} // NOPMD: BC 1.47
 		// CVC certificate should not be part of OCSP certificate cache
 		cert = caCertificateCacheTestSession.findLatestBySubjectDN(HashID.getFromDNString(CertTools.getSubjectDN(testcvccert)));
 		assertNull(cert);
 		cert = caCertificateCacheTestSession.findLatestBySubjectDN(HashID.getFromSubjectDN(testscepcert));
-		assertEquals(CertTools.getSubjectDN(testscepcert), CertTools.getSubjectDN(cert));
+		X509Certificate certX509 = jcaX509CertificateConverter.getCertificate(cert);
+		assertEquals(CertTools.getSubjectDN(testscepcert), CertTools.getSubjectDN(certX509));
 
 	}
 
-	public static Throwable threadException = null;
 	@Test
 	public void test02loadCertificates() throws Exception {
 		Collection<Certificate> certs = new ArrayList<>();
@@ -224,25 +233,39 @@ public class CaCertificateCacheSystemTest {
         no55.join();
 		long end = new Date().getTime();
 		log.info("Time consumed: "+(end-start));
-        assertNull(threadException != null?threadException.getMessage():"null", threadException);
+        assertNull(threadException != null ? threadException.getMessage() : "null", threadException);
 	}
 	
 	private static class CacheTester implements Runnable { // NOPMD, this is not a JEE app, only a test
 	    private CaCertificateCacheTestSessionRemote cache = null;
 	    private String dn;
+	    final JcaX509CertificateConverter jcaX509CertificateConverter = new JcaX509CertificateConverter();
+	    
 	    public CacheTester(CaCertificateCacheTestSessionRemote cache, String lookfor) {
 	        this.cache = cache;
 	        this.dn = lookfor;
 	    }
+	    
 	    @Override
         public void run() {
 	        for (int i=0; i<1000;i++) {
-	            X509Certificate cert = cache.findLatestBySubjectDN(HashID.getFromDNString(dn));
-	            // The cache tests will not return any CV Certificates because this OCSP cache 
-	            // only handles X.509 Certificates.
-	            if (!Strings.CS.contains(dn, "CVCTest")) {
-	                cert.getSubjectX500Principal(); // just to see that we did receive a cert, will throw NPE if no cert was returned              
-	            }
+	            try {
+                    JcaX509CertificateHolder cert = cache.findLatestBySubjectDN(HashID.getFromDNString(dn));
+                    final X509Certificate certX509;
+                    if (cert != null) {
+                        certX509 = jcaX509CertificateConverter.getCertificate(cert);
+                    } else {
+                        certX509 = null;
+                    }
+
+                    // The cache tests will not return any CV Certificates because this OCSP cache 
+                    // only handles X.509 Certificates.
+                    if (!Strings.CS.contains(dn, "CVCTest")) {
+                        certX509.getSubjectX500Principal(); // just to see that we did receive a cert, will throw NPE if no cert was returned              
+                    }
+                } catch (CertificateException e) {
+                    throw new IllegalStateException(e);
+                }
 	        }               
 	    }
 	}

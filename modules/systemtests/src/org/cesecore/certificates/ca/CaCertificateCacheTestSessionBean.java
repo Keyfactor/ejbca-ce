@@ -13,9 +13,11 @@
 package org.cesecore.certificates.ca;
 
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 
+import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.cesecore.certificates.ca.internal.CaCertificateCacheTestSessionRemote;
 import org.cesecore.certificates.certificate.HashID;
 import org.cesecore.certificates.certificate.internal.CaCertificateCacheLocal;
@@ -38,8 +40,13 @@ public class CaCertificateCacheTestSessionBean implements CaCertificateCacheTest
     }
 
     @Override
-    public X509Certificate findLatestBySubjectDN(HashID id) {
-        return caCertificateCache.findBySubjectKeyIdentifier(id);
+    public JcaX509CertificateHolder findLatestBySubjectDN(HashID id) throws CertificateEncodingException {
+        X509Certificate certificate = caCertificateCache.findLatestBySubjectDN(id);
+        if (certificate == null) {
+            return null;
+        } else {
+            return new JcaX509CertificateHolder(caCertificateCache.findLatestBySubjectDN(id));
+                            }
     }
 
 }

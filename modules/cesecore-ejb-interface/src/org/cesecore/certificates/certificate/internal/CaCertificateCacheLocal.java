@@ -24,10 +24,15 @@ import jakarta.ejb.Local;
 public interface CaCertificateCacheLocal {
     
     X509Certificate findLatestBySubjectDN(final HashID id);
+    
     X509Certificate[] findLatestByIssuerDN(final HashID id);
+    
     X509Certificate[] getRootCertificates();
+    
     X509Certificate findBySubjectKeyIdentifier(final HashID id);
+    
     boolean isCacheExpired();
+    
     void loadCertificates(final Collection<Certificate> certs);
 
 }
