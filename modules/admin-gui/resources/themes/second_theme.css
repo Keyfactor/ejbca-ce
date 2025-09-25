@@ -1550,6 +1550,10 @@ textarea:disabled:not(.ui-state-disabled) {
 	vertical-align: top;
 }
 
+.display-block {
+	display:block;
+}
+
 /* PrimeFaces class adjustments: END */
 
 .table-layout-auto {

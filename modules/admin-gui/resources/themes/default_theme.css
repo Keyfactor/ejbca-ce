@@ -1721,6 +1721,10 @@ body .ui-datatable .ui-datatable-footer {
 	vertical-align: top;
 }
 
+.display-block {
+	display:block;
+}
+
 /* PrimeFaces class adjustments: END */
 
 .table-layout-auto {
