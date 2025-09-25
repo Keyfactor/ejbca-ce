@@ -51,6 +51,23 @@ public class GlobalOcspConfiguration extends ConfigurationBase implements Serial
     private static final String INCLUDE_SIGNING_CERTIFICATE = "includeSigningCertificate";
     private static final String INCLUDE_CERTIFICATE_CHAIN = "includeCertificateChain";
     private static final String NON_EXISTING_BEHAVIOR = "nonExistingBehavior";
+    private static final String REQUEST_SIGNER_REVOCATION_STATUS_CACHE_TIME = "ocspRequestSignerRevocationStatusCacheTime";
+    
+    /**
+     * 
+     * @return the revocation status cache time, in milliseconds. 0 means no caching is performed.
+     */
+    public long getRequestSignserRevocationStatusCacheTime() {
+        if(data.get(REQUEST_SIGNER_REVOCATION_STATUS_CACHE_TIME) == null) {
+            //60 was the default value prior to this value being moved into the database in 9.4
+            setRequestSignserRevocationStatusCacheTime(60000);
+        }
+        return (long) data.get(REQUEST_SIGNER_REVOCATION_STATUS_CACHE_TIME);
+    }
+    
+    public void setRequestSignserRevocationStatusCacheTime(long cacheTimeInSeconds) {
+        data.put(REQUEST_SIGNER_REVOCATION_STATUS_CACHE_TIME, cacheTimeInSeconds);
+    }
     
     public boolean getIncludeSigningCertificate() {
         if(data.get(INCLUDE_SIGNING_CERTIFICATE) == null) {
@@ -112,14 +129,8 @@ public class GlobalOcspConfiguration extends ConfigurationBase implements Serial
         data.put(DEFAULT_OCSP_RESPONDER_REFERENCE, reference);
     }
     
-    @SuppressWarnings("deprecation")
     public OcspKeyBinding.ResponderIdType getOcspResponderIdType() {
         OcspKeyBinding.ResponderIdType ocspResponderIdType = (ResponderIdType) data.get(OCSP_RESPONDER_ID_TYPE_REFERENCE);
-        if(ocspResponderIdType == null) {
-            //Lazy upgrade if running from versions prior to 6.7.0
-            ocspResponderIdType = OcspKeyBinding.ResponderIdType.getFromNumericValue(OcspConfiguration.getResponderIdType());
-            setOcspResponderIdType(ocspResponderIdType);
-        }
         return ocspResponderIdType;
     }
     

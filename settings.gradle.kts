@@ -101,7 +101,7 @@ dependencyResolutionManagement {
             library("commons-beanutils", ":commons-beanutils:1.9.4")
             library("commons-text", ":commons-text:1.10.0")
             library("angus.activation", ":angus.activation:2.0.2")
-            library("myfaces-api", ":myfaces-api:4.0.2")
+            library("myfaces-api", ":myfaces-api:4.1.1")
             library("kerb4j-server-common", ":kerb4j-server-common:0.1.2")
             library("kerb-core", ":kerb-core:2.0.3")
             library("kerb-crypto", ":kerb-crypto:2.0.3")
@@ -123,7 +123,7 @@ dependencyResolutionManagement {
             library("cxf.rt.transports.http", ":cxf-rt-transports-http:4.1.3")
             library("cxf.rt.wsdl", ":cxf-rt-wsdl:4.1.3")
             library("gmbal.api", ":gmbal-api-only:4.0.3")
-            library("istack-commons-runtime", ":istack-commons-runtime:3.0.11")
+            library("istack-commons-runtime-soap-client", ":istack-commons-runtime:3.0.11")
             library("jaxws.rt", ":jaxws-rt:4.0.1")
             library("policy", ":policy:4.0.1")
             library("saaj.impl", ":saaj-impl:3.0.0")
@@ -142,7 +142,7 @@ dependencyResolutionManagement {
             library("hibernate-commons-annotations", ":hibernate-commons-annotations:6.0.6.Final")
             library("hibernate-core", ":hibernate-core:6.5.2.Final")
             library("hibernate-validator", ":hibernate-validator:8.0.1.Final")
-            library("istack-commons-runtime-old", ":istack-commons-runtime:3.0.7")
+            library("istack-commons-runtime-hibernate", ":istack-commons-runtime:3.0.7")
             library("jakarta.activation-api", ":jakarta.activation-api:2.1.0")
             library("jandex", ":jandex:3.1.2")
             library("javassist", ":javassist:3.29.2-GA")
@@ -280,7 +280,7 @@ dependencyResolutionManagement {
                     "cxf.rt.transports.http",
                     "cxf.rt.wsdl",
                     "gmbal.api",
-                    "istack-commons-runtime",
+                    "istack-commons-runtime-soap-client",
                     "jakarta.xml.bind.api",
                     "jaxb.runtime",
                     "jaxws.rt",

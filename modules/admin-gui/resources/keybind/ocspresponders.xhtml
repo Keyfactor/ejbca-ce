@@ -27,20 +27,22 @@
 	<ui:param name="resourceBean" value="#{ocspResponderMBean}" />
 	<ui:define name="content">
 
+	<h1>
+		<h:outputText value="#{web.text.INTERNALKEYBINDING_TYPE_OCSP_RESPONDERS}"/>
+		<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/OCSP_Responders.html')}" escape="false"/>
+	</h1>
+
     <p:tabView id="tabs" dynamic="true" activeIndex="#{ocspResponderMBean.lastActiveTab}">
         <p:ajax event="tabChange" listener="#{ocspResponderMBean.onTabChange}"/>
 
-        <p:tab title="#{web.text.INTERNALKEYBINDING_TYPE_OCSP_RESPONDERS}" >
+        <p:tab title="#{web.text.INTERNALKEYBINDING_TYPE_OCSP_RESPONDERS}">
 
 		<h:outputText value="" rendered="#{ocspResponderMBean.pageLoadResetTrigger}"/>
-		<h1>
-			<h:outputText value="#{web.text.INTERNALKEYBINDING_TYPE_OCSP_RESPONDERS}"/>
-			<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/OCSP_Responders.html')}" escape="false"/>
-		</h1>
-		<br/>
-		<h:panelGroup styleClass="section-label-span">
-			<h:outputText value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_DESCRIPTION}"/>
-		</h:panelGroup>
+		<h3 class="padding-bottom-1-rem">
+			<h:outputText value="#{web.text.INTERNALKEYBINDING_TYPE_OCSP_LIST_OF_OCSPRESPONDERS}"/>
+		</h3>
+		<h:outputText value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_DESCRIPTION}"/>
+
 		<h:form id="internalkeybindings">
 			<h:dataTable value="#{ocspResponderMBean.internalKeyBindingGuiList}" var="guiInfo"
 						 styleClass="grid" style="border-collapse: collapse; right: auto; left: auto">
@@ -144,207 +146,183 @@
 		</h:form>
 		</p:tab>
 		<p:tab title="#{web.text.INTERNALKEYBINDING_TYPE_OCSP_CONFIGURATION}" >
-		
-		<h:form id="defaultResponder">
-			<h3>
-				<h:outputText value="#{web.text.INTERNALKEYBINDING_DEFAULTRESPONDER}" rendered="#{ocspResponderMBean.forbiddenToEdit}"/>
-				<h:outputText value="#{web.text.INTERNALKEYBINDING_SET_DEFAULTRESPONDER}" rendered="#{!ocspResponderMBean.forbiddenToEdit}"/>
-				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/OCSP_Responders.html')}" escape="false"/>
-			</h3>
-			<h:panelGrid columns="2">
-				<h:selectOneMenu id="defaultResponderTarget" value="#{ocspResponderMBean.defaultResponderTarget}" disabled="#{ocspResponderMBean.forbiddenToEdit}" >
-					<f:selectItems value="#{ocspResponderMBean.defaultResponderTargets}"/>
-				</h:selectOneMenu>
-				<h:commandButton action="#{ocspResponderMBean.saveDefaultResponder}" rendered="#{ocspResponderMBean.allowedToEdit}" value="#{web.text.INTERNALKEYBINDING_SET}"/>
-			</h:panelGrid>
-		</h:form>
-		
-		<h:form id="globalUnknownResponse">
-		  <h3>
-            <h:outputText value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_NONEXISTINGRESPONSE_GLOBAL}" />
-            <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/OCSP_Responders.html')}" escape="false"/>
-          </h3>
-		  <h:panelGrid columns="2">
-		      <h:selectOneMenu value="#{ocspResponderMBean.currentGlobalUnknownResponse}" disabled="#{!ocspResponderMBean.inEditMode}">
-                <f:selectItems value="#{ocspResponderMBean.availableUnknownResponses}"/>
-              </h:selectOneMenu>
-              <h:commandButton action="#{ocspResponderMBean.saveCurrentGlobalUnknownResponse}" rendered="#{ocspResponderMBean.allowedToEdit}" value="#{web.text.INTERNALKEYBINDING_SET}"/>
-		  </h:panelGrid>
-		
-		 
-		</h:form>
-		
-		
-		<h:form id="includeFromCA" style="display: block;">
-		    <h3>
-                <h:outputText value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_RESPONSE_FORMAT}" />
-                <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/OCSP_Responders.html')}" escape="false"/>
-            </h3>
-            <h:panelGrid columns="2">
-                <h:selectBooleanCheckbox id="globalIncludeSigningCert" disabled="#{ocspResponderMBean.forbiddenToEdit}" value="#{ocspResponderMBean.globalIncludeSigningCertificate}"/>
-                <h:outputLabel for="globalIncludeSigningCert" value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_INCLUDESIGNCER_GLOBAL}"/>
-                <h:selectBooleanCheckbox id="globalIncludeCertificateChain" disabled="#{ocspResponderMBean.forbiddenToEdit}" value="#{ocspResponderMBean.globalIncludeCertificateChain}"/>
-                <h:outputLabel for="globalIncludeCertificateChain" value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_INCLUDECERTCHAIN_GLOBAL}"/>
-                <h:commandButton action="#{ocspResponderMBean.saveGlobalIncludeValues}" rendered="#{ocspResponderMBean.allowedToEdit}" value="#{web.text.INTERNALKEYBINDING_SAVE}"/>
-            </h:panelGrid>
-        </h:form>
-		 
-		<h:form id="enableNonce">
-			<h3>
-				<h:outputText value="#{web.text.INTERNALKEYBINDING_ENABLED_NONCE_CA}" rendered="#{ocspResponderMBean.forbiddenToEdit}"/>
-				<h:outputText value="#{web.text.INTERNALKEYBINDING_SET_ENABLE_NONCE_CA}" rendered="#{!ocspResponderMBean.forbiddenToEdit}"/>
-				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/OCSP_Responders.html')}" escape="false"/>
-			</h3>
-			<h:panelGrid columns="2">
-				<h:panelGroup>
-					<h:selectBooleanCheckbox id="globallyEnableNonce" disabled="#{ocspResponderMBean.forbiddenToEdit}" value="#{ocspResponderMBean.globallyEnableNonce}"/>
-					<h:outputLabel for="globallyEnableNonce" value="#{web.text.USE}"/>
-				</h:panelGroup>
-				<h:commandButton action="#{ocspResponderMBean.saveNonceEnabled}" rendered="#{ocspResponderMBean.allowedToEdit}" value="#{web.text.INTERNALKEYBINDING_SAVE}"/>
-			</h:panelGrid>
-		</h:form>
+			<h:form id="globalOcspConfiguration">
+			  <h3 class="padding-bottom-1-rem">
+			      <h:outputText value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_GLOBAL_CONFIGURATION}"/>
+			      <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/OCSP_Responders.html')}" escape="false"/>
+			  </h3>
+			  <p:panelGrid columns="3" columnClasses="ui-md-4,ui-md-4,ui-md-4">
+			      <!-- Default Responder -->
+			      <h:panelGroup>
+			          <h:outputText value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_DEFAULTRESPONDER}"/>
+			      </h:panelGroup>
+			      <h:selectOneMenu id="defaultResponderTarget" value="#{ocspResponderMBean.defaultResponderTarget}" disabled="#{ocspResponderMBean.forbiddenToEdit}" styleClass="ui-md-11">
+                    <f:selectItems value="#{ocspResponderMBean.defaultResponderTargets}"/>
+                  </h:selectOneMenu>
+                  <h:outputLabel value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_DEFAULTRESPONDER_HELP}" styleClass="smallHelp"/>
+                  <!-- Enable OCSP Signing Cache Update -->
+                  <h:panelGroup>
+                    <h:outputText value="#{web.text.INTERNALKEYBINDING_ENABLE_OCSP_SIGNING_CACHE_UPDATE}"/>
+                  </h:panelGroup>
+                  <h:panelGroup>
+                    <p:selectBooleanCheckbox id="globallyEnableOcspSigningCacheUpdate" disabled="#{ocspResponderMBean.forbiddenToEdit}" value="#{ocspResponderMBean.globallyEnableOcspSigningCacheUpdate}"/>
+                  </h:panelGroup>
+                  <h:panelGroup>
+                    &nbsp;
+                  </h:panelGroup>
+                  <!-- Signer Certificate Revocation Check Cache Time -->
+                  <h:panelGroup>
+                     <h:outputText value="#{web.text.INTERNALKEYBINDING_REQUEST_SIGNER_REVOCATION_CHECK_CACHE_TIME}"/>
+                  </h:panelGroup>
+                  <h:panelGroup>
+                    <h:inputText disabled="#{not ocspResponderMBean.allowedToEdit}" value="#{ocspResponderMBean.requestSignerCertificateRevocationCacheTime}"
+                        onchange="this.form.submit()" styleClass="ui-md-11" id="requestSignerRevocationCheckCacheTime">
+                            <f:converter converterId="jakarta.faces.Long"/>
+                    </h:inputText>
+                  </h:panelGroup>
+                  <h:panelGroup>
+                    <h:outputLabel value="#{web.text.INTERNALKEYBINDING_REQUEST_SIGNER_REVOCATION_CHECK_CACHE_TIME_HELP}" styleClass="smallHelp"/>
+                  </h:panelGroup>
+	              <!-- Enable cache for unknown status -->
+	              <h:outputText value="#{web.text.INTERNALKEYBINDING_ENABLE_CACHE_FOR_UNAUTHORIZED_RESPONSES}"/>
+	              <p:selectBooleanCheckbox id="globallyEnableOcspBrowserCacheUnknownStatus"
+                                             disabled="#{ocspResponderMBean.forbiddenToEdit}"
+                                             value="#{ocspResponderMBean.cacheHeaderUnauthorizedResponses}"/>
+	              <h:panelGroup>
+                    &nbsp;
+                  </h:panelGroup>
+                  <!-- OCSP Response Cleanup -->
+                  <h:panelGroup>
+                    <h:outputText for="ocspCleanupEnable" value="#{web.text.OCSP_RESPONSE_CLEANUP}"/>
+                    <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/OCSP_Response_Pre-Production.html')}" escape="false"/>
+                  </h:panelGroup>
+                    <h:panelGroup id="ocspCleanupGroup">
+                       <p:selectBooleanCheckbox id="ocspCleanupEnable"
+                                             value="#{ocspResponderMBean.ocspCleanupUse}"
+                                             disabled="#{!ocspResponderMBean.allowedToEditSystemConfiguration}"
+                                             immediate="true">
+                            <f:ajax render="globalOcspConfiguration:ocspCleanupGroup"/>
+                       </p:selectBooleanCheckbox>
+                       <br/>
+                       <h:inputText id="ocspCleanupInterval"
+                                 disabled="#{!ocspResponderMBean.allowedToEditSystemConfiguration or !ocspResponderMBean.ocspCleanupUse}"
+                                 value="#{ocspResponderMBean.ocspCleanupSchedule}" size="10"/>
+    
+                       <h:selectOneMenu disabled="#{!ocspResponderMBean.allowedToEditSystemConfiguration or !ocspResponderMBean.ocspCleanupUse}"
+                                     value="#{ocspResponderMBean.ocspCleanupScheduleUnit}"
+                                     style="margin-left:5px; min-width:100px">
+                           <f:selectItems value="#{ocspResponderMBean.availableOcspCleanupUnits}"/>
+                       </h:selectOneMenu>
+                    </h:panelGroup>
+                    <h:outputText value="#{web.text.OCSP_RESPONSE_CLEANUP_EXP}" styleClass="smallHelp"/>
+                  
+			  </p:panelGrid>
+			  <h:commandButton action="#{ocspResponderMBean.saveGlobalOcspConfiguration}" rendered="#{ocspResponderMBean.allowedToEdit}" value="#{web.text.INTERNALKEYBINDING_SAVE}" id="saveGlobalSettings"/>
+			</h:form>
+			<h:form id="caOcspBehavior">
+			 <h3 class="padding-top-1-rem">
+                <h:outputText value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_CA_BEHAVIOR}"/>
+             </h3>
+			  <h:outputText value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_CA_BEHAVIOR_HELP}" styleClass="smallHelp"/>
+              <p:panelGrid columns="3" columnClasses="ui-md-4,ui-md-4,ui-md-4" styleClass="padding-top-1-rem">
+                <!-- Global Nonexisting Response -->
+                <h:outputText value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_NONEXISTINGRESPONSE_GLOBAL}" />
+                <h:selectOneMenu value="#{ocspResponderMBean.currentGlobalUnknownResponse}" disabled="#{!ocspResponderMBean.inEditMode}" styleClass="ui-md-11" id="caReseponseForUnknownCertificates">
+                    <f:selectItems value="#{ocspResponderMBean.availableUnknownResponses}"/>
+                </h:selectOneMenu>
+                <h:panelGroup>
+                    &nbsp;
+                </h:panelGroup>
+                <!-- Include signing certificate in response from CAs -->
+                <h:outputText value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_INCLUDESIGNCER_GLOBAL}"/>
+                <p:selectBooleanCheckbox id="globalIncludeSigningCert" disabled="#{ocspResponderMBean.forbiddenToEdit}" value="#{ocspResponderMBean.globalIncludeSigningCertificate}"/>
+                <h:panelGroup>
+                     &nbsp;
+                </h:panelGroup>
+                <!-- Include certificate chain in response from CAs -->
+                <h:outputText value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_INCLUDECERTCHAIN_GLOBAL}"/>
+                <p:selectBooleanCheckbox id="globalIncludeCertificateChain" disabled="#{ocspResponderMBean.forbiddenToEdit}" value="#{ocspResponderMBean.globalIncludeCertificateChain}"/>
+                <h:panelGroup>
+                     &nbsp;
+                </h:panelGroup>
+                 <!-- Enable nonce for CAs -->
+                <h:outputText value="#{web.text.INTERNALKEYBINDING_ENABLED_NONCE_CA}"/>
+                <p:selectBooleanCheckbox id="globallyEnableNonce" disabled="#{ocspResponderMBean.forbiddenToEdit}" value="#{ocspResponderMBean.globallyEnableNonce}"/>
+                 <h:panelGroup>
+                     &nbsp;
+                </h:panelGroup>
+                <!-- Responder ID Type for CAs -->
+                <h:outputText value="#{web.text.INTERNALKEYBINDING_DEFAULT_RESPONDERIDTYPE}"/>
+                <h:selectOneMenu id="defaultResponderId" value="#{ocspResponderMBean.responderIdType}" disabled="#{ocspResponderMBean.forbiddenToEdit}" styleClass="ui-md-11">
+                    <f:selectItems value="#{ocspResponderMBean.responderIdTargets}"/>
+                </h:selectOneMenu>
+                <h:panelGroup>
+                     &nbsp;
+                </h:panelGroup>
+                <!-- Response Validity -->
+                <h:outputText value="#{web.text.INTERNALKEYBINDING_VALIDITY_DEFAULTS}"/>
+                <h:inputText disabled="#{not ocspResponderMBean.allowedToEdit}" value="#{ocspResponderMBean.defaultResponseValidity}"
+                        onchange="this.form.submit()" styleClass="ui-md-11" id="defaultValidityTimes">
+                            <f:converter converterId="jakarta.faces.Long"/>
+                 </h:inputText>
+                 <h:outputText value="#{web.text.INTERNALKEYBINDING_VALIDITY_HELP}" styleClass="smallHelp"/>
+                 <!--  Default Max Validity -->
+                 <h:outputText value="#{web.text.INTERNALKEYBINDING_VALIDITY_MAX}"/>
+                 <h:inputText disabled="#{not ocspResponderMBean.allowedToEdit}" value="#{ocspResponderMBean.defaultResponseMaxAge}"
+                        onchange="this.form.submit()" styleClass="ui-md-11" id="maxAgeHttpHeader">
+                            <f:converter converterId="jakarta.faces.Long"/>
+                 </h:inputText>
+                 <h:outputText value="#{web.text.INTERNALKEYBINDING_VALIDITY_MAX_HELP}" styleClass="smallHelp"/>
+                 <!-- Max age at expiration -->
+                 <h:outputText value="#{web.text.INTERNALKEYBINDING_VALIDITY_MAX_EXPIRATION}"/>
+                 <p:selectBooleanCheckbox value="#{ocspResponderMBean.useMaxValidityForExpiration}"
+                                             disabled="#{not ocspResponderMBean.allowedToEdit or ocspResponderMBean.defaultResponseMaxAge == '0'}"
+                                             onchange="this.form.submit()"
+                                             id="useMaxAgeForExpiredResponses"
+                 />
+                 <h:outputText value="#{web.text.INTERNALKEYBINDING_VALIDITY_MAX_EXPIRATION_HELP}" styleClass="smallHelp"/>
+                
+              </p:panelGrid>
 
-		<h:form id="responderId">
-			<h3>
-				<h:outputText value="#{web.text.INTERNALKEYBINDING_DEFAULT_RESPONDERIDTYPE}" rendered="#{ocspResponderMBean.forbiddenToEdit}"/>
-				<h:outputText value="#{web.text.INTERNALKEYBINDING_SET_DEFAULT_RESPONDERIDTYPE}" rendered="#{!ocspResponderMBean.forbiddenToEdit}"/>
-				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/OCSP_Responders.html')}" escape="false"/>
-			</h3>
-			<h:panelGrid columns="2">
-				<h:selectOneMenu id="defaultResponderId" value="#{ocspResponderMBean.responderIdType}" disabled="#{ocspResponderMBean.forbiddenToEdit}" >
-					<f:selectItems value="#{ocspResponderMBean.responderIdTargets}"/>
-				</h:selectOneMenu>
-				<h:commandButton action="#{ocspResponderMBean.saveResponderIdType}" rendered="#{ocspResponderMBean.allowedToEdit}" value="#{web.text.INTERNALKEYBINDING_SET}"/>
-			</h:panelGrid>
-		</h:form>
-
-		<h:form id="enableOcspSigningCacheUpdate">
-			<h3>
-				<h:outputText value="#{web.text.INTERNALKEYBINDING_ENABLE_OCSP_SIGNING_CACHE_UPDATE}" rendered="#{ocspResponderMBean.forbiddenToEdit}"/>
-				<h:outputText value="#{web.text.INTERNALKEYBINDING_SET_ENABLE_OCSP_SIGNING_CACHE_UPDATE}" rendered="#{!ocspResponderMBean.forbiddenToEdit}"/>
-				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/OCSP_Responders.html')}" escape="false"/>
-			</h3>
-			<h:panelGrid columns="2">
-				<h:panelGroup>
-					<h:selectBooleanCheckbox id="globallyEnableOcspSigningCacheUpdate" disabled="#{ocspResponderMBean.forbiddenToEdit}" value="#{ocspResponderMBean.globallyEnableOcspSigningCacheUpdate}"/>
-					<h:outputLabel for="globallyEnableOcspSigningCacheUpdate" value="#{web.text.USE}"/>
-				</h:panelGroup>
-				<h:commandButton action="#{ocspResponderMBean.saveEnableOcspSigningCacheUpdate}" rendered="#{ocspResponderMBean.allowedToEdit}" value="#{web.text.INTERNALKEYBINDING_SAVE}"/>
-			</h:panelGrid>
-		</h:form>
-
-
-		<h:form id="enableCacheForUnknownStatus">
-			<h3>
-				<h:outputText value="#{web.text.INTERNALKEYBINDING_ENABLE_CACHE_FOR_UNAUTHORIZED_RESPONSES}" rendered="#{ocspResponderMBean.forbiddenToEdit}"/>
-				<h:outputText value="#{web.text.INTERNALKEYBINDING_SET_ENABLE_CACHE_FOR_UNAUTHORIZED_RESPONSES}" rendered="#{!ocspResponderMBean.forbiddenToEdit}"/>
-				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/OCSP_Responders.html')}" escape="false"/>
-			</h3>
-			<h:panelGrid columns="2">
-				<h:panelGroup>
-					<h:selectBooleanCheckbox id="globallyEnableOcspBrowserCacheUnknownStatus"
-											 disabled="#{ocspResponderMBean.forbiddenToEdit}"
-											 value="#{ocspResponderMBean.cacheHeaderUnauthorizedResponses}"/>
-					<h:outputLabel for="globallyEnableOcspSigningCacheUpdate" value="#{web.text.USE}"/>
-				</h:panelGroup>
-				<h:commandButton action="#{ocspResponderMBean.saveEnableExplicitNoCacheUnauthorizedResponses}"
-								 rendered="#{ocspResponderMBean.allowedToEdit}"
-								 value="#{web.text.INTERNALKEYBINDING_SAVE}"
-				/>
-			</h:panelGrid>
-		</h:form>
-		
-		<h:form id="defaultValitidyTimes" style="display: block;">
-			<h3>
-				<h:outputText value="#{web.text.INTERNALKEYBINDING_VALIDITY_DEFAULTS}"/>
-				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/OCSP_Responders.html')}" escape="false"/>
-			</h3>
-			<h:panelGroup>
-				<h:outputText value="#{web.text.INTERNALKEYBINDING_VALIDITY_DEFAULTS_HELP}" styleClass="help" style="font-size: smaller"/>
-			</h:panelGroup>
-			<p:panelGrid columns="3" styleClass="ui-panelgrid-blank">
-				<!-- Default response validity -->
-				<h:panelGroup layout="block">
-					<h:outputText value="#{web.text.INTERNALKEYBINDING_VALIDITY_RESPONSE}"/>				
-				</h:panelGroup>
-				<h:panelGroup>
-					<h:inputText disabled="#{not ocspResponderMBean.allowedToEdit}" value="#{ocspResponderMBean.defaultResponseValidity}"
-						onchange="this.form.submit()">
-							<f:converter converterId="jakarta.faces.Long"/>
-					</h:inputText>
-				</h:panelGroup>
-				<h:panelGroup layout="block">
-					<h:outputText value="#{web.text.INTERNALKEYBINDING_VALIDITY_HELP}" styleClass="help" style="font-size: smaller"/>
-				</h:panelGroup>
-				<!--  Default Max Validity -->
-				<h:panelGroup>
-					<h:outputText value="#{web.text.INTERNALKEYBINDING_VALIDITY_MAX}"/>				
-				</h:panelGroup>
-				<h:panelGroup>
-					<h:inputText disabled="#{not ocspResponderMBean.allowedToEdit}" value="#{ocspResponderMBean.defaultResponseMaxAge}"
-						onchange="this.form.submit()">
-							<f:converter converterId="jakarta.faces.Long"/>
-					</h:inputText>
-				</h:panelGroup>
-				<h:panelGroup layout="block">
-					<h:outputText value="#{web.text.INTERNALKEYBINDING_VALIDITY_MAX_HELP}" styleClass="help" style="font-size: smaller"/>
-				</h:panelGroup>
-				<!-- Max age at expiration -->
-				<h:panelGroup>
-					<h:outputText value="#{web.text.INTERNALKEYBINDING_VALIDITY_MAX_EXPIRATION}"/>				
-				</h:panelGroup>
-				<h:panelGroup>
-					<h:selectBooleanCheckbox
-											 value="#{ocspResponderMBean.useMaxValidityForExpiration}"
-											 disabled="#{not ocspResponderMBean.allowedToEdit or ocspResponderMBean.defaultResponseMaxAge == '0'}"
-											 onchange="this.form.submit()" />
-				</h:panelGroup>
-				<h:panelGroup layout="block">
-					<h:outputText value="#{web.text.INTERNALKEYBINDING_VALIDITY_MAX_EXPIRATION_HELP}" styleClass="help" style="font-size: smaller"/>
-				</h:panelGroup>
-			</p:panelGrid>	
-			
-			<h:panelGroup layout="block">
-				<h:commandButton action="#{ocspResponderMBean.saveGlobalResponseValues}"
-								 rendered="#{ocspResponderMBean.allowedToEdit}"
-								 disabled="#{ocspResponderMBean.validitiesUnchanged}"
-								 value="#{web.text.INTERNALKEYBINDING_SAVE}" >
-					<f:ajax event="change" render="@form" />
-				</h:commandButton>
-			</h:panelGroup>
-			
-		</h:form>
-		
-
+              <h:commandButton action="#{ocspResponderMBean.saveGlobalCaSettings}" rendered="#{ocspResponderMBean.allowedToEdit}" value="#{web.text.INTERNALKEYBINDING_SAVE}" id="saveCAConfiguration">
+                <f:ajax event="change" render="@form" />
+              </h:commandButton>
+			</h:form>
 
 		<!-- Settings for OCSP audit and transaction logging -->
 		<h:form id="ocspLoggingSettings">
-			<h3>
+			<h3 class="padding-top-1-rem padding-bottom-1-rem">
 				<h:outputText value="#{web.text.OCSP_LOGGING_HEADER}"/>
 				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/OCSP_Responders.html')}" escape="false"/>
 			</h3>
-			<h:panelGrid id="ocspLoggingSettings" columns="2" cellspacing="3">
+			<h:panelGrid id="ocspLoggingSettings" columns="2" columnClasses="ui-md-3">
 				<h:panelGroup>
-					<h:selectBooleanCheckbox id="enableOcspTransactionLogging"
+					<p:selectBooleanCheckbox id="enableOcspTransactionLogging"
 											 value="#{ocspResponderMBean.isOcspTransactionLoggingEnabled}"
-											 disabled="#{not ocspResponderMBean.allowedToEdit}">
+											 disabled="#{not ocspResponderMBean.allowedToEdit}"
+                                             itemLabel="#{web.text.OCSP_LOGGING_ENABLE_TRANSACTION_LOGGING}"
+                    >
 						<f:ajax render="ocspLoggingSettings"/>
-					</h:selectBooleanCheckbox>
-					<h:outputLabel for="enableOcspTransactionLogging" value="#{web.text.OCSP_LOGGING_ENABLE_TRANSACTION_LOGGING}"/>
+					</p:selectBooleanCheckbox>
 				</h:panelGroup>
 				<div/>
 				<h:outputLabel value="#{web.text.OCSP_LOGGING_TRANSACTION_LOG_PATTERN}"
-							   rendered="#{ocspResponderMBean.isOcspTransactionLoggingEnabled}"/>
+							   rendered="#{ocspResponderMBean.isOcspTransactionLoggingEnabled}"
+                               for="transactionLogPattern" styleClass="align-label"
+                />
 				<h:panelGroup rendered="#{ocspResponderMBean.isOcspTransactionLoggingEnabled}">
 					<h:inputText value="#{ocspResponderMBean.ocspTransactionLogPattern}"
-								 disabled="#{not ocspResponderMBean.allowedToEdit}" size="80"/>
+								 disabled="#{not ocspResponderMBean.allowedToEdit}" styleClass="ui-md-11" id="transactionLogPattern"/>
 					<br/>
 					<h:outputLabel value="#{web.text.OCSP_LOGGING_TRANSACTION_LOG_PATTERN_HINT}" styleClass="smallHelp"/>
 				</h:panelGroup>
-				<h:outputLabel value="#{web.text.OCSP_LOGGING_TRANSACTION_LOG_VALUES}" rendered="#{ocspResponderMBean.isOcspTransactionLoggingEnabled}"/>
+				<h:outputLabel value="#{web.text.OCSP_LOGGING_TRANSACTION_LOG_VALUES}"
+                               rendered="#{ocspResponderMBean.isOcspTransactionLoggingEnabled}"
+                               for="transactionLogMessage"
+                />
 				<h:panelGroup rendered="#{ocspResponderMBean.isOcspTransactionLoggingEnabled}">
 					<h:inputTextarea value="#{ocspResponderMBean.ocspTransactionLogValues}"
-									 disabled="#{not ocspResponderMBean.allowedToEdit}" rows="5" cols="80" />
+									 disabled="#{not ocspResponderMBean.allowedToEdit}" rows="5" styleClass="ui-md-11" id="transactionLogMessage" />
 					<br/>
 					<h:outputLabel value="#{web.text.OCSP_LOGGING_TRANSACTION_LOG_VALUES_HINT}" styleClass="smallHelp"/>
 				</h:panelGroup>
@@ -354,31 +332,34 @@
 									 action="#{ocspResponderMBean.commandTestOcspTransactionLogging}">
 						<f:ajax render="testTransactionLogging" execute="@form"/>
 					</h:commandButton>
-					<br/>
+					<br/><br/>
 					<h:outputText value="#{ocspResponderMBean.ocspTransactionLogMessage}"
-								  rendered="#{ocspResponderMBean.isOcspTransactionLoggingEnabled}"/>
+								  rendered="#{ocspResponderMBean.isOcspTransactionLoggingEnabled}" styleClass="padding-top-1-rem padding-bottom-1-rem"/>
 				</h:panelGroup>
 
 				<h:panelGroup>
-					<h:selectBooleanCheckbox id="enableOcspAuditLogging"
+					<p:selectBooleanCheckbox id="enableOcspAuditLogging"
 											 value="#{ocspResponderMBean.isOcspAuditLoggingEnabled}"
-											 disabled="#{not ocspResponderMBean.allowedToEdit}">
+											 disabled="#{not ocspResponderMBean.allowedToEdit}"
+                                             itemLabel="#{web.text.OCSP_LOGGING_ENABLE_AUDIT_LOGGING}">
 						<f:ajax render="ocspLoggingSettings"/>
-					</h:selectBooleanCheckbox>
-					<h:outputLabel for="enableOcspAuditLogging" value="#{web.text.OCSP_LOGGING_ENABLE_AUDIT_LOGGING}"/>
+					</p:selectBooleanCheckbox>
 				</h:panelGroup>
 				<div/>
-				<h:outputLabel value="#{web.text.OCSP_LOGGING_AUDIT_LOG_PATTERN}" rendered="#{ocspResponderMBean.isOcspAuditLoggingEnabled}"/>
-				<h:panelGroup rendered="#{ocspResponderMBean.isOcspAuditLoggingEnabled}">
+                <h:outputLabel value="#{web.text.OCSP_LOGGING_AUDIT_LOG_PATTERN}" rendered="#{ocspResponderMBean.isOcspAuditLoggingEnabled}" for="auditLogPattern"/>
+                <h:panelGroup rendered="#{ocspResponderMBean.isOcspAuditLoggingEnabled}">
 					<h:inputText value="#{ocspResponderMBean.ocspAuditLogPattern}"
-								 disabled="#{not ocspResponderMBean.allowedToEdit}" size="80" />
+								 disabled="#{not ocspResponderMBean.allowedToEdit}"
+                                 styleClass="ui-md-11"
+                                 id="auditLogPattern"
+                    />
 					<br/>
 					<h:outputLabel value="#{web.text.OCSP_LOGGING_AUDIT_LOG_PATTERN_HINT}" styleClass="smallHelp"/>
 				</h:panelGroup>
-				<h:outputLabel value="#{web.text.OCSP_LOGGING_AUDIT_LOG_VALUES}" rendered="#{ocspResponderMBean.isOcspAuditLoggingEnabled}"/>
+				<h:outputLabel value="#{web.text.OCSP_LOGGING_AUDIT_LOG_VALUES}" rendered="#{ocspResponderMBean.isOcspAuditLoggingEnabled}" for="auditLogMessage"/>
 				<h:panelGroup rendered="#{ocspResponderMBean.isOcspAuditLoggingEnabled}">
 					<h:inputTextarea value="#{ocspResponderMBean.ocspAuditLogValues}"
-									 disabled="#{not ocspResponderMBean.allowedToEdit}" rows="5" cols="80" />
+									 disabled="#{not ocspResponderMBean.allowedToEdit}" rows="5" styleClass="ui-md-11" id="auditLogMessage" />
 					<br/>
 					<h:outputLabel value="#{web.text.OCSP_LOGGING_AUDIT_LOG_VALUES_HINT}" styleClass="smallHelp"/>
 				</h:panelGroup>
@@ -388,20 +369,20 @@
 									 action="#{ocspResponderMBean.commandTestOcspAuditLogging}">
 						<f:ajax render="testAuditLogging" execute="@form"/>
 					</h:commandButton>
-					<br/>
+					<br/><br/>
 					<h:outputText value="#{ocspResponderMBean.ocspAuditLogMessage}"
-								  rendered="#{ocspResponderMBean.isOcspAuditLoggingEnabled}"/>
+								  rendered="#{ocspResponderMBean.isOcspAuditLoggingEnabled}" styleClass="padding-top-1-rem padding-bottom-1-rem"/>
 				</h:panelGroup>
 
-				<h:outputLabel value="#{web.text.OCSP_LOGGING_DATE_FORMAT}" rendered="#{ocspResponderMBean.isOcspAuditLoggingEnabled or ocspResponderMBean.isOcspTransactionLoggingEnabled}"/>
+				<h:outputLabel value="#{web.text.OCSP_LOGGING_DATE_FORMAT}" rendered="#{ocspResponderMBean.isOcspAuditLoggingEnabled or ocspResponderMBean.isOcspTransactionLoggingEnabled}" for="logDateFormat" styleClass="align-label"/>
 				<h:panelGroup rendered="#{ocspResponderMBean.isOcspAuditLoggingEnabled or ocspResponderMBean.isOcspTransactionLoggingEnabled}">
 					<h:inputText value="#{ocspResponderMBean.ocspLoggingDateFormat}"
-								 disabled="#{not ocspResponderMBean.allowedToEdit}" size="80" />
+								 disabled="#{not ocspResponderMBean.allowedToEdit}" rows="5" styleClass="ui-md-11" id="logDateFormat"/>
 					<br/>
 					<h:outputLabel value="#{web.text.OCSP_LOGGING_DATE_FORMAT_HINT}" styleClass="smallHelp"/>
 				</h:panelGroup>
 			</h:panelGrid>
-			<h:commandButton value="#{web.text.OCSP_LOGGING_SAVE}" action="#{ocspResponderMBean.saveOcspLoggingConfiguration}"/>
+			<h:commandButton value="#{web.text.OCSP_LOGGING_SAVE}" action="#{ocspResponderMBean.saveOcspLoggingConfiguration}" id="applyLoggingSettings"/>
 		</h:form>
         </p:tab>
         </p:tabView>
