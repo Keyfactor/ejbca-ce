@@ -12,34 +12,9 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.configuration;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Serializable;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.security.MessageDigest;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
+import com.keyfactor.util.FileTools;
+import com.keyfactor.util.StreamSizeLimitExceededException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.component.UIComponent;
@@ -50,7 +25,6 @@ import jakarta.faces.model.SelectItem;
 import jakarta.inject.Named;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.Part;
-
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -90,6 +64,7 @@ import org.ejbca.config.AvailableProtocolsConfiguration;
 import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.GlobalCustomCssConfiguration;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ocsp.OcspResponseCleanupSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -114,9 +89,33 @@ import org.primefaces.component.tabview.TabView;
 import org.primefaces.event.TabChangeEvent;
 import org.primefaces.model.file.UploadedFile;
 
-import com.keyfactor.util.FileTools;
-import com.keyfactor.util.StreamSizeLimitExceededException;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * Backing bean for the various system configuration pages.
@@ -491,6 +490,39 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
     private List<OAuthKeyInfo> oauthKeys = null;
     private String defaultOauthKeyLabel = null;
+
+    private List<String> oauthHostnamesAllowlist = null;
+
+    /**
+     * Gets the OAuth providers allowlist as a newline-separated string for the textarea
+     * @return String with one hostname per line
+     */
+    public String getCurrentOauthHostnamesAllowlist() {
+        final String[] allowedHosts = getOAuthConfiguration().getAllowedOauthHosts();
+        if (allowedHosts == null || allowedHosts.length == 0 || (allowedHosts.length == 1 && allowedHosts[0].trim().isEmpty())) {
+            return WebConfiguration.getHostName();
+        } else {
+            oauthHostnamesAllowlist = Arrays.asList(allowedHosts);
+            return String.join("\n", oauthHostnamesAllowlist);
+        }
+    }
+
+    /**
+     * Sets the OAuth providers allowlist from a newline-separated string
+     * @param allowlist String containing hostnames separated by newlines
+     */
+    public void setCurrentOauthHostnamesAllowlist(final String allowlist) {
+        if (allowlist == null || allowlist.trim().isEmpty()) {
+            oauthHostnamesAllowlist = new ArrayList<>();
+            return;
+        }
+
+        // Split on newlines and filter out empty lines
+        oauthHostnamesAllowlist = Arrays.stream(allowlist.split("\\R"))  // splits on all types of newlines
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toList());
+    }
 
     public List<OAuthKeyInfo> getOauthKeys() {
         if (oauthKeys == null) {
@@ -1076,7 +1108,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalConfig.setSessionTimeoutTime(currentConfig.getSessionTimeoutTime());
                 globalConfig.setVaStatusTimeConstraint(currentConfig.getVaStatusTimeConstraint());
                 globalConfig.setEnableIcaoCANameChange(currentConfig.getEnableIcaoCANameChange());
-                
+
 
                 if (isValidOcspCleanupSettings()) {
                     globalConfig.setOcspCleanupSchedule(currentConfig.getOcspCleanupSchedule());
@@ -2245,7 +2277,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     public boolean renderStatedumpTab() {
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.ROLE_ROOT.resource()) && isStatedumpAvailable();
     }
-    
+
     public boolean isCtCacheEnabled() {
         return getCurrentConfig().isCtCacheEnabled();
     }
