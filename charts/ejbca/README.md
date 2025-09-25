@@ -41,14 +41,9 @@ EJBCA Community is licensed under the LGPL license, please see **[LICENSE](https
 
 The **EJBCA Community Helm Chart** boostraps **EJBCA Community** on a [Kubernetes](http://kubernetes.io) cluster using the [Helm](https://helm.sh) package manager.
 
-### Add repo
-```shell
-helm repo add keyfactor https://keyfactor.github.io/ejbca-community-helm/
-```
-
 ### Quick start
 ```shell
-helm install ejbca keyfactor/ejbca-community-helm --namespace ejbca --create-namespace
+helm install ejbca oci://repo.keyfactor.com/charts/ejbca-ce --version x.y.z
 ```
 This command deploys `ejbca-community-helm` on the Kubernetes cluster in the default configuration.
 
@@ -56,11 +51,11 @@ This command deploys `ejbca-community-helm` on the Kubernetes cluster in the def
 
 To customize the installation, create and edit a custom values file with deployment parameters:
 ```shell
-helm show values keyfactor/ejbca-community-helm > ejbca.yaml
+helm show values oci://repo.keyfactor.com/charts/ejbca-ce --version x.y.z > ejbca.yaml
 ```
 Deploy `ejbca-community-helm` on the Kubernetes cluster with custom configurations:
 ```shell
-helm install ejbca keyfactor/ejbca-community-helm --namespace ejbca --create-namespace --values ejbca.yaml
+helm install ejbca oci://repo.keyfactor.com/charts/ejbca-ce --version x.y.z --namespace ejbca --create-namespace --values ejbca.yaml
 ```
 
 ## Example Custom Deployments
