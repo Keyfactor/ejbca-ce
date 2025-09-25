@@ -138,12 +138,16 @@ public class LogOutServlet extends HttpServlet {
                 .getExternalContext().getRequest();
         String redirectUri = request.getRequestURL().toString();
 
-        // Verify that the hostname from the request is in the allowed hostname list
         OAuthConfiguration oAuthConfiguration = (OAuthConfiguration) globalConfigurationSession
                 .getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
         if (!OAuthTools.isHostnameAllowed(redirectUri, oAuthConfiguration)) {
             logger.info("Hostname in redirect URI is not in the allowed hostname list: " + redirectUri);
-            throw new IllegalStateException("Hostname in redirect URI is not in the allowed hostname list");
+            String baseUrl = globalConfiguration.getBaseUrl(
+                    "https",
+                    WebConfiguration.getHostName(),
+                    WebConfiguration.getPublicHttpsPort()
+            ) + "ra/";
+            return baseUrl + "logout.xhtml";
         }
 
         return redirectUri;

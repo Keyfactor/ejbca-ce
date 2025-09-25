@@ -42,6 +42,8 @@ import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.KeyBindingFinder;
 import org.cesecore.keybind.KeyBindingNotFoundException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
+import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.HttpTools;
 
@@ -260,10 +262,13 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
                 .getExternalContext().getRequest();
         String redirectUri = request.getRequestURL().toString();
 
-        // Verify that the hostname from the request is in the allowed hostname list
         if (!OAuthTools.isHostnameAllowed(redirectUri, ejbcaWebBean.getOAuthConfiguration())) {
             log.info("Hostname in redirect URI is not in the allowed hostname list: " + redirectUri);
-            throw new IllegalStateException("Hostname in redirect URI is not in the allowed hostname list");
+            return ejbcaWebBean.getGlobalConfiguration().getBaseUrl(
+                    "https",
+                    WebConfiguration.getHostName(),
+                    WebConfiguration.getPublicHttpsPort()
+            ) + GlobalConfiguration.ADMIN_WEB_PATH;
         }
 
         return redirectUri;

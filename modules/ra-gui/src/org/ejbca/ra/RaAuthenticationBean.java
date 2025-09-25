@@ -39,6 +39,8 @@ import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 
@@ -185,7 +187,13 @@ public class RaAuthenticationBean implements Serializable {
         OAuthConfiguration oAuthConfiguration = raMasterApi.getGlobalConfiguration(OAuthConfiguration.class);
         if (!OAuthTools.isHostnameAllowed(redirectUri, oAuthConfiguration)) {
             log.info("Hostname in redirect URI is not in the allowed hostname list: " + redirectUri);
-            throw new IllegalStateException("Hostname in redirect URI is not in the allowed hostname list");
+            GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            String baseUrl = globalConfiguration.getBaseUrl(
+                    "https",
+                    WebConfiguration.getHostName(),
+                    WebConfiguration.getPublicHttpsPort()
+            ) + "ra/";
+            return baseUrl + "logout.xhtml";
         }
 
         return redirectUri;

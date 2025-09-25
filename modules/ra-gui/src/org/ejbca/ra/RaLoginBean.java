@@ -43,6 +43,7 @@ import org.cesecore.keybind.KeyBindingFinder;
 import org.cesecore.keybind.KeyBindingNotFoundException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.util.HttpTools;
 
@@ -205,10 +206,16 @@ public class RaLoginBean implements Serializable {
                 .getExternalContext().getRequest();
         String redirectUri = request.getRequestURL().toString();
 
-        // Verify that the hostname from the request is in the allowed hostname list
         if (!OAuthTools.isHostnameAllowed(redirectUri, oAuthConfiguration)) {
             log.info("Hostname in redirect URI is not in the allowed hostname list: " + redirectUri);
-            throw new IllegalStateException("Hostname in redirect URI is not in the allowed hostname list");
+            if (globalConfiguration == null) {
+                initGlobalConfiguration();
+            }
+            String baseUrl = globalConfiguration.getBaseUrl("https", WebConfiguration.getHostName(), WebConfiguration.getPublicHttpsPort()) + "ra/";
+            if (!baseUrl.endsWith("/")) {
+                baseUrl += "/";
+            }
+            return baseUrl +"login.xhtml";
         }
 
         return redirectUri;

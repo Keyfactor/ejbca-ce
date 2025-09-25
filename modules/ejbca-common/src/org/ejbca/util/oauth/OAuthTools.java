@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.util.oauth;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
 import java.security.cert.CertificateParsingException;
@@ -23,7 +25,6 @@ import java.util.Collection;
 import java.util.List;
 
 import com.nimbusds.jose.jwk.KeyType;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.keyfactor.util.CertTools;
@@ -122,25 +123,38 @@ public class OAuthTools {
 
         final String[] allowedHosts = oAuthConfiguration.getAllowedOauthHosts();
         if (allowedHosts == null || allowedHosts.length == 0) {
-            // If no hosts are specified, we consider all hosts allowed
-            return true;
+            // If no hosts are specified, no hosts are allowed
+            return false;
         }
-
-        String extractedHostname = hostname;
-        if (hostname.contains("://")) {
-            extractedHostname = hostname.split("://")[1];
-        }
-        if (extractedHostname.contains("/")) {
-            extractedHostname = extractedHostname.split("/")[0];
-        }
-        if (extractedHostname.contains(":")) {
-            extractedHostname = extractedHostname.split(":")[0];
-        }
-
-        final String hostnamePart = extractedHostname;
+        final String hostnamePart = extractHostnameFromUrl(hostname);
 
         return Arrays.stream(allowedHosts)
-                .anyMatch(allowedHost -> StringUtils.equalsIgnoreCase(allowedHost, hostnamePart));
+                .anyMatch(allowedHost -> allowedHost.equalsIgnoreCase(hostnamePart));
+    }
+
+    /**
+     * Extracts the hostname from a URL string using java.net.URL.
+     *
+     * @param urlString The URL string to extract hostname from
+     * @return The extracted hostname, or the original string if it's not a valid URL
+     */
+    public static String extractHostnameFromUrl(final String urlString) {
+        if (urlString == null) {
+            return null;
+        }
+
+        try {
+            // If the string doesn't start with a protocol, add one to make it parseable
+            String urlToParse = urlString;
+            if (!urlString.contains("://")) {
+                urlToParse = "http://" + urlString;
+            }
+            URL url = new URL(urlToParse);
+            return url.getHost();
+        } catch (MalformedURLException e) {
+            // If it's not a valid URL, return the original string
+            return urlString;
+        }
     }
 
 }
