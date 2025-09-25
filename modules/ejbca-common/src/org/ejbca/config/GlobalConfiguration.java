@@ -123,7 +123,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final int DEFAULT_VA_STATUS_TIME_CONSTRAINT = 14400;
 
     private static final int SESSION_TIMEOUT_MIN = 1;
-    private static final int SESSION_TIMEOUT_MAX = Integer.MAX_VALUE;
+    private static final int SESSION_TIMEOUT_MAX = Integer.MAX_VALUE / (60*1000) -1;
 
     // Default CT Logs
     private static final LinkedHashMap<Integer,CTLogInfo> CTLOGS_DEFAULT = new LinkedHashMap<>();
