@@ -498,20 +498,13 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
      * @return String with one hostname per line
      */
     public String getCurrentOauthHostnamesAllowlist() {
-
         final String[] allowedHosts = getOAuthConfiguration().getAllowedOauthHosts();
-        if (allowedHosts == null) {
-            oauthHostnamesAllowlist = Collections.emptyList();
-        } else {
-            oauthHostnamesAllowlist = Arrays.asList(allowedHosts);
-        }
-
-        if (oauthHostnamesAllowlist.isEmpty()) {
+        if (allowedHosts == null || allowedHosts.length == 0 || (allowedHosts.length == 1 && allowedHosts[0].trim().isEmpty())) {
             return WebConfiguration.getHostName();
         } else {
+            oauthHostnamesAllowlist = Arrays.asList(allowedHosts);
             return String.join("\n", oauthHostnamesAllowlist);
         }
-
     }
 
     /**
