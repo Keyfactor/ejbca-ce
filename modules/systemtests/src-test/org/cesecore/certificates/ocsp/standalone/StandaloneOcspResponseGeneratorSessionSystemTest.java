@@ -255,6 +255,8 @@ public class StandaloneOcspResponseGeneratorSessionSystemTest {
             } catch (Exception e) {
                 //Ignore any failures.
             }
+            internalKeyBindingMgmtSession.deleteInternalKeyBinding(authenticationToken, internalKeyBindingId);
+            
             // Make sure default responder is restored
             setOcspDefaultResponderReference(originalDefaultResponder);
             // All CAs that are created with cryptoTokenRunner.createX509Ca are removed by cryptoTokenRunner.cleanUp();
