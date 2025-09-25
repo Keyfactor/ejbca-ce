@@ -116,12 +116,12 @@ public class OAuthToolsUnitTest {
     }
 
     @Test
-    public void testIsHostnameAllowedWithEmptyAllowList() {
+    public void testIsHostnameNotAllowedWithEmptyAllowList() {
         TestOAuthConfiguration emptyConfig = new TestOAuthConfiguration(new String[0]);
-        assertTrue("Empty allow list should allow any hostname", OAuthTools.isHostnameAllowed("example.com", emptyConfig));
+        assertFalse("Empty allow list should allow any hostname", OAuthTools.isHostnameAllowed("example.com", emptyConfig));
 
         TestOAuthConfiguration nullConfig = new TestOAuthConfiguration(null);
-        assertTrue("Null allow list should allow any hostname", OAuthTools.isHostnameAllowed("example.com", nullConfig));
+        assertFalse("Null allow list should allow any hostname", OAuthTools.isHostnameAllowed("example.com", nullConfig));
     }
 
     @Test

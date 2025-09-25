@@ -127,7 +127,9 @@ public class OAuthTools {
             return false;
         }
         final String hostnamePart = extractHostnameFromUrl(hostname);
-
+        if (hostnamePart == null) {
+            return false;
+        }
         return Arrays.stream(allowedHosts)
                 .anyMatch(allowedHost -> allowedHost.equalsIgnoreCase(hostnamePart));
     }
