@@ -43,12 +43,12 @@ import org.cesecore.keybind.KeyBindingFinder;
 import org.cesecore.keybind.KeyBindingNotFoundException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.util.HttpTools;
 
 import com.keyfactor.util.RandomHelper;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import org.ejbca.util.oauth.OAuthTools;
 
 /**
  * JSF Managed Bean for the OAuth login page in the RA Web. 
@@ -100,7 +100,7 @@ public class RaLoginBean implements Serializable {
             this.label = label;
         }
     }
-    
+
     public void onLoginPageLoad() throws IOException {
         HttpServletRequest servletRequest = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
         final Map<String, String> params = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
@@ -169,11 +169,11 @@ public class RaLoginBean implements Serializable {
             }
         }
     }
-    
+
     public Collection<OAuthKeyInfoGui> getOauthKeys() {
         return oauthKeys;
     }
-    
+
     private String getOauthLoginUrl(OAuthKeyInfo oauthKeyInfo) {
         String url = oauthKeyInfo.getOauthLoginUrl();
         return addParametersToUrl(oauthKeyInfo, url);
@@ -199,13 +199,21 @@ public class RaLoginBean implements Serializable {
                 .queryParam("state", stateInSession);
         return uriBuilder.build().toString();
     }
-    
+
     private String getRedirectUri() {
         HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance()
                 .getExternalContext().getRequest();
-        return request.getRequestURL().toString();
+        String redirectUri = request.getRequestURL().toString();
+
+        // Verify that the hostname from the request is in the allowed hostname list
+        if (!OAuthTools.isHostnameAllowed(redirectUri, oAuthConfiguration)) {
+            log.info("Hostname in redirect URI is not in the allowed hostname list: " + redirectUri);
+            throw new IllegalStateException("Hostname in redirect URI is not in the allowed hostname list");
+        }
+
+        return redirectUri;
     }
-    
+
     private void initGlobalConfiguration() {
         oAuthConfiguration = raMasterApi.getGlobalConfiguration(OAuthConfiguration.class);
         // Get the local RA configuration, because we want to calculate the URL to the RA, not the CA

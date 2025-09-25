@@ -39,13 +39,12 @@ import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.certificate.DnComponents;
+import org.ejbca.util.oauth.OAuthTools;
 
 /**
  * JSF Managed Bean for handling authentication of clients.
@@ -60,7 +59,7 @@ public class RaAuthenticationBean implements Serializable {
 
     // JavaServlet Specification 2.5 Section 7.1.1: "...The name of the session tracking cookie must be JSESSIONID".
     private static final String SESSIONCOOKIENAME = "JSESSIONID";
-    
+
     @EJB
     private WebAuthenticationProviderSessionLocal webAuthenticationProviderSession;
     @EJB
@@ -77,7 +76,7 @@ public class RaAuthenticationBean implements Serializable {
         authenticationToken = getRaAuthenticationHelper().getAuthenticationToken(getHttpServletRequest(), getHttpServletResponse());
         return authenticationToken;
     }
-    
+
     /** @return any X509Certificate the client has provided */
     public X509Certificate getX509CertificateFromRequest() {
         x509Certificate = getRaAuthenticationHelper().getX509CertificateFromRequest(getHttpServletRequest());
@@ -91,7 +90,7 @@ public class RaAuthenticationBean implements Serializable {
     public void resetAuthentication(){
         getRaAuthenticationHelper().resetAuthenticationToken();
     }
-    
+
     private HttpServletRequest getHttpServletRequest() {
         return (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
     }
@@ -99,7 +98,7 @@ public class RaAuthenticationBean implements Serializable {
     private HttpServletResponse getHttpServletResponse() {
         return (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();
     }
-    
+
     public boolean isPublicUser() {
         return getAuthenticationToken() instanceof PublicAccessAuthenticationToken;
     }
@@ -136,7 +135,7 @@ public class RaAuthenticationBean implements Serializable {
         }
         return authToken.toString();
     }
-    
+
     /** Invoked from RaHttpSessionListener when a session expires/is destroyed */
     public void onSessionDestroyed(final HttpSessionEvent httpSessionEvent) {
         log.info("HTTP session from client with authentication " + authenticationToken + " ended.");
@@ -180,18 +179,27 @@ public class RaAuthenticationBean implements Serializable {
     private String getRedirectUri() {
         HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance()
                 .getExternalContext().getRequest();
-        return request.getRequestURL().toString();
+        String redirectUri = request.getRequestURL().toString();
+
+        // Verify that the hostname from the request is in the allowed hostname list
+        OAuthConfiguration oAuthConfiguration = raMasterApi.getGlobalConfiguration(OAuthConfiguration.class);
+        if (!OAuthTools.isHostnameAllowed(redirectUri, oAuthConfiguration)) {
+            log.info("Hostname in redirect URI is not in the allowed hostname list: " + redirectUri);
+            throw new IllegalStateException("Hostname in redirect URI is not in the allowed hostname list");
+        }
+
+        return redirectUri;
     }
 
     public String getUserRemoteAddr() {
         return getHttpServletRequest().getRemoteAddr();
     }
-    
+
     public RaAuthenticationHelper getRaAuthenticationHelper() {
         if (raAuthenticationHelper == null) {
             raAuthenticationHelper = new RaAuthenticationHelper(webAuthenticationProviderSession, raMasterApi);
         }
-        
+
         return raAuthenticationHelper;
     }
 

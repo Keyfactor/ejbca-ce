@@ -36,6 +36,7 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.util.HttpTools;
+import org.ejbca.util.oauth.OAuthTools;
 
 /**
  * Servlet for invalidation of the current HTTP session.
@@ -48,19 +49,19 @@ public class LogOutServlet extends HttpServlet {
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
     private WebAuthenticationProviderSessionLocal authenticationSession;
-    
+
     private static final long serialVersionUID = 1L;
-    
+
     // JavaServlet Specification 2.5 Section 7.1.1: "...The name of the session tracking cookie must be JSESSIONID".
     private static final String SESSIONCOOKIENAME = "JSESSIONID";
     private GlobalConfiguration globalConfiguration;
-    
+
     @PostConstruct
     public void initialize() {
         globalConfiguration = (GlobalConfiguration) globalConfigurationSession
                 .getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
     }
-    
+
     @Override
     public void doPost(final HttpServletRequest request, final HttpServletResponse response) throws IOException, ServletException {
     	doGet(request, response);
@@ -135,6 +136,16 @@ public class LogOutServlet extends HttpServlet {
     private String getRedirectUri() {
         HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance()
                 .getExternalContext().getRequest();
-        return request.getRequestURL().toString();
+        String redirectUri = request.getRequestURL().toString();
+
+        // Verify that the hostname from the request is in the allowed hostname list
+        OAuthConfiguration oAuthConfiguration = (OAuthConfiguration) globalConfigurationSession
+                .getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
+        if (!OAuthTools.isHostnameAllowed(redirectUri, oAuthConfiguration)) {
+            logger.info("Hostname in redirect URI is not in the allowed hostname list: " + redirectUri);
+            throw new IllegalStateException("Hostname in redirect URI is not in the allowed hostname list");
+        }
+
+        return redirectUri;
     }
 }
