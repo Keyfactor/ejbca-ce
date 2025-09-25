@@ -84,8 +84,8 @@
 		<copy file="${ejbca-rest-api.resources.dir}/META-INF/validation-mapping.xml" tofile="${ejbca-rest-api.build.dir}/META-INF/validation-mapping.xml"/>
 
 		<war destfile="${mod.ejbca-rest-api.war}" webxml="${ejbca-rest-api.resources.dir}/WEB-INF/web.xml" basedir="${ejbca-rest-api.build.dir}">
-            <zipfileset prefix="WEB-INF/lib" dir="${lib}/ext/swagger" erroronmissingdir="false" includes="*.jar"/>
-			<zipfileset prefix="WEB-INF/lib" dir="${lib}" includes="javassist-3.29.2-GA.jar"/>
+            <zipfileset prefix="WEB-INF/lib" dir="${lib}/ext/swagger" erroronmissingdir="false" includes="*.jar" excludes="commons-lang*.jar"/>
+			<zipfileset prefix="WEB-INF/lib" dir="${lib}" includes="javassist-3.29.2-GA.jar" />
 			<lib file="${mod.ejbca-rest-common.lib}"/>
 			<lib file="${mod.ejbca-rest-certificate.lib}"/>
 			<lib file="${mod.ejbca-rest-coap.lib}"/>

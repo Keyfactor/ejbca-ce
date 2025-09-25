@@ -16,6 +16,7 @@ allprojects {
             dirs(rootProject.projectDir.resolve("lib/xstream"))
             dirs(rootProject.projectDir.resolve("lib/jee/soapclient"))
             dirs(rootProject.projectDir.resolve("lib/ext/jackson2"))
+            dirs(rootProject.projectDir.resolve("lib/ext/jaxb"))
             dirs(rootProject.projectDir.resolve("lib/swagger"))
             dirs(rootProject.projectDir.resolve("lib/ext/swagger"))
             dirs(rootProject.projectDir.resolve("lib/primefaces"))
@@ -122,7 +123,6 @@ dependencies {
     earlib(libs.commons.fileupload2)
     earlib(libs.commons.fileupload2.core)
     earlib(libs.commons.io)
-    earlib(libs.commons.lang)
     earlib(libs.commons.lang3)
     earlib(libs.commons.logging)
     earlib(libs.commons.text)
@@ -615,6 +615,10 @@ val moduleShortcuts = mapOf(
     "configdump" to ":modules:configdump:cli:build",
     "clientToolBox" to ":modules:clientToolBox:build",
     "cmpclient" to ":modules:cmpclient:build",
+    "ejbca-caa-cli" to ":modules:caa:cli:build",
+    "ejbca-ejb-cli" to ":modules:ejbca-ejb-cli:build",
+    "p11ng-cli" to ":modules:p11ng-cli:build",
+    "ejbca-db-cli" to ":modules:ejbca-entity:cli:build",
 )
 
 moduleShortcuts.forEach { (shortcut, fullPath) ->

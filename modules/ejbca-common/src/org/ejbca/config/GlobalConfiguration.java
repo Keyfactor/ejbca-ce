@@ -1,5 +1,6 @@
 /*************************************************************************
  *                                                                       *
+
  *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
@@ -25,7 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.certificatetransparency.GoogleCtPolicy;
@@ -41,31 +42,34 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final long serialVersionUID = -2051789798029184421L;
 
     private static final Logger LOG = Logger.getLogger(GlobalConfiguration.class);
+    
+    public static final String GLOBAL_CONFIGURATION_ID = "0";
 
     // Default Values
     public static final float LATEST_VERSION = 3f;
 
     public static final String EJBCA_VERSION = InternalConfiguration.getAppVersion();
     public static final String EJBCA_COMMUNITY_VERSION = InternalConfiguration.getCommunityVersion();
+    
+    public static final String ADMIN_WEB_PATH = "adminweb/";
+    public static final String CA_PATH = ADMIN_WEB_PATH+"ca";
 
     // Entries to choose from in userpreference part, defines the size of data to be displayed on one page.
-    private final  String[] DEFAULTPOSSIBLEENTRIESPERPAGE = {"10" , "25" , "50" , "100"};
-    // Entries to choose from in view log part, defines the size of data to be displayed on one page.
-    private final  String[] DEFAULTPOSSIBLELOGENTRIESPERPAGE = {"10" , "25" , "50" , "100", "200", "400"};
+    public static final  String[] DEFAULT_POSSIBLE_ENTRIES_PER_PAGE = {"10" , "25" , "50" , "100"};
 
-    public static final String GLOBAL_CONFIGURATION_ID = "0";
 
     // Path added to baseurl used as default value in CRLDistributionPointURI field in Certificate Profile definitions.
-    private static final  String   DEFAULTCRLDISTURIPATH  = "publicweb/webdist/certdist?cmd=crl&issuer=";
+    private static final String DEFAULT_CRL_DIST_URI_PATH  = "publicweb/webdist/certdist?cmd=crl&issuer=";
 
     // Path added to baseurl used as default value in DeltaCRLDistributionPointURI field in Certificate Profile definitions.
-    private static final  String   DEFAULTDELTACRLDISTURIPATH  = "publicweb/webdist/certdist?cmd=deltacrl&issuer=";
+    private static final String DEFAULT_DELTA_CRL_DIST_URI_PATH  = "publicweb/webdist/certdist?cmd=deltacrl&issuer=";
+
 
     // DN added to baseurl used as default value in CRLDistributionPointURI field in Certificate Profile definitions.
-    private static final  String   DEFAULTCRLDISTURIPATHDN  = "CN=TestCA,O=AnaTom,C=SE";
+    public static final String DEFAULT_CRL_DIST_URI_PATH_DN = "CN=TestCA,O=AnaTom,C=SE";
 
     // Path added to baseurl used as default value in OCSP Service Locator URI field in Certificate Profile definitions.
-	private static final  String   DEFAULTOCSPSERVICELOCATORURIPATH = "publicweb/status/ocsp";
+	private static final  String DEFAULT_OCSP_SERVICE_LOCATOR_URI_PATH = "publicweb/status/ocsp";
 
     public static byte[] DEFAULT_HEADER_LOGO = new byte[0];
 
@@ -73,7 +77,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final Set<String> NODESINCLUSTER_DEFAULT      = new LinkedHashSet<>();
 
     // Title of ra admin web interface.
-    private static final  String   DEFAULTEJBCATITLE             = InternalConfiguration.getAppNameCapital() + " Administration";
+    public static final String DEFAULT_EJBCA_TITLE = InternalConfiguration.getAppNameCapital() + " Administration";
 
     // OCSP Cleanup
     @Deprecated(since = "9.4.0")
@@ -179,7 +183,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     /** Creates a new instance of GlobalConfiguration */
     public GlobalConfiguration()  {
        super();
-       setEjbcaTitle(DEFAULTEJBCATITLE);
+       setEjbcaTitle(DEFAULT_EJBCA_TITLE);
        setHeadBannerLogo(DEFAULT_HEADER_LOGO);
     }
 
@@ -256,40 +260,24 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
         );
     }
 
-    public String getAdminWebPath() {
-        return "adminweb/";
-    }
-
-    public String getRaWebPath() {
-        return "ra/";
-    }
-
     public String getStandardCRLDistributionPointURI(){
-        return getStandardCRLDistributionPointURINoDN() + DEFAULTCRLDISTURIPATHDN;
+        return getStandardCRLDistributionPointURINoDN() + DEFAULT_CRL_DIST_URI_PATH_DN;
     }
 
     public String getStandardCRLDistributionPointURINoDN(){
-        return getBaseUrlPublic() + DEFAULTCRLDISTURIPATH;
-    }
-
-    /** This MUST be omitted when the CRL issuer is also the cert issuer, which is the only mode EJBCA supports
-    * https://www.rfc-editor.org/rfc/rfc5280.html#section-4.2.1.13
-    * A value would be a DN like 'CN=TestCA,O=AnaTom,C=SE'
-    */
-    public String getStandardCRLIssuer() {
-    	return null;
+        return getBaseUrlPublic() + DEFAULT_CRL_DIST_URI_PATH;
     }
 
     public String getStandardDeltaCRLDistributionPointURI(){
-    	return getStandardDeltaCRLDistributionPointURINoDN() + DEFAULTCRLDISTURIPATHDN;
+    	return getStandardDeltaCRLDistributionPointURINoDN() + DEFAULT_CRL_DIST_URI_PATH_DN;
     }
 
     public String getStandardDeltaCRLDistributionPointURINoDN(){
-        return getBaseUrlPublic() + DEFAULTDELTACRLDISTURIPATH;
+        return getBaseUrlPublic() + DEFAULT_DELTA_CRL_DIST_URI_PATH;
     }
 
 	public String getStandardOCSPServiceLocatorURI(){
-        return getBaseUrlPublic() + DEFAULTOCSPSERVICELOCATORURIPATH;
+        return getBaseUrlPublic() + DEFAULT_OCSP_SERVICE_LOCATOR_URI_PATH;
 	}
 
      /** Checks the themes path for css files and returns an array of filenames
@@ -323,27 +311,8 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     }
 
     // Methods for manipulating the title.
-    public   String getEjbcaTitle() {return (String) data.get(TITLE);}
-    public   static String getEjbcaDefaultTitle() {return DEFAULTEJBCATITLE;}
-    public   void setEjbcaTitle(String ejbcatitle) {data.put(TITLE,ejbcatitle);}
-
-
-    public   String getAuthorizationPath() {return getAdminWebPath()+"administratorprivileges";}
-    public   String getBannersPath() {return "banners";}
-    public   String getCaPath() {return getAdminWebPath()+"ca";}
-    public   String getConfigPath() {return getAdminWebPath()+"sysconfig";}
-    public   String getImagesPath() {return "images";}
-    public   String getLanguagePath() {return "languages";}
-    public   String getLogPath() {return getAdminWebPath()+"log";}
-    public   String getReportsPath() {return getAdminWebPath()+"reports";}
-    public   String getRaPath() {return getAdminWebPath()+"ra";}
-    public   String getThemePath() {return "themes";}
-
-    public   String getLanguageFilename(){return "languagefile";}
-    public   String getIeCssFilenamePostfix(){return "_ie-fixes";}
-
-    public   String[] getPossibleEntiresPerPage(){return DEFAULTPOSSIBLEENTRIESPERPAGE;}
-    public   String[] getPossibleLogEntiresPerPage(){return DEFAULTPOSSIBLELOGENTRIESPERPAGE;}
+    public String getEjbcaTitle() {return (String) data.get(TITLE);}
+    public void setEjbcaTitle(String ejbcatitle) {data.put(TITLE,ejbcatitle);}
 
     public   String getAvailableThemesAsString(){return (String) data.get(AVAILABLETHEMES);}
 

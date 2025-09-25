@@ -50,7 +50,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -65,7 +66,6 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.WebPrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
-import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.control.StandardRules;
@@ -317,6 +317,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
     @EJB
+    private EndEntityAuthenticationSessionLocal endEntityAuthenticationSession;
+    @EJB
     private EstOperationsSessionLocal estOperationsSessionLocal;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
@@ -382,9 +384,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
      * <tr><th>18<td>=<td>8.3.0
      * <tr><th>19<td>=<td>9.2.0
      * <tr><th>20<td>=<td>9.3.0
+     * <tr><th>21<td>=<td>9.4.0
      * </table>
      */
-    private static final int RA_MASTER_API_VERSION = 20;
+    private static final int RA_MASTER_API_VERSION = 21;
 
     /**
      * Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time
@@ -435,27 +438,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         final HashMap<String, Boolean> accessRules = authorizationSession.getAccessAvailableToAuthenticationToken(authenticationToken);
         final int updateNumber = accessTreeUpdateSession.getAccessTreeUpdateNumber();
         return new RaAuthorizationResult(accessRules, updateNumber);
-    }
-
-    @Override
-    @Deprecated
-    public AccessSet getUserAccessSet(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
-        return authorizationSystemSession.getAccessSetForAuthToken(authenticationToken);
-    }
-
-    @Override
-    @Deprecated
-    public List<AccessSet> getUserAccessSets(final List<AuthenticationToken> authenticationTokens) {
-        final List<AccessSet> ret = new ArrayList<>();
-        for (final AuthenticationToken authenticationToken : authenticationTokens) {
-            try {
-                ret.add(authorizationSystemSession.getAccessSetForAuthToken(authenticationToken));
-            } catch (AuthenticationFailedException e) {
-                // Always add, even if null. Otherwise the caller won't be able to determine which AccessSet belongs to which AuthenticationToken
-                ret.add(null);
-            }
-        }
-        return ret;
     }
 
     @Override
@@ -1925,8 +1907,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         final RaRoleSearchResponse searchResponse = new RaRoleSearchResponse();
         final String searchString = request.getGenericSearchString();
         for (final Role role : authorizedRoles) {
-            if (searchString == null || StringUtils.containsIgnoreCase(role.getRoleName(), searchString) ||
-                    (role.getNameSpace() != null && StringUtils.containsIgnoreCase(role.getNameSpace(), searchString))) {
+            if (searchString == null || Strings.CI.contains(role.getRoleName(), searchString) ||
+                    (role.getNameSpace() != null && Strings.CI.contains(role.getNameSpace(), searchString))) {
                 searchResponse.getRoles().add(role);
             }
         }
@@ -2150,11 +2132,19 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
     }
 
-    private boolean populateEndEntityFromRestRequest(final AuthenticationToken admin, final EndEntityInformation endEntity) throws EjbcaException {
-        // we ignore global configuration to "ignore EEP restriction" for REST
+    private boolean populateEndEntityFromRestRequest(final AuthenticationToken admin, 
+                            final EndEntityInformation endEntity, String endEntityProfileAccessRule) throws EjbcaException, AuthorizationDeniedException {
 
+        // CA
+        Integer caId = caSession.getAuthorizedCaNamesToIds(admin).get(endEntity.getExtendedInformation().getCustomData(ExtendedInformation.CA_NAME));
+        if (caId == null) {
+            throw new EjbcaException("CA name is invalid or unauthorized.");
+        }
+        endEntity.setCAId(caId);
+        
+        // we ignore global configuration to "ignore EEP restriction" for REST
         // EEP
-        Map<Integer, String> eeProfIdToNameMap = getAuthorizedEndEntityProfileIdsToNameMap(admin);
+        Map<Integer, String> eeProfIdToNameMap = endEntityProfileSession.getEndEntityProfileIdToNameMap();
         Integer endEntityProfileId = null;
         for (Entry<Integer, String> entry : eeProfIdToNameMap.entrySet()) {
             if (entry.getValue().equals(endEntity.getExtendedInformation().getCustomData(ExtendedInformation.END_ENTITY_PROFILE_NAME))) {
@@ -2166,15 +2156,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (endEntityProfileId == null) {
             throw new EjbcaException("End Entity Profile is invalid or unauthorized.");
         }
+        endEntityAuthenticationSession.assertAuthorizedToEndEntityProfile(
+                admin, endEntityProfileId, endEntityProfileAccessRule, caId);
         endEntity.setEndEntityProfileId(endEntityProfileId);
         EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(endEntityProfileId);
 
-        // CA
-        Integer caId = caSession.getAuthorizedCaNamesToIds(admin).get(endEntity.getExtendedInformation().getCustomData(ExtendedInformation.CA_NAME));
-        if (caId == null) {
-            throw new EjbcaException("CA name is invalid or unauthorized.");
-        }
-        endEntity.setCAId(caId);
+        
 
         // Certificate profile id
         int certificateProfileId = certificateProfileSession
@@ -2202,7 +2189,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         // only for REST to avoid fetching end entity profile contents to RA
         if (endEntity.getExtendedInformation() != null &&
                 endEntity.getExtendedInformation().getCustomData(ExtendedInformation.MARKER_FROM_REST_RESOURCE) != null) {
-            isClearPwd = populateEndEntityFromRestRequest(admin, endEntity);
+            isClearPwd = populateEndEntityFromRestRequest(admin, endEntity, AccessRulesConstants.CREATE_END_ENTITY);
         }
 
         try {
@@ -2926,9 +2913,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             // only for REST to avoid fetching end entity profile contents to RA
             if (endEntityInformation.getExtendedInformation() != null &&
                     endEntityInformation.getExtendedInformation().getCustomData(ExtendedInformation.MARKER_FROM_REST_RESOURCE) != null) {
-                EndEntityProfile endEntityProfile =
-                        endEntityProfileSession.getEndEntityProfileNoClone(endEntityInformation.getEndEntityProfileId());
-                isClearPwd = endEntityProfile.isClearTextPasswordUsed() && endEntityProfile.isClearTextPasswordDefault();
+                try {
+                    isClearPwd = populateEndEntityFromRestRequest(authenticationToken, endEntityInformation, AccessRulesConstants.EDIT_END_ENTITY);
+                } catch (EjbcaException e) {
+                    throw new AuthorizationDeniedException(e.getMessage());
+                }
                 endEntityInformation.getExtendedInformation().removeInternalKeys();
             }
             if (newUsername == null)
@@ -3517,6 +3506,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return certificateProfileSession.getProfileAsXml(authenticationToken, profileId);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public Collection<CertificateWrapper> processCardVerifiableCertificateRequest(
             final AuthenticationToken authenticationToken, final String username, final String password, final String cvcReq
@@ -3572,6 +3562,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public AcmeOrder getAcmeOrderById(final String orderId) {
         return acmeOrderDataSession.getAcmeOrder(orderId);
+    }
+
+    @Override
+    public AcmeOrder getIfReadyAcmeOrder(final String orderId) {
+        return acmeOrderDataSession.getIfReadyAcmeOrder(orderId);
     }
 
     @Override

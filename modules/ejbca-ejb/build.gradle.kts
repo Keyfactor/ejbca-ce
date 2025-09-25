@@ -25,14 +25,22 @@ dependencies {
     compileOnly(libs.cert.cvc)
     compileOnly(libs.guava)
     compileOnly(libs.log4j.v12.api)
-    compileOnly(libs.commons.lang)
     compileOnly(libs.commons.lang3)
     compileOnly(libs.commons.configuration2)
     compileOnly(libs.commons.collections4)
     compileOnly(libs.nimbus.jose.jwt)
     compileOnly(libs.x509.common.util)
     compileOnly(libs.bundles.cryptotokens)
+    compileOnly(libs.istack.commons.runtime.jaxb)
+    compileOnly(libs.jakarta.xml.bind.api)
+    compileOnly(libs.jaxb.core.jaxb)
+    compileOnly(libs.jaxb.impl.jaxb)
+    compileOnly(libs.jaxb.runtime)
+    compileOnly(libs.txw2.jaxb)
+    compileOnly(libs.hibernate.validator)
     testRuntimeOnly(libs.jldap)
+    testRuntimeOnly(libs.jboss.logging)
+    testRuntimeOnly(libs.classmate)
 }
 
 sourceSets {

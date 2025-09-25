@@ -258,7 +258,7 @@ public class CmpRaThrowAwaySystemTest extends CmpTestCase {
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         String username = "cmpRaThrowAwayTestUser" + RND.nextLong(); // This is what we expect from the CMP configuration
         final X500Name subjectDN = new X500Name("CN=" + username);
-        PKIMessage one = genCertReq(this.caCertificate.getIssuerDN().toString(), subjectDN, keys, this.caCertificate, nonce, transid, true, null, notBefore,
+        PKIMessage one = genCertReq(this.caCertificate.getIssuerX500Principal().toString(), subjectDN, keys, this.caCertificate, nonce, transid, true, null, notBefore,
                 notAfter, null, null, null);
         PKIMessage req;
         if (usePbmac1) {
@@ -272,7 +272,7 @@ public class CmpRaThrowAwaySystemTest extends CmpTestCase {
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
         ASN1OutputStream.create(bao, ASN1Encoding.DER).writeObject(req);
         byte[] resp = sendCmpHttp(bao.toByteArray(), 200, configAlias);
-        checkCmpResponseGeneral(resp, this.caCertificate.getIssuerDN().toString(), subjectDN, this.caCertificate, nonce, transid, false, PBE_SECRET,
+        checkCmpResponseGeneral(resp, this.caCertificate.getIssuerX500Principal().toString(), subjectDN, this.caCertificate, nonce, transid, false, PBE_SECRET,
                 PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), usePbmac1);
         X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, configAlias, subjectDN, this.caCertificate, resp, reqId);
         assertEquals("Certificate history data was or wasn't stored: ", useCertReqHistory, (this.csrHistorySession.retrieveCertReqHistory(CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert)) != null));
@@ -292,7 +292,7 @@ public class CmpRaThrowAwaySystemTest extends CmpTestCase {
         bao = new ByteArrayOutputStream();
         ASN1OutputStream.create(bao, ASN1Encoding.DER).writeObject(req1);
         resp = sendCmpHttp(bao.toByteArray(), 200, configAlias);
-        checkCmpResponseGeneral(resp, this.caCertificate.getIssuerDN().toString(), subjectDN, this.caCertificate, nonce, transid, false,
+        checkCmpResponseGeneral(resp, this.caCertificate.getIssuerX500Principal().toString(), subjectDN, this.caCertificate, nonce, transid, false,
                 PBE_SECRET, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), usePbmac1);
         checkCmpPKIConfirmMessage(subjectDN, this.caCertificate, resp);
 
@@ -300,7 +300,7 @@ public class CmpRaThrowAwaySystemTest extends CmpTestCase {
         // TODO: ECA-1916 should remove dependency on useUserStorage
         if (useCertificateStorage && useUserStorage) {
             // Now revoke the bastard using the CMPv1 reason code!
-            PKIMessage rev = genRevReq(this.caCertificate.getIssuerDN().toString(), subjectDN, cert.getSerialNumber(), this.caCertificate, nonce, transid, false, null, null);
+            PKIMessage rev = genRevReq(this.caCertificate.getIssuerX500Principal().toString(), subjectDN, cert.getSerialNumber(), this.caCertificate, nonce, transid, false, null, null);
             PKIMessage revReq;
             if (usePbmac1) {
                 revReq = protectPKIMessageWithPbmac1(rev, false, PBE_SECRET, "unusedKeyId", 567);
@@ -311,9 +311,9 @@ public class CmpRaThrowAwaySystemTest extends CmpTestCase {
             bao = new ByteArrayOutputStream();
             ASN1OutputStream.create(bao, ASN1Encoding.DER).writeObject(revReq);
             resp = sendCmpHttp(bao.toByteArray(), 200, configAlias);
-            checkCmpResponseGeneral(resp, this.caCertificate.getIssuerDN().toString(), subjectDN, this.caCertificate, nonce, transid, false,
+            checkCmpResponseGeneral(resp, this.caCertificate.getIssuerX500Principal().toString(), subjectDN, this.caCertificate, nonce, transid, false,
                     PBE_SECRET, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), usePbmac1);
-            checkCmpRevokeConfirmMessage(this.caCertificate.getIssuerDN().toString(), subjectDN, cert.getSerialNumber(), this.caCertificate, resp, true);
+            checkCmpRevokeConfirmMessage(this.caCertificate.getIssuerX500Principal().toString(), subjectDN, cert.getSerialNumber(), this.caCertificate, resp, true);
             int reason = this.certificateStoreSession.getStatus(CertTools.getSubjectDN(this.caCertificate), cert.getSerialNumber()).revocationReason;
             assertEquals("Certificate was not revoked with the right reason.", RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, reason);
         }

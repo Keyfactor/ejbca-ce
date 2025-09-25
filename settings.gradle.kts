@@ -40,10 +40,10 @@ gradle.allprojects {
 dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
-            library("bcprov", ":bcprov:jdk18on-1.80.1")
-            library("bcpkix", ":bcpkix:jdk18on-1.80.1")
-            library("bctls", ":bctls:jdk18on-1.80.1")
-            library("bcutil", ":bcutil:jdk18on-1.80.1")
+            library("bcprov", ":bcprov:jdk18on-1.80.2")
+            library("bcpkix", ":bcpkix:jdk18on-1.80.2")
+            library("bctls", ":bctls:jdk18on-1.80.2")
+            library("bcutil", ":bcutil:jdk18on-1.80.2")
             library("ejbca-ws-client-gen", ":ejbca-ws-client-gen:1")
             library("caffeine", ":caffeine:3.1.6")
             library("jakartaee-api", ":jakarta.jakartaee-api:10.0.0")
@@ -53,15 +53,14 @@ dependencyResolutionManagement {
             library("log4j-v12-api", ":log4j-1.2-api:2.20.0")
             library("log4j-api", ":log4j-api:2.20.0")
             library("log4j-core", ":log4j-core:2.20.0")
-            library("commons-lang", ":commons-lang:2.6")
             library("commons-lang3", ":commons-lang3:3.18.0")
             library("commons-configuration2", ":commons-configuration2:2.11.0")
             library("commons-collections4", ":commons-collections4:4.5.0")
             library("nimbus-jose-jwt", ":nimbus-jose-jwt:9.37.3")
-            library("x509-common-util", ":x509-common-util:5.3.5")
-            library("cryptotokens-api", ":cryptotokens-api:3.2.1")
-            library("cryptotokens-impl", ":cryptotokens-impl:3.2.1")
-            library("cryptotokens-impl-ee", ":cryptotokens-impl-ee:3.2.1")
+            library("x509-common-util", ":x509-common-util:5.3.6")
+            library("cryptotokens-api", ":cryptotokens-api:3.3.2")
+            library("cryptotokens-impl", ":cryptotokens-impl:3.3.2")
+            library("cryptotokens-impl-ee", ":cryptotokens-impl-ee:3.3.2")
             library("adsddl", ":adsddl:1.9")
             library("jakarta.jws-api", ":jakarta.jws-api:3.0.0")
             library("jakarta.xml.soap-api", ":jakarta.xml.soap-api:3.0.2")
@@ -102,7 +101,7 @@ dependencyResolutionManagement {
             library("commons-beanutils", ":commons-beanutils:1.9.4")
             library("commons-text", ":commons-text:1.10.0")
             library("angus.activation", ":angus.activation:2.0.2")
-            library("myfaces-api", ":myfaces-api:4.0.2")
+            library("myfaces-api", ":myfaces-api:4.1.1")
             library("kerb4j-server-common", ":kerb4j-server-common:0.1.2")
             library("kerb-core", ":kerb-core:2.0.3")
             library("kerb-crypto", ":kerb-crypto:2.0.3")
@@ -124,7 +123,7 @@ dependencyResolutionManagement {
             library("cxf.rt.transports.http", ":cxf-rt-transports-http:4.1.3")
             library("cxf.rt.wsdl", ":cxf-rt-wsdl:4.1.3")
             library("gmbal.api", ":gmbal-api-only:4.0.3")
-            library("istack-commons-runtime", ":istack-commons-runtime:3.0.11")
+            library("istack-commons-runtime-soap-client", ":istack-commons-runtime:3.0.11")
             library("jaxws.rt", ":jaxws-rt:4.0.1")
             library("policy", ":policy:4.0.1")
             library("saaj.impl", ":saaj-impl:3.0.0")
@@ -143,7 +142,7 @@ dependencyResolutionManagement {
             library("hibernate-commons-annotations", ":hibernate-commons-annotations:6.0.6.Final")
             library("hibernate-core", ":hibernate-core:6.5.2.Final")
             library("hibernate-validator", ":hibernate-validator:8.0.1.Final")
-            library("istack-commons-runtime-old", ":istack-commons-runtime:3.0.7")
+            library("istack-commons-runtime-hibernate", ":istack-commons-runtime:3.0.7")
             library("jakarta.activation-api", ":jakarta.activation-api:2.1.0")
             library("jandex", ":jandex:3.1.2")
             library("javassist", ":javassist:3.29.2-GA")
@@ -186,6 +185,12 @@ dependencyResolutionManagement {
             library("jakarta.mail", ":jakarta.mail:2.0.3")
             library("jaxb.core", ":jaxb-core:4.0.2")
             library("jaxb.impl", ":jaxb-impl:4.0.2")
+            // jaxb license validation
+            library("istack-commons-runtime-jaxb", ":istack-commons-runtime:4.1.2")
+            library("jaxb.core-jaxb", ":jaxb-core:4.0.5")
+            library("jaxb.impl-jaxb", ":jaxb-impl:4.0.5")
+            library("txw2-jaxb", ":txw2:4.0.5")
+            
 
             if (!isProductionMode) {
                 library("jboss.client", ":jboss:client")
@@ -238,7 +243,6 @@ dependencyResolutionManagement {
             bundle(
                 "utils",
                 listOf(
-                    "commons-lang",
                     "commons-lang3",
                     "commons-configuration2",
                     "commons-collections4",
@@ -276,7 +280,7 @@ dependencyResolutionManagement {
                     "cxf.rt.transports.http",
                     "cxf.rt.wsdl",
                     "gmbal.api",
-                    "istack-commons-runtime",
+                    "istack-commons-runtime-soap-client",
                     "jakarta.xml.bind.api",
                     "jaxb.runtime",
                     "jaxws.rt",

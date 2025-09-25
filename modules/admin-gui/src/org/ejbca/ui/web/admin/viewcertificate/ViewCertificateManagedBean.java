@@ -27,7 +27,7 @@ import java.util.stream.Stream;
 
 import com.keyfactor.util.CertTools;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -208,7 +208,7 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
             qcStatement = certificateData.hasQcStatement();
             certificateTransparencySCTs = certificateData.hasCertificateTransparencySCTs();
             
-            downloadCertificateLink = getEjbcaWebBean().getBaseUrl() + globalconfiguration.getCaPath() + "/endentitycert";
+            downloadCertificateLink = getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.CA_PATH + "/endentitycert";
             
             returnToLink = composeReturnToLink(request, globalconfiguration);
         }
@@ -222,29 +222,30 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
             final int returnToId = Integer.parseInt(returnToParameter);
             switch (returnToId) {
             case RETURN_TO_AUDITLOG: // 0 = send user to the audit log page
-                returnToLink = getEjbcaWebBean().getBaseUrl() + globalconfiguration.getAdminWebPath() + "audit/search.xhtml";
+                returnToLink = getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH + "audit/search.xhtml";
                 break;
             case RETURN_TO_PEERCONNECTORS: // 1 = send user to the peer overview page
-                returnToLink = getEjbcaWebBean().getBaseUrl() + globalconfiguration.getAdminWebPath() + "peerconnector/peerconnectors.xhtml";
+                returnToLink = getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH + "peerconnector/peerconnectors.xhtml";
                 break;
             case RETURN_TO_OCSPKB: // 2 = send user to the IKB OCSP page
-                returnToLink = getEjbcaWebBean().getBaseUrl() + globalconfiguration.getAdminWebPath() + "keybind/ocspresponders.xhtml";
+                returnToLink = getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH + "keybind/ocspresponders.xhtml";
                 break;
             case RETURN_TO_AUTHKB: // 3 = send user to the IKB AKB page
-                returnToLink = getEjbcaWebBean().getBaseUrl() + globalconfiguration.getAdminWebPath() + "keybind/keybindings.xhtml";
+                returnToLink = getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH + "keybind/keybindings.xhtml";
                 break;
             case RETURN_TO_EDITIKB: // 4 = send user back to Edit IKB page (default to IKB page)
                 if (keyBindingId != 0) {
-                    returnToLink = getEjbcaWebBean().getBaseUrl() + globalconfiguration.getAdminWebPath() + "keybind/keybinding.xhtml?internalKeyBindingId=" + keyBindingId;
+                    returnToLink = getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH + "keybind/keybinding.xhtml?internalKeyBindingId=" + keyBindingId;
+
                 } else {
-                    returnToLink = getEjbcaWebBean().getBaseUrl() + globalconfiguration.getAdminWebPath() + "keybind/keybindings.xhtml";
+                    returnToLink = getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH + "keybind/keybindings.xhtml";
                 }
                 break;
             case RETURN_TO_ROLEMEMBERS: // 5 = send user back to role members page
                 if (roleId != 0) {
-                    returnToLink = getEjbcaWebBean().getBaseUrl() + globalconfiguration.getAdminWebPath() + "administratorprivileges/rolemembers.xhtml?roleId=" + roleId;
+                    returnToLink = getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH + "administratorprivileges/rolemembers.xhtml?roleId=" + roleId;
                 } else {
-                    returnToLink = getEjbcaWebBean().getBaseUrl() + globalconfiguration.getAdminWebPath() + "administratorprivileges/roles.xhtml";
+                    returnToLink = getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH + "administratorprivileges/roles.xhtml";
                 }
             }
         } catch (final NumberFormatException e) {
@@ -619,7 +620,7 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     }
 
     public String getLink() throws UnsupportedEncodingException {
-        return getEjbcaWebBean().getBaseUrl()+ getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath() + java.net.URLEncoder.encode("viewcertificate.xhtml","UTF-8") ;
+        return getEjbcaWebBean().getBaseUrl()+ GlobalConfiguration.ADMIN_WEB_PATH + java.net.URLEncoder.encode("viewcertificate.xhtml","UTF-8") ;
     }
 
     public void actionKeyRecovery() throws AuthorizationDeniedException, CADoesntExistsException {

@@ -33,7 +33,7 @@ public final class YamlWriter {
         options.setAllowReadOnlyProperties(true);
 
         final Yaml yaml = new Yaml(options);
-        final String yamlExport = yaml.dumpAs(data, Tag.MAP, DumperOptions.FlowStyle.AUTO);
+        final String yamlExport = yaml.dumpAs(data, Tag.MAP, DumperOptions.FlowStyle.BLOCK);
 
         return yamlExport.getBytes(StandardCharsets.UTF_8);
     }

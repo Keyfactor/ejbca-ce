@@ -20,7 +20,7 @@ import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.ejbca.core.model.ra.raadmin.validators.RegexFieldValidator;
 import org.junit.Test;
 

@@ -27,9 +27,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public class ExceptionInfoRestResponse {
 
     // Have to match HTTP Status codes
-    @Schema(name = "Status code", example = "202")
+    @Schema(description = "Status code", example = "202")
     private int statusCode;
-    @Schema(name = "Information message", example = "Request with Id 1 is still waiting for approval")
+    @Schema(description = "Information message", example = "Request with Id 1 is still waiting for approval")
     private String infoMessage;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String link;

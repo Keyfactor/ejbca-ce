@@ -19,7 +19,7 @@ import java.util.List;
 import jakarta.faces.FacesException;
 import jakarta.faces.context.FacesContext;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificate.ca.its.region.CircularRegion;
 import org.cesecore.certificate.ca.its.region.IdentifiedRegionCountryRegions;

@@ -13,8 +13,6 @@
 package org.ejbca.core.ejb.db;
 
 import org.cesecore.authorization.cache.AccessTreeUpdateData;
-import org.cesecore.authorization.rules.AccessRuleData;
-import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.certificate.Base64CertData;
 import org.cesecore.certificates.certificate.CertificateData;
@@ -28,7 +26,6 @@ import org.cesecore.keybind.InternalKeyBindingData;
 import org.cesecore.keys.token.CryptoTokenData;
 import org.cesecore.oscp.OcspResponseData;
 import org.cesecore.profiles.ProfileData;
-import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.member.RoleMemberData;
 import org.ejbca.acme.AcmeAccountData;
@@ -50,16 +47,12 @@ import org.ejbca.peerconnector.PeerData;
 import java.io.Serializable;
 import java.util.List;
 
-@SuppressWarnings("deprecation")
 public record DatabaseContent(
-        List<AccessRuleData> accessRuleData,
         List<AccessTreeUpdateData> accessTreeUpdateData,
-        List<AccessUserAspectData> accessUserAspectData,
         List<AcmeAccountData> acmeAccountData,
         List<AcmeAuthorizationData> acmeAuthorizationData,
         List<AcmeNonceData> acmeNonceData,
         List<AcmeOrderData> acmeOrderData,
-        List<AdminGroupData> adminGroupData,
         List<AdminPreferencesData> adminPreferencesData,
         List<ApprovalData> approvalData,
         List<Base64CertData> base64CertData,

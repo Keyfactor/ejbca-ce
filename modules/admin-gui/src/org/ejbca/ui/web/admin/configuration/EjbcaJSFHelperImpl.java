@@ -68,8 +68,8 @@ public class EjbcaJSFHelperImpl implements EjbcaJSFHelper, Serializable {
     public String getEjbcaTitle() {
         GlobalConfiguration gc = getEjbcaWebBean().getGlobalConfiguration();
         if (gc == null) {
-            log.warn("GlobalConfiguration is null trying to get from EjbcaWebBean, returning default Title.");
-            return  GlobalConfiguration.getEjbcaDefaultTitle();
+            log.warn("GlobalConfiguration is null trying to get from EjbcaWebBean, returning default title.");
+            return  GlobalConfiguration.DEFAULT_EJBCA_TITLE;
         }
         return gc.getEjbcaTitle();
     }

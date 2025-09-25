@@ -13,7 +13,7 @@
 
 package org.ejbca.ui.cli;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -394,10 +394,10 @@ public class RecoverCommand extends EjbcaCliUserCommandBase {
     }
 
     private boolean certificateWasCreated(final String line) {
-        return StringUtils.contains(line, "CERT_CREATION;SUCCESS");
+        return Strings.CS.contains(line, "CERT_CREATION;SUCCESS");
     }
 
     private boolean endEntityWasCreated(final String line) {
-        return StringUtils.contains(line, "RA_ADDENDENTITY;SUCCESS");
+        return Strings.CS.contains(line, "RA_ADDENDENTITY;SUCCESS");
     }
 }

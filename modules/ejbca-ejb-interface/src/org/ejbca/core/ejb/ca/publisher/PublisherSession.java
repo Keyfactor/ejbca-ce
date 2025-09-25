@@ -16,7 +16,7 @@ package org.ejbca.core.ejb.ca.publisher;
 import java.util.Collection;
 import java.util.Map;
 
-import org.apache.commons.lang.math.IntRange;
+import org.apache.commons.lang3.IntegerRange;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
@@ -228,7 +228,7 @@ public interface PublisherSession {
      * @throws AuthorizationDeniedException if access was denied to the CA matching userDN
      * @see org.ejbca.core.model.ca.publisher.BasePublisher
      */
-    boolean republishCrl(AuthenticationToken admin, Collection<Integer> publisherids, String caFingerprint, String issuerDn, IntRange crlPartitionIndeces) throws AuthorizationDeniedException;
+    boolean republishCrl(AuthenticationToken admin, Collection<Integer> publisherids, String caFingerprint, String issuerDn, IntegerRange crlPartitionIndeces) throws AuthorizationDeniedException;
     
 
     /**

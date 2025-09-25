@@ -29,6 +29,7 @@ import java.util.zip.ZipInputStream;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.faces.application.FacesMessage;
+import jakarta.faces.component.UIComponent;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.event.AjaxBehaviorEvent;
 import jakarta.faces.view.ViewScoped;
@@ -37,9 +38,10 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.Part;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
@@ -58,6 +60,8 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.cesecore.config.GlobalCaConfiguration;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleDataSessionLocal;
@@ -78,6 +82,9 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.bean.SessionBeans;
 import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
+import org.primefaces.component.tabview.Tab;
+import org.primefaces.component.tabview.TabView;
+import org.primefaces.event.TabChangeEvent;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.EJBTools;
@@ -93,12 +100,21 @@ import com.keyfactor.util.EJBTools;
 public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     protected static final Logger log = Logger.getLogger(ManageCAsMBean.class);
     private static final long serialVersionUID = 1L;
+   
+    @EJB
+    private AuthorizationSessionLocal authorizationSession;
     @EJB
     private CaSessionLocal caSession;
     @EJB
     private CertificateProfileSessionLocal certificateProfileSessionLocal;
     @EJB
+    private CertificateStoreSessionLocal certificateStoreSession;
+    @EJB
+    private EndEntityManagementSessionLocal endEntityManagementSession;
+    @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
     private RoleSessionLocal roleSession;
     @EJB
@@ -107,10 +123,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     private RoleDataSessionLocal roleDataSession;
     @EJB
     private RoleMemberDataSessionLocal roleMemberDataSession;
-    @EJB
-    private CertificateStoreSessionLocal certificateStoreSession;
-    @EJB
-    private EndEntityManagementSessionLocal endEntityManagementSession;
+   
     private Map<String, Integer> caNames;
     private CAInterfaceBean caBean;
     private int selectedCaId;
@@ -125,6 +138,59 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
 
     private transient Part certificateBundle;
 
+    private int lastActiveTab = 0;
+    
+    private GlobalCaConfiguration globalCaConfiguration;
+    
+    public ManageCAsMBean() {
+        super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
+    }
+
+    @PostConstruct
+    public void init() {
+        final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+        try {
+            caBean = SessionBeans.getCaBean(request);
+        } catch (ServletException e) {
+            throw new IllegalStateException("Could not initiate CAInterfaceBean", e);
+        }
+        caNames = caSession.getAuthorizedCaNamesToIds(getAdmin());
+        caidtonamemap = caSession.getCAIdToNameMap();
+        initializeListOfCas();
+        final Map<String, Object> requestMap = FacesContext.getCurrentInstance().getExternalContext().getRequestMap();
+        selectedCaIdForDelete = (int) requestMap.getOrDefault("selectedCaIdForDelete", 0);
+        setGlobalCaConfiguration((GlobalCaConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCaConfiguration.CA_CONFIGURATION_ID));
+    }
+    
+    public int getLastActiveTab() {
+        return lastActiveTab;
+    }
+
+    public void setLastActiveTab(final int lastActiveTab) {
+        this.lastActiveTab = lastActiveTab;
+    }
+    
+    public void onTabChange(final TabChangeEvent<?> event) {
+        final Tab activeTab = event.getTab();
+        if (activeTab == null) {
+            return;
+        }
+        final TabView tabView = (TabView) activeTab.getParent();
+        // There is tabView.getTabIndex(), but it just calls
+        // SystemConfigMBean.getLastActiveTab(), so it can't be used.
+        int tabIndex = 0;
+        for (final UIComponent tab : tabView.getChildren()) {
+            if (!tab.isRendered()) {
+                continue;
+            }
+            if (tab == activeTab) {
+                setLastActiveTab(tabIndex);
+                break;
+            }
+            tabIndex++;
+        }
+    }
+    
     public void setCertificateBundle(final Part certificateBundle) {
         this.certificateBundle = certificateBundle;
     }
@@ -239,25 +305,6 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
                     "The selected certificate bundle could not be uploaded." + e.getMessage(),
                     null);
         }
-    }
-
-    public ManageCAsMBean() {
-        super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
-    }
-
-    @PostConstruct
-    public void init() {
-        final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-        try {
-            caBean = SessionBeans.getCaBean(request);
-        } catch (ServletException e) {
-            throw new IllegalStateException("Could not initiate CAInterfaceBean", e);
-        }
-        caNames = caSession.getAuthorizedCaNamesToIds(getAdmin());
-        caidtonamemap = caSession.getCAIdToNameMap();
-        initializeListOfCas();
-        final Map<String, Object> requestMap = FacesContext.getCurrentInstance().getExternalContext().getRequestMap();
-        selectedCaIdForDelete = (int) requestMap.getOrDefault("selectedCaIdForDelete", 0);
     }
 
     private void initializeListOfCas() {
@@ -558,5 +605,27 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
 
     public boolean isCaListEmpty() {
         return authorizedCas == null || authorizedCas.isEmpty();
+    }
+    
+    /** @return true if admin may create new or modify System Configuration, in this case GlobalCaConfiguration. */
+    public boolean isAllowedToEditSystemConfiguration() {
+        return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_EDIT.resource());
+    }
+    
+    public void saveGlobalCaSettings() {
+        try {
+            globalConfigurationSession.saveConfiguration(getAdmin(), globalCaConfiguration);
+        } catch (AuthorizationDeniedException e) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+        }
+    }
+
+    public GlobalCaConfiguration getGlobalCaConfiguration() {
+        return globalCaConfiguration;
+    }
+
+
+    public void setGlobalCaConfiguration(GlobalCaConfiguration globalCaConfiguration) {
+        this.globalCaConfiguration = globalCaConfiguration;
     }
 }

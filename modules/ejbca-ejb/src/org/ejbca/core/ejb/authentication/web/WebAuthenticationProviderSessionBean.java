@@ -29,7 +29,7 @@ import com.nimbusds.jwt.JWTParser;
 import com.nimbusds.jwt.PlainJWT;
 import com.nimbusds.jwt.SignedJWT;
 import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
@@ -603,7 +603,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 "https",
                 WebConfiguration.getHostName(),
                 WebConfiguration.getPublicHttpsPort()
-        ) + globalConfiguration.getAdminWebPath();
+        ) + GlobalConfiguration.ADMIN_WEB_PATH;
     }
 
     public boolean isAllowBlankAudience() {

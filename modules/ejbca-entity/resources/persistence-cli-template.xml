@@ -28,12 +28,9 @@
     -->
     <persistence-unit name="ejbca-read" transaction-type="RESOURCE_LOCAL">
         <mapping-file>META-INF/orm-ejbca-${database.name}.xml</mapping-file>
-        <class>org.cesecore.authorization.rules.AccessRuleData</class>
         <class>org.cesecore.authorization.cache.AccessTreeUpdateData</class>
-        <class>org.cesecore.authorization.user.AccessUserAspectData</class>
         <class>org.cesecore.roles.member.RoleMemberData</class>
         <class>org.cesecore.roles.RoleData</class>
-        <class>org.cesecore.roles.AdminGroupData</class>
         <class>org.cesecore.audit.impl.integrityprotected.AuditRecordData</class>
         <class>org.cesecore.certificates.ca.CAData</class>
         <class>org.cesecore.certificates.certificate.CertificateData</class>
@@ -76,12 +73,9 @@
     -->
     <persistence-unit name="ejbca-write" transaction-type="RESOURCE_LOCAL">
         <mapping-file>META-INF/orm-ejbca-${database.name}.xml</mapping-file>
-        <class>org.cesecore.authorization.rules.AccessRuleData</class>
         <class>org.cesecore.authorization.cache.AccessTreeUpdateData</class>
-        <class>org.cesecore.authorization.user.AccessUserAspectData</class>
         <class>org.cesecore.roles.member.RoleMemberData</class>
         <class>org.cesecore.roles.RoleData</class>
-        <class>org.cesecore.roles.AdminGroupData</class>
         <class>org.cesecore.audit.impl.integrityprotected.AuditRecordData</class>
         <class>org.cesecore.certificates.ca.CAData</class>
         <class>org.cesecore.certificates.certificate.CertificateData</class>

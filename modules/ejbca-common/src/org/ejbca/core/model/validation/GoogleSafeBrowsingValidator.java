@@ -13,7 +13,22 @@
 
 package org.ejbca.core.model.validation;
 
-import org.apache.commons.lang.StringUtils;
+import static java.util.stream.Collectors.toList;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.function.Supplier;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -35,20 +50,6 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-
-import java.io.IOException;
-import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.function.Supplier;
-
-import static java.util.stream.Collectors.toList;
 
 /**
  * Validates domain names against the <a href="https://developers.google.com/safe-browsing">Google Safe Browsing API</a>.
@@ -271,7 +272,7 @@ public class GoogleSafeBrowsingValidator extends ValidatorBase implements DnsNam
         while (iterator.hasNext()) {
             final JSONObject nextMatch = (JSONObject) iterator.next();
             final JSONObject threat = (JSONObject) nextMatch.get("threat");
-            if (StringUtils.equals((String) threat.get("url"), domainName)) {
+            if (Strings.CS.equals((String) threat.get("url"), domainName)) {
                 return domainName + " is a threat.";
             }
         }

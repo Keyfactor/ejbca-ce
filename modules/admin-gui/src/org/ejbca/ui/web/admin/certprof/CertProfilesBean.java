@@ -37,7 +37,7 @@ import jakarta.inject.Named;
 import jakarta.servlet.http.Part;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
@@ -227,15 +227,12 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
     
     public void actionExportProfile() {
         selectCurrentRowData();
-        GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        redirect(getEjbcaWebBean().getBaseUrl() + globalConfiguration.getAdminWebPath() + "profilesexport", "profileType",
-                "cp", "profileId", getSelectedCertProfileId().toString());
+        redirect(getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH + "profilesexport", "profileType", "cp", "profileId",
+                getSelectedCertProfileId().toString());
     }
 
     public void actionExportProfiles() {
-        GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        redirect(getEjbcaWebBean().getBaseUrl() + globalConfiguration.getAdminWebPath() + "profilesexport", "profileType",
-                "cp");
+        redirect(getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH + "profilesexport", "profileType", "cp");
     }
     
     /** @return true if we are running EJBCA build that has CA functionality enabled. */

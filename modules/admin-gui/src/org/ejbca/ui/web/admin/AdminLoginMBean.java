@@ -29,7 +29,7 @@ import jakarta.ws.rs.core.UriBuilder;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationNotProvidedException;
 import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
@@ -42,6 +42,7 @@ import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.KeyBindingFinder;
 import org.cesecore.keybind.KeyBindingNotFoundException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.HttpTools;
@@ -260,7 +261,7 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
                 "https",
                 WebConfiguration.getHostName(),
                 WebConfiguration.getPublicHttpsPort()
-        ) + ejbcaWebBean.getGlobalConfiguration().getAdminWebPath();
+        ) + GlobalConfiguration.ADMIN_WEB_PATH;
     }
 
     private boolean verifyStateParameter(final String state) {

@@ -28,7 +28,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.core.UriBuilder;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
@@ -204,11 +204,7 @@ public class RaLoginBean implements Serializable {
         if (globalConfiguration == null) {
             initGlobalConfiguration();
         }
-        String baseUrl = globalConfiguration.getBaseUrl(
-                "https",
-                WebConfiguration.getHostName(),
-                WebConfiguration.getPublicHttpsPort()
-        ) + globalConfiguration.getRaWebPath();
+        String baseUrl = globalConfiguration.getBaseUrl("https", WebConfiguration.getHostName(), WebConfiguration.getPublicHttpsPort()) + "ra/";
         if (!baseUrl.endsWith("/")) {
             baseUrl += "/";
         }

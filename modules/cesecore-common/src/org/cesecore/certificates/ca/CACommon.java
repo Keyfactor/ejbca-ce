@@ -186,39 +186,6 @@ public interface CACommon extends IUpgradeableData {
     Map<ApprovalRequestType, Integer> getApprovals();
 
     void setApprovals(Map<ApprovalRequestType, Integer> approvals);
-
-    /**
-     * @return a collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which action that requires approvals,
-     * default none and never null.
-     *
-     * @deprecated since 6.8.0, see getApprovals()
-     */
-    @Deprecated
-    Collection<Integer> getApprovalSettings();
-
-    /**
-     * Collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which action that requires approvals
-     *
-     * @deprecated since 6.8.0, see setApprovals()
-     */
-    @Deprecated
-    void setApprovalSettings(Collection<Integer> approvalSettings);
-
-    /**
-     * @return the id of the approval profile. Defult -1 (= none)
-     *
-     * @deprecated since 6.8.0, see getApprovals()
-     */
-    @Deprecated
-    int getApprovalProfile();
-
-    /**
-     * The id of the approval profile.
-     *
-     * @deprecated since 6.8.0, see setApprovals()
-     */
-    @Deprecated
-    void setApprovalProfile(int approvalProfileID);
     
     void updateCA(CryptoToken cryptoToken, CAInfo cainfo, AvailableCustomCertificateExtensionsConfiguration cceConfig)
             throws InvalidAlgorithmException;

@@ -13,20 +13,17 @@
 
 package org.cesecore.repository.util;
 
-import org.cesecore.util.Base64GetHashMap;
-import org.cesecore.util.Base64PutHashMap;
-import org.cesecore.util.SecureXMLDecoder;
-
-import java.beans.XMLDecoder;
-import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import org.cesecore.util.Base64GetHashMap;
+import org.cesecore.util.Base64PutHashMap;
+import org.cesecore.util.SecureXMLDecoder;
 
 public final class XmlUtil {
 
@@ -50,6 +47,7 @@ public final class XmlUtil {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public static Map<Object, Object> fromXml(final String xml) {
         if (xml == null) {
             return Map.of();
@@ -58,7 +56,6 @@ public final class XmlUtil {
             try (SecureXMLDecoder decoder = new SecureXMLDecoder(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)))) {
                 final Map<?, ?> map = (Map<?, ?>)decoder.readObject();
                 // Handle Base64 encoded string values
-                @SuppressWarnings("unchecked")
                 final var base64GetHashMap = new Base64GetHashMap(map);
                 return base64GetHashMap;
             } catch (IOException e) {

@@ -24,8 +24,8 @@ import java.util.Set;
 
 import com.keyfactor.util.StringTools;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.math.NumberUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.tokens.AuthenticationTokenMetaData;
@@ -139,7 +139,7 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
 
     /** @return an authorized existing role based on the roleId HTTP param or null if no such role was found. */
     public Role getRole() {
-        if (role==null && NumberUtils.isNumber(roleIdParam)) {
+        if (role==null && NumberUtils.isCreatable(roleIdParam)) {
             try {
                 role = roleSession.getRole(getAdmin(), Integer.parseInt(roleIdParam));
                 if (role==null && log.isDebugEnabled()) {
@@ -182,7 +182,6 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
     }
 
     /** @return a viewable list of 'match with'-texts */
-    @SuppressWarnings("deprecation")
     public List<SelectItem> getMatchWithItems() {
         if (matchWithItems == null) {
             matchWithItems = new ArrayList<>();
@@ -192,11 +191,9 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
                 final AuthenticationTokenMetaData authenticationTokenMetaData = AccessMatchValueReverseLookupRegistry.INSTANCE.getMetaData(tokenType);
                 if (authenticationTokenMetaData.isUserConfigurable()) {
                     for (final AccessMatchValue accessMatchValue : authenticationTokenMetaData.getAccessMatchValues()) {
-                        // Special exclusion of this rather useless match value that will never match anything
-                        if (!X500PrincipalAccessMatchValue.NONE.equals(accessMatchValue)) {
-                            matchWithItems.add(new SelectItem(tokenType + ":" + accessMatchValue.getNumericValue(),
-                                    getEjbcaWebBean().getText(tokenType) + ": " + getEjbcaWebBean().getText(accessMatchValue.name())));
-                        }
+                        matchWithItems.add(new SelectItem(tokenType + ":" + accessMatchValue.getNumericValue(),
+                                getEjbcaWebBean().getText(tokenType) + ": " + getEjbcaWebBean().getText(accessMatchValue.name())));
+
                     }
                 }
             }

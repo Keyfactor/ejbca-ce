@@ -17,7 +17,7 @@ import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 /**
  * Domain class representing a blacklist entry.
@@ -111,10 +111,10 @@ public class BlacklistEntry implements Serializable, Cloneable {
 
     public Map<Object, Object> diff(BlacklistEntry newEntry) {
         final Map<Object, Object> result = new LinkedHashMap<>();
-        if (!StringUtils.equals(this.getValue(), newEntry.getValue())) {
+        if (!Strings.CS.equals(this.getValue(), newEntry.getValue())) {
             result.put("changed:value", newEntry.getValue() == null ? "null" : newEntry.getValue());
         }
-        if (!StringUtils.equals(this.getData(), newEntry.getData())) {
+        if (!Strings.CS.equals(this.getData(), newEntry.getData())) {
             result.put("changed:data", newEntry.getData() == null ? "null" : newEntry.getData());
         }
         return result;

@@ -12,18 +12,30 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.cainterface;
 
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-import jakarta.ejb.EJB;
-import jakarta.faces.context.ExternalContext;
-import jakarta.faces.context.FacesContext;
-import jakarta.faces.model.SelectItem;
-import jakarta.faces.view.ViewScoped;
-import jakarta.inject.Named;
-import jakarta.servlet.http.Part;
+import java.io.IOException;
+import java.io.Serializable;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.security.cert.CRLException;
+import java.security.cert.Certificate;
+import java.security.cert.X509CRL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
@@ -47,26 +59,15 @@ import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.security.cert.CRLException;
-import java.security.cert.Certificate;
-import java.security.cert.X509CRL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+
+import jakarta.ejb.EJB;
+import jakarta.faces.model.SelectItem;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Named;
+import jakarta.servlet.http.Part;
 
 /**
  * JSF Managed Bean or the ca functions page in the CA UI.
@@ -76,9 +77,7 @@ import java.util.stream.Collectors;
 public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(CAFunctionsMBean.class);
-    /**
-     * Don't spend more than 5 minutes on archiving expired certificates here.
-     */
+    /** Don't spend more than 5 minutes on archiving expired certificates here. */
     private static final long MAX_CRL_ARCHIVAL_SECS = 5 * 60;
 
     @EJB
@@ -90,7 +89,6 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
     @EJB
     private PublishingCrlSessionLocal publishingCrlSession;
 
-    private final GlobalConfiguration globalConfiguration;
     private List<CAGuiInfo> caGuiInfos = null;
     private transient Part uploadFile;
     private final List<String> extCaNameList;
@@ -98,7 +96,6 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
 
     public CAFunctionsMBean() {
         super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
-        globalConfiguration = getEjbcaWebBean().getGlobalConfiguration();
         final TreeMap<String, Integer> externalCANames = getEjbcaWebBean().getExternalCANames();
         extCaNameList = new ArrayList<>(externalCANames.keySet());
     }
@@ -305,11 +302,8 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
         return caGuiInfos;
     }
 
-    /**
-     * Record for caching CRL entries
-     **/
-    record CRLKey(String subject, int partitionIndex) {
-    }
+    /** Record for caching CRL entries **/
+    record CRLKey(String subject, int partitionIndex) {}
 
     private void refreshCaGuiInfos() {
         caGuiInfos = new ArrayList<>();
@@ -331,7 +325,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             if (cainfo instanceof X509CAInfo) {
                 final int numberOfPartitions = cainfo.getAllCrlPartitionIndexes() == null
                         ? 0
-                        : cainfo.getAllCrlPartitionIndexes().getMaximumInteger();
+                        : cainfo.getAllCrlPartitionIndexes().getMaximum();
                 for (int currentPartitionIndex = 0; currentPartitionIndex <= numberOfPartitions; currentPartitionIndex++) {
                     final CRLInfo currentCrlInfo = crlStoreSession.getLastCRLInfoLightWeight(cainfo.getLatestSubjectDN(), currentPartitionIndex, false);
                     if (currentCrlInfo != null) {
@@ -402,25 +396,15 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
     }
 
     public String getCertificatePopupLink(final int caid) {
-        return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getAdminWebPath() + "viewcertificate.xhtml?caid=" + caid;
+        return getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH + "viewcertificate.xhtml?caid=" + caid;
     }
 
     public String openCertificateInfoPopup(final int caid) {
-        return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getCaPath() + "/viewcainfo.xhtml?caid=" + caid;
+        return getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.CA_PATH + "/viewcainfo.xhtml?caid=" + caid;
     }
 
     public String getDownloadCertificateLink() {
-        return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getCaPath() + "/cacert";
-    }
-
-    public void prepareDownloadCertificate(final String type, final int level, final String issuer) {
-        final String certificateLinkUrl = String.format("?cmd=%s&level=%s&issuer=%s", type, level, issuer);
-        redirect(getDownloadCertificateLink() + certificateLinkUrl);
-    }
-
-    public void prepareDownloadSshPublicKey(final int level, final String name) {
-        final String sshPublicKeyLinkUrl = String.format("?level=%s&name=%s", level, name);
-        redirect(getSshPublicKeyLink() + sshPublicKeyLinkUrl);
+        return getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.CA_PATH + "/cacert";
     }
 
     public String getSshPublicKeyLink() {
@@ -428,17 +412,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
     }
 
     public String getDownloadCrlLink() {
-        return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getCaPath() + "/getcrl/getcrl";
-    }
-
-    public void prepareDownloadCrlLink(final String issuer) {
-        final String downloadCrlLinkUrl = String.format("?cmd=crl&issuer=%s", issuer);
-        redirect(getDownloadCrlLink() + downloadCrlLinkUrl);
-    }
-
-    public void prepareDownloadCrlLinkPartition(final String issuer, final String partition) {
-        final String downloadCrlLinkUrl = String.format("?cmd=crl&issuer=%s&partition=%s", issuer, partition);
-        redirect(getDownloadCrlLink() + downloadCrlLinkUrl);
+        return getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.CA_PATH + "/getcrl/getcrl";
     }
 
     public void showJksDownloadForm(final CAGuiInfo caGuiInfo, final int index) {
@@ -465,7 +439,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             final X509CRL x509crl = CertTools.getCRLfromByteArray(bytes);
             if (x509crl == null) {
                 addNonTranslatedErrorMessage("Could not parse CRL. It must be in DER format.");
-            } else if (!StringUtils.equals(cainfo.getSubjectDN(), CertTools.getIssuerDN(x509crl))) {
+            } else if (!Strings.CS.equals(cainfo.getSubjectDN(), CertTools.getIssuerDN(x509crl))) {
                 addNonTranslatedErrorMessage("Error: The CRL in the file in not issued by " + crlImportCaName);
             } else {
                 final int crlPartitionIndex = CertificateConstants.NO_CRL_PARTITION; // TODO partitioned CRL import (partition auto-detection) could be added as part of ECA-7961

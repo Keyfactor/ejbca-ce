@@ -13,10 +13,6 @@
 
 package org.ejbca.config;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.cesecore.configuration.ConfigurationBase;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,6 +24,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
+import org.apache.log4j.Logger;
+import org.cesecore.configuration.ConfigurationBase;
 
 
 /**
@@ -86,11 +87,6 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
      */
     @Deprecated
     public static final String CONFIG_CERTREQHANDLER_CLASS = "certreqhandler.class";
-    /**
-     * @deprecated since 6.12.0. No longer used, and can no longer be set. The datasource is now hard-coded to be UnidDS
-     */
-    @Deprecated
-    public static final String CONFIG_UNIDDATASOURCE = "uniddatasource";
 
     public static final String PROFILE_USE_KEYID = "KeyId";
     public static final String PROFILE_DEFAULT = "ProfileDefault";
@@ -287,7 +283,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     }
 
     public void setRAMode(String alias, String mode) {
-        setRAMode(alias, StringUtils.equalsIgnoreCase(mode, RA_MODE));
+        setRAMode(alias, Strings.CI.equals(mode, RA_MODE));
     }
 
 
@@ -344,7 +340,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     public boolean getVendorMode(String alias) {
         String key = alias + DOT + CONFIG_VENDORCERTIFICATEMODE;
         String value = getValue(key, alias);
-        return StringUtils.equalsIgnoreCase(value, "true");
+        return Strings.CI.equals(value, "true");
     }
 
     /**
@@ -414,7 +410,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     public boolean getResponseCaPubsIssuingCA(String alias) {
         String key = alias + DOT + CONFIG_RESPONSE_CAPUBS_ISSUING_CA;
         String value = getValue(key, alias);
-        return StringUtils.equalsIgnoreCase(value, "true");
+        return Strings.CI.equals(value, "true");
     }
 
     /**
@@ -455,7 +451,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     public boolean getAllowRAVerifyPOPO(String alias) {
         String key = alias + DOT + CONFIG_ALLOWRAVERIFYPOPO;
         String value = getValue(key, alias);
-        return StringUtils.equalsIgnoreCase(value, "true");
+        return Strings.CI.equals(value, "true");
     }
 
     public void setAllowRAVerifyPOPO(String alias, boolean raVerifyPopo) {
@@ -521,7 +517,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     public boolean getAllowRACustomSerno(String alias) {
         String key = alias + DOT + CONFIG_RA_ALLOWCUSTOMCERTSERNO;
         String value = getValue(key, alias);
-        return StringUtils.equalsIgnoreCase(value, "true");
+        return Strings.CI.equals(value, "true");
     }
 
     public void setAllowRACustomSerno(String alias, boolean allowCustomSerno) {
@@ -543,7 +539,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     public void setRAEEProfile(String alias, String eep) throws NumberFormatException {
 
         // Check the the value actually is an int. Throws NumberFormatException
-        if (!StringUtils.equals(CmpConfiguration.PROFILE_USE_KEYID, eep)) {
+        if (!Strings.CS.equals(CmpConfiguration.PROFILE_USE_KEYID, eep)) {
             Integer.parseInt(eep);
         }
 
@@ -590,7 +586,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     public boolean getOmitVerificationsInEEC(String alias) {
         String key = alias + DOT + CONFIG_RA_OMITVERIFICATIONSINEEC;
         String value = getValue(key, alias);
-        return StringUtils.equalsIgnoreCase(value, "true");
+        return Strings.CI.equals(value, "true");
     }
 
     public void setOmitVerificationsInEEC(String alias, boolean omit) {
@@ -601,7 +597,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     public boolean getKurAllowAutomaticUpdate(String alias) {
         String key = alias + DOT + CONFIG_ALLOWAUTOMATICKEYUPDATE;
         String value = getValue(key, alias);
-        return StringUtils.equalsIgnoreCase(value, "true");
+        return Strings.CI.equals(value, "true");
     }
 
     public void setKurAllowAutomaticUpdate(String alias, boolean allowAutomaticUpdate) {
@@ -612,7 +608,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     public boolean getAllowServerGeneratedKeys(String alias) {
         String key = alias + DOT + CONFIG_ALLOWSERVERGENERATEDKEYS;
         String value = getValue(key, alias);
-        return StringUtils.equalsIgnoreCase(value, "true");
+        return Strings.CI.equals(value, "true");
     }
 
     public void setAllowServerGeneratedKeys(String alias, boolean allowSrvGenKeys) {
@@ -624,7 +620,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     public boolean getKurAllowSameKey(String alias) {
         String key = alias + DOT + CONFIG_ALLOWUPDATEWITHSAMEKEY;
         String value = getValue(key, alias);
-        return StringUtils.equalsIgnoreCase(value, "true");
+        return Strings.CI.equals(value, "true");
     }
 
     public void setKurAllowSameKey(String alias, boolean allowSameKey) {
@@ -635,7 +631,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     public boolean getUseExtendedValidation(String alias) {
         String key = alias + DOT + CONFIG_EXTENDEDVALIDATION;
         String value = getValue(key, alias);
-        return StringUtils.equalsIgnoreCase(value, "true");
+        return Strings.CI.equals(value, "true");
     }
 
     public void setUseExtendedValidation(String alias, boolean use) {
@@ -771,8 +767,6 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
         for (String key : getAllAliasKeys(alias)) {
             data.remove(key);
         }
-        // remove old keys from previous versions of EJBCA
-        data.remove(CONFIG_UNIDDATASOURCE);
         aliases.remove(alias);
         data.put(ALIAS_LIST, aliases);
     }
@@ -801,7 +795,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
         Set<String> oldKeys = getAllAliasKeys(oldAlias);
         for (String oldkey : oldKeys) {
             String newkey = oldkey;
-            newkey = StringUtils.replace(newkey, oldAlias, newAlias);
+            newkey = Strings.CS.replace(newkey, oldAlias, newAlias);
             Object value = data.get(oldkey);
             data.put(newkey, value);
         }
@@ -834,7 +828,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
 
         for (String originalKey : getAllAliasKeys(originAlias)) {
             String cloneKey = originalKey;
-            cloneKey = StringUtils.replace(cloneKey, originAlias, cloneAlias);
+            cloneKey = Strings.CS.replace(cloneKey, originAlias, cloneAlias);
             Object value = data.get(originalKey);
             data.put(cloneKey, value);
         }
@@ -952,7 +946,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
             }
 
             for (int i = 0; i < modules.length; i++) {
-                if (StringUtils.equals(modules[i].trim(), authModule)) {
+                if (Strings.CS.equals(modules[i].trim(), authModule)) {
                     return params[i];
                 }
             }
@@ -977,7 +971,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     }
 
     public static boolean isRAMode(final String mode) {
-        return StringUtils.equalsIgnoreCase(mode, RA_MODE);
+        return Strings.CI.equals(mode, RA_MODE);
     }
 
     public static String getOperationalMode(final boolean mode) {

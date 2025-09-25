@@ -376,16 +376,6 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable, Compa
     int getRemainingApprovalsInPartition(Collection<Approval> approvalsPerformed, int stepIdentifier, int partitionIdentifier);
 
     /**
-     * Updates any references to a CA's CAId and Subject DN. Approval Profiles can contain CA Id references in the list of allowed roles of the steps.
-     * @param approvalProfile Profile object to modify.
-     * @param fromId Old CA Id to replace.
-     * @param toId New CA Id to replace with.
-     * @param toSubjectDN New CA Subject DN.
-     * @return True if the approval profile was changed. If so it should be persisted to the database.
-     */
-    boolean updateCAIds(final int fromId, final int toId, final String toSubjectDN);
-
-    /**
      * Retrieve a list of all steps which must be completed before an approval request is approved.
      * @return a list of all steps in this approval profile
      */

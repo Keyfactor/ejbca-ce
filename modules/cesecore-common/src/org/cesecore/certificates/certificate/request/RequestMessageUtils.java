@@ -241,7 +241,7 @@ public abstract class RequestMessageUtils {
                     }
                     case CertificateRequestMessage.popSigningKey: {
                         // RFC 4211 Section 4.1
-                        final POPOSigningKey popoSigningKey = POPOSigningKey.getInstance(jcrm.toASN1Structure().getPopo().getObject());
+                        final POPOSigningKey popoSigningKey = POPOSigningKey.getInstance(jcrm.toASN1Structure().getPop().getObject());
                         if (log.isDebugEnabled()) {
                             if (popoSigningKey!=null) {
                                 log.debug("CRMF POPOSigningKey poposkInput:                      " + popoSigningKey.getPoposkInput());

@@ -35,7 +35,7 @@ import jakarta.faces.model.SelectItem;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
 
-import org.apache.commons.lang.math.NumberUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -355,7 +355,7 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
 
     /** @return an authorized existing role based on the roleId HTTP param or null if no such role was found. */
     public Role getRole() {
-        if (role==null && NumberUtils.isNumber(roleIdParam)) {
+        if (role==null && NumberUtils.isCreatable(roleIdParam)) {
             try {
                 role = roleSession.getRole(getAdmin(), Integer.parseInt(roleIdParam));
                 if (role==null && log.isDebugEnabled()) {

@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.util.query;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * A class used by Query class to build a custom query for EJBCA approval module.

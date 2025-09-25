@@ -43,8 +43,9 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
@@ -78,6 +79,7 @@ import org.cesecore.keys.token.KeyPairInfo;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.ValidityDate;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.authorization.AuthorizationSystemSession;
 import org.ejbca.core.ejb.authorization.AuthorizationSystemSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
@@ -297,7 +299,7 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
     }
     
     public boolean isRenderKeyOptions() {
-        return !getAvailableCryptoTokenList().isEmpty() && StringUtils.equals(getCryptoTokenType(), USE_EXISTING_CRYPTO_TOKEN);
+        return !getAvailableCryptoTokenList().isEmpty() && Strings.CS.equals(getCryptoTokenType(), USE_EXISTING_CRYPTO_TOKEN);
     }
     
     public List<SelectItem> getAvailableSigningAlgList() {
@@ -397,7 +399,7 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
     }
     
     public String getCaCertificateDownloadLink() {
-        return getEjbcaWebBean().getBaseUrl() + getEjbcaWebBean().getGlobalConfiguration().getCaPath() + "/cafunctions.xhtml";
+        return getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.CA_PATH + "/cafunctions.xhtml";
     }
     
     public void install() {
@@ -633,21 +635,21 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
         caInfoDto.setTestKey("");
 
         for (final String alias : availableCryptoTokenEncryptionAliases) {
-            if (CAToken.SOFTPRIVATEDECKEYALIAS.equals(alias) || StringUtils.containsIgnoreCase(alias, "default")) {
+            if (CAToken.SOFTPRIVATEDECKEYALIAS.equals(alias) || Strings.CI.contains(alias, "default")) {
                 caInfoDto.setCryptoTokenDefaultKey(alias);
-            } else if (CAToken.SOFTPRIVATESIGNKEYALIAS.equals(alias) || StringUtils.containsIgnoreCase(alias, "sign")) {
+            } else if (CAToken.SOFTPRIVATESIGNKEYALIAS.equals(alias) || Strings.CI.contains(alias, "sign")) {
                 caInfoDto.setCryptoTokenCertSignKey(alias);
-            } else if (StringUtils.containsIgnoreCase(alias, "test")) {
+            } else if (Strings.CI.contains(alias, "test")) {
                 caInfoDto.setTestKey(alias);
             }
         }
 
         for (final String alias : availableCryptoTokenKeyAliases) {
-            if (CAToken.SOFTPRIVATEDECKEYALIAS.equals(alias) || StringUtils.containsIgnoreCase(alias, "default")) {
+            if (CAToken.SOFTPRIVATEDECKEYALIAS.equals(alias) || Strings.CI.contains(alias, "default")) {
                 caInfoDto.setCryptoTokenDefaultKey(alias);
-            } else if (CAToken.SOFTPRIVATESIGNKEYALIAS.equals(alias) || StringUtils.containsIgnoreCase(alias, "sign"))  {
+            } else if (CAToken.SOFTPRIVATESIGNKEYALIAS.equals(alias) || Strings.CI.contains(alias, "sign"))  {
                 caInfoDto.setCryptoTokenCertSignKey(alias);
-            } else if (StringUtils.containsIgnoreCase(alias, "test")) {
+            } else if (Strings.CI.contains(alias, "test")) {
                 caInfoDto.setTestKey(alias);
             }
         }
@@ -669,7 +671,7 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
     
     private boolean verifySuperAdminFields() {
         if (StringUtils.isEmpty(getAdminKeyStorePassword()) ||
-                !StringUtils.equals(getAdminKeyStorePassword(), getAdminKeyStorePasswordRepeated())) {
+                !Strings.CS.equals(getAdminKeyStorePassword(), getAdminKeyStorePasswordRepeated())) {
             addErrorMessage("PASSWORDSDOESNTMATCH");
             return false;
         }

@@ -221,7 +221,7 @@ public class PartitionedApprovalProfilesSystemTest extends CaTestCase {
         ApprovalPartition singlePartition = executionStep.getPartitions().values().iterator().next();
         Set<RoleInformation> roles = new HashSet<>();
         //Add admin1 as an approving admin to the partition
-        RoleInformation admin1RoleInfo =  RoleInformation.fromRoleMembers(role.getRoleId(), role.getNameSpace(), role.getRoleName(), Arrays.asList(roleMember1));
+        RoleInformation admin1RoleInfo =  new RoleInformation(role.getRoleId(), role.getNameSpace(), role.getRoleName());
         roles.add(admin1RoleInfo);
         DynamicUiProperty<? extends Serializable> rolesProperty = new DynamicUiProperty<>(
                 PartitionedApprovalProfile.PROPERTY_ROLES_WITH_APPROVAL_RIGHTS, admin1RoleInfo, roles);
@@ -284,7 +284,7 @@ public class PartitionedApprovalProfilesSystemTest extends CaTestCase {
         ApprovalPartition firstStepPartition = firstStep.getPartitions().values().iterator().next();
         Set<RoleInformation> roles = new HashSet<>();
         //Add admin1 as an approving admin to the partition
-        RoleInformation admin1RoleInfo =  RoleInformation.fromRoleMembers(role.getRoleId(), role.getNameSpace(), role.getRoleName(), Arrays.asList(roleMember1));
+        RoleInformation admin1RoleInfo =  new RoleInformation(role.getRoleId(), role.getNameSpace(), role.getRoleName());
         roles.add(admin1RoleInfo);
         DynamicUiProperty<? extends Serializable> firstrolesProperty = new DynamicUiProperty<>(
                 PartitionedApprovalProfile.PROPERTY_ROLES_WITH_APPROVAL_RIGHTS, admin1RoleInfo, roles);
@@ -296,7 +296,7 @@ public class PartitionedApprovalProfilesSystemTest extends CaTestCase {
         ApprovalPartition secondStepPartition = secondStep.getPartitions().values().iterator().next();
         roles = new HashSet<>();
         //Add admin1 as an approving admin to the partition
-        RoleInformation admin2RoleInfo =  RoleInformation.fromRoleMembers(role.getRoleId(), role.getNameSpace(), role.getRoleName(), Arrays.asList(roleMember2));
+        RoleInformation admin2RoleInfo =  new RoleInformation(role.getRoleId(), role.getNameSpace(), role.getRoleName());
         roles.add(admin1RoleInfo);
         DynamicUiProperty<? extends Serializable> secondRoleProperty = new DynamicUiProperty<>(
                 PartitionedApprovalProfile.PROPERTY_ROLES_WITH_APPROVAL_RIGHTS, admin1RoleInfo, roles);
@@ -357,7 +357,7 @@ public class PartitionedApprovalProfilesSystemTest extends CaTestCase {
         ApprovalPartition secondPartition = step.addPartition();
         Set<RoleInformation> roles = new HashSet<>();
         //Add admin1 as an approving admin to the partition
-        RoleInformation admin1RoleInfo =  RoleInformation.fromRoleMembers(role.getRoleId(), role.getNameSpace(), role.getRoleName(), Arrays.asList(roleMember1));
+        RoleInformation admin1RoleInfo =  new RoleInformation(role.getRoleId(), role.getNameSpace(), role.getRoleName());
         roles.add(admin1RoleInfo);
         DynamicUiProperty<? extends Serializable> firstrolesProperty = new DynamicUiProperty<>(
                 PartitionedApprovalProfile.PROPERTY_ROLES_WITH_APPROVAL_RIGHTS, admin1RoleInfo, roles);
@@ -366,7 +366,7 @@ public class PartitionedApprovalProfilesSystemTest extends CaTestCase {
         doubleSequencenProfile.addPropertyToPartition(step.getStepIdentifier(), firstPartition.getPartitionIdentifier(), firstrolesProperty);
         //Add admin2 as an approving admin to the partition
         // Note: Using the same roleId seem strange, but is what the original test code did
-        RoleInformation admin2RoleInfo =  RoleInformation.fromRoleMembers(role.getRoleId(), role.getNameSpace(), role.getRoleName(), Arrays.asList(roleMember2));
+        RoleInformation admin2RoleInfo =  new RoleInformation(role.getRoleId(), role.getNameSpace(), role.getRoleName());
         roles.add(admin2RoleInfo);
         DynamicUiProperty<? extends Serializable> secondrolesProperty = new DynamicUiProperty<>(
                 PartitionedApprovalProfile.PROPERTY_ROLES_WITH_APPROVAL_RIGHTS, admin2RoleInfo, roles);

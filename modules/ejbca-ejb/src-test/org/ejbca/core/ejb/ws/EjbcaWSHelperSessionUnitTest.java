@@ -22,7 +22,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import org.apache.commons.lang.time.FastDateFormat;
+import org.apache.commons.lang3.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -133,8 +133,8 @@ public class EjbcaWSHelperSessionUnitTest {
         final UserDataVOWS userdata = ejbcaWsHelper.convertEndEntityInformation(endEntityInfo,
                 TEST_CANAME, TEST_EEPNAME, TEST_CPNAME, UserDataVOWS.TOKEN_TYPE_USERGENERATED);
         // Then
-        assertEquals("2019-06-30 17:53:00+00:00", userdata.getStartTime());
-        assertEquals("2019-07-31 21:15:00+00:00", userdata.getEndTime());
+        assertEquals("2019-06-30 17:53:00Z", userdata.getStartTime());
+        assertEquals("2019-07-31 21:15:00Z", userdata.getEndTime());
         log.trace("<convertToUserDataWithoutSeconds");
     }
 
@@ -151,8 +151,8 @@ public class EjbcaWSHelperSessionUnitTest {
         final UserDataVOWS userdata = ejbcaWsHelper.convertEndEntityInformation(endEntityInfo,
                 TEST_CANAME, TEST_EEPNAME, TEST_CPNAME, UserDataVOWS.TOKEN_TYPE_USERGENERATED);
         // Then
-        assertEquals("2019-06-30 17:53:59+00:00", userdata.getStartTime());
-        assertEquals("2019-07-31 21:15:34+00:00", userdata.getEndTime());
+        assertEquals("2019-06-30 17:53:59Z", userdata.getStartTime());
+        assertEquals("2019-07-31 21:15:34Z", userdata.getEndTime());
         log.trace("<convertToUserDataWithSeconds");
     }
 

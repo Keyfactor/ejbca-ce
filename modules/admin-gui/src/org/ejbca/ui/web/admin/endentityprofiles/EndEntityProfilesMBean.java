@@ -39,7 +39,7 @@ import jakarta.inject.Named;
 import jakarta.servlet.http.Part;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
@@ -49,6 +49,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleDataSessionLocal;
 import org.cesecore.util.SecureXMLDecoder;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
@@ -287,14 +288,10 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
 
     public void actionExportProfile(String selectedEndEntityProfile) {
         clearMessages();
-        String selectedEndEntityProfileId = endEntityProfileNameToIdMap.get(selectedEndEntityProfile);
+        final String selectedEndEntityProfileId = endEntityProfileNameToIdMap.get(selectedEndEntityProfile);
         if (selectedEndEntityProfileId != null) {
-            if (selectedEndEntityProfileId.equals(""+EndEntityConstants.EMPTY_END_ENTITY_PROFILE)) {
-                addErrorMessage(YOU_CANT_EDIT_EMPTY_PROFILE);
-                return;
-            }
-            redirect(getEjbcaWebBean().getBaseUrl() + getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath() + "/profilesexport", "profileType",
-                    "eep", "profileId",selectedEndEntityProfileId);
+            redirect(getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH + "/profilesexport", "profileType",
+                    "eep", "profileId", selectedEndEntityProfileId.toString());
         } else {
             addErrorMessage(PROFILE_NOT_SELECTED);
         }
@@ -303,7 +300,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
 
     public void actionExportProfiles() {
         clearMessages();
-        redirect(getEjbcaWebBean().getBaseUrl() + getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath() + "/profilesexport", "profileType",
+        redirect(getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH + "/profilesexport", "profileType",
                 "eep");
     }
 

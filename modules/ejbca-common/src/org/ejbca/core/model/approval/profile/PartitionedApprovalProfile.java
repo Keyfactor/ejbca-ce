@@ -25,7 +25,6 @@ import org.cesecore.internal.InternalResources;
 import org.cesecore.profiles.Profile;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleInformation;
-import org.cesecore.roles.member.RoleMember;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.cesecore.util.ui.DynamicUiPropertyCallback;
 import org.ejbca.core.model.approval.Approval;
@@ -43,7 +42,7 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
 
     private static final InternalResources intres = InternalResources.getInstance();
 
-    public static final RoleInformation ANYBODY = RoleInformation.fromRoleMembers(-1, null, "Anybody", new ArrayList<RoleMember>());
+    public static final RoleInformation ANYBODY = new RoleInformation(-1, null, "Anybody");
 
     public static final int EXECUTION_STEP_ID = 0;
     public static final String PROPERTY_NAME = "name";

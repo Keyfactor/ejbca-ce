@@ -12,13 +12,14 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingRules;
+import org.cesecore.license.LicenseStateContainer;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.InternalConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -35,7 +36,6 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.ByteArrayInputStream;
 import java.io.Serializable;
-
 
 /**
  * Backing bean for the menu on the left (in the default theme) in the AdminWeb.
@@ -253,12 +253,16 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
      * @return the URL to EJBCA Admin UI, i.e. https://hostname:8443/ejbca/adminweb/, always ends with a '/'
      */
     public String getAdminWebUrl() {
-        String url = getEjbcaWebBean().getBaseUrl() + getGlobalConfiguration().getAdminWebPath();
+        String url = getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH;
         // This most likely always ends with a / but make damn sure
-        if (!StringUtils.endsWith(url, "/")) {
+        if (!Strings.CS.endsWith(url, "/")) {
             url += "/";
         }
         return url;
+    }
+    
+    public String getBadLicenseInvalidMessage() {
+        return LicenseStateContainer.getLicenseInvalidWarning();
     }
     
     private transient StreamedContent headerLogoImage;

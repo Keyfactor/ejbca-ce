@@ -52,7 +52,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.math.IntRange;
+import org.apache.commons.lang3.IntegerRange;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
@@ -432,19 +432,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 } catch (EndEntityProfileNotFoundException e) {
                     log.error("End-entity profile " + name + " could no longer be found", e);
                 }
-            }
-        }
-
-        // Update Approval Profiles
-        final Map<Integer, String> approvalProfiles = approvalProfileSession.getApprovalProfileIdToNameMap();
-        for (int appProfId : approvalProfiles.keySet()) {
-            final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfile(appProfId);
-            if (approvalProfile.updateCAIds(fromId, toId, toDN)) {
-                String name = approvalProfile.getProfileName();
-                if (log.isDebugEnabled()) {
-                    log.debug("Changing CA Ids in Approval Profile " + name);
-                }
-                approvalProfileSession.changeApprovalProfile(authenticationToken, approvalProfile);
             }
         }
 
@@ -3567,9 +3554,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         final String caDataDn = caInfo.getSubjectDN();
         final boolean doPublishDeltaCRL = caInfo.getDeltaCRLPeriod() > 0;
         publishCrlPartition(admin, caCertFingerprint, caCertDn, CertificateConstants.NO_CRL_PARTITION, publisherIds, caDataDn, doPublishDeltaCRL);
-        final IntRange crlPartitions = caInfo.getAllCrlPartitionIndexes();
+        final IntegerRange crlPartitions = caInfo.getAllCrlPartitionIndexes();
         if (crlPartitions != null) {
-            for (int crlPartitionIndex = crlPartitions.getMinimumInteger(); crlPartitionIndex <= crlPartitions.getMaximumInteger(); crlPartitionIndex++) {
+            for (int crlPartitionIndex = crlPartitions.getMinimum(); crlPartitionIndex <= crlPartitions.getMaximum(); crlPartitionIndex++) {
                 publishCrlPartition(admin, caCertFingerprint, caCertDn, crlPartitionIndex, publisherIds, caDataDn, doPublishDeltaCRL);
             }
         }

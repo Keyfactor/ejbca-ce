@@ -13,6 +13,9 @@
 
 package org.ejbca.ui.web.admin.configuration;
 
+import static org.ejbca.core.ejb.authorization.AuthorizationSystemSession.SUPERADMIN_ROLE;
+import static org.primefaces.util.Constants.SEMICOLON;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
@@ -48,17 +51,15 @@ import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-import jakarta.ejb.EJBException;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.http.HttpServletRequest;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.math.NumberUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.audit.enums.EventStatus;
@@ -71,6 +72,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.OAuth2AuthenticationToken;
 import org.cesecore.authentication.tokens.OAuth2Principal;
 import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
+import org.cesecore.authorization.AuthorizationCache;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
@@ -131,10 +133,10 @@ import org.ejbca.util.HttpTools;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.keys.KeyTools;
-import org.cesecore.authorization.AuthorizationCache;
 
-import static org.ejbca.core.ejb.authorization.AuthorizationSystemSession.SUPERADMIN_ROLE;
-import static org.primefaces.util.Constants.SEMICOLON;
+import jakarta.ejb.EJBException;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * The main bean for the web interface, it contains all basic functions.
@@ -316,10 +318,10 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         final int lastUpdateNumber = AuthorizationCache.INSTANCE.getLastUpdateNumber();
         // Re-initialize if we are not initialized (new session) or if authentication parameters change within an existing session (TLS session ID or client certificate).
         // If authentication parameters change it can be an indication of session hijacking, which should be denied if we re-auth, or just session re-use in web browser such as what FireFox 57 seems to do even after browser re-start
-        if (!authState.initialized || !StringUtils.equals(authState.authenticationTokenTlsSessionId, currentTlsSessionId)
-                || (authState.isAuthenticatedWithToken && !StringUtils.equals(authState.oauthAuthenticationToken, oauthBearerToken))
-                || (authState.isAuthenticatedWithToken && !StringUtils.equals(authState.oauthIdToken, oauthIdToken))
-                || (!authState.isAuthenticatedWithToken && !StringUtils.equals(fingerprint, authState.certificateFingerprint))
+        if (!authState.initialized || !Strings.CS.equals(authState.authenticationTokenTlsSessionId, currentTlsSessionId)
+                || (authState.isAuthenticatedWithToken && !Strings.CS.equals(authState.oauthAuthenticationToken, oauthBearerToken))
+                || (authState.isAuthenticatedWithToken && !Strings.CS.equals(authState.oauthIdToken, oauthIdToken))
+                || (!authState.isAuthenticatedWithToken && !Strings.CS.equals(fingerprint, authState.certificateFingerprint))
                 || authState.authenticatedAtUpdateNumber != lastUpdateNumber) {
             if (log.isDebugEnabled() && authState.initialized) {
                 // Only log this if we are not initialized, i.e. if we entered here because session authentication parameters changed
@@ -584,14 +586,14 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     /** Return the admins selected theme including its trailing '.css' */
     @Override
     public String getCssFile() {
-        return globalconfiguration == null ? null : globalconfiguration.getAdminWebPath() + globalconfiguration.getThemePath() + "/" + currentAdminPreference.getTheme() + ".css";
+        return globalconfiguration == null ? null : GlobalConfiguration.ADMIN_WEB_PATH + "themes/" + currentAdminPreference.getTheme() + ".css";
     }
 
     /** Return the IE fixes CSS of the admins selected theme including it's trailing '.css' */
     @Override
     public String getIeFixesCssFile() {
-        return globalconfiguration == null ? null : globalconfiguration.getAdminWebPath() + globalconfiguration.getThemePath() + "/" + currentAdminPreference.getTheme()
-                + globalconfiguration.getIeCssFilenamePostfix() + ".css";
+        return globalconfiguration == null ? null : GlobalConfiguration.ADMIN_WEB_PATH + "themes/" + currentAdminPreference.getTheme()
+                + "_ie-fixes.css";
     }
 
     /** Returns a version string for JavaScript and CSS file cache control */
@@ -752,12 +754,12 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
 
     @Override
     public String getAdminWebBaseUrl() {
-        return globalconfiguration == null ? null : globalconfiguration.getRelativeUri() + globalconfiguration.getAdminWebPath();
+        return globalconfiguration == null ? null : globalconfiguration.getRelativeUri() + GlobalConfiguration.ADMIN_WEB_PATH;
     }
 
     @Override
     public String getReportsPath() {
-        return globalconfiguration == null ? null : globalconfiguration.getReportsPath();
+        return globalconfiguration == null ? null : GlobalConfiguration.ADMIN_WEB_PATH + "reports";
     }
 
     /* Returns the global configuration */
@@ -796,19 +798,21 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         final String theme = currentAdminPreference.getTheme().toLowerCase();
         final String postfix = imagefilename.substring(imagefilename.lastIndexOf('.') + 1);
 
+        final String imagePath = "images";
+        
         final String[] filepaths = new String[] {
-                "/" + globalconfiguration.getImagesPath() + "/" + imagefile + "." + theme + "." + prefered + "." + postfix,
-                "/" + globalconfiguration.getImagesPath() + "/" + imagefile + "." + theme + "." + secondary + "." + postfix,
-                "/" + globalconfiguration.getImagesPath() + "/" + imagefile + "." + theme + "." + postfix,
-                "/" + globalconfiguration.getImagesPath() + "/" + imagefile + "." + prefered + "." + postfix,
-                "/" + globalconfiguration.getImagesPath() + "/" + imagefile + "." + secondary + "." + postfix,
+                "/" + imagePath + "/" + imagefile + "." + theme + "." + prefered + "." + postfix,
+                "/" + imagePath + "/" + imagefile + "." + theme + "." + secondary + "." + postfix,
+                "/" + imagePath + "/" + imagefile + "." + theme + "." + postfix,
+                "/" + imagePath + "/" + imagefile + "." + prefered + "." + postfix,
+                "/" + imagePath + "/" + imagefile + "." + secondary + "." + postfix,
         };
         for (final String filepath : filepaths) {
             if (this.getClass().getResourceAsStream(filepath) != null) {
                 return filepath;
             }
         }
-        return "/" + globalconfiguration.getImagesPath() + "/" + imagefile + "." + postfix;
+        return "/" + imagePath + "/" + imagefile + "." + postfix;
     }
 
     @Override
@@ -1612,7 +1616,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                 }
                 final String eeProfileIdString = cmpconfiguration.getRAEEProfile(alias);
                 // If value is set to KeyId we will not hide it, because it can be any EE profile
-                if (!StringUtils.equals(CmpConfiguration.PROFILE_USE_KEYID, eeProfileIdString)) {
+                if (!Strings.CS.equals(CmpConfiguration.PROFILE_USE_KEYID, eeProfileIdString)) {
                     if (eeProfileIdString != null && endEntityProfileSession.getEndEntityProfile(Integer.valueOf(eeProfileIdString)) != null) {
                         if (!authorizedProfileIds.contains(Integer.valueOf(eeProfileIdString))) {
                             if (log.isDebugEnabled()) {
@@ -1685,7 +1689,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     @Override
     public Collection<String> getAvailableCAsOfEEProfile(final String endEntityProfileId)
             throws NumberFormatException, AuthorizationDeniedException {
-        if (StringUtils.equals(endEntityProfileId, CmpConfiguration.PROFILE_USE_KEYID)) {
+        if (Strings.CS.equals(endEntityProfileId, CmpConfiguration.PROFILE_USE_KEYID)) {
             final List<String> certificateAuthorities = new ArrayList<>(caSession.getAuthorizedCaNamesToIds(authState.administrator).keySet());
             return addKeyIdAndSort(certificateAuthorities);
         }
@@ -1715,7 +1719,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
      */
     @Override
     public Collection<String> getAvailableCertProfilesOfEEProfile(final String endEntityProfileId) {
-        if (StringUtils.equals(endEntityProfileId, CmpConfiguration.PROFILE_USE_KEYID)) {
+        if (Strings.CS.equals(endEntityProfileId, CmpConfiguration.PROFILE_USE_KEYID)) {
             final List<Integer> allCertificateProfileIds = certificateProfileSession.getAuthorizedCertificateProfileIds(authState.administrator, 0);
             final List<String> allCertificateProfiles = new ArrayList<>(allCertificateProfileIds.size());
             for (final int id : allCertificateProfileIds) {
@@ -2060,7 +2064,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             Integer caId = 0;
             // To be backward compatible with EJBCA 6.11, where this was stored as the name instead of ID, we make it possible to use both. See ECA-6556
             final String defaultCAIDStr = estConfiguration.getDefaultCAID(alias);
-            if (NumberUtils.isNumber(defaultCAIDStr)) {
+            if (NumberUtils.isCreatable(defaultCAIDStr)) {
                 caId = Integer.valueOf(defaultCAIDStr);
             } else if (StringUtils.isNotEmpty(defaultCAIDStr)) {
                 // We have a caName, and want the Id

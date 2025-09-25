@@ -24,7 +24,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Data class containing settings for configuration dump.
@@ -49,6 +49,7 @@ public class ConfigdumpSetting implements Serializable {
         APPROVALPROFILE("approval-profiles", "Approval Profile"),
         CERTPROFILE("certificate-profiles", "CERTPROFILE"),
         EEPROFILE("end-entity-profiles", "EEPROFILE"),
+        EEPROFILECONFIG("end-entity-profiles", "EEPROFILECONFIG"),
         SERVICE("services", "Services"),
         ROLE("admin-roles", "ROLE"),
         KEYBINDING("internal-key-bindings", "KEYBINDING"),
@@ -64,7 +65,8 @@ public class ConfigdumpSetting implements Serializable {
         CERTEXTENSION("custom-certificate-extensions", "CERTEXTENSION"),
         OAUTHKEY("trusted-oauth-providers", "OAUTHKEY"),
         AVAILABLEPROTOCOLS("available-protocols", "AVAILABLEPROTOCOLS"),
-        EXTERNALACCOUNTBINDING("external-account-bindings", "EXTERNALACCOUNTBINDINGS");
+        EXTERNALACCOUNTBINDING("external-account-bindings", "EXTERNALACCOUNTBINDINGS"),
+        OAUTH("oauth-configuration", "OAUTH");
         // Unimplemented:
         // ENDENTITY, SYSCONFIG, CMPCONFIG, PEERCONFIG
 
@@ -212,8 +214,8 @@ public class ConfigdumpSetting implements Serializable {
     private OverwriteMode overwriteMode = OverwriteMode.NONE;
     private ResolveReferenceMode resolveReferenceMode = ResolveReferenceMode.NO_RESOLUTION_SET;
     private Map<ConfigdumpItem<?>, OverwriteMode> overwriteResolutions = new HashMap<>();
-    private Map<ConfigdumpItem<?>, ResolveReferenceMode> resolveReferenceModeResolutions = new HashMap<>();
-    private Map<ConfigdumpItem<?>, String> passwords = new HashMap<>();
+    private final Map<ConfigdumpItem<?>, ResolveReferenceMode> resolveReferenceModeResolutions = new HashMap<>();
+    private final Map<ConfigdumpItem<?>, Map<String, String>> passwords = new HashMap<>();
     private boolean initializeCas;
     private boolean exportDefaults;
     private boolean exportExternalCas = true; // needs to be true in import mode, or overwrite detection will not work
@@ -413,11 +415,14 @@ public class ConfigdumpSetting implements Serializable {
         return true;
     }
 
-    public void putPassword(final ConfigdumpItem<?> configdumpItem, final String password) {
-        passwords.put(configdumpItem, password);
+    public void putPassword(final ConfigdumpItem<?> configdumpItem, final String field, final String password) {
+        if(!passwords.containsKey(configdumpItem)){
+            passwords.put(configdumpItem, new HashMap<>());
+        }
+        passwords.get(configdumpItem).put(field, password);
     }
 
-    public Optional<String> getPasswordFor(final ConfigdumpItem<?> configdumpItem) {
+    public Optional<Map<String,String>> getPasswordFor(final ConfigdumpItem<?> configdumpItem) {
         return Optional.ofNullable(passwords.get(configdumpItem));
     }
 
