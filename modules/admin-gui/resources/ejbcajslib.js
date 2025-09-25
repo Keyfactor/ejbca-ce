@@ -24,16 +24,6 @@ function checkAll(checkboxlist,size) {
   }
 }
 
-function checkFieldNotEmpty(thetextfield, alerttext) {
-	field = eval(thetextfield);
-	var text = new String(field.value);
-	if (!text || 0 === text.length || text === "") {
-		alert(alerttext)
-		return false
-	}
-	return true;
-}
-
 /**
  * Used in importca.xhtml and importcacert.xhtml
  * 
