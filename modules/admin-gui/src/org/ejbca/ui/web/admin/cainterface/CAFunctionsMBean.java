@@ -472,11 +472,13 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
         }
     }
 
-    public void createNewDeltaCrl(final int caid) throws CAOfflineException, CryptoTokenOfflineException {
+    public void createNewDeltaCrl(final int caid) throws CAOfflineException {
         try {
             publishingCrlSession.forceDeltaCRL(getAdmin(), caid);
         } catch (final CADoesntExistsException | AuthorizationDeniedException | DeltaCrlException e) {
             throw new IllegalStateException(e);
+        } catch (final CryptoTokenOfflineException e) {
+            addErrorMessage("CATOKENISOFFLINE");
         }
         refreshCaGuiInfos();
     }
