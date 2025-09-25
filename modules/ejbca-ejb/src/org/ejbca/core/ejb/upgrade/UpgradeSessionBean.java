@@ -381,7 +381,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     private boolean upgrade(String dbtype, String oldVersion) {
     	log.debug(">upgrade from version: "+oldVersion+", with dbtype: "+dbtype);
-        if (isLesserThan(oldVersion, "6.16.0")) {
+        if (isLesserThan(oldVersion, "6.15.0")) {
             log.error(
                     "Upgrading from EJBCA prior to version 6.15.0 is forbidden. Read the EJBCA Upgrade Guide for more information.");
             return false;
