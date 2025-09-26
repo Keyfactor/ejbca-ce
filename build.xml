@@ -68,7 +68,7 @@
     <!-- =================================================================== -->
     <!-- Build ALL                                                           -->
     <!-- =================================================================== -->
-    <target name="build" depends="deprecated:check, fail-unless-appserver-detected, testforgnujava, ejbca.ear" description="Builds EJBCA"/>
+    <target name="build" depends="deprecated:check, fail-unless-appserver-detected, testforgnujava, ejbca.ear, configure-git-hooks" description="Builds EJBCA"/>
     
 	<!--
 	  Installs EJBCA by creating an initial CA and generating certs for
@@ -979,6 +979,7 @@
 				<exclude name="SEMVER" />
 				<exclude name="VERSION" />
 				<exclude name="TAGS" />
+				<exclude name="src/ci/" />
 				<exclude name="src/package/" />
 				<exclude name="lib/coverage/**" />
                 <!-- Exclude directories from release that are built after "clean" as dependency to documentation -->
@@ -1039,6 +1040,7 @@
 		    <zipfileset dir="." prefix="${basezipfile}" filemode="700" dirmode="700"> 
 		    	<include name="**/*.sh" />
 				<exclude name="bin/backup/**" />
+				<exclude name="src/ci/**" />
 				<exclude name="modules/statedump/**" />
 				<exclude name="container/**" />
 				<exclude name=".jx/**" />
@@ -1506,4 +1508,54 @@ SHA-256 checksum: ${cesecorebinSHA256}
         </copy>
     </target>
 
+	<!-- Git hooks -->
+	<condition property="isWindows">
+		<os family="windows"/>
+	</condition>
+
+	<!-- Verify that required directories are present. -->
+	<target name="check-git-hook-prerequisites">
+		<condition property="git.hooks.available">
+			<and>
+				<available file=".git" type="dir"/> <!-- won't exist in Zip distributions -->
+				<available file="src/ci" type="dir"/> <!-- won't exist in CE -->
+			</and>
+		</condition>
+	</target>
+
+	<!-- Determine if Git hooks need to be configured -->
+	<target name="check-git-hook-config" depends="check-git-hook-prerequisites" if="git.hooks.available">
+		<!-- Get current Git hook path -->
+		<exec executable="git" dir="${ejbca.home}"
+			  outputproperty="git.hooksPath"
+			  resultproperty="git.exitCode"
+			  failonerror="false">
+			<arg value="config"/>
+			<arg value="--local"/>
+			<arg value="--get"/>
+			<arg value="core.hooksPath"/>
+		</exec>
+		<condition property="git.hooks.need.config">
+			<or>
+				<not>
+					<equals arg1="${git.exitCode}" arg2="0"/>
+				</not>
+				<not>
+					<equals arg1="${git.hooksPath}" arg2="src/ci/git-hooks" trim="true"/>
+				</not>
+			</or>
+		</condition>
+	</target>
+
+	<!-- Update the Git hook path if needed -->
+	<target name="configure-git-hooks" depends="check-git-hook-config" if="git.hooks.need.config" unless="isWindows">
+		<exec executable="git" dir="${ejbca.home}" failonerror="true">
+			<arg value="config"/>
+			<arg value="--local"/>
+			<arg value="--replace-all"/>
+			<arg value="core.hooksPath"/>
+			<arg value="src/ci/git-hooks"/>
+		</exec>
+		<echo message="⚙️ Configured Git to use hooks located in 'src/ci/git-hooks'."/>
+	</target>
 </project>

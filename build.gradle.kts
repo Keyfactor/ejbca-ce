@@ -1,4 +1,6 @@
 import java.net.Socket
+import org.gradle.internal.os.OperatingSystem
+import java.io.ByteArrayOutputStream
 
 val edition: String by extra
 val appServerHome: String? by extra
@@ -491,4 +493,47 @@ tasks.register<Delete>("cleanDist") {
 
 tasks.named("clean") {
     dependsOn("cleanDist")
+}
+
+// Git hook setup
+tasks.register("configureGitHooks") {
+    description = "Configures Git hooks."
+    group = "build"
+    doFirst {
+        // Skip Git hook setup on Windows systems. Most of our hooks perform simple checks using Unix tools,
+        // which are likely to encounter issues when executed in Git Bash on Windows.
+        if (OperatingSystem.current().isWindows) {
+            return@doFirst
+        }
+
+        // Verify that required directories are present.
+        val gitDir = project.file(".git") // won't exist in Zip distributions
+        val ciDir = project.file("src/ci") // won't exist in CE
+
+        if (!gitDir.isDirectory || !ciDir.isDirectory) {
+            return@doFirst
+        }
+
+        // Check the user's local Git config and update the project's hook path if needed.
+        val expectedGitHookPath = "src/ci/git-hooks"
+        val currentGitHookPath = ByteArrayOutputStream().use { output ->
+            exec {
+                commandLine("git", "config", "--local", "--get", "core.hooksPath")
+                standardOutput = output
+                isIgnoreExitValue = true
+            }
+            output.toString().trim().takeIf { it.isNotEmpty() }
+        }
+
+        if (currentGitHookPath != expectedGitHookPath) {
+            exec {
+                commandLine("git", "config", "--local", "--replace-all", "core.hooksPath", expectedGitHookPath)
+            }
+            logger.lifecycle("⚙\uFE0F Configured Git to use hooks located in '$expectedGitHookPath'.")
+        }
+    }
+}
+
+tasks.named("build") {
+    dependsOn("configureGitHooks")
 }
