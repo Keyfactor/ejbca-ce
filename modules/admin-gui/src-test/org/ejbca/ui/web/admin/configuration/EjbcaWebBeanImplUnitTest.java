@@ -53,7 +53,8 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.OAuthConfiguration;
-import org.cesecore.roles.Role;
+import org.cesecore.dto.RoleDataDto;
+import org.cesecore.dto.RoleDataDtoBuilder;
 import org.easymock.EasyMock;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.GlobalConfiguration;
@@ -93,8 +94,8 @@ public final class EjbcaWebBeanImplUnitTest {
     private static final String[] BEARER_TOKEN_FINGERPRINTS = { "fp111", "fp222" };
     private static final OAuth2Principal TEST_CLAIMS = OAuth2Principal.builder().setIssuer("Issuer").setSubject("Subject").setOid("2.999.123").build();
     private static final String OAUTH_PROVIDER_NAME = "OAuth Provider 123";
-    private static final List<Role> ADMIN_ROLES = new ArrayList<>(Arrays.asList(new Role(null, "Test Role")));
-    
+    private static final List<RoleDataDto> ADMIN_ROLES = new ArrayList<>(Arrays.asList(new RoleDataDtoBuilder().setName("Test Role").build()));
+
     private static X509Certificate[] allAdminCerts;
     
     private static X509Certificate adminCert;

@@ -15,8 +15,7 @@ package org.cesecore.repository;
 
 import jakarta.persistence.EntityManager;
 import org.apache.log4j.Logger;
-import org.cesecore.repository.dto.Converter;
-import org.cesecore.repository.dto.Dto;
+import org.cesecore.dto.Dto;
 import org.cesecore.repository.exception.RecordIdAlreadyExistsException;
 import org.cesecore.repository.exception.RecordIdDoesNotExistException;
 import org.cesecore.repository.exception.RecordIndexAlreadyExistsException;
@@ -31,48 +30,73 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public final class Database<T extends Dto<Id>, Id, Bean extends EntityManagerBean> implements Repository<T, Id> {
+public final class Database<T extends Dto<Id>, Id, Bean extends EntityManagerBean<T>> implements Repository<T, Id> {
 
     private static final Logger log = Logger.getLogger(Database.class);
 
     private final EntityManager entityManager;
     private final Class<Bean> beanClass;
-    private final Converter<T, Bean> converter;
-    private final String indexColumnName;
+    private final Function<Bean, T> beanToDtoFunction;
+    private final Function<T, Bean> dtoToBeanFunction;
+    private final String[] indexColumnNames;
     private final Supplier<Id> idSupplier;
     private final Lock lock;
 
     public Database(final EntityManager entityManager,
                     final Class<Bean> beanClass,
-                    final Converter<T, Bean> converter,
-                    final String indexColumnName,
-                    final Supplier<Id> idSupplier) {
+                    final Function<Bean, T> beanToDtoFunction,
+                    final Function<T, Bean> dtoToBeanFunction,
+                    final Supplier<Id> idSupplier,
+                    final String... indexColumnNames) {
         this.entityManager = entityManager;
         this.beanClass = beanClass;
-        this.converter = converter;
-        this.indexColumnName = indexColumnName;
+        this.beanToDtoFunction = beanToDtoFunction;
+        this.dtoToBeanFunction = dtoToBeanFunction;
         this.idSupplier = idSupplier;
         this.lock = new ReentrantLock();
+        if (indexColumnNames.length == 0) {
+            try {
+                this.indexColumnNames = beanClass
+                        .getConstructor()
+                        .newInstance()
+                        .toDto()
+                        .indexNames();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+        else {
+            this.indexColumnNames = indexColumnNames;
+        }
     }
 
     public Database(final EntityManager entityManager,
                     final Class<Bean> beanClass,
-                    final Converter<T, Bean> converter,
-                    final String indexColumnName) {
-        this(entityManager, beanClass, converter, indexColumnName, null);
+                    final Function<Bean, T> beanToDtoFunction,
+                    final Function<T, Bean> dtoToBeanFunction,
+                    final String... indexColumnNames) {
+        this(entityManager, beanClass, beanToDtoFunction, dtoToBeanFunction, null, indexColumnNames);
     }
 
     private void verifyIdNotUsed(final T dto) {
         if (findByIdNonSynchronized(dto.id()) != null) {
-            final var message = "There is already an record with id: " + dto.id();
+            final var message = "There is already a record with id: " + dto.id();
             log.debug(message);
             throw new RecordIdAlreadyExistsException(message);
         }
     }
 
     private void verifyIndexNotUsed(final T dto) {
-        if (findByIndexNonSynchronized(dto.index()) != null) {
-            final var message = "There is already an record with index: " + dto.index();
+        var names = dto.indexNames();
+        var values = dto.indexValues();
+        if (findByIndexNonSynchronized(values) != null) {
+            final StringBuilder messageBuilder = new StringBuilder("There is already a record with: ");
+            String delim = "";
+            for (int i=0; i<names.length; i++) {
+                messageBuilder.append(String.format("%s%s=%s", delim, names[i], values[i]));
+                delim = ", ";
+            }
+            final var message = messageBuilder.toString();
             log.debug(message);
             throw new RecordIndexAlreadyExistsException(message);
         }
@@ -80,8 +104,8 @@ public final class Database<T extends Dto<Id>, Id, Bean extends EntityManagerBea
 
     @SuppressWarnings("unchecked")
     T addNonSynchronized(final T dto) {
-        T dtoWithId;
-        if (dto.id() == null) {
+        final T dtoWithId;
+        if (dto.isIdUnassigned()) {
             if (idSupplier == null) {
                 final var message = "Cannot add an object without id to the database.";
                 log.debug(message);
@@ -96,51 +120,108 @@ public final class Database<T extends Dto<Id>, Id, Bean extends EntityManagerBea
         }
         verifyIdNotUsed(dtoWithId);
         verifyIndexNotUsed(dtoWithId);
-        Bean bean = converter.toBean(dtoWithId);
+        final Bean bean = dtoToBeanFunction.apply(dtoWithId);
         entityManager.persist(bean);
         return dtoWithId;
     }
 
     @Override
     public T add(final T dto) {
-        return SynchronizationUtil.synchronizedSupplier(lock,
+        final var addedDto = SynchronizationUtil.synchronizedSupplier(lock,
                 () -> addNonSynchronized(dto));
+        if (log.isDebugEnabled()) {
+            log.debug("Added: " + dto);
+        }
+        return addedDto;
     }
 
     T findByIdNonSynchronized(final Id id) {
         final var bean = entityManager.find(beanClass, id);
-        return converter.toDto(bean);
+        return bean == null ?
+                null :
+                beanToDtoFunction.apply(bean);
     }
 
     public T findById(final Id id) {
-        return SynchronizationUtil.synchronizedSupplier(lock, () -> findByIdNonSynchronized(id));
+        final var dto = SynchronizationUtil.synchronizedSupplier(lock, () -> findByIdNonSynchronized(id));
+        if (log.isDebugEnabled()) {
+            log.debug("Found: " + dto);
+        }
+        return dto;
     }
 
-    Bean findBeanByIndexNonSynchronized(final String index) {
-        final var sql = "SELECT bean FROM " + beanClass.getSimpleName() + " bean WHERE " + indexColumnName + "=:index";
-        final var query = entityManager.createQuery(sql, beanClass).setParameter("index", index);
+    private boolean isEmpty(final Object value) {
+        return value == null || value.toString().isEmpty();
+    }
+
+    String getFindByIndexSql(final Object... indexValues) {
+        final StringBuilder sqlBuilder = new StringBuilder();
+        sqlBuilder.append("SELECT bean FROM ").append(beanClass.getSimpleName()).append(" bean WHERE ");
+        String delimiter = "";
+        for (int i = 0; i < indexColumnNames.length; i++) {
+            sqlBuilder.append(delimiter);
+            if (isEmpty(indexValues[i])) {
+                sqlBuilder.append("bean.");
+                sqlBuilder.append(indexColumnNames[i]);
+                sqlBuilder.append(" IS NULL");
+            }
+            else {
+                sqlBuilder.append("bean.");
+                sqlBuilder.append(indexColumnNames[i]);
+                sqlBuilder.append("=:");
+                sqlBuilder.append(indexColumnNames[i]);
+            }
+            delimiter = " AND ";
+        }
+        return sqlBuilder.toString();
+    }
+
+    Bean findBeanByIndexNonSynchronized(final Object... indexValues) {
+        if (indexValues == null || indexValues.length == 0) {
+            return null;
+        }
+        final var sql = getFindByIndexSql(indexValues);
+        var query = entityManager.createQuery(sql, beanClass);
+        for (int i=0; i<indexValues.length; i++) {
+            if (sql.contains(":" + indexColumnNames[i])) {
+                query = query.setParameter(indexColumnNames[i], indexValues[i]);
+            }
+        }
         final var list = query.getResultList();
         return list.isEmpty() ?
                 null :
                 list.get(0);
     }
 
-    T findByIndexNonSynchronized(final String index) {
-        final var bean = findBeanByIndexNonSynchronized(index);
-        return converter.toDto(bean);
+    T findByIndexNonSynchronized(final Object... indexValues) {
+        final var bean = findBeanByIndexNonSynchronized(indexValues);
+        return bean == null ?
+                null :
+                beanToDtoFunction.apply(bean);
     }
 
     @Override
-    public T findByIndex(final String index) {
-        return SynchronizationUtil.synchronizedSupplier(lock, () -> findByIndexNonSynchronized(index));
+    public T findByIndex(final Object... indexValues) {
+        T dto = SynchronizationUtil.synchronizedSupplier(lock, () -> findByIndexNonSynchronized(indexValues));
+        if (log.isDebugEnabled()) {
+            log.debug("Found by index: " + dto);
+        }
+        return dto;
     }
 
     public List<T> findAllNonSynchronized() {
-        return entityManager.createQuery("SELECT bean FROM " + beanClass.getSimpleName() + " bean", beanClass)
+        final var list = entityManager.createQuery("SELECT bean FROM " + beanClass.getSimpleName() + " bean", beanClass)
                 .getResultList()
                 .stream()
-                .map(converter::toDto)
+                .map(beanToDtoFunction)
                 .toList();
+        if (log.isDebugEnabled()) {
+            log.debug("Found all: ");
+            for (final var dto : list) {
+                log.debug(dto);
+            }
+        }
+        return list;
     }
 
     public List<T> findAll() {
@@ -148,28 +229,29 @@ public final class Database<T extends Dto<Id>, Id, Bean extends EntityManagerBea
     }
 
     T addOrUpdateNonSynchronized(final T dto) {
-        final var dtoWithId = dto.id() == null ? (T)dto.withId(idSupplier.get()) : dto;
+        final var dtoWithId = dto.isIdUnassigned() ?
+                (T)dto.withId(idSupplier.get()) :
+                dto;
         final var previousBeanById = entityManager.find(beanClass, dtoWithId.id());
-        final var previousBeanByIndex = findBeanByIndexNonSynchronized(dtoWithId.index());
+        final var previousBeanByIndex = findBeanByIndexNonSynchronized(dtoWithId.indexValues());
         if (previousBeanById == null) {
             if (previousBeanByIndex == null) {
-                final var bean = converter.toBean(dtoWithId);
-                entityManager.persist(bean);
-                return converter.toDto(bean);
+                final var beanWithId = dtoToBeanFunction.apply(dtoWithId);
+                entityManager.persist(beanWithId);
+                return dtoWithId;
             }
             else {
-                throw new RecordIndexDoesNotExistException("There is already a record with index: " + dtoWithId.index());
+                throw new RecordIndexAlreadyExistsException("There is already a record with: " + Cache.toString(dtoWithId.indexNames(), dtoWithId.indexValues()));
             }
         }
         else {
             if (Objects.equals(previousBeanById, previousBeanByIndex) || previousBeanByIndex == null) {
-                entityManager.remove(previousBeanById);
-                final var persistedDto = converter.toDto(previousBeanById);
-                entityManager.persist(previousBeanById);
-                return persistedDto;
+                previousBeanById.init(dtoWithId);
+                entityManager.merge(previousBeanById);
+                return dtoWithId;
             }
             else {
-                throw new RecordIndexAlreadyExistsException("There is already a record with index: " + dtoWithId.index());
+                throw new RecordIndexAlreadyExistsException("There is already a record with: " + Cache.toString(dtoWithId.indexNames(), dtoWithId.indexValues()));
             }
         }
     }
@@ -180,23 +262,18 @@ public final class Database<T extends Dto<Id>, Id, Bean extends EntityManagerBea
     }
 
     void updateNonSynchronized(final T dto) {
-        try {
-            entityManager.getTransaction().begin();
-            var bean = entityManager.find(beanClass, dto.id());
-            if (bean == null) {
-                final String message = "There is no record with id: " + dto.id();
-                log.debug(message);
-                throw new RecordIdDoesNotExistException(message);
-            }
-            entityManager.refresh(bean);
-            var updatedBean = converter.toBean(dto);
-            entityManager.persist(updatedBean);
-            entityManager.getTransaction().commit();
+        final var bean = entityManager.find(beanClass, dto.id());
+        if (bean == null) {
+            final String message = "There is no record with id: " + dto.id();
+            log.debug(message);
+            throw new RecordIdDoesNotExistException(message);
         }
-        catch (Exception e) {
-            entityManager.getTransaction().rollback();
-            throw e;
+        entityManager.remove(bean);
+        if (findByIndexNonSynchronized(dto.indexValues()) != null) {
+            throw new RecordIndexDoesNotExistException("There is already a record with: " + Cache.toString(dto.indexNames(), dto.indexValues()));
         }
+        var updatedBean = dtoToBeanFunction.apply(dto);
+        entityManager.persist(updatedBean);
     }
 
     @Override
@@ -211,7 +288,7 @@ public final class Database<T extends Dto<Id>, Id, Bean extends EntityManagerBea
         }
         else {
             entityManager.remove(bean);
-            return converter.toDto(bean);
+            return beanToDtoFunction.apply(bean);
         }
     }
 
@@ -220,27 +297,24 @@ public final class Database<T extends Dto<Id>, Id, Bean extends EntityManagerBea
         return SynchronizationUtil.synchronizedSupplier(lock, () -> removeByIdNonSynchronized(id));
     }
 
-    T removeByIndexNonSynchronized(final String index) {
-        final var bean = findBeanByIndexNonSynchronized(index);
-        if (bean == null) {
-            return null;
+    T removeByIndexNonSynchronized(final Object... indexValues) {
+        final T dto = findByIndexNonSynchronized(indexValues);
+        if (dto != null) {
+            removeByIdNonSynchronized(dto.id());
         }
-        else {
-            entityManager.remove(bean);
-            return converter.toDto(bean);
-        }
+        return dto;
     }
 
     @Override
-    public T removeByIndex(final String index) {
-        return SynchronizationUtil.synchronizedSupplier(lock, () -> removeByIndexNonSynchronized(index));
+    public T removeByIndex(final Object... indexValues) {
+        return SynchronizationUtil.synchronizedSupplier(lock, () -> removeByIndexNonSynchronized(indexValues));
     }
 
-    <T> T execute(final Lock lock, final Function<EntityManager, T> function) {
+    <U> U execute(final Lock lock, final Function<EntityManager, U> function) {
         return SynchronizationUtil.synchronizedSupplier(lock, () -> function.apply(entityManager));
     }
 
-    public <T> T execute(final Function<EntityManager, T> function) {
+    public <U> U execute(final Function<EntityManager, U> function) {
         return SynchronizationUtil.synchronizedSupplier(lock, () -> function.apply(entityManager));
     }
 

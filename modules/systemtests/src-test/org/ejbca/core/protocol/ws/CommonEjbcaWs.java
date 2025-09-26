@@ -46,7 +46,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -134,9 +136,10 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.dto.RoleDataDto;
+import org.cesecore.dto.RoleDataDtoBuilder;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
@@ -288,20 +291,21 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         managementCaName = CaTestUtils.getClientCertCaName(intAdmin);
     }
 
-    protected void setAccessRulesForWsAdmin(final List<String> resourcesAllowed, final List<String> resourcesDenied) throws AuthorizationDeniedException {
-        final Role role = roleSession.getRole(intAdmin, null, WS_ADMIN_ROLENAME);
+    protected void setAccessRulesForWsAdmin(final List<String> resourcesAllowed, final List<String> resourcesDenied) throws AuthorizationDeniedException, RoleExistsException {
+        final RoleDataDto role = roleSession.getRole(intAdmin, null, WS_ADMIN_ROLENAME);
         assertNotNull("Role " + WS_ADMIN_ROLENAME + " does not exist!", role);
-        role.getAccessRules().clear();
+        Map<String, Boolean> accessRules = new HashMap<>();
         if (resourcesAllowed!=null) {
             for (final String resource : resourcesAllowed) {
-                role.getAccessRules().put(resource, Role.STATE_ALLOW);
+                accessRules.put(resource, RoleDataDto.STATE_ALLOW);
             }
         }
         if (resourcesDenied!=null) {
             for (final String resource : resourcesDenied) {
-                role.getAccessRules().put(resource, Role.STATE_DENY);
+                accessRules.put(resource, RoleDataDto.STATE_DENY);
             }
         }
+        roleSession.persistRole(intAdmin, role.withAccessRules(accessRules));
     }
 
     protected void adminSetUpAdmin() throws Exception {
@@ -383,18 +387,20 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         } catch (NoSuchEndEntityException e) {
             throw new IllegalStateException("End entity not created.", e);
         }
-        // Setup Role and RoleMember
+        // Setup RoleDataDto and RoleMember
         final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
         final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
-        Role role = roleSession.getRole(intAdmin, null, wsadminRoleName);
+        RoleDataDto role = roleSession.getRole(intAdmin, null, wsadminRoleName);
         if (role == null) {
             log.info("Creating new role: " + wsadminRoleName);
-            final Role newRole = new Role(null, wsadminRoleName);
-            newRole.getAccessRules().put(StandardRules.ROLE_ROOT.resource(), Role.STATE_ALLOW);
+            final RoleDataDto newRole = new RoleDataDtoBuilder()
+                    .setName(wsadminRoleName)
+                    .setAccessRules(Map.of(StandardRules.ROLE_ROOT.resource(), RoleDataDto.STATE_ALLOW))
+                    .build();
             role = roleSession.persistRole(intAdmin, newRole);
         }
         boolean adminExists = false;
-        for (final RoleMember roleMember : roleMemberSession.getRoleMembersByRoleId(intAdmin, role.getRoleId())) {
+        for (final RoleMember roleMember : roleMemberSession.getRoleMembersByRoleId(intAdmin, role.id())) {
             if (TEST_ADMIN_USERNAME.equals(roleMember.getTokenMatchValue())) {
                 adminExists = true;
                 break;
@@ -404,7 +410,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
             log.info("Adding member to role: " + wsadminRoleName);
             roleMemberSession.persist(intAdmin, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                     caInfo.getCAId(), RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
-                    TEST_ADMIN_USERNAME, role.getRoleId(), null));
+                    TEST_ADMIN_USERNAME, role.id(), null));
         }
         return fileHandles;
     }
@@ -454,9 +460,9 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         }
         // Remove Role
         final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
-        final Role role = roleSession.getRole(intAdmin, null, wsadminRoleName);
+        final RoleDataDto role = roleSession.getRole(intAdmin, null, wsadminRoleName);
         if (role != null) {
-            roleSession.deleteRoleIdempotent(intAdmin, role.getRoleId());
+            roleSession.deleteRoleIdempotent(intAdmin, role.id());
         }
     }
 

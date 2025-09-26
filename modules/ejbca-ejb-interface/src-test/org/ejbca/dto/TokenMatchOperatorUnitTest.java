@@ -13,6 +13,7 @@
 
 package org.ejbca.dto;
 
+import org.cesecore.dto.TokenMatchOperator;
 import org.junit.Assert;
 import org.junit.Test;
 

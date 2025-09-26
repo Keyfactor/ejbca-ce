@@ -96,9 +96,9 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
+import org.cesecore.dto.RoleDataDto;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
-import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
@@ -1610,10 +1610,10 @@ public class CrmfKeyUpdateSystemTest extends CmpTestCase {
 
         // Initialize the role mgmt system with this role that is allowed to edit roles
         String roleName = getRoleName();
-        final Role role = roleSession.getRole(ADMIN, null, roleName);
+        final RoleDataDto role = roleSession.getRole(ADMIN, null, roleName);
         roleMemberSession.persist(ADMIN, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                 CertTools.getIssuerDN(cert).hashCode(), RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue(),
-                AccessMatchType.TYPE_EQUALCASE.getNumericValue(), CertTools.getSerialNumberAsString(cert), role.getRoleId(), null));
+                AccessMatchType.TYPE_EQUALCASE.getNumericValue(), CertTools.getSerialNumberAsString(cert), role.id(), null));
         return token;
     }
 
@@ -1666,10 +1666,10 @@ public class CrmfKeyUpdateSystemTest extends CmpTestCase {
     private void removeAuthenticationToken(AuthenticationToken authToken, Certificate cert, String adminName) throws RoleNotFoundException,
             AuthorizationDeniedException, ApprovalException, NoSuchEndEntityException, WaitingForApprovalException, CouldNotRemoveEndEntityException {
         if (cert!=null) {
-            final Role role = roleSession.getRole(ADMIN, null, getRoleName());
+            final RoleDataDto role = roleSession.getRole(ADMIN, null, getRoleName());
             if (role!=null) {
                 final String tokenMatchValue = CertTools.getSerialNumberAsString(cert);
-                for (final RoleMember roleMember : roleMemberSession.getRoleMembersByRoleId(ADMIN, role.getRoleId())) {
+                for (final RoleMember roleMember : roleMemberSession.getRoleMembersByRoleId(ADMIN, role.id())) {
                     if (tokenMatchValue.equals(roleMember.getTokenMatchValue())) {
                         roleMemberSession.remove(ADMIN, roleMember.getId());
                     }

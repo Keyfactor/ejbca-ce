@@ -14,10 +14,8 @@
 package org.cesecore.repository;
 
 import org.apache.log4j.Logger;
-import org.cesecore.repository.dto.Dto;
-import org.cesecore.repository.dto.TimedDto;
-import org.cesecore.repository.exception.RecordIdAlreadyExistsException;
-import org.cesecore.repository.exception.RecordIndexDoesNotExistException;
+import org.cesecore.dto.Dto;
+import org.cesecore.dto.TimedDto;
 import org.cesecore.repository.util.SynchronizationUtil;
 
 import java.util.ArrayList;
@@ -25,6 +23,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -34,10 +33,25 @@ public final class Cache<T extends Dto<Id>, Id> implements Repository<T, Id> {
     static final long NEVER_EXPIRE = Long.MAX_VALUE;
 
     private final Map<Id, TimedDto<T>> idToTimedDtoMap;
-    private final Map<String, Id> indexToIdMap;
-    private final Map<Id, String> idToIndexMap;
+    private final Map<Integer, Id> indexToIdMap;
+    private final Map<Id, Integer> idToIndexMap;
     private final long expirationTimeMs;
     private final Lock lock;
+
+    static Integer getCacheKey(final Object... values) {
+        return values == null || values.length == 0 ? null : Objects.hash(values);
+    }
+
+    static String toString(final String[] names, final Object[] values) {
+        StringBuilder sb = new StringBuilder();
+        String delim = "";
+        for (int i = 0; i < names.length; i++) {
+            sb.append(delim);
+            sb.append(String.format("%s%s=%s", delim, names[i], ""+values[i]));
+            delim = ", ";
+        }
+        return sb.toString();
+    }
 
     public Cache() {
         this(NEVER_EXPIRE);
@@ -51,33 +65,17 @@ public final class Cache<T extends Dto<Id>, Id> implements Repository<T, Id> {
         this.lock = new ReentrantLock();
     }
 
-    private void verifyIdNotUsed(final T dto) {
-        if (findById(dto.id()) != null) {
-            final var message = "There is already an record with id: " + dto.id();
-            log.debug(message);
-            throw new RecordIdAlreadyExistsException(message);
-        }
-    }
-
-    private void verifyIndexNotUsed(final T dto) {
-        if (findByIndex(dto.index()) != null) {
-            final var message = "There is already an record with index: " + dto.index();
-            log.debug(message);
-            throw new RecordIndexDoesNotExistException(message);
-        }
-    }
-
-    T addNonSynchronized(T dto) {
-        verifyIdNotUsed(dto);
-        verifyIndexNotUsed(dto);
+    public T addNonSynchronized(T dto) {
+        removeByIdNonSynchronized(dto.id());
+        var cacheKey = getCacheKey(dto.indexValues());
+        removeByIndexNonSynchronized(cacheKey);
         var prevIndex = idToIndexMap.get(dto.id());
         indexToIdMap.remove(prevIndex);
         final var timedDto = new TimedDto<>(dto);
         idToTimedDtoMap.put(dto.id(), timedDto);
-        final var index = dto.index();
-        if (index != null) {
-            indexToIdMap.put(index, dto.id());
-            idToIndexMap.put(dto.id(), index);
+        if (cacheKey != null) {
+            indexToIdMap.put(cacheKey, dto.id());
+            idToIndexMap.put(dto.id(), cacheKey);
         }
         return dto;
     }
@@ -106,15 +104,16 @@ public final class Cache<T extends Dto<Id>, Id> implements Repository<T, Id> {
         return SynchronizationUtil.synchronizedSupplier(lock, ()-> findByIdNonSynchronized(id));
     }
 
-    T findByIndexNonSynchronized(final String index) {
-        final var id = indexToIdMap.get(index);
+    public T findByIndexNonSynchronized(final Integer indexKey) {
+        final var id = indexToIdMap.get(indexKey);
         final var timedDto = idToTimedDtoMap.get(id);
         return getNonExpiredDto(timedDto);
     }
 
     @Override
-    public T findByIndex(final String index) {
-        return SynchronizationUtil.synchronizedSupplier(lock, ()->findByIndexNonSynchronized(index));
+    public T findByIndex(final Object... indexValues) {
+        final Integer cacheKey = getCacheKey(indexValues);
+        return SynchronizationUtil.synchronizedSupplier(lock, ()->findByIndexNonSynchronized(cacheKey));
     }
 
     List<T> findAllNonSynchronized() {
@@ -127,7 +126,7 @@ public final class Cache<T extends Dto<Id>, Id> implements Repository<T, Id> {
 
     @Override
     public List<T> findAll() {
-        return SynchronizationUtil.synchronizedSupplier(lock, ()->findAllNonSynchronized());
+        return SynchronizationUtil.synchronizedSupplier(lock, this::findAllNonSynchronized);
     }
 
     T removeByIdNonSynchronized(final Id id) {
@@ -139,21 +138,14 @@ public final class Cache<T extends Dto<Id>, Id> implements Repository<T, Id> {
                 timedDto.dto();
     }
 
-    T addOrUpdateNonSynchronized(final T dto) {
-        removeByIdNonSynchronized(dto.id());
-        removeByIndexNonSynchronized(dto.index());
-        return addNonSynchronized(dto);
-    }
-
     @Override
     public T addOrUpdate(final T dto) {
-        return SynchronizationUtil.synchronizedSupplier(lock, ()->addOrUpdateNonSynchronized(dto));
+        return SynchronizationUtil.synchronizedSupplier(lock, ()->addNonSynchronized(dto));
     }
 
     @Override
     public void update(final T dto) {
-        removeByIdNonSynchronized(dto.id());
-        addNonSynchronized(dto);
+        SynchronizationUtil.synchronizedSupplier(lock, ()->addNonSynchronized(dto));
     }
 
     @Override
@@ -162,19 +154,21 @@ public final class Cache<T extends Dto<Id>, Id> implements Repository<T, Id> {
                 ()->removeByIdNonSynchronized(id));
     }
 
-    T removeByIndexNonSynchronized(final String index) {
-        var id = indexToIdMap.remove(index);
-        final var timedDto = idToTimedDtoMap.remove(id);
-        idToIndexMap.remove(id);
-        return timedDto == null ?
-                null :
-                timedDto.dto();
+    T removeByIndexNonSynchronized(final Integer indexKey) {
+        if (indexKey == null) {
+            return null;
+        }
+        else {
+            var id = indexToIdMap.remove(indexKey);
+            idToIndexMap.remove(id);
+            final var timedDto = idToTimedDtoMap.remove(id);
+            return getNonExpiredDto(timedDto);
+        }
     }
 
-    @Override
-    public T removeByIndex(final String index) {
-        return SynchronizationUtil.synchronizedSupplier(this.lock,
-                ()->removeByIndexNonSynchronized(index));
+    public T removeByIndex(final Object... indexValues) {
+        final Integer cacheKey = getCacheKey(indexValues);
+        return SynchronizationUtil.synchronizedSupplier(this.lock, ()->removeByIndexNonSynchronized(cacheKey));
     }
 
     void clearNonSynchronized() {
