@@ -140,7 +140,7 @@ public class OAuthTools {
      * @param urlString The URL string to extract hostname from
      * @return The extracted hostname, or the original string if it's not a valid URL
      */
-    public static String extractHostnameFromUrl(final String urlString) {
+    private static String extractHostnameFromUrl(final String urlString) {
         if (urlString == null) {
             return null;
         }
