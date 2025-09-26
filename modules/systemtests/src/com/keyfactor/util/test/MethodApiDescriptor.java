@@ -86,10 +86,8 @@ public class MethodApiDescriptor {
         assertNotNull(expectedHash);
         // Not using assertEquals here, because it would show the actual value of the hash,
         // and it should NOT be copied.
-        final var actualHash = getActualHashValue();
-        assertEquals("Test data has been corrupted", expectedHash, actualHash);
-        //assertTrue("Test data has been corrupted. Please revert the changes! " + getActualHashValue(), getActualHashValue().equals(expectedHash));
-    }
+        assertTrue("Test data has been corrupted. Please revert the changes!" + getActualHashValue(), getActualHashValue().equals(expectedHash));
+}
 
     public String getName() {
         return name;

@@ -749,15 +749,12 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
 
     private static <T extends Serializable> T getAsObject(final byte[] bytes, Class<T> type) {
         try (final LookAheadObjectInputStream lookAheadObjectInputStream = new LookAheadObjectInputStream(new ByteArrayInputStream(bytes))) {
-            lookAheadObjectInputStream.setAcceptedClasses(Arrays.asList(type, LinkedHashMap.class, HashMap.class, HashSet.class, DynamicUiPropertyCallback.class,
+            lookAheadObjectInputStream.setAcceptedClasses(Arrays.asList(type, LinkedHashMap.class, HashMap.class, HashSet.class, DynamicUiPropertyCallback.class, 
                   AccessMatchType.class, UrlString.class, MultiLineString.class, String.class, Date.class,
                   PositiveIntegerValidator.class, IntegerValidator.class, StringValidator.class, RadioButton.class, ArrayList.class, Enum.class, 
-                  Collections.emptyList().getClass().asSubclass(Serializable.class),
-                  Collections.emptyMap().getClass().asSubclass(Serializable.class),
-                  Collections.unmodifiableMap(new HashMap<>()).getClass().asSubclass(Serializable.class),
-                  Map.of().getClass().asSubclass(Serializable.class),
+                  Collections.emptyList().getClass().asSubclass(Serializable.class), 
                   Class.forName("org.cesecore.roles.RoleInformation").asSubclass(Serializable.class),
-                  Class.forName("org.cesecore.dto.RoleDataDto").asSubclass(Serializable.class)));
+                  Class.forName("org.cesecore.roles.RoleData").asSubclass(Serializable.class)));
             lookAheadObjectInputStream.setEnabledMaxObjects(false);
             lookAheadObjectInputStream.setEnabledSubclassing(false);
             lookAheadObjectInputStream.setEnabledInterfaceImplementations(false);

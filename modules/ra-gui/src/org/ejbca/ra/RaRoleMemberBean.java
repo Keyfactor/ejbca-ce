@@ -36,7 +36,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.config.OAuthConfiguration;
-import org.cesecore.dto.RoleDataDto;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.member.RoleMember;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.era.RaRoleMemberTokenTypeInfo;
@@ -78,7 +78,7 @@ public class RaRoleMemberBean implements Serializable {
 
     private Integer roleMemberId;
     private RoleMember roleMember;
-    private RoleDataDto role;
+    private Role role;
 
     private int roleId;
     private String tokenType;
@@ -214,17 +214,17 @@ public class RaRoleMemberBean implements Serializable {
     public List<SelectItem> getAvailableRoles() {
         if (availableRoles == null) {
             availableRoles = new ArrayList<>();
-            final List<RoleDataDto> roles = new ArrayList<>(raMasterApiProxyBean.getAuthorizedRoles(raAuthenticationBean.getAuthenticationToken()));
+            final List<Role> roles = new ArrayList<>(raMasterApiProxyBean.getAuthorizedRoles(raAuthenticationBean.getAuthenticationToken()));
             Collections.sort(roles);
             boolean hasNamespaces = false;
-            for (final RoleDataDto role : roles) {
-                if (!StringUtils.isEmpty(role.nameSpace())) {
+            for (final Role role : roles) {
+                if (!StringUtils.isEmpty(role.getNameSpace())) {
                     hasNamespaces = true;
                 }
             }
-            for (final RoleDataDto role : roles) {
-                final String name = hasNamespaces ? role.fullName() : role.name();
-                availableRoles.add(new SelectItem(role.id(), name));
+            for (final Role role : roles) {
+                final String name = hasNamespaces ? role.getRoleNameFull() : role.getRoleName();
+                availableRoles.add(new SelectItem(role.getRoleId(), name));
             }
         }
         return availableRoles;
@@ -364,7 +364,7 @@ public class RaRoleMemberBean implements Serializable {
         final RoleMember savedRoleMember = raMasterApiProxyBean.saveRoleMember(raAuthenticationBean.getAuthenticationToken(), roleMemberWithChanges);
         if (savedRoleMember == null) {
             if (log.isDebugEnabled()) {
-                log.debug("The role member could not be saved. RoleDataDto member ID: " + roleMemberId + ". RoleDataDto ID: " + roleId + ". Match value: '" + matchValue + "'");
+                log.debug("The role member could not be saved. Role member ID: " + roleMemberId + ". Role ID: " + roleId + ". Match value: '" + matchValue + "'");
             }
             raLocaleBean.addMessageError("role_member_page_error_generic");
             return "";
@@ -398,7 +398,7 @@ public class RaRoleMemberBean implements Serializable {
 
     public String getRemoveConfirmationText() {
         if (role != null) {
-            return raLocaleBean.getMessage("remove_role_member_page_confirm_with_role", role.name());
+            return raLocaleBean.getMessage("remove_role_member_page_confirm_with_role", role.getRoleName());
         } else {
             return raLocaleBean.getMessage("remove_role_member_page_confirm");
         }
@@ -407,7 +407,7 @@ public class RaRoleMemberBean implements Serializable {
     public String delete() throws AuthorizationDeniedException {
         if (!raMasterApiProxyBean.deleteRoleMember(raAuthenticationBean.getAuthenticationToken(), roleMember.getRoleId(), roleMember.getId())) {
             if (log.isDebugEnabled()) {
-                log.debug("The role member could not be deleted. RoleDataDto member ID: " + roleMemberId + ". RoleDataDto ID: " + roleId + ". Match value: '" + matchValue + "'");
+                log.debug("The role member could not be deleted. Role member ID: " + roleMemberId + ". Role ID: " + roleId + ". Match value: '" + matchValue + "'");
             }
             raLocaleBean.addMessageError("remove_role_member_page_error_generic");
             return "";

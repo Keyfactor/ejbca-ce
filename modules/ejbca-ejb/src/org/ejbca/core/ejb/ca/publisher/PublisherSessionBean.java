@@ -70,7 +70,7 @@ import org.cesecore.repository.Database;
 import org.cesecore.repository.exception.RecordIdAlreadyExistsException;
 import org.cesecore.repository.exception.RecordIndexAlreadyExistsException;
 import org.cesecore.repository.exception.RecordIndexDoesNotExistException;
-import org.cesecore.util.XmlUtil;
+import org.cesecore.repository.util.XmlUtil;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.ProfileID;
@@ -99,9 +99,10 @@ import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.certificate.DnComponents;
-import org.cesecore.dto.PublisherData;
+import org.ejbca.dto.PublisherData;
 import org.ejbca.dto.PublisherDataBean;
-import org.cesecore.dto.PublisherDataBuilder;
+import org.ejbca.dto.PublisherDataBuilder;
+import org.ejbca.dto.PublisherDataConverter;
 
 /**
  * Handles management of Publishers.
@@ -139,12 +140,6 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     private static CachedDatabase<PublisherData, Integer, PublisherDataBean> repository;
     private static ConcurrentMap<Integer, BasePublisher> basePublisherMap;
 
-    private PublisherDataBean dtoToBean(PublisherData dto) {
-        final PublisherDataBean bean = new PublisherDataBean();
-        bean.init(dto);
-        return bean;
-    }
-
     @PostConstruct
     public void postConstruct() {
         if (repository == null) {
@@ -154,8 +149,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                     Database<PublisherData, Integer, PublisherDataBean> database = new Database<>(
                             entityManager,
                             PublisherDataBean.class,
-                            PublisherDataBean::toDto,
-                            this::dtoToBean,
+                            new PublisherDataConverter(),
                             "name");
                     final var cache = new Cache<PublisherData, Integer>(EjbcaConfiguration.getCachePublisherTime());
                     repository = new CachedDatabase<>(database, cache);
@@ -719,12 +713,12 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                 return List.of();
             }
             final var bean = originalBeans.get(0);
-            final PublisherData originalDto = bean.toDto();
+            final PublisherData originalDto = PublisherDataConverter.INSTANCE.toDto(bean);
             bean.setName(name);
             bean.setData(publisherData);
             bean.setUpdateCounter(bean.getUpdateCounter() + 1);
             em.merge(bean);
-            final PublisherData updatedDto = bean.toDto();
+            final PublisherData updatedDto = PublisherDataConverter.INSTANCE.toDto(bean);
             publisher.setName(name);
             return List.of(originalDto, updatedDto);
         });
@@ -794,7 +788,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     private void cloneDbBean(final String oldName, final String newName) {
         final var sql = "SELECT bean FROM PublisherDataBean bean WHERE bean.name=:name";
         repository.execute((em) -> {
-            final int newId = findFreePublisherIdNonSynchronized();
+            final int newId = findFreePublisherId();
             final PublisherDataBean originalBean = getPublisherDataBeanByName(em, sql, oldName);
             if (originalBean == null) {
                 throw new RecordIndexDoesNotExistException("No publisher with name " + oldName + " found.");
@@ -835,6 +829,15 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         }
     }
 
+    private Integer removeByName(final String name) {
+        return repository.execute((em) -> {
+            String sql = "DELETE FROM PublisherDataBean WHERE name=:name";
+            return em.createQuery(sql)
+                    .setParameter("name", name)
+                    .executeUpdate();
+        });
+    }
+
     @Override
     public void removePublisherInternal(AuthenticationToken admin, String name) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
@@ -842,8 +845,8 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         }
         authorizedToEditPublishers(admin);
         try {
-            final var dto = repository.removeByIndex(name);
-            if (dto == null) {
+            final var count = removeByName(name);
+            if (count == 0) {
                 if (log.isDebugEnabled()) {
                     log.debug("Trying to remove a publisher that does not exist: " + name);
                 }
@@ -1131,12 +1134,6 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
 
     private int findFreePublisherId() {
         final ProfileID.DB db = (id) -> repository.findById(id) == null;
-        return ProfileID.getNotUsedID(db);
-    }
-
-
-    private int findFreePublisherIdNonSynchronized() {
-        final ProfileID.DB db = (id) -> repository.findByIdNonSynchronized(id) == null;
         return ProfileID.getNotUsedID(db);
     }
 

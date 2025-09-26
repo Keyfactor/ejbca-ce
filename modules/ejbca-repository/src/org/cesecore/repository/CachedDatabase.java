@@ -15,7 +15,7 @@ package org.cesecore.repository;
 
 import jakarta.persistence.EntityManager;
 import org.apache.log4j.Logger;
-import org.cesecore.dto.Dto;
+import org.cesecore.repository.dto.Dto;
 import org.cesecore.repository.util.SynchronizationUtil;
 import org.ejbca.dto.EntityManagerBean;
 
@@ -24,7 +24,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 
-public final class CachedDatabase<T extends Dto<Id>, Id, Bean extends EntityManagerBean<T>> implements Repository<T, Id> {
+public final class CachedDatabase<T extends Dto<Id>, Id, Bean extends EntityManagerBean> implements Repository<T, Id> {
 
     private static final Logger log = Logger.getLogger(CachedDatabase.class);
 
@@ -41,8 +41,7 @@ public final class CachedDatabase<T extends Dto<Id>, Id, Bean extends EntityMana
 
     T addNonSynchronized(final T dto) {
         final var addedDto = database.addNonSynchronized(dto);
-        cache.removeByIdNonSynchronized(addedDto.id());
-        cache.removeByIndexNonSynchronized(Cache.getCacheKey(addedDto.indexValues()));
+        cache.addNonSynchronized(addedDto);
         return addedDto;
     }
 
@@ -50,7 +49,7 @@ public final class CachedDatabase<T extends Dto<Id>, Id, Bean extends EntityMana
         return SynchronizationUtil.synchronizedSupplier(this.lock, () -> addNonSynchronized(dto));
     }
 
-    public T findByIdNonSynchronized(final Id id) {
+    T findByIdNonSynchronized(final Id id) {
         var dto = cache.findByIdNonSynchronized(id);
         if (dto == null) {
             dto = database.findByIdNonSynchronized(id);
@@ -66,12 +65,8 @@ public final class CachedDatabase<T extends Dto<Id>, Id, Bean extends EntityMana
         return SynchronizationUtil.synchronizedSupplier(this.lock, () -> findByIdNonSynchronized(id));
     }
 
-    T findByIndexNonSynchronized(Object... index) {
-        if (index == null || index.length == 0) {
-            return null;
-        }
-        final Integer cacheKey = Cache.getCacheKey(index);
-        final var cacheDto = cache.findByIndexNonSynchronized(cacheKey);
+    T findByIndexNonSynchronized(String index) {
+        final var cacheDto = cache.findByIndexNonSynchronized(index);
         if (cacheDto == null) {
             final var dbDto = database.findByIndexNonSynchronized(index);
             if (dbDto != null) {
@@ -84,12 +79,12 @@ public final class CachedDatabase<T extends Dto<Id>, Id, Bean extends EntityMana
         }
     }
 
-    @Override
-    public T findByIndex(Object... indexValues) {
-        return SynchronizationUtil.synchronizedSupplier(this.lock, () -> findByIndexNonSynchronized(indexValues));
+    public T findByIndex(String index) {
+        return SynchronizationUtil.synchronizedSupplier(this.lock, () -> findByIndexNonSynchronized(index));
     }
 
     List<T> findAllNonSynchronized() {
+        cache.clearNonSynchronized();
         return database.findAllNonSynchronized();
     }
 
@@ -99,8 +94,7 @@ public final class CachedDatabase<T extends Dto<Id>, Id, Bean extends EntityMana
 
     T addOrUpdateNonSynchronized(final T dto) {
         final var addedDto = database.addOrUpdateNonSynchronized(dto);
-        cache.removeByIdNonSynchronized(addedDto.id());
-        cache.removeByIndexNonSynchronized(Cache.getCacheKey(addedDto.indexValues()));
+        cache.addOrUpdateNonSynchronized(addedDto);
         return addedDto;
     }
 
@@ -110,7 +104,7 @@ public final class CachedDatabase<T extends Dto<Id>, Id, Bean extends EntityMana
 
     void updateNonSynchronized(final T dto) {
         cache.removeByIdNonSynchronized(dto.id());
-        cache.removeByIndexNonSynchronized(Cache.getCacheKey(dto.indexValues()));
+        cache.removeByIndexNonSynchronized(dto.index());
         database.updateNonSynchronized(dto);
     }
 
@@ -128,14 +122,14 @@ public final class CachedDatabase<T extends Dto<Id>, Id, Bean extends EntityMana
         return SynchronizationUtil.synchronizedSupplier(lock, () -> removeByIdNonSynchronized(id));
     }
 
-    T removeByIndexNonSynchronized(Object... index) {
-        cache.removeByIndexNonSynchronized(Cache.getCacheKey(index));
+    T removeByIndexNonSynchronized(final String index) {
+        cache.removeByIndexNonSynchronized(index);
         return database.removeByIndexNonSynchronized(index);
     }
 
     @Override
-    public T removeByIndex(final Object... index) {
-        return SynchronizationUtil.synchronizedSupplier(this.lock, () -> removeByIndexNonSynchronized(index));
+    public T removeByIndex(final String index) {
+        return SynchronizationUtil.synchronizedSupplier(lock, () -> removeByIndexNonSynchronized(index));
     }
 
     public void clearCache() {
@@ -147,7 +141,10 @@ public final class CachedDatabase<T extends Dto<Id>, Id, Bean extends EntityMana
     }
 
     public <R> R execute(Function<EntityManager, R> function) {
-        return database.execute(function);
+        return database.execute((em) -> {
+            cache.clearNonSynchronized();
+            return function.apply(em);
+        });
     }
 
 }

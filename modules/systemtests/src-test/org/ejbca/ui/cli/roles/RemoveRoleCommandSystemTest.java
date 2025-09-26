@@ -16,9 +16,8 @@ import static org.junit.Assert.assertNull;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.dto.RoleDataDto;
-import org.cesecore.dto.RoleDataDtoBuilder;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.junit.After;
@@ -38,17 +37,14 @@ public class RemoveRoleCommandSystemTest {
 
     @Before
     public void setup() throws Exception {
-        final var role = new RoleDataDtoBuilder()
-                .setName(TESTCLASS_NAME)
-                .build();
-        roleSession.persistRole(authenticationToken, role);
+        roleSession.persistRole(authenticationToken, new Role(null, TESTCLASS_NAME));
     }
 
     @After
     public void teardown() throws Exception {
-        final RoleDataDto role = roleSession.getRole(authenticationToken, null, TESTCLASS_NAME);
+        final Role role = roleSession.getRole(authenticationToken, null, TESTCLASS_NAME);
         if (role!=null) {
-            roleSession.deleteRoleIdempotent(authenticationToken, role.id());
+            roleSession.deleteRoleIdempotent(authenticationToken, role.getRoleId());
         }
     }
 
@@ -56,7 +52,7 @@ public class RemoveRoleCommandSystemTest {
     public void testRemoveRole() throws AuthorizationDeniedException {
         String[] args = new String[] { TESTCLASS_NAME };
         command.execute(args);
-        final RoleDataDto role = roleSession.getRole(authenticationToken, null, TESTCLASS_NAME);
+        final Role role = roleSession.getRole(authenticationToken, null, TESTCLASS_NAME);
         assertNull("Role was not removed,", role);
     }
 }

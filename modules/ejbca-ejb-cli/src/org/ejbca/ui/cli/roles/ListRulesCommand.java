@@ -17,7 +17,8 @@ import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.dto.RoleDataDto;
+import org.cesecore.roles.AccessRulesHelper;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
@@ -56,12 +57,12 @@ public class ListRulesCommand extends BaseRolesCommand {
         final String roleName = parameters.get(ROLE_NAME_KEY);
         final String namespace = parameters.get(ROLE_NAMESPACE_KEY);
         try {
-            final RoleDataDto roleData = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).getRole(getAuthenticationToken(), namespace, roleName);
-            if (roleData == null) {
+            final Role role = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).getRole(getAuthenticationToken(), namespace, roleName);
+            if (role == null) {
             	getLogger().error("No such role " + super.getFullRoleName(namespace, roleName) + ".");
                 return CommandResult.FUNCTIONAL_FAILURE;
             }
-            for (final Entry<String,Boolean> entry : roleData.accessRules().entrySet()) {
+            for (final Entry<String,Boolean> entry : AccessRulesHelper.getAsListSortedByKey(role.getAccessRules())) {
                 final String resource = entry.getKey();
                 final String resourceName = super.getResourceToResourceNameMap().get(resource);
             	getLogger().info((resourceName==null?resource:resourceName) + " " + (entry.getValue() ? "ALLOW" : "DENY"));

@@ -20,10 +20,9 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 import com.keyfactor.util.CertTools;
@@ -73,9 +72,8 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
-import org.cesecore.dto.RoleDataDto;
-import org.cesecore.dto.RoleDataDtoBuilder;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
@@ -664,19 +662,16 @@ public class P10CrRequestSystemTest extends CmpTestCase {
 
     private void grantAccessToCert(final Certificate cert) throws Exception {
         roleSession.deleteRoleIdempotent(ADMIN, null, TEST_ROLE);
-        final List<String> allowedList = Arrays.asList(
+        final List<String> accessRules = Arrays.asList(
                 AccessRulesConstants.REGULAR_CREATEENDENTITY,
                 AccessRulesConstants.REGULAR_EDITENDENTITY,
                 AccessRulesConstants.REGULAR_CREATECERTIFICATE,
                 AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepDnOverrideId + AccessRulesConstants.CREATE_END_ENTITY,
                 AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepDnOverrideId + AccessRulesConstants.EDIT_END_ENTITY,
                 StandardRules.CAACCESS.resource() + testx509ca.getCAId());
-        final Map<String, Boolean> accessRules = new HashMap<>();
-        allowedList.forEach(rule -> accessRules.put(rule, RoleDataDto.STATE_ALLOW));
-        RoleDataDto roleData = new RoleDataDtoBuilder().setName(TEST_ROLE).setAccessRules(accessRules).build();
-        final RoleDataDto role = roleSession.persistRole(ADMIN, roleData);
+        final Role role = roleSession.persistRole(ADMIN, new Role(null, TEST_ROLE, accessRules, Collections.emptyList()));
         roleMemberSession.persist(ADMIN, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, testx509ca.getCAId(), RoleMember.NO_PROVIDER,
                 X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
-                DnComponents.getPartFromDN(CertTools.getSubjectDN(cert), "CN"), role.id(), null));
+                DnComponents.getPartFromDN(CertTools.getSubjectDN(cert), "CN"), role.getRoleId(), null));
     }
 }

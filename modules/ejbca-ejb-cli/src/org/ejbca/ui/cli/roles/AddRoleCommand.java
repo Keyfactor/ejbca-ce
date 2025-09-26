@@ -15,8 +15,7 @@ package org.ejbca.ui.cli.roles;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.dto.RoleDataDto;
-import org.cesecore.dto.RoleDataDtoBuilder;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
@@ -58,11 +57,8 @@ public class AddRoleCommand extends BaseRolesCommand {
         String roleNamespace = parameters.get(NAMESPACE_KEY);
         
         try {
-            final RoleDataDto roleData = new RoleDataDtoBuilder()
-                    .setNameSpace(roleNamespace)
-                    .setName(roleName)
-                    .build();
-            EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).persistRole(getAuthenticationToken(), roleData);
+            Role role = new Role(roleNamespace, roleName);
+            EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).persistRole(getAuthenticationToken(), role);
             return CommandResult.SUCCESS;
         } catch (RoleExistsException e) {
             log.error("ERROR: Role of name " + roleName + " already exists.");

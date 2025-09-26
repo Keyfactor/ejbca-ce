@@ -144,6 +144,7 @@ public class PublisherSessionSystemTest {
         // Add new publisher
         publisherProxySession.addPublisher(internalAdmin, name_1, publisher_1);
         publisherProxySession.addPublisher(internalAdmin, name_2, publisher_2);
+        Thread.sleep(SLEEP_TIME_MS);
         BasePublisher pub = publisherSession.getPublisher(name_1);
         assertNotNull(pub);
         assertEquals("Description is not what we set", "foobar", pub.getDescription());
@@ -159,10 +160,10 @@ public class PublisherSessionSystemTest {
         // Change publisher
         pub.setDescription("newdesc");
         publisherSession.changePublisher(internalAdmin, name_1, pub);
-        BasePublisher received = publisherSession.getPublisher(name_1);
-        assertEquals("Description is not what we set", "newdesc", received.getDescription());
-        assertEquals("Publisher is not a LdapPublisher", LdapPublisher.class.getName(), received.getClass().getName());
-        assertEquals("datasource is not what we set", "foo", ((LdapPublisher)received).getBaseDN());
+        pub = publisherSession.getPublisher(name_1);
+        assertEquals("Description is not what we set", "newdesc", pub.getDescription());
+        assertEquals("Publisher is not a LdapPublisher", LdapPublisher.class.getName(), pub.getClass().getName());
+        assertEquals("datasource is not what we set", "foo", ((LdapPublisher)pub).getBaseDN());
         int id1 = publisherProxySession.getPublisherId(name_1);
         assertEquals("Id should be the same after change, but it is not", id, id1);
         // Remove publishers

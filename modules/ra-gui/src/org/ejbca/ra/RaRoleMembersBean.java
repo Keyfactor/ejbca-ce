@@ -38,7 +38,7 @@ import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.config.OAuthConfiguration;
-import org.cesecore.dto.RoleDataDto;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.member.RoleMember;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.era.RaRoleMemberSearchRequest;
@@ -310,27 +310,27 @@ public class RaRoleMembersBean implements Serializable {
     public List<SelectItem> getAvailableRoles() {
         if (availableRoles == null) {
             availableRoles = new ArrayList<>();
-            final List<RoleDataDto> roles = new ArrayList<>(raMasterApiProxyBean.getAuthorizedRoles(raAuthenticationBean.getAuthenticationToken()));
+            final List<Role> roles = new ArrayList<>(raMasterApiProxyBean.getAuthorizedRoles(raAuthenticationBean.getAuthenticationToken()));
             Collections.sort(roles);
             roleIdToNameMap = new HashMap<>();
             roleIdToNamespaceMap = new HashMap<>();
             String lastNamespace = null;
             hasMultipleNamespaces = false;
-            for (final RoleDataDto role : roles) {
-                roleIdToNameMap.put(role.id(), role.name());
-                if (!StringUtils.isEmpty(role.nameSpace())) {
-                    roleIdToNamespaceMap.put(role.id(), role.nameSpace());
+            for (final Role role : roles) {
+                roleIdToNameMap.put(role.getRoleId(), role.getRoleName());
+                if (!StringUtils.isEmpty(role.getNameSpace())) {
+                    roleIdToNamespaceMap.put(role.getRoleId(), role.getNameSpace());
                 }
                 // Check if there's more than one namespace. If so the namespaces are shown in the GUI
-                if (lastNamespace != null && !lastNamespace.equals(role.nameSpace())) {
+                if (lastNamespace != null && !lastNamespace.equals(role.getNameSpace())) {
                     hasMultipleNamespaces = true;
                 }
-                lastNamespace = role.nameSpace();
+                lastNamespace = role.getNameSpace();
             }
             availableRoles.add(new SelectItem(null, raLocaleBean.getMessage("role_members_page_criteria_role_optionany")));
-            for (final RoleDataDto role : roles) {
-                final String label = hasMultipleNamespaces ? role.fullName() : role.name();
-                availableRoles.add(new SelectItem(role.id(), label));
+            for (final Role role : roles) {
+                final String label = hasMultipleNamespaces ? role.getRoleNameFull() : role.getRoleName();
+                availableRoles.add(new SelectItem(role.getRoleId(), label));
             }
         }
         return availableRoles;

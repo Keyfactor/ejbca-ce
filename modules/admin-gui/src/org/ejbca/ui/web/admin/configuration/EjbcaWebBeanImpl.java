@@ -89,7 +89,7 @@ import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.EABConfiguration;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.dto.RoleDataDto;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionLocal;
@@ -2210,16 +2210,16 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
 
         List<RoleMember> members;
         try {
-            RoleDataDto superAdminRole = roleSession.getRole(authState.administrator, null, SUPERADMIN_ROLE);
+            Role superAdminRole = roleSession.getRole(authState.administrator, null, SUPERADMIN_ROLE);
             if (Objects.isNull(superAdminRole)) {
                 return false;
             }
-            List<RoleDataDto> currentUserRoles = roleSession.getRolesAuthenticationTokenIsMemberOf(authState.administrator);
+            List<Role> currentUserRoles = roleSession.getRolesAuthenticationTokenIsMemberOf(authState.administrator);
             boolean isSuperAdmin = currentUserRoles.stream().anyMatch(role -> role.equals(superAdminRole));
             if (!isSuperAdmin) {
                 return false;
             }
-            members = roleMemberSession.getRoleMembersByRoleId(authState.administrator,superAdminRole.id());
+            members = roleMemberSession.getRoleMembersByRoleId(authState.administrator,superAdminRole.getRoleId());
         } catch (AuthorizationDeniedException e) {
             return false;
         }
@@ -2231,8 +2231,8 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     }
 
     public void removePublicAccessRoleMember() throws AuthorizationDeniedException {
-        RoleDataDto superAdminRole = roleSession.getRole(authState.administrator, null, SUPERADMIN_ROLE);
-        List<RoleMember> members = roleMemberSession.getRoleMembersByRoleId(authState.administrator,superAdminRole.id());
+        Role superAdminRole = roleSession.getRole(authState.administrator, null, SUPERADMIN_ROLE);
+        List<RoleMember> members = roleMemberSession.getRoleMembersByRoleId(authState.administrator,superAdminRole.getRoleId());
 
         List<Integer> publicAccessMembers = members.stream()
             .filter(member -> member.getTokenType().equals(PUBLIC_ACCESS_AUTHENTICATION_TOKEN))

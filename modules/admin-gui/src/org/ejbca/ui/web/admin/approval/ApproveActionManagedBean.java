@@ -38,9 +38,9 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.dto.RoleDataDto;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.roles.AccessRulesHelper;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleInformation;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMemberDataSessionLocal;
@@ -422,7 +422,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
             if (approvalProfile != null) {
                 ApprovalStep step = approvalProfile.getFirstStep();
                 ApprovalStep currentStep = getCurrentStep();
-                List<RoleDataDto> rolesTokenIsMemberOf = roleSession.getRolesAuthenticationTokenIsMemberOf(getAdmin());
+                List<Role> rolesTokenIsMemberOf = roleSession.getRolesAuthenticationTokenIsMemberOf(getAdmin());
                 while (step != null) {
                     if (currentStep != null && step.equals(currentStep)) {
                         break;
@@ -459,7 +459,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
                         .getApprovalProfile(approvalDataVOView.getApprovalProfile().getProfileId());
                 if (getCurrentStep() != null) {
                     final ApprovalStep approvalStep = approvalProfile.getStep(getCurrentStep().getStepIdentifier());
-                    List<RoleDataDto> roles = roleSession.getRolesAuthenticationTokenIsMemberOf(getAdmin());
+                    List<Role> roles = roleSession.getRolesAuthenticationTokenIsMemberOf(getAdmin());
                     for (Integer approvalPartitionId : getCurrentStep().getPartitions().keySet()) {
                         ApprovalPartition approvalPartition = approvalStep.getPartition(approvalPartitionId);
                         if (approvalPartition != null) {
@@ -556,12 +556,12 @@ public class ApproveActionManagedBean extends BaseManagedBean {
                         approvalPartition.getPropertyList().get(propertyName));
                 switch (propertyClone.getPropertyCallback()) {
                 case ROLES:
-                    final List<RoleDataDto> allAuthorizedRoles = roleSession.getAuthorizedRoles(getAdmin());
+                    final List<Role> allAuthorizedRoles = roleSession.getAuthorizedRoles(getAdmin());
                     final List<RoleInformation> roleRepresentations = new ArrayList<>();
-                    for (final RoleDataDto role : allAuthorizedRoles) {
+                    for (final Role role : allAuthorizedRoles) {
                         if (AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVEENDENTITY)
                                 || AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVECAACTION)) {
-                            roleRepresentations.add(new RoleInformation(role.getId(), role.getNameSpace(), role.getName()));
+                            roleRepresentations.add(new RoleInformation(role.getRoleId(), role.getNameSpace(), role.getRoleName()));
                         }
                     }
                     if (!roleRepresentations.contains(propertyClone.getDefaultValue())) {
@@ -673,7 +673,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
       */
     private List<RoleInformation> updateRoleMembers(final RoleInformation roleToUpdate) {
         final AuthenticationToken alwaysAllowToken = new AlwaysAllowLocalAuthenticationToken("Approval update");
-        RoleDataDto role;
+        Role role;
         try {
            role = roleSession.getRole(alwaysAllowToken, roleToUpdate.getIdentifier());
         } catch (AuthorizationDeniedException e) {
@@ -681,10 +681,10 @@ public class ApproveActionManagedBean extends BaseManagedBean {
         }
         final List<RoleInformation> roleRepresentations = new ArrayList<>();
         if (role != null) {
-            if (role.getId() == roleToUpdate.getIdentifier()
+            if (role.getRoleId() == roleToUpdate.getIdentifier()
                     && (AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVEENDENTITY)
                             || AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVECAACTION))) {
-                roleRepresentations.add(new RoleInformation(role.getId(), role.getNameSpace(), role.getName()));
+                roleRepresentations.add(new RoleInformation(role.getRoleId(), role.getNameSpace(), role.getRoleName()));
             }
         }
         return roleRepresentations;

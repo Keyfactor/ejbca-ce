@@ -86,10 +86,10 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.dto.RoleDataDto;
 import org.cesecore.keys.keyimport.KeyImportFailure;
 import org.cesecore.keys.keyimport.KeyImportRequestData;
 import org.cesecore.roles.AccessRulesHelper;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.util.LogRedactionUtils;
@@ -469,45 +469,45 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public List<RoleDataDto> getAuthorizedRoles(final AuthenticationToken authenticationToken) {
-        final Map<Integer, RoleDataDto> roleDataMap = new HashMap<>();
+    public List<Role> getAuthorizedRoles(final AuthenticationToken authenticationToken) {
+        final Map<Integer, Role> roleMap = new HashMap<>();
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 1) {
                 try {
-                    for (final RoleDataDto roleData : raMasterApi.getAuthorizedRoles(authenticationToken)) {
-                        roleDataMap.put(roleData.id(), roleData);
+                    for (final Role role : raMasterApi.getAuthorizedRoles(authenticationToken)) {
+                        roleMap.put(role.getRoleId(), role);
                     }
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
             }
         }
-        return new ArrayList<>(roleDataMap.values());
+        return new ArrayList<>(roleMap.values());
     }
     
     @Override
-    public List<RoleDataDto> getRolesAuthenticationTokenIsMemberOf(final AuthenticationToken authenticationToken) {
-        final Map<Integer, RoleDataDto> roleDataMap = new HashMap<>();
+    public List<Role> getRolesAuthenticationTokenIsMemberOf(final AuthenticationToken authenticationToken) {
+        final Map<Integer, Role> roleMap = new HashMap<>();
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 15) {
                 try {
-                    for (final RoleDataDto role : raMasterApi.getRolesAuthenticationTokenIsMemberOf(authenticationToken)) {
-                        roleDataMap.put(role.id(), role);
+                    for (final Role role : raMasterApi.getRolesAuthenticationTokenIsMemberOf(authenticationToken)) {
+                        roleMap.put(role.getRoleId(), role);
                     }
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
             }
         }
-        return new ArrayList<>(roleDataMap.values());
+        return new ArrayList<>(roleMap.values());
     }
 
     @Override
-    public RoleDataDto getRole(final AuthenticationToken authenticationToken, final int roleId) throws AuthorizationDeniedException {
+    public Role getRole(final AuthenticationToken authenticationToken, final int roleId) throws AuthorizationDeniedException {
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 1) {
                 try {
-                    RoleDataDto role = raMasterApi.getRole(authenticationToken, roleId);
+                    Role role = raMasterApi.getRole(authenticationToken, roleId);
                     if (role != null) {
                         return role;
                     }
@@ -560,14 +560,14 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public RoleDataDto saveRole(final AuthenticationToken authenticationToken, final RoleDataDto roleData) throws AuthorizationDeniedException, RoleExistsException {
+    public Role saveRole(final AuthenticationToken authenticationToken, final Role role) throws AuthorizationDeniedException, RoleExistsException {
         AuthorizationDeniedException authorizationDeniedException = null;
         // Try to save/update on the systems until successful, starting with the remote systems first.
         // (The save operation might be unsuccessful if we're editing an existing role that belongs to another system, for instance)
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             try {
                 if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 1) {
-                    final RoleDataDto savedRole = raMasterApi.saveRole(authenticationToken, roleData);
+                    final Role savedRole = raMasterApi.saveRole(authenticationToken, role);
                     if (savedRole != null) {
                         return savedRole;
                     }

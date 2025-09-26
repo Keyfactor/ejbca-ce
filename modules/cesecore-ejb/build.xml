@@ -26,8 +26,6 @@
 		<path location="${cesecore-ejb.dir}/../cesecore-common/dist/cesecore-common.jar"/>
 		<path location="${cesecore-ejb.dir}/../cesecore-entity/dist/cesecore-entity.jar"/>
 		<path location="${cesecore-ejb.dir}/../cesecore-ejb-interface/dist/cesecore-ejb-interface.jar"/>
-        <path location="${cesecore-ejb.dir}/../dist/ejbca-entity.jar" />
-        <path location="${cesecore-ejb.dir}/../dist/ejbca-repository.jar" />
 		<path refid="lib.x509-common-util.classpath" />
 		<path refid="lib.cryptotokens.classpath"/>
 	</path>
@@ -45,9 +43,9 @@
 	</path>
 
 	<target name="jar" depends="">
- 		<mkdir dir="${cesecore-ejb.build.dir}/classes"/>
+		<mkdir dir="${cesecore-ejb.build.dir}/classes"/>
 		<javac srcdir="${cesecore-ejb.dir}/src" destdir="${cesecore-ejb.build.dir}/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
-			<classpath refid="compile.classpath"/>
+			<classpath refid="test.classpath"/>
 		</javac>
 		<mkdir dir="${cesecore-ejb.dir}/dist"/>
 		<jar destfile="${cesecore-ejb.dir}/dist/cesecore-ejb.jar">

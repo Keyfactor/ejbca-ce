@@ -28,8 +28,8 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
-import org.cesecore.dto.RoleDataDto;
 import org.cesecore.profiles.ProfileBase;
+import org.cesecore.roles.Role;
 import org.cesecore.util.ProfileID;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.cesecore.util.ui.MultiLineString;
@@ -468,7 +468,7 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
 
     @Override
     public boolean isApprovalAuthorized(Collection<Approval> approvalsPerformed, Approval approval, 
-            List<RoleDataDto> rolesTokenIsMemberOf) throws AuthenticationFailedException {
+            List<Role> rolesTokenIsMemberOf) throws AuthenticationFailedException {
         ApprovalStep previousStep = getFirstStep();
         ApprovalStep relevantStep = getStep(approval.getStepId());
         while(previousStep != null) {

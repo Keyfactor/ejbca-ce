@@ -44,8 +44,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
-import org.cesecore.dto.RoleDataDto;
-import org.cesecore.dto.RoleDataDtoBuilder;
 import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingStatus;
@@ -56,6 +54,7 @@ import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
@@ -196,10 +195,10 @@ public class InitCASystemTest extends CaTestCase {
             cmpConfig.setRACAName(CMP_ALIAS, RENAME_CA); // this one shouldn't need to be updated, but it's tested anyway
             globalConfigurationSession.saveConfiguration(admin, cmpConfig);
 
-            final RoleDataDto role = roleSession.persistRole(admin, new RoleDataDtoBuilder().setName(ROLE_NAME).build());
+            final Role role = roleSession.persistRole(admin, new Role(null, ROLE_NAME));
             final RoleMember roleMember = roleMemberSession.persist(admin, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                     origCaId, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
-                    AccessMatchType.TYPE_EQUALCASE.getNumericValue(), "TestUser", role.id(), null));
+                    AccessMatchType.TYPE_EQUALCASE.getNumericValue(), "TestUser", role.getRoleId(), null));
             // Now change a value and initialize
             log.debug("Trying to initialize with changed Subject DN");
             retrievedCaInfo.setSubjectDN(NEW_DN);
@@ -292,9 +291,9 @@ public class InitCASystemTest extends CaTestCase {
             keyBindMgmtSession.deleteInternalKeyBinding(admin, keybindIdToDelete);
         }
         try {
-            final RoleDataDto role = roleSession.getRole(admin, null, ROLE_NAME);
+            final Role role = roleSession.getRole(admin, null, ROLE_NAME);
             if (role!=null) {
-                roleSession.deleteRoleIdempotent(admin, role.id());
+                roleSession.deleteRoleIdempotent(admin, role.getRoleId());
             }
         } catch (Exception e) {
             log.debug(e.getMessage());

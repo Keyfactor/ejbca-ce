@@ -20,8 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.cesecore.authentication.AuthenticationFailedException;
-import org.cesecore.dto.RoleDataDto;
-import org.cesecore.dto.RoleDataDtoBuilder;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleInformation;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.cesecore.util.ui.PropertyValidationException;
@@ -67,10 +66,12 @@ public class PartitionedApprovalProfileUnitTest {
         approvalProfile.initialize();
         //Create another step (one is default)
         approvalProfile.addStepFirst();
-        List<RoleDataDto> rolesTokenIsMemberOf = new ArrayList<>();
+        List<Role> rolesTokenIsMemberOf = new ArrayList<Role>();
         // The role role1 will be allowed to approve the partition
-        RoleDataDto role1 = new RoleDataDtoBuilder().setId(1).setName("Rolename1").build();
-        RoleDataDto role2 = new RoleDataDtoBuilder().setId(2).setName("Rolename2").build();
+        Role role1 = new Role(null, "Rolename1");
+        Role role2 = new Role(null, "Rolename2");
+        role1.setRoleId(1);
+        role2.setRoleId(2);
         rolesTokenIsMemberOf.add(role1);
         rolesTokenIsMemberOf.add(role2);
         for (ApprovalStep approvalStep : approvalProfile.getSteps().values()) {
@@ -95,9 +96,11 @@ public class PartitionedApprovalProfileUnitTest {
         approvalProfile.initialize();
         //Create another step (one is default)
         approvalProfile.addStepFirst();
-        List<RoleDataDto> rolesTokenIsMemberOf = new ArrayList<>();
-        RoleDataDto role1 = new RoleDataDtoBuilder().setId(1).setName("Rolename1").build();
-        RoleDataDto role2 = new RoleDataDtoBuilder().setId(2).setName("Rolename2").build();
+        List<Role> rolesTokenIsMemberOf = new ArrayList<Role>();
+        Role role1 = new Role(null, "Rolename1");
+        Role role2 = new Role(null, "Rolename2");
+        role1.setRoleId(1);
+        role2.setRoleId(2);
         rolesTokenIsMemberOf.add(role1);
         rolesTokenIsMemberOf.add(role2);
         for (ApprovalStep approvalStep : approvalProfile.getSteps().values()) {
@@ -122,10 +125,12 @@ public class PartitionedApprovalProfileUnitTest {
         approvalProfile.initialize();
         //Create another step (one is default)
         approvalProfile.addStepFirst();
-        List<RoleDataDto> rolesTokenIsMemberOf = new ArrayList<>();
+        List<Role> rolesTokenIsMemberOf = new ArrayList<Role>();
         // This role will be allowed to view the partition
-        RoleDataDto role1 = new RoleDataDtoBuilder().setId(1).setName("Rolename1").build();
-        RoleDataDto role2 = new RoleDataDtoBuilder().setId(2).setName("Rolename2").build();
+        Role role1 = new Role(null, "Rolename1");
+        Role role2 = new Role(null, "Rolename2");
+        role1.setRoleId(1);
+        role2.setRoleId(2);
         rolesTokenIsMemberOf.add(role1);
         rolesTokenIsMemberOf.add(role2);
         for (ApprovalStep approvalStep : approvalProfile.getSteps().values()) {
@@ -151,9 +156,11 @@ public class PartitionedApprovalProfileUnitTest {
         approvalProfile.initialize();
         //Create another step (one is default)
         approvalProfile.addStepFirst();
-        List<RoleDataDto> rolesTokenIsMemberOf = new ArrayList<>();
-        RoleDataDto role1 = new RoleDataDtoBuilder().setId(1).setName("Rolename1").build();
-        RoleDataDto role2 = new RoleDataDtoBuilder().setId(2).setName("Rolename2").build();
+        List<Role> rolesTokenIsMemberOf = new ArrayList<Role>();
+        Role role1 = new Role(null, "Rolename1");
+        Role role2 = new Role(null, "Rolename2");
+        role1.setRoleId(1);
+        role2.setRoleId(2);
         rolesTokenIsMemberOf.add(role1);
         rolesTokenIsMemberOf.add(role2);
         for (ApprovalStep approvalStep : approvalProfile.getSteps().values()) {
@@ -185,9 +192,11 @@ public class PartitionedApprovalProfileUnitTest {
         approvalProfile.initialize();
         //Create another step (one is default)
         approvalProfile.addStepFirst();
-        List<RoleDataDto> rolesTokenIsMemberOf = new ArrayList<>();
-        RoleDataDto role1 = new RoleDataDtoBuilder().setId(1).setName("Rolename1").build();
-        RoleDataDto role2 = new RoleDataDtoBuilder().setId(2).setName("Rolename2").build();
+        List<Role> rolesTokenIsMemberOf = new ArrayList<Role>();
+        Role role1 = new Role(null, "Rolename1");
+        Role role2 = new Role(null, "Rolename2");
+        role1.setRoleId(1);
+        role2.setRoleId(2);
         rolesTokenIsMemberOf.add(role1);
         rolesTokenIsMemberOf.add(role2);
         for (ApprovalStep approvalStep : approvalProfile.getSteps().values()) {

@@ -53,11 +53,11 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.dto.RoleDataDto;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.AccessRulesHelper;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.SimpleTime;
@@ -727,10 +727,9 @@ public class EndEntityProfileSessionBeanSystemTest extends RoleUsingTestCase {
             // It should work now
             endEntityProfileSession.changeEndEntityProfile(roleMgmgToken, "TESTEEPROFNOAUTH", profile);
             // Add a deny rule to the role
-            final RoleDataDto roleInstance1 = roleSession.getRole(alwaysAllowToken, null, ROLENAME);
-            Map<String, Boolean> accessRules = new HashMap<>(roleInstance1.accessRules());
-            accessRules.put(StandardRules.CAACCESS.resource() + caid, RoleDataDto.STATE_DENY);
-            roleSession.persistRole(alwaysAllowToken, roleInstance1.withAccessRules(accessRules));
+            final Role roleInstance1 = roleSession.getRole(alwaysAllowToken, null, ROLENAME);
+            roleInstance1.getAccessRules().put(StandardRules.CAACCESS.resource() + caid, Role.STATE_DENY);
+            roleSession.persistRole(alwaysAllowToken, roleInstance1);
             try {
                 // Now it should fail
                 endEntityProfileSession.changeEndEntityProfile(roleMgmgToken, "TESTEEPROFNOAUTH", profile);
@@ -742,26 +741,23 @@ public class EndEntityProfileSessionBeanSystemTest extends RoleUsingTestCase {
             ids1 = endEntityProfileSession.getAuthorizedEndEntityProfileIds(roleMgmgToken, AccessRulesConstants.CREATE_END_ENTITY);
             assertFalse("Id should not be amongst authorized Ids: "+id1, ids1.contains(id1));
             // Remove the deny rule again so we can remove the profile later on
-            final RoleDataDto roleInstance2 = roleSession.getRole(alwaysAllowToken, null, ROLENAME);
-            Map<String, Boolean> accessRules2 = new HashMap<>(roleInstance2.accessRules());
-            accessRules2.remove(AccessRulesHelper.normalizeResource(StandardRules.CAACCESS.resource() + caid));
-            roleSession.persistRole(alwaysAllowToken, roleInstance2.withAccessRules(accessRules2));
+            final Role roleInstance2 = roleSession.getRole(alwaysAllowToken, null, ROLENAME);
+            roleInstance2.getAccessRules().remove(AccessRulesHelper.normalizeResource(StandardRules.CAACCESS.resource() + caid));
+            roleSession.persistRole(alwaysAllowToken, roleInstance2);
             // SHould be back
             ids1 = endEntityProfileSession.getAuthorizedEndEntityProfileIds(roleMgmgToken, AccessRulesConstants.CREATE_END_ENTITY);
             assertTrue("Id should be amongst authorized Ids: "+id1, ids1.contains(id1));
             // Also test the rule CREATE_END_ENTITY
             // First remove access to this EE profile by setting /endentityprofilesrules/id1/create_end_entity to decline
-            final RoleDataDto roleInstance3 = roleSession.getRole(alwaysAllowToken, null, ROLENAME);
-            Map<String, Boolean> accessRules3 = new HashMap<>(roleInstance3.accessRules());
-            accessRules3.put(AccessRulesConstants.ENDENTITYPROFILEPREFIX + id1 + AccessRulesConstants.CREATE_END_ENTITY, RoleDataDto.STATE_DENY);
-            roleSession.persistRole(alwaysAllowToken, roleInstance3.withAccessRules(accessRules3));
+            final Role roleInstance3 = roleSession.getRole(alwaysAllowToken, null, ROLENAME);
+            roleInstance3.getAccessRules().put(AccessRulesConstants.ENDENTITYPROFILEPREFIX + id1 + AccessRulesConstants.CREATE_END_ENTITY, Role.STATE_DENY);
+            roleSession.persistRole(alwaysAllowToken, roleInstance3);
             ids1 = endEntityProfileSession.getAuthorizedEndEntityProfileIds(roleMgmgToken, AccessRulesConstants.CREATE_END_ENTITY);
             assertFalse("Id should not be amongst authorized Ids: "+id1, ids1.contains(id1));
             // Replace the deny rule with an accept rule so we can edit the profile later on
-            final RoleDataDto roleInstance4 = roleSession.getRole(alwaysAllowToken, null, ROLENAME);
-            Map<String, Boolean> accessRules4 = new HashMap<>(roleInstance4.accessRules());
-            accessRules4.put(AccessRulesConstants.ENDENTITYPROFILEPREFIX + id1 + AccessRulesConstants.CREATE_END_ENTITY, RoleDataDto.STATE_ALLOW);
-            roleSession.persistRole(alwaysAllowToken, roleInstance4.withAccessRules(accessRules4));
+            final Role roleInstance4 = roleSession.getRole(alwaysAllowToken, null, ROLENAME);
+            roleInstance4.getAccessRules().put(AccessRulesConstants.ENDENTITYPROFILEPREFIX + id1 + AccessRulesConstants.CREATE_END_ENTITY, Role.STATE_ALLOW);
+            roleSession.persistRole(alwaysAllowToken, roleInstance4);
             ids1 = endEntityProfileSession.getAuthorizedEndEntityProfileIds(roleMgmgToken, AccessRulesConstants.CREATE_END_ENTITY);
             assertTrue("Id should be amongst authorized Ids: "+id1, ids1.contains(id1));
         } finally {

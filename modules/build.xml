@@ -231,7 +231,7 @@
 		<ant antfile="${mod.ejbca-entity.path}/build.xml" target="build-cli" inheritall="true" inheritrefs="true"/>
 	</target>
 
-	<target name="ejbca-ejb-interface" depends="ejbca-ws-common" description="Build EJBCA EJB interfaces library">
+	<target name="ejbca-ejb-interface" depends="ejbca-entity, ejbca-common, ejbca-ws-common, ejbca-repository, ejbca-repository-generator" description="Build EJBCA EJB interfaces library">
 		<ant antfile="${mod.ejbca-ejb-interface.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
@@ -248,15 +248,15 @@
     <target name="cesecore-ejb-interface" depends="-build-cesecore-ejb-interface, -copy-cesecore-entities, -copy-cesecore-common, -copy-cesecore-ejb-interface"/>
     <target name="cesecore-ejb" depends="-build-cesecore-ejb, -copy-cesecore-entities, -copy-cesecore-common, -copy-cesecore-ejb-interface, -copy-cesecore-ejb"/>
         
-        <target name="-build-cesecore-ejb" depends="ejbca-repository, cesecore-entity, cesecore-common, cesecore-ejb-interface, cesecore-x509ca">
+        <target name="-build-cesecore-ejb" depends="cesecore-entity, cesecore-common, cesecore-ejb-interface, cesecore-x509ca">
             <!-- Builds cesecore-ejb which also builds all other cesecore modules -->
             <ant antfile="${mod.cesecore-ejb.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
         </target>
-
-    <target name="-build-cesecore-ejb-interface" depends="cesecore-entity, cesecore-common">
-        <ant antfile="${mod.cesecore-ejb-interface.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
-    </target>
-
+        
+        <target name="-build-cesecore-ejb-interface" depends="cesecore-entity, cesecore-common">
+            <ant antfile="${mod.cesecore-ejb-interface.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
+        </target>
+        
         <target name="-build-cesecore-common" >
             <ant antfile="${mod.cesecore-common.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
         </target>
@@ -463,7 +463,7 @@
 						iodef, mpic, msae, cits, ejbca-repository">
 	</target>
 
-	<target name="ejbca-repository" depends="cesecore-common,cesecore-entity,ejbca-entity">
+	<target name="ejbca-repository" depends="cesecore-common">
 		<ant antfile="${modules.basedir}/ejbca-repository/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 

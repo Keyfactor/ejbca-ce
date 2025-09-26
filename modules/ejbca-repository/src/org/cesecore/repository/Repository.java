@@ -13,7 +13,7 @@
 
 package org.cesecore.repository;
 
-import org.cesecore.dto.Dto;
+import org.cesecore.repository.dto.Dto;
 
 import java.util.List;
 
@@ -23,7 +23,7 @@ public interface Repository <T extends Dto<Id>, Id> {
 
     T findById(final Id id);
 
-    T findByIndex(final Object... indexValues);
+    T findByIndex(final String index);
 
     List<T> findAll();
 
@@ -33,6 +33,6 @@ public interface Repository <T extends Dto<Id>, Id> {
 
     T removeById(final Id id);
 
-    T removeByIndex(final Object... indexValues);
+    T removeByIndex(final String index);
 
 }

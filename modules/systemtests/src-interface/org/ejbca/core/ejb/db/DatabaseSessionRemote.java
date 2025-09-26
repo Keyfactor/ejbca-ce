@@ -32,7 +32,7 @@ public interface DatabaseSessionRemote {
      *   CertificateData
      *   CryptoTokenData
      *   GlobalConfigurationData
-     *   RoleDataDto
+     *   RoleData
      *   RoleMemberData
      *   UserData
      *

@@ -17,10 +17,9 @@ import static org.junit.Assert.assertTrue;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.dto.RoleDataDto;
-import org.cesecore.dto.RoleDataDtoBuilder;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.AccessRulesHelper;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.junit.After;
@@ -39,12 +38,12 @@ public class ChangeRulesSystemTest {
     private final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
     private final AuthenticationToken internalToken = new TestAlwaysAllowLocalAuthenticationToken("ChangeRulesSystemTest");
     private final ChangeRuleCommand command = new ChangeRuleCommand();
-    private int roleId = RoleDataDto.ROLE_ID_UNASSIGNED;
+    private int roleId = Role.ROLE_ID_UNASSIGNED;
     
     @Before
     public void setUp() throws Exception {
-        final RoleDataDto role = roleSession.persistRole(internalToken, new RoleDataDtoBuilder().setName(ROLENAME).build());
-        roleId = role.id();
+        final Role role = roleSession.persistRole(internalToken, new Role(null, ROLENAME));
+        roleId = role.getRoleId();
     }
     
     @After
@@ -57,10 +56,10 @@ public class ChangeRulesSystemTest {
     public void testAddLegacyRule() throws AuthorizationDeniedException {
         final String accessRuleName = "/ca";
         command.execute(new String[]{ ROLENAME, accessRuleName, "ACCEPT", "-R"});
-        final RoleDataDto modifiedRole = roleSession.getRole(internalToken, null, ROLENAME);
+        final Role modifiedRole = roleSession.getRole(internalToken, null, ROLENAME);
         final String resource = AccessRulesHelper.normalizeResource(accessRuleName);
-        assertNotNull("Rule " + resource + " was not added to role via CLI", modifiedRole.accessRules().get(resource));
-        assertTrue("Rule " + resource + " was not added to role via CLI", modifiedRole.accessRules().get(resource).booleanValue());
+        assertNotNull("Rule " + resource + " was not added to role via CLI", modifiedRole.getAccessRules().get(resource));
+        assertTrue("Rule " + resource + " was not added to role via CLI", modifiedRole.getAccessRules().get(resource).booleanValue());
     }
     
     /**
@@ -71,9 +70,9 @@ public class ChangeRulesSystemTest {
     public void testAddCesecoreRule() throws AuthorizationDeniedException {      
         final String accessRuleName = "/secureaudit";
         command.execute(new String[]{ ROLENAME, accessRuleName, "ACCEPT", "-R"});
-        final RoleDataDto modifiedRole = roleSession.getRole(internalToken, null, ROLENAME);
+        final Role modifiedRole = roleSession.getRole(internalToken, null, ROLENAME);
         final String resource = AccessRulesHelper.normalizeResource(accessRuleName);
-        assertNotNull("Rule " + resource + " was not added to role via CLI", modifiedRole.accessRules().get(resource));
-        assertTrue("Rule " + resource + " was not added to role via CLI", modifiedRole.accessRules().get(resource).booleanValue());
+        assertNotNull("Rule " + resource + " was not added to role via CLI", modifiedRole.getAccessRules().get(resource));
+        assertTrue("Rule " + resource + " was not added to role via CLI", modifiedRole.getAccessRules().get(resource).booleanValue());
     }    
 }
