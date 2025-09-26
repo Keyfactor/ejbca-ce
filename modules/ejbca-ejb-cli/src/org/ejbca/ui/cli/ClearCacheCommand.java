@@ -139,7 +139,7 @@ public class ClearCacheCommand extends EjbcaCommandBase {
             log.info("Flushing Authorization cache.");
             // Flush access control
             EjbRemoteHelper.INSTANCE.getRemoteSession(AuthorizationSessionRemote.class).forceCacheExpire();
-            // Flush RoleDataDto cache
+            // Flush RoleData cache
             EjbRemoteHelper.INSTANCE.getRemoteSession(RoleDataSessionRemote.class).forceCacheExpire();
             // Flush RoleMemberData cache
             EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberDataSessionRemote.class).forceCacheExpire();

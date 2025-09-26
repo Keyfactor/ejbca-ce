@@ -18,7 +18,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,9 +33,8 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.config.GlobalCaConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
-import org.cesecore.dto.RoleDataDto;
-import org.cesecore.dto.RoleDataDtoBuilder;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -95,20 +93,6 @@ public class RenewCANewSubjectDNPropagationSystemTest extends CaTestCase {
         globalConfigSession.saveConfiguration(internalAdmin, globalConfiguration);
     }
 
-    private RoleDataDto getRoleData(final String name, String allowed, String denied) {
-        final Map<String, Boolean> accessRules = new HashMap<>();
-        if (allowed != null) {
-            accessRules.put(allowed, RoleDataDto.STATE_ALLOW);
-        }
-        if (denied != null) {
-            accessRules.put(denied, RoleDataDto.STATE_DENY);
-        }
-        return new RoleDataDtoBuilder()
-                .setName(name)
-                .setAccessRules(accessRules)
-                .build();
-    }
-
     @Before
     public void setUp() throws Exception {
         super.setUp();
@@ -122,19 +106,26 @@ public class RenewCANewSubjectDNPropagationSystemTest extends CaTestCase {
         createTestCertificateProfile(testProfileName2);
 
         final CAInfo caInfo = caSession.getCAInfo(internalAdmin, "TEST");
-
-        roleSession.persistRole(internalAdmin, getRoleData(testRole1, StandardRules.CAACCESS.resource() + caInfo.getCAId(), null));
-        roleSession.persistRole(internalAdmin, getRoleData(testRole2, StandardRules.CAACCESS.resource(), StandardRules.CAACCESS.resource() + caInfo.getCAId()));
-        roleSession.persistRole(internalAdmin, getRoleData(testRole3, StandardRules.CAACCESS.resource() + DUMMY_CA_ID, null));
+        roleSession.persistRole(internalAdmin, new Role(null, testRole1, Arrays.asList(
+                StandardRules.CAACCESS.resource() + caInfo.getCAId()
+                ), null));
+        roleSession.persistRole(internalAdmin, new Role(null, testRole2, Arrays.asList(
+                StandardRules.CAACCESS.resource()
+                ), Arrays.asList(
+                        StandardRules.CAACCESS.resource() + caInfo.getCAId()
+                        )));
+        roleSession.persistRole(internalAdmin, new Role(null, testRole3, Arrays.asList(
+                StandardRules.CAACCESS.resource() + DUMMY_CA_ID
+                ), null));
     }
 
     @After
     public void tearDown() throws Exception {
         for (final String roleName : Arrays.asList(testRole1,testRole2, testRole3)) {
             try {
-                final RoleDataDto role = roleSession.getRole(internalAdmin, null, roleName);
+                final Role role = roleSession.getRole(internalAdmin, null, roleName);
                 if (role!=null) {
-                    roleSession.deleteRoleIdempotent(internalAdmin, role.id());
+                    roleSession.deleteRoleIdempotent(internalAdmin, role.getRoleId());
                 }
             } catch (Exception e) {
                 log.debug(e.getMessage());
@@ -216,16 +207,16 @@ public class RenewCANewSubjectDNPropagationSystemTest extends CaTestCase {
         //e.g. /ca/12345/ has to be cloned to /ca/6789/ where "12345" and "6789" are CA IDs before and after the renewal
         final int caIdOld = caInfoBeforeNameChange.getCAId();
         final int caIdNew = caInfoAfterNameChange.getCAId();
-        final Map<String,Boolean> accessRulesForRole1 = roleSession.getRole(internalAdmin, null, testRole1).accessRules();
-        assertEquals(RoleDataDto.STATE_ALLOW, accessRulesForRole1.get(StandardRules.CAACCESS.resource() + caIdOld + "/"));
-        assertEquals(RoleDataDto.STATE_ALLOW, accessRulesForRole1.get(StandardRules.CAACCESS.resource() + caIdNew + "/"));
-        final Map<String,Boolean> accessRulesForRole2 = roleSession.getRole(internalAdmin, null, testRole2).accessRules();
-        assertEquals(RoleDataDto.STATE_ALLOW, accessRulesForRole2.get(StandardRules.CAACCESS.resource()));
-        assertEquals(RoleDataDto.STATE_DENY, accessRulesForRole2.get(StandardRules.CAACCESS.resource() + caIdOld + "/"));
-        assertEquals(RoleDataDto.STATE_DENY, accessRulesForRole2.get(StandardRules.CAACCESS.resource() + caIdNew + "/"));
-        final Map<String,Boolean> accessRulesForRole3 = roleSession.getRole(internalAdmin, null, testRole3).accessRules();
+        final Map<String,Boolean> accessRulesForRole1 = roleSession.getRole(internalAdmin, null, testRole1).getAccessRules();
+        assertEquals(Role.STATE_ALLOW, accessRulesForRole1.get(StandardRules.CAACCESS.resource() + caIdOld + "/"));
+        assertEquals(Role.STATE_ALLOW, accessRulesForRole1.get(StandardRules.CAACCESS.resource() + caIdNew + "/"));
+        final Map<String,Boolean> accessRulesForRole2 = roleSession.getRole(internalAdmin, null, testRole2).getAccessRules();
+        assertEquals(Role.STATE_ALLOW, accessRulesForRole2.get(StandardRules.CAACCESS.resource()));
+        assertEquals(Role.STATE_DENY, accessRulesForRole2.get(StandardRules.CAACCESS.resource() + caIdOld + "/"));
+        assertEquals(Role.STATE_DENY, accessRulesForRole2.get(StandardRules.CAACCESS.resource() + caIdNew + "/"));
+        final Map<String,Boolean> accessRulesForRole3 = roleSession.getRole(internalAdmin, null, testRole3).getAccessRules();
         assertEquals(1, accessRulesForRole3.size());
-        assertEquals(RoleDataDto.STATE_ALLOW, accessRulesForRole3.get(StandardRules.CAACCESS.resource() + DUMMY_CA_ID + "/"));
+        assertEquals(Role.STATE_ALLOW, accessRulesForRole3.get(StandardRules.CAACCESS.resource() + DUMMY_CA_ID + "/"));
         log.trace("<testPropagationAfterCARenewSubjectDN()");
     }
 }

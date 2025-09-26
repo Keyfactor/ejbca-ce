@@ -30,10 +30,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import com.keyfactor.util.certificate.DnComponents;
@@ -58,10 +56,9 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.dto.RoleDataDto;
-import org.cesecore.dto.RoleDataDtoBuilder;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
@@ -153,7 +150,7 @@ public class ApprovalSessionSystemTest extends CaTestCase {
             SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final ApprovalProfileSessionRemote approvalProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
             ApprovalProfileSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private RoleDataDto role;
+    private Role role;
     private int caid = getTestCAId();
     private long originalValidity = 0L;
     private long originalValidityLongExpirationPeriod = 0L;
@@ -292,35 +289,30 @@ public class ApprovalSessionSystemTest extends CaTestCase {
 
         fileHandles.addAll(BatchCreateTool.createAllNew(intadmin, new File(P12_FOLDER_NAME)));
 
-        final RoleDataDto oldRole = roleSession.getRole(intadmin, null, roleName);
+        final Role oldRole = roleSession.getRole(intadmin, null, roleName);
         if (oldRole != null) {
-            roleSession.deleteRoleIdempotent(intadmin, oldRole.id());
+            roleSession.deleteRoleIdempotent(intadmin, oldRole.getRoleId());
         }
-        Map<String, Boolean> accessRules = new HashMap<>();
-        accessRules.put(AccessRulesConstants.REGULAR_APPROVEENDENTITY, RoleDataDto.STATE_ALLOW);
-        accessRules.put(AccessRulesConstants.ENDENTITYPROFILEBASE, RoleDataDto.STATE_ALLOW);
-        accessRules.put(StandardRules.CAACCESSBASE.resource(), RoleDataDto.STATE_ALLOW);
-        accessRules.put(AuditLogRules.VIEW.resource(), RoleDataDto.STATE_ALLOW);
-        role = new RoleDataDtoBuilder()
-                .setName(roleName)
-                .setAccessRules(accessRules)
-                .build();
-        role = roleSession.persistRole(intadmin, role);
+        role = roleSession.persistRole(intadmin, new Role(null, roleName, Arrays.asList(
+                AccessRulesConstants.REGULAR_APPROVEENDENTITY,
+                AccessRulesConstants.ENDENTITYPROFILEBASE,
+                StandardRules.CAACCESSBASE.resource(),
+                AuditLogRules.VIEW.resource()), null));
         roleMemberSession.persist(intadmin, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                 caid, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
-                AccessMatchType.TYPE_EQUALCASE.getNumericValue(), adminusername1, role.id(), null));
+                AccessMatchType.TYPE_EQUALCASE.getNumericValue(), adminusername1, role.getRoleId(), null));
         roleMemberSession.persist(intadmin, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                 caid, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
-                AccessMatchType.TYPE_EQUALCASE.getNumericValue(), adminusername2, role.id(), null));
+                AccessMatchType.TYPE_EQUALCASE.getNumericValue(), adminusername2, role.getRoleId(), null));
         roleMemberSession.persist(intadmin, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                 caid, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
-                AccessMatchType.TYPE_EQUALCASE.getNumericValue(), adminusername3, role.id(), null));
+                AccessMatchType.TYPE_EQUALCASE.getNumericValue(), adminusername3, role.getRoleId(), null));
         roleMemberSession.persist(intadmin, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                 caid, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
-                AccessMatchType.TYPE_EQUALCASE.getNumericValue(), reqadminusername, role.id(), null));
+                AccessMatchType.TYPE_EQUALCASE.getNumericValue(), reqadminusername, role.getRoleId(), null));
         roleMemberSession.persist(intadmin, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                 "CN=externalCert,C=SE".hashCode(), RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue(),
-                AccessMatchType.TYPE_EQUALCASE.getNumericValue(), CertTools.getSerialNumberAsString(externalcert), role.id(), null));
+                AccessMatchType.TYPE_EQUALCASE.getNumericValue(), CertTools.getSerialNumberAsString(externalcert), role.getRoleId(), null));
 
         admincert1 = (X509Certificate) EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(adminusername1)).iterator().next();
         admincert2 = (X509Certificate) EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(adminusername2)).iterator().next();
@@ -383,7 +375,7 @@ public class ApprovalSessionSystemTest extends CaTestCase {
             }
         }
         if (role != null) {
-            roleSession.deleteRoleIdempotent(intadmin, role.id());
+            roleSession.deleteRoleIdempotent(intadmin, role.getRoleId());
         }
         if (removeUserName != null) {
             endEntityManagementSession.deleteUser(intadmin, removeUserName);

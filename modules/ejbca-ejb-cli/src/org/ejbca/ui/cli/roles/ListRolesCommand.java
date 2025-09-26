@@ -18,7 +18,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.dto.RoleDataDto;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
@@ -41,17 +41,17 @@ public class ListRolesCommand extends BaseRolesCommand {
 
     @Override
     public CommandResult execute(ParameterContainer parameters) {
-        final List<RoleDataDto> roleDataList = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).getAuthorizedRoles(getAuthenticationToken());
-        Collections.sort(roleDataList);
+        final List<Role> roles = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).getAuthorizedRoles(getAuthenticationToken());
+        Collections.sort(roles);
         final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
-        for (final RoleDataDto roleData : roleDataList) {
+        for (final Role role : roles) {
             List<RoleMember> roleMembers;
             try {
-                roleMembers = roleMemberSession.getRoleMembersByRoleId(getAuthenticationToken(), roleData.id());
+                roleMembers = roleMemberSession.getRoleMembersByRoleId(getAuthenticationToken(), role.getRoleId());
                 final String roleMembersString = " (" + roleMembers.size() + " member"+(roleMembers.size()==1?"":"s")+")";
-                getLogger().info(super.getFullRoleName(roleData.nameSpace(), roleData.name()) + " " + roleMembersString);
+                getLogger().info(super.getFullRoleName(role.getNameSpace(), role.getRoleName()) + " " + roleMembersString);
             } catch (AuthorizationDeniedException e) {
-                getLogger().info(super.getFullRoleName(roleData.nameSpace(), roleData.name()) + " (? members)");
+                getLogger().info(super.getFullRoleName(role.getNameSpace(), role.getRoleName()) + " (? members)");
             }
         }
         return CommandResult.SUCCESS;

@@ -15,7 +15,6 @@ package org.ejbca.ui.web.admin.administratorprivileges;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -41,8 +40,7 @@ import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.dto.RoleDataDto;
-import org.cesecore.dto.RoleDataDtoBuilder;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.ejbca.config.GlobalCustomCssConfiguration;
@@ -69,14 +67,14 @@ public class RolesBean extends BaseManagedBean implements Serializable {
     private SecurityEventsLoggerSessionLocal auditLogSession;
 
     private boolean addRoleInProgress = false;
-    private RoleDataDto roleToRename = null;
-    private RoleDataDto roleToDelete = null;
+    private Role roleToRename = null;
+    private Role roleToDelete = null;
     private String editNameSpaceSelected;
     private String editNameSpace;
     private String editRoleName;
     private int selectedStyle;
     private List<SelectItem> raStyleList;
-    private transient ListDataModel<RoleDataDto> rolesAvailable;
+    private transient ListDataModel<Role> rolesAvailable;
     private List<String> nameSpacesAvailable;
     private boolean onlyEmptyNameSpaceInUse = true;
 
@@ -106,22 +104,22 @@ public class RolesBean extends BaseManagedBean implements Serializable {
     }
 
     /** @return the ListDataModel of all roles the admin is authorized to */
-    public ListDataModel<RoleDataDto> getRolesAvailable() {
+    public ListDataModel<Role> getRolesAvailable() {
         if (rolesAvailable==null) {
-            final List<RoleDataDto> roles = roleSession.getAuthorizedRoles(super.getAdmin());
+            final List<Role> roles = roleSession.getAuthorizedRoles(super.getAdmin());
             boolean onlyEmptyNameSpaceInUse = true;
-            for (final RoleDataDto role : roles) {
-                if (!StringUtils.isEmpty(role.getNameSpace())) {
+            for (final Role role : roles) {
+                if (!role.getNameSpace().isEmpty()) {
                     onlyEmptyNameSpaceInUse = false;
                     break;
                 }
             }
             this.onlyEmptyNameSpaceInUse = onlyEmptyNameSpaceInUse;
             // Sort case insensitive
-            Collections.sort(roles, new Comparator<RoleDataDto>() {
+            Collections.sort(roles, new Comparator<Role>() {
                 @Override
-                public int compare(RoleDataDto o1, RoleDataDto o2) {
-                    return o1.getName().compareToIgnoreCase(o2.getName());
+                public int compare(Role o1, Role o2) {
+                    return o1.getRoleName().compareToIgnoreCase(o2.getRoleName());
                 }
             });
             rolesAvailable = new ListDataModel<>(roles);
@@ -134,14 +132,10 @@ public class RolesBean extends BaseManagedBean implements Serializable {
         nameSpacesAvailable = null;
         rolesAvailable = null;
     }
-
-    private boolean containsEmptyElement(Collection<String> collection) {
-        return collection != null && collection.stream().anyMatch(StringUtils::isEmpty);
-    }
-
+    
     /** @return true if the admin has access to the empty namespace (and hence is allowed to create new ones) */
     public boolean isAuthorizedToCreateNewNameSpace() {
-        return isAuthorizedToEditRoles() && containsEmptyElement(getNameSpaceAvailable());
+        return isAuthorizedToEditRoles() && getNameSpaceAvailable().contains("");
     }
 
     /** @return a list of existing and authorized namespaces that the admin has access to */
@@ -185,7 +179,7 @@ public class RolesBean extends BaseManagedBean implements Serializable {
     public void setEditRoleName(String editRoleName) { this.editRoleName = editRoleName.trim(); }
     
     public int getSelectedStyle() {
-        RoleDataDto roleToSelect = rolesAvailable.getRowData();
+        Role roleToSelect = rolesAvailable.getRowData();
         selectedStyle = roleToSelect.getStyleId();
         return selectedStyle;
     }
@@ -218,10 +212,11 @@ public class RolesBean extends BaseManagedBean implements Serializable {
         try {
             final GlobalCustomCssConfiguration globalCustomCssConfiguration = (GlobalCustomCssConfiguration)
                     globalConfigurationSession.getCachedConfiguration(GlobalCustomCssConfiguration.CSS_CONFIGURATION_ID);
-            final RoleDataDto roleToSave = rolesAvailable.getRowData();
-            log.info("Saving custom RA style " + selectedStyle +  " for role " + roleToSave.getName() + ".");
+            final Role roleToSave = rolesAvailable.getRowData();
+            log.info("Saving custom RA style " + selectedStyle +  " for role " + roleToSave.getRoleName() + ".");
             final RaStyleInfo newRaStyle = globalCustomCssConfiguration.getRaStyleInfo().get(selectedStyle);
-            roleSession.persistRole(getAdmin(), roleToSave.withStyleId(selectedStyle), false);
+            roleToSave.setStyleId(selectedStyle);
+            roleSession.persistRole(getAdmin(), roleToSave, false);
             auditLogSession.log(EventTypes.ROLE_UPDATE_STYLE, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
                     getAdmin().toString(), null, null, null, newRaStyle.getAsMap());
         } catch (RoleExistsException e) {
@@ -261,7 +256,7 @@ public class RolesBean extends BaseManagedBean implements Serializable {
             if (editNameSpace==null) {
                 editNameSpace = editNameSpaceSelected;
             }
-            final RoleDataDto role = new RoleDataDtoBuilder().setNameSpace(editNameSpace).setName(editRoleName).build();
+            final Role role = new Role(editNameSpace, editRoleName);
             roleSession.persistRole(getAdmin(), role);
             reloadRolesAndNameSpaces();
             actionAddRoleReset();
@@ -281,7 +276,7 @@ public class RolesBean extends BaseManagedBean implements Serializable {
     public void actionRenameRoleStart() {
         roleToRename = rolesAvailable.getRowData();
         setEditNameSpaceSelected(roleToRename.getNameSpace());
-        setEditRoleName(roleToRename.getName());
+        setEditRoleName(roleToRename.getRoleName());
     }
     /** Invoked when canceling process to rename a role */
     public void actionRenameRoleReset() {
@@ -297,7 +292,8 @@ public class RolesBean extends BaseManagedBean implements Serializable {
             if (editNameSpace==null) {
                 editNameSpace = editNameSpaceSelected;
             }
-            roleToRename = roleToRename.withNameSpace(editNameSpace).withName(editRoleName);
+            roleToRename.setNameSpace(editNameSpace);
+            roleToRename.setRoleName(editRoleName);
             roleSession.persistRole(getAdmin(), roleToRename);
             actionRenameRoleReset();
             reloadRolesAndNameSpaces();
@@ -315,7 +311,7 @@ public class RolesBean extends BaseManagedBean implements Serializable {
         return isAuthorizedToEditRoles() && roleToDelete!=null;
     }
     /** @return the role that is the admin has started the process of deleting */
-    public RoleDataDto getRoleToDelete() {
+    public Role getRoleToDelete() {
         return roleToDelete;
     }
     /** Invoked when starting process to delete a role */
@@ -329,7 +325,7 @@ public class RolesBean extends BaseManagedBean implements Serializable {
     /** Invoked when confirming process to delete a role */
     public void actionDeleteRoleConfirm() {
         try {
-            if (roleSession.deleteRoleIdempotent(getAdmin(), roleToDelete.getId())) {
+            if (roleSession.deleteRoleIdempotent(getAdmin(), roleToDelete.getRoleId())) {
                 super.addGlobalMessage(FacesMessage.SEVERITY_INFO, "ROLES_INFO_DELETED");
             }
         } catch (AuthorizationDeniedException e) {

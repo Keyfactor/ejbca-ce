@@ -18,7 +18,7 @@ import jakarta.ejb.Local;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.dto.RoleDataDto;
+import org.cesecore.roles.Role;
 
 /**
  * Local interface for Role management operations.
@@ -35,10 +35,10 @@ public interface RoleSessionLocal extends RoleSession {
     void assertAuthorizedToRoleMembers(AuthenticationToken authenticationToken, int roleId, boolean requireEditAccess) throws AuthorizationDeniedException;
 
     /** @return a List of Roles the caller is a member of (without taking nesting into account) */
-    List<RoleDataDto> getRolesAuthenticationTokenIsMemberOf(AuthenticationToken authenticationToken);
+    List<Role> getRolesAuthenticationTokenIsMemberOf(AuthenticationToken authenticationToken);
 
     /** @return a list of all Roles that have access to the resource and the caller is allowed to see */
-    List<RoleDataDto> getAuthorizedRolesWithAccessToResource(AuthenticationToken authenticationToken, String resource);
+    List<Role> getAuthorizedRolesWithAccessToResource(AuthenticationToken authenticationToken, String resource);
 
     /** 
      * Update Role access rules and optionally any RoleMember relating to the CA ID.

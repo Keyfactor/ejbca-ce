@@ -20,9 +20,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -31,8 +30,6 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
-import org.cesecore.dto.RoleDataDto;
-import org.cesecore.dto.RoleDataDtoBuilder;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
 import org.cesecore.roles.management.RoleInitializationSessionRemote;
@@ -40,8 +37,6 @@ import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -59,33 +54,12 @@ public class RoleSessionBeanSystemTest {
     private final AuthenticationToken alwaysAllowAuthenticationToken = new TestAlwaysAllowLocalAuthenticationToken(RoleSessionBeanSystemTest.class.getSimpleName());
 
     private void cleanUpRole(final String nameSpace, final String roleName) throws AuthorizationDeniedException {
-        final RoleDataDto role = roleSession.getRole(alwaysAllowAuthenticationToken, nameSpace, roleName);
-        if (role != null) {
-            roleSession.deleteRoleIdempotent(alwaysAllowAuthenticationToken, role.id());
+        final Role cleanUpRole = roleSession.getRole(alwaysAllowAuthenticationToken, nameSpace, roleName);
+        if (cleanUpRole!=null) {
+            roleSession.deleteRoleIdempotent(alwaysAllowAuthenticationToken, cleanUpRole.getRoleId());
         }
     }
-
-    private void cleanUpRoles() throws AuthorizationDeniedException {
-        cleanUpRole(null, "RoleSessionBeanSystemTest.testCrud");
-        cleanUpRole("companyx", "RoleSessionBeanSystemTest.testCrud (renamed)");
-        cleanUpRole(null, "RoleSessionBeanSystemTest.testConflict");
-        cleanUpRole(null, "RoleSessionBeanSystemTest.testRename");
-        cleanUpRole(null, "RoleSessionBeanSystemTest.testRenamedRole");
-        cleanUpRole(null, "RoleSessionBeanSystemTest.testAddRemoveAccess");
-        cleanUpRole(null, "testIsAuthorizedToDeleteOwnRoleMember");
-        cleanUpRole(null, "testIsAuthorizedToDeleteOwnRoleMember2");
-    }
-
-    @Before
-    public void setUp() throws Exception {
-        cleanUpRoles();
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        cleanUpRoles();
-    }
-
+    
     /**
      * Basic sanity test for role operations
      * @throws RoleExistsException
@@ -93,40 +67,32 @@ public class RoleSessionBeanSystemTest {
      */
     @Test
     public void testCrud() throws RoleExistsException, AuthorizationDeniedException {
+        cleanUpRole(null, "RoleSessionBeanSystemTest.testCrud");
         // Create
-        final RoleDataDto role = new RoleDataDtoBuilder()
-                .setName("RoleSessionBeanSystemTest.testCrud")
-                .setAccessRules(Map.of("/", RoleDataDto.STATE_ALLOW))
-                .build();
-        final RoleDataDto createdRole = roleSession.persistRole(alwaysAllowAuthenticationToken, role);
-        assertFalse("createdRole is expected to have an ID", createdRole.isIdUnassigned());
-        assertEquals("createdRole has wrong namespace", role.nameSpace(), createdRole.nameSpace());
-        assertEquals("createdRole has wrong name", role.name(), createdRole.name());
-        assertEquals("createdRole has wrong access rules", role.accessRules(), createdRole.accessRules());
+        final Role role = new Role(null, "RoleSessionBeanSystemTest.testCrud");
+        role.getAccessRules().put("/", Role.STATE_ALLOW);
+        final Role createdRole = roleSession.persistRole(alwaysAllowAuthenticationToken, role);
+        assertFalse(Role.ROLE_ID_UNASSIGNED == createdRole.getRoleId());
+        assertEquals(role.getNameSpace(), createdRole.getNameSpace());
+        assertEquals(role.getRoleName(), createdRole.getRoleName());
+        assertEquals(role.getAccessRules().size(), createdRole.getAccessRules().size());
         // Read
-        final RoleDataDto fetchedRole = roleSession.getRole(alwaysAllowAuthenticationToken, createdRole.id());
-        String message = "Expected:\n" + createdRole + "\nActual:\n" + fetchedRole;
-        assertEquals(message, createdRole, fetchedRole);
-
+        final Role fetchedRole = roleSession.getRole(alwaysAllowAuthenticationToken, createdRole.getRoleId());
+        assertEquals(createdRole.getRoleId(), fetchedRole.getRoleId());
+        assertEquals(createdRole.getNameSpace(), fetchedRole.getNameSpace());
+        assertEquals(createdRole.getRoleName(), fetchedRole.getRoleName());
+        assertEquals(createdRole.getAccessRules().size(), fetchedRole.getAccessRules().size());
         // Update (including renaming and change of namespace)
-        Map<String, Boolean> accessRules = new HashMap<>(fetchedRole.accessRules());
-        accessRules.put("/a/b", RoleDataDto.STATE_DENY);
-        RoleDataDto modifiedRole = new RoleDataDtoBuilder(fetchedRole)
-                .setAccessRules(accessRules)
-                .setName(fetchedRole.name() + " (renamed)")
-                .setNameSpace("companyx")
-                .build();
-        final RoleDataDto updatedRole = roleSession.persistRole(alwaysAllowAuthenticationToken, modifiedRole);
-        assertEquals("Wrong RoleDataDto", modifiedRole, updatedRole);
-
+        fetchedRole.getAccessRules().put("/a/b", Role.STATE_DENY);
+        fetchedRole.setRoleName(fetchedRole.getRoleName() + " (renamed)");
+        fetchedRole.setNameSpace("companyx");
+        final Role updatedRole = roleSession.persistRole(alwaysAllowAuthenticationToken, fetchedRole);
+        assertEquals(fetchedRole.getRoleId(), updatedRole.getRoleId());
+        assertEquals(fetchedRole.getNameSpace(), updatedRole.getNameSpace());
+        assertEquals(fetchedRole.getRoleName(), updatedRole.getRoleName());
+        assertEquals(fetchedRole.getAccessRules().size(), updatedRole.getAccessRules().size());
         // Delete
-        assertTrue("Unable to delete the role created by this test.", roleSession.deleteRoleIdempotent(alwaysAllowAuthenticationToken, createdRole.id()));
-    }
-
-    private RoleDataDto getRoleData(final String name) {
-        return new RoleDataDtoBuilder()
-                .setName(name)
-                .build();
+        assertTrue("Unable to delete the role created by this test.", roleSession.deleteRoleIdempotent(alwaysAllowAuthenticationToken, createdRole.getRoleId()));
     }
 
     /**
@@ -136,17 +102,21 @@ public class RoleSessionBeanSystemTest {
      */
     @Test
     public void testNameConflict() throws RoleExistsException, AuthorizationDeniedException {
-        final String name = "RoleSessionBeanSystemTest.testConflict";
+        cleanUpRole(null, "RoleSessionBeanSystemTest.testConflict");
         // Create
-        final RoleDataDto role1 = getRoleData(name).withAccessRules(Map.of("/", RoleDataDto.STATE_ALLOW));
-        final RoleDataDto persisted = roleSession.persistRole(alwaysAllowAuthenticationToken, role1);
-        assertNotNull("Failed to get the role that was just added", roleSession.getRole(alwaysAllowAuthenticationToken, persisted.nameSpace(), persisted.name()));
-        final RoleDataDto role2 = getRoleData(name).withAccessRules(Map.of("/", RoleDataDto.STATE_ALLOW));
+        final Role role1 = new Role(null, "RoleSessionBeanSystemTest.testConflict");
+        role1.getAccessRules().put("/", Role.STATE_ALLOW);
+        roleSession.persistRole(alwaysAllowAuthenticationToken, role1);
+        assertNotNull(roleSession.getRole(alwaysAllowAuthenticationToken, null, "RoleSessionBeanSystemTest.testConflict"));
+        final Role role2 = new Role(null, "RoleSessionBeanSystemTest.testConflict");
+        role2.getAccessRules().put("/", Role.STATE_ALLOW);
         try {
             roleSession.persistRole(alwaysAllowAuthenticationToken, role2);
             fail("Should not have been able to create 2 roles with the same nameSpace + roleName combination.");
         } catch (RoleExistsException e) {
+            
         }
+        cleanUpRole(null, "RoleSessionBeanSystemTest.testConflict");
     }
     
     /**
@@ -159,17 +129,20 @@ public class RoleSessionBeanSystemTest {
     public void testRenameRole() throws AuthorizationDeniedException, RoleExistsException {
         final String defaultName = "RoleSessionBeanSystemTest.testRename";
         final String newName = "RoleSessionBeanSystemTest.testRenamedRole";
+        cleanUpRole(null, defaultName);
+        cleanUpRole(null, newName);
         //Set up role
-        RoleDataDto roleToRename = getRoleData(defaultName);
-        RoleDataDto persistedRole = roleSession.persistRole(alwaysAllowAuthenticationToken, roleToRename);
+        Role roleToRename = new Role(null, defaultName);
+        roleToRename = roleSession.persistRole(alwaysAllowAuthenticationToken, roleToRename);
         //Rename
-        RoleDataDto renamedRole = persistedRole.withName(newName);
-        roleSession.persistRole(alwaysAllowAuthenticationToken, renamedRole);
-
+        roleToRename.setRoleName(newName);
+        roleSession.persistRole(alwaysAllowAuthenticationToken, roleToRename);
         //Get persisted role and verify id + name change
-        RoleDataDto retrievedRole = roleSession.getRole(alwaysAllowAuthenticationToken, persistedRole.id());
-        assertEquals("Wrong ID", persistedRole.id(), retrievedRole.id());
-        assertEquals("Wrong name", newName, retrievedRole.name());
+        Role retrievedRole = roleSession.getRole(alwaysAllowAuthenticationToken, roleToRename.getRoleId());
+        assertEquals(retrievedRole.getRoleId(), roleToRename.getRoleId());
+        assertEquals(retrievedRole.getRoleName(), newName);
+        cleanUpRole(null, defaultName);
+        cleanUpRole(null, newName);
     }
     
     /**
@@ -177,46 +150,57 @@ public class RoleSessionBeanSystemTest {
      * @throws AuthorizationDeniedException
      */
     @Test
-    public void testAddAndRemoveAccessRulesToRole() throws AuthorizationDeniedException, RoleExistsException {
+    public void testAddAndRemoveAccessRulesToRole() throws AuthorizationDeniedException {
+        cleanUpRole(null, "RoleSessionBeanSystemTest.testAddRemoveAccess");
         //Create
         final String ROLE_NAME = "RoleSessionBeanSystemTest.testAddRemoveAccess";
         final String RULE1 = "/future/rama";
         final String RULE2 = "/future/world";
+        Role role = null;
 
-        final RoleDataDto role = getRoleData(ROLE_NAME).withAccessRules(Map.of(RULE1, RoleDataDto.STATE_ALLOW));
-        RoleDataDto persisted = roleSession.persistRole(alwaysAllowAuthenticationToken, role);
+        try {
+            role = new Role(null, ROLE_NAME);
+            assertTrue(ROLE_NAME.equals(role.getRoleName()));
 
-        // Check the returned role
-        assertEquals(1, persisted.accessRules().size());
-        assertEquals(RoleDataDto.STATE_ALLOW, persisted.accessRules().get(AccessRulesHelper.normalizeResource(RULE1)));
+            role.getAccessRules().put(RULE1, Role.STATE_ALLOW);
+            role = roleSession.persistRole(alwaysAllowAuthenticationToken, role);
 
-        // Do the same check for a role retrieved from the database,
-        RoleDataDto foundRole = roleSession.getRole(alwaysAllowAuthenticationToken, persisted.id());
-        assertEquals(1, foundRole.accessRules().size());
-        assertEquals(RoleDataDto.STATE_ALLOW, foundRole.accessRules().get(AccessRulesHelper.normalizeResource(RULE1)));
+            // Check the returned role
+            assertEquals(1 ,role.getAccessRules().size());
+            assertEquals(Role.STATE_ALLOW, role.getAccessRules().get(AccessRulesHelper.normalizeResource(RULE1)));   
+          
+            // Do the same check for a role retrieved from the database,
+            Role foundRole = roleSession.getRole(alwaysAllowAuthenticationToken, role.getRoleId());
+            assertEquals(1, foundRole.getAccessRules().size());
+            assertEquals(Role.STATE_ALLOW, foundRole.getAccessRules().get(AccessRulesHelper.normalizeResource(RULE1)));
 
-        // Add another rule
-        Map<String, Boolean> extendedAccessRules = new HashMap<>(persisted.accessRules());
-        extendedAccessRules.put(RULE2, RoleDataDto.STATE_ALLOW);
-        RoleDataDto updatedRoleData = roleSession.persistRole(alwaysAllowAuthenticationToken, persisted.withAccessRules(extendedAccessRules));
+            // Add another rule
+            role.getAccessRules().put(RULE2, Role.STATE_ALLOW);
+            role = roleSession.persistRole(alwaysAllowAuthenticationToken, role);
 
-        // Check that both rules (and only those two) are there.
-        final Map<String, Boolean> retrievedRules = roleSession.getRole(alwaysAllowAuthenticationToken, persisted.id()).accessRules();
-        assertEquals(2, retrievedRules.size());
-        assertEquals(RoleDataDto.STATE_ALLOW, retrievedRules.get(AccessRulesHelper.normalizeResource(RULE1)));
-        assertEquals(RoleDataDto.STATE_ALLOW, retrievedRules.get(AccessRulesHelper.normalizeResource(RULE2)));
+            // Check that both rules (and only those two) are there.
+            LinkedHashMap<String, Boolean> retrievedRules = roleSession.getRole(alwaysAllowAuthenticationToken, role.getRoleId()).getAccessRules();
+            assertEquals(2, retrievedRules.size());
+            assertEquals(Role.STATE_ALLOW, retrievedRules.get(AccessRulesHelper.normalizeResource(RULE1)));
+            assertEquals(Role.STATE_ALLOW, retrievedRules.get(AccessRulesHelper.normalizeResource(RULE2)));
 
-        // Remove one of rules
-        final Map<String, Boolean> reducedAccessRules = new HashMap<>(retrievedRules);
-        reducedAccessRules.remove(AccessRulesHelper.normalizeResource(RULE1));
-        final RoleDataDto roleDataWithReducedAccessRules = roleSession.persistRole(alwaysAllowAuthenticationToken, updatedRoleData.withAccessRules(reducedAccessRules));
+            // Remove one of rules
+            role.getAccessRules().remove(AccessRulesHelper.normalizeResource(RULE1));
+            role = roleSession.persistRole(alwaysAllowAuthenticationToken, role);
+            
+            //Verify database commit
+            retrievedRules = role.getAccessRules();
+            assertEquals(1, retrievedRules.size());
+            assertEquals(Role.STATE_ALLOW, retrievedRules.get(AccessRulesHelper.normalizeResource(RULE2)));
 
-        // Verify database commit
-        assertEquals(1, roleDataWithReducedAccessRules.accessRules().size());
-        assertEquals(RoleDataDto.STATE_ALLOW, roleDataWithReducedAccessRules.accessRules().get(AccessRulesHelper.normalizeResource(RULE2)));
+            // Verify that futureRama has been removed entirely
+            assertNull(role.getAccessRules().get(AccessRulesHelper.normalizeResource(RULE1)));
 
-        // Verify that futureRama has been removed entirely
-        assertNull(roleDataWithReducedAccessRules.accessRules().get(AccessRulesHelper.normalizeResource(RULE1)));
+        } catch (RoleExistsException e) {
+            fail("Attempt to add a role: " + role.getRoleName() + " fail because it already exists. Is the database clean?");
+        } finally {
+            cleanUpRole(null, "RoleSessionBeanSystemTest.testAddRemoveAccess");
+        }
     }
     
     /**
@@ -229,16 +213,16 @@ public class RoleSessionBeanSystemTest {
     @Test(expected = AuthorizationDeniedException.class)
     public void testIsAuthorizedToEditRoleWithoutRuleAccess() throws RoleExistsException, AuthorizationDeniedException {
         final String authRoleName = "AuthRole";
-        final String unAuthRoleName = "UnAuthRole";
+        final String unAuthRoleName ="UnAuthRole";
         final String authDN = "CN=AccessTest";
-        RoleDataDto authRole = getRoleData(authRoleName);
-        RoleDataDto unAuthRole = getRoleData(unAuthRoleName);
+        Role authRole = new Role(null, authRoleName);
+        Role unAuthRole = new Role(null, unAuthRoleName);
         cleanUpRole(null, authRoleName);
         cleanUpRole(null, unAuthRoleName);
         List<String> accessRules = Arrays.asList(StandardRules.EDITROLES.toString());
         
         //Create tokens representing access rules of created roles
-        AuthenticationToken authToken = roleInitializationSession.createAuthenticationTokenAndAssignToNewRole(authDN, null, authRole.name(), accessRules, null);
+        AuthenticationToken authToken = roleInitializationSession.createAuthenticationTokenAndAssignToNewRole(authDN, null, authRole.getRoleName(), accessRules, null);
         AuthenticationToken unAuthToken = roleInitializationSession.createAuthenticationTokenAndAssignToNewRole(authDN, null, unAuthRoleName, null, accessRules);
         
         authRole = roleSession.getRole(authToken, null, authRoleName);
@@ -248,7 +232,7 @@ public class RoleSessionBeanSystemTest {
         
         //Test edit. AuthorizationDeniedException is expected
         try {
-            roleSession.deleteRoleIdempotent(unAuthToken, authRole.id());
+            roleSession.deleteRoleIdempotent(unAuthToken, authRole.getRoleId());
             fail("Was able to edit role without proper authorization");
         } finally {
             cleanUpRole(null, authRoleName);
@@ -256,13 +240,13 @@ public class RoleSessionBeanSystemTest {
         }
     }
 
-    /** Verify that an administrator cannot edit a RoleDataDto that is providing all its access */
+    /** Verify that an administrator cannot edit a Role that is providing all its access */
     @Test(expected = AuthorizationDeniedException.class)
     public void testIsAuthorizedToNotEditOwnRole() throws RoleExistsException, AuthorizationDeniedException {
         final String TESTNAME = "testIsAuthorizedToNotEditOwnRole";
         final TestX509CertificateAuthenticationToken authenticationToken = roleInitializationSession.createAuthenticationTokenAndAssignToNewRole("CN="+TESTNAME, null, TESTNAME,
                 Arrays.asList(StandardRules.ROLE_ROOT.resource()), null);
-        RoleDataDto role;
+        final Role role;
         try {
             role = roleSession.getRole(alwaysAllowAuthenticationToken, null, TESTNAME);
         } catch (AuthorizationDeniedException e) {
@@ -270,8 +254,8 @@ public class RoleSessionBeanSystemTest {
             return;
         }
         try {
-            Map<String, Boolean> accessRules = Map.of(StandardRules.CAACCESS.resource(), RoleDataDto.STATE_ALLOW);
-            role = role.withAccessRules(accessRules);
+            role.getAccessRules().clear();
+            role.getAccessRules().put(StandardRules.CAACCESS.resource(), Role.STATE_ALLOW);
             roleSession.persistRole(authenticationToken, role);
             fail("Was able to lower own access.");
         } finally {
@@ -284,10 +268,11 @@ public class RoleSessionBeanSystemTest {
         final String TESTNAME = "testIsNotAuthorizedToChangeNamespaceOfOwnRole";
         final TestX509CertificateAuthenticationToken authenticationToken = roleInitializationSession.createAuthenticationTokenAndAssignToNewRole("CN="+TESTNAME, null, TESTNAME,
                 Arrays.asList(StandardRules.ROLE_ROOT.resource()), null);
-        RoleDataDto role = roleSession.getRole(alwaysAllowAuthenticationToken, null, TESTNAME);
+        Role role = roleSession.getRole(alwaysAllowAuthenticationToken, null, TESTNAME);
         try {
+            role.setNameSpace("PrimeKey"); // limit to 'PrimeKey'
             try {
-                roleSession.persistRole(authenticationToken, role.withNameSpace("PrimeKey"));
+                roleSession.persistRole(authenticationToken, role);
             } catch (AuthorizationDeniedException e) { } // NOPMD expected
             fail("Was able to lower own access.");
         } finally {
@@ -295,13 +280,13 @@ public class RoleSessionBeanSystemTest {
         }
     }
     
-    /** Verify that an administrator cannot remove the RoleDataDto that is providing all its access */
+    /** Verify that an administrator cannot remove the Role that is providing all its access */
     @Test(expected = AuthorizationDeniedException.class)
     public void testIsAuthorizedToNotDeleteOwnRole() throws RoleExistsException, AuthorizationDeniedException {
         final String TESTNAME = "testIsAuthorizedToNotDeleteOwnRole";
         final TestX509CertificateAuthenticationToken authenticationToken = roleInitializationSession.createAuthenticationTokenAndAssignToNewRole("CN="+TESTNAME, null, TESTNAME,
                 Arrays.asList(StandardRules.CAACCESS.resource()), null);
-        final RoleDataDto role;
+        final Role role;
         try {
             role = roleSession.getRole(alwaysAllowAuthenticationToken, null, TESTNAME);
         } catch (AuthorizationDeniedException e) {
@@ -309,7 +294,7 @@ public class RoleSessionBeanSystemTest {
             return;
         }
         try {
-            roleSession.deleteRoleIdempotent(authenticationToken, role.id());
+            roleSession.deleteRoleIdempotent(authenticationToken, role.getRoleId());
             fail("Was able to lower own access.");
         } finally {
             roleInitializationSession.removeAllAuthenticationTokensRoles(authenticationToken);
@@ -322,7 +307,7 @@ public class RoleSessionBeanSystemTest {
         final String TESTNAME = "testIsAuthorizedToNotDeleteOwnRoleMember";
         final TestX509CertificateAuthenticationToken authenticationToken = roleInitializationSession.createAuthenticationTokenAndAssignToNewRole("CN="+TESTNAME, null, TESTNAME,
                 Arrays.asList(StandardRules.CAACCESS.resource()), null);
-        final RoleDataDto role;
+        final Role role;
         try {
             role = roleSession.getRole(alwaysAllowAuthenticationToken, null, TESTNAME);
         } catch (AuthorizationDeniedException e) {
@@ -330,63 +315,56 @@ public class RoleSessionBeanSystemTest {
             return;
         }
         try {
-            final RoleMember roleMember = roleMemberSession.getRoleMembersByRoleId(alwaysAllowAuthenticationToken, role.id()).get(0);
+            final RoleMember roleMember = roleMemberSession.getRoleMembersByRoleId(alwaysAllowAuthenticationToken, role.getRoleId()).get(0);
             roleMemberSession.remove(authenticationToken, roleMember.getId());
             fail("Was able to lower own access.");
         } finally {
             roleInitializationSession.removeAllAuthenticationTokensRoles(authenticationToken);
         }
     }
-
-    private RoleDataDto getRoleData(final String name, final String allowed) {
-        return new RoleDataDtoBuilder()
-                .setName(name)
-                .setAccessRules(Map.of(allowed, RoleDataDto.STATE_ALLOW))
-                .build();
-    }
-
-    /** Verify that an administrator can remove the RoleDataDto that is providing redundant access */
+    
+    /** Verify that an administrator can remove the Role that is providing redundant access */
     public void testIsAuthorizedToDeleteOwnRole() throws RoleExistsException, AuthorizationDeniedException {
         final String TESTNAME = "testIsAuthorizedToDeleteOwnRole";
         final TestX509CertificateAuthenticationToken authenticationToken = roleInitializationSession.createAuthenticationTokenAndAssignToNewRole("CN="+TESTNAME, null, TESTNAME,
                 Arrays.asList(StandardRules.CAACCESS.resource()), null);
         try {
-            final RoleDataDto role1 = roleSession.getRole(alwaysAllowAuthenticationToken, null, TESTNAME);
-            final List<RoleMember> roleMembers1 = roleMemberSession.getRoleMembersByRoleId(alwaysAllowAuthenticationToken, role1.id());
-            final RoleDataDto role2 = roleSession.persistRole(alwaysAllowAuthenticationToken, getRoleData(TESTNAME+"2", StandardRules.CAACCESS.resource()));
+            final Role role1 = roleSession.getRole(alwaysAllowAuthenticationToken, null, TESTNAME);
+            final List<RoleMember> roleMembers1 = roleMemberSession.getRoleMembersByRoleId(alwaysAllowAuthenticationToken, role1.getRoleId());
+            final Role role2 = roleSession.persistRole(alwaysAllowAuthenticationToken, new Role(null, TESTNAME+"2", Arrays.asList(StandardRules.CAACCESS.resource()), null));
             final RoleMember roleMember2 = new RoleMember(roleMembers1.get(0));
             roleMember2.setId(RoleMember.ROLE_MEMBER_ID_UNASSIGNED);
-            roleMember2.setRoleId(role2.id());
+            roleMember2.setRoleId(role2.getRoleId());
             roleMemberSession.persist(alwaysAllowAuthenticationToken, roleMember2);
             try {
-                roleSession.deleteRoleIdempotent(authenticationToken, role1.id());
+                roleSession.deleteRoleIdempotent(authenticationToken, role1.getRoleId());
             } catch (AuthorizationDeniedException e) {
-                fail("Unable to delete RoleDataDto that provides redundant access: " +e.getMessage());
+                fail("Unable to delete Role that provides redundant access: " +e.getMessage());
             }
         } finally {
             roleInitializationSession.removeAllAuthenticationTokensRoles(authenticationToken);
         }
     }
     
-    /** Verify that an administrator can remove the RoleDataDto that is providing redundant access */
+    /** Verify that an administrator can remove the Role that is providing redundant access */
     public void testIsAuthorizedToDeleteOwnRoleMember() throws RoleExistsException, AuthorizationDeniedException {
         final String TESTNAME = "testIsAuthorizedToDeleteOwnRoleMember";
         final TestX509CertificateAuthenticationToken authenticationToken = roleInitializationSession.createAuthenticationTokenAndAssignToNewRole("CN="+TESTNAME, null, TESTNAME,
                 Arrays.asList(StandardRules.CAACCESS.resource()), null);
         try {
-            final RoleDataDto role1 = roleSession.getRole(alwaysAllowAuthenticationToken, null, TESTNAME);
-            final List<RoleMember> roleMembers1 = roleMemberSession.getRoleMembersByRoleId(alwaysAllowAuthenticationToken, role1.id());
-            final RoleDataDto role2 = roleSession.persistRole(alwaysAllowAuthenticationToken, getRoleData(TESTNAME+"2", StandardRules.CAACCESS.resource()));
+            final Role role1 = roleSession.getRole(alwaysAllowAuthenticationToken, null, TESTNAME);
+            final List<RoleMember> roleMembers1 = roleMemberSession.getRoleMembersByRoleId(alwaysAllowAuthenticationToken, role1.getRoleId());
+            final Role role2 = roleSession.persistRole(alwaysAllowAuthenticationToken, new Role(null, TESTNAME+"2", Arrays.asList(StandardRules.CAACCESS.resource()), null));
             final RoleMember roleMember2 = new RoleMember(roleMembers1.get(0));
             roleMember2.setId(RoleMember.ROLE_MEMBER_ID_UNASSIGNED);
-            roleMember2.setRoleId(role2.id());
+            roleMember2.setRoleId(role2.getRoleId());
             roleMemberSession.persist(alwaysAllowAuthenticationToken, roleMember2);
             try {
                 roleMemberSession.remove(authenticationToken, roleMembers1.get(0).getId());
             } catch (AuthorizationDeniedException e) {
                 fail("Unable to delete RoleMember that provides redundant access: " +e.getMessage());
             } finally {
-                roleSession.deleteRoleIdempotent(authenticationToken, role1.id());
+                roleSession.deleteRoleIdempotent(authenticationToken, role1.getRoleId());
             }
         } finally {
             roleInitializationSession.removeAllAuthenticationTokensRoles(authenticationToken);
@@ -410,12 +388,12 @@ public class RoleSessionBeanSystemTest {
         try {
             AuthenticationToken strongToken = roleInitializationSession.createAuthenticationTokenAndAssignToNewRole(someDN, null, strongAdminRoleName, strongRules, null);
             AuthenticationToken weakToken = roleInitializationSession.createAuthenticationTokenAndAssignToNewRole(someDN, null, weakAdminRoleName, weakRules, weakDeniedRules);
-            RoleDataDto strongRole = roleSession.getRole(alwaysAllowAuthenticationToken, null, strongAdminRoleName);
-            RoleDataDto weakRole = roleSession.getRole(alwaysAllowAuthenticationToken, null, weakAdminRoleName);
-            List<RoleDataDto> strongAuthorizedRoles = roleSession.getAuthorizedRoles(strongToken);
-            List<RoleDataDto> weakAuthorizedRoles = roleSession.getAuthorizedRoles(weakToken);
-            for (RoleDataDto role : weakAuthorizedRoles) {
-                log.info(role.name());
+            Role strongRole = roleSession.getRole(alwaysAllowAuthenticationToken, null, strongAdminRoleName);
+            Role weakRole = roleSession.getRole(alwaysAllowAuthenticationToken, null, weakAdminRoleName);
+            List<Role> strongAuthorizedRoles = roleSession.getAuthorizedRoles(strongToken);
+            List<Role> weakAuthorizedRoles = roleSession.getAuthorizedRoles(weakToken);
+            for (Role role : weakAuthorizedRoles) {
+                log.info(role.getRoleName());
             }
             assertTrue(strongAuthorizedRoles.contains(weakRole));
             assertTrue(strongAuthorizedRoles.contains(strongRole));
@@ -439,12 +417,14 @@ public class RoleSessionBeanSystemTest {
         final TestX509CertificateAuthenticationToken authenticationToken = roleInitializationSession.createAuthenticationTokenAndAssignToNewRole(
                 "CN="+roleName1, nameSpace1, roleName1, Arrays.asList(StandardRules.ROLE_ROOT.resource()), null);
         try {
-            final RoleDataDto role = roleSession.getRole(alwaysAllowAuthenticationToken, nameSpace1, roleName1).withName(roleName2);
-            final RoleDataDto roleUpdate1 = roleSession.persistRole(alwaysAllowAuthenticationToken, role);
-            assertEquals(role.id(), roleUpdate1.id());
+            final Role role = roleSession.getRole(alwaysAllowAuthenticationToken, nameSpace1, roleName1);
+            role.setRoleName(roleName2);
+            final Role roleUpdate1 = roleSession.persistRole(alwaysAllowAuthenticationToken, role);
+            assertEquals(role.getRoleId(), roleUpdate1.getRoleId());
             assertNull(roleSession.getRole(alwaysAllowAuthenticationToken, nameSpace1, roleName1));
-            final RoleDataDto roleUpdate2 = roleSession.persistRole(alwaysAllowAuthenticationToken, roleUpdate1.withNameSpace(nameSpace2));
-            assertEquals(role.id(), roleUpdate2.id());
+            roleUpdate1.setNameSpace(nameSpace2);
+            final Role roleUpdate2 = roleSession.persistRole(alwaysAllowAuthenticationToken, roleUpdate1);
+            assertEquals(role.getRoleId(), roleUpdate2.getRoleId());
             assertNull(roleSession.getRole(alwaysAllowAuthenticationToken, nameSpace2, roleName1));
             assertNotNull(roleSession.getRole(alwaysAllowAuthenticationToken, nameSpace2, roleName2));
         } finally {
@@ -481,13 +461,13 @@ public class RoleSessionBeanSystemTest {
             assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken1), Arrays.asList(nameSpace1), null, false);
             assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken2), Arrays.asList(nameSpace2), null, false);
             assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken3), Arrays.asList(nameSpace3), null, false);
-            // Authentication token matching RoleMember that belongs to RoleDataDto with empty name space should see all namespaces
+            // Authentication token matching RoleMember that belongs to Role with empty name space should see all namespaces
             assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken4), Arrays.asList(nameSpace1, nameSpace2, nameSpace4),
                     Arrays.asList(nameSpace3), true);
-            // Add authenticationToken1 matched by CN to RoleDataDto 2 (with nameSpace2)
+            // Add authenticationToken1 matched by CN to Role 2 (with nameSpace2)
             addRoleMemberToRole(nameSpace2, commonRoleName, subjectDn1);
             assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken1), Arrays.asList(nameSpace1, nameSpace2), null, false);
-            // And again, add authenticationToken1 matched by CN to RoleDataDto 3 (with nameSpace3)
+            // And again, add authenticationToken1 matched by CN to Role 3 (with nameSpace3)
             RoleMember roleMember = addRoleMemberToRole(nameSpace3, commonRoleName, subjectDn1);
             assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken1), Arrays.asList(nameSpace1, nameSpace2, nameSpace3), null, false);
             // Sanity check that adding authenticationToken1 did not grant more access to the other authenticationTokens
@@ -495,20 +475,19 @@ public class RoleSessionBeanSystemTest {
             assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken3), Arrays.asList(nameSpace3), null, false);
             assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken4), Arrays.asList(nameSpace1, nameSpace2, nameSpace4),
                     Arrays.asList(nameSpace3), true);
-            // Remove authenticationToken1 matched by CN from RoleDataDto 3 (with nameSpace3) and expect that this namespace is no longer available
+            // Remove authenticationToken1 matched by CN from Role 3 (with nameSpace3) and expect that this namespace is no longer available
             roleMemberSession.remove(alwaysAllowAuthenticationToken, roleMember.getId());
             assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken1), Arrays.asList(nameSpace1, nameSpace2), null, false);
             // Grant additional access to authenticationToken4 and expect that namespace3 will now also be visible
-            final RoleDataDto role4 = roleSession.getRole(alwaysAllowAuthenticationToken, nameSpace4, commonRoleName);
-            Map<String, Boolean> accessRules = new HashMap<>(role4.accessRules());
-            accessRules.put(StandardRules.ROLE_ROOT.resource(), RoleDataDto.STATE_ALLOW);
-            roleSession.persistRole(alwaysAllowAuthenticationToken, role4.withAccessRules(accessRules));
+            final Role role4 = roleSession.getRole(alwaysAllowAuthenticationToken, nameSpace4, commonRoleName);
+            role4.getAccessRules().put(StandardRules.ROLE_ROOT.resource(), Role.STATE_ALLOW);
+            roleSession.persistRole(alwaysAllowAuthenticationToken, role4);
             assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken4), Arrays.asList(nameSpace1, nameSpace2, nameSpace3, nameSpace4), null, true);
             // Revoke additional access from authenticationToken4 and expect that namespace3 will no longer be visible
-            final RoleDataDto role4b = roleSession.getRole(alwaysAllowAuthenticationToken, nameSpace4, commonRoleName);
-            accessRules = new HashMap<>();
-            accessRules.put(StandardRules.CAACCESS.resource(), RoleDataDto.STATE_ALLOW);
-            roleSession.persistRole(alwaysAllowAuthenticationToken, role4b.withAccessRules(accessRules));
+            final Role role4b = roleSession.getRole(alwaysAllowAuthenticationToken, nameSpace4, commonRoleName);
+            role4b.getAccessRules().clear();
+            role4b.getAccessRules().put(StandardRules.CAACCESS.resource(), Role.STATE_ALLOW);
+            roleSession.persistRole(alwaysAllowAuthenticationToken, role4b);
             assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken4), Arrays.asList(nameSpace1, nameSpace2, nameSpace4), null, true);
         } finally {
             roleInitializationSession.removeAllAuthenticationTokensRoles(authenticationToken1);
@@ -555,16 +534,16 @@ public class RoleSessionBeanSystemTest {
             assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken1), Arrays.asList(nameSpace1b), null, false);
             assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken2), Arrays.asList(nameSpace2b), null, false);
             assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken3), Arrays.asList(nameSpace3b), null, false);
-            // Authentication token matching RoleMember that belongs to RoleDataDto with empty name space should see all namespaces
+            // Authentication token matching RoleMember that belongs to Role with empty name space should see all namespaces
             assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken4), Arrays.asList(nameSpace1b, nameSpace2b, nameSpace4a),
                     Arrays.asList(nameSpace3b, nameSpace1a, nameSpace2a, nameSpace3a), true);
-            // Add authenticationToken1 matched by CN to RoleDataDto 2 (with nameSpace2)
+            // Add authenticationToken1 matched by CN to Role 2 (with nameSpace2)
             reassignRoleToDifferentNameSpace(commonRoleName, nameSpace2b, nameSpace2a);
             addRoleMemberToRole(nameSpace2a, commonRoleName, subjectDn1);
             reassignRoleToDifferentNameSpace(commonRoleName, nameSpace2a, nameSpace2b);
             assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken1), Arrays.asList(nameSpace1b, nameSpace2b),
                     Arrays.asList(nameSpace1a, nameSpace2a), false);
-            // And again, add authenticationToken1 matched by CN to RoleDataDto 3 (with nameSpace3)
+            // And again, add authenticationToken1 matched by CN to Role 3 (with nameSpace3)
             RoleMember roleMember = addRoleMemberToRole(nameSpace3b, commonRoleName, subjectDn1);
             assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken1), Arrays.asList(nameSpace1b, nameSpace2b, nameSpace3b),
                     Arrays.asList(nameSpace1a, nameSpace2a, nameSpace3a), false);
@@ -573,22 +552,21 @@ public class RoleSessionBeanSystemTest {
             assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken3), Arrays.asList(nameSpace3b), null, false);
             assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken4), Arrays.asList(nameSpace1b, nameSpace2b, nameSpace4a),
                     Arrays.asList(nameSpace3b), true);
-            // Remove authenticationToken1 matched by CN from RoleDataDto 3 (with nameSpace3) and expect that this namespace is no longer available
+            // Remove authenticationToken1 matched by CN from Role 3 (with nameSpace3) and expect that this namespace is no longer available
             roleMemberSession.remove(alwaysAllowAuthenticationToken, roleMember.getId());
             assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken1), Arrays.asList(nameSpace1b, nameSpace2b),
                     Arrays.asList(nameSpace1a, nameSpace2a), false);
             // Grant additional access to authenticationToken4 and expect that namespace3 will now also be visible
-            final RoleDataDto role4 = roleSession.getRole(alwaysAllowAuthenticationToken, nameSpace4a, commonRoleName);
-            Map<String, Boolean> accessRules = new HashMap<>(role4.accessRules());
-            accessRules.put(StandardRules.ROLE_ROOT.resource(), RoleDataDto.STATE_ALLOW);
-            roleSession.persistRole(alwaysAllowAuthenticationToken, role4.withAccessRules(accessRules));
+            final Role role4 = roleSession.getRole(alwaysAllowAuthenticationToken, nameSpace4a, commonRoleName);
+            role4.getAccessRules().put(StandardRules.ROLE_ROOT.resource(), Role.STATE_ALLOW);
+            roleSession.persistRole(alwaysAllowAuthenticationToken, role4);
             assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken4), Arrays.asList(nameSpace1b, nameSpace2b, nameSpace3b, nameSpace4a),
                     Arrays.asList(nameSpace1a, nameSpace2a, nameSpace3a), true);
             // Revoke additional access from authenticationToken4 and expect that namespace3 will no longer be visible
-            final RoleDataDto role4b = roleSession.getRole(alwaysAllowAuthenticationToken, nameSpace4a, commonRoleName);
-            accessRules = new HashMap<>();
-            accessRules.put(StandardRules.CAACCESS.resource(), RoleDataDto.STATE_ALLOW);
-            roleSession.persistRole(alwaysAllowAuthenticationToken, role4b.withAccessRules(accessRules));
+            final Role role4b = roleSession.getRole(alwaysAllowAuthenticationToken, nameSpace4a, commonRoleName);
+            role4b.getAccessRules().clear();
+            role4b.getAccessRules().put(StandardRules.CAACCESS.resource(), Role.STATE_ALLOW);
+            roleSession.persistRole(alwaysAllowAuthenticationToken, role4b);
             assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken4), Arrays.asList(nameSpace1b, nameSpace2b, nameSpace4a),
                     Arrays.asList(nameSpace1a, nameSpace2a), true);
             // Verify that move from empty namespace4a to non-empty namespace4b will prevent access to other namespaces
@@ -608,18 +586,19 @@ public class RoleSessionBeanSystemTest {
         }
     }
     
-    /** Move a RoleDataDto from one name space to another */
+    /** Move a Role from one name space to another */
     private void reassignRoleToDifferentNameSpace(final String roleName, final String oldNameSpace, final String newNameSpace) throws AuthorizationDeniedException, RoleExistsException {
-        final RoleDataDto role = roleSession.getRole(alwaysAllowAuthenticationToken, oldNameSpace, roleName);
-        roleSession.persistRole(alwaysAllowAuthenticationToken, role.withNameSpace(newNameSpace));
+        final Role role = roleSession.getRole(alwaysAllowAuthenticationToken, oldNameSpace, roleName);
+        role.setNameSpace(newNameSpace);
+        roleSession.persistRole(alwaysAllowAuthenticationToken, role);
     }
 
     /** Add self signed certificate match to a role identified by name and return the persisted RoleMember */
     private RoleMember addRoleMemberToRole(final String nameSpace, final String roleName, final String subjectDn) throws AuthorizationDeniedException {
-        final RoleDataDto role = roleSession.getRole(alwaysAllowAuthenticationToken, nameSpace, roleName);
+        final Role role = roleSession.getRole(alwaysAllowAuthenticationToken, nameSpace, roleName);
         return roleMemberSession.persist(alwaysAllowAuthenticationToken, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                 subjectDn.hashCode(), RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_FULLDN.getNumericValue(),
-                AccessMatchType.TYPE_EQUALCASE.getNumericValue(), subjectDn, role.id(), null));
+                AccessMatchType.TYPE_EQUALCASE.getNumericValue(), subjectDn, role.getRoleId(), null));
         
     }
     

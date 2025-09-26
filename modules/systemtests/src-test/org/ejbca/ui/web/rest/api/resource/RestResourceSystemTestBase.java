@@ -77,10 +77,10 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
-import org.cesecore.dto.RoleDataDto;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.management.RoleInitializationSessionRemote;
@@ -204,7 +204,7 @@ public class RestResourceSystemTestBase {
             SimpleRequestMessage simpleRequestMessage = new SimpleRequestMessage(keyPair.getPublic(), endEntityInformation.getUsername(), endEntityInformation.getPassword());
             final X509ResponseMessage x509ResponseMessage = (X509ResponseMessage) signSession.createCertificate(INTERNAL_ADMIN_TOKEN, simpleRequestMessage, X509ResponseMessage.class, endEntityInformation);
             X_509_CERTIFICATE = (X509Certificate) x509ResponseMessage.getCertificate();
-            final RoleDataDto role = roleSession.getRole(INTERNAL_ADMIN_TOKEN, null, SUPER_ADMINISTRATOR_ROLE_NAME);
+            final Role role = roleSession.getRole(INTERNAL_ADMIN_TOKEN, null, SUPER_ADMINISTRATOR_ROLE_NAME);
             ROLE_MEMBER = roleMemberSession.persist(INTERNAL_ADMIN_TOKEN,
                     new RoleMember(
                             X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
@@ -212,7 +212,7 @@ public class RestResourceSystemTestBase {
                             X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
                             AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
                             CERTIFICATE_USER_NAME,
-                            role.id(),
+                            role.getRoleId(),
                             CERTIFICATE_USER_NAME + " for REST API Tests"
                     )
             );

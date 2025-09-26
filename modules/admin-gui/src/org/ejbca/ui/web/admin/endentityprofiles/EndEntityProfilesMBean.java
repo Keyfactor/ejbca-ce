@@ -46,7 +46,7 @@ import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
-import org.cesecore.dto.RoleDataDto;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleDataSessionLocal;
 import org.cesecore.util.SecureXMLDecoder;
 import org.ejbca.config.GlobalConfiguration;
@@ -268,11 +268,11 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
         }
         final List<String> rolenames = new ArrayList<>();
         final Pattern idInRulename = Pattern.compile("^" + AccessRulesConstants.ENDENTITYPROFILEPREFIX + "(-?[0-9]+)/.*$");
-        for (final RoleDataDto role : roleDataSession.getAllRoles()) {
-            for (final String explicitResource : role.accessRules().keySet()) {
+        for (final Role role : roleDataSession.getAllRoles()) {
+            for (final String explicitResource : role.getAccessRules().keySet()) {
                 final Matcher matcher = idInRulename.matcher(explicitResource);
                 if (matcher.find() && String.valueOf(profileId).equals(matcher.group(1))) {
-                    rolenames.add(role.fullName());
+                    rolenames.add(role.getRoleNameFull());
                     break;
                 }
             }

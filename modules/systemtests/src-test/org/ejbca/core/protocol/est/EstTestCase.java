@@ -86,8 +86,8 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileExistsExce
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.dto.RoleDataDto;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
@@ -480,7 +480,7 @@ public abstract class EstTestCase extends CaTestCase {
         /*
         Only when we need to add the user to a role, which we don't for EST re-enroll
         
-        final RoleDataDto role = roleSession.getRole(ADMIN, null, SUPER_ADMINISTRATOR_ROLE_NAME);
+        final Role role = roleSession.getRole(ADMIN, null, SUPER_ADMINISTRATOR_ROLE_NAME);
         ROLE_MEMBER = roleMemberSession.persist(ADMIN,
                 new RoleMember(
                         X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
@@ -518,7 +518,7 @@ public abstract class EstTestCase extends CaTestCase {
      * @throws AuthorizationDeniedException if unauthorized to modify role
      */
     protected RoleMember addToSuperAdminRole(final int clientCertCaID, final String certCN) throws AuthorizationDeniedException {
-        final RoleDataDto role = roleSession.getRole(ADMIN, null, SUPER_ADMINISTRATOR_ROLE_NAME);
+        final Role role = roleSession.getRole(ADMIN, null, SUPER_ADMINISTRATOR_ROLE_NAME);
         RoleMember member = roleMemberSession.persist(ADMIN,
                 new RoleMember(
                         X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
@@ -526,7 +526,7 @@ public abstract class EstTestCase extends CaTestCase {
                         X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
                         AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
                         certCN,
-                        role.id(),
+                        role.getRoleId(),
                         certCN + " for EST System Tests"
                 )
         );

@@ -15,7 +15,7 @@ package org.cesecore.roles;
 import java.io.Serializable;
 
 /**
- * Container POJO used due to the fact RoleDataDto in certain contexts doesn't survive encoding to JSF
+ * Container POJO used due to the fact RoleData in certain contexts doesn't survive encoding to JSF
  */
 public class RoleInformation implements Serializable {
     private static final long serialVersionUID = 1L;

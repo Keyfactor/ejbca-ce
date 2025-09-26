@@ -30,7 +30,7 @@
         <mapping-file>META-INF/orm-ejbca-${database.name}.xml</mapping-file>
         <class>org.cesecore.authorization.cache.AccessTreeUpdateData</class>
         <class>org.cesecore.roles.member.RoleMemberData</class>
-        <class>org.ejbca.dto.RoleData</class>
+        <class>org.cesecore.roles.RoleData</class>
         <class>org.cesecore.audit.impl.integrityprotected.AuditRecordData</class>
         <class>org.cesecore.certificates.ca.CAData</class>
         <class>org.cesecore.certificates.certificate.CertificateData</class>
@@ -75,7 +75,7 @@
         <mapping-file>META-INF/orm-ejbca-${database.name}.xml</mapping-file>
         <class>org.cesecore.authorization.cache.AccessTreeUpdateData</class>
         <class>org.cesecore.roles.member.RoleMemberData</class>
-        <class>org.ejbca.dto.RoleData</class>
+        <class>org.cesecore.roles.RoleData</class>
         <class>org.cesecore.audit.impl.integrityprotected.AuditRecordData</class>
         <class>org.cesecore.certificates.ca.CAData</class>
         <class>org.cesecore.certificates.certificate.CertificateData</class>

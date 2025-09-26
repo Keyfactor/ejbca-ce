@@ -47,9 +47,9 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.dto.RoleDataDto;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
@@ -322,10 +322,10 @@ public class EjbcaWSNonAdminSystemTest extends CommonEjbcaWs {
 
         File f = BatchCreateTool.createUser(intadmin, new File(P12_FOLDER_NAME), adminusername1);
         fileHandles.addAll(Collections.singletonList(f));
-        final RoleDataDto role = roleSession.getRole(intadmin, null, getRoleName());
+        final Role role = roleSession.getRole(intadmin, null, getRoleName());
         roleMemberSession.persist(intadmin, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                 caid, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(), adminusername1,
-                role.id(), null));
+                role.getRoleId(), null));
 
         admincert1 = (X509Certificate) EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(adminusername1)).iterator().next();
 
@@ -339,9 +339,9 @@ public class EjbcaWSNonAdminSystemTest extends CommonEjbcaWs {
 
     protected void removeApprovalAdmins() throws Exception {
         endEntityManagementSession.deleteUser(intadmin, adminusername1);
-        final RoleDataDto role = roleSession.getRole(intadmin, null, getRoleName());
+        final Role role = roleSession.getRole(intadmin, null, getRoleName());
         if (role!=null) {
-            for (final RoleMember roleMember : roleMemberSession.getRoleMembersByRoleId(intadmin, role.id())) {
+            for (final RoleMember roleMember : roleMemberSession.getRoleMembersByRoleId(intadmin, role.getRoleId())) {
                 if (adminusername1.equals(roleMember.getTokenMatchValue())) {
                     roleMemberSession.remove(intadmin, roleMember.getId());
                 }

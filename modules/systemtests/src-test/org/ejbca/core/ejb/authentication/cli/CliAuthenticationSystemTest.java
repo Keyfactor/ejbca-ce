@@ -19,6 +19,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.security.Principal;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -35,9 +36,8 @@ import org.cesecore.authorization.AuthorizationSessionRemote;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.dto.RoleDataDto;
-import org.cesecore.dto.RoleDataDtoBuilder;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
@@ -82,24 +82,19 @@ public class CliAuthenticationSystemTest {
 
     private final TestAlwaysAllowLocalAuthenticationToken internalToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
             CliAuthenticationProviderSessionRemote.class.getSimpleName()));
-    private int roleId = RoleDataDto.ROLE_ID_UNASSIGNED;
+    private int roleId = Role.ROLE_ID_UNASSIGNED;
 
     @Before
     public void setUp() throws Exception {
-        RoleDataDto oldRole = roleSession.getRole(internalToken, null, CLI_TEST_ROLENAME);
+        Role oldRole = roleSession.getRole(internalToken, null, CLI_TEST_ROLENAME);
         if (oldRole!=null) {
-            roleSession.deleteRoleIdempotent(internalToken, oldRole.id());
+            roleSession.deleteRoleIdempotent(internalToken, oldRole.getRoleId());
         }
-        Map<String, Boolean> accessRules = Map.of(StandardRules.ROLE_ROOT.resource(), RoleDataDto.STATE_ALLOW);
-        RoleDataDto role = new RoleDataDtoBuilder()
-                .setName(CLI_TEST_ROLENAME)
-                .setAccessRules(accessRules)
-                .build();
-        role = roleSession.persistRole(internalToken, role);
+        final Role role = roleSession.persistRole(internalToken, new Role(null, CLI_TEST_ROLENAME, Arrays.asList(StandardRules.ROLE_ROOT.resource()), null));
         roleMemberSession.persist(internalToken, new RoleMember(CliAuthenticationTokenMetaData.TOKEN_TYPE,
                 RoleMember.NO_ISSUER, RoleMember.NO_PROVIDER, CliUserAccessMatchValue.USERNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
-                CliAuthenticationSystemTestHelperSessionRemote.USERNAME, role.id(), null));
-        roleId = role.id();
+                CliAuthenticationSystemTestHelperSessionRemote.USERNAME, role.getRoleId(), null));
+        roleId = role.getRoleId();
     }
 
     @After

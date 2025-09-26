@@ -13,8 +13,12 @@
 
 package org.ejbca.repository.generator;
 
+import org.ejbca.repository.generator.model.Entity;
 import freemarker.template.Configuration;
 import freemarker.template.TemplateExceptionHandler;
+import org.ejbca.repository.generator.model.Field;
+import org.ejbca.repository.generator.util.JsonUtil;
+import org.ejbca.repository.generator.util.StringUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,7 +26,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
-import java.nio.file.Files;
 import java.util.TimeZone;
 import java.util.stream.Stream;
 
@@ -43,47 +46,37 @@ public class Main {
         return new File(outputDir, packageName.replaceAll("\\.", File.separator));
     }
 
-    private static String firstUpperCase(String s) {
-        return s.substring(0, 1).toUpperCase() + s.substring(1);
-    }
-
-    private static void doGenerateFile(Configuration configuration, File dir, String templateName, Entity entity, boolean force) throws Exception {
+    private static void doGenerateFile(Configuration configuration, File dir, String templateName, Entity entity) throws Exception {
         String filename = templateName
-                .replace("dto", firstUpperCase(entity.getName()))
+                .replace("dto", StringUtil.firstUpperCase(entity.getName()))
                 .replace("ftl", "java");
         File file = new File(dir, filename);
-        if (force || !file.exists()) {
+        if (!file.exists()) {
             file.getParentFile().mkdirs();
             Writer out = new FileWriter(file);
             configuration.getTemplate(templateName).process(entity, out);
         }
     }
 
-    private static String getSrcDirName(final boolean test, final String templateName) {
-        if (test) {
-            return "modules/ejbca-repository/src-test";
-        }
-        else {
-            if (templateName.contains("Dto")) {
-                return "modules/cesecore-entity/src";
-            }
-            else {
+    private static String getSrcDirName(final boolean production, final String templateName) {
+        if (production) {
+            if (templateName.toLowerCase().contains("bean")) {
                 return "modules/ejbca-entity/src";
             }
+            else {
+                return "modules/ejbca-ejb-interface/src";
+            }
+        }
+        else {
+            return "modules/ejbca-repository/src-test";
         }
     }
 
-    private static void generateFiles(Configuration configuration, File rootDir, boolean test, String[] templateNames, Entity entity, boolean force) throws Exception {
+    private static void generateFiles(Configuration configuration, File rootDir, boolean production, String[] templateNames, Entity entity) throws Exception {
         for (String templateName : templateNames) {
-            File srcDir = new File(rootDir, getSrcDirName(test, templateName));
-            if (test || templateName.contains("Dto")) {
-                entity.setPackageName("org.cesecore");
-            }
-            else {
-                entity.setPackageName("org.ejbca");
-            }
+            File srcDir = new File(rootDir, getSrcDirName(production, templateName));
             File dir = getDir(srcDir, entity.getPackageName()+".dto");
-            doGenerateFile(configuration, dir, templateName, entity, force);
+            doGenerateFile(configuration, dir, templateName, entity);
         }
     }
 
@@ -134,82 +127,41 @@ public class Main {
         return getRootDir(new File(".").getCanonicalFile());
     }
 
-    private static Entity parseJson(final String dtoName, final InputStream inputStream, boolean test) {
+    private static Field getField(final String javaName, final String javaType) {
+        final var field = new Field();
+        field.setJavaName(javaName);
+        field.setJavaType(javaType);
+        return field;
+    }
+
+    private static Entity parseJson(final String dtoName, final InputStream inputStream, boolean production) {
         Entity entity = JsonUtil.parseJson(inputStream, Entity.class);
+        entity.setPackageName("org.ejbca");
         entity.setName(dtoName);
-        entity.setTest(test);
-        if (entity.getIndexNames() == null) {
-            entity.setIndexNames(new String[0]);
-        }
+        entity.setProduction(production);
         return entity;
     }
 
-    private static void updateOrmMappingFile(final File file, final Entity entity) throws IOException {
-        final var content = Files.readString(file.toPath()).replace(
-                "org.cesecore.certificates.ca."+entity.getName(),
-                entity.getPackageName()+".dto."+entity.getName());
-        Files.write(file.toPath(), content.getBytes());
-    }
-
-    private static void updateOrmMappingFiles(final File rootDir, final Entity entity) throws IOException {
-        final var dir = new File(rootDir, "modules/ejbca-entity/resources");
-        final var files = dir.listFiles(file ->
-                file.getName().startsWith("orm-ejbca") && file.getName().endsWith(".xml"));
-        for (File file : files) {
-            updateOrmMappingFile(file, entity);
-        }
-    }
-
-    private static void doMain(File rootDir, boolean test, String entityName, boolean force) throws Exception {
-        final String nameSuffix = test ? "-test" : "";
+    private static void doMain(File rootDir, boolean production) throws Exception {
+        final String nameSuffix = production ? "" : "-test";
         final File templatesDir = new File(rootDir, "modules/ejbca-repository/templates");
         final String[] templateNames = templatesDir.list();
-        final String jsonFileName = "modules/ejbca-repository/resources" + nameSuffix + "/" + entityName + ".json";
-        final File jsonFile = new File(rootDir, jsonFileName);
-        if (!jsonFile.isFile()) {
-            throw new IllegalArgumentException("Cannot find the file: " + jsonFile.getCanonicalPath());
-        }
+        File resourcesDir = new File(rootDir, "modules/ejbca-repository/resources" + nameSuffix);
+        File[] jsonFiles = resourcesDir.listFiles((dir, name) -> name.endsWith(".json"));
         Configuration configuration = getTemplateConfiguration(templatesDir);
-        try (FileInputStream fileInputStream = getFileInputStream(jsonFile)) {
-            final var name = jsonFile.getName().replace(".json", "");
-            final var entity = parseJson(name, fileInputStream, test);
-            generateFiles(configuration, rootDir, test, templateNames, entity, force);
-            if (!test) {
-                updateOrmMappingFiles(rootDir, entity);
+        for (File jsonFile : jsonFiles) {
+            try (FileInputStream fileInputStream = getFileInputStream(jsonFile)) {
+                final var name = jsonFile.getName().replace(".json", "");
+                final var entity = parseJson(name, fileInputStream, production);
+                generateFiles(configuration, rootDir, production, templateNames, entity);
             }
         }
-    }
-
-    private static boolean isArgument(final String[] args, final String name) {
-        for (String arg : args) {
-            if (arg.equals(name)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static String getArgument(final String[] args, final String name) throws Exception{
-        for (int i = 0; i < args.length-1; i++) {
-            if (args[i].equals(name)) {
-                return args[i+1];
-            }
-        }
-        throw new Exception("Argument " + name + " not found");
     }
 
     public static void main(String[] args) throws Exception {
-        final String entityName = getArgument(args, "--entityName");
-        final boolean test = isArgument(args, "--test");
-        final boolean force = isArgument(args, "--force");
         final var rootDir = getRootDir();
-        try {
-            doMain(rootDir, test, entityName, force);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-            throw e;
-        }
+        doMain(rootDir, false);
+        doMain(rootDir, true);
     }
 
 }

@@ -32,7 +32,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
-import org.cesecore.dto.RoleDataDto;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
@@ -91,7 +91,7 @@ public class AddRoleMemberCommand extends BaseRolesCommand {
     public CommandResult execute(ParameterContainer parameters) {
         final String roleName = parameters.get(ROLE_NAME_KEY);
         final String namespace = parameters.get(ROLE_NAMESPACE_KEY);
-        final RoleDataDto role;
+        final Role role;
         try {
             role = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).getRole(getAuthenticationToken(), namespace, roleName);
         } catch (AuthorizationDeniedException e) {
@@ -188,9 +188,9 @@ public class AddRoleMemberCommand extends BaseRolesCommand {
         } else {
            matchValue = parameters.get(MATCH_VALUE_KEY);
         }  
-
+                
         final RoleMember roleMember = new RoleMember(tokenType, tokenIssuerId, tokenProviderId, accessMatchValue.getNumericValue(), accessMatchType.getNumericValue(),
-                matchValue , role.id(), description);
+                matchValue , role.getRoleId(), description);
         try {
             final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
             if (roleMemberExists(roleMember, roleMemberSession)) {
@@ -222,12 +222,12 @@ public class AddRoleMemberCommand extends BaseRolesCommand {
     public String getFullHelpText() {
         final StringBuilder sb = new StringBuilder();
         sb.append(getCommandDescription() + ".\n");
-        final List<RoleDataDto> roleDataList = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).getAuthorizedRoles(getAuthenticationToken());
-        Collections.sort(roleDataList);
+        final List<Role> roles = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).getAuthorizedRoles(getAuthenticationToken());
+        Collections.sort(roles);
         String availableRoles = "";
-        for (final RoleDataDto roleData : roleDataList) {
+        for (final Role role : roles) {
             availableRoles += availableRoles.length() == 0 ? "" : ", ";
-            availableRoles += "'" + super.getFullRoleName(roleData.nameSpace(), roleData.name()) + "'";
+            availableRoles += "'" + super.getFullRoleName(role.getNameSpace(), role.getRoleName()) + "'";
         }
         sb.append("\nAvailable Roles: " + availableRoles + "\n");
         String availableCas = "";

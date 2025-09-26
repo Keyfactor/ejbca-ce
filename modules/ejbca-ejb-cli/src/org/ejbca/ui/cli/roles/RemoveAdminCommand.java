@@ -23,7 +23,7 @@ import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.dto.RoleDataDto;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
@@ -73,7 +73,7 @@ public class RemoveAdminCommand extends BaseRolesCommand {
     public CommandResult execute(ParameterContainer parameters) {
         final String roleName = parameters.get(ROLE_NAME_KEY);
         final String namespace = parameters.get(ROLE_NAMESPACE_KEY);
-        final RoleDataDto role;
+        final Role role;
         try {
             role = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).getRole(getAuthenticationToken(), namespace, roleName);
         } catch (AuthorizationDeniedException e) {
@@ -153,7 +153,7 @@ public class RemoveAdminCommand extends BaseRolesCommand {
         final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
         try {
             boolean foundMatch = false;
-            for (final RoleMember roleMember : roleMemberSession.getRoleMembersByRoleId(getAuthenticationToken(), role.id())) {
+            for (final RoleMember roleMember : roleMemberSession.getRoleMembersByRoleId(getAuthenticationToken(), role.getRoleId())) {
                 if (tokenType.equals(roleMember.getTokenType()) &&
                         tokenIssuerId == roleMember.getTokenIssuerId() &&
                         accessMatchValue.getNumericValue()==roleMember.getTokenMatchKey() &&

@@ -31,9 +31,8 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.cesecore.dto.RoleDataDto;
-import org.cesecore.dto.RoleDataDtoBuilder;
-import org.junit.Before;
+import org.cesecore.roles.Role;
+import org.cesecore.roles.RoleData;
 import org.junit.Test;
 
 /**
@@ -50,32 +49,25 @@ public class DynamicUiPropertyUnitTest {
     private static final Logger log = Logger.getLogger(DynamicUiPropertyUnitTest.class);
     
     final static private String roleName = "anybody";
-
-    private RoleDataDto anybody;
-
-    @Before
-    public void setUp() throws Exception {
-        anybody = new RoleDataDtoBuilder()
-                .setName(roleName)
-                .build();
-    }
-
+    
     @Test
     public void testEncodingAndDecodingOfComplexType() throws PropertyValidationException {
-        DynamicUiProperty<RoleDataDto> roleProperty = new DynamicUiProperty<>("test",
+        RoleData anybody = new RoleData(new Role(null, roleName));
+        DynamicUiProperty<RoleData> roleProperty = new DynamicUiProperty<>("test",
                 anybody, new HashSet<>(Collections.singletonList(anybody)));
         roleProperty.setHasMultipleValues(true);
         List<String> encodedValues = roleProperty.getEncodedValues();  
-        DynamicUiProperty<RoleDataDto> rolePropertyCopy = new DynamicUiProperty<>("test",
-                anybody, new HashSet<>());
+        DynamicUiProperty<RoleData> rolePropertyCopy = new DynamicUiProperty<>("test",
+                anybody, new HashSet<RoleData>());
         rolePropertyCopy.setHasMultipleValues(true);
         rolePropertyCopy.setEncodedValues(encodedValues);
-        assertTrue("RoleDataDto object didn't survive encodement/decodement", rolePropertyCopy.getValues().contains(anybody));
+        assertTrue("RoleData object didn't survive encodement/decodement", rolePropertyCopy.getValues().contains(anybody));
     }
 
     @Test
     public void testConstructors() {
-        DynamicUiProperty<RoleDataDto> property = new DynamicUiProperty<>("someproperty", anybody);
+        final RoleData anybody = new RoleData(new Role(null, roleName));
+        DynamicUiProperty<RoleData> property = new DynamicUiProperty<>("someproperty", anybody);
         checkPropertyState(property, "constructor with default value");
 
         property = new DynamicUiProperty<>(property);
@@ -84,19 +76,20 @@ public class DynamicUiPropertyUnitTest {
 
     @Test
     public void testSetValue() throws PropertyValidationException {
-        DynamicUiProperty<RoleDataDto> property = new DynamicUiProperty<>();
-        property.setType(RoleDataDto.class);
+        final RoleData anybody = new RoleData(new Role(null, roleName));
+        DynamicUiProperty<RoleData> property = new DynamicUiProperty<>();
+        property.setType(RoleData.class);
         property.setValue(anybody);
         checkPropertyState(property, "setValue(something)");
         assertEquals(anybody, property.getValue());
         property.setValue(null);
         checkPropertyState(property, "setValue(null)");
-        property.setEncodedValue(new DynamicUiProperty<RoleDataDto>().getAsEncodedValue(anybody));
+        property.setEncodedValue(new DynamicUiProperty<RoleData>().getAsEncodedValue(anybody));
         checkPropertyState(property, "setEncodedValue(something)");
         assertEquals(anybody, property.getValue());
     }
 
-    private void checkPropertyState(final DynamicUiProperty<RoleDataDto> property, final String step) {
+    private void checkPropertyState(final DynamicUiProperty<RoleData> property, final String step) {
         property.getValue(); // Make sure we can get the value
         try {
             property.getValues();

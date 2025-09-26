@@ -214,8 +214,7 @@ public class RoleMemberDataSessionBean implements RoleMemberDataSessionLocal, Ro
             query = entityManager.createQuery("SELECT a FROM RoleMemberData a WHERE a.tokenType=:tokenType AND a.roleId<>0", RoleMemberData.class)
                     .setParameter("tokenType", tokenType);
             }
-            final var resultList = query.getResultList();
-            for (RoleMemberData roleMemberData : resultList) {
+            for (RoleMemberData roleMemberData : query.getResultList()) {
                 result.add(roleMemberData.asValueObject());
             }
             if (!result.isEmpty()) {
@@ -230,16 +229,15 @@ public class RoleMemberDataSessionBean implements RoleMemberDataSessionLocal, Ro
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public Set<Integer> getRoleIdsMatchingAuthenticationTokenOrFail(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
-        final Set<Integer> roleIds = new HashSet<>();
+        final Set<Integer> ret = new HashSet<>();
         if (authenticationToken!=null) {
-            final List<RoleMember> roleMembers = getRoleMembersForAuthenticationToken(authenticationToken);
-            for (final RoleMember roleMemberData : roleMembers) {
+            for (final RoleMember roleMemberData : getRoleMembersForAuthenticationToken(authenticationToken)) {
                 if (authenticationToken.matches(convertToAccessUserAspect(roleMemberData))) {
-                    roleIds.add(roleMemberData.getRoleId());
+                    ret.add(roleMemberData.getRoleId());
                 }
             }
         }
-        return roleIds;
+        return ret;
     }
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)

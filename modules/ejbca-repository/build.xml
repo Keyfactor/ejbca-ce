@@ -36,10 +36,6 @@
 		<path refid="lib.junit.classpath"/>
 		<path location="${ejbca-repository.build.dir}"/>
 		<path location="${ejbca-repository.build-test.dir}"/>
-        <fileset dir="${ejbca.home}/lib/ext/test">
-            <include name="mockito-core-*.jar"/>
-            <include name="byte-buddy*.jar"/>
-        </fileset>
 	</path>
 
 	<path id="compile.classpath">
@@ -49,10 +45,8 @@
 		<path refid="lib.bouncycastle.classpath"/>
 		<path refid="lib.cryptotokens.classpath"/>
 		<path refid="lib.xmlpull.classpath"/>
-		<path location="${ejbca.home}/modules/dist/cesecore-common.jar"/>
-        <path location="${ejbca.home}/modules/dist/cesecore-entity.jar"/>
-        <path location="${ejbca.home}/modules/dist/ejbca-entity.jar"/>
-        <path location="${mod.cesecore-common.lib}"/>
+		<path location="${ejbca.home}/dist/cesecore-common.jar"/>
+		<path location="${mod.cesecore-common.lib}"/>
 		<fileset dir="${ejbca.home}/lib">
 			<include name="freemarker-*.jar"/>
 			<include name="log4j-*.jar"/>
@@ -76,10 +70,6 @@
 		<path refid="lib.junit.classpath"/>
 		<path location="${mod.ejbca-repository.lib}" />
 		<path location="${ejbca-repository.build-test.dir}" />
-        <fileset dir="${ejbca.home}/lib/ext/test">
-            <include name="mockito-core-*.jar"/>
-            <include name="byte-buddy*.jar"/>
-        </fileset>
 	</path>
 
     <target name="clean" description="Clean up this module">

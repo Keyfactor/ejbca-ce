@@ -33,7 +33,7 @@
                     </h1>
                     <h2>
                         <h:outputText id="titleRole"
-                                      value="#{web.text.ADMINROLE} : #{empty accessRulesBean.role.nameSpace() ? '' : '['.concat(accessRulesBean.role.nameSpace()).concat('] ')}#{accessRulesBean.role.name()}"
+                                      value="#{web.text.ADMINROLE} : #{empty accessRulesBean.role.nameSpace ? '' : '['.concat(accessRulesBean.role.nameSpace).concat('] ')}#{accessRulesBean.role.roleName}"
                                       rendered="#{not empty accessRulesBean.role}"/>
                     </h2>
                 </h:panelGroup>
@@ -42,18 +42,18 @@
                         <h:outputText value="#{web.text.BACKTOROLES}"/>
                     </h:outputLink>
                     <h:outputLink id="viewMembers" value="rolemembers.xhtml" rendered="#{not empty accessRulesBean.role}">
-                        <f:param name="roleId" value="#{accessRulesBean.role.id()}"/>
+                        <f:param name="roleId" value="#{accessRulesBean.role.roleId}"/>
                         <h:outputText value="#{web.text.ROLEMEMBERS}" rendered="#{accessRulesBean.authorizedToEditRole}"/>
                         <h:outputText value="#{web.text.VIEWROLEMEMBERS}" rendered="#{!accessRulesBean.authorizedToEditRole}"/>
                     </h:outputLink>
                     <h:outputLink id="viewModeSwitchBasicOrAdvanced" value="accessrules.xhtml" rendered="#{not empty accessRulesBean.role}">
-                        <f:param name="roleId" value="#{accessRulesBean.role.id()}"/>
+                        <f:param name="roleId" value="#{accessRulesBean.role.roleId}"/>
                         <f:param name="advanced" value="#{!accessRulesBean.advancedMode}" disable="#{accessRulesBean.advancedMode}"/>
                         <h:outputText value="#{web.text.BASICMODE}" rendered="#{accessRulesBean.advancedMode}"/>
                         <h:outputText value="#{web.text.ADVANCEDMODE}" rendered="#{!accessRulesBean.advancedMode}"/>
                     </h:outputLink>
                     <h:outputLink id="viewModeSwitchConfigOrSummary" value="accessrules.xhtml" rendered="#{not empty accessRulesBean.role and accessRulesBean.advancedMode}">
-                        <f:param name="roleId" value="#{accessRulesBean.role.id()}"/>
+                        <f:param name="roleId" value="#{accessRulesBean.role.roleId}"/>
                         <f:param name="advanced" value="#{accessRulesBean.advancedMode}"/>
                         <f:param name="summary" value="#{!accessRulesBean.advancedModeSummary}"/>
                         <h:outputText value="#{web.text.ACCESSRULES_LINK_CONFIG}" rendered="#{accessRulesBean.advancedModeSummary}"/>

@@ -20,7 +20,6 @@ import java.security.Principal;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Objects;
 
 import javax.security.auth.x500.X500Principal;
 
@@ -32,10 +31,9 @@ import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMeta
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
-import org.cesecore.dto.RoleDataDto;
-import org.cesecore.dto.RoleDataDtoBuilder;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
@@ -70,14 +68,6 @@ public class AuthorizationSessionBeanSystemTest {
         assertTrue(authorizationSession.isAuthorized(alwaysAllowAuthenticationToken, "/a", "/b"));
     }
 
-    private RoleDataDto getRoleData(final String nameSpace, final String name, final HashMap<String,Boolean> accessRules) {
-        return new RoleDataDtoBuilder()
-                .setNameSpace(nameSpace)
-                .setName(name)
-                .setAccessRules(accessRules)
-                .build();
-    }
-
     @Test
     public void testIsAuthorizedSingleRole() throws RoleExistsException, AuthorizationDeniedException {
         // Let's set up a role and a nice resource tree to play with.
@@ -85,22 +75,22 @@ public class AuthorizationSessionBeanSystemTest {
         final String roleName = "testIsAuthorizedSingleRole";
         try {
             final HashMap<String,Boolean> accessRules = new HashMap<>();
-            accessRules.put("/accept", RoleDataDto.STATE_ALLOW);
-            accessRules.put("/decline", RoleDataDto.STATE_DENY);
-            accessRules.put("/acceptRecursive", RoleDataDto.STATE_ALLOW);
-            accessRules.put("/acceptRecursive/accept", RoleDataDto.STATE_ALLOW);
-            accessRules.put("/acceptRecursive/decline", RoleDataDto.STATE_DENY);
-            accessRules.put("/accept/accept", RoleDataDto.STATE_ALLOW);
-            accessRules.put("/accept/decline", RoleDataDto.STATE_DENY);
-            accessRules.put("/somerule/accept", RoleDataDto.STATE_ALLOW);
-            accessRules.put("/somerule/decline", RoleDataDto.STATE_DENY);
-            final RoleDataDto role = roleSession.persistRole(alwaysAllowAuthenticationToken, getRoleData(nameSpace, roleName, accessRules));
+            accessRules.put("/accept", Role.STATE_ALLOW);
+            accessRules.put("/decline", Role.STATE_DENY);
+            accessRules.put("/acceptRecursive", Role.STATE_ALLOW);
+            accessRules.put("/acceptRecursive/accept", Role.STATE_ALLOW);
+            accessRules.put("/acceptRecursive/decline", Role.STATE_DENY);
+            accessRules.put("/accept/accept", Role.STATE_ALLOW);
+            accessRules.put("/accept/decline", Role.STATE_DENY);
+            accessRules.put("/somerule/accept", Role.STATE_ALLOW);
+            accessRules.put("/somerule/decline", Role.STATE_DENY);
+            final Role role = roleSession.persistRole(alwaysAllowAuthenticationToken, new Role(nameSpace, roleName, accessRules));
             final String commonName = roleName;
             final String subjectAndIssuerDn = "CN="+commonName;
             final int caId = subjectAndIssuerDn.hashCode();
             final int roleMemberId = roleMemberProxySession.createOrEdit(new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                     caId, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
-                    AccessMatchType.TYPE_EQUALCASE.getNumericValue(), commonName, role.id(), null));
+                    AccessMatchType.TYPE_EQUALCASE.getNumericValue(), commonName, role.getRoleId(), null));
             assertEquals(caId, roleMemberProxySession.findRoleMember(roleMemberId).getTokenIssuerId());
             final AuthenticationToken authenticationToken = createAuthenticationToken("CN="+commonName);
             assertFalse(authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.ROLE_ROOT.resource()));
@@ -142,34 +132,34 @@ public class AuthorizationSessionBeanSystemTest {
         final String roleName2 = commonName + "2";
         try {
             final HashMap<String,Boolean> accessRules1 = new HashMap<>();
-            accessRules1.put("/allowInFirst", RoleDataDto.STATE_ALLOW);
-            accessRules1.put("/denyInFirst", RoleDataDto.STATE_DENY);
-            accessRules1.put("/allowInBoth", RoleDataDto.STATE_ALLOW);
-            accessRules1.put("/allowInBoth/allowInFirst", RoleDataDto.STATE_ALLOW);
-            accessRules1.put("/allowInBoth/denyInFirst", RoleDataDto.STATE_DENY);
-            accessRules1.put("/allowInFirst/allowInFirst", RoleDataDto.STATE_ALLOW);
-            accessRules1.put("/allowInFirst/denyInFirst", RoleDataDto.STATE_DENY);
-            accessRules1.put("/somerule/allowInFirst", RoleDataDto.STATE_ALLOW);
-            accessRules1.put("/somerule/denyInFirst", RoleDataDto.STATE_DENY);
-            final RoleDataDto role1 = roleSession.persistRole(alwaysAllowAuthenticationToken, getRoleData(nameSpace, roleName1, accessRules1));
+            accessRules1.put("/allowInFirst", Role.STATE_ALLOW);
+            accessRules1.put("/denyInFirst", Role.STATE_DENY);
+            accessRules1.put("/allowInBoth", Role.STATE_ALLOW);
+            accessRules1.put("/allowInBoth/allowInFirst", Role.STATE_ALLOW);
+            accessRules1.put("/allowInBoth/denyInFirst", Role.STATE_DENY);
+            accessRules1.put("/allowInFirst/allowInFirst", Role.STATE_ALLOW);
+            accessRules1.put("/allowInFirst/denyInFirst", Role.STATE_DENY);
+            accessRules1.put("/somerule/allowInFirst", Role.STATE_ALLOW);
+            accessRules1.put("/somerule/denyInFirst", Role.STATE_DENY);
+            final Role role1 = roleSession.persistRole(alwaysAllowAuthenticationToken, new Role(nameSpace, roleName1, accessRules1));
             final HashMap<String,Boolean> accessRules2 = new HashMap<>();
-            accessRules2.put("/allowInBoth", RoleDataDto.STATE_ALLOW);
-            accessRules2.put("/allowInBoth/allowInFirst", RoleDataDto.STATE_DENY);
-            accessRules2.put("/allowInBoth/denyInFirst", RoleDataDto.STATE_DENY);
-            accessRules2.put("/allowInFirst/allowInFirst", RoleDataDto.STATE_DENY);
-            accessRules2.put("/allowInFirst/denyInFirst", RoleDataDto.STATE_ALLOW);
-            accessRules2.put("/somerule/allowInFirst", RoleDataDto.STATE_DENY);
-            accessRules2.put("/somerule/denyInFirst", RoleDataDto.STATE_DENY);
-            final RoleDataDto role2 = roleSession.persistRole(alwaysAllowAuthenticationToken, getRoleData(nameSpace, roleName2, accessRules2));
+            accessRules2.put("/allowInBoth", Role.STATE_ALLOW);
+            accessRules2.put("/allowInBoth/allowInFirst", Role.STATE_DENY);
+            accessRules2.put("/allowInBoth/denyInFirst", Role.STATE_DENY);
+            accessRules2.put("/allowInFirst/allowInFirst", Role.STATE_DENY);
+            accessRules2.put("/allowInFirst/denyInFirst", Role.STATE_ALLOW);
+            accessRules2.put("/somerule/allowInFirst", Role.STATE_DENY);
+            accessRules2.put("/somerule/denyInFirst", Role.STATE_DENY);
+            final Role role2 = roleSession.persistRole(alwaysAllowAuthenticationToken, new Role(nameSpace, roleName2, accessRules2));
             final String subjectAndIssuerDn = "CN="+commonName;
             final int caId = subjectAndIssuerDn.hashCode();
             final int roleMemberId1 = roleMemberProxySession.createOrEdit(new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                     caId, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
-                    AccessMatchType.TYPE_EQUALCASE.getNumericValue(), commonName, role1.id(), null));
+                    AccessMatchType.TYPE_EQUALCASE.getNumericValue(), commonName, role1.getRoleId(), null));
             assertEquals(caId, roleMemberProxySession.findRoleMember(roleMemberId1).getTokenIssuerId());
             final int roleMemberId2 = roleMemberProxySession.createOrEdit(new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                     caId, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
-                    AccessMatchType.TYPE_EQUALCASE.getNumericValue(), commonName, role2.id(), null));
+                    AccessMatchType.TYPE_EQUALCASE.getNumericValue(), commonName, role2.getRoleId(), null));
             assertEquals(caId, roleMemberProxySession.findRoleMember(roleMemberId2).getTokenIssuerId());
             assertFalse(roleMemberId1==roleMemberId2);
             final AuthenticationToken authenticationToken = createAuthenticationToken(subjectAndIssuerDn);
@@ -214,37 +204,37 @@ public class AuthorizationSessionBeanSystemTest {
         final String roleName2 = commonName2;
         try {
             final HashMap<String,Boolean> accessRules1 = new HashMap<>();
-            accessRules1.put("/allowInFirst", RoleDataDto.STATE_ALLOW);
-            accessRules1.put("/denyInFirst", RoleDataDto.STATE_DENY);
-            accessRules1.put("/allowInBoth", RoleDataDto.STATE_ALLOW);
-            accessRules1.put("/allowInBoth/allowInFirst", RoleDataDto.STATE_ALLOW);
-            accessRules1.put("/allowInBoth/denyInFirst", RoleDataDto.STATE_DENY);
-            accessRules1.put("/allowInFirst/allowInFirst", RoleDataDto.STATE_ALLOW);
-            accessRules1.put("/allowInFirst/denyInFirst", RoleDataDto.STATE_DENY);
-            accessRules1.put("/somerule/accept", RoleDataDto.STATE_ALLOW);
-            accessRules1.put("/somerule/denyInFirst", RoleDataDto.STATE_DENY);
-            final RoleDataDto role1 = roleSession.persistRole(alwaysAllowAuthenticationToken, getRoleData(nameSpace, roleName1, accessRules1));
+            accessRules1.put("/allowInFirst", Role.STATE_ALLOW);
+            accessRules1.put("/denyInFirst", Role.STATE_DENY);
+            accessRules1.put("/allowInBoth", Role.STATE_ALLOW);
+            accessRules1.put("/allowInBoth/allowInFirst", Role.STATE_ALLOW);
+            accessRules1.put("/allowInBoth/denyInFirst", Role.STATE_DENY);
+            accessRules1.put("/allowInFirst/allowInFirst", Role.STATE_ALLOW);
+            accessRules1.put("/allowInFirst/denyInFirst", Role.STATE_DENY);
+            accessRules1.put("/somerule/accept", Role.STATE_ALLOW);
+            accessRules1.put("/somerule/denyInFirst", Role.STATE_DENY);
+            final Role role1 = roleSession.persistRole(alwaysAllowAuthenticationToken, new Role(nameSpace, roleName1, accessRules1));
             final HashMap<String,Boolean> accessRules2 = new HashMap<>();
-            accessRules2.put("/allowInBoth", RoleDataDto.STATE_ALLOW);
-            accessRules2.put("/allowInBoth/allowInFirst", RoleDataDto.STATE_DENY);
-            accessRules2.put("/allowInBoth/denyInFirst", RoleDataDto.STATE_DENY);
-            accessRules2.put("/allowInFirst/allowInFirst", RoleDataDto.STATE_DENY);
-            accessRules2.put("/allowInFirst/denyInFirst", RoleDataDto.STATE_ALLOW);
-            accessRules2.put("/somerule/allowInFirst", RoleDataDto.STATE_DENY);
-            accessRules2.put("/somerule/denyInFirst", RoleDataDto.STATE_DENY);
-            final RoleDataDto role2 = roleSession.persistRole(alwaysAllowAuthenticationToken, getRoleData(nameSpace, roleName2, accessRules2));
-            assertFalse(Objects.equals(role1.id(), role2.id()));
+            accessRules2.put("/allowInBoth", Role.STATE_ALLOW);
+            accessRules2.put("/allowInBoth/allowInFirst", Role.STATE_DENY);
+            accessRules2.put("/allowInBoth/denyInFirst", Role.STATE_DENY);
+            accessRules2.put("/allowInFirst/allowInFirst", Role.STATE_DENY);
+            accessRules2.put("/allowInFirst/denyInFirst", Role.STATE_ALLOW);
+            accessRules2.put("/somerule/allowInFirst", Role.STATE_DENY);
+            accessRules2.put("/somerule/denyInFirst", Role.STATE_DENY);
+            final Role role2 = roleSession.persistRole(alwaysAllowAuthenticationToken, new Role(nameSpace, roleName2, accessRules2));
+            assertFalse(role1.getRoleId()==role2.getRoleId());
             final String subjectAndIssuerDn = "CN="+commonName1;
             final int caId = subjectAndIssuerDn.hashCode();
             final int roleMemberId1 = roleMemberProxySession.createOrEdit(new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                     caId, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
-                    AccessMatchType.TYPE_EQUALCASE.getNumericValue(), commonName1, role1.id(), null));
+                    AccessMatchType.TYPE_EQUALCASE.getNumericValue(), commonName1, role1.getRoleId(), null));
             assertEquals(caId, roleMemberProxySession.findRoleMember(roleMemberId1).getTokenIssuerId());
             final String subjectAndIssuerDn2 = "CN="+commonName2;
             final int caId2 = subjectAndIssuerDn2.hashCode();
             final int roleMemberId2 = roleMemberProxySession.createOrEdit(new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                     caId2, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
-                    AccessMatchType.TYPE_EQUALCASE.getNumericValue(), commonName2, role2.id(), null));
+                    AccessMatchType.TYPE_EQUALCASE.getNumericValue(), commonName2, role2.getRoleId(), null));
             assertEquals(caId2, roleMemberProxySession.findRoleMember(roleMemberId2).getTokenIssuerId());
             assertFalse(roleMemberId1==roleMemberId2);
             final AuthenticationToken authenticationToken = createAuthenticationToken("CN="+commonName1);
@@ -284,9 +274,9 @@ public class AuthorizationSessionBeanSystemTest {
     
     private void cleanUpRole(final String nameSpace, final String roleName) throws AuthorizationDeniedException {
         final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("cleanUpRole"));
-        final RoleDataDto role = roleSession.getRole(authenticationToken, nameSpace, roleName);
+        final Role role = roleSession.getRole(authenticationToken, nameSpace, roleName);
         if (role!=null) {
-            roleSession.deleteRoleIdempotent(authenticationToken, role.id());
+            roleSession.deleteRoleIdempotent(authenticationToken, role.getRoleId());
         }
     }
 

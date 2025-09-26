@@ -34,12 +34,11 @@ import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMeta
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
-import org.cesecore.dto.RoleDataDto;
-import org.cesecore.dto.RoleDataDtoBuilder;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.UsernameBasedAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.UsernameBasedAuthenticationTokenMetaData;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
@@ -98,21 +97,15 @@ public class RoleMemberDataSessionSystemTest {
         }
         log.debug("<testCrudOperations");
     }
-
-    private RoleDataDto getRoleData(final String name) {
-        return new RoleDataDtoBuilder()
-                .setName(name)
-                .build();
-    }
-
+    
     /**
      * Tests that optimized lookup of "preferred" match values is working (e.g. serial number for X.509 authentication tokens, and user name for CLI)
      */
     @Test
     public void testPreferredMatchValues() throws RoleExistsException, AuthorizationDeniedException, AuthenticationFailedException, InvalidAlgorithmParameterException, OperatorCreationException, CertificateException, CertIOException {
         log.debug(">testPreferredMatchValues");
-        final RoleDataDto role1 = roleSession.persistRole(alwaysAllowAuthenticationToken, getRoleData(TEST_ROLE_NAME + "1"));
-        final RoleDataDto role2 = roleSession.persistRole(alwaysAllowAuthenticationToken, getRoleData(TEST_ROLE_NAME + "2"));
+        final Role role1 = roleSession.persistRole(alwaysAllowAuthenticationToken, new Role(null, TEST_ROLE_NAME + "1"));
+        final Role role2 = roleSession.persistRole(alwaysAllowAuthenticationToken, new Role(null, TEST_ROLE_NAME + "2"));
         try {
             // Create certificates with the serial numbers
             KeyPair kp = KeyTools.genKeys("1024", "RSA");
@@ -149,26 +142,26 @@ public class RoleMemberDataSessionSystemTest {
             createRoleMember(role1, UsernameBasedAuthenticationTokenMetaData.TOKEN_TYPE, RoleMember.NO_ISSUER, 0, "seconduser");
             createRoleMember(role2, UsernameBasedAuthenticationTokenMetaData.TOKEN_TYPE, RoleMember.NO_ISSUER, 0, "thirduser"); // "thirduser" matches role 2
             // Test
-            final Set<Integer> role1IdSet = new HashSet<>(Arrays.asList(role1.id()));
-            final Set<Integer> role2IdSet = new HashSet<>(Arrays.asList(role2.id()));
-            final Set<Integer> role12IdSet = new HashSet<>(Arrays.asList(role1.id(), role2.id()));
+            final Set<Integer> role1IdSet = new HashSet<>(Arrays.asList(role1.getRoleId()));
+            final Set<Integer> role2IdSet = new HashSet<>(Arrays.asList(role2.getRoleId()));
+            final Set<Integer> role12IdSet = new HashSet<>(Arrays.asList(role1.getRoleId(), role2.getRoleId()));
             assertEquals(role1IdSet, roleMemberProxySession.getRoleIdsMatchingAuthenticationTokenOrFail(new UsernameBasedAuthenticationToken(new UsernamePrincipal("firstuser"))));
             assertEquals(role1IdSet, roleMemberProxySession.getRoleIdsMatchingAuthenticationTokenOrFail(new UsernameBasedAuthenticationToken(new UsernamePrincipal("seconduser"))));
             assertEquals(role2IdSet, roleMemberProxySession.getRoleIdsMatchingAuthenticationTokenOrFail(new UsernameBasedAuthenticationToken(new UsernamePrincipal("thirduser"))));
             assertEquals(role1IdSet, roleMemberProxySession.getRoleIdsMatchingAuthenticationTokenOrFail(new TestX509CertificateAuthenticationToken(cert1)));
             assertEquals(role12IdSet, roleMemberProxySession.getRoleIdsMatchingAuthenticationTokenOrFail(new TestX509CertificateAuthenticationToken(cert2)));
         } finally {
-            roleSession.deleteRoleIdempotent(alwaysAllowAuthenticationToken, role1.id());
-            roleSession.deleteRoleIdempotent(alwaysAllowAuthenticationToken, role2.id());
+            roleSession.deleteRoleIdempotent(alwaysAllowAuthenticationToken, role1.getRoleId());
+            roleSession.deleteRoleIdempotent(alwaysAllowAuthenticationToken, role2.getRoleId());
         }
         log.debug("<testPreferredMatchValues");
     }
     
-    private int createRoleMember(final RoleDataDto role, final String tokenType, final int tokenIssuerId, final int matchKey, final String matchValue) {
-        if (role.isIdUnassigned()) {
-            throw new IllegalStateException("Missing RoleDataDto ID");
+    private int createRoleMember(final Role role, final String tokenType, final int tokenIssuerId, final int matchKey, final String matchValue) {
+        if (role.getRoleId() == Role.ROLE_ID_UNASSIGNED) {
+            throw new IllegalStateException("Missing Role ID");
         }
         return roleMemberProxySession.createOrEdit(new RoleMember(tokenType, tokenIssuerId, RoleMember.NO_PROVIDER, matchKey, AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
-                matchValue, role.id(), null));
+                matchValue, role.getRoleId(), null));
     }
 }

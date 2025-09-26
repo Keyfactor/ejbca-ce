@@ -17,7 +17,6 @@ dependencies {
     compileOnly(libs.bctls)
     compileOnly(libs.bcutil)
     compileOnly(project(":modules:cesecore-common"))
-    compileOnly(project(":modules:cesecore-entity"))
     compileOnly(project(":modules:ejbca-entity"))
     testImplementation(libs.junit)
     testImplementation(libs.hamcrest.core)

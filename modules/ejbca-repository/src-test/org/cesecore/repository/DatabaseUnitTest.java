@@ -13,109 +13,56 @@
 
 package org.cesecore.repository;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.TypedQuery;
-import org.cesecore.dto.DummyCertWithIndex;
-import org.cesecore.dto.DummyCertWithIndexBean;
 import org.cesecore.repository.exception.RecordIdAlreadyExistsException;
-import org.cesecore.repository.exception.RecordIndexAlreadyExistsException;
+import org.cesecore.repository.mock.EntityManagerMock;
+import org.ejbca.dto.DummyCert;
+import org.ejbca.dto.DummyCertBean;
+import org.ejbca.dto.DummyCertConverter;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-import static org.cesecore.repository.util.DtoUtil.getDummyCertWithIndex;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.when;
+import static org.cesecore.repository.CachedDatabaseUnitTest.getDummyCert;
 
 public class DatabaseUnitTest {
 
-    private EntityManager entityManager;
-    private TypedQuery<DummyCertWithIndexBean> query;
-    private Map<String, Object> parameters;
-    private Database<DummyCertWithIndex, Long, DummyCertWithIndexBean> database;
-    private DummyCertWithIndex cert1;
-    private DummyCertWithIndex cert2;
+    private EntityManagerMock entityManagerMock;
+    private Database database;
+    private DummyCert cert1;
+    private DummyCert cert2;
+    private DummyCertConverter certConverter;
     private AtomicLong nextId;
-    private List<DummyCertWithIndexBean> beanList;
 
-    private DummyCertWithIndexBean dtoToBean(final DummyCertWithIndex dto) {
-        DummyCertWithIndexBean bean = new DummyCertWithIndexBean();
-        bean.init(dto);
-        return bean;
-    }
-
-    private boolean containsId(final Long id) {
-        return beanList.stream().anyMatch(bean -> bean.getId().equals(id));
-    }
-
-    private boolean equals(Object[] a, Object[] b) {
-        for (int i = 0; i < a.length; i++) {
-            if (!Objects.equals(a[i], b[i])) {
-                return false;
-            }
+    private boolean equals(Object o1, Object o2) {
+        if (o2 instanceof Long) {
+            DummyCertBean certBean1 = (DummyCertBean) o1;
+            return Objects.equals(certBean1.getId(), o2);
         }
-        return true;
-    }
-
-    private boolean containsIndex(final DummyCertWithIndex dto) {
-        return beanList.stream()
-                .map(bean->bean.toDto().indexValues())
-                .anyMatch(indexValues -> equals(indexValues, dto.indexValues()));
+        DummyCertBean certBean1 = (DummyCertBean) o1;
+        DummyCertBean certBean2 = (DummyCertBean) o2;
+        return Objects.equals(certBean1.getId(), certBean2.getId()) || Objects.equals(certBean1.getName(), certBean2.getName());
     }
 
     @Before
     public void setUp() {
         nextId = new AtomicLong(1L);
-        beanList = new ArrayList<>();
-        query = Mockito.mock(TypedQuery.class);
-        entityManager = Mockito.mock(EntityManager.class);
-        parameters = new HashMap<>();
-        doAnswer(invocation -> {
-            DummyCertWithIndexBean bean = invocation.getArgument(0);
-            DummyCertWithIndex dto = bean.toDto();
-            if (containsId(dto.getId())) {
-                throw new RecordIdAlreadyExistsException("There is already an record with id=" + dto.getId());
-            }
-            if (containsIndex(dto)) {
-                throw new RecordIndexAlreadyExistsException("There is already an record with index. " + dto);
-            }
-            beanList.add(bean);
-            return null;
-        }).when(entityManager).persist(any());
-        when(entityManager.createQuery(anyString(), eq(DummyCertWithIndexBean.class))).thenReturn(query);
-        doAnswer(invocation -> {
-            String key = invocation.getArgument(0);
-            Object value = invocation.getArgument(1);
-            parameters.put(key, value);
-            return query;
-        }).when(query).setParameter(anyString(), any());
-        when(query.getResultList()).thenReturn(beanList);
-        doAnswer(invocation -> {
-            final Long id = invocation.getArgument(1);
-            return beanList.stream()
-                    .filter(bean -> bean.getId().equals(id)).findFirst().orElse(null);
-        }).when(entityManager).find(eq(DummyCertWithIndexBean.class), any());
-        database = new Database<>(
-                entityManager,
-                DummyCertWithIndexBean.class,
-                DummyCertWithIndexBean::toDto,
-                this::dtoToBean,
+        entityManagerMock = new EntityManagerMock((o1, o2) -> equals(o1, o2) ? 0 : -1);
+        certConverter = new DummyCertConverter();
+        database = new Database(
+                entityManagerMock,
+                DummyCertBean.class,
+                certConverter,
+                "name",
                 () -> nextId.getAndIncrement());
-        cert1 = getDummyCertWithIndex(1L, "common-name-1", "name-1", "author-1", 1);
-        cert2 = getDummyCertWithIndex(2L, "common-name-2", "name-2", "author-2", 2);
+        cert1 = getDummyCert(1L, "name-1", "author-1", 1);
+        cert2 = getDummyCert(2L, "name-2", "author-2", 2);
     }
 
     @Test
@@ -126,29 +73,17 @@ public class DatabaseUnitTest {
         database.addNonSynchronized(cert1);
 
         // Then
-        assertEquals(1, beanList.size());
-        assertEquals(cert1, beanList.get(0).toDto());
+        Assert.assertEquals(1, entityManagerMock.getTypedQueryMock().getResultList().size());
+        assertEquals(cert1, certConverter.toDto((DummyCertBean) entityManagerMock.getTypedQueryMock().getResultList().get(0)));
     }
 
     @Test(expected = RecordIdAlreadyExistsException.class)
     public void testAddNonSynchronized_idAlreadyUsed() {
         // Given
-        final var dto = cert2.withId(cert1.getId());
-        final var bean = new DummyCertWithIndexBean();
-        bean.init(dto);
-        beanList.add(bean);
-
-        // When
-        database.addNonSynchronized(cert1);
-    }
-
-    @Test(expected = RecordIndexAlreadyExistsException.class)
-    public void testAddNonSynchronized_indexAlreadyUsed() {
-        // Given
-        final var dto = cert2.withName(cert1.getName());
-        final var bean = new DummyCertWithIndexBean();
-        bean.init(dto);
-        beanList.add(bean);
+        final var otherBean = new DummyCertBean();
+        otherBean.setId(cert1.id());
+        otherBean.setName("name-other");
+        entityManagerMock.getTypedQueryMock().getResultList().add(otherBean);
 
         // When
         database.addNonSynchronized(cert1);
@@ -168,15 +103,32 @@ public class DatabaseUnitTest {
     @Test
     public void testFindByIdNonSynchronized_match() {
         // Given
-        final var bean = new DummyCertWithIndexBean();
-        bean.init(cert1);
-        beanList.add(bean);
+        final var expectedBean = certConverter.toBean(cert1);
+        entityManagerMock.getTypedQueryMock().getResultList().add(expectedBean);
 
         // When
         final var actual = database.findByIdNonSynchronized(cert1.id());
 
         // Then
         assertEquals(cert1, actual);
+    }
+
+    @Test
+    public void testFindAllNonSynchronized() {
+        // Given
+        final var expectedBean1 = certConverter.toBean(cert1);
+        entityManagerMock.getTypedQueryMock().getResultList().add(expectedBean1);
+        final var expectedBean2 = certConverter.toBean(cert2);
+        entityManagerMock.getTypedQueryMock().getResultList().add(expectedBean2);
+
+        // When
+        final var actual = database.findAllNonSynchronized();
+
+        // Then
+        assertNotNull(actual);
+        assertEquals(2, actual.size());
+        assertEquals(cert1, actual.get(0));
+        assertEquals(cert2, actual.get(1));
     }
 
 }

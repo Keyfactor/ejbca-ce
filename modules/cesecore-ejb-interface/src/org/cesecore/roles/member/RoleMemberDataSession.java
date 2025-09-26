@@ -21,7 +21,7 @@ package org.cesecore.roles.member;
 public interface RoleMemberDataSession {
     
     /**
-     * Forces the RoleDataDto cache to expire
+     * Forces the RoleData cache to expire
      */
     void forceCacheExpire();
 }

@@ -28,14 +28,14 @@ import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
+import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.dto.RoleDataDto;
-import org.cesecore.dto.RoleDataDtoBuilder;
 import org.cesecore.roles.AccessRulesHelper;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.era.IdNameHashMap;
@@ -48,7 +48,7 @@ import org.ejbca.ra.jsfext.AddRemoveListState;
 
 
 /**
- * Backing bean for the Edit RoleDataDto page
+ * Backing bean for the Edit Role page
  *
  */
 @Named
@@ -82,7 +82,7 @@ public class RaRoleBean implements Serializable {
     
     private Integer roleId;
     private Integer cloneFromRoleId;
-    private RoleDataDto role;
+    private Role role;
 
     private String name;
     private String namespace;
@@ -101,7 +101,7 @@ public class RaRoleBean implements Serializable {
         public RuleCheckboxInfo(final List<String> accessRules, final String labelMessageKey) {
             this.accessRules = accessRules;
             this.label = raLocaleBean.getMessage(labelMessageKey);
-            this.allowed = accessRules.stream().allMatch(accessRule -> AccessRulesHelper.hasAccessToResource(role.accessRules(), accessRule));
+            this.allowed = accessRules.stream().allMatch(accessRule -> AccessRulesHelper.hasAccessToResource(role.getAccessRules(), accessRule));
         }
 
         public List<String> getAccessRules() {
@@ -119,7 +119,7 @@ public class RaRoleBean implements Serializable {
     private Map<Integer,String> eeProfilesWithCustomPermissions = new HashMap<>();
     private boolean allowNewCas;
     private boolean allowNewEndEntityProfiles;
-
+    
     public void initialize() throws AuthorizationDeniedException {
         if (initialized) {
             return;
@@ -128,15 +128,15 @@ public class RaRoleBean implements Serializable {
         
         // Get namespaces
         namespaceOptions = new ArrayList<>();
-        namespaces = raMasterApiProxyBean.getAuthorizedRoleNamespaces(raAuthenticationBean.getAuthenticationToken(), roleId != null ? roleId : RoleDataDto.ROLE_ID_UNASSIGNED);
+        namespaces = raMasterApiProxyBean.getAuthorizedRoleNamespaces(raAuthenticationBean.getAuthenticationToken(), roleId != null ? roleId : Role.ROLE_ID_UNASSIGNED);
         Collections.sort(namespaces);
-        hasAccessToEmptyNamespace = namespaces.stream().anyMatch(String::isEmpty);
+        hasAccessToEmptyNamespace = namespaces.contains("");
         if (hasAccessToEmptyNamespace) {
             namespaceOptions.add(new SelectItem("", raLocaleBean.getMessage("role_page_namespace_none")));
             namespaceOptions.add(new SelectItem(NEW_NAMESPACE_ITEM, raLocaleBean.getMessage("role_page_namespace_createnew")));
         }
         for (final String namespace : namespaces) {
-            if (!StringUtils.isEmpty(namespace)) {
+            if (!namespace.equals("")) {
                 namespaceOptions.add(new SelectItem(namespace, namespace));
             }
         }
@@ -145,16 +145,13 @@ public class RaRoleBean implements Serializable {
         if (roleId != null || cloneFromRoleId != null) {
             int roleToFetch = (roleId != null ? roleId : cloneFromRoleId);
             role = raMasterApiProxyBean.getRole(raAuthenticationBean.getAuthenticationToken(), roleToFetch);
-            name = role.name();
-            namespace = role.nameSpace();
+            name = role.getRoleName();
+            namespace = role.getNameSpace();
             if (roleId == null) {
-                role = role.withId(RoleDataDto.ROLE_ID_UNASSIGNED); // force creation of a new role if we are cloning
+                role.setRoleId(Role.ROLE_ID_UNASSIGNED); // force creation of a new role if we are cloning
             }
         } else {
-            role = new RoleDataDtoBuilder()
-                    .setNameSpace(getDefaultNamespace())
-                    .setName("")
-                    .build();
+            role = new Role(getDefaultNamespace(), "");
             name = "";
         }
 
@@ -163,13 +160,13 @@ public class RaRoleBean implements Serializable {
         for (final KeyToValueHolder<CAInfo> kv : authorizedCas.values()) {
             final CAInfo ca = kv.getValue();
             final String accessRule = StandardRules.CAACCESS.resource() + kv.getId();
-            final boolean enabled = AccessRulesHelper.hasAccessToResource(role.accessRules(), accessRule);
+            final boolean enabled = AccessRulesHelper.hasAccessToResource(role.getAccessRules(), accessRule);
             caListState.addListItem(accessRule, ca.getName(), enabled);
         }
         
         final IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = raMasterApiProxyBean.getAuthorizedEndEntityProfiles(raAuthenticationBean.getAuthenticationToken(), AccessRulesConstants.VIEW_END_ENTITY);
         // Only allow end entity profiles with either full or no access to be edited
-        for (final String accessRule : role.accessRules().keySet()) {
+        for (final String accessRule : role.getAccessRules().keySet()) {
             if (accessRule.startsWith(AccessRulesConstants.ENDENTITYPROFILEPREFIX)) {
                 final Matcher matcher = detailedProfileRulePattern.matcher(accessRule);
                 if (matcher.matches()) {
@@ -181,7 +178,7 @@ public class RaRoleBean implements Serializable {
         for (final KeyToValueHolder<EndEntityProfile> kv : authorizedEndEntityProfiles.values()) {
             if (!eeProfilesWithCustomPermissions.containsKey(kv.getId())) {
                 final String accessRule = AccessRulesConstants.ENDENTITYPROFILEPREFIX + kv.getId();
-                final boolean enabled = AccessRulesHelper.hasAccessToResource(role.accessRules(), accessRule);
+                final boolean enabled = AccessRulesHelper.hasAccessToResource(role.getAccessRules(), accessRule);
                 endEntityProfileListState.addListItem(accessRule, kv.getName(), enabled);
             }
         }
@@ -196,13 +193,13 @@ public class RaRoleBean implements Serializable {
         endEntityRules.add(new RuleCheckboxInfo(Arrays.asList(AccessRulesConstants.REGULAR_VIEWENDENTITY, AccessRulesConstants.REGULAR_VIEWCERTIFICATE), "role_page_access_viewendentity_and_certificates"));
         endEntityRules.add(new RuleCheckboxInfo(Arrays.asList(AccessRulesConstants.REGULAR_VIEWENDENTITYHISTORY), "role_page_access_viewendentityhistory"));
 
-        allowNewCas = AccessRulesHelper.hasAccessToResource(role.accessRules(), StandardRules.CAACCESSBASE.resource());
-        allowNewEndEntityProfiles = AccessRulesHelper.hasAccessToResource(role.accessRules(), AccessRulesConstants.ENDENTITYPROFILEBASE);
+        allowNewCas = AccessRulesHelper.hasAccessToResource(role.getAccessRules(), StandardRules.CAACCESSBASE.resource());
+        allowNewEndEntityProfiles = AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.ENDENTITYPROFILEBASE);
     }
 
     public String getDefaultNamespace() {
         if (isLimitedToOneNamespace() || namespaces.isEmpty()) { // should never be empty, but better safe than sorry
-            return null;
+            return "";
         } else {
             return namespaces.get(0);
         }
@@ -212,7 +209,7 @@ public class RaRoleBean implements Serializable {
     public void setRoleId(final Integer roleId) { this.roleId = roleId; }
     public Integer getCloneFromRoleId() { return cloneFromRoleId; }
     public void setCloneFromRoleId(final Integer cloneFromRoleId) { this.cloneFromRoleId = cloneFromRoleId; }
-    public RoleDataDto getRole() { return role; }
+    public Role getRole() { return role; }
     public String getName() { return name; }
     public void setName(final String name) { this.name = name; }
     public String getNamespace() { return namespace; }
@@ -302,7 +299,7 @@ public class RaRoleBean implements Serializable {
         // The getRole method returns a reference to an object which should not be edited directly,
         // so we make a deep copy of it here, which we can edit freely. This code is not performance critical,
         // so cloning through serialization is OK (and does not require a copy constructor that needs to be maintained).
-        final var roleDataBuilder = role.toBuilder();
+        final Role roleWithChanges = (Role) SerializationUtils.clone(role);
         // Check and set namespace
         if (!isLimitedToOneNamespace()) {
             final String namespaceToUse;
@@ -321,46 +318,45 @@ public class RaRoleBean implements Serializable {
                 }
                 namespaceToUse = namespace;
             }
-            roleDataBuilder.setNameSpace(namespaceToUse);
-        } else if (role.isIdUnassigned()) {
+            roleWithChanges.setNameSpace(namespaceToUse);
+        } else if (role.getRoleId() == Role.ROLE_ID_UNASSIGNED) {
             // New role, and the admin is only allowed to use one namespace. Set the namespace to the only allowed one
-            roleDataBuilder.setNameSpace(namespaces.get(0));
+            roleWithChanges.setNameSpace(namespaces.get(0));
         }
-        roleDataBuilder.setName(name);
+        roleWithChanges.setRoleName(name);
 
         // Set access rules
-        final Map<String,Boolean> accessRules = new HashMap<>(role.accessRules());
+        final Map<String,Boolean> accessMap = roleWithChanges.getAccessRules();
         for (final RuleCheckboxInfo checkboxInfo : endEntityRules) {
-            checkboxInfo.getAccessRules().forEach(accessRule -> accessRules.put(accessRule, checkboxInfo.allowed));
+            checkboxInfo.getAccessRules().forEach(accessRule -> accessMap.put(accessRule, checkboxInfo.allowed));
         }
-        accessRules.putAll(caListState.getItemStates());
-        accessRules.putAll(endEntityProfileListState.getItemStates());
+        accessMap.putAll(caListState.getItemStates());
+        accessMap.putAll(endEntityProfileListState.getItemStates());
         if (allowNewCas) {
-            accessRules.put(StandardRules.CAACCESS.resource(), true);
+            accessMap.put(StandardRules.CAACCESS.resource(), true);
         } else {
-            accessRules.remove(StandardRules.CAACCESS.resource());
+            accessMap.remove(StandardRules.CAACCESS.resource());
         }
         if (allowNewEndEntityProfiles) {
-            accessRules.put(AccessRulesConstants.ENDENTITYPROFILEPREFIX, true);
+            accessMap.put(AccessRulesConstants.ENDENTITYPROFILEPREFIX, true);
         } else {
-            accessRules.remove(AccessRulesConstants.ENDENTITYPROFILEPREFIX);
+            accessMap.remove(AccessRulesConstants.ENDENTITYPROFILEPREFIX);
         }
-        final var roleWithChanges = roleDataBuilder.setAccessRules(accessRules).build();
 
         try {
             role = raMasterApiProxyBean.saveRole(raAuthenticationBean.getAuthenticationToken(), roleWithChanges);
         } catch (RoleExistsException e) {
             if (log.isDebugEnabled()) {
-                log.debug("Role named '" + roleWithChanges.name() + "' in namespace '" + roleWithChanges.nameSpace() + "' already exists.");
+                log.debug("Role named '" + roleWithChanges.getRoleName() + "' in namespace '" + roleWithChanges.getNameSpace() + "' already exists.");
             }
-            if (!StringUtils.isEmpty(roleWithChanges.nameSpace())) {
-                raLocaleBean.addMessageError("role_page_error_already_exists_with_namespace", roleWithChanges.name(), roleWithChanges.nameSpace());
+            if (!StringUtils.isEmpty(roleWithChanges.getNameSpace())) {
+                raLocaleBean.addMessageError("role_page_error_already_exists_with_namespace", roleWithChanges.getRoleName(), roleWithChanges.getNameSpace());
             } else {
-                raLocaleBean.addMessageError("role_page_error_already_exists", roleWithChanges.name());
+                raLocaleBean.addMessageError("role_page_error_already_exists", roleWithChanges.getRoleName());
             }
             return "";
         }
-        roleId = role.id();
+        roleId = role.getRoleId();
         return "roles?faces-redirect=true&includeViewParams=true";
     }
 
@@ -371,15 +367,15 @@ public class RaRoleBean implements Serializable {
     public String getDeleteConfirmationText() {
         // Find out how many role members this role has
         final RaRoleMemberSearchRequest searchRequest = new RaRoleMemberSearchRequest();
-        searchRequest.setRoleIds(Collections.singletonList(role.id()));
+        searchRequest.setRoleIds(Collections.singletonList(role.getRoleId()));
         final RaRoleMemberSearchResponse response = raMasterApiProxyBean.searchForRoleMembers(raAuthenticationBean.getAuthenticationToken(), searchRequest);
         return raLocaleBean.getMessage("delete_role_page_confirm", response.getRoleMembers().size());
     }
 
     public String delete() throws AuthorizationDeniedException {
-        if (!raMasterApiProxyBean.deleteRole(raAuthenticationBean.getAuthenticationToken(), role.id())) {
+        if (!raMasterApiProxyBean.deleteRole(raAuthenticationBean.getAuthenticationToken(), role.getRoleId())) {
             if (log.isDebugEnabled()) {
-                log.debug("The role '" + role.fullName() + "' could not be deleted. RoleDataDto ID: " + role.id());
+                log.debug("The role '" + role.getRoleNameFull() + "' could not be deleted. Role ID: " + role.getRoleId());
             }
             raLocaleBean.addMessageError("delete_role_page_error_generic");
             return "";

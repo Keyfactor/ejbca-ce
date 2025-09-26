@@ -62,8 +62,8 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.config.GlobalCaConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.dto.RoleDataDto;
 import org.cesecore.roles.AccessRulesHelper;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleDataSessionLocal;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMember;
@@ -100,7 +100,7 @@ import com.keyfactor.util.EJBTools;
 public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     protected static final Logger log = Logger.getLogger(ManageCAsMBean.class);
     private static final long serialVersionUID = 1L;
-
+   
     @EJB
     private AuthorizationSessionLocal authorizationSession;
     @EJB
@@ -123,7 +123,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     private RoleDataSessionLocal roleDataSession;
     @EJB
     private RoleMemberDataSessionLocal roleMemberDataSession;
-
+   
     private Map<String, Integer> caNames;
     private CAInterfaceBean caBean;
     private int selectedCaId;
@@ -139,9 +139,9 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     private transient Part certificateBundle;
 
     private int lastActiveTab = 0;
-
+    
     private GlobalCaConfiguration globalCaConfiguration;
-
+    
     public ManageCAsMBean() {
         super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
     }
@@ -161,7 +161,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
         selectedCaIdForDelete = (int) requestMap.getOrDefault("selectedCaIdForDelete", 0);
         setGlobalCaConfiguration((GlobalCaConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCaConfiguration.CA_CONFIGURATION_ID));
     }
-
+    
     public int getLastActiveTab() {
         return lastActiveTab;
     }
@@ -169,7 +169,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     public void setLastActiveTab(final int lastActiveTab) {
         this.lastActiveTab = lastActiveTab;
     }
-
+    
     public void onTabChange(final TabChangeEvent<?> event) {
         final Tab activeTab = event.getTab();
         if (activeTab == null) {
@@ -190,7 +190,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
             tabIndex++;
         }
     }
-
+    
     public void setCertificateBundle(final Part certificateBundle) {
         this.certificateBundle = certificateBundle;
     }
@@ -464,9 +464,9 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     private List<String> rolesUsedByCa(int selectedCaId) {
         final List<String> rolesList = new ArrayList<>();
 
-        final List<RoleDataDto> roles = roleSession.getAuthorizedRoles(getAdmin());
+        final List<Role> roles = roleSession.getAuthorizedRoles(getAdmin());
 
-        for (final RoleDataDto role : roles) {
+        for (final Role role : roles) {
             rolesList.addAll(getRolesUsedByCa(role, selectedCaId));
             Collections.sort(rolesList);
         }
@@ -474,22 +474,22 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
         return rolesList;
     }
 
-    private List<String> getRolesUsedByCa(final RoleDataDto role,  final Integer selectedCaId) {
+    private List<String> getRolesUsedByCa(final Role role,  final Integer selectedCaId) {
         final List<String> result = new ArrayList<>();
 
         final String resource = AccessRulesHelper.normalizeResource(StandardRules.CAACCESS.resource() + selectedCaId);
-        if (role.accessRules().containsKey(resource)) {
-            result.add(role.name());
+        if (role.getAccessRules().containsKey(resource)) {
+            result.add(role.getName());
         } else {
             try {
-                final List<RoleMember> roleMembers = roleMemberSession.getRoleMembersByRoleId(getAdmin(), role.id());
+                final List<RoleMember> roleMembers = roleMemberSession.getRoleMembersByRoleId(getAdmin(), role.getRoleId());
                 for (RoleMember roleMember : roleMembers) {
                     if (roleMember.getTokenIssuerId() == selectedCaId) {
                         // Do more expensive checks if it is a potential match
                         final AccessMatchValue accessMatchValue = AccessMatchValueReverseLookupRegistry.INSTANCE.getMetaData(
                                 roleMember.getTokenType()).getAccessMatchValueIdMap().get(roleMember.getTokenMatchKey());
                         if (accessMatchValue.isIssuedByCa()) {
-                            result.add(role.name());
+                            result.add(role.getName());
                             break;
                         }
                     }
@@ -560,11 +560,11 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     private boolean isCaIdInUseByRoleOrRoleMember(final int caId) {
-        for (final RoleDataDto role : roleDataSession.getAllRoles()) {
-            if (role.accessRules().containsKey(AccessRulesHelper.normalizeResource(StandardRules.CAACCESS.resource() + caId))) {
+        for (final Role role : roleDataSession.getAllRoles()) {
+            if (role.getAccessRules().containsKey(AccessRulesHelper.normalizeResource(StandardRules.CAACCESS.resource() + caId))) {
                 return true;
             }
-            for (final RoleMember roleMember : roleMemberDataSession.findRoleMemberByRoleId(role.id())) {
+            for (final RoleMember roleMember : roleMemberDataSession.findRoleMemberByRoleId(role.getRoleId())) {
                 if (roleMember.getTokenIssuerId()==caId) {
                     // Do more expensive checks if it is a potential match
                     final AccessMatchValue accessMatchValue = AccessMatchValueReverseLookupRegistry.INSTANCE.getMetaData(
@@ -606,12 +606,12 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     public boolean isCaListEmpty() {
         return authorizedCas == null || authorizedCas.isEmpty();
     }
-
+    
     /** @return true if admin may create new or modify System Configuration, in this case GlobalCaConfiguration. */
     public boolean isAllowedToEditSystemConfiguration() {
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_EDIT.resource());
     }
-
+    
     public void saveGlobalCaSettings() {
         try {
             globalConfigurationSession.saveConfiguration(getAdmin(), globalCaConfiguration);
