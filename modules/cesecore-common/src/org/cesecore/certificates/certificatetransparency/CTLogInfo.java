@@ -105,9 +105,17 @@ public final class CTLogInfo implements Serializable {
         return publicKeyBytes;
     }
 
-    // Used by Configdump
-    public void setPublicKeyBytes(final byte[] publicKeyBytes) {
-        setLogPublicKey(publicKeyBytes);
+    public String getPublicKeyBytesAsString() {
+        return java.util.Base64.getEncoder().encodeToString(publicKeyBytes);
+    }
+
+    public void setPublicKeyBytesAsString(final String base64EncodedKey) {
+        if (base64EncodedKey == null) {
+            this.publicKeyBytes = null;
+            return;
+        }
+        this.publicKeyBytes = java.util.Base64.getDecoder().decode(base64EncodedKey);
+        ensureParsed();
     }
 
     public void setLogPublicKey(final byte[] publicKeyBytes) {
