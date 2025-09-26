@@ -14,12 +14,8 @@
 package org.ejbca.core.ejb.upgrade;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -40,18 +36,14 @@ import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
-import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
-import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.certificatetransparency.GoogleCtPolicy;
 import org.cesecore.certificates.ocsp.logging.AuditLogger;
 import org.cesecore.certificates.ocsp.logging.GuidHolder;
 import org.cesecore.certificates.ocsp.logging.PatternLogger;
 import org.cesecore.certificates.ocsp.logging.TransactionLogger;
-import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.ConfigurationHolder;
@@ -63,11 +55,9 @@ import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingNameInUseException;
-import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keybind.impl.OcspNonExistingBehavior;
 import org.cesecore.roles.AccessRulesHelper;
@@ -98,11 +88,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.util.JDBCUtil;
 
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.FileTools;
 import com.keyfactor.util.StringTools;
-import com.keyfactor.util.certificate.DnComponents;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
@@ -395,34 +381,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     private boolean upgrade(String dbtype, String oldVersion) {
     	log.debug(">upgrade from version: "+oldVersion+", with dbtype: "+dbtype);
-        if (isLesserThan(oldVersion, "6.11.0")) {
-            log.error(
-                    "Upgrading from EJBCA prior to version 6.11.0 is forbidden. Read the EJBCA Upgrade Guide for more information.");
-            return false;
-        }
-        if (isLesserThan(oldVersion, "6.12.0")) {
-            try {
-                upgradeSession.migrateDatabase6120();
-            } catch (UpgradeFailedException e) {
-                return false;
-            }
-            setLastUpgradedToVersion("6.12.0");
-        }
-        if (isLesserThan(oldVersion, "6.14.0")) {
-            try {
-                upgradeSession.migrateDatabase6140();
-            } catch (UpgradeFailedException e) {
-                return false;
-            }
-            setLastUpgradedToVersion("6.14.0");
-        }
         if (isLesserThan(oldVersion, "6.15.0")) {
-            try {
-                upgradeSession.migrateDatabase6150();
-            } catch (UpgradeFailedException e) {
-                return false;
-            }
-            setLastUpgradedToVersion("6.15.0");
+            log.error(
+                    "Upgrading from EJBCA prior to version 6.15.0 is forbidden. Read the EJBCA Upgrade Guide for more information.");
+            return false;
         }
         if (isLesserThan(oldVersion, "7.2.0")) {
             upgradeSession.upgradeCrlStoreAndCertStoreConfiguration720();
@@ -945,202 +907,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     public boolean isPostUpgradeNeeded() {
         return isLesserThan(getLastPostUpgradedToVersion(), "9.4.0");
     }
-    
-    /**
-     * Upgrades to EJBCA 6.12.0
-     * @throws InternalKeyBindingNameInUseException 
-     * 
-     */
-    @Override
-    public void migrateDatabase6120() {
-        log.debug("migrateDatabase6120: Importing OCSP extensions from ocsp.properties file and UnidFnr trust dir (if available)");
-        importOcspExtensions();
-        importUnidFnrTrustDir();
-    }
-    
-    /**
-     * Upgrade to EJBCA 6.14.0 
-     * Provides all current Peer connector roles with the new rules, controlling access to SCEP (same procedure as 
-     * migrateDatabase6110) on remote RA instances. Should be allowed by default to not cause any regressions. 
-     * This rules is only relevant for RA Peer connector roles.
-     */
-    @Override
-    public void migrateDatabase6140() throws UpgradeFailedException {
-        log.debug("migrateDatabase6140: Adding new rule for SCEP protocol access on remote RA instances.");
-        List<Role> allRoles = roleDataSession.getAllRoles();
-        for (Role role : allRoles) {
-            boolean isRaRequestRole = role.hasAccessToResource(AccessRulesConstants.REGULAR_PEERCONNECTOR_INVOKEAPI);
-            if (isRaRequestRole) {
-                role.getAccessRules().put(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_ACME), Role.STATE_ALLOW);
-                role.getAccessRules().put(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_REST), Role.STATE_ALLOW);
-                role.getAccessRules().put(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_SCEP), Role.STATE_ALLOW);
-                roleDataSession.persistRole(role);
-            }
-        }
-    }
-    
-    
-    /**
-     * Upgrade to EJBCA 6.15.0 
-     * 
-     * All the CCE will get a new required flag with the default value set to true.
-     *  
-     */
-    @Override
-    public void migrateDatabase6150() throws UpgradeFailedException {
-        log.debug("migrateDatabase6150: Adding new field (required) for custom certificate extensions.");
         
-        AvailableCustomCertificateExtensionsConfiguration availableCustomCertExtensionsConfig = (AvailableCustomCertificateExtensionsConfiguration) globalConfigurationSession
-                .getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
-        
-        for (CertificateExtension customCertificateExtension : availableCustomCertExtensionsConfig.getAllAvailableCustomCertificateExtensions()) {
-                customCertificateExtension.setRequiredFlag(true);
-                try {
-                    globalConfigurationSession.saveConfiguration(authenticationToken, availableCustomCertExtensionsConfig);
-                } catch (AuthorizationDeniedException e) {
-                    log.error("Authorization error while saving the updated configuration!", e);
-                }
-        }
-    }
-
-    /**
-     * From EJBCA 6.12.0, all extensions defined in ocsp.properties are selected for each key binding instead. Since this
-     * setting was global previously, it should be fair to add each extension to every OCSP key binding.
-     */
-    private void importOcspExtensions() {
-        @SuppressWarnings("deprecation")
-        final List<String> ocspExtensionOids = OcspConfiguration.getExtensionOids();
-        if (ocspExtensionOids.isEmpty()) {
-            log.debug("No OCSP extensions for import were found in ocsp.properties");
-            return;
-        }
-        final List<Integer> ocspKbIds = internalKeyBindingDataSession.getIds(OcspKeyBinding.IMPLEMENTATION_ALIAS);
-        for (Integer ocspKbId : ocspKbIds) {
-            InternalKeyBinding ikbToEdit = internalKeyBindingDataSession.getInternalKeyBindingForEdit(ocspKbId);
-            List<String> currentExtensions = ikbToEdit.getOcspExtensions();
-            for (String extension : ocspExtensionOids) {
-                if (!currentExtensions.contains(extension.replaceAll("\\*", ""))) {
-                    currentExtensions.add(extension.replaceAll("\\*", ""));
-                }
-            }
-            ikbToEdit.setOcspExtensions(currentExtensions);
-            try {
-                internalKeyBindingDataSession.mergeInternalKeyBinding(ikbToEdit);
-            } catch (InternalKeyBindingNameInUseException e) {
-                log.info("Could not update internal key binding: " + ikbToEdit.getName() + ". IKB is in use. ");
-            }
-        }
-    }
-    
-    private void importUnidFnrTrustDir() {
-        List<X509Certificate> trustedCerts = new ArrayList<>();
-        Certificate cacert = null;
-        boolean isUnidFnrEnabled = OcspConfiguration.isUnidEnabled();
-        @SuppressWarnings("deprecation")
-        String trustDir = OcspConfiguration.getUnidTrustDir();
-        @SuppressWarnings("deprecation")
-        String cacertfile = OcspConfiguration.getUnidCaCert();
-        if (StringUtils.isEmpty(trustDir)) {
-            // This installation is probably not using UnidFnr at all.
-            log.debug("No UnidFnr Trust directory found. Skipping import (expected for most installations).");
-            if (isUnidFnrEnabled) {
-                log.error("No UnidFnr Trust directory found. Cannot procede import");
-            }
-            return;
-        }
-        
-        // Read all files from trustDir, expect that they are PEM formatted certificates.
-        CryptoProviderTools.installBCProviderIfNotAvailable();
-        File dir = new File(trustDir);
-        try {
-            if (dir == null || dir.isDirectory() == false) {
-                log.error("Could not read UnidFnr Trust Directory: " + dir.getCanonicalPath()+ " is not a directory.\nImport interrupted");
-                return;                
-            }
-            File files[] = dir.listFiles();
-            if (files == null || files.length == 0) {
-                log.info("No files found in UnidFnr Trust directory: " + dir.getCanonicalPath() + ". Skipping import");
-                return;
-            }
-            for (int i=0; i < files.length; i++) {
-                final String fileName = files[i].getCanonicalPath();
-                // Read the file, don't stop completely if one file has errors in it.
-                try {
-                    final byte bytesFromFile[] = FileTools.readFiletoBuffer(fileName);
-                    byte[] bytes;
-                    try {
-                        bytes = FileTools.getBytesFromPEM(bytesFromFile, CertTools.BEGIN_CERTIFICATE, CertTools.END_CERTIFICATE);
-                    } catch (Exception e) {
-                        bytes = bytesFromFile; // assume binary data (.der).
-                    }
-                    final X509Certificate  cert = CertTools.getCertfromByteArray(bytes, X509Certificate.class);
-                    trustedCerts.add(cert);
-                } catch (CertificateException | IOException e) {
-                    log.error("error reading '" + fileName + "' from trustDir: " + e.getMessage(), e);
-                }
-            }
-        } catch (IOException e) {
-            String errMsg = "Error reading files from trustDir: " + e.getMessage();
-            log.error(errMsg, e);
-            // Since the file exists but we can't read it. We should stop here and warn the user
-            throw new IllegalStateException(errMsg);
-        }
-        // Read the CA Certificate file
-        if (StringUtils.isEmpty(cacertfile)) {
-            // Since this MUST be set if UnidFnr Extension is used, we should skip import if not found
-            log.debug("No UnidFnr CA Cert directory found. Skipping import");
-            if (isUnidFnrEnabled) {
-                log.error("No UnidFnr CA Cert directory found. Cannot procede import");
-            }
-            return;
-        }
-        try {
-            byte[] bytes = FileTools.getBytesFromPEM(FileTools
-                    .readFiletoBuffer(cacertfile),
-                    CertTools.BEGIN_CERTIFICATE, CertTools.END_CERTIFICATE);
-            cacert = CertTools.getCertfromByteArray(bytes, Certificate.class);
-        } catch (Exception e) {
-            String errMsg = "Error reading CA Certificate from UnidFnr cacertfile";
-            log.error(errMsg, e);
-            // Since the file exists but we can't read it. We should stop here and warn the user
-            throw new IllegalStateException(errMsg);
-        }
-        
-        if (!CertTools.isCA(cacert)) {
-            log.error(cacertfile + " does not point to a CA Certificate");
-            return;
-        }
-        final String subjectdn = CertTools.getSubjectDN(cacert);
-        
-        final int caid = DnComponents.stringToBCDNString(subjectdn).hashCode();
-        try {
-            caSession.verifyExistenceOfCA(caid);
-        } catch (CADoesntExistsException e) {
-            log.info("Could not add CA to OCSP Key Binding trusted certificates. " + subjectdn + " is not known by EJBCA.");
-            return;
-        }
-        // Add all found certificate serial numbers to the IKB trust entries
-        final List<Integer> ocspKbIds = internalKeyBindingDataSession.getIds(OcspKeyBinding.IMPLEMENTATION_ALIAS);
-        for (Integer ocspKbId : ocspKbIds) {
-            InternalKeyBinding ikbToEdit = internalKeyBindingDataSession.getInternalKeyBindingForEdit(ocspKbId);
-            List<InternalKeyBindingTrustEntry> currentTrustEntries = ikbToEdit.getTrustedCertificateReferences();
-            
-            for (X509Certificate trustedCert : trustedCerts) {
-                final String subjectDn = trustedCert.getSubjectX500Principal().getName();
-                final DNFieldExtractor dnFieldExtractor = new DNFieldExtractor(subjectDn, DNFieldExtractor.TYPE_SUBJECTDN);
-                final String commonName = dnFieldExtractor.getFieldString(DNFieldExtractor.CN);
-                currentTrustEntries.add(new InternalKeyBindingTrustEntry(caid, trustedCert.getSerialNumber(), commonName));
-            }
-            ikbToEdit.setTrustedCertificateReferences(currentTrustEntries);
-            try {
-                internalKeyBindingDataSession.mergeInternalKeyBinding(ikbToEdit);
-            } catch (InternalKeyBindingNameInUseException e) {
-                // Should not happen when merging
-                log.info("Could not edit key binding: " + ikbToEdit.getName() + ". Name already in use");
-            }
-        }
-    }
-    
     private boolean postMigrateDatabase720() {
         log.info("Starting post upgrade to 7.2.0");
         setCustomCertificateValidityWithSecondsGranularity(true);

@@ -498,11 +498,9 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
 
 		return "listpublishers?faces-redirect=true";
     }
-    
+
     public void savePublisherAndTestConnection() throws AuthorizationDeniedException {
-
         savePublisher();
-
         testConnection();
     }
 

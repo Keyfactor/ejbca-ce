@@ -841,6 +841,7 @@
 		<available file="${ejbca.home}/modules/plugins-ee/build.xml" />
 	</condition>
 	<property name="variant" value=""/> <!-- If we are running on a full EJBCA instance! -->
+    <property name="licensing" value=""/> <!-- If we are should include licensing packages -->
 
 	<!-- This property is used to distinguish if we are running in full EJBCA or on a VA/RA only instance. To exclude parts from ejbca.sh accordingly -->
     <condition property="running.full.ejbca" value="true">
@@ -848,8 +849,8 @@
             <not><equals arg1="${variant}" arg2="ra" casesensitive="false"/></not>
             <not><equals arg1="${variant}" arg2="va" casesensitive="false"/></not>
          </and>
-    </condition>	
-	
+    </condition>
+
 	<!-- Allows overruling the documentation generation for ziprelease. This is needed for Jenkins jobs, because confluence is not accessible from inside Jenkins. 
 	     Default value (when you don't specify the -Ddoc.update flag at all) is TRUE -->
 	<condition property="doc.update.ziprelease" value="true">
@@ -871,11 +872,18 @@
 
 		<antcall target="update-gitrev" /> <!-- update git revision version property -->
 		<antcall target="update-edition" />
-		
+
 		<condition property="build.contains.eidas">
 			<equals arg1="${variant}" arg2="eidas" casesensitive="false"/>
 		</condition>
-		
+
+        <condition property="build.contains.licensing">
+            <and>
+                <not><equals arg1="${edition}" arg2="ce" casesensitive="false"/></not>
+                <istrue value="${licensing}"/>
+            </and>
+        </condition>
+
         <condition property="build.contains.va" value="true">
             <not><equals arg1="${variant}" arg2="ra" casesensitive="false"/></not>
         </condition>
@@ -895,7 +903,7 @@
         <condition property="build.contains.cesecore-cvcca" value="true">
 			<istrue value="${running.full.ejbca}" />
         </condition>
-		
+
 		<condition property="variant.suffix" value="_RA">
             <equals arg1="${variant}" arg2="ra" casesensitive="false"/>
         </condition>
@@ -908,14 +916,14 @@
 			<equals arg1="${variant}" arg2="eidas" casesensitive="false"/>
 		</condition>
 
-		<condition property="variant.suffix" value="_ProxyCA">
+        <condition property="variant.suffix" value="_ProxyCA">
 			<equals arg1="${variant}" arg2="proxy-ca" casesensitive="false"/>
 		</condition>
 
 		<condition property="variant.suffix" value="">
 			<istrue value="${running.full.ejbca}" />
         </condition>
-		
+
         <!-- Pre-configure eIDAS edition only to use P11NG with CP5 additions -->
 	    <copy file="src/java/defaultvalues.properties" tofile="${tmp}/eidas/src/java/defaultvalues.properties" overwrite="true">
 	        <filterchain>
@@ -1024,7 +1032,13 @@
 	            <exclude name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/ca/**/CaImportProfilesCommand.java" unless="running.full.ejbca"/>
 	            <exclude name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/CreateCertCommand.java" unless="running.full.ejbca"/>
 				<!-- End of the list of subcommands of ejbca.sh that must be hidden when we are running on limited ejbca (va/ra) installation -->
-		    	
+
+                <!-- Exclude Licence Validation files unless otherwise specified-->
+                <exclude unless="build.contains.licensing" name="modules/ejbca-ejb/src/org/ejbca/core/ejb/license/**"/>
+                <exclude unless="build.contains.licensing" name="modules/ejbca-ejb/src-test/org/ejbca/core/ejb/license/**"/>
+                <exclude unless="build.contains.licensing" name="modules/ejbca-common/src/org/ejbca/core/ejb/license/**"/>
+                <!--END: Exclude Licence Validation files -->
+
 		    </zipfileset>
 			
             <!-- Pre-configure eIDAS edition only to use P11NG with CP5 additions -->

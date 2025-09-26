@@ -16,6 +16,7 @@ public enum LookUpProfile {
 
     SMIME("SMIME lookup"),
     TLS("TLS lookup"),
+    MARK_CERTIFICATE("Mark Certificate lookup"),
     NONE("");
 
     private final String value;
