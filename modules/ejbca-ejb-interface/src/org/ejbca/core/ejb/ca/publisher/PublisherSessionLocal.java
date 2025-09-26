@@ -22,9 +22,10 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.dto.PublisherData;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
-import org.ejbca.dto.PublisherData;
+import org.ejbca.core.model.ca.publisher.PublisherException;
 
 /**
  * Local interface for PublisherSession.
@@ -37,7 +38,13 @@ public interface PublisherSessionLocal extends PublisherSession {
      * Makes sure that no Publishers are cached to ensure that we read from database
      * next time we try to access it.
      */
-    void flushPublisherCache(); 
+    void flushPublisherCache();
+
+    /**
+     * @param publisherId The ID of the publisher.
+     * @throws PublisherException If the validation fails.
+     */
+    void validateInput(int publisherId) throws PublisherException;
 
     /**
      * Test the connection to of a publisher

@@ -18,8 +18,10 @@ import java.security.Principal;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.cesecore.authentication.AuthenticationFailedException;
@@ -38,9 +40,10 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.cesecore.dto.RoleDataDto;
+import org.cesecore.dto.RoleDataDtoBuilder;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleInformation;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
@@ -85,7 +88,7 @@ public class PartitionedApprovalProfilesSystemTest extends CaTestCase {
 
     private static final String P12_FOLDER_NAME = "p12";
 
-    private static Role role;
+    private static RoleDataDto role;
     private static int caid = getTestCAId();
 
     private static String reqadminusername = null;
@@ -149,22 +152,23 @@ public class PartitionedApprovalProfilesSystemTest extends CaTestCase {
         endEntityManagementSession.addUser(alwaysAllowAuthenticationToken, reqUserData, true);
         String roleName = PartitionedApprovalProfilesSystemTest.class.getSimpleName();
         final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
-        final Role oldRole = roleSession.getRole(alwaysAllowAuthenticationToken, null, roleName);
+        final RoleDataDto oldRole = roleSession.getRole(alwaysAllowAuthenticationToken, null, roleName);
         if (oldRole != null) {
-            roleSession.deleteRoleIdempotent(alwaysAllowAuthenticationToken, oldRole.getRoleId());
+            roleSession.deleteRoleIdempotent(alwaysAllowAuthenticationToken, oldRole.id());
         }
-        role = roleSession.persistRole(alwaysAllowAuthenticationToken, new Role(null, roleName, Arrays.asList(
-                AccessRulesConstants.REGULAR_APPROVEENDENTITY,
-                AccessRulesConstants.ENDENTITYPROFILEBASE,
-                StandardRules.CAACCESSBASE.resource()
-                ), null));
+        Map<String, Boolean> accessRules = new HashMap<>();
+        accessRules.put(AccessRulesConstants.REGULAR_APPROVEENDENTITY, RoleDataDto.STATE_ALLOW);
+        accessRules.put(AccessRulesConstants.ENDENTITYPROFILEBASE, RoleDataDto.STATE_ALLOW);
+        accessRules.put(StandardRules.CAACCESSBASE.resource(), RoleDataDto.STATE_ALLOW);
+        role = new RoleDataDtoBuilder().setName(roleName).setAccessRules(accessRules).build();
+        role = roleSession.persistRole(alwaysAllowAuthenticationToken, role);
         final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
         roleMember1 = roleMemberSession.persist(alwaysAllowAuthenticationToken, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                 caid, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
-                AccessMatchType.TYPE_EQUALCASEINS.getNumericValue(), adminusername1, role.getRoleId(), null));
+                AccessMatchType.TYPE_EQUALCASEINS.getNumericValue(), adminusername1, role.id(), null));
         roleMember2 = roleMemberSession.persist(alwaysAllowAuthenticationToken, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                 caid, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
-                AccessMatchType.TYPE_EQUALCASEINS.getNumericValue(), adminusername2, role.getRoleId(), null));
+                AccessMatchType.TYPE_EQUALCASEINS.getNumericValue(), adminusername2, role.id(), null));
 
         fileHandles.addAll(BatchCreateTool.createAllNew(alwaysAllowAuthenticationToken, new File(P12_FOLDER_NAME)));
 
@@ -189,7 +193,7 @@ public class PartitionedApprovalProfilesSystemTest extends CaTestCase {
         }
         removeTestCA();
         RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
-        roleSession.deleteRoleIdempotent(alwaysAllowAuthenticationToken, role.getRoleId());
+        roleSession.deleteRoleIdempotent(alwaysAllowAuthenticationToken, role.id());
         EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE
                 .getRemoteSession(EndEntityManagementSessionRemote.class);
         endEntityManagementSession.deleteUser(alwaysAllowAuthenticationToken, adminusername1);
@@ -221,11 +225,11 @@ public class PartitionedApprovalProfilesSystemTest extends CaTestCase {
         ApprovalPartition singlePartition = executionStep.getPartitions().values().iterator().next();
         Set<RoleInformation> roles = new HashSet<>();
         //Add admin1 as an approving admin to the partition
-        RoleInformation admin1RoleInfo =  new RoleInformation(role.getRoleId(), role.getNameSpace(), role.getRoleName());
+        RoleInformation admin1RoleInfo =  new RoleInformation(role.getId(), role.getNameSpace(), role.getName());
         roles.add(admin1RoleInfo);
         DynamicUiProperty<? extends Serializable> rolesProperty = new DynamicUiProperty<>(
                 PartitionedApprovalProfile.PROPERTY_ROLES_WITH_APPROVAL_RIGHTS, admin1RoleInfo, roles);
-        rolesProperty.setValuesGeneric(new ArrayList<RoleInformation>(Arrays.asList(admin1RoleInfo)));
+        rolesProperty.setValuesGeneric(new ArrayList<>(Arrays.asList(admin1RoleInfo)));
         rolesProperty.setHasMultipleValues(true);
         singleStepPartitionProfile.addPropertyToPartition(executionStep.getStepIdentifier(), singlePartition.getPartitionIdentifier(), rolesProperty);
         int approvalProfileId = approvalProfileSession.addApprovalProfile(alwaysAllowAuthenticationToken,
@@ -284,7 +288,7 @@ public class PartitionedApprovalProfilesSystemTest extends CaTestCase {
         ApprovalPartition firstStepPartition = firstStep.getPartitions().values().iterator().next();
         Set<RoleInformation> roles = new HashSet<>();
         //Add admin1 as an approving admin to the partition
-        RoleInformation admin1RoleInfo =  new RoleInformation(role.getRoleId(), role.getNameSpace(), role.getRoleName());
+        RoleInformation admin1RoleInfo =  new RoleInformation(role.getId(), role.getNameSpace(), role.getName());
         roles.add(admin1RoleInfo);
         DynamicUiProperty<? extends Serializable> firstrolesProperty = new DynamicUiProperty<>(
                 PartitionedApprovalProfile.PROPERTY_ROLES_WITH_APPROVAL_RIGHTS, admin1RoleInfo, roles);
@@ -296,7 +300,7 @@ public class PartitionedApprovalProfilesSystemTest extends CaTestCase {
         ApprovalPartition secondStepPartition = secondStep.getPartitions().values().iterator().next();
         roles = new HashSet<>();
         //Add admin1 as an approving admin to the partition
-        RoleInformation admin2RoleInfo =  new RoleInformation(role.getRoleId(), role.getNameSpace(), role.getRoleName());
+        RoleInformation admin2RoleInfo =  new RoleInformation(role.getId(), role.getNameSpace(), role.getName());
         roles.add(admin1RoleInfo);
         DynamicUiProperty<? extends Serializable> secondRoleProperty = new DynamicUiProperty<>(
                 PartitionedApprovalProfile.PROPERTY_ROLES_WITH_APPROVAL_RIGHTS, admin1RoleInfo, roles);
@@ -357,7 +361,7 @@ public class PartitionedApprovalProfilesSystemTest extends CaTestCase {
         ApprovalPartition secondPartition = step.addPartition();
         Set<RoleInformation> roles = new HashSet<>();
         //Add admin1 as an approving admin to the partition
-        RoleInformation admin1RoleInfo =  new RoleInformation(role.getRoleId(), role.getNameSpace(), role.getRoleName());
+        RoleInformation admin1RoleInfo =  new RoleInformation(role.getId(), role.getNameSpace(), role.getName());
         roles.add(admin1RoleInfo);
         DynamicUiProperty<? extends Serializable> firstrolesProperty = new DynamicUiProperty<>(
                 PartitionedApprovalProfile.PROPERTY_ROLES_WITH_APPROVAL_RIGHTS, admin1RoleInfo, roles);
@@ -366,7 +370,7 @@ public class PartitionedApprovalProfilesSystemTest extends CaTestCase {
         doubleSequencenProfile.addPropertyToPartition(step.getStepIdentifier(), firstPartition.getPartitionIdentifier(), firstrolesProperty);
         //Add admin2 as an approving admin to the partition
         // Note: Using the same roleId seem strange, but is what the original test code did
-        RoleInformation admin2RoleInfo =  new RoleInformation(role.getRoleId(), role.getNameSpace(), role.getRoleName());
+        RoleInformation admin2RoleInfo =  new RoleInformation(role.getId(), role.getNameSpace(), role.getName());
         roles.add(admin2RoleInfo);
         DynamicUiProperty<? extends Serializable> secondrolesProperty = new DynamicUiProperty<>(
                 PartitionedApprovalProfile.PROPERTY_ROLES_WITH_APPROVAL_RIGHTS, admin2RoleInfo, roles);

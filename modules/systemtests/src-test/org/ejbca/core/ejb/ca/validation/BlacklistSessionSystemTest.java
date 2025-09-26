@@ -31,8 +31,8 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.dto.RoleDataDto;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.model.validation.BlacklistEntry;
@@ -185,9 +185,9 @@ public class BlacklistSessionSystemTest extends RoleUsingTestCase {
                 // NOPMD
             }
             // Update the role, add edit privileges
-            final Role fetchedRole = roleSession.getRole(internalAdmin, null, "BlacklistSessionSystemTest");
-            fetchedRole.getAccessRules().put(StandardRules.BLACKLISTEDIT.resource(), Role.STATE_ALLOW);
-            roleSession.persistRole(internalAdmin, fetchedRole);
+            final RoleDataDto fetchedRole = roleSession.getRole(internalAdmin, null, "BlacklistSessionSystemTest");
+            Map<String, Boolean> accessRules = Map.of(StandardRules.BLACKLISTEDIT.resource(), RoleDataDto.STATE_ALLOW);
+            roleSession.persistRole(internalAdmin, fetchedRole.withAccessRules(accessRules));
             // Try to edit a Validator
             listSession.changeBlacklistEntry(roleMgmgToken, entry1);
             listSession.removeBlacklistEntry(roleMgmgToken, PublicKeyBlacklistEntry.TYPE, value);

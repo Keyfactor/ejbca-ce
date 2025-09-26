@@ -36,6 +36,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
+import org.cesecore.dto.RoleDataDto;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -134,7 +135,7 @@ public class RaMasterApiSystemTest {
             new MethodApiDescriptor("checkUserStatus", "void", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "java.lang.String", "java.lang.String"), "6c55df9d82b2"),
             new MethodApiDescriptor("isApproved", "java.lang.Integer", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "int"), "964944f1837e"),
             new MethodApiDescriptor("getEndEntityProfileAsXml", "[B", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "int"), "a0d2274518d1"),
-            new MethodApiDescriptor("getRole", "org.cesecore.roles.Role", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "int"), "7575166f6c90"),
+            new MethodApiDescriptor("getRole", RoleDataDto.class.getName(), Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "int"), "b1930536e5cb"),
             new MethodApiDescriptor("searchForRoles", "org.ejbca.core.model.era.RaRoleSearchResponse", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "org.ejbca.core.model.era.RaRoleSearchRequest"), "a1be22cb54a9"),
             new MethodApiDescriptor("scepDispatch", "[B", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "java.lang.String", "java.lang.String", "java.lang.String"), "e3a0173b494e"),
             new MethodApiDescriptor("searchForCertificate", "org.cesecore.certificates.certificate.CertificateDataWrapper", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "java.lang.String"), "05b89f2f3579"),
@@ -209,7 +210,7 @@ public class RaMasterApiSystemTest {
             new MethodApiDescriptor("getAcmeAccountById", "org.ejbca.core.protocol.acme.AcmeAccount", Arrays.asList("java.lang.String"), "368381a79ddf"),
             new MethodApiDescriptor("persistAcmeAuthorization", "java.lang.String", Arrays.asList("org.ejbca.core.protocol.acme.AcmeAuthorization"), "14c872164d27"),
             new MethodApiDescriptor("getApprovalRequest", "org.ejbca.core.model.era.RaApprovalRequestInfo", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "int"), "880536e09d44"),
-            new MethodApiDescriptor("saveRole", "org.cesecore.roles.Role", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "org.cesecore.roles.Role"), "b4f64fb545e3"),
+            new MethodApiDescriptor("saveRole", RoleDataDto.class.getName(), Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", RoleDataDto.class.getName()), "c6dbc8302235"),
             new MethodApiDescriptor("deleteRole", "boolean", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "int"), "94bdda58c6f7"),
             new MethodApiDescriptor("getCertificateStatus", "org.cesecore.certificates.certificate.CertificateStatus", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "java.lang.String", "java.math.BigInteger"), "58df46cf0d1c"),
             new MethodApiDescriptor("getLatestCrl", "[B", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "java.lang.String", "boolean"), "cbbaa53f5912"),

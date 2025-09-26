@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
+import org.cesecore.dto.RoleDataDto;
 import org.junit.Test;
 
 /**
@@ -41,15 +42,15 @@ public class AccessRulesHelperUnitTest {
     public void testUnion() {
         log.trace(">testUnion");
         final HashMap<String, Boolean> accessRules1 = new HashMap<>();
-        accessRules1.put("/a/", Role.STATE_ALLOW);
-        accessRules1.put("/a/b/", Role.STATE_DENY);
-        accessRules1.put("/b/", Role.STATE_DENY);
-        accessRules1.put("/b/a/", Role.STATE_ALLOW);
+        accessRules1.put("/a/", RoleDataDto.STATE_ALLOW);
+        accessRules1.put("/a/b/", RoleDataDto.STATE_DENY);
+        accessRules1.put("/b/", RoleDataDto.STATE_DENY);
+        accessRules1.put("/b/a/", RoleDataDto.STATE_ALLOW);
         final HashMap<String, Boolean> accessRules2 = new HashMap<>();
-        accessRules2.put("/a/", Role.STATE_ALLOW);
-        accessRules2.put("/a/c/", Role.STATE_DENY);
-        accessRules2.put("/c/", Role.STATE_ALLOW);
-        accessRules2.put("/c/d/", Role.STATE_DENY);
+        accessRules2.put("/a/", RoleDataDto.STATE_ALLOW);
+        accessRules2.put("/a/c/", RoleDataDto.STATE_DENY);
+        accessRules2.put("/c/", RoleDataDto.STATE_ALLOW);
+        accessRules2.put("/c/d/", RoleDataDto.STATE_DENY);
         testUnion(accessRules1, accessRules2);
         testUnion(accessRules2, accessRules1);
         log.trace("<testUnion");
@@ -64,13 +65,13 @@ public class AccessRulesHelperUnitTest {
         log.trace("  after union of rules:");
         debugLogAccessRules(accessRules);
         // Verify that the expected input rules are present in normalized form
-        assertEquals(ERRMSG_UNEXPECTED_STATE, Role.STATE_ALLOW, accessRules.get("/a/"));
+        assertEquals(ERRMSG_UNEXPECTED_STATE, RoleDataDto.STATE_ALLOW, accessRules.get("/a/"));
         assertEquals(ERRMSG_UNEXPECTED_STATE, null,             accessRules.get("/a/b/"));
         assertEquals(ERRMSG_UNEXPECTED_STATE, null,             accessRules.get("/a/c/"));
         assertEquals(ERRMSG_UNEXPECTED_STATE, null,             accessRules.get("/b/"));
-        assertEquals(ERRMSG_UNEXPECTED_STATE, Role.STATE_ALLOW, accessRules.get("/b/a/"));
-        assertEquals(ERRMSG_UNEXPECTED_STATE, Role.STATE_ALLOW, accessRules.get("/c/"));
-        assertEquals(ERRMSG_UNEXPECTED_STATE, Role.STATE_DENY,  accessRules.get("/c/d/"));
+        assertEquals(ERRMSG_UNEXPECTED_STATE, RoleDataDto.STATE_ALLOW, accessRules.get("/b/a/"));
+        assertEquals(ERRMSG_UNEXPECTED_STATE, RoleDataDto.STATE_ALLOW, accessRules.get("/c/"));
+        assertEquals(ERRMSG_UNEXPECTED_STATE, RoleDataDto.STATE_DENY,  accessRules.get("/c/d/"));
         // Verify that no other rules are present
         final HashMap<String, Boolean> accessRulesToClean = new HashMap<>(accessRules);
         accessRulesToClean.remove("/a/");
@@ -95,18 +96,18 @@ public class AccessRulesHelperUnitTest {
     public void testIntersection() {
         log.trace(">testIntersection");
         final HashMap<String, Boolean> accessRules1 = new HashMap<>();
-        accessRules1.put("/a/", Role.STATE_ALLOW);
-        accessRules1.put("/a/b/", Role.STATE_DENY);
-        accessRules1.put("/b/", Role.STATE_DENY);
-        accessRules1.put("/b/a/", Role.STATE_ALLOW);
-        accessRules1.put("/b/b/", Role.STATE_ALLOW);
-        accessRules1.put("/c/d/", Role.STATE_ALLOW);
+        accessRules1.put("/a/", RoleDataDto.STATE_ALLOW);
+        accessRules1.put("/a/b/", RoleDataDto.STATE_DENY);
+        accessRules1.put("/b/", RoleDataDto.STATE_DENY);
+        accessRules1.put("/b/a/", RoleDataDto.STATE_ALLOW);
+        accessRules1.put("/b/b/", RoleDataDto.STATE_ALLOW);
+        accessRules1.put("/c/d/", RoleDataDto.STATE_ALLOW);
         final HashMap<String, Boolean> accessRules2 = new HashMap<>();
-        accessRules2.put("/a/", Role.STATE_ALLOW);
-        accessRules2.put("/a/c/", Role.STATE_DENY);
-        accessRules2.put("/b/b/", Role.STATE_ALLOW);
-        accessRules2.put("/c/", Role.STATE_ALLOW);
-        accessRules2.put("/c/d/", Role.STATE_DENY);
+        accessRules2.put("/a/", RoleDataDto.STATE_ALLOW);
+        accessRules2.put("/a/c/", RoleDataDto.STATE_DENY);
+        accessRules2.put("/b/b/", RoleDataDto.STATE_ALLOW);
+        accessRules2.put("/c/", RoleDataDto.STATE_ALLOW);
+        accessRules2.put("/c/d/", RoleDataDto.STATE_DENY);
         testIntersection(accessRules1, accessRules2);
         testIntersection(accessRules2, accessRules1);
         log.trace("<testIntersection");
@@ -121,12 +122,12 @@ public class AccessRulesHelperUnitTest {
         log.trace(" after intersection of rules:");
         debugLogAccessRules(accessRules);
         // Verify that the expected input rules are present in normalized form
-        assertEquals(ERRMSG_UNEXPECTED_STATE, Role.STATE_ALLOW, accessRules.get("/a/"));
-        assertEquals(ERRMSG_UNEXPECTED_STATE, Role.STATE_DENY,  accessRules.get("/a/b/"));
-        assertEquals(ERRMSG_UNEXPECTED_STATE, Role.STATE_DENY,  accessRules.get("/a/c/"));
+        assertEquals(ERRMSG_UNEXPECTED_STATE, RoleDataDto.STATE_ALLOW, accessRules.get("/a/"));
+        assertEquals(ERRMSG_UNEXPECTED_STATE, RoleDataDto.STATE_DENY,  accessRules.get("/a/b/"));
+        assertEquals(ERRMSG_UNEXPECTED_STATE, RoleDataDto.STATE_DENY,  accessRules.get("/a/c/"));
         assertEquals(ERRMSG_UNEXPECTED_STATE, null,             accessRules.get("/b/"));
         assertEquals(ERRMSG_UNEXPECTED_STATE, null,             accessRules.get("/b/a/"));
-        assertEquals(ERRMSG_UNEXPECTED_STATE, Role.STATE_ALLOW, accessRules.get("/b/b/"));
+        assertEquals(ERRMSG_UNEXPECTED_STATE, RoleDataDto.STATE_ALLOW, accessRules.get("/b/b/"));
         assertEquals(ERRMSG_UNEXPECTED_STATE, null,             accessRules.get("/c/"));
         assertEquals(ERRMSG_UNEXPECTED_STATE, null,             accessRules.get("/c/d/"));
         // Verify that no other rules are present
@@ -153,11 +154,11 @@ public class AccessRulesHelperUnitTest {
     @Test
     public void testSorting() {
         final LinkedHashMap<String, Boolean> accessRules = new LinkedHashMap<>();
-        accessRules.put("/abc/d/", Role.STATE_ALLOW);
-        accessRules.put("/abc/", Role.STATE_DENY);
-        accessRules.put("/", Role.STATE_ALLOW);
-        accessRules.put("/a/b/", Role.STATE_DENY);
-        accessRules.put("/a/", Role.STATE_ALLOW);
+        accessRules.put("/abc/d/", RoleDataDto.STATE_ALLOW);
+        accessRules.put("/abc/", RoleDataDto.STATE_DENY);
+        accessRules.put("/", RoleDataDto.STATE_ALLOW);
+        accessRules.put("/a/b/", RoleDataDto.STATE_DENY);
+        accessRules.put("/a/", RoleDataDto.STATE_ALLOW);
         AccessRulesHelper.sortAccessRules(accessRules);
         final Iterator<Entry<String, Boolean>> iterator = accessRules.entrySet().iterator();
         assertEquals("/", iterator.next().getKey());
@@ -170,12 +171,12 @@ public class AccessRulesHelperUnitTest {
     @Test
     public void testMinimizeAccessRules() {
         final HashMap<String, Boolean> accessRules = new HashMap<>();
-        accessRules.put("/", Role.STATE_DENY);
-        accessRules.put("/a/", Role.STATE_ALLOW);
-        accessRules.put("/a/b/", Role.STATE_ALLOW);
-        accessRules.put("/a/c/", Role.STATE_DENY);
-        accessRules.put("/b/", Role.STATE_DENY);
-        accessRules.put("/b/a/", Role.STATE_ALLOW);
+        accessRules.put("/", RoleDataDto.STATE_DENY);
+        accessRules.put("/a/", RoleDataDto.STATE_ALLOW);
+        accessRules.put("/a/b/", RoleDataDto.STATE_ALLOW);
+        accessRules.put("/a/c/", RoleDataDto.STATE_DENY);
+        accessRules.put("/b/", RoleDataDto.STATE_DENY);
+        accessRules.put("/b/a/", RoleDataDto.STATE_ALLOW);
 
         AccessRulesHelper.minimizeAccessRules(accessRules);
 

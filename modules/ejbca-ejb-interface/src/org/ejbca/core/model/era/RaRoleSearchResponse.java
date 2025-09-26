@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.cesecore.roles.Role;
+import org.cesecore.dto.RoleDataDto;
 
 /**
  * Response of role search from RA UI.
@@ -29,11 +29,11 @@ public class RaRoleSearchResponse implements Serializable {
     
     private static final long serialVersionUID = 1L;
 
-    private List<Role> roles = new ArrayList<>();
+    private List<RoleDataDto> roles = new ArrayList<>();
     private boolean mightHaveMoreResults = false;
 
-    public List<Role> getRoles() { return roles; }
-    public void setRoles(List<Role> roles) { this.roles = roles; }
+    public List<RoleDataDto> getRoles() { return roles; }
+    public void setRoles(List<RoleDataDto> roles) { this.roles = roles; }
 
     public boolean isMightHaveMoreResults() { return mightHaveMoreResults; }
     public void setMightHaveMoreResults(boolean mightHaveMoreResults) { this.mightHaveMoreResults = mightHaveMoreResults; }
@@ -43,12 +43,12 @@ public class RaRoleSearchResponse implements Serializable {
      * @param otherResponse Search response object to add roles from.
      */
     public void merge(final RaRoleSearchResponse otherResponse) {
-        final Map<Integer,Role> roleMap = new HashMap<>();
-        for (final Role role : roles) {
-            roleMap.put(role.getRoleId(), role);
+        final Map<Integer, RoleDataDto> roleMap = new HashMap<>();
+        for (final RoleDataDto roleData : roles) {
+            roleMap.put(roleData.id(), roleData);
         }
-        for (final Role role : otherResponse.roles) {
-            roleMap.put(role.getRoleId(), role);
+        for (final RoleDataDto roleData : otherResponse.roles) {
+            roleMap.put(roleData.id(), roleData);
         }
         this.roles.clear();
         this.roles.addAll(roleMap.values());

@@ -30,4 +30,37 @@ public class Feature {
 
     @XmlAttribute
     private Long quantity;
+
+    protected String getId() {
+        return id;
+    }
+
+    protected void setId(String id) {
+        this.id = id;
+    }
+
+    protected String getDisplayName() {
+        return displayName;
+    }
+
+    protected void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+
+    protected Boolean getEnabled() {
+        return enabled;
+    }
+
+    protected void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    protected Long getQuantity() {
+        return quantity;
+    }
+
+    protected void setQuantity(Long quantity) {
+        this.quantity = quantity;
+    }
+    
 }

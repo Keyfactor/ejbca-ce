@@ -25,8 +25,7 @@ import org.ejbca.core.model.ca.publisher.LdapSearchPublisher;
 import org.ejbca.core.model.ca.publisher.MultiGroupPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.dto.PublisherDataBean;
-import org.ejbca.dto.PublisherDataConverter;
-import org.ejbca.dto.PublisherData;
+import org.cesecore.dto.PublisherData;
 
 import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
@@ -60,8 +59,9 @@ public class PublisherDataUtil {
 
     @SuppressWarnings("unchecked")
     private static HashMap<?, ?> parseDataMapFromPublisher(final PublisherData dto) {
-        final var bytes = new PublisherDataConverter()
-                .toBean(dto)
+        final var bean = new PublisherDataBean();
+        bean.init(dto);
+        final var bytes = bean
                 .getData()
                 .getBytes(StandardCharsets.UTF_8);
         try (SecureXMLDecoder decoder = new SecureXMLDecoder(new ByteArrayInputStream(bytes))) {
@@ -109,11 +109,11 @@ public class PublisherDataUtil {
 
     @SuppressWarnings("unchecked")
     public static PublisherData setPublisher(final PublisherData dto, BasePublisher publisher) {
-        final var converter = new PublisherDataConverter();
-        final var bean = converter.toBean(dto);
+        final var bean = new PublisherDataBean();
+        bean.init(dto);
         bean.setData(toString(publisher));
         bean.setUpdateCounter(dto.updateCounter()+1);
-        return converter.toDto(bean);
+        return bean.toDto();
     }
 
     @SuppressWarnings("unchecked")

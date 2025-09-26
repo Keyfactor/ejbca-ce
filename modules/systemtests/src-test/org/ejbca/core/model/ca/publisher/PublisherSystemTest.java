@@ -108,13 +108,13 @@ public class PublisherSystemTest extends RoleUsingTestCase {
 	private final static String PEER_PUBLISHER_CLASSPATH = "org.ejbca.peerconnector.publisher.PeerPublisher";
     private final static String PEER_PUBLISHER_NAME= "PeerPublisher";
 	
-	private final static String cloneName = "TESTCLONEDUMMYCUSTOM";
-	private final static String orgName = "TESTDUMMYCUSTOM";
-	private final static String newName = "TESTNEWDUMMYCUSTOM";
+	private final static String CLONE_NAME = "TESTCLONEDUMMYCUSTOM";
+	private final static String ORG_NAME   = "TESTDUMMYCUSTOM";
+	private final static String NEW_NAME   = "TESTNEWDUMMYCUSTOM";
 
 	private static final Logger log = Logger.getLogger(PublisherSystemTest.class);
 	private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken("PublisherTest");
-	private static final String commonname = PublisherSystemTest.class.getCanonicalName();
+	private static final String COMMON_NAME = PublisherSystemTest.class.getCanonicalName();
 	private static final Set<String> publisherNames = new HashSet<>();
 
 	private final PublisherSessionRemote publisherSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class);
@@ -138,7 +138,7 @@ public class PublisherSystemTest extends RoleUsingTestCase {
 	public void setUp() throws Exception {
         Certificate cert = CertTools.getCertfromByteArray(testcert, Certificate.class);
         int caid = CertTools.getIssuerDN(cert).hashCode();
-        super.setUpAuthTokenAndRole(null, commonname,
+        super.setUpAuthTokenAndRole(null, COMMON_NAME,
 									Arrays.asList(StandardRules.CAACCESS.resource() + caid,
 												  AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES,
 												  AuditLogRules.VIEW.resource()), null);
@@ -159,7 +159,9 @@ public class PublisherSystemTest extends RoleUsingTestCase {
             try {
                 publisherProxySession.removePublisherInternal(internalAdmin, publisherName);
                 log.debug("Publisher named '"+publisherName+"' removed.");
-            } catch (Exception pee) {ret = false;}
+            } catch (Exception pee) {
+                ret = false;
+            }
         }
         assertTrue("Removing Publisher failed", ret);
     }
@@ -222,7 +224,7 @@ public class PublisherSystemTest extends RoleUsingTestCase {
 		    CustomPublisherContainer publisher = new CustomPublisherContainer();
 			publisher.setClassPath("org.ejbca.core.model.ca.publisher.DummyCustomPublisher");
 			publisher.setDescription("Used in Junit Test, Remove this one");
-			this.publisherProxySession.addPublisher(internalAdmin, orgName, publisher);
+			this.publisherProxySession.addPublisher(internalAdmin, ORG_NAME, publisher);
 		} catch (PublisherExistsException pee) {
 			final String m = "The name of the publisher does already exist for another publisher.";
 			log.error(m, pee);
@@ -238,8 +240,8 @@ public class PublisherSystemTest extends RoleUsingTestCase {
 	@Test
 	public void test04RenamePublisher() throws AuthorizationDeniedException, PublisherExistsException, PublisherDoesntExistsException {
 		log.trace(">test04RenamePublisher()");
-		publisherNames.add(newName);
-		this.publisherProxySession.renamePublisher(internalAdmin, orgName, newName);
+		publisherNames.add(NEW_NAME);
+		this.publisherProxySession.renamePublisher(internalAdmin, ORG_NAME, NEW_NAME);
 		log.trace("<test04RenamePublisher()");
 	}
 
@@ -251,9 +253,9 @@ public class PublisherSystemTest extends RoleUsingTestCase {
 	public void test05ClonePublisher() throws AuthorizationDeniedException {
 		log.trace(">test05ClonePublisher()");
 
-		publisherNames.add(cloneName);
+		publisherNames.add(CLONE_NAME);
 		try {
-			this.publisherProxySession.clonePublisher(internalAdmin, newName, cloneName);
+			this.publisherProxySession.clonePublisher(internalAdmin, NEW_NAME, CLONE_NAME);
 		} catch (PublisherDoesntExistsException e) {
 			final String m = "Publisher to be cloned does not exist.";
 			log.error(m, e);
@@ -273,9 +275,9 @@ public class PublisherSystemTest extends RoleUsingTestCase {
 	@Test
 	public void test06EditPublisher() throws AuthorizationDeniedException {
 		log.trace(">test06EditPublisher()");
-		final BasePublisher publisher = this.publisherSession.getPublisher(cloneName);
+		final BasePublisher publisher = this.publisherSession.getPublisher(CLONE_NAME);
 		publisher.setDescription(publisher.getDescription().toUpperCase());
-		this.publisherSession.changePublisher(internalAdmin, cloneName, publisher);
+		this.publisherSession.changePublisher(internalAdmin, CLONE_NAME, publisher);
 		log.trace("<test06EditPublisher()");
 	}
 
@@ -288,8 +290,8 @@ public class PublisherSystemTest extends RoleUsingTestCase {
 	public void test07StoreCertToDummy() throws CertificateException, AuthorizationDeniedException {
 		log.trace(">test07StoreCertToDummy()");
 		final Certificate cert = CertTools.getCertfromByteArray(testcert, Certificate.class);
-		final ArrayList<Integer> publishers = new ArrayList<Integer>();
-		publishers.add(Integer.valueOf(this.publisherProxySession.getPublisherId(newName)));
+		final ArrayList<Integer> publishers = new ArrayList<>();
+		publishers.add(this.publisherProxySession.getPublisherId(NEW_NAME));
 
         final CertificateData cd = new CertificateData(cert, cert.getPublicKey(), "test05", null, "crt123", CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.NO_END_ENTITY_PROFILE, CertificateConstants.NO_CRL_PARTITION, "foo", System.currentTimeMillis(), true, true);
@@ -311,7 +313,7 @@ public class PublisherSystemTest extends RoleUsingTestCase {
 		log.trace(">test08storeCRLToDummy()");
 		final String issuerDn = CertTools.getIssuerDN(CertTools.getCRLfromByteArray(testcrl));
 		final ArrayList<Integer> publishers = new ArrayList<Integer>();
-		publishers.add(Integer.valueOf(this.publisherProxySession.getPublisherId(newName)));
+		publishers.add(Integer.valueOf(this.publisherProxySession.getPublisherId(NEW_NAME)));
 		final boolean ret = this.publisherSession.storeCRL(this.admin, publishers, testcrl, null, 1, issuerDn);
 		assertTrue("Storing CRL to dummy publisher failed", ret);
 		log.trace("<test08storeCRLToDummy()");
@@ -324,7 +326,7 @@ public class PublisherSystemTest extends RoleUsingTestCase {
 	@Test
 	public void test09EditPublisherName() throws AuthorizationDeniedException {
 		log.trace(">testEditPublisherName()");
-		final BasePublisher publisher = this.publisherSession.getPublisher(cloneName);
+		final BasePublisher publisher = this.publisherSession.getPublisher(CLONE_NAME);
 		final String newPublisherName = "TESTEDITPUBLISHERNAME";
 		publisherNames.add(newPublisherName);
 
@@ -391,7 +393,7 @@ public class PublisherSystemTest extends RoleUsingTestCase {
 			final int profileId = endEntityProfileSession.getEndEntityProfileId(eepName);
 
 			final ArrayList<Integer> publishers = new ArrayList<>();
-			publishers.add(Integer.valueOf(this.publisherProxySession.getPublisherId(newName)));
+			publishers.add(Integer.valueOf(this.publisherProxySession.getPublisherId(NEW_NAME)));
 
 			// When a certificate is stored via publisher
 			final CertificateData cd = new CertificateData(certificate, certificate.getPublicKey(), username, null, "crt123",

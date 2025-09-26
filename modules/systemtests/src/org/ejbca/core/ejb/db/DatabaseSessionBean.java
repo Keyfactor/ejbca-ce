@@ -28,11 +28,11 @@ import org.cesecore.certificates.certificatetransparency.SctData;
 import org.cesecore.certificates.crl.CRLData;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationData;
+import org.cesecore.dto.RoleDataDto;
 import org.cesecore.keybind.InternalKeyBindingData;
 import org.cesecore.keys.token.CryptoTokenData;
 import org.cesecore.oscp.OcspResponseData;
 import org.cesecore.profiles.ProfileData;
-import org.cesecore.roles.RoleData;
 import org.cesecore.roles.member.RoleMemberData;
 import org.ejbca.acme.AcmeAccountData;
 import org.ejbca.acme.AcmeAuthorizationData;
@@ -112,7 +112,7 @@ public class DatabaseSessionBean implements DatabaseSessionRemote {
                 clearTable(ProfileData.class, true),
                 clearTable(PublisherDataBean.class, true),
                 clearTable(PublisherQueueData.class, true),
-                clearTable(RoleData.class, clearProtectedTables),
+                clearTable(RoleDataDto.class, clearProtectedTables),
                 clearTable(RoleMemberData.class, clearProtectedTables),
                 clearTable(SctData.class, true),
                 clearTable(ServiceData.class, true),
