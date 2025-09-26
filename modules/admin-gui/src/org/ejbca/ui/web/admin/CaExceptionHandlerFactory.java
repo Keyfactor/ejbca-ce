@@ -40,7 +40,6 @@ import org.cesecore.authentication.AuthenticationFailedException;
  *         &lt;exception-handler-factory>org.ejbca.ui.web.admin.CaExceptionHandlerFactory&lt;/exception-handler-factory&gt;
  *     &lt;/factory&gt;
  *     
- * @version $Id$
  */
 public class CaExceptionHandlerFactory extends ExceptionHandlerFactory {
 
@@ -51,6 +50,7 @@ public class CaExceptionHandlerFactory extends ExceptionHandlerFactory {
 
     private final ExceptionHandlerFactory parentExceptionHandlerFactory;
 
+    @SuppressWarnings("deprecation") //Using the super constructor in ExceptionHandlerFactory will lead to a stack overflow
     public CaExceptionHandlerFactory(final ExceptionHandlerFactory parent) {
         this.parentExceptionHandlerFactory = parent;
     }
@@ -64,6 +64,7 @@ public class CaExceptionHandlerFactory extends ExceptionHandlerFactory {
     private class CaExceptionHandler extends ExceptionHandlerWrapper {
         private final ExceptionHandler wrappedExceptionHandler;
 
+        @SuppressWarnings("deprecation") //Using the super constructor in ExceptionHandlerFactory will lead to a stack overflow
         CaExceptionHandler(final ExceptionHandler wrappedExceptionHandler) {
             this.wrappedExceptionHandler = wrappedExceptionHandler;
         }

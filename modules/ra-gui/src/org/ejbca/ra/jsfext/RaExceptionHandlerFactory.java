@@ -38,7 +38,6 @@ import org.apache.log4j.Logger;
  *         &lt;exception-handler-factory>org.ejbca.ra.jsfext.RaExceptionHandlerFactory&lt;/exception-handler-factory&gt;
  *     &lt;/factory&gt;
  *     
- * @version $Id$
  */
 public class RaExceptionHandlerFactory extends ExceptionHandlerFactory {
 
@@ -48,6 +47,7 @@ public class RaExceptionHandlerFactory extends ExceptionHandlerFactory {
 
     private final ExceptionHandlerFactory parentExceptionHandlerFactory;
 
+    @SuppressWarnings("deprecation") //Using the super constructor in ExceptionHandlerFactory will lead to a stack overflow
     public RaExceptionHandlerFactory(ExceptionHandlerFactory parent) {
         while (parent instanceof RaExceptionHandlerFactory) {
             log.warn("Attempted to wrap a RaExceptionHandlerFactory in a RaExceptionHandlerFactory");
@@ -68,6 +68,7 @@ public class RaExceptionHandlerFactory extends ExceptionHandlerFactory {
     private class RaExceptionHandler extends ExceptionHandlerWrapper {
         private final ExceptionHandler wrappedExceptionHandler;
 
+        @SuppressWarnings("deprecation") //Using the super constructor in ExceptionHandlerFactory will lead to a stack overflow
         RaExceptionHandler(final ExceptionHandler wrappedExceptionHandler) {
             this.wrappedExceptionHandler = wrappedExceptionHandler;
         }
