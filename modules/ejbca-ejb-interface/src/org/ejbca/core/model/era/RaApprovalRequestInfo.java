@@ -26,7 +26,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.roles.Role;
+import org.cesecore.dto.RoleDataDto;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -105,7 +105,7 @@ public class RaApprovalRequestInfo implements Serializable {
 
     public RaApprovalRequestInfo(final AuthenticationToken authenticationToken, final String caName, final String endEntityProfileName,
             final EndEntityProfile endEntityProfile, final String certificateProfileName, final ApprovalDataVO approval,
-            final List<ApprovalDataText> requestData, final RaEditableRequestData editableData, final List<Role> rolesTokenIsMemberOf) {
+            final List<ApprovalDataText> requestData, final RaEditableRequestData editableData, final List<RoleDataDto> rolesTokenIsMemberOf) {
         id = approval.getId();
         this.caName = caName;
         final Certificate requesterCert = approval.getApprovalRequest().getRequestAdminCert();
@@ -292,7 +292,7 @@ public class RaApprovalRequestInfo implements Serializable {
     }
     
     /** Is waiting for the given admin to do something */
-    public boolean isWaitingForMe(final List<Role> roles) {
+    public boolean isWaitingForMe(final List<RoleDataDto> roleDataList) {
         if (requestedByMe) {
             // There are approval types that do not get executed automatically on approval.
             // These go into APPROVED (instead of EXECUTED) state and need to executed again by the requester
@@ -301,7 +301,7 @@ public class RaApprovalRequestInfo implements Serializable {
             return false; // Already approved by me, so not "waiting for me"
         } else {
             if (status == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL) {
-                if (approvalProfile.canApprove(roles, nextApprovalStepPartition)) {
+                if (approvalProfile.canApprove(roleDataList, nextApprovalStepPartition)) {
                     return true;
                 }
             }
@@ -310,8 +310,8 @@ public class RaApprovalRequestInfo implements Serializable {
     }
 
     /** Is waiting for someone else to do something */
-    public boolean isPending(final List<Role> roles) {
-        return !isWaitingForMe(roles) && !isProcessed();
+    public boolean isPending(final List<RoleDataDto> roleDataList) {
+        return !isWaitingForMe(roleDataList) && !isProcessed();
     }
 
     public boolean isExpired(final Date now) {

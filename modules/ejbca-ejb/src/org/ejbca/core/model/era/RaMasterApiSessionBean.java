@@ -130,12 +130,12 @@ import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.dto.RoleDataDto;
 import org.cesecore.keys.keyimport.KeyImportFailure;
 import org.cesecore.keys.keyimport.KeyImportRequestData;
 import org.cesecore.keys.validation.CaaIdentitiesValidator;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.keys.validation.Validator;
-import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMember;
@@ -465,11 +465,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public List<RaStyleInfo> getAvailableCustomRaStyles(AuthenticationToken authenticationToken, int hashCodeOfCurrentList) {
         List<RaStyleInfo> associatedCss = new ArrayList<>();
         LinkedHashMap<Integer, RaStyleInfo> allCssInfos = getAllCustomRaCss();
-        List<Role> isMemberOf = roleSession.getRolesAuthenticationTokenIsMemberOf(authenticationToken);
-        for (Role role : isMemberOf) {
-            RaStyleInfo cssToAdd = allCssInfos.get(role.getStyleId());
+        List<RoleDataDto> isMemberOf = roleSession.getRolesAuthenticationTokenIsMemberOf(authenticationToken);
+        for (RoleDataDto role : isMemberOf) {
+            RaStyleInfo cssToAdd = allCssInfos.get(role.styleId());
             if (cssToAdd != null) {
-                associatedCss.add(allCssInfos.get(role.getStyleId()));
+                associatedCss.add(allCssInfos.get(role.styleId()));
             }
         }
         if (associatedCss.hashCode() == hashCodeOfCurrentList) {
@@ -479,17 +479,17 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public List<Role> getAuthorizedRoles(AuthenticationToken authenticationToken) {
+    public List<RoleDataDto> getAuthorizedRoles(AuthenticationToken authenticationToken) {
         return roleSession.getAuthorizedRoles(authenticationToken);
     }
 
     @Override
-    public List<Role> getRolesAuthenticationTokenIsMemberOf(AuthenticationToken authenticationToken) {
+    public List<RoleDataDto> getRolesAuthenticationTokenIsMemberOf(AuthenticationToken authenticationToken) {
         return roleSession.getRolesAuthenticationTokenIsMemberOf(authenticationToken);
     }
 
     @Override
-    public Role getRole(final AuthenticationToken authenticationToken, final int roleId) throws AuthorizationDeniedException {
+    public RoleDataDto getRole(final AuthenticationToken authenticationToken, final int roleId) throws AuthorizationDeniedException {
         return roleSession.getRole(authenticationToken, roleId);
     }
 
@@ -497,7 +497,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public List<String> getAuthorizedRoleNamespaces(final AuthenticationToken authenticationToken, final int roleId) {
         // Skip roles that come from other peers if roleId is set
         try {
-            if (roleId != Role.ROLE_ID_UNASSIGNED && getRole(authenticationToken, roleId) == null) {
+            if (roleId != RoleDataDto.ROLE_ID_UNASSIGNED && getRole(authenticationToken, roleId) == null) {
                 if (log.isDebugEnabled()) {
                     log.debug("Requested role with ID " + roleId + " does not exist on this system, returning empty list of namespaces");
                 }
@@ -541,19 +541,19 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public Role saveRole(final AuthenticationToken authenticationToken, final Role role) throws AuthorizationDeniedException, RoleExistsException {
-        if (role.getRoleId() != Role.ROLE_ID_UNASSIGNED) {
+    public RoleDataDto saveRole(final AuthenticationToken authenticationToken, final RoleDataDto role) throws AuthorizationDeniedException, RoleExistsException {
+        if (role.id() != RoleDataDto.ROLE_ID_UNASSIGNED) {
             // Updating a role
-            Role oldRole = roleSession.getRole(authenticationToken, role.getRoleId());
-            if (oldRole == null) {
+            RoleDataDto oldRoleData = roleSession.getRole(authenticationToken, role.id());
+            if (oldRoleData == null) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Role with ID " + role.getRoleId() + " does not exist on this system, and will not be updated here. The role name to save was '" + role.getRoleNameFull() + "'");
+                    log.debug("RoleDataDto with ID " + role.id() + " does not exist on this system, and will not be updated here. The role name to save was '" + role.fullName() + "'");
                 }
                 return null; // not present on this system
             }
         }
         if (log.isDebugEnabled()) {
-            log.debug("Persisting a role with ID " + role.getRoleId() + " and name '" + role.getRoleNameFull() + "'");
+            log.debug("Persisting a role with ID " + role.id() + " and name '" + role.fullName() + "'");
         }
         return roleSession.persistRole(authenticationToken, role);
     }
@@ -595,7 +595,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         // Sanity check that there's no ID collision
         if (roleMember.getRoleId() != roleId) {
             if (log.isDebugEnabled()) {
-                log.debug("Role member has an unexpected Role ID " + roleMemberId + ". Role ID " + roleId);
+                log.debug("RoleDataDto member has an unexpected RoleDataDto ID " + roleMemberId + ". RoleDataDto ID " + roleId);
             }
             return false;
         }
@@ -728,7 +728,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
         // Editable data
         final RaEditableRequestData editableData = getRequestEditableData(approvalDataVO);
-        final List<Role> rolesTokenIsMemberOf = roleSession.getRolesAuthenticationTokenIsMemberOf(authenticationToken);
+        final List<RoleDataDto> rolesTokenIsMemberOf = roleSession.getRolesAuthenticationTokenIsMemberOf(authenticationToken);
         return new RaApprovalRequestInfo(authenticationToken, caName, endEntityProfileName, endEntityProfile, certificateProfileName, approvalDataVO,
                 requestData, editableData, rolesTokenIsMemberOf);
     }
@@ -917,7 +917,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             response.setMightHaveMoreResults(true);
         }
 
-        final List<Role> rolesTokenIsMemberOf = getRolesAuthenticationTokenIsMemberOf(authenticationToken);
+        final List<RoleDataDto> rolesTokenIsMemberOf = getRolesAuthenticationTokenIsMemberOf(authenticationToken);
         for (final ApprovalDataVO approvalDataVO : approvals) {
             final List<ApprovalDataText> requestDataLite = approvalDataVO.getApprovalRequest().getNewRequestDataAsText(authenticationToken); // this method isn't guaranteed to return the full information
             final RaEditableRequestData editableData = getRequestEditableData(approvalDataVO);
@@ -1903,12 +1903,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public RaRoleSearchResponse searchForRoles(AuthenticationToken authenticationToken, RaRoleSearchRequest request) {
         // TODO optimize this (ECA-5721), should filter with a database query
-        final List<Role> authorizedRoles = getAuthorizedRoles(authenticationToken);
+        final List<RoleDataDto> authorizedRoles = getAuthorizedRoles(authenticationToken);
         final RaRoleSearchResponse searchResponse = new RaRoleSearchResponse();
         final String searchString = request.getGenericSearchString();
-        for (final Role role : authorizedRoles) {
-            if (searchString == null || Strings.CI.contains(role.getRoleName(), searchString) ||
-                    (role.getNameSpace() != null && Strings.CI.contains(role.getNameSpace(), searchString))) {
+        for (final RoleDataDto role : authorizedRoles) {
+            if (searchString == null || Strings.CI.contains(role.name(), searchString) ||
+                    (role.nameSpace() != null && Strings.CI.contains(role.nameSpace(), searchString))) {
                 searchResponse.getRoles().add(role);
             }
         }
@@ -1929,8 +1929,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
         // Dito for roles
         final List<Integer> authorizedLocalRoleIds = new ArrayList<>();
-        for (final Role role : roleSession.getAuthorizedRoles(authenticationToken)) {
-            final int roleId = role.getRoleId();
+        for (final RoleDataDto role : roleSession.getAuthorizedRoles(authenticationToken)) {
+            final int roleId = role.id();
             if (request.getRoleIds().isEmpty() || request.getRoleIds().contains(roleId)) {
                 authorizedLocalRoleIds.add(roleId);
             }
@@ -1995,7 +1995,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
             response.setMightHaveMoreResults(roleMemberDatas.size() == maxResults);
             if (log.isDebugEnabled()) {
-                log.debug("Role Member search query: " + LogRedactionUtils.getRedactedMessage(sb.toString()) + " LIMIT " + maxResults + " \u2192 "
+                log.debug("RoleDataDto Member search query: " + LogRedactionUtils.getRedactedMessage(sb.toString()) + " LIMIT " + maxResults + " \u2192 "
                         + roleMemberDatas.size() + " results. queryTimeout=" + queryTimeout + "ms");
             }
         } catch (QueryTimeoutException e) {

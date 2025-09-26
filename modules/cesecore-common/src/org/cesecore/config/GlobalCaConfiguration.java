@@ -21,7 +21,7 @@ import org.cesecore.configuration.ConfigurationBase;
  */
 public class GlobalCaConfiguration extends ConfigurationBase implements Serializable {
 
-    public static final String CA_CONFIGURATION_ID = "GLOBAL_CA";
+    public static final String CA_CONFIGURATION_ID = "global-ca-configuration";
     
     private static final long serialVersionUID = 1L;
     

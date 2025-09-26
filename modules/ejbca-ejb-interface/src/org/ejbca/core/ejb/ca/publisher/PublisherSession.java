@@ -28,7 +28,7 @@ import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
-import org.ejbca.dto.PublisherData;
+import org.cesecore.dto.PublisherData;
 
 
 /**

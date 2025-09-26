@@ -15,7 +15,7 @@ package org.ejbca.ui.cli.roles;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.roles.Role;
+import org.cesecore.dto.RoleDataDto;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
@@ -55,12 +55,12 @@ public class RemoveRoleCommand extends BaseRolesCommand {
         final String namespace = parameters.get(ROLE_NAMESPACE_KEY);
         final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
         try {
-            final Role role = roleSession.getRole(getAuthenticationToken(), namespace, roleName);
-            if (role == null) {
+            final RoleDataDto roleData = roleSession.getRole(getAuthenticationToken(), namespace, roleName);
+            if (roleData == null) {
                 getLogger().error("No such role " + super.getFullRoleName(namespace, roleName) + ".");
                 return CommandResult.FUNCTIONAL_FAILURE;
             }
-            if (!roleSession.deleteRoleIdempotent(getAuthenticationToken(), role.getRoleId())) {
+            if (!roleSession.deleteRoleIdempotent(getAuthenticationToken(), roleData.id())) {
                 getLogger().error("No such role " + super.getFullRoleName(namespace, roleName) + ".");
                 return CommandResult.FUNCTIONAL_FAILURE;
             }

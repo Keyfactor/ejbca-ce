@@ -18,6 +18,7 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +38,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.dto.RoleDataDto;
+import org.cesecore.dto.RoleDataDtoBuilder;
 import org.ejbca.core.ejb.approval.ApprovalProfileSession;
+import org.ejbca.ui.web.admin.peerconnector.AccessRuleRequest;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.SelectItemComparator;
@@ -288,6 +292,21 @@ public abstract class BaseManagedBean implements Serializable {
         ret.sort((a, b) -> a.getLabel().compareToIgnoreCase(b.getLabel()));
         ret.add(0, new SelectItem(-1, EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("NONE")));
         return ret;
+    }
+
+    protected RoleDataDto getRoleData(final String name, Collection<AccessRuleRequest> accessRulesRequests) {
+        Map<String, Boolean> accessRulesMap = new HashMap<>();
+        for (final AccessRuleRequest accessRuleRequest : accessRulesRequests) {
+            if (accessRuleRequest.isAccept()) {
+                for (final String rule : accessRuleRequest.getRules()) {
+                    accessRulesMap.put(rule, RoleDataDto.STATE_ALLOW);
+                }
+            }
+        }
+        return new RoleDataDtoBuilder()
+                .setName(name)
+                .setAccessRules(accessRulesMap)
+                .build();
     }
 
 }

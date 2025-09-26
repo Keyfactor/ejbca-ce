@@ -35,19 +35,19 @@
                          columnClasses="alignmiddle,alignmiddle,alignmiddle,alignmiddle">
                 <h:column rendered="#{!rolesBean.onlyEmptyNameSpaceInUse}">
                     <f:facet name="header"><h:outputText value="#{web.text.ROLES_LABEL_NAMESPACE}"/></f:facet>
-                    <h:outputText value="#{role.nameSpace}"/>
+                    <h:outputText value="#{role.nameSpace()}"/>
                 </h:column>
                 <h:column>
                     <f:facet name="header"><h:outputText value="#{web.text.ROLES_LABEL_ROLENAME}"/></f:facet>
-                    <h:outputText value="#{role.roleName}"/>
+                    <h:outputText value="#{role.name()}"/>
                 </h:column>
                 <h:column>
                     <h:outputLink value="#{web.ejbcaWebBean.adminWebBaseUrl}administratorprivileges/rolemembers.xhtml" styleClass="commandLink" title="#{web.text.EDITROLEMEMBERS}">
-                        <f:param name="roleId" value="#{role.roleId}"/>
+                        <f:param name="roleId" value="#{role.id()}"/>
                         <h:outputText value="#{web.text.ROLEMEMBERS}"/>
                     </h:outputLink>
                     <h:outputLink value="#{web.ejbcaWebBean.adminWebBaseUrl}administratorprivileges/accessrules.xhtml" styleClass="commandLink" title="#{web.text.EDITACCESSRULES}">
-                        <f:param name="roleId" value="#{role.roleId}"/>
+                        <f:param name="roleId" value="#{role.id()}"/>
                         <h:outputText value="#{web.text.ACCESSRULES}"/>
                     </h:outputLink>
                 </h:column>
@@ -90,10 +90,10 @@
                     <h:outputLabel value="#{web.text.ROLES_LABEL_NAMESPACE}"/>
                     <h:panelGroup>
                         <h:outputText value="#{rolesBean.editNameSpaceSelected}"
-                                      rendered="#{!rolesBean.renderEditNameSpace and rolesBean.nameSpaceAvailable.size()==1}"/>
+                                      rendered="#{!rolesBean.renderEditNameSpace and rolesBean.getNameSpaceAvailable().size()==1}"/>
                         <h:selectOneMenu value="#{rolesBean.editNameSpaceSelected}" styleClass="fullwidth"
-                                         rendered="#{!rolesBean.renderEditNameSpace and rolesBean.nameSpaceAvailable.size()!=1}">
-                            <f:selectItems value="#{rolesBean.nameSpaceAvailable}"/>
+                                         rendered="#{!rolesBean.renderEditNameSpace and rolesBean.getNameSpaceAvailable().size()!=1}">
+                            <f:selectItems value="#{rolesBean.getNameSpaceAvailable()}"/>
                             <f:ajax execute="@form" render="@form"/>
                         </h:selectOneMenu>
                         <h:inputText value="#{rolesBean.editNameSpace}" title="#{web.text.ROLES_NAMESPACE_PLACEHOLDER}"
@@ -129,10 +129,10 @@
                     <h:outputLabel value="#{web.text.ROLES_LABEL_NAMESPACE}"/>
                     <h:panelGroup>
                         <h:outputText value="#{rolesBean.editNameSpaceSelected}"
-                                      rendered="#{!rolesBean.renderEditNameSpace and rolesBean.nameSpaceAvailable.size()==1}"/>
+                                      rendered="#{!rolesBean.renderEditNameSpace and rolesBean.getNameSpaceAvailable().size()==1}"/>
                         <h:selectOneMenu value="#{rolesBean.editNameSpaceSelected}" styleClass="fullwidth"
-                                         rendered="#{!rolesBean.renderEditNameSpace and rolesBean.nameSpaceAvailable.size()!=1}">
-                            <f:selectItems value="#{rolesBean.nameSpaceAvailable}"/>
+                                         rendered="#{!rolesBean.renderEditNameSpace and rolesBean.getNameSpaceAvailable().size()!=1}">
+                            <f:selectItems value="#{rolesBean.getNameSpaceAvailable()}"/>
                             <f:ajax execute="@form" render="@form"/>
                         </h:selectOneMenu>
                         <h:inputText value="#{rolesBean.editNameSpace}" title="#{web.text.ROLES_NAMESPACE_PLACEHOLDER}"
@@ -166,9 +166,9 @@
                 <h2><h:outputText value="#{web.text.DELETEROLE}"/></h2>
                 <h:panelGrid columns="2">
                     <h:outputLabel value="#{web.text.ROLES_LABEL_NAMESPACE}" rendered="#{!rolesBean.onlyEmptyNameSpaceInUse}"/>
-                    <h:outputText value="#{rolesBean.roleToDelete.nameSpace}" rendered="#{!rolesBean.onlyEmptyNameSpaceInUse}"/>
+                    <h:outputText value="#{rolesBean.roleToDelete.nameSpace()}" rendered="#{!rolesBean.onlyEmptyNameSpaceInUse}"/>
                     <h:outputLabel value="#{web.text.ROLES_LABEL_ROLENAME}"/>
-                    <h:outputText value="#{rolesBean.roleToDelete.roleName}"/>
+                    <h:outputText value="#{rolesBean.roleToDelete.name()}"/>
                 </h:panelGrid>
                 <h:panelGroup styleClass="alignright fullwidth" layout="block">
                     <h:commandButton value="#{web.text.CANCEL}" action="#{rolesBean.actionDeleteRoleReset}" immediate="true">

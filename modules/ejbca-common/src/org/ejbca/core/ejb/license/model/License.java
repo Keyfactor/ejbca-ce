@@ -47,5 +47,37 @@ public class License {
     public ZonedDateTime getExpirationDate() {
         return expirationDate;
     }
-        
+
+    protected String getId() {
+        return id;
+    }
+
+    protected void setId(String id) {
+        this.id = id;
+    }
+
+    protected ZonedDateTime getIssuedDate() {
+        return issuedDate;
+    }
+
+    protected void setIssuedDate(ZonedDateTime issuedDate) {
+        this.issuedDate = issuedDate;
+    }
+
+    protected String getIssuerName() {
+        return issuerName;
+    }
+
+    protected void setIssuerName(String issuerName) {
+        this.issuerName = issuerName;
+    }
+
+    protected static String getLicenseExpired() {
+        return LICENSE_EXPIRED;
+    }
+
+    protected void setExpirationDate(ZonedDateTime expirationDate) {
+        this.expirationDate = expirationDate;
+    }
+            
 }
