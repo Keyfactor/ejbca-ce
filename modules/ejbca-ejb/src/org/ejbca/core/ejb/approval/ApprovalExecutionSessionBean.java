@@ -33,7 +33,7 @@ import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.config.GlobalEndEntityProfileConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.roles.Role;
+import org.cesecore.dto.RoleDataDto;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
@@ -125,7 +125,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
             if (approvalData.getStatus() != ApprovalDataVO.STATUS_WAITINGFORAPPROVAL) {
                 throw new ApprovalException("Wrong status of approval request, expected STATUS_WAITINGFORAPPROVAL(-1): "+approvalData.getStatus());
             }
-            final List<Role> rolesWhichApprovalAuthTokenIsMemberOf = roleSession.getRolesAuthenticationTokenIsMemberOf(approval.getAdmin());
+            final List<RoleDataDto> rolesWhichApprovalAuthTokenIsMemberOf = roleSession.getRolesAuthenticationTokenIsMemberOf(approval.getAdmin());
             // Check if the approval is applicable, i.e belongs to and satisfies a certain partition, as well as that all previous steps have been satisfied
             if (!approvalProfile.isApprovalAuthorized(approvalsPerformed, approval, rolesWhichApprovalAuthTokenIsMemberOf)) {
                 throw new AuthorizationDeniedException("Administrator " + approval.getAdmin().toString() + " was not authorized to partition " + approval.getPartitionId()
@@ -233,7 +233,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
                 approvalProfile = approvalData.getApprovalDataVO().getApprovalRequest().getApprovalProfile();
             }
             final List<Approval> approvalsPerformed = approvalData.getApprovals();
-            final List<Role> rolesWhichApprovalAuthTokenIsMemberOf = roleSession.getRolesAuthenticationTokenIsMemberOf(approval.getAdmin());
+            final List<RoleDataDto> rolesWhichApprovalAuthTokenIsMemberOf = roleSession.getRolesAuthenticationTokenIsMemberOf(approval.getAdmin());
             // Check if the approval is applicable, i.e belongs to and satisfies a certain partition, as well as that all previous steps have been satisfied
             if (!approvalProfile.isApprovalAuthorized(approvalsPerformed, approval, rolesWhichApprovalAuthTokenIsMemberOf)) {
                 throw new AuthorizationDeniedException("Administrator " + approval.getAdmin().toString() + " was not authorized to partition " + approval.getPartitionId()
@@ -359,7 +359,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
         
         if (nextStep != null) {
             final Map<Integer, ApprovalPartition> partitions = nextStep.getPartitions();
-            List<Role> roles = roleSession.getRolesAuthenticationTokenIsMemberOf(admin);
+            List<RoleDataDto> roles = roleSession.getRolesAuthenticationTokenIsMemberOf(admin);
             for (ApprovalPartition partition : partitions.values()) {
                 if (approvalProfile.canApprove(roles, partition)) {
                     allowed = true;

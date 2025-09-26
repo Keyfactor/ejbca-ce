@@ -28,7 +28,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
-import org.cesecore.roles.Role;
+import org.cesecore.dto.RoleDataDto;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
@@ -66,21 +66,21 @@ public class ListAdminsCommand extends BaseRolesCommand {
     public CommandResult execute(ParameterContainer parameters) {
         final String roleName = parameters.get(ROLE_NAME_KEY);
         final String namespace = parameters.get(ROLE_NAMESPACE_KEY);
-        final Role role;
+        final RoleDataDto roleData;
         try {
-            role = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).getRole(getAuthenticationToken(), namespace, roleName);
+            roleData = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).getRole(getAuthenticationToken(), namespace, roleName);
         } catch (AuthorizationDeniedException e1) {
             getLogger().error("Not authorized to role " + super.getFullRoleName(namespace, roleName) + ".");
             return CommandResult.AUTHORIZATION_FAILURE;
         }
-        if (role == null) {
+        if (roleData == null) {
             getLogger().error("No such role " + super.getFullRoleName(namespace, roleName) + ".");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
         final List<RoleMember> roleMembers;
         try {
             roleMembers = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class).getRoleMembersByRoleId(
-                    getAuthenticationToken(), role.getRoleId());
+                    getAuthenticationToken(), roleData.id());
         } catch (AuthorizationDeniedException e) {
             getLogger().error("Not authorized to members of role " + super.getFullRoleName(namespace, roleName) + ".");
             return CommandResult.AUTHORIZATION_FAILURE;
