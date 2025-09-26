@@ -54,7 +54,7 @@
     <div id="page-content-wrapper">
     <ui:insert name="banner">
       
-      <h:panelGroup layout="block" styleClass="banner-container" >
+      <h:panelGroup layout="block" styleClass="banner-container">
       <p:panelGrid columns="2">
       <h:panelGroup>
         <div id="header">
@@ -65,12 +65,35 @@
           </div>
         </div>
       </h:panelGroup>
-      <h:panelGroup rendered="#{not empty adminMenuBean.badLicenseInvalidMessage}">
-            <div class="ui-messages">
-               <div class="ui-messages-error">
-                  <h:outputText value="#{adminMenuBean.badLicenseInvalidMessage}" escape="false"/>
-               </div>
-            </div>
+      <h:panelGroup rendered="#{adminMenuBean.showLicenseWarning}" style="display: flex; align-items: center;">
+            <h:panelGroup style="width: 80%" rendered="#{adminMenuBean.licenseExpireIn60Days}">
+              <div class="ui-messages">
+                 <div class="ui-messages-info">
+                    <h:outputText value="#{adminMenuBean.badLicenseInvalidMessage}" escape="false"/>
+                 </div>
+              </div>
+            </h:panelGroup>
+            <h:panelGroup style="width: 80%" rendered="#{adminMenuBean.licenseExpireIn30Days}">
+              <div class="ui-messages">
+                 <div class="ui-messages-warn">
+                    <h:outputText value="#{adminMenuBean.badLicenseInvalidMessage}" escape="false"/>
+                 </div>
+              </div>
+            </h:panelGroup>
+            <h:panelGroup style="width: 80%" rendered="#{adminMenuBean.licenseExpireIn5Days}">
+              <div class="ui-messages">
+                 <div class="ui-messages-error">
+                    <h:outputText value="#{adminMenuBean.badLicenseInvalidMessage}" escape="false"/>
+                 </div>
+              </div>
+            </h:panelGroup>
+            <h:panelGroup style="width: 80%" rendered="#{adminMenuBean.licenseExpired}">
+              <div class="ui-messages">
+                 <div class="ui-messages-error">
+                    <h:outputText value="#{adminMenuBean.badLicenseInvalidMessage}" escape="false"/>
+                 </div>
+              </div>
+            </h:panelGroup>
         </h:panelGroup>
       </p:panelGrid>
       </h:panelGroup>

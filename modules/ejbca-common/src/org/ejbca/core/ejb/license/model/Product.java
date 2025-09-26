@@ -41,4 +41,45 @@ public class Product {
     @XmlElement(name = "Feature")
     @NotEmpty
     private List<Feature> features;
+
+    protected String getId() {
+        return id;
+    }
+
+    protected void setId(String id) {
+        this.id = id;
+    }
+
+    protected String getDisplayName() {
+        return displayName;
+    }
+
+    protected void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+
+    protected Integer getMajorRev() {
+        return majorRev;
+    }
+
+    protected void setMajorRev(Integer majorRev) {
+        this.majorRev = majorRev;
+    }
+
+    protected Integer getMinorRev() {
+        return minorRev;
+    }
+
+    protected void setMinorRev(Integer minorRev) {
+        this.minorRev = minorRev;
+    }
+
+    protected List<Feature> getFeatures() {
+        return features;
+    }
+
+    protected void setFeatures(List<Feature> features) {
+        this.features = features;
+    }
+    
 }

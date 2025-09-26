@@ -24,4 +24,21 @@ public class Customer {
     @XmlAttribute(name = "crm_id")
     @NotNull
     private String crmId;
+
+    protected String getName() {
+        return name;
+    }
+
+    protected void setName(String name) {
+        this.name = name;
+    }
+
+    protected String getCrmId() {
+        return crmId;
+    }
+
+    protected void setCrmId(String crmId) {
+        this.crmId = crmId;
+    }
+    
 }

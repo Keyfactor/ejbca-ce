@@ -36,6 +36,26 @@ public class LicenseData {
 
     public License getLicense() {
         return license;
+    }
+
+    protected Customer getCustomer() {
+        return customer;
+    }
+
+    protected void setCustomer(Customer customer) {
+        this.customer = customer;
+    }
+
+    protected List<Product> getProducts() {
+        return products;
+    }
+
+    protected void setProducts(List<Product> products) {
+        this.products = products;
+    }
+
+    protected void setLicense(License license) {
+        this.license = license;
     }    
 
 }
