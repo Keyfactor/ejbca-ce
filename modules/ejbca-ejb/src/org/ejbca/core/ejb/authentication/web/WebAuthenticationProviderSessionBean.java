@@ -544,11 +544,6 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
         return oAuthGrantResponseInfo;
     }
 
-    @Override
-    public OAuthGrantResponseInfo refreshOAuthBearerToken(final OAuthConfiguration oauthConfiguration, final String encodedOauthBearerToken, final String oauthIdToken, final String refreshToken) {
-        // Call the new method with null request URL to use the default behavior
-        return refreshOAuthBearerToken(oauthConfiguration, encodedOauthBearerToken, oauthIdToken, refreshToken, null);
-    }
 
     private OAuthKeyInfo getJwtKey(final OAuthConfiguration oauthConfiguration, final String keyId) {
         if (oauthConfiguration != null) {
