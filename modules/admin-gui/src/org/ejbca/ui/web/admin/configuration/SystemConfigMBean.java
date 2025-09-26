@@ -77,6 +77,7 @@ import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.management.RoleDataSessionLocal;
+import org.cesecore.util.OidUtils;
 import org.cesecore.util.SecureZipUnpacker;
 import org.ejbca.config.AvailableProtocolsConfiguration;
 import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
@@ -1639,7 +1640,12 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             return;
         }
 
-        ekuConfig.addExtKeyUsage(currentEKUOid, currentEKUName);
+        try {
+            ekuConfig.addExtKeyUsage(currentEKUOid, currentEKUName);
+        } catch (InvalidConfigurationException e) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    "EKU with OID " + currentEKUOid + " was invalid and could not be saved.", e.getLocalizedMessage()));
+        }
         try {
             getEjbcaWebBean().saveAvailableExtendedKeyUsagesConfiguration(ekuConfig);
             availableExtendedKeyUsages = new ListDataModel<>(getNewAvailableExtendedKeyUsages());
