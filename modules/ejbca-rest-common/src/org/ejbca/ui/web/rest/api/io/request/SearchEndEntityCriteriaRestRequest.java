@@ -28,7 +28,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * @see org.ejbca.ui.web.rest.api.validator.ValidSearchEndEntityCriteriaRestRequest
  */
 @Schema(description = "Use one of allowed values as property(see enum values below).\n" +
-		"QUERY - multiplicity [0, 1] - is used to search by SubjectDn, SubjectAn, Username; \n" +
+		"QUERY - multiplicity [0, 1] - is used to search by partial or equal(case insensitive) SubjectDn, SubjectAn, Username; \n " +
+        "USERNAME or SUBJECT_DN - may be used to search with end entity name or subject dn which is faster than QUERY as SubjectAn column is quite large. " +
+        "Also by using EQUAL_CASE_SENSITIVE as operation case sensitive but faster search can be done. \n" +
         "Available STATUS - multiplicity [0, 9] - values are: NEW, FAILED, " +
         "INITIALIZED, INPROCESS, GENERATED, REVOKED, " +
         "HISTORICAL, KEYRECOVERY, WAITINGFORADDAPPROVAL;\n" +
@@ -48,7 +50,7 @@ public class SearchEndEntityCriteriaRestRequest {
     private String value;
 
     @Schema(description = "An operation for property on inserted value. 'EQUALS' for string, 'LIKE' for string value ('QUERY')",
-            allowableValues = {"EQUAL", "LIKE"},
+            allowableValues = {"EQUAL", "LIKE", "EQUAL_CASE_SENSITIVE"},
             type = "string")
     private String operation;
 
@@ -96,6 +98,8 @@ public class SearchEndEntityCriteriaRestRequest {
      */
     public enum CriteriaProperty {
     	QUERY,
+    	USERNAME,
+    	SUBJECT_DN,
         END_ENTITY_PROFILE,
         CERTIFICATE_PROFILE,
         CA,
@@ -135,7 +139,8 @@ public class SearchEndEntityCriteriaRestRequest {
      */
     public enum CriteriaOperation {
         EQUAL,
-        LIKE;
+        LIKE,
+        EQUAL_CASE_SENSITIVE;
 
         /**
          * Resolves the CriteriaOperation using its name or returns null.

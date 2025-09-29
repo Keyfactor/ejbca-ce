@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -1717,6 +1718,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             AuthenticationToken authenticationToken, RaEndEntitySearchRequest request, int currentQueryOffset,
             String sortingOperation, String additionalConstraintQuery, int additionalConstraintParam) {
         final RaEndEntitySearchResponse response = new RaEndEntitySearchResponse();
+        if (StringUtils.isBlank(sortingOperation)) {
+            searchUserByExactMatchIfPossible(authenticationToken, request, response);
+        }
+        if (!response.getEndEntities().isEmpty()) {
+            return response;
+        }
         final List<Integer> authorizedLocalCaIds = new ArrayList<>(caSession.getAuthorizedCaIds(authenticationToken));
         // Only search a subset of the requested CAs if requested
         if (!request.getCaIds().isEmpty()) {
@@ -1763,7 +1770,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             sb.append(" AND (");
             boolean firstAppended = false;
             if (!subjectDnSearchString.isEmpty()) {
-                sb.append("UPPER(a.subjectDN) LIKE :subjectDN");
+                if (request.isExactLetterCaseSearch()) {
+                    sb.append("a.subjectDN LIKE :subjectDN");
+                } else {
+                    sb.append("UPPER(a.subjectDN) LIKE :subjectDN");
+                }
                 firstAppended = true;
             }
             if (!subjectAnSearchString.isEmpty()) {
@@ -1772,13 +1783,18 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 } else {
                     firstAppended = true;
                 }
+                // subjectAltName is not UPPERed
                 sb.append("a.subjectAltName LIKE :subjectAltName");
             }
             if (!usernameSearchString.isEmpty()) {
                 if (firstAppended) {
                     sb.append(" OR ");
                 }
-                sb.append("UPPER(a.username) LIKE :username");
+                if (request.isExactLetterCaseSearch()) {
+                    sb.append("a.username LIKE :username");
+                } else {
+                    sb.append("UPPER(a.username) LIKE :username");
+                }
             }
             sb.append(")");
         }
@@ -1826,7 +1842,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         if (!subjectDnSearchString.isEmpty()) {
             if (request.isSubjectDnSearchExact()) {
-                query.setParameter("subjectDN", subjectDnSearchString.toUpperCase());
+                if (request.isExactLetterCaseSearch()) {
+                    query.setParameter("subjectDN", subjectDnSearchString);
+                } else {
+                    query.setParameter("subjectDN", subjectDnSearchString.toUpperCase());
+                }
             } else {
                 query.setParameter("subjectDN", "%" + subjectDnSearchString.toUpperCase() + "%");
             }
@@ -1840,7 +1860,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         if (!usernameSearchString.isEmpty()) {
             if (request.isUsernameSearchExact()) {
-                query.setParameter("username", usernameSearchString.toUpperCase());
+                if (request.isExactLetterCaseSearch()) {
+                    query.setParameter("username", usernameSearchString);
+                } else {
+                    query.setParameter("username", usernameSearchString.toUpperCase());
+                }
             } else {
                 query.setParameter("username", "%" + usernameSearchString.toUpperCase() + "%");
             }
@@ -1898,6 +1922,85 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             response.setMightHaveMoreResults(true);
         }
         return response;
+    }
+    
+    // the 2 key difference between the SQL query we make in caller function and in this method is
+    //
+    // we do not use authorized CA, CP and EEP IDs in the SQL query(relevant only if non-superadmin, so most prod case)
+    // we do the authorization check after the result is fetched instead
+    // result: less no of columns involved but possibility of large result which is limited by equality check instead of like
+    //
+    // the whole row is fetched instead of only the username(s) and then N queries for each user
+    // once again bad idea for large result but works for small one
+    private void searchUserByExactMatchIfPossible(AuthenticationToken authenticationToken, RaEndEntitySearchRequest request,
+            RaEndEntitySearchResponse response) {
+        
+        if (!request.isExactLetterCaseSearch() || request.getPageNumber()!=1) {
+            log.debug("Either not a exact letter case match search or page number more than 1");
+            return;
+        }
+        
+        if (!(request.getCaIds().size() <= 1 
+                && request.getEepIds().isEmpty() && request.getCpIds().isEmpty() 
+                && request.getSubjectAnSearchString().isBlank()
+                && ((request.getSubjectDnSearchString().isBlank() && !request.getUsernameSearchString().isBlank())
+                || (!request.getSubjectDnSearchString().isBlank() && request.getUsernameSearchString().isBlank())))) {
+            if (log.isTraceEnabled()) {
+                log.trace("Exact search may only be performed if: ");
+                log.trace(" - [Match type is EQUAL_CASE_SENSITIVE]");
+                log.trace(" - [Search Criteria type is USERNAME or SUBJECTDN]");
+                log.trace(" - [Only USERNAME or SUBJECTDN is mentioned]");
+                log.trace(" - [At most one CA is mentioned and only with SUBJECTDN]");
+                log.trace(" - [No other criteria e.g. certificate or end entity profile, status, dates etc may be used]");
+            }
+            return;
+        }
+        
+        if (request.getCaIds().size()==1 
+                && request.isSubjectDnSearchExact() && !request.getSubjectDnSearchString().isBlank()
+                ) {
+            try {
+                response.getEndEntities().addAll(
+                        endEntityAccessSession.findUserBySubjectAndIssuerDN(authenticationToken, 
+                            request.getSubjectDnSearchString(), 
+                            caSession.findById(request.getCaIds().get(0)).getSubjectDN()));
+            } catch (AuthorizationDeniedException e) {
+                // ignore
+            }
+        }
+        
+        if (request.getCaIds().size()==0 
+                && request.isSubjectDnSearchExact() && !request.getSubjectDnSearchString().isBlank()
+                ) {
+            try {
+                response.getEndEntities().addAll(
+                        endEntityAccessSession.findUserBySubjectDN(authenticationToken, request.getSubjectDnSearchString()));
+            } catch (AuthorizationDeniedException e) {
+             // ignore
+            }
+        }
+        
+        if (request.getCaIds().size()==0 
+                && request.isUsernameSearchExact() && !request.getUsernameSearchString().isBlank()
+                ) {
+            try {
+                EndEntityInformation user = endEntityAccessSession.findUser(authenticationToken, request.getUsernameSearchString());
+                if (user!=null) {
+                    response.getEndEntities().add(user);
+                }
+            } catch (AuthorizationDeniedException e) {
+                // ignore
+            }
+        }
+        
+        if (response.getEndEntities().isEmpty()) {
+            return;
+        }
+        
+        response.setMightHaveMoreResults(false);
+        // always sort by username
+        response.getEndEntities().sort(Comparator.comparing(EndEntityInformation::getUsername, Comparator.nullsFirst(String::compareTo)));
+        
     }
 
     @Override
