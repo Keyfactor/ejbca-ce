@@ -819,7 +819,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         final List<SelectItem> ret = new ArrayList<>();
         AvailableExtendedKeyUsagesConfiguration ekuConfig = getEjbcaWebBean().getAvailableExtendedKeyUsagesConfiguration();
         Map<String, String> ekus = ekuConfig.getAllEKUOidsAndNames();
-        ArrayList<String> usedEKUs = getCertificateProfile().getExtendedKeyUsageOids();
+        List<String> usedEKUs = getCertificateProfile().getExtendedKeyUsageOids();
         //If in view only mode, display only used EKU's
         if (isViewOnly()) {
             for(String oid : usedEKUs) {
