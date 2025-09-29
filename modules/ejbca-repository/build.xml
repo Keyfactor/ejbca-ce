@@ -25,7 +25,6 @@
     <import file="${ejbca-repository.dir}/../build-helpers.xml"/>
 
 	<property name="ejbca-repository.build.dir" location="${ejbca-repository.dir}/build"/>
-	<property name="ejbca-repository-generator.build.dir" location="${ejbca-repository.dir}/../ejbca-repository-generator/build"/>
 	<property name="ejbca-repository.build-test.dir" location="${ejbca-repository.dir}/build-test"/>
 	<property name="ejbca-repository.src.dir" location="${ejbca-repository.dir}/src"/>
 	<property name="ejbca-repository.src-test.dir" location="${ejbca-repository.dir}/src-test"/>

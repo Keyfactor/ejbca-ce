@@ -23,8 +23,8 @@ import jakarta.persistence.Transient;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.dbprotection.DatabaseProtectionException;
+import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectedDataImpl;
-import org.cesecore.dbprotection.ProtectedDataIntegrityImpl;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.dto.RoleDataDto;
 import org.cesecore.util.Base64GetHashMap;
@@ -57,8 +57,7 @@ public final class RoleData implements Serializable, EntityManagerBean<RoleDataD
     private static ProtectedDataImpl protectedDataImpl;
 
     static {
-        protectedDataImpl = new ProtectedDataIntegrityImpl();
-        protectedDataImpl.setTableName("RoleDataDto");
+        protectedDataImpl = ProtectedData.initializeProtectedDataImpl("RoleData");
     }
 
     // It is important that the names below match the ones in the database table RoleDataDto

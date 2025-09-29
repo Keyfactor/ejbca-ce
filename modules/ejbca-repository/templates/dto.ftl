@@ -23,7 +23,6 @@ import jakarta.persistence.Transient;
 <#if !test>
 import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.dbprotection.ProtectedDataImpl;
-import org.cesecore.dbprotection.ProtectedDataIntegrityImpl;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.dto.${name?cap_first}Dto;
 </#if>
@@ -43,8 +42,7 @@ public final class ${name?cap_first} implements Serializable, EntityManagerBean<
     private static ProtectedDataImpl protectedDataImpl;
 
     static {
-        protectedDataImpl = new ProtectedDataIntegrityImpl();
-        protectedDataImpl.setTableName("${name?cap_first}");
+        protectedDataImpl = ProtectedData.initializeProtectedDataImpl("${name?cap_first}");
     }
 
     public static ProtectedDataImpl getProtectedDataImpl() {

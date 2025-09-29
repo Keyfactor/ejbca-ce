@@ -40,6 +40,7 @@ public interface WebAuthenticationProviderSessionLocal extends AuthenticationPro
     /** @return an OAuth2AuthenticationToken based on the given encoded token.  Returns null if token not valid. */
     AuthenticationToken authenticateUsingOAuthBearerToken(OAuthConfiguration oauthConfiguration, String encodedOauthBearerToken, String oauthIdToken) throws TokenExpiredException;
 
-    /** @return new OAuthGrantResponseInfo from oauth provider based on the given refresh token */
-    OAuthGrantResponseInfo refreshOAuthBearerToken(OAuthConfiguration oauthConfiguration, String encodedOauthBearerToken, String oauthIdToken, String refreshToken) throws TokenExpiredException;
+
+    /** @return new OAuthGrantResponseInfo from oauth provider based on the given refresh token, using the provided request URL if allowed */
+    OAuthGrantResponseInfo refreshOAuthBearerToken(OAuthConfiguration oauthConfiguration, String encodedOauthBearerToken, String oauthIdToken, String refreshToken, String requestUrl) throws TokenExpiredException;
 }

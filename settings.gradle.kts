@@ -406,7 +406,6 @@ include(
     "modules:systemtests:ejb",
     "modules:clientToolBox",
     "modules:ejbca-repository",
-    "modules:ejbca-repository-generator",
     "modules:cmpclient",
 )
 
