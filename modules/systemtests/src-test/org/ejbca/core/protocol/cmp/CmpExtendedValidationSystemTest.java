@@ -24,9 +24,10 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import com.keyfactor.util.CertTools;
@@ -67,7 +68,8 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
-import org.cesecore.roles.Role;
+import org.cesecore.dto.RoleDataDto;
+import org.cesecore.dto.RoleDataDtoBuilder;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
@@ -1101,20 +1103,28 @@ public class CmpExtendedValidationSystemTest extends CmpTestCase {
         return cert;
     }
 
-
-    private void grantAccessToCert(final Certificate cert) throws Exception {
-        roleSession.deleteRoleIdempotent(ADMIN, null, TEST_ROLE);
-        final List<String> accessRules = Arrays.asList(
+    private RoleDataDto getRoleData() {
+        final List<String> allowResources = Arrays.asList(
                 AccessRulesConstants.REGULAR_CREATEENDENTITY,
                 AccessRulesConstants.REGULAR_EDITENDENTITY,
                 AccessRulesConstants.REGULAR_CREATECERTIFICATE,
                 AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepDnOverrideId + AccessRulesConstants.CREATE_END_ENTITY,
                 AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepDnOverrideId + AccessRulesConstants.EDIT_END_ENTITY,
                 StandardRules.CAACCESS.resource() + testx509ca.getCAId());
-        final Role role = roleSession.persistRole(ADMIN, new Role(null, TEST_ROLE, accessRules, Collections.emptyList()));
+        final Map<String, Boolean> accessRules = new HashMap<>();
+        allowResources.forEach(resource -> accessRules.put(resource, RoleDataDto.STATE_ALLOW));
+        return new RoleDataDtoBuilder()
+                .setName(TEST_ROLE)
+                .setAccessRules(accessRules)
+                .build();
+    }
+
+    private void grantAccessToCert(final Certificate cert) throws Exception {
+        roleSession.deleteRoleIdempotent(ADMIN, null, TEST_ROLE);
+        final RoleDataDto role = roleSession.persistRole(ADMIN, getRoleData());
         roleMemberSession.persist(ADMIN, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, testx509ca.getCAId(), RoleMember.NO_PROVIDER,
                 X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
-                DnComponents.getPartFromDN(CertTools.getSubjectDN(cert), "CN"), role.getRoleId(), null));
+                DnComponents.getPartFromDN(CertTools.getSubjectDN(cert), "CN"), role.id(), null));
     }
 
     private PKIMessage genCertReq(final String userDn) throws InvalidKeyException, NoSuchAlgorithmException, SignatureException, IOException {

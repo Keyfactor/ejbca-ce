@@ -22,11 +22,11 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileData;
 import org.cesecore.certificates.certificatetransparency.SctData;
 import org.cesecore.certificates.crl.CRLData;
 import org.cesecore.configuration.GlobalConfigurationData;
+import org.cesecore.dto.RoleDataDto;
 import org.cesecore.keybind.InternalKeyBindingData;
 import org.cesecore.keys.token.CryptoTokenData;
 import org.cesecore.oscp.OcspResponseData;
 import org.cesecore.profiles.ProfileData;
-import org.cesecore.roles.RoleData;
 import org.cesecore.roles.member.RoleMemberData;
 import org.ejbca.acme.AcmeAccountData;
 import org.ejbca.acme.AcmeAuthorizationData;
@@ -74,7 +74,7 @@ public record DatabaseContent(
         List<ProfileData> profileData,
         List<PublisherDataBean> publisherData,
         List<PublisherQueueData> publisherQueueData,
-        List<RoleData> roleData,
+        List<RoleDataDto> roleData,
         List<RoleMemberData> roleMemberData,
         List<SctData> sctData,
         List<ServiceData> serviceData,

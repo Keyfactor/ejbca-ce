@@ -24,19 +24,29 @@ import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectedDataImpl;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
-
+import org.cesecore.dto.PublisherData;
+import org.cesecore.dto.PublisherDataRecord;
+import org.cesecore.util.XmlUtil;
+import java.util.Collections;
 import java.io.Serializable;
 import java.util.Objects;
 
 @Entity
 @Table(name = "PublisherData")
-public final class PublisherDataBean implements Serializable, EntityManagerBean {
+public final class PublisherDataBean implements Serializable, EntityManagerBean<PublisherData> {
 
     private static ProtectedDataImpl protectedDataImpl;
 
     static {
-        final String entityClassName = PublisherDataBean.class.getSimpleName();
-        protectedDataImpl = ProtectedData.initializeProtectedDataImpl(entityClassName);
+        protectedDataImpl = ProtectedData.initializeProtectedDataImpl("PublisherData");
+    }
+
+    public static ProtectedDataImpl getProtectedDataImpl() {
+        return protectedDataImpl;
+    }
+
+    public static void setProtectedDataImpl(final ProtectedDataImpl protectedDataImpl) {
+        PublisherDataBean.protectedDataImpl = protectedDataImpl;
     }
 
     private Integer id;
@@ -99,6 +109,23 @@ public final class PublisherDataBean implements Serializable, EntityManagerBean 
         this.rowProtection = rowProtection;
     }
 
+    @Override
+    public PublisherData toDto() {
+        return new PublisherDataRecord(
+                    getId(),
+                    getName(),
+                    getUpdateCounter(),
+                    Collections.unmodifiableMap(XmlUtil.fromXml(getData())));
+    }
+
+    @Override
+    public void init(PublisherData dto) {
+        setId(dto.id());
+        setName(dto.name());
+        setUpdateCounter(dto.updateCounter());
+        setData(XmlUtil.toXml(dto.data()));
+    }
+
     @Transient
     @Override
     public int getProtectVersion() {
@@ -112,7 +139,6 @@ public final class PublisherDataBean implements Serializable, EntityManagerBean 
         builder.append(getId());
         builder.append(getName());
         builder.append(getUpdateCounter());
-        builder.append(getData());
         return builder.toString();
     }
 
@@ -120,7 +146,7 @@ public final class PublisherDataBean implements Serializable, EntityManagerBean 
     @PreUpdate
     protected void protectData() throws DatabaseProtectionException {
         final var unProtectedData = getProtectString(getProtectVersion());
-        final var protectedData = protectedDataImpl.getProtectedData(getProtectVersion(), unProtectedData);
+        final var protectedData = protectedDataImpl.getProtectedData(rowVersion, unProtectedData);
         if (protectedData != null) {
             setRowProtection(protectedData);
         }

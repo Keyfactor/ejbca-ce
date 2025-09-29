@@ -13,18 +13,27 @@
 
 package org.ejbca.dto;
 
-public interface EntityManagerBean {
+public interface EntityManagerBean<Dto> {
+
+    String KEY_VERSION = "version";
 
     int getRowVersion();
 
-    void setRowVersion(int rowVersion);
+    void setRowVersion(final int rowVersion);
 
     String getRowProtection();
 
-    void setRowProtection(String rowProtection);
+    void setRowProtection(final String rowProtection);
 
     String getProtectString(final int version);
 
     int getProtectVersion();
+
+    Dto toDto();
+
+    void init(final Dto dto);
+
+    default void upgrade() {
+    }
 
 }

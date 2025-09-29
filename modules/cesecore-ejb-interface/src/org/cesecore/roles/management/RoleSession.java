@@ -16,8 +16,8 @@ import java.util.List;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
+import org.cesecore.dto.RoleDataDto;
 
 /**
  * Common interface for Role management operations.
@@ -33,7 +33,7 @@ public interface RoleSession {
      * @throws RoleExistsException if provided role's nameSpace and roleName combination is used by another role
      * @throws AuthorizationDeniedException if the caller is not authorized to store the role
      */
-    Role persistRole(AuthenticationToken authenticationToken, Role role) throws RoleExistsException, AuthorizationDeniedException;
+    RoleDataDto persistRole(AuthenticationToken authenticationToken, RoleDataDto role) throws RoleExistsException, AuthorizationDeniedException;
 
     /**
      * Store the provided role. If the role id is 0, a new Id will be assigned and the role will be created.
@@ -45,7 +45,7 @@ public interface RoleSession {
      * @throws RoleExistsException if provided role's nameSpace and roleName combination is used by another role
      * @throws AuthorizationDeniedException if the caller is not authorized to store the role
      */
-    Role persistRole(AuthenticationToken authenticationToken, Role role, boolean requireNonImportantRoleMembership)
+    RoleDataDto persistRole(AuthenticationToken authenticationToken, RoleDataDto role, boolean requireNonImportantRoleMembership)
             throws RoleExistsException, AuthorizationDeniedException;
 
     /**
@@ -66,7 +66,7 @@ public interface RoleSession {
      * @return the Role for the specified id or null if no such role exists
      * @throws AuthorizationDeniedException the caller is not authorized to see this role (leaks that a role with this id exists)
      */
-    Role getRole(AuthenticationToken authenticationToken, int roleId) throws AuthorizationDeniedException;
+    RoleDataDto getRole(AuthenticationToken authenticationToken, int roleId) throws AuthorizationDeniedException;
 
     /**
      * @param authenticationToken the callers AuthenticationToken
@@ -75,14 +75,14 @@ public interface RoleSession {
      * @return the Role for the specified id or null if no such role exists
      * @throws AuthorizationDeniedException the caller is not authorized to see this role (leaks that a role with this id exists)
      */
-    Role getRole(AuthenticationToken authenticationToken, String nameSpace, String roleName) throws AuthorizationDeniedException;
+    RoleDataDto getRole(AuthenticationToken authenticationToken, String nameSpace, String roleName) throws AuthorizationDeniedException;
     
     /**
      * Returns a list of all roles that the given administrator is allowed to see.
      * @param authenticationToken Administrator.
      * @return List of authorized roles. May be empty, but never null.
      */
-    List<Role> getAuthorizedRoles(AuthenticationToken authenticationToken);
+    List<RoleDataDto> getAuthorizedRoles(AuthenticationToken authenticationToken);
 
     /**
      * Returns a list of all role namespaces that the given administrator is allowed to see.

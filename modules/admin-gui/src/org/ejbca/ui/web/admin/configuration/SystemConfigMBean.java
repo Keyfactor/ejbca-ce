@@ -68,6 +68,7 @@ import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.config.RaStyleInfo.RaCssInfo;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.dto.RoleDataDto;
 import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingStatus;
@@ -75,7 +76,6 @@ import org.cesecore.keybind.impl.AuthenticationKeyBinding;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.roles.AccessRulesHelper;
-import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleDataSessionLocal;
 import org.cesecore.util.SecureZipUnpacker;
 import org.ejbca.config.AvailableProtocolsConfiguration;
@@ -1153,11 +1153,12 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 // control check is performed in this step.
                 if (!currentConfig.getEnableKeyRecovery()) {
                     log.info("Key recovery has been disabled. Checking if there are any stale access rules to remove...");
-                    for (final Role role : roleSession.getAllRoles()) {
-                        if (role.getAccessRules().containsKey(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_KEYRECOVERY))) {
-                            role.getAccessRules().remove(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_KEYRECOVERY));
-                            roleSession.persistRole(role);
-                            log.info("Removed access rule " + AccessRulesConstants.REGULAR_KEYRECOVERY + " from role " + role.getRoleName());
+                    for (final RoleDataDto role : roleSession.getAllRoles()) {
+                        if (role.accessRules().containsKey(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_KEYRECOVERY))) {
+                            Map<String, Boolean> accessRules = new HashMap<>(role.accessRules());
+                            accessRules.remove(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_KEYRECOVERY));
+                            roleSession.persistRole(role.withAccessRules(accessRules));
+                            log.info("Removed access rule " + AccessRulesConstants.REGULAR_KEYRECOVERY + " from role " + role.name());
                         }
                     }
                 }

@@ -10,7 +10,6 @@ dependencies {
     compileOnly(project(":modules:cesecore-ejb-interface"))
     compileOnly(project(":modules:cesecore-entity"))
     compileOnly(project(":modules:ejbca-repository"))
-    compileOnly(project(":modules:ejbca-repository-generator"))
     compileOnly(libs.jakartaee.api)
     compileOnly(libs.jaxb.runtime)
     compileOnly(libs.bcpkix)
