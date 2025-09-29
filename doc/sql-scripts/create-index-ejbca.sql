@@ -82,6 +82,10 @@ CREATE INDEX userdata_idx11 ON UserData (status);
 -- Increase speed while selecting all the user data while looking for end entities
 CREATE INDEX userdata_idx12 ON UserData(timeCreated);
 
+-- Avoid full table searches when CA or EE profile is mentioned 
+CREATE INDEX userdata_idx13 ON UserData (cAId);
+-- CREATE INDEX userdata_idx14 ON UserData (endEntityProfileId);
+
 CREATE INDEX publisherqueue_idx3 ON PublisherQueueData (publisherId, publishStatus, timeCreated);
 
 -- When using a role members with many entries

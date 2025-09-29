@@ -56,18 +56,22 @@ public class CryptoTokenTestUtils {
             .getRemoteSession(CryptoTokenManagementSessionRemote.class);
 
     public static X509CA createTestCAWithSoftCryptoToken(AuthenticationToken authenticationToken, String dN) throws Exception {
-      return (X509CA)internalCreateTestCAWithSoftCryptoToken(authenticationToken, dN, CAInfo.SELFSIGNED, false);
+      return (X509CA)internalCreateTestCAWithSoftCryptoToken(authenticationToken, dN, CAInfo.SELFSIGNED, false, true);
     }
+    
+    public static X509CA createTestCAWithSoftCryptoToken(AuthenticationToken authenticationToken, String dN, boolean uniqueSubjectDn) throws Exception {
+        return (X509CA)internalCreateTestCAWithSoftCryptoToken(authenticationToken, dN, CAInfo.SELFSIGNED, false, uniqueSubjectDn);
+      }
 
     public static X509CA createTestCAWithSoftCryptoToken(AuthenticationToken authenticationToken, String dN, int signedBy) throws Exception {
-        return (X509CA)internalCreateTestCAWithSoftCryptoToken(authenticationToken, dN, signedBy, false);
+        return (X509CA)internalCreateTestCAWithSoftCryptoToken(authenticationToken, dN, signedBy, false, true);
     }
 
     public static CvcCA createTestCVCAWithSoftCryptoToken(AuthenticationToken authenticationToken, String dN) throws Exception {
-        return (CvcCA)internalCreateTestCAWithSoftCryptoToken(authenticationToken, dN, CAInfo.SELFSIGNED, true);
+        return (CvcCA)internalCreateTestCAWithSoftCryptoToken(authenticationToken, dN, CAInfo.SELFSIGNED, true, true);
       }
 
-    private static CA internalCreateTestCAWithSoftCryptoToken(AuthenticationToken authenticationToken, String dN, int signedBy, boolean cvc) throws Exception {
+    private static CA internalCreateTestCAWithSoftCryptoToken(AuthenticationToken authenticationToken, String dN, int signedBy, boolean cvc, boolean uniqueSubjectDn) throws Exception {
         CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
         final CA ca;
         if (cvc) {
@@ -83,6 +87,11 @@ public class CryptoTokenTestUtils {
         }
         // Now add the test CA so it is available in the tests
         caSession.addCA(authenticationToken, ca);
+        if (!uniqueSubjectDn) {
+            CAInfo createdCaInfo = caSession.getCAInfo(authenticationToken, dN.hashCode());
+            createdCaInfo.setDoEnforceUniqueDistinguishedName(false);
+            caSession.editCA(authenticationToken, createdCaInfo);
+        }
         return ca;
     }
 

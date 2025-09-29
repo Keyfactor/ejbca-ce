@@ -21,8 +21,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
-import java.time.Period;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.List;
 import java.util.Set;
@@ -42,8 +42,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
-import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.license.LicenseState;
 import org.cesecore.license.LicenseStateContainer;
 import org.ejbca.config.EjbcaConfiguration;
@@ -58,7 +56,7 @@ import org.xml.sax.SAXException;
 
 import com.keyfactor.util.CertTools;
 
-import jakarta.ejb.EJB;
+import jakarta.annotation.PostConstruct;
 import jakarta.ejb.Schedule;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
@@ -84,91 +82,106 @@ public class LicenseVerifierEnterpriseSessionBean {
                     + "V9Ut0N7UfSlgV2rE1QRhIkkMivXUaz6od7ZjQMQ7+OrKuffCspJ3y5eiSR6QVYrk\n"
                     + "MwIDAQAB\n"
                     + "-----END PUBLIC KEY-----";
+    
+    // see GenerateExampleLicense
+    protected static String LICENCE_VERIFIER_KEY_PEM_NON_PRODUCTION = "-----BEGIN PUBLIC KEY-----\n"
+            + "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsRP8KJ5tgi2XXTyZ5zEM\n"
+            + "EAmWFe9AFQxEejOpSaZw4o+kQ0aaEWb3GgUxl1fFyBOdi0T5D20FAbupzaulOC5L\n"
+            + "N4R4uZphUdFrFc0XFwX9ZsfeXi2PiGay1kLv2lxdrYLLj3bv6OpwSD221shp3itX\n"
+            + "twiLkriA1+uB5/fiZr0R74G9/PHk4uEGSWq1F7i0igR71hu/++w9W8tKSl1YUj6g\n"
+            + "plNFNyd+uvE0NESvgq3TRKhqwBSTl3Sg3fBtwho4PbVZUZVDbUSyi4lpjEcZdgCs\n"
+            + "O35VPSaNvMEFesYmotiQcl+OQgteK8prJkxFuq53plQ3TY78fgsGNlvovYfLo2JS\n"
+            + "4wIDAQAB\n"
+            + "-----END PUBLIC KEY-----";
         
     private static PublicKey licenseVerificationKey;
-    private static final String LICENCE_FILE_PATH = "/mnt/licence/ejbca-licence";
-        
-    private static final int SOON_TO_EXPIRE_DAYS = 90;
-    private static final int EXPIRED_TOO_LONG_DAYS = 100;
+    private static final String LICENCE_FILE_PATH = "/mnt/license/ejbca-license";
+            
+    private static final int EXPIRED_TOO_LONG_DAYS = 90;
     
-    @EJB
-    private AuthorizationSessionLocal authorizationSession;
-    
-    private static int startUpCountDown = 3;
-        
-    @Schedule(hour = "*", minute = "*/1", persistent = false)
+    private static final String LICENSE_MISSING_MESSAGE = "No license file is provided. Shutting down EJBCA...";
+     
+    @PostConstruct
+    public void init() {
+        // Run immediately at startup
+        log.debug("EJBCA license check timer triggered immediate: " + java.time.LocalDateTime.now());
+        validateLicenseInBackground();
+    }
+     
+    @Schedule(hour = "*/1", persistent = false)
+    //@Schedule(hour = "*", minute = "*/1", persistent = false)
     public void validateLicenseInBackground() {
-        startUpCountDown--;
         log.debug("EJBCA license check timer triggered: " + java.time.LocalDateTime.now());
-        if (!EjbcaConfiguration.getIsInProductionMode() || startUpCountDown>0) {
-            return;
-        }
-                
-        boolean publicAccessEnabled = 
-                authorizationSession.isAuthorizedNoLogging(new PublicAccessAuthenticationToken("LicenseVerifier", true), "/");
         
         String licenseContent = readLicenseFile();
         if (licenseContent!=null) {
             validateLicense(licenseContent);
+        } else {
+            if (!EjbcaConfiguration.getIsInProductionMode()) {
+                log.debug("EJBCA license is missing in non-production mode. ignoring...");
+                return;
+            }
+            decorateLicenseErrorMessage(LICENSE_MISSING_MESSAGE);
+            System.exit(1);
         }
         
-        if (!publicAccessEnabled) { // high chance of new installation
-            executeFailureFunction();
-        }
     }
     
     private static String readLicenseFile() {
         Path path = Paths.get(LICENCE_FILE_PATH);
         if (!Files.exists(path)) {
-            prepareFailureAction(LicenseState.MISSING);
             return null;
         }
         String content = null;
         try {
             content = Files.readString(path); // assume UTF-8
         } catch (IOException e) {
-            log.error("File ", e);
+            log.info("File could not be read", e);
         }
         if (content==null || content.length() < 100) {
-            prepareFailureAction(LicenseState.MISSING);
             return null;
         } 
         return content;
     }
     
     private static void prepareFailureAction(LicenseState licenseState) {
-        LicenseStateContainer.setLicenseState(licenseState);
-        if (licenseState!=LicenseState.VALID) {
-            decorateLicenseErrorMessage("EJBCA license " + licenseState.getStatusMessage() 
-                                            + ". Please contact xxxx@keyfactor.com to renew license.");
-        }
+        prepareFailureAction(licenseState, licenseState.getStatusMessage());
     }
     
-    private static void executeFailureFunction() {
-        // commented out as definitely not part of 9.4.0
-//        if (System.getenv("SHOOT_MY_FOOT")!=null && System.getenv("NO_LICENSE_PUBLIC_ACCESS")==null &&
-//                LicenseStateContainer.getLicenseState() == LicenseState.EXPIRED_LONG_BACK) {
-//            decorateLicenseErrorMessage("EJBCA license is expired more than 3 months ago. Shutting down...");
-//            System.exit(1);
-//        }
+    private static void prepareFailureActionForExpiry(LicenseState licenseState, long days) {
+        prepareFailureAction(licenseState, licenseState.getStatusMessage()
+                    .replace(LicenseState.TO_BE_EXPIRE_DAYS_TEMPLATE, "" + days));
+    }
+    
+    private static void prepareFailureAction(LicenseState licenseState, String message) {
+        LicenseStateContainer.setLicenseState(licenseState);
+        if (licenseState!=LicenseState.VALID) {
+            decorateLicenseErrorMessage(message + ". Please contact xxxx@keyfactor.com to renew license.");
+        }
+        if (licenseState==LicenseState.EJBCA_SETUP_INVALID || licenseState==LicenseState.INVALID
+                || licenseState==LicenseState.EXPIRED_LONG_BACK ) {
+            System.exit(1);
+        }
     }
     
     private static void decorateLicenseErrorMessage(String message) {
         StringBuilder sb = new StringBuilder();
-        final String banner = "###########################################################################";
+        final String banner = "###############################################################################";
         List.of(banner, banner, banner, "", message, "", banner, banner, banner).forEach(log::error);
-        List.of(banner, "", message, "", banner ).forEach(x -> sb.append("<b>" + x + "</b><br>"));
+        List.of("", message, "").forEach(x -> sb.append("<b>" + x + "</b><br>"));
         LicenseStateContainer.setLicenseInvalidWarning(sb.toString());
     }
-    
-
     
     protected void validateLicense(String licenseContent) {
         
         if (licenseVerificationKey==null) {
-            readPublicKeyFromPem();
+            if (EjbcaConfiguration.getIsInProductionMode()) {
+                readPublicKeyFromPem(LICENCE_VERIFIER_KEY_PEM);
+            } else {
+                readPublicKeyFromPem(LICENCE_VERIFIER_KEY_PEM_NON_PRODUCTION);
+            }
         }
-        
+                
         byte[] licenseBytes = licenseContent.getBytes(StandardCharsets.UTF_8);
         Element doc;
         LicenseData license = null;
@@ -189,23 +202,34 @@ public class LicenseVerifierEnterpriseSessionBean {
 
         Validator validator = factory.getValidator();
         Set<ConstraintViolation<LicenseData>> violations = validator.validate(license);
-        Period soonToExpireCheck = Period.between(ZonedDateTime.now().plusDays(SOON_TO_EXPIRE_DAYS).toLocalDate(),
-                                                                license.getLicense().getExpirationDate().toLocalDate());
+        
         if (violations.isEmpty()) {
-            LicenseStateContainer.setLicenseState(LicenseState.VALID);
-            if (soonToExpireCheck.isNegative()) {
-                prepareFailureAction(LicenseState.TO_BE_EXPIRED);
+            long daysToExpiry = ChronoUnit.DAYS.between(ZonedDateTime.now().toLocalDate(),
+                    license.getLicense().getExpirationDate().toLocalDate());
+                        
+            if (daysToExpiry < 5) {
+                prepareFailureActionForExpiry(LicenseState.TO_BE_EXPIRED_5_DAYS, daysToExpiry);
+            } else if (daysToExpiry < 30) {
+                prepareFailureActionForExpiry(LicenseState.TO_BE_EXPIRED_30_DAYS, daysToExpiry);
+            } else if (daysToExpiry < 60) {
+                prepareFailureActionForExpiry(LicenseState.TO_BE_EXPIRED_60_DAYS, daysToExpiry);
+            } else {
+                LicenseStateContainer.setLicenseState(LicenseState.VALID);
             }
+
             return;
         }
         
         if (violations.stream().anyMatch(v -> v.getMessage().equals(License.LICENSE_EXPIRED))) {
-            Period expireLongBackCheck = Period.between(ZonedDateTime.now().minusDays(EXPIRED_TOO_LONG_DAYS).toLocalDate(),
-                    license.getLicense().getExpirationDate().toLocalDate());
-            if (expireLongBackCheck.isNegative()) {
-                prepareFailureAction(LicenseState.EXPIRED_LONG_BACK);
+            
+            long expiredSince = ChronoUnit.DAYS.between(
+                                                license.getLicense().getExpirationDate().toLocalDate(), 
+                                                ZonedDateTime.now().toLocalDate());
+            
+            if (expiredSince > EXPIRED_TOO_LONG_DAYS) {
+                prepareFailureActionForExpiry(LicenseState.EXPIRED_LONG_BACK, EXPIRED_TOO_LONG_DAYS);
             } else {
-                prepareFailureAction(LicenseState.EXPIRED);
+                prepareFailureActionForExpiry(LicenseState.EXPIRED, EXPIRED_TOO_LONG_DAYS - expiredSince);
             }
         } else {
             prepareFailureAction(LicenseState.INVALID);
@@ -219,7 +243,7 @@ public class LicenseVerifierEnterpriseSessionBean {
             context = JAXBContext.newInstance(LicenseData.class);
             return (LicenseData) context.createUnmarshaller().unmarshal(node);
         } catch (JAXBException e) {
-            log.error("Could not create xml parser", e);
+            log.info("Could not create xml parser", e);
             prepareFailureAction(LicenseState.EJBCA_SETUP_INVALID);
             return null;
         }
@@ -265,9 +289,9 @@ public class LicenseVerifierEnterpriseSessionBean {
         return null;
     }
     
-    private static void readPublicKeyFromPem() {
+    private static void readPublicKeyFromPem(String pemContent) {
         
-        String keyPem = LICENCE_VERIFIER_KEY_PEM
+        String keyPem = pemContent
                 .replace(CertTools.BEGIN_PUBLIC_KEY, "")
                 .replace(CertTools.END_PUBLIC_KEY, "")
                 .replaceAll("\\s", "");
@@ -280,7 +304,7 @@ public class LicenseVerifierEnterpriseSessionBean {
             keyFactory = KeyFactory.getInstance("RSA");
             licenseVerificationKey = keyFactory.generatePublic(keySpec);
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-            log.info("Unable to parse license verification key.");
+            log.info("Unable to parse license verification key.", e);
             prepareFailureAction(LicenseState.EJBCA_SETUP_INVALID);
         }
         
