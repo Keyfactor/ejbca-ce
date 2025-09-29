@@ -82,6 +82,11 @@ spec:
           - name: ejbca-config-conf-files
             mountPath: /opt/keyfactor/ejbca/conf/
           {{- end }}
+          {{- if .Values.ejbca.license }}
+          - name: ejbca-license
+            mountPath: /mnt/license/ejbca-license
+            subPath: ejbca-license
+          {{- end }}
         {{- end }}
         {{- if .Values.hsm.enabled }}
         - name: hsm-driver-init
@@ -95,11 +100,6 @@ spec:
           volumeMounts:
             - name: p11proxy-client
               mountPath: /mnt/driver/
-            {{- if .Values.ejbca.license }}
-            - name: ejbca-license
-              mountPath: /mnt/license/ejbca-license
-              subPath: ejbca-license
-            {{- end }}
         {{- end }}
         {{- if .Values.ejbca.initContainers }}
           {{- toYaml .Values.ejbca.initContainers | nindent 8 }}
