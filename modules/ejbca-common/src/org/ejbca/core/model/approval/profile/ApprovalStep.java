@@ -25,7 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.roles.RoleData;
+import org.cesecore.dto.RoleDataDto;
 import org.cesecore.roles.RoleInformation;
 import org.cesecore.util.LookAheadObjectInputStream;
 import org.cesecore.util.ProfileID;
@@ -88,7 +88,7 @@ public class ApprovalStep implements Serializable {
             ois.setEnabledMaxObjects(false);
             ois.setAcceptedClasses(Arrays.asList(ApprovalStep.class, ApprovalPartition.class, LinkedHashMap.class, HashMap.class,
                     DynamicUiProperty.class, DynamicUiPropertyCallback.class, Enum.class, ArrayList.class, DynamicUiPropertyValidator.class,
-                    RoleInformation.class, HashSet.class, AccessMatchType.class, RoleData.class, RadioButton.class, MultiLineString.class, 
+                    RoleInformation.class, HashSet.class, AccessMatchType.class, RoleDataDto.class, RadioButton.class, MultiLineString.class,
                     UrlString.class));
             ois.setEnabledInterfaceImplementations(true, "org.cesecore.util.ui");
             final ApprovalStep step = (ApprovalStep) ois.readObject();

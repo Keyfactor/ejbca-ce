@@ -33,9 +33,9 @@ import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.dto.RoleDataDto;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.roles.AccessRulesHelper;
-import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleInformation;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMemberSessionLocal;
@@ -524,12 +524,12 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
                 DynamicUiProperty<? extends Serializable> propertyClone = new DynamicUiProperty<>(property);
                 switch (propertyClone.getPropertyCallback()) {
                 case ROLES:
-                    final List<Role> allAuthorizedRoles = roleSession.getAuthorizedRoles(getAdmin());
+                    final List<RoleDataDto> allAuthorizedRoles = roleSession.getAuthorizedRoles(getAdmin());
                     final List<RoleInformation> roleRepresentations = new ArrayList<>();
-                    for (final Role role : allAuthorizedRoles) {
+                    for (final RoleDataDto role : allAuthorizedRoles) {
                         if (AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVEENDENTITY)
                                 || AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVECAACTION)) {
-                            roleRepresentations.add(new RoleInformation(role.getRoleId(), role.getNameSpace(), role.getRoleName()));
+                            roleRepresentations.add(new RoleInformation(role.getId(), role.getNameSpace(), role.getName()));
                         }
                     }
                     if (!roleRepresentations.contains(propertyClone.getDefaultValue())) {
@@ -540,13 +540,13 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
                     updateEncodedValues(propertyClone, property);
                     break;
                 case ROLES_VIEW:
-                    final List<Role> allAuthorizedRolesForViewing = roleSession.getAuthorizedRoles(getAdmin());
+                    final List<RoleDataDto> allAuthorizedRolesForViewing = roleSession.getAuthorizedRoles(getAdmin());
                     final List<RoleInformation> viewingRoleRepresentations = new ArrayList<>();
-                    for (final Role role : allAuthorizedRolesForViewing) {
+                    for (final RoleDataDto role : allAuthorizedRolesForViewing) {
                         if (AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_VIEWAPPROVALS)
                                 || AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVEENDENTITY)
                                 || AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVECAACTION)) {
-                            viewingRoleRepresentations.add(new RoleInformation(role.getRoleId(), role.getNameSpace(), role.getRoleName()));
+                            viewingRoleRepresentations.add(new RoleInformation(role.getId(), role.getNameSpace(), role.getName()));
                         }
                     }
                     if (!viewingRoleRepresentations.contains(propertyClone.getDefaultValue())) {

@@ -1,5 +1,7 @@
 {
-  "indexName": "name",
+  "indexNames": [
+    "name"
+  ],
   "xmlName": "data",
   "idName": "id",
   "idType": "Integer",

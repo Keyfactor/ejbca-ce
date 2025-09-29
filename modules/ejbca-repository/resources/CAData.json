@@ -1,0 +1,34 @@
+{
+  "indexNames": [
+    "name"
+  ],
+  "xmlName": "data",
+  "idName": "cAId",
+  "idType": "Integer",
+  "fields": [
+    {
+      "javaType": "Integer",
+      "javaName": "cAId"
+    },
+    {
+      "javaType": "String",
+      "javaName": "name"
+    },
+    {
+      "javaType": "String",
+      "javaName": "subjectDN"
+    },
+    {
+      "javaType": "int",
+      "javaName": "status"
+    },
+    {
+      "javaType": "long",
+      "javaName": "expireTime"
+    },
+    {
+      "javaType": "long",
+      "javaName": "updateTime"
+    }
+  ]
+}

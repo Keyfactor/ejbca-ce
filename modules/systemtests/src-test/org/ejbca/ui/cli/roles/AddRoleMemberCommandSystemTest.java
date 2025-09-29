@@ -20,9 +20,10 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.X509CA;
+import org.cesecore.dto.RoleDataDto;
+import org.cesecore.dto.RoleDataDtoBuilder;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
@@ -51,7 +52,7 @@ public class AddRoleMemberCommandSystemTest {
     private static X509CA x509ca = null;
 
     private final AddRoleMemberCommand command = new AddRoleMemberCommand();
-    private int roleId = Role.ROLE_ID_UNASSIGNED;
+    private int roleId = RoleDataDto.ROLE_ID_UNASSIGNED;
 
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -68,7 +69,7 @@ public class AddRoleMemberCommandSystemTest {
 
     @Before
     public void setup() throws Exception {
-        roleId = roleSession.persistRole(authenticationToken, new Role(null, TESTCLASS_NAME)).getRoleId();
+        roleId = roleSession.persistRole(authenticationToken, new RoleDataDtoBuilder().setName(TESTCLASS_NAME).build()).id();
     }
     
     @After

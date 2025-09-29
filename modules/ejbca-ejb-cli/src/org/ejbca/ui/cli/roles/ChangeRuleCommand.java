@@ -15,14 +15,16 @@ package org.ejbca.ui.cli.roles;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.rules.AccessRuleState;
+import org.cesecore.dto.RoleDataDto;
 import org.cesecore.roles.AccessRulesHelper;
-import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
@@ -67,14 +69,14 @@ public class ChangeRuleCommand extends BaseRolesCommand {
     public CommandResult execute(ParameterContainer parameters) {
         final String roleName = parameters.get(NAME_KEY);
         final String namespace = parameters.get(ROLE_NAMESPACE_KEY);
-        final Role role;
+        final RoleDataDto roleData;
         try {
-            role = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).getRole(getAuthenticationToken(), namespace, roleName);
+            roleData = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).getRole(getAuthenticationToken(), namespace, roleName);
         } catch (AuthorizationDeniedException e1) {
             getLogger().error("Not authorized to role " + super.getFullRoleName(namespace, roleName) + ".");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
-        if (role == null) {
+        if (roleData == null) {
             getLogger().error("No such role " + super.getFullRoleName(namespace, roleName) + ".");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
@@ -95,25 +97,26 @@ public class ChangeRuleCommand extends BaseRolesCommand {
                 getLogger().warn("Setting " + RECURSIVE_KEY + " is not needed from EJBCA 6.8.0, since all rules are always recursive.");
             }
 
+            final Map<String, Boolean> accessRules = new HashMap<>(roleData.accessRules());
             if (rule == AccessRuleState.RULE_NOTUSED) {
-                if (role.getAccessRules().remove(resource)==null) {
+                if (accessRules.remove(resource)==null) {
                     getLogger().info("No rule for resource '" + resourceName + "' found.");
                 }
             } else if (rule == AccessRuleState.RULE_ACCEPT) {
-                if (role.getAccessRules().put(resource, Role.STATE_ALLOW)==null) {
+                if (accessRules.put(resource, RoleDataDto.STATE_ALLOW)==null) {
                     getLogger().info("Added accept rule for resource '" + resourceName + "'.");
                 } else {
                     getLogger().info("Replaces existing access rule with allow rule for resource '" + resourceName + "'.");
                 }
             } else {
-                if (role.getAccessRules().put(resource, Role.STATE_DENY)==null) {
+                if (accessRules.put(resource, RoleDataDto.STATE_DENY)==null) {
                     getLogger().info("Added deny rule for resource '" + resourceName + "'.");
                 } else {
                     getLogger().info("Replaces existing access rule with deny rule for resource '" + resourceName + "'.");
                 }
             }
             try {
-                EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).persistRole(getAuthenticationToken(), role);
+                EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).persistRole(getAuthenticationToken(), roleData.withAccessRules(accessRules));
             } catch (RoleExistsException e) {
                 getLogger().error("ERROR: Unable to save changes: " + e.getMessage());
                 return CommandResult.FUNCTIONAL_FAILURE;
@@ -135,12 +138,12 @@ public class ChangeRuleCommand extends BaseRolesCommand {
     public String getFullHelpText() {
         final StringBuilder sb = new StringBuilder();
         sb.append(getCommandDescription() + "\n");
-        final List<Role> roles = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).getAuthorizedRoles(getAuthenticationToken());
+        final List<RoleDataDto> roles = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).getAuthorizedRoles(getAuthenticationToken());
         Collections.sort(roles);
         final StringBuilder availableRoles = new StringBuilder();
-        for (final Role role : roles) {
-            if (StringUtils.isEmpty(role.getNameSpace())) {
-                availableRoles.append((availableRoles.length() == 0 ? "" : ", ") + super.getFullRoleName(role.getNameSpace(), role.getRoleName()));
+        for (final RoleDataDto role : roles) {
+            if (StringUtils.isEmpty(role.nameSpace())) {
+                availableRoles.append((availableRoles.length() == 0 ? "" : ", ") + super.getFullRoleName(role.nameSpace(), role.name()));
             }
         }
         sb.append("Available roles: " + availableRoles + "\n");
