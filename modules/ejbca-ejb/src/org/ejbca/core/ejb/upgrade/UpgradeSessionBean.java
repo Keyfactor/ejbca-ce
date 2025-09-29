@@ -21,6 +21,7 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,13 +56,13 @@ import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.dto.RoleDataDto;
 import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingNameInUseException;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keybind.impl.OcspNonExistingBehavior;
 import org.cesecore.roles.AccessRulesHelper;
-import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.management.RoleDataSessionLocal;
 import org.cesecore.roles.management.RoleSessionLocal;
@@ -597,17 +598,16 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private boolean postMigrateDatabase930() {
         log.info("Starting post upgrade to 9.3.0");
         //Remove, from all roles, all user data source related rules. 
-        for(Role role : roleSession.getAuthorizedRoles(authenticationToken)) {
-            LinkedHashMap<String, Boolean> accessRules = role.getAccessRules();
-            List<String> ruleNames = new ArrayList<>(accessRules.keySet());
+        for(RoleDataDto role : roleSession.getAuthorizedRoles(authenticationToken)) {
+            Map<String, Boolean> accessRules = new HashMap<>(role.accessRules());
+            var ruleNames = new HashSet<>(accessRules.keySet());
             for(String rule :  ruleNames) {
                 if(rule.startsWith(AccessRulesConstants.USERDATASOURCEBASE) || rule.startsWith(AccessRulesConstants.REGULAR_EDITUSERDATASOURCES)) {
                     accessRules.remove(rule);
                 }
             }
-            role.setAccessRules(accessRules);
             try {
-                roleSession.persistRole(authenticationToken, role);
+                roleSession.persistRole(authenticationToken, role.withAccessRules(accessRules));
             } catch (RoleExistsException e) {
                 log.error("Role seems to have changed ID while retaining name/namespace or vice versa.");
                 return false;
@@ -693,11 +693,11 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             } catch (AuthorizationDeniedException e) {
                 throw new IllegalStateException("Always allow token was denied access to global configuration.", e);
             }
-        }     
+        }
     }
-    
+
     private void removeOldOcspNonExistingValues_9_4_0() throws AuthorizationDeniedException {
-        //Remove old data from OCSP Responders 
+        //Remove old data from OCSP Responders
         for(int id : internalKeyBindingDataSession.getIds(OcspKeyBinding.IMPLEMENTATION_ALIAS)) {
             OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingDataSession.getInternalKeyBindingForEdit(id);
             LinkedHashMap<Object, Object> data = ocspKeyBinding.getDataMapToPersist();
@@ -709,7 +709,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, ocspKeyBinding);
             } catch (InternalKeyBindingNameInUseException e) {
                 throw new IllegalStateException("Internal keybinding with name " + ocspKeyBinding.getName() + " was modified, but for some reason the system thinks it was created.", e);
-            } 
+            }
         }
     }
 
@@ -907,7 +907,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     public boolean isPostUpgradeNeeded() {
         return isLesserThan(getLastPostUpgradedToVersion(), "9.4.0");
     }
-        
+
     private boolean postMigrateDatabase720() {
         log.info("Starting post upgrade to 7.2.0");
         setCustomCertificateValidityWithSecondsGranularity(true);
@@ -958,7 +958,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
         log.info("Post upgrade to 7.11.0 complete.");
         return true;
-    }    
+    }
 
     /**
      * The configuration files <code>certstore.properties</code> and <code>crlstore.properties</code> are removed as of EJBCA 7.2.
@@ -1008,11 +1008,12 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                     .getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
             if (!globalConfiguration.getEnableKeyRecovery()) {
                 log.info("Key recovery is disabled. Checking if there are any stale access rules to remove...");
-                for (final Role role : roleSession.getAuthorizedRoles(authenticationToken)) {
-                    if (role.getAccessRules().containsKey(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_KEYRECOVERY))) {
-                        role.getAccessRules().remove(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_KEYRECOVERY));
-                        roleSession.persistRole(authenticationToken, role);
-                        log.info("Removed access rule " + AccessRulesConstants.REGULAR_KEYRECOVERY + " from role " + role.getRoleName());
+                for (final RoleDataDto role : roleSession.getAuthorizedRoles(authenticationToken)) {
+                    if (role.accessRules().containsKey(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_KEYRECOVERY))) {
+                        Map<String, Boolean> accessRules = new HashMap<>(role.accessRules());
+                        accessRules.remove(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_KEYRECOVERY));
+                        roleSession.persistRole(authenticationToken, role.withAccessRules(accessRules));
+                        log.info("Removed access rule " + AccessRulesConstants.REGULAR_KEYRECOVERY + " from role " + role.name());
                     }
                 }
             }
@@ -1407,15 +1408,15 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         final String ruleUseApprovalRequestId = AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_USEAPPROVALREQUESTID);
         try {
             log.debug("migrateDatabase7100: Checking if roles need added access rules added in 7.10.0");
-            for (final Role role : roleSession.getAuthorizedRoles(authenticationToken)) {
-                final LinkedHashMap<String, Boolean> access = role.getAccessRules();
-                if (Boolean.TRUE.equals(access.get(ruleCreateCert)) || Boolean.TRUE.equals(access.get(ruleKeyRecovery))) {
+            for (final RoleDataDto role : roleSession.getAuthorizedRoles(authenticationToken)) {
+                final Map<String, Boolean> accessRules = new HashMap<>(role.accessRules());
+                if (Boolean.TRUE.equals(accessRules.get(ruleCreateCert)) || Boolean.TRUE.equals(accessRules.get(ruleKeyRecovery))) {
                     // Users that can create or recover certs should still be able to do so.
-                    log.info("Adding new access rules to '" + role.getRoleNameFull() + "'");
-                    access.put(ruleUsePassword, true);
-                    access.put(ruleUseApprovalRequestId, true);
-                    AccessRulesHelper.minimizeAccessRules(access);
-                    roleSession.persistRole(authenticationToken, role);
+                    log.info("Adding new access rules to '" + role.fullName() + "'");
+                    accessRules.put(ruleUsePassword, true);
+                    accessRules.put(ruleUseApprovalRequestId, true);
+                    AccessRulesHelper.minimizeAccessRules(accessRules);
+                    roleSession.persistRole(authenticationToken, role.withAccessRules(accessRules));
                 }
             }
         } catch (AuthorizationDeniedException | RoleExistsException e) {
@@ -1594,8 +1595,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     public void migrateDatabase940() throws UpgradeFailedException {
         log.info("Starting upgrade to 9.4.0");
         //Move various setting from ocsp.properties into the database configuration
-        migrateOcspOptions940();        
-        //Migrate non-existing values in ocsp responders to the new single value 
+        migrateOcspOptions940();
+        //Migrate non-existing values in ocsp responders to the new single value
         upgradeOcspKeybindings_9_4_0();
         //Move enableIcaoNameChange from GlobalConfiguration to the new GlobalCaConfiguration row
         migrateCaConfigurationFromGlobalConfig940();
@@ -1648,9 +1649,9 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             throw new UpgradeFailedException("More than one value of ocsp.nonexistingisgood, ocsp.nonexistingisrevoked and ocsp.nonexistingisunauthorized is true at the same time. This is an error state. "
                     + "Please modify ocsp.properties to set only one or none of these values to be true.");
         }
-        
+
         globalOcspConfiguration.setRequestSignserRevocationStatusCacheTime(OcspConfiguration.getRequestSigningCertRevocationCacheTimeMs());
-        
+
         try {
             globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);
         } catch (AuthorizationDeniedException e) {
@@ -1695,7 +1696,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             throw new UpgradeFailedException(msg, e);
         }  
     }
-    
+
     /**
      * In 9.4 the behavior for ocsp keybindings in regards to unknown certs was changed from being three booleans to being a single value.
      */

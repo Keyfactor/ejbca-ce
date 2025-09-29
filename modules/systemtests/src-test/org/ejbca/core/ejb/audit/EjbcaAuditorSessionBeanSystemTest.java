@@ -19,7 +19,9 @@ import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.cesecore.RoleUsingTestCase;
@@ -30,8 +32,8 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AuditLogRules;
+import org.cesecore.dto.RoleDataDto;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.management.RoleSessionRemote;
@@ -85,9 +87,10 @@ public class EjbcaAuditorSessionBeanSystemTest extends RoleUsingTestCase {
     @Test
     public void testAuthorization() throws RoleNotFoundException, AuthorizationDeniedException, RoleExistsException {
         LOG.trace(">testAuthorization");
-        final Role roleAuditor = roleSession.getRole(alwaysAllowToken, null, ROLE_NAME);
-        roleAuditor.getAccessRules().put(AuditLogRules.VIEW.resource(), Role.STATE_DENY);
-        roleSession.persistRole(alwaysAllowToken, roleAuditor);
+        final RoleDataDto roleAuditor = roleSession.getRole(alwaysAllowToken, null, ROLE_NAME);
+        Map<String, Boolean> accessRules = new HashMap<>(roleAuditor.accessRules());
+        accessRules.put(AuditLogRules.VIEW.resource(), RoleDataDto.STATE_DENY);
+        roleSession.persistRole(alwaysAllowToken, roleAuditor.withAccessRules(accessRules));
         //Create a brand spanking new authenticationToken
         AuthenticationToken authenticationToken = createAuthenticationToken("CN="+ROLE_NAME);
         try {
@@ -113,9 +116,10 @@ public class EjbcaAuditorSessionBeanSystemTest extends RoleUsingTestCase {
         LOG.trace(">testAuthorizationBigName");
         String upn = "EjbcaAuditorSessionBeanSystemTest" + getLongString();
         AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(upn));
-        final Role roleAuditor = roleSession.getRole(alwaysAllowToken, null, ROLE_NAME);
-        roleAuditor.getAccessRules().put(AuditLogRules.CONFIGURE.resource(), Role.STATE_ALLOW);
-        roleSession.persistRole(alwaysAllowToken, roleAuditor);
+        final RoleDataDto roleAuditor = roleSession.getRole(alwaysAllowToken, null, ROLE_NAME);
+        Map<String, Boolean> accessRules = new HashMap<>(roleAuditor.accessRules());
+        accessRules.put(AuditLogRules.CONFIGURE.resource(), RoleDataDto.STATE_ALLOW);
+        roleSession.persistRole(alwaysAllowToken, roleAuditor.withAccessRules(accessRules));
         final List<Object> params = new ArrayList<Object>();
         params.add(EventTypes.ACCESS_CONTROL.toString());
         List<? extends AuditLogEntry> entries = 

@@ -128,7 +128,8 @@ public class RaAuthenticationHelper implements Serializable {
                     if (refreshToken != null) {
                         OAuthGrantResponseInfo token = null;
                         try {
-                            token = webAuthenticationProviderSession.refreshOAuthBearerToken(oauthConfiguration, oauthBearerToken, oauthIdToken, refreshToken);
+                            String requestUrl = httpServletRequest.getRequestURL().toString();
+                            token = webAuthenticationProviderSession.refreshOAuthBearerToken(oauthConfiguration, oauthBearerToken, oauthIdToken, refreshToken, requestUrl);
                             if (token != null) {
                                 httpServletRequest.getSession(true).setAttribute("ejbca.bearer.token", token.getAccessToken());
                                 if (token.getIdToken() != null) {
@@ -157,7 +158,7 @@ public class RaAuthenticationHelper implements Serializable {
         resetUnwantedHttpHeaders(httpServletRequest, httpServletResponse);
         return authenticationToken;
     }
-    
+
     /** @return any X509Certificate the client has provided with the request*/
     public X509Certificate getX509CertificateFromRequest(final HttpServletRequest httpServletRequest) {
         X509Certificate x509Certificate = getClientX509Certificate(httpServletRequest);
@@ -174,7 +175,7 @@ public class RaAuthenticationHelper implements Serializable {
             return authorizedCas != null && !authorizedCas.isEmpty();
         }
     }
-    
+
     /**
      * Gets bearer token from Authorization header or from session
      * @param httpServletRequest
@@ -205,7 +206,7 @@ public class RaAuthenticationHelper implements Serializable {
     private String getRefreshToken(HttpServletRequest httpServletRequest) {
         return  (String) httpServletRequest.getSession(true).getAttribute("ejbca.refresh.token");
     }
-    
+
     /** Invoke once the session is started to prevent security leak via HTTP headers related. */
     private void resetUnwantedHttpHeaders(final HttpServletRequest httpServletRequest, final HttpServletResponse httpServletResponse) {
         // Ensure that we never send the JSESSIONID over an insecure (HTTP) connection
@@ -225,12 +226,12 @@ public class RaAuthenticationHelper implements Serializable {
             httpServletResponse.setHeader(HTTP_HEADER_X_POWERED_BY, "");
         }
     }
-    
+
     private X509Certificate getClientX509Certificate(final HttpServletRequest httpServletRequest) {
         final X509Certificate[] certificates = (X509Certificate[]) httpServletRequest.getAttribute("jakarta.servlet.request.X509Certificate");
         return certificates == null || certificates.length==0 ? null : certificates[0];
     }
-    
+
     private String getTlsSessionId(final HttpServletRequest httpServletRequest) {
         final String sslSessionIdServletsStandard;
         final Object sslSessionIdServletsStandardObject = httpServletRequest.getAttribute("jakarta.servlet.request.ssl_session_id");

@@ -91,6 +91,7 @@ public class EstRAModeBasicSystemTest extends EstTestCase {
     private static final EnterpriseEditionEjbBridgeProxySessionRemote enterpriseEjbBridgeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EnterpriseEditionEjbBridgeProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     private static KeyPair ec256;
+
     private static KeyPair mldsa44;
     private static KeyPair slhdsa;
     private static String estAlias = "EstRAModeBasicSystemTest";

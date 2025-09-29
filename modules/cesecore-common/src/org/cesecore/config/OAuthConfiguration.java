@@ -92,7 +92,12 @@ public class OAuthConfiguration extends ConfigurationBase implements Serializabl
     }
 
     public String[] getAllowedOauthHosts() {
-        return (String[])data.get(ALLOWED_OAUTH_HOSTS);
+        final String[] allowedOauthHosts = (String[]) data.get(ALLOWED_OAUTH_HOSTS);
+        if (allowedOauthHosts == null) {
+            return new String[0];
+        } else {
+            return allowedOauthHosts;
+        }
     }
 
     public void setAllowedOauthHosts(String[] allowedOauthHosts) {
@@ -149,5 +154,4 @@ public class OAuthConfiguration extends ConfigurationBase implements Serializabl
         String hostnameRegex = "^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$";
         return hostname != null && hostname.matches(hostnameRegex);
     }
-
 }

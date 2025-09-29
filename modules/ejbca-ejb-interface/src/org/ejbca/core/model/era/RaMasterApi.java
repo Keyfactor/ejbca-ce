@@ -44,9 +44,9 @@ import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.configuration.ConfigurationBase;
+import org.cesecore.dto.RoleDataDto;
 import org.cesecore.keys.keyimport.KeyImportFailure;
 import org.cesecore.keys.keyimport.KeyImportRequestData;
-import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.member.RoleMember;
 import org.ejbca.config.GlobalAcmeConfiguration;
@@ -220,20 +220,20 @@ public interface RaMasterApi {
      * @return a list with roles that the caller is authorized to see.
      * @since Master RA API version 1 (EJBCA 6.8.0)
      */
-    List<Role> getAuthorizedRoles(AuthenticationToken authenticationToken);
+    List<RoleDataDto> getAuthorizedRoles(AuthenticationToken authenticationToken);
     
     /**
      * @return a list with roles that the caller is a member of.
      * @since Master RA API version 15 (EJBCA 7.11.0)
      */
-    List<Role> getRolesAuthenticationTokenIsMemberOf(AuthenticationToken authenticationToken);
+    List<RoleDataDto> getRolesAuthenticationTokenIsMemberOf(AuthenticationToken authenticationToken);
 
     /**
-     * @return the Role with the given ID, or null if it does not exist
+     * @return the RoleDataDto with the given ID, or null if it does not exist
      * @throws AuthorizationDeniedException if missing view access.
      * @since Master RA API version 1 (EJBCA 6.8.0)
      */
-    Role getRole(AuthenticationToken authenticationToken, int roleId) throws AuthorizationDeniedException;
+    RoleDataDto getRole(AuthenticationToken authenticationToken, int roleId) throws AuthorizationDeniedException;
 
     /**
      * @param roleId Only include namespaces from peers where this role is present. Set to 0 to include all.
@@ -253,13 +253,13 @@ public interface RaMasterApi {
      * Adds or updates a role in the database. If the role has an ID, it will be updated, but only on the system where it exists.
      * Otherwise, this method will try to create it on any of the configured systems.
      * @param authenticationToken Admin
-     * @param role Role to persist. The roleId controls whether it should be added or updated.
+     * @param role RoleDataDto to persist. The roleId controls whether it should be added or updated.
      * @return The role object if the role was added/updated, otherwise null.
      * @throws AuthorizationDeniedException if unauthorized to update this role, or not authorized on any system to add it.
      * @throws RoleExistsException if a role with the given name already exists (can happen when adding or renaming)
      * @since Master RA API version 1 (EJBCA 6.8.0)
      */
-    Role saveRole(AuthenticationToken authenticationToken, Role role) throws AuthorizationDeniedException, RoleExistsException;
+    RoleDataDto saveRole(AuthenticationToken authenticationToken, RoleDataDto role) throws AuthorizationDeniedException, RoleExistsException;
 
     /**
      * Deletes a role.
@@ -272,7 +272,7 @@ public interface RaMasterApi {
     boolean deleteRole(AuthenticationToken authenticationToken, int roleId) throws AuthorizationDeniedException;
 
     /**
-     * @return the Role Member with the given ID, or null if it does not exist
+     * @return the RoleDataDto Member with the given ID, or null if it does not exist
      * @throws AuthorizationDeniedException if missing view access.
      * @since Master RA API version 1 (EJBCA 6.8.0)
      */

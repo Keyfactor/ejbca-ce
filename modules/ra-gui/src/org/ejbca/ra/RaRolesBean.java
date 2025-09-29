@@ -27,7 +27,7 @@ import jakarta.inject.Named;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.roles.Role;
+import org.cesecore.dto.RoleDataDto;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.era.RaRoleSearchRequest;
 import org.ejbca.core.model.era.RaRoleSearchResponse;
@@ -60,7 +60,7 @@ public class RaRolesBean implements Serializable {
     
     private RaRoleSearchResponse lastExecutedResponse = null;
     
-    private List<Role> resultsFiltered = new ArrayList<>();
+    private List<RoleDataDto> resultsFiltered = new ArrayList<>();
     private boolean hasNamespaces;
     
     private enum SortBy { NAMESPACE, ROLE };
@@ -101,8 +101,8 @@ public class RaRolesBean implements Serializable {
         
         // Check if we should show the namespace column
         hasNamespaces = false;
-        for (final Role role : resultsFiltered) {
-            if (!StringUtils.isEmpty(role.getNameSpace())) {
+        for (final RoleDataDto role : resultsFiltered) {
+            if (!StringUtils.isEmpty(role.nameSpace())) {
                 hasNamespaces = true;
             }
         }
@@ -110,7 +110,7 @@ public class RaRolesBean implements Serializable {
         sort();
     }
     
-    public List<Role> getFilteredResults() {
+    public List<RoleDataDto> getFilteredResults() {
         return resultsFiltered;
     }
     
@@ -128,23 +128,23 @@ public class RaRolesBean implements Serializable {
     
     // Sorting
     private void sort() {
-        Collections.sort(resultsFiltered, new Comparator<Role>() {
+        Collections.sort(resultsFiltered, new Comparator<RoleDataDto>() {
             @Override
-            public int compare(Role o1, Role o2) {
+            public int compare(RoleDataDto o1, RoleDataDto o2) {
                 int sortDir = (isSortAscending() ? 1 : -1);
                 switch (sortBy) {
                 // TODO locale-aware sorting
                 case NAMESPACE: {
-                    int difference = o1.getNameSpace().compareToIgnoreCase(o2.getNameSpace());
+                    int difference = o1.nameSpace().compareToIgnoreCase(o2.nameSpace());
                     if (difference == 0) {
-                        return o1.getRoleName().compareToIgnoreCase(o2.getRoleName()) * sortDir; // Sort roles in the same namespace by role name
+                        return o1.name().compareToIgnoreCase(o2.name()) * sortDir; // Sort roles in the same namespace by role name
                     }
                     return difference * sortDir;
                 }
                 case ROLE: {
-                    int difference = o1.getRoleName().compareToIgnoreCase(o2.getRoleName());
+                    int difference = o1.name().compareToIgnoreCase(o2.name());
                     if (difference == 0) {
-                        return o1.getNameSpace().compareToIgnoreCase(o2.getNameSpace()) * sortDir; // Sort roles with the same name by namespace
+                        return o1.nameSpace().compareToIgnoreCase(o2.nameSpace()) * sortDir; // Sort roles with the same name by namespace
                     }
                     return difference * sortDir;
                 }
