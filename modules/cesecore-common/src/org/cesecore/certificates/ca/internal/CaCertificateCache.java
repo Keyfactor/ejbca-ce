@@ -54,6 +54,8 @@ public enum CaCertificateCache  {
     private Map<Integer, X509Certificate> certsFromSubjectKeyIdentifier = new HashMap<>();
     /** All root certificates. */
     private Set<X509Certificate> rootCertificates = new HashSet<>();
+    /** All CA certificates. */
+    private Set<X509Certificate> allCaCertificates = new HashSet<>();
 
 	/** Cache time counter, set and used by loadCertificates */
 	private long certValidTo = 0;
@@ -81,6 +83,10 @@ public enum CaCertificateCache  {
 
     public X509Certificate[] getRootCertificates() {
         return rootCertificates.toArray(new X509Certificate[0]);
+    }
+    
+    public X509Certificate[] getAllCaCertificates() {
+        return allCaCertificates.toArray(new X509Certificate[0]);
     }
 
     public X509Certificate findBySubjectKeyIdentifier(final HashID id) {
@@ -112,6 +118,7 @@ public enum CaCertificateCache  {
         Map<Integer, Set<X509Certificate>> newCertsFromIssuerDN = new HashMap<>();
         Map<Integer, X509Certificate> newCertsFromSubjectKeyIdentifier = new HashMap<>();
         Set<X509Certificate> newRootCertificates = new HashSet<>();
+        Set<X509Certificate> newAllCaCertificates = new HashSet<>();
         if (certs != null) {
             for (final Certificate tmp : certs) {
                 if (!(tmp instanceof X509Certificate)) {
@@ -166,6 +173,7 @@ public enum CaCertificateCache  {
                     isLatest = true;
                 }
                 if (isLatest) {
+                    newAllCaCertificates.add(cert);
                     newCertsFromSubjectDN.put(subjectDNKey, cert);
                     final Integer issuerDNKey = HashID.getFromIssuerDN(cert).getKey();
                     if (!issuerDNKey.equals(subjectDNKey)) { // don't add roots to themselves
@@ -201,6 +209,7 @@ public enum CaCertificateCache  {
         certsFromIssuerDN = newCertsFromIssuerDN;
         certsFromSubjectDN = newCertsFromSubjectDN;
         rootCertificates = newRootCertificates;
+        allCaCertificates = newAllCaCertificates;
         certValidTo = System.currentTimeMillis() + OcspConfiguration.getSigningCertsValidTimeInMilliseconds();
     }
 }

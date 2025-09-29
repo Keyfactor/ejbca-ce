@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
+import java.util.Set;
 
 import jakarta.ejb.EJB;
 import jakarta.mail.MessagingException;
@@ -140,15 +141,20 @@ public class CertStoreServlet extends StoreServletBase {
 	}
 	
     @Override
-    protected void printInfo(X509Certificate[] certs, String indent, PrintWriter pw) {
+    protected void printInfo(X509Certificate[] certs, String indent, PrintWriter pw, Set<String> consideredSubjectDns) {
         for (X509Certificate cert : certs) {
+            if (consideredSubjectDns.contains(CertTools.getSubjectDN(cert))) {
+                continue;
+            } else {
+                consideredSubjectDns.add(CertTools.getSubjectDN(cert));
+            }
             printInfo(cert, indent, pw);
             pw.println();
             final X509Certificate[] issuedCerts = this.certCache.findLatestByIssuerDN(HashID.getFromSubjectDN(cert));
             if (ArrayUtils.isEmpty(issuedCerts)) {
                 continue;
             }
-            printInfo(issuedCerts, SPACE + indent, pw);
+            printInfo(issuedCerts, SPACE + indent, pw, consideredSubjectDns);
         }
     }
 }

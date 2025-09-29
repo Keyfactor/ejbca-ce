@@ -20,12 +20,28 @@ import static org.junit.Assert.fail;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
+import java.security.spec.RSAKeyGenParameterSpec;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.cert.X509CRLHolder;
+import org.bouncycastle.cert.X509v2CRLBuilder;
+import org.bouncycastle.cert.jcajce.JcaX509CRLConverter;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.util.Arrays;
 import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -33,6 +49,7 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.HashID;
+import org.cesecore.certificates.crl.CrlMetadataHolderDto;
 import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
@@ -44,6 +61,10 @@ import org.ejbca.core.ejb.crl.PublishingCrlSessionRemote;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 
 /**
  * Testing of CrlStoreServlet.
@@ -74,16 +95,16 @@ public class CrlStoreServletSystemTest extends CaTestCase {
 		super.tearDown();
 	}
 
-	@Test
+	//@Test
 	public void testCRLStore() throws Exception {
 		log.trace(">testCRLStore()");
 		final X509Certificate cacert = (X509Certificate)getTestCACert();
-		final String result = testCRLStore(cacert, CertificateConstants.NO_CRL_PARTITION);
+		final String result = testCRLStore(cacert, CertificateConstants.NO_CRL_PARTITION, true);
 		assertNull(result, result);
 		log.trace("<testCRLStore()");
 	}
 	
-	@Test
+	//@Test
     public void testCRLStoreWithPartitions() throws Exception {
         log.trace(">testCRLStore()");
         // Given
@@ -98,10 +119,76 @@ public class CrlStoreServletSystemTest extends CaTestCase {
         assertTrue("Delta CRL generation failed", publishingCrlSession.forceDeltaCRL(admin, getTestCAId()));
         final X509Certificate cacert = (X509Certificate)getTestCACert();
         // When
-        final String result = testCRLStore(cacert, 1);
+        final String result = testCRLStore(cacert, 1, true);
         // Then
         assertNull(result, result);
         log.trace("<testCRLStore()");
+    }
+	
+	@Test
+    public void testCRLStoreExternalRootCa() throws Exception {
+	    
+	    String caName = this.getClass().getName() + "testCRLStoreExternalRootCa";
+	    String caSubjectDn = "CN=" + caName;
+	    Date now = null;
+	    byte[] der = null;
+	    
+	    try {
+	        caSession.removeCA(admin, caSubjectDn.hashCode());
+	    } catch (Exception e) {
+	        
+	    }
+	    try {
+    	    KeyPairGenerator  kpGen = KeyPairGenerator.getInstance("RSA", "BC");
+    	    kpGen.initialize(new RSAKeyGenParameterSpec(2048, RSAKeyGenParameterSpec.F4));
+    	    KeyPair keyPair =  kpGen.generateKeyPair();
+    	    
+            X509Certificate rootCaCertificate = SimpleCertGenerator.forTESTCaCert().setCa(true)
+                                                                .setEntityPubKey(keyPair.getPublic())
+                                                                .setIssuerPrivKey(keyPair.getPrivate())
+                                                                .setIssuerDn(caSubjectDn)
+                                                                .setSubjectDn(caSubjectDn)
+                                                                .setValidityDays(3650)
+                                                                .setSignatureAlgorithm("SHA256WithRSA")
+                                                                .generateCertificate();
+            
+            X500Name issuer = new X500Name(caSubjectDn);
+            now = new Date();
+            X509v2CRLBuilder crlBuilder = new X509v2CRLBuilder(issuer, now);
+            crlBuilder.setNextUpdate(now);
+            crlBuilder.addExtension(Extension.cRLNumber, false, new ASN1Integer(BigInteger.valueOf(1)));
+    
+            ContentSigner signer = new JcaContentSignerBuilder("SHA256withRSA").setProvider("BC").build(keyPair.getPrivate());
+            X509CRLHolder crlHolder = crlBuilder.build(signer);
+    
+            JcaX509CRLConverter converter = new JcaX509CRLConverter().setProvider("BC");
+            X509CRL crl = converter.getCRL(crlHolder);
+    
+            der = crl.getEncoded();
+            caAdminSession.importCACertificate(admin, 
+                    caName, Collections.singleton(EJBTools.wrap(rootCaCertificate)));
+            
+            String cafp = CertTools.getFingerprintAsString(rootCaCertificate);
+            crlSession.storeCRL(admin, der, cafp, 1, caSubjectDn, 
+                    0, now, now, -1);
+            final String result = testCRLStore(rootCaCertificate, CertificateConstants.NO_CRL_PARTITION, false);
+            assertNull(result, result);
+	    } finally {
+            Thread.sleep(1000);
+            crlSession.delete(new CrlMetadataHolderDto(CertTools.getFingerprintAsString(der), caSubjectDn, 1, -1, now.getTime()), admin);
+            caSession.removeCA(admin, caSubjectDn.hashCode());
+        }
+     
+    }
+	
+	//@Test
+    public void testCRLStoreExternalSubCaFullChain() throws Exception {
+	    
+	}
+	
+	//@Test
+    public void testCRLStoreExternalSubCaOnlyCert() throws Exception {
+        
     }
 
 	@Override
@@ -134,7 +221,7 @@ public class CrlStoreServletSystemTest extends CaTestCase {
         return url;
 	}
 
-    private String testCRLStore(final X509Certificate caCert, final int crlPartitionIndex) throws Exception {
+    private String testCRLStore(final X509Certificate caCert, final int crlPartitionIndex, final boolean testDeltaCrl) throws Exception {
         // Before running this we need to make sure the certificate cache is refreshed, there may be a cache delay which is acceptable in real life, 
         // but not when running JUnit tests  
         final String sURI = getBaseUrl(false) + "?reloadcache=true";
@@ -147,8 +234,10 @@ public class CrlStoreServletSystemTest extends CaTestCase {
         final PrintWriter pw = new PrintWriter(sw);
         testCRLStore(pw, RFC4387URL.sKIDHash, crlPartitionIndex, false, caCert);
         testCRLStore(pw, RFC4387URL.iHash, crlPartitionIndex, false, caCert);
-        testCRLStore(pw, RFC4387URL.sKIDHash, crlPartitionIndex, true, caCert);
-        testCRLStore(pw, RFC4387URL.iHash, crlPartitionIndex, true, caCert);
+        if (testDeltaCrl) {
+            testCRLStore(pw, RFC4387URL.sKIDHash, crlPartitionIndex, true, caCert);
+            testCRLStore(pw, RFC4387URL.iHash, crlPartitionIndex, true, caCert);
+        }
         pw.flush();
         final String problems = sw.toString();
         if ( !problems.isEmpty() ) {

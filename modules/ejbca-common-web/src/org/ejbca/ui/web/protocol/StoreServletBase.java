@@ -17,10 +17,13 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.security.cert.X509Certificate;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.internal.CaCertificateCache;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.ejbca.config.VAConfiguration;
@@ -48,6 +51,9 @@ public abstract class StoreServletBase extends HttpServlet {
 	
 	@EJB
 	private CertificateStoreSessionLocal certificateStoreSession;
+	
+	@EJB
+	private CaSessionLocal caSession;
 
 	/**
 	 * Called when the servlet is initialized.
@@ -286,7 +292,9 @@ public abstract class StoreServletBase extends HttpServlet {
 	private void printInfo(final HttpServletResponse resp) throws IOException {
 		final StringWriter sw = new StringWriter();
 		final PrintWriter pw = new HtmlPrintWriter(sw);
-		printInfo(this.certCache.getRootCertificates(), "", pw);
+		Set<String> consideredSubjectDns = new HashSet<>();
+		printInfo(this.certCache.getRootCertificates(), "", pw, consideredSubjectDns);
+		printInfo(this.certCache.getAllCaCertificates(), "", pw, consideredSubjectDns);
 		pw.flush();
 		pw.close();
 		sw.flush();
@@ -311,5 +319,5 @@ public abstract class StoreServletBase extends HttpServlet {
 		}
 	}
 	
-	protected abstract void printInfo(X509Certificate[] certs, String indent, PrintWriter pw);
+	protected abstract void printInfo(X509Certificate[] certs, String indent, PrintWriter pw, Set<String> consideredSubjectDns);
 }
