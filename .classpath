@@ -236,7 +236,7 @@
 	<classpathentry kind="lib" path="lib/ext/test/objenesis-3.3.jar"/>
 	<classpathentry kind="lib" path="lib/commons-text-1.10.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-codec-1.17.1.jar"/>
-	<classpathentry kind="lib" path="lib/nimbus-jose-jwt-9.37.3.jar"/>
+	<classpathentry kind="lib" path="lib/nimbus-jose-jwt-9.37.4.jar"/>
 	<classpathentry kind="lib" path="lib/jcip-annotations-1.0-1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang3-3.17.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-fileupload2-core-2.0.0-M4.jar"/>
