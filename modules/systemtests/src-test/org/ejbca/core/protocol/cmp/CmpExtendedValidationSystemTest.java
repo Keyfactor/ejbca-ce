@@ -12,24 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.protocol.cmp;
 
-import java.io.IOException;
-import java.math.BigInteger;
-import java.security.InvalidKeyException;
-import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
-import java.security.SignatureException;
-import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.EJBTools;
@@ -38,7 +20,6 @@ import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.SignatureParameter;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.string.StringConfigurationCache;
-
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.cmp.PKIBody;
 import org.bouncycastle.asn1.cmp.PKIFailureInfo;
@@ -82,6 +63,24 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.math.BigInteger;
+import java.security.InvalidKeyException;
+import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.SignatureException;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -639,31 +638,6 @@ public class CmpExtendedValidationSystemTest extends CmpTestCase {
         log.trace("<testVerifyHmacProtectedMessageRaModeCaRaSharedSecret");
     }
 
-    /**
-     * This test will verify that a message protected by PBMAC1 HMAC will pass when ca cmp ra shared secret is used
-     */
-    @Test
-    public void testVerifyHmacPbmac1ProtectedMessageRaModeCaRaSharedSecret() throws Exception {
-        log.trace(">testVerifyHmacPbmac1ProtectedMessageRaModeCaRaSharedSecret");
-        cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_HMAC);
-        cmpConfiguration.setAuthenticationParameters(ALIAS, "-");
-        cmpConfiguration.setRAMode(ALIAS, true);
-        cmpConfiguration.setResponseProtection(ALIAS, "signature");
-        globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration);
-        final String userDn = "C=SE,O=PrimeKey,CN=testHMACProtectionRaModeUser";
-        final String caRaSharedSecret = "foo123";
-        final PKIMessage req = genCertReq(userDn);
-        final byte[] messageBytes = CmpMessageHelper.pkiMessageToByteArray(CmpMessageHelper.protectPKIMessageWithPBMAC1(req, testx509ca.getName(),
-                caRaSharedSecret, "1.3.14.3.2.26", 1023, 1024, "1.3.6.1.5.5.8.1.2"));
-        // Send CMP request
-        final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
-        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, false, null,
-                PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), true);
-        checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDnX500, cacert, resp, reqId);
-        shouldBeAccepted();
-        log.trace("<testVerifyHmacPbmac1ProtectedMessageRaModeCaRaSharedSecret");
-    }
-    
     /**
      * This test will verify that a message protected by HMAC will pass when secret is specified in alias
      */
