@@ -23,7 +23,7 @@ public class CompareUtil {
         // Prevent instantiation
     }
 
-    protected static boolean doEquals(Iterator iteratorA, Iterator iteratorB) {
+    protected static boolean doEquals(Iterator<?> iteratorA, Iterator<?> iteratorB) {
         while (iteratorA.hasNext() && iteratorB.hasNext()) {
             if (!equals(iteratorA.next(), iteratorB.next())) {
                 return false;
@@ -49,7 +49,7 @@ public class CompareUtil {
             return true;
         }
         if (a == null || b == null) {
-            return a == null && b == null;
+            return false;
         }
         if (a.getClass() != b.getClass()) {
             return false;
@@ -98,7 +98,7 @@ public class CompareUtil {
         return a.equals(b);
     }
 
-    public static int compare(final Comparable a, final Comparable b) {
+    public static <T extends Comparable<T>> int compare(final T a, final T b) {
         if (a == b) {
             return 0;
         }

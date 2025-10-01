@@ -54,6 +54,11 @@ public class EndEntityRestResponse {
                 .filter(component->!component.isInternalName())
                 .collect(Collectors.toUnmodifiableList());
     }
+    
+    // Test only
+    public EndEntityRestResponse() {
+        
+    }
 
     /**
      * Return a builder instance for this class.

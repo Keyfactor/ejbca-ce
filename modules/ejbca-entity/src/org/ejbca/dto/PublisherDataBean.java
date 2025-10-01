@@ -21,8 +21,8 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import org.cesecore.dbprotection.DatabaseProtectionException;
+import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectedDataImpl;
-import org.cesecore.dbprotection.ProtectedDataIntegrityImpl;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.dto.PublisherData;
 import org.cesecore.dto.PublisherDataRecord;
@@ -38,8 +38,7 @@ public final class PublisherDataBean implements Serializable, EntityManagerBean<
     private static ProtectedDataImpl protectedDataImpl;
 
     static {
-        protectedDataImpl = new ProtectedDataIntegrityImpl();
-        protectedDataImpl.setTableName("PublisherData");
+        protectedDataImpl = ProtectedData.initializeProtectedDataImpl("PublisherData");
     }
 
     public static ProtectedDataImpl getProtectedDataImpl() {
