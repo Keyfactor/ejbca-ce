@@ -95,7 +95,7 @@ public class CrlStoreServletSystemTest extends CaTestCase {
 		super.tearDown();
 	}
 
-	//@Test
+	@Test
 	public void testCRLStore() throws Exception {
 		log.trace(">testCRLStore()");
 		final X509Certificate cacert = (X509Certificate)getTestCACert();
@@ -104,7 +104,7 @@ public class CrlStoreServletSystemTest extends CaTestCase {
 		log.trace("<testCRLStore()");
 	}
 	
-	//@Test
+	@Test
     public void testCRLStoreWithPartitions() throws Exception {
         log.trace(">testCRLStore()");
         // Given
@@ -181,16 +181,97 @@ public class CrlStoreServletSystemTest extends CaTestCase {
      
     }
 	
-	//@Test
+	@Test
     public void testCRLStoreExternalSubCaFullChain() throws Exception {
-	    
+	    testCRLStoreExternalSubCa("testCRLStoreExternalSubCaFullChain", true);
 	}
 	
-	//@Test
+	@Test
     public void testCRLStoreExternalSubCaOnlyCert() throws Exception {
-        
+	    testCRLStoreExternalSubCa("testCRLStoreExternalSubCaOnlyCert", false);
     }
-
+	
+    private void testCRLStoreExternalSubCa(String caNamePart, boolean includeRoot) throws Exception {
+	    
+	    String rootCaName = this.getClass().getName() + caNamePart + "Root";
+        String rootCaSubjectDn = "CN=" + rootCaName;
+        
+        String subCaName = this.getClass().getName() + caNamePart + "Sub";
+        String subCaSubjectDn = "CN=" + subCaName;
+        
+        Date now = null;
+        byte[] der = null;
+        
+        try {
+            caSession.removeCA(admin, subCaSubjectDn.hashCode());
+        } catch (Exception e) {
+            
+        }
+        try {
+            
+            KeyPairGenerator  kpGenRoot = KeyPairGenerator.getInstance("RSA", "BC");
+            kpGenRoot.initialize(new RSAKeyGenParameterSpec(2048, RSAKeyGenParameterSpec.F4));
+            KeyPair keyPairRoot =  kpGenRoot.generateKeyPair();
+            
+            KeyPairGenerator  kpGenSub = KeyPairGenerator.getInstance("RSA", "BC");
+            kpGenSub.initialize(new RSAKeyGenParameterSpec(2048, RSAKeyGenParameterSpec.F4));
+            KeyPair keyPairSub =  kpGenSub.generateKeyPair();
+            
+            X509Certificate rootCaCertificate = SimpleCertGenerator.forTESTCaCert().setCa(true)
+                    .setEntityPubKey(keyPairRoot.getPublic())
+                    .setIssuerPrivKey(keyPairRoot.getPrivate())
+                    .setIssuerDn(rootCaSubjectDn)
+                    .setSubjectDn(rootCaSubjectDn)
+                    .setValidityDays(6)
+                    .setSignatureAlgorithm("SHA256WithRSA")
+                    .generateCertificate();
+            
+            X509Certificate subCaCertificate = SimpleCertGenerator.forTESTCaCert().setCa(true)
+                                                                .setEntityPubKey(keyPairSub.getPublic())
+                                                                .setIssuerPrivKey(keyPairRoot.getPrivate())
+                                                                .setIssuerPubKey(keyPairRoot.getPublic())
+                                                                .setIssuerDn(rootCaSubjectDn)
+                                                                .setSubjectDn(subCaSubjectDn)
+                                                                .setValidityDays(3)
+                                                                .setSignatureAlgorithm("SHA256WithRSA")
+                                                                .generateCertificate();
+                        
+            X500Name issuer = new X500Name(subCaSubjectDn);
+            now = new Date();
+            X509v2CRLBuilder crlBuilder = new X509v2CRLBuilder(issuer, now);
+            crlBuilder.setNextUpdate(now);
+            crlBuilder.addExtension(Extension.cRLNumber, false, new ASN1Integer(BigInteger.valueOf(1)));
+    
+            ContentSigner signer = new JcaContentSignerBuilder("SHA256withRSA").setProvider("BC").build(keyPairSub.getPrivate());
+            X509CRLHolder crlHolder = crlBuilder.build(signer);
+    
+            JcaX509CRLConverter converter = new JcaX509CRLConverter().setProvider("BC");
+            X509CRL crl = converter.getCRL(crlHolder);
+    
+            der = crl.getEncoded();
+            if (includeRoot) { 
+                caAdminSession.importCACertificate(admin, 
+                    subCaName, List.of(EJBTools.wrap(subCaCertificate), EJBTools.wrap(rootCaCertificate)
+                            ));
+            } else {
+                caAdminSession.importCACertificate(admin, 
+                        subCaName, List.of(EJBTools.wrap(subCaCertificate)
+                                ));
+            }
+            
+            String cafp = CertTools.getFingerprintAsString(subCaCertificate);
+            crlSession.storeCRL(admin, der, cafp, 1, subCaSubjectDn, 
+                    0, now, now, -1);
+            final String result = testCRLStore(subCaCertificate, CertificateConstants.NO_CRL_PARTITION, false);
+            assertNull(result, result);
+        } finally {
+            Thread.sleep(1000);
+            crlSession.delete(new CrlMetadataHolderDto(CertTools.getFingerprintAsString(der), subCaSubjectDn, 1, -1, now.getTime()), admin);
+            caSession.removeCA(admin, subCaSubjectDn.hashCode());
+        }
+        
+	}
+	
 	@Override
     public String getRoleName() {
 		return this.getClass().getSimpleName();
