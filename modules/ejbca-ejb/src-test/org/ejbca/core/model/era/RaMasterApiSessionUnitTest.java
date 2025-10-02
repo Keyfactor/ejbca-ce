@@ -50,7 +50,6 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionLocal;
@@ -103,7 +102,6 @@ public class RaMasterApiSessionUnitTest {
     private GlobalConfigurationSessionLocal globalConfigurationSessionMock = EasyMock.createStrictMock(GlobalConfigurationSessionLocal.class);
     private EndEntityAccessSessionLocal endEntityAccessSessionMock = EasyMock.createStrictMock(EndEntityAccessSessionLocal.class);
     private KeyStoreCreateSessionLocal keyStoreCreateSessionMock = EasyMock.createStrictMock(KeyStoreCreateSessionLocal.class);
-    private Role roleMock = EasyMock.createStrictMock(Role.class);
     private RoleSessionLocal roleSessionMock = EasyMock.createStrictMock(RoleSessionLocal.class);
     private RoleMember roleMemberMock = EasyMock.createStrictMock(RoleMember.class);
     private RoleMemberSessionLocal roleMemberSessionMock = EasyMock.createStrictMock(RoleMemberSessionLocal.class);
@@ -114,7 +112,7 @@ public class RaMasterApiSessionUnitTest {
     private Object[] allMocks = { adminMock, certificateProfileSessionMock, certificateProfileMock, endEntityMock,
             endEntityAuthenticationSessionMock, endEntityManagementSessionMock, endEntityProfileSessionMock,
             globalConfigurationSessionMock, endEntityAccessSessionMock, keyStoreCreateSessionMock,
-            roleMock, roleSessionMock, roleMemberMock, roleMemberSessionMock, signSessionMock,
+            roleSessionMock, roleMemberMock, roleMemberSessionMock, signSessionMock,
             globalConfigurationMock, endEntityProfileMock, extendedInfoMock };
     private static final byte[] TEST_P12 = Base64.decode(
             ("MIIGQgIBAzCCBfsGCSqGSIb3DQEHAaCCBewEggXoMIIF5DCCATgGCSqGSIb3DQEHAaCCASkEggEl\n" +
