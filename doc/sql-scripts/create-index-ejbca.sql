@@ -61,8 +61,8 @@ CREATE INDEX certificatedata_idx_serial ON CertificateData (serialNumber);
 -- The accountBindingId is often not used, but even if it is not used, it is necessary to have an index (EJBCA will still search by this column)
 CREATE INDEX certificatedata_idx_eab ON CertificateData (accountBindingId);
 -- The subjectAltName index could be configured either to match only the first 750 characters, or to match the full row, using a slower full-text index.
--- Index working on MySQL/MariaDB
-CREATE INDEX certificatedata_idx_san ON CertificateData (subjectAltName(750));
+-- However the index is not utilized for search queries. Test with MariaDB 10.11.14 and PostgreSQL 15.14
+-- CREATE INDEX certificatedata_idx_san ON CertificateData (subjectAltName(750));
 -- For PostgreSQL (and some other databases?) you need to format the index a little bit differently 
 -- CREATE INDEX certificatedata_idx_san ON CertificateData (LEFT(subjectaltname,750));
 -- or, for slower full-text querying: CREATE FULLTEXT INDEX certificatedata_idx_san ON CertificateData (subjectAltName);
@@ -81,6 +81,10 @@ CREATE INDEX userdata_idx11 ON UserData (status);
 
 -- Increase speed while selecting all the user data while looking for end entities
 CREATE INDEX userdata_idx12 ON UserData(timeCreated);
+
+-- Avoid full table searches when CA or EE profile is mentioned 
+CREATE INDEX userdata_idx13 ON UserData (cAId);
+-- CREATE INDEX userdata_idx14 ON UserData (endEntityProfileId);
 
 CREATE INDEX publisherqueue_idx3 ON PublisherQueueData (publisherId, publishStatus, timeCreated);
 

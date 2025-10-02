@@ -251,7 +251,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         authenticationSession = ejbLocalHelper.getWebAuthenticationProviderSession();
         clearCacheSession = ejbLocalHelper.getClearCacheSession();
     }
-    
+
     /**
      * Implementing this ensures that transient fields will exist after serialization.
      */
@@ -384,7 +384,8 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                 } catch (TokenExpiredException e) {
                     String refreshToken = getRefreshToken(httpServletRequest);
                     if (refreshToken != null) {
-                        OAuthGrantResponseInfo token = authenticationSession.refreshOAuthBearerToken(oAuthConfiguration, oauthBearerToken, oauthIdToken, refreshToken);
+                        String requestUrl = httpServletRequest.getRequestURL().toString();
+                        OAuthGrantResponseInfo token = authenticationSession.refreshOAuthBearerToken(oAuthConfiguration, oauthBearerToken, oauthIdToken, refreshToken, requestUrl);
                         if (token != null) {
                             httpServletRequest.getSession(true).setAttribute("ejbca.bearer.token", token.getAccessToken());
                             if (token.getIdToken() != null) {
@@ -799,7 +800,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         final String postfix = imagefilename.substring(imagefilename.lastIndexOf('.') + 1);
 
         final String imagePath = "images";
-        
+
         final String[] filepaths = new String[] {
                 "/" + imagePath + "/" + imagefile + "." + theme + "." + prefered + "." + postfix,
                 "/" + imagePath + "/" + imagefile + "." + theme + "." + secondary + "." + postfix,
@@ -983,7 +984,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         this.msAutoenrollmentConfig = msAutoEnrollmentConfiguration;
         globalConfigurationSession.saveConfiguration(authState.administrator, msAutoEnrollmentConfiguration);
     }
-    
+
     /**
      * Save the given EST configuration.
      *
@@ -1008,7 +1009,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     public void reloadAutoenrollmentConfiguration() {
         msAutoenrollmentConfig =  (MSAutoEnrollmentConfiguration) globalConfigurationSession.getCachedConfiguration(MSAutoEnrollmentConfiguration.CONFIGURATION_ID);
     }
-    
+
     @Override
     public void reloadEstConfiguration() {
         estconfiguration = (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
@@ -1064,7 +1065,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         }
         return ret;
     }
-    
+
     @Override
     public TreeMap<String, Integer>  getAuthorizedSshCertificateProfileNames() {
         final TreeMap<String,Integer> ret = new TreeMap<>();
@@ -1100,7 +1101,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         }
         return ret;
     }
-    
+
     /**
      * Returns authorized ITS CA certificate profile names as a treemap of name (String) -> id (Integer)
      */
@@ -1395,9 +1396,9 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         }
         return false;
     }
-    
+
     private boolean followHttpsRedirect(String redirectUri, int redirectAttempt, String hostname) {
-        
+
         if(StringUtils.isBlank(redirectUri)) {
             return false;
         }
@@ -1408,7 +1409,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         } catch (NoSuchAlgorithmException | KeyManagementException e) {
             throw new IllegalStateException(e);
         }
-        
+
         HttpsURLConnection conn = null;
         try {
             URL url = new URL(redirectUri);
@@ -1422,7 +1423,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                 }
             });
             conn.connect();
-            
+
             int responseCode = conn.getResponseCode();
             log.info("Cache clearance redirect attempt: " + redirectAttempt  + " at: " + redirectUri + 
                                     " response: " + responseCode);
@@ -1435,10 +1436,10 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         } catch (IOException e) {
             log.error("Cache clearance redirect attempt failed with exception: " + e.getMessage());
         }
-        
+
         log.info("Failed to clear caches for host: " + hostname);
         return false;
-        
+
     }
 
     /** @return true if the provided hostname matches the name reported by the system for localhost */
@@ -1859,7 +1860,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         }
         return msAutoenrollmentConfig;
     }
-    
+
     /**
      * Merges together an alias from the editing clone into the proper configuration cache and saves it to the database.
      *
@@ -1937,7 +1938,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         globalConfigurationSession.flushConfigurationCache(MSAutoEnrollmentConfiguration.CONFIGURATION_ID);
         reloadAutoenrollmentConfiguration();
     }
-    
+
     @Override
     public EstConfiguration getEstConfiguration() {
         if (estconfiguration == null) {
@@ -1947,7 +1948,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         //Clear EST config of unauthorized aliases (aliases referring to CA, EEP or CPs that the current admin doesn't have access to)
         return clearEstConfigurationFromUnauthorizedAliases(estconfiguration);
     }
-    
+
     /**
      * Returns a clone of the current EstConfiguration containing only the given alias. Also caches the clone locally.
      *
