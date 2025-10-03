@@ -65,6 +65,7 @@ import org.cesecore.certificates.ocsp.logging.GuidHolder;
 import org.cesecore.certificates.ocsp.logging.PatternLogger;
 import org.cesecore.certificates.ocsp.logging.TransactionLogger;
 import org.cesecore.config.GlobalOcspConfiguration;
+import org.cesecore.config.InvalidConfigurationException;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
@@ -121,6 +122,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
     private long defaultResponseMaxAge;
     private boolean useMaxValidityForExpiration;
     private long requestSignerCertificateRevocationCacheTime;
+    private long signingCertificateCacheTime;
 
     private String currentOcspExtension = null;
     
@@ -184,6 +186,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
         ocspCleanupUse = globalConfiguration.getOcspCleanupUse();
         ocspCleanupSchedule = globalConfiguration.getOcspCleanupSchedule();
         ocspCleanupScheduleUnit = globalConfiguration.getOcspCleanupScheduleUnit();
+        signingCertificateCacheTime = globalConfiguration.getSigningCertificateValidityTimeMilliseconds();
     }
 
     @Override
@@ -348,6 +351,15 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
                 globalConfiguration.setOcspCleanupScheduleUnit(ocspCleanupScheduleUnit);
                 modified = true;
             }
+        }
+        
+        if(signingCertificateCacheTime != globalConfiguration.getSigningCertificateValidityTimeMilliseconds()) {
+            try {
+                globalConfiguration.setSigningCertificateValidityTimeMilliseconds(signingCertificateCacheTime);
+            } catch (InvalidConfigurationException e) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+            }
+            modified = true;
         }
         
         
@@ -1252,5 +1264,15 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
     /** @return true if admin may create new or modify System Configuration. */
     public boolean isAllowedToEditSystemConfiguration() {
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_EDIT.resource());
+    }
+
+    public long getSigningCertificateCacheTime() {
+        //Convert from ms to s
+        return signingCertificateCacheTime/1000;
+    }
+
+    public void setSigningCertificateCacheTime(long signingCertificateCacheTime) {
+        //Convert from s to ms
+        this.signingCertificateCacheTime = signingCertificateCacheTime*1000;
     }
 }

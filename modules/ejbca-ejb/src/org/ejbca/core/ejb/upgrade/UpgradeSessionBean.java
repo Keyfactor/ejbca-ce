@@ -53,6 +53,7 @@ import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.config.GlobalCtConfiguration;
 import org.cesecore.config.GlobalEndEntityProfileConfiguration;
 import org.cesecore.config.GlobalOcspConfiguration;
+import org.cesecore.config.InvalidConfigurationException;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
@@ -1651,9 +1652,25 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
 
         globalOcspConfiguration.setRequestSignserRevocationStatusCacheTime(OcspConfiguration.getRequestSigningCertRevocationCacheTimeMs());
+        
+        // ocsp.signingCertsValidTime was being used in two places both for OCSP signing certificates and for the CA certificate cache. Thus it's being split into two new fields in the sysconfig
+        GlobalCaConfiguration globalCaConfiguration = (GlobalCaConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCaConfiguration.CA_CONFIGURATION_ID);
+        int signingCertificateValidTime = OcspConfiguration.getSigningCertsValidTimeInMilliseconds();
+        if(signingCertificateValidTime < 0) {
+            //normalize negative values to 0;
+            signingCertificateValidTime = 0;
+        }
+        try {
+            globalOcspConfiguration.setSigningCertificateValidityTimeMilliseconds(signingCertificateValidTime);
+            globalCaConfiguration.setCaCertificateCacheTimeMillis(signingCertificateValidTime);
+        } catch (InvalidConfigurationException e) {
+            //Only negative values would cause the setter to fail, which shouldn't be able to happen according to the above. 
+            throw new UpgradeFailedException(e);
+        }
 
         try {
             globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);
+            globalConfigurationSession.saveConfiguration(authenticationToken, globalCaConfiguration);
         } catch (AuthorizationDeniedException e) {
             String msg = "Always allow token was denied authorisation to global configuration table.";
             log.error(msg, e);

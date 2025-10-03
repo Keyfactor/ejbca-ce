@@ -21,8 +21,8 @@ import java.security.cert.X509Certificate;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
-import org.cesecore.certificates.ca.internal.CaCertificateCache;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.certificate.internal.CaCertificateCacheLocal;
 import org.ejbca.config.VAConfiguration;
 import org.ejbca.util.HTMLTools;
 
@@ -43,9 +43,9 @@ public abstract class StoreServletBase extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
 	private static final Logger log = Logger.getLogger(StoreServletBase.class);
-
-	protected CaCertificateCache certCache;
 	
+	@EJB
+	private CaCertificateCacheLocal caCertificateCache;
 	@EJB
 	private CertificateStoreSessionLocal certificateStoreSession;
 
@@ -57,7 +57,6 @@ public abstract class StoreServletBase extends HttpServlet {
 	@Override
     public void init(ServletConfig config) throws ServletException {
 		super.init(config);
-		this.certCache = CaCertificateCache.INSTANCE;
 	}
 
 	/**
@@ -286,7 +285,7 @@ public abstract class StoreServletBase extends HttpServlet {
 	private void printInfo(final HttpServletResponse resp) throws IOException {
 		final StringWriter sw = new StringWriter();
 		final PrintWriter pw = new HtmlPrintWriter(sw);
-		printInfo(this.certCache.getRootCertificates(), "", pw);
+		printInfo(caCertificateCache.getRootCertificates(), "", pw);
 		pw.flush();
 		pw.close();
 		sw.flush();

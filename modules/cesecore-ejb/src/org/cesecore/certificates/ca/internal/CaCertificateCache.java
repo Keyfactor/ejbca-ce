@@ -28,36 +28,59 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.HashID;
-import org.cesecore.config.OcspConfiguration;
+import org.cesecore.certificates.certificate.internal.CaCertificateCacheLocal;
+import org.cesecore.config.GlobalCaConfiguration;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
+
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.ConcurrencyManagement;
+import jakarta.ejb.ConcurrencyManagementType;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Startup;
 
 
 /**
  * A cache for storing CA certificates
  *
- * @version $Id$
  *
  */
-public enum CaCertificateCache  {
-    INSTANCE;
+@Singleton
+@Startup
+@ConcurrencyManagement(ConcurrencyManagementType.BEAN)
+public class CaCertificateCache implements CaCertificateCacheLocal {
     
     // Logger is not static since static initializers run after the constructor for enums.
 	private final Logger log = Logger.getLogger(CaCertificateCache.class);
 
+	@EJB
+	private GlobalConfigurationSessionLocal globalConfigurationSession;
+	
     /** Mapping from subjectDN to key in the certs HashMap. */
-    private Map<Integer, X509Certificate> certsFromSubjectDN = new HashMap<>();
+    private Map<Integer, X509Certificate> certsFromSubjectDN;
     /** Mapping from issuerDN to key in the certs HashMap. */
-    private Map<Integer, Set<X509Certificate>> certsFromIssuerDN = new HashMap<>();
+    private Map<Integer, Set<X509Certificate>> certsFromIssuerDN;
     /** Mapping from subject key identifier to key in the certs HashMap. */
-    private Map<Integer, X509Certificate> certsFromSubjectKeyIdentifier = new HashMap<>();
+    private Map<Integer, X509Certificate> certsFromSubjectKeyIdentifier;
     /** All root certificates. */
-    private Set<X509Certificate> rootCertificates = new HashSet<>();
+    private Set<X509Certificate> rootCertificates;
 
 	/** Cache time counter, set and used by loadCertificates */
-	private long certValidTo = 0;
+	private long certValidTo;
+	
+	@PostConstruct
+    public void initialize() {
+	    certsFromSubjectDN = new HashMap<>();
+	    certsFromSubjectKeyIdentifier = new HashMap<>();
+	    certsFromIssuerDN = new HashMap<>();
+	    rootCertificates = new HashSet<>();
+	    certValidTo = 0;
+	}
 
+	@Override
     public X509Certificate findLatestBySubjectDN(final HashID id) {
         final X509Certificate ret = certsFromSubjectDN.get(id.getKey());
         if (ret==null && log.isDebugEnabled()) {
@@ -66,6 +89,7 @@ public enum CaCertificateCache  {
         return ret;
 	}
 
+	@Override
 	public X509Certificate[] findLatestByIssuerDN(final HashID id) {	    
         final Set<X509Certificate> sCert = certsFromIssuerDN.get(id.getKey());
         
@@ -79,10 +103,12 @@ public enum CaCertificateCache  {
 
     }
 
+	@Override
     public X509Certificate[] getRootCertificates() {
         return rootCertificates.toArray(new X509Certificate[0]);
     }
 
+	@Override
     public X509Certificate findBySubjectKeyIdentifier(final HashID id) {
         final X509Certificate ret = certsFromSubjectKeyIdentifier.get(id.getKey());
         if (ret==null && log.isDebugEnabled()) {
@@ -91,6 +117,7 @@ public enum CaCertificateCache  {
         return ret;
     }
 
+	@Override
     public boolean isCacheExpired() {
         return certValidTo < System.currentTimeMillis();
     }
@@ -103,6 +130,7 @@ public enum CaCertificateCache  {
 	 * 
 	 * @param certs A collection of X509Certificates to put in the CA certificate cache, if empty or null the cache will be emptied
 	 */
+	@Override
     public synchronized void loadCertificates(final Collection<Certificate> certs) {
         if (log.isDebugEnabled()) {
             log.debug("Loaded " + (certs == null ? "0" : Integer.toString(certs.size())) + " ca certificates");
@@ -201,6 +229,7 @@ public enum CaCertificateCache  {
         certsFromIssuerDN = newCertsFromIssuerDN;
         certsFromSubjectDN = newCertsFromSubjectDN;
         rootCertificates = newRootCertificates;
-        certValidTo = System.currentTimeMillis() + OcspConfiguration.getSigningCertsValidTimeInMilliseconds();
+        GlobalCaConfiguration globalCaConfiguration = (GlobalCaConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCaConfiguration.CA_CONFIGURATION_ID);
+        certValidTo = System.currentTimeMillis() + globalCaConfiguration.getCaCertificateCacheTimeMillis();
     }
 }
