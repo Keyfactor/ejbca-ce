@@ -2382,7 +2382,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 	private boolean areEmailsInSubjectAltNameInvalid(String altName) {
 		List<String> sanEmails = DnComponents.getEmailFromDN(altName);
 		for (String email : sanEmails) {
-			if (!StringTools.isValidEmail(email)) {
+			if (!StringUtils.isAsciiPrintable(email)) {
 				return true;
 			}
 		}
