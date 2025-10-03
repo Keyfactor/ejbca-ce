@@ -43,6 +43,8 @@ public class RaEndEntitySearchRequest implements Serializable, Comparable<RaEndE
     private long modifiedBefore = Long.MAX_VALUE;
     private List<Integer> statuses = new ArrayList<>();
     private int pageNumber = 0;
+    
+    private boolean exactLetterCaseSearch;
 
     /** Default constructor */
     public RaEndEntitySearchRequest() {}
@@ -63,6 +65,8 @@ public class RaEndEntitySearchRequest implements Serializable, Comparable<RaEndE
         modifiedAfter = request.modifiedAfter;
         modifiedBefore = request.modifiedBefore;
         statuses.addAll(request.statuses);
+        
+        exactLetterCaseSearch = request.exactLetterCaseSearch;
     }
 
     public int getMaxResults() { return maxResults; }
@@ -108,6 +112,9 @@ public class RaEndEntitySearchRequest implements Serializable, Comparable<RaEndE
     public List<Integer> getStatuses() { return statuses; }
     public void setStatuses(final List<Integer> statuses) { this.statuses = statuses; }
 
+    public boolean isExactLetterCaseSearch() { return exactLetterCaseSearch; }
+    public void setExactLetterCaseSearch(boolean exactLetterCaseSearch) { this.exactLetterCaseSearch = exactLetterCaseSearch; }
+
     @Override
     public int hashCode() {
         return HashCodeBuilder.reflectionHashCode(this);
@@ -128,6 +135,11 @@ public class RaEndEntitySearchRequest implements Serializable, Comparable<RaEndE
     @Override
     public int compareTo(final RaEndEntitySearchRequest other) {
         if (other==null) {
+            return 1;
+        }
+        if (isExactLetterCaseSearch()!=other.isExactLetterCaseSearch()) {
+            // there can be considerable difference for narrowing i.e. case in-sensitive to case sensitve
+            // as more results would fit within the same page
             return 1;
         }
         // First check if there is any there is any indication that this does not contain the whole other
@@ -207,12 +219,14 @@ public class RaEndEntitySearchRequest implements Serializable, Comparable<RaEndE
     /** @return true if the username is matched by this search. */
     public boolean matchUsername(final String username) {
         return username != null && ((!usernameSearchExact && username.toUpperCase().contains(usernameSearchString.toUpperCase())) ||
-                                    (usernameSearchExact && username.equalsIgnoreCase(usernameSearchString)));
+                                    (usernameSearchExact && !exactLetterCaseSearch && username.equalsIgnoreCase(usernameSearchString)) ||
+                                    (usernameSearchExact && exactLetterCaseSearch && username.equals(usernameSearchString)));
     }
     /** @return true if the subjectDn is matched by this search. */
     public boolean matchSubjectDn(final String subjectDn) {
         return subjectDn != null && ((!subjectDnSearchExact && subjectDn.toUpperCase().contains(subjectDnSearchString.toUpperCase())) ||
-                                    (subjectDnSearchExact && subjectDn.equalsIgnoreCase(subjectDnSearchString)));
+                                    (subjectDnSearchExact && !exactLetterCaseSearch && subjectDn.equalsIgnoreCase(subjectDnSearchString)) ||
+                                    (subjectDnSearchExact && exactLetterCaseSearch && subjectDn.equals(subjectDnSearchString)) );
     }
     /** @return true if the subjectAn is matched by this search. */
     public boolean matchSubjectAn(final String subjectAn) {

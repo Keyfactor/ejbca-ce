@@ -49,6 +49,7 @@ import org.ejbca.util.HttpTools;
 
 import com.keyfactor.util.RandomHelper;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import org.ejbca.util.oauth.OAuthTools;
 
 /**
  * Bean used to display a login page.
@@ -223,7 +224,7 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
             OAuthKeyInfo oAuthKeyInfo = ejbcaWebBean.getOAuthConfiguration().getOauthKeyByLabel(oauthClicked);
             if (oAuthKeyInfo != null) {
                 try {
-                    
+
                     OAuthGrantResponseInfo token = getOauthRequestHelper().sendTokenRequest(oAuthKeyInfo, authCode, getRedirectUri());
                     if (token.compareTokenType(HttpTools.AUTHORIZATION_SCHEME_BEARER)) {
                         if (token.getAccessToken() != null) {
@@ -257,11 +258,20 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
     }
 
     private String getRedirectUri() {
-        return ejbcaWebBean.getGlobalConfiguration().getBaseUrl(
-                "https",
-                WebConfiguration.getHostName(),
-                WebConfiguration.getPublicHttpsPort()
-        ) + GlobalConfiguration.ADMIN_WEB_PATH;
+        HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance()
+                .getExternalContext().getRequest();
+        String redirectUri = request.getRequestURL().toString();
+
+        if (!OAuthTools.isHostnameAllowed(redirectUri, ejbcaWebBean.getOAuthConfiguration())) {
+            log.info("Hostname in redirect URI is not in the allowed hostname list: " + redirectUri);
+            return ejbcaWebBean.getGlobalConfiguration().getBaseUrl(
+                    "https",
+                    WebConfiguration.getHostName(),
+                    WebConfiguration.getPublicHttpsPort()
+            ) + GlobalConfiguration.ADMIN_WEB_PATH;
+        }
+
+        return redirectUri;
     }
 
     private boolean verifyStateParameter(final String state) {

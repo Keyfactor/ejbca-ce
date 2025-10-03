@@ -52,7 +52,7 @@ import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
-import org.cesecore.certificates.ca.internal.CaCertificateCache;
+import org.cesecore.certificates.certificate.internal.CaCertificateCacheLocal;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -61,8 +61,8 @@ import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.config.GlobalCaConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
-import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.util.CvcKeyTools;
@@ -109,6 +109,8 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     @EJB
     private AuthorizationSessionLocal authorizationSession;
     @EJB
+    private CaCertificateCacheLocal caCertificateCache;
+    @EJB
     private CertificateProfileSessionLocal certificateProfileSession;
     @EJB
     private CertificateDataSessionLocal certificateDataSession;
@@ -142,7 +144,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void initTimers() {
         // Reload CA certificate cache cache, and cancel/create timers if there are no timers or if the cache is empty (probably a fresh startup)
-        if (getTimerCount(TIMERID_CACERTIFICATECACHE)==0 || CaCertificateCache.INSTANCE.isCacheExpired()){
+        if (getTimerCount(TIMERID_CACERTIFICATECACHE)==0 || caCertificateCache.isCacheExpired()){
         	reloadCaCertificateCacheAndSetTimeout();
         } else {
             log.info("Not initing CaCertificateCache reload timers, there are already some.");
@@ -1732,7 +1734,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         }
 
         // First lookup cache for potential CA certs.
-        final X509Certificate[] caCert = CaCertificateCache.INSTANCE.findLatestByIssuerDN(HashID.getFromDNString(issuerDn));
+        final X509Certificate[] caCert = caCertificateCache.findLatestByIssuerDN(HashID.getFromDNString(issuerDn));
         if (ArrayUtils.isNotEmpty(caCert)) {
             for (final X509Certificate cert : caCert) {
                 if (cert.getSerialNumber().equals(sernoBigInt)) {
@@ -1936,7 +1938,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
                 caCerts.add(queryResults.get(0));
             }
         }
-        CaCertificateCache.INSTANCE.loadCertificates(caCerts);
+        caCertificateCache.loadCertificates(caCerts);
         if (log.isDebugEnabled()) {
             log.debug("Reloaded CA certificate cache with " + caCerts.size() + " certificates");
         }
@@ -1990,7 +1992,8 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             certificateStoreSession.reloadCaCertificateCache();
         } finally {
             // Schedule a new timer of this type
-            final long interval = OcspConfiguration.getSigningCertsValidTimeInMilliseconds();
+            GlobalCaConfiguration globalCaConfiguration = (GlobalCaConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCaConfiguration.CA_CONFIGURATION_ID);
+            final long interval = globalCaConfiguration.getCaCertificateCacheTimeMillis();
             if (interval > 0) {
                 timerService.createSingleActionTimer(interval, new TimerConfig(TIMERID_CACERTIFICATECACHE, false));
             }

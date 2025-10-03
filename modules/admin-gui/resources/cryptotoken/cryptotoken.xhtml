@@ -674,19 +674,16 @@
                                     action="#{cryptoTokenMBean.saveCurrentCryptoTokenWithCheck}"
                                     value="#{web.text.SAVE}"
                                     rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode and !cryptoTokenMBean.p11SlotUsed and cryptoTokenMBean.currentCryptoTokenId == 0
-                            and cryptoTokenMBean.currentCryptoToken.type != 'Pkcs11NgCryptoToken'}"
-                                    onclick="return checkFieldNotEmpty(document.getElementById('currentCryptoTokenForm:currentCryptoTokenNameText'),'The name of crypto token is mandatory!');"/>
+                            and cryptoTokenMBean.currentCryptoToken.type != 'Pkcs11NgCryptoToken'}"/>
                             <h:commandButton
                                     action="#{cryptoTokenMBean.saveCurrentCryptoToken}"
                                     value="#{web.text.CRYPTOTOKEN_SAVE_CONFIRM}"
-                                    rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode and cryptoTokenMBean.p11SlotUsed}"
-                                    onclick="return checkFieldNotEmpty(document.getElementById('currentCryptoTokenForm:currentCryptoTokenNameText'),'The name of crypto token is mandatory!');"/>
+                                    rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode and cryptoTokenMBean.p11SlotUsed}"/>
                             <h:commandButton
                                     action="#{cryptoTokenMBean.saveCurrentCryptoToken}"
                                     value="#{web.text.SAVE}"
                                     rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode
-                            and (cryptoTokenMBean.currentCryptoTokenId != 0 or cryptoTokenMBean.currentCryptoToken.type == 'Pkcs11NgCryptoToken')}"
-                                    onclick="return checkFieldNotEmpty(document.getElementById('currentCryptoTokenForm:currentCryptoTokenNameText'),'The name of crypto token is mandatory!');"/>
+                            and (cryptoTokenMBean.currentCryptoTokenId != 0 or cryptoTokenMBean.currentCryptoToken.type == 'Pkcs11NgCryptoToken')}"/>
                             <h:button value="#{web.text.CANCEL}" outcome="cryptotokens.xhtml?faces-redirect=true" immediate="true"
                                       rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"/>
                         </div>

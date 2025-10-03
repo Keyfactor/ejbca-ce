@@ -24,22 +24,30 @@ import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectedDataImpl;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
-
+import org.cesecore.dto.RoleMemberData;
+import org.cesecore.dto.RoleMemberDataRecord;
 import java.io.Serializable;
 import java.util.Objects;
 
 @Entity
 @Table(name = "RoleMemberData")
-public class RoleMemberDataBean implements Serializable, EntityManagerBean {
+public final class RoleMemberDataBean implements Serializable, EntityManagerBean<RoleMemberData> {
 
     private static ProtectedDataImpl protectedDataImpl;
 
     static {
-        final String entityClassName = RoleMemberDataBean.class.getSimpleName();
-        protectedDataImpl = ProtectedData.initializeProtectedDataImpl(entityClassName);
+        protectedDataImpl = ProtectedData.initializeProtectedDataImpl("RoleMemberData");
     }
 
-    private int primaryKey;
+    public static ProtectedDataImpl getProtectedDataImpl() {
+        return protectedDataImpl;
+    }
+
+    public static void setProtectedDataImpl(final ProtectedDataImpl protectedDataImpl) {
+        RoleMemberDataBean.protectedDataImpl = protectedDataImpl;
+    }
+
+    private Integer primaryKey;
     private String tokenType;
     private int tokenIssuerId;
     private int tokenProviderId;
@@ -48,7 +56,7 @@ public class RoleMemberDataBean implements Serializable, EntityManagerBean {
     private String tokenMatchValue;
     private int roleId;
     private String description;
-    private int rowVersion;
+    private Integer rowVersion;
     private String rowProtection;
 
     public RoleMemberDataBean() {
@@ -56,11 +64,11 @@ public class RoleMemberDataBean implements Serializable, EntityManagerBean {
     }
 
     @Id
-    public int getPrimaryKey() {
+    public Integer getPrimaryKey() {
        return this.primaryKey;
     }
 
-    public void setPrimaryKey(int primaryKey) {
+    public void setPrimaryKey(Integer primaryKey) {
        this.primaryKey = primaryKey;
     }
 
@@ -144,10 +152,37 @@ public class RoleMemberDataBean implements Serializable, EntityManagerBean {
         this.rowProtection = rowProtection;
     }
 
+    @Override
+    public RoleMemberData toDto() {
+        return new RoleMemberDataRecord(
+                    getPrimaryKey(),
+                    getTokenType(),
+                    getTokenIssuerId(),
+                    getTokenProviderId(),
+                    getTokenMatchKey(),
+                    getTokenMatchOperator(),
+                    getTokenMatchValue(),
+                    getRoleId(),
+                    getDescription());
+    }
+
+    @Override
+    public void init(RoleMemberData dto) {
+        setPrimaryKey(dto.primaryKey());
+        setTokenType(dto.tokenType());
+        setTokenIssuerId(dto.tokenIssuerId());
+        setTokenProviderId(dto.tokenProviderId());
+        setTokenMatchKey(dto.tokenMatchKey());
+        setTokenMatchOperator(dto.tokenMatchOperator());
+        setTokenMatchValue(dto.tokenMatchValue());
+        setRoleId(dto.roleId());
+        setDescription(dto.description());
+    }
+
     @Transient
     @Override
     public int getProtectVersion() {
-        return 2;
+        return 1;
     }
 
     @Transient
@@ -157,29 +192,12 @@ public class RoleMemberDataBean implements Serializable, EntityManagerBean {
         builder.append(getPrimaryKey());
         builder.append(getTokenType());
         builder.append(getTokenIssuerId());
-        if (version >= 2) {
-            builder.append(getTokenProviderId());
-        }
+        builder.append(getTokenProviderId());
         builder.append(getTokenMatchKey());
         builder.append(getTokenMatchOperator());
         builder.append(getTokenMatchValue());
         builder.append(getRoleId());
         builder.append(getDescription());
-        return builder.toString();
-    }
-
-    @Transient
-    public String getProtectString_Eca10289() {
-        final ProtectionStringBuilder builder = new ProtectionStringBuilder();
-        builder.append(getPrimaryKey())
-                .append(getTokenType())
-                .append(getTokenIssuerId())
-                .append(getTokenProviderId())
-                .append(getTokenMatchKey())
-                .append(getTokenMatchOperator())
-                .append(getTokenMatchValue())
-                .append(getRoleId())
-                .append(getDescription());
         return builder.toString();
     }
 
@@ -198,15 +216,8 @@ public class RoleMemberDataBean implements Serializable, EntityManagerBean {
         try {
             final var unProtectedData = getProtectString(getProtectVersion());
             protectedDataImpl.verifyData(unProtectedData, rowProtection, "PublisherDataBean", String.valueOf(primaryKey));
-        } catch (final DatabaseProtectionException e1) {
-            // Try to verify again with a mocked RoleMemberData object returning a "patched"
-            // protected string
-            final var secondUnProtectedData = getProtectString_Eca10289();
-            try {
-                protectedDataImpl.verifyData(secondUnProtectedData, rowProtection, "PublisherDataBean", String.valueOf(primaryKey));
-            } catch (final DatabaseProtectionException e2) {
-                protectedDataImpl.onDataVerificationError(e2);
-            }
+        } catch (final DatabaseProtectionException e) {
+            protectedDataImpl.onDataVerificationError(e);
         }
     }
 

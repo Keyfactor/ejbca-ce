@@ -13,10 +13,6 @@
 
 package org.ejbca.ui.cli.ca;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -27,11 +23,22 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Random;
 
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.FileTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
+
+import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.SubjectAltPublicKeyInfo;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.BufferingContentSigner;
@@ -58,13 +65,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.FileTools;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.certificate.SimpleCertGenerator;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.keys.KeyTools;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 /**
  * System test class for CaInitCommandSystemTest, tests rudimentary behavior of the "ca init" CLI command
@@ -88,6 +91,9 @@ public class CaInitCommandSystemTest {
     private static final String[] ECC_CA_ARGS = {  CA_NAME, CA_DN, "soft", "foo123", "secp256r1", "ECDSA", "365", "null", "SHA256withECDSA" };
     private static final String[] ECC_CA_EXPLICIT_ARGS = {  CA_NAME, CA_DN, "soft", "foo123", "secp256r1", "ECDSA", "365", "null",
             "SHA256withECDSA", "-explicitecc" };
+    private static final String[] HYBRID_CA_ARGS = {  "--caname", CA_NAME, "--dn", CA_DN, "--tokenName", CA_NAME, "--tokenPass", "foo123",
+            "--tokenType", "soft", "-v", "3", "--policy", "null", "-s", "SHA256WithECDSA", "--keyspec", "secp256r1",
+            "--altkeyspec", "ML-DSA-44", "--altsigalg", "ML-DSA-44" };
 
 
     private CaInitCommand caInitCommand;
@@ -151,7 +157,7 @@ public class CaInitCommandSystemTest {
         CommandResult result = caInitCommand.execute(HAPPY_PATH_ARGS);
         assertNotNull("Happy path CA was not created.", caSession.getCAInfo(admin, CA_NAME));
         assertEquals("Result should be success", CommandResult.SUCCESS.getReturnCode(), result.getReturnCode());
-        
+
         // 2. Use existing crypto token
         // Test creating CA from an existing crypto token, i.e. not creating a new crypto token, re-use the crypto token created above
         // First create the token.properties file that we need for the command
@@ -165,7 +171,7 @@ public class CaInitCommandSystemTest {
             }
         } finally {
             f.deleteOnExit();
-        }        
+        }
         final String[] HAPPY_PATH_WITH_TOKENNAME = {  "--caname", CA_NAME_2, "--dn", CA_DN_2, "--tokenName", CA_NAME, "--tokenPass", "foo123", "--tokenprop", f.getAbsolutePath(), "--keyspec", "2048", "--keytype", "RSA", "-v", "30", "--policy", "null", "-s", "SHA256withRSA" };
         result = caInitCommand.execute(HAPPY_PATH_WITH_TOKENNAME);
         assertNotNull("Happy path CA 2 was not created.", caSession.getCAInfo(admin, CA_NAME_2));
@@ -215,7 +221,10 @@ public class CaInitCommandSystemTest {
         CAInfo cainfo = caSession.getCAInfo(admin, CA_NAME);
         assertNotNull("ECC CA was not created.", cainfo);
         Certificate cert = cainfo.getCertificateChain().iterator().next();
-        assertEquals("EC", cert.getPublicKey().getAlgorithm());
+        assertEquals("Public key should be EC", "EC", cert.getPublicKey().getAlgorithm());
+        X509CertificateHolder certHolder = new JcaX509CertificateHolder((X509Certificate)cert);
+        SubjectAltPublicKeyInfo altPub = SubjectAltPublicKeyInfo.fromExtensions(certHolder.getExtensions());
+        assertNull("There must NOT be an alt public key in a plain certificate", altPub);
     }
 
     /** Test happy path for creating an ECDSA CA with explicit ECC parameters. Requires some special handling. */
@@ -236,7 +245,7 @@ public class CaInitCommandSystemTest {
         }
     }
 
-   
+
     /**
      * Create a root CA, then create a sub CA signed by that root.
      */
@@ -244,7 +253,7 @@ public class CaInitCommandSystemTest {
     public void testCreateSubCa() throws AuthorizationDeniedException {
         final String rootCaName = "rootca";
         final String subCaName = "subca";
-        final String[] ROOT_CA_ARGS = { rootCaName, "CN=rootca", "soft", "foo123", "2048", "RSA", "365", "null", "SHA1WithRSA" };     
+        final String[] ROOT_CA_ARGS = { rootCaName, "CN=rootca", "soft", "foo123", "2048", "RSA", "365", "null", "SHA1WithRSA" };
         assertEquals(CommandResult.SUCCESS, caInitCommand.execute(ROOT_CA_ARGS));
         CAInfo rootCaInfo = caSession.getCAInfo(admin, rootCaName);
         int rootCaId = rootCaInfo.getCAId();
@@ -261,14 +270,26 @@ public class CaInitCommandSystemTest {
         } finally {
             CaTestUtils.removeCa(admin, rootCaInfo);
         }
-        
-
     }
-    
+
+    /** Test happy path for creating an Hybrid CA with ECDSA and ML-DSA. */
+    @Test
+    public void testHybridCA() throws Exception {
+        caInitCommand.execute(HYBRID_CA_ARGS);
+        CAInfo cainfo = caSession.getCAInfo(admin, CA_NAME);
+        assertNotNull("Hybrid CA was not created.", cainfo);
+        Certificate cert = cainfo.getCertificateChain().iterator().next();
+        assertEquals("Public key should be EC", "EC", cert.getPublicKey().getAlgorithm());
+        X509CertificateHolder certHolder = new JcaX509CertificateHolder((X509Certificate)cert);
+        SubjectAltPublicKeyInfo altPub = SubjectAltPublicKeyInfo.fromExtensions(certHolder.getExtensions());
+        assertNotNull("There must be an alt public key in a hybrid certificate", altPub);
+        assertEquals("Alt public key is not ML-DSA-44", NISTObjectIdentifiers.id_ml_dsa_44, altPub.getAlgorithm().getAlgorithm());
+    }
+
     private static final String[] IMPORT_SIGNED_BY_EXTERNAL_ARGS = { CA_NAME, "cert.pem" };
     private static final String[] SIGNED_BY_EXTERNAL_ARGS = { CA_NAME, CA_DN, "soft", "foo123", "2048", "RSA", "365", "null", "SHA256WithRSA",
             "--signedby", "External", "-externalcachain", "chain.pem" };
-    
+
     /** Test happy path for creating a CA signed by an external CA. */
     @Test
     public void testCASignedByExternal() throws Exception {
@@ -289,7 +310,7 @@ public class CaInitCommandSystemTest {
         File csr = new File(CA_NAME + "_csr.der");
         File certfile = new File(CA_NAME + "_cert.der");
         try {
-            ArrayList<Certificate> mylist = new ArrayList<Certificate>();
+            ArrayList<Certificate> mylist = new ArrayList<>();
             mylist.add(externalCACert);
             FileOutputStream fos = new FileOutputStream(temp);
             fos.write(CertTools.getPemFromCertificateChain(mylist));
@@ -325,7 +346,7 @@ public class CaInitCommandSystemTest {
             final X509Certificate cert = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
             fp2 = CertTools.getFingerprintAsString(cert);
             // Now we have issued a certificate, import it
-            mylist = new ArrayList<Certificate>();
+            mylist = new ArrayList<>();
             mylist.add(cert);
             fos = new FileOutputStream(certfile);
             fos.write(CertTools.getPemFromCertificateChain(mylist));

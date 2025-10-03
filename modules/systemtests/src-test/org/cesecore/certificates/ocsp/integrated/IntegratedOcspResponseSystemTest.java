@@ -101,8 +101,7 @@ import org.cesecore.certificates.ocsp.logging.GuidHolder;
 import org.cesecore.certificates.ocsp.logging.TransactionCounter;
 import org.cesecore.certificates.ocsp.logging.TransactionLogger;
 import org.cesecore.config.GlobalOcspConfiguration;
-import org.cesecore.config.OcspConfiguration;
-import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
+import org.cesecore.config.InvalidConfigurationException;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.junit.util.CryptoTokenRunner;
 import org.cesecore.keybind.impl.OcspNonExistingBehavior;
@@ -153,8 +152,6 @@ public class IntegratedOcspResponseSystemTest {
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
-    private CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CryptoTokenManagementSessionRemote.class);
     private InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
@@ -1057,10 +1054,13 @@ public class IntegratedOcspResponseSystemTest {
      */
     @Test
     public void testCacheUpdates() throws OCSPException, AuthorizationDeniedException, MalformedRequestException, IOException, InterruptedException,
-            CADoesntExistsException, IllegalCryptoTokenException, CertificateEncodingException {
+            CADoesntExistsException, IllegalCryptoTokenException, CertificateEncodingException, InvalidConfigurationException {
         final Integer timeToWait = 2;
         // Set the validity time to a single second for testing purposes.
-        cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNING_CERTD_VALID_TIME, timeToWait.toString());
+        GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        final long originalSigningCertificateValidityTime = globalOcspConfiguration.getSigningCertificateValidityTimeMilliseconds();
+        globalOcspConfiguration.setSigningCertificateValidityTimeMilliseconds(timeToWait * 1000);
+        globalConfigurationSession.saveConfiguration(internalAdmin, globalOcspConfiguration);
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
         try {
             // An OCSP request
@@ -1096,8 +1096,8 @@ public class IntegratedOcspResponseSystemTest {
 
         } finally {
             // Reset sign trust valid time.
-            cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNING_CERTD_VALID_TIME,
-                    Integer.toString(OcspConfiguration.getSigningCertsValidTimeInMilliseconds()));
+            globalOcspConfiguration.setSigningCertificateValidityTimeMilliseconds(originalSigningCertificateValidityTime);
+            globalConfigurationSession.saveConfiguration(internalAdmin, globalOcspConfiguration);
 
         }
     }

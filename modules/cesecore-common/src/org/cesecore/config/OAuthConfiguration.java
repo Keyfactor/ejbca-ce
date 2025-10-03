@@ -14,6 +14,7 @@
 package org.cesecore.config;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -29,6 +30,7 @@ public class OAuthConfiguration extends ConfigurationBase implements Serializabl
     private static final   String OAUTH_KEYS          = "oauthkeys";
     // Default OAuth Keys
     private static final   String DEFAULT_OAUTH_KEY   = "defaultoauthkey";
+    private static final String ALLOWED_OAUTH_HOSTS = "allowedoauthhosts";
 
     public Map<String,OAuthKeyInfo> getOauthKeys() {
         @SuppressWarnings("unchecked")
@@ -64,6 +66,44 @@ public class OAuthConfiguration extends ConfigurationBase implements Serializabl
         data.put(DEFAULT_OAUTH_KEY, defaultKey);
     }
 
+    // Methods used by configdump
+    public String getDefaultOauthKeyLabel() {
+        return getDefaultOauthKey() == null ? null : getDefaultOauthKey().getLabel();
+    }
+
+    public void setDefaultOauthKeyLabel(final String label) {
+        if (label != null && !label.isBlank() && !"none".equalsIgnoreCase(label)) {
+            final Map<String, OAuthKeyInfo> oAuthKeyInfoMap = getOauthKeys();
+
+            if (oAuthKeyInfoMap != null && !oAuthKeyInfoMap.isEmpty()) {
+                final OAuthKeyInfo defaultOauthKey = oAuthKeyInfoMap.get(label);
+                if (defaultOauthKey != null) {
+                    setDefaultOauthKey(defaultOauthKey);
+                } else {
+                    throw new IllegalArgumentException("No OAuth key with label " + label + " found.");
+                }
+            } else {
+                throw new IllegalArgumentException("No OAuth keys found.");
+            }
+
+        } else {
+            setDefaultOauthKey(null);
+        }
+    }
+
+    public String[] getAllowedOauthHosts() {
+        final String[] allowedOauthHosts = (String[]) data.get(ALLOWED_OAUTH_HOSTS);
+        if (allowedOauthHosts == null) {
+            return new String[0];
+        } else {
+            return allowedOauthHosts;
+        }
+    }
+
+    public void setAllowedOauthHosts(String[] allowedOauthHosts) {
+        final String[] allowedOAuthHostFinalList = filterValidHostnames(allowedOauthHosts); // Validate the OAuth allowlist before saving
+        data.put(ALLOWED_OAUTH_HOSTS, allowedOAuthHostFinalList);
+    }
 
     public OAuthKeyInfo getOauthKeyByLabel(String label){
         Map<String, OAuthKeyInfo> oauthKeys = getOauthKeys();
@@ -89,5 +129,29 @@ public class OAuthConfiguration extends ConfigurationBase implements Serializabl
     @Override
     public String getConfigurationId() {
         return OAUTH_CONFIGURATION_ID;
+    }
+
+    /**
+     * Filters the provided list of hostnames and returns a new list containing only the valid hostnames.
+     *
+     * @param allowlist the string array of hostnames to be filtered
+     * @return a string array of hostnames that are valid, according to the validation criteria in the isValidHostname() method
+     */
+    private String[] filterValidHostnames(final String[] allowlist) {
+        return Arrays.stream(allowlist)
+                .filter(this::isValidHostname)
+                .toArray(String[]::new);
+
+    }
+
+    /**
+     * Validates a hostname
+     * @param hostname The hostname to validate
+     * @return true if valid, false otherwise
+     */
+    private boolean isValidHostname(final String hostname) {
+        // Basic hostname validation
+        String hostnameRegex = "^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$";
+        return hostname != null && hostname.matches(hostnameRegex);
     }
 }

@@ -58,6 +58,7 @@ import org.ejbca.core.model.era.RaEndEntitySearchResponse;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
+import org.ejbca.ra.EnrollMakeNewRequestBean.KeyPairGeneration;
 import org.ejbca.ra.RaEndEntityDetails.Callbacks;
 
 /**
@@ -99,6 +100,32 @@ public class RaSearchEesBean implements Serializable {
 
     private String modifiedAfter = "";
     private String modifiedBefore = "";
+    
+    private enum SearchStringScope {
+        GENERIC("search_ee_generic"),
+        USERNAME_CONTAINS("search_ee_username_contains"),
+        USERNAME_EQUALS("search_ee_username_equals"),
+        USERNAME_EQUALS_WITH_CASE("search_ee_username_equals_with_case"),
+        SUBJECTDN_CONTAINS("search_ee_subjectdn_contains"),
+        SUBJECTDN_EQUALS("search_ee_subjectdn_equals"),
+        SUBJECTDN_EQUALS_WITH_CASE("search_ee_subjectdn_equals_with_case");
+
+        private String description;
+        
+        SearchStringScope(String description) {
+            this.description = description;
+        }
+
+        public static SearchStringScope fromDescription(String description) {
+            for (SearchStringScope scope : SearchStringScope.values()) {
+                if (scope.description.equalsIgnoreCase(description)) {
+                    return scope;
+                }
+            }
+            throw new IllegalArgumentException("Unknown value: " + description);
+        }
+    }
+    private SearchStringScope selectSearchTermScope = SearchStringScope.GENERIC;
 
     private enum SortOrder { PROFILE, CA, SUBJECT, USERNAME, MODIFIED, STATUS };
 
@@ -147,6 +174,7 @@ public class RaSearchEesBean implements Serializable {
     /** Determine if we need to query back end or just filter and execute the required action. */
     private void searchAndFilterCommon() {
         final int compared = stagedRequest.compareTo(lastExecutedRequest);
+        log.debug("stagedRequest.compareTo(lastExecutedRequest): " + compared);
         boolean search = compared > 0;
         if (compared != 0) {
             stagedRequest.setPageNumber(0);
@@ -158,7 +186,8 @@ public class RaSearchEesBean implements Serializable {
             }
             filterTransformSort();
             // Check if there are sufficient results to fill screen and search for more
-            if (resultsFiltered.size()<lastExecutedRequest.getMaxResults() && lastExecutedResponse.isMightHaveMoreResults()) {
+            if (resultsFiltered.size()==0 ||
+                    (resultsFiltered.size()<lastExecutedRequest.getMaxResults() && lastExecutedResponse.isMightHaveMoreResults())) {
                 if (log.isDebugEnabled()) {
                     log.debug("Trying to load more results since filter left too few results → Query");
                 }
@@ -242,6 +271,28 @@ public class RaSearchEesBean implements Serializable {
             }
         });
     }
+    
+    public List<SelectItem> getAvailableSearchScopes() {
+        final List<SelectItem> ret = new ArrayList<>();
+        for (SearchStringScope scope: SearchStringScope.values()) {
+            ret.add(new SelectItem(scope.name(), raLocaleBean.getMessage(scope.description)));
+        }
+        return ret;
+    }
+    
+    public String getSelectSearchTermScope() {
+        return selectSearchTermScope.name();
+    }
+
+    /**
+     * @param selectedKeyStoreGeneration the selectedKeyPairGeneration to set
+     */
+    public void setSelectSearchTermScope(final String selectSearchTermScope) {
+        log.info("selectSearchTermScope: " + selectSearchTermScope);
+        this.selectSearchTermScope = SearchStringScope.valueOf(selectSearchTermScope);
+        lastExecutedRequest = null;
+        redefineSearchRequest();
+    }
 
     /** @return true if there were no matching search results for the current criteria. */
     public boolean isResultsNone() {
@@ -255,7 +306,7 @@ public class RaSearchEesBean implements Serializable {
     public boolean isResultsTimeout() {
         return getFilteredResults().isEmpty() && isMoreResultsAvailable();
     }
-
+  
     public String getSortedByProfile() { return getSortedBy(SortOrder.PROFILE); }
     public void sortByProfile() { sortBy(SortOrder.PROFILE, true); }
     public String getSortedByCa() { return getSortedBy(SortOrder.CA); }
@@ -314,9 +365,61 @@ public class RaSearchEesBean implements Serializable {
     public String getGenericSearchString() { return this.genericSearchString; }
     public void setGenericSearchString(final String genericSearchString) {
         this.genericSearchString = genericSearchString;
-        stagedRequest.setSubjectDnSearchString(genericSearchString);
-        stagedRequest.setSubjectAnSearchString(genericSearchString);
-        stagedRequest.setUsernameSearchString(genericSearchString);
+        if (!genericSearchString.isBlank()) {
+            redefineSearchRequest();
+        }
+        
+    }
+    
+    private void redefineSearchRequest() {
+        
+        switch (selectSearchTermScope) {
+            case USERNAME_EQUALS:
+            case USERNAME_EQUALS_WITH_CASE:
+                stagedRequest.setSubjectDnSearchString("");
+                stagedRequest.setSubjectAnSearchString("");
+                stagedRequest.setUsernameSearchString(genericSearchString);
+                stagedRequest.setUsernameSearchExact(true);
+                stagedRequest.setSubjectDnSearchExact(false);
+                break;
+            case USERNAME_CONTAINS:
+                stagedRequest.setSubjectDnSearchString("");
+                stagedRequest.setSubjectAnSearchString("");
+                stagedRequest.setUsernameSearchString(genericSearchString);
+                stagedRequest.setUsernameSearchExact(false);
+                stagedRequest.setSubjectDnSearchExact(false);
+                break;
+            case SUBJECTDN_EQUALS_WITH_CASE:
+            case SUBJECTDN_EQUALS:
+                stagedRequest.setSubjectDnSearchString(genericSearchString);
+                stagedRequest.setSubjectDnSearchExact(true);
+                stagedRequest.setSubjectAnSearchString("");
+                stagedRequest.setUsernameSearchString("");
+                stagedRequest.setUsernameSearchExact(false);
+                break;
+            case SUBJECTDN_CONTAINS:
+                stagedRequest.setSubjectDnSearchString(genericSearchString);
+                stagedRequest.setSubjectDnSearchExact(false);
+                stagedRequest.setSubjectAnSearchString("");
+                stagedRequest.setUsernameSearchString("");
+                stagedRequest.setUsernameSearchExact(false);
+                break;
+            default:
+            case GENERIC:
+                stagedRequest.setSubjectDnSearchString(genericSearchString);
+                stagedRequest.setSubjectAnSearchString(genericSearchString);
+                stagedRequest.setUsernameSearchString(genericSearchString);
+                stagedRequest.setUsernameSearchExact(false);
+                stagedRequest.setSubjectDnSearchExact(false);
+                break;
+        }
+        
+        stagedRequest.setExactLetterCaseSearch(selectSearchTermScope == SearchStringScope.SUBJECTDN_EQUALS_WITH_CASE 
+                || selectSearchTermScope == SearchStringScope.USERNAME_EQUALS_WITH_CASE);
+        if (!genericSearchString.isBlank()) {
+            searchAndFilterCommon();
+        }
+    
     }
 
     public int getCriteriaMaxResults() { return stagedRequest.getMaxResults(); }

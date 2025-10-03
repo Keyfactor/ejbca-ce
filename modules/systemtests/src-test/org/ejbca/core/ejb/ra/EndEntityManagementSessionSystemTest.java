@@ -33,6 +33,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
@@ -79,6 +80,8 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.config.GlobalEndEntityProfileConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
+import org.cesecore.dto.RoleDataDto;
+import org.cesecore.dto.RoleDataDtoBuilder;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.keys.validation.KeyValidatorSessionRemote;
@@ -87,7 +90,6 @@ import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemot
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.UsernameBasedAuthenticationToken;
-import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
@@ -954,18 +956,23 @@ public class EndEntityManagementSessionSystemTest extends CaTestCase {
                 assertTrue("Wrong auth denied message: "+e.getMessage(), Strings.CS.startsWith(e.getMessage(), "Administrator not authorized to CA"));
             }
             // Now add the administrator to a role that has access to /ca/* but not ee profiles
-            final Role oldRole = roleSession.getRole(admin, null, testRole);
+            final RoleDataDto oldRole = roleSession.getRole(admin, null, testRole);
             if (oldRole!=null) {
-                roleSession.deleteRoleIdempotent(admin, oldRole.getRoleId());
+                roleSession.deleteRoleIdempotent(admin, oldRole.id());
             }
-            final Role role = roleSession.persistRole(admin, new Role(null, testRole, Collections.singletonList(StandardRules.CAACCESSBASE.resource()), null));
-            roleMemberSession.persist(admin, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
+            final RoleDataDto role = new RoleDataDtoBuilder()
+                    .setName(testRole)
+                    .setAccessRules(Map.of(StandardRules.CAACCESSBASE.resource(), RoleDataDto.STATE_ALLOW))
+                    .build();
+            final RoleDataDto persistedRole = roleSession.persistRole(admin, role);
+            final RoleMember roleMember = new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                     CertTools.getIssuerDN(adminCert).hashCode(), RoleMember.NO_PROVIDER,
                     X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
                     AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
                     DnComponents.getPartFromDN(CertTools.getSubjectDN(adminCert), "CN"),
-                    role.getRoleId(),
-                    null));
+                    persistedRole.id(),
+                    null);
+            roleMemberSession.persist(admin, roleMember);
             // We must enforce end entity profile limitations for this, with false it should be ok now
             eelimitation = setEnableEndEntityProfileLimitations(false);
             // Do the same test, now it should work since we are authorized to CA and we don't enforce EE profile authorization
@@ -996,9 +1003,9 @@ public class EndEntityManagementSessionSystemTest extends CaTestCase {
             } catch (Exception e) { // NOPMD
                 log.info("Error in finally: ", e);
             }
-            final Role oldRole = roleSession.getRole(admin, null, testRole);
+            final RoleDataDto oldRole = roleSession.getRole(admin, null, testRole);
             if (oldRole!=null) {
-                roleSession.deleteRoleIdempotent(admin, oldRole.getRoleId());
+                roleSession.deleteRoleIdempotent(admin, oldRole.id());
             }
         }
     }

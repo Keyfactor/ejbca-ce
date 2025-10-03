@@ -142,6 +142,8 @@
 		<pathelement location="${mod.edition-specific-interface.lib}"/>
 		<pathelement location="${mod.edition-specific-ejb.lib}"/>
 		<path refid="lib.junit.classpath"/>
+        <path location="${ejbca.home}/modules/statedump/build/classes/java/test"/>
+        <path location="${ejbca.home}/modules/statedump/build-ejb"/>
 	</path>
 	
 	<path id="manifest.classpath">

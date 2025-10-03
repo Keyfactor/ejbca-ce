@@ -25,12 +25,11 @@ public class OcspConfiguration {
 
     private static final Logger log = Logger.getLogger(OcspConfiguration.class);
 
+    @Deprecated(since = "9.4.0")
     public static final String SIGNING_CERTD_VALID_TIME = "ocsp.signingCertsValidTime";
     @Deprecated(since = "9.4.0")
     public static final String REQUEST_SIGNING_CERT_REVOCATION_CACHE_TIME = "ocsp.reqsigncertrevcachetime";
-    public static final String SIGNING_TRUSTSTORE_VALID_TIME = "ocsp.signtrustvalidtime";
     public static final String SIGNATUREREQUIRED = "ocsp.signaturerequired";
-    public static final String CARD_PASSWORD = "ocsp.keys.cardPassword";
     public static final String WARNING_BEFORE_EXPERATION_TIME = "ocsp.warningBeforeExpirationTime";
     @Deprecated(since = "9.4.0")
     public static final String NON_EXISTING_IS_GOOD = "ocsp.nonexistingisgood";
@@ -57,6 +56,7 @@ public class OcspConfiguration {
     /**
      * The interval on which new OCSP signing certificates are loaded in milliseconds
      */
+    @Deprecated(since = "9.4.0")
     public static int getSigningCertsValidTimeInMilliseconds() {
         int timeInSeconds;
         final int defaultTimeInSeconds = 300; // 5 minutes

@@ -36,9 +36,10 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
+import org.cesecore.dto.RoleDataDto;
+import org.cesecore.dto.RoleDataDtoBuilder;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionLocal;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
-import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.member.RoleMember;
@@ -61,21 +62,29 @@ public class RoleInitializationSessionBean implements RoleInitializationSessionR
     private RoleMemberSessionLocal roleMemberSession;
 	@EJB
 	private SimpleAuthenticationProviderSessionLocal simpleAuthenticationProviderSession;
-	
-	@Override
+
+    private RoleDataDto getRoleData(final String nameSpace, final String name, final HashMap<String,Boolean> accessRules) {
+        return new RoleDataDtoBuilder()
+                .setNameSpace(nameSpace)
+                .setName(name)
+                .setAccessRules(accessRules)
+                .build();
+    }
+
+    @Override
     public void initializeAccessWithCert(AuthenticationToken authenticationToken, String roleName, Certificate certificate) throws RoleExistsException, RoleNotFoundException, AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">initializeAccessWithCert: " + authenticationToken.toString() + ", " + roleName);
         }
         final HashMap<String,Boolean> accessRules = new HashMap<>();
-        accessRules.put(StandardRules.ROLE_ROOT.resource(), Role.STATE_ALLOW);
-        final Role role = roleSession.persistRole(authenticationToken, new Role(null, roleName, accessRules));
+        accessRules.put(StandardRules.ROLE_ROOT.resource(), RoleDataDto.STATE_ALLOW);
+        final RoleDataDto role = roleSession.persistRole(authenticationToken, getRoleData(null, roleName, accessRules));
         roleMemberSession.persist(authenticationToken, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                 CertTools.getIssuerDN(certificate).hashCode(), RoleMember.NO_PROVIDER,
                 X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue(),
                 AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
                 CertTools.getSerialNumber(certificate).toString(16),
-                role.getRoleId(),
+                role.id(),
                 null));
         if (log.isTraceEnabled()) {
             log.trace("<initializeAccessWithCert: " + authenticationToken.toString() + ", " + roleName);
@@ -90,34 +99,34 @@ public class RoleInitializationSessionBean implements RoleInitializationSessionR
         final HashMap<String,Boolean> initialAccessRules = new HashMap<>();
         if (resourcesAllowed!=null) {
             for (final String resource : resourcesAllowed) {
-                initialAccessRules.put(resource, Role.STATE_ALLOW);
+                initialAccessRules.put(resource, RoleDataDto.STATE_ALLOW);
             }
         }
         if (resourcesDenied!=null) {
             for (final String resource : resourcesDenied) {
-                initialAccessRules.put(resource, Role.STATE_DENY);
+                initialAccessRules.put(resource, RoleDataDto.STATE_DENY);
             }
         }
         if (resourcesAllowed==null && resourcesDenied==null) {
-            initialAccessRules.put(StandardRules.ROLE_ROOT.resource(), Role.STATE_ALLOW);
+            initialAccessRules.put(StandardRules.ROLE_ROOT.resource(), RoleDataDto.STATE_ALLOW);
         }
-        // Setup Role and RoleMember matching by certificate serial number
+        // Setup RoleDataDto and RoleMember matching by certificate serial number
         try {
             // Clean up old left overs from a failed previous run
-            final Role oldRole = roleSession.getRole(alwaysAllowAuthenticationToken, null, roleName);
+            final RoleDataDto oldRole = roleSession.getRole(alwaysAllowAuthenticationToken, null, roleName);
             if (oldRole!=null) {
-                roleSession.deleteRoleIdempotent(alwaysAllowAuthenticationToken, oldRole.getRoleId());
+                roleSession.deleteRoleIdempotent(alwaysAllowAuthenticationToken, oldRole.id());
             }
-            final Role role = roleSession.persistRole(alwaysAllowAuthenticationToken, new Role(roleNameSpace, roleName, initialAccessRules));
+            final RoleDataDto role = roleSession.persistRole(alwaysAllowAuthenticationToken, getRoleData(roleNameSpace, roleName, initialAccessRules));
             roleMemberSession.persist(alwaysAllowAuthenticationToken, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                     CertTools.getIssuerDN(x509Certificate).hashCode(), RoleMember.NO_PROVIDER,
                     X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue(),
                     AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
                     CertTools.getSerialNumber(x509Certificate).toString(16),
-                    role.getRoleId(),
+                    role.id(),
                     null));
             if (log.isDebugEnabled()) {
-                log.debug("Added role '"+role.getRoleNameFull()+"' ("+role.getRoleId()+") matching certificate " + CertTools.getSubjectDN(x509Certificate));
+                log.debug("Added role '"+role.fullName()+"' ("+role.id()+") matching certificate " + CertTools.getSubjectDN(x509Certificate));
             }
         } catch (AuthorizationDeniedException e) {
             // AlwaysAllowLocalAuthenticationToken should never be denied access
@@ -145,14 +154,14 @@ public class RoleInitializationSessionBean implements RoleInitializationSessionR
         if (authenticationToken==null) {
             log.debug("TestX509CertificateAuthenticationToken was null. No clean up will take place.");
         } else {
-            final List<Role> roles = new ArrayList<>(roleSession.getRolesAuthenticationTokenIsMemberOf(authenticationToken));
+            final List<RoleDataDto> roles = new ArrayList<>(roleSession.getRolesAuthenticationTokenIsMemberOf(authenticationToken));
             // Check that we really added the match value to each of these roles, so we don't accidently nuke other roles
             final String expectedTokenMatchValue = CertTools.getSerialNumberAsString(authenticationToken.getCertificate());
             final AuthenticationToken alwaysAllowAuthenticationToken = new AlwaysAllowLocalAuthenticationToken("removeAllAuthenticationTokensRoles");
-            for (final Role role : new ArrayList<>(roles)) {
+            for (final RoleDataDto role : new ArrayList<>(roles)) {
                 try {
                     boolean roleMemberAddedToRoleByThisClass = false;
-                    for (final RoleMember roleMember : roleMemberSession.getRoleMembersByRoleId(alwaysAllowAuthenticationToken, role.getRoleId())) {
+                    for (final RoleMember roleMember : roleMemberSession.getRoleMembersByRoleId(alwaysAllowAuthenticationToken, role.id())) {
                         if (X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE.equals(roleMember.getTokenType()) &&
                                 roleMember.getTokenMatchKey() == X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue() &&
                                 expectedTokenMatchValue.equals(roleMember.getTokenMatchValue())) {
@@ -170,11 +179,11 @@ public class RoleInitializationSessionBean implements RoleInitializationSessionR
             if (log.isDebugEnabled()) {
                 log.debug("Removing " + roles.size() + " roles matching " + authenticationToken);
             }
-            for (final Role role : roles) {
+            for (final RoleDataDto role : roles) {
                 try {
-                    if (roleSession.deleteRoleIdempotent(alwaysAllowAuthenticationToken, role.getRoleId())) {
+                    if (roleSession.deleteRoleIdempotent(alwaysAllowAuthenticationToken, role.id())) {
                         if (log.isDebugEnabled()) {
-                            log.debug("Removed role '"+role.getRoleNameFull()+"' ("+role.getRoleId()+") matching " + authenticationToken);
+                            log.debug("Removed role '"+role.fullName()+"' ("+role.id()+") matching " + authenticationToken);
                         }
                     }
                 } catch (AuthorizationDeniedException e) {

@@ -73,8 +73,9 @@ import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
+import org.cesecore.dto.RoleDataDto;
+import org.cesecore.dto.RoleDataDtoBuilder;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
@@ -181,6 +182,23 @@ public class OAuthSystemTest {
     @ClassRule
     public static final TemporaryFolder folder = new TemporaryFolder();
 
+    private static Map<String, Boolean> getAccessRules() {
+        var keys = Arrays.asList(
+                AccessRulesConstants.ROLE_ADMINISTRATOR,
+                AccessRulesConstants.REGULAR_VIEWCERTIFICATE,
+                StandardRules.CREATECERT.resource(),
+                AccessRulesConstants.REGULAR_VIEWENDENTITY,
+                AccessRulesConstants.REGULAR_CREATEENDENTITY,
+                AccessRulesConstants.REGULAR_EDITENDENTITY,
+                AccessRulesConstants.REGULAR_DELETEENDENTITY,
+                AccessRulesConstants.REGULAR_REVOKEENDENTITY,
+                AccessRulesConstants.REGULAR_VIEWENDENTITYHISTORY
+        );
+        final Map<String, Boolean> accessRules = new HashMap<>();
+        keys.forEach(key -> accessRules.put(key, RoleDataDto.STATE_ALLOW));
+        return accessRules;
+    }
+
     @BeforeClass
     public static void beforeClass() throws NoSuchAlgorithmException, InvalidKeySpecException, AuthorizationDeniedException, RoleExistsException, CertificateException, OperatorCreationException, CryptoTokenOfflineException, KeyManagementException, KeyStoreException, IOException {
         CryptoProviderTools.installBCProviderIfNotAvailable();
@@ -216,21 +234,12 @@ public class OAuthSystemTest {
         final int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
         adminca = CaTestUtils.createTestX509CA("CN=" + CA, "foo123".toCharArray(), false, keyusage);
         // add role
-        final Role role1 = roleSession.persistRole(authenticationToken, new Role(null, ROLENAME, Arrays.asList(
-                AccessRulesConstants.ROLE_ADMINISTRATOR,
-                AccessRulesConstants.REGULAR_VIEWCERTIFICATE,
-                StandardRules.CREATECERT.resource(),
-                AccessRulesConstants.REGULAR_VIEWENDENTITY,
-                AccessRulesConstants.REGULAR_CREATEENDENTITY,
-                AccessRulesConstants.REGULAR_EDITENDENTITY,
-                AccessRulesConstants.REGULAR_DELETEENDENTITY,
-                AccessRulesConstants.REGULAR_REVOKEENDENTITY,
-                AccessRulesConstants.REGULAR_VIEWENDENTITYHISTORY
-        ), null));
+        RoleDataDto role = new RoleDataDtoBuilder().setName(ROLENAME).setAccessRules(getAccessRules()).build();
+        final RoleDataDto role1 = roleSession.persistRole(authenticationToken, role);
         // Add the second RA role
         roleMember = new RoleMember(OAuth2AuthenticationTokenMetaData.TOKEN_TYPE,
                 adminca.getCAId(), RoleMember.NO_PROVIDER, OAuth2AccessMatchValue.CLAIM_SUBJECT.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
-                OAUTH_SUB, role1.getRoleId(), null);
+                OAUTH_SUB, role1.id(), null);
         roleMember.setTokenProviderId(oAuthKeyInfo.getInternalId());
         roleMember = roleMemberSession.persist(authenticationToken, roleMember);
 

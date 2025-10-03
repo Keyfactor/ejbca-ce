@@ -16,7 +16,7 @@ import java.util.List;
 
 import jakarta.ejb.Local;
 
-import org.cesecore.roles.Role;
+import org.cesecore.dto.RoleDataDto;
 
 /**
  * Interface for low level Role operations.
@@ -26,19 +26,24 @@ import org.cesecore.roles.Role;
 @Local
 public interface RoleDataSessionLocal extends RoleDataSession {
 
-    /** @return all roles */
-    List<Role> getAllRoles();
+    /**
+     * @return all roles
+     */
+    List<RoleDataDto> getAllRoles();
 
-    /** @return a role by its unique id or null if the role does not exist */
-    Role getRole(int id);
+    /**
+     * @return a role by its unique id or null if the role does not exist
+     */
+    RoleDataDto getRole(int id);
 
     /**
      * Find a role in the database from the unique roleName and nameSpace combination.
+     *
      * @param roleName
      * @param nameSpace
      * @return the role or null if none was found
      */
-    Role getRole(String roleName, String nameSpace);
+    RoleDataDto getRole(String roleName, String nameSpace);
 
     /**
      * Delete a role from the database (currently not affecting any role members)
@@ -52,5 +57,5 @@ public interface RoleDataSessionLocal extends RoleDataSession {
      * 
      * @return persisted version of the role
      */
-    Role persistRole(Role role);
+    RoleDataDto persistRole(RoleDataDto role);
 }

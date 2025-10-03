@@ -34,8 +34,8 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
+import org.cesecore.dto.RoleDataDto;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
@@ -197,13 +197,12 @@ public class ClientCertificateAuthSystemTest {
 
     private void setRoleAccess(final String... accessRules) {
         try {
-            final Role role = roleSession.getRole(alwaysAllowToken, null, ROLE_NAME);
+            final RoleDataDto role = roleSession.getRole(alwaysAllowToken, null, ROLE_NAME);
             var ruleMap = new LinkedHashMap<String, Boolean>();
             for (final String rule : accessRules) {
                 ruleMap.put(rule, true);
             }
-            role.setAccessRules(ruleMap);
-            roleSession.persistRole(alwaysAllowToken, role);
+            roleSession.persistRole(alwaysAllowToken, role.withAccessRules(ruleMap));
         } catch (AuthorizationDeniedException | RoleExistsException e) {
             throw new IllegalStateException(e);
         }
@@ -211,7 +210,7 @@ public class ClientCertificateAuthSystemTest {
 
     private void removeRoleMember() {
         try {
-            final int roleId = roleSession.getRole(alwaysAllowToken, null, ROLE_NAME).getRoleId();
+            final int roleId = roleSession.getRole(alwaysAllowToken, null, ROLE_NAME).id();
             // There should only be a single role member, but remove all to be safe
             for (final RoleMember member : roleMemberSession.getRoleMembersByRoleId(alwaysAllowToken, roleId)) {
                 assertTrue("Could not delete role member", roleMemberSession.remove(alwaysAllowToken, member.getId()));

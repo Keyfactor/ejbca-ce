@@ -42,10 +42,6 @@ public interface UpgradeSessionLocal  extends UpgradeSession{
     boolean isEndEntityProfileInCertificateData();
     
     /** For internal user from UpgradeSessionBean only! */
-    void migrateDatabase6140() throws UpgradeFailedException;
-    /** For internal user from UpgradeSessionBean only! */
-    void migrateDatabase6150() throws UpgradeFailedException;
-    /** For internal user from UpgradeSessionBean only! */
     void upgradeCrlStoreAndCertStoreConfiguration720();
     /** For internal user from UpgradeSessionBean only */
     void migrateDatabase730();

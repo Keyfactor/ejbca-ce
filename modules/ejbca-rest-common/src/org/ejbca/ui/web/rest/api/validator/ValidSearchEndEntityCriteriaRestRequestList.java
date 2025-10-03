@@ -87,6 +87,8 @@ public @interface ValidSearchEndEntityCriteriaRestRequestList {
                     //final CriteriaOperation criteriaOperation = CriteriaOperation.resolveCriteriaOperation(searchEndEntityCriteriaRestRequest.getOperation());
                     switch (criteriaProperty) {
                     	case QUERY:
+                    	case SUBJECT_DN:
+                    	case USERNAME:
                     		queryCount++;
                     		break;
                         case STATUS:
