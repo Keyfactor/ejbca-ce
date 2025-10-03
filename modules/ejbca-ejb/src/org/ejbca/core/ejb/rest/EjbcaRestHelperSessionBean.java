@@ -18,11 +18,9 @@ import java.text.ParseException;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
-import com.keyfactor.util.StringTools;
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.x509.Extension;
