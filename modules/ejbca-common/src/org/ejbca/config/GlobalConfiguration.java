@@ -31,6 +31,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.certificatetransparency.GoogleCtPolicy;
 import org.cesecore.config.ExternalScriptsConfiguration;
+import org.cesecore.config.InvalidConfigurationException;
 import org.cesecore.configuration.ConfigurationBase;
 import org.ejbca.util.URIUtil;
 
@@ -435,9 +436,10 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
         }
     }
 
-    public void setSessionTimeoutTime(int timeInMinutes) {
+    public void setSessionTimeoutTime(int timeInMinutes) throws InvalidConfigurationException {
         if (timeInMinutes < SESSION_TIMEOUT_MIN || timeInMinutes > SESSION_TIMEOUT_MAX) {
             data.put(SESSIONTIMEOUTTIME, DEFAULTSESSIONTIMEOUTTIME);
+                throw new InvalidConfigurationException("Session timeout time must be between " + SESSION_TIMEOUT_MIN + " and " + SESSION_TIMEOUT_MAX + " minutes.");
         } else {
             data.put(SESSIONTIMEOUTTIME, timeInMinutes);
         }
