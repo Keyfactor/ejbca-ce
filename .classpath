@@ -157,7 +157,7 @@
 	<classpathentry kind="lib" path="lib/ext/jaxb/jaxb-runtime-4.0.5.jar"/>
 	<classpathentry kind="lib" path="lib/ext/jaxb/jaxb-impl-4.0.5.jar"/>
 	<classpathentry kind="lib" path="lib/ext/jaxb/txw2-4.0.5.jar"/>
-	<classpathentry kind="lib" path="lib/cert-cvc-1.6.2.jar"/>
+	<classpathentry kind="lib" path="lib/cert-cvc-1.6.3.jar"/>
 	<classpathentry kind="lib" path="lib/commons-configuration2-2.11.0.jar"/>
 	<classpathentry kind="lib" path="lib/xstream/xstream-1.4.21.jar"/>
 	<classpathentry kind="lib" path="lib/kerb4j-server-common-0.1.2.jar"/>
