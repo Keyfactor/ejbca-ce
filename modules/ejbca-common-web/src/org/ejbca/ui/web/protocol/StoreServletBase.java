@@ -293,8 +293,8 @@ public abstract class StoreServletBase extends HttpServlet {
 		final StringWriter sw = new StringWriter();
 		final PrintWriter pw = new HtmlPrintWriter(sw);
 		Set<String> consideredSubjectDns = new HashSet<>();
-		printInfo(this.certCache.getRootCertificates(), "", pw, consideredSubjectDns);
-		printInfo(this.certCache.getAllCaCertificates(), "", pw, consideredSubjectDns);
+		printInfo(this.caCertificateCache.getRootCertificates(), "", pw, consideredSubjectDns);
+		printInfo(this.caCertificateCache.getAllCaCertificates(), "", pw, consideredSubjectDns);
 		pw.flush();
 		pw.close();
 		sw.flush();
