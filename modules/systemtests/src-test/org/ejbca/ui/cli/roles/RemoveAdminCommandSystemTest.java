@@ -22,8 +22,9 @@ import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.dto.RoleDataDto;
+import org.cesecore.dto.RoleDataDtoBuilder;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
@@ -46,11 +47,14 @@ public class RemoveAdminCommandSystemTest {
     private final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
 
     private final RemoveAdminCommand command = new RemoveAdminCommand();
-    private int roleId = Role.ROLE_ID_UNASSIGNED;
+    private int roleId = RoleDataDto.ROLE_ID_UNASSIGNED;
 
     @Before
     public void setUp() throws Exception {
-        roleId = roleSession.persistRole(internalAdmin, new Role(null, ROLENAME)).getRoleId();
+        final var role = new RoleDataDtoBuilder()
+                .setName(ROLENAME)
+                .build();
+        roleId = roleSession.persistRole(internalAdmin, role).id();
     }
 
     @After

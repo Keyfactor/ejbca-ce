@@ -27,6 +27,11 @@ public class ExtendedInformationRestResponseComponent {
 	private String name;
     @Schema(description = "Property value", example = "3003020105")
     private String value;
+    
+    // Test only
+    public  ExtendedInformationRestResponseComponent() {
+        
+    }
 
     private ExtendedInformationRestResponseComponent(String name, String value) {
         this.name = name;

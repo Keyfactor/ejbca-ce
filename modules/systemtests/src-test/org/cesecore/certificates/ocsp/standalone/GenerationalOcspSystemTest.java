@@ -35,8 +35,6 @@ import org.cesecore.certificates.ocsp.logging.GuidHolder;
 import org.cesecore.certificates.ocsp.logging.TransactionCounter;
 import org.cesecore.certificates.ocsp.logging.TransactionLogger;
 import org.cesecore.config.GlobalOcspConfiguration;
-import org.cesecore.config.OcspConfiguration;
-import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.junit.util.CryptoTokenRunner;
 import org.cesecore.junit.util.PKCS12TestRunner;
@@ -81,8 +79,6 @@ public class GenerationalOcspSystemTest {
 
     private final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    private final CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
             InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
@@ -100,7 +96,6 @@ public class GenerationalOcspSystemTest {
     public TestRule retryRule = new RetryRule(3, 1000);
 
     private CryptoTokenRunner cryptoTokenRunner;
-    private String originalSigningTruststoreValidTime;
 
     public GenerationalOcspSystemTest(CryptoTokenRunner cryptoTokenRunner) {
         this.cryptoTokenRunner = cryptoTokenRunner;
@@ -109,16 +104,12 @@ public class GenerationalOcspSystemTest {
 
     @Before
     public void setUp() throws Exception {
-        originalSigningTruststoreValidTime = cesecoreConfigurationProxySession.getConfigurationValue(OcspConfiguration.SIGNING_TRUSTSTORE_VALID_TIME);
-        //Make sure timers don't run while we debug
-        cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNING_TRUSTSTORE_VALID_TIME,
-                Integer.toString(Integer.MAX_VALUE / 1000));
+        
     }
 
     @After
     public void tearDown() throws Exception {
         cryptoTokenRunner.cleanUp();
-        cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNING_TRUSTSTORE_VALID_TIME, originalSigningTruststoreValidTime);
     }
 
     /**

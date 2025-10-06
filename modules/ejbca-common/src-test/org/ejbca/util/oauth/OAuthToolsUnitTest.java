@@ -13,14 +13,17 @@
 package org.ejbca.util.oauth;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
 import java.security.cert.CertificateParsingException;
 
+import org.cesecore.config.OAuthConfiguration;
 import org.junit.Test;
 
 import com.keyfactor.util.Base64;
@@ -103,4 +106,62 @@ public class OAuthToolsUnitTest {
                 OAuthTools.getKeyIdFromJwkKey(JWK_PUBLIC_KEY.getBytes(StandardCharsets.US_ASCII)));
     }
 
+    @Test
+    public void testIsHostnameAllowedWithNullParameters() {
+        // Test with null hostname
+        assertFalse("Null hostname should not be allowed", OAuthTools.isHostnameAllowed(null, new TestOAuthConfiguration(new String[]{"example.com"})));
+
+        // Test with null configuration
+        assertFalse("Null configuration should not allow any hostname", OAuthTools.isHostnameAllowed("example.com", null));
+    }
+
+    @Test
+    public void testIsHostnameNotAllowedWithEmptyAllowList() {
+        TestOAuthConfiguration emptyConfig = new TestOAuthConfiguration(new String[0]);
+        assertFalse("Empty allow list should allow any hostname", OAuthTools.isHostnameAllowed("example.com", emptyConfig));
+
+        TestOAuthConfiguration nullConfig = new TestOAuthConfiguration(null);
+        assertFalse("Null allow list should allow any hostname", OAuthTools.isHostnameAllowed("example.com", nullConfig));
+    }
+
+    @Test
+    public void testIsHostnameAllowedWithValidHostnames() {
+        TestOAuthConfiguration config = new TestOAuthConfiguration(new String[]{"example.com", "test.org"});
+
+        assertTrue("Hostname in allow list should be allowed", OAuthTools.isHostnameAllowed("example.com", config));
+        assertTrue("Hostname in allow list should be allowed", OAuthTools.isHostnameAllowed("test.org", config));
+        assertTrue("Hostname matching should be case-insensitive", OAuthTools.isHostnameAllowed("EXAMPLE.COM", config));
+        assertFalse("Hostname not in allow list should not be allowed", OAuthTools.isHostnameAllowed("unknown.com", config));
+    }
+
+    @Test
+    public void testIsHostnameAllowedWithUrlParts() {
+        TestOAuthConfiguration config = new TestOAuthConfiguration(new String[]{"example.com", "test.org"});
+
+        assertTrue("Hostname with protocol should be allowed if base hostname is in allow list", 
+                OAuthTools.isHostnameAllowed("https://example.com", config));
+        assertTrue("Hostname with path should be allowed if base hostname is in allow list",
+                OAuthTools.isHostnameAllowed("example.com/path", config));
+        assertTrue("Hostname with port should be allowed if base hostname is in allow list", 
+                OAuthTools.isHostnameAllowed("example.com:8443", config));
+        assertTrue("Hostname with protocol, path and port should be allowed if base hostname is in allow list", 
+                OAuthTools.isHostnameAllowed("https://example.com:8443/path", config));
+    }
+
+    /**
+     * Simple implementation of OAuthConfiguration for testing purposes.
+     */
+    private static class TestOAuthConfiguration extends OAuthConfiguration {
+        private static final long serialVersionUID = 1L;
+        private final String[] allowedHosts;
+
+        public TestOAuthConfiguration(String[] allowedHosts) {
+            this.allowedHosts = allowedHosts;
+        }
+
+        @Override
+        public String[] getAllowedOauthHosts() {
+            return allowedHosts;
+        }
+    }
 }

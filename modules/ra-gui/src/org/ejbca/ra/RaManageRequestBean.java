@@ -34,8 +34,8 @@ import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.dto.RoleDataDto;
 import org.cesecore.keys.validation.ValidationResult;
-import org.cesecore.roles.Role;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
@@ -246,7 +246,7 @@ public class RaManageRequestBean implements Serializable {
             final ApprovalStep step = requestInfo.request.getNextApprovalStep();
             final ApprovalProfile approvalProfile = requestInfo.request.getApprovalProfile();
             if (step != null) {
-                List<Role> roles = raMasterApiProxyBean.getRolesAuthenticationTokenIsMemberOf(raAuthenticationBean.getAuthenticationToken());
+                List<RoleDataDto> roles = raMasterApiProxyBean.getRolesAuthenticationTokenIsMemberOf(raAuthenticationBean.getAuthenticationToken());
                 for (ApprovalPartition approvalPartition : step.getPartitions().values()) {
                     boolean canApprove = false;
                     boolean canView = false;
@@ -259,12 +259,12 @@ public class RaManageRequestBean implements Serializable {
                     if (!canApprove) {
                         List<Integer> roleIdsWhichCanApprove = approvalProfile.getAllowedRoleIds(approvalPartition);
                         List<Integer> roleIdsWhichCanView = approvalProfile.getAllowedRoleIdsForViewingPartition(approvalPartition);
-                        for (Role role: roles) {
-                            if (roleIdsWhichCanApprove.contains(role.getRoleId())) {
+                        for (RoleDataDto role: roles) {
+                            if (roleIdsWhichCanApprove.contains(role.id())) {
                                 canApprove = true;
                                 break;
                             }
-                            if (roleIdsWhichCanView.contains(role.getRoleId())) {
+                            if (roleIdsWhichCanView.contains(role.id())) {
                                 canView = true;
                             }
                         }

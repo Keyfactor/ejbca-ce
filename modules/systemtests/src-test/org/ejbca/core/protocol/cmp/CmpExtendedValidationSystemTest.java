@@ -12,23 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.protocol.cmp;
 
-import java.io.IOException;
-import java.math.BigInteger;
-import java.security.InvalidKeyException;
-import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
-import java.security.SignatureException;
-import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
-
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.EJBTools;
@@ -37,7 +20,6 @@ import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.SignatureParameter;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.string.StringConfigurationCache;
-
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.cmp.PKIBody;
 import org.bouncycastle.asn1.cmp.PKIFailureInfo;
@@ -67,7 +49,8 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
-import org.cesecore.roles.Role;
+import org.cesecore.dto.RoleDataDto;
+import org.cesecore.dto.RoleDataDtoBuilder;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
@@ -80,6 +63,24 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.math.BigInteger;
+import java.security.InvalidKeyException;
+import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.SignatureException;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -638,31 +639,6 @@ public class CmpExtendedValidationSystemTest extends CmpTestCase {
     }
 
     /**
-     * This test will verify that a message protected by PBMAC1 HMAC will pass when ca cmp ra shared secret is used
-     */
-    @Test
-    public void testVerifyHmacPbmac1ProtectedMessageRaModeCaRaSharedSecret() throws Exception {
-        log.trace(">testVerifyHmacPbmac1ProtectedMessageRaModeCaRaSharedSecret");
-        cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_HMAC);
-        cmpConfiguration.setAuthenticationParameters(ALIAS, "-");
-        cmpConfiguration.setRAMode(ALIAS, true);
-        cmpConfiguration.setResponseProtection(ALIAS, "signature");
-        globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration);
-        final String userDn = "C=SE,O=PrimeKey,CN=testHMACProtectionRaModeUser";
-        final String caRaSharedSecret = "foo123";
-        final PKIMessage req = genCertReq(userDn);
-        final byte[] messageBytes = CmpMessageHelper.pkiMessageToByteArray(CmpMessageHelper.protectPKIMessageWithPBMAC1(req, testx509ca.getName(),
-                caRaSharedSecret, "1.3.14.3.2.26", 1023, 1024, "1.3.6.1.5.5.8.1.2"));
-        // Send CMP request
-        final byte[] resp = sendCmpHttp(messageBytes, 200, ALIAS);
-        checkCmpResponseGeneral(resp, ISSUER_DN, userDnX500, cacert, nonce, transid, false, null,
-                PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), true);
-        checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDnX500, cacert, resp, reqId);
-        shouldBeAccepted();
-        log.trace("<testVerifyHmacPbmac1ProtectedMessageRaModeCaRaSharedSecret");
-    }
-    
-    /**
      * This test will verify that a message protected by HMAC will pass when secret is specified in alias
      */
     @Test
@@ -1101,20 +1077,28 @@ public class CmpExtendedValidationSystemTest extends CmpTestCase {
         return cert;
     }
 
-
-    private void grantAccessToCert(final Certificate cert) throws Exception {
-        roleSession.deleteRoleIdempotent(ADMIN, null, TEST_ROLE);
-        final List<String> accessRules = Arrays.asList(
+    private RoleDataDto getRoleData() {
+        final List<String> allowResources = Arrays.asList(
                 AccessRulesConstants.REGULAR_CREATEENDENTITY,
                 AccessRulesConstants.REGULAR_EDITENDENTITY,
                 AccessRulesConstants.REGULAR_CREATECERTIFICATE,
                 AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepDnOverrideId + AccessRulesConstants.CREATE_END_ENTITY,
                 AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepDnOverrideId + AccessRulesConstants.EDIT_END_ENTITY,
                 StandardRules.CAACCESS.resource() + testx509ca.getCAId());
-        final Role role = roleSession.persistRole(ADMIN, new Role(null, TEST_ROLE, accessRules, Collections.emptyList()));
+        final Map<String, Boolean> accessRules = new HashMap<>();
+        allowResources.forEach(resource -> accessRules.put(resource, RoleDataDto.STATE_ALLOW));
+        return new RoleDataDtoBuilder()
+                .setName(TEST_ROLE)
+                .setAccessRules(accessRules)
+                .build();
+    }
+
+    private void grantAccessToCert(final Certificate cert) throws Exception {
+        roleSession.deleteRoleIdempotent(ADMIN, null, TEST_ROLE);
+        final RoleDataDto role = roleSession.persistRole(ADMIN, getRoleData());
         roleMemberSession.persist(ADMIN, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, testx509ca.getCAId(), RoleMember.NO_PROVIDER,
                 X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
-                DnComponents.getPartFromDN(CertTools.getSubjectDN(cert), "CN"), role.getRoleId(), null));
+                DnComponents.getPartFromDN(CertTools.getSubjectDN(cert), "CN"), role.id(), null));
     }
 
     private PKIMessage genCertReq(final String userDn) throws InvalidKeyException, NoSuchAlgorithmException, SignatureException, IOException {

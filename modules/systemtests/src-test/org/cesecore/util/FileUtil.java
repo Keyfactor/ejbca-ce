@@ -25,8 +25,6 @@ public class FileUtil {
     }
 
     public static File getResourceAsFile(String name) throws IOException {
-        System.out.println("*** name = " + name);
-        System.out.println("*** pwd  = " + getPwd());
         URL url = FileUtil.class.getClassLoader().getResource(name);
         if (url == null) {
             throw new FileNotFoundException(name);

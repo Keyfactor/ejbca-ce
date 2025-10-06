@@ -2,6 +2,7 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 ejbca:
+  license: 
   importEjbcaConfFiles: false
   #ejbcaConfFilesSecret: ejbca-conf
 
@@ -164,7 +165,7 @@ image:
   # Application variant: not set for full EJBCA, "ra" or "va"
   #variant: ra
   repository: keyfactor/ejbca-ce
-  tag: 9.3.0
+  tag: latest
   pullPolicy: IfNotPresent
 imagePullSecrets: []
 nameOverride: ""

@@ -599,11 +599,11 @@
         	<zipfileset prefix="lib" dir="${ejbca.home}/modules/dist">
                 <include name="ejbca-common-web.jar" />
                 <include name="ejbca-interface.jar" />
+                <include name="cesecore-entity.jar" />
                 <include name="ejbca-entity.jar" />
                 <include name="ejbca-ws.jar" />
                 <include name="cesecore-ejb-interface.jar" />
                 <include name="cesecore-common.jar" />
-                <include name="cesecore-entity.jar" />
         		<include name="cesecore-x509ca.jar" />
         		<include name="cesecore-cvcca.jar" />
         		<include name="ejbca-extensions.jar" />
@@ -959,6 +959,7 @@
 		    	<exclude name="bin/backup/**" />
 		    	<exclude name="tmp/**" />
 		    	<exclude name="dist/**" />
+                <exclude name="build/**" />
 		    	<exclude name="out/**" />
 		    	<exclude name="p12*/**" />
 		    	<exclude name="**/*.class" />
@@ -977,17 +978,10 @@
 		    	<exclude name="modules/statedump/**" />
 		    	<exclude name="container/" />
 		    	<exclude name="Dockerfile" />
-				<exclude name="preview/" />
 				<exclude name="charts/" />
-				<exclude name=".lighthouse/" />
-				<exclude name=".jx/" />
 				<exclude name=".github/" />
+				<exclude name=".gitlab/" />
 				<exclude name=".gitlab-ci.yml" />
-				<exclude name="OWNERS" />
-				<exclude name="OWNERS_ALIASES" />
-				<exclude name="SEMVER" />
-				<exclude name="VERSION" />
-				<exclude name="TAGS" />
 				<exclude name="src/ci/" />
 				<exclude name="src/package/" />
 				<exclude name="lib/coverage/**" />
@@ -1058,7 +1052,6 @@
 				<exclude name="src/ci/**" />
 				<exclude name="modules/statedump/**" />
 				<exclude name="container/**" />
-				<exclude name=".jx/**" />
 		    </zipfileset>
 		</zip>
         <antcall target="signjar">
@@ -1335,7 +1328,11 @@ SHA-256 checksum: ${cesecorebinSHA256}
         <ant dir="modules" target="ejbca.ear.module-dependencies" inheritall="true" inheritrefs="true"/>
 	</target>
 
-    <target name="ejbca-entity">
+    <target name="cesecore-entity" >
+        <ant dir="modules" target="cesecore-entity" />
+    </target>
+
+    <target name="ejbca-entity" depends="cesecore-entity">
     	<ant dir="modules" target="ejbca-entity" />
     </target>
 	
