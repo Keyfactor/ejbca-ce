@@ -23,7 +23,6 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
-import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.internal.CaCertificateCacheLocal;
 import org.ejbca.config.VAConfiguration;
@@ -51,9 +50,6 @@ public abstract class StoreServletBase extends HttpServlet {
 	private CaCertificateCacheLocal caCertificateCache;
 	@EJB
 	private CertificateStoreSessionLocal certificateStoreSession;
-	
-	@EJB
-	private CaSessionLocal caSession;
 
 	/**
 	 * Called when the servlet is initialized.
