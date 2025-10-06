@@ -89,9 +89,7 @@ import jakarta.inject.Named;
 public class CertProfileBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(CertProfileBean.class);
-
-    private static final String LEGACY_FIXED_MARKER = "(FIXED)";
-
+    
     @EJB
     private CaSessionLocal caSession;
 
@@ -208,10 +206,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         boolean success = true;
         try {
             // Perform last minute validations before saving
-            if (profileName.endsWith(LEGACY_FIXED_MARKER)) {
-                addErrorMessage("YOUCANTEDITFIXEDCERTPROFS");
-                success = false;
-            } else if (StringUtils.isBlank(profileName)) {
+            if (StringUtils.isBlank(profileName)) {
                 addNonTranslatedErrorMessage("Error: Certificate profile name cannot be empty.");
                 success = false;
             } else if (!StringTools.checkFieldForLegalChars(profileName)) {
