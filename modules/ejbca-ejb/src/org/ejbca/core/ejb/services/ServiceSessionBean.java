@@ -593,7 +593,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             if (worker != null) {
                 worker.canWorkerRun(ejbs);
             }
-        } catch (ServiceExecutionFailedException e) {
+        } catch (RuntimeException | ServiceExecutionFailedException e) {
             //Worker was found to be in an error state
             log.error("Worker execution has been postponed.", e);
             return false;
