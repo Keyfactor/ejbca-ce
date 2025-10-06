@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.internal.CaCertificateCache;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.certificate.internal.CaCertificateCacheLocal;
 import org.ejbca.config.VAConfiguration;
 import org.ejbca.util.HTMLTools;
 
@@ -46,9 +47,9 @@ public abstract class StoreServletBase extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
 	private static final Logger log = Logger.getLogger(StoreServletBase.class);
-
-	protected CaCertificateCache certCache;
 	
+	@EJB
+	private CaCertificateCacheLocal caCertificateCache;
 	@EJB
 	private CertificateStoreSessionLocal certificateStoreSession;
 	
@@ -63,7 +64,6 @@ public abstract class StoreServletBase extends HttpServlet {
 	@Override
     public void init(ServletConfig config) throws ServletException {
 		super.init(config);
-		this.certCache = CaCertificateCache.INSTANCE;
 	}
 
 	/**

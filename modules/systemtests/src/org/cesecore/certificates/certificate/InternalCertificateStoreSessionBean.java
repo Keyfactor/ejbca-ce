@@ -41,7 +41,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.certificates.ca.internal.CaCertificateCache;
+import org.cesecore.certificates.certificate.internal.CaCertificateCacheLocal;
 import org.cesecore.certificates.crl.CRLData;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
@@ -69,6 +69,8 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
 
     @EJB
     private AuthorizationSessionLocal authorizationSession;
+    @EJB
+    private CaCertificateCacheLocal caCertificateCache;
     @EJB
     private CertificateDataSessionLocal certificateDataSession;
     @EJB
@@ -287,7 +289,7 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
     }
     
     private void getCachedCaCertEntries(X509Certificate root, Set<X509Certificate> allCaCerts) {
-        X509Certificate[] subCaCerts = CaCertificateCache.INSTANCE.findLatestByIssuerDN(HashID.getFromDNString(CertTools.getSubjectDN(root)));
+        X509Certificate[] subCaCerts = caCertificateCache.findLatestByIssuerDN(HashID.getFromDNString(CertTools.getSubjectDN(root)));
         if (subCaCerts==null) {
             return;
         }
@@ -300,7 +302,7 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
     @Override
     public List<CertificateDataWrapper> getCaCertificateCacheEntries() {
         final Set<X509Certificate> allCaCerts = new HashSet<>();
-        X509Certificate[] rootCerts = CaCertificateCache.INSTANCE.getRootCertificates();
+        X509Certificate[] rootCerts = caCertificateCache.getRootCertificates();
         for (X509Certificate root: rootCerts) {
             allCaCerts.add(root);
             getCachedCaCertEntries(root, allCaCerts);

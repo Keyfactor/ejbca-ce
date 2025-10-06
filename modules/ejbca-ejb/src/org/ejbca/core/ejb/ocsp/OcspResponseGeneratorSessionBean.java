@@ -109,13 +109,13 @@ import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
-import org.cesecore.certificates.ca.internal.CaCertificateCache;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStatusHolder;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.HashID;
+import org.cesecore.certificates.certificate.internal.CaCertificateCacheLocal;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparency;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -208,6 +208,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
      */
     private TimerService timerService;
 
+    @EJB
+    private CaCertificateCacheLocal caCertificateCache;
     @EJB
     private CaSessionLocal caSession;
     @EJB
@@ -486,7 +488,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             }
         } finally {
             // Schedule a new timer of this type
-            addTimer(OcspConfiguration.getSigningCertsValidTimeInMilliseconds(), TIMERID_OCSPSIGNINGCACHE);
+            GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            addTimer(globalOcspConfiguration.getSigningCertificateValidityTimeMilliseconds(), TIMERID_OCSPSIGNINGCACHE);
         }
     }
     
@@ -1149,7 +1152,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         log.info(intres.getLocalizedMessage("ocsp.infosigner", signerSubjectDn));
                         verifyOK = true;
                         // Check that the signer certificate can be verified by one of the CA-certificates that we answer for
-                        final X509Certificate signerca = CaCertificateCache.INSTANCE.findLatestBySubjectDN(HashID.getFromIssuerDN(signercert));
+                        final X509Certificate signerca = caCertificateCache.findLatestBySubjectDN(HashID.getFromIssuerDN(signercert));
                         if (signerca != null) {
                             try {
                                 signercert.verify(signerca.getPublicKey());

@@ -21,26 +21,35 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.log4j.Logger;
-import org.cesecore.certificates.ca.internal.CaCertificateCache;
 import org.cesecore.certificates.certificate.HashID;
+import org.cesecore.certificates.certificate.internal.CaCertificateCacheLocal;
 import org.cesecore.certificates.crl.CRLInfo;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 
 import com.keyfactor.util.CertTools;
+
+import jakarta.ejb.ConcurrencyManagement;
+import jakarta.ejb.ConcurrencyManagementType;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Startup;
 
 /**
  * An implementation of this is managing a cache of CRLs. The implementation should be optimized for quick lookups of CRLs that the 
  * VA responder needs to fetch.
  *
  */
+@Singleton
+@Startup
+@ConcurrencyManagement(ConcurrencyManagementType.BEAN)
 public class CRLCache {
 	private static final Logger log = Logger.getLogger(CRLCache.class);
+		
+	@EJB
+	private CrlStoreSessionLocal crlStoreSession;
+	@EJB
+	private CaCertificateCacheLocal certCache;
 	
-    private static CRLCache instance = null;
-    private static final Lock lock = new ReentrantLock();
-	
-	private final CrlStoreSessionLocal crlStoreSession;
-	private final CaCertificateCache certCache;
 	private final Map<Integer, CRLEntity> crls = new HashMap<>();
 	private final Map<Integer, CRLEntity> deltaCrls = new HashMap<>();
 	private class CRLEntity {
@@ -80,33 +89,6 @@ public class CRLCache {
 	 */
 	private final Lock rebuildlock = new ReentrantLock();
 
-	 /**
-     * @return  {@link CRLCache} for the CA.
-     */
-     public static CRLCache getInstance(CrlStoreSessionLocal crlDataSession, CaCertificateCache certCache) {
-         if (instance != null) {
-             return instance;
-         }
-         lock.lock();
-         try {
-             if (instance == null) {
-                 instance = new CRLCache(crlDataSession, certCache);
-             }
-             return instance;
-         } finally {
-             lock.unlock();
-         }
-     }
-	
-	/**
-	 * @param crlSession reference to CRLStoreSession
-	 * @param certStore references to needed CA certificates.
-	 */
-	private CRLCache(CrlStoreSessionLocal crlStoreSession, CaCertificateCache certCache) {
-		super();
-		this.crlStoreSession = crlStoreSession;
-		this.certCache = certCache;
-	}
 
 	/**
      * @param id The ID of the subject key identifier.

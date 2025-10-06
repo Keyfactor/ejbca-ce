@@ -46,3 +46,9 @@ sourceSets {
 tasks.jar {
     from(sourceSets["main"].output)
 }
+
+tasks.test {
+    // Always run tests in this module to ensure that the `CodeQualityUnitTest` is executed,
+    // even if no changes were made to the `ejbca-repository` module itself.
+    outputs.upToDateWhen { false }
+}

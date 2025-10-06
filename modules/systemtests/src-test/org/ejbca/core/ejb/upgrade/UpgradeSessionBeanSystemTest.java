@@ -54,6 +54,7 @@ import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.config.GlobalCtConfiguration;
 import org.cesecore.config.GlobalEndEntityProfileConfiguration;
 import org.cesecore.config.GlobalOcspConfiguration;
+import org.cesecore.config.InvalidConfigurationException;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.configuration.GlobalConfigurationProxySessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
@@ -763,6 +764,91 @@ public class UpgradeSessionBeanSystemTest {
             globalOcspConfiguration.setIncludeSigningCertificate(includeSignerCertCurrent);
             globalOcspConfiguration.setIncludeCertificateChain(includeCertChainCurrent);
             globalConfigurationProxySession.saveConfiguration(alwaysAllowtoken, globalOcspConfiguration);
+        }
+    }
+    
+    @Test
+    public void testMigrateOcspSigningCertificateValidTime9_4_0() throws AuthorizationDeniedException, InvalidConfigurationException {
+        GlobalOcspConfiguration currentGlobalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        GlobalCaConfiguration currentGlobalCaConfiguration = (GlobalCaConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalCaConfiguration.CA_CONFIGURATION_ID);
+        final long currentSigningCertificateValiditytime = currentGlobalOcspConfiguration.getSigningCertificateValidityTimeMilliseconds();
+        final long currentCaCertificateCacheTime = currentGlobalCaConfiguration.getCaCertificateCacheTimeMillis();
+        try {
+            //Set up EJBCA in a pre-upgrade state
+            final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            guc.setUpgradedToVersion("9.3.0");
+            guc.setPostUpgradedToVersion("9.3.0");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+            
+            cesecoreConfigSession.setConfigurationValue("ocsp.signingCertsValidTime", "5");
+            
+            //Perform upgrade
+            upgradeSession.upgrade(/* database */ null, /* upgrade from */ "9.3.0", /* post upgrade? */ false);
+            //Retrieve config and verify upgrade
+            GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            GlobalCaConfiguration globalCaConfiguration = (GlobalCaConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalCaConfiguration.CA_CONFIGURATION_ID);
+            //Original configuration is in seconds, new one is in ms
+            assertEquals("ocsp.signingCertsValidTime was not migrated to database.", 5000, globalOcspConfiguration.getSigningCertificateValidityTimeMilliseconds());
+            assertEquals("ocsp.signingCertsValidTime was not migrated to database.", 5000, globalCaConfiguration.getCaCertificateCacheTimeMillis());
+        } finally {
+            
+            final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            guc.setUpgradedToVersion("9.4.0");
+            guc.setPostUpgradedToVersion("9.4.0");            
+            //Set values to current
+            GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            globalOcspConfiguration.setSigningCertificateValidityTimeMilliseconds(currentSigningCertificateValiditytime);
+            globalConfigurationProxySession.saveConfiguration(alwaysAllowtoken, globalOcspConfiguration);
+            GlobalCaConfiguration globalCaConfiguration = (GlobalCaConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalCaConfiguration.CA_CONFIGURATION_ID);
+            globalCaConfiguration.setCaCertificateCacheTimeMillis(currentCaCertificateCacheTime);
+            globalConfigurationProxySession.saveConfiguration(alwaysAllowtoken, globalCaConfiguration);
+        }
+    }
+    
+    /**
+     * 
+     * Test that a negative value gets translated into 0
+     */
+    @Test
+    public void testMigrateOcspSigningCertificateValidTimeNegative9_4_0() throws AuthorizationDeniedException, InvalidConfigurationException {
+        GlobalOcspConfiguration currentGlobalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        GlobalCaConfiguration currentGlobalCaConfiguration = (GlobalCaConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalCaConfiguration.CA_CONFIGURATION_ID);
+        final long currentSigningCertificateValiditytime = currentGlobalOcspConfiguration.getSigningCertificateValidityTimeMilliseconds();
+        final long currentCaCertificateCacheTime = currentGlobalCaConfiguration.getCaCertificateCacheTimeMillis();
+        try {
+            //Set up EJBCA in a pre-upgrade state
+            final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            guc.setUpgradedToVersion("9.3.0");
+            guc.setPostUpgradedToVersion("9.3.0");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+            
+            cesecoreConfigSession.setConfigurationValue("ocsp.signingCertsValidTime", "-5");
+            
+            //Perform upgrade
+            upgradeSession.upgrade(/* database */ null, /* upgrade from */ "9.3.0", /* post upgrade? */ false);
+            //Retrieve config and verify upgrade
+            GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            GlobalCaConfiguration globalCaConfiguration = (GlobalCaConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalCaConfiguration.CA_CONFIGURATION_ID);
+            //Original configuration is in seconds, new one is in ms
+            assertEquals("ocsp.signingCertsValidTime was not migrated to database.", 0, globalOcspConfiguration.getSigningCertificateValidityTimeMilliseconds());
+            assertEquals("ocsp.signingCertsValidTime was not migrated to database.", 0, globalCaConfiguration.getCaCertificateCacheTimeMillis());
+        } finally {
+            
+            final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            guc.setUpgradedToVersion("9.4.0");
+            guc.setPostUpgradedToVersion("9.4.0");            
+            //Set values to current
+            GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            globalOcspConfiguration.setSigningCertificateValidityTimeMilliseconds(currentSigningCertificateValiditytime);
+            globalConfigurationProxySession.saveConfiguration(alwaysAllowtoken, globalOcspConfiguration);
+            GlobalCaConfiguration globalCaConfiguration = (GlobalCaConfiguration) globalConfigurationProxySession.getCachedConfiguration(GlobalCaConfiguration.CA_CONFIGURATION_ID);
+            globalCaConfiguration.setCaCertificateCacheTimeMillis(currentCaCertificateCacheTime);
+            globalConfigurationProxySession.saveConfiguration(alwaysAllowtoken, globalCaConfiguration);
+
         }
     }
 
