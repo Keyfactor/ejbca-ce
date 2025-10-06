@@ -129,7 +129,7 @@
             <basic fetch="EAGER" name="updateTime"><column name="updateTime" column-definition="NUMBER(19)" nullable="false"/></basic>
             <basic fetch="EAGER" name="subjectKeyId"><column name="subjectKeyId" column-definition="VARCHAR2(255 byte)"/></basic>
             <basic fetch="EAGER" name="accountBindingId"><column name="accountBindingId" column-definition="VARCHAR2(255 byte)" nullable="true"/></basic>
-            <basic fetch="EAGER" name="subjectAltName"><column name="subjectAltName" column-definition="VARCHAR2(2000 byte)" nullable="true"/></basic>
+            <basic fetch="EAGER" name="subjectAltName"><column name="subjectAltName" column-definition="VARCHAR2(4000 byte)" nullable="true"/></basic>
             <basic fetch="EAGER" name="zzzRowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
             <basic fetch="EAGER" name="zzzCertificateRequest"><column name="certificateRequest" column-definition="CLOB"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="NUMBER(10)" nullable="false"/></version>
@@ -165,7 +165,7 @@
             <basic fetch="EAGER" name="updateTime"><column name="updateTime" column-definition="NUMBER(19)" nullable="false"/></basic>
             <basic fetch="EAGER" name="subjectKeyId"><column name="subjectKeyId" column-definition="VARCHAR2(255 byte)"/></basic>
             <basic fetch="EAGER" name="accountBindingId"><column name="accountBindingId" column-definition="VARCHAR2(255 byte)" nullable="true"/></basic>
-            <basic fetch="EAGER" name="subjectAltName"><column name="subjectAltName" column-definition="VARCHAR2(2000 byte)" nullable="true"/></basic>
+            <basic fetch="EAGER" name="subjectAltName"><column name="subjectAltName" column-definition="VARCHAR2(4000 byte)" nullable="true"/></basic>
             <basic fetch="EAGER" name="zzzRowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
             <basic fetch="EAGER" name="zzzCertificateRequest"><column name="certificateRequest" column-definition="CLOB"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="NUMBER(10)" nullable="false"/></version>
@@ -387,7 +387,7 @@
             <id name="username"><column name="username" column-definition="VARCHAR2(255 byte)"/></id>
             <basic fetch="EAGER" name="subjectDN"><column name="subjectDN" column-definition="VARCHAR2(400 byte)"/></basic>
             <basic fetch="EAGER" name="caId"><column name="cAId" column-definition="NUMBER(10)" nullable="false"/></basic>
-            <basic fetch="EAGER" name="subjectAltName"><column name="subjectAltName" column-definition="VARCHAR2(2000 byte)"/></basic>
+            <basic fetch="EAGER" name="subjectAltName"><column name="subjectAltName" column-definition="VARCHAR2(4000 byte)"/></basic>
             <basic fetch="EAGER" name="subjectEmail"><column name="subjectEmail" column-definition="VARCHAR2(255 byte)"/></basic>
             <basic fetch="EAGER" name="status"><column name="status" column-definition="NUMBER(10)" nullable="false"/></basic>
             <basic fetch="EAGER" name="type"><column name="type" column-definition="NUMBER(10)" nullable="false"/></basic>
