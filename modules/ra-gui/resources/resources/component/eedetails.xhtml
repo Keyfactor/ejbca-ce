@@ -878,7 +878,7 @@
                     <h:outputText
                             styleClass="#{cc.attrs.styleInfo} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
                             value="#{cc.attrs.raEndEntityDetails.keyRecoverable ? msg.component_eedetails_field_keyrecoverable_yes : msg.component_eedetails_field_keyrecoverable_no }"
-                            rendered="#{cc.attrs.approvalRequestMode or (!cc.attrs.editMode and cc.attrs.raEndEntityDetails.keyRecoverableUsed)}"/>
+                            rendered="#{cc.attrs.approvalRequestMode and (!cc.attrs.editMode and cc.attrs.raEndEntityDetails.keyRecoverableUsed)}"/>
                 </h:panelGroup>
 
                 <h:outputLabel for="editCertificateExtensionDataField" value="#{msg.enroll_cert_extension_data}"

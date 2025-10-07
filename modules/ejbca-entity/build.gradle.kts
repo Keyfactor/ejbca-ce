@@ -6,7 +6,6 @@ dependencies {
     compileOnly(project(":modules:ejbca-common"))
     compileOnly(project(":modules:cesecore-common"))
     compileOnly(project(":modules:cesecore-entity"))
-    compileOnly(project(":modules:ejbca-repository-generator"))
     compileOnly(libs.jakartaee.api)
     compileOnly(libs.log4j.v12.api)
     compileOnly(libs.commons.lang3)

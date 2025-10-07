@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -53,6 +54,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.util.Properties;
@@ -130,12 +132,12 @@ import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.dto.RoleDataDto;
 import org.cesecore.keys.keyimport.KeyImportFailure;
 import org.cesecore.keys.keyimport.KeyImportRequestData;
 import org.cesecore.keys.validation.CaaIdentitiesValidator;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.keys.validation.Validator;
-import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMember;
@@ -250,7 +252,9 @@ import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
+import jakarta.annotation.Resource;
 import jakarta.ejb.EJB;
+import jakarta.ejb.SessionContext;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
@@ -357,6 +361,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
+    @Resource
+    private SessionContext sessionContext;
 
     /**
      * Defines the current RA Master API version.
@@ -465,11 +471,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public List<RaStyleInfo> getAvailableCustomRaStyles(AuthenticationToken authenticationToken, int hashCodeOfCurrentList) {
         List<RaStyleInfo> associatedCss = new ArrayList<>();
         LinkedHashMap<Integer, RaStyleInfo> allCssInfos = getAllCustomRaCss();
-        List<Role> isMemberOf = roleSession.getRolesAuthenticationTokenIsMemberOf(authenticationToken);
-        for (Role role : isMemberOf) {
-            RaStyleInfo cssToAdd = allCssInfos.get(role.getStyleId());
+        List<RoleDataDto> isMemberOf = roleSession.getRolesAuthenticationTokenIsMemberOf(authenticationToken);
+        for (RoleDataDto role : isMemberOf) {
+            RaStyleInfo cssToAdd = allCssInfos.get(role.styleId());
             if (cssToAdd != null) {
-                associatedCss.add(allCssInfos.get(role.getStyleId()));
+                associatedCss.add(allCssInfos.get(role.styleId()));
             }
         }
         if (associatedCss.hashCode() == hashCodeOfCurrentList) {
@@ -479,17 +485,17 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public List<Role> getAuthorizedRoles(AuthenticationToken authenticationToken) {
+    public List<RoleDataDto> getAuthorizedRoles(AuthenticationToken authenticationToken) {
         return roleSession.getAuthorizedRoles(authenticationToken);
     }
 
     @Override
-    public List<Role> getRolesAuthenticationTokenIsMemberOf(AuthenticationToken authenticationToken) {
+    public List<RoleDataDto> getRolesAuthenticationTokenIsMemberOf(AuthenticationToken authenticationToken) {
         return roleSession.getRolesAuthenticationTokenIsMemberOf(authenticationToken);
     }
 
     @Override
-    public Role getRole(final AuthenticationToken authenticationToken, final int roleId) throws AuthorizationDeniedException {
+    public RoleDataDto getRole(final AuthenticationToken authenticationToken, final int roleId) throws AuthorizationDeniedException {
         return roleSession.getRole(authenticationToken, roleId);
     }
 
@@ -497,7 +503,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public List<String> getAuthorizedRoleNamespaces(final AuthenticationToken authenticationToken, final int roleId) {
         // Skip roles that come from other peers if roleId is set
         try {
-            if (roleId != Role.ROLE_ID_UNASSIGNED && getRole(authenticationToken, roleId) == null) {
+            if (roleId != RoleDataDto.ROLE_ID_UNASSIGNED && getRole(authenticationToken, roleId) == null) {
                 if (log.isDebugEnabled()) {
                     log.debug("Requested role with ID " + roleId + " does not exist on this system, returning empty list of namespaces");
                 }
@@ -541,19 +547,19 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public Role saveRole(final AuthenticationToken authenticationToken, final Role role) throws AuthorizationDeniedException, RoleExistsException {
-        if (role.getRoleId() != Role.ROLE_ID_UNASSIGNED) {
+    public RoleDataDto saveRole(final AuthenticationToken authenticationToken, final RoleDataDto role) throws AuthorizationDeniedException, RoleExistsException {
+        if (role.id() != RoleDataDto.ROLE_ID_UNASSIGNED) {
             // Updating a role
-            Role oldRole = roleSession.getRole(authenticationToken, role.getRoleId());
-            if (oldRole == null) {
+            RoleDataDto oldRoleData = roleSession.getRole(authenticationToken, role.id());
+            if (oldRoleData == null) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Role with ID " + role.getRoleId() + " does not exist on this system, and will not be updated here. The role name to save was '" + role.getRoleNameFull() + "'");
+                    log.debug("RoleDataDto with ID " + role.id() + " does not exist on this system, and will not be updated here. The role name to save was '" + role.fullName() + "'");
                 }
                 return null; // not present on this system
             }
         }
         if (log.isDebugEnabled()) {
-            log.debug("Persisting a role with ID " + role.getRoleId() + " and name '" + role.getRoleNameFull() + "'");
+            log.debug("Persisting a role with ID " + role.id() + " and name '" + role.fullName() + "'");
         }
         return roleSession.persistRole(authenticationToken, role);
     }
@@ -595,7 +601,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         // Sanity check that there's no ID collision
         if (roleMember.getRoleId() != roleId) {
             if (log.isDebugEnabled()) {
-                log.debug("Role member has an unexpected Role ID " + roleMemberId + ". Role ID " + roleId);
+                log.debug("RoleDataDto member has an unexpected RoleDataDto ID " + roleMemberId + ". RoleDataDto ID " + roleId);
             }
             return false;
         }
@@ -728,7 +734,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
         // Editable data
         final RaEditableRequestData editableData = getRequestEditableData(approvalDataVO);
-        final List<Role> rolesTokenIsMemberOf = roleSession.getRolesAuthenticationTokenIsMemberOf(authenticationToken);
+        final List<RoleDataDto> rolesTokenIsMemberOf = roleSession.getRolesAuthenticationTokenIsMemberOf(authenticationToken);
         return new RaApprovalRequestInfo(authenticationToken, caName, endEntityProfileName, endEntityProfile, certificateProfileName, approvalDataVO,
                 requestData, editableData, rolesTokenIsMemberOf);
     }
@@ -917,7 +923,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             response.setMightHaveMoreResults(true);
         }
 
-        final List<Role> rolesTokenIsMemberOf = getRolesAuthenticationTokenIsMemberOf(authenticationToken);
+        final List<RoleDataDto> rolesTokenIsMemberOf = getRolesAuthenticationTokenIsMemberOf(authenticationToken);
         for (final ApprovalDataVO approvalDataVO : approvals) {
             final List<ApprovalDataText> requestDataLite = approvalDataVO.getApprovalRequest().getNewRequestDataAsText(authenticationToken); // this method isn't guaranteed to return the full information
             final RaEditableRequestData editableData = getRequestEditableData(approvalDataVO);
@@ -1717,6 +1723,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             AuthenticationToken authenticationToken, RaEndEntitySearchRequest request, int currentQueryOffset,
             String sortingOperation, String additionalConstraintQuery, int additionalConstraintParam) {
         final RaEndEntitySearchResponse response = new RaEndEntitySearchResponse();
+        if (StringUtils.isBlank(sortingOperation)) {
+            searchUserByExactMatchIfPossible(authenticationToken, request, response);
+        }
+        if (!response.getEndEntities().isEmpty()) {
+            return response;
+        }
         final List<Integer> authorizedLocalCaIds = new ArrayList<>(caSession.getAuthorizedCaIds(authenticationToken));
         // Only search a subset of the requested CAs if requested
         if (!request.getCaIds().isEmpty()) {
@@ -1763,7 +1775,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             sb.append(" AND (");
             boolean firstAppended = false;
             if (!subjectDnSearchString.isEmpty()) {
-                sb.append("UPPER(a.subjectDN) LIKE :subjectDN");
+                if (request.isExactLetterCaseSearch()) {
+                    sb.append("a.subjectDN LIKE :subjectDN");
+                } else {
+                    sb.append("UPPER(a.subjectDN) LIKE :subjectDN");
+                }
                 firstAppended = true;
             }
             if (!subjectAnSearchString.isEmpty()) {
@@ -1772,13 +1788,18 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 } else {
                     firstAppended = true;
                 }
+                // subjectAltName is not UPPERed
                 sb.append("a.subjectAltName LIKE :subjectAltName");
             }
             if (!usernameSearchString.isEmpty()) {
                 if (firstAppended) {
                     sb.append(" OR ");
                 }
-                sb.append("UPPER(a.username) LIKE :username");
+                if (request.isExactLetterCaseSearch()) {
+                    sb.append("a.username LIKE :username");
+                } else {
+                    sb.append("UPPER(a.username) LIKE :username");
+                }
             }
             sb.append(")");
         }
@@ -1826,7 +1847,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         if (!subjectDnSearchString.isEmpty()) {
             if (request.isSubjectDnSearchExact()) {
-                query.setParameter("subjectDN", subjectDnSearchString.toUpperCase());
+                if (request.isExactLetterCaseSearch()) {
+                    query.setParameter("subjectDN", subjectDnSearchString);
+                } else {
+                    query.setParameter("subjectDN", subjectDnSearchString.toUpperCase());
+                }
             } else {
                 query.setParameter("subjectDN", "%" + subjectDnSearchString.toUpperCase() + "%");
             }
@@ -1840,7 +1865,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         if (!usernameSearchString.isEmpty()) {
             if (request.isUsernameSearchExact()) {
-                query.setParameter("username", usernameSearchString.toUpperCase());
+                if (request.isExactLetterCaseSearch()) {
+                    query.setParameter("username", usernameSearchString);
+                } else {
+                    query.setParameter("username", usernameSearchString.toUpperCase());
+                }
             } else {
                 query.setParameter("username", "%" + usernameSearchString.toUpperCase() + "%");
             }
@@ -1899,16 +1928,95 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         return response;
     }
+    
+    // the 2 key difference between the SQL query we make in caller function and in this method is
+    //
+    // we do not use authorized CA, CP and EEP IDs in the SQL query(relevant only if non-superadmin, so most prod case)
+    // we do the authorization check after the result is fetched instead
+    // result: less no of columns involved but possibility of large result which is limited by equality check instead of like
+    //
+    // the whole row is fetched instead of only the username(s) and then N queries for each user
+    // once again bad idea for large result but works for small one
+    private void searchUserByExactMatchIfPossible(AuthenticationToken authenticationToken, RaEndEntitySearchRequest request,
+            RaEndEntitySearchResponse response) {
+        
+        if (!request.isExactLetterCaseSearch() || request.getPageNumber()!=1) {
+            log.debug("Either not a exact letter case match search or page number more than 1");
+            return;
+        }
+        
+        if (!(request.getCaIds().size() <= 1 
+                && request.getEepIds().isEmpty() && request.getCpIds().isEmpty() 
+                && request.getSubjectAnSearchString().isBlank()
+                && ((request.getSubjectDnSearchString().isBlank() && !request.getUsernameSearchString().isBlank())
+                || (!request.getSubjectDnSearchString().isBlank() && request.getUsernameSearchString().isBlank())))) {
+            if (log.isTraceEnabled()) {
+                log.trace("Exact search may only be performed if: ");
+                log.trace(" - [Match type is EQUAL_CASE_SENSITIVE]");
+                log.trace(" - [Search Criteria type is USERNAME or SUBJECTDN]");
+                log.trace(" - [Only USERNAME or SUBJECTDN is mentioned]");
+                log.trace(" - [At most one CA is mentioned and only with SUBJECTDN]");
+                log.trace(" - [No other criteria e.g. certificate or end entity profile, status, dates etc may be used]");
+            }
+            return;
+        }
+        
+        if (request.getCaIds().size()==1 
+                && request.isSubjectDnSearchExact() && !request.getSubjectDnSearchString().isBlank()
+                ) {
+            try {
+                response.getEndEntities().addAll(
+                        endEntityAccessSession.findUserBySubjectAndIssuerDN(authenticationToken, 
+                            request.getSubjectDnSearchString(), 
+                            caSession.findById(request.getCaIds().get(0)).getSubjectDN()));
+            } catch (AuthorizationDeniedException e) {
+                // ignore
+            }
+        }
+        
+        if (request.getCaIds().size()==0 
+                && request.isSubjectDnSearchExact() && !request.getSubjectDnSearchString().isBlank()
+                ) {
+            try {
+                response.getEndEntities().addAll(
+                        endEntityAccessSession.findUserBySubjectDN(authenticationToken, request.getSubjectDnSearchString()));
+            } catch (AuthorizationDeniedException e) {
+             // ignore
+            }
+        }
+        
+        if (request.getCaIds().size()==0 
+                && request.isUsernameSearchExact() && !request.getUsernameSearchString().isBlank()
+                ) {
+            try {
+                EndEntityInformation user = endEntityAccessSession.findUser(authenticationToken, request.getUsernameSearchString());
+                if (user!=null) {
+                    response.getEndEntities().add(user);
+                }
+            } catch (AuthorizationDeniedException e) {
+                // ignore
+            }
+        }
+        
+        if (response.getEndEntities().isEmpty()) {
+            return;
+        }
+        
+        response.setMightHaveMoreResults(false);
+        // always sort by username
+        response.getEndEntities().sort(Comparator.comparing(EndEntityInformation::getUsername, Comparator.nullsFirst(String::compareTo)));
+        
+    }
 
     @Override
     public RaRoleSearchResponse searchForRoles(AuthenticationToken authenticationToken, RaRoleSearchRequest request) {
         // TODO optimize this (ECA-5721), should filter with a database query
-        final List<Role> authorizedRoles = getAuthorizedRoles(authenticationToken);
+        final List<RoleDataDto> authorizedRoles = getAuthorizedRoles(authenticationToken);
         final RaRoleSearchResponse searchResponse = new RaRoleSearchResponse();
         final String searchString = request.getGenericSearchString();
-        for (final Role role : authorizedRoles) {
-            if (searchString == null || Strings.CI.contains(role.getRoleName(), searchString) ||
-                    (role.getNameSpace() != null && Strings.CI.contains(role.getNameSpace(), searchString))) {
+        for (final RoleDataDto role : authorizedRoles) {
+            if (searchString == null || Strings.CI.contains(role.name(), searchString) ||
+                    (role.nameSpace() != null && Strings.CI.contains(role.nameSpace(), searchString))) {
                 searchResponse.getRoles().add(role);
             }
         }
@@ -1929,8 +2037,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
         // Dito for roles
         final List<Integer> authorizedLocalRoleIds = new ArrayList<>();
-        for (final Role role : roleSession.getAuthorizedRoles(authenticationToken)) {
-            final int roleId = role.getRoleId();
+        for (final RoleDataDto role : roleSession.getAuthorizedRoles(authenticationToken)) {
+            final int roleId = role.id();
             if (request.getRoleIds().isEmpty() || request.getRoleIds().contains(roleId)) {
                 authorizedLocalRoleIds.add(roleId);
             }
@@ -1995,7 +2103,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
             response.setMightHaveMoreResults(roleMemberDatas.size() == maxResults);
             if (log.isDebugEnabled()) {
-                log.debug("Role Member search query: " + LogRedactionUtils.getRedactedMessage(sb.toString()) + " LIMIT " + maxResults + " \u2192 "
+                log.debug("RoleDataDto Member search query: " + LogRedactionUtils.getRedactedMessage(sb.toString()) + " LIMIT " + maxResults + " \u2192 "
                         + roleMemberDatas.size() + " results. queryTimeout=" + queryTimeout + "ms");
             }
         } catch (QueryTimeoutException e) {
@@ -3883,31 +3991,82 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return null;
     }
 
+    // Requires a transaction since it set the status and password. If the operation fails, then the status must not be left as NEW.
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
     public byte[] selfRenewCertificate(RaSelfRenewCertificateData renewCertificateData)
             throws AuthorizationDeniedException, EjbcaException, NoSuchEndEntityException, WaitingForApprovalException,
             CertificateSerialNumberException, EndEntityProfileValidationException, IllegalNameException,
             CADoesntExistsException {
-        AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new WebPrincipal(
+        // Note that the certificate being renewed need not be an administrator certificate, it can also be some client
+        // certificate that is used for some external service (but issued by EJBCA).
+        final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new WebPrincipal(
                 "RenewSelfCertificate", renewCertificateData.getClientIPAddress()));
-        EndEntityInformation userData = endEntityAccessSession.findUser(admin, renewCertificateData.getUsername());
-        if (userData.getType().contains(EndEntityTypes.SENDNOTIFICATION)) {
-            EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(userData.getEndEntityProfileId());
+        final EndEntityInformation userData = endEntityAuthenticationSession.checkAllowedToEnroll(admin, renewCertificateData.getUsername());
+        requireClientAuthProfileAndCa(userData);
+        final boolean sendNotification = userData.getType().contains(EndEntityTypes.SENDNOTIFICATION);
+        final EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(userData.getEndEntityProfileId());
+        // The password is used for:
+        // * The PKCS#12 file
+        // * Notifications, if enabled
+        // * Internally, for authentication in SignSessionBean.createCertificate (which is called during keystore generation)
+        if (profile.useAutoGeneratedPasswd()) {
             userData.setPassword(profile.makeAutoGeneratedPassword());
         } else {
             userData.setPassword(renewCertificateData.getPassword());
         }
-        userData.setStatus(EndEntityConstants.STATUS_NEW);
-        endEntityManagementSession.changeUser(admin, userData, false);
-        userData.setTokenType(EndEntityConstants.TOKEN_SOFT_P12);
-        if (userData.getExtendedInformation() == null || userData.getExtendedInformation().getKeyStoreAlgorithmType() == null) {
-            if (userData.getExtendedInformation() == null) {
-                userData.setExtendedInformation(new ExtendedInformation());
-            }
-            userData.getExtendedInformation().setKeyStoreAlgorithmType(renewCertificateData.getKeyAlg());
-            userData.getExtendedInformation().setKeyStoreAlgorithmSubType(renewCertificateData.getKeySpec());
+        if (sendNotification) {
+            // Notification is triggered on status change, so in this case, the status needs to be
+            // flipped back (to NEW) and forth (to GENERATED, which happens after successful keystore generation)
+            userData.setStatus(EndEntityConstants.STATUS_NEW);
         }
-        return generateKeyStoreWithoutViewEndEntityAccessRule(admin, userData);
+        endEntityManagementSession.changeUser(admin, userData, false);
+        boolean success = false;
+        try {
+            userData.setTokenType(EndEntityConstants.TOKEN_SOFT_P12); // This is checked against the allowed types in the profile in EndEntityProfile.doesUserFulfillEndEntityProfileWithoutPassword
+            if (userData.getExtendedInformation() == null || userData.getExtendedInformation().getKeyStoreAlgorithmType() == null) {
+                if (userData.getExtendedInformation() == null) {
+                    userData.setExtendedInformation(new ExtendedInformation());
+                }
+                userData.getExtendedInformation().setKeyStoreAlgorithmType(renewCertificateData.getKeyAlg());
+                userData.getExtendedInformation().setKeyStoreAlgorithmSubType(renewCertificateData.getKeySpec());
+            }
+            final byte[] ret = generateKeyStoreWithoutViewEndEntityAccessRule(admin, userData);
+
+            // Ensure that the password is always cleared when renewing with client certificate,
+            // even if isRenewDaysBeforeExpirationUsed is enabled in the profile.
+            // (This ignores if "Finish User" is disabled, or if multiple requests are allowed,
+            // but I don't think there's any good reason to use such configurations with self-renewal.)
+            endEntityManagementSession.setClearTextPassword(admin, renewCertificateData.getUsername(), null);
+            success = true;
+            return ret;
+        } finally { // Note: This `try` block never does NOT throw WaitingForApprovalException, that's thrown by changeUser() before
+            if (!success) {
+                // Roll back the status change to NEW if an error happens
+                sessionContext.setRollbackOnly();
+            }
+        }
+    }
+
+    private void requireClientAuthProfileAndCa(final EndEntityInformation userData) throws AuthorizationDeniedException {
+        // Safety checks that the certificate profile makes sense for self-renewal
+        final CertificateProfile certProf = certificateProfileSession.getCertificateProfile(userData.getCertificateProfileId());
+        if (!certProf.isTypeEndEntity()) { // Safety check to prevent "self-renewal" of CAs that have an end-entity (e.g. locally signed SubCAs)
+            throw new AuthorizationDeniedException("Cannot self-renew user with certificate profile that is not of end entity type");
+        }
+        if (!certProf.getKeyUsage(CertificateConstants.DIGITALSIGNATURE)) {
+            throw new AuthorizationDeniedException("Self-renewal requires certificate profile to have KeyUsage with digitalSignature");
+        }
+        final boolean[] allowedKU = certProf.getKeyUsage();
+        for (int keyUsage = 0; keyUsage < allowedKU.length; keyUsage++) {
+            if (allowedKU[keyUsage] && keyUsage != CertificateConstants.DIGITALSIGNATURE && keyUsage != CertificateConstants.NONREPUDIATION &&
+                    keyUsage != CertificateConstants.KEYENCIPHERMENT) {
+                throw new AuthorizationDeniedException("Key Usage " + keyUsage + " is not allowed for self-renewal. Only Digital Signature, Non-Repudiation and Key Encipherment are allowed.");
+            }
+        }
+        if (!certProf.getExtendedKeyUsageOids().contains(KeyPurposeId.id_kp_clientAuth.getId())) {
+            throw new AuthorizationDeniedException("Self-renewal requires certificate profile to have Extended Key Usage with clientAuthentication");
+        }
     }
 
     @Override

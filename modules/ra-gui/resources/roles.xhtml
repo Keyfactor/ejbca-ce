@@ -72,7 +72,7 @@
                                         onerror="function(data){ejbca.ra.onAjaxError(data,'rolesForm:filteredResults');}"/>
                                 </h:commandButton>
                             </f:facet>
-                            <h:outputText value="#{raRole.roleName}" style="white-space: nowrap"/>
+                            <h:outputText value="#{raRole.name()}" style="white-space: nowrap"/>
                         </h:column>
                         
                         <h:column rendered="#{raRolesBean.hasNamespaces}">
@@ -84,12 +84,12 @@
                                         onerror="function(data){ejbca.ra.onAjaxError(data,'rolesForm:filteredResults');}"/>
                                 </h:commandButton>
                             </f:facet>
-                            <h:outputText value="#{raRole.nameSpace}" style="white-space: nowrap"/>
+                            <h:outputText value="#{raRole.nameSpace()}" style="white-space: nowrap"/>
                         </h:column>
                         
                         <h:column>
                             <h:link id="editButton" styleClass="editLink" outcome="role_edit" includeViewParams="true">
-                                <f:param name="roleId" value="#{raRole.roleId}"/>
+                                <f:param name="roleId" value="#{raRole.id()}"/>
                                 <h:outputText value="#{msg.roles_page_edit_command}" styleClass="viewMoreLink" rendered="#{raAccessBean.authorizedToEditRoleRules}"/>
                                 <h:outputText value="#{msg.roles_page_view_command}" styleClass="viewMoreLink" rendered="#{not raAccessBean.authorizedToEditRoleRules}"/>
                             </h:link>
@@ -97,21 +97,21 @@
                         
                         <h:column rendered="#{raAccessBean.authorizedToEditRoleRules}">
                             <h:link id="deleteButton" styleClass="deleteLink" outcome="role_delete" includeViewParams="true">
-                                <f:param name="roleId" value="#{raRole.roleId}"/>
+                                <f:param name="roleId" value="#{raRole.id()}"/>
                                 <h:outputText value="#{msg.roles_page_delete_command}" styleClass="viewMoreLink"/>
                             </h:link>
                         </h:column>
                         
                         <h:column rendered="#{raAccessBean.authorizedToEditRoleRules}">
                             <h:link id="cloneButton" styleClass="cloneLink" outcome="role_edit" includeViewParams="true">
-                                <f:param name="cloneFromRoleId" value="#{raRole.roleId}"/>
+                                <f:param name="cloneFromRoleId" value="#{raRole.id()}"/>
                                 <h:outputText value="#{msg.roles_page_clone_command}" styleClass="viewMoreLink"/>
                             </h:link>
                         </h:column>
                         
                         <h:column>
                             <h:link id="membersButton" styleClass="membersLink" outcome="role_members" includeViewParams="true">
-                                <f:param name="criteriaRoleId" value="#{raRole.roleId}"/>
+                                <f:param name="criteriaRoleId" value="#{raRole.id()}"/>
                                 <f:param name="fromRolesPage" value="true"/>
                                 <h:outputText value="#{msg.roles_page_members_command}" styleClass="viewMoreLink"/>
                             </h:link>

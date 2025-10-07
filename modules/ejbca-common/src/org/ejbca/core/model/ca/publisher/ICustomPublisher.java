@@ -58,6 +58,11 @@ public interface ICustomPublisher {
     boolean storeOcspResponseData(OcspResponseData ocspResponseData) throws PublisherException;
 
     /**
+     * @see org.ejbca.core.model.ca.publisher.BasePublisher#validateInput
+     */
+    default void validateInput() throws PublisherException {}
+
+    /**
      * @see org.ejbca.core.model.ca.publisher.BasePublisher#testConnection
      */
     void testConnection() throws PublisherConnectionException, FatalPublisherConnectionException;

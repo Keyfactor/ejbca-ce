@@ -34,7 +34,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -64,12 +63,12 @@ import org.cesecore.config.EABConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.config.GlobalCtConfiguration;
 import org.cesecore.config.GlobalEndEntityProfileConfiguration;
-import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.InvalidConfigurationException;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.config.RaStyleInfo.RaCssInfo;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.dto.RoleDataDto;
 import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingStatus;
@@ -77,13 +76,13 @@ import org.cesecore.keybind.impl.AuthenticationKeyBinding;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.roles.AccessRulesHelper;
-import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleDataSessionLocal;
 import org.cesecore.util.SecureZipUnpacker;
 import org.ejbca.config.AvailableProtocolsConfiguration;
 import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.GlobalCustomCssConfiguration;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ocsp.OcspResponseCleanupSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -209,11 +208,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         private int sessionTimeoutTime;
         private int vaStatusTimeConstraint;
 
-        // Settings for the cleanup job for removing old OCSP responses created by the presigners.
-        private boolean ocspCleanupUse;
-        private String ocspCleanupSchedule;
-        private String ocspCleanupScheduleUnit;
-
         //Admin Preferences
         private int preferedLanguage;
         private int secondaryLanguage;
@@ -239,7 +233,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             final GlobalConfiguration globalConfig = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
             final GlobalCtConfiguration globalCtConfiguration = (GlobalCtConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCtConfiguration.CT_CONFIGURATION_ID);
             final GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
-            final GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
             final GlobalEndEntityProfileConfiguration globalEEPConfiguration = (GlobalEndEntityProfileConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalEndEntityProfileConfiguration.EEP_CONFIGURATION_ID);
 
             try {
@@ -257,10 +250,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 this.sessionTimeoutTime = globalConfig.getSessionTimeoutTime();
                 this.vaStatusTimeConstraint = globalConfig.getVaStatusTimeConstraint();
                 this.ctLogs = new ArrayList<>(globalConfig.getCTLogs().values());
-                this.ocspCleanupUse = globalOcspConfiguration.getOcspCleanupUse();
-                this.ocspCleanupSchedule = globalOcspConfiguration.getOcspCleanupSchedule();
-                this.ocspCleanupScheduleUnit = globalOcspConfiguration.getOcspCleanupScheduleUnit();
-
                 // Admin Preferences
                 if(adminPreference == null) {
                     adminPreference = getEjbcaWebBean().getAdminPreference();
@@ -321,16 +310,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public void setSessionTimeoutTime(int sessionTimeoutTime) {this.sessionTimeoutTime = sessionTimeoutTime;}
         public int getVaStatusTimeConstraint() { return vaStatusTimeConstraint; }
         public void setVaStatusTimeConstraint(final int vaStatusTimeConstraint) { this.vaStatusTimeConstraint = vaStatusTimeConstraint; }
-
-        // OCSP Options: Cleanup Job
-        public boolean getOcspCleanupUse() { return ocspCleanupUse; }
-        public void setOcspCleanupUse(final boolean value) { this.ocspCleanupUse = value; }
-
-        public String getOcspCleanupSchedule() { return ocspCleanupSchedule; }
-        public void setOcspCleanupSchedule(final String value) {this.ocspCleanupSchedule = value;}
-
-        public String getOcspCleanupScheduleUnit() { return ocspCleanupScheduleUnit; }
-        public void setOcspCleanupScheduleUnit(final String value) {this.ocspCleanupScheduleUnit = value;}
 
         // Admin Preferences
         public int getPreferedLanguage() { return this.preferedLanguage; }
@@ -512,6 +491,39 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private List<OAuthKeyInfo> oauthKeys = null;
     private String defaultOauthKeyLabel = null;
 
+    private List<String> oauthHostnamesAllowlist = null;
+
+    /**
+     * Gets the OAuth providers allowlist as a newline-separated string for the textarea
+     * @return String with one hostname per line
+     */
+    public String getCurrentOauthHostnamesAllowlist() {
+        final String[] allowedHosts = getOAuthConfiguration().getAllowedOauthHosts();
+        if (allowedHosts == null || allowedHosts.length == 0 || (allowedHosts.length == 1 && allowedHosts[0].trim().isEmpty())) {
+            return WebConfiguration.getHostName();
+        } else {
+            oauthHostnamesAllowlist = Arrays.asList(allowedHosts);
+            return String.join("\n", oauthHostnamesAllowlist);
+        }
+    }
+
+    /**
+     * Sets the OAuth providers allowlist from a newline-separated string
+     * @param allowlist String containing hostnames separated by newlines
+     */
+    public void setCurrentOauthHostnamesAllowlist(final String allowlist) {
+        if (allowlist == null || allowlist.trim().isEmpty()) {
+            oauthHostnamesAllowlist = new ArrayList<>();
+            return;
+        }
+
+        // Split on newlines and filter out empty lines
+        oauthHostnamesAllowlist = Arrays.stream(allowlist.split("\\R"))  // splits on all types of newlines
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toList());
+    }
+
     public List<OAuthKeyInfo> getOauthKeys() {
         if (oauthKeys == null) {
             this.oauthKeys = new ArrayList<>(getOAuthConfiguration().getOauthKeys().values());
@@ -594,6 +606,18 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 addErrorMessage("OAUTHKEYTAB_EDITDEFAULTKEYNOTPOSSIBLE");
             }
 
+            getEjbcaWebBean().saveOAuthConfiguration(oAuthConfiguration);
+        } catch (AuthorizationDeniedException e) {
+            String msg = "Cannot save System Configuration. " + e.getLocalizedMessage();
+            log.info(msg);
+            super.addNonTranslatedErrorMessage(msg);
+        }
+        flushCache();
+    }
+
+    public void saveAllowedOauthHostnames() {
+        getOAuthConfiguration().setAllowedOauthHosts(oauthHostnamesAllowlist.toArray(new String[0]));
+        try {
             getEjbcaWebBean().saveOAuthConfiguration(oAuthConfiguration);
         } catch (AuthorizationDeniedException e) {
             String msg = "Cannot save System Configuration. " + e.getLocalizedMessage();
@@ -1129,11 +1153,12 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 // control check is performed in this step.
                 if (!currentConfig.getEnableKeyRecovery()) {
                     log.info("Key recovery has been disabled. Checking if there are any stale access rules to remove...");
-                    for (final Role role : roleSession.getAllRoles()) {
-                        if (role.getAccessRules().containsKey(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_KEYRECOVERY))) {
-                            role.getAccessRules().remove(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_KEYRECOVERY));
-                            roleSession.persistRole(role);
-                            log.info("Removed access rule " + AccessRulesConstants.REGULAR_KEYRECOVERY + " from role " + role.getRoleName());
+                    for (final RoleDataDto role : roleSession.getAllRoles()) {
+                        if (role.accessRules().containsKey(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_KEYRECOVERY))) {
+                            Map<String, Boolean> accessRules = new HashMap<>(role.accessRules());
+                            accessRules.remove(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_KEYRECOVERY));
+                            roleSession.persistRole(role.withAccessRules(accessRules));
+                            log.info("Removed access rule " + AccessRulesConstants.REGULAR_KEYRECOVERY + " from role " + role.name());
                         }
                     }
                 }
@@ -1149,22 +1174,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalConfigurationSession.saveConfiguration(getAdmin(), globalEEPConfiguration);
             } catch (AuthorizationDeniedException e) {
                 String msg = "Cannot save Global EEP Configuration. " + e.getLocalizedMessage();
-                log.info(msg);
-                super.addNonTranslatedErrorMessage(msg);
-            }
-
-            // Save OCSP related settings to the GlobalOcspConfiguration
-            final GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-            if (isValidOcspCleanupSettings()) {
-                globalOcspConfiguration.setOcspCleanupSchedule(currentConfig.getOcspCleanupSchedule());
-                globalOcspConfiguration.setOcspCleanupScheduleUnit(currentConfig.getOcspCleanupScheduleUnit());
-                globalOcspConfiguration.setOcspCleanupUse(currentConfig.getOcspCleanupUse());
-            }
-
-            try {
-                globalConfigurationSession.saveConfiguration(getAdmin(), globalOcspConfiguration);
-            } catch (AuthorizationDeniedException e) {
-                String msg = "Cannot save Global OCSP Configuration. " + e.getLocalizedMessage();
                 log.info(msg);
                 super.addNonTranslatedErrorMessage(msg);
             }
@@ -1350,44 +1359,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             }
         }
         return list;
-    }
-
-    private boolean isValidOcspCleanupSettings() {
-        if (getCurrentConfig().getOcspCleanupUse()) {
-            final String unit = currentConfig.getOcspCleanupScheduleUnit();
-            final Integer interval;
-
-            // Validate number
-            try {
-                interval = Integer.parseInt(currentConfig.getOcspCleanupSchedule());
-            } catch (NumberFormatException ex) {
-                addErrorMessage("OCSP_ERROR_NUMBER");
-                return false;
-            }
-
-            // Validate units and amounts
-            if (unit.equals(TimeUnit.DAYS.toString())) {
-                if (interval > 31 || interval < 1) {
-                    addErrorMessage("OCSP_ERROR_DAYS");
-                    return false;
-                }
-            } else if (unit.equals(TimeUnit.HOURS.toString())) {
-                if (interval > 23 || interval < 1) {
-                    addErrorMessage("OCSP_ERROR_HOURS");
-                    return false;
-                }
-            } else if (unit.equals(TimeUnit.MINUTES.toString())) {
-                if (interval > 59 || interval < 1) {
-                    addErrorMessage("OCSP_ERROR_MINUTES");
-                    return false;
-                }
-            } else {
-                addErrorMessage("OCSP_ERROR_UNIT");
-                return false;
-            }
-        }
-
-        return true;
     }
 
     // --------------------------------------------
@@ -2163,24 +2134,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             ret.add(new SelectItem(current.getId(), current.getName(), current.getName(), !current.getStatus().equals(InternalKeyBindingStatus.ACTIVE)));
         }
         return ret;
-    }
-
-    public List<SelectItem> getAvailableOcspCleanupUnits() {
-        final List<SelectItem> units = new ArrayList<>();
-        final String days = TimeUnit.DAYS.toString();
-        final String hours = TimeUnit.HOURS.toString();
-        final String minutes = TimeUnit.MINUTES.toString();
-
-        // Minutes
-        units.add(new SelectItem(minutes, StringUtils.capitalize(minutes.toLowerCase())));
-
-        // Hours
-        units.add(new SelectItem(hours, StringUtils.capitalize(hours.toLowerCase())));
-
-        // Days
-        units.add(new SelectItem(days, StringUtils.capitalize(days.toLowerCase())));
-
-        return units;
     }
 
     public List<SelectItem> getAvailableLanguageSelectItems() {

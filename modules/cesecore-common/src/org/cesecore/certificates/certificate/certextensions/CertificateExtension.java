@@ -30,14 +30,12 @@ import org.cesecore.util.Named;
  * 
  * The methods that need implementation is getValue
  * 
- * @version $Id$
  */
 public abstract class CertificateExtension implements Named, Serializable {
 	
 	private static final long serialVersionUID = -7708267512352607118L;
 	
-	// This attribute should be removed when support for EJBCA 6.15.0 is dropped. This attribute has been replaced by OID as an extension's identifying attribute.
-	// By the time we dropped support for Ejbca 6.15.0, this attribute will not be significant in any way and any references to it can be removed without replacement.
+	// This attribute has been replaced by OID as an extension's identifying attribute, which is theoretically possible since the support of 6.15 is dropped.
 	@Deprecated
     private int id;
 	private String oID;

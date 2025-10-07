@@ -24,3 +24,4 @@ jacoco.exec
 **/*.log
 modules/ejbca-common/result.ser
 java_*.hprof
+testLicenses

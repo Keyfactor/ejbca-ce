@@ -574,6 +574,18 @@ textarea#enrollWithRequestIdForm\:certificateRequest {
     margin: 1% 1% 2% 0;
 }
 
+#contentForm\:parentSelectSearchType {
+    width: 91%;
+    margin: 1% 1% 0 0;
+}
+
+#contentForm\:selectSearchTermScope,
+#contentForm\:selectSearchTermScopeOptions {
+   display: block;
+   width: 100% !important;
+   margin: 0
+}
+
 .parentCriteriaCheckbox {
   height: 100%;
   font-size: 90%;

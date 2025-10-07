@@ -35,7 +35,6 @@ import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.cesecore.certificates.ocsp.extension.OCSPExtension;
-import org.cesecore.config.ConfigurationHolder;
 import org.ejbca.core.protocol.ocsp.extension.certhash.OcspCertHashExtension;
 import org.ejbca.core.protocol.ocsp.extension.unid.OCSPUnidExtension;
 import org.junit.AfterClass;
@@ -52,15 +51,12 @@ import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
 /**
- * Unit test for the OCSP Extensions cache and 
+ * System test for the OCSP Extensions cache and 
  * 
  *
  */
 public class OcspExtensionsSystemTest {
 
-    private static final String OCSP_UNID_OID = "2.16.578.1.16.3.2";
-    private static final String OCSP_UNID_CLASSNAME = OCSPUnidExtension.class.getName();
-    private static final String OCSP_CERTHASH_CLASSNAME = OcspCertHashExtension.class.getName();
     private static Certificate certificate;
     private static File trustedCertificateFile;
     private static File caCertificateFile;
@@ -114,11 +110,6 @@ public class OcspExtensionsSystemTest {
         } finally {
             fileOutputStream.close();
         }
-        ConfigurationHolder.updateConfiguration("ocsp.extensionoid", OCSP_UNID_OID+';'+OcspCertHashExtension.CERT_HASH_OID);
-        ConfigurationHolder.updateConfiguration("ocsp.extensionclass", OCSP_UNID_CLASSNAME+';'+OCSP_CERTHASH_CLASSNAME);
-        ConfigurationHolder.updateConfiguration("ocsp.uniddatsource", "foo");
-        ConfigurationHolder.updateConfiguration("ocsp.unidtrustdir", trustDir.getAbsolutePath());
-        ConfigurationHolder.updateConfiguration("ocsp.unidcacert", caCertificateFile.getAbsolutePath());
         OcspExtensionsCache.INSTANCE.reloadCache();
 
     }

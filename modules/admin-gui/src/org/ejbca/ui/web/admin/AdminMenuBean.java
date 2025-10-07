@@ -19,6 +19,7 @@ import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingRules;
+import org.cesecore.license.LicenseState;
 import org.cesecore.license.LicenseStateContainer;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.InternalConfiguration;
@@ -263,6 +264,28 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
     
     public String getBadLicenseInvalidMessage() {
         return LicenseStateContainer.getLicenseInvalidWarning();
+    }
+    
+    public boolean isShowLicenseWarning() {
+        return LicenseStateContainer.getLicenseState().ordinal() >= LicenseState.TO_BE_EXPIRED_60_DAYS.ordinal() &&
+                LicenseStateContainer.getLicenseState().ordinal() <= LicenseState.EXPIRED_LONG_BACK.ordinal();
+    }
+    
+    public boolean isLicenseExpireIn60Days() {
+        return LicenseStateContainer.getLicenseState()==LicenseState.TO_BE_EXPIRED_60_DAYS;
+    }
+    
+    public boolean isLicenseExpireIn30Days() {
+        return LicenseStateContainer.getLicenseState()==LicenseState.TO_BE_EXPIRED_30_DAYS;
+    }
+    
+    public boolean isLicenseExpireIn5Days() {
+        return LicenseStateContainer.getLicenseState()==LicenseState.TO_BE_EXPIRED_5_DAYS;
+    }
+    
+    public boolean isLicenseExpired() {
+        return LicenseStateContainer.getLicenseState()==LicenseState.EXPIRED || 
+                LicenseStateContainer.getLicenseState()==LicenseState.EXPIRED_LONG_BACK;
     }
     
     private transient StreamedContent headerLogoImage;
