@@ -673,6 +673,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             // MS Template Settings
             updateMappedTemplates();
             autoEnrollmentConfiguration.setMsTemplateSettings(alias, dto.getMappedMsTemplates());
+            autoEnrollmentConfiguration.setCertificateTemplateCacheLifetime(alias, dto.getCertificateTemplateCacheLifetime());
 
             globalConfigurationSession.saveConfiguration(getAdmin(), autoEnrollmentConfiguration);
             getEjbcaWebBean().clearAutoenrollCache();
