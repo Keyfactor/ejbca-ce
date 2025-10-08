@@ -182,11 +182,11 @@
 	<classpathentry kind="lib" path="lib/jee/soapclient/gmbal-api-only-4.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/ejbca-ws-client-gen.jar"/>
 	<classpathentry kind="lib" path="lib/x509-common-util-5.3.6.jar" sourcepath="/x509-common-util"/>
-	<classpathentry kind="lib" path="lib/cryptotokens-api-3.3.2.jar"/>
-	<classpathentry kind="lib" path="lib/cryptotokens-impl-3.3.2.jar"/>
-	<classpathentry kind="lib" path="lib/cryptotokens-impl-ee-3.3.2.jar"/>
+	<classpathentry kind="lib" path="lib/cryptotokens-api-3.4.0.jar"/>
+	<classpathentry kind="lib" path="lib/cryptotokens-impl-3.4.0.jar"/>
+	<classpathentry kind="lib" path="lib/cryptotokens-impl-ee-3.4.0.jar"/>
 	<classpathentry kind="lib" path="lib/primefaces/primefaces-15.0.3-jakarta.jar"/>
-	<classpathentry kind="lib" path="lib/p11ng-0.25.7-20250719-9ea9aa2.jar" sourcepath="/p11ng"/>
+	<classpathentry kind="lib" path="lib/p11ng-0.26.0.jar" sourcepath="/p11ng"/>
 	<classpathentry kind="var" path="APPSRV_HOME/bin/client/jboss-client.jar"/>
 	<classpathentry kind="var" path="ANT_HOME/lib/ant.jar"/>
 	<classpathentry kind="lib" path="src/appserver/jboss/jboss7"/>
@@ -216,10 +216,10 @@
 	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-annotations-2.17.2.jar"/>
 	<classpathentry kind="lib" path="lib/ct/ctlog-0.1.7.jar"/>
 	<classpathentry kind="lib" path="lib/ct/protobuf-java-3.25.5.jar"/>
-	<classpathentry kind="lib" path="lib/bcpkix-jdk18on-1.80.2.jar"/>
-	<classpathentry kind="lib" path="lib/bcprov-jdk18on-1.80.2.jar"/>
-	<classpathentry kind="lib" path="lib/bctls-jdk18on-1.80.2.jar"/>
-	<classpathentry kind="lib" path="lib/bcutil-jdk18on-1.80.2.jar"/>
+	<classpathentry kind="lib" path="lib/bcpkix-jdk18on-1.82.jar"/>
+	<classpathentry kind="lib" path="lib/bcprov-jdk18on-1.82.jar"/>
+	<classpathentry kind="lib" path="lib/bctls-jdk18on-1.82.jar"/>
+	<classpathentry kind="lib" path="lib/bcutil-jdk18on-1.82.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/jboss-logging-3.6.0.Final.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/parsson-1.1.7.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/yasson-3.0.4.jar"/>
@@ -241,9 +241,12 @@
 	<classpathentry kind="lib" path="lib/hibernate/hibernate-validator-8.0.1.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/test/easymock-5.2.0.jar"/>
 	<classpathentry kind="lib" path="lib/ext/test/objenesis-3.3.jar"/>
+	<classpathentry kind="lib" path="lib/ext/test/byte-buddy-1.17.7.jar"/>
+	<classpathentry kind="lib" path="lib/ext/test/byte-buddy-agent-1.17.7.jar"/>
+	<classpathentry kind="lib" path="lib/ext/test/mockito-core-5.19.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-text-1.10.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-codec-1.17.1.jar"/>
-	<classpathentry kind="lib" path="lib/nimbus-jose-jwt-9.37.3.jar"/>
+	<classpathentry kind="lib" path="lib/nimbus-jose-jwt-9.37.4.jar"/>
 	<classpathentry kind="lib" path="lib/jcip-annotations-1.0-1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang3-3.18.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-fileupload2-core-2.0.0-M4.jar"/>

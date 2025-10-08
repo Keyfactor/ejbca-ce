@@ -425,7 +425,7 @@ public class RaCertificateDetails implements Serializable {
 
                 final CardVerifiableCertificate cardVerifiableCertificate = (CardVerifiableCertificate) certificate;
                 this.typeVersion = String.valueOf(CVCertificateBody.CVC_VERSION);
-                // Role and access rights
+                // RoleDataDto and access rights
                 try {
                     final AuthorizationField authorizationField = cardVerifiableCertificate.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField();
                     if (authorizationField != null) {

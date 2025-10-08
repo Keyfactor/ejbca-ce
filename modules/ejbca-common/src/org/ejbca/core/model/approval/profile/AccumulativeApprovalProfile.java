@@ -19,9 +19,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.cesecore.dto.RoleDataDto;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.profiles.Profile;
-import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleInformation;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.cesecore.util.ui.PositiveIntegerValidator;
@@ -157,12 +157,12 @@ public class AccumulativeApprovalProfile extends ApprovalProfileBase {
     }
     
     @Override
-    public boolean canApprove(List<Role> rolesTokenIsMemberOf, final ApprovalPartition approvalPartition) {
+    public boolean canApprove(List<RoleDataDto> rolesTokenIsMemberOf, final ApprovalPartition approvalPartition) {
         return true;
     }
     
     @Override
-    public boolean canView(List<Role> rolesTokenIsMemberOf, final ApprovalPartition approvalPartition) {
+    public boolean canView(List<RoleDataDto> rolesTokenIsMemberOf, final ApprovalPartition approvalPartition) {
         return true;
     }
     

@@ -29,7 +29,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.roles.Role;
+import org.cesecore.dto.RoleDataDto;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
@@ -88,11 +88,11 @@ public class GetAdminTruststoreCommand extends BaseCaAdminCommand {
         
         final Set<X509Certificate> certs = new LinkedHashSet<>();
         
-        final List<Role> roles = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).getAuthorizedRoles(getAuthenticationToken());
+        final List<RoleDataDto> roles = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).getAuthorizedRoles(getAuthenticationToken());
         final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
-        for (final Role role : roles) {
+        for (final RoleDataDto role : roles) {
             try {
-                final List<RoleMember> roleMembers = roleMemberSession.getRoleMembersByRoleId(getAuthenticationToken(), role.getRoleId());
+                final List<RoleMember> roleMembers = roleMemberSession.getRoleMembersByRoleId(getAuthenticationToken(), role.id());
                 for (final RoleMember member : roleMembers) {
                     final int tokenIssuerId = member.getTokenIssuerId();
                     if (tokenIssuerId != RoleMember.NO_ISSUER) {
@@ -106,7 +106,7 @@ public class GetAdminTruststoreCommand extends BaseCaAdminCommand {
                     }
                 }
             } catch (final AuthorizationDeniedException e) {
-                getLogger().info("Unable to access certificate for role:" + role.getRoleName());
+                getLogger().info("Unable to access certificate for role:" + role.name());
             }
         }
         

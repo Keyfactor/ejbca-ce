@@ -13,6 +13,7 @@
 package org.cesecore.certificates.certificate;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -33,10 +34,11 @@ import com.keyfactor.util.keys.KeyTools;
 /**
  * An object of this class is identifying one or several certificates or a CRL.
  *
- * @version $Id$
  */
-public class HashID {
-	/** Log4j instance for Base */
+public class HashID implements Serializable {
+    
+	private static final long serialVersionUID = 1L;
+    /** Log4j instance for Base */
 	private static final Logger log = Logger.getLogger(HashID.class);
 	/**
 	 * True if the ID confirms to a RFC4387 ID.

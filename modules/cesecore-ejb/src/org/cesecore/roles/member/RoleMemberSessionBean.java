@@ -34,8 +34,8 @@ import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
+import org.cesecore.dto.RoleDataDto;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleDataSessionLocal;
 import org.cesecore.roles.management.RoleSessionLocal;
 
@@ -67,9 +67,9 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
     private SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
 
     /** @return the authorized role */
-    private Role lookupRoleAndCheckAuthorization(final AuthenticationToken authenticationToken, final RoleMember roleMember) throws AuthorizationDeniedException {
+    private RoleDataDto lookupRoleAndCheckAuthorization(final AuthenticationToken authenticationToken, final RoleMember roleMember) throws AuthorizationDeniedException {
         // Check existence and authorization of referenced objects
-        final Role role = roleSession.getRole(authenticationToken, roleMember.getRoleId());
+        final RoleDataDto role = roleSession.getRole(authenticationToken, roleMember.getRoleId());
         if (roleMember.getRoleId() != RoleMember.NO_ROLE && role == null) {
             throw new IllegalStateException("Role with ID " + roleMember.getRoleId() + " was not found, or administrator is not authorized to it");
         }
@@ -126,7 +126,7 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
         if (log.isDebugEnabled()) {
             log.debug("Persisting a role member with ID " + roleMember.getId() + " and match value '" + roleMember.getTokenMatchValue() + "'");
         }
-        final Role role = lookupRoleAndCheckAuthorization(authenticationToken, roleMember);
+        final RoleDataDto role = lookupRoleAndCheckAuthorization(authenticationToken, roleMember);
         normalizeRoleMember(roleMember);
         final RoleMember persistedRoleMember = roleMemberDataSession.persistRoleMember(roleMember);
         final boolean addedRoleMember = (oldRoleMember==null);
@@ -135,9 +135,10 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
         final String tokenMatchKeyName = AccessMatchValueReverseLookupRegistry.INSTANCE.performReverseLookup(tokenType, tokenMatchKey).name();
         final String msg;
         if (addedRoleMember) {
-            msg = InternalResources.getInstance().getLocalizedMessage("authorization.adminadded", persistedRoleMember.getTokenMatchValue(), role.getRoleNameFull());
-        } else {
-            msg = InternalResources.getInstance().getLocalizedMessage("authorization.adminchanged", persistedRoleMember.getTokenMatchValue(), role.getRoleNameFull());
+            msg = InternalResources.getInstance().getLocalizedMessage("authorization.adminadded", persistedRoleMember.getTokenMatchValue(), role.fullName());
+        }
+        else {
+            msg = InternalResources.getInstance().getLocalizedMessage("authorization.adminchanged", persistedRoleMember.getTokenMatchValue(), role.fullName());
         }
         final Map<String, Object> details = new LinkedHashMap<>();
         details.put("msg", msg);
@@ -162,8 +163,8 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
         }
         if (addedRoleMember || oldRoleMember.getRoleId()!=persistedRoleMember.getRoleId()) {
             details.put("roleId", roleMember.getRoleId());
-            details.put("nameSpace", role.getNameSpace());
-            details.put("roleName", role.getRoleName());
+            details.put("nameSpace", role.nameSpace());
+            details.put("roleName", role.name());
         }
         if (addedRoleMember || !Strings.CS.equals(oldRoleMember.getDescription(), persistedRoleMember.getDescription())) {
             details.put("description", persistedRoleMember.getDescription());
@@ -205,10 +206,10 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
             final String msg = InternalResources.getInstance().getLocalizedMessage("authorization.notauthorizedtoviewroles", authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
         }
+        final List<RoleMember> roleMembers = new ArrayList<>();
         if (roleSession.getRole(authenticationToken, roleId)==null) {
-            return null;
+            return roleMembers;
         }
-        final List<RoleMember> ret = new ArrayList<>();
         final Set<String> requiredCaAccessResources = new HashSet<>();
         for (final RoleMemberData roleMemberData : roleMemberDataSession.findByRoleId(roleId)) {
             final RoleMember roleMember = roleMemberData.asValueObject();
@@ -227,13 +228,13 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
             if (checkIssuerAccess) {
                 requiredCaAccessResources.add(StandardRules.CAACCESS.resource() + roleMember.getTokenIssuerId());
             }
-            ret.add(roleMember);
+            roleMembers.add(roleMember);
         }
         final String[] requiredCaAccessResourcesArray = requiredCaAccessResources.toArray(new String[requiredCaAccessResources.size()]);
         if (!requiredCaAccessResources.isEmpty() && !authorizationSession.isAuthorizedNoLogging(authenticationToken, requiredCaAccessResourcesArray)) {
             throw new AuthorizationDeniedException("Not authorized to all members in role.");
         }
-        return ret;
+        return roleMembers;
     }
 
     /** @throws AuthorizationDeniedException if the provided RoleMember is the only member in the particular RoleMember's Role matching the authentication token */
@@ -279,14 +280,14 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
         }
         assertNonImportantRoleMembership(authenticationToken, roleMember);
         roleSession.assertAuthorizedToRoleMembers(authenticationToken, roleMember.getRoleId(), true);
-        final Role role = lookupRoleAndCheckAuthorization(authenticationToken, roleMember);
+        final RoleDataDto role = lookupRoleAndCheckAuthorization(authenticationToken, roleMember);
         final boolean removed = roleMemberDataSession.remove(roleMemberId);
         if (removed) {
             final String tokenType = roleMember.getTokenType();
             final int tokenMatchKey = roleMember.getTokenMatchKey();
             final AccessMatchValue matchKey = AccessMatchValueReverseLookupRegistry.INSTANCE.performReverseLookup(tokenType, tokenMatchKey);
             final String tokenMatchKeyName = matchKey != null ? matchKey.name() : null;
-            final String msg = InternalResources.getInstance().getLocalizedMessage("authorization.adminremoved", roleMember.getTokenMatchValue(), role.getRoleNameFull());
+            final String msg = InternalResources.getInstance().getLocalizedMessage("authorization.adminremoved", roleMember.getTokenMatchValue(), role.fullName());
             final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             details.put("id", roleMember.getId());
@@ -296,8 +297,8 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
             details.put("tokenMatchOperator", roleMember.getAccessMatchType().name() + " (" + roleMember.getTokenMatchOperator()+ ")");
             details.put("tokenMatchValue", roleMember.getTokenMatchValue());
             details.put("roleId", roleMember.getRoleId());
-            details.put("nameSpace", role.getNameSpace());
-            details.put("roleName", role.getRoleName());
+            details.put("nameSpace", role.nameSpace());
+            details.put("roleName", role.name());
             details.put("description", roleMember.getDescription());
             securityEventsLoggerSession.log(EventTypes.ROLE_ACCESS_USER_DELETION, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
                     authenticationToken.toString(), null, null, null, details);

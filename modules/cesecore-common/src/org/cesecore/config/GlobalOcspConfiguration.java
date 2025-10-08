@@ -52,6 +52,34 @@ public class GlobalOcspConfiguration extends ConfigurationBase implements Serial
     private static final String INCLUDE_CERTIFICATE_CHAIN = "includeCertificateChain";
     private static final String NON_EXISTING_BEHAVIOR = "nonExistingBehavior";
     private static final String REQUEST_SIGNER_REVOCATION_STATUS_CACHE_TIME = "ocspRequestSignerRevocationStatusCacheTime";
+    private static final String SIGNING_CERTIFICATE_VALIDITY_TIME = "signingCertificateValidityTime";
+    // OCSP Cleanup
+    private static final String PROPERTY_OCSP_CLEANUP_USE = "ocsp.cleanup.use";
+    private static final boolean PROPERTY_OCSP_CLEANUP_USE_DEFAULT = false;
+    private static final String PROPERTY_OCSP_CLEANUP_SCHEDULE = "ocsp.cleanup.schedule";
+    private static final String PROPERTY_OCSP_CLEANUP_SCHEDULE_DEFAULT = "5";
+    private static final String PROPERTY_OCSP_CLEANUP_SCHEDULE_UNIT = "ocsp.cleanup.schedule_unit";
+    private static final String PROPERTY_OCSP_CLEANUP_SCHEDULE_UNIT_DEFAULT = TimeUnit.HOURS.toString();
+
+    
+    public long getSigningCertificateValidityTimeMilliseconds() {
+        if(data.get(SIGNING_CERTIFICATE_VALIDITY_TIME) == null) {
+            //set the default
+            try {
+                setSigningCertificateValidityTimeMilliseconds(300*1000);
+            } catch (InvalidConfigurationException e) {    
+                throw new IllegalStateException("Default value of 300000 was somehow negative.", e);
+            }  
+        }
+        return (long) data.get(SIGNING_CERTIFICATE_VALIDITY_TIME);
+    }
+    
+    public void setSigningCertificateValidityTimeMilliseconds(long validityTime) throws InvalidConfigurationException {
+        if(validityTime < 0) {
+            throw new InvalidConfigurationException("Validity time must be a greater than or equal to 0, was " + validityTime);
+        }
+        data.put(SIGNING_CERTIFICATE_VALIDITY_TIME, validityTime);
+    }
     
     /**
      * 
@@ -91,14 +119,7 @@ public class GlobalOcspConfiguration extends ConfigurationBase implements Serial
         data.put(INCLUDE_CERTIFICATE_CHAIN, includeCertificateChain);
     }
 
-    // OCSP Cleanup
-    private static final String PROPERTY_OCSP_CLEANUP_USE = "ocsp.cleanup.use";
-    private static final boolean PROPERTY_OCSP_CLEANUP_USE_DEFAULT = false;
-    private static final String PROPERTY_OCSP_CLEANUP_SCHEDULE = "ocsp.cleanup.schedule";
-    private static final String PROPERTY_OCSP_CLEANUP_SCHEDULE_DEFAULT = "5";
-    private static final String PROPERTY_OCSP_CLEANUP_SCHEDULE_UNIT = "ocsp.cleanup.schedule_unit";
-    private static final String PROPERTY_OCSP_CLEANUP_SCHEDULE_UNIT_DEFAULT = TimeUnit.HOURS.toString();
-
+ 
     public boolean getExplicitNoCacheUnauthorizedResponsesEnabled() {
         if (Objects.isNull(data.get(EXPLICIT_NO_CACHE_UNAUTHORIZED_RESPONSES_ENABLED))) {
             setExplicitNoCacheUnauthorizedResponsesEnabled(false); // Put the default if not already present

@@ -38,7 +38,6 @@
 		<path refid="lib.bouncycastle.classpath"/>
 		<path refid="lib.swagger.classpath"/>
 		<path refid="lib.javassist.classpath"/>
-		
 	</path>
 
 	<path id="compile.classpath">

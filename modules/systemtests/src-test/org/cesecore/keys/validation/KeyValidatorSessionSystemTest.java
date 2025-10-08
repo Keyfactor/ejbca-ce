@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -79,9 +80,9 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
+import org.cesecore.dto.RoleDataDto;
 import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.FileUtil;
@@ -110,17 +111,19 @@ public class KeyValidatorSessionSystemTest extends RoleUsingTestCase {
     /** Class logger. */
     private static final Logger log = Logger.getLogger(KeyValidatorSessionSystemTest.class);
 
+    private static final String ROLE_NAME = KeyValidatorSessionSystemTest.class.getSimpleName();
+
     /** Test user. */
     private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(
-            new UsernamePrincipal("KeyValidatorSessionSystemTest-Admin"));
+            new UsernamePrincipal(ROLE_NAME + "-Admin"));
 
-    private static final String TEST_CA_NAME = "KeyValidatorSessionSystemTest-TestCA";
+    private static final String TEST_CA_NAME = ROLE_NAME + "-TestCA";
 
-    private static final String TEST_CP_NAME = "KeyValidatorSessionSystemTest-TestCP";
+    private static final String TEST_CP_NAME = ROLE_NAME + "-TestCP";
 
-    private static final String TEST_EEP_NAME = "KeyValidatorSessionSystemTest-TestEEP";
+    private static final String TEST_EEP_NAME = ROLE_NAME + "-TestEEP";
 
-    private static final String TEST_EE_NAME = "KeyValidatorSessionSystemTest-TestEE";
+    private static final String TEST_EE_NAME = ROLE_NAME + "-TestEE";
 
     private static final String TEST_EE_PASSWORD = "start#123";
 
@@ -186,16 +189,32 @@ public class KeyValidatorSessionSystemTest extends RoleUsingTestCase {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         log.trace(">tearDown()");
         try {
             removeUserIfExists(TEST_EE_NAME);
+        }
+        catch (Exception e) {
+        }
+        try {
             removeEndEntityProfileIfExist(TEST_EEP_NAME);
+        }
+        catch (Exception e) {
+        }
+        try {
             removeCertificateProfileIfExist(TEST_CP_NAME);
+        }
+        catch (Exception e) {
+        }
+        try {
             CaTestUtils.removeCa(internalAdmin, testCA.getCAInfo());
-        } finally {
-            // Be sure to do this, even if the above fails
+        }
+        catch (Exception e) {
+        }
+        try {
             tearDownRemoveRole();
+        }
+        catch (Exception e) {
         }
         log.trace("<tearDown()");
     }
@@ -870,8 +889,12 @@ public class KeyValidatorSessionSystemTest extends RoleUsingTestCase {
                 // NOPMD
             }
             // Update the role, add edit privileges
-            final Role fetchedRole = roleSession.getRole(internalAdmin, null, "KeyValidatorSessionSystemTest");
-            fetchedRole.getAccessRules().put(StandardRules.VALIDATOREDIT.resource(), Role.STATE_ALLOW);
+            final String roleName = "KeyValidatorSessionSystemTest";
+            RoleDataDto fetchedRole = roleSession.getRole(roleMgmgToken, null, roleName);
+            assertNotNull("There is no Role named \""+roleName+"\".", fetchedRole);
+            var accessRules = new HashMap<>(fetchedRole.getAccessRules());
+            accessRules.put(StandardRules.VALIDATOREDIT.resource(), RoleDataDto.STATE_ALLOW);
+            fetchedRole = fetchedRole.withAccessRules(accessRules);
             roleSession.persistRole(internalAdmin, fetchedRole);
             // Try to edit a Validator
             keyValidatorProxySession.changeKeyValidator(roleMgmgToken, val);
