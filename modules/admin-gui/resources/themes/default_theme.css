@@ -289,6 +289,9 @@ h4 {
 	font-size: 1em;
 	color: #000;
 }
+h4.margin-bottom {
+	margin:0 0 .5em 0;
+}
 a {
 	background-color: transparent;
 	text-decoration: none;
@@ -1712,6 +1715,14 @@ body .ui-datatable .ui-datatable-footer {
 .ui-messages-info:has(ul li:nth-child(2)) ul {
     list-style-type: disc;
     padding-left: 1rem;
+}
+
+.ui-datatable table td.verticalAlignTop {
+	vertical-align: top;
+}
+
+.display-block {
+	display:block;
 }
 
 /* PrimeFaces class adjustments: END */
