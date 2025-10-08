@@ -336,9 +336,9 @@ spec:
         {{- end }}
       volumes:
         {{- if .Values.ejbca.license }}
-          - name: ejbca-license
-            secret:
-              secretName: {{ .Values.ejbca.license }}
+        - name: ejbca-license
+          secret:
+            secretName: {{ .Values.ejbca.license }}
         {{- end }}
         {{- if .Values.ejbca.useH2Persistence }}
         - name: ejbca-h2-persistence
