@@ -115,10 +115,9 @@
 			<h:outputText value="#{scepConfigMBean.currentAlias.raDefaultCA}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
 
-		<h:outputLabel for="rapwd" value="#{web.text.SCEP_RA_AUTH_PASSWORD}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
-		<h:panelGroup id="rapwd" rendered="#{scepConfigMBean.currentAlias.modeRa}">
-	    	<h:inputSecret redisplay="true" value="#{scepConfigMBean.currentAlias.raAuthPassword}" rendered="#{scepConfigMBean.currentAliasEditMode}"
-	    		disabled="#{scepConfigMBean.currentAlias.useIntune}">
+		<h:outputLabel for="rapwd" value="#{web.text.SCEP_RA_AUTH_PASSWORD}" rendered="#{scepConfigMBean.currentAlias.modeRa and not scepConfigMBean.currentAlias.useIntune}"/>
+		<h:panelGroup id="rapwd" rendered="#{scepConfigMBean.currentAlias.modeRa and not scepConfigMBean.currentAlias.useIntune}">
+	    	<h:inputSecret redisplay="true" value="#{scepConfigMBean.currentAlias.raAuthPassword}" rendered="#{scepConfigMBean.currentAliasEditMode}">
 				<f:passThroughAttribute name="autocomplete" value="new-password"/>
 	    	</h:inputSecret>
 	    	<h:outputText value="**********" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
