@@ -52,6 +52,7 @@ import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.util.msae.MsaeUtil;
+import org.ejbca.core.protocol.msae.CertificateTemplateCacheLocal;
 import org.ejbca.core.protocol.msae.LDAPException;
 import org.ejbca.core.protocol.msae.MsaeLdapMessageSessionLocal;
 import org.ejbca.ui.web.admin.BaseManagedBean;
@@ -101,6 +102,8 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     private InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession;
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
+    @EJB
+    private CertificateTemplateCacheLocal certificateTemplateCache;
 
     private AutoEnrollmentDTO dto;
 
@@ -624,6 +627,12 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             getEjbcaWebBean().addAutoenrollAlias(newAlias);
         } else {
             getEjbcaWebBean().renameAutoenrollAlias(oldAlias, newAlias);
+
+            // Clear the certificate template cache for the old alias when renaming
+            certificateTemplateCache.clearCache(oldAlias);
+            if (log.isDebugEnabled()) {
+                log.debug("Cleared certificate template cache for old alias: " + oldAlias);
+            }
         }
 
         autoenrollmentConfigMBean.setSelectedAlias(newAlias);
@@ -678,6 +687,13 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             globalConfigurationSession.saveConfiguration(getAdmin(), autoEnrollmentConfiguration);
             getEjbcaWebBean().clearAutoenrollCache();
             getEjbcaWebBean().reloadAutoenrollmentConfiguration();
+
+            // Clear the certificate template cache for this alias
+            certificateTemplateCache.clearCache(alias);
+            if (log.isDebugEnabled()) {
+                log.debug("Cleared certificate template cache for alias: " + alias);
+            }
+
             addInfoMessage("MSAE_AUTOENROLLMENT_SAVE_OK");
             return "done";
         } catch (AuthorizationDeniedException e) {

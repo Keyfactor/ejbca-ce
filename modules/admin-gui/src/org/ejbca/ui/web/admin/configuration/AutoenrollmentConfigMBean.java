@@ -17,7 +17,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.protocol.msae.CertificateTemplateCacheLocal;
 import org.ejbca.ui.web.admin.BaseManagedBean;
+
+import jakarta.ejb.EJB;
 
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.inject.Named;
@@ -31,7 +34,10 @@ import java.util.List;
 @SessionScoped
 public class AutoenrollmentConfigMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
-    
+
+    @EJB
+    private CertificateTemplateCacheLocal certificateTemplateCache;
+
     private String selectedAlias;
     private String newAlias;
     private boolean viewOnly = true;
@@ -70,6 +76,9 @@ public class AutoenrollmentConfigMBean extends BaseManagedBean implements Serial
     }
 
     public String deleteAliasAction() throws AuthorizationDeniedException {
+        // Clear the certificate template cache for the alias before removing it
+        certificateTemplateCache.clearCache(selectedAlias);
+
         getEjbcaWebBean().removeAutoenrollAlias(selectedAlias);
         if (getEjbcaWebBean().getAutoenrollConfiguration().aliasExists(selectedAlias)) {
             addErrorMessage("MSAE_COULD_NOT_DELETE_ALIAS");
