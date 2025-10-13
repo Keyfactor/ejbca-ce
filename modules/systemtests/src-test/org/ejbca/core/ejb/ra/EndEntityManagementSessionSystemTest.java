@@ -1393,7 +1393,7 @@ public class EndEntityManagementSessionSystemTest extends CaTestCase {
             // Add a new end entity profile, by default password is required and we should not be able to add a user with empty or null password.
             EndEntityProfile profile = new EndEntityProfile();
             profile.addField(DnComponents.COMMONNAME);
-            profile.setAvailableCAs(Arrays.asList(SecConst.ALLCAS));
+            profile.setAvailableCAs(Arrays.asList(CAConstants.ALLCAS));
             
             profile.setIssuanceRevocationReasonUsed(true);
             profile.setIssuanceRevocationReasonModifiable(true);
@@ -1434,7 +1434,7 @@ public class EndEntityManagementSessionSystemTest extends CaTestCase {
         String thisusername = genRandomUserName();
         try {
             EndEntityInformation endEntityInformation = new EndEntityInformation(thisusername,  "CN=" + thisusername, caId, null, null, 
-                    EndEntityTypes.ENDUSER.toEndEntityType(), profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, null);
+                    EndEntityTypes.ENDUSER.toEndEntityType(), profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_P12, null);
             endEntityInformation.setPassword("foo123");
             if (reasonRequest!=null) {
                 endEntityInformation.setExtendedInformation(new ExtendedInformation());
