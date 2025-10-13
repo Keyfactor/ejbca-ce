@@ -195,6 +195,14 @@ public abstract class PatternLogger implements Serializable {
         paramPut(key, new String(Hex.encode(value)));
     }
 
+    public void paramAppend(String key, byte[] value) {
+        if (this.valuepairs.get(key) == null || this.valuepairs.get(key) == "0") {
+            paramPut(key, new String(Hex.encode(value)));
+        } else {
+            paramPut(key, this.valuepairs.get(key) + " - " + new String(Hex.encode(value)));
+        }
+    }
+
     /**
      * method that makes sure that a "" is inserted instead of null
      * @param key

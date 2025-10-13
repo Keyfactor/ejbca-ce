@@ -1434,24 +1434,25 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             // If the Extended Revoked Definition should be added for certificates that we can not find in the database, see RFC6960 4.4.8
             boolean addExtendedRevokedExtension = false;
             Date producedAt = null;
-            
+
             for (Req ocspRequest : ocspRequests) {
                 CertificateID certId = ocspRequest.getCertID();
                 ASN1ObjectIdentifier certIdhash = certId.getHashAlgOID();
-                
+
                 if (!OIWObjectIdentifiers.idSHA1.equals(certIdhash) && !NISTObjectIdentifiers.id_sha256.equals(certIdhash) 
                         && !NISTObjectIdentifiers.id_sha384.equals(certIdhash) && !NISTObjectIdentifiers.id_sha512.equals(certIdhash)) {
                     throw new InvalidAlgorithmException("CertID with SHA1, SHA256, SHA384 and SHA512 are supported, not: "+certIdhash.getId());
                 }
                 if (!isPreSigning && transactionLogger.isEnabled()) {
-                    transactionLogger.paramPut(TransactionLogger.SERIAL_NOHEX, certId.getSerialNumber().toByteArray());
+                    transactionLogger.paramAppend(TransactionLogger.SERIAL_NOHEX, certId.getSerialNumber().toByteArray());
                     transactionLogger.paramPut(TransactionLogger.DIGEST_ALGOR, certId.getHashAlgOID().toString());
                     transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_HASH, certId.getIssuerNameHash());
                     transactionLogger.paramPut(TransactionLogger.ISSUER_KEY, certId.getIssuerKeyHash());
                 }
+                
                 if (!isPreSigning && auditLogger.isEnabled()) {
                     auditLogger.paramPut(AuditLogger.ISSUER_KEY, certId.getIssuerKeyHash());
-                    auditLogger.paramPut(AuditLogger.SERIAL_NOHEX, certId.getSerialNumber().toByteArray());
+                    auditLogger.paramAppend(AuditLogger.SERIAL_NOHEX, certId.getSerialNumber().toByteArray());
                     auditLogger.paramPut(AuditLogger.ISSUER_NAME_HASH, certId.getIssuerNameHash());
                 }
                 final String hash = StringTools.hex(certId.getIssuerNameHash());
