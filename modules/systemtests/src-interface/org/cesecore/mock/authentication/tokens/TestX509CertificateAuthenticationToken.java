@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
 
 import javax.security.auth.x500.X500Principal;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.InvalidAuthenticationTokenException;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
@@ -92,7 +92,7 @@ public class TestX509CertificateAuthenticationToken extends X509CertificateAuthe
         int parameter;
         int size = 0;
         String[] clientstrings = null;
-        if (StringUtils.equals(getMetaData().getTokenType(), accessUser.getTokenType())) {
+        if (Strings.CS.equals(getMetaData().getTokenType(), accessUser.getTokenType())) {
             // First check that issuers match.
             if (accessUser.getCaId()!=null && accessUser.getCaId().intValue() == adminCaId) {
                 // Determine part of certificate to match with.
@@ -105,10 +105,6 @@ public class TestX509CertificateAuthenticationToken extends X509CertificateAuthe
                         case TYPE_EQUALCASE:
                         case TYPE_EQUALCASEINS:
                             returnvalue = matchValueAsBigInteger.equals(certificate.getSerialNumber());
-                            break;
-                        case TYPE_NOT_EQUALCASE:
-                        case TYPE_NOT_EQUALCASEINS:
-                            returnvalue = !matchValueAsBigInteger.equals(certificate.getSerialNumber());
                             break;
                         default:
                         }
@@ -123,11 +119,6 @@ public class TestX509CertificateAuthenticationToken extends X509CertificateAuthe
                         break;
                     case TYPE_EQUALCASEINS:
                         returnvalue = value.equalsIgnoreCase(CertTools.getSubjectDN(certificate));
-                        break;
-                    case TYPE_NOT_EQUALCASE:
-                        returnvalue = !value.equals(CertTools.getSubjectDN(certificate));
-                    case TYPE_NOT_EQUALCASEINS:
-                        returnvalue = !value.equalsIgnoreCase(CertTools.getSubjectDN(certificate));
                         break;
                     default:
                     }
@@ -197,22 +188,6 @@ public class TestX509CertificateAuthenticationToken extends X509CertificateAuthe
                         case TYPE_EQUALCASEINS:
                             for (int i = 0; i < size; i++) {
                                 returnvalue = clientstrings[i].equalsIgnoreCase(accessUser.getMatchValue());
-                                if (returnvalue) {
-                                    break;
-                                }
-                            }
-                            break;
-                        case TYPE_NOT_EQUALCASE:
-                            for (int i = 0; i < size; i++) {
-                                returnvalue = !clientstrings[i].equals(accessUser.getMatchValue());
-                                if (returnvalue) {
-                                    break;
-                                }
-                            }
-                            break;
-                        case TYPE_NOT_EQUALCASEINS:
-                            for (int i = 0; i < size; i++) {
-                                returnvalue = !clientstrings[i].equalsIgnoreCase(accessUser.getMatchValue());
                                 if (returnvalue) {
                                     break;
                                 }

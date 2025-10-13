@@ -14,24 +14,22 @@ package org.ejbca.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.authorization.rules.AccessRuleData;
-import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.config.GlobalOcspConfiguration;
+import org.cesecore.dto.RoleDataDto;
 import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 import org.cesecore.roles.AccessRulesHelper;
-import org.cesecore.roles.Role;
 import org.cesecore.roles.member.RoleMember;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.EstConfiguration;
@@ -230,27 +228,41 @@ public final class CAIdTools {
         }
         return changed;
     }
-    
+
     /**
-     * Updates any references to a CA's CAId and Subject DN in the given role and list of role members.
-     * @param role Role to modify.
-     * @param roleMembers List of the role's members. The members may be modified.
-     * @param fromId Old CA Id.
-     * @param toId New CA Id.
-     * @param toSubjectDN New CA Subject DN.
+     * Updates a RoleDataDto object by replacing references to a specific CA ID in its access rules.
+     *
+     * @param roleData the RoleDataDto instance to modify.
+     * @param fromId the old CA ID that should be replaced.
+     * @param toId the new CA ID to replace with.
+     * @return an updated RoleDataDto instance with modified access rules if changes were made,
+     *         or the original RoleDataDto instance if no changes were necessary.
+     */
+    public static RoleDataDto getUpdatedRoleData(final RoleDataDto roleData, final int fromId, final int toId) {
+        // Look for references from access rules (currently only the /ca/<CA ID> rule)
+        final String oldResource = AccessRulesHelper.normalizeResource(StandardRules.CAACCESS.resource() + fromId);
+        final String newResource = AccessRulesHelper.normalizeResource(StandardRules.CAACCESS.resource() + toId);
+        final Boolean state = roleData.accessRules().get(oldResource);
+        if (state == null) {
+            return roleData;
+        }
+        else {
+            var accessRules = new HashMap<>(roleData.accessRules());
+            accessRules.remove(oldResource);
+            accessRules.put(newResource, state);
+            return roleData.withAccessRules(accessRules);
+        }
+    }
+
+    /**
+     * Updates tokenIssuerId in RoleMembers issued by CA
+     * @param roleMembers The RoleMembers to update.
+     * @param fromId The tokenIssuerId to replace.
+     * @param toId The tokenIssuerId to replace with.
      * @return True if there was a change.
      */
-    public static boolean updateCAIds(final Role role, final List<RoleMember> roleMembers, final int fromId, final int toId, final String toSubjectDN) {
+    public static boolean updateRoleMembers(final List<RoleMember> roleMembers, final int fromId, final int toId) {
         boolean changed = false;
-        // Look for references from access rules (currently only the /ca/<CA ID> rule) */
-        final String oldResource = AccessRulesHelper.normalizeResource(StandardRules.CAACCESS.resource() + String.valueOf(fromId));
-        final String newResource = AccessRulesHelper.normalizeResource(StandardRules.CAACCESS.resource() + String.valueOf(toId));
-        final Boolean state = role.getAccessRules().remove(oldResource);
-        if (state != null) { // rule for old CA ID exists
-            role.getAccessRules().put(newResource, state);
-            changed = true;
-        }
-        // Look for references from members
         for (final RoleMember roleMember : roleMembers) {
             if (roleMember.getTokenIssuerId() == fromId) {
                 // Also check that tokenIssuerId refers to a CA. This check is more expensive performance-wise so it's done last
@@ -264,48 +276,7 @@ public final class CAIdTools {
         }
         return changed;
     }
-    
-    /**
-     * Updates any references to a CA's CAId and Subject DN.
-     * @param roleName Name of the role. Used when creating roles to replace the old roles with.
-     * @param rules Access rules of the role. Updated in place.
-     * @param users Access users of the role. Updated in place.
-     * @param fromId Old CA Id.
-     * @param toId New CA Id.
-     * @param toSubjectDN New CA Subject DN.
-     * @return True if there was a change.
-     */
-    @Deprecated
-    public static boolean updateCAIds(final String roleName, final Map<Integer,AccessRuleData> rules, final Map<Integer,AccessUserAspectData> users, final int fromId, final int toId, final String toSubjectDN) {
-        final String toReplace = StandardRules.CAACCESS.resource()+String.valueOf(fromId);
-        final String toReplaceSlash = toReplace+"/";
-        boolean changed = false;
-        // Look for references from access rules
-        for (int id : new ArrayList<>(rules.keySet())) {
-            AccessRuleData rule = rules.get(id);
-            final String accessRuleName = rule.getAccessRuleName();
-            
-            if (accessRuleName.equals(toReplace) || accessRuleName.startsWith(toReplaceSlash)) {
-                final String newName = StandardRules.CAACCESS.resource() + String.valueOf(toId) + accessRuleName.substring(toReplace.length());
-                final int state = rule.getState();
-                rule = new AccessRuleData(roleName, newName, rule.getInternalState(), rule.getRecursive());
-                rule.setState(state);
-                rules.put(id, rule);
-                changed = true;
-            }
-        }
-        // Look for references from access users
-        for (int id : new ArrayList<>(users.keySet())) {
-            AccessUserAspectData user = users.get(id);
-            if (user.getCaId() == fromId) {
-                user = new AccessUserAspectData(roleName, toId, user.getMatchWith(), user.getTokenType(), user.getMatchTypeAsType(), user.getMatchValue());
-                users.put(id, user);
-                changed = true;
-            }
-        }
-        return changed;
-    }
-    
+
     /**
      * Rebuilds extended services so the Subject DN gets updated.
      */

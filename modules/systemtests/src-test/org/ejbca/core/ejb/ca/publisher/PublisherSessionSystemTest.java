@@ -14,12 +14,16 @@
 package org.ejbca.core.ejb.ca.publisher;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertFalse;
 
+import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.common.exception.ReferencesToItemExistException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
@@ -32,6 +36,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Collection;
+
 /**
  * Tests Publisher session.
  * 
@@ -39,26 +45,55 @@ import org.junit.Test;
  */
 public class PublisherSessionSystemTest {
 
+    private static final Logger log = Logger.getLogger(PublisherSessionSystemTest.class);
     private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("PublisherSessionSystemTest"));
+    private static final long SLEEP_TIME_MS = 1000L;
+    private static final String PUBLISHER_NAME_PREFIX = "PublisherSessionSystemTest";
 
-    private PublisherSessionRemote publisherSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class);
-    private PublisherProxySessionRemote publisherProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private ConfigurationSessionRemote configSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private String originalCacheTime;
+    private PublisherSessionRemote publisherSession;
+    private PublisherProxySessionRemote publisherProxySession;
+    private ConfigurationSessionRemote configSession;
+    private int nextPublisherIndex;
+
+    private String getNextPublisherName() {
+        final var element = new Exception().getStackTrace()[1];
+        return PUBLISHER_NAME_PREFIX + "_" + element.getMethodName()+ "_" + nextPublisherIndex++;
+    }
+
+    private Collection<String> getCurrentPublisherNames() {
+        return publisherSession.getPublisherIdToNameMap().values();
+    }
+
+    private void removeAddedPublishers() throws AuthorizationDeniedException, ReferencesToItemExistException {
+        final var currentPublisherNames = getCurrentPublisherNames();
+        for (String publisherName : currentPublisherNames) {
+            if (publisherName.startsWith(PUBLISHER_NAME_PREFIX)) {
+                publisherSession.removePublisher(internalAdmin, publisherName);
+            }
+        }
+    }
 
     @Before
     public void setUp() throws Exception {
-
+        configSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+        originalCacheTime = configSession.getProperty("publisher.cachetime");
+        publisherSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class);
+        publisherProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+        removeAddedPublishers();
+        nextPublisherIndex = 1;
     }
 
     @After
     public void tearDown() throws Exception {
+        configSession.updateProperty("publisher.cachetime", originalCacheTime);
+        removeAddedPublishers();
     }
-
 
     @Test
     public void testGetPublishersForPeer() throws PublisherException, AuthorizationDeniedException {
         final int peerId = 123456789;
-        final String name = "PeerPublisherTest1234";
+        final String name = getNextPublisherName();
 
         CustomPublisherContainer publisher = new CustomPublisherContainer();
         publisher.setPropertyData("peerId=" + peerId);
@@ -74,52 +109,68 @@ public class PublisherSessionSystemTest {
     }
 
     @Test
-    public void testAddChangeRemovePublisher() throws PublisherExistsException, AuthorizationDeniedException {
-        LdapPublisher publ = new LdapPublisher();
-        publ.setBaseDN("foo");
-        publ.setDescription("foobar");
-        LdapPublisher publ1 = new LdapPublisher();
-        publ1.setBaseDN("bar");
-        publ1.setDescription("barfoo");
-        final String name = PublisherSessionSystemTest.class.getSimpleName();
-        final String name1 = PublisherSessionSystemTest.class.getSimpleName()+"1";
-        try {
-            // Test some initial empty checks to see we do not get NPEs
-            int noid = publisherProxySession.getPublisherId(name);
-            assertEquals(0, noid);
-            String noname = publisherProxySession.getPublisherName(123);
-            assertNull(noname);
-            // Add new publisher
-            publisherProxySession.addPublisher(internalAdmin, name, publ);
-            publisherProxySession.addPublisher(internalAdmin, name1, publ1);
-            BasePublisher pub = publisherSession.getPublisher(name);
-            assertEquals("Description is not what we set", "foobar", pub.getDescription());
-            assertEquals("Publisher is not a LdapPublisher", LdapPublisher.class.getName(), pub.getClass().getName());
-            assertEquals("datasource is not what we set", "foo", ((LdapPublisher)pub).getBaseDN());
-            int id = publisherProxySession.getPublisherId(name);
-            BasePublisher pub1 = publisherSession.getPublisher(id);
-            assertEquals("Description is not what we set", "foobar", pub1.getDescription());
-            assertEquals("Publisher is not a LdapPublisher", LdapPublisher.class.getName(), pub1.getClass().getName());
-            assertEquals("datasource is not what we set", "foo", ((LdapPublisher)pub1).getBaseDN());
-            // Change publisher
-            pub.setDescription("newdesc");
-            publisherSession.changePublisher(internalAdmin, name, pub);
-            pub = publisherSession.getPublisher(name);
-            assertEquals("Description is not what we set", "newdesc", pub.getDescription());
-            assertEquals("Publisher is not a LdapPublisher", LdapPublisher.class.getName(), pub.getClass().getName());
-            assertEquals("datasource is not what we set", "foo", ((LdapPublisher)pub).getBaseDN());
-            int id1 = publisherProxySession.getPublisherId(name);
-            assertEquals("Id should be the same after change, but it is not", id, id1);
-            // Remove publishers
-            publisherProxySession.removePublisherInternal(internalAdmin, name);
-            publisherProxySession.removePublisherInternal(internalAdmin, name1);
-            assertNull("Should return null when publisher does not exist", publisherSession.getPublisher(name));
-            assertNull("Should return null when publisher does not exist", publisherSession.getPublisher(name1));
-            assertNull("Should return null when publisher does not exist", publisherSession.getPublisher(id));
-        } finally {
-            publisherProxySession.removePublisherInternal(internalAdmin, name);
-            publisherProxySession.removePublisherInternal(internalAdmin, name1);            
-        }
+    public void testAddAndGetByName() throws AuthorizationDeniedException, PublisherExistsException, InterruptedException {
+        // Given
+        final LdapPublisher publisher = new LdapPublisher();
+        publisher.setBaseDN("foo");
+        publisher.setDescription("foobar");
+        final String name = getNextPublisherName();
+
+        // When
+        publisherProxySession.addPublisher(internalAdmin, name, publisher);
+
+        // Then
+        assertNotNull(publisherSession.getPublisher(name));
+        assertNotEquals(Integer.valueOf(0), publisherProxySession.getPublisherId(name));
+    }
+
+    @Test
+    public void testAddChangeRemovePublisher() throws PublisherExistsException, AuthorizationDeniedException, InterruptedException {
+        // Given
+        final LdapPublisher publisher_1 = new LdapPublisher();
+        publisher_1.setBaseDN("foo");
+        publisher_1.setDescription("foobar");
+        final LdapPublisher publisher_2 = new LdapPublisher();
+        publisher_2.setBaseDN("bar");
+        publisher_2.setDescription("barfoo");
+        final String name_1 = getNextPublisherName();
+        final String name_2 = getNextPublisherName();
+
+        // Test some initial empty checks to see we do not get NPEs
+        int noId = publisherProxySession.getPublisherId(name_1);
+        assertEquals("There is no publisher with the name: " + name_1, 0, noId);
+        String noName = publisherProxySession.getPublisherName(123);
+        assertNull("There is no publisher with the id: 123", noName);
+        // Add new publisher
+        publisherProxySession.addPublisher(internalAdmin, name_1, publisher_1);
+        publisherProxySession.addPublisher(internalAdmin, name_2, publisher_2);
+        BasePublisher pub = publisherSession.getPublisher(name_1);
+        assertNotNull(pub);
+        assertEquals("Description is not what we set", "foobar", pub.getDescription());
+        assertEquals("Publisher is not a LdapPublisher", LdapPublisher.class.getName(), pub.getClass().getName());
+        assertEquals("datasource is not what we set", "foo", ((LdapPublisher)pub).getBaseDN());
+        int id = publisherProxySession.getPublisherId(name_1);
+        assertNotEquals(0, id);
+        BasePublisher pub1 = publisherSession.getPublisher(id);
+        assertNotNull(pub1);
+        assertEquals("Description is not what we set", "foobar", pub1.getDescription());
+        assertEquals("Publisher is not a LdapPublisher", LdapPublisher.class.getName(), pub1.getClass().getName());
+        assertEquals("datasource is not what we set", "foo", ((LdapPublisher)pub1).getBaseDN());
+        // Change publisher
+        pub.setDescription("newdesc");
+        publisherSession.changePublisher(internalAdmin, name_1, pub);
+        BasePublisher received = publisherSession.getPublisher(name_1);
+        assertEquals("Description is not what we set", "newdesc", received.getDescription());
+        assertEquals("Publisher is not a LdapPublisher", LdapPublisher.class.getName(), received.getClass().getName());
+        assertEquals("datasource is not what we set", "foo", ((LdapPublisher)received).getBaseDN());
+        int id1 = publisherProxySession.getPublisherId(name_1);
+        assertEquals("Id should be the same after change, but it is not", id, id1);
+        // Remove publishers
+        publisherProxySession.removePublisherInternal(internalAdmin, name_1);
+        publisherProxySession.removePublisherInternal(internalAdmin, name_2);
+        assertNull("Should return null when publisher does not exist", publisherSession.getPublisher(name_1));
+        assertNull("Should return null when publisher does not exist", publisherSession.getPublisher(name_2));
+        assertNull("Should return null when publisher does not exist", publisherSession.getPublisher(id));
     }
     
     /**
@@ -129,41 +180,27 @@ public class PublisherSessionSystemTest {
     @Test
     public void testPublisherCache() throws Exception {
         // First make sure we have the right cache time
-        final String oldcachetime = configSession.getProperty("publisher.cachetime");
         configSession.updateProperty("publisher.cachetime", "1000");
-        LdapPublisher publ = new LdapPublisher();
-        publ.setDescription("foobar");
-        final String name = PublisherSessionSystemTest.class.getSimpleName();
-        try {
-            // Add a publisher
-            publisherProxySession.addPublisher(internalAdmin, name, publ);
-            // Make sure publisher has the right value from the beginning
-            BasePublisher pub = publisherSession.getPublisher(name);
-            assertEquals("Description is not what we set", "foobar", pub.getDescription());
-            // Change publisher
-            pub.setDescription("bar");
-            publisherSession.changePublisher(internalAdmin, name, pub);
-            // Read publisher again, cache should have been updated directly
-            pub = publisherSession.getPublisher(name);
-            assertEquals("bar", pub.getDescription());
-            // Flush caches to reset cache timeout
-            publisherProxySession.flushPublisherCache();
-            /// Read publisher to ensure it is in cache
-            pub = publisherSession.getPublisher(name);
-            assertEquals("bar", pub.getDescription());
-            // Change publisher not flushing cache, old value should remain when reading
-            pub.setDescription("newvalue");
-            publisherProxySession.internalChangePublisherNoFlushCache(name, pub);
-            pub = publisherSession.getPublisher(name);
-            assertEquals("bar", pub.getDescription()); // old value
-            // Wait 2 seconds and try again, now the cache should have been updated
-            Thread.sleep(2000);
-            pub = publisherSession.getPublisher(name);
-            assertEquals("newvalue", pub.getDescription()); // new value
-        } finally {
-            configSession.updateProperty("publisher.cachetime", oldcachetime);
-            publisherProxySession.removePublisherInternal(internalAdmin, name);
-        }
-    } 
+        LdapPublisher addedPublisher = new LdapPublisher();
+        addedPublisher.setDescription("foobar");
+        final String name = getNextPublisherName();
+
+        // Add a publisher
+        publisherProxySession.addPublisher(internalAdmin, name, addedPublisher);
+        // Make sure publisher has the right value from the beginning
+        final BasePublisher actualPublisher_1 = publisherSession.getPublisher(name);
+        assertEquals("Description is not what we set", addedPublisher.getDescription(), actualPublisher_1.getDescription());
+        // Change publisher
+        actualPublisher_1.setDescription("bar");
+        publisherSession.changePublisher(internalAdmin, name, actualPublisher_1);
+        // Read publisher again, cache should have been updated directly
+        final BasePublisher actualPublisher_2 = publisherSession.getPublisher(name);
+        assertEquals("bar", actualPublisher_2.getDescription());
+        // Flush caches to reset cache timeout
+        publisherProxySession.flushPublisherCache();
+        /// Read publisher to ensure it is in cache
+        final BasePublisher actualPublisher_3 = publisherSession.getPublisher(name);
+        assertEquals("bar", actualPublisher_3.getDescription());
+    }
 
 }

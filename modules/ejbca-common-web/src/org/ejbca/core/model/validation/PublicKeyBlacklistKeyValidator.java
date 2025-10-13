@@ -22,7 +22,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPublicKey;
@@ -101,7 +101,8 @@ public class PublicKeyBlacklistKeyValidator extends KeyValidatorBase {
         for (final String algorithm : AlgorithmTools.getAvailableKeyAlgorithms()) {
             labels.put(algorithm, algorithm);
         }
-        final DynamicUiProperty<String> keyAlgorithms = new DynamicUiProperty<String>(String.class, KEY_ALGORITHMS, getKeyAlgorithmsAsString(), labels.keySet());
+        final DynamicUiProperty<String> keyAlgorithms = new DynamicUiProperty<String>(String.class, KEY_ALGORITHMS, getKeyAlgorithmsAsString(),
+                labels.keySet().stream().toList());
         keyAlgorithms.setRenderingHint(DynamicUiProperty.RENDER_SELECT_MANY);
         keyAlgorithms.setLabels(labels);
         keyAlgorithms.setHasMultipleValues(true);

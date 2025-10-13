@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.configdump;
 
-import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.cesecore.util.Named;
 import org.ejbca.configdump.ConfigdumpSetting.ItemProblem;
 import org.ejbca.configdump.ConfigdumpSetting.ItemType;

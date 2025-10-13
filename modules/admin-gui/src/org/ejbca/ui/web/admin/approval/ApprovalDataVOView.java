@@ -33,6 +33,7 @@ import org.cesecore.authentication.tokens.WebPrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalRequest;
@@ -203,7 +204,7 @@ public class ApprovalDataVOView implements Serializable {
      */
     public String getApproveActionWindowLink() {
         final String link = EjbcaJSFHelper.getBean().getEjbcaWebBean().getBaseUrl()
-                + EjbcaJSFHelper.getBean().getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath() + "approval/approvalaction.xhtml?uniqueId="
+                + GlobalConfiguration.ADMIN_WEB_PATH + "approval/approvalaction.xhtml?uniqueId="
                 + data.getId();
         return "window.open('" + link + "', 'ViewApproveAction', 'width=650,height=800,scrollbars=yes,toolbar=no,resizable=yes').focus()";
     }
@@ -219,7 +220,7 @@ public class ApprovalDataVOView implements Serializable {
             String link;
             try {
                 link = EjbcaJSFHelper.getBean().getEjbcaWebBean().getBaseUrl()
-                        + EjbcaJSFHelper.getBean().getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath()
+                        + GlobalConfiguration.ADMIN_WEB_PATH
                         + "viewcertificate.xhtml?certsernoparameter="
                         + java.net.URLEncoder.encode(data.getReqadmincertsn() + "," + data.getReqadmincertissuerdn(), "UTF-8");
             } catch (final UnsupportedEncodingException e) {
@@ -274,7 +275,7 @@ public class ApprovalDataVOView implements Serializable {
         for (int i = 0; i < certificateSerialNumbers.size(); i++) {
             try {
                 link = EjbcaJSFHelper.getBean().getEjbcaWebBean().getBaseUrl()
-                        + EjbcaJSFHelper.getBean().getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath()
+                        + GlobalConfiguration.ADMIN_WEB_PATH
                         + "viewcertificate.xhtml?certsernoparameter="
                         + java.net.URLEncoder.encode(certificateSerialNumbers.get(i) + "," + certificateIssuerDN.get(i), "UTF-8");
             } catch (final UnsupportedEncodingException e) {

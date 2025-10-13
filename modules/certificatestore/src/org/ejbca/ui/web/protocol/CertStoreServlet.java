@@ -29,10 +29,11 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.HashID;
+import org.cesecore.certificates.certificate.internal.CaCertificateCacheLocal;
 import org.ejbca.util.HTMLTools;
 
 import com.keyfactor.util.CertTools;
@@ -42,12 +43,13 @@ import com.keyfactor.util.StringTools;
  * Servlet implementing server side of the Certificate Store.
  * For a detailed description see RFC 4387.
  * 
- * @version  $Id$
  */
 public class CertStoreServlet extends StoreServletBase {
 	
 	private static final long serialVersionUID = 1L;
 
+	@EJB
+	private CaCertificateCacheLocal caCertificateCache;
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
 
@@ -60,13 +62,13 @@ public class CertStoreServlet extends StoreServletBase {
 
 	@Override
 	public void iHash(String iHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException {
-	    returnCerts( this.certCache.findLatestByIssuerDN(HashID.getFromB64(iHash)), resp, iHash );
+	    returnCerts( caCertificateCache.findLatestByIssuerDN(HashID.getFromB64(iHash)), resp, iHash );
 	}
 
 
 	@Override
 	public void sKIDHash(String sKIDHash, HttpServletResponse resp, HttpServletRequest req, String name) throws IOException, ServletException {
-	    returnCert( this.certCache.findBySubjectKeyIdentifier(HashID.getFromB64(sKIDHash)), resp, name );
+	    returnCert( caCertificateCache.findBySubjectKeyIdentifier(HashID.getFromB64(sKIDHash)), resp, name );
 	}
 
 	@Override
@@ -76,7 +78,7 @@ public class CertStoreServlet extends StoreServletBase {
 
 	@Override
 	public void sHash(String sHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException {
-	    final X509Certificate cert = this.certCache.findLatestBySubjectDN(HashID.getFromB64(sHash));
+	    final X509Certificate cert = caCertificateCache.findLatestBySubjectDN(HashID.getFromB64(sHash));
 		returnCert( cert, resp, sHash);
 	}
 
@@ -144,7 +146,7 @@ public class CertStoreServlet extends StoreServletBase {
         for (X509Certificate cert : certs) {
             printInfo(cert, indent, pw);
             pw.println();
-            final X509Certificate[] issuedCerts = this.certCache.findLatestByIssuerDN(HashID.getFromSubjectDN(cert));
+            final X509Certificate[] issuedCerts = caCertificateCache.findLatestByIssuerDN(HashID.getFromSubjectDN(cert));
             if (ArrayUtils.isEmpty(issuedCerts)) {
                 continue;
             }

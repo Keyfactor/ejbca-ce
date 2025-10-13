@@ -34,8 +34,8 @@ import jakarta.faces.model.SelectItem;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.math.NumberUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
@@ -314,7 +314,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     private void postConstruct() {
         if (profiledata == null) {
             final String profileIdParam = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get(PARAMETER_PROFILE_ID);
-            if (!NumberUtils.isNumber(profileIdParam)) {
+            if (!NumberUtils.isCreatable(profileIdParam)) {
                 throw new IllegalStateException("Internal error. Missing or invalid " + PARAMETER_PROFILE_ID + " HTTP request parameter.");
             }
             loadProfile(Integer.valueOf(profileIdParam));
@@ -1205,6 +1205,14 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
 
     public void setRevocationReasonModifiable(boolean modifiable) {
         profiledata.setIssuanceRevocationReasonModifiable(modifiable);
+    }
+    
+    public boolean isRevocationReasonDefault() {
+        return profiledata.isIssuanceRevocationReasonDefault();
+    }
+
+    public void setRevocationReasonDefault(boolean defaultValue) {
+        profiledata.setIssuanceRevocationReasonDefault(defaultValue);
     }
 
     public boolean getUseSendNotification() {

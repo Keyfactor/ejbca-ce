@@ -15,7 +15,7 @@ package org.ejbca.ui.cli.ca;
 
 import java.util.Collection;
 
-import org.apache.commons.lang.math.IntRange;
+import org.apache.commons.lang3.IntegerRange;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -54,7 +54,7 @@ public class CaGetCrlInfo extends BaseCaAdminCommand {
                 throw new IllegalStateException("CLI user was not authorized to retrieved CA.", e);
             } 
             final StringBuilder stringBuilder = new StringBuilder();
-            final IntRange allCrlPartitionIndexes = caInfo.getAllCrlPartitionIndexes();
+            final IntegerRange allCrlPartitionIndexes = caInfo.getAllCrlPartitionIndexes();
             final CrlStoreSessionRemote crlStoreSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class);
             if(allCrlPartitionIndexes == null) {
                 outputCrlHeader(stringBuilder, caInfo);
@@ -64,13 +64,13 @@ public class CaGetCrlInfo extends BaseCaAdminCommand {
                 outputCrlInfo(stringBuilder, deltaCrlInfo, null,true);
             }
             else {
-                for (int crlPartitionIndex = allCrlPartitionIndexes.getMinimumInteger(); crlPartitionIndex <= allCrlPartitionIndexes.getMaximumInteger(); crlPartitionIndex++) {
+                for (int crlPartitionIndex = allCrlPartitionIndexes.getMinimum(); crlPartitionIndex <= allCrlPartitionIndexes.getMaximum(); crlPartitionIndex++) {
                     outputCrlHeader(stringBuilder, caInfo);
                     final CRLInfo crlInfo = crlStoreSessionRemote.getLastCRLInfo(caInfo.getSubjectDN(), crlPartitionIndex, false);
                     outputCrlInfo(stringBuilder, crlInfo, crlPartitionIndex, false);
                     final CRLInfo deltaCrlInfo = crlStoreSessionRemote.getLastCRLInfo(caInfo.getSubjectDN(), crlPartitionIndex, true);
                     outputCrlInfo(stringBuilder, deltaCrlInfo, crlPartitionIndex,true);
-                    if(crlPartitionIndex < allCrlPartitionIndexes.getMaximumInteger()) {
+                    if(crlPartitionIndex < allCrlPartitionIndexes.getMaximum()) {
                         stringBuilder.append(System.getProperty("line.separator"));
                     }
                 }

@@ -17,8 +17,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
@@ -54,6 +54,8 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
+    @EJB
+    CryptoTokenSessionLocal cryptoTokenSession;
 
     private static final Logger log = Logger.getLogger(CryptoTokenSessionBean.class);
 
@@ -64,7 +66,7 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
     public void postConstruct() {
         CryptoProviderTools.installBCProviderIfNotAvailable();
     }
-
+    
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public void flushCache() {
@@ -83,6 +85,16 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
         }
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public void flushId(Integer id) {
+        CryptoTokenCache.INSTANCE.shouldCheckForUpdates(id);
+        if (log.isDebugEnabled()) {
+            log.debug("Flushed CryptoToken cache entry " + id);
+        }
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     private boolean isMigrateP11Tokens() {
         final String migratePkcs11CryptoTokensValue = System.getenv("USE_P11NG_AS_P11");
         if (migratePkcs11CryptoTokensValue != null) {
@@ -107,6 +119,7 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
     @Override
     public CryptoToken getCryptoToken(final int cryptoTokenId) {
         // 1. Check (new) CryptoTokenCache if it is time to sync-up with database
+        // 1a. Also, check local stamp vs shared stamp to see if it is time to synch-up with database when clustered
         if (CryptoTokenCache.INSTANCE.shouldCheckForUpdates(cryptoTokenId)) {
             if (log.isDebugEnabled()) {
                 log.debug("CryptoToken with ID " + cryptoTokenId + " will be checked for updates.");
@@ -209,7 +222,7 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
             // soft crypto tokens will), the crypto token will be reloaded and most likely get deactivated on other cluster nodes (when it is reloaded there). 
             // We don't want that, so don't update the database contents if it's not needed.
             // We only check for empty "tokenDataAsBytes", which is what it is on HSM crypto tokens, don't want to compare binary byte arrays here
-            if (StringUtils.equals(tokenName, cryptoTokenData.getTokenName()) && StringUtils.equals(tokenType, cryptoTokenData.getTokenType()) 
+            if (Strings.CS.equals(tokenName, cryptoTokenData.getTokenName()) && Strings.CS.equals(tokenType, cryptoTokenData.getTokenType()) 
                     && tokenProperties.equals(cryptoTokenData.getTokenProperties()) 
                     && ArrayUtils.isEmpty(tokenDataAsBytes) && ArrayUtils.isEmpty(cryptoTokenData.getTokenDataAsBytes())) {
                 doMerge = false;
@@ -236,6 +249,7 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
         	}
             cryptoTokenData = createOrUpdateCryptoTokenData(cryptoTokenData);
             // Update cache with provided token (it might be active and we like keeping things active)
+            // Update local stamp and shared stamp when clustered
             CryptoTokenCache.INSTANCE.updateWith(cryptoTokenId, cryptoTokenData.getProtectString(0).hashCode(), tokenName, cryptoToken);
         } else {
             if (log.isDebugEnabled()) {

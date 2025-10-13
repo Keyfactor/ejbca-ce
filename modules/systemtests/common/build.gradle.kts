@@ -20,7 +20,7 @@ dependencies {
     compileOnly(libs.jakartaee.api)
     compileOnly(libs.json.simple)
     compileOnly(libs.junit)
-    compileOnly(libs.commons.lang)
+    compileOnly(libs.commons.lang3)
     compileOnly(libs.log4j.v12.api)
     compileOnly(libs.x509.common.util)
     compileOnly(libs.bundles.cryptotokens)
@@ -45,10 +45,12 @@ sourceSets {
     }
 }
 
+// define interfaces that should be used to generate service manifest files
+ext["serviceInterfaces"] = listOf(
+    "org.cesecore.certificates.certificate.certextensions.CustomCertificateExtension"
+)
+
 tasks.jar {
     from(sourceSets["main"].output)
-    from("resources/META-INF") {
-        into("META-INF")
-    }
     archiveBaseName.set("systemtests-common")
 }

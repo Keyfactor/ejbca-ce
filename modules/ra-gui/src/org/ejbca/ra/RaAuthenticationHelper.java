@@ -17,10 +17,8 @@ import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
@@ -28,6 +26,7 @@ import org.cesecore.authentication.oauth.TokenExpiredException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.PublicAccessAuthenticationTokenMetaData;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
+import org.cesecore.authorization.AuthorizationCache;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.config.OAuthConfiguration;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
@@ -36,7 +35,9 @@ import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.util.HttpTools;
 
 import com.keyfactor.util.CertTools;
-import org.cesecore.authorization.AuthorizationCache;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Web session authentication helper.
@@ -70,8 +71,14 @@ public class RaAuthenticationHelper implements Serializable {
     public AuthenticationToken getAuthenticationToken(final HttpServletRequest httpServletRequest, final HttpServletResponse httpServletResponse) {
         final String currentTlsSessionId = getTlsSessionId(httpServletRequest);
         final int lastUpdateNumber = AuthorizationCache.INSTANCE.getLastUpdateNumber();
-        if (authenticationToken==null || !StringUtils.equals(authenticationTokenTlsSessionId, currentTlsSessionId) ||
-                authenticatedAtUpdateNumber != lastUpdateNumber) {
+        if (authenticationToken != null && authenticatedAtUpdateNumber != lastUpdateNumber) {
+            if (log.isDebugEnabled()) {
+                log.debug("Roles have been updated. Forcing re-authentication for administrator '" + authenticationToken + "'");
+            }
+            authenticationToken = null;
+            x509AuthenticationTokenFingerprint = null;
+        }
+        if (authenticationToken==null || !Strings.CS.equals(authenticationTokenTlsSessionId, currentTlsSessionId)) {
             if (log.isTraceEnabled()) {
                 log.trace("New TLS session IDs or authenticationToken: currentClientTlsSessionID: "+currentTlsSessionId+", authenticationTokenTlsSessionId: "+authenticationTokenTlsSessionId);
             }
@@ -91,7 +98,7 @@ public class RaAuthenticationHelper implements Serializable {
                 if (log.isTraceEnabled()) {
                     log.trace("currentRequestFingerprint: "+fingerprint+", x509AuthenticationTokenFingerprint: "+x509AuthenticationTokenFingerprint);
                 }
-                if (x509AuthenticationTokenFingerprint != null && !StringUtils.equals(fingerprint, x509AuthenticationTokenFingerprint)) {
+                if (x509AuthenticationTokenFingerprint != null && !Strings.CS.equals(fingerprint, x509AuthenticationTokenFingerprint)) {
                     log.warn("Suspected session hijacking attempt from " + httpServletRequest.getRemoteAddr() +
                             ". RA client presented a different TLS certificate in the same HTTP session." +
                             " new certificate had subject '" + CertTools.getSubjectDN(x509Certificate) + "'.");
@@ -121,7 +128,8 @@ public class RaAuthenticationHelper implements Serializable {
                     if (refreshToken != null) {
                         OAuthGrantResponseInfo token = null;
                         try {
-                            token = webAuthenticationProviderSession.refreshOAuthBearerToken(oauthConfiguration, oauthBearerToken, oauthIdToken, refreshToken);
+                            String requestUrl = httpServletRequest.getRequestURL().toString();
+                            token = webAuthenticationProviderSession.refreshOAuthBearerToken(oauthConfiguration, oauthBearerToken, oauthIdToken, refreshToken, requestUrl);
                             if (token != null) {
                                 httpServletRequest.getSession(true).setAttribute("ejbca.bearer.token", token.getAccessToken());
                                 if (token.getIdToken() != null) {
@@ -150,7 +158,7 @@ public class RaAuthenticationHelper implements Serializable {
         resetUnwantedHttpHeaders(httpServletRequest, httpServletResponse);
         return authenticationToken;
     }
-    
+
     /** @return any X509Certificate the client has provided with the request*/
     public X509Certificate getX509CertificateFromRequest(final HttpServletRequest httpServletRequest) {
         X509Certificate x509Certificate = getClientX509Certificate(httpServletRequest);
@@ -167,7 +175,7 @@ public class RaAuthenticationHelper implements Serializable {
             return authorizedCas != null && !authorizedCas.isEmpty();
         }
     }
-    
+
     /**
      * Gets bearer token from Authorization header or from session
      * @param httpServletRequest
@@ -198,7 +206,7 @@ public class RaAuthenticationHelper implements Serializable {
     private String getRefreshToken(HttpServletRequest httpServletRequest) {
         return  (String) httpServletRequest.getSession(true).getAttribute("ejbca.refresh.token");
     }
-    
+
     /** Invoke once the session is started to prevent security leak via HTTP headers related. */
     private void resetUnwantedHttpHeaders(final HttpServletRequest httpServletRequest, final HttpServletResponse httpServletResponse) {
         // Ensure that we never send the JSESSIONID over an insecure (HTTP) connection
@@ -218,12 +226,12 @@ public class RaAuthenticationHelper implements Serializable {
             httpServletResponse.setHeader(HTTP_HEADER_X_POWERED_BY, "");
         }
     }
-    
+
     private X509Certificate getClientX509Certificate(final HttpServletRequest httpServletRequest) {
         final X509Certificate[] certificates = (X509Certificate[]) httpServletRequest.getAttribute("jakarta.servlet.request.X509Certificate");
         return certificates == null || certificates.length==0 ? null : certificates[0];
     }
-    
+
     private String getTlsSessionId(final HttpServletRequest httpServletRequest) {
         final String sslSessionIdServletsStandard;
         final Object sslSessionIdServletsStandardObject = httpServletRequest.getAttribute("jakarta.servlet.request.ssl_session_id");

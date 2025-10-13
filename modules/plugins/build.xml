@@ -20,6 +20,7 @@
         <path refid="lib.json-simple.classpath"/>
         <path refid="lib.nimbus-jose-jwt.classpath"/>
         <path refid="lib.jsch.classpath"/>
+        <path refid="lib.snakeyaml.classpath"/>
     </path>
 
     <path id="compile-ejbca.classpath">

@@ -22,7 +22,8 @@ dependencies {
     compileOnly(libs.commons.codec)
     compileOnly(libs.commons.collections4)
     compileOnly(libs.commons.io)
-    compileOnly(libs.commons.lang)
+    compileOnly(libs.commons.lang3)
+    compileOnly(libs.commons.text)
     compileOnly(libs.guava)
     compileOnly(libs.cert.cvc)
     compileOnly(libs.commons.lang3)
@@ -44,6 +45,7 @@ dependencies {
     implementation(libs.csrfguard.jsp.tags)
     implementation(libs.primefaces)
     testRuntimeOnly(libs.myfaces.api)
+    testImplementation(project(":modules:ejbca-repository"))
 }
 
 sourceSets {

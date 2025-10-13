@@ -12,9 +12,11 @@
  *************************************************************************/
 package org.cesecore.roles.management;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
@@ -22,17 +24,17 @@ import jakarta.ejb.TransactionAttributeType;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
-import jakarta.persistence.TypedQuery;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.roles.Role;
-import org.cesecore.roles.RoleData;
+import org.cesecore.dto.RoleDataDto;
+import org.cesecore.repository.Cache;
+import org.cesecore.repository.CachedDatabase;
+import org.cesecore.repository.Database;
 import org.cesecore.roles.member.RoleMemberDataSessionLocal;
 import org.cesecore.util.ProfileID;
-import org.cesecore.util.QueryResultWrapper;
+import org.ejbca.dto.RoleData;
 
 /**
  * Implementation of the RoleDataSession local interface.
@@ -52,140 +54,93 @@ public class RoleDataSessionBean implements RoleDataSessionLocal, RoleDataSessio
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
 
-    @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public List<Role> getAllRoles() {
-        final TypedQuery<RoleData> query = entityManager.createQuery("SELECT a FROM RoleData a", RoleData.class);
-        final List<Role> ret = new ArrayList<>();
-        for (final RoleData roleData : query.getResultList()) {
-            ret.add(roleData.getRole());
-        }
-        return ret;
-    }
+    private static final Lock INIT_LOCK = new ReentrantLock();
+    private static Cache<RoleDataDto, Integer> roleDataCache;
+    private static Database<RoleDataDto, Integer, RoleData> roleDataDatabase;
+    private static CachedDatabase<RoleDataDto, Integer, RoleData> roleDataRepository;
 
-    @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public Role getRole(final String nameSpace, final String roleName) {
-        final Integer roleId = RoleCache.INSTANCE.getNameToIdMap().get(Role.getRoleNameFullAsCacheName(nameSpace, roleName));
-        if (roleId != null) {
-            return getRole(roleId.intValue());
-        }
-        final RoleData result = getRoleData(nameSpace, roleName);
-        final Role role = result==null ? null : result.getRole();
-        if (role!=null) {
-            RoleCache.INSTANCE.updateWith(role.getRoleId(), role.hashCode(), Role.getRoleNameFullAsCacheName(role.getNameSpace(), role.getRoleName()), role);
-        }
-        return role;
-    }
-
-    private RoleData getRoleData(final String nameSpace, final String roleName) {
-        if (StringUtils.isEmpty(nameSpace)) {
-            final Query query = entityManager.createQuery("SELECT a FROM RoleData a WHERE a.roleName=:roleName AND a.nameSpaceColumn IS NULL");
-            query.setParameter("roleName", roleName);
-            return QueryResultWrapper.getSingleResult(query);
-        } else {
-            final Query query = entityManager.createQuery("SELECT a FROM RoleData a WHERE a.roleName=:roleName AND a.nameSpaceColumn=:nameSpace");
-            query.setParameter("roleName", roleName);
-            query.setParameter("nameSpace", nameSpace);
-            return QueryResultWrapper.getSingleResult(query);
-        }
-    }
-
-    @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public Role getRole(final int roleId) {
-        if (roleId==Role.ROLE_ID_UNASSIGNED) {
-            // The reserved ID will never have a database entry, so return quickly with what we know will be the result
-            return null;
-        }
-        // 1. Check cache if it is time to sync-up with database
-        if (RoleCache.INSTANCE.shouldCheckForUpdates(roleId)) {
-            if (log.isDebugEnabled()) {
-                log.debug("Object with ID " + roleId + " will be checked for updates.");
+    private int findFreeDatabaseId() {
+        final ProfileID.DB db = (id) -> {
+            if (id == RoleDataDto.ROLE_ID_UNASSIGNED) {
+                return false;
             }
-            // 2. If cache is expired or missing, first thread to discover this reloads item from database and sends it to the cache
-            final RoleData roleData = getRoleData(roleId);
-            if (roleData==null) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Requested object did not exist in database and will be purged from cache if present: " + roleId);
-                }
-                // Ensure that it is removed from cache when the object is no longer present in the database
-                RoleCache.INSTANCE.removeEntry(roleId);
-            } else {
-                final Role role = roleData.getRole();
-                final int digest = role.hashCode();
-                // 3. The cache compares the database data with what is in the cache
-                // 4. If database is different from cache, replace it in the cache
-                RoleCache.INSTANCE.updateWith(roleId, digest, Role.getRoleNameFullAsCacheName(role.getNameSpace(), role.getRoleName()), role);
-                // Return role, working even if the cache is disabled
-                return role;
-            }
-        }
-        // 5. Get object from cache now (or null) and be merry
-        return RoleCache.INSTANCE.getEntry(roleId);
-    }
-
-    private RoleData getRoleData(final int roleId) {
-        final TypedQuery<RoleData> query = entityManager.createQuery("SELECT a FROM RoleData a WHERE a.id=:id", RoleData.class);
-        query.setParameter("id", roleId);
-        return QueryResultWrapper.getSingleResult(query);
-    }
-
-    @Override
-    public Role persistRole(final Role role) {
-        if (role==null) {
-            // Successfully did nothing
-            return null;
-        }
-        boolean authorizationMightHaveChanged = true;
-        if (role.getRoleId()==Role.ROLE_ID_UNASSIGNED) {
-            role.setRoleId(findFreeRoleId());
-            entityManager.persist(new RoleData(role));
-        } else {
-            final RoleData roleData = getRoleData(role.getRoleId());
-            if (roleData==null) {
-                // Must have been removed by another process, but caller wants to persist it, so we proceed (keeping the requested Role ID)
-                entityManager.persist(new RoleData(role));
-            } else {
-                final Role oldRole = roleData.getRole();
-                if (role.getAccessRules().equals(oldRole.getAccessRules())) {
-                    // We will not care if the role has any members, since there is no change to the access rules
-                    authorizationMightHaveChanged = false;
-                }
-                // Since the entity is managed, we just update its values
-                roleData.setRole(role);
-            }
-        }
-        RoleCache.INSTANCE.updateWith(role.getRoleId(), role.hashCode(), Role.getRoleNameFullAsCacheName(role.getNameSpace(), role.getRoleName()), role);
-        // If we only created a new Role that has no members yet or the access rules did no change, the authorization would not have changed
-        authorizationMightHaveChanged &= isRoleMembersPresent(role.getRoleId());
-        if (authorizationMightHaveChanged) {
-            accessTreeUpdateSession.signalForAccessTreeUpdate();
-        }
-        return role;
-    }
-
-    /** @return a integer Id that is currently unused in the database */
-    private int findFreeRoleId() {
-        final ProfileID.DB db = new ProfileID.DB() {
-            @Override
-            public boolean isFree(final int candidate) {
-                return candidate!=Role.ROLE_ID_UNASSIGNED && getRole(candidate) == null;
-            }
+            Query query = entityManager.createQuery("SELECT r from RoleData r where r.id = :id");
+            query.setParameter("id", id);
+            return query.getResultList().isEmpty();
         };
         return ProfileID.getNotUsedID(db);
     }
 
+    private RoleData dtoToBean(RoleDataDto dto) {
+        RoleData bean = new RoleData();
+        bean.init(dto);
+        return bean;
+    }
+
+    @PostConstruct
+    public void initialize() {
+        if (roleDataRepository == null) {
+            try {
+                INIT_LOCK.lock();
+                if (roleDataRepository == null) {
+                    roleDataDatabase = new Database<>(
+                            entityManager,
+                            RoleData.class,
+                            RoleData::toDto,
+                            this::dtoToBean,
+                            this::findFreeDatabaseId,
+                            "nameSpace", "roleName");
+                    roleDataCache = new Cache<>(CesecoreConfiguration.getCacheAuthorizationTime());
+                    roleDataRepository = new CachedDatabase<>(roleDataDatabase, roleDataCache);
+                }
+            } finally {
+                INIT_LOCK.unlock();
+            }
+        }
+    }
+
     @Override
-    public boolean deleteRoleNoAuthorizationCheck(final int roleId) {
-        // Use an DELETE query instead of entityManager.remove to tolerate concurrent deletion better
-        final Query query = entityManager.createQuery("DELETE FROM RoleData a WHERE a.id=:id");
-        query.setParameter("id", roleId);
-        final boolean ret = query.executeUpdate()==1;
-        if (ret && isRoleMembersPresent(roleId)) {
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public List<RoleDataDto> getAllRoles() {
+        return roleDataRepository.findAll();
+    }
+
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public RoleDataDto getRole(final String nameSpace, final String roleName) {
+        return roleDataRepository.findByIndex(nameSpace, roleName);
+    }
+
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public RoleDataDto getRole(final int roleId) {
+        if (roleId == RoleDataDto.ROLE_ID_UNASSIGNED) {
+            // The reserved ID will never have a database entry, so return quickly with what we know will be the result
+            return null;
+        }
+        return roleDataRepository.findById(roleId);
+    }
+
+    @Override
+    public RoleDataDto persistRole(final RoleDataDto roleData) {
+        if (roleData == null) {
+            // Successfully did nothing
+            return null;
+        }
+        final var persisted = roleDataRepository.addOrUpdate(roleData);
+        if (isRoleMembersPresent(persisted.id())) {
             accessTreeUpdateSession.signalForAccessTreeUpdate();
         }
-        return ret;
+        return persisted;
+    }
+
+    @Override
+    public boolean deleteRoleNoAuthorizationCheck(final int roleId) {
+        final var removedDto = roleDataRepository.removeById(roleId);
+        if (removedDto != null && isRoleMembersPresent(removedDto.id())) {
+            accessTreeUpdateSession.signalForAccessTreeUpdate();
+        }
+        return removedDto != null;
     }
     
     private boolean isRoleMembersPresent(final int roleId) {
@@ -194,6 +149,7 @@ public class RoleDataSessionBean implements RoleDataSessionLocal, RoleDataSessio
 
     @Override
     public void forceCacheExpire() {
-        RoleCache.INSTANCE.flush();
+        roleDataRepository.clearCache();
     }
+
 }

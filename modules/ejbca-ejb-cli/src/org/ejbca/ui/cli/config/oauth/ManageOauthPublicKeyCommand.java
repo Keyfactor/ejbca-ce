@@ -20,7 +20,7 @@ import java.security.PublicKey;
 import java.security.cert.CertificateParsingException;
 import java.text.ParseException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.oauth.OAuthPublicKey;
@@ -234,9 +234,15 @@ public class ManageOauthPublicKeyCommand extends BaseOAuthConfigCommand{
             }
         } catch (MalformedURLException e) {
             log.info("Could not parse public key config url " + url);
+            if (log.isDebugEnabled()) {
+                log.debug("Could not parse public key config url ", e);
+            }
             return false;
         } catch (ParseException | IOException | JOSEException e) {
             log.info("Could not load keys using config url " + url);
+            if (log.isDebugEnabled()) {
+                log.debug("Could not parse public key config url ", e);
+            }
             return false;
         }
         return true;

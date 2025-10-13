@@ -12,9 +12,10 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.validator;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.ejbca.ui.web.rest.api.io.request.EndEntityStatus;
 import org.ejbca.ui.web.rest.api.io.request.SearchEndEntityCriteriaRestRequest;
+import org.ejbca.ui.web.rest.api.io.request.SearchEndEntityCriteriaRestRequest.CriteriaOperation;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.ConstraintValidator;
@@ -127,6 +128,13 @@ public @interface ValidSearchEndEntityCriteriaRestRequest {
             }
             // Check the correlation between Property - Value - Operator
             switch (criteriaProperty) {
+                case QUERY:{
+                    if (criteriaOperation == CriteriaOperation.EQUAL_CASE_SENSITIVE) {
+                        ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidSearchEndEntityCriteriaRestRequest.invalid.query.must.case.insensitve}");
+                        return false;
+                    }
+                    break;
+                }
                 // Value: Any String
                 // Operation: EQUALS
                 case END_ENTITY_PROFILE:

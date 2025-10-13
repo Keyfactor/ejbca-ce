@@ -15,20 +15,20 @@ package org.cesecore.config;
 import java.io.Serializable;
 
 import org.cesecore.configuration.ConfigurationBase;
-import org.cesecore.internal.InternalResources;
-
 /**
  * Handles global CESeCore configuration values. 
  * 
- * @version $Id$
  */
 public class GlobalCesecoreConfiguration extends ConfigurationBase implements Serializable {
     
     private static final long serialVersionUID = 1L;
+        
+    public static final int DEFAULT_QUERY_COUNT = 500;
+    public static final long DEFAULT_QUERY_TIMEOUT = 10000L;
+    public static final boolean DEFAULT_REDACT_PII_DATA_BY_DEFAULT = false;
+    public static final boolean DEFAULT_REDACT_PII_DATA_ENFORCED = false;
     
-    private static final InternalResources intres = InternalResources.getInstance();
-    
-    /** A fixed maximum value to ensure that  */
+    /** A fixed maximum value to ensure that max query count does not exceed sane values  */
     private static final int FIXED_MAXIMUM_QUERY_COUNT = 25_000;
     
     public static final String CESECORE_CONFIGURATION_ID = "CESECORE_CONFIGURATION";
@@ -39,10 +39,15 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase implements Se
     private static final String REDACT_PII_DATA_DEFAULT = "redact.pii.default";
     private static final String REDACT_PII_DATA_ENFORCED = "redact.pii.enforced";
     
+    @Deprecated(since = "9.4.0")
     private static final String CT_CACHE_ENABLED_KEY = "ct_cache_enabled";
+    @Deprecated(since = "9.4.0")
     private static final String CT_CACHE_SIZE_KEY = "ct_cache_size";
+    @Deprecated(since = "9.4.0")
     private static final String CT_CACHE_CLEANUP_INTERVAL_KEY = "ct_cache_cleanup_interval";
+    @Deprecated(since = "9.4.0")
     private static final String CT_CACHE_FAST_FAIL_ENABLED_KEY = "ct_cache_fast_fail_enabled";
+    @Deprecated(since = "9.4.0")
     private static final String CT_CACHE_FAST_FAIL_BACKOFF_KEY = "ct_cache_fast_fail_backoff";
     
     @Override
@@ -60,7 +65,7 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase implements Se
      */
     public boolean getRedactPiiByDefault() {
         final Object res = data.get(REDACT_PII_DATA_DEFAULT);
-        return res == null ? false : (boolean) res;
+        return res == null ? DEFAULT_REDACT_PII_DATA_BY_DEFAULT : (boolean) res;
     }
     
     public void setRedactPiiByDefault(boolean redactPiiByDefault) {
@@ -73,7 +78,7 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase implements Se
      */
     public boolean getRedactPiiEnforced() {
         final Object res = data.get(REDACT_PII_DATA_ENFORCED);
-        return res == null ? false : (boolean) res;
+        return res == null ? DEFAULT_REDACT_PII_DATA_ENFORCED : (boolean) res;
     }
     
     public void setRedactPiiEnforced(boolean redactPiiEnforced) {
@@ -83,7 +88,7 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase implements Se
     /** @return the maximum size of the result from SQL select queries */
     public int getMaximumQueryCount() {
         final Object num = data.get(MAXIMUM_QUERY_COUNT_KEY);
-        return num == null ? 500 : (int) num;
+        return num == null ? DEFAULT_QUERY_COUNT : (int) num;
     }
     
     /**
@@ -94,10 +99,10 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase implements Se
      */
     public void setMaximumQueryCount(int maximumQueryCount) throws InvalidConfigurationException { 
         if (maximumQueryCount > FIXED_MAXIMUM_QUERY_COUNT) {
-            throw new InvalidConfigurationException(intres.getLocalizedMessage("globalconfig.error.querysizetoolarge", maximumQueryCount, FIXED_MAXIMUM_QUERY_COUNT));
+            throw new InvalidConfigurationException("Unable to set query size limit of " + maximumQueryCount +  ". System has a fixed limit of " + FIXED_MAXIMUM_QUERY_COUNT + ".");
         }
         if (maximumQueryCount < 1) {
-            throw new InvalidConfigurationException(intres.getLocalizedMessage("globalconfig.error.querysizetoolow"));
+            throw new InvalidConfigurationException("Minimum valid query size limit is 1.");
         }
         data.put(MAXIMUM_QUERY_COUNT_KEY, maximumQueryCount);
     }
@@ -105,17 +110,25 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase implements Se
     /** @return database dependent query timeout hint in milliseconds or 0 if this is disabled. */
     public long getMaximumQueryTimeout() {
         final Object num = data.get(MAXIMUM_QUERY_TIMEOUT_KEY);
-        return num == null ? 10000L : (long) num;
+        return num == null ? DEFAULT_QUERY_TIMEOUT : (long) num;
     }
 
-    /** Set's the database dependent query timeout hint in milliseconds or 0 if this is disabled. */
-    public void setMaximumQueryTimeout(final long maximumQueryTimeoutMs) { 
+    /** Set's the database dependent query timeout hint in milliseconds or 0 if this is disabled. 
+     * @throws InvalidConfigurationException */
+    public void setMaximumQueryTimeout(final long maximumQueryTimeoutMs) throws InvalidConfigurationException { 
+        if(maximumQueryTimeoutMs < 0) {
+            throw new InvalidConfigurationException("Maximum query timeout cannot be set to less than 0 (disabled).");
+        }
+        
         data.put(MAXIMUM_QUERY_TIMEOUT_KEY, Math.max(maximumQueryTimeoutMs, 0L));
     }
     
+    @Deprecated(since = "9.4.0")
     public boolean getCtCacheEnabled() { return getBoolean(CT_CACHE_ENABLED_KEY, true); }
+    @Deprecated(since = "9.4.0")
     public void setCtCacheEnabled(final boolean value) { data.put(CT_CACHE_ENABLED_KEY, value); } 
     
+    @Deprecated(since = "9.4.0")
     public long getCtCacheSize() { 
         Long value = (Long) data.get(CT_CACHE_SIZE_KEY);
         if(value == null) {
@@ -123,10 +136,13 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase implements Se
         }
         return (Long) data.get(CT_CACHE_SIZE_KEY);
     }
+    
+    @Deprecated(since = "9.4.0")
     public void setCtCacheSize(final long ctCacheSize) {
         data.put(CT_CACHE_SIZE_KEY, ctCacheSize);
     }
     
+    @Deprecated(since = "9.4.0")
     public long getCtCacheCleanupInterval() {
         Long value = (Long) data.get(CT_CACHE_CLEANUP_INTERVAL_KEY);
         if(value == null) {
@@ -135,18 +151,22 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase implements Se
         return (Long) data.get(CT_CACHE_CLEANUP_INTERVAL_KEY);
     }
     
+    @Deprecated(since = "9.4.0")
     public void setCtCacheCleanupInterval(final long interval) {
         data.put(CT_CACHE_CLEANUP_INTERVAL_KEY, interval);
     }
     
+    @Deprecated(since = "9.4.0")
     public boolean getCtCacheFastFailEnabled() {
         return getBoolean(CT_CACHE_FAST_FAIL_ENABLED_KEY, true);
     }
     
+    @Deprecated(since = "9.4.0")
     public void setCtCacheFastFailEnabled(final boolean fastFailEnabled) {
         data.put(CT_CACHE_FAST_FAIL_ENABLED_KEY, fastFailEnabled);
     }
     
+    @Deprecated(since = "9.4.0")
     public long getCtCacheFastFailBackoff() {
         Long value = (Long) data.get(CT_CACHE_FAST_FAIL_BACKOFF_KEY);
         if(value == null) {
@@ -155,6 +175,7 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase implements Se
         return (Long) data.get(CT_CACHE_FAST_FAIL_BACKOFF_KEY);
     }
     
+    @Deprecated(since = "9.4.0")
     public void setCtCacheFastFailBackoff(final long backoff) {
         data.put(CT_CACHE_FAST_FAIL_BACKOFF_KEY, backoff);
     }

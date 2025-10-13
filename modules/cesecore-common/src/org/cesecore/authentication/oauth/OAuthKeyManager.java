@@ -13,17 +13,19 @@
 
 package org.cesecore.authentication.oauth;
 
+import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 
-import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 
 /**
  * This class is responsible for managing a list of OAuth Keys.
  *
  */
-public class OAuthKeyManager {
+public class OAuthKeyManager implements Serializable {
+    private static final long serialVersionUID = 1L;
     private final List<OAuthKeyInfo> oauthKeys;
 
     /**
@@ -77,8 +79,8 @@ public class OAuthKeyManager {
      */
     public boolean canAdd(final OAuthKeyInfo oauthKey) {
         for (OAuthKeyInfo existing : oauthKeys) {
-            final boolean hasSameInternalId = ObjectUtils.equals(existing.getInternalId(), oauthKey.getInternalId());
-            final boolean hasSameLabel = StringUtils.equals(existing.getLabel(), oauthKey.getLabel());
+            final boolean hasSameInternalId = Objects.equals(existing.getInternalId(), oauthKey.getInternalId());
+            final boolean hasSameLabel = Strings.CS.equals(existing.getLabel(), oauthKey.getLabel());
             if (hasSameInternalId || hasSameLabel) {
                 return false;
             }
@@ -98,8 +100,8 @@ public class OAuthKeyManager {
      */
      public boolean canEdit(final OAuthKeyInfo oauthKey, final String newLabel) {
          for (OAuthKeyInfo existing : oauthKeys) {
-             final boolean hasSameLabel = StringUtils.equals(existing.getLabel(), newLabel);
-             final boolean hasSameInternalId = ObjectUtils.equals(existing.getInternalId(), oauthKey.getInternalId());
+             final boolean hasSameLabel = Strings.CS.equals(existing.getLabel(), newLabel);
+             final boolean hasSameInternalId = Objects.equals(existing.getInternalId(), oauthKey.getInternalId());
              if (hasSameLabel && !hasSameInternalId) {
                  return false;
              }

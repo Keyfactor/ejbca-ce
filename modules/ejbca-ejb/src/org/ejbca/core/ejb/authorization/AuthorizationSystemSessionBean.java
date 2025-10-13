@@ -15,21 +15,12 @@ package org.ejbca.core.ejb.authorization;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ServiceLoader;
-import java.util.Set;
 
-import jakarta.ejb.EJB;
-import jakarta.ejb.Stateless;
-import jakarta.ejb.TransactionAttribute;
-import jakarta.ejb.TransactionAttributeType;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -38,7 +29,6 @@ import org.cesecore.authentication.tokens.PublicAccessMatchValue;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
-import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRulePlugin;
@@ -47,11 +37,13 @@ import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.config.GlobalEndEntityProfileConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.dto.RoleDataDto;
+import org.cesecore.dto.RoleDataDtoBuilder;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.roles.AccessRulesHelper;
-import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleDataSessionLocal;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMember;
@@ -64,6 +56,13 @@ import org.ejbca.core.ejb.authentication.cli.CliUserAccessMatchValue;
 import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 /**
  * This session bean handles high level authorization system tasks.
@@ -124,7 +123,9 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
         final Map<Integer, String> eepIdToNameMap = endEntityProfileSession.getEndEntityProfileIdToNameMap();
         final Map<Integer,String> cryptoTokenIdToNameMap = cryptoTokenSession.getCryptoTokenIdToNameMap();
         final GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        final boolean endEntityProfileLimitationsEnabled = ignoreLimitations || globalConfiguration.getEnableEndEntityProfileLimitations();
+        final GlobalEndEntityProfileConfiguration globalEEPConfiguration = (GlobalEndEntityProfileConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalEndEntityProfileConfiguration.EEP_CONFIGURATION_ID);
+
+        final boolean endEntityProfileLimitationsEnabled = ignoreLimitations || globalEEPConfiguration.getEnableEndEntityProfileLimitations();
         final boolean keyRecoveryEnabled = ignoreLimitations || globalConfiguration.getEnableKeyRecovery();
         final Map<String, Map<String,String>> categorizedAccessRules = getAllResourceAndResourceNamesByCategory(
                 endEntityProfileLimitationsEnabled, keyRecoveryEnabled,
@@ -143,7 +144,8 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
         final Map<Integer, String> eepIdToNameMap = endEntityProfileSession.getEndEntityProfileIdToNameMap();
         final Map<Integer,String> cryptoTokenIdToNameMap = cryptoTokenSession.getCryptoTokenIdToNameMap();
         final GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        final boolean endEntityProfileLimitationsEnabled = globalConfiguration.getEnableEndEntityProfileLimitations();
+        final GlobalEndEntityProfileConfiguration globalEEPConfiguration = (GlobalEndEntityProfileConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalEndEntityProfileConfiguration.EEP_CONFIGURATION_ID);
+        final boolean endEntityProfileLimitationsEnabled = globalEEPConfiguration.getEnableEndEntityProfileLimitations();
         final boolean keyRecoveryEnabled = globalConfiguration.getEnableKeyRecovery();
         return getAllResourceAndResourceNamesByCategory(
                 endEntityProfileLimitationsEnabled, keyRecoveryEnabled, Arrays.asList(EjbcaConfiguration.getCustomAvailableAccessRules()), 
@@ -255,23 +257,31 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
         return ret;
     }
 
+    private RoleDataDto getSuperAdminRoleData() {
+        final RoleDataDtoBuilder builder = new RoleDataDtoBuilder();
+        builder.setId(1);
+        builder.setName(SUPERADMIN_ROLE);
+        builder.setNameSpace(null);
+        builder.setAccessRules(Map.of(StandardRules.ROLE_ROOT.resource(), RoleDataDto.STATE_ALLOW));
+        return builder.build();
+    }
+
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
     public boolean initializeAuthorizationModule() {
-        // Since RoleData might be empty when this is invoked on a not yet upgraded system, we also check if there are any CAs present.
-        // (The CLI admin might have been reconfigured or removed in the old authorization system and we don't want to change this.)
+        // Since RoleDataDto might be empty when this is invoked on a not yet upgraded system, we also check if there are any CAs present.
+        // (The CLI admin might have been reconfigured or removed in the old authorization system, and we don't want to change this.)
         if (roleDataSession.getAllRoles().isEmpty() && caSession.getAllCaIds().isEmpty()) {
             log.info("No roles or CAs exist, initializing Super Administrator Role with default CLI user.");
             // Create "Super Administrator Role" (with roleId "1" to ensure that upgraded installations still have the same roleId)
-            final Role roleToPersist = new Role(null, SUPERADMIN_ROLE, Arrays.asList(StandardRules.ROLE_ROOT.resource()), null);
-            roleToPersist.setRoleId(1);
-            final Role role = roleDataSession.persistRole(roleToPersist);
+            final RoleDataDto roleToPersist = getSuperAdminRoleData();
+            final RoleDataDto persistedRole = roleDataSession.persistRole(roleToPersist);
             // We won't create any RoleMember for a Super Admin certificate here
             // Add CLI user role member
             final String username = EjbcaConfiguration.getCliDefaultUser();
             roleMemberDataSession.persistRoleMember(new RoleMember(CliAuthenticationTokenMetaData.TOKEN_TYPE,
                     RoleMember.NO_ISSUER, RoleMember.NO_PROVIDER, CliUserAccessMatchValue.USERNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
-                    username, role.getRoleId(), null));
+                    username, persistedRole.id(), null));
             // Add CLI user end entity
             final UserData userData = new UserData(username, EjbcaConfiguration.getCliDefaultPassword(), false, "UID=" + username, 0, null, null, null, 0,
                     EndEntityConstants.EMPTY_END_ENTITY_PROFILE, 0, 0, null);
@@ -299,7 +309,7 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
             log.info("The Role '" + SUPERADMIN_ROLE + "' has not been initialized. Cannot add SuperAdmin '" + superAdminCN + "'.");
             return false;
         }
-        final Role role = roleSession.getRole(authenticationToken, null, SUPERADMIN_ROLE);
+        final RoleDataDto role = roleSession.getRole(authenticationToken, null, SUPERADMIN_ROLE);
         if (role==null) {
             log.info("The Role '" + SUPERADMIN_ROLE + "' does not exist. Cannot add SuperAdmin '" + superAdminCN + "'.");
             return false;
@@ -308,7 +318,7 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
             // We don't care if the caller has done this before. If the caller is authorized we comply.
             roleMemberSession.persist(authenticationToken, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                     caId, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
-                    superAdminCN, role.getRoleId(), null));
+                    superAdminCN, role.id(), null));
         }
 
         if (superAdminCN==null // only from ca init command, do additional validation 
@@ -319,35 +329,35 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
         }
         
         //add managementCA access to Public Role
-        final Role publicRole = roleSession.getRole(authenticationToken, null, PUBLIC_ACCESS_ROLE);
-        publicRole.getAccessRules().put(AccessRulesHelper.normalizeResource(StandardRules.CAACCESSBASE.resource() + "/" + caId + "/")
-                , Role.STATE_ALLOW);
-        roleDataSession.persistRole(publicRole);
+        final RoleDataDto publicRole = roleSession.getRole(authenticationToken, null, PUBLIC_ACCESS_ROLE);
+        final Map<String, Boolean> accessRules = Map.of(StandardRules.CAACCESSBASE.resource() + "/" + caId + "/", RoleDataDto.STATE_ALLOW);
+        roleDataSession.persistRole(publicRole.withAccessRules(accessRules));
         return true;
     }
 
-    @SuppressWarnings("deprecation")
-    @Override
-    public AccessSet getAccessSetForAuthToken(AuthenticationToken authenticationToken) throws AuthenticationFailedException {
-        final HashMap<String, Boolean> accessRules = authorizationSession.getAccessAvailableToAuthenticationToken(authenticationToken);
-        final Set<String> allResources = new HashSet<>(getAllResources(false).keySet());
-        // Since we no longer support the recursive rule in AccessSets from EJBCA 6.8.0 we also need to include non-configurable access rules
-        // ..but this is kind of theoretical since we currently don't support any of these operations from the RA
-        allResources.add(StandardRules.CAADD.resource());
-        allResources.add(StandardRules.CAREMOVE.resource());
-        return AccessSet.fromAccessRules(accessRules, allResources);
+    private RoleDataDto getPublicAccessRoleOnFreshInstallation() {
+        final var keys = Arrays.asList(
+                StandardRules.CAVIEW.resource(),
+                StandardRules.CREATECERT.resource(),
+                AccessRulesConstants.REGULAR_USEUSERNAME,
+                AccessRulesConstants.ENDENTITYPROFILEBASE + "/"+EndEntityConstants.EMPTY_END_ENTITY_PROFILE+"/");
+        final Map<String, Boolean> accessRules = new HashMap<>();
+        for (final String key : keys) {
+            accessRules.put(key, RoleDataDto.STATE_ALLOW);
+        }
+        return new RoleDataDtoBuilder()
+                .setName(PUBLIC_ACCESS_ROLE)
+                .setAccessRules(accessRules)
+                .build();
     }
 
     private void initPublicAccessRoleOnFreshInstallation(){
         log.info("Initialising public access role with confidential role member.");
-        final Role roleToPersist = new Role(null, PUBLIC_ACCESS_ROLE,
-                Arrays.asList(StandardRules.CAVIEW.resource(), StandardRules.CREATECERT.resource(), AccessRulesConstants.REGULAR_USEUSERNAME,
-                        AccessRulesConstants.ENDENTITYPROFILEBASE + "/"+EndEntityConstants.EMPTY_END_ENTITY_PROFILE+"/"),
-                null);
-        final Role role = roleDataSession.persistRole(roleToPersist);
+        final RoleDataDto roleToPersist = getPublicAccessRoleOnFreshInstallation();
+        final RoleDataDto persistedRole = roleDataSession.persistRole(roleToPersist);
         roleMemberDataSession.persistRoleMember(new RoleMember(PublicAccessAuthenticationTokenMetaData.TOKEN_TYPE,
                 RoleMember.NO_ISSUER, RoleMember.NO_PROVIDER, PublicAccessMatchValue.TRANSPORT_CONFIDENTIAL.getNumericValue(),
                 AccessMatchType.TYPE_UNUSED.getNumericValue(),
-                "", role.getRoleId(), null));
+                "", persistedRole.id(), null));
     }
 }

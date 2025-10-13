@@ -22,7 +22,6 @@ import org.cesecore.configuration.ConfigurationCache;
  * Class Holding cache variable for CESeCore global configuration. Needed because EJB spec does not allow volatile, non-final 
  * fields in session beans.
  * 
- * @version $Id$
  */
 public class GlobalCesecoreConfigurationCache implements ConfigurationCache {
 

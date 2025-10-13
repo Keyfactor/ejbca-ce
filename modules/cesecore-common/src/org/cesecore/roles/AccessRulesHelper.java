@@ -16,8 +16,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
@@ -32,7 +32,7 @@ public abstract class AccessRulesHelper {
     private static final Logger log = Logger.getLogger(AccessRulesHelper.class);
 
     /** @return true if the provided map of access rules allows access to all the given resources */
-    public static boolean hasAccessToResources(final HashMap<String, Boolean> accessRules, final String...resources) {
+    public static boolean hasAccessToResources(final Map<String, Boolean> accessRules, final String...resources) {
         if (resources!=null) {
             for (final String resource : resources) {
                 if (!AccessRulesHelper.hasAccessToResource(accessRules, resource)) {
@@ -44,7 +44,7 @@ public abstract class AccessRulesHelper {
     }
 
     /** @return true if the provided map of access rules allows access to the given resource */
-    public static boolean hasAccessToResource(final HashMap<String, Boolean> accessRules, final String resource) {
+    public static boolean hasAccessToResource(final Map<String, Boolean> accessRules, final String resource) {
         if (resource==null || resource.charAt(0)!='/') {
             return false;
         }
@@ -72,7 +72,7 @@ public abstract class AccessRulesHelper {
     }
 
     /** Normalize access rules tree (make sure rules always end with a '/') */
-    public static void normalizeResources(final HashMap<String, Boolean> accessRules) {
+    public static void normalizeResources(final Map<String, Boolean> accessRules) {
         // For each rule, check if there are higher level rules (e.g. shorter path) with the same access state
         for (final String resource : new ArrayList<>(accessRules.keySet())) {
             if (!resource.endsWith("/")) {
@@ -91,8 +91,14 @@ public abstract class AccessRulesHelper {
         return resource;
     }
 
+    public static Map<String, Boolean> getMinimizedAccessRules(final Map<String, Boolean> accessRules) {
+        final HashMap<String, Boolean> minimizedAccessRules = new HashMap<>(accessRules);
+        minimizeAccessRules(minimizedAccessRules);
+        return minimizedAccessRules;
+    }
+
     /** Remove redundant rules. Assumes parameter is in normalized form. */
-    public static void minimizeAccessRules(final HashMap<String, Boolean> accessRules) {
+    public static void minimizeAccessRules(final Map<String, Boolean> accessRules) {
         // For each rule, check if there are higher level rules (e.g. shorter path) with the same access state
         for (final String resourceWithTrailingSlash : new ArrayList<>(accessRules.keySet())) {
             final Boolean currentState = accessRules.get(resourceWithTrailingSlash);
@@ -142,7 +148,7 @@ public abstract class AccessRulesHelper {
     }
 
     /** @return the rules for all resources granted by either sets of normalized accessRules. (The union of the sets.) */
-    public static HashMap<String, Boolean> getAccessRulesUnion(final HashMap<String, Boolean> accessRules1, final HashMap<String, Boolean> accessRules2) {
+    public static HashMap<String, Boolean> getAccessRulesUnion(final HashMap<String, Boolean> accessRules1, final Map<String, Boolean> accessRules2) {
         final HashMap<String, Boolean> accessRules = new HashMap<>();
         /*
          * Simple example of algorithm:
@@ -176,7 +182,7 @@ public abstract class AccessRulesHelper {
     }
 
     /** @return the rules for all resources granted by both sets of normalized accessRules. (The intersection of the sets.) */
-    public static HashMap<String, Boolean> getAccessRulesIntersection(final HashMap<String, Boolean> accessRules1, final HashMap<String, Boolean> accessRules2) {
+    public static HashMap<String, Boolean> getAccessRulesIntersection(final Map<String, Boolean> accessRules1, final Map<String, Boolean> accessRules2) {
         final HashMap<String, Boolean> accessRules = new HashMap<>();
         /*
          * Simple example of algorithm:
@@ -219,7 +225,7 @@ public abstract class AccessRulesHelper {
     }
 
     /** Sort the provided access rules. (Useful for more readable persistence format.) */
-    public static void sortAccessRules(final LinkedHashMap<String, Boolean> accessRules) {
+    public static void sortAccessRules(final Map<String, Boolean> accessRules) {
         final List<Entry<String, Boolean>> sortEntryList = getAsListSortedByKey(accessRules);
         accessRules.clear();
         for (final Entry<String, Boolean> entry : sortEntryList) {
@@ -228,7 +234,7 @@ public abstract class AccessRulesHelper {
     }
 
     /** @return the map sorted by keys */
-    public static <T1, T2> List<Entry<T1, T2>> getAsListSortedByKey(final HashMap<T1, T2> accessRulesMap) {
+    public static <T1, T2> List<Entry<T1, T2>> getAsListSortedByKey(final Map<T1, T2> accessRulesMap) {
         final List<Entry<T1, T2>> accessRulesList = new ArrayList<>(accessRulesMap.entrySet());
         Collections.sort(accessRulesList, new Comparator<Entry<T1, T2>>() {
             @Override

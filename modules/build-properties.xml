@@ -19,7 +19,7 @@
     <property name="mod.common-lib.path" location="${mod.common.path}/lib" />
     <property name="mod.systemtests.path" location="${mod.path}/systemtests" />
     <property name="mod.dist.path" location="${mod.path}/dist" />
-	<property name="mod.ejbca-common.path" location="${mod.path}/ejbca-common" /> 
+	<property name="mod.ejbca-common.path" location="${mod.path}/ejbca-common" />
 	<property name="mod.ejbca-common-web.path" location="${mod.path}/ejbca-common-web" />
     <property name="mod.ejbca-entity.path" location="${mod.path}/ejbca-entity" />
     <property name="mod.ejbca-entity.lib" location="${mod.dist.path}/ejbca-entity.jar" />
@@ -74,6 +74,7 @@
     <property name="mod.peerconnector-rar.lib" location="${mod.dist.path}/peerconnector.rar" />
     <property name="mod.peerconnector-war.lib" location="${mod.dist.path}/peerconnector.war" />
     <property name="mod.peerconnector-publ.lib" location="${mod.dist.path}/peerconnector-publ.jar" />
+	<property name="mod.ejbca-repository.lib" location="${mod.dist.path}/ejbca-repository.jar" />
     <property name="mod.acme.path" location="${mod.path}/acme" />
     <property name="mod.acme.war" location="${mod.dist.path}/acme.war" />
     <property name="mod.acme-common.jar" location="${mod.dist.path}/acme-common.jar" />
@@ -268,6 +269,18 @@
 			<include name="jackson-module-jaxb-annotations-2.*.jar"/>
 		</fileset>
 	</path>
+	
+	<path id="lib.jaxb.classpath">
+	  <fileset dir="${ejbca.home}/lib/ext/jaxb">
+			<include name="istack-commons-runtime-*.jar"/>
+      <include name="jakarta.activation-api-*.jar"/>
+      <include name="jakarta.xml.bind-api-*.jar"/>
+      <include name="jaxb-core-*.jar"/>
+      <include name="jaxb-runtime-*.jar"/>
+      <include name="jaxb-impl-*.jar"/>
+      <include name="txw2-*.jar"/>
+		</fileset>
+	</path>
 
 	<mkdir dir="${ejbca.home}/lib/ext/swagger"/> <!-- Avoid failure when this directory is excluded from a release. -->
 	<path id="lib.swagger.classpath">
@@ -297,11 +310,7 @@
 	<path id="lib.log4j.classpath"><fileset dir="${ejbca.home}/lib" includes="log4j*.jar"/></path>
 	<path id="lib.slf4jlog4j.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="slf4j-reload*.jar"/></path>
 	<path id="lib.slf4japi.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="slf4j-api*.jar"/></path>
-	<path id="lib.commons-lang.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-lang-*.jar"/></path>
-    <path id="lib.commons-lang.classpath">
-        <!-- Include both commons-lang 2 and 3 -->
-        <fileset dir="${ejbca.home}/lib" includes="commons-lang*.jar"/>
-    </path>
+    <path id="lib.commons-lang.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-lang*.jar"/></path>
 	<path id="lib.commons-text.classpath">
 		<!-- Needed for commons-text -->
 		<path refid="lib.commons-lang.classpath" />
@@ -315,7 +324,6 @@
 	<path id="lib.commons-logging.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-logging*.jar"/></path>
 	<path id="lib.commons-fileupload2.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-fileupload2-jakarta-*.jar"/></path>
 	<path id="lib.commons-fileupload2-core.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-fileupload2-core-*.jar"/></path>
-	<path id="lib.commons-fileupload.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-fileupload-*.jar"/></path>
 	<path id="lib.hc.classpath"><fileset dir="${ejbca.home}/lib" includes="httpcore-*.jar httpclient-*.jar httpmime-*.jar"/></path>
 	<path id="lib.commons-io.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-io-*.jar"/></path>
 	<path id="lib.jsch.classpath"><fileset dir="${ejbca.home}/lib" includes="jsch-*.jar"/></path>

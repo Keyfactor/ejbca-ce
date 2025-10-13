@@ -27,7 +27,7 @@ import java.security.cert.CertificateException;
 import java.util.Date;
 import java.util.Enumeration;
 
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -244,7 +244,7 @@ public class KeyRecoveryImportCommand extends BaseRaCommand {
             boolean randomUser = false;
             if (username == null) {
                 getLogger().info("No username parameter supplied, creating a randomized username based on CN UID, SERIALNUMBER, or 'user', in order of existence.");
-                final String seq = RandomStringUtils.randomAlphanumeric(20);
+                final String seq = RandomStringUtils.secure().nextAlphanumeric(20);
                 String userPart = DnComponents.getPartFromDN(CertTools.getSubjectDN(userCertificate), "CN");
                 if (userPart == null) {
                     userPart = DnComponents.getPartFromDN(CertTools.getSubjectDN(userCertificate), "UID");                    
@@ -275,7 +275,8 @@ public class KeyRecoveryImportCommand extends BaseRaCommand {
                 final EndEntityInformation userdata = new EndEntityInformation(username, CertTools.getSubjectDN(userCertificate), cainfo.getCAId(), DnComponents.getSubjectAlternativeName(userCertificate), 
                         DnComponents.getEMailAddress(userCertificate), EndEntityConstants.STATUS_GENERATED, new EndEntityType(EndEntityTypes.ENDUSER), endentityprofileid, certificateprofileid, null,
                         null, EndEntityConstants.TOKEN_SOFT_P12, null);
-                final String randompwd = RandomStringUtils.randomAlphanumeric(20);
+                final String randompwd = RandomStringUtils.secure().nextAlphanumeric(20);
+
                 userdata.setPassword(randompwd);
                 userdata.setKeyRecoverable(true);
                 endEntityManagementSession.addUser(getAuthenticationToken(), userdata, false);                

@@ -43,8 +43,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.math.IntRange;
+import org.apache.commons.lang3.IntegerRange;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.certificates.KeyEncryptionPaddingAlgorithm;
@@ -445,9 +445,9 @@ public class X509CAInfo extends CAInfo {
   }
 
   @Override
-  public IntRange getAllCrlPartitionIndexes() {
+  public IntegerRange getAllCrlPartitionIndexes() {
       if (getUsePartitionedCrl()) {
-          return new IntRange(1, getCrlPartitions());
+          return IntegerRange.of(1, getCrlPartitions());
       }
       return null;
   }

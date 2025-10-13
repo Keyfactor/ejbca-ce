@@ -21,11 +21,10 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
+import org.cesecore.dto.RoleDataDto;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.profiles.Profile;
-import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleInformation;
-import org.cesecore.roles.member.RoleMember;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.cesecore.util.ui.DynamicUiPropertyCallback;
 import org.ejbca.core.model.approval.Approval;
@@ -43,7 +42,7 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
 
     private static final InternalResources intres = InternalResources.getInstance();
 
-    public static final RoleInformation ANYBODY = RoleInformation.fromRoleMembers(-1, null, "Anybody", new ArrayList<RoleMember>());
+    public static final RoleInformation ANYBODY = new RoleInformation(-1, null, "Anybody");
 
     public static final int EXECUTION_STEP_ID = 0;
     public static final String PROPERTY_NAME = "name";
@@ -147,15 +146,15 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
     }
     
     @Override
-    public boolean canApprove(List<Role> rolesTokenIsMemberOf, final ApprovalPartition approvalPartition) {
+    public boolean canApprove(List<RoleDataDto> rolesTokenIsMemberOf, final ApprovalPartition approvalPartition) {
         boolean canApprove = false;
         if (approvalPartition != null) {
             if (canAnyoneApprovePartition(approvalPartition)) {
                 return true;
             }
             List<Integer> roleIdsWhichCanApprove = getAllowedRoleIds(approvalPartition);
-            for (Role role: rolesTokenIsMemberOf) {
-                if (roleIdsWhichCanApprove.contains(role.getRoleId())) {
+            for (RoleDataDto roleData: rolesTokenIsMemberOf) {
+                if (roleIdsWhichCanApprove.contains(roleData.id())) {
                     canApprove = true;
                     break;
                 }
@@ -169,7 +168,7 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
     }
     
     @Override
-    public boolean canView(List<Role> rolesTokenIsMemberOf, final ApprovalPartition approvalPartition) {
+    public boolean canView(List<RoleDataDto> rolesTokenIsMemberOf, final ApprovalPartition approvalPartition) {
         boolean canView = false;
         if (approvalPartition != null) {
             if (canAnyoneApprovePartition(approvalPartition) || canAnyoneViewPartition(approvalPartition)) {
@@ -177,8 +176,8 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
             }
             List<Integer> roleIdsWhichCanView = getAllowedRoleIdsForViewingPartition(approvalPartition);
             List<Integer> roleIdsWhichCanApprove = getAllowedRoleIds(approvalPartition);
-            for (Role role: rolesTokenIsMemberOf) {
-                if (roleIdsWhichCanView.contains(role.getRoleId()) || roleIdsWhichCanApprove.contains(role.getRoleId())) {
+            for (RoleDataDto roleData: rolesTokenIsMemberOf) {
+                if (roleIdsWhichCanView.contains(roleData.id()) || roleIdsWhichCanApprove.contains(roleData.id())) {
                     canView = true;
                     break;
                 }

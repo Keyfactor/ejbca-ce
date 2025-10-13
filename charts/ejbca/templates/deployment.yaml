@@ -82,6 +82,11 @@ spec:
           - name: ejbca-config-conf-files
             mountPath: /opt/keyfactor/ejbca/conf/
           {{- end }}
+          {{- if .Values.ejbca.license }}
+          - name: ejbca-license
+            mountPath: /mnt/license/ejbca-license
+            subPath: ejbca-license
+          {{- end }}
         {{- end }}
         {{- if .Values.hsm.enabled }}
         - name: hsm-driver-init
@@ -182,8 +187,6 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: {{ include "ejbca.imageRepository" . }}:{{ .Values.image.tag | default .Chart.AppVersion }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
           env: {{- include "ejbca.ejbcaDeploymentParameters" . | nindent 12 }}
             {{- if or (.Values.services.proxyAJP.enabled) (.Values.httpd.enabled) }}
             - name: PROXY_AJP_BIND
@@ -266,6 +269,11 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
+            {{- if .Values.ejbca.license }}
+            - name: ejbca-license
+              mountPath: /mnt/license/ejbca-license
+              subPath: ejbca-license
+            {{- end }}
             {{- if .Values.ejbca.useH2Persistence }}
             - name: ejbca-h2-persistence
               mountPath: /mnt/persistent/
@@ -273,6 +281,10 @@ spec:
             {{- if .Values.ejbca.importExternalCas }}
             - name: ejbca-config-external-cas
               mountPath: /mnt/external/secrets/tls/cas/
+            {{- end }}
+            {{- if .Values.ejbca.importJvmTruststore }}
+            - name: ejbca-config-jvm-truststore
+              mountPath: /mnt/external/secrets/ca/ts/
             {{- end }}
             {{- if .Values.ejbca.importAppserverKeystore }}
             - name: ejbca-config-appserver-keystore
@@ -307,6 +319,9 @@ spec:
         {{- if .Values.hsm.luna.enabled }}
           {{ include "ejbca.hsm.sidecar.luna" . | nindent 8 }}
         {{- end }}
+        {{- if .Values.hsm.dpod.enabled }}
+          {{ include "ejbca.hsm.sidecar.dpod" . | nindent 8 }}
+        {{- end }}
         {{- if .Values.hsm.utimaco.enabled }}
           {{ include "ejbca.hsm.sidecar.utimaco" . | nindent 8 }}
         {{- end }}
@@ -320,6 +335,11 @@ spec:
           {{- toYaml .Values.ejbca.sidecarContainers | nindent 8 }}
         {{- end }}
       volumes:
+        {{- if .Values.ejbca.license }}
+        - name: ejbca-license
+          secret:
+            secretName: {{ .Values.ejbca.license }}
+        {{- end }}
         {{- if .Values.ejbca.useH2Persistence }}
         - name: ejbca-h2-persistence
           persistentVolumeClaim:
@@ -353,6 +373,11 @@ spec:
         - name: ejbca-config-external-cas
           secret:
             secretName: {{ .Values.ejbca.externalCasSecret }}
+        {{- end }}
+        {{- if .Values.ejbca.importJvmTruststore }}
+        - name: ejbca-config-jvm-truststore
+          secret:
+            secretName: {{ .Values.ejbca.jvmTruststoreSecret }}
         {{- end }}
         {{- if .Values.ejbca.importAppserverKeystore }}
         - name: ejbca-config-appserver-keystore
@@ -410,6 +435,9 @@ spec:
         {{- end }}
         {{- if .Values.hsm.luna.enabled }}
           {{ include "ejbca.hsm.volume.luna" . | nindent 8 }}
+        {{- end }}
+        {{- if .Values.hsm.dpod.enabled }}
+          {{ include "ejbca.hsm.volume.dpod" . | nindent 8 }}
         {{- end }}
         {{- if .Values.hsm.utimaco.enabled }}
           {{ include "ejbca.hsm.volume.utimaco" . | nindent 8 }}

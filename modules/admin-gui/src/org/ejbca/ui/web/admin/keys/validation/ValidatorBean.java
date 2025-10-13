@@ -25,6 +25,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.keyfactor.CesecoreException;
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.CertTools;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -59,10 +63,6 @@ import org.ejbca.ui.psm.jsf.JsfDynamicUiPsmFactory;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
-
-import com.keyfactor.CesecoreException;
-import com.keyfactor.ErrorCode;
-import com.keyfactor.util.CertTools;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
@@ -114,12 +114,13 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     private DynamicUiModel uiModel;
 
     /** Dynamic UI PSM component. */
-    private HtmlPanelGrid dataGrid;
+    private transient HtmlPanelGrid dataGrid;
     
-    /** Test file */
-    private UploadedFile testFile;   
+    /** UploadedFile for handling the upload process */
+    private transient UploadedFile testFile;
+    /** This holds the actual byte data of the uploaded file. This is here to make the upload play nicer with high availability. */
+    private byte[] testFileBytes;
     private String testResults = "";
-
 
     public ValidatorBean() {
         super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.VALIDATORVIEW.resource());
@@ -301,6 +302,11 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
      * @throws DynamicUiModelException if the PSM could not be initialized.
      */
     public HtmlPanelGrid getDataGrid() throws DynamicUiModelException {
+        // if this bean is deserialized on another VM, the UI components
+        // need to be regenerated
+        if (dataGrid == null) {
+            initializeDynamicUI(stagedValidator);
+        }
         return dataGrid;
     }
 
@@ -739,7 +745,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     //as retrieved from the pkimetal validator, it could extended to be used for multiple different values by adding a differentiator
     //as a oarameter. 
     public List<SelectItem> getGroupList() {
-        if(stagedValidator instanceof UiCallBackList) {
+        if (stagedValidator instanceof UiCallBackList) {
             UiCallBackList uiCallBackList = (UiCallBackList) stagedValidator;
             Map<String, Set<LinterProfile>> linterProfileList = uiCallBackList.getProfileList().getProfiles();
             List<SelectItem> groupedList = new ArrayList<>();
@@ -763,14 +769,12 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
      */
     public void testValidator() {
         if(stagedValidator instanceof TestableValidator) {
-            if(testFile == null) {
+            if(testFileBytes == null) {
                 FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Failure.", "No file has been uploaded.");
                 FacesContext.getCurrentInstance().addMessage(null, message);
             } else {
-                byte[] fileBytes;
                 try {
-                    fileBytes = IOUtils.toByteArray(testFile.getInputStream());
-                    X509Certificate testCertificate = CertTools.getCertfromByteArray(fileBytes, X509Certificate.class);
+                    X509Certificate testCertificate = CertTools.getCertfromByteArray(testFileBytes, X509Certificate.class);
                     List<String> result = ((TestableValidator) stagedValidator).test(testCertificate);
                     if (result.isEmpty()) {
                         testResults = "Test certificate was validated without error.";
@@ -780,12 +784,6 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
                             stringBuilder.append(errorMessage + "\n");
                         }
                         testResults = "Validation failure(s):\n\n" + stringBuilder.toString();
-                    }
-                } catch (IOException e) {
-                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Failure.", "Could not parse uploaded file: " + e.getMessage());
-                    FacesContext.getCurrentInstance().addMessage(null, message);
-                    if (log.isDebugEnabled()) {
-                        log.debug("Could not parse uploaded file: " + e.getMessage(), e);
                     }
                 } catch (CertificateParsingException e) {
                     FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Failure.", "Could not parse file as an X509 Certificate: " + e.getMessage());
@@ -798,22 +796,37 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
         }
     }
 
-    public UploadedFile getTestFile() {        
+    public UploadedFile getTestFile() {
         return testFile;
     }
 
-    public void setTestFile(UploadedFile testFile) {
-        if (testFile != null) {
-            this.testFile = testFile;
+    public void setTestFile(UploadedFile testFile) throws IOException {
+        try {
+            if (testFile != null) {
+                this.testFileBytes = IOUtils.toByteArray(testFile.getInputStream());
+            }
+        } catch (IOException e) {
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Failure.", "Could not parse uploaded file: " + e.getMessage());
+            FacesContext.getCurrentInstance().addMessage(null, message);
+            if (log.isDebugEnabled()) {
+                log.debug("Could not parse uploaded file: " + e.getMessage(), e);
+            }
         }
-
     }
     
-    public void handleFileUpload(FileUploadEvent event) {
-        if(stagedValidator instanceof TestableValidator) {            
-            this.testFile = event.getFile();
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Success!", event.getFile().getFileName() + " is uploaded.");
-            FacesContext.getCurrentInstance().addMessage(null, message);
+    public void handleFileUpload(FileUploadEvent event) throws IOException {
+        if (stagedValidator instanceof TestableValidator) {
+            try {
+                this.testFileBytes = IOUtils.toByteArray(event.getFile().getInputStream());
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Success!", event.getFile().getFileName() + " is uploaded.");
+                FacesContext.getCurrentInstance().addMessage(null, message);
+            } catch (IOException e) {
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Failure.", "Could not parse uploaded file: " + e.getMessage());
+                FacesContext.getCurrentInstance().addMessage(null, message);
+                if (log.isDebugEnabled()) {
+                    log.debug("Could not parse uploaded file: " + e.getMessage(), e);
+                }
+            }
         }   
     }
     

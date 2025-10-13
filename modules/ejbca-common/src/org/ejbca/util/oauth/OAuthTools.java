@@ -12,12 +12,15 @@
  *************************************************************************/
 package org.ejbca.util.oauth;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -30,6 +33,7 @@ import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.AsymmetricJWK;
 import com.nimbusds.jose.jwk.JWK;
 import org.cesecore.authentication.oauth.OAuthPublicKey;
+import org.cesecore.config.OAuthConfiguration;
 
 /**
  * Class containing static helper methods for OAuth operations
@@ -38,7 +42,7 @@ public class OAuthTools {
 
     private static final Logger log = Logger.getLogger(KeyTools.class);
 
-    /** Like {@link KeyTools.getBytesFromPublicKeyFile}, but allows certificates and JWK keys also <code>{"kid":</code>... */
+    /** Like {@link com.keyfactor.util.keys.KeyTools#getBytesFromPublicKeyFile}, but allows certificates and JWK keys also <code>{"kid":</code>... */
     public static byte[] getBytesFromOauthKey(final byte[] bytes) throws CertificateParsingException {
         try {
             return KeyTools.getBytesFromPublicKeyFile(bytes);
@@ -103,6 +107,56 @@ public class OAuthTools {
             }
         }
         return result;
+    }
+
+    /**
+     * Verifies if a given hostname is in the allowed hostname list.
+     * 
+     * @param hostname The hostname to verify
+     * @param oAuthConfiguration The OAuth configuration containing the allowed hostname list
+     * @return true if the hostname is in the allowed list or if the allowed list is empty/null, false otherwise
+     */
+    public static boolean isHostnameAllowed(final String hostname, final OAuthConfiguration oAuthConfiguration) {
+        if (hostname == null || oAuthConfiguration == null) {
+            return false;
+        }
+
+        final String[] allowedHosts = oAuthConfiguration.getAllowedOauthHosts();
+        if (allowedHosts == null || allowedHosts.length == 0) {
+            // If no hosts are specified, no hosts are allowed
+            return false;
+        }
+        final String hostnamePart = extractHostnameFromUrl(hostname);
+        if (hostnamePart == null) {
+            return false;
+        }
+        return Arrays.stream(allowedHosts)
+                .anyMatch(allowedHost -> allowedHost.equalsIgnoreCase(hostnamePart));
+    }
+
+    /**
+     * Extracts the hostname from a URL string using java.net.URL.
+     *
+     * @param urlString The URL string to extract hostname from
+     * @return The extracted hostname, or the original string if it's not a valid URL
+     */
+    private static String extractHostnameFromUrl(final String urlString) {
+        if (urlString == null) {
+            return null;
+        }
+
+        try {
+            // If the string doesn't start with a protocol, add one to make it parseable
+            String urlToParse = urlString;
+            if (!urlString.contains("://")) {
+                urlToParse = "http://" + urlString;
+            }
+            URL url = new URL(urlToParse);
+            return url.getHost();
+        } catch (MalformedURLException e) {
+            // If it's not a valid URL, return the original string
+            return urlString;
+        }
     }
 
 }

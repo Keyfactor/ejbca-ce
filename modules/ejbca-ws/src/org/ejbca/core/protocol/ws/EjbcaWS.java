@@ -36,21 +36,10 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
-import jakarta.annotation.Resource;
-import jakarta.ejb.EJB;
-import jakarta.ejb.Stateless;
-import jakarta.ejb.TransactionAttribute;
-import jakarta.ejb.TransactionAttributeType;
-import jakarta.jws.WebMethod;
-import jakarta.jws.WebService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.xml.bind.DatatypeConverter;
 import javax.xml.datatype.DatatypeConfigurationException;
-import jakarta.xml.ws.Action;
-import jakarta.xml.ws.WebServiceContext;
-import jakarta.xml.ws.handler.MessageContext;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.Properties;
@@ -118,7 +107,6 @@ import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.RaCrlSearchRequest;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
-import org.ejbca.core.model.hardtoken.HardTokenDoesntExistsException;
 import org.ejbca.core.model.hardtoken.HardTokenExistsException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
@@ -163,6 +151,19 @@ import com.keyfactor.util.certificate.CertificateWrapper;
 import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
+
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.jws.WebMethod;
+import jakarta.jws.WebService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.xml.bind.DatatypeConverter;
+import jakarta.xml.ws.Action;
+import jakarta.xml.ws.WebServiceContext;
+import jakarta.xml.ws.handler.MessageContext;
 
 /**
  * Implementor of the IEjbcaWS interface.
@@ -493,10 +494,9 @@ public class EjbcaWS implements IEjbcaWS {
      * @param tokenType The type of the cryptotoken. Available types: SoftCryptoToken, PKCS11CryptoToken
      * @param activationPin Pin code for the cryptotoken
      * @param autoActivate Set to true|false to allow|disallow whether cryptotoken should be autoactivated or not
-     * @param cryptoTokenProperties as a List of KeyValuePair objects. See {@link org.ejbca.core.protocol.ws.objects.CryptoTokenConstantsWS}
+     * @param cryptoTokenProperties as a List of KeyValuePair objects.
      * @throws EjbcaException if an error occurred
      * @throws AuthorizationDeniedException if client isn't authorized to request
-     * @see org.ejbca.core.protocol.ws.objects.CryptoTokenConstantsWS
      */
     @WebMethod
     @Action(input="http://ws.protocol.core.ejbca.org/createCryptoToken")
@@ -2340,9 +2340,9 @@ public class EjbcaWS implements IEjbcaWS {
             final IPatternLogger logger = TransactionLogger.getPatternLogger();
             logAdminName(admin, logger);
             try {
-                if (StringUtils.equalsIgnoreCase(profileType, "eep")) {
+                if (Strings.CI.equals(profileType, "eep")) {
                     return raMasterApiProxyBean.getEndEntityProfileAsXml(admin, profileId);
-                } else if (StringUtils.equalsIgnoreCase(profileType, "cp")) {
+                } else if (Strings.CI.equals(profileType, "cp")) {
                     return raMasterApiProxyBean.getCertificateProfileAsXml(admin, profileId);
                 } else {
                     throw new UnknownProfileTypeException("Unknown profile type '" + profileType
@@ -3038,7 +3038,6 @@ public class EjbcaWS implements IEjbcaWS {
      * @return Hard Tokens are no longer supported. Always throws EjbcaException
      * @throws CADoesntExistsException if a referenced CA does not exist
      * @throws AuthorizationDeniedException if client isn't authorized to request
-     * @throws HardTokenDoesntExistsException if hard token doesn't exist
      * @throws NotFoundException if an object cannot be found in the database
      * @throws ApprovalException if there is already a request waiting for approval.
      * @throws ApprovalRequestExpiredException Throws this exception one time if one of the approvals have expired, once notified it won't throw it anymore.

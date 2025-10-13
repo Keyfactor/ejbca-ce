@@ -17,7 +17,8 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.cmp.RevReqContent;
@@ -140,12 +141,12 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
                 // Check that the value of KeyId from the request is allowed 
                 // Note that this restriction only applies to HMAC and not EndEntityCertificate because in the latter, the use of profiles can be restricted through 
                 // Administrator privileges. Other authentication modules are not used in RA mode
-                final boolean useKeyIdForEndEntityProfile = StringUtils.equals(cmpConfiguration.getRAEEProfile(confAlias), CmpConfiguration.PROFILE_USE_KEYID);
-                final boolean useKeyIdForCertificateProfile = StringUtils.equals(cmpConfiguration.getRACertProfile(confAlias), CmpConfiguration.PROFILE_USE_KEYID);
+                final boolean useKeyIdForEndEntityProfile = Strings.CS.equals(cmpConfiguration.getRAEEProfile(confAlias), CmpConfiguration.PROFILE_USE_KEYID);
+                final boolean useKeyIdForCertificateProfile = Strings.CS.equals(cmpConfiguration.getRACertProfile(confAlias), CmpConfiguration.PROFILE_USE_KEYID);
                 if (useKeyIdForEndEntityProfile || useKeyIdForCertificateProfile) {
                     final String keyId = CmpMessageHelper.getStringFromOctets(pkiMessage.getHeader().getSenderKID());
-                    if ((useKeyIdForEndEntityProfile && StringUtils.equals(keyId, EndEntityConstants.EMPTY_ENDENTITYPROFILENAME)) ||
-                            (useKeyIdForCertificateProfile && StringUtils.equals(keyId, CertificateProfile.ENDUSERPROFILENAME))) {
+                    if ((useKeyIdForEndEntityProfile && Strings.CS.equals(keyId, EndEntityConstants.EMPTY_ENDENTITYPROFILENAME)) ||
+                            (useKeyIdForCertificateProfile && Strings.CS.equals(keyId, CertificateProfile.ENDUSERPROFILENAME))) {
                         errorMessage = "Unaccepted KeyId '" + keyId + "' in CMP request";
                         LOG.info(errorMessage);
                         return false;

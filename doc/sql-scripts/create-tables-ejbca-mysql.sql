@@ -447,7 +447,7 @@ CREATE TABLE AcmeAuthorizationData (
 );
 
 CREATE TABLE SctData (
-	pk VARCHAR(250) BINARY NOT NULL,
+    pk VARCHAR(250) BINARY NOT NULL,
     logId INT(11) NOT NULL,
     fingerprint VARCHAR(250) BINARY NOT NULL,
     certificateExpirationDate BIGINT(20) NOT NULL,
@@ -458,7 +458,7 @@ CREATE TABLE SctData (
 );
 
 CREATE TABLE OcspResponseData (
-	id VARCHAR(250) BINARY NOT NULL,
+    id VARCHAR(250) BINARY NOT NULL,
     serialNumber VARCHAR(250) BINARY NOT NULL,
     producedAt BIGINT(20) NOT NULL,
     nextUpdate BIGINT(20),

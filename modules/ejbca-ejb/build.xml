@@ -23,6 +23,8 @@
 		<path refid="lib.commons-collections4.classpath"/>
 		<path refid="lib.caffeine.classpath"/>
 		<path refid="lib.guava.classpath"/>
+		<path refid="lib.jaxb.classpath"/>
+		<path refid="lib.hibernate.validator"/>
 		<path location="${mod.caa.lib}"/>
 		<path location="${mod.cesecore-ejb.lib}"/>
 		<path location="${mod.ejbca-entity.lib}"/>
@@ -30,6 +32,7 @@
 		<path location="${mod.ejbca-common.lib}"/>
 		<path location="${mod.ejbca-common-web.lib}"/>
 		<path location="${mod.ejbca-ws.lib}"/>
+		<path location="${mod.ejbca-repository.lib}"/>
 		<path location="${mod.cesecore-entity.lib}"/>
 		<path location="${mod.cesecore-common.lib}"/>
 		<path location="${mod.cesecore-ejb-interface.lib}"/>
@@ -76,6 +79,7 @@
 		<path location="${mod.ejbca-ejb-interface.lib}"/>
 		<path refid="compile-test.classpath"/>
 		<path refid="lib.junit.classpath"/>
+		<path refid="lib.jboss-logging.classpath"/>
 	</path>
 
 	<condition property="exclude.ee-ejbbridge-implementation" value="org/ejbca/core/ejb/EnterpriseEditionEjbBridgeSessionBean.java" else="exclude.ee-ejbbridge-implementation.nonexistingvalue">
@@ -136,7 +140,6 @@
 		<copy file="${log4j.test.file}" tofile="${ejbca-ejb.build-test.dir}/log4j.xml" failonerror="true"/>
 		<copy todir="${ejbca-ejb.build-test.dir}" failonerror="true">
 			<fileset dir="${ejbca.home}/src" includes="intresources/**"/>
-			<fileset dir="${ejbca.home}" includes="conf/extendedkeyusage.properties"/>
 		</copy>
 		<!-- systemtests.properties needs to be in the classpath, if it exists for targeting non-default environment-->
 		<copy file="${systemtests.properties.file}" todir="${ejbca-ejb.build-test.dir}" failonerror="false"/>

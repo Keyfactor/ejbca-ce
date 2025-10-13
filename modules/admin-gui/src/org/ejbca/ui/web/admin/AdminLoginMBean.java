@@ -19,7 +19,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.context.FacesContext;
@@ -30,7 +29,7 @@ import jakarta.ws.rs.core.UriBuilder;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationNotProvidedException;
 import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
@@ -43,12 +42,14 @@ import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.KeyBindingFinder;
 import org.cesecore.keybind.KeyBindingNotFoundException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.HttpTools;
 
 import com.keyfactor.util.RandomHelper;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import org.ejbca.util.oauth.OAuthTools;
 
 /**
  * Bean used to display a login page.
@@ -76,7 +77,8 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
     @EJB
     private InternalKeyBindingMgmtSessionLocal internalKeyBindings;
 
-    public class OAuthKeyInfoGui{
+    public class OAuthKeyInfoGui implements Serializable {
+        private static final long serialVersionUID = 1L;
         String label;
 
         public OAuthKeyInfoGui(String label) {
@@ -95,16 +97,8 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
     private String firstHeader;
     private String secondHeader;
     private String text;
-    private OauthRequestHelper oauthRequestHelper;
+    private transient OauthRequestHelper oauthRequestHelper;
 
-    /**
-     * Set the helper object that interacts with OAuth servers.
-     */
-    @PostConstruct
-    public void setRequestHelper() {
-        oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder(internalKeyBindings, certificateStoreLocal, cryptoToken, caSession));
-    }
-    
     /**
      * @return the general error which occurred, or welcome header
      */
@@ -230,8 +224,8 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
             OAuthKeyInfo oAuthKeyInfo = ejbcaWebBean.getOAuthConfiguration().getOauthKeyByLabel(oauthClicked);
             if (oAuthKeyInfo != null) {
                 try {
-                    
-                    OAuthGrantResponseInfo token = oauthRequestHelper.sendTokenRequest(oAuthKeyInfo, authCode, getRedirectUri());
+
+                    OAuthGrantResponseInfo token = getOauthRequestHelper().sendTokenRequest(oAuthKeyInfo, authCode, getRedirectUri());
                     if (token.compareTokenType(HttpTools.AUTHORIZATION_SCHEME_BEARER)) {
                         if (token.getAccessToken() != null) {
                             log.debug("Successfully obtained oauth token, redirecting to main page.");
@@ -264,11 +258,20 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
     }
 
     private String getRedirectUri() {
-        return ejbcaWebBean.getGlobalConfiguration().getBaseUrl(
-                "https",
-                WebConfiguration.getHostName(),
-                WebConfiguration.getPublicHttpsPort()
-        ) + ejbcaWebBean.getGlobalConfiguration().getAdminWebPath();
+        HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance()
+                .getExternalContext().getRequest();
+        String redirectUri = request.getRequestURL().toString();
+
+        if (!OAuthTools.isHostnameAllowed(redirectUri, ejbcaWebBean.getOAuthConfiguration())) {
+            log.info("Hostname in redirect URI is not in the allowed hostname list: " + redirectUri);
+            return ejbcaWebBean.getGlobalConfiguration().getBaseUrl(
+                    "https",
+                    WebConfiguration.getHostName(),
+                    WebConfiguration.getPublicHttpsPort()
+            ) + GlobalConfiguration.ADMIN_WEB_PATH;
+        }
+
+        return redirectUri;
     }
 
     private boolean verifyStateParameter(final String state) {
@@ -346,5 +349,12 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
         header = header.replace("form-action 'self'", "form-action " + urls + "'self'");
         httpResponse.setHeader("Content-Security-Policy", header);
         httpResponse.setHeader("X-Content-Security-Policy", header);
+    }
+
+    public OauthRequestHelper getOauthRequestHelper() {
+        if (oauthRequestHelper == null) {
+            oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder(internalKeyBindings, certificateStoreLocal, cryptoToken, caSession));
+        }
+        return oauthRequestHelper;
     }
 }

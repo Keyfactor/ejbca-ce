@@ -19,8 +19,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.cesecore.authentication.AuthenticationFailedException;
+import org.cesecore.dto.RoleDataDto;
 import org.cesecore.profiles.Profile;
-import org.cesecore.roles.Role;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -244,7 +244,7 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable, Compa
      * @throws AuthenticationFailedException if the authentication token in the approval wasn't valid
      */
     boolean isApprovalAuthorized(final Collection<Approval> approvalsPerformed, final Approval approval, 
-            final List<Role> rolesTokenIsMemberOf) throws AuthenticationFailedException;
+            final List<RoleDataDto> rolesTokenIsMemberOf) throws AuthenticationFailedException;
 
     /**
      * @return the number of steps in this profile
@@ -276,7 +276,7 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable, Compa
      * @param approvalPartition an approval partition from an approval step
      * @return true if administrator has approval rights
      */
-    boolean canApprove(List<Role> rolesTokenIsMemberOf, final ApprovalPartition approvalPartition);
+    boolean canApprove(List<RoleDataDto> rolesTokenIsMemberOf, final ApprovalPartition approvalPartition);
     
     /**
      * Tests if an administrator can view a particular partition. Approval rights automatically count as view rights.
@@ -285,7 +285,7 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable, Compa
      * @param approvalPartition an approval partition from an approval step
      * @return true if administrator has view or approval rights
      */
-    boolean canView(List<Role> rolesTokenIsMemberOf, final ApprovalPartition approvalPartition);
+    boolean canView(List<RoleDataDto> rolesTokenIsMemberOf, final ApprovalPartition approvalPartition);
 
     /**
      * Returns true if the given partition has been configured to allow any administrator to approve it.
@@ -374,16 +374,6 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable, Compa
      *  ApprovalDataVO.STATUS_EXECUTIONDENIED (-7) if partition has been denied.
      */
     int getRemainingApprovalsInPartition(Collection<Approval> approvalsPerformed, int stepIdentifier, int partitionIdentifier);
-
-    /**
-     * Updates any references to a CA's CAId and Subject DN. Approval Profiles can contain CA Id references in the list of allowed roles of the steps.
-     * @param approvalProfile Profile object to modify.
-     * @param fromId Old CA Id to replace.
-     * @param toId New CA Id to replace with.
-     * @param toSubjectDN New CA Subject DN.
-     * @return True if the approval profile was changed. If so it should be persisted to the database.
-     */
-    boolean updateCAIds(final int fromId, final int toId, final String toSubjectDN);
 
     /**
      * Retrieve a list of all steps which must be completed before an approval request is approved.

@@ -17,11 +17,10 @@ import java.io.IOException;
 import java.net.URLDecoder;
 import java.security.cert.X509Certificate;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.cert.ocsp.OCSPResp;
 import org.bouncycastle.cert.ocsp.OCSPRespBuilder;
-import org.cesecore.certificates.ocsp.cache.OcspConfigurationCache;
 import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
 import org.cesecore.certificates.ocsp.logging.AuditLogger;
 import org.cesecore.certificates.ocsp.logging.GuidHolder;
@@ -78,13 +77,13 @@ public class OCSPServlet extends HttpServlet {
                 log.trace(">doGet()");
             }
             // We have a command to force reloading of keys that can only be run from localhost
-            final boolean doReload = StringUtils.equals(request.getParameter("reloadkeys"), "true");
+            final boolean doReload = Strings.CS.equals(request.getParameter("reloadkeys"), "true");
             final String newConfig = request.getParameter("newConfig");
             final boolean doNewConfig = newConfig != null && newConfig.length() > 0;
             final boolean doRestoreConfig = request.getParameter("restoreConfig") != null;
             final String remote = request.getRemoteAddr();
             if (doReload || doNewConfig || doRestoreConfig) {
-                if (!StringUtils.equals(remote, "127.0.0.1")) {
+                if (!Strings.CS.equals(remote, "127.0.0.1")) {
                     log.info("Got reloadkeys or updateConfig of restoreConfig command from unauthorized ip: " + remote);
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
                     return;
@@ -108,13 +107,11 @@ public class OCSPServlet extends HttpServlet {
                     ConfigurationHolder.updateConfiguration(aConfig[i].substring(0, separatorIx),
                             aConfig[i].substring(separatorIx + 1, aConfig[i].length()));
                 }
-                OcspConfigurationCache.INSTANCE.reloadConfiguration();
                 log.info("Call from " + remote + " to update configuration");
                 return;
             }
             if (doRestoreConfig) {
                 ConfigurationHolder.restoreConfiguration();
-                OcspConfigurationCache.INSTANCE.reloadConfiguration();
                 log.info("Call from " + remote + " to restore configuration.");
                 return;
             }

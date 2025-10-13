@@ -18,6 +18,8 @@ import org.ejbca.core.EjbcaException;
 
 public class KeyRecoveryNotAvailableException extends EjbcaException {
 
+    private static final long serialVersionUID = 1L;
+
     public KeyRecoveryNotAvailableException(String message) {
         super(ErrorCode.KEY_RECOVERY_NOT_AVAILABLE, message);
     }

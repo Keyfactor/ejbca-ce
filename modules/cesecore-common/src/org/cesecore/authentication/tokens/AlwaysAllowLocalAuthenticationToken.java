@@ -15,9 +15,7 @@ package org.cesecore.authentication.tokens;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 
-import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspect;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 
@@ -105,56 +103,6 @@ public class AlwaysAllowLocalAuthenticationToken extends NestableAuthenticationT
     @Override
     public AlwaysAllowLocalAuthenticationTokenMetaData getMetaData() {
         return metaData;
-    }
-    
-    /** Do not use since EJBCA 6.8. Kept for backwards compatibility reasons to de-serialize ApprovalRequests. See ECA-6442 */
-    @SuppressWarnings("unused")
-    @Deprecated 
-    private static enum InternalMatchValue implements AccessMatchValue {
-        INSTANCE(0), DEFAULT(Integer.MAX_VALUE);
-
-        private static final String TOKEN_TYPE = "AlwaysAllowAuthenticationToken";
-        
-        private final int numericValue;
-        
-        private InternalMatchValue(final int numericValue) {
-            this.numericValue = numericValue;
-        }
-        
-        @Override
-        public int getNumericValue() {         
-            return numericValue;
-        }
-
-        @Override
-        public String getTokenType() {           
-            return TOKEN_TYPE;
-        }
-
-        @Override
-        public boolean isIssuedByCa() {
-            return false;
-        }
-
-        @Override
-        public boolean isIssuedByOauthProvider() {
-            return false;
-        }
-
-        @Override
-        public boolean isDefaultValue() {
-            return numericValue == DEFAULT.numericValue;
-        }
-
-        @Override
-        public List<AccessMatchType> getAvailableAccessMatchTypes() {
-            return null;
-        }
-
-        @Override
-        public String normalizeMatchValue(String value) {
-            return null;
-        }
     }
 
 }

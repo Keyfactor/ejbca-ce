@@ -46,6 +46,7 @@ import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.certificate.DnComponents;
+import org.ejbca.util.oauth.OAuthTools;
 
 /**
  * JSF Managed Bean for handling authentication of clients.
@@ -60,7 +61,7 @@ public class RaAuthenticationBean implements Serializable {
 
     // JavaServlet Specification 2.5 Section 7.1.1: "...The name of the session tracking cookie must be JSESSIONID".
     private static final String SESSIONCOOKIENAME = "JSESSIONID";
-    
+
     @EJB
     private WebAuthenticationProviderSessionLocal webAuthenticationProviderSession;
     @EJB
@@ -68,24 +69,19 @@ public class RaAuthenticationBean implements Serializable {
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
 
-    private RaAuthenticationHelper raAuthenticationHelper = null;
-    private AuthenticationToken authenticationToken = null;
+    private transient RaAuthenticationHelper raAuthenticationHelper = null;
+    private transient AuthenticationToken authenticationToken = null;
     private X509Certificate x509Certificate = null;
 
     /** @return the X509CertificateAuthenticationToken if the client has provided a certificate or a PublicAccessAuthenticationToken otherwise. */
     public AuthenticationToken getAuthenticationToken() {
-        if (raAuthenticationHelper==null) {
-            raAuthenticationHelper = new RaAuthenticationHelper(webAuthenticationProviderSession, raMasterApi);
-        }
-        authenticationToken = raAuthenticationHelper.getAuthenticationToken(getHttpServletRequest(), getHttpServletResponse());
+        authenticationToken = getRaAuthenticationHelper().getAuthenticationToken(getHttpServletRequest(), getHttpServletResponse());
         return authenticationToken;
     }
+
     /** @return any X509Certificate the client has provided */
     public X509Certificate getX509CertificateFromRequest() {
-        if (raAuthenticationHelper==null) {
-            raAuthenticationHelper = new RaAuthenticationHelper(webAuthenticationProviderSession, raMasterApi);
-        }
-        x509Certificate = raAuthenticationHelper.getX509CertificateFromRequest(getHttpServletRequest());
+        x509Certificate = getRaAuthenticationHelper().getX509CertificateFromRequest(getHttpServletRequest());
         return x509Certificate;
     }
 
@@ -94,9 +90,9 @@ public class RaAuthenticationBean implements Serializable {
     }
 
     public void resetAuthentication(){
-        raAuthenticationHelper.resetAuthenticationToken();
+        getRaAuthenticationHelper().resetAuthenticationToken();
     }
-    
+
     private HttpServletRequest getHttpServletRequest() {
         return (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
     }
@@ -104,7 +100,7 @@ public class RaAuthenticationBean implements Serializable {
     private HttpServletResponse getHttpServletResponse() {
         return (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();
     }
-    
+
     public boolean isPublicUser() {
         return getAuthenticationToken() instanceof PublicAccessAuthenticationToken;
     }
@@ -141,7 +137,7 @@ public class RaAuthenticationBean implements Serializable {
         }
         return authToken.toString();
     }
-    
+
     /** Invoked from RaHttpSessionListener when a session expires/is destroyed */
     public void onSessionDestroyed(final HttpSessionEvent httpSessionEvent) {
         log.info("HTTP session from client with authentication " + authenticationToken + " ended.");
@@ -183,16 +179,36 @@ public class RaAuthenticationBean implements Serializable {
     }
 
     private String getRedirectUri() {
-        GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        String baseUrl = globalConfiguration.getBaseUrl(
-                "https",
-                WebConfiguration.getHostName(),
-                WebConfiguration.getPublicHttpsPort()
-        ) + "ra/";
-        return baseUrl + "logout.xhtml";
+        HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance()
+                .getExternalContext().getRequest();
+        String redirectUri = request.getRequestURL().toString();
+
+        // Verify that the hostname from the request is in the allowed hostname list
+        OAuthConfiguration oAuthConfiguration = raMasterApi.getGlobalConfiguration(OAuthConfiguration.class);
+        if (!OAuthTools.isHostnameAllowed(redirectUri, oAuthConfiguration)) {
+            log.info("Hostname in redirect URI is not in the allowed hostname list: " + redirectUri);
+            GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            String baseUrl = globalConfiguration.getBaseUrl(
+                    "https",
+                    WebConfiguration.getHostName(),
+                    WebConfiguration.getPublicHttpsPort()
+            ) + "ra/";
+            return baseUrl + "logout.xhtml";
+        }
+
+        return redirectUri;
     }
 
     public String getUserRemoteAddr() {
         return getHttpServletRequest().getRemoteAddr();
     }
+
+    public RaAuthenticationHelper getRaAuthenticationHelper() {
+        if (raAuthenticationHelper == null) {
+            raAuthenticationHelper = new RaAuthenticationHelper(webAuthenticationProviderSession, raMasterApi);
+        }
+
+        return raAuthenticationHelper;
+    }
+
 }

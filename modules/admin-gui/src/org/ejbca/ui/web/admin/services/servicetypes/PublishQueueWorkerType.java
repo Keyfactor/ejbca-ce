@@ -23,9 +23,8 @@ import org.ejbca.core.model.services.workers.PublishQueueProcessWorker;
  * Class managing the view of the Renew CA Worker
  * 
  *
- * @version $Id$
  */
-public class PublishQueueWorkerType extends BaseEmailNotifyingWorkerType {
+public class PublishQueueWorkerType extends BaseWorkerType {
 	
 	private static final long serialVersionUID = -5012349995138960737L;
 
@@ -41,10 +40,11 @@ public class PublishQueueWorkerType extends BaseEmailNotifyingWorkerType {
 	
 
 	public PublishQueueWorkerType(){
-		super(NAME, PUBLISHQUEUEPROCESSWORKER_SUB_PAGE, PublishQueueProcessWorker.class.getName());
+		super(PUBLISHQUEUEPROCESSWORKER_SUB_PAGE, NAME, true,  PublishQueueProcessWorker.class.getName());
 		// No action available for this worker
 		deleteAllCompatibleActionTypes();
-		addCompatibleActionTypeName(NoActionType.NAME);				
+		addCompatibleActionTypeName(NoActionType.NAME);
+		addCompatibleIntervalTypeName(PeriodicalIntervalType.NAME);
 	}
 	
 	

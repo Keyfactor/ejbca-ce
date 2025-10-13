@@ -19,11 +19,12 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
+import org.cesecore.util.LogRedactionUtils;
 
 import com.keyfactor.util.CeSecoreNameStyle;
-import org.cesecore.util.LogRedactionUtils;
 
 /**
  * DN string utilities.
@@ -99,11 +100,11 @@ public abstract class DNFieldsUtil {
             value1 = entry.getValue();
             value2 = map2.get(key);
             if (snAttributeKey.equals( key)) { // check that serial numbers are not blank and not equal. 
-                if (StringUtils.isBlank(value1) || StringUtils.isBlank(value2) || StringUtils.equals(value1, value2)) {
+                if (StringUtils.isBlank(value1) || StringUtils.isBlank(value2) || Strings.CS.equals(value1, value2)) {
                     result = false;
                 }
             } else { // All other DN attributes must be equal.
-                if (!StringUtils.equals(value1, value2)) {
+                if (!Strings.CS.equals(value1, value2)) {
                 	result = false;
                 }
             }

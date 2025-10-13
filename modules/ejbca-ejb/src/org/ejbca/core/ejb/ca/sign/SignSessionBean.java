@@ -40,7 +40,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1Integer;
@@ -131,7 +132,7 @@ import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.config.GlobalCesecoreConfiguration;
+import org.cesecore.config.GlobalCtConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.util.CvcKeyTools;
@@ -724,8 +725,8 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                         }
                     }
                     boolean verifiedOuter = false; // So we can throw an error if we could not verify
-                    if (StringUtils.equals(holderReference.getMnemonic(), caReferenceField.getMnemonic())
-                            && StringUtils.equals(holderReference.getCountry(), caReferenceField.getCountry())) {
+                    if (Strings.CS.equals(holderReference.getMnemonic(), caReferenceField.getMnemonic())
+                            && Strings.CS.equals(holderReference.getCountry(), caReferenceField.getCountry())) {
                         if (log.isDebugEnabled()) {
                             log.debug("Authenticated request is self signed, we will try to verify it using user's old certificate.");
                         }
@@ -793,7 +794,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                         }
                         // If there are no old certificates, continue processing as usual, using the sent in username/password hoping the
                         // status is NEW and password is correct.
-                    } else { // if (StringUtils.equals(holderRef, caRef))
+                    } else { // if (Strings.CS.equals(holderRef, caRef))
                         // Subject and issuerDN is CN=Mnemonic,C=Country
                         final String dn = "CN=" + caReferenceField.getMnemonic() + ",C=" + caReferenceField.getCountry();
                         if (log.isDebugEnabled()) {
@@ -1407,15 +1408,14 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         final GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession
                 .getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
 
+        final GlobalCtConfiguration globalCtConfiguration = (GlobalCtConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCtConfiguration.CT_CONFIGURATION_ID);
         final CertificateGenerationParams certGenParams = new CertificateGenerationParams();
         final CTSubmissionConfigParams ctConfig = new CTSubmissionConfigParams();
         ctConfig.setConfiguredCTLogs(globalConfiguration.getCTLogs());
-        ctConfig.setValidityPolicy(globalConfiguration.getGoogleCtPolicy());
+        ctConfig.setValidityPolicy(globalCtConfiguration.getGoogleCtPolicy());
         certGenParams.setCTSubmissionConfigParams(ctConfig);
-        final GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession
-                .getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
-        certGenParams.setCtCacheFastFailEnabled(globalCesecoreConfiguration.getCtCacheFastFailEnabled());
-        certGenParams.setCtCacheFastFailBackoff(globalCesecoreConfiguration.getCtCacheFastFailBackoff());
+        certGenParams.setCtCacheFastFailEnabled(globalCtConfiguration.getCtCacheFastFailEnabled());
+        certGenParams.setCtCacheFastFailBackoff(globalCtConfiguration.getCtCacheFastFailBackoff());
         return certGenParams;
     }
 

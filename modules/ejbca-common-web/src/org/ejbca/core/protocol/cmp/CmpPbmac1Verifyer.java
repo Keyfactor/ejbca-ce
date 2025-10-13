@@ -16,7 +16,7 @@ package org.ejbca.core.protocol.cmp;
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.cmp.PKIHeader;
@@ -63,13 +63,13 @@ public class CmpPbmac1Verifyer implements CmpMessageProtectionVerifyer {
         final PKIHeader head = msg.getHeader();
         this.pAlg = head.getProtectionAlg();
         final ASN1ObjectIdentifier algId = pAlg.getAlgorithm();
-        if (!StringUtils.equals(algId.getId(), PKCSObjectIdentifiers.id_PBMAC1.getId())) {
+        if (!Strings.CS.equals(algId.getId(), PKCSObjectIdentifiers.id_PBMAC1.getId())) {
             final String errMsg = "Protection algorithm id expected '"+ PKCSObjectIdentifiers.id_PBMAC1.getId() +
                     "' (PBMAC1) but was '" + algId.getId() + "'.";
             throw new InvalidCmpProtectionException(errMsg);   
         }
         final PBMAC1Params pbmac1Params = PBMAC1Params.getInstance(pAlg.getParameters());
-        if (!StringUtils.equals(pbmac1Params.getKeyDerivationFunc().getAlgorithm().getId(), PKCSObjectIdentifiers.id_PBKDF2.getId())) {
+        if (!Strings.CS.equals(pbmac1Params.getKeyDerivationFunc().getAlgorithm().getId(), PKCSObjectIdentifiers.id_PBKDF2.getId())) {
             final String errMsg = "Key derivation function id expected '" + PKCSObjectIdentifiers.id_PBKDF2 +
                     "' (PBKDF2) but was '" + pbmac1Params.getKeyDerivationFunc().getAlgorithm().getId() + "'.";
             throw new InvalidCmpProtectionException(errMsg);

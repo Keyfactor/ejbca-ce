@@ -111,6 +111,7 @@ import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 import org.cesecore.keybind.impl.OcspKeyBinding;
+import org.cesecore.keybind.impl.OcspNonExistingBehavior;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.token.NullCryptoToken;
@@ -157,8 +158,6 @@ public class StandaloneOcspResponseGeneratorSessionSystemTest {
     private static final String TESTCLASSNAME = StandaloneOcspResponseGeneratorSessionSystemTest.class.getSimpleName();
     private static final Logger log = Logger.getLogger(StandaloneOcspResponseGeneratorSessionSystemTest.class);
 
-    private String originalSigningTruststoreValidTime;
-
     private final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private final CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE
@@ -180,30 +179,11 @@ public class StandaloneOcspResponseGeneratorSessionSystemTest {
     private final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(TESTCLASSNAME);
 
     private X509CAInfo x509ca;
-    private X509CAInfo x509EcCa;
-    private X509CAInfo x509MldsaCa;
-    private X509CAInfo x509SlhdsaCa;
-    private X509CAInfo x509MsCompatibleRootCa;
-    private X509CAInfo x509MsCompatibleSubCa;
+
     private int internalKeyBindingId;
-    private int internalKeyBindingEccId;
-    private int internalKeyBindingMldsaId;
-    private int internalKeyBindingSlhdsaId;
-    private int internalKeyBindingMsCompatRootId;
-    private int internalKeyBindingMsCompatSubCaId;
     private int cryptoTokenId;
     private X509Certificate ocspSigningCertificate;
-    private X509Certificate ocspSigningEccCertificate;
-    private X509Certificate ocspSigningMldsaCertificate;
-    private X509Certificate ocspSigningSlhdsaCertificate;
-    private X509Certificate ocspSigningMsCompatRootCertificate;
-    private X509Certificate ocspSigningMsCompatSubCaCertificate;
     private X509Certificate caCertificate;
-    private X509Certificate ecCaCertificate;
-    private X509Certificate mldsaCaCertificate;
-    private X509Certificate slhdsaCaCertificate;
-    private X509Certificate msCompatibleRootCaCertificate;
-    private X509Certificate msCompatibleSubCaCertificate;
     private static String originalDefaultResponder;
 
     private X509CAInfo x509CaSignBehalf;
@@ -238,9 +218,6 @@ public class StandaloneOcspResponseGeneratorSessionSystemTest {
         assumeTrue("Test with runner " + cryptoTokenRunner.getSimpleName() + " cannot run on this platform.", cryptoTokenRunner.canRun());
         if (cryptoTokenRunner.canRun()) {
             x509ca = cryptoTokenRunner.createX509Ca("CN="+testName.getMethodName(), testName.getMethodName());
-            originalSigningTruststoreValidTime = cesecoreConfigurationProxySession.getConfigurationValue(OcspConfiguration.SIGNING_TRUSTSTORE_VALID_TIME);
-            //Make sure timers don't run while we debug
-            cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNING_TRUSTSTORE_VALID_TIME, Integer.toString(Integer.MAX_VALUE/1000));
             //Create an independent cryptotoken
             cryptoTokenId = cryptoTokenRunner.createCryptoToken("StandaloneOcspResponseGeneratorTestCryptoToken");
             internalKeyBindingId = OcspTestUtils.createInternalKeyBinding(authenticationToken, cryptoTokenId, OcspKeyBinding.IMPLEMENTATION_ALIAS,
@@ -265,60 +242,6 @@ public class StandaloneOcspResponseGeneratorSessionSystemTest {
             signOnBehalfEntry.add(new InternalKeyBindingTrustEntry(externalCaInfo.getCAId(), null, "behalf entry external"));
             OcspTestUtils.addSignOnBehalfEntries(authenticationToken, internalKeyBindingId, signOnBehalfEntry);
 
-            String caName = testName.getMethodName() + "EC";
-            x509EcCa = cryptoTokenRunner.createX509Ca("CN="+caName, "CN="+caName,  caName, "7300d",
-                    "secp384r1", AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA);
-            ecCaCertificate = (X509Certificate) x509EcCa.getCertificateChain().get(0);
-            internalKeyBindingEccId = OcspTestUtils.createInternalKeyBinding(authenticationToken, cryptoTokenId, OcspKeyBinding.IMPLEMENTATION_ALIAS,
-                    TESTCLASSNAME + "EC", "secp384r1", AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA);
-            signerDN = "CN=ocspTestEcSigner";
-            ocspSigningEccCertificate = OcspTestUtils.createOcspSigningCertificate(authenticationToken, OcspTestUtils.OCSP_END_USER_NAME + "EC", signerDN, internalKeyBindingEccId, x509EcCa.getCAId());
-
-            try {
-                String mldsaCaName = testName.getMethodName() + "MLDSA";
-                x509MldsaCa = cryptoTokenRunner.createX509Ca("CN="+mldsaCaName, "CN="+mldsaCaName,  mldsaCaName, "7300d",
-                        "ML-DSA-44", AlgorithmConstants.SIGALG_MLDSA44);
-                mldsaCaCertificate = (X509Certificate) x509MldsaCa.getCertificateChain().get(0);
-                internalKeyBindingMldsaId = OcspTestUtils.createInternalKeyBinding(authenticationToken, cryptoTokenId, OcspKeyBinding.IMPLEMENTATION_ALIAS,
-                        TESTCLASSNAME + "MLDSA", "ML-DSA-44", AlgorithmConstants.SIGALG_MLDSA44);
-                signerDN = "CN=ocspTestMldsaSigner";
-                ocspSigningMldsaCertificate = OcspTestUtils.createOcspSigningCertificate(authenticationToken, OcspTestUtils.OCSP_END_USER_NAME + "MLDSA", signerDN, internalKeyBindingMldsaId, x509MldsaCa.getCAId());
-            } catch (Exception e) {
-                // If we get an IllegalstateException it means ML-DSA is not supported
-                log.info("ML-DSA not supported for CryptoTokenRunner: " + cryptoTokenRunner.getSimpleName() + ", not running ML-DSA test.");
-            }
-
-            try {
-                String slhdsaCaName = testName.getMethodName() + "SLHDSA";
-                x509SlhdsaCa = cryptoTokenRunner.createX509Ca("CN="+slhdsaCaName, "CN="+slhdsaCaName,  slhdsaCaName, "7300d",
-                        "SLH-DSA-SHA2-128F", AlgorithmConstants.SIGALG_SLHDSA_SHA2_128F);
-                slhdsaCaCertificate = (X509Certificate) x509SlhdsaCa.getCertificateChain().get(0);
-                internalKeyBindingSlhdsaId = OcspTestUtils.createInternalKeyBinding(authenticationToken, cryptoTokenId, OcspKeyBinding.IMPLEMENTATION_ALIAS,
-                        TESTCLASSNAME + "SLHDSA", "SLH-DSA-SHA2-128F", AlgorithmConstants.SIGALG_SLHDSA_SHA2_128F);
-                signerDN = "CN=ocspTestSlhdsaSigner";
-                ocspSigningSlhdsaCertificate = OcspTestUtils.createOcspSigningCertificate(authenticationToken, OcspTestUtils.OCSP_END_USER_NAME + "SLHDSA", signerDN, internalKeyBindingSlhdsaId, x509SlhdsaCa.getCAId());
-            } catch (Exception e) {
-                // If we get an IllegalstateException it means SLH-DSA is not supported
-                log.info("SLH-DSA not supported for CryptoTokenRunner: " + cryptoTokenRunner.getSimpleName() + ", not running SLH-DSA test.");
-            }
-            
-            caName = testName.getMethodName() + "MsCompatRoot";
-            x509MsCompatibleRootCa = cryptoTokenRunner.createX509CaMsCompatible("CN="+caName, caName);
-            msCompatibleRootCaCertificate = (X509Certificate) x509MsCompatibleRootCa.getCertificateChain().get(0);
-            internalKeyBindingMsCompatRootId = OcspTestUtils.createInternalKeyBinding(authenticationToken, cryptoTokenId, OcspKeyBinding.IMPLEMENTATION_ALIAS,
-                    TESTCLASSNAME + "MsCompatRoot", "RSA2048", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-            signerDN = "CN=ocspSigningMsCompatRootSigner";
-            ocspSigningMsCompatRootCertificate = OcspTestUtils.createOcspSigningCertificate(authenticationToken, 
-                    OcspTestUtils.OCSP_END_USER_NAME + "MsCompatRoot", signerDN, internalKeyBindingMsCompatRootId, x509MsCompatibleRootCa.getCAId());
-
-            caName = testName.getMethodName() + "MsCompatSub";
-            x509MsCompatibleSubCa = cryptoTokenRunner.createX509CaMsCompatible("CN="+caName, caName, x509MsCompatibleRootCa.getCAId());
-            msCompatibleSubCaCertificate = (X509Certificate) x509MsCompatibleSubCa.getCertificateChain().get(0);
-            internalKeyBindingMsCompatSubCaId = OcspTestUtils.createInternalKeyBinding(authenticationToken, cryptoTokenId, OcspKeyBinding.IMPLEMENTATION_ALIAS,
-                    TESTCLASSNAME + "MsCompatSub", "RSA2048", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-            signerDN = "CN=ocspSigningMsCompatSubSigner";
-            ocspSigningMsCompatSubCaCertificate = OcspTestUtils.createOcspSigningCertificate(authenticationToken, 
-                    OcspTestUtils.OCSP_END_USER_NAME + "MsCompatSub", signerDN, internalKeyBindingMsCompatSubCaId, x509MsCompatibleSubCa.getCAId());
 
         }
     }
@@ -329,22 +252,11 @@ public class StandaloneOcspResponseGeneratorSessionSystemTest {
             cryptoTokenRunner.cleanUp();
             try {
                 internalCertificateStoreSession.removeCertificate(ocspSigningCertificate);
-                internalCertificateStoreSession.removeCertificate(ocspSigningEccCertificate);
-                internalCertificateStoreSession.removeCertificate(ocspSigningMldsaCertificate);
-                internalCertificateStoreSession.removeCertificate(ocspSigningSlhdsaCertificate);
-                internalCertificateStoreSession.removeCertificate(userSignBehalfCertificate);
-                internalCertificateStoreSession.removeCertificate(ocspSigningMsCompatSubCaCertificate);
-                internalCertificateStoreSession.removeCertificate(ocspSigningMsCompatRootCertificate);
             } catch (Exception e) {
                 //Ignore any failures.
             }
             internalKeyBindingMgmtSession.deleteInternalKeyBinding(authenticationToken, internalKeyBindingId);
-            internalKeyBindingMgmtSession.deleteInternalKeyBinding(authenticationToken, internalKeyBindingEccId);
-            internalKeyBindingMgmtSession.deleteInternalKeyBinding(authenticationToken, internalKeyBindingMldsaId);
-            internalKeyBindingMgmtSession.deleteInternalKeyBinding(authenticationToken, internalKeyBindingSlhdsaId);
-            internalKeyBindingMgmtSession.deleteInternalKeyBinding(authenticationToken, internalKeyBindingMsCompatSubCaId);
-            internalKeyBindingMgmtSession.deleteInternalKeyBinding(authenticationToken, internalKeyBindingMsCompatRootId);
-            cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNING_TRUSTSTORE_VALID_TIME, originalSigningTruststoreValidTime);
+            
             // Make sure default responder is restored
             setOcspDefaultResponderReference(originalDefaultResponder);
             // All CAs that are created with cryptoTokenRunner.createX509Ca are removed by cryptoTokenRunner.cleanUp();
@@ -481,83 +393,194 @@ public class StandaloneOcspResponseGeneratorSessionSystemTest {
     /** Tests the basic case of a standalone OCSP installation, i.e where this is a classic VA */
     @Test
     public void testStandAloneOcspResponseSanity() throws Exception {
-        //Now delete the original CA, making this test completely standalone.
-        OcspTestUtils.deleteCa(authenticationToken, x509ca);
-        OcspTestUtils.deleteCa(authenticationToken, x509EcCa);
-        OcspTestUtils.deleteCa(authenticationToken, x509MldsaCa);
-        OcspTestUtils.deleteCa(authenticationToken, x509SlhdsaCa);
-        OcspTestUtils.deleteCa(authenticationToken, x509MsCompatibleSubCa);
-        OcspTestUtils.deleteCa(authenticationToken, x509MsCompatibleRootCa);
-        activateKeyBinding(internalKeyBindingId);
-        activateKeyBinding(internalKeyBindingEccId, ocspSigningEccCertificate);
-        if (mldsaCaCertificate != null) {
-            activateKeyBinding(internalKeyBindingMldsaId, ocspSigningMldsaCertificate);
-        }
-        if (slhdsaCaCertificate != null) {
-            activateKeyBinding(internalKeyBindingSlhdsaId, ocspSigningSlhdsaCertificate);
-        }
-        activateKeyBinding(internalKeyBindingMsCompatSubCaId, ocspSigningMsCompatSubCaCertificate);
-        activateKeyBinding(internalKeyBindingMsCompatRootId, ocspSigningMsCompatRootCertificate);
-        ocspResponseGeneratorSession.reloadOcspSigningCache();
-        // RSA external OCSP responder sanity
-        OCSPReq ocspRequest = buildOcspRequest(null, null, caCertificate, ocspSigningCertificate.getSerialNumber());
-        OCSPResp response = sendRequest(ocspRequest);
-        assertEquals("Response status not zero.", OCSPResp.SUCCESSFUL, response.getStatus());
-        validateSuccessfulResponse((BasicOCSPResp) response.getResponseObject(), ocspSigningCertificate.getPublicKey());
-        BasicOCSPResp basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
-        assertEquals("Signature algorithm is wrong", AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
-                AlgorithmTools.getAlgorithmNameFromOID(basicOcspResponse.getSignatureAlgOID()));
+        
+        X509CAInfo x509EcCa;
+        X509CAInfo x509MldsaCa = null;
+        X509CAInfo x509SlhdsaCa = null;
+        X509CAInfo x509MsCompatibleRootCa;
+        X509CAInfo x509MsCompatibleSubCa;
 
-        // EC external OCSP responder sanity
-        ocspRequest = buildOcspRequest(null, null, ecCaCertificate, ocspSigningEccCertificate.getSerialNumber());
-        response = sendRequest(ocspRequest);
-        assertEquals("Response status not zero.", OCSPResp.SUCCESSFUL, response.getStatus());
-        validateOcspResponse((BasicOCSPResp) response.getResponseObject(), ocspSigningEccCertificate.getPublicKey(), ocspSigningEccCertificate, null);
-        basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
-        assertEquals("Signature algorithm is wrong", AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA,
-                AlgorithmTools.getAlgorithmNameFromOID(basicOcspResponse.getSignatureAlgOID()));
+        int internalKeyBindingEccId = 0;
+        int internalKeyBindingMldsaId = 0;
+        int internalKeyBindingSlhdsaId = 0;
+        int internalKeyBindingMsCompatRootId = 0;
+        int internalKeyBindingMsCompatSubCaId = 0;
 
-        // ML-DSA external OCSP responder sanity, we can only run that if the underlying crypto token supports ML-DSA
-        // (as of Feb 2025 PKCS12CryptoRunner does, P11NG would if the HSM supported it, but SoftHSM does not)
-        if (mldsaCaCertificate != null) {
-            ocspRequest = buildOcspRequest(null, null, mldsaCaCertificate, ocspSigningMldsaCertificate.getSerialNumber());
+        X509Certificate ocspSigningEccCertificate = null;
+        X509Certificate ocspSigningMldsaCertificate = null;
+        X509Certificate ocspSigningSlhdsaCertificate = null;
+        X509Certificate ocspSigningMsCompatRootCertificate = null;
+        X509Certificate ocspSigningMsCompatSubCaCertificate = null;
+
+        X509Certificate ecCaCertificate;
+        X509Certificate mldsaCaCertificate = null;
+        X509Certificate slhdsaCaCertificate = null;
+        X509Certificate msCompatibleRootCaCertificate;
+        X509Certificate msCompatibleSubCaCertificate;
+
+        try {
+            String caName = testName.getMethodName() + "EC";
+            x509EcCa = cryptoTokenRunner.createX509Ca("CN=" + caName, "CN=" + caName, caName, "7300d", "secp384r1",
+                    AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA);
+            ecCaCertificate = (X509Certificate) x509EcCa.getCertificateChain().get(0);
+            internalKeyBindingEccId = OcspTestUtils.createInternalKeyBinding(authenticationToken, cryptoTokenId, OcspKeyBinding.IMPLEMENTATION_ALIAS,
+                    TESTCLASSNAME + "EC", "secp384r1", AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA);
+            String signerDN = "CN=ocspTestEcSigner";
+            ocspSigningEccCertificate = OcspTestUtils.createOcspSigningCertificate(authenticationToken, OcspTestUtils.OCSP_END_USER_NAME + "EC",
+                    signerDN, internalKeyBindingEccId, x509EcCa.getCAId());
+
+            try {
+                String mldsaCaName = testName.getMethodName() + "MLDSA";
+                x509MldsaCa = cryptoTokenRunner.createX509Ca("CN=" + mldsaCaName, "CN=" + mldsaCaName, mldsaCaName, "7300d", "ML-DSA-44",
+                        AlgorithmConstants.SIGALG_MLDSA44);
+                mldsaCaCertificate = (X509Certificate) x509MldsaCa.getCertificateChain().get(0);
+                internalKeyBindingMldsaId = OcspTestUtils.createInternalKeyBinding(authenticationToken, cryptoTokenId,
+                        OcspKeyBinding.IMPLEMENTATION_ALIAS, TESTCLASSNAME + "MLDSA", "ML-DSA-44", AlgorithmConstants.SIGALG_MLDSA44);
+                signerDN = "CN=ocspTestMldsaSigner";
+                ocspSigningMldsaCertificate = OcspTestUtils.createOcspSigningCertificate(authenticationToken,
+                        OcspTestUtils.OCSP_END_USER_NAME + "MLDSA", signerDN, internalKeyBindingMldsaId, x509MldsaCa.getCAId());
+            } catch (Exception e) {
+                // If we get an IllegalstateException it means ML-DSA is not supported
+                log.info("ML-DSA not supported for CryptoTokenRunner: " + cryptoTokenRunner.getSimpleName() + ", not running ML-DSA test.");
+            }
+
+            try {
+                String slhdsaCaName = testName.getMethodName() + "SLHDSA";
+                x509SlhdsaCa = cryptoTokenRunner.createX509Ca("CN=" + slhdsaCaName, "CN=" + slhdsaCaName, slhdsaCaName, "7300d", "SLH-DSA-SHA2-128F",
+                        AlgorithmConstants.SIGALG_SLHDSA_SHA2_128F);
+                slhdsaCaCertificate = (X509Certificate) x509SlhdsaCa.getCertificateChain().get(0);
+                internalKeyBindingSlhdsaId = OcspTestUtils.createInternalKeyBinding(authenticationToken, cryptoTokenId,
+                        OcspKeyBinding.IMPLEMENTATION_ALIAS, TESTCLASSNAME + "SLHDSA", "SLH-DSA-SHA2-128F",
+                        AlgorithmConstants.SIGALG_SLHDSA_SHA2_128F);
+                signerDN = "CN=ocspTestSlhdsaSigner";
+                ocspSigningSlhdsaCertificate = OcspTestUtils.createOcspSigningCertificate(authenticationToken,
+                        OcspTestUtils.OCSP_END_USER_NAME + "SLHDSA", signerDN, internalKeyBindingSlhdsaId, x509SlhdsaCa.getCAId());
+            } catch (Exception e) {
+                // If we get an IllegalstateException it means SLH-DSA is not supported
+                log.info("SLH-DSA not supported for CryptoTokenRunner: " + cryptoTokenRunner.getSimpleName() + ", not running SLH-DSA test.");
+            }
+
+            caName = testName.getMethodName() + "MsCompatRoot";
+            x509MsCompatibleRootCa = cryptoTokenRunner.createX509CaMsCompatible("CN=" + caName, caName);
+            msCompatibleRootCaCertificate = (X509Certificate) x509MsCompatibleRootCa.getCertificateChain().get(0);
+            internalKeyBindingMsCompatRootId = OcspTestUtils.createInternalKeyBinding(authenticationToken, cryptoTokenId,
+                    OcspKeyBinding.IMPLEMENTATION_ALIAS, TESTCLASSNAME + "MsCompatRoot", "RSA2048", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            signerDN = "CN=ocspSigningMsCompatRootSigner";
+            ocspSigningMsCompatRootCertificate = OcspTestUtils.createOcspSigningCertificate(authenticationToken,
+                    OcspTestUtils.OCSP_END_USER_NAME + "MsCompatRoot", signerDN, internalKeyBindingMsCompatRootId, x509MsCompatibleRootCa.getCAId());
+
+            caName = testName.getMethodName() + "MsCompatSub";
+            x509MsCompatibleSubCa = cryptoTokenRunner.createX509CaMsCompatible("CN=" + caName, caName, x509MsCompatibleRootCa.getCAId());
+            msCompatibleSubCaCertificate = (X509Certificate) x509MsCompatibleSubCa.getCertificateChain().get(0);
+            internalKeyBindingMsCompatSubCaId = OcspTestUtils.createInternalKeyBinding(authenticationToken, cryptoTokenId,
+                    OcspKeyBinding.IMPLEMENTATION_ALIAS, TESTCLASSNAME + "MsCompatSub", "RSA2048", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            signerDN = "CN=ocspSigningMsCompatSubSigner";
+            ocspSigningMsCompatSubCaCertificate = OcspTestUtils.createOcspSigningCertificate(authenticationToken,
+                    OcspTestUtils.OCSP_END_USER_NAME + "MsCompatSub", signerDN, internalKeyBindingMsCompatSubCaId, x509MsCompatibleSubCa.getCAId());
+
+            //Now delete the original CA, making this test completely standalone.
+            OcspTestUtils.deleteCa(authenticationToken, x509ca);
+            OcspTestUtils.deleteCa(authenticationToken, x509EcCa);
+            OcspTestUtils.deleteCa(authenticationToken, x509MldsaCa);
+            OcspTestUtils.deleteCa(authenticationToken, x509SlhdsaCa);
+            OcspTestUtils.deleteCa(authenticationToken, x509MsCompatibleSubCa);
+            OcspTestUtils.deleteCa(authenticationToken, x509MsCompatibleRootCa);
+            activateKeyBinding(internalKeyBindingId);
+            activateKeyBinding(internalKeyBindingEccId, ocspSigningEccCertificate);
+            if (mldsaCaCertificate != null) {
+                activateKeyBinding(internalKeyBindingMldsaId, ocspSigningMldsaCertificate);
+            }
+            if (slhdsaCaCertificate != null) {
+                activateKeyBinding(internalKeyBindingSlhdsaId, ocspSigningSlhdsaCertificate);
+            }
+            activateKeyBinding(internalKeyBindingMsCompatSubCaId, ocspSigningMsCompatSubCaCertificate);
+            activateKeyBinding(internalKeyBindingMsCompatRootId, ocspSigningMsCompatRootCertificate);
+            ocspResponseGeneratorSession.reloadOcspSigningCache();
+            // RSA external OCSP responder sanity
+            OCSPReq ocspRequest = buildOcspRequest(null, null, caCertificate, ocspSigningCertificate.getSerialNumber());
+            OCSPResp response = sendRequest(ocspRequest);
+            assertEquals("Response status not zero.", OCSPResp.SUCCESSFUL, response.getStatus());
+            validateSuccessfulResponse((BasicOCSPResp) response.getResponseObject(), ocspSigningCertificate.getPublicKey());
+            BasicOCSPResp basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
+            assertEquals("Signature algorithm is wrong", AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
+                    AlgorithmTools.getAlgorithmNameFromOID(basicOcspResponse.getSignatureAlgOID()));
+
+            // EC external OCSP responder sanity
+            ocspRequest = buildOcspRequest(null, null, ecCaCertificate, ocspSigningEccCertificate.getSerialNumber());
             response = sendRequest(ocspRequest);
             assertEquals("Response status not zero.", OCSPResp.SUCCESSFUL, response.getStatus());
-            validateOcspResponse((BasicOCSPResp) response.getResponseObject(), ocspSigningMldsaCertificate.getPublicKey(), ocspSigningMldsaCertificate, null);
+            validateOcspResponse((BasicOCSPResp) response.getResponseObject(), ocspSigningEccCertificate.getPublicKey(), ocspSigningEccCertificate,
+                    null);
             basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
-            assertEquals("Signature algorithm is wrong", AlgorithmConstants.SIGALG_MLDSA44,
+            assertEquals("Signature algorithm is wrong", AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA,
                     AlgorithmTools.getAlgorithmNameFromOID(basicOcspResponse.getSignatureAlgOID()));
-        }
 
-        // SLH-DSA external OCSP responder sanity, we can only run that if the underlying crypto token supports SLH-DSA
-        if (slhdsaCaCertificate != null) {
-            ocspRequest = buildOcspRequest(null, null, slhdsaCaCertificate, ocspSigningSlhdsaCertificate.getSerialNumber());
+            // ML-DSA external OCSP responder sanity, we can only run that if the underlying crypto token supports ML-DSA
+            // (as of Feb 2025 PKCS12CryptoRunner does, P11NG would if the HSM supported it, but SoftHSM does not)
+            if (mldsaCaCertificate != null) {
+                ocspRequest = buildOcspRequest(null, null, mldsaCaCertificate, ocspSigningMldsaCertificate.getSerialNumber());
+                response = sendRequest(ocspRequest);
+                assertEquals("Response status not zero.", OCSPResp.SUCCESSFUL, response.getStatus());
+                validateOcspResponse((BasicOCSPResp) response.getResponseObject(), ocspSigningMldsaCertificate.getPublicKey(),
+                        ocspSigningMldsaCertificate, null);
+                basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
+                assertEquals("Signature algorithm is wrong", AlgorithmConstants.SIGALG_MLDSA44,
+                        AlgorithmTools.getAlgorithmNameFromOID(basicOcspResponse.getSignatureAlgOID()));
+            }
+
+            // SLH-DSA external OCSP responder sanity, we can only run that if the underlying crypto token supports SLH-DSA
+            if (slhdsaCaCertificate != null) {
+                ocspRequest = buildOcspRequest(null, null, slhdsaCaCertificate, ocspSigningSlhdsaCertificate.getSerialNumber());
+                response = sendRequest(ocspRequest);
+                assertEquals("Response status not zero.", OCSPResp.SUCCESSFUL, response.getStatus());
+                validateOcspResponse((BasicOCSPResp) response.getResponseObject(), ocspSigningSlhdsaCertificate.getPublicKey(),
+                        ocspSigningSlhdsaCertificate, null);
+                basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
+                assertEquals("Signature algorithm is wrong", AlgorithmConstants.SIGALG_SLHDSA_SHA2_128F,
+                        AlgorithmTools.getAlgorithmNameFromOID(basicOcspResponse.getSignatureAlgOID()));
+            }
+
+            // MS Compatible Root CA external OCSP responder sanity
+            ocspRequest = buildOcspRequest(null, null, msCompatibleRootCaCertificate, ocspSigningMsCompatRootCertificate.getSerialNumber());
             response = sendRequest(ocspRequest);
             assertEquals("Response status not zero.", OCSPResp.SUCCESSFUL, response.getStatus());
-            validateOcspResponse((BasicOCSPResp) response.getResponseObject(), ocspSigningSlhdsaCertificate.getPublicKey(), ocspSigningSlhdsaCertificate, null);
+            validateOcspResponse((BasicOCSPResp) response.getResponseObject(), ocspSigningMsCompatRootCertificate.getPublicKey(),
+                    ocspSigningMsCompatRootCertificate, null);
             basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
-            assertEquals("Signature algorithm is wrong", AlgorithmConstants.SIGALG_SLHDSA_SHA2_128F,
+            assertEquals("Signature algorithm is wrong", AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
                     AlgorithmTools.getAlgorithmNameFromOID(basicOcspResponse.getSignatureAlgOID()));
+
+            // MS Compatible Sub CA external OCSP responder sanity
+            ocspRequest = buildOcspRequest(null, null, msCompatibleSubCaCertificate, ocspSigningMsCompatSubCaCertificate.getSerialNumber());
+            response = sendRequest(ocspRequest);
+            assertEquals("Response status not zero.", OCSPResp.SUCCESSFUL, response.getStatus());
+            validateOcspResponse((BasicOCSPResp) response.getResponseObject(), ocspSigningMsCompatSubCaCertificate.getPublicKey(),
+                    ocspSigningMsCompatSubCaCertificate, null);
+            basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
+            assertEquals("Signature algorithm is wrong", AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
+                    AlgorithmTools.getAlgorithmNameFromOID(basicOcspResponse.getSignatureAlgOID()));
+
+        } finally {
+            try {
+                internalCertificateStoreSession.removeCertificate(ocspSigningEccCertificate);
+                internalCertificateStoreSession.removeCertificate(ocspSigningMldsaCertificate);
+                internalCertificateStoreSession.removeCertificate(ocspSigningSlhdsaCertificate);
+                internalCertificateStoreSession.removeCertificate(userSignBehalfCertificate);
+                internalCertificateStoreSession.removeCertificate(ocspSigningMsCompatSubCaCertificate);
+                internalCertificateStoreSession.removeCertificate(ocspSigningMsCompatRootCertificate);
+            } catch (Exception e) {
+                //Ignore any failures.
+            }
+            try {
+                internalKeyBindingMgmtSession.deleteInternalKeyBinding(authenticationToken, internalKeyBindingEccId);
+                internalKeyBindingMgmtSession.deleteInternalKeyBinding(authenticationToken, internalKeyBindingMldsaId);
+                internalKeyBindingMgmtSession.deleteInternalKeyBinding(authenticationToken, internalKeyBindingSlhdsaId);
+                internalKeyBindingMgmtSession.deleteInternalKeyBinding(authenticationToken, internalKeyBindingMsCompatSubCaId);
+                internalKeyBindingMgmtSession.deleteInternalKeyBinding(authenticationToken, internalKeyBindingMsCompatRootId);
+            } catch (Exception e) {
+                //Ignore any failures.
+            }
         }
-        
-        // MS Compatible Root CA external OCSP responder sanity
-        ocspRequest = buildOcspRequest(null, null, msCompatibleRootCaCertificate, ocspSigningMsCompatRootCertificate.getSerialNumber());
-        response = sendRequest(ocspRequest);
-        assertEquals("Response status not zero.", OCSPResp.SUCCESSFUL, response.getStatus());
-        validateOcspResponse((BasicOCSPResp) response.getResponseObject(), ocspSigningMsCompatRootCertificate.getPublicKey(), ocspSigningMsCompatRootCertificate, null);
-        basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
-        assertEquals("Signature algorithm is wrong", AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
-                AlgorithmTools.getAlgorithmNameFromOID(basicOcspResponse.getSignatureAlgOID()));
-        
-        // MS Compatible Sub CA external OCSP responder sanity
-        ocspRequest = buildOcspRequest(null, null, msCompatibleSubCaCertificate, ocspSigningMsCompatSubCaCertificate.getSerialNumber());
-        response = sendRequest(ocspRequest);
-        assertEquals("Response status not zero.", OCSPResp.SUCCESSFUL, response.getStatus());
-        validateOcspResponse((BasicOCSPResp) response.getResponseObject(), 
-                        ocspSigningMsCompatSubCaCertificate.getPublicKey(), ocspSigningMsCompatSubCaCertificate, null);
-        basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
-        assertEquals("Signature algorithm is wrong", AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
-                AlgorithmTools.getAlgorithmNameFromOID(basicOcspResponse.getSignatureAlgOID()));
 
     }
 
@@ -1039,8 +1062,10 @@ public class StandaloneOcspResponseGeneratorSessionSystemTest {
     public void testResponseWithDefaultResponderForExternalNoDefaultSet() throws Exception {
         // Make sure that a default responder is set
         setOcspDefaultResponderReference("");
-        String originalNoneExistingIsGood = cesecoreConfigurationProxySession.getConfigurationValue(OcspConfiguration.NON_EXISTING_IS_GOOD);
-        cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.NON_EXISTING_IS_GOOD, "false");
+        GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        OcspNonExistingBehavior originalNoneExisting = globalOcspConfiguration.getOcspNonExistingBehavior();
+        globalOcspConfiguration.setOcspNonExistingBehavior(OcspNonExistingBehavior.UNKNOWN);
+        globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);
         try {
             //Make default responder standalone
             OcspTestUtils.deleteCa(authenticationToken, x509ca);
@@ -1110,7 +1135,9 @@ public class StandaloneOcspResponseGeneratorSessionSystemTest {
                 internalCertificateStoreSession.removeCertificate(externalCaCertificate);
             }
         } finally {
-            cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.NON_EXISTING_IS_GOOD, originalNoneExistingIsGood);
+            GlobalOcspConfiguration restoreOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            restoreOcspConfiguration.setOcspNonExistingBehavior(originalNoneExisting);
+            globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);
         }
     }
 
@@ -1119,8 +1146,10 @@ public class StandaloneOcspResponseGeneratorSessionSystemTest {
     public void testResponseWithDefaultResponderForExternalRevoked() throws Exception {
         // Make sure that a default responder is set
         setOcspDefaultResponderReference(CertTools.getIssuerDN(ocspSigningCertificate));
-        String originalNoneExistingIsGood = cesecoreConfigurationProxySession.getConfigurationValue(OcspConfiguration.NON_EXISTING_IS_GOOD);
-        cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.NON_EXISTING_IS_GOOD, "false");
+        GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        OcspNonExistingBehavior originalNoneExisting = globalOcspConfiguration.getOcspNonExistingBehavior();
+        globalOcspConfiguration.setOcspNonExistingBehavior(OcspNonExistingBehavior.UNKNOWN);
+        globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);
         try {
             //Make default responder standalone
             OcspTestUtils.deleteCa(authenticationToken, x509ca);
@@ -1196,7 +1225,9 @@ public class StandaloneOcspResponseGeneratorSessionSystemTest {
                 internalCertificateStoreSession.removeCertificate(externalCaCertificate);
             }
         } finally {
-            cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.NON_EXISTING_IS_GOOD, originalNoneExistingIsGood);
+            GlobalOcspConfiguration restoreOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            restoreOcspConfiguration.setOcspNonExistingBehavior(originalNoneExisting);
+            globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);
         }
     }
 
@@ -1221,7 +1252,9 @@ public class StandaloneOcspResponseGeneratorSessionSystemTest {
     public void testStandAloneOcspResponseDefaultResponder() throws Exception {
         // Make sure that a default responder is set
         String originalResponder = setOcspDefaultResponderReference(CertTools.getIssuerDN(ocspSigningCertificate));
-        cesecoreConfigurationProxySession.setConfigurationValue("ocsp.nonexistingisgood", "false");
+        GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        globalOcspConfiguration.setOcspNonExistingBehavior(OcspNonExistingBehavior.UNKNOWN);
+        globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);        
         try {
               //Now delete the original CA, making this test completely standalone.
             OcspTestUtils.deleteCa(authenticationToken, x509ca);
@@ -1251,7 +1284,6 @@ public class StandaloneOcspResponseGeneratorSessionSystemTest {
                     .getSerialNumber());
             assertTrue(singleResponses[0].getCertStatus() instanceof UnknownStatus);
         } finally {
-            cesecoreConfigurationProxySession.setConfigurationValue("ocsp.nonexistingisgood", "false");
             setOcspDefaultResponderReference(originalResponder);
         }
     }

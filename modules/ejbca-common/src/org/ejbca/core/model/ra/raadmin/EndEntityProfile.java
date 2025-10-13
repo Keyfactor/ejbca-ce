@@ -14,7 +14,6 @@
 package org.ejbca.core.model.ra.raadmin;
 
 import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,12 +29,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import com.keyfactor.util.Base64;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.keys.KeyStoreCipher;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields;
@@ -271,21 +270,6 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 
     /** Redact SubjectDn and SAN from server and audit log*/
     public static final String REDACTPII   = "REDACTPII";
-
-    @Deprecated //Since 8.0.0
-    private static final String PRINTINGUSE            = "PRINTINGUSE";
-    @Deprecated //Since 8.0.0
-    private static final String PRINTINGDEFAULT        = "PRINTINGDEFAULT";
-    @Deprecated //Since 8.0.0
-    private static final String PRINTINGREQUIRED       = "PRINTINGREQUIRED";
-    @Deprecated //Since 8.0.0
-    private static final String PRINTINGCOPIES         = "PRINTINGCOPIES";
-    @Deprecated //Since 8.0.0
-    private static final String PRINTINGPRINTERNAME    = "PRINTINGPRINTERNAME";
-    @Deprecated //Since 8.0.0
-    private static final String PRINTINGSVGFILENAME    = "PRINTINGSVGFILENAME";
-    @Deprecated //Since 8.0.0
-    private static final String PRINTINGSVGDATA        = "PRINTINGSVGDATA";
 
     private static final String PSD2QCSTATEMENT    = "PSD2QCSTATEMENT";
 
@@ -825,7 +809,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 
     public boolean getSshVerifyRequired() {
         final String value = getValue(SSH_CRITICAL_OPTION_VERIFY_REQUIRED, 0);
-        return StringUtils.equals(value, TRUE) ? true : false;
+        return Strings.CS.equals(value, TRUE) ? true : false;
     }
 
     public void setSshVerifyRequired(final boolean value) {
@@ -1361,6 +1345,14 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     public void setIssuanceRevocationReasonModifiable(final boolean use) {
         setModifyable(ISSUANCEREVOCATIONREASON, 0, use);
     }
+    
+    public boolean isIssuanceRevocationReasonDefault() {
+        return isRequired(ISSUANCEREVOCATIONREASON, 0);
+    }
+
+    public void setIssuanceRevocationReasonDefault(final boolean use) {
+        setRequired(ISSUANCEREVOCATIONREASON, 0, use);
+    }
 
     /**
      * Returns the initial revocation reason.
@@ -1667,141 +1659,6 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         data.put(ALLOW_MULTI_VALUE_RDNS, allow);
     }
 
-    /** @return true if printing of userdata should be done. default is false.
-     * @deprecated Printing support was removed in 8.0.0
-     */
-    @Deprecated
-    public boolean getUsePrinting(){
-    	return getValueDefaultFalse(PRINTINGUSE);
-    }
-
-    /**
-     *
-     * @deprecated Printing support was removed in 8.0.0
-     */
-    @Deprecated
-    public void setUsePrinting(final boolean use){
-    	data.put(PRINTINGUSE, use);
-    }
-
-    /** @return true if printing of userdata should be done. default is false.
-     * @deprecated Printing support was removed in 8.0.0
-     */
-    @Deprecated
-    public boolean getPrintingDefault(){
-    	return getValueDefaultFalse(PRINTINGDEFAULT);
-    }
-
-    /**
-     * @deprecated Printing support was removed in 8.0.0
-     */
-    @Deprecated
-    public void setPrintingDefault(final boolean printDefault){
-    	data.put(PRINTINGDEFAULT, printDefault);
-    }
-
-    /** @return true if printing of userdata should be done. default is false.
-     *
-     * @deprecated Printing support was removed in 8.0.0
-     */
-    @Deprecated
-    public boolean getPrintingRequired(){
-    	return getValueDefaultFalse(PRINTINGREQUIRED);
-    }
-
-    /**
-     *
-     * @deprecated Printing support was removed in 8.0.0
-     */
-    @Deprecated
-    public void setPrintingRequired(final boolean printRequired){
-    	data.put(PRINTINGREQUIRED, printRequired);
-    }
-
-    /**
-     *  @return the number of copies that should be printed. Default is 1.
-     * @deprecated Printing support was removed in 8.0.0
-     */
-    @Deprecated
-    public int getPrintedCopies(){
-    	if (data.get(PRINTINGCOPIES) == null) {
-    		return 1;
-    	}
-    	return (int) data.get(PRINTINGCOPIES);
-    }
-
-    /**
-     *
-     * @deprecated Printing support was removed in 8.0.0
-     */
-    @Deprecated
-    public void setPrintedCopies(int copies){
-    	data.put(PRINTINGCOPIES, copies);
-    }
-
-    /** @return the name of the printer that should be used
-     *
-     *
-     * @deprecated Used for the SVGPrinter, no longer in use since 8.0.0
-     */
-    @Deprecated
-    public String getPrinterName(){
-    	return getValueDefaultEmpty(PRINTINGPRINTERNAME);
-    }
-
-    /**
-     *
-     * @deprecated Used for the SVGPrinter, no longer in use since 8.0.0
-     */
-    @Deprecated
-    public void setPrinterName(final String printerName){
-    	data.put(PRINTINGPRINTERNAME, printerName);
-    }
-
-    /** @return filename of the uploaded
-     * @deprecated Used for the SVGPrinter, no longer in use since 8.0.0
-     */
-    @Deprecated
-    public String getPrinterSVGFileName(){
-    	return getValueDefaultEmpty(PRINTINGSVGFILENAME);
-    }
-
-    /**
-     *
-     * @deprecated Used for the SVGPrinter, no longer in use since 8.0.0
-     */
-    @Deprecated
-    public void setPrinterSVGFileName(final String printerSVGFileName){
-    	data.put(PRINTINGSVGFILENAME, printerSVGFileName);
-    }
-
-    /**
-     * @return the data of the SVG file, if no content have been uploaded null is returned
-     *
-     * @deprecated Used for the SVGPrinter, no longer in use since 8.0.0
-     */
-    @Deprecated
-    public String getPrinterSVGData(){
-        final String value = (String) data.get(PRINTINGSVGDATA);
-    	if (StringUtils.isBlank(value)) {
-    		return null;
-    	}
-    	return new String(Base64.decode(value.getBytes(StandardCharsets.US_ASCII)));
-    }
-
-    /**
-     *
-     * @deprecated Used for the SVGPrinter, no longer in use since 8.0.0
-     */
-    @Deprecated
-    public void setPrinterSVGData(final String svgData) {
-        if (StringUtils.isBlank(svgData)) {
-            data.remove(PRINTINGSVGDATA);
-        } else {
-            data.put(PRINTINGSVGDATA, new String(Base64.encode(svgData.getBytes())));
-        }
-    }
-
     /** @return the boolean value or false if null. Note: Some keys need translating to integer first (e.g. those with use/value/required flags) */
     private boolean getValueDefaultFalse(final Object key) {
     	if (data.get(key) == null) {
@@ -2065,7 +1922,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	}
     	if (getUse(ISSUANCEREVOCATIONREASON, 0) && !isModifyable(ISSUANCEREVOCATIONREASON, 0)) {
     		final String value = getValue(ISSUANCEREVOCATIONREASON, 0);
-    		if (!StringUtils.equals(issuanceRevReason, value)) {
+    		if (!Strings.CS.equals(issuanceRevReason, value)) {
     			throw new EndEntityProfileValidationException("Issuance revocation reason '"+issuanceRevReason+"' does not match required value '"+value+"'.");
     		}
     	}
@@ -2366,7 +2223,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
                 } else {
                     // Check that postalAddress has #der_encoding_in_hex format, i.e. a full der sequence in hex format
                     if (DnComponents.POSTALADDRESS.equals(DnComponents.dnIdToProfileName(dnId))) {
-                        if (!StringUtils.startsWith(fieldValue, "#30")) {
+                        if (!Strings.CS.startsWith(fieldValue, "#30")) {
                             throw new EndEntityProfileValidationException(DnComponents.dnIdToProfileName(dnId) + " (" + fieldValue + ") does not seem to be in #der_encoding_in_hex format. See \"End_Entity_Profiles.html\" for more information about the postalAddress (2.5.4.16) field.");
                         }
                     }

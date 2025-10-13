@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import jakarta.ejb.EJB;
 import jakarta.faces.event.AjaxBehaviorEvent;
@@ -29,7 +30,7 @@ import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.tokens.AuthenticationTokenMetaData;
@@ -37,7 +38,7 @@ import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.config.OAuthConfiguration;
-import org.cesecore.roles.Role;
+import org.cesecore.dto.RoleDataDto;
 import org.cesecore.roles.member.RoleMember;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.era.RaRoleMemberSearchRequest;
@@ -185,8 +186,8 @@ public class RaRoleMembersBean implements Serializable {
         resultsFiltered = new ArrayList<>();
         for (final RoleMember member : lastExecutedResponse.getRoleMembers()) {
             final AccessMatchValue accessMatchValue = getAccessMatchValue(member.getTokenType(), member.getTokenMatchKey());
-            final String caName = !accessMatchValue.isIssuedByCa() ? "" : StringUtils.defaultString(caIdToNameMap.get(member.getTokenIssuerId()), raLocaleBean.getMessage("role_members_page_info_unknownca"));
-            final String providerLabel =!accessMatchValue.isIssuedByOauthProvider() ? "" : StringUtils.defaultString(providerIdToLabelMap.get(member.getTokenProviderId()), raLocaleBean.getMessage("role_members_page_info_unknownprovider"));
+            final String caName = !accessMatchValue.isIssuedByCa() ? "" : Objects.toString(caIdToNameMap.get(member.getTokenIssuerId()), raLocaleBean.getMessage("role_members_page_info_unknownca"));
+            final String providerLabel =!accessMatchValue.isIssuedByOauthProvider() ? "" : Objects.toString(providerIdToLabelMap.get(member.getTokenProviderId()), raLocaleBean.getMessage("role_members_page_info_unknownprovider"));
             final String roleName = StringUtils.defaultString(roleIdToNameMap.get(member.getRoleId()));
             final String namespace = roleIdToNamespaceMap.get(member.getRoleId());
             final String tokenTypeText = raLocaleBean.getMessage("role_member_token_type_" + member.getTokenType());
@@ -309,27 +310,27 @@ public class RaRoleMembersBean implements Serializable {
     public List<SelectItem> getAvailableRoles() {
         if (availableRoles == null) {
             availableRoles = new ArrayList<>();
-            final List<Role> roles = new ArrayList<>(raMasterApiProxyBean.getAuthorizedRoles(raAuthenticationBean.getAuthenticationToken()));
+            final List<RoleDataDto> roles = new ArrayList<>(raMasterApiProxyBean.getAuthorizedRoles(raAuthenticationBean.getAuthenticationToken()));
             Collections.sort(roles);
             roleIdToNameMap = new HashMap<>();
             roleIdToNamespaceMap = new HashMap<>();
             String lastNamespace = null;
             hasMultipleNamespaces = false;
-            for (final Role role : roles) {
-                roleIdToNameMap.put(role.getRoleId(), role.getRoleName());
-                if (!StringUtils.isEmpty(role.getNameSpace())) {
-                    roleIdToNamespaceMap.put(role.getRoleId(), role.getNameSpace());
+            for (final RoleDataDto role : roles) {
+                roleIdToNameMap.put(role.id(), role.name());
+                if (!StringUtils.isEmpty(role.nameSpace())) {
+                    roleIdToNamespaceMap.put(role.id(), role.nameSpace());
                 }
                 // Check if there's more than one namespace. If so the namespaces are shown in the GUI
-                if (lastNamespace != null && !lastNamespace.equals(role.getNameSpace())) {
+                if (lastNamespace != null && !lastNamespace.equals(role.nameSpace())) {
                     hasMultipleNamespaces = true;
                 }
-                lastNamespace = role.getNameSpace();
+                lastNamespace = role.nameSpace();
             }
             availableRoles.add(new SelectItem(null, raLocaleBean.getMessage("role_members_page_criteria_role_optionany")));
-            for (final Role role : roles) {
-                final String label = hasMultipleNamespaces ? role.getRoleNameFull() : role.getRoleName();
-                availableRoles.add(new SelectItem(role.getRoleId(), label));
+            for (final RoleDataDto role : roles) {
+                final String label = hasMultipleNamespaces ? role.fullName() : role.name();
+                availableRoles.add(new SelectItem(role.id(), label));
             }
         }
         return availableRoles;
@@ -400,5 +401,4 @@ public class RaRoleMembersBean implements Serializable {
         }
         return availableTokenTypes;
     }
-    
 }

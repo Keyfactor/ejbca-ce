@@ -13,6 +13,7 @@
 
 package org.ejbca.ui.web.admin.configuration;
 
+import java.io.Serializable;
 import java.security.cert.CertificateParsingException;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -20,15 +21,16 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import jakarta.servlet.http.Part;
-
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.certificatetransparency.CtLogManager;
 
 import com.keyfactor.util.keys.KeyTools;
+
+import jakarta.servlet.http.Part;
 
 /**
  * This class is used to manage CT logs in EJBCA's system configuration. It adds some additional
@@ -36,16 +38,18 @@ import com.keyfactor.util.keys.KeyTools;
  * new CT logs, checking whether a CT log is in use before removing it and language awareness.
  *
  */
-public class SystemConfigurationCtLogManager extends CtLogManager {
+public class SystemConfigurationCtLogManager extends CtLogManager implements Serializable {
+    private static final long serialVersionUID = 1L;
     private static final String EDIT_CT_LOG = "editCTLog";
     private static final String CT_LOG_SAVED = "saved";
     private static final Logger log = Logger.getLogger(SystemConfigurationCtLogManager.class);
     private final SystemConfigurationHelper systemConfigurationHelper;
     private final CtLogEditor ctLogEditor;
 
-    public class CtLogEditor {
+    public class CtLogEditor implements Serializable {
+        private static final long serialVersionUID = 1L;
         private String url;
-        private Part publicKeyFile;
+        private transient Part publicKeyFile;
         private String label;
         private int timeout = 5000;
         private CTLogInfo ctLogBeingEdited;
@@ -191,7 +195,7 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
         }
     }
 
-    public interface SystemConfigurationHelper {
+    public interface SystemConfigurationHelper extends Serializable {
         /**
          * Displays an error message to the user.
          * @param languageKey the language key of the message to show
@@ -377,8 +381,8 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
         final CTLogInfo ctLogToUpdate = ctLogEditor.getCtLogBeingEdited();
         for (final CTLogInfo existing : super.getAllCtLogs()) {
             final boolean isSameLog = existing.getLogId() == ctLogToUpdate.getLogId();
-            final boolean urlExistsInCtLogGroup = StringUtils.equals(existing.getUrl(), ctLogEditor.getCtLogUrl())
-                    && StringUtils.equals(existing.getLabel(), ctLogEditor.getCtLogLabel());
+            final boolean urlExistsInCtLogGroup = Strings.CS.equals(existing.getUrl(), ctLogEditor.getCtLogUrl())
+                    && Strings.CS.equals(existing.getLabel(), ctLogEditor.getCtLogLabel());
             if (!isSameLog && urlExistsInCtLogGroup) {
                 systemConfigurationHelper.addErrorMessage("CTLOGTAB_ALREADYEXISTS", existing.getUrl());
                 return StringUtils.EMPTY;
@@ -417,7 +421,7 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
         // Remove labels already containing a CT log with the same URL
         for (int i = labels.size() - 1; i >= 0; i--) {
             final String label = labels.get(i);
-            if (StringUtils.equals(label, ctLog.getLabel())) {
+            if (Strings.CS.equals(label, ctLog.getLabel())) {
                 // Always add the CT log label of the log itself
                 continue;
             }
@@ -431,7 +435,7 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
 
     private boolean logGroupHasAnotherCtLogWithSameUrl(final List<CTLogInfo> logGroupMembers, final CTLogInfo ctLog) {
         for (final CTLogInfo logGroupMember : logGroupMembers) {
-            if (logGroupMember.getLogId() != ctLog.getLogId() && StringUtils.equals(logGroupMember.getUrl(), ctLog.getUrl())) {
+            if (logGroupMember.getLogId() != ctLog.getLogId() && Strings.CS.equals(logGroupMember.getUrl(), ctLog.getUrl())) {
                 return true;
             }
         }

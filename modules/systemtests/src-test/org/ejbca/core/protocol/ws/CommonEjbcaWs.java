@@ -46,7 +46,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -57,10 +59,9 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
-import jakarta.xml.bind.DatatypeConverter;
 import javax.xml.namespace.QName;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -136,9 +137,10 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.dto.RoleDataDto;
+import org.cesecore.dto.RoleDataDtoBuilder;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
@@ -199,12 +201,14 @@ import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.RandomHelper;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-import com.keyfactor.util.RandomHelper;
+
+import jakarta.xml.bind.DatatypeConverter;
 
 
 public abstract class CommonEjbcaWs extends CaTestCase {
@@ -287,20 +291,21 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         managementCaName = CaTestUtils.getClientCertCaName(intAdmin);
     }
 
-    protected void setAccessRulesForWsAdmin(final List<String> resourcesAllowed, final List<String> resourcesDenied) throws AuthorizationDeniedException {
-        final Role role = roleSession.getRole(intAdmin, null, WS_ADMIN_ROLENAME);
+    protected void setAccessRulesForWsAdmin(final List<String> resourcesAllowed, final List<String> resourcesDenied) throws AuthorizationDeniedException, RoleExistsException {
+        final RoleDataDto role = roleSession.getRole(intAdmin, null, WS_ADMIN_ROLENAME);
         assertNotNull("Role " + WS_ADMIN_ROLENAME + " does not exist!", role);
-        role.getAccessRules().clear();
+        Map<String, Boolean> accessRules = new HashMap<>();
         if (resourcesAllowed!=null) {
             for (final String resource : resourcesAllowed) {
-                role.getAccessRules().put(resource, Role.STATE_ALLOW);
+                accessRules.put(resource, RoleDataDto.STATE_ALLOW);
             }
         }
         if (resourcesDenied!=null) {
             for (final String resource : resourcesDenied) {
-                role.getAccessRules().put(resource, Role.STATE_DENY);
+                accessRules.put(resource, RoleDataDto.STATE_DENY);
             }
         }
+        roleSession.persistRole(intAdmin, role.withAccessRules(accessRules));
     }
 
     protected void adminSetUpAdmin() throws Exception {
@@ -382,18 +387,20 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         } catch (NoSuchEndEntityException e) {
             throw new IllegalStateException("End entity not created.", e);
         }
-        // Setup Role and RoleMember
+        // Setup RoleDataDto and RoleMember
         final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
         final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
-        Role role = roleSession.getRole(intAdmin, null, wsadminRoleName);
+        RoleDataDto role = roleSession.getRole(intAdmin, null, wsadminRoleName);
         if (role == null) {
             log.info("Creating new role: " + wsadminRoleName);
-            final Role newRole = new Role(null, wsadminRoleName);
-            newRole.getAccessRules().put(StandardRules.ROLE_ROOT.resource(), Role.STATE_ALLOW);
+            final RoleDataDto newRole = new RoleDataDtoBuilder()
+                    .setName(wsadminRoleName)
+                    .setAccessRules(Map.of(StandardRules.ROLE_ROOT.resource(), RoleDataDto.STATE_ALLOW))
+                    .build();
             role = roleSession.persistRole(intAdmin, newRole);
         }
         boolean adminExists = false;
-        for (final RoleMember roleMember : roleMemberSession.getRoleMembersByRoleId(intAdmin, role.getRoleId())) {
+        for (final RoleMember roleMember : roleMemberSession.getRoleMembersByRoleId(intAdmin, role.id())) {
             if (TEST_ADMIN_USERNAME.equals(roleMember.getTokenMatchValue())) {
                 adminExists = true;
                 break;
@@ -403,7 +410,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
             log.info("Adding member to role: " + wsadminRoleName);
             roleMemberSession.persist(intAdmin, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                     caInfo.getCAId(), RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
-                    TEST_ADMIN_USERNAME, role.getRoleId(), null));
+                    TEST_ADMIN_USERNAME, role.id(), null));
         }
         return fileHandles;
     }
@@ -453,9 +460,9 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         }
         // Remove Role
         final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
-        final Role role = roleSession.getRole(intAdmin, null, wsadminRoleName);
+        final RoleDataDto role = roleSession.getRole(intAdmin, null, wsadminRoleName);
         if (role != null) {
-            roleSession.deleteRoleIdempotent(intAdmin, role.getRoleId());
+            roleSession.deleteRoleIdempotent(intAdmin, role.id());
         }
     }
 
@@ -576,11 +583,11 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         boolean foundrevreason = false;
         boolean founddirattrs = false;
         for (ExtendedInformationWS item : userei) {
-            if (StringUtils.equals(item.getName(), ExtendedInformation.CUSTOMDATA + ExtendedInformation.CUSTOM_REVOCATIONREASON)) {
+            if (Strings.CS.equals(item.getName(), ExtendedInformation.CUSTOMDATA + ExtendedInformation.CUSTOM_REVOCATIONREASON)) {
                 assertEquals(Integer.toString(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD), item.getValue());
                 foundrevreason = true;
             }
-            if (StringUtils.equals(item.getName(), ExtendedInformation.SUBJECTDIRATTRIBUTES)) {
+            if (Strings.CS.equals(item.getName(), ExtendedInformation.SUBJECTDIRATTRIBUTES)) {
                 assertEquals("DATEOFBIRTH=19761123", item.getValue());
                 founddirattrs = true;
             }
@@ -604,11 +611,11 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         foundrevreason = false;
         founddirattrs = false;
         for (ExtendedInformationWS item : userei) {
-            if (StringUtils.equals(item.getName(), ExtendedInformation.CUSTOMDATA + ExtendedInformation.CUSTOM_REVOCATIONREASON)) {
+            if (Strings.CS.equals(item.getName(), ExtendedInformation.CUSTOMDATA + ExtendedInformation.CUSTOM_REVOCATIONREASON)) {
                 assertEquals(Integer.toString(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD), item.getValue());
                 foundrevreason = true;
             }
-            if (StringUtils.equals(item.getName(), ExtendedInformation.SUBJECTDIRATTRIBUTES)) {
+            if (Strings.CS.equals(item.getName(), ExtendedInformation.SUBJECTDIRATTRIBUTES)) {
                 assertEquals("DATEOFBIRTH=19761123", item.getValue());
                 founddirattrs = true;
             }
@@ -1238,7 +1245,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         final CertReqMsg certReqMsg = CertReqMsg.getInstance(certificateRequestMessage.getEncoded());
         // Sanity check the created request
         if (useProofOfPossession && publicKeyMacPassword!=null) {
-            final POPOSigningKey popoSigningKey = POPOSigningKey.getInstance(certReqMsg.getPopo().getObject());
+            final POPOSigningKey popoSigningKey = POPOSigningKey.getInstance(certReqMsg.getPop().getObject());
             assertNotNull("PublicKeyMAC was null in request!", popoSigningKey.getPoposkInput().getPublicKeyMAC());
             assertNull("Subject should not be set.", certReqMsg.getCertReq().getCertTemplate().getSubject());
         }
@@ -1924,7 +1931,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
             boolean certfound = false;
             for (final Certificate expirewscert : certs) {
                 java.security.cert.Certificate expirecert = CertificateHelper.getCertificate(expirewscert.getCertificateData());
-                if (StringUtils.equalsIgnoreCase(CertTools.getSubjectDN(cert1), CertTools.getSubjectDN(expirecert))) {
+                if (Strings.CI.equals(CertTools.getSubjectDN(cert1), CertTools.getSubjectDN(expirecert))) {
                     certfound = true;
                     break;
                 }
@@ -1970,10 +1977,10 @@ public abstract class CommonEjbcaWs extends CaTestCase {
             boolean foundcert2 = false;
             for(Certificate expirewscert : certs) {
                 java.security.cert.Certificate expirecert = CertificateHelper.getCertificate(expirewscert.getCertificateData());
-                if(StringUtils.equalsIgnoreCase(CertTools.getSubjectDN(cert1), CertTools.getSubjectDN(expirecert)) && StringUtils.equalsIgnoreCase(CertTools.getIssuerDN(cert1), CertTools.getIssuerDN(expirecert))) {
+                if(Strings.CI.equals(CertTools.getSubjectDN(cert1), CertTools.getSubjectDN(expirecert)) && Strings.CI.equals(CertTools.getIssuerDN(cert1), CertTools.getIssuerDN(expirecert))) {
                     foundcert1 = true;
                 }
-                if(StringUtils.equalsIgnoreCase(CertTools.getSubjectDN(cert2), CertTools.getSubjectDN(expirecert)) && StringUtils.equalsIgnoreCase(CertTools.getIssuerDN(cert2), CertTools.getIssuerDN(expirecert))) {
+                if(Strings.CI.equals(CertTools.getSubjectDN(cert2), CertTools.getSubjectDN(expirecert)) && Strings.CI.equals(CertTools.getIssuerDN(cert2), CertTools.getIssuerDN(expirecert))) {
                     foundcert2 = true;
                 }
             }
@@ -1988,10 +1995,10 @@ public abstract class CommonEjbcaWs extends CaTestCase {
             foundcert2 = false;
             for(Certificate expirewscert : certs) {
                 java.security.cert.Certificate expirecert = CertificateHelper.getCertificate(expirewscert.getCertificateData());
-                if(StringUtils.equalsIgnoreCase(CertTools.getSubjectDN(cert1), CertTools.getSubjectDN(expirecert)) && StringUtils.equalsIgnoreCase(CertTools.getIssuerDN(cert1), CertTools.getIssuerDN(expirecert))) {
+                if(Strings.CI.equals(CertTools.getSubjectDN(cert1), CertTools.getSubjectDN(expirecert)) && Strings.CI.equals(CertTools.getIssuerDN(cert1), CertTools.getIssuerDN(expirecert))) {
                     foundcert1 = true;
                 }
-                if(StringUtils.equalsIgnoreCase(CertTools.getSubjectDN(cert2), CertTools.getSubjectDN(expirecert)) && StringUtils.equalsIgnoreCase(CertTools.getIssuerDN(cert2), CertTools.getIssuerDN(expirecert))) {
+                if(Strings.CI.equals(CertTools.getSubjectDN(cert2), CertTools.getSubjectDN(expirecert)) && Strings.CI.equals(CertTools.getIssuerDN(cert2), CertTools.getIssuerDN(expirecert))) {
                     foundcert2 = true;
                 }
             }

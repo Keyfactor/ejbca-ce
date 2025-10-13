@@ -266,14 +266,14 @@
 			<h:outputText value="#{web.text.USEFIELDSINDN}"/>
 		</h:panelGroup>
 		<h:panelGroup>
-			<h:selectBooleanCheckbox id="useCustomDnOrder" value="#{editPublisher.ldapPublisherMBData.useCustomDnOrder}">
+			<h:selectBooleanCheckbox id="useCustomDnOrder" value="#{editPublisher.ldapPublisherMBData.useCustomDnOrder}" disabled="#{editPublisher.readOnly}" >
 				<f:ajax event="change" execute="@this" render="ldapCertDn"/>
 			</h:selectBooleanCheckbox>
 			<h:outputLabel for="useCustomDnOrder" value="#{web.text.CUSTOMDNORDER}"/>
 			<br />
 			<h:panelGroup id="ldapCertDn" layout="block">
-				<h:selectManyListbox id="fieldsInLdapDn"
-									value="#{editPublisher.ldapPublisherMBData.useFieldInLdapDN}" disabledClass="#{editPublisher.readOnly}" styleClass="select-list" size="10"
+				<h:selectManyListbox id="fieldsInLdapDn"  disabled="#{editPublisher.readOnly}"
+									 value="#{editPublisher.ldapPublisherMBData.useFieldInLdapDN}" disabledClass="#{editPublisher.readOnly}" styleClass="select-list" size="10"
 									rendered="#{not editPublisher.ldapPublisherMBData.useCustomDnOrder}"
 									required="true" requiredMessage="#{web.text.MUSTSELECTATLEASTONEFIELD}" converter="jakarta.faces.Integer">
 					<f:selectItems value="#{editPublisher.ldapPublisherMBData.ldapPublisherLocationFieldsFromCertificateDN}" />

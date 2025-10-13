@@ -21,7 +21,7 @@ import java.util.TimeZone;
 
 import jakarta.faces.model.SelectItem;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
@@ -29,7 +29,7 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.roles.Role;
+import org.cesecore.dto.RoleDataDto;
 import org.cesecore.util.ValidityDate;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.model.approval.Approval;
@@ -58,7 +58,8 @@ public class ApprovalRequestGUIInfo implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(ApprovalRequestGUIInfo.class);
     
-    public static final class ApprovalGuiObject {
+    public static final class ApprovalGuiObject implements Serializable {
+        private static final long serialVersionUID = 1L;
         private Approval approval;
         
         public ApprovalGuiObject(Approval approval) {
@@ -332,6 +333,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
         if (endEntityInformation != null) {
             final EndEntityProfile endEntityProfile = request.getEndEntityProfile();
             final RaEndEntityDetails.Callbacks callbacks = new RaEndEntityDetails.Callbacks() {
+                private static final long serialVersionUID = 1L;
                 @Override
                 public RaLocaleBean getRaLocaleBean() { return raLocaleBean; }
                 @Override
@@ -520,7 +522,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
     public boolean isRequestedByMe() { return request.isRequestedByMe(); }
     public boolean isApprovedByMe() { return request.isApprovedByMe(); }
     public boolean isPending(final AuthenticationToken admin) { 
-        List<Role> roles = raMasterApi.getRolesAuthenticationTokenIsMemberOf(admin);
+        List<RoleDataDto> roles = raMasterApi.getRolesAuthenticationTokenIsMemberOf(admin);
         return request.isPending(roles); 
     }
     public boolean isPendingExecution() { return request.getStatus() == ApprovalDataVO.STATUS_APPROVED; /* = approved but not executed */ }
@@ -529,7 +531,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
     public boolean isUnsuccessful() { return !isWaitingForApproval() && !isSuccessful(); }
     public boolean isExecutionFailed() { return request.getStatus() == ApprovalDataVO.STATUS_EXECUTIONFAILED; }
     public boolean isWaitingForMe(final AuthenticationToken admin) {
-        List<Role> roles = raMasterApi.getRolesAuthenticationTokenIsMemberOf(admin);
+        List<RoleDataDto> roles = raMasterApi.getRolesAuthenticationTokenIsMemberOf(admin);
         return request.isWaitingForMe(roles); 
     }
     public boolean isWaitingForApproval() { return request.getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL; }

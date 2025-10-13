@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jcajce.provider.asymmetric.util.EC5Util;
 import org.bouncycastle.math.ec.ECPoint;
@@ -83,7 +83,7 @@ public class EccKeyValidator extends KeyValidatorBase {
     }
 
     @Override
-    @SuppressWarnings({"serial", "unchecked"})
+    @SuppressWarnings({"unchecked"})
     public void initDynamicUiModel() {
         super.initDynamicUiModel();
         final DynamicUiProperty<Integer> settingsTemplate = new DynamicUiProperty<>(Integer.class, SETTINGS_TEMPLATE, getSettingsTemplate(), KeyValidatorSettingsTemplate.types());
@@ -91,6 +91,7 @@ public class EccKeyValidator extends KeyValidatorBase {
         settingsTemplate.setLabels(KeyValidatorSettingsTemplate.map());
         settingsTemplate.setRequired(true);
         settingsTemplate.setActionCallback(new DynamicUiActionCallback() {
+            private static final long serialVersionUID = 1L;
             @Override
             public void action(final Object parameter) throws DynamicUiCallbackException {
                 final Map<Object, Object> oldValues = (Map<Object, Object>) data.clone();
@@ -105,6 +106,8 @@ public class EccKeyValidator extends KeyValidatorBase {
         uiModel.add(settingsTemplate);
         final DynamicUiProperty<String> curves = new DynamicUiProperty<>(String.class, CURVES, getCurvesAsString(),
                 new ArrayList<>(AlgorithmTools.getFlatNamedEcCurvesMap().keySet())) {
+                    private static final long serialVersionUID = 1L;
+
                     @Override
                     public boolean isDisabled() { return isCurvesDisabled(); }
         };
@@ -113,6 +116,8 @@ public class EccKeyValidator extends KeyValidatorBase {
         curves.setRequired(true);
         uiModel.add(curves);
         uiModel.add(new DynamicUiProperty<>(Boolean.class, USE_FULL_PUBLIC_KEY_VALIDATION_ROUTINE, isUseFullPublicKeyValidationRoutine()) {
+            private static final long serialVersionUID = 1L;
+
             @Override
             public boolean isDisabled() { return isPropertyDisabled(); }
         });

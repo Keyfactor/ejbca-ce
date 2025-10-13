@@ -24,12 +24,11 @@ import java.util.Set;
 
 import com.keyfactor.util.StringTools;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.math.NumberUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.tokens.AuthenticationTokenMetaData;
-import org.cesecore.authentication.tokens.OAuth2AuthenticationTokenMetaData;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
@@ -43,7 +42,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.roles.Role;
+import org.cesecore.dto.RoleDataDto;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberDataSessionLocal;
@@ -96,7 +95,7 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
     private OAuthConfiguration oAuthConfiguration;
 
     private String roleIdParam;
-    private Role role;
+    private RoleDataDto role;
 
     private List<SelectItem> matchWithItems = null;
     private String matchWithSelected = X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE + ":" + X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue();
@@ -105,7 +104,7 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
     private String tokenMatchValue = "";
     private String description = "";
 
-    private ListDataModel<RoleMember> roleMembers = null;
+    private transient ListDataModel<RoleMember> roleMembers = null;
     private RoleMember roleMemberToDelete = null;
 
     private Map<Integer, String> caIdToNameMap = null;
@@ -129,7 +128,7 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
     public boolean isAuthorizedToEditRole() {
         try {
             if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.EDITROLES.resource()) && getRole()!=null) {
-                roleSession.assertAuthorizedToRoleMembers(getAdmin(), getRole().getRoleId(), true);
+                roleSession.assertAuthorizedToRoleMembers(getAdmin(), getRole().id(), true);
                 return true;
             }
         } catch (AuthorizationDeniedException e) {
@@ -139,8 +138,9 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
     }
 
     /** @return an authorized existing role based on the roleId HTTP param or null if no such role was found. */
-    public Role getRole() {
-        if (role==null && NumberUtils.isNumber(roleIdParam)) {
+    public RoleDataDto getRole() {
+        if (role==null && NumberUtils.isCreatable(roleIdParam)) {
+
             try {
                 role = roleSession.getRole(getAdmin(), Integer.parseInt(roleIdParam));
                 if (role==null && log.isDebugEnabled()) {
@@ -158,7 +158,7 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
     /** @return a ListDataModel of all RoleMembers in this Role (sorted) */
     public ListDataModel<RoleMember> getRoleMembers() {
         if (roleMembers==null) {
-            final List<RoleMember> roleMembers = roleMemberDataSession.findRoleMemberByRoleId(role.getRoleId());
+            final List<RoleMember> roleMembers = roleMemberDataSession.findRoleMemberByRoleId(role.id());
             Collections.sort(roleMembers, new Comparator<RoleMember>() {
                 @Override
                 public int compare(final RoleMember roleMember1, final RoleMember roleMember2) {
@@ -183,24 +183,18 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
     }
 
     /** @return a viewable list of 'match with'-texts */
-    @SuppressWarnings("deprecation")
     public List<SelectItem> getMatchWithItems() {
         if (matchWithItems == null) {
             matchWithItems = new ArrayList<>();
             final List<String> tokenTypes = new ArrayList<>(AccessMatchValueReverseLookupRegistry.INSTANCE.getAllTokenTypes());
             Collections.sort(tokenTypes);
             for (final String tokenType : tokenTypes) {
-                if (tokenType.equals(OAuth2AuthenticationTokenMetaData.TOKEN_TYPE) && !getEjbcaWebBean().isRunningEnterprise()) {
-                    continue;
-                }
                 final AuthenticationTokenMetaData authenticationTokenMetaData = AccessMatchValueReverseLookupRegistry.INSTANCE.getMetaData(tokenType);
                 if (authenticationTokenMetaData.isUserConfigurable()) {
                     for (final AccessMatchValue accessMatchValue : authenticationTokenMetaData.getAccessMatchValues()) {
-                        // Special exclusion of this rather useless match value that will never match anything
-                        if (!X500PrincipalAccessMatchValue.NONE.equals(accessMatchValue)) {
-                            matchWithItems.add(new SelectItem(tokenType + ":" + accessMatchValue.getNumericValue(),
-                                    getEjbcaWebBean().getText(tokenType) + ": " + getEjbcaWebBean().getText(accessMatchValue.name())));
-                        }
+                        matchWithItems.add(new SelectItem(tokenType + ":" + accessMatchValue.getNumericValue(),
+                                getEjbcaWebBean().getText(tokenType) + ": " + getEjbcaWebBean().getText(accessMatchValue.name())));
+
                     }
                 }
             }
@@ -217,13 +211,13 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
     public String getMatchWithItemString(final RoleMember roleMember) {
         final AuthenticationTokenMetaData authenticationTokenMetaData = AccessMatchValueReverseLookupRegistry.INSTANCE.getMetaData(roleMember.getTokenType());
         if (authenticationTokenMetaData == null) {
-            log.warn("Unsupported token type '" + roleMember.getTokenType() + "' in role '" + role.getName() + "'");
+            log.warn("Unsupported token type '" + roleMember.getTokenType() + "' in role '" + role.name() + "'");
             return roleMember.getTokenType() + "(UNKNOWN): #" + roleMember.getTokenMatchKey();
         }
         final String tokenTypeString = getEjbcaWebBean().getText(authenticationTokenMetaData.getTokenType());
         final AccessMatchValue matchValue = authenticationTokenMetaData.getAccessMatchValueIdMap().get(roleMember.getTokenMatchKey());
         if (matchValue == null) {
-            log.warn("Unknown token match key " + roleMember.getTokenMatchKey() + " for " + roleMember.getTokenType() + " in role '" + role.getName() + "'");
+            log.warn("Unknown token match key " + roleMember.getTokenMatchKey() + " for " + roleMember.getTokenType() + " in role '" + role.name() + "'");
             return tokenTypeString + ": " + '#'+String.valueOf(roleMember.getTokenMatchKey() + "(UNKNOWN)");
         }
         final String tokenMatchKeyString = getEjbcaWebBean().getText(matchValue.name());
@@ -445,7 +439,7 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
             try {
                 // Persist the new role member
                 final RoleMember roleMember = new RoleMember(tokenType, tokenIssuerId, tokenProviderId, tokenMatchKey,
-                        accessMatchType.getNumericValue(), tokenMatchValue, role.getRoleId(), description);
+                        accessMatchType.getNumericValue(), tokenMatchValue, role.id(), description);
                 roleMemberSession.persist(getAdmin(), roleMember);
             } catch (AuthorizationDeniedException e) {
                 super.addGlobalMessage(FacesMessage.SEVERITY_ERROR, "AUTHORIZATIONDENIED");

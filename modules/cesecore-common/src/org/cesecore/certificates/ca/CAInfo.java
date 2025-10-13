@@ -22,19 +22,19 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.math.IntRange;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.CertificateWrapper;
+import com.keyfactor.util.certificate.DnComponents;
+
+import org.apache.commons.lang3.IntegerRange;
 import org.cesecore.certificates.KeyEncryptionPaddingAlgorithm;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.ca.ssh.SshCa;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.util.SimpleTime;
-
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.EJBTools;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.certificate.CertificateWrapper;
-import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Holds non sensitive information about a CA.
@@ -105,24 +105,6 @@ public abstract class CAInfo implements Serializable {
     protected boolean finishuser;
     protected Collection<ExtendedCAServiceInfo> extendedcaserviceinfos;
     protected boolean useNoConflictCertificateData = false; // By Default we use normal certificate data table.
-
-    /**
-     * @deprecated since 6.8.0, where approval settings and profiles became interlinked.
-     */
-    @Deprecated
-    private Collection<Integer> approvalSettings;
-    /**
-     * @deprecated since 6.8.0, where approval settings and profiles became interlinked.
-     */
-    @Deprecated
-    private int approvalProfile;
-
-    /**
-     * @deprecated since 6.6.0, use the appropriate approval profile instead
-     * Needed for a while in order to be able to import old statedumps from 6.5 and earlier
-     */
-    @Deprecated
-    protected int numOfReqApprovals;
 
     private LinkedHashMap<ApprovalRequestType, Integer> approvals;
 
@@ -481,51 +463,6 @@ public abstract class CAInfo implements Serializable {
     }
 
     /**
-     * Returns the ID of an approval profile
-     *
-     * @deprecated since 6.8.0. Use getApprovals() instead;
-     */
-    @Deprecated
-    public int getApprovalProfile() {
-        return approvalProfile;
-    }
-
-    /**
-     * Sets the ID of an approval profile.
-     *
-     * @deprecated since 6.8.0. Use setApprovals() instead;
-     */
-    @Deprecated
-    public void setApprovalProfile(final int approvalProfileID) {
-        this.approvalProfile = approvalProfileID;
-    }
-
-
-    /**
-     * Returns a collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which
-     * action that requires approvals, default none
-     *
-     * Never null
-     *
-     * @deprecated since 6.8.0. Use getApprovals() instead;
-     */
-    @Deprecated
-    public Collection<Integer> getApprovalSettings() {
-        return approvalSettings;
-    }
-
-    /**
-     * Collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which
-     * action that requires approvals
-     *
-     * @deprecated since 6.8.0. Use getApprovals() instead;
-     */
-    @Deprecated
-    public void setApprovalSettings(Collection<Integer> approvalSettings) {
-        this.approvalSettings = approvalSettings;
-    }
-
-    /**
      * @return true if the NoConflictCertificateData used.
      */
     public boolean isUseNoConflictCertificateData() {
@@ -665,7 +602,7 @@ public abstract class CAInfo implements Serializable {
      * Returns the CRL partitions' indexes for a given CA, or null if the CRL is not partitioned or the CA type does not support CRLs (e.g. CVC CA).
      * This includes suspended partitions, suspended partitions will just not have new certificates assigned to them.
      */
-    public IntRange getAllCrlPartitionIndexes() {
+    public IntegerRange getAllCrlPartitionIndexes() {
         return null;
     }
 

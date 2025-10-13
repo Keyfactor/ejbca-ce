@@ -8,7 +8,6 @@ dependencies {
     compileOnly(project(":modules:cesecore-entity"))
     compileOnly(libs.jakartaee.api)
     compileOnly(libs.log4j.v12.api)
-    compileOnly(libs.commons.lang)
     compileOnly(libs.commons.lang3)
     compileOnly(libs.x509.common.util)
 

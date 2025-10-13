@@ -64,7 +64,7 @@ import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1BitString;
 import org.bouncycastle.asn1.ASN1Encodable;
@@ -324,7 +324,15 @@ public abstract class CmpTestCase extends CaTestCase {
             AlgorithmIdentifier pAlg, DEROctetString senderKID, boolean implicitConfirm)
             throws NoSuchAlgorithmException, IOException, InvalidKeyException, SignatureException {
         return genCertReq(issuerDN, userDN, userDN, "UPN=fooupn@bar.com,rfc822Name=fooemail@bar.com", keys, null, null, cacert, nonce, transid, raVerifiedPopo,
-                extensions, notBefore, notAfter, customCertSerno, pAlg, senderKID, implicitConfirm);
+                extensions, notBefore, notAfter, customCertSerno, pAlg, senderKID, implicitConfirm, null);
+    }
+
+    public static PKIMessage genCertReq(String issuerDN, X500Name userDN, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid,
+            boolean raVerifiedPopo, Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno,
+            AlgorithmIdentifier pAlg, DEROctetString senderKID, AlgorithmIdentifier popoAlgorithmIdentifier)
+            throws NoSuchAlgorithmException, IOException, InvalidKeyException, SignatureException {
+        return genCertReq(issuerDN, userDN, userDN, "UPN=fooupn@bar.com,rfc822Name=fooemail@bar.com", keys, null, null, cacert, nonce, transid, raVerifiedPopo,
+                extensions, notBefore, notAfter, customCertSerno, pAlg, senderKID, false, popoAlgorithmIdentifier);
     }
 
     public static PKIMessage genCertReq(String issuerDN, X500Name userDN, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid,
@@ -332,7 +340,7 @@ public abstract class CmpTestCase extends CaTestCase {
             AlgorithmIdentifier pAlg, DEROctetString senderKID)
             throws NoSuchAlgorithmException, IOException, InvalidKeyException, SignatureException {
         return genCertReq(issuerDN, userDN, userDN, "UPN=fooupn@bar.com,rfc822Name=fooemail@bar.com", keys, null, null, cacert, nonce, transid, raVerifiedPopo,
-                extensions, notBefore, notAfter, customCertSerno, pAlg, senderKID, false);
+                extensions, notBefore, notAfter, customCertSerno, pAlg, senderKID, false, null);
     }
 
     public static PKIMessage genP10CrCertReq(String issuerDN, X500Name userDN, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid,
@@ -348,7 +356,7 @@ public abstract class CmpTestCase extends CaTestCase {
             AlgorithmIdentifier pAlg, DEROctetString senderKID)
             throws NoSuchAlgorithmException, IOException, InvalidKeyException, SignatureException {
         return genCertReq(issuerDN, userDN, userDN, "UPN=fooupn@bar.com,rfc822Name=fooemail@bar.com,directoryName=CN=foobar\\,C=SE", keys, null, null, cacert, nonce, transid, raVerifiedPopo,
-                extensions, notBefore, notAfter, customCertSerno, pAlg, senderKID, false);
+                extensions, notBefore, notAfter, customCertSerno, pAlg, senderKID, false, null);
     }
 
     public static PKIMessage genCertReqAssertNotNull(String issuerDN, X500Name userDN, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid,
@@ -356,7 +364,7 @@ public abstract class CmpTestCase extends CaTestCase {
             AlgorithmIdentifier pAlg, DEROctetString senderKID)
             throws NoSuchAlgorithmException, IOException, InvalidKeyException, SignatureException {
         final PKIMessage result = genCertReq(issuerDN, userDN, userDN, "UPN=fooupn@bar.com,rfc822Name=fooemail@bar.com", keys, null, null, cacert, nonce, transid, raVerifiedPopo,
-                extensions, notBefore, notAfter, customCertSerno, pAlg, senderKID, false);
+                extensions, notBefore, notAfter, customCertSerno, pAlg, senderKID, false, null);
         log.debug("Created CMRF with userDN: "+ userDN);
         assertNotNull("Generating CrmfRequest failed.", result);
         return result;
@@ -367,7 +375,7 @@ public abstract class CmpTestCase extends CaTestCase {
             AlgorithmIdentifier pAlg, DEROctetString senderKID)
             throws NoSuchAlgorithmException, IOException, InvalidKeyException, SignatureException {
         return genCertReq(issuerDN, userDN, userDN, "UPN=fooupn@bar.com,rfc822Name=fooemail@bar.com", keys, null, null, cacert, nonce, transid, raVerifiedPopo,
-                extensions, notBefore, notAfter, customCertSerno, pAlg, senderKID, false);
+                extensions, notBefore, notAfter, customCertSerno, pAlg, senderKID, false, null);
     }
     /**
      *
@@ -386,6 +394,8 @@ public abstract class CmpTestCase extends CaTestCase {
      * @param customCertSerno
      * @param pAlg
      * @param senderKID
+     * @param implicitConfirm
+     * @param popoAlgorithmIdentifier this only needs to be specified if a custom algorithm is to be used
      * @return PKIMessage, to be protected
      * @throws NoSuchAlgorithmException
      * @throws NoSuchProviderException
@@ -396,7 +406,7 @@ public abstract class CmpTestCase extends CaTestCase {
     protected static PKIMessage genCertReq(String issuerDN, X500Name userDN, X500Name senderDN, String altNames, KeyPair keys, SubjectPublicKeyInfo spkInfo,
             KeyPair protocolEncrKey, Certificate cacert, byte[] nonce, byte[] transid,
             boolean raVerifiedPopo, Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno,
-            AlgorithmIdentifier pAlg, DEROctetString senderKID, boolean implicitConfirm)
+            AlgorithmIdentifier pAlg, DEROctetString senderKID, boolean implicitConfirm, AlgorithmIdentifier popoAlgorithmIdentifier)
             throws NoSuchAlgorithmException, IOException, InvalidKeyException, SignatureException {
         // Validity can have notBefore, notAfter or both
         ASN1EncodableVector optionalValidityV = new ASN1EncodableVector();
@@ -503,12 +513,19 @@ public abstract class CmpTestCase extends CaTestCase {
                 mout.close();
                 byte[] popoProtectionBytes = baos.toByteArray();
                 try {
-                    final String sigalg = AlgorithmTools.getSignAlgOidFromDigestAndKey(null, keys.getPrivate().getAlgorithm()).getId();
-                    final Signature signature = Signature.getInstance(sigalg, BouncyCastleProvider.PROVIDER_NAME);
+                    AlgorithmIdentifier algId;
+                    if (popoAlgorithmIdentifier != null) {
+                        algId = popoAlgorithmIdentifier;
+                        log.info("Using provided algorithm identifier for POPO: " + algId.getAlgorithm().getId());
+                    } else {
+                        final String sigalg = AlgorithmTools.getSignAlgOidFromDigestAndKey(null, keys.getPrivate().getAlgorithm()).getId();
+                        algId = new AlgorithmIdentifier(new ASN1ObjectIdentifier(sigalg));
+                    }
+                    final Signature signature = Signature.getInstance(algId.getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
                     signature.initSign(keys.getPrivate());
                     signature.update(popoProtectionBytes);
                     DERBitString bs = new DERBitString(signature.sign());
-                    POPOSigningKey popoSigningKey = new POPOSigningKey(null, new AlgorithmIdentifier(new ASN1ObjectIdentifier(sigalg)), bs);
+                    POPOSigningKey popoSigningKey = new POPOSigningKey(null, algId, bs);
                     proofOfPossession = new ProofOfPossession(popoSigningKey);
                 } catch (NoSuchProviderException e) {
                     throw new IllegalStateException("BouncyCastle provider not found.", e);
@@ -1061,14 +1078,9 @@ public abstract class CmpTestCase extends CaTestCase {
         }
         if (signed) {
             // Verify the signature
-            byte[] protBytes = CmpMessageHelper.getProtectedBytes(respObject);
-            ASN1BitString bs = respObject.getProtection();
             try {
-                final Signature signature = Signature.getInstance(expectedSignAlg, BouncyCastleProvider.PROVIDER_NAME);
-                signature.initVerify(cacert);
-                signature.update(protBytes);
-                assertTrue(signature.verify(bs.getBytes()));
-            } catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeyException | SignatureException e) {
+                assertTrue(CmpMessageHelper.verifySignature(respObject, cacert.getPublicKey()));
+            } catch (SignatureException e) {
                 log.debug(e.getMessage(), e);
                 fail(e.getMessage());
             }

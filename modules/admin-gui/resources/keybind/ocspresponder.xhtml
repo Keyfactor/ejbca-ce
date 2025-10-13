@@ -53,7 +53,7 @@
 				<h:message for="internalKeyBindingId"/>
 				<h:outputLabel for="name" value="#{web.text.INTERNALKEYBINDING_FIELD_NAME}"/>
 				<h:panelGroup id="name">
-					<h:inputText rendered="#{ocspResponderMBean.inEditMode}" value="#{ocspResponderMBean.currentName}" required="true" requiredMessage="#{web.text.YOUAREREQUIRED} #{web.text.INTERNALKEYBINDING_FIELD_NAME}" size="40" maxlength="255" title="#{web.text.FORMAT_ID_STR}" />
+					<h:inputText rendered="#{ocspResponderMBean.inEditMode}" value="#{ocspResponderMBean.currentName}" size="40" maxlength="255" title="#{web.text.FORMAT_ID_STR}" />
 					<h:outputText rendered="#{!ocspResponderMBean.inEditMode}" value="#{ocspResponderMBean.currentName}"/>
 				</h:panelGroup>
 				<h:message for="name"/>
@@ -260,6 +260,16 @@
                     </h:panelGroup>
                 </h:panelGroup>
                 <h:message for="chainGeneration"/>
+			</h:panelGrid>
+			<h:panelGrid columns="3">
+			     <h:outputLabel for="responseForUnknown" value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_RESPONSE_FOR_UNKNOWN}" />
+                <h:panelGroup id="responseForUnknown">  
+                    <h:panelGroup disabled="#{!ocspResponderMBean.inEditMode}">
+                        <h:selectOneMenu value="#{ocspResponderMBean.currentUnknownResponse}" disabled="#{!ocspResponderMBean.inEditMode}">
+                            <f:selectItems value="#{ocspResponderMBean.availableUnknownResponses}"/>
+                        </h:selectOneMenu>
+                    </h:panelGroup>
+                </h:panelGroup>
 			</h:panelGrid>
 
 			<h3><h:outputText value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_OCSPEXTENSIONHEADER}"/></h3>

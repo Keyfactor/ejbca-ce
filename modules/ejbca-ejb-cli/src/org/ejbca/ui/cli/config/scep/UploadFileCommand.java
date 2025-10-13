@@ -18,7 +18,7 @@ import java.util.Set;
 
 import org.apache.commons.configuration2.CompositeConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.config.ConfigurationHolder;
@@ -117,13 +117,12 @@ public class UploadFileCommand extends BaseScepConfigCommand {
         // Reading all relevant configurations from file.
         boolean populated = false;
         Set<String> keys = ScepConfiguration.getAllAliasKeys(alias);
-        @SuppressWarnings("unchecked")
         Iterator<String> itr = config.getKeys();
         while (itr.hasNext()) {
             String key = itr.next();
             String value = config.getString(key);
-            if(StringUtils.contains(key, ScepConfiguration.SCEP_RAMODE_OLD)) {
-                value = StringUtils.equalsIgnoreCase(config.getString(key), "true") ? "ra" : "ca";
+            if(Strings.CS.contains(key, ScepConfiguration.SCEP_RAMODE_OLD)) {
+                value = Strings.CI.equals(config.getString(key), "true") ? "ra" : "ca";
                 key = alias + "." + ScepConfiguration.SCEP_OPERATIONMODE;
             }
             if (keys.contains(key)) {

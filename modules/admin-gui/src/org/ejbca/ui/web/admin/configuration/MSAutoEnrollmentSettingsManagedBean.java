@@ -35,7 +35,7 @@ import jakarta.servlet.http.Part;
 
 import com.keyfactor.util.StringTools;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -78,10 +78,10 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     private static final String KEYTAB_CONTENT_TYPE = "application/octet-stream";
     private static final String KRB5_CONF_CONTENT_TYPE = "application/octet-stream";
     private static final String KRB5_CONF_CONTENT_TYPE_PLAIN = "text/plain";
-    private Part keyTabFile;
+    private transient Part keyTabFile;
 
     // MSAE Krb5Conf Settings
-    private Part krb5ConfFile;
+    private transient Part krb5ConfFile;
     private String selectedTemplateOid;
     private String selectedCertificateProfileName;
     private Integer selectedCertificateProfileId;
@@ -89,7 +89,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     private Integer selectedEndEntityProfileId;
     private IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = new IdNameHashMap<>();
     private IdNameHashMap<CertificateProfile> authorizedCertificateProfiles = new IdNameHashMap<>();
-    private ListDataModel<MSAutoEnrollmentSettingsTemplate> mappedMsTemplates = null;
+    private transient ListDataModel<MSAutoEnrollmentSettingsTemplate> mappedMsTemplates = null;
 
     @EJB
     private MsaeLdapMessageSessionLocal msaeLdapMessageSession;
@@ -117,7 +117,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             if (StringUtils.isEmpty(aliasName)) {
                 this.dto = new AutoEnrollmentDTO();
             } else {
-                final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = MsaeUtil.fetchMSAEConfig(aliasName);
+                final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = MsaeUtil.fetchMSAEConfigLocalOnly(aliasName);
                 this.dto = new AutoEnrollmentDTO(aliasName, autoEnrollmentConfiguration);
             }
         }
@@ -340,6 +340,12 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
                 .collect(Collectors.toList());
     }
 
+    public List<SelectItem> getAvailableSSLTrustManagerTypes() {
+        return List.of(new SelectItem(MSAutoEnrollmentConfiguration.TRUST_MANAGER_LOCAL_TRUST_STORE, getEjbcaWebBean().getText("MSAE_LOCAL_TRUST_STORE")),
+                       new SelectItem(MSAutoEnrollmentConfiguration.TRUST_MANAGER_IMPORTED_CA, getEjbcaWebBean().getText("MSAE_IMPORTED_CA")),
+                       new SelectItem(MSAutoEnrollmentConfiguration.TRUST_MANAGER_KEY_BINDING, getEjbcaWebBean().getText("MSAE_KEY_BINDING")));
+    }
+
     /**
      * @return a list of all CA names and caids
      */
@@ -477,7 +483,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         }
         if (adLoginPass.equals(HIDDEN_PWD)) {
             // If password field has been reset in GUI, test connection with persisted password
-            final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = MsaeUtil.fetchMSAEConfig(getDto().getAlias());
+            final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = MsaeUtil.fetchMSAEConfigLocalOnly(getDto().getAlias());
             adLoginPass = autoEnrollmentConfiguration.getAdLoginPassword(getDto().getAlias());
             if (StringUtils.isEmpty(adLoginPass)) {
                 addErrorMessage("MSAE_AD_TEST_CONNECTION_FAILURE", "Invalid Credentials");
@@ -503,7 +509,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         try {
             final AutoEnrollmentDTO dto = getDto();
             final String alias = dto.getAlias();
-            final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = MsaeUtil.fetchMSAEConfig(alias);
+            final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = MsaeUtil.fetchMSAEConfigLocalOnly(alias);
             
             if (!getEjbcaWebBean().getAutoenrollConfiguration().aliasExists(alias)) {
                 getEjbcaWebBean().addAutoenrollAlias(alias);
@@ -535,7 +541,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         try {
             final AutoEnrollmentDTO dto = getDto();
             final String alias = dto.getAlias();
-            final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = MsaeUtil.fetchMSAEConfig(alias);
+            final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = MsaeUtil.fetchMSAEConfigLocalOnly(alias);
 
             if (!getEjbcaWebBean().getAutoenrollConfiguration().aliasExists(alias)) {
                 getEjbcaWebBean().addAutoenrollAlias(alias);
@@ -635,7 +641,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
 
             final AutoEnrollmentDTO dto = getDto();
             final String alias = dto.getAlias();
-            final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = MsaeUtil.fetchMSAEConfig(alias);
+            final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = MsaeUtil.fetchMSAEConfigLocalOnly(alias);
             
             // MSAE Kerberos Settings
             autoEnrollmentConfiguration.setMsaeForestRoot(alias, dto.getMsaeForestRoot());
@@ -647,6 +653,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
 
             // MSAE Settings
             autoEnrollmentConfiguration.setIsUseSsl(alias, dto.isUseSSL());
+            autoEnrollmentConfiguration.setTrustManagerType(alias, dto.getTrustManagerType());
             autoEnrollmentConfiguration.setFollowLdapReferral(alias, dto.isFollowLdapReferral());
             autoEnrollmentConfiguration.setAdConnectionPort(alias, dto.getAdConnectionPort());
             autoEnrollmentConfiguration.setLdapReadTimeout(alias, dto.getLdapReadTimeout());

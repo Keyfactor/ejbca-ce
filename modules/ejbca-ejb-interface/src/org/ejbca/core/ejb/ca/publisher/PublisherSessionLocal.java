@@ -22,8 +22,10 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.dto.PublisherData;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
+import org.ejbca.core.model.ca.publisher.PublisherException;
 
 /**
  * Local interface for PublisherSession.
@@ -36,7 +38,13 @@ public interface PublisherSessionLocal extends PublisherSession {
      * Makes sure that no Publishers are cached to ensure that we read from database
      * next time we try to access it.
      */
-    void flushPublisherCache(); 
+    void flushPublisherCache();
+
+    /**
+     * @param publisherId The ID of the publisher.
+     * @throws PublisherException If the validation fails.
+     */
+    void validateInput(int publisherId) throws PublisherException;
 
     /**
      * Test the connection to of a publisher
@@ -71,6 +79,7 @@ public interface PublisherSessionLocal extends PublisherSession {
 
     /**
      * Returns a publisher id, given it's publishers name
+     *
      * @return the id or 0 if the publisher cannot be found.
      */
     int getPublisherId(String name);
@@ -100,17 +109,6 @@ public interface PublisherSessionLocal extends PublisherSession {
      * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_publisher
      */
     void removePublisherInternal(AuthenticationToken admin, String name) throws AuthorizationDeniedException;
-
-    /**
-     * Allows upgrade for Community Users to EJBCA 6.3.1.1 from previous versions of EJBCA by replacing the old 
-     * VA publisher with a placeholder 
-     * 
-     * @return the number of upgraded publishers
-     */
-    int adhocUpgradeTo6_3_1_1();
-
-    /** @return true if the old VA publisher is still present in the database and upgrade is needed. */
-    boolean isOldVaPublisherPresent();
     
     /** @return return the query results as a List. */
     List<PublisherData> findAll();

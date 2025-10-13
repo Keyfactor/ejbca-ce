@@ -16,9 +16,8 @@ package org.ejbca.core.protocol.cmp;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
-import jakarta.ejb.EJBException;
-
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -67,6 +66,8 @@ import com.keyfactor.CesecoreException;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+
+import jakarta.ejb.EJBException;
 
 /**
  * Message handler for certificate request messages in the CRMF format.
@@ -175,7 +176,7 @@ public class P10CrMessageHandler extends BaseCmpMessageHandler implements ICmpMe
                         LOG.debug("P10CR request message header has protection alg: " + p10CrReq.getHeader().getProtectionAlg().getAlgorithm().getId());
                     }
                     // We don't need a default digest algorithm, if setPreferredDigestAlg is null, the sender cert's algorithm will be used
-                    p10CrReq.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(p10CrReq.getHeader().getProtectionAlg().getAlgorithm().getId(), null));
+                    p10CrReq.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlgAndHandleParameters(p10CrReq.getHeader().getProtectionAlg(), null));
                 } else if (LOG.isDebugEnabled()) {
                     LOG.debug("P10CR request message header has no protection alg, using default alg in response.");
                 }
@@ -342,10 +343,10 @@ public class P10CrMessageHandler extends BaseCmpMessageHandler implements ICmpMe
         }
         final String username = StringTools.stripUsername(gen.generateUsername(dnname.toString()));
         final String pwd;
-        if (StringUtils.equals(authenticationModule.getName(), CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE)) {
+        if (Strings.CS.equals(authenticationModule.getName(), CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE)) {
             pwd = authenticationModule.getAuthenticationString();
-        } else if (StringUtils.equals(authenticationModule.getName(), CmpConfiguration.AUTHMODULE_HMAC)) {
-            if (StringUtils.equals(this.userPwdParams, "random")) {
+        } else if (Strings.CS.equals(authenticationModule.getName(), CmpConfiguration.AUTHMODULE_HMAC)) {
+            if (Strings.CS.equals(this.userPwdParams, "random")) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Setting 12 char random user password.");
                 }
@@ -381,7 +382,7 @@ public class P10CrMessageHandler extends BaseCmpMessageHandler implements ICmpMe
         crmfreq.setPassword(pwd);
         // Set all protection parameters
         CmpMessageProtectionVerifyer verifyer = null;
-        if (StringUtils.equals(authenticationModule.getName(), CmpConfiguration.AUTHMODULE_HMAC)) {
+        if (Strings.CS.equals(authenticationModule.getName(), CmpConfiguration.AUTHMODULE_HMAC)) {
             final HMACAuthenticationModule hmacmodule = (HMACAuthenticationModule) authenticationModule;
             verifyer = hmacmodule.getPasswordBasedProtectionVerifyer();
             if (verifyer instanceof CmpPbeVerifyer) {
@@ -394,7 +395,7 @@ public class P10CrMessageHandler extends BaseCmpMessageHandler implements ICmpMe
                     LOG.debug("responseProt=" + this.responseProt + ", pbeDigestAlg=" + pbeDigestAlg + ", pbeMacAlg=" + pbeMacAlg + ", keyId=" + keyId
                             + ", raSecret=" + (raSecret == null ? "null" : "not null"));
                 }
-                if (StringUtils.equals(this.responseProt, "pbe")) {
+                if (Strings.CS.equals(this.responseProt, "pbe")) {
                     crmfreq.setPbeParameters(keyId, raSecret, pbeDigestAlg, pbeMacAlg, pbeIterationCount);
                 }
             } else if (verifyer instanceof CmpPbmac1Verifyer) {
@@ -408,7 +409,7 @@ public class P10CrMessageHandler extends BaseCmpMessageHandler implements ICmpMe
                     LOG.debug("responseProt=" + this.responseProt + ", pbmac1PrfAlg=" + pbmac1PrfAlg + ", pbmac1MacAlg=" + pbmac1MacAlg
                             + ", keyId=" + keyId + ", raSecret=" + (raSecret == null ? "null" : "not null"));
                 }
-                if (StringUtils.equals(this.responseProt, "pbe")) {
+                if (Strings.CS.equals(this.responseProt, "pbe")) {
                     crmfreq.setPbmac1Parameters(keyId, raSecret, pbmac1PrfAlg, pbmac1MacAlg, pbmac1IterationCount, pbmac1DkLen);
                 }
             }

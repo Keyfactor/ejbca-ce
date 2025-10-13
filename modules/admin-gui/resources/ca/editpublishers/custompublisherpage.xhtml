@@ -59,6 +59,9 @@
 				<h:inputText value="#{editPublisher.customPublisherMBData.customPublisherPropertyValues[property.name]}" 
 							 size="45" maxlength="255" disabled="#{editPublisher.readOnly}" 
 							 rendered="#{editPublisher.customPublisherMBData.renderCustomTextInput(property)}"/>
+				<h:inputTextarea value="#{editPublisher.customPublisherMBData.customPublisherPropertyValues[property.name]}" 
+							 cols="80" rows="4" disabled="#{editPublisher.readOnly}" 
+							 rendered="#{editPublisher.customPublisherMBData.renderCustomTextInputArea(property)}"/>
 				<h:inputSecret value="#{editPublisher.customPublisherMBData.customPublisherPropertyValues[property.name]}" 
 							   size="45" maxlength="255" disabled="#{editPublisher.readOnly}"
 							   rendered="#{editPublisher.customPublisherMBData.renderCustomInputPassword(property)}"
@@ -73,7 +76,10 @@
 			<h:outputText rendered="#{editPublisher.renderCustomHelp(property)}">
 				<br />
 			</h:outputText>
-			<h:outputText value="#{editPublisher.getCustomHelpText(property)}" styleClass="smallHelp" rendered="#{editPublisher.renderCustomHelp(property)}"/>
+                <h:panelGroup rendered="#{editPublisher.renderCustomHelp(property)}">
+                    <br/>
+                    <h:outputText value="#{editPublisher.getCustomHelpText(property)}" styleClass="smallHelp"/>
+                </h:panelGroup>
 			</h:panelGroup>
 		</c:forEach>
 

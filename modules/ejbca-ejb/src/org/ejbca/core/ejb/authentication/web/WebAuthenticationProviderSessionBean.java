@@ -29,7 +29,7 @@ import com.nimbusds.jwt.JWTParser;
 import com.nimbusds.jwt.PlainJWT;
 import com.nimbusds.jwt.SignedJWT;
 import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
@@ -65,6 +65,7 @@ import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.config.GlobalUpgradeConfiguration;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.log.LogConstants;
+import org.ejbca.util.oauth.OAuthTools;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
@@ -73,6 +74,7 @@ import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.net.URL;
 import java.security.Key;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
@@ -84,7 +86,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  *
@@ -115,7 +119,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
 
 
 
-    private LoadingCache<CertificateStatusCacheKey, Integer> cache;
+    private transient LoadingCache<CertificateStatusCacheKey, Integer> cache;
 
     private boolean allowBlankAudience = false;
 
@@ -133,7 +137,6 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     @PostConstruct
     public void initialize() {
         initializeAudienceCheck();
-        initializeCache();
     }
 
     /**
@@ -148,15 +151,6 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
         if (isAllowBlankAudience() && LOG.isDebugEnabled()) {
             LOG.debug("Database not post-upgraded to 7.8.0 yet.  Allowing OAuth logins without checking 'aud' claim.");
         }
-    }
-
-    private void initializeCache() {
-        cache = Caffeine.newBuilder()
-                .maximumSize(10_000)
-                .refreshAfterWrite(12, TimeUnit.SECONDS)
-                .expireAfterAccess(60, TimeUnit.SECONDS)
-                .build(key -> certificateStoreSession.getFirstStatusByIssuerAndSerno(
-                        key.getSubjectDn(), key.getSerialNumber()));
     }
 
     @Override
@@ -231,7 +225,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
             if (!verifyOauth2Audience(keyInfo, claims)) {
                 return null;
             }
-                       
+
             if (keyInfo.isFetchUserInfo()) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Sending userInfo request");
@@ -311,7 +305,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
             if (!isUserInfoSignatureValid(jwt, keyInfoFromToken, keyId)) {
                 return tokenClaims;
             }
-            
+
             userInfoClaims = jwt.getJWTClaimsSet();
             if (LOG.isDebugEnabled()) {
                 LOG.debug("User Info Claims:" + userInfoClaims);
@@ -329,7 +323,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
             LOG.info("Unable to use userinfo response. Trying to continue without the claims from the userinfo endpoint.");
             return tokenClaims;  
         }
-        
+
         return claimsSetBuilder.build();
     }
 
@@ -394,7 +388,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
         }
         return null;
     }
-    
+
     private SignedJWT getSignedJwtFromAnyToken(String token) throws ParseException {
         JWT jwt = null;
         if (StringUtils.isNotEmpty(token)) {
@@ -452,7 +446,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 .setName(safeGetClaim(claims, "name"))
                 .setEmail(safeGetClaim(claims, "email"))
                 .setEmailVerified(safeGetBooleanClaim(claims, "email_verified"));
-        
+
         // add Roles if they exist in the JWT and are of the expected type.  All this type checking may be overly paranoid,
         // but this is an external value used in authentication, and there's no schema for JSON
         if (claims.getClaims().containsKey("roles")) {
@@ -470,7 +464,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 }
             }
         }
-        
+
         return oauthBuilder.build();
     }
 
@@ -498,7 +492,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     }
 
     @Override
-    public OAuthGrantResponseInfo refreshOAuthBearerToken(final OAuthConfiguration oauthConfiguration, final String encodedOauthBearerToken, final String oauthIdToken, final String refreshToken) {
+    public OAuthGrantResponseInfo refreshOAuthBearerToken(final OAuthConfiguration oauthConfiguration, final String encodedOauthBearerToken, final String oauthIdToken, final String refreshToken, final String requestUrl) {
         OAuthGrantResponseInfo oAuthGrantResponseInfo;
         try {
             final SignedJWT jwt = getSignedJwtFromBearerOrIdToken(encodedOauthBearerToken, oauthIdToken);
@@ -510,7 +504,34 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 logAuthenticationFailure(intres.getLocalizedMessage(jwt.getHeader().getKeyID() != null ? "authentication.jwt.keyid_missing" : "authentication.jwt.default_keyid_not_configured"));
                 return null;
             }
-            String redirectUrl = getBaseUrl();
+
+            // Use the request URL if provided and hostname is allowed, otherwise fall back to base URL
+            String redirectUrl;
+            if (requestUrl != null) {
+                try {
+                    URL url = new URL(requestUrl);
+                    String hostname = url.getHost();
+
+                    if (OAuthTools.isHostnameAllowed(hostname, oauthConfiguration)) {
+                        String protocol = url.getProtocol();
+                        int port = url.getPort() != -1 ? url.getPort() : WebConfiguration.getPublicHttpsPort();
+
+                        // Construct URL with the validated hostname and port from the request
+                        GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession
+                            .getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+                        redirectUrl = globalConfiguration.getBaseUrl(protocol, hostname, port)
+                            + GlobalConfiguration.ADMIN_WEB_PATH;
+                    } else {
+                        redirectUrl = getBaseUrl();
+                    }
+                } catch (java.net.MalformedURLException e) {
+                    LOG.info("Could not parse request URL: " + requestUrl);
+                    redirectUrl = getBaseUrl();
+                }
+            } else {
+                redirectUrl = getBaseUrl();
+            }
+
             OauthRequestHelper oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder(internalKeyBindingSession, certificateStoreSession, cryptoTokenSession, caSession));
             oAuthGrantResponseInfo = oauthRequestHelper.sendRefreshTokenRequest(refreshToken, keyInfo, redirectUrl);
         } catch (ParseException e) {
@@ -522,6 +543,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
         }
         return oAuthGrantResponseInfo;
     }
+
 
     private OAuthKeyInfo getJwtKey(final OAuthConfiguration oauthConfiguration, final String keyId) {
         if (oauthConfiguration != null) {
@@ -594,7 +616,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     }
 
     private int getCachedStatus(X509Certificate certificate) {
-        return cache.get(new CertificateStatusCacheKey(CertTools.getIssuerDN(certificate),
+        return getCache().get(new CertificateStatusCacheKey(CertTools.getIssuerDN(certificate),
                 CertTools.getSerialNumber(certificate)));
     }
 
@@ -611,11 +633,34 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 "https",
                 WebConfiguration.getHostName(),
                 WebConfiguration.getPublicHttpsPort()
-        ) + globalConfiguration.getAdminWebPath();
+        ) + GlobalConfiguration.ADMIN_WEB_PATH;
     }
 
     public boolean isAllowBlankAudience() {
         return allowBlankAudience;
+    }
+
+    public LoadingCache<CertificateStatusCacheKey, Integer> getCache() {
+        // the cache is transient - lazily construct it
+
+        if (cache == null) {
+            // We need to use a custom execuror service - the default executor will
+            // not work with the app server's Security Manager.
+            var threadNumber = new AtomicInteger();
+            var executor = Executors.newCachedThreadPool(r -> {
+                var t = new Thread(r);
+                t.setDaemon(true);
+                t.setName("certificate-status-cache-" + threadNumber.incrementAndGet());
+                return t;
+            });
+            cache = Caffeine.newBuilder()
+                    .executor(executor)
+                    .maximumSize(10_000)
+                    .refreshAfterWrite(12, TimeUnit.SECONDS)
+                    .expireAfterAccess(60, TimeUnit.SECONDS)
+                    .build(key -> certificateStoreSession.getFirstStatusByIssuerAndSerno(key.getSubjectDn(), key.getSerialNumber()));
+        }
+        return cache;
     }
 
     private static class CertificateStatusCacheKey {

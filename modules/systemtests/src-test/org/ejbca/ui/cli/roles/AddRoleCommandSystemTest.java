@@ -16,8 +16,8 @@ import static org.junit.Assert.assertNotNull;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.dto.RoleDataDto;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.junit.After;
@@ -35,9 +35,9 @@ public class AddRoleCommandSystemTest {
 
     @After
     public void teardown() throws Exception {
-        final Role oldRole = roleSession.getRole(authenticationToken, null, TESTCLASS_NAME);
+        final RoleDataDto oldRole = roleSession.getRole(authenticationToken, null, TESTCLASS_NAME);
         if (oldRole!=null) {
-            roleSession.deleteRoleIdempotent(authenticationToken, oldRole.getRoleId());
+            roleSession.deleteRoleIdempotent(authenticationToken, oldRole.id());
         }
     }
 
@@ -45,7 +45,7 @@ public class AddRoleCommandSystemTest {
     public void testAddRoleCommand() throws AuthorizationDeniedException {
         String[] args = new String[] { TESTCLASS_NAME };
         command.execute(args);
-        final Role addedRole = roleSession.getRole(authenticationToken, null, TESTCLASS_NAME);
+        final RoleDataDto addedRole = roleSession.getRole(authenticationToken, null, TESTCLASS_NAME);
         assertNotNull("Role was not added.", addedRole);
     }
 }

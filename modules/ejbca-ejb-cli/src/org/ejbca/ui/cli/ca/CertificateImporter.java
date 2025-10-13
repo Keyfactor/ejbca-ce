@@ -22,7 +22,7 @@ import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.concurrent.Callable;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.CAInfo;
@@ -147,7 +147,7 @@ class CertificateImporter implements Callable<CertificateImporter.Result> {
     }
 
     private String getEndEntityUsername(final String filename, final Certificate certificate, final String usernameFilter) {
-        if (StringUtils.equalsIgnoreCase(usernameFilter, "DN")) {
+        if (Strings.CI.equals(usernameFilter, "DN")) {
             // Use the DN if requested, but fall-back to filename if DN is empty.
             final String dn = CertTools.getSubjectDN(certificate);
             if (dn == null || dn.length() == 0) {
@@ -157,7 +157,7 @@ class CertificateImporter implements Callable<CertificateImporter.Result> {
             } else {
                 return dn;
             }
-        } else if (StringUtils.equalsIgnoreCase(usernameFilter, "CN")) {
+        } else if (Strings.CI.equals(usernameFilter, "CN")) {
             // Use CN if requested, but fallback to DN if it's empty, or if DN is empty as well, fall back to filename.
             final String dn = CertTools.getSubjectDN(certificate);
             final String cn = DnComponents.getPartFromDN(dn, "CN");

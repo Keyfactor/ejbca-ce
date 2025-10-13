@@ -19,8 +19,8 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.asn1.ASN1Boolean;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
@@ -200,7 +200,7 @@ public class BasicCertificateExtension extends CertificateExtension implements C
         if (encoding.equalsIgnoreCase(ENCODING_NAME_RAW)) {
             if (values.length > 1) {
                 // nvalues can not be used together with encoding=RAW
-                throw new CertificateExtensionException(intres.getLocalizedMessage("certext.certextmissconfigured", getId()));
+                throw new CertificateExtensionException("Certificate Extension " + getId() + " seems to be misconfigured.");                        
             } else {
                 result = parseRaw(values[0]);
             }

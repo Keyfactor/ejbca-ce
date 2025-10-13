@@ -28,7 +28,6 @@ import org.cesecore.authorization.AuthorizationCache.AuthorizationCacheCallback;
 import org.cesecore.authorization.AuthorizationCache.AuthorizationResult;
 import org.cesecore.authorization.access.AuthorizationCacheReloadListener;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
-import org.cesecore.authorization.cache.RemoteAccessSetCacheHolder;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
@@ -56,6 +55,8 @@ import jakarta.ejb.TimerService;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -63,7 +64,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 /**
  * Business logic for the EJBCA 6.8.0+ authorization system.
@@ -90,9 +90,15 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
 
     @Resource
     private SessionContext sessionContext;
-    private TimerService timerService; // When the sessionContext is injected, the timerService should be looked up.
-    private AuthorizationSessionLocal authorizationSession;
+    private transient TimerService timerService; // When the sessionContext is injected, the timerService should be looked up.
+    private transient AuthorizationSessionLocal authorizationSession;
 
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        timerService = sessionContext.getTimerService();
+        authorizationSession = sessionContext.getBusinessObject(AuthorizationSessionLocal.class);
+    }
+    
     @PostConstruct
     public void postConstruct() {
         timerService = sessionContext.getTimerService();
@@ -136,6 +142,17 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
     private boolean isAuthorized(final AuthenticationToken authenticationToken, final boolean doLogging, final String... resources) {
         try {
             final HashMap<String, Boolean> accessRules = getAccessAvailableToAuthenticationToken(authenticationToken);
+            // commented out as definitely not part of licensing logic as per 9.4.0 
+            // condition check needs to change: always use auth if License is present
+            // no license OR license expired X months back => crash
+            // no license + NO_LICENSE_PUBLIC_ACCESS=true => everyone is superadmin
+//            if (System.getenv("NO_LICENSE_PUBLIC_ACCESS")==null) { 
+//                accessRules = getAccessAvailableToAuthenticationToken(authenticationToken);
+//            } else {
+//                //log.info("Enabled public access with lack of license:" + System.getenv("NO_LICENSE_PUBLIC_ACCESS"));
+//                accessRules = new HashMap<String, Boolean>();
+//                accessRules.put("/", true);
+//            }
             final Map<String, Object> details = doLogging ? new LinkedHashMap<>() : null;
             for (int i=0; i<resources.length; i++) {
                 final String resource = resources[i];
@@ -180,8 +197,6 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
             log.trace("forceCacheExpire");
         }
         AuthorizationCache.INSTANCE.clear(accessTreeUpdateSession.getAccessTreeUpdateNumber());
-        // Clear the local RA Access Set Cache
-        RemoteAccessSetCacheHolder.forceEmptyCache();
         authorizationSession.scheduleBackgroundRefresh();
     }
 
@@ -271,7 +286,6 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
     }
 
     /** @return the union of access rules available to the AuthenticationToken if it matches several roles (ignoring any nested tokens)  */
-    @SuppressWarnings("deprecation")
     private HashMap<String, Boolean> getAccessAvailableToSingleToken(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
         HashMap<String, Boolean> accessRules = new HashMap<>();
         if (authenticationToken!=null) {
@@ -285,35 +299,8 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
                     log.debug(e.getMessage(), e);
                 }
             } else {
-                if (accessTreeUpdateSession.isNewAuthorizationPatternMarkerPresent()) {
-                    // This is the new 6.8.0+ behavior (combine access of matched rules)
-                    for (final int matchingRoleId : roleMemberDataSession.getRoleIdsMatchingAuthenticationTokenOrFail(authenticationToken)) {
-                        accessRules = AccessRulesHelper.getAccessRulesUnion(accessRules, roleDataSession.getRole(matchingRoleId).getAccessRules());
-                    }
-                } else {
-                    // This is the legacy behavior (use priority matching). Remove this once we no longer need to support upgrades to 6.8.0.
-                    // Greater tokenMatchKey number has higher priority. When equal, deny trumps accept
-                    final Map<Integer, Integer> roleIdToTokenMatchKeyMap = roleMemberDataSession.getRoleIdsAndTokenMatchKeysMatchingAuthenticationToken(authenticationToken);
-                    final Map<Integer, Integer> keepMap = new HashMap<>();
-                    // 1. Find highest tokenMatchKey number and keep these entries
-                    int highest = 0;
-                    for (final Entry<Integer,Integer> entry : roleIdToTokenMatchKeyMap.entrySet()) {
-                        final int current = entry.getValue();
-                        if (highest<current) {
-                            keepMap.clear();
-                            highest = current;
-                        }
-                        if (highest == current) {
-                            keepMap.put(entry.getKey(), entry.getValue());
-                        }
-                    }
-                    // 2. Get the intersection of rights for all matching roles
-                    if (!keepMap.isEmpty()) {
-                        accessRules.put("/", Boolean.TRUE);
-                        for (final int matchingRoleId : keepMap.keySet()) {
-                            accessRules = AccessRulesHelper.getAccessRulesIntersection(accessRules, roleDataSession.getRole(matchingRoleId).getAccessRules());
-                        }
-                    }
+                for (final int matchingRoleId : roleMemberDataSession.getRoleIdsMatchingAuthenticationTokenOrFail(authenticationToken)) {
+                    accessRules = AccessRulesHelper.getAccessRulesUnion(accessRules, roleDataSession.getRole(matchingRoleId).getAccessRules());
                 }
             }
         }

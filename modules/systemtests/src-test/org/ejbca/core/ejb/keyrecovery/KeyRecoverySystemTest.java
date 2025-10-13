@@ -33,7 +33,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import org.apache.log4j.Logger;
@@ -74,11 +76,12 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.configuration.GlobalConfigurationProxySessionRemote;
+import org.cesecore.dto.RoleDataDto;
+import org.cesecore.dto.RoleDataDtoBuilder;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
@@ -196,23 +199,28 @@ public class KeyRecoverySystemTest extends CaTestCase {
     public void setUp() throws Exception {
         super.setUp();
         admin = createCaAuthenticatedToken();
-        final Role role = roleSession.persistRole(internalAdmin, new Role(null, KEYRECOVERY_ROLE, Arrays.asList(
+        final var allowed = Arrays.asList(
                 AccessRulesConstants.ENDENTITYPROFILEPREFIX + EndEntityConstants.EMPTY_END_ENTITY_PROFILE + AccessRulesConstants.KEYRECOVERY_RIGHTS,
                 AccessRulesConstants.REGULAR_KEYRECOVERY,
                 StandardRules.CAACCESS.resource() + getTestCAId()
-                ), null));
-        roleMemberSession.persist(internalAdmin, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, getTestCAId(), RoleMember.NO_PROVIDER, 
+        );
+        final Map<String, Boolean> accessRules = new HashMap<>();
+        allowed.forEach(rule -> accessRules.put(rule, RoleDataDto.STATE_ALLOW));
+        final RoleDataDto role = new RoleDataDtoBuilder().setName(KEYRECOVERY_ROLE).setAccessRules(accessRules).build();
+        final RoleDataDto persistedRole = roleSession.persistRole(internalAdmin, role);
+        final RoleMember roleMember = new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, getTestCAId(), RoleMember.NO_PROVIDER,
                 X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
-                DnComponents.getPartFromDN(CertTools.getSubjectDN(getTestCACert()), "CN"), role.getRoleId(), null));
+                DnComponents.getPartFromDN(CertTools.getSubjectDN(getTestCACert()), "CN"), persistedRole.id(), null);
+        roleMemberSession.persist(internalAdmin, roleMember);
     }
 
     @Override
     @After
     public void tearDown() throws Exception {
         super.tearDown();
-        final Role role = roleSession.getRole(internalAdmin, null, KEYRECOVERY_ROLE);
+        final RoleDataDto role = roleSession.getRole(internalAdmin, null, KEYRECOVERY_ROLE);
         if (role!=null) {
-            roleSession.deleteRoleIdempotent(internalAdmin, role.getRoleId());
+            roleSession.deleteRoleIdempotent(internalAdmin, role.id());
         }
     }
 

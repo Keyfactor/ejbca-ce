@@ -12,13 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -46,15 +39,30 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
 
 import javax.security.auth.x500.X500Principal;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Strings;
+
+import com.keyfactor.util.CeSecoreNameStyle;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.SHA1DigestCalculator;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
@@ -66,6 +74,7 @@ import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.ASN1String;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERNull;
@@ -80,6 +89,8 @@ import org.bouncycastle.asn1.pkcs.CertificationRequestInfo;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x500.X500NameBuilder;
+import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.CRLReason;
@@ -144,17 +155,12 @@ import org.cesecore.keys.validation.IssuancePhase;
 import org.cesecore.keys.validation.ValidationException;
 import org.junit.Test;
 
-import com.keyfactor.util.CeSecoreNameStyle;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.SHA1DigestCalculator;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.certificate.SimpleCertGenerator;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.KeyTools;
-import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /** JUnit test for X.509 CA
  *
@@ -349,14 +355,24 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         boolean[] ku = cert.getKeyUsage();
         assertTrue(ku[0]);
         assertTrue(ku[1]);
-        assertTrue(ku[2]);
         assertFalse(ku[3]);
         assertFalse(ku[4]);
         assertFalse(ku[5]);
         assertFalse(ku[6]);
         assertFalse(ku[7]);
         int bcku = CertTools.sunKeyUsageToBC(ku);
-        assertEquals(X509KeyUsage.digitalSignature|X509KeyUsage.nonRepudiation|X509KeyUsage.keyEncipherment, bcku);
+        // The CERTPROFILE_FIXED_ENDUSER have by default 'Forbid encryption usage for ECC keys' checked since 9.4.0 which
+        // defaults to 'Forbid encryption usage for ECC keys' in certificate profiles
+        final String keyAlg = cert.getPublicKey().getAlgorithm();
+        if (Strings.CS.startsWith(keyAlg, "EC")
+                || Strings.CS.startsWith(keyAlg, "Ed")
+                || AlgorithmTools.isPQC(keyAlg) && !AlgorithmTools.isKEM(keyAlg)) {
+            assertFalse("keyEncipherment should not be present for signature keys", ku[2]);
+            assertEquals(X509KeyUsage.digitalSignature|X509KeyUsage.nonRepudiation, bcku);
+        } else {
+            assertTrue("keyEncipherment should be present for RSA and KEM keys", ku[2]);
+            assertEquals(X509KeyUsage.digitalSignature|X509KeyUsage.nonRepudiation|X509KeyUsage.keyEncipherment, bcku);
+        }
 
         // Create a CRL
         Collection<RevokedCertInfo> revcerts = new ArrayList<>();
@@ -850,7 +866,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
                     } catch (InvalidKeyException | CertificateException | NoSuchAlgorithmException | NoSuchProviderException | SignatureException e) {
                         // NOPMD: expected
                     }
-                    assertFalse("presign public key should not be same as certificate public key", ArrayUtils.isEquals(pubK.getEncoded(), certificate.getPublicKey().getEncoded()));
+                    assertFalse("presign public key should not be same as certificate public key", Objects.deepEquals(pubK.getEncoded(), certificate.getPublicKey().getEncoded()));
                     // presign certificate should have presign key authority key identifier
                     byte[] certAuthKeyID = CertTools.getAuthorityKeyId(certificate);
                     JcaX509ExtensionUtils extensionUtils = new JcaX509ExtensionUtils(SHA1DigestCalculator.buildSha1Instance());
@@ -1062,7 +1078,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
                 .setIssuerPrivKey(privateKey)
                 .setEntityPubKey(publicKey)
                 .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
-                .generateCertificate();  
+                .generateCertificate();
         assertNotNull(cacert);
         List<Certificate> cachain = new ArrayList<>();
         cachain.add(cacert);
@@ -1121,8 +1137,8 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             // An unescaped '+' character is interpreted as a separator between two connected subjectAltName fields. So "rfc822Name=user+plus@user.com" is
             // handled as "rfc822Name=user" and "plus@user.com". Since the second part does not map to any known fields, the resulting SubjectAltName is
             // "rfc822Name=user"
-            assertFalse(StringUtils.equals("rfc822name=" + emailUnescaped, DnComponents.getSubjectAlternativeName(certificate)));
-            assertFalse(StringUtils.equals("rfc822name=" + emailEscaped, DnComponents.getSubjectAlternativeName(certificate)));
+            assertFalse(Strings.CS.equals("rfc822name=" + emailUnescaped, DnComponents.getSubjectAlternativeName(certificate)));
+            assertFalse(Strings.CS.equals("rfc822name=" + emailEscaped, DnComponents.getSubjectAlternativeName(certificate)));
             assertEquals("rfc822name=user", DnComponents.getSubjectAlternativeName(certificate));
         } catch (CAOfflineException e) {
             fail("Certificate could not be created: " + e.getMessage());
@@ -1918,6 +1934,70 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         ASN1Encodable params = pkinfo.getAlgorithm().getParameters();
         assertNotNull("AlgorithmID parameters must not be null for an RSA public key, see RFC3279", params);
         assertEquals("Params should be DERNull", DERNull.INSTANCE, params);
+    }
+
+    /**
+     * Test if the DN attributes such as CN which has printable sting format inside 
+     * CSR preserve their formatting in the final generated cert or not.
+     * Note that for this to pass "Allow Subject DN Override by CSR" must be selected in the associated CP and
+     * in the used CA there must be the option of "PrintableString encoding in DN" enabled.
+     * @throws Exception
+     */
+    @Test
+    public void testPrintableStringInCSRShouldBePreservedAfterCertificateGeneration() throws Exception {
+        final String algName = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
+        final CryptoToken cryptoToken = getNewCryptoToken();
+        final X509CA x509ca = createTestCA(cryptoToken, CADN, algName, null, null);
+
+        // Create a pkcs10 certificate request
+        KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+
+        // Building DN with CN and C elements of PrintableString type and O of UTF8String type
+        X500NameBuilder builder = new X500NameBuilder(BCStyle.INSTANCE);
+        builder.addRDN(BCStyle.CN, new DERPrintableString("RequestMessageCn"));
+        builder.addRDN(BCStyle.O, "PrimeKey");
+        builder.addRDN(BCStyle.C, new DERPrintableString("SE"));
+        X500Name x509dn = builder.build();
+
+        PKCS10CertificationRequest certificationRequest = CertTools.genPKCS10CertificationRequest(algName, x509dn, keyPair.getPublic(), null, keyPair.getPrivate(), BouncyCastleProvider.PROVIDER_NAME);
+        PKCS10RequestMessage requestMessage = new PKCS10RequestMessage(new JcaPKCS10CertificationRequest(certificationRequest));
+        assertEquals("CN=RequestMessageCn,O=PrimeKey,C=SE", requestMessage.getRequestDN());
+
+        EndEntityInformation endEntityInformation = new EndEntityInformation("username", "CN=EndEntityInformationCn,O=PrimeKey,C=SE", 666, null, "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
+
+        //Create CP and generate certificate
+        CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        cp.setAllowDNOverride(true);
+
+        Certificate usercert = x509ca.generateCertificate(cryptoToken, endEntityInformation, requestMessage, keyPair.getPublic(), 0, null, null, cp, null, "00000", cceConfig);
+        assertNotNull(usercert);
+
+
+        X509Certificate x509cert = (X509Certificate) usercert;
+        X500Name certSubject = X500Name.getInstance(x509cert.getSubjectX500Principal().getEncoded());
+
+        // Extract and compare
+        Map<String, String> csrEncodings = extractEncodings(x509dn);
+        Map<String, String> certEncodings = extractEncodings(certSubject);
+
+        assertEquals("Encoding mismatch between CSR and Certificate subjects!",
+                csrEncodings, certEncodings);
+    }
+
+    private static Map<String, String> extractEncodings(X500Name name) throws Exception {
+        Map<String, String> encodings = new LinkedHashMap<>();
+        for (RDN rdn : name.getRDNs()) {
+            ASN1Primitive primitive = rdn.getFirst().getValue().toASN1Primitive();
+            String displayName = BCStyle.INSTANCE.oidToDisplayName(rdn.getFirst().getType());
+
+            String type = primitive.getClass().getSimpleName(); // e.g. DERUTF8String, DERPrintableString
+            String value = (primitive instanceof ASN1String)
+                    ? ((ASN1String) primitive).getString()
+                    : primitive.toString();
+
+            encodings.put(displayName + "=" + value, type);
+        }
+        return encodings;
     }
 
     /**

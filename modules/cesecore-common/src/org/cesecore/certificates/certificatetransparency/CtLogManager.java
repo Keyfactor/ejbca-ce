@@ -13,13 +13,14 @@
 
 package org.cesecore.certificates.certificatetransparency;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 /**
  * This class is responsible for managing a list of CT logs. The CT logs backed by
@@ -29,7 +30,8 @@ import org.apache.commons.lang.StringUtils;
  * a database or a file.
  * @version $Id$
  */
-public class CtLogManager {
+public class CtLogManager implements Serializable {
+    private static final long serialVersionUID = 1L;
     private final List<CTLogInfo> ctLogs;
 
     /**
@@ -165,8 +167,8 @@ public class CtLogManager {
     public boolean canAdd(final CTLogInfo ctLog) {
         for (CTLogInfo existing : ctLogs) {
             final boolean hasSameId = existing.getLogId() == ctLog.getLogId();
-            final boolean urlExistsInCtLogGroup = StringUtils.equals(existing.getUrl(), ctLog.getUrl())
-                    && StringUtils.equals(existing.getLabel(), ctLog.getLabel());
+            final boolean urlExistsInCtLogGroup = Strings.CS.equals(existing.getUrl(), ctLog.getUrl())
+                    && Strings.CS.equals(existing.getLabel(), ctLog.getLabel());
             if (hasSameId || urlExistsInCtLogGroup) {
                 return false;
             }

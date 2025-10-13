@@ -53,7 +53,8 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.OAuthConfiguration;
-import org.cesecore.roles.Role;
+import org.cesecore.dto.RoleDataDto;
+import org.cesecore.dto.RoleDataDtoBuilder;
 import org.easymock.EasyMock;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.GlobalConfiguration;
@@ -72,6 +73,7 @@ import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
+import org.cesecore.authorization.AuthorizationCache;
 
 /**
  *
@@ -92,8 +94,8 @@ public final class EjbcaWebBeanImplUnitTest {
     private static final String[] BEARER_TOKEN_FINGERPRINTS = { "fp111", "fp222" };
     private static final OAuth2Principal TEST_CLAIMS = OAuth2Principal.builder().setIssuer("Issuer").setSubject("Subject").setOid("2.999.123").build();
     private static final String OAUTH_PROVIDER_NAME = "OAuth Provider 123";
-    private static final List<Role> ADMIN_ROLES = new ArrayList<>(Arrays.asList(new Role(null, "Test Role")));
-    
+    private static final List<RoleDataDto> ADMIN_ROLES = new ArrayList<>(Arrays.asList(new RoleDataDtoBuilder().setName("Test Role").build()));
+
     private static X509Certificate[] allAdminCerts;
     
     private static X509Certificate adminCert;
@@ -416,6 +418,20 @@ public final class EjbcaWebBeanImplUnitTest {
         assertEquals("Admin should have an authentication token", mockedAuthToken, ejbcaWebBean.getAdminObject());
     }
 
+    /**
+     * Like clientCert, but expected authentication to be cached. This method
+     * is used by the {@link #updateNumberChange()} test case.
+     */
+    private void clientCertCached() throws Exception {
+        expectExtractCertificate();
+        expect(ejbs.getAuthorizationSession().isAuthorized(same(mockedAuthToken), eq(TEST_ACCESS_RESOURCE))).andReturn(true);
+        replayAll();
+        ejbcaWebBean.initialize(mockedRequest, TEST_ACCESS_RESOURCE);
+        verifyAll();
+        assertEquals("Wrong admin fingerprint", adminFingerprint, ejbcaWebBean.getCertificateFingerprint());
+        assertEquals("Admin should have an authentication token", mockedAuthToken, ejbcaWebBean.getAdminObject());
+    }
+
     /** Tests successful authentication without client certificate but with OAuth2 token */
     @Test
     public void bearerToken() throws Exception {
@@ -522,6 +538,29 @@ public final class EjbcaWebBeanImplUnitTest {
         clientCert(); // should perform authentication again
         resetAll();
         tlsSession = TLS_SESSION_3;
+        clientCert(); // should also perform authentication again
+    }
+
+    /**
+     * Simulates an incremented update number in AccessTreeUpdateData, which
+     * can happen in clustered environments, when a role is modified on a
+     * different EJBCA node.
+     */
+    @Test
+    public void updateNumberChange() throws Exception {
+        // Do an initial authentication to populate the authState field.
+        clientCert();
+        int initialUpdateNumber = AuthorizationCache.INSTANCE.getLastUpdateNumber();
+        reset(allMockObjects.toArray()); // can't use resetAll, since that would replace the mocked authenticationToken also
+
+        // Second time, the authentication should be cached until
+        // the update number changes.
+        clientCertCached();
+        resetAll();
+
+        // This time, we bump the update number (note that the AuthorizationCache
+        // is a different cache than the authState field).
+        AuthorizationCache.INSTANCE.clear(initialUpdateNumber + 1);
         clientCert(); // should also perform authentication again
     }
     

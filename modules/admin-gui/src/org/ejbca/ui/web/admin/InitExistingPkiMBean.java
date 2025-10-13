@@ -26,7 +26,7 @@ import jakarta.inject.Named;
 import jakarta.servlet.http.Part;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.control.StandardRules;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
@@ -41,7 +41,7 @@ public class InitExistingPkiMBean extends BaseManagedBean implements Serializabl
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(InitExistingPkiMBean.class);
     
-    private Part uploadFile;
+    private transient Part uploadFile;
     private String importedCaName;
     private boolean caImported = false;
 

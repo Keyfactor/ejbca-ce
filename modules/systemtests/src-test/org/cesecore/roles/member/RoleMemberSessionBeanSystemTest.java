@@ -27,8 +27,9 @@ import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMeta
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
+import org.cesecore.dto.RoleDataDto;
+import org.cesecore.dto.RoleDataDtoBuilder;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.management.RoleSessionRemote;
@@ -39,48 +40,56 @@ import org.junit.Test;
 
 /**
  * Test of RoleMemberSessionBean.
- * 
- * @version $Id$
+ *
  */
 public class RoleMemberSessionBeanSystemTest extends RoleUsingTestCase {
 
     private static final int INVALID_USER_ID = -1;
-    private static final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken("RoleMemberSessionBeanSystemTest");
+    private static final String NAME_SPACE = null;
+    private static final String ROLE_NAME = "TestMembersRole";
+    private static final String ROLE_MEMBER_NAME = "RoleMemberSessionTest";
+    private AuthenticationToken alwaysAllowToken;
 
-    private RoleMemberSessionRemote roleMemberSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
-    private RoleSessionRemote roleSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
+    private RoleMemberSessionRemote roleMemberSessionRemote;
+    private RoleSessionRemote roleSessionRemote;
     
     private AuthenticationToken authenticationToken;
     private AuthenticationToken unauthorizedAuthenticationToken;
-    
-    private Role role;
-    private Role persistedTestRole;
+
+    private RoleDataDto role;
+    private RoleDataDto persistedTestRole;
     private RoleMember roleMember;
 
     @Before
-    public void setUp() throws RoleExistsException, RoleNotFoundException, AuthorizationDeniedException {
+    public void setUp() throws RoleExistsException, RoleNotFoundException, AuthorizationDeniedException, InterruptedException {
+        alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(this.getClass().getSimpleName());
+        roleMemberSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
+        roleSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
+        cleanUpRole(NAME_SPACE, ROLE_NAME);
+        cleanUpRole(NAME_SPACE, ROLE_MEMBER_NAME);
         final String unauthorizedDN = "CN=RoleMemberSessionBeanSystemTest";
-        setUpAuthTokenAndRole("RoleMemberSessionTest"); //Set up role authorized to create new roles
+        setUpAuthTokenAndRole(ROLE_MEMBER_NAME); //Set up role authorized to create new roles
         authenticationToken = roleMgmgToken;
         unauthorizedAuthenticationToken = createAuthenticationToken(unauthorizedDN);
-        //Create a new role used for tests only, makes cleanup easier
-        role = new Role(null, "TestMembersRole");
-        persistedTestRole = roleSessionRemote.persistRole(authenticationToken, role);       
-        roleMember = new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, RoleMember.NO_ISSUER, RoleMember.NO_PROVIDER, 0, 0, "",
-                                    persistedTestRole.getRoleId(), "TestValue");
+
+        // Create a new role used for tests only, makes cleanup easier
+        role = new RoleDataDtoBuilder().setName(ROLE_NAME).build();
+        persistedTestRole = roleSessionRemote.persistRole(authenticationToken, role);
+        roleMember = new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, RoleMember.NO_ISSUER, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(), "foo",
+                                    persistedTestRole.getId(), "TestValue");
     }
     
     @After
     public void tearDown() throws AuthorizationDeniedException, RoleNotFoundException {
-        cleanUpRole(null, "TestMembersRole");
-        cleanUpRole(null, "RoleMemberSessionTest");
         tearDownRemoveRole();
+        cleanUpRole(NAME_SPACE, ROLE_NAME);
+        cleanUpRole(NAME_SPACE, ROLE_MEMBER_NAME);
     }
     
     private void cleanUpRole(final String nameSpace, final String roleName) throws AuthorizationDeniedException {
-        final Role cleanUpRole = roleSessionRemote.getRole(alwaysAllowToken, nameSpace, roleName);
-        if (cleanUpRole!=null) {
-            roleSessionRemote.deleteRoleIdempotent(alwaysAllowToken, cleanUpRole.getRoleId());
+        final RoleDataDto cleanUpRole = roleSessionRemote.getRole(alwaysAllowToken, nameSpace, roleName);
+        if (cleanUpRole != null) {
+            roleSessionRemote.deleteRoleIdempotent(alwaysAllowToken, cleanUpRole.id());
         }
     }
  
@@ -155,10 +164,10 @@ public class RoleMemberSessionBeanSystemTest extends RoleUsingTestCase {
         for (int i = 0; i < numberOfTestEntries; i++) {
             roleMemberSessionRemote.persist(authenticationToken, roleMember);
         }
-        List<RoleMember> returnedRoleMembers = roleMemberSessionRemote.getRoleMembersByRoleId(authenticationToken, persistedTestRole.getRoleId());
+        List<RoleMember> returnedRoleMembers = roleMemberSessionRemote.getRoleMembersByRoleId(authenticationToken, persistedTestRole.id());
         assertEquals(numberOfTestEntries, returnedRoleMembers.size());
         for (RoleMember roleMember : returnedRoleMembers) {
-            assertEquals(persistedTestRole.getRoleId(), roleMember.getRoleId());
+            assertEquals(persistedTestRole.id().intValue(), roleMember.getRoleId());
         }
     }
     
@@ -166,7 +175,7 @@ public class RoleMemberSessionBeanSystemTest extends RoleUsingTestCase {
     public void testNormalization() throws AuthorizationDeniedException {
         RoleMember testRoleMember = roleMemberSessionRemote.persist(authenticationToken, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                 RoleMember.NO_ISSUER, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
-                "0", persistedTestRole.getRoleId(), "Test"));
+                "0", persistedTestRole.id(), "Test"));
         try {
             testRoleMember = roleMemberSessionRemote.getRoleMember(authenticationToken, testRoleMember.getId());
             assertEquals("0", testRoleMember.getTokenMatchValue());

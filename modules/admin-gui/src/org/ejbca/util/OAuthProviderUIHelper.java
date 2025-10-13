@@ -14,7 +14,7 @@
  
 package org.ejbca.util;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.cesecore.authentication.oauth.MissingOAuthKeyAttributeException;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.ejbca.ui.web.admin.configuration.SystemConfigurationOAuthKeyManager.OAuthKeyEditor;

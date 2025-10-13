@@ -93,7 +93,6 @@ public abstract class CvcCABase extends CABase implements Serializable, CvcCA {
     }
 
     @Override
-    @SuppressWarnings("deprecation")
     public void init(HashMap<Object, Object> loadedData, int caId, String subjectDN, String name, int status, Date updateTime, Date expireTime) {
 		super.init(loadedData);
 		setExpireTime(expireTime);
@@ -112,9 +111,6 @@ public abstract class CvcCABase extends CABase implements Serializable, CvcCA {
 				getApprovals(),
 				getIncludeInHealthCheck(), isDoEnforceUniquePublicKeys(),isDoEnforceKeyRenewal(), isDoEnforceUniqueDistinguishedName(), isDoEnforceUniqueSubjectDNSerialnumber(),
 				isUseCertReqHistory(), isUseUserStorage(), isUseCertificateStorage(), isAddCompromisedKeysToBlockList(), isAcceptRevocationNonExistingEntry());
-        //These to settings were deprecated in 6.8.0, but are still set for upgrade reasons
-        info.setApprovalProfile(getApprovalProfile());
-        info.setApprovalSettings(getApprovalSettings());
 		super.setCAInfo(info);
         setCAId(caId);        
 	}
@@ -157,35 +153,12 @@ public abstract class CvcCABase extends CABase implements Serializable, CvcCA {
 		return LATEST_VERSION;
 	}
 
-    @SuppressWarnings("deprecation")
     @Override
 	public void upgrade(){
 		if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
 			// New version of the class, upgrade
             log.info("Upgrading CVCCA with version "+getVersion());
 
-			// Put upgrade code here...
-            
-            // v1->v2 is only an upgrade in order to upgrade CA token
-            // v2->v3 is a upgrade of X509CA that has to be adjusted here too, due to the common heritage
-            if (data.get(CRLPERIOD) instanceof Integer) {
-            	setCRLPeriod(0L);
-            }
-            if (data.get(CRLISSUEINTERVAL) instanceof Integer) {
-            	setCRLIssueInterval(0L);
-            }
-            if (data.get(CRLOVERLAPTIME) instanceof Integer) {
-            	setCRLOverlapTime(0L);
-            }
-            if (data.get(DELTACRLPERIOD) instanceof Integer) {
-            	setDeltaCRLPeriod(0L);
-            }
-
-            // v4.
-            // 'encodedValidity' MUST set to "" (Empty String) here. The initialization is done during post-upgrade of EJBCA 6.6.1.
-            if(null == data.get(ENCODED_VALIDITY) && null != data.get(VALIDITY)) {
-                setEncodedValidity(getEncodedValidity());
-            }
             
             data.put(VERSION, LATEST_VERSION);
 		}  

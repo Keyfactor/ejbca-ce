@@ -39,16 +39,17 @@ import jakarta.inject.Named;
 import jakarta.servlet.http.Part;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
-import org.cesecore.roles.Role;
+import org.cesecore.dto.RoleDataDto;
 import org.cesecore.roles.management.RoleDataSessionLocal;
 import org.cesecore.util.SecureXMLDecoder;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
@@ -119,7 +120,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     private String clonedProfileName;
     
     private String endEntityProfileName;
-    private Part uploadFile;
+    private transient Part uploadFile;
     private boolean profileSaved;
     private String uploadFilename;
     private Map<String, String> endEntityProfileNameToIdMap = null;
@@ -267,11 +268,11 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
         }
         final List<String> rolenames = new ArrayList<>();
         final Pattern idInRulename = Pattern.compile("^" + AccessRulesConstants.ENDENTITYPROFILEPREFIX + "(-?[0-9]+)/.*$");
-        for (final Role role : roleDataSession.getAllRoles()) {
-            for (final String explicitResource : role.getAccessRules().keySet()) {
+        for (final RoleDataDto role : roleDataSession.getAllRoles()) {
+            for (final String explicitResource : role.accessRules().keySet()) {
                 final Matcher matcher = idInRulename.matcher(explicitResource);
                 if (matcher.find() && String.valueOf(profileId).equals(matcher.group(1))) {
-                    rolenames.add(role.getRoleNameFull());
+                    rolenames.add(role.fullName());
                     break;
                 }
             }
@@ -287,14 +288,10 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
 
     public void actionExportProfile(String selectedEndEntityProfile) {
         clearMessages();
-        String selectedEndEntityProfileId = endEntityProfileNameToIdMap.get(selectedEndEntityProfile);
+        final String selectedEndEntityProfileId = endEntityProfileNameToIdMap.get(selectedEndEntityProfile);
         if (selectedEndEntityProfileId != null) {
-            if (selectedEndEntityProfileId.equals(""+EndEntityConstants.EMPTY_END_ENTITY_PROFILE)) {
-                addErrorMessage(YOU_CANT_EDIT_EMPTY_PROFILE);
-                return;
-            }
-            redirect(getEjbcaWebBean().getBaseUrl() + getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath() + "/profilesexport", "profileType",
-                    "eep", "profileId",selectedEndEntityProfileId);
+            redirect(getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH + "/profilesexport", "profileType",
+                    "eep", "profileId", selectedEndEntityProfileId.toString());
         } else {
             addErrorMessage(PROFILE_NOT_SELECTED);
         }
@@ -303,7 +300,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
 
     public void actionExportProfiles() {
         clearMessages();
-        redirect(getEjbcaWebBean().getBaseUrl() + getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath() + "/profilesexport", "profileType",
+        redirect(getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH + "/profilesexport", "profileType",
                 "eep");
     }
 
@@ -543,6 +540,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     }
     
     public void actionView(String endEntityProfileName) {
+        endEntityProfileName = endEntityProfileName.replace(ejbcaWebBean.getText("MISSINGCAIDS"), "").trim();
         clearMessages();
         if (endEntityProfileName==null) {
             addErrorMessage(PROFILE_NOT_SELECTED);
@@ -558,6 +556,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
 
 
     public void actionEdit(String endEntityProfileName) {
+        endEntityProfileName = endEntityProfileName.replace(ejbcaWebBean.getText("MISSINGCAIDS"), "").trim();
         clearMessages();
         if (endEntityProfileName==null) {
             addErrorMessage(PROFILE_NOT_SELECTED);
@@ -574,6 +573,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     }
 
     public void actionClone(String endEntityProfileName) {
+        endEntityProfileName = endEntityProfileName.replace(ejbcaWebBean.getText("MISSINGCAIDS"), "").trim();
         clearMessages();
         setEndEntityProfileName(endEntityProfileName);
         if (endEntityProfileName!=null) {
@@ -604,7 +604,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     }
     
     public void actionDelete(String selectedEndEntityProfile) {
-        
+        selectedEndEntityProfile = selectedEndEntityProfile.replace(ejbcaWebBean.getText("MISSINGCAIDS"), "").trim();
         if (selectedEndEntityProfile.equals(EndEntityConstants.EMPTY_ENDENTITYPROFILENAME)) {
             addErrorMessage(YOU_CANT_EDIT_EMPTY_PROFILE);
             return;

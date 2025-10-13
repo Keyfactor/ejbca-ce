@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.jsf.validator;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
 import com.keyfactor.util.StringTools;

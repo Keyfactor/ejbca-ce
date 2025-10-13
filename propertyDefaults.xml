@@ -100,15 +100,6 @@
 	<!-- java.ver is used to select the correct version of bc libraries to include in ear -->   
 	<property name="java.ver" value="16" />
 	<property name="ca.tokentype" value="soft"/>
-	<property name="mail.from" value="ejbca-donotreply@domain.com" />
-	<property name="mail.user" value="ejbca_user" />
-	<property name="mail.password" value="" />
-	<property name="mail.pop3.host" value="localhost" />
-	<property name="mail.smtp.host" value="localhost" />
-	<property name="mail.smtp.port" value="25" />
-	<property name="mail.smtp.auth" value="false" />
-	<property name="mail.smtp.starttls.enable" value="false" />
-	<property name="mail.debug" value="false" />
 	<property name="httpserver.external.fqdn" value="" />
 	<property name="target.servercert.ca" value="ManagementCA" />
 	<property name="target.clientcert.ca" value="ManagementCA" />
@@ -146,7 +137,6 @@ appserver.type           = ${appserver.type}
 appserver.subtype        = ${appserver.subtype}
 appserver.home           = ${appserver.home}
 java.version(ant.java)   = ${java.version} (${ant.java.version})
-ocsp.signaturealgorithm  = ${ocsp.signaturealgorithm}
 datasource.jndi-name     = ${datasource.jndi-name}
 datasource.jndi-name-prefix = ${datasource.jndi-name-prefix}
 database.name            = ${database.name}
@@ -157,13 +147,6 @@ database.password        = ***
 database.useSeparateCertificateTable = ${database.useSeparateCertificateTable}
 database.valid.connection.sql = ${database.valid.connection.sql}
 mail.jndi-name           = ${mail.jndi-name}
-mail.from                = ${mail.from}
-mail.user                = ${mail.user}
-mail.password            = ***
-mail.smtp.host           = ${mail.smtp.host}
-mail.smtp.port           = ${mail.smtp.port}
-mail.smtp.auth           = ${mail.smtp.auth}
-mail.debug               = ${mail.debug}
 httpserver.pubhttp	     = ${httpserver.pubhttp}
 httpserver.pubhttps	     = ${httpserver.pubhttps}
 httpserver.privhttps     = ${httpserver.privhttps}

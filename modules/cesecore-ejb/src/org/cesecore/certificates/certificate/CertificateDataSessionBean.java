@@ -15,7 +15,7 @@ package org.cesecore.certificates.certificate;
 import static java.util.stream.Collectors.toList;
 import static org.cesecore.authorization.control.StandardRules.SYSTEMCONFIGURATION_VIEW;
 
-import org.apache.commons.lang.time.FastDateFormat;
+import org.apache.commons.lang3.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -116,6 +116,21 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
                                     + "(SELECT max(b.notBefore) FROM CertificateData b WHERE b.subjectDN=:subjectDN)", 
                                     CertificateData.class);
         query.setParameter("subjectDN", subjectDN);
+        return query.getSingleResult();
+    }
+
+    @Override
+    public CertificateData findLastExpiringActiveCertByUsername(final String username, final Date currentTime) {
+        final TypedQuery<CertificateData> query = entityManager.createQuery(
+                                    "SELECT a FROM CertificateData a WHERE a.username=:username AND a.status in (:status1, :status2) "
+                                    + " AND a.expireDate >= :currentTime "
+                                    + " ORDER BY a.expireDate DESC",
+                                    CertificateData.class);
+        query.setParameter("username", username);
+        query.setParameter("status1", CertificateConstants.CERT_ACTIVE);
+        query.setParameter("status2", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION);
+        query.setParameter("currentTime", currentTime.getTime());
+        query.setMaxResults(1);
         return query.getSingleResult();
     }
 

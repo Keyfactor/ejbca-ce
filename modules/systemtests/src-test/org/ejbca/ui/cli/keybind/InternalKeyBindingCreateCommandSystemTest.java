@@ -42,7 +42,6 @@ import static org.junit.Assert.assertTrue;
 /**
  * System tests for InternalKeyBindingCreateCommand
  * 
- * @version $Id$
  *
  */
 public class InternalKeyBindingCreateCommandSystemTest {
@@ -51,7 +50,7 @@ public class InternalKeyBindingCreateCommandSystemTest {
     private static final String KEYBINDING_NAME = "CliTest";
     private static final String KEY_PAIR_ALIAS = "CliTest";
     private static final String[] STANDARD_ARGS = { KEYBINDING_NAME, "OcspKeyBinding", "DISABLED", "null", TESTCLASSNAME, KEY_PAIR_ALIAS,
-            "SHA256WithRSA", "-nonexistingisgood=false", "-maxAge=0", "-nonexistingisrevoked=true", "-requireTrustedSignature=true", "-untilNextUpdate=0",
+            "SHA256WithRSA", "-maxAge=0", "-requireTrustedSignature=true", "-untilNextUpdate=0",
             "-responderidtype=NAME", "-includecertchain=false" };
 
     private static final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(TESTCLASSNAME));
@@ -92,8 +91,6 @@ public class InternalKeyBindingCreateCommandSystemTest {
             InternalKeyBinding internalKeyBinding = internalKeyBindingMgmtSession.getInternalKeyBinding(alwaysAllowToken, keyBindingId);
             assertTrue("Purported Long value was not saved as Long.",
                     internalKeyBinding.getProperty(OcspKeyBinding.PROPERTY_MAX_AGE).getValue() instanceof Long);
-            assertTrue("Purported Boolean value was not saved as Boolean.", internalKeyBinding.getProperty(OcspKeyBinding.PROPERTY_NON_EXISTING_GOOD)
-                    .getValue() instanceof Boolean);
         } finally {
             Integer keyBindingId = internalKeyBindingMgmtSession.getIdFromName(KEYBINDING_NAME);
             if (keyBindingId != null) {

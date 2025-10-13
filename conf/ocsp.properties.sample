@@ -8,22 +8,6 @@
 # Default is '/${app.name}/publicweb/status'
 #ocsp.contextroot=/status
 
-# If set to false the OCSP responses will only contain the signature certificate (if ocsp.includesignercertinresponse is set to 'true'), 
-# and not the whole certificate chain of the OCSP responder.
-# Default true.
-#ocsp.includecertchain=true
-
-# If set to false, the  OCSP response will not contain the signing certificate.
-# Default true 
-#ocsp.includesignercert=true
-
-# Specifies which signature algorithms can be used in OCSP responses. You can specify several algorithm
-# separated by ';'. If RSA keys are used in the OCSP signing certificate, the algorithm with RSA will be used, and
-# if ECDSA keys are used in the OCSP signing certificate, the algorithm with ECDSA will be used.
-#
-# Default: SHA256WithRSA;SHA256withRSAandMGF1;SHA384WithRSA;SHA512WithRSA;SHA224withECDSA;SHA256withECDSA;SHA384withECDSA;SHA512withECDSA;Ed25519;Ed448
-#ocsp.signaturealgorithm=SHA256WithRSA;SHA256withRSAandMGF1;SHA384WithRSA;SHA512WithRSA;SHA224withECDSA;SHA256withECDSA;SHA384withECDSA;SHA512withECDSA;Ed25519;Ed448
-
 # The interval on which the the OCSP signing certificates are updated in seconds.
 # If set to 0 or negative these certificate are never updated.
 # Default: 300
@@ -36,51 +20,19 @@
 # Default: 604800 (1 week)
 #ocsp.warningBeforeExpirationTime=10000
 
-# If true a certificate that does not exist in the database, but is issued by a CA the responder handles
-# will be treated as not revoked. Default (when value is false) is to treat is as "unknown". Since the OCSP responders database normally contains all issued certificate
-# this gives sensible values (in line with RFC6960) to "ok", "revoked" and "unknown" certificates.
-#
-# Setting this value to true is useful if you want an External OCSP responder database to only contain revoked certificates, and not
-# all certificates. In this case the responder will answer "ok" to requests for certificates that do not exist in the database. 
-# If both 'ocsp.nonexistingisgood' and 'ocsp.nonexistingisrevoked' are set to 'true', the responder will answer "ok".
-#
-# Note that for standard OCSP responders this value is set in the keybinding, so this configuration value acts as a default for CAs. 
-#
-# Default: false
-#ocsp.nonexistingisgood=false
-
-# Setting this value to true will cause CAs to respond with an unsigned "Unauthorized" response for unknown serial numbers. 
-#
-# Setting this value to true is not compatible with ocsp.nonexistingisgood or ocsp.nonexistingisrevoked
-#
-# Note that for standard OCSP responders this value is set in the keybinding, so this configuration value acts as a default for CAs. 
-#
-# Default: false
-#ocsp.nonexistingisunauthorized=false
-
-# The value of 'ocsp.nonexistingisgood=false' may be overridden if the URL that the client used to send the request is matching some regular expression.
+# The value of 'CA Response for Unknown Certificates' set to other than GOOD in the OCSP Configuration(s) may be overridden if the URL that the client used to send the request is matching some regular expression.
 # The regular expressions that if any of them is fulfilled will override 'ocsp.nonexistingisgood=false' is numbered from 1 and up. It may be any numbers.
 # Here follows an example of 2:
 #ocsp.nonexistingisgood.uri.1=.*\\?thisEndingIsGood$
 #ocsp.nonexistingisgood.uri.2=^http://good.myhost.nu:8080/.*
 
-# The value of 'ocsp.nonexistingisgood=true' may be overridden if the URL that the client used to send the request is matching some regular expression.
+# The value of 'CA Response for Unknown Certificates' set to GOOD  may be overridden if the URL that the client used to send the request is matching some regular expression.
 # The regular expressions that if any of them is fulfilled will override 'ocsp.nonexistingisgood=true' is numbered from 1 and up. It may be any numbers.
 # Here follows an example of 2:
 #ocsp.nonexistingisbad.uri.1=.*\\?thisEndingIsBad$
 #ocsp.nonexistingisbad.uri.2=^http://bad.myhost.nu:8080/.*
 
-# If true a certificate that does not exist in the database, but is issued by a CA the responder handles,
-# will be treated as revoked; the revocation reason will be "Certificate Hold" and the revocation time is January 1st, 1970 (compliant with RFC6960). 
-# Default (when this value and value of "Non existing is good" are false) is to treat it as "unknown".
-# If both "Non existing is good" and "Non existing is revoked", the responder will answer "ok".
-#
-# Note that for standard OCSP responders this value is set in the keybinding, so this configuration value acts as a default for CAs. 
-#
-# Default: false
-#ocsp.nonexistingisrevoked=false
-
-# The value of 'ocsp.nonexistingisrevoked=false' may be overridden if the URL that the client used to send the request is matching some regular expression.
+# The value of 'CA Response for Unknown Certificates' set to other than REVOKED  may be overridden if the URL that the client used to send the request is matching some regular expression.
 # The regular expressions that if any of them is fulfilled will override 'ocsp.nonexistingisrevoked=false' is numbered from 1 and up. It may be any numbers.
 # Here follows an example of 2:
 #ocsp.nonexistingisrevoked.uri.1=.*\\?thisEndingIsRevoked$
@@ -96,11 +48,6 @@
 #
 # Default: false
 #ocsp.signaturerequired=false
-
-# Cache time of revocation checks of the OCSP request signer's certificate in milliseconds.
-# Set to 0 to never cache this revocation information.
-# Default: 60000
-#ocsp.reqsigncertrevcachetime=60000
 
 # Timeout setting for the Global OCSP configuration cache. Once the cache has timed out it will be reread from the 
 # database.

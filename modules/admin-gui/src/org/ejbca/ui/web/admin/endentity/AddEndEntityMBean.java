@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -34,9 +33,10 @@ import jakarta.faces.event.AjaxBehaviorEvent;
 import jakarta.faces.model.SelectItem;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -73,7 +73,6 @@ import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.bean.SessionBeans;
 import org.ejbca.ui.web.admin.rainterface.RAInterfaceBean;
 import org.ejbca.ui.web.admin.rainterface.UserView;
-import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ietf.ldap.LDAPDN;
 
 import com.keyfactor.ErrorCode;
@@ -135,9 +134,7 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     private int numberOfRequests = 1;
     private int revocationStatus = RevokedCertInfo.NOT_REVOKED;
     private boolean sendNotification;
-    private boolean usePrinting;
     private boolean useKeyRecovery = false;
-    private GlobalConfiguration globalConfiguration;
     private String customSerialNumber;
     private List<SubjectDnFieldData> subjectDnFieldDatas;
     private List<SubjectAltNameFieldData> subjectAltNameFieldDatas;
@@ -146,29 +143,24 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
 
     private String[] profileNames = null; 
     
-    private EjbcaWebBean ejbcaWebBean;
-    private RAInterfaceBean raBean;
-    
+    private transient GlobalConfiguration globalConfiguration;
+    private transient RAInterfaceBean raBean;
+
     // Authentication check and audit log page access request
     @PostConstruct
-    public void initialize() throws AuthorizationDeniedException, EjbcaException {
+    public void initialize() {
         if (!getEjbcaWebBean().isAuthorizedNoLogSilent(AccessRulesConstants.ROLE_ADMINISTRATOR)) {
-            throw new AuthorizationDeniedException("You are not authorized to view this page.");
+            // PostConstruct methods can't throw checked exceptions
+            throw new IllegalStateException("You are not authorized to view this page.");
         }
 
         final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
 
-        ejbcaWebBean = getEjbcaWebBean();
         try {
-
-            globalConfiguration = ejbcaWebBean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR,
-                    AccessRulesConstants.REGULAR_CREATEENDENTITY);
-
-            raBean = SessionBeans.getRaBean(request);
-            raBean.initialize(ejbcaWebBean);
-
             RequestHelper.setDefaultCharacterEncoding(request);
             
+            getRaBean();
+            getGlobalConfiguration();
             initUserData();
         } catch (Exception e) {
             addNonTranslatedErrorMessage(e.getMessage());
@@ -184,7 +176,6 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
                     throw new IllegalStateException("Error while transfering to error page!");
                 }
             }
-
         }
     }
 
@@ -231,7 +222,7 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     public List<SelectItem> getAvailableEndEntityProfiles() throws EndEntityProfileNotFoundException {
         final List<SelectItem> ret = new ArrayList<>();
         for(int i = 0; i < profileNames.length; i++) {
-            int pId = raBean.getEndEntityProfileId(profileNames[i]);
+            int pId = getRaBean().getEndEntityProfileId(profileNames[i]);
             ret.add(new SelectItem(pId, profileNames[i]));
 
         }
@@ -284,7 +275,7 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     
     public String actionChangeEndEntityProfile(AjaxBehaviorEvent event) {
         
-        this.selectedEeProfile = raBean.getEndEntityProfile(selectedEeProfileId);
+        this.selectedEeProfile = getRaBean().getEndEntityProfile(selectedEeProfileId);
         
         this.maxLoginAttempts = selectedEeProfile.getValue(EndEntityProfile.MAXFAILEDLOGINS, 0).equals("-1") ? StringUtils.EMPTY
                 : selectedEeProfile.getValue(EndEntityProfile.MAXFAILEDLOGINS, 0);
@@ -297,9 +288,8 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
         this.cabfOrganizationIdentifier = selectedEeProfile.getCabfOrganizationIdentifier();
         this.numberOfRequests = selectedEeProfile.getAllowedRequests();
         this.setSendNotification(selectedEeProfile.getValue(EndEntityProfile.SENDNOTIFICATION,0).equals(EndEntityProfile.TRUE));
-        this.setUsePrinting(selectedEeProfile.getPrintingDefault());
-        this.useKeyRecovery = globalConfiguration.getEnableKeyRecovery()
-                && ejbcaWebBean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_KEYRECOVERY)
+        this.useKeyRecovery = getGlobalConfiguration().getEnableKeyRecovery()
+                && getEjbcaWebBean().isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_KEYRECOVERY)
                 && selectedEeProfile.getUse(EndEntityProfile.KEYRECOVERABLE, 0);
 
         /* Main Certificate Data */
@@ -496,15 +486,15 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     }
     
     public boolean isRenderOtherCertDataSection() {
-        return (selectedEeProfile.getUseExtensiondata() 
-                || selectedEeProfile.isCustomSerialNumberUsed() 
-                || selectedEeProfile.isValidityStartTimeUsed()
-                || selectedEeProfile.isValidityEndTimeUsed() 
-                || selectedEeProfile.isCardNumberUsed()
-                || selectedEeProfile.isNameConstraintsPermittedUsed() 
-                || selectedEeProfile.isNameConstraintsExcludedUsed()
-                || selectedEeProfile.isPsd2QcStatementUsed() 
-                || selectedEeProfile.isCabfOrganizationIdentifierUsed());
+        return (selectedEeProfile.getUseExtensiondata()
+        || selectedEeProfile.isCustomSerialNumberUsed()
+        || selectedEeProfile.isValidityStartTimeUsed()
+        || selectedEeProfile.isValidityEndTimeUsed()
+        || selectedEeProfile.isCardNumberUsed()
+        || selectedEeProfile.isNameConstraintsPermittedUsed()
+        || selectedEeProfile.isNameConstraintsExcludedUsed()
+        || selectedEeProfile.isPsd2QcStatementUsed()
+        || selectedEeProfile.isCabfOrganizationIdentifierUsed());
     }
     
     public boolean isCustomSerialNumberUsed()  {
@@ -578,22 +568,9 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     public boolean isCardNumberRequired() {
         return selectedEeProfile.isCardNumberRequired();
     }
-
-    // Name constraint permitted section
-    public String getNameConstraintsPermitted() {
-        return nameConstraintsPermitted;
-    }
-
-    public void setNameConstraintsPermitted(String nameConstraintsPermitted) {
-        this.nameConstraintsPermitted = nameConstraintsPermitted;
-    }
     
     public boolean isNameConstraintsPermittedUsed() {
         return selectedEeProfile.isNameConstraintsPermittedUsed();
-    }
-    
-    public boolean isNameConstraintsPermittedRequired() {
-        return selectedEeProfile.isNameConstraintsPermittedRequired();
     }
     
     public String getNameConstraintsPermittedHelpText() {
@@ -601,16 +578,29 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
                getEjbcaWebBean().getText("EXT_PKIX_NC_PERMITTED_HELP2") +
                getEjbcaWebBean().getText("EXT_PKIX_NC_PERMITTED_HELP3");
     }
-    /* ****************************************************** */ 
-
-    // Name constraint excluded section
+    
+    public boolean isNameConstraintsPermittedRequired() {
+        return selectedEeProfile.isNameConstraintsPermittedRequired();
+    }
+    
     public boolean isNameConstraintsExcludedUsed() {
         return selectedEeProfile.isNameConstraintsExcludedUsed();
     }
     
+    public String getNameConstraintsExcludedHelpText() {
+        return getEjbcaWebBean().getText("EXT_PKIX_NC_EXCLUDED_HELP1") + getEjbcaWebBean().getText("EXT_PKIX_NC_EXCLUDED_HELP2");
+    }
     
     public boolean isNameConstraintsExcludedRequired() {
-        return selectedEeProfile.isNameConstraintsExcludedRequired();
+        return selectedEeProfile.isNameConstraintsPermittedRequired();
+    }
+
+    public String getNameConstraintsPermitted() {
+        return nameConstraintsPermitted;
+    }
+
+    public void setNameConstraintsPermitted(String nameConstraintsPermitted) {
+        this.nameConstraintsPermitted = nameConstraintsPermitted;
     }
 
     public String getNameConstraintsExcluded() {
@@ -620,11 +610,6 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     public void setNameConstraintsExcluded(String nameConstraintsExcluded) {
         this.nameConstraintsExcluded = nameConstraintsExcluded;
     }
-
-    public String getNameConstraintsExcludedHelpText() {
-        return getEjbcaWebBean().getText("EXT_PKIX_NC_EXCLUDED_HELP1") + getEjbcaWebBean().getText("EXT_PKIX_NC_EXCLUDED_HELP2");
-    }
-    /* ****************************************************** */ 
     
     public boolean isUseExtensionData() {
         return selectedEeProfile.getUseExtensiondata();
@@ -702,8 +687,7 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
         return selectedEeProfile.getUse(EndEntityProfile.ALLOWEDREQUESTS, 0) 
                 || useKeyRecovery
                 || selectedEeProfile.getUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0)
-                || selectedEeProfile.getUse(EndEntityProfile.SENDNOTIFICATION, 0) 
-                || selectedEeProfile.getUsePrinting();
+                || selectedEeProfile.getUse(EndEntityProfile.SENDNOTIFICATION, 0);
     }    
     
     
@@ -798,22 +782,6 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     public void setSendNotification(boolean sendNotification) {
         this.sendNotification = sendNotification;
     }
-
-    public boolean isUsePrintingEnabled() {
-        return selectedEeProfile.getUsePrinting();
-    }
-    
-    public boolean isPrintingRequired() {
-        return selectedEeProfile.getPrintingRequired();
-    }
-
-    public boolean isUsePrinting() {
-        return usePrinting;
-    }
-
-    public void setUsePrinting(boolean usePrinting) {
-        this.usePrinting = usePrinting;
-    }
     
     /**
      * Adds endentity using the parameters set in the GUI and if all the checks pass.
@@ -831,7 +799,6 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     public void addUser()
             throws ParseException, ParameterException, EndEntityExistsException, CADoesntExistsException, CertificateSerialNumberException,
             AuthorizationDeniedException, EndEntityProfileValidationException, IllegalNameException, CertificateExtensionException {
-        
         if (!doesPasswordAndConfirmationMatch()) {
             addNonTranslatedErrorMessage(getEjbcaWebBean().getText("PASSWORDSDOESNTMATCH"));
             return;
@@ -840,9 +807,8 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
         // User view initialization
         UserView newUserView = new UserView();
         newUserView.setEndEntityProfileId(selectedEeProfileId);
-
         newUserView = checkAndSetExtendedInformation(newUserView);
-        
+
         try { // Fields require validation, order is somehow important!
             newUserView = checkAndSetUserNameAndPassword(newUserView);
             newUserView = checkAndSetLoginAttempts(newUserView);
@@ -866,7 +832,6 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
         newUserView = checkAndSetMaxNumberOfRequests(newUserView);
         newUserView.setKeyRecoverable(keyRecoveryCheckboxStatus.left);
         newUserView.setSendNotification(sendNotification);
-        newUserView.setPrintUserData(usePrinting);
         newUserView = checkAndSetRevokationReason(newUserView);
         newUserView = checkAndSetValidityTimes(newUserView);
         newUserView = checkAndSetPsd2QcStatement(newUserView);
@@ -886,7 +851,7 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     
     public List<SelectItem> getAvailableCas() {
         
-        Map<Integer, List<Integer>> currentAvailableCas = raBean.getCasAvailableToEndEntity(selectedEeProfileId);
+        Map<Integer, List<Integer>> currentAvailableCas = getRaBean().getCasAvailableToEndEntity(selectedEeProfileId);
         List<SelectItem> availableCasList = new ArrayList<>();
         List<Integer> availableCasToSelectedEeProfile = currentAvailableCas.get(selectedCertProfileId);
         Map<Integer, String> caIdToNameMap = caSession.getCAIdToNameMap();
@@ -920,7 +885,7 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     public ImmutablePair<List<UserView>, Boolean> getAddedUsers() {
         List<UserView> addedUsersList = new ArrayList<>();
         final int numberOfRows = getEjbcaWebBean().getEntriesPerPage();
-        final UserView[] addedUsers = raBean.getAddedUsers(numberOfRows);
+        final UserView[] addedUsers = getRaBean().getAddedUsers(numberOfRows);
 
         for (int i = 0; i < addedUsers.length; i++) {
             if (addedUsers[i] != null) {
@@ -931,7 +896,7 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     }
     
     public String encodeUserName(final String userName) throws UnsupportedEncodingException {
-        return URLEncoder.encode(userName, StandardCharsets.UTF_8);
+        return java.net.URLEncoder.encode(userName, StandardCharsets.UTF_8);
     }
     
     public String getAddedUserCN(final UserView addedUser) {
@@ -947,11 +912,11 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     }
 
     public String getViewEndEntityPopupLink(final String username) {
-        return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getAdminWebPath() + "ra/viewendentity.xhtml?username=" + URLEncoder.encode(username, StandardCharsets.UTF_8);
+        return getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH + "ra/viewendentity.xhtml?username=" + username;
     }
 
     public String getEditEndEntityPopupLink(final String username) {
-        return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getAdminWebPath() + "ra/editendentity.xhtml?username=" + URLEncoder.encode(username, StandardCharsets.UTF_8);
+        return getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH + "ra/editendentity.xhtml?username=" + username;
     }
 
     public void setConfirmPasswordFieldValue(String confirmPasswordFieldValue) {
@@ -1017,13 +982,13 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     
     private void initUserData() throws EndEntityProfileNotFoundException, EndEntityException{
 
-        profileNames = (String[]) ejbcaWebBean.getAuthorizedEndEntityProfileNames(AccessRulesConstants.CREATE_END_ENTITY).keySet().toArray(new String[0]);
+        profileNames = (String[]) getEjbcaWebBean().getAuthorizedEndEntityProfileNames(AccessRulesConstants.CREATE_END_ENTITY).keySet().toArray(new String[0]);
         
         if (profileNames == null || profileNames.length == 0) {
             throw new EndEntityException(getEjbcaWebBean().getText("NOTAUTHORIZEDTOCREATEENDENTITY"));
         } else {
-            this.selectedEeProfileId = raBean.getEndEntityProfileId(profileNames[0]);
-            this.selectedEeProfile = raBean.getEndEntityProfile(selectedEeProfileId);
+            this.selectedEeProfileId = getRaBean().getEndEntityProfileId(profileNames[0]);
+            this.selectedEeProfile = getRaBean().getEndEntityProfile(selectedEeProfileId);
         }
         
         if (caSession.getAuthorizedCaIds(getAdmin()) == null || caSession.getAuthorizedCaIds(getAdmin()).isEmpty()) {
@@ -1039,8 +1004,8 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
         this.profileEmail = selectedEeProfile.getValue(EndEntityProfile.EMAIL,0);
         this.cabfOrganizationIdentifier = selectedEeProfile.getCabfOrganizationIdentifier();
 
-        this.useKeyRecovery = globalConfiguration.getEnableKeyRecovery()
-                && ejbcaWebBean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_KEYRECOVERY)
+        this.useKeyRecovery = getGlobalConfiguration().getEnableKeyRecovery()
+                && getEjbcaWebBean().isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_KEYRECOVERY)
                 && selectedEeProfile.getUse(EndEntityProfile.KEYRECOVERABLE, 0);
 
         final String issuanceRevocationReason = selectedEeProfile.getValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0);
@@ -1057,7 +1022,6 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
         this.keyRecoveryCheckboxStatus.setRight(selectedEeProfile.isRequired(EndEntityProfile.KEYRECOVERABLE,0));
         
         this.setSendNotification(selectedEeProfile.getValue(EndEntityProfile.SENDNOTIFICATION,0).equals(EndEntityProfile.TRUE));
-        this.setUsePrinting(selectedEeProfile.getPrintingDefault());
 
         composeSubjectDnFieldsAndData();
         composeSubjectAltNameFieldAndData();
@@ -1176,7 +1140,6 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     }
 
     private void composeSubjectDnFieldsAndData() {
-
         this.subjectDnFieldDatas = new ArrayList<>();
 
         int numberOfSubjectDnFields = selectedEeProfile.getSubjectDNFieldOrderLength();
@@ -1211,6 +1174,7 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
 
             this.subjectDnFieldDatas.add(subjectDnFieldData);
         }
+        
     }
     
     private void composeSubjectDirAttrFieldsAndData() {
@@ -1234,16 +1198,15 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
             this.subjectDirAttrFieldDatas.add(subjectDirAttrFieldData);
         }
     }
+
     
     private UserView checkAndSetExtendedInformation(UserView newUserView) {
         if (this.extensionData != null) {
             ExtendedInformation ei = newUserView.getExtendedInformation();
-            if (ei == null) {                
+            if (ei == null) {
                 ei = new ExtendedInformation();
-
                 super.setExtendedInformation(ei);
                 super.setExtensionData(this.extensionData);
-
                 newUserView.setExtendedInformation(super.getExtendedInformation());
             }
         }
@@ -1295,12 +1258,12 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     private void finallyCreateUser(UserView newUserView) throws EndEntityExistsException, CADoesntExistsException, CertificateSerialNumberException,
             AuthorizationDeniedException, EndEntityProfileValidationException, IllegalNameException {
         // See if user already exists
-        if (raBean.userExist(newUserView.getUsername())) {
+        if (getRaBean().userExist(newUserView.getUsername())) {
             addNonTranslatedErrorMessage(getEjbcaWebBean().getText("ENDENTITYALREADYEXISTS"));
         } else {
             // No validation error. Go ahead an try to add user
             try {
-                EndEntityInformation endEntityInformation = raBean.addUser(newUserView);
+                EndEntityInformation endEntityInformation = getRaBean().addUser(newUserView);
                 newUserView.setUsername(endEntityInformation.getUsername());
                 selectedEeProfile.setUsernameDefault(endEntityInformation.getUsername());
                 final String addedUsername = endEntityInformation.getUsername();
@@ -1756,6 +1719,35 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
         }        
         
         return newUserView;
+    }
+
+    public GlobalConfiguration getGlobalConfiguration() {
+        if (globalConfiguration == null) {
+            try {
+                final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+                globalConfiguration = getEjbcaWebBean().initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR,
+                        AccessRulesConstants.REGULAR_CREATEENDENTITY);
+            } catch (Exception e) {
+                throw new IllegalStateException(e);
+            }
+        }
+
+
+        return globalConfiguration;
+    }
+
+    public RAInterfaceBean getRaBean() {
+        if (raBean == null) {
+            try {
+                final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+                raBean = SessionBeans.getRaBean(request);
+                raBean.initialize(getEjbcaWebBean());
+            } catch (ServletException e) {
+                throw new IllegalStateException(e);
+            }
+        }
+        
+        return raBean;
     }
     
 }

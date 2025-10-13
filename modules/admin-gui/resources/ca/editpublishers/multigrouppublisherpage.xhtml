@@ -44,7 +44,8 @@
 		</h:panelGroup>
 		
 		<h:panelGroup>
-			<h:inputTextarea value="#{editPublisher.multiGroupPublisherMBData.multiGroupPublisherGroups}" cols="45" rows="8" id="publishergroupstextarea"/>
+			<h:inputTextarea value="#{editPublisher.multiGroupPublisherMBData.multiGroupPublisherGroups}" cols="45" rows="8" id="publishergroupstextarea"
+							 disabled="#{editPublisher.readOnly}"/>
 			<br />
 			<h:outputText styleClass="smallHelp" value="#{web.text.MULTIGROUPPUBLISHER_HELP}"/>
 			<br />

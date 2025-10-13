@@ -23,9 +23,10 @@ import java.security.cert.CertificateEncodingException;
 import java.util.Collection;
 
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.crypto.algorithm.SignatureParameter;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DERNull;
@@ -141,8 +142,9 @@ public class CmpConfirmResponseMessage extends BaseCmpMessage implements Respons
 	                    // with the same DN but different keys
                         myPKIHeader.setSenderKID(CertTools.getSubjectKeyId(signCertChain.iterator().next()));
 			        }
-				    myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);				    
-					responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, signCertChain, signKey, signAlg, digestAlg, provider);
+                    myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
+					SignatureParameter signatureParameter = determineSignatureParameterFromRequest();
+                    responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, signCertChain, signKey, signAlg, digestAlg, provider, signatureParameter);
 				} catch (CertificateEncodingException | SecurityException | SignatureException e) {
 					log.error("Error creating CmpConfirmMessage: ", LogRedactionUtils.getRedactedException(e));
 				} 		

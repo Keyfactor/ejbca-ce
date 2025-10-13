@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TimeZone;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
@@ -100,7 +100,7 @@ public class RaRenewBean implements Serializable {
     private List<String> availableKeyAlgorithms;
     private List<Integer> availableBitLengths;
     private List<String> availableEcCurves;
-    private UIComponent confirmPasswordComponent;
+    private transient UIComponent confirmPasswordComponent;
 
     public void initialize() {
         if (initialized) {
@@ -187,7 +187,7 @@ public class RaRenewBean implements Serializable {
                     raLocaleBean.addMessageError("enroll_token_could_not_be_downloaded", name);
                 }
             } else {
-                log.debug("Admin client certificate renewal was requested, and is waiting for approval.");
+                log.debug("Admin client certificate renewal was requested, but either failed or is waiting for approval.");
             }
         }
         return "";

@@ -34,7 +34,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.x509.Extensions;
@@ -95,7 +95,7 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.config.GlobalCesecoreConfiguration;
+import org.cesecore.config.GlobalCtConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.configuration.LogRedactionConfigurationCache;
 import org.cesecore.internal.InternalResources;
@@ -229,13 +229,12 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
 
             if (CAInfo.CATYPE_CVC == ca.getCAType() &&
                     endEntityInformation.getExtendedInformation() != null &&
-                    endEntityInformation.getExtendedInformation().certificateSerialNumber() != null &&
+                    endEntityInformation.getExtendedInformation().getSequenceNumber() != null &&
                     requestMessage instanceof SimpleRequestMessage) {
-                sequence = endEntityInformation.getExtendedInformation().certificateSerialNumber().toString();
+                sequence = endEntityInformation.getExtendedInformation().getSequenceNumber();
                 if (sequence.length() > 5) {
                     throw new CertificateCreateException(ErrorCode.FIELD_VALUE_NOT_VALID, "Certificate serial number is too long for CVC type certificate.");
                 }
-                endEntityInformation.getExtendedInformation().setCertificateSerialNumber(null);
             } else {
                 byte[] ki = requestMessage.getRequestKeyInfo();
                 // CVC sequence is only 5 characters, don't fill with a lot of garbage here, it must be a readable string
@@ -518,10 +517,10 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 return sctDataSession.getThreadPool();
             }
         });
-        final GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession
-                .getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
-        certGenParams.setCtCacheFastFailEnabled(globalCesecoreConfiguration.getCtCacheEnabled());
-        certGenParams.setCtCacheFastFailBackoff(globalCesecoreConfiguration.getCtCacheFastFailBackoff());
+        final GlobalCtConfiguration globalCtConfiguration = (GlobalCtConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalCtConfiguration.CT_CONFIGURATION_ID);
+        certGenParams.setCtCacheFastFailEnabled(globalCtConfiguration.getCtCacheEnabled());
+        certGenParams.setCtCacheFastFailBackoff(globalCtConfiguration.getCtCacheFastFailBackoff());
         certGenParams.setIncompleteIssuanceJournalCallbacks(incompleteIssuanceJournalDataSession);
 
         try {

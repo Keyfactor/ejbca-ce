@@ -33,13 +33,15 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 
 import javax.security.auth.x500.X500Principal;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.CaTestUtils;
@@ -77,7 +79,10 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.config.GlobalEndEntityProfileConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
+import org.cesecore.dto.RoleDataDto;
+import org.cesecore.dto.RoleDataDtoBuilder;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.keys.validation.KeyValidatorSessionRemote;
@@ -86,12 +91,10 @@ import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemot
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.UsernameBasedAuthenticationToken;
-import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueProxySessionRemote;
@@ -265,10 +268,11 @@ public class EndEntityManagementSessionSystemTest extends CaTestCase {
     }
     
     private boolean setEnableEndEntityProfileLimitations(final boolean newValue) throws AuthorizationDeniedException {
-        final GlobalConfiguration gc = (GlobalConfiguration) globalConfSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        final boolean previousValue = gc.getEnableEndEntityProfileLimitations();
-        gc.setEnableEndEntityProfileLimitations(newValue);
-        globalConfSession.saveConfiguration(admin, gc);
+        final GlobalEndEntityProfileConfiguration globalEEPConfiguration = (GlobalEndEntityProfileConfiguration) globalConfSession.getCachedConfiguration(GlobalEndEntityProfileConfiguration.EEP_CONFIGURATION_ID);
+        final boolean previousValue = globalEEPConfiguration.getEnableEndEntityProfileLimitations();
+
+        globalEEPConfiguration.setEnableEndEntityProfileLimitations(newValue);
+        globalConfSession.saveConfiguration(admin, globalEEPConfiguration);
         return previousValue;
     }
     
@@ -929,13 +933,13 @@ public class EndEntityManagementSessionSystemTest extends CaTestCase {
                 endEntityManagementSession.addUser(adminTokenNoAuth, userdata, false);
                 fail("should throw");
             } catch (AuthorizationDeniedException e) {
-                assertTrue("Wrong auth denied message: "+e.getMessage(), StringUtils.startsWith(e.getMessage(), "Administrator not authorized to CA"));
+                assertTrue("Wrong auth denied message: "+e.getMessage(), Strings.CS.startsWith(e.getMessage(), "Administrator not authorized to CA"));
             }
             try {
                 endEntityManagementSession.changeUser(adminTokenNoAuth, userdata, true);
                 fail("should throw");
             } catch (AuthorizationDeniedException e) {
-                assertTrue("Wrong auth denied message: "+e.getMessage(), StringUtils.startsWith(e.getMessage(), "Administrator not authorized to CA"));
+                assertTrue("Wrong auth denied message: "+e.getMessage(), Strings.CS.startsWith(e.getMessage(), "Administrator not authorized to CA"));
             }
             endEntityManagementSession.addUser(admin, userdata, false);
             try {
@@ -943,27 +947,32 @@ public class EndEntityManagementSessionSystemTest extends CaTestCase {
                 log.debug("Rename result: " + result);
                 fail("should throw");
             } catch (AuthorizationDeniedException e) {
-                assertTrue("Wrong auth denied message: "+e.getMessage(), StringUtils.startsWith(e.getMessage(), "Administrator not authorized to CA"));
+                assertTrue("Wrong auth denied message: "+e.getMessage(), Strings.CS.startsWith(e.getMessage(), "Administrator not authorized to CA"));
             }
             try {
                 endEntityManagementSession.deleteUser(adminTokenNoAuth, authUsername);
                 fail("should throw");
             } catch (AuthorizationDeniedException e) {
-                assertTrue("Wrong auth denied message: "+e.getMessage(), StringUtils.startsWith(e.getMessage(), "Administrator not authorized to CA"));
+                assertTrue("Wrong auth denied message: "+e.getMessage(), Strings.CS.startsWith(e.getMessage(), "Administrator not authorized to CA"));
             }
             // Now add the administrator to a role that has access to /ca/* but not ee profiles
-            final Role oldRole = roleSession.getRole(admin, null, testRole);
+            final RoleDataDto oldRole = roleSession.getRole(admin, null, testRole);
             if (oldRole!=null) {
-                roleSession.deleteRoleIdempotent(admin, oldRole.getRoleId());
+                roleSession.deleteRoleIdempotent(admin, oldRole.id());
             }
-            final Role role = roleSession.persistRole(admin, new Role(null, testRole, Collections.singletonList(StandardRules.CAACCESSBASE.resource()), null));
-            roleMemberSession.persist(admin, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
+            final RoleDataDto role = new RoleDataDtoBuilder()
+                    .setName(testRole)
+                    .setAccessRules(Map.of(StandardRules.CAACCESSBASE.resource(), RoleDataDto.STATE_ALLOW))
+                    .build();
+            final RoleDataDto persistedRole = roleSession.persistRole(admin, role);
+            final RoleMember roleMember = new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                     CertTools.getIssuerDN(adminCert).hashCode(), RoleMember.NO_PROVIDER,
                     X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
                     AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
                     DnComponents.getPartFromDN(CertTools.getSubjectDN(adminCert), "CN"),
-                    role.getRoleId(),
-                    null));
+                    persistedRole.id(),
+                    null);
+            roleMemberSession.persist(admin, roleMember);
             // We must enforce end entity profile limitations for this, with false it should be ok now
             eelimitation = setEnableEndEntityProfileLimitations(false);
             // Do the same test, now it should work since we are authorized to CA and we don't enforce EE profile authorization
@@ -977,13 +986,13 @@ public class EndEntityManagementSessionSystemTest extends CaTestCase {
                 endEntityManagementSession.changeUser(adminTokenNoAuth, userdata, false);
                 fail("should throw");
             } catch (AuthorizationDeniedException e) {
-                assertTrue("Wrong auth denied message: "+e.getMessage(), StringUtils.startsWith(e.getMessage(), "Administrator not authorized to end entity profile"));
+                assertTrue("Wrong auth denied message: "+e.getMessage(), Strings.CS.startsWith(e.getMessage(), "Administrator not authorized to end entity profile"));
             }
             try {
                 endEntityManagementSession.renameEndEntity(adminTokenNoAuth, authUsername, authUsername+"_renamed");
                 fail("should throw");
             } catch (AuthorizationDeniedException e) {
-                assertTrue("Wrong auth denied message: "+e.getMessage(), StringUtils.startsWith(e.getMessage(), "Administrator not authorized to end entity profile"));
+                assertTrue("Wrong auth denied message: "+e.getMessage(), Strings.CS.startsWith(e.getMessage(), "Administrator not authorized to end entity profile"));
             }
         } finally {
         	if (eelimitation!=null) {
@@ -994,9 +1003,9 @@ public class EndEntityManagementSessionSystemTest extends CaTestCase {
             } catch (Exception e) { // NOPMD
                 log.info("Error in finally: ", e);
             }
-            final Role oldRole = roleSession.getRole(admin, null, testRole);
+            final RoleDataDto oldRole = roleSession.getRole(admin, null, testRole);
             if (oldRole!=null) {
-                roleSession.deleteRoleIdempotent(admin, oldRole.getRoleId());
+                roleSession.deleteRoleIdempotent(admin, oldRole.id());
             }
         }
     }
@@ -1374,6 +1383,80 @@ public class EndEntityManagementSessionSystemTest extends CaTestCase {
             }
         }
     }
+    
+    @Test
+    public void testEndEntityIssuanceRevocationReason() throws Exception {
+        // First make sure we have end entity profile limitations enabled
+        final boolean eelimitation = setEnableEndEntityProfileLimitations(true);
+        final String eeprofileName = "TESTISSUANCEREVREASON";
+        try {            
+            // Add a new end entity profile, by default password is required and we should not be able to add a user with empty or null password.
+            EndEntityProfile profile = new EndEntityProfile();
+            profile.addField(DnComponents.COMMONNAME);
+            profile.setAvailableCAs(Arrays.asList(SecConst.ALLCAS));
+            
+            profile.setIssuanceRevocationReasonUsed(true);
+            profile.setIssuanceRevocationReasonModifiable(true);
+            profile.setIssuanceRevocationReasonDefault(true);
+            profile.setIssuanceRevocationReason(RevocationReasons.CERTIFICATEHOLD);
+            // Profile will be removed in finally clause
+            endEntityProfileSession.addEndEntityProfile(admin, eeprofileName, profile);
+            int profileId = endEntityProfileSession.getEndEntityProfileId(eeprofileName);
+            
+            EndEntityInformation data = 
+                    enrollEndEntityAndAssertRevocationReason(profileId, null, RevocationReasons.CERTIFICATEHOLD);
+            String thisusername = data.getUsername();
+            data.setDN("CN=XX" + data.getUsername());
+            data.setPassword("foo123");
+            data.getExtendedInformation().setIssuanceRevocationReason(RevocationReasons.AFFILIATIONCHANGED.getDatabaseValue());
+            endEntityManagementSession.changeUser(admin, data, false);
+            data = endEntityAccessSession.findUser(admin, thisusername);
+            assertNotNull(data);
+            assertEquals(thisusername, data.getUsername());
+            assertEquals("CN=XX" + thisusername, data.getDN());
+            assertEquals(RevocationReasons.AFFILIATIONCHANGED.getDatabaseValue(), data.getExtendedInformation().getIssuanceRevocationReason());
+            
+            data = enrollEndEntityAndAssertRevocationReason(profileId, RevocationReasons.CERTIFICATEHOLD, RevocationReasons.CERTIFICATEHOLD);
+            
+            profile.setIssuanceRevocationReasonDefault(false);
+            endEntityProfileSession.changeEndEntityProfile(admin, eeprofileName, profile);
+            data = enrollEndEntityAndAssertRevocationReason(profileId, null, null);
+            
+        } finally {            
+            setEnableEndEntityProfileLimitations(eelimitation);
+            endEntityProfileSession.removeEndEntityProfile(admin, eeprofileName);
+        }
+    }
+    
+    private EndEntityInformation enrollEndEntityAndAssertRevocationReason(int profileId, 
+            RevocationReasons reasonRequest, RevocationReasons reasonExpected) throws Exception {
+        
+        String thisusername = genRandomUserName();
+        try {
+            EndEntityInformation endEntityInformation = new EndEntityInformation(thisusername,  "CN=" + thisusername, caId, null, null, 
+                    EndEntityTypes.ENDUSER.toEndEntityType(), profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, null);
+            endEntityInformation.setPassword("foo123");
+            if (reasonRequest!=null) {
+                endEntityInformation.setExtendedInformation(new ExtendedInformation());
+                endEntityInformation.getExtendedInformation().setIssuanceRevocationReason(reasonRequest.getDatabaseValue());
+            }
+            endEntityManagementSession.addUser(admin, endEntityInformation, false);
+            usernames.add(thisusername);
+        } catch (EndEntityProfileValidationException e) {
+            fail("User " + thisusername + " was not added to the database although it should have been. " + e.getMessage());
+        }
+        
+        EndEntityInformation data = endEntityAccessSession.findUser(admin, thisusername);
+        assertNotNull(data);
+        assertEquals(thisusername, data.getUsername());
+        assertEquals("CN=" + thisusername, data.getDN());
+        if (reasonExpected!=null) {
+            assertEquals(reasonExpected.getDatabaseValue(), data.getExtendedInformation().getIssuanceRevocationReason());
+        }
+        return data;
+    }
+
+
     
     @Test
     public void testCnCopyToMsUpn() throws Exception {

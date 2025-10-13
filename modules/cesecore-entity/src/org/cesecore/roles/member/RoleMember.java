@@ -13,10 +13,11 @@
 package org.cesecore.roles.member;
 
 import java.io.Serializable;
+import java.util.Objects;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.roles.Role;
+import org.cesecore.dto.RoleDataDto;
 
 import com.keyfactor.util.StringTools;
 
@@ -27,7 +28,7 @@ import com.keyfactor.util.StringTools;
 public class RoleMember implements Serializable, Comparable<RoleMember> {
 
     public static int ROLE_MEMBER_ID_UNASSIGNED = 0;
-    public static int NO_ROLE = Role.ROLE_ID_UNASSIGNED;
+    public static int NO_ROLE = RoleDataDto.ROLE_ID_UNASSIGNED;
     public static int NO_ISSUER = 0;
     public static int NO_PROVIDER = 0;
 
@@ -173,8 +174,8 @@ public class RoleMember implements Serializable, Comparable<RoleMember> {
                 && this.getTokenProviderId() == roleMember.getTokenProviderId()
                 && this.getTokenMatchKey() == roleMember.getTokenMatchKey()
                 && this.getTokenMatchOperator() == roleMember.getTokenMatchOperator()
-                && StringUtils.equals(this.getTokenMatchValue(), roleMember.getTokenMatchValue())
-                && StringUtils.equals(this.getTokenType(), roleMember.getTokenType());
+                && Strings.CS.equals(this.getTokenMatchValue(), roleMember.getTokenMatchValue())
+                && Strings.CS.equals(this.getTokenType(), roleMember.getTokenType());
     }
 
     @Override
@@ -210,5 +211,49 @@ public class RoleMember implements Serializable, Comparable<RoleMember> {
             return diff;
         }
         return 0;
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final RoleMember other = (RoleMember) obj;
+        return this.id == other.id &&
+                Objects.equals(this.tokenType, other.tokenType) &&
+                this.tokenIssuerId == other.tokenIssuerId &&
+                this.tokenProviderId == other.tokenProviderId &&
+                this.tokenMatchKey == other.tokenMatchKey &&
+                this.tokenMatchOperator == other.tokenMatchOperator &&
+                Objects.equals(this.tokenMatchOperator, other.tokenMatchOperator) &&
+                this.roleId == other.roleId &&
+                Objects.equals(this.description, other.description);
+    }
+
+    public void appendTo(final StringBuilder sb, final String prefix) {
+        sb.append(prefix).append("id                 = ").append(id).append("\n");
+        sb.append(prefix).append("tokenType          = ").append(tokenType).append("\n");
+        sb.append(prefix).append("tokenIssuerId      = ").append(tokenIssuerId).append("\n");
+        sb.append(prefix).append("tokenProviderId    = ").append(tokenProviderId).append("\n");
+        sb.append(prefix).append("tokenMatchKey      = ").append(tokenMatchKey).append("\n");
+        sb.append(prefix).append("tokenMatchOperator = ").append(tokenMatchOperator).append("\n");
+        sb.append(prefix).append("tokenMatchValue    = ").append(tokenMatchValue).append("\n");
+        sb.append(prefix).append("roleId             = ").append(roleId).append("\n");
+        sb.append(prefix).append("description        = ").append(description).append("\n");
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        appendTo(sb, "");
+        return sb.toString();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, tokenType, tokenIssuerId, tokenProviderId, tokenMatchKey, tokenMatchOperator, tokenMatchValue, roleId, description);
     }
 }

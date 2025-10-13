@@ -15,8 +15,8 @@ dependencies {
     compileOnly(libs.log4j.v12.api)
     compileOnly(libs.log4j.api)
     compileOnly(libs.log4j.core)
-    compileOnly(libs.commons.lang)
     compileOnly(libs.commons.lang3)
+    compileOnly(libs.commons.text)
     compileOnly(libs.commons.logging)
     compileOnly(libs.commons.codec)
     compileOnly(libs.commons.configuration2)
@@ -41,7 +41,7 @@ dependencies {
     compileOnly(libs.hibernate.commons.annotations)
     compileOnly(libs.hibernate.core)
     compileOnly(libs.hibernate.validator)
-    compileOnly(libs.istack.commons.runtime.old)
+    compileOnly(libs.istack.commons.runtime.hibernate)
     compileOnly(libs.jakarta.activation.api)
     compileOnly(libs.jandex)
     compileOnly(libs.jakarta.persistence.api)
@@ -66,9 +66,6 @@ sourceSets {
             setSrcDirs(
                 listOf("src")
             )
-            resources {
-                srcDirs("resources")
-            }
         }
     }
     test {
@@ -88,7 +85,6 @@ tasks.processTestResources {
         include("dncomponents.properties")
         include("profilemappings.properties")
         include("profilemappings_enterprise.properties")
-        include("certextensions.properties")
     }
     from("${rootProject.projectDir}/conf") {
         // Required by Pkcs11WrapperUnitTest
@@ -104,6 +100,21 @@ tasks.withType<Test> {
     )
 }
 
+// define interfaces that should be used to generate service manifest files
+ext["serviceInterfaces"] = listOf(
+    "org.cesecore.certificates.ocsp.extension.OCSPExtension",
+    "org.cesecore.authentication.tokens.AuthenticationTokenMetaData",
+    "org.cesecore.certificates.ca.CvcPlugin",
+    "org.cesecore.authorization.rules.AccessRulePlugin",
+    "org.cesecore.configuration.ConfigurationCache",
+    "org.cesecore.certificates.certificate.certextensions.CustomCertificateExtension",
+    "org.cesecore.keys.validation.Validator",
+    "org.cesecore.certificates.ca.CACommon",
+    "com.keyfactor.util.keys.token.pkcs11.PKCS11SlotListWrapperFactory",
+    "com.keyfactor.util.certificate.CertificateImplementation",
+    "com.keyfactor.util.crypto.provider.CryptoProvider"
+)
+
 tasks.jar {
     from(sourceSets["main"].output)
     from("${rootProject.projectDir}/src/java") {
@@ -111,7 +122,6 @@ tasks.jar {
         include("dncomponents.properties")
         include("profilemappings.properties")
         include("profilemappings_enterprise.properties")
-        include("certextensions.properties")
     }
     from("${rootProject.projectDir}/src/intresources") {
         into("intresources")

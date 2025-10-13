@@ -1,8 +1,9 @@
-import java.util.Properties
+import java.util.*
 
 rootProject.name = "ejbca"
 
 val ejbcaProperties: Properties = loadPropertiesFromFiles(
+    "src/internal.properties",
     "conf/ejbca.properties",
     "conf/database.properties",
     "conf/systemtests.properties"
@@ -16,24 +17,33 @@ val edition = if (editionProp == "ce" || !eeModuleExists) "ce" else "ee"
 val appServerHome: String? = ejbcaProperties.getProperty("appserver.home", System.getenv("APPSRV_HOME"))
 val isProductionMode = ejbcaProperties.getProperty("ejbca.productionmode", "true").toBoolean()
 
+val ejbcaVersionNumber = ejbcaProperties.getProperty("app.version.number", "0.0.0").toString()
+val ejbcaVersionString = if (edition == "ee") {
+    ejbcaProperties.expandPlaceholders("app.version")
+} else {
+    ejbcaProperties.expandPlaceholders("community.version")
+}
+
 // share project properties with other build files
 gradle.allprojects {
     extra["isProductionMode"] = isProductionMode
     extra["edition"] = edition
     extra["appServerHome"] = appServerHome
+    extra["ejbcaVersionString"] = ejbcaVersionString
     // add other properties loaded from EJBCA configuration files
     ejbcaProperties.forEach { (key, value) ->
         extra["$key"] = value
     }
+    version = ejbcaVersionNumber
 }
 
 dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
-            library("bcprov", ":bcprov:jdk18on-1.80")
-            library("bcpkix", ":bcpkix:jdk18on-1.80")
-            library("bctls", ":bctls:jdk18on-1.80")
-            library("bcutil", ":bcutil:jdk18on-1.80")
+            library("bcprov", ":bcprov:jdk18on-1.82")
+            library("bcpkix", ":bcpkix:jdk18on-1.82")
+            library("bctls", ":bctls:jdk18on-1.82")
+            library("bcutil", ":bcutil:jdk18on-1.82")
             library("ejbca-ws-client-gen", ":ejbca-ws-client-gen:1")
             library("caffeine", ":caffeine:3.1.6")
             library("jakartaee-api", ":jakarta.jakartaee-api:10.0.0")
@@ -43,16 +53,14 @@ dependencyResolutionManagement {
             library("log4j-v12-api", ":log4j-1.2-api:2.20.0")
             library("log4j-api", ":log4j-api:2.20.0")
             library("log4j-core", ":log4j-core:2.20.0")
-            library("commons-lang", ":commons-lang:2.6")
-            library("commons-lang3", ":commons-lang3:3.17.0")
-            library("commons-lang3-old", ":commons-lang3:3.14.0")
+            library("commons-lang3", ":commons-lang3:3.18.0")
             library("commons-configuration2", ":commons-configuration2:2.11.0")
-            library("commons-collections4", ":commons-collections4:4.4")
-            library("nimbus-jose-jwt", ":nimbus-jose-jwt:9.37.3")
-            library("x509-common-util", ":x509-common-util:5.3.2")
-            library("cryptotokens-api", ":cryptotokens-api:3.0.0")
-            library("cryptotokens-impl", ":cryptotokens-impl:3.0.0")
-            library("cryptotokens-impl-ee", ":cryptotokens-impl-ee:3.0.0")
+            library("commons-collections4", ":commons-collections4:4.5.0")
+            library("nimbus-jose-jwt", ":nimbus-jose-jwt:9.37.4")
+            library("x509-common-util", ":x509-common-util:5.3.6")
+            library("cryptotokens-api", ":cryptotokens-api:3.4.0")
+            library("cryptotokens-impl", ":cryptotokens-impl:3.4.0")
+            library("cryptotokens-impl-ee", ":cryptotokens-impl-ee:3.4.0")
             library("adsddl", ":adsddl:1.9")
             library("jakarta.jws-api", ":jakarta.jws-api:3.0.0")
             library("jakarta.xml.soap-api", ":jakarta.xml.soap-api:3.0.2")
@@ -75,6 +83,7 @@ dependencyResolutionManagement {
             library("jackson-core", ":jackson-core:2.17.2")
             library("jackson-databind", ":jackson-databind:2.17.2")
             library("jackson-annotations", ":jackson-annotations:2.17.2")
+            library("jackson-dataformat-xml", "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.18.3")
             library("jackson-dataformat-yaml", ":jackson-dataformat-yaml:2.17.2")
             library("reflections", ":reflections:0.9.11")
             library("swagger-annotations", ":swagger-annotations-jakarta:2.2.22")
@@ -83,17 +92,16 @@ dependencyResolutionManagement {
             library("swagger-models", ":swagger-models-jakarta:2.2.22")
             library("swagger-integration", ":swagger-integration-jakarta:2.2.22")
             library("classgraph", ":classgraph:4.8.174")
-            library("commons-fileupload2", ":commons-fileupload2-jakarta:2.0.0-M1")
-            library("commons-fileupload2-core", ":commons-fileupload2-core:2.0.0-M2")
-            library("commons-fileupload", ":commons-fileupload:1.5")
+            library("commons-fileupload2", ":commons-fileupload2-jakarta-servlet6:2.0.0-M4")
+            library("commons-fileupload2-core", ":commons-fileupload2-core:2.0.0-M4")
             library("jacknji11", ":jacknji11:1.3.1")
-            library("p11ng", ":p11ng:0.25.7")
+            library("p11ng", ":p11ng:0.26.0")
             library("protobuf-java", ":protobuf-java:3.25.5")
             library("ctlog", ":ctlog:0.1.7")
             library("commons-beanutils", ":commons-beanutils:1.9.4")
             library("commons-text", ":commons-text:1.10.0")
             library("angus.activation", ":angus.activation:2.0.2")
-            library("myfaces-api", ":myfaces-api:4.0.2")
+            library("myfaces-api", ":myfaces-api:4.1.1")
             library("kerb4j-server-common", ":kerb4j-server-common:0.1.2")
             library("kerb-core", ":kerb-core:2.0.3")
             library("kerb-crypto", ":kerb-crypto:2.0.3")
@@ -107,15 +115,15 @@ dependencyResolutionManagement {
             library("slf4j.api", ":slf4j-api:2.0.16")
             library("slf4j.reload4j", ":slf4j-reload4j:2.0.16")
             // soapclient
-            library("cxf.core", ":cxf-core:4.1.1")
-            library("cxf.rt.bindings.soap", ":cxf-rt-bindings-soap:4.1.1")
-            library("cxf.rt.databinding.jaxb", ":cxf-rt-databinding-jaxb:4.1.1")
-            library("cxf.rt.frontend.jaxws", ":cxf-rt-frontend-jaxws:4.1.1")
-            library("cxf.rt.frontend.simple", ":cxf-rt-frontend-simple:4.1.1")
-            library("cxf.rt.transports.http", ":cxf-rt-transports-http:4.1.1")
-            library("cxf.rt.wsdl", ":cxf-rt-wsdl:4.1.1")
+            library("cxf.core", ":cxf-core:4.1.3")
+            library("cxf.rt.bindings.soap", ":cxf-rt-bindings-soap:4.1.3")
+            library("cxf.rt.databinding.jaxb", ":cxf-rt-databinding-jaxb:4.1.3")
+            library("cxf.rt.frontend.jaxws", ":cxf-rt-frontend-jaxws:4.1.3")
+            library("cxf.rt.frontend.simple", ":cxf-rt-frontend-simple:4.1.3")
+            library("cxf.rt.transports.http", ":cxf-rt-transports-http:4.1.3")
+            library("cxf.rt.wsdl", ":cxf-rt-wsdl:4.1.3")
             library("gmbal.api", ":gmbal-api-only:4.0.3")
-            library("istack-commons-runtime", ":istack-commons-runtime:3.0.11")
+            library("istack-commons-runtime-soap-client", ":istack-commons-runtime:3.0.11")
             library("jaxws.rt", ":jaxws-rt:4.0.1")
             library("policy", ":policy:4.0.1")
             library("saaj.impl", ":saaj-impl:3.0.0")
@@ -124,16 +132,16 @@ dependencyResolutionManagement {
             library("woodstox.core", ":woodstox-core:6.5.0")
             library("wsdl4j", ":wsdl4j:1.6.3")
             library("xmlschema.core", ":xmlschema-core:2.2.5")
+            library("service.manifest.builder", ":servicemanifestbuilder:1.0.1")
             // hibernate
             library("antlr4-runtime", ":antlr4-runtime:4.13.0")
-            library("byte-buddy", ":byte-buddy:1.14.15")
             library("classmate", ":classmate:1.5.1")
             library("fastInfoset", ":FastInfoset:1.2.15")
             library("hibernate-community-dialects", ":hibernate-community-dialects:6.5.2.Final")
             library("hibernate-commons-annotations", ":hibernate-commons-annotations:6.0.6.Final")
             library("hibernate-core", ":hibernate-core:6.5.2.Final")
             library("hibernate-validator", ":hibernate-validator:8.0.1.Final")
-            library("istack-commons-runtime-old", ":istack-commons-runtime:3.0.7")
+            library("istack-commons-runtime-hibernate", ":istack-commons-runtime:3.0.7")
             library("jakarta.activation-api", ":jakarta.activation-api:2.1.0")
             library("jandex", ":jandex:3.1.2")
             library("javassist", ":javassist:3.29.2-GA")
@@ -144,8 +152,12 @@ dependencyResolutionManagement {
             library("stax.ex", ":stax-ex:1.8")
             library("txw2", ":txw2:2.3.1")
             library("yasson", ":yasson:3.0.4")
+            library("freemarker", ":freemarker:2.3.34")
             // test dependencies
             library("junit", ":junit:4.13.2")
+            library("mockito", ":mockito-core:5.19.0")
+            library("byte-buddy", ":byte-buddy:1.17.7")
+            library("byte-buddy-agent", ":byte-buddy-agent:1.17.7")
             library("easymock", ":easymock:5.2.0")
             library("objenesis", ":objenesis:3.3")
             library("hamcrest-core", ":hamcrest-core:1.3")
@@ -175,6 +187,12 @@ dependencyResolutionManagement {
             library("jakarta.mail", ":jakarta.mail:2.0.3")
             library("jaxb.core", ":jaxb-core:4.0.2")
             library("jaxb.impl", ":jaxb-impl:4.0.2")
+            // jaxb license validation
+            library("istack-commons-runtime-jaxb", ":istack-commons-runtime:4.1.2")
+            library("jaxb.core-jaxb", ":jaxb-core:4.0.5")
+            library("jaxb.impl-jaxb", ":jaxb-impl:4.0.5")
+            library("txw2-jaxb", ":txw2:4.0.5")
+            
 
             if (!isProductionMode) {
                 library("jboss.client", ":jboss:client")
@@ -194,8 +212,10 @@ dependencyResolutionManagement {
                     "commons-configuration2",
                     "commons-text",
                     "commons-beanutils",
-                    // easymock
                     "easymock",
+                    "mockito",
+                    "byte-buddy",
+                    "byte-buddy-agent",
                     "objenesis"
                 )
             )
@@ -227,14 +247,12 @@ dependencyResolutionManagement {
             bundle(
                 "utils",
                 listOf(
-                    "commons-lang",
                     "commons-lang3",
                     "commons-configuration2",
                     "commons-collections4",
                     "commons-logging",
                     "commons-codec",
                     "commons-io",
-                    "commons-fileupload",
                     "commons-beanutils",
                     "commons-text",
                     "log4j-api",
@@ -266,7 +284,7 @@ dependencyResolutionManagement {
                     "cxf.rt.transports.http",
                     "cxf.rt.wsdl",
                     "gmbal.api",
-                    "istack-commons-runtime",
+                    "istack-commons-runtime-soap-client",
                     "jakarta.xml.bind.api",
                     "jaxb.runtime",
                     "jaxws.rt",
@@ -387,6 +405,8 @@ include(
     "modules:systemtests:common",
     "modules:systemtests:ejb",
     "modules:clientToolBox",
+    "modules:ejbca-repository",
+    "modules:cmpclient",
 )
 
 fun loadPropertiesFromFiles(vararg filePaths: String): Properties {
@@ -401,4 +421,13 @@ fun loadPropertiesFromFiles(vararg filePaths: String): Properties {
         }
     }
     return properties
+}
+
+fun Properties.expandPlaceholders(templateKey: String): String {
+    val template = ejbcaProperties.getProperty(templateKey);
+    val placeholderPattern = Regex("\\$\\{([^}]+)\\}")
+    return placeholderPattern.replace(template) { matchResult ->
+        val propertyKey = matchResult.groupValues[1]
+        getProperty(propertyKey) ?: matchResult.value
+    }
 }

@@ -9,7 +9,6 @@ dependencies {
     compileOnly(libs.bctls)
     compileOnly(libs.bcutil)
     compileOnly(libs.log4j.v12.api)
-    compileOnly(libs.commons.lang)
     compileOnly(libs.commons.lang3)
     compileOnly(libs.commons.collections4)
     compileOnly(libs.x509.common.util)
@@ -26,12 +25,14 @@ sourceSets {
             setSrcDirs(
                 listOf("src")
             )
-            resources {
-                srcDirs("resources")
-            }
         }
     }
 }
+
+// define interfaces that should be used to generate service manifest files
+ext["serviceInterfaces"] = listOf(
+    "org.cesecore.certificates.ca.CACommon"
+)
 
 tasks.jar {
     from(sourceSets["main"].output)

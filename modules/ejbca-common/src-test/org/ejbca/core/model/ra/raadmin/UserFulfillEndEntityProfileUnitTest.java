@@ -25,7 +25,7 @@ import java.util.Set;
 
 import com.keyfactor.util.certificate.DnComponents;
 
-import org.apache.commons.lang.time.FastDateFormat;
+import org.apache.commons.lang3.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -1445,7 +1445,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         LinkedHashMap<String, Set<String>> map = new LinkedHashMap<>();
         map.put("Namespace1", new LinkedHashSet<>());
         map.put("Namespace2", new LinkedHashSet<>());
-        eabConfiguration.setEabConfigMap(map);
+        eabConfiguration.setEABMap(map);
 
         final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         Set<String> namespaces = new HashSet<>(Collections.singletonList("EABNamespace"));
@@ -1475,7 +1475,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         map.put(eabNamespace, new LinkedHashSet<>());
         map.get(eabNamespace).add("SomeId");
         map.put("Namespace2", new LinkedHashSet<>());
-        eabConfiguration.setEabConfigMap(map);
+        eabConfiguration.setEABMap(map);
 
         final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         Set<String> namespaces = new HashSet<>(Collections.singletonList(eabNamespace));
@@ -1507,7 +1507,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         set.add(accountBindingId);
         map.put(eabNamespace, set);
         map.put("Namespace2", new LinkedHashSet<>());
-        eabConfiguration.setEabConfigMap(map);
+        eabConfiguration.setEABMap(map);
 
         final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         Set<String> namespaces = new HashSet<>(Collections.singletonList(eabNamespace));

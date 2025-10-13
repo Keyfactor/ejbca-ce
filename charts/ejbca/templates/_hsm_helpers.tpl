@@ -8,6 +8,8 @@ Define HSM container image with versions
 {{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-softhsm/images/hsm-driver-softhsm:1.1.0" }}
 {{- else if .Values.hsm.luna.enabled }}
 {{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-luna7/images/hsm-driver-luna7:0.4.0" }}
+{{- else if .Values.hsm.dpod.enabled }}
+{{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-dpod/images/hsm-driver-dpod:0.1.0" }}
 {{- else if .Values.hsm.utimaco.enabled }}
 {{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-utimaco/images/hsm-driver-utimaco:0.3.0" }}
 {{- else if .Values.hsm.nshield.enabled }}
@@ -88,6 +90,30 @@ Enable individual sidecars and volumes: Luna
 - name: hsm-luna-secret-client-key
   secret:
     secretName: hsm-luna-secret-client-key
+{{- end -}}
+
+{{/*
+Enable individual sidecars and volumes: DPoD
+*/}}
+{{- define "ejbca.hsm.sidecar.dpod" -}}
+{{- if .Values.hsm.dpod.enabled }}
+- name: hsm
+  image: {{ include "ejbca.hsmImage" . }}
+  imagePullPolicy: {{ .Values.hsm.imagePullPolicy }}
+  volumeMounts:
+    - name: hsm-dpod-secret
+      mountPath: "/opt/keyfactor/thales/conf/Chrystoki.conf"
+      subPath: Chrystoki.conf
+    - name: hsm-dpod-secret
+      mountPath: "/opt/keyfactor/thales/conf/partition-certificate.pem"
+      subPath: partition-certificate.pem
+{{- end }}
+{{- end -}}
+
+{{- define "ejbca.hsm.volume.dpod" -}}
+- name: hsm-dpod-secret
+  secret:
+    secretName: {{ .Values.hsm.dpod.hsmConfigurationSecret }}
 {{- end -}}
 
 {{/*

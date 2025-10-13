@@ -15,7 +15,7 @@ dependencies {
     compileOnly(libs.bctls)
     compileOnly(libs.bcutil)
     compileOnly(libs.log4j.v12.api)
-    compileOnly(libs.commons.lang)
+    compileOnly(libs.commons.lang3)
     compileOnly(libs.x509.common.util)
     testRuntimeOnly(libs.cert.cvc)
 }
@@ -34,8 +34,12 @@ tasks.war {
         rename("web-status-ejbca.xml", "web.xml")
         into("WEB-INF")
     }
-    from("resources/WEB-INF/META-INF") {
-        into("WEB-INF/classes/META-INF")
+    // Include META-INF from the va:extensions module build
+    from(project(":modules:va:extensions").layout.buildDirectory.dir("classes/java/main")) {
+        include("META-INF/**")
+        into("WEB-INF/classes")
     }
+    dependsOn(":modules:va:extensions:buildServiceManifest")
+
     archiveBaseName.set("status")
 }

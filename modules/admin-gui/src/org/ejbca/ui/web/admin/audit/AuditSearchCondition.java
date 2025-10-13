@@ -12,20 +12,22 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.audit;
 
+import java.io.Serializable;
 import java.util.List;
 
 import jakarta.faces.model.SelectItem;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.cesecore.audit.AuditLogEntry;
 
 /**
  * 
  * @version $Id$
  */
-public class AuditSearchCondition {
+public class AuditSearchCondition implements Serializable {
 	
-	private Operation operation = Operation.AND;
+	private static final long serialVersionUID = 1L;
+    private Operation operation = Operation.AND;
 	private final String column;
 	private Condition condition = Condition.EQUALS;
 	private String value;
@@ -70,7 +72,7 @@ public class AuditSearchCondition {
 	public void setValue(String value) {
 	    //The details column is XML-encoded, so escape any sensitive characters
         if (column.equals(AuditLogEntry.FIELD_ADDITIONAL_DETAILS)) {
-            this.value = StringEscapeUtils.escapeXml(value);
+            this.value = StringEscapeUtils.escapeXml11(value);
         } else {
             this.value = value;
         }

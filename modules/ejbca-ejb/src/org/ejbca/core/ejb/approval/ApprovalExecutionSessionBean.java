@@ -32,11 +32,11 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAConstants;
+import org.cesecore.config.GlobalEndEntityProfileConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.roles.Role;
+import org.cesecore.dto.RoleDataDto;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.util.LogRedactionUtils;
-import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
@@ -72,7 +72,6 @@ import org.ejbca.util.approval.ApprovalUtil;
  * circular dependencies, since execution will require SSBs that originally created the
  * approval request.
  */
-@SuppressWarnings("deprecation")
 @Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLocal, ApprovalExecutionSessionRemote {
@@ -106,7 +105,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
         }
         final ApprovalData approvalData = approvalSession.findNonExpiredApprovalDataLocal(approvalId);
         if (approvalData == null) {
-            String msg = intres.getLocalizedMessage("approval.notexist", approvalId);
+            String msg = "Approval request with requestID " + approvalId + " does not exist.";
             log.info(msg);
             throw new ApprovalException(ErrorCode.APPROVAL_REQUEST_ID_NOT_EXIST, msg);
         }
@@ -127,7 +126,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
             if (approvalData.getStatus() != ApprovalDataVO.STATUS_WAITINGFORAPPROVAL) {
                 throw new ApprovalException("Wrong status of approval request, expected STATUS_WAITINGFORAPPROVAL(-1): "+approvalData.getStatus());
             }
-            final List<Role> rolesWhichApprovalAuthTokenIsMemberOf = roleSession.getRolesAuthenticationTokenIsMemberOf(approval.getAdmin());
+            final List<RoleDataDto> rolesWhichApprovalAuthTokenIsMemberOf = roleSession.getRolesAuthenticationTokenIsMemberOf(approval.getAdmin());
             // Check if the approval is applicable, i.e belongs to and satisfies a certain partition, as well as that all previous steps have been satisfied
             if (!approvalProfile.isApprovalAuthorized(approvalsPerformed, approval, rolesWhichApprovalAuthTokenIsMemberOf)) {
                 throw new AuthorizationDeniedException("Administrator " + approval.getAdmin().toString() + " was not authorized to partition " + approval.getPartitionId()
@@ -141,8 +140,6 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
             final boolean readyToCheckExecution = approvalProfile.canApprovalExecute(approvalsPerformed);
             approvalSession.setApprovals(approvalData, approvalsPerformed);
             if (readyToCheckExecution) {
-                //Kept for legacy reasons to allow for 100% uptime, can be removed once upgrading from 6.6.0 is no longer supported. 
-                approvalData.setRemainingapprovals(0);
                 final ApprovalRequest approvalRequest = approvalData.getApprovalRequest();
                 if (approvalRequest.isExecutable()) {
                     try {
@@ -222,7 +219,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
         log.trace(">reject: hash="+approvalId);
         final ApprovalData approvalData = approvalSession.findNonExpiredApprovalDataLocal(approvalId);
         if (approvalData == null) {
-            String msg = intres.getLocalizedMessage("approval.notexist", approvalId);
+            String msg =  "Approval request with requestID " + approvalId + " does not exist.";
             log.info(msg);
             throw new ApprovalException(ErrorCode.APPROVAL_REQUEST_ID_NOT_EXIST, msg);
         }
@@ -237,7 +234,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
                 approvalProfile = approvalData.getApprovalDataVO().getApprovalRequest().getApprovalProfile();
             }
             final List<Approval> approvalsPerformed = approvalData.getApprovals();
-            final List<Role> rolesWhichApprovalAuthTokenIsMemberOf = roleSession.getRolesAuthenticationTokenIsMemberOf(approval.getAdmin());
+            final List<RoleDataDto> rolesWhichApprovalAuthTokenIsMemberOf = roleSession.getRolesAuthenticationTokenIsMemberOf(approval.getAdmin());
             // Check if the approval is applicable, i.e belongs to and satisfies a certain partition, as well as that all previous steps have been satisfied
             if (!approvalProfile.isApprovalAuthorized(approvalsPerformed, approval, rolesWhichApprovalAuthTokenIsMemberOf)) {
                 throw new AuthorizationDeniedException("Administrator " + approval.getAdmin().toString() + " was not authorized to partition " + approval.getPartitionId()
@@ -253,8 +250,6 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
             }
             approvalSession.setApprovals(approvalData, approvalsPerformed);
             //Retrieve the approval profile just to make sure that the state is still valid
-            //Kept for legacy reasons
-            approvalData.setRemainingapprovals(0);
             if (approvalData.getApprovalRequest().isExecutable()) {
                 approvalData.setStatus(ApprovalDataVO.STATUS_EXECUTIONDENIED);
                 approvalData.setExpireDate(new Date());
@@ -333,9 +328,9 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
                         null);
                 throw new AuthorizationDeniedException(msg);
             }
-            GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession
-                    .getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-            if (globalConfiguration.getEnableEndEntityProfileLimitations()) {
+
+            final GlobalEndEntityProfileConfiguration globalEEPConfiguration = (GlobalEndEntityProfileConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalEndEntityProfileConfiguration.EEP_CONFIGURATION_ID);
+            if (globalEEPConfiguration.getEnableEndEntityProfileLimitations()) {
                 if (!authorizationSession.isAuthorized(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + approvalData.getEndEntityProfileId()
                         + AccessRulesConstants.APPROVE_END_ENTITY)) {
                     final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", AccessRulesConstants.ENDENTITYPROFILEPREFIX
@@ -365,7 +360,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
         
         if (nextStep != null) {
             final Map<Integer, ApprovalPartition> partitions = nextStep.getPartitions();
-            List<Role> roles = roleSession.getRolesAuthenticationTokenIsMemberOf(admin);
+            List<RoleDataDto> roles = roleSession.getRolesAuthenticationTokenIsMemberOf(admin);
             for (ApprovalPartition partition : partitions.values()) {
                 if (approvalProfile.canApprove(roles, partition)) {
                     allowed = true;

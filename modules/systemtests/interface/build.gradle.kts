@@ -11,9 +11,10 @@ dependencies {
     compileOnly(project(":modules:ejbca-entity"))
     compileOnly(project(":modules:ejbca-ws:common"))
     compileOnly(libs.jakartaee.api)
-    compileOnly(libs.commons.lang)
+    compileOnly(libs.commons.lang3)
     compileOnly(libs.log4j.v12.api)
     compileOnly(libs.x509.common.util)
+    compileOnly(libs.bundles.bouncy.castle)
     testRuntimeOnly(libs.bundles.resteasy.jaxrs)
 }
 
@@ -22,11 +23,13 @@ sourceSets {
         java {
             setSrcDirs(listOf("../src-interface"))
         }
-        resources {
-            srcDirs("resources")
-        }
     }
 }
+
+// define interfaces that should be used to generate service manifest files
+ext["serviceInterfaces"] = listOf(
+    "org.cesecore.authentication.tokens.AuthenticationTokenMetaData"
+)
 
 tasks.jar {
     from(sourceSets["main"].output)

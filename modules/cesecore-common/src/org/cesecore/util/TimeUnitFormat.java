@@ -20,7 +20,7 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /** 
  * Class to parse and format relative time values, i.e. '1y-2mo+3d-4h+5m-6s7ms'.

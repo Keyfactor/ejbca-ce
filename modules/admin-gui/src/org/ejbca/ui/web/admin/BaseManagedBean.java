@@ -33,7 +33,7 @@ import jakarta.faces.context.PartialViewContext;
 import jakarta.faces.model.SelectItem;
 import jakarta.servlet.http.HttpServletRequest;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -55,6 +55,14 @@ public abstract class BaseManagedBean implements Serializable {
 
     // Reference to AccessRulesConstants.* and StandardRules.*
     final String[] accessRulesConstantString;
+    private transient EjbcaWebBean ejbcaWebBean;
+
+    /**
+     * No args ctor to adhere to HA class rules.  Should not be called directly.
+     */
+    public BaseManagedBean() {
+        accessRulesConstantString = new String[0];
+    }
     
     /**
      * Initializes authorization assuming authorization required to following resources.
@@ -79,7 +87,9 @@ public abstract class BaseManagedBean implements Serializable {
     }
     
     protected EjbcaWebBean getEjbcaWebBean() {
-        return EjbcaJSFHelper.getBean().getEjbcaWebBean();
+        if (ejbcaWebBean == null)
+            ejbcaWebBean = EjbcaJSFHelper.getBean().getEjbcaWebBean();
+        return ejbcaWebBean;
     }
 
     /**

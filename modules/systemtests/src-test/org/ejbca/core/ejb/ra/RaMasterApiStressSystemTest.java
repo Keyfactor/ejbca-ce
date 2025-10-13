@@ -22,7 +22,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import org.apache.commons.lang.time.StopWatch;
+import org.apache.commons.lang3.time.StopWatch;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -95,7 +95,7 @@ public class RaMasterApiStressSystemTest extends CaTestCase {
     public void setUp() throws Exception {
         super.setUp();
         //We want to make database transactions expensive. This means that we need to stuff a few thousand entries into the RoleMemberData table
-        int roleId = roleSession.getRole(alwaysAllowToken, null, getRoleName()).getRoleId();
+        int roleId = roleSession.getRole(alwaysAllowToken, null, getRoleName()).id();
         for(int i = 0; i < NUMBER_OF_ROLE_MEMBERS; i++) {
             roleMemberDataProxySession.createOrEdit(new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, getTestCAId(), RoleMember.NO_PROVIDER,
                     X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),

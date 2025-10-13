@@ -16,11 +16,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeSet;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.model.ca.publisher.MultiGroupPublisher;
@@ -63,18 +63,18 @@ public final class MultiGroupPublisherMBData implements Serializable {
 
     public void setMultiGroupPublisherParameters(final MultiGroupPublisher multiGroupPublisher)
             throws PublisherDoesntExistsException, PublisherExistsException {
-        final HashMap<String, Integer> publisherNameToIdMap = publisherSession.getPublisherNameToIdMap();
+        final Map<String, Integer> publisherNameToIdMap = publisherSession.getPublisherNameToIdMap();
         final List<TreeSet<Integer>> multiPublisherGroups = convertMultiPublishersStringToData(publisherNameToIdMap, multiGroupPublisherGroups);
         multiGroupPublisher.setPublisherGroups(multiPublisherGroups);
     }
 
     private String getMultiPublishersDataAsString(final MultiGroupPublisher publisher) {
         final List<TreeSet<Integer>> publisherGroups = publisher.getPublisherGroups();
-        final HashMap<Integer, String> publisherIdToNameMap = publisherSession.getPublisherIdToNameMap();
+        final Map<Integer, String> publisherIdToNameMap = publisherSession.getPublisherIdToNameMap();
         return convertMultiPublishersDataToString(publisherIdToNameMap, publisherGroups);
     }
 
-    private String convertMultiPublishersDataToString(final HashMap<Integer, String> publisherIdToNameMap, final List<TreeSet<Integer>> data) {
+    private String convertMultiPublishersDataToString(final Map<Integer, String> publisherIdToNameMap, final List<TreeSet<Integer>> data) {
         StringBuffer multiPublishersDataAsString = new StringBuffer();
         String prefix = "";
         for (final TreeSet<Integer> group : data) {
@@ -101,7 +101,7 @@ public final class MultiGroupPublisherMBData implements Serializable {
         return multiPublishersDataAsString.toString();
     }
 
-    private List<TreeSet<Integer>> convertMultiPublishersStringToData(final HashMap<String, Integer> publisherNameToIdMap, final String textareaData)
+    private List<TreeSet<Integer>> convertMultiPublishersStringToData(final Map<String, Integer> publisherNameToIdMap, final String textareaData)
             throws PublisherDoesntExistsException, PublisherExistsException {
         final TreeSet<Integer> selectedPublishers = new TreeSet<>();
         final List<String> listOfPublisherNames = Arrays.asList(textareaData.split("\n"));

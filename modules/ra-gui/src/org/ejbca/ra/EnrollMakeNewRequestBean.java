@@ -33,7 +33,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
@@ -51,6 +50,7 @@ import com.keyfactor.util.keys.KeyTools;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Primitive;
@@ -191,7 +191,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private List<EndEntityProfile.FieldInstance> sshPrincipals;
     private String criticalOptionsForceCommand;
     private String criticalOptionsSourceAddress;
-    private transient Optional<Boolean> criticalOptionsVerifyRequired = Optional.empty();
+    private Boolean criticalOptionsVerifyRequired = false;
     private String sshAdditionalExtensions;
     private String sshPubKeyDescription;
     private boolean useClearPassword;
@@ -225,7 +225,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private String alternativeAlgorithmFromCsrUiRepresentation = "";
     private int selectedTokenType;
 
-    private Part uploadFile;
+    private transient Part uploadFile;
     private String certificateRequest;
     private String publicKeyModulus;
     private String publicKeyExponent;
@@ -244,10 +244,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private boolean requestPreviewMoreDetails;
     private boolean setCustomValidity;
     private Boolean useKeyRecoverable = null;
-    private UIComponent subjectDnMessagesComponent;
-    private UIComponent userCredentialsMessagesComponent;
-    private UIComponent confirmPasswordComponent;
-    private UIComponent validityInputComponent;
+    private transient UIComponent subjectDnMessagesComponent;
+    private transient UIComponent userCredentialsMessagesComponent;
+    private transient UIComponent confirmPasswordComponent;
+    private transient UIComponent validityInputComponent;
     private String nameConstraintPermitted;
     private String nameConstraintExcluded;
     private Boolean sendNotification;
@@ -2088,7 +2088,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
      * @param selectedEndEntityProfile the selectedEndEntityProfile to set
      */
     public void setSelectedEndEntityProfile(final String selectedEndEntityProfile) {
-        if (!StringUtils.equals(selectedEndEntityProfile, this.selectedEndEntityProfile)) {
+        if (!Strings.CS.equals(selectedEndEntityProfile, this.selectedEndEntityProfile)) {
             this.selectedEndEntityProfile = selectedEndEntityProfile;
             // When ever the end entity profile changes this affects available request fields
             resetRequestInfo();
@@ -2120,7 +2120,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         final String currentSelection = this.selectedKeyPairGeneration == null
                 ? null
                 : this.selectedKeyPairGeneration.name();
-        if (!StringUtils.equals(selectedKeyStoreGeneration, currentSelection)) {
+        if (!Strings.CS.equals(selectedKeyStoreGeneration, currentSelection)) {
             resetAlgorithmCsrUpload();
         }
         if (StringUtils.isNotEmpty(selectedKeyStoreGeneration)) {
@@ -2346,7 +2346,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
      * @param selectedCertificateProfile the selectedCertificateProfile to set
      */
     public void setSelectedCertificateProfile(final String selectedCertificateProfile) {
-        if (!StringUtils.equals(selectedCertificateProfile, this.selectedCertificateProfile)) {
+        if (!Strings.CS.equals(selectedCertificateProfile, this.selectedCertificateProfile)) {
             // When ever the certificate profile changes this affects the available key algorithms
             availableAlgorithmSelectItems = null;
             // ...and any uploaded CSR needs to be revalidated (and we can do this by forcing a re-upload)
@@ -2687,7 +2687,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public boolean isSubjectDnRendered() {
         return hasAnyField(getSubjectDn());
     }
-
+    
     /**
      * @return the current Subject DN as determined by state of dependencies
      */
@@ -2701,9 +2701,9 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 if (cainfo instanceof X509CAInfo) {
                     final X509CAInfo x509cainfo = (X509CAInfo) cainfo;
                     subjectDn.setLdapOrder(x509cainfo.getUseLdapDnOrder() && certificateProfile.getUseLdapDnOrder());
-                    subjectDn.setNameStyle(x509cainfo.getUsePrintableStringSubjectDN()
-                            ? PrintableStringNameStyle.INSTANCE
-                            : CeSecoreNameStyle.INSTANCE);
+                    subjectDn.setNameStyleProvider(x509cainfo.getUsePrintableStringSubjectDN()
+                            ? () -> PrintableStringNameStyle.INSTANCE
+                            : () -> CeSecoreNameStyle.INSTANCE);
                 }
                 for (EndEntityProfile.FieldInstance instance : subjectDn.getRequiredFieldInstances()) {
                     if (isDnEmail(instance)) {
@@ -3252,17 +3252,17 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     public boolean getCriticalOptionsVerifyRequired() {
-        if (criticalOptionsVerifyRequired.isEmpty() && StringUtils.isNotEmpty(getSelectedEndEntityProfile())) {
-            criticalOptionsVerifyRequired = Optional.of(getSelectedEndEntityProfileContent().getSshVerifyRequired());
+        if (criticalOptionsVerifyRequired == null && StringUtils.isNotEmpty(getSelectedEndEntityProfile())) {
+            criticalOptionsVerifyRequired = getSelectedEndEntityProfileContent().getSshVerifyRequired();
         }
-        if (criticalOptionsVerifyRequired.isPresent()) {
-            return criticalOptionsVerifyRequired.get();
+        if (criticalOptionsVerifyRequired != null) {
+            return criticalOptionsVerifyRequired;
         }
         return false;
     }
 
     public void setCriticalOptionsVerifyRequired(final boolean criticalOptionsVerifyRequired) {
-        this.criticalOptionsVerifyRequired = Optional.of(criticalOptionsVerifyRequired);
+        this.criticalOptionsVerifyRequired = criticalOptionsVerifyRequired;
     }
 
     public boolean isRenderedSshAdditionalExtensions() {
@@ -3420,7 +3420,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                     SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP, getCriticalOptionsSourceAddress());
         }
 
-        if (criticalOptionsVerifyRequired.isPresent() && criticalOptionsVerifyRequired.get()) {
+        if (criticalOptionsVerifyRequired == true) {
             criticalOptionsToAdd.put(
                     SshEndEntityProfileFields.SSH_CRITICAL_OPTION_VERIFY_REQUIRED_CERT_PROP, null);
         }

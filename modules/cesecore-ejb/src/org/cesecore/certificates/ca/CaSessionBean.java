@@ -32,7 +32,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.audit.enums.EventStatus;
@@ -191,6 +192,14 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         if (log.isDebugEnabled()) {
             log.debug("Flushed CA cache.");
         }
+    }
+
+    /** @return return the query results as a List of CA ids. */
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public List<Integer> getAllCaIdsWithoutCache() {
+        final TypedQuery<Integer> query = entityManager.createQuery("SELECT a.caId FROM CAData a", Integer.class);
+        return query.getResultList();
     }
 
     @Override
@@ -389,7 +398,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 	private void assertAuthorizationAndTarget(AuthenticationToken admin, final String name, final String subjectDN, final int cryptoTokenId, final CACommon ca)
 			throws CADoesntExistsException, AuthorizationDeniedException {
 		assertAuthorizationAndTargetWithNewSubjectDn(admin, name, subjectDN, cryptoTokenId, ca);
-        if (!StringUtils.equals(subjectDN, ca.getSubjectDN()) && ca.getCAInfo().getStatus() != CAConstants.CA_UNINITIALIZED) {
+        if (!Strings.CS.equals(subjectDN, ca.getSubjectDN()) && ca.getCAInfo().getStatus() != CAConstants.CA_UNINITIALIZED) {
             throw new CADoesntExistsException("Not same CA subject DN.");
         }
 	}
@@ -413,7 +422,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         // The CA needs the same name and subject DN in order to store it
         if (name == null || subjectDN == null) {
             throw new CADoesntExistsException("Null CA name or SubjectDN");
-        } else if (!StringUtils.equals(name, ca.getName())) {
+        } else if (!Strings.CS.equals(name, ca.getName())) {
             throw new CADoesntExistsException("Not same CA name.");
         }
     }
@@ -678,6 +687,17 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     @Override
     public TreeMap<String,Integer> getAuthorizedCaNamesToIds(final AuthenticationToken admin) {
         final Collection<Integer> availableCaIds = getAllCaIds();
+        return getNamesFromIds(admin, availableCaIds);
+    }
+
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public TreeMap<String,Integer> getAuthorizedCaNamesToIdsWithoutCache(final AuthenticationToken admin) {
+        final Collection<Integer> availableCaIds = getAllCaIdsWithoutCache();
+        return getNamesFromIds(admin, availableCaIds);
+    }
+
+    private TreeMap<String, Integer> getNamesFromIds(AuthenticationToken admin, Collection<Integer> availableCaIds) {
         final TreeMap<String,Integer> names = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         for (Integer caid : availableCaIds) {
             if (authorizedToCANoLogging(admin, caid)) {
@@ -860,7 +880,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
                 // If this CA didn't have any certificates, it surely wasn't the right one if we are looking for a specific key sequence
                 sequence = null;
             }
-            if (!StringUtils.equals(keySequence, sequence)) {
+            if (!Strings.CS.equals(keySequence, sequence)) {
                 // it was not the right CA, remove it from cache so we will find the right one instead
                 if (log.isDebugEnabled()) {
                     log.debug("We had a cached CA already for " + caid + "/" + name + " but it was not the right with the right keySequence (" + keySequence + "), so ignoring this find and looking again...");
@@ -911,7 +931,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
                             if (caCert.getType().equals("CVC")) {
                                 // It's a CVC certificate, check that the sequence (if we passed one as argument) matches the CA
                                 if (StringUtils.isNotEmpty(keySequence)) {
-                                    if (StringUtils.equals(keySequence, caKeySeq)) {
+                                    if (Strings.CS.equals(keySequence, caKeySeq)) {
                                         // Yes, we were looking for exactly this CA certificate
                                         if (log.isDebugEnabled()) {
                                             log.debug("We were looking for a CA with ID " + caid + " and keySequence " + keySequence + ", and found another CA to map to with the same keySequence and CA ID " + currentUpgradedCaData.getCaId());
@@ -987,7 +1007,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             final CACommon ca = CaCache.INSTANCE.getEntry(caId);
             if (ca != null && CollectionUtils.isNotEmpty(ca.getCertificateChain())) {
                 final String sequence = CertTools.getSerialNumberAsString(ca.getCertificateChain().get(0));
-                if (!StringUtils.equals(keySequence, sequence)) {
+                if (!Strings.CS.equals(keySequence, sequence)) {
                     // it was not the right CA, remove it from cache so we will find the right one instead
                     if (log.isDebugEnabled()) {
                         log.debug("We had a cached CA already for " + caId + " but it was not the right with the right keySequence (" + keySequence + "), so purging from cache and looking in database.");

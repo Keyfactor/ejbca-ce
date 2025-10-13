@@ -13,7 +13,7 @@
 
 package org.ejbca.core.ejb.services;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.InternalSecurityEventsLoggerSessionLocal;
@@ -593,7 +593,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             if (worker != null) {
                 worker.canWorkerRun(ejbs);
             }
-        } catch (ServiceExecutionFailedException e) {
+        } catch (RuntimeException | ServiceExecutionFailedException e) {
             //Worker was found to be in an error state
             log.error("Worker execution has been postponed.", e);
             return false;

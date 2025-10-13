@@ -35,7 +35,7 @@ import jakarta.faces.model.SelectItem;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
 
-import org.apache.commons.lang.math.NumberUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -44,10 +44,12 @@ import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.config.GlobalEndEntityProfileConfiguration;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.dto.RoleDataDto;
 import org.cesecore.keybind.InternalKeyBindingRules;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.roles.AccessRulesHelper;
-import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.ejbca.core.ejb.authorization.AuthorizationSystemSessionLocal;
@@ -80,19 +82,21 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
     /** Basic mode access rule holder sorted by section */
     private static class AccessRulesTemplate {
         private final String name;
-        private final HashMap<String,Boolean> accessRules = new HashMap<>();
+        private final Map<String,Boolean> accessRules;
 
         public AccessRulesTemplate(final String name, final AccessRule...accessRules) {
             this.name = name;
+            Map<String, Boolean> rules = new HashMap<>();
             for (final AccessRule accessRule : accessRules) {
-                this.getAccessRules().put(accessRule.resource, accessRule.state);
+                rules.put(accessRule.resource, accessRule.state);
             }
-            AccessRulesHelper.normalizeResources(this.accessRules);
-            AccessRulesHelper.minimizeAccessRules(this.accessRules);
+            AccessRulesHelper.normalizeResources(rules);
+            AccessRulesHelper.minimizeAccessRules(rules);
+            this.accessRules = rules;
         }
 
         public String getName() { return name; }
-        public HashMap<String,Boolean> getAccessRules() { return accessRules; }
+        public Map<String,Boolean> getAccessRules() { return accessRules; }
     }
 
     /** Advanced mode access rule holder sorted for a category */
@@ -184,84 +188,84 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
     private static final List<AccessRulesTemplate> accessRulesTemplates = Arrays.asList(
             new AccessRulesTemplate(TEMPLATE_NAME_CUSTOM),
             new AccessRulesTemplate("SUPERVISOR",
-                    new AccessRule(AccessRulesConstants.ROLE_ADMINISTRATOR, Role.STATE_ALLOW),
-                    new AccessRule(AuditLogRules.VIEW.resource(), Role.STATE_ALLOW),
-                    new AccessRule(AccessRulesConstants.REGULAR_VIEWCERTIFICATE, Role.STATE_ALLOW),
+                    new AccessRule(AccessRulesConstants.ROLE_ADMINISTRATOR, RoleDataDto.STATE_ALLOW),
+                    new AccessRule(AuditLogRules.VIEW.resource(), RoleDataDto.STATE_ALLOW),
+                    new AccessRule(AccessRulesConstants.REGULAR_VIEWCERTIFICATE, RoleDataDto.STATE_ALLOW),
                     // From legacy JS
-                    new AccessRule(AccessRulesConstants.REGULAR_VIEWENDENTITYHISTORY, Role.STATE_ALLOW),
-                    new AccessRule(AccessRulesConstants.REGULAR_VIEWENDENTITY, Role.STATE_ALLOW)
+                    new AccessRule(AccessRulesConstants.REGULAR_VIEWENDENTITYHISTORY, RoleDataDto.STATE_ALLOW),
+                    new AccessRule(AccessRulesConstants.REGULAR_VIEWENDENTITY, RoleDataDto.STATE_ALLOW)
                     ),
             new AccessRulesTemplate("AUDITOR",
-                    new AccessRule(AccessRulesConstants.ROLE_ADMINISTRATOR, Role.STATE_ALLOW),
-                    new AccessRule(AuditLogRules.VIEW.resource(), Role.STATE_ALLOW),
-                    new AccessRule(AccessRulesConstants.REGULAR_VIEWCERTIFICATE, Role.STATE_ALLOW),
-                    new AccessRule(InternalKeyBindingRules.VIEW.resource(), Role.STATE_ALLOW),
-                    new AccessRule(StandardRules.CAVIEW.resource(), Role.STATE_ALLOW),
-                    new AccessRule(StandardRules.CERTIFICATEPROFILEVIEW.resource(), Role.STATE_ALLOW),
-                    new AccessRule(StandardRules.APPROVALPROFILEVIEW.resource(), Role.STATE_ALLOW),
-                    new AccessRule(CryptoTokenRules.VIEW.resource(), Role.STATE_ALLOW),
-                    new AccessRule(AccessRulesConstants.REGULAR_VIEWPUBLISHER, Role.STATE_ALLOW),
-                    new AccessRule(AccessRulesConstants.REGULAR_VIEWVALIDATOR, Role.STATE_ALLOW),
-                    new AccessRule(AccessRulesConstants.SERVICES_VIEW, Role.STATE_ALLOW),
-                    new AccessRule(AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES, Role.STATE_ALLOW),
-                    new AccessRule(AccessRulesConstants.REGULAR_PEERCONNECTOR_VIEW, Role.STATE_ALLOW),
-                    new AccessRule(StandardRules.SYSTEMCONFIGURATION_VIEW.resource(), Role.STATE_ALLOW),
-                    new AccessRule(StandardRules.EKUCONFIGURATION_VIEW.resource(), Role.STATE_ALLOW),
-                    new AccessRule(StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource(), Role.STATE_ALLOW),
-                    new AccessRule(StandardRules.VIEWROLES.resource(), Role.STATE_ALLOW),
-                    new AccessRule(AccessRulesConstants.REGULAR_VIEWENDENTITY, Role.STATE_ALLOW),
-                    new AccessRule(AccessRulesConstants.REGULAR_VIEWENDENTITYHISTORY, Role.STATE_ALLOW)
+                    new AccessRule(AccessRulesConstants.ROLE_ADMINISTRATOR, RoleDataDto.STATE_ALLOW),
+                    new AccessRule(AuditLogRules.VIEW.resource(), RoleDataDto.STATE_ALLOW),
+                    new AccessRule(AccessRulesConstants.REGULAR_VIEWCERTIFICATE, RoleDataDto.STATE_ALLOW),
+                    new AccessRule(InternalKeyBindingRules.VIEW.resource(), RoleDataDto.STATE_ALLOW),
+                    new AccessRule(StandardRules.CAVIEW.resource(), RoleDataDto.STATE_ALLOW),
+                    new AccessRule(StandardRules.CERTIFICATEPROFILEVIEW.resource(), RoleDataDto.STATE_ALLOW),
+                    new AccessRule(StandardRules.APPROVALPROFILEVIEW.resource(), RoleDataDto.STATE_ALLOW),
+                    new AccessRule(CryptoTokenRules.VIEW.resource(), RoleDataDto.STATE_ALLOW),
+                    new AccessRule(AccessRulesConstants.REGULAR_VIEWPUBLISHER, RoleDataDto.STATE_ALLOW),
+                    new AccessRule(AccessRulesConstants.REGULAR_VIEWVALIDATOR, RoleDataDto.STATE_ALLOW),
+                    new AccessRule(AccessRulesConstants.SERVICES_VIEW, RoleDataDto.STATE_ALLOW),
+                    new AccessRule(AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES, RoleDataDto.STATE_ALLOW),
+                    new AccessRule(AccessRulesConstants.REGULAR_PEERCONNECTOR_VIEW, RoleDataDto.STATE_ALLOW),
+                    new AccessRule(StandardRules.SYSTEMCONFIGURATION_VIEW.resource(), RoleDataDto.STATE_ALLOW),
+                    new AccessRule(StandardRules.EKUCONFIGURATION_VIEW.resource(), RoleDataDto.STATE_ALLOW),
+                    new AccessRule(StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource(), RoleDataDto.STATE_ALLOW),
+                    new AccessRule(StandardRules.VIEWROLES.resource(), RoleDataDto.STATE_ALLOW),
+                    new AccessRule(AccessRulesConstants.REGULAR_VIEWENDENTITY, RoleDataDto.STATE_ALLOW),
+                    new AccessRule(AccessRulesConstants.REGULAR_VIEWENDENTITYHISTORY, RoleDataDto.STATE_ALLOW)
                     ),
             new AccessRulesTemplate("RAADMINISTRATOR",
-                    new AccessRule(AccessRulesConstants.ROLE_ADMINISTRATOR, Role.STATE_ALLOW),
-                    new AccessRule(AccessRulesConstants.REGULAR_CREATECERTIFICATE, Role.STATE_ALLOW),
-                    new AccessRule(AccessRulesConstants.REGULAR_VIEWCERTIFICATE, Role.STATE_ALLOW),
-                    new AccessRule(AccessRulesConstants.REGULAR_USEAPPROVALREQUESTID, Role.STATE_ALLOW),
-                    new AccessRule(AccessRulesConstants.REGULAR_USEUSERNAME, Role.STATE_ALLOW),
+                    new AccessRule(AccessRulesConstants.ROLE_ADMINISTRATOR, RoleDataDto.STATE_ALLOW),
+                    new AccessRule(AccessRulesConstants.REGULAR_CREATECERTIFICATE, RoleDataDto.STATE_ALLOW),
+                    new AccessRule(AccessRulesConstants.REGULAR_VIEWCERTIFICATE, RoleDataDto.STATE_ALLOW),
+                    new AccessRule(AccessRulesConstants.REGULAR_USEAPPROVALREQUESTID, RoleDataDto.STATE_ALLOW),
+                    new AccessRule(AccessRulesConstants.REGULAR_USEUSERNAME, RoleDataDto.STATE_ALLOW),
                     // From legacy JS
-                    new AccessRule(AccessRulesConstants.REGULAR_VIEWENDENTITY, Role.STATE_ALLOW),
-                    new AccessRule(AccessRulesConstants.REGULAR_VIEWENDENTITYHISTORY, Role.STATE_ALLOW),
-                    new AccessRule(AccessRulesConstants.REGULAR_CREATEENDENTITY, Role.STATE_ALLOW),
-                    new AccessRule(AccessRulesConstants.REGULAR_EDITENDENTITY, Role.STATE_ALLOW),
-                    new AccessRule(AccessRulesConstants.REGULAR_DELETEENDENTITY, Role.STATE_ALLOW),
-                    new AccessRule(AccessRulesConstants.REGULAR_REVOKEENDENTITY, Role.STATE_ALLOW),
-                    new AccessRule(AccessRulesConstants.REGULAR_KEYRECOVERY, Role.STATE_ALLOW),
-                    new AccessRule(AccessRulesConstants.REGULAR_APPROVEENDENTITY, Role.STATE_ALLOW),
-                    new AccessRule(AccessRulesConstants.REGULAR_VIEWAPPROVALS, Role.STATE_ALLOW),
-                    new AccessRule(AuditLogRules.VIEW.resource(), Role.STATE_ALLOW)
+                    new AccessRule(AccessRulesConstants.REGULAR_VIEWENDENTITY, RoleDataDto.STATE_ALLOW),
+                    new AccessRule(AccessRulesConstants.REGULAR_VIEWENDENTITYHISTORY, RoleDataDto.STATE_ALLOW),
+                    new AccessRule(AccessRulesConstants.REGULAR_CREATEENDENTITY, RoleDataDto.STATE_ALLOW),
+                    new AccessRule(AccessRulesConstants.REGULAR_EDITENDENTITY, RoleDataDto.STATE_ALLOW),
+                    new AccessRule(AccessRulesConstants.REGULAR_DELETEENDENTITY, RoleDataDto.STATE_ALLOW),
+                    new AccessRule(AccessRulesConstants.REGULAR_REVOKEENDENTITY, RoleDataDto.STATE_ALLOW),
+                    new AccessRule(AccessRulesConstants.REGULAR_KEYRECOVERY, RoleDataDto.STATE_ALLOW),
+                    new AccessRule(AccessRulesConstants.REGULAR_APPROVEENDENTITY, RoleDataDto.STATE_ALLOW),
+                    new AccessRule(AccessRulesConstants.REGULAR_VIEWAPPROVALS, RoleDataDto.STATE_ALLOW),
+                    new AccessRule(AuditLogRules.VIEW.resource(), RoleDataDto.STATE_ALLOW)
                     ),
             new AccessRulesTemplate("CAADMINISTRATOR",
-                    new AccessRule(AccessRulesConstants.ROLE_ADMINISTRATOR, Role.STATE_ALLOW),
-                    new AccessRule(StandardRules.CAFUNCTIONALITY.resource(), Role.STATE_ALLOW),
-                    new AccessRule(StandardRules.CAVIEW.resource(), Role.STATE_ALLOW),
-                    new AccessRule(StandardRules.CERTIFICATEPROFILEVIEW.resource(), Role.STATE_ALLOW),
-                    new AccessRule(AccessRulesConstants.REGULAR_EDITPUBLISHER, Role.STATE_ALLOW),
-                    new AccessRule(AccessRulesConstants.REGULAR_VIEWPUBLISHER, Role.STATE_ALLOW),
-                    new AccessRule(AccessRulesConstants.REGULAR_EDITVALIDATOR, Role.STATE_ALLOW),
-                    new AccessRule(AccessRulesConstants.REGULAR_VIEWVALIDATOR, Role.STATE_ALLOW),
-                    new AccessRule(AccessRulesConstants.REGULAR_EDITBLACKLIST, Role.STATE_ALLOW),
-                    new AccessRule(StandardRules.VALIDATORACCESSBASE.resource(), Role.STATE_ALLOW),
+                    new AccessRule(AccessRulesConstants.ROLE_ADMINISTRATOR, RoleDataDto.STATE_ALLOW),
+                    new AccessRule(StandardRules.CAFUNCTIONALITY.resource(), RoleDataDto.STATE_ALLOW),
+                    new AccessRule(StandardRules.CAVIEW.resource(), RoleDataDto.STATE_ALLOW),
+                    new AccessRule(StandardRules.CERTIFICATEPROFILEVIEW.resource(), RoleDataDto.STATE_ALLOW),
+                    new AccessRule(AccessRulesConstants.REGULAR_EDITPUBLISHER, RoleDataDto.STATE_ALLOW),
+                    new AccessRule(AccessRulesConstants.REGULAR_VIEWPUBLISHER, RoleDataDto.STATE_ALLOW),
+                    new AccessRule(AccessRulesConstants.REGULAR_EDITVALIDATOR, RoleDataDto.STATE_ALLOW),
+                    new AccessRule(AccessRulesConstants.REGULAR_VIEWVALIDATOR, RoleDataDto.STATE_ALLOW),
+                    new AccessRule(AccessRulesConstants.REGULAR_EDITBLACKLIST, RoleDataDto.STATE_ALLOW),
+                    new AccessRule(StandardRules.VALIDATORACCESSBASE.resource(), RoleDataDto.STATE_ALLOW),
                     // This was present in legacy DefaultRoles, but makes very little sense
-                    //new AccessRule(AuditLogRules.LOG.resource(), Role.STATE_ALLOW),
-                    new AccessRule(AccessRulesConstants.REGULAR_RAFUNCTIONALITY, Role.STATE_ALLOW),
-                    new AccessRule(StandardRules.EDITROLES.resource(), Role.STATE_ALLOW),
-                    new AccessRule(StandardRules.VIEWROLES.resource(), Role.STATE_ALLOW),
-                    new AccessRule(AccessRulesConstants.ENDENTITYPROFILEBASE, Role.STATE_ALLOW),
-                    //new AccessRule(AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES, Role.STATE_ALLOW),
-                    new AccessRule(CryptoTokenRules.VIEW.resource(), Role.STATE_ALLOW),
+                    //new AccessRule(AuditLogRules.LOG.resource(), RoleDataDto.STATE_ALLOW),
+                    new AccessRule(AccessRulesConstants.REGULAR_RAFUNCTIONALITY, RoleDataDto.STATE_ALLOW),
+                    new AccessRule(StandardRules.EDITROLES.resource(), RoleDataDto.STATE_ALLOW),
+                    new AccessRule(StandardRules.VIEWROLES.resource(), RoleDataDto.STATE_ALLOW),
+                    new AccessRule(AccessRulesConstants.ENDENTITYPROFILEBASE, RoleDataDto.STATE_ALLOW),
+                    //new AccessRule(AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES, RoleDataDto.STATE_ALLOW),
+                    new AccessRule(CryptoTokenRules.VIEW.resource(), RoleDataDto.STATE_ALLOW),
                     /*
                      * Note:
                      * We DO NOT allow CA Administrators to USE CryptoTokens, since this would mean that they could
                      * bind any existing CryptoToken to a new CA and access the keys.
-                     * new AccessRule(CryptoTokenRules.USE.resource(), Role.STATE_ALLOW)
+                     * new AccessRule(CryptoTokenRules.USE.resource(), RoleDataDto.STATE_ALLOW)
                      */
-                    new AccessRule(InternalKeyBindingRules.DELETE.resource(), Role.STATE_ALLOW),
-                    new AccessRule(InternalKeyBindingRules.MODIFY.resource(), Role.STATE_ALLOW),
-                    new AccessRule(InternalKeyBindingRules.VIEW.resource(), Role.STATE_ALLOW),
+                    new AccessRule(InternalKeyBindingRules.DELETE.resource(), RoleDataDto.STATE_ALLOW),
+                    new AccessRule(InternalKeyBindingRules.MODIFY.resource(), RoleDataDto.STATE_ALLOW),
+                    new AccessRule(InternalKeyBindingRules.VIEW.resource(), RoleDataDto.STATE_ALLOW),
                     // From legacy JS
-                    new AccessRule(AuditLogRules.VIEW.resource(), Role.STATE_ALLOW)
+                    new AccessRule(AuditLogRules.VIEW.resource(), RoleDataDto.STATE_ALLOW)
                     ),
-            new AccessRulesTemplate("SUPERADMINISTRATOR", new AccessRule(StandardRules.ROLE_ROOT.resource(), Role.STATE_ALLOW))
+            new AccessRulesTemplate("SUPERADMINISTRATOR", new AccessRule(StandardRules.ROLE_ROOT.resource(), RoleDataDto.STATE_ALLOW))
             );
 
     @EJB
@@ -276,6 +280,8 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
     private KeyValidatorSessionLocal keyValidatorSession;
     @EJB
     private RoleSessionLocal roleSession;
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
 
     private Map<Integer, String> caIdToNameMap;
     private Map<Integer, String> eepIdToNameMap;
@@ -283,7 +289,7 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
     private String roleIdParam;
     private String advancedParam;
     private String summaryParam;
-    private Role role;
+    private RoleDataDto role;
 
     private String accessRulesTemplateSelected = TEMPLATE_NAME_CUSTOM;
     private List<SelectItem> availableAccessRulesTemplates = null;
@@ -324,7 +330,7 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
     
     /** Perform POST-REDIRECT-GET when this method is invoked from a non-AJAX context. */
     private void nonAjaxPostRedirectGet() {
-        String requestParams = "?roleId=" + role.getRoleId();
+        String requestParams = "?roleId=" + role.id();
         if (isAdvancedMode()) {
             requestParams += "&advanced=true";
             if (isAdvancedModeSummary()) {
@@ -350,8 +356,8 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
     }
 
     /** @return an authorized existing role based on the roleId HTTP param or null if no such role was found. */
-    public Role getRole() {
-        if (role==null && NumberUtils.isNumber(roleIdParam)) {
+    public RoleDataDto getRole() {
+        if (role==null && NumberUtils.isCreatable(roleIdParam)) {
             try {
                 role = roleSession.getRole(getAdmin(), Integer.parseInt(roleIdParam));
                 if (role==null && log.isDebugEnabled()) {
@@ -378,9 +384,9 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
         // Calculate available templates and the current best match
         getAvailableAccessRulesTemplates();
         // Select access rules that are allowed by the role
-        final Role role = getRole();
+        final RoleDataDto role = getRole();
         if (role != null) {
-            final LinkedHashMap<String, Boolean> accessRules = role.getAccessRules();
+            final Map<String, Boolean> accessRules = role.accessRules();
             // Find CA access resources allowed by this role
             setResourcesCaSelected(getSelectedRulesFromIdentifiers(accessRules, StandardRules.CAACCESS.resource(), caIdToNameMap.keySet()));
             // Find RA resources allowed by this role
@@ -397,7 +403,7 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
     }
 
     /** @return minimal list of resources that the provided access rules grants */
-    private List<String> getSelectedRulesFromIdentifiers(final LinkedHashMap<String, Boolean> accessRules, final String baseResource, final Set<Integer> ids) {
+    private List<String> getSelectedRulesFromIdentifiers(final Map<String, Boolean> accessRules, final String baseResource, final Set<Integer> ids) {
         final List<String> ret = new ArrayList<>();
         if (AccessRulesHelper.hasAccessToResource(accessRules, baseResource)) {
             ret.add(baseResource);
@@ -416,7 +422,7 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
      * Like {@link #getSelectedRulesFromIdentifiers}, but also includes rules that have all enabled sub-rules present.
      * (example: if "Create End Entity" and "Edit End Entity" are selected, then it will also include all profiles that have those items allowed)
      */
-    private List<String> getSelectedRulesFromIdentifiers(final LinkedHashMap<String, Boolean> accessRules, final String baseResource, final Set<Integer> ids,
+    private List<String> getSelectedRulesFromIdentifiers(final Map<String, Boolean> accessRules, final String baseResource, final Set<Integer> ids,
             final List<SelectItem> selectedSubRules) {
         // Get all items that are allowed recursively
         final List<String> ret = getSelectedRulesFromIdentifiers(accessRules, baseResource, ids);
@@ -445,11 +451,11 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
     }
 
     /** @return minimal list of resources that the provided access rules grants */
-    private List<String> getSelectedRulesFromSelectItems(final LinkedHashMap<String, Boolean> accessRules, final List<SelectItem> selectItems) {
+    private List<String> getSelectedRulesFromSelectItems(final Map<String, Boolean> accessRules, final List<SelectItem> selectItems) {
         final List<String> ret = new ArrayList<>();
         for (final SelectItem selectItem : selectItems) {
             final String resource = AccessRulesHelper.normalizeResource(String.valueOf(selectItem.getValue()));
-            if (AccessRulesHelper.hasAccessToResource(getRole().getAccessRules(), resource)) {
+            if (AccessRulesHelper.hasAccessToResource(getRole().accessRules(), resource)) {
                 ret.add(resource);
             }
         }
@@ -488,7 +494,7 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
     /** Invoked by the user when changing selected template and JavaScript is disabled (or via the AJAX call) */
     public void actionAccessRulesTemplateSelect() {
         final AccessRulesTemplate accessRulesTemplate = getAccessRulesTemplate();
-        final LinkedHashMap<String, Boolean> accessRules = getRole().getAccessRules();
+        final Map<String, Boolean> accessRules = new LinkedHashMap<>(getRole().accessRules());
         accessRules.clear();
         accessRules.putAll(accessRulesTemplate.getAccessRules());
         reinitSelection();
@@ -508,8 +514,8 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
                 final List<String> allowedResources = new ArrayList<>();
                 // Ensure that there is no access rule in role that is not covered by template to check for a match
                 if (getRole() != null) {
-                    if (getRole().getAccessRules() != null) {
-                        final HashMap<String, Boolean> remainingAccessRulesInRole = new HashMap<>(getRole().getAccessRules());
+                    if (getRole().accessRules() != null) {
+                        final HashMap<String, Boolean> remainingAccessRulesInRole = new HashMap<>(getRole().accessRules());
                         AccessRulesHelper.normalizeResources(remainingAccessRulesInRole);
                         AccessRulesHelper.minimizeAccessRules(remainingAccessRulesInRole);
                         filterOutSelectItems(remainingAccessRulesInRole, getAvailableResourcesCa());
@@ -531,14 +537,14 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
                                     isAccessRuleTemplateSet = true;
                             } else {
                                 if (log.isDebugEnabled()) {
-                                    log.debug("Role '" + getRole().getRoleNameFull() + "' does not qualify as a '" + accessRulesTemplate.getName()
+                                    log.debug("Role '" + getRole().fullName() + "' does not qualify as a '" + accessRulesTemplate.getName()
                                             + "'. Extra rules: " + Arrays.toString(remainingAccessRulesInRole.keySet().toArray()));
                                 }
                             }
                         }
                     } else {
                         if(log.isDebugEnabled()) {
-                            log.debug("Role with name " + role.getRoleName() + " returned a null access rule list.");
+                            log.debug("Role with name " + role.name() + " returned a null access rule list.");
                         }
                     }
                 } else {
@@ -743,7 +749,8 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
 
     /** @return true if this installation is configured to use EndEntityProfileLimitations */
     private boolean isEnableEndEntityProfileLimitations() {
-        return super.getEjbcaWebBean().getGlobalConfiguration().getEnableEndEntityProfileLimitations();
+        final GlobalEndEntityProfileConfiguration globalEEPConfiguration = (GlobalEndEntityProfileConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalEndEntityProfileConfiguration.EEP_CONFIGURATION_ID);
+        return globalEEPConfiguration.getEnableEndEntityProfileLimitations();
     }
 
     /** @return true if this installation is configured to perform key recovery */
@@ -767,13 +774,13 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
         }
         // Add access rules selected by the user
         for (final String resource : getResourcesCaSelected()) {
-            newAccessRules.put(resource, Role.STATE_ALLOW);
+            newAccessRules.put(resource, RoleDataDto.STATE_ALLOW);
         }
         for (final String resource : getResourcesEeSelected()) {
-            newAccessRules.put(resource, Role.STATE_ALLOW);
+            newAccessRules.put(resource, RoleDataDto.STATE_ALLOW);
         }
         for (final String resource : getResourcesEepSelected()) {
-            newAccessRules.put(resource, Role.STATE_ALLOW);
+            newAccessRules.put(resource, RoleDataDto.STATE_ALLOW);
         }
         if (isEnableEndEntityProfileLimitations()) {
             /*
@@ -788,18 +795,17 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
              */
         }
         for (final String resource : getResourcesKeyValidatorsSelected()) {
-            newAccessRules.put(resource, Role.STATE_ALLOW);
+            newAccessRules.put(resource, RoleDataDto.STATE_ALLOW);
         }
         for (final String resource : getResourcesIkbSelected()) {
-            newAccessRules.put(resource, Role.STATE_ALLOW);
+            newAccessRules.put(resource, RoleDataDto.STATE_ALLOW);
         }
         for (final String resource : getResourcesOtherSelected()) {
-            newAccessRules.put(resource, Role.STATE_ALLOW);
+            newAccessRules.put(resource, RoleDataDto.STATE_ALLOW);
         }
         // Replace access rules and persist
-        final Role role = getRole();
-        role.getAccessRules().clear();
-        role.getAccessRules().putAll(newAccessRules);
+        RoleDataDto role = getRole();
+        role = role.withAccessRules(newAccessRules);
         try {
             this.role = roleSession.persistRole(getAdmin(), role);
             super.addGlobalMessage(FacesMessage.SEVERITY_INFO, "ACCESSRULES_INFO_SAVED");
@@ -862,12 +868,12 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
     private List<AccessRuleItem> getAuthorizedAccessRuleItems() {
         if (authorizedAccessRuleItems==null) {
             final List<AccessRuleItem> allAccessRuleItems = getAllAccessRuleItems();
-            final LinkedHashMap<String, Boolean> rolesAccesssRules = getRole().getAccessRules();
-            AccessRulesHelper.minimizeAccessRules(rolesAccesssRules);
+            final Map<String, Boolean> accessRules = new HashMap<>(getRole().accessRules());
+            AccessRulesHelper.minimizeAccessRules(accessRules);
             for (final AccessRuleItem accessRuleItem : new ArrayList<>(allAccessRuleItems)) {
                 if (authorizationSession.isAuthorizedNoLogging(getAdmin(), accessRuleItem.getResource())) {
                     // Check current Role' state of this rule
-                    accessRuleItem.setState(AccessRuleState.toAccessRuleState(rolesAccesssRules.get(accessRuleItem.getResource())).name());
+                    accessRuleItem.setState(AccessRuleState.toAccessRuleState(accessRules.get(accessRuleItem.getResource())).name());
                 } else {
                     // Note that for EEPs you are only "really" authorized to it if you also are authorized to all the CAs in it
                     // BUT if the current admin is authorized to a rule he is also authorized to give the same access to others
@@ -912,9 +918,8 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
 
     /** Invoked by the admin when saving access rules in advanced mode. */
     public void actionSaveAccessRulesAdvanced() {
-        final Role role = getRole();
-        final LinkedHashMap<String, Boolean> accessRules = role.getAccessRules();
-        accessRules.clear();
+        final RoleDataDto role = getRole();
+        final LinkedHashMap<String, Boolean> accessRules = new LinkedHashMap<>();
         for (final AccessRuleItem accessRuleItem : authorizedAccessRuleItems) {
             if (!AccessRuleState.UNDEFINED.equals(accessRuleItem.getStateEnum())) {
                 accessRules.put(accessRuleItem.getResource(), AccessRuleState.ALLOW.equals(accessRuleItem.getStateEnum()));
@@ -922,8 +927,8 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
         }
         final int numberOfRulesBeforeSave = accessRules.size();
         try {
-            this.role = roleSession.persistRole(getAdmin(), role);
-            final int numberOfRedundantRules = numberOfRulesBeforeSave-role.getAccessRules().size();
+            this.role = roleSession.persistRole(getAdmin(), role.withAccessRules(accessRules));
+            final int numberOfRedundantRules = numberOfRulesBeforeSave-role.accessRules().size();
             if (numberOfRedundantRules==0) {
                 super.addGlobalMessage(FacesMessage.SEVERITY_INFO, "ACCESSRULES_INFO_SAVED");
             } else {

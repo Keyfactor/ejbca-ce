@@ -38,9 +38,9 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.dto.RoleDataDto;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.roles.AccessRulesHelper;
-import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleInformation;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMemberDataSessionLocal;
@@ -150,9 +150,14 @@ public class ApproveActionManagedBean extends BaseManagedBean {
 	private HashMap<Integer, String> statustext = null;
 	private Map<Integer, Action> partitionActions;
 
-	private ListDataModel<ApprovalPartitionProfileGuiObject> partitionsAuthorizedToView = null;
+	// partitionsAuthorizedToViewList is the backing object for partitionsAuthorizedToView.  
+	// partitionsAuthorizedToView should only be accessed via getPartitionsAuthorizedToView
+	// to ensure correct initialization
+	private transient ListDataModel<ApprovalPartitionProfileGuiObject> partitionsAuthorizedToView = null;
+	private List<ApprovalPartitionProfileGuiObject> partitionsAuthorizedToViewList= null;
 	private Set<Integer> partitionsAuthorizedToApprove = null;
-	private ListDataModel<ApprovalPartitionProfileGuiObject> previousPartitions = null;
+	
+	private transient ListDataModel<ApprovalPartitionProfileGuiObject> previousPartitions = null;
 
 	public HashMap<Integer, String> getStatusText(){
 	    if(statustext == null){
@@ -208,7 +213,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     }
 
     public Action getActionForPartition() {
-        Action result = getPartitionActions().get(partitionsAuthorizedToView.getRowData().getPartitionId());
+        Action result = getPartitionActions().get(getPartitionsAuthorizedToView().getRowData().getPartitionId());
         if(result != null) {
             return result;
         } else {
@@ -233,7 +238,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     }
 
     public void setActionForPartition(final Action action) {
-        getPartitionActions().put(partitionsAuthorizedToView.getRowData().getPartitionId(), action);
+        getPartitionActions().put(getPartitionsAuthorizedToView().getRowData().getPartitionId(), action);
     }
 
     public String saveState(ActionEvent event) {
@@ -242,7 +247,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
         if (approvalDataVO != null) {
             ApprovalRequest approvalRequest = approvalDataVO.getApprovalRequest();
             ApprovalProfile storedApprovalProfile = approvalRequest.getApprovalProfile();
-            for (Iterator<ApprovalPartitionProfileGuiObject> iter = partitionsAuthorizedToView.iterator(); iter.hasNext(); ) {
+            for (Iterator<ApprovalPartitionProfileGuiObject> iter = getPartitionsAuthorizedToView().iterator(); iter.hasNext(); ) {
                 boolean isRejected = false;
                 ApprovalPartitionProfileGuiObject approvalPartitionGuiObject = iter.next();
                 Integer partitionId = approvalPartitionGuiObject.getPartitionId();
@@ -417,7 +422,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
             if (approvalProfile != null) {
                 ApprovalStep step = approvalProfile.getFirstStep();
                 ApprovalStep currentStep = getCurrentStep();
-                List<Role> rolesTokenIsMemberOf = roleSession.getRolesAuthenticationTokenIsMemberOf(getAdmin());
+                List<RoleDataDto> rolesTokenIsMemberOf = roleSession.getRolesAuthenticationTokenIsMemberOf(getAdmin());
                 while (step != null) {
                     if (currentStep != null && step.equals(currentStep)) {
                         break;
@@ -446,34 +451,37 @@ public class ApproveActionManagedBean extends BaseManagedBean {
      */
     public ListDataModel<ApprovalPartitionProfileGuiObject> getApprovalPartitions() {
         if (partitionsAuthorizedToView == null) {
-            List<ApprovalPartitionProfileGuiObject> authorizedPartitions = new ArrayList<>();
-            partitionsAuthorizedToApprove = new HashSet<>();
-            //Make sure we're not reading stale data
-            final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfile(approvalDataVOView.getApprovalProfile().getProfileId());
-            if (getCurrentStep() != null) {
-                final ApprovalStep approvalStep = approvalProfile.getStep(getCurrentStep().getStepIdentifier());
-                List<Role> roles = roleSession.getRolesAuthenticationTokenIsMemberOf(getAdmin());
-                for (Integer approvalPartitionId : getCurrentStep().getPartitions().keySet()) {
-                    ApprovalPartition approvalPartition = approvalStep.getPartition(approvalPartitionId);
-                    if (approvalPartition != null) {
-                        if (approvalProfile.canView(roles, approvalPartition)) {
-                            final DynamicUiProperty<? extends Serializable> nameProperty = approvalPartition
-                                    .getProperty(PartitionedApprovalProfile.PROPERTY_NAME);
-                            authorizedPartitions.add(new ApprovalPartitionProfileGuiObject(
-                                    approvalDataVOView.getApprovalProfile().getApprovalProfileTypeIdentifier(),
-                                    approvalPartition.getPartitionIdentifier(), nameProperty != null ? nameProperty.getValueAsString() : "-",
-                                    getPartitionProperties(approvalPartition)));
-                        }
-                        if (approvalProfile.canApprove(roles, approvalPartition)) {
-                            partitionsAuthorizedToApprove.add(approvalPartition.getPartitionIdentifier());
+            if (partitionsAuthorizedToViewList == null) {
+                List<ApprovalPartitionProfileGuiObject> authorizedPartitions = new ArrayList<>();
+                partitionsAuthorizedToApprove = new HashSet<>();
+                //Make sure we're not reading stale data
+                final ApprovalProfile approvalProfile = approvalProfileSession
+                        .getApprovalProfile(approvalDataVOView.getApprovalProfile().getProfileId());
+                if (getCurrentStep() != null) {
+                    final ApprovalStep approvalStep = approvalProfile.getStep(getCurrentStep().getStepIdentifier());
+                    List<RoleDataDto> roles = roleSession.getRolesAuthenticationTokenIsMemberOf(getAdmin());
+                    for (Integer approvalPartitionId : getCurrentStep().getPartitions().keySet()) {
+                        ApprovalPartition approvalPartition = approvalStep.getPartition(approvalPartitionId);
+                        if (approvalPartition != null) {
+                            if (approvalProfile.canView(roles, approvalPartition)) {
+                                final DynamicUiProperty<? extends Serializable> nameProperty = approvalPartition
+                                        .getProperty(PartitionedApprovalProfile.PROPERTY_NAME);
+                                authorizedPartitions.add(new ApprovalPartitionProfileGuiObject(
+                                        approvalDataVOView.getApprovalProfile().getApprovalProfileTypeIdentifier(),
+                                        approvalPartition.getPartitionIdentifier(), nameProperty != null ? nameProperty.getValueAsString() : "-",
+                                        getPartitionProperties(approvalPartition)));
+                            }
+                            if (approvalProfile.canApprove(roles, approvalPartition)) {
+                                partitionsAuthorizedToApprove.add(approvalPartition.getPartitionIdentifier());
+                            }
                         }
                     }
                 }
+                partitionsAuthorizedToViewList = authorizedPartitions;
             }
-            partitionsAuthorizedToView = new ListDataModel<>(authorizedPartitions);
-
+            partitionsAuthorizedToView = new ListDataModel<>(partitionsAuthorizedToViewList);
         }
-        return partitionsAuthorizedToView;
+        return getPartitionsAuthorizedToView();
     }
 
     public boolean canApprovePartition(ApprovalPartitionProfileGuiObject partition) {
@@ -548,13 +556,12 @@ public class ApproveActionManagedBean extends BaseManagedBean {
                         approvalPartition.getPropertyList().get(propertyName));
                 switch (propertyClone.getPropertyCallback()) {
                 case ROLES:
-                    final List<Role> allAuthorizedRoles = roleSession.getAuthorizedRoles(getAdmin());
+                    final List<RoleDataDto> allAuthorizedRoles = roleSession.getAuthorizedRoles(getAdmin());
                     final List<RoleInformation> roleRepresentations = new ArrayList<>();
-                    for (final Role role : allAuthorizedRoles) {
+                    for (final RoleDataDto role : allAuthorizedRoles) {
                         if (AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVEENDENTITY)
                                 || AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVECAACTION)) {
-                            roleRepresentations.add(RoleInformation.fromRoleMembers(role.getRoleId(), role.getNameSpace(), role.getRoleName(), 
-                                    new ArrayList<>()));
+                            roleRepresentations.add(new RoleInformation(role.getId(), role.getNameSpace(), role.getName()));
                         }
                     }
                     if (!roleRepresentations.contains(propertyClone.getDefaultValue())) {
@@ -666,7 +673,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
       */
     private List<RoleInformation> updateRoleMembers(final RoleInformation roleToUpdate) {
         final AuthenticationToken alwaysAllowToken = new AlwaysAllowLocalAuthenticationToken("Approval update");
-        Role role;
+        RoleDataDto role;
         try {
            role = roleSession.getRole(alwaysAllowToken, roleToUpdate.getIdentifier());
         } catch (AuthorizationDeniedException e) {
@@ -674,10 +681,10 @@ public class ApproveActionManagedBean extends BaseManagedBean {
         }
         final List<RoleInformation> roleRepresentations = new ArrayList<>();
         if (role != null) {
-            if (role.getRoleId() == roleToUpdate.getIdentifier()
+            if (role.getId() == roleToUpdate.getIdentifier()
                     && (AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVEENDENTITY)
                             || AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVECAACTION))) {
-                roleRepresentations.add(RoleInformation.fromRoleMembers(role.getRoleId(), role.getNameSpace(), role.getRoleName(), new ArrayList<>()));
+                roleRepresentations.add(new RoleInformation(role.getId(), role.getNameSpace(), role.getName()));
             }
         }
         return roleRepresentations;
@@ -720,4 +727,8 @@ public class ApproveActionManagedBean extends BaseManagedBean {
              log.error("Invalid propery value while setting the encoded values for property clone!" + e);
          }
      }
+
+    public ListDataModel<ApprovalPartitionProfileGuiObject> getPartitionsAuthorizedToView() {
+        return partitionsAuthorizedToView;
+    }
 }

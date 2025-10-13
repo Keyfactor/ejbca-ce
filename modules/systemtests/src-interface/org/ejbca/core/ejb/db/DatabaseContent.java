@@ -13,8 +13,6 @@
 package org.ejbca.core.ejb.db;
 
 import org.cesecore.authorization.cache.AccessTreeUpdateData;
-import org.cesecore.authorization.rules.AccessRuleData;
-import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.certificate.Base64CertData;
 import org.cesecore.certificates.certificate.CertificateData;
@@ -24,19 +22,17 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileData;
 import org.cesecore.certificates.certificatetransparency.SctData;
 import org.cesecore.certificates.crl.CRLData;
 import org.cesecore.configuration.GlobalConfigurationData;
+import org.cesecore.dto.RoleDataDto;
 import org.cesecore.keybind.InternalKeyBindingData;
 import org.cesecore.keys.token.CryptoTokenData;
 import org.cesecore.oscp.OcspResponseData;
 import org.cesecore.profiles.ProfileData;
-import org.cesecore.roles.AdminGroupData;
-import org.cesecore.roles.RoleData;
 import org.cesecore.roles.member.RoleMemberData;
 import org.ejbca.acme.AcmeAccountData;
 import org.ejbca.acme.AcmeAuthorizationData;
 import org.ejbca.acme.AcmeNonceData;
 import org.ejbca.acme.AcmeOrderData;
 import org.ejbca.core.ejb.approval.ApprovalData;
-import org.ejbca.core.ejb.ca.publisher.PublisherData;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueData;
 import org.ejbca.core.ejb.ca.store.CertReqHistoryData;
 import org.ejbca.core.ejb.ca.validation.BlacklistData;
@@ -45,21 +41,18 @@ import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData;
 import org.ejbca.core.ejb.services.ServiceData;
+import org.ejbca.dto.PublisherDataBean;
 import org.ejbca.peerconnector.PeerData;
 
 import java.io.Serializable;
 import java.util.List;
 
-@SuppressWarnings("deprecation")
 public record DatabaseContent(
-        List<AccessRuleData> accessRuleData,
         List<AccessTreeUpdateData> accessTreeUpdateData,
-        List<AccessUserAspectData> accessUserAspectData,
         List<AcmeAccountData> acmeAccountData,
         List<AcmeAuthorizationData> acmeAuthorizationData,
         List<AcmeNonceData> acmeNonceData,
         List<AcmeOrderData> acmeOrderData,
-        List<AdminGroupData> adminGroupData,
         List<AdminPreferencesData> adminPreferencesData,
         List<ApprovalData> approvalData,
         List<Base64CertData> base64CertData,
@@ -79,9 +72,9 @@ public record DatabaseContent(
         List<OcspResponseData> ocspResponseData,
         List<PeerData> peerData,
         List<ProfileData> profileData,
-        List<PublisherData> publisherData,
+        List<PublisherDataBean> publisherData,
         List<PublisherQueueData> publisherQueueData,
-        List<RoleData> roleData,
+        List<RoleDataDto> roleData,
         List<RoleMemberData> roleMemberData,
         List<SctData> sctData,
         List<ServiceData> serviceData,

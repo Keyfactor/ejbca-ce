@@ -26,7 +26,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.Properties;
 import org.cesecore.certificates.ca.CaSessionRemote;
@@ -240,9 +240,7 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
         // If we should also create PEM-files, do that
         if (keystoreType == EndEntityConstants.TOKEN_SOFT_PEM) {
             String PEMfilename = mainStoreDir + "/pem";
-            P12toPEM p12topem = new P12toPEM(ks, kspassword);
-            p12topem.setExportPath(PEMfilename);
-            p12topem.createPEM();
+            P12toPEM.createPEM(ks, kspassword, PEMfilename);
         } else {
             try (final FileOutputStream fileOutputStream = new FileOutputStream(keyStoreFilename);) {
                 ks.store(fileOutputStream, kspassword.toCharArray());
