@@ -82,7 +82,7 @@ public class UserFulfillEndEntityProfileUnitTest {
         final EndEntityProfile profile = new EndEntityProfile();
         profile.setReverseFieldChecks(true);
 
-        // Set so CN=modifyable required, OU0=Modifyable not required, OU1=Modifyable not required, OU3=required {hard,soft}, C=O{SE,DK} not required
+        // Set so CN=modifiable required, OU0=Modifiable not required, OU1=Modifiable not required, OU3=required {hard,soft}, C=O{SE,DK} not required
         profile.addField(DnComponents.ORGANIZATIONALUNIT);
         profile.addField(DnComponents.ORGANIZATIONALUNIT);
         profile.addField(DnComponents.ORGANIZATIONALUNIT);
