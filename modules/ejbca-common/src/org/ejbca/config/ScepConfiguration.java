@@ -13,12 +13,17 @@
 
 package org.ejbca.config;
 
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.configuration.ConfigurationBase;
 import org.ejbca.core.model.UsernameGenerateMode;
 
+import java.io.ByteArrayInputStream;
 import java.io.Serializable;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -94,6 +99,13 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public static final String PROXY_PORT = "intuneProxyPort";
     public static final String PROXY_USER = "intuneProxyUser";
     public static final String PROXY_PASS = "intuneProxyPass";
+    public static final String ENCRYPTION_TOKEN_ID = "encryptionTokenId";
+    public static final String ENCRYPTION_KEY_ALIAS = "encryptionKeyAlias";
+    public static final String ENCRYPTION_CERTIFICATE = "encryptionCertificate";
+    public static final String SIGNING_ALGORITHM = "signingAlgorithm";
+    public static final String SIGNING_TOKEN_ID = "signingTokenId";
+    public static final String SIGNING_KEY_ALIAS = "signingKeyAlias";
+    public static final String SIGNING_CERTIFICATE = "signingCertificate";
 
     // This List is used in the command line handling of updating a config value to insure a correct value.
     public static final List<String> SCEP_BOOLEAN_KEYS = Arrays.asList(SCEP_INCLUDE_CA, SCEP_RETURN_CA_CHAIN_IN_GETCACERT);
@@ -104,7 +116,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     private final String ALIAS_LIST = "aliaslist";
 
     // Default Values
-    public static final float LATEST_VERSION = 7f;
+    public static final float LATEST_VERSION = 8f;
     public static final String EJBCA_VERSION = InternalConfiguration.getAppVersion();
 
 
@@ -125,6 +137,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public static final String DEFAULT_RA_NAME_GENERATION_POSTFIX = "";
     public static final String DEFAULT_RETURN_CA_CHAIN_IN_GETCACERT = Boolean.TRUE.toString();
     public static final String DEFAULT_AAD_USE_KEYBINDING = Boolean.FALSE.toString();
+    public static final String DEFAULT_SIGNING_ALGORITHM = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
 
 
     /**
@@ -176,6 +189,13 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         data.put(alias + PROXY_PORT, "");
         data.put(alias + PROXY_USER, "");
         data.put(alias + PROXY_PASS, "");
+        data.put(alias + ENCRYPTION_TOKEN_ID, "");
+        data.put(alias + ENCRYPTION_KEY_ALIAS, "");
+        data.put(alias + ENCRYPTION_CERTIFICATE, "");
+        data.put(alias + SIGNING_ALGORITHM, "");
+        data.put(alias + SIGNING_TOKEN_ID, "");
+        data.put(alias + SIGNING_KEY_ALIAS, "");
+        data.put(alias + SIGNING_CERTIFICATE, "");
     }
 
     // return all the key with an alias
@@ -212,6 +232,14 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         keys.add(alias + PROXY_PORT);
         keys.add(alias + PROXY_USER);
         keys.add(alias + PROXY_PASS);
+        keys.add(alias + ENCRYPTION_TOKEN_ID);
+        keys.add(alias + ENCRYPTION_KEY_ALIAS);
+        keys.add(alias + ENCRYPTION_CERTIFICATE);
+        keys.add(alias + SIGNING_ALGORITHM);
+        keys.add(alias + SIGNING_TOKEN_ID);
+        keys.add(alias + SIGNING_KEY_ALIAS);
+        keys.add(alias + SIGNING_CERTIFICATE);
+
         return keys;
     }
 
@@ -461,7 +489,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     }
 
     public void setIntuneAadAppKey(final String alias, final String value) {
-        // Put the clear text value into the cache, or it will be not available until the cache is reloaded. 
+        // Put the clear text value into the cache, or it will be not available until the cache is reloaded.
         decryptedIntuneAadAppKey.put(alias, value);
         String key = alias + "." + AAD_APP_KEY;
         setValue(key, getEncryptedValue(value), alias);
@@ -879,6 +907,27 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
                 if (data.get(alias + SCEP_CHAIN_ROOT_FIRST) == null) {
                     data.put(alias + SCEP_CHAIN_ROOT_FIRST, Boolean.TRUE.toString());
                 }
+                if (data.get(alias + ENCRYPTION_TOKEN_ID) == null) {
+                    data.put(alias + ENCRYPTION_TOKEN_ID, "");
+                }
+                if (data.get(alias + ENCRYPTION_KEY_ALIAS) == null) {
+                    data.put(alias + ENCRYPTION_KEY_ALIAS, "");
+                }
+                if (data.get(alias + ENCRYPTION_CERTIFICATE) == null) {
+                    data.put(alias + ENCRYPTION_CERTIFICATE, "");
+                }
+                if (data.get(alias + SIGNING_ALGORITHM) == null) {
+                    data.put(alias + SIGNING_ALGORITHM, "");
+                }
+                if (data.get(alias + SIGNING_TOKEN_ID) == null) {
+                    data.put(alias + SIGNING_TOKEN_ID, "");
+                }
+                if (data.get(alias + SIGNING_KEY_ALIAS) == null) {
+                    data.put(alias + SIGNING_KEY_ALIAS, "");
+                }
+                if (data.get(alias + SIGNING_CERTIFICATE) == null) {
+                    data.put(alias + SIGNING_CERTIFICATE, "");
+                }
             }
             data.put(VERSION, Float.valueOf(LATEST_VERSION));
         }
@@ -897,6 +946,154 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
             filterDiffMapForLogging(diff, alias + "." + SCEP_RA_AUTHPWD);
             filterDiffMapForLogging(diff, alias + "." + AAD_APP_KEY);
             filterDiffMapForLogging(diff, alias + "." + PROXY_PASS);
+        }
+    }
+
+    public void setEncryptionCryptoTokenId(String alias, Integer cryptoTokenId) {
+        String encryptionTokenIdString = (cryptoTokenId == null) ? "" : cryptoTokenId.toString();
+        setValue(alias + "." + ENCRYPTION_TOKEN_ID, encryptionTokenIdString, alias);
+    }
+
+    public void setEncryptionKeyAlias(String alias, String encryptionKeyAlias) {
+        setValue(alias + "." + ENCRYPTION_KEY_ALIAS, encryptionKeyAlias == null ? "" : encryptionKeyAlias, alias);
+    }
+
+    public void setEncryptionCertificate(String alias, String pemEncodedCertificate) {
+        setValue(alias + "." + ENCRYPTION_CERTIFICATE, pemEncodedCertificate == null ? "" : pemEncodedCertificate, alias);
+    }
+
+    public String getEncryptionKeyAlias(String alias) {
+        String value = getValue(alias + "." + ENCRYPTION_KEY_ALIAS, alias);
+        if (value == null) {
+            // Lazy initialization for SCEP configurations older than 9.4
+            setValue(alias + "." + ENCRYPTION_KEY_ALIAS, "", alias);
+            return null;
+        } else if ("".equals(value)) {
+            return null;
+        } else {
+            return value;
+        }
+    }
+
+    public Integer getEncryptionCryptoTokenId(String alias) {
+        String stringValue = getValue(alias + "." + ENCRYPTION_TOKEN_ID, alias);
+        if (stringValue == null) {
+            // Lazy initialization for SCEP configurations older than 9.4
+            setValue(alias + "." + ENCRYPTION_TOKEN_ID, "", alias);
+            return null;
+        }
+        else if ("".equals(stringValue)) {
+            return null;
+        } else {
+            return Integer.parseInt(stringValue);
+        }
+    }
+
+    public String getEncryptionCertificate(String alias) {
+        String value = getValue(alias + "." + ENCRYPTION_CERTIFICATE, alias);
+        if (value == null)  {
+            // Lazy initialization for SCEP configurations older than 9.4
+            setValue(alias + "." + ENCRYPTION_CERTIFICATE, "", alias);
+            return null;
+        }
+        else if ("".equals(value)) {
+            return null;
+        } else {
+            return value;
+        }
+    }
+
+    /** return the SCEP encryption certificate as a certificate object */
+    public X509Certificate decodeEncryptionCertificate(String alias) {
+        String pemEncodedCertificate = getEncryptionCertificate(alias);
+        if (pemEncodedCertificate == null) {
+            return null;
+        }
+
+        try {
+            return CertTools.getCertsFromPEM(new ByteArrayInputStream(pemEncodedCertificate.getBytes()), X509Certificate.class).get(0);
+        } catch (CertificateParsingException e) {
+            // how did a badly formatted certificate end up in the config?
+            log.error("Bad SCEP encryption certificate in alias " + alias + "\n" + pemEncodedCertificate);
+            return null;
+        }
+    }
+
+    public void setSigningAlgorithm(final String alias, final String sigAlg) {
+        setValue(alias + "." + SIGNING_ALGORITHM, sigAlg, alias);
+    }
+
+    public void setSigningCryptoTokenId(String alias, Integer cryptoTokenId) {
+        String signingTokenIdString = (cryptoTokenId == null) ? "" : cryptoTokenId.toString();
+        setValue(alias + "." + SIGNING_TOKEN_ID, signingTokenIdString, alias);
+    }
+
+    public void setSigningKeyAlias(String alias, String signingKeyAlias) {
+        setValue(alias + "." + SIGNING_KEY_ALIAS, signingKeyAlias == null ? "" : signingKeyAlias, alias);
+    }
+
+    public void setSigningCertificate(String alias, String pemEncodedCertificate) {
+        setValue(alias + "." + SIGNING_CERTIFICATE, pemEncodedCertificate == null ? "" : pemEncodedCertificate, alias);
+    }
+
+    public String getSigningAlgorithm(final String alias) {
+        return getValue(alias + "." + SIGNING_ALGORITHM, alias);
+    }
+
+    public String getSigningKeyAlias(String alias) {
+        String value = getValue(alias + "." + SIGNING_KEY_ALIAS, alias);
+        if (value == null) {
+            // Lazy initialization for SCEP configurations older than 9.4
+            setValue(alias + "." + SIGNING_KEY_ALIAS, "", alias);
+            return null;
+        } else if ("".equals(value)) {
+            return null;
+        } else {
+            return value;
+        }
+    }
+
+    public Integer getSigningCryptoTokenId(String alias) {
+        String stringValue = getValue(alias + "." + SIGNING_TOKEN_ID, alias);
+        if (stringValue == null) {
+            // Lazy initialization for SCEP configurations older than 9.4
+            setValue(alias + "." + SIGNING_TOKEN_ID, "", alias);
+            return null;
+        }
+        else if ("".equals(stringValue)) {
+            return null;
+        } else {
+            return Integer.parseInt(stringValue);
+        }
+    }
+
+    public String getSigningCertificate(String alias) {
+        String value = getValue(alias + "." + SIGNING_CERTIFICATE, alias);
+        if (value == null)  {
+            // Lazy initialization for SCEP configurations older than 9.4
+            setValue(alias + "." + SIGNING_CERTIFICATE, "", alias);
+            return null;
+        }
+        else if ("".equals(value)) {
+            return null;
+        } else {
+            return value;
+        }
+    }
+
+    /** return the SCEP signing certificate as a certificate object */
+    public X509Certificate decodeSigningCertificate(String alias) {
+        String pemEncodedCertificate = getSigningCertificate(alias);
+        if (pemEncodedCertificate == null) {
+            return null;
+        }
+
+        try {
+            return CertTools.getCertsFromPEM(new ByteArrayInputStream(pemEncodedCertificate.getBytes()), X509Certificate.class).get(0);
+        } catch (CertificateParsingException e) {
+            // how did a badly formatted certificate end up in the config?
+            log.error("Bad SCEP signing certificate in alias " + alias + "\n" + pemEncodedCertificate);
+            return null;
         }
     }
 
