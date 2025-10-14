@@ -24,6 +24,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collection;
@@ -85,8 +86,8 @@ import com.keyfactor.util.certificate.DnComponents;
 
 
 /**
- * Class to handle SCEP request messages sent to the CA. 
- * 
+ * Class to handle SCEP request messages sent to the CA.
+ *
  * This class implements equals/hashcode, so if any members are added please modify those as well.
  *
  */
@@ -121,11 +122,11 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
     /**
      * The messageType attribute specify the type of operation performed by the transaction. This
      * attribute is required in all PKI messages. Currently, the following message types are
-     * defined: 
-     * PKCSReq (19)  -- Permits use of PKCS#10 certificate request 
-     * CertRep (3)   -- Response to certificate or CRL request 
-     * GetCertInitial (20)  -- Certificate polling in manual enrollment 
-     * GetCert (21)  -- Retrieve a certificate 
+     * defined:
+     * PKCSReq (19)  -- Permits use of PKCS#10 certificate request
+     * CertRep (3)   -- Response to certificate or CRL request
+     * GetCertInitial (20)  -- Certificate polling in manual enrollment
+     * GetCert (21)  -- Retrieve a certificate
      * GetCRL  (22)  -- Retrieve a CRL
      */
     private int messageType = 0;
@@ -151,12 +152,28 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
 
     /** Error text */
     private String errorText = null;
-    
-    /** Issuer DN the message is sent to (CAs Issuer DN), contained in the 
+
+    /** token used when message encrypted with different key from the CA key */
+    private Integer encryptionCryptoTokenId = null;
+
+    /** alias used when message encrypted with different key from the CA key */
+    private String encryptionKeyAlias = null;
+
+    /** token used when message signed with different key from the CA key */
+    private Integer signingCryptoTokenId = null;
+
+    /** alias used when message signed with different key from the CA key */
+    private String signingKeyAlias = null;
+
+    /** certificate used when message signed with different key from the CA key */
+    private String pemEncodedSigningCertificate = null;
+
+
+    /** Issuer DN the message is sent to (CAs Issuer DN), contained in the
      * request as recipientInfo.issuerAndSerialNumber in EnvelopeData part */
     private transient String issuerDN = null;
-    
-    /** SerialNumber of the CA cert of the CA the message is sent to, contained in the 
+
+    /** SerialNumber of the CA cert of the CA the message is sent to, contained in the
      * request as recipientInfo.issuerAndSerialNumber in EnvelopeData part */
     private transient BigInteger serialNo = null;
 
@@ -178,25 +195,25 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
     private transient IssuerAndSerialNumber issuerAndSerno = null;
 
     /** preferred digest algorithm to use in replies, if applicable.
-     *  Defaults to CMSSignedGenerator.DIGEST_SHA256 for SCEP messages. If SCEP request is 
+     *  Defaults to CMSSignedGenerator.DIGEST_SHA256 for SCEP messages. If SCEP request is
      * digested with SHA1 it is set to SHA1 though. This is only for backwards compatibility issues, as specified in a SCEP draft.
      * Modern request/responses will use SHA-256.
      */
     private transient String preferredDigestAlg = CMSSignedGenerator.DIGEST_SHA256;
-    
+
     /**
      * originalDigestAlgorithm to use if legacy digest algorithms such as SHA1 and md5 are allowed by SCEP alias
-     * If the configuration does not allow legacy algorithms, default SHA256 will be used  
+     * If the configuration does not allow legacy algorithms, default SHA256 will be used
      */
-    private transient String originalDigestAlgorithm = CMSSignedGenerator.DIGEST_SHA256; 
-    
+    private transient String originalDigestAlgorithm = CMSSignedGenerator.DIGEST_SHA256;
+
     /** preferred content encryption algorithm to use in replies, if applicable.
-     *  Defaults to SMIMECapability.dES_CBC for SCEP messages. If SCEP request is 
+     *  Defaults to SMIMECapability.dES_CBC for SCEP messages. If SCEP request is
      * encrypted with dES_EDE3_CBC it is set to this though. This is only for backwards compatibility issues, as specified in a SCEP draft.
      */
     private transient ASN1ObjectIdentifier contentEncAlg = SMIMECapability.dES_CBC;
     /** preferred key encryption algorithm to use in replies, if applicable.
-     *  Defaults to PKCSObjectIdentifiers.rsaEncryption for SCEP messages. If SCEP request content encryption key is 
+     *  Defaults to PKCSObjectIdentifiers.rsaEncryption for SCEP messages. If SCEP request content encryption key is
      * encrypted with RSAES_OAEP it is set to this though.
      */
     private transient ASN1ObjectIdentifier keyEncAlg = PKCSObjectIdentifiers.rsaEncryption;
@@ -208,7 +225,6 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
 	 */
 	private transient String getCertInitialSubject;
 
-	
     /**
      * Constructs a new SCEP/PKCS7 message handler object.
      *
@@ -217,20 +233,45 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
      *
      * @throws IOException if the request can not be parsed.
      */
-    public ScepRequestMessage(byte[] msg, boolean incCACert) throws IOException {
-    	if (log.isTraceEnabled()) {
+	public ScepRequestMessage(byte[] msg, boolean incCACertKeyAlias) throws IOException {
+	    this(msg, incCACertKeyAlias, null, null, null, null, null);	
+	}
+	
+    /**
+     * Constructs a new SCEP/PKCS7 message handler object.
+     *
+     * @param msg The DER encoded PKCS7 request.
+     * @param incCACert if the CA certificate should be included in the response or not.
+     * @param encryptionCryptoTokenId the crypto token holding the dedicated SCEP decryption key.  May be null.
+     * @param encryptionKeyAlias the dedicated SCEP decryption key alias.  May be null.
+     * @param signingCryptoTokenId the crypto token holding the dedicated SCEP response signing key.  May be null.
+     * @param signingKeyAlias the dedicated SCEP response signing key alias.  May be null.
+     * @param pemEncodedSigningCertificate the dedicated SCEP response signing certificate .  May be null.
+     *
+     * @throws IOException if the request can not be parsed.
+     */
+    public ScepRequestMessage(byte[] msg, boolean incCACert, 
+            Integer encryptionCryptoTokenId, String encryptionKeyAlias,
+            Integer signingCryptoTokenId, String signingKeyAlias, String pemEncodedSigningCertificate) throws IOException {
+        if (log.isTraceEnabled()) {
     		log.trace(">ScepRequestMessage");
     	}
         this.scepmsg = msg;
         this.includeCACert = incCACert;
+        this.encryptionCryptoTokenId = encryptionCryptoTokenId;
+        this.encryptionKeyAlias = encryptionKeyAlias;
+        this.signingCryptoTokenId = signingCryptoTokenId;
+        this.signingKeyAlias = signingKeyAlias;
+        this.pemEncodedSigningCertificate = pemEncodedSigningCertificate;
+
         init();
         if (log.isTraceEnabled()) {
         	log.trace("<ScepRequestMessage");
         }
     }
-    
+
     /**
-     * Recreate a request message from an encoded 
+     * Recreate a request message from an encoded
      *
      * @param encodedStep an approval step that has been encoded as a string
      */
@@ -259,12 +300,12 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
         byte[] byteArray = baos.toByteArray();
         return new String(Base64.encode(byteArray, false));
     }
-    
+
     /**
-     * This method verifies the signature of the PKCS#7 wrapper of this message. 
-     * 
+     * This method verifies the signature of the PKCS#7 wrapper of this message.
+     *
      * @param publicKey the public key of the keypair that signed this message
-     * @return true if signature verifies. 
+     * @return true if signature verifies.
      * @throws CMSException if the underlying byte array of this SCEP message couldn't be read
      * @throws OperatorCreationException if a signature verifier couldn't be constructed from the given public key
      */
@@ -272,7 +313,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
         CMSSignedData cmsSignedData = new CMSSignedData(scepmsg);
         return cmsSignedData.verifySignatures(new ScepVerifierProvider(publicKey));
     }
-    
+
     private void init() throws IOException {
     	if (log.isTraceEnabled()) {
     		log.trace(">init");
@@ -339,7 +380,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
 						} catch (CertificateException e) {
 							log.error("Error parsing requestKeyInfo : ", e);
 						}
-                        
+
                     }
                 }
             }
@@ -484,14 +525,14 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
             JceKeyTransEnvelopedRecipient rec = new JceKeyTransEnvelopedRecipient(privateKey);
             rec.setProvider(jceProvider); // Use the crypto token provides for asymmetric key operations
             rec.setContentProvider(BouncyCastleProvider.PROVIDER_NAME); // Use BC for the symmetric key operations
-            // Option we must set to prevent Java PKCS#11 provider to try to make the symmetric decryption in the HSM, 
-            // even though we set content provider to BC. Symm decryption in HSM varies between different HSMs and at least for this case is known 
+            // Option we must set to prevent Java PKCS#11 provider to try to make the symmetric decryption in the HSM,
+            // even though we set content provider to BC. Symm decryption in HSM varies between different HSMs and at least for this case is known
             // to not work in SafeNet Luna (JDK behavior changed in JDK 7_75 where they introduced imho a buggy behavior)
-            rec.setMustProduceEncodableUnwrappedKey(true);                              
+            rec.setMustProduceEncodableUnwrappedKey(true);
             decBytes = recipient.getContent(rec);
             break;
         }
-        
+
 
         if (messageType == ScepRequestMessage.SCEP_TYPE_PKCSREQ) {
             pkcs10 = new JcaPKCS10CertificationRequest(decBytes);
@@ -511,7 +552,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
         } else if (messageType == ScepRequestMessage.SCEP_TYPE_GETCERTINITIAL) {
             ASN1Sequence derSequence = (ASN1Sequence) DERSequence.fromByteArray(decBytes);
             //Issuer and subject have been encoded in the envelope as per section 3.2.3 in the draft
-            issuerDN = X500Name.getInstance(derSequence.getObjectAt(0)).toString();                     
+            issuerDN = X500Name.getInstance(derSequence.getObjectAt(0)).toString();
             getCertInitialSubject = X500Name.getInstance(derSequence.getObjectAt(1)).toString();
             if (log.isDebugEnabled()) {
                 log.debug("Successfully extracted issuerdn: '" + issuerDN + "', '" + getCertInitialSubject + "'.");
@@ -569,7 +610,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
         }
         return ret;
     }
-   
+
     @Override
     public boolean verify() {
         if (log.isTraceEnabled()) {
@@ -586,8 +627,8 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
             log.error("PKCS7 not initialized!");
         } catch (GeneralSecurityException | CMSException e) {
             log.error("Error in PKCS7:", e);
-        } 
-        
+        }
+
         if (log.isTraceEnabled()) {
         	log.trace("<verify()");
         }
@@ -636,7 +677,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
                     log.error("No SN in DN: " + LogRedactionUtils.getRedactedMessage(getRequestDN()));
                     return null;
                 }
-                // Special if the DN contains unstructuredAddress where it becomes: 
+                // Special if the DN contains unstructuredAddress where it becomes:
                 // SN=1728668 + 1.2.840.113549.1.9.2=pix.primekey.se
                 // We only want the SN and not the oid-part.
                 int index = name.indexOf(' ');
@@ -684,7 +725,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
 
     @Override
     public BigInteger getSerialNo() {
-        // For SCEP this is used to see if we are targeting a SCEP request or the "next CA certificate", 
+        // For SCEP this is used to see if we are targeting a SCEP request or the "next CA certificate",
         // i.e. a rollover CA certificate that has not been activated yet
         if (log.isTraceEnabled()) {
         	log.trace(">getSerialNo()");
@@ -696,7 +737,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
 
     @Override
     public String getCASequence() {
-        // Same as getSerialNo for SCEP, used to see if we are targeting a SCEP request or the "next CA certificate", 
+        // Same as getSerialNo for SCEP, used to see if we are targeting a SCEP request or the "next CA certificate",
         // i.e. a rollover CA certificate that has not been activated yet
         return getSerialNo().toString();
     }
@@ -753,8 +794,8 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
         	log.trace(">getRequestDN()");
         }
         String ret = null;
-        
-        try {         
+
+        try {
             if (pkcs10 == null) {
                 init();
                 decrypt();
@@ -782,7 +823,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
 
     @Override
     public void setKeyInfo(Certificate cert, PrivateKey key, String provider) {
-        // We don't need the public key 
+        // We don't need the public key
         // this.cert = cert;
         this.privateKey = key;
         if (provider == null) {
@@ -791,7 +832,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
             this.jceProvider = provider;        	
         }
     }
-        
+
     @Override
     public int getErrorNo() {
         return error;
@@ -821,14 +862,14 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
     public String getPreferredDigestAlg() {
     	return preferredDigestAlg;
     }
-    
+
     /**
-     * Method to control digest algorithm in response based on SCEP alias configuration check in ScepMessageDispatcherSessionBean    
+     * Method to control digest algorithm in response based on SCEP alias configuration check in ScepMessageDispatcherSessionBean
      */
     public void setPreferredDigestAlg(String preferredDigestAlg) {
         this.preferredDigestAlg = preferredDigestAlg;
     }
-    
+
     /**
      * Method to get the original digest algorithm from the request in case SCEP alias allow legacy algorithms, such as SHA1, md5
      * @return the original digest algorithm from the request
@@ -836,10 +877,10 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
     public String getOriginalDigestAlgorithm() {
         return originalDigestAlgorithm;
     }
-    
+
     /** Returns the type of SCEP message it is
-     * 
-     * @return value as defined by SCEP_TYPE_PKCSREQ, SCEP_TYPE_GETCRL, SCEP_TYPE_GETCERT, SCEP_TYPE_GETCERTINITIAL  
+     *
+     * @return value as defined by SCEP_TYPE_PKCSREQ, SCEP_TYPE_GETCRL, SCEP_TYPE_GETCERT, SCEP_TYPE_GETCERTINITIAL
      */
     public int getMessageType() {
         return messageType;
@@ -848,22 +889,22 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
 
     /**
      * Method returning the certificate used to sign the SCEP_TYPE_PKCSREQ pkcs7 request.
-     * 
+     *
      * @return The certificate used for signing or null if it doesn't exist or not been initialized.
      */
     public Certificate getSignerCert(){
     	return signercert;
     }
-    
+
     /** Method used to retrieve the content encryption algorithm that was used to encrypt the SCEP request
-     * 
+     *
      * @return ASN1ObjectOdentifier, typically SMIMECapability.dES_CBC or SMIMECapability.dES_EDE3_CBC
      */
     public ASN1ObjectIdentifier getContentEncAlg() {
         return contentEncAlg;
     }
     /** Method used to retrieve the key encryption algorithm that was used in the SCEP request
-     * 
+     *
      * @return ASN1ObjectOdentifier, typically PKCSObjectIdentifiers.rsaEncryption or PKCSObjectIdentifiers.id_RSAES_OAEP
      */
     public ASN1ObjectIdentifier getKeyEncAlg() {
@@ -871,21 +912,21 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
     }
 
     private static class ScepVerifierProvider implements SignerInformationVerifierProvider {
-        
+
         private final SignerInformationVerifier signerInformationVerifier;
-        
+
         public ScepVerifierProvider(PublicKey publicKey) throws OperatorCreationException {
             JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME);
             JcaSignerInfoVerifierBuilder signerInfoVerifierBuilder = new JcaSignerInfoVerifierBuilder(calculatorProviderBuilder.build())
             .setProvider(BouncyCastleProvider.PROVIDER_NAME);
             signerInformationVerifier = signerInfoVerifierBuilder.build(publicKey);
         }
-                
+
         @Override
         public SignerInformationVerifier get(SignerId signerId) throws OperatorCreationException {
             return signerInformationVerifier;
         }
-        
+
     }
 
     @Override
@@ -904,42 +945,84 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (!super.equals(obj))
+        }
+        if (!super.equals(obj)) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         ScepRequestMessage other = (ScepRequestMessage) obj;
-        if (error != other.error)
+        if (error != other.error) {
             return false;
+        }
         if (errorText == null) {
-            if (other.errorText != null)
+            if (other.errorText != null) {
                 return false;
-        } else if (!errorText.equals(other.errorText))
+            }
+        } else if (!errorText.equals(other.errorText)) {
             return false;
-        if (messageType != other.messageType)
+        }
+        if (messageType != other.messageType) {
             return false;
-        if (!Arrays.equals(requestKeyInfo, other.requestKeyInfo))
+        }
+        if (!Arrays.equals(requestKeyInfo, other.requestKeyInfo)) {
             return false;
-        if (!Arrays.equals(scepmsg, other.scepmsg))
+        }
+        if (!Arrays.equals(scepmsg, other.scepmsg)) {
             return false;
+        }
         if (senderNonce == null) {
-            if (other.senderNonce != null)
+            if (other.senderNonce != null) {
                 return false;
-        } else if (!senderNonce.equals(other.senderNonce))
+            }
+        } else if (!senderNonce.equals(other.senderNonce)) {
             return false;
+        }
         if (transactionId == null) {
-            if (other.transactionId != null)
+            if (other.transactionId != null) {
                 return false;
-        } else if (!transactionId.equals(other.transactionId))
+            }
+        } else if (!transactionId.equals(other.transactionId)) {
             return false;
+        }
+        if (!stringEquals(pemEncodedSigningCertificate, other.pemEncodedSigningCertificate)
+                || !integerEquals(signingCryptoTokenId, other.signingCryptoTokenId)
+                || !stringEquals(signingKeyAlias, other.signingKeyAlias)
+                || !integerEquals(encryptionCryptoTokenId, other.encryptionCryptoTokenId)
+                || !stringEquals(encryptionKeyAlias, other.encryptionKeyAlias)) {
+            return false;
+        }
         return true;
     }
-    
+
+    /**
+     * A null-safe string comparison
+     */
+    static private boolean stringEquals(String s1, String s2) {
+        if (s1 != null) {
+            return s1.equals(s2);
+        } else {
+            return s2 == null;
+        }
+    }
+
+    /**
+     * A null-safe Integer comparison
+     */
+    static private boolean integerEquals(Integer i1, Integer i2) {
+        if (i1 != null) {
+            return i1.equals(i2);
+        } else {
+            return i2 == null;
+        }
+    }
+
     /**
      * Utility method for divining the generated username when using SCEP in RA mode based on the given configuration.
-     * 
+     *
      * @param scepConfiguration the SCEP configuration
      * @param configAlias the SCEP alias
      * @param dnname the DN name in the request
@@ -955,5 +1038,38 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
         final UsernameGenerator gen = UsernameGenerator.getInstance(usernameGenParams);
         return gen.generateUsername(dnname.toString());
     }
-        
-} 
+
+    @Override
+    public Integer getEncryptionCryptoTokenId() {
+        return encryptionCryptoTokenId;
+    }
+
+    @Override
+    public String getEncryptionKeyAlias() {
+        return encryptionKeyAlias;
+    }
+
+    @Override
+    public Integer getSigningCryptoTokenId() {
+        return signingCryptoTokenId;
+    }
+
+    @Override
+    public String getSigningKeyAlias() {
+        return signingKeyAlias;
+    }
+    
+    @Override
+    public Certificate getSigningCertificate() {
+        if (pemEncodedSigningCertificate == null) {
+            return null;
+        }
+        try {
+            return CertificateFactory.getInstance("X509").generateCertificate(new ByteArrayInputStream(pemEncodedSigningCertificate.getBytes()));
+        } catch (CertificateException e) {
+            // how did a badly formatted certificate get in our config data?
+            log.error("Internal error: bad signing certificate", e);
+            return null;
+        }
+    }
+}

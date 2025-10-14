@@ -36,12 +36,13 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.ejb.EJB;
-import jakarta.ejb.Stateless;
-import jakarta.ejb.TransactionAttribute;
-import jakarta.ejb.TransactionAttributeType;
 import javax.security.auth.x500.X500Principal;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.RandomHelper;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -116,11 +117,11 @@ import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.ui.web.protocol.CertificateRenewalException;
 
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.RandomHelper;
-import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
@@ -179,7 +180,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             scepRaModeExtension = null;
             log.error(SCEP_RA_MODE_EXTENSION_CLASSNAME + " was found, but could not be instanced. " + e.getMessage());
-        } 
+        }
 
         try {
             @SuppressWarnings("unchecked")
@@ -191,7 +192,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             scepClientCertificateRenewal = null;
             log.error(SCEP_CLIENT_CERTIFICATE_RENEWAL_CLASSNAME + " was found, but could not be instanced. " + e.getMessage());
-        } 
+        }
     }
 
     @Override
@@ -236,31 +237,72 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             if (log.isDebugEnabled()) {
                 log.debug("Got SCEP cert request for CA '" + caname + "' using alias " + scepConfigurationAlias + " with GetCACert message '" + message +"'.");
             }
-            Collection<Certificate> certs = null;
             CAInfo cainfo = caSession.getCAInfoInternal(-1, caname, true);
-            if (cainfo != null) {
-                certs = cainfo.getCertificateChain();
+            if (cainfo == null) {
+                return null;
             }
+            Collection<Certificate> certs = cainfo.getCertificateChain();
             if (certs == null) {
                 return null;
-            } else if (certs.size() == 1 || (!scepConfig.getReturnCaChainInGetCaCert(scepConfigurationAlias) && certs.size() > 1)) {
+            }
+
+            // if there is a dedicated SCEP encryption certificate, add it to the chain
+            var encryptionCertificate = scepConfig.decodeEncryptionCertificate(scepConfigurationAlias);
+            if (encryptionCertificate != null) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Returning X.509 certificate as response for GetCACert for single CA: " + caname);
+                    log.debug("Adding encryption certificate to certificate chain " + encryptionCertificate.getIssuerX500Principal() + ":"
+                            + encryptionCertificate.getSerialNumber());
                 }
-                // CAs certificate is in the first position in the Collection
-                X509Certificate cert = (X509Certificate) certs.iterator().next();
+                // getCertificateChain returns the chain in root-last order, so our encryption cert should be at the beginning
+                var certsRaCertificates = new ArrayList<Certificate>();
+                certsRaCertificates.add(encryptionCertificate);
+                certsRaCertificates.addAll(certs);
+                certs = certsRaCertificates;
+            }
+            
+            // if there is a dedicated SCEP signing certificate, add it to the chain
+            var signingCertificate = scepConfig.decodeSigningCertificate(scepConfigurationAlias);
+            if (signingCertificate != null) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Sent certificate for CA '" + caname + "' to SCEP client.");
+                    log.debug("Adding signing certificate to certificate chain " + signingCertificate.getIssuerX500Principal() + ":"
+                            + signingCertificate.getSerialNumber());
                 }
-                return ScepResponseInfo.onlyResponseBytes(cert.getEncoded());
+                // to match known working Command behavior, add the signing certificate at the end
+                var certsRaCertificates = new ArrayList<Certificate>();
+                certsRaCertificates.addAll(certs);
+                certsRaCertificates.add(signingCertificate);
+                certs = certsRaCertificates;
+            }
+            
+            if (certs.size() == 1 || (!scepConfig.getReturnCaChainInGetCaCert(scepConfigurationAlias) && certs.size() > 1)) {
+                // if we aren't returning the whole chain, and we have an encryption certificate, we should return it
+                if (encryptionCertificate != null) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Returning encryption certificate as response for GetCACert for single CA: " + caname);
+                    }
+                    return ScepResponseInfo.onlyResponseBytes(encryptionCertificate.getEncoded());
+                }
+
+                // return a single CA certificate
+                else {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Returning X.509 certificate as response for GetCACert for single CA: " + caname);
+                    }
+                    // CAs certificate is in the first position in the Collection
+                    X509Certificate cert = (X509Certificate) certs.iterator().next();
+                    if (log.isDebugEnabled()) {
+                        log.debug("Sent certificate for CA '" + caname + "' to SCEP client.");
+                    }
+                    return ScepResponseInfo.onlyResponseBytes(cert.getEncoded());
+                }
             } else if (certs.size() > 1 && scepConfig.getReturnCaChainInGetCaCert(scepConfigurationAlias)) {
                 try {
                     if (log.isDebugEnabled()) {
                         log.debug("Creating certs-only CMS message as response for GetCACert for CA chain: " + caname);
                     }
                     List<X509Certificate> certList = CertTools.convertCertificateChainToX509Chain(certs);
-                    // CA chain order is not well defined in the drafts/RFC and implementation varies between clients. Historically we've delivered 
-                    // root first, but the alias contains a setting for running root last. 
+                    // CA chain order is not well defined in the drafts/RFC and implementation varies between clients. Historically we've delivered
+                    // root first, but the alias contains a setting for running root last.
                     if (scepConfig.getCaChainRootFirstOrder(scepConfigurationAlias)) {
                         Collections.reverse(certList);
                     }
@@ -298,7 +340,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 throw new CADoesntExistsException(errMsg);
             } else {
                 if (caSession.getFutureRolloverCertificate(cainfo.getCAId()) != null) {
-                    // Send full certificate chain of next CA, in SCEP-PKCS7 format 
+                    // Send full certificate chain of next CA, in SCEP-PKCS7 format
                     if (log.isDebugEnabled()) {
                         log.debug("Sending next certificate chain for CA '" + caname + "' to SCEP client.");
                     }
@@ -318,8 +360,8 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             // We have two different options here, compliant with SCEP draft23 or RFC8894, we try to be compliant with both
             if (cainfo != null) {
                 final boolean hasRolloverCert = (caSession.getFutureRolloverCertificate(cainfo.getCAId()) != null);
-                // SCEP draft 23, "4.6.1.  Get Next CA Response Message Format". 
-                // It SHOULD also remove the GetNextCACert setting from the capabilities until it does have rollover certificates.            
+                // SCEP draft 23, "4.6.1.  Get Next CA Response Message Format".
+                // It SHOULD also remove the GetNextCACert setting from the capabilities until it does have rollover certificates.
                 return hasRolloverCert
                         ? ScepResponseInfo.onlyResponseBytes("POSTPKIOperation\nGetNextCACert\nRenewal\nSHA-512\nSHA-256\nSHA-1\nDES3\nAES\nSCEPStandard".getBytes())
                         : ScepResponseInfo.onlyResponseBytes("POSTPKIOperation\nRenewal\nSHA-512\nSHA-256\nSHA-1\nDES3\nAES\nSCEPStandard".getBytes());
@@ -336,9 +378,9 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
     /**
      * Fetches the name of the CA to use for the SCEP response, as defined by the alias, the message provided in the
      * SCEP request and default CA defined by the property <code>scep.defaultca</code> in <code>ejbca.properties</code>.
-     * 
+     *
      * <p>This function implements the requirements specified in section 5.2.1 of draft-nourse-scep-23.
-     * 
+     *
      * <p>
      * <code>
      *   The OPERATION MUST be set to "GetCACert".<br>
@@ -346,12 +388,12 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
      *   certification authority issuer identifier.  A CA Administrator<br>
      *   defined string allows for multiple CAs supported by one SCEP server.<br>
      * </code>
-     * 
-     * <p>The function returns the CA name specified in the message. If the message is empty and the alias is operating 
+     *
+     * <p>The function returns the CA name specified in the message. If the message is empty and the alias is operating
      * in RA mode, it returns the CA name specified by the alias. If the alias is operating in CA mode, it returns the
      * name of the default SCEP CA defined by the property <code>scep.defaultca</code>. If no such property is defined
      * an exception is thrown with a user-friendly error message.
-     * 
+     *
      * @param caName the name of the CA as indicated by the message sent by the SCEP client.
      * @param scepConfiguration the SCEP configuration of this EJBCA instance
      * @param alias the alias being used by the SCEP client
@@ -372,12 +414,12 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             // When in RA mode, use the CA defined by the alias
             return scepConfiguration.getRADefaultCA(alias);
         }
-        
+
         // In CA mode, you can configure the alias name to be the same as a CA name, to use that as default, if not specified in the message
         if (caSession.getCAInternal(-1, alias, null, true) != null) {
             return alias;
         }
-        
+
         // Use the CA defined by the property scep.defaultca in CA mode. If not defined, throw an error.
         final String defaultCa = EjbcaConfiguration.getScepDefaultCA();
         if (StringUtils.isEmpty(defaultCa)) {
@@ -397,27 +439,27 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
      * @param scepConfig The SCEP configuration
      *
      * @return byte[] containing response to be sent to client.
-     * @throws AuthorizationDeniedException 
+     * @throws AuthorizationDeniedException
      * @throws CertificateExtensionException if msg specified invalid extensions
-     * @throws InvalidAlgorithmException 
-     * @throws CAOfflineException 
-     * @throws IllegalValidityException 
-     * @throws CertificateSerialNumberException 
-     * @throws CertificateRevokeException 
-     * @throws CertificateCreateException 
-     * @throws IllegalNameException 
-     * @throws AuthLoginException 
-     * @throws AuthStatusException 
-     * @throws SignRequestSignatureException 
-     * @throws SignRequestException 
-     * @throws CADoesntExistsException 
-     * @throws IllegalKeyException 
-     * @throws CryptoTokenOfflineException 
-     * @throws CustomCertificateSerialNumberException 
+     * @throws InvalidAlgorithmException
+     * @throws CAOfflineException
+     * @throws IllegalValidityException
+     * @throws CertificateSerialNumberException
+     * @throws CertificateRevokeException
+     * @throws CertificateCreateException
+     * @throws IllegalNameException
+     * @throws AuthLoginException
+     * @throws AuthStatusException
+     * @throws SignRequestSignatureException
+     * @throws SignRequestException
+     * @throws CADoesntExistsException
+     * @throws IllegalKeyException
+     * @throws CryptoTokenOfflineException
+     * @throws CustomCertificateSerialNumberException
      * @throws CertificateRenewalException if an error occurs during Client Certificate Renewal
-     * @throws SignatureException if a Client Certificate Renewal request was badly signed. 
-     * @throws CertificateException 
-     * @throws {@link NoSuchEndEntityException} if end entity wasn't found, and RA mode isn't available. 
+     * @throws SignatureException if a Client Certificate Renewal request was badly signed.
+     * @throws CertificateException
+     * @throws {@link NoSuchEndEntityException} if end entity wasn't found, and RA mode isn't available.
      */
     private ScepResponseInfo scepCertRequest(AuthenticationToken administrator, byte[] msg, final String alias, final ScepConfiguration scepConfig)
             throws AuthorizationDeniedException, CertificateExtensionException, NoSuchEndEntityException, CustomCertificateSerialNumberException,
@@ -435,7 +477,8 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
         boolean includeCACert = scepConfig.getIncludeCA(alias);
         ScepRequestMessage reqmsg;
         try {
-            reqmsg = new ScepRequestMessage(msg, includeCACert);
+            reqmsg = new ScepRequestMessage(msg, includeCACert, scepConfig.getEncryptionCryptoTokenId(alias), scepConfig.getEncryptionKeyAlias(alias),
+                    scepConfig.getSigningCryptoTokenId(alias), scepConfig.getSigningKeyAlias(alias), scepConfig.getSigningCertificate(alias));
         } catch (IOException e) {
             log.info("Error receiving ScepMessage: ", LogRedactionUtils.getRedactedException(e));
             return null;
@@ -489,7 +532,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                     }
                 } else {
 
-                    // Get the certificate 
+                    // Get the certificate
                     if (log.isDebugEnabled()) {
                         log.debug("SCEP certificate enrollment with alias '" + alias + "'");
                     }
@@ -531,7 +574,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 final X509Certificate cacert = (X509Certificate) ca.getCACertificate();
                 final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
                 reqmsg.setKeyInfo(cacert, cryptoToken.getPrivateKey(keyAlias), cryptoToken.getSignProviderName());
-                //Retrieve the original request and transaction ID based on the username 
+                //Retrieve the original request and transaction ID based on the username
                 final String username = reqmsg.generateUsername(scepConfig, alias);
                 final CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(scepConfig.getRACertProfile(alias));
                 final String approvalProfileName = approvalProfileSession
@@ -616,12 +659,12 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                     String failText;
                     switch (approval.getStatus()) {
                     case ApprovalDataVO.STATUS_EXECUTED:
-                        //Now go ahead and process the cached certificate request     
+                        //Now go ahead and process the cached certificate request
                         try {
                             try {
                                 resp = signSession.createCertificate(administrator, originalRequest, ScepResponseMessage.class, null);
                             } finally {
-                                //That done, let's erase the cached request from the end entity                              
+                                //That done, let's erase the cached request from the end entity
                                 try {
                                     eraseCachedEnrollmentValue(administrator, username);
                                 } catch (CADoesntExistsException | ApprovalException | CertificateSerialNumberException | IllegalNameException
@@ -642,7 +685,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                             return ScepResponseInfo.onlyResponseBytes(resp.getResponseMessage());
                         }
                         if (resp != null) {
-                            //Since the client will be expecting the nonce to be that of the poll request instead of the original request, set it here. 
+                            //Since the client will be expecting the nonce to be that of the poll request instead of the original request, set it here.
                             resp.setRecipientNonce(reqmsg.getSenderNonce());
                             try {
                                 resp.create();
@@ -713,7 +756,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 }
             }
         } else if (reqmsg.getMessageType() == ScepRequestMessage.SCEP_TYPE_GETCRL) {
-            // create the stupid encrypted CRL message, the below can actually only be made 
+            // create the stupid encrypted CRL message, the below can actually only be made
             // at the CA, since CAs private key is needed to decrypt
             ResponseMessage resp = signSession.getCRL(administrator, reqmsg, ScepResponseMessage.class);
             if (resp != null) {
@@ -781,13 +824,13 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
 
     /**
      * Return an Intune client for the current configuration.
-     * 
+     *
      * @param alias SCEP alias
      * @param scepConfig configuration used to build the client
      * @return client for sending commands to Intune
      * @throws CertificateCreateException Unable to create the client
-     * @throws AzureException 
-     * @throws IOException 
+     * @throws AzureException
+     * @throws IOException
      */
     private IntuneRestApi getIntuneScepServiceClient(final String alias, final ScepConfiguration scepConfig) throws CertificateCreateException, IOException, AzureException {
         try {
@@ -795,7 +838,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             if (isNotBlank(scepConfig.getIntuneProxyHost(alias))) {
                 builder = builder.withProxyHost(scepConfig.getIntuneProxyHost(alias))
                         .withProxyPort(Integer.parseInt(scepConfig.getIntuneProxyPort(alias)));
-                
+
                 if (isNotBlank(scepConfig.getIntuneProxyUser(alias))) {
                     builder = builder.withProxyUser(scepConfig.getIntuneProxyUser(alias))
                             .withProxyPassword(scepConfig.getIntuneProxyPass(alias));
@@ -828,9 +871,9 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                     log.debug("Crypto token " + token.getTokenName() + " offline.", e);
                     throw new CertificateCreateException("Crypto token " + token.getTokenName() + " offline.", e);
                 }
-                
+
             }
-            
+
             // azure government may use a different AD login url
             if (isNotBlank(scepConfig.getIntuneAuthority(alias))) {
                 builder.withAzureLoginUrl(scepConfig.getIntuneAuthority(alias));
@@ -878,11 +921,23 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
         } catch (AuthorizationDeniedException e) {
             throw new CertificateCreateException("Administator is not authorized for CA: " + caName, e);
         }
-        final CAToken caToken = caInfo.getCAToken();
-        final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(caToken.getCryptoTokenId());
         try {
-            reqmsg.setKeyInfo(ca.getCACertificate(), cryptoToken.getPrivateKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),
-                    cryptoToken.getSignProviderName());
+            // decrypt using dedicated encryption key
+            if (scepConfig.getEncryptionCertificate(alias) != null) {
+                int encryptionCryptoTokenId = scepConfig.getEncryptionCryptoTokenId(alias);
+                String encryptionKeyAlias = scepConfig.getEncryptionKeyAlias(alias);
+                if (log.isDebugEnabled()) {
+                    log.debug("Decrypting SCEP message using dedicated decryption key token = " + encryptionCryptoTokenId + ", key alias = " + encryptionKeyAlias);
+                }
+                final CryptoToken decryptionToken = cryptoTokenSession.getCryptoToken(encryptionCryptoTokenId);
+                reqmsg.setKeyInfo(scepConfig.decodeEncryptionCertificate(alias), decryptionToken.getPrivateKey(encryptionKeyAlias),
+                        decryptionToken.getSignProviderName());
+            } else {
+                final CAToken caToken = caInfo.getCAToken();
+                final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(caToken.getCryptoTokenId());
+                reqmsg.setKeyInfo(ca.getCACertificate(), cryptoToken.getPrivateKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),
+                        cryptoToken.getSignProviderName());
+            }
             reqmsg.verify();
             return reqmsg.getCertificationRequest().getEncoded();
         } catch (Exception e) {
@@ -893,7 +948,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
 
     /**
      * Erases the cached SCEP request and the approval type from the end entity
-     * 
+     *
      * @param authenticationToken an authentication token
      * @param username the username of the end entity
      */
@@ -922,10 +977,10 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
 
     /**
      * Create a response message with status FAILURE
-     * 
+     *
      * @param req the request message
      * @param signingCa the CA configured to sign responses
-     * @return a response message with the given status 
+     * @return a response message with the given status
      * @throws CryptoTokenOfflineException
      */
     private ScepResponseMessage createPendingResponseMessage(final RequestMessage req, final X509CAInfo signingCa)
@@ -975,10 +1030,10 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
 
     /**
      * Create a response message with status FAILURE
-     * 
+     *
      * @param req the request message
      * @param signingCa the CA configured to sign responses
-     * @return a response message with the given status 
+     * @return a response message with the given status
      * @throws CryptoTokenOfflineException
      */
     private ScepResponseMessage createFailingResponseMessage(final RequestMessage req, final X509CAInfo signingCa, final FailInfo failInfo,
@@ -1050,7 +1105,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
 
             if (response == null) {
                 log.debug("Logging SCEP failure for alias '" + alias + "' and transaction ID '" + transactionId + "'. ");
-                // see https://msdn.microsoft.com/en-us/library/cc231198.aspx.  Below is a "vendor specific" error code for us.  
+                // see https://msdn.microsoft.com/en-us/library/cc231198.aspx.  Below is a "vendor specific" error code for us.
                 // We only send one, since the actual error condition isn't returned from the CA
                 final long errorCode = 0x20000001L;
                 final String errorMessage = "Failed to issue certificate for alias '" + alias + "' and transaction ID '" + transactionId + "'. ";
@@ -1061,7 +1116,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 // use java.util to ensure there are no crlfs
                 final String base64Message = java.util.Base64.getEncoder().encodeToString(response.getPkcs10Request());
                 log.debug("Logging SCEP failure for alias '" + alias + "' and transaction ID '" + transactionId + "'. ");
-                // see https://msdn.microsoft.com/en-us/library/cc231198.aspx.  Below is a "vendor specific" error code for us.  
+                // see https://msdn.microsoft.com/en-us/library/cc231198.aspx.  Below is a "vendor specific" error code for us.
                 final long errorCode = 0x20000100L + response.getFailInfo().intValue();
                 final String errorMessage = response.getFailText();
                 intuneScepServiceClient.sendFailureNotification(transactionId, base64Message, errorCode,
@@ -1079,12 +1134,12 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 log.debug("scep thumbprint = " + thumbprint);
                 final String hexSerialNumber = response.getSerialNumber().toString(16);
                 log.debug("scep hexSerialNumber = " + hexSerialNumber);
-                
-                // note that the ca id sent here has to match the ca id sent when polling for revocations.  
-                // We're sending the issuer DN, as encoded in the certificate, as the identifier of the issuing CA.  
+
+                // note that the ca id sent here has to match the ca id sent when polling for revocations.
+                // We're sending the issuer DN, as encoded in the certificate, as the identifier of the issuing CA.
                 final String issuer = response.getIssuer().getName();
                 log.debug("scep issuer = " + issuer);
-                
+
                 intuneScepServiceClient.sendSuccessNotification(transactionId, base64Message, thumbprint, hexSerialNumber,
                         response.getNotAfter().toString(), issuer, issuer, issuer);
             }
@@ -1114,7 +1169,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
     }
 
     /**
-     * Just a convenient holder for additional data during SCEP issuance.  
+     * Just a convenient holder for additional data during SCEP issuance.
      */
     public class IntuneScepData {
 

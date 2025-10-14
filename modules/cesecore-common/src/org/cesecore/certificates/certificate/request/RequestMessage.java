@@ -169,9 +169,9 @@ public interface RequestMessage extends Serializable {
 
     /**
      * Get the key, in SubjectPublicKeyInfo format, from a certification request if the request format supports this
-     * This is separate from the {@link #getRequestPublicKey()}, because the 
+     * This is separate from the {@link #getRequestPublicKey()}, because the
      * SubjectPublicKeyInfo can be empty, or contain only an algorithmIdentifier in case when server generated keys are requested.
-     * 
+     *
      * @see #getRequestPublicKey()
      * @return SubjectPublicKeyInfo, with the same public key as getRequestPublicKey, or null, or only an algorithmIdentifier.
      */
@@ -314,4 +314,25 @@ public interface RequestMessage extends Serializable {
      * @param additionalExtraCertificates the list of CA certificates.
      */
     void setAdditionalExtraCertsCertificates(final List<Certificate> additionalExtraCertificates);
+
+    default Integer getEncryptionCryptoTokenId() {
+        return null;
+    }
+
+    default String getEncryptionKeyAlias() {
+        return null;
+    }
+    
+    default Integer getSigningCryptoTokenId() {
+        return null;
+    }
+
+    default String getSigningKeyAlias() {
+        return null;
+    }
+    
+    default Certificate getSigningCertificate() {
+        return null;
+    }
+
 }

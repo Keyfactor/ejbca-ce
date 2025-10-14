@@ -73,6 +73,7 @@ import org.ejbca.core.ejb.upgrade.UpgradeSessionLocal;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.era.RaMasterApiSessionLocal;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
+import org.ejbca.core.protocol.scep.ScepKeyRenewalSessionLocal;
 import org.ejbca.statedump.ejb.StatedumpSession;
 import org.ejbca.statedump.ejb.StatedumpSessionLocal;
 
@@ -183,7 +184,8 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
     @Override public OcspResponseCleanupSessionLocal getOcspResponseCleanupSession() {return getEjbLocal().getOcspResponseCleanupSession(); }
     @Override public SctDataSessionLocal getSctDataSession() { return getEjbLocal().getSctDataSession(); }
     @Override public OcspDataSessionLocal getOcspDataSession() { return getEjbLocal().getOcspDataSession(); }
-   
+    @Override public ScepKeyRenewalSessionLocal getScepKeyRenewalSession() { return getEjbLocal().getScepKeyRenewalSession(); }
+
 	/**
      * Dynamically loads the StatedumpSession with JNDI. It's usually not available in the EJBCA source tree,
      * and in this case this is properly handled  by returning null.
