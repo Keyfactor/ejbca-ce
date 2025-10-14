@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.configuration;
 
+import jakarta.persistence.LockModeType;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import java.util.Properties;
@@ -35,6 +36,12 @@ public interface GlobalConfigurationSession {
      * @return a copy from the cache, or a copy from the database, if the copy in the cache was stale or missing.
      */
     ConfigurationBase getCachedConfiguration(String configID);
+
+    /**
+     * Extends getCachedConfiguration(String configID) and locks the row to avoid concurrent modification
+     */
+    ConfigurationBase getCachedConfigurationAndLockWrites(String configID);
+
 
     /** Clear and load global configuration cache. */
     void flushConfigurationCache(String configID);
