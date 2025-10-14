@@ -12,8 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.protocol.msae;
 
-import java.util.Collection;
-import javax.naming.directory.SearchResult;
+import java.util.List;
 import jakarta.ejb.Local;
 
 /**
@@ -24,23 +23,23 @@ import jakarta.ejb.Local;
 public interface CertificateTemplateCacheLocal {
 
     /**
-     * Gets templates from cache if available and not expired, otherwise returns null
+     * Gets template records from cache if available and not expired, otherwise returns null
      * 
      * @param alias the alias to get templates for
-     * @return collection of search results containing templates, or null if not in cache or expired
+     * @return list of TemplateRecord entries, or null if not in cache or expired
      */
-    default Collection<SearchResult> getTemplates(String alias) {
+    default List<TemplateRecord> getTemplateRecords(String alias) {
         throw new UnsupportedOperationException("Certificate template cache methods are only supported in EJBCA Enterprise");
     }
 
     /**
-     * Stores templates in cache with the specified TTL
+     * Stores template records in cache with the specified TTL
      * 
      * @param alias the alias to store templates for
      * @param templates the templates to store
      * @param timeToLive the time to live in milliseconds
      */
-    default void putTemplates(String alias, Collection<SearchResult> templates, long timeToLive) {
+    default void putTemplateRecords(String alias, List<TemplateRecord> templates, long timeToLive) {
         throw new UnsupportedOperationException("Certificate template cache methods are only supported in EJBCA Enterprise");
     }
 
