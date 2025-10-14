@@ -12,38 +12,56 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.configuration;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
+import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.AuthorizationSessionLocal;
-import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.certificates.ca.CAConstants;
-import org.cesecore.certificates.ca.CaSessionLocal;
-import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
-import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.ejbca.config.ScepConfiguration;
-import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
-import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.ui.web.admin.BaseManagedBean;
-import org.ejbca.util.SelectItemComparator;
-
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import jakarta.ejb.EJB;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.model.ListDataModel;
 import jakarta.faces.model.SelectItem;
 import jakarta.inject.Named;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.log4j.Logger;
+import org.bouncycastle.jce.X509KeyUsage;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.AuthorizationSessionLocal;
+import org.cesecore.authorization.control.CryptoTokenRules;
+import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.ca.CAConstants;
+import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.keys.token.CryptoTokenInfo;
+import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
+import org.ejbca.config.ScepConfiguration;
+import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.protocol.scep.ScepRaCertificateIssuer;
+import org.ejbca.core.protocol.scep.ScepEncryptionCertificateIssuanceException;
+import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.util.SelectItemComparator;
+
+import java.io.Serializable;
+import java.security.KeyStoreException;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * JavaServer Faces Managed Bean for managing SCEP configuration.
@@ -54,7 +72,25 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
 
     private static final String HIDDEN_PWD = "**********";
 
-    public class ScepAliasGuiInfo {
+    /**
+     * Keep track of which token/key generated the encryption certificate, so if it changes
+     * in the GUI we know to create a new one on save.
+     */
+    public static class ScepRaCertificate implements Serializable {
+        private static final long serialVersionUID = 1L;
+
+        public ScepRaCertificate(Integer tokenId, String keyAlias, String pemEncodedCertificate) {
+            this.tokenId = tokenId;
+            this.keyAlias = keyAlias;
+            this.pemEncodedCertificate = pemEncodedCertificate;
+        }
+        private Integer tokenId;
+        private String keyAlias;
+        private String pemEncodedCertificate;
+    };
+
+    public class ScepAliasGuiInfo implements Serializable {
+        private static final long serialVersionUID = 1L;
         private String alias;
         private String mode;
         private boolean includeCA;
@@ -85,6 +121,14 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         private String intuneProxyPort;
         private String intuneProxyUser;
         private String intuneProxyPass;
+        private Boolean useRaKeys = false;
+        private Integer encryptionCryptoTokenId;
+        private String encryptionKeyAlias;
+        private ScepRaCertificate encryptionCertificate;
+        private String signingAlgorithm;
+        private Integer signingCryptoTokenId;
+        private String signingKeyAlias;
+        private ScepRaCertificate signingCertificate;
 
         public ScepAliasGuiInfo(final String alias) {
             this.alias = alias;
@@ -117,6 +161,27 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             this.intuneProxyPort = scepConfig.getIntuneProxyPort(alias);
             this.intuneProxyUser = scepConfig.getIntuneProxyUser(alias);
             this.intuneProxyPass = ScepConfigMBean.HIDDEN_PWD;
+            
+            this.encryptionKeyAlias = scepConfig.getEncryptionKeyAlias(alias);
+            this.encryptionCryptoTokenId = scepConfig.getEncryptionCryptoTokenId(alias);
+            String pemEncryptionCertificate = scepConfig.getEncryptionCertificate(alias);
+            if (pemEncryptionCertificate == null) {
+                this.encryptionCertificate = null;
+            } else {
+                this.encryptionCertificate = new ScepRaCertificate(this.encryptionCryptoTokenId, this.encryptionKeyAlias, pemEncryptionCertificate);
+            }
+            this.signingAlgorithm = scepConfig.getSigningAlgorithm(alias);
+            this.signingKeyAlias = scepConfig.getSigningKeyAlias(alias);
+            this.signingCryptoTokenId = scepConfig.getSigningCryptoTokenId(alias);
+            String pemSigningCertificate = scepConfig.getSigningCertificate(alias);
+            if (pemEncryptionCertificate == null) {
+                this.signingCertificate = null;
+            } else {
+                this.signingCertificate = new ScepRaCertificate(signingCryptoTokenId, signingKeyAlias, pemSigningCertificate);
+            }
+            
+            // one should be enough, but lets be paranoid
+            this.useRaKeys = encryptionCryptoTokenId != null && encryptionKeyAlias != null && signingCryptoTokenId != null && signingKeyAlias != null;
         }
 
         public ScepAliasGuiInfo() {
@@ -150,6 +215,14 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             this.intuneProxyPort = "";
             this.intuneProxyUser = "";
             this.intuneProxyPass = "";
+            this.useRaKeys = false;
+            this.encryptionCryptoTokenId = null;
+            this.encryptionKeyAlias = null;
+            this.encryptionCertificate = null;
+            this.signingAlgorithm = ScepConfiguration.DEFAULT_SIGNING_ALGORITHM;
+            this.signingCryptoTokenId = null;
+            this.signingKeyAlias = null;
+            this.signingCertificate = null;
         }
 
         public String getAlias() {
@@ -407,7 +480,185 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         public void setRootFirst(boolean rootFirst) {
             this.rootFirst = rootFirst;
         }
+
+        public Integer getEncryptionCryptoTokenId() {
+            return encryptionCryptoTokenId;
+        }
+
+        public void setEncryptionCryptoTokenId(Integer cryptotokenId) {
+            this.encryptionCryptoTokenId = cryptotokenId;
+            if (cryptotokenId == null) {
+                encryptionKeyAlias = null;
+            } else {
+                // token has changed - choose the first 
+                var availableKeyAliases = getAvailableKeyAliases(encryptionCryptoTokenId, REQUIRED_ENCRYPTION_KEY_USAGES, "RSA");
+                if (availableKeyAliases.size() > 0) {
+                    encryptionKeyAlias = availableKeyAliases.get(0);
+                } else {
+                    encryptionKeyAlias = null;
+                }
+            }
+        }
+
+        public String getEncryptionKeyAlias() {
+            return encryptionKeyAlias;
+        }
+
+        public void setEncryptionKeyAlias(String encryptionKeyAlias) {
+            this.encryptionKeyAlias = encryptionKeyAlias;
+        }
+
+        public ScepRaCertificate getEncryptionCertificate() {
+            return encryptionCertificate;
+        }
+
+        public ScepRaCertificate getSigningCertificate() {
+            return signingCertificate;
+        }
+
+
+        public void setEncryptionCertificate(ScepRaCertificate encryptionCertificate) {
+            this.encryptionCertificate = encryptionCertificate;
+        }
+
+        /**
+         * is this scep profile using a separate encryption key and no certificate has been issued for it?
+         */
+        public boolean encryptionCertificateMustBeGenerated() {
+            if (!getUseRaKeys()) {
+                return false;
+            }
+            
+            return (encryptionCryptoTokenId != null && encryptionKeyAlias != null
+                    && (encryptionCertificate == null || encryptionCertificate.pemEncodedCertificate == null
+                            || !encryptionCertificate.tokenId.equals(encryptionCryptoTokenId) || !encryptionCertificate.keyAlias.equals(encryptionKeyAlias)));
+        }
+
+        /**
+         * is this scep profile using a separate encryption key and no certificate has been issued for it?
+         */
+        public boolean signingCertificateMustBeGenerated() {
+            if (!getUseRaKeys()) {
+                return false;
+            }
+
+            return (signingCryptoTokenId != null && signingKeyAlias != null
+                    && (signingCertificate == null || signingCertificate.pemEncodedCertificate == null
+                            || !signingCertificate.tokenId.equals(signingCryptoTokenId) || !signingCertificate.keyAlias.equals(signingKeyAlias)));
+        }
+
+
+        public void setEncryptionCertificate(Integer cryptoToken, String encryptionKeyAlias, X509Certificate encryptionCertificate) {
+            String pemEncodedCertificate;
+            try {
+                pemEncodedCertificate = CertTools.getPemFromCertificate(encryptionCertificate);
+            } catch (CertificateEncodingException e) {
+                // this should never happen
+                log.error("Unexpected certificate encoding exception", e);
+                throw new RuntimeException("Can never happen exception", e);
+            }
+
+            this.encryptionCertificate = new ScepRaCertificate(cryptoToken, encryptionKeyAlias, pemEncodedCertificate);
+        }
+
+        public void setSigningCertificate(Integer cryptoToken, String signingKeyAlias, X509Certificate signingCertificate) {
+            String pemEncodedCertificate;
+            try {
+                pemEncodedCertificate = CertTools.getPemFromCertificate(signingCertificate);
+            } catch (CertificateEncodingException e) {
+                // this should never happen
+                log.error("Unexpected certificate encoding exception", e);
+                throw new RuntimeException("Can never happen exception", e);
+            }
+
+            this.signingCertificate = new ScepRaCertificate(cryptoToken, signingKeyAlias, pemEncodedCertificate);
+        }
+
+        public Boolean getUseRaKeys() {
+            return useRaKeys;
+        }
+
+        public void setUseRaKeys(Boolean useRaKeys) {
+            this.useRaKeys = useRaKeys;
+            
+            if (!useRaKeys) {
+                encryptionCryptoTokenId = null;
+                encryptionKeyAlias = null;
+                signingAlgorithm = null;
+                signingCryptoTokenId = null;
+                signingKeyAlias = null;
+            } else {
+                signingAlgorithm = ScepConfiguration.DEFAULT_SIGNING_ALGORITHM;
+                // pick the first entries as defaults
+                if (encryptionCryptoTokenId == null) {
+                    ArrayList<Pair<Integer,String>> availableTokens = getAvailableTokens();
+                    if (availableTokens.size() > 0) {
+                        encryptionCryptoTokenId = availableTokens.get(0).getKey();
+                        var availableKeyAliases = getAvailableKeyAliases(encryptionCryptoTokenId, REQUIRED_ENCRYPTION_KEY_USAGES, "RSA");
+                        if (availableKeyAliases.size() > 0) {
+                            encryptionKeyAlias = availableKeyAliases.get(0);
+                        }
+                    }
+                }
+    
+                // pick the first entries as defaults
+                if (signingCryptoTokenId == null) {
+                    ArrayList<Pair<Integer,String>> availableTokens = getAvailableTokens();
+                    if (availableTokens.size() > 0) {
+                        signingCryptoTokenId = availableTokens.get(0).getKey();
+                        var availableKeyAliases = getAvailableKeyAliases(signingCryptoTokenId, REQUIRED_SIGNING_KEY_USAGES,
+                                AlgorithmTools.getKeyAlgorithmFromSigAlg(signingAlgorithm));
+                        if (availableKeyAliases.size() > 0) {
+                            signingKeyAlias = availableKeyAliases.get(0);
+                        }
+                    }
+                }
+            }
+        }
+
+        public String getSigningAlgorithm() {
+            return signingAlgorithm;
+        }
+
+        public void setSigningAlgorithm(final String sigalg) {
+            this.signingAlgorithm = sigalg;
+        }
+
+        public String getSigningKeyAlias() {
+            return signingKeyAlias;
+        }
+
+        public void setSigningKeyAlias(String signingKeyAlias) {
+            this.signingKeyAlias = signingKeyAlias;
+        }
+
+        public Integer getSigningCryptoTokenId() {
+            return signingCryptoTokenId;
+        }
+
+        public void setSigningCryptoTokenId(Integer signingCryptoTokenId) {
+            this.signingCryptoTokenId = signingCryptoTokenId;
+            if (signingCryptoTokenId == null) {
+                signingKeyAlias = null;
+            } else {
+                // token has changed, so the old alias may no longer be valid
+                var availableKeyAliases = getAvailableKeyAliases(signingCryptoTokenId, REQUIRED_SIGNING_KEY_USAGES,
+                        AlgorithmTools.getKeyAlgorithmFromSigAlg(signingAlgorithm));
+                if (availableKeyAliases.size() > 0) {
+                    signingKeyAlias = availableKeyAliases.get(0);
+                } else {
+                    signingKeyAlias = null;
+                }
+            }
+        }
     }
+
+    @EJB
+    private EndEntityManagementSessionLocal endEntityManagementSession;
+    @EJB
+    private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
+    @EJB
+    private CertificateCreateSessionLocal certificateCreateSession;
 
     private static final long serialVersionUID = 2L;
     private static final Logger log = Logger.getLogger(ScepConfigMBean.class);
@@ -564,11 +815,66 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             }
 
             try {
+                // if we're using RA keys, make sure all key and tokens have selections, and issue any needed certificates
+                if (!currentAlias.useRaKeys) {
+                    scepConfig.setEncryptionCertificate(alias, null);
+                    scepConfig.setEncryptionCryptoTokenId(alias, null);
+                    scepConfig.setEncryptionKeyAlias(alias, null);
+                    scepConfig.setSigningAlgorithm(alias, null);
+                    scepConfig.setSigningCertificate(alias, null);
+                    scepConfig.setSigningCryptoTokenId(alias, null);
+                    scepConfig.setSigningKeyAlias(alias, null);
+                } else {
+                    if (currentAlias.encryptionCryptoTokenId == null || currentAlias.encryptionKeyAlias == null
+                            || currentAlias.signingCryptoTokenId == null || currentAlias.signingKeyAlias == null
+                            || currentAlias.signingAlgorithm == null) {
+                        log.debug("User attempted to save SCEP configuration using RA keys without choosing keys");
+                        addErrorMessage("SELECTRAKEYS");
+                        return null;
+                    }
+                    
+                    // if a new encryption/signing certificates need to be issued for this SCEP profile, issue them and set them in the config
+                    var issuer = new ScepRaCertificateIssuer(cryptoTokenManagementSession, caSession, endEntityManagementSession,
+                            certificateCreateSession);
+                    if (currentAlias.encryptionCertificateMustBeGenerated()) {
+                        var certificate = issuer.issueEncryptionCertificate(authenticationToken, currentAlias.getRaDefaultCA(),
+                                currentAlias.encryptionCryptoTokenId, currentAlias.encryptionKeyAlias);
+                        currentAlias.setEncryptionCertificate(currentAlias.encryptionCryptoTokenId, currentAlias.encryptionKeyAlias, certificate);
+                    }
+                    if (currentAlias.signingCertificateMustBeGenerated()) {
+                        var certificate = issuer.issueSigningCertificate(authenticationToken, currentAlias.getRaDefaultCA(),
+                                currentAlias.signingCryptoTokenId, currentAlias.signingKeyAlias);
+                        currentAlias.setSigningCertificate(currentAlias.signingCryptoTokenId, currentAlias.signingKeyAlias, certificate);
+                    }
+                    
+                    // save SCEP RA certificate settings
+                    scepConfig.setEncryptionCryptoTokenId(alias, currentAlias.encryptionCryptoTokenId);
+                    scepConfig.setEncryptionKeyAlias(alias, currentAlias.encryptionKeyAlias);
+                    if (currentAlias.encryptionCryptoTokenId == null || currentAlias.encryptionCertificate == null) {
+                        scepConfig.setEncryptionCertificate(alias, null);
+                    } else {
+                        scepConfig.setEncryptionCertificate(alias, currentAlias.encryptionCertificate.pemEncodedCertificate);
+                    }
+                    scepConfig.setSigningAlgorithm(alias, currentAlias.signingAlgorithm);
+                    scepConfig.setSigningCryptoTokenId(alias, currentAlias.signingCryptoTokenId);
+                    scepConfig.setSigningKeyAlias(alias, currentAlias.signingKeyAlias);
+                    if (currentAlias.signingCryptoTokenId == null || currentAlias.signingCertificate == null) {
+                        scepConfig.setSigningCertificate(alias, null);
+                    } else {
+                        scepConfig.setSigningCertificate(alias, currentAlias.signingCertificate.pemEncodedCertificate);
+                    }
+                }
+
                 globalConfigSession.saveConfiguration(authenticationToken, scepConfig);
             } catch (AuthorizationDeniedException e) {
                 String msg = "Cannot save alias. Administrator is not authorized.";
                 log.info(msg + e.getLocalizedMessage());
                 super.addNonTranslatedErrorMessage(msg);
+            } catch (ScepEncryptionCertificateIssuanceException e) {
+                String msg = "Cannot save alias. Unable to issue an RA certificate.";
+                log.info(msg + e.getLocalizedMessage(), e);
+                addErrorMessage("CANTISSUERACERT", e.getLocalizedMessage());
+                return null;
             }
         }
         flushCache();
@@ -764,6 +1070,95 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
 
     public boolean isExistsClientCertificateRenewalExtension() {
         return editionEjbBridgeSession.isRunningEnterprise();
+    }
+
+    public List<String> getAvailableSigningAlgorithms() {
+        // Return all algorithms except the SHA1 ones (otherwise SHA1WithRSA would come first, and serve as a very bad default option)
+        return new ArrayList<>(Arrays.asList(AlgorithmConstants.AVAILABLE_SIGALGS).stream().filter(
+                sigalg -> !sigalg.startsWith(AlgorithmConstants.HASHALGORITHM_SHA1)).toList());
+    }
+
+    private ArrayList<Pair<Integer, String>> getAvailableTokens() {
+        final ArrayList<Pair<Integer, String>> availableCryptoTokens = new ArrayList<>();
+        for (CryptoTokenInfo current : cryptoTokenManagementSession.getCryptoTokenInfos(authenticationToken)) {
+            if (current.isActive()
+                    && authorizationSession.isAuthorizedNoLogging(authenticationToken,
+                            CryptoTokenRules.USE.resource() + "/" + current.getCryptoTokenId())) {
+                availableCryptoTokens.add(Pair.of(current.getCryptoTokenId(), current.getName()));
+            }
+        }
+        availableCryptoTokens.sort((o1, o2) -> o1.getRight().compareToIgnoreCase(o2.getRight()));
+        return availableCryptoTokens;
+    }
+
+    /**
+     * Find all key aliases on tokenId that match the required usages and algorithm
+     * 
+     * @param tokenId token to search
+     * @param requiredUsages only keys with all these usages will be returned
+     * @param requiredAlgorithm only keys matching this algorithm will be returned.  May be null.
+     * @return List of matching key aliases
+     */
+    private ArrayList<String> getAvailableKeyAliases(Integer tokenId, Set<Long> requiredUsages, String requiredAlgorithm) {
+        final var availableKeys = new ArrayList<String>();
+        try {
+            CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(tokenId);
+            for (String alias : cryptoToken.getAliases()) {
+                // algorithm is required and differs
+                if (requiredAlgorithm != null && !cryptoToken.getPublicKey(alias).getAlgorithm().equals(requiredAlgorithm)) {
+                    continue;
+                }
+
+                Set<Long> keyUsages = cryptoToken.getKeyUsagesFromPublicKey(alias);
+                if (keyUsages == null || keyUsages.isEmpty() || keyUsages.containsAll(requiredUsages)) {
+                    availableKeys.add(alias);
+                }
+            }
+            availableKeys.sort(String::compareTo);
+            return availableKeys;
+        } catch (KeyStoreException | CryptoTokenOfflineException e) {
+            log.error("Crypto token " + currentAlias.signingCryptoTokenId + " off line");
+            return new ArrayList<>();
+        }
+    }
+
+    public List<SelectItem> getAvailableEncryptionCryptoTokens() {
+        return getAvailableTokens().stream().map(t -> new SelectItem(t.getKey(), t.getValue())).collect(Collectors.toList());
+    }
+
+    public List<SelectItem> getAvailableSigningCryptoTokens() {
+        return getAvailableTokens().stream().map(t -> new SelectItem(t.getKey(), t.getValue())).collect(Collectors.toList());
+    }
+
+    static final Set<Long> REQUIRED_SIGNING_KEY_USAGES = Set.of((long) X509KeyUsage.digitalSignature);
+    static final Set<Long> REQUIRED_ENCRYPTION_KEY_USAGES = Set.of((long) X509KeyUsage.keyEncipherment);
+    
+    public List<SelectItem> getAvailableSigningKeys() {
+        if (currentAlias == null || currentAlias.signingCryptoTokenId == null || currentAlias.signingAlgorithm == null) {
+            return new ArrayList<>();
+        }
+        return getAvailableKeyAliases(currentAlias.signingCryptoTokenId, REQUIRED_SIGNING_KEY_USAGES, AlgorithmTools.getKeyAlgorithmFromSigAlg(currentAlias.signingAlgorithm)).stream().map(a -> new SelectItem(a)).toList();
+    }
+
+    public List<SelectItem> getAvailableEncryptionKeys() {
+        if (currentAlias == null || currentAlias.encryptionCryptoTokenId == null) {
+            return new ArrayList<>();
+        }
+        return getAvailableKeyAliases(currentAlias.encryptionCryptoTokenId, REQUIRED_ENCRYPTION_KEY_USAGES, "RSA").stream().map(a -> new SelectItem(a)).toList();
+    }
+
+    public String getCurrentAliasEncryptionCryptoTokenName() {
+        if (currentAlias == null || currentAlias.encryptionCryptoTokenId == null) {
+            return "";
+        }
+        return cryptoTokenManagementSession.getCryptoTokenInfo(currentAlias.encryptionCryptoTokenId).getName();
+    }
+
+    public String getCurrentAliasSigningCryptoTokenName() {
+        if (currentAlias == null || currentAlias.signingCryptoTokenId == null) {
+            return "";
+        }
+        return cryptoTokenManagementSession.getCryptoTokenInfo(currentAlias.signingCryptoTokenId).getName();
     }
 
 }

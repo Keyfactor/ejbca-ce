@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.configuration;
 
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -20,6 +21,7 @@ import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import jakarta.persistence.PersistenceContext;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -46,6 +48,11 @@ public class GlobalConfigurationProxySessionBean implements GlobalConfigurationP
     }
 
     @Override
+    public ConfigurationBase getCachedConfigurationAndLockWrites(String configID) {
+        return globalConfigurationSession.getCachedConfigurationAndLockWrites(configID);
+    }
+
+    @Override
     public void flushConfigurationCache(String configID) {
         globalConfigurationSession.flushConfigurationCache(configID);
     }
@@ -68,6 +75,11 @@ public class GlobalConfigurationProxySessionBean implements GlobalConfigurationP
     @Override
     public GlobalConfigurationData findByConfigurationId(String configurationId) {
         return globalConfigurationSession.findByConfigurationId(configurationId);
+    }
+
+    @Override
+    public GlobalConfigurationData findByConfigurationId(String configurationId, LockModeType lockModeType, Map<String, Object> dbHints) {
+        return globalConfigurationSession.findByConfigurationId(configurationId, lockModeType, dbHints);
     }
 
     @Override

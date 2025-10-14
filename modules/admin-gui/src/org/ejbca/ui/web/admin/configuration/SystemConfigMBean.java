@@ -100,6 +100,7 @@ import org.ejbca.core.model.services.actions.NoAction;
 import org.ejbca.core.model.services.intervals.PeriodicalInterval;
 import org.ejbca.core.model.services.workers.PreCertificateMaintenanceWorkerConstants;
 import org.ejbca.core.model.util.EjbLocalHelper;
+import org.ejbca.core.protocol.scep.ScepKeyRenewalSessionLocal;
 import org.ejbca.statedump.ejb.StatedumpImportOptions;
 import org.ejbca.statedump.ejb.StatedumpImportResult;
 import org.ejbca.statedump.ejb.StatedumpObjectKey;
@@ -410,6 +411,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private final StatedumpSessionLocal statedumpSession = new EjbLocalHelper().getStatedumpSession();
     private final RoleDataSessionLocal roleSession = getEjbcaWebBean().getEjb().getRoleDataSession();
     private final OcspResponseCleanupSessionLocal ocspCleanupSession = getEjbcaWebBean().getEjb().getOcspResponseCleanupSession();
+    private final ScepKeyRenewalSessionLocal scepKeyRenewalSession = getEjbcaWebBean().getEjb().getScepKeyRenewalSession();
     private final InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession = getEjbcaWebBean().getEjb().getInternalKeyBindingMgmtSession();
     private final ServiceSessionLocal serviceSession = new EjbLocalHelper().getServiceSession();
 
@@ -1098,6 +1100,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
                 // Restart OCSP cleanup job timers
                 ocspCleanupSession.restart();
+                scepKeyRenewalSession.restart();
 
                 globalCesecoreConfiguration.setMaximumQueryCount(currentConfig.getMaximumQueryCount());
                 globalCesecoreConfiguration.setMaximumQueryTimeout(currentConfig.getMaximumQueryTimeout());
@@ -1365,6 +1368,11 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         } else {
             availableProtocolsConfiguration.setProtocolStatus(protocolToToggle.getProtocol(), true);
         }
+
+        if (AvailableProtocols.SCEP.getName().equals(protocolToToggle.getProtocol())) {
+            scepKeyRenewalSession.restart();
+        }
+
         // Save config
         try {
             getEjbcaWebBean().getEjb().getGlobalConfigurationSession().saveConfiguration(getAdmin(), availableProtocolsConfiguration);

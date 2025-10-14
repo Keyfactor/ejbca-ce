@@ -43,6 +43,7 @@ import java.util.Set;
 
 import jakarta.ejb.CreateException;
 
+import jakarta.persistence.LockModeType;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
@@ -368,7 +369,12 @@ public class WebAuthenticationProviderSessionBeanSystemTest {
                 globalUpgradeConfiguration.setPostUpgradedToVersion(version);
                 return globalUpgradeConfiguration;
             }
-            
+
+            @Override
+            public ConfigurationBase getCachedConfigurationAndLockWrites(String configID) {
+                return null;
+            }
+
             @Override
             public void saveConfigurationWithRootAccessCheck(AuthenticationToken authenticationToken, ConfigurationBase conf)
                     throws AuthorizationDeniedException {
@@ -395,6 +401,12 @@ public class WebAuthenticationProviderSessionBeanSystemTest {
             
             @Override
             public GlobalConfigurationData findByConfigurationId(String configurationId) {
+                return null;
+            }
+
+            @Override
+            public GlobalConfigurationData findByConfigurationId(String configurationId, LockModeType lockModeType,
+                    Map<String, Object> dbHints) {
                 return null;
             }
 

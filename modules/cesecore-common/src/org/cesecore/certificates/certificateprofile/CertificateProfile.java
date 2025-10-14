@@ -76,6 +76,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public static final String ENDUSERPROFILENAME = "ENDUSER";
     public static final String OCSPSIGNERPROFILENAME = "OCSPSIGNER";
     public static final String SERVERPROFILENAME = "SERVER";
+    public static final String SCEPENCRYPTORPROFILENAME = "SCEPENCRYPTOR";
+    public static final String SCEPSIGNERPROFILENAME = "SCEPSIGNER";
     public static final String SSHPROFILENAME = "SSH";
     public static final String ITSPROFILENAME = "ITS";
 
@@ -87,6 +89,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         FIXED_PROFILENAMES.add(OCSPSIGNERPROFILENAME);
         FIXED_PROFILENAMES.add(SERVERPROFILENAME);
         FIXED_PROFILENAMES.add(SSHPROFILENAME);
+        FIXED_PROFILENAMES.add(SCEPENCRYPTORPROFILENAME);
+        FIXED_PROFILENAMES.add(SCEPSIGNERPROFILENAME);
         FIXED_PROFILENAMES.add(ITSPROFILENAME);
     }
 
@@ -154,6 +158,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public static final String DEFAULT_CERTIFICATE_VALIDITY = "2y";
     /** Constant for default validity for fixed profiles is 25 years including 6 or 7 leap days. */
     public static final String DEFAULT_CERTIFICATE_VALIDITY_FOR_FIXED_CA = "25y7d";
+    /** SCEP encryption and signing certs have short validity - 30 days */
+    public static final String DEFAULT_CERTIFICATE_VALIDITY_FOR_FIXED_SCEP_RA = "30d";
     /** Constant for default validity offset (for backward compatibility': -10m'!) */
     public static final String DEFAULT_CERTIFICATE_VALIDITY_OFFSET = "-10m";
     public static final long DEFAULT_PRIVATE_KEY_USAGE_PERIOD_OFFSET = 0;
@@ -635,6 +641,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             setUseOcspNoCheck(true);
         } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_SERVER) {
             setType(CertificateConstants.CERTTYPE_ENDENTITY);
+        } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_ENCRYPTOR) {
+            setType(CertificateConstants.CERTTYPE_ENDENTITY);
+        } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_SIGNER) {
+            setType(CertificateConstants.CERTTYPE_ENDENTITY);
         }
     }
 
@@ -647,6 +657,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public void setDefaultEncodedValidity(final int type) {
         if (type == CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA || type == CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA) {
             setEncodedValidity(DEFAULT_CERTIFICATE_VALIDITY_FOR_FIXED_CA);
+        } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_ENCRYPTOR || type == CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_SIGNER) {
+            setEncodedValidity(DEFAULT_CERTIFICATE_VALIDITY_FOR_FIXED_SCEP_RA);
         } else {
             setEncodedValidity(DEFAULT_CERTIFICATE_VALIDITY);
         }
@@ -723,6 +735,17 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             setKeyUsage(new boolean[9]);
             setKeyUsage(CertificateConstants.DIGITALSIGNATURE, true);
             setKeyUsage(CertificateConstants.KEYENCIPHERMENT, true);
+            setKeyUsageCritical(true);
+        } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_ENCRYPTOR) {
+            setUseKeyUsage(true);
+            setKeyUsage(new boolean[9]);
+            setKeyUsage(CertificateConstants.DATAENCIPHERMENT, true);
+            setKeyUsage(CertificateConstants.KEYENCIPHERMENT, true);
+            setKeyUsageCritical(true);
+        } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_SIGNER) {
+            setUseKeyUsage(true);
+            setKeyUsage(new boolean[9]);
+            setKeyUsage(CertificateConstants.DIGITALSIGNATURE, true);
             setKeyUsageCritical(true);
         }
     }

@@ -25,18 +25,18 @@ import org.cesecore.config.CesecoreConfiguration;
 /**
  * Class Holding cache variable. Needed because EJB spec does not allow volatile, non-final fields
  * in session beans.
- * 
+ *
  * This cache is designed so only one thread at the time will update the cache if it is too old. Other
  * threads will happily return a bit too old object. If a cache update is forced, for example when
  * a profile is edited, it will always update the cache even if the commit of the transaction fails.
- * 
+ *
  * Another known issue during forced updates is the race condition exists, so an update in progress
  * might overwrite the result from forced update's database query.
- * 
+ *
  * The intention of this design is better throughput than fully ordered sequential updates.
- * 
+ *
  * Probably based on EJBCA's org.ejbca.core.ejb.ca.store.CertificateProfileCache r11155
- * 
+ *
  * @version $Id$
  */
 public enum CertificateProfileCache {
@@ -71,16 +71,20 @@ public enum CertificateProfileCache {
         idNameMapCacheTemplate.put(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA), CertificateProfile.ROOTCAPROFILENAME);
         idNameMapCacheTemplate.put(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER), CertificateProfile.OCSPSIGNERPROFILENAME);
         idNameMapCacheTemplate.put(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_SERVER), CertificateProfile.SERVERPROFILENAME);
+        idNameMapCacheTemplate.put(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_ENCRYPTOR), CertificateProfile.SCEPSIGNERPROFILENAME);
+        idNameMapCacheTemplate.put(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_SIGNER), CertificateProfile.SCEPENCRYPTORPROFILENAME);
         nameIdMapCacheTemplate.put(CertificateProfile.ENDUSERPROFILENAME, Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER));
         nameIdMapCacheTemplate.put(CertificateProfile.SUBCAPROFILENAME, Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA));
         nameIdMapCacheTemplate.put(CertificateProfile.ROOTCAPROFILENAME, Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA));
         nameIdMapCacheTemplate.put(CertificateProfile.OCSPSIGNERPROFILENAME, Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER));
         nameIdMapCacheTemplate.put(CertificateProfile.SERVERPROFILENAME, Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_SERVER));
+        nameIdMapCacheTemplate.put(CertificateProfile.SCEPENCRYPTORPROFILENAME, Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_ENCRYPTOR));
+        nameIdMapCacheTemplate.put(CertificateProfile.SCEPSIGNERPROFILENAME, Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_SIGNER));
     }
 
     /**
      * Fetch all profiles from the database, unless cache is enabled, valid and we do not force an update.
-     * 
+     *
      * @param entityManager is required for reading the profiles from the database if we need to update the cache
      * @param force if true, this will force an update even if the cache is not yet invalid
      */

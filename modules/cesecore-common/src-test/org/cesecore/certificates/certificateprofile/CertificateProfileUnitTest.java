@@ -903,12 +903,16 @@ public class CertificateProfileUnitTest {
         final CertificateProfile cpEndUser = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         final CertificateProfile ocspSigner = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER);
         final CertificateProfile server = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_SERVER);
+        final CertificateProfile scepEncryption = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_ENCRYPTOR);
+        final CertificateProfile scepSigner = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_SIGNER);
 
         assertEquals(CertificateProfile.DEFAULT_CERTIFICATE_VALIDITY_FOR_FIXED_CA, cpRootCa.getEncodedValidity());
         assertEquals(CertificateProfile.DEFAULT_CERTIFICATE_VALIDITY_FOR_FIXED_CA, cpSubCa.getEncodedValidity());
         assertEquals(CertificateProfile.DEFAULT_CERTIFICATE_VALIDITY, cpEndUser.getEncodedValidity());
         assertEquals(CertificateProfile.DEFAULT_CERTIFICATE_VALIDITY, ocspSigner.getEncodedValidity());
         assertEquals(CertificateProfile.DEFAULT_CERTIFICATE_VALIDITY, server.getEncodedValidity());
+        assertEquals(CertificateProfile.DEFAULT_CERTIFICATE_VALIDITY_FOR_FIXED_SCEP_RA, scepEncryption.getEncodedValidity());
+        assertEquals(CertificateProfile.DEFAULT_CERTIFICATE_VALIDITY_FOR_FIXED_SCEP_RA, scepSigner.getEncodedValidity());
     }
 
     @Test

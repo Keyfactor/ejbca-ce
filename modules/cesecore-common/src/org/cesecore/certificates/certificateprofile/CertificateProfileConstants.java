@@ -46,6 +46,8 @@ public final class CertificateProfileConstants {
 	public static final int CERTPROFILE_FIXED_SSH             = 5;
     public static final int CERTPROFILE_FIXED_ITS             = 6;
 	public static final int CERTPROFILE_FIXED_SERVER          = 9;
+	public static final int CERTPROFILE_FIXED_SCEP_ENCRYPTOR  = 10;
+	public static final int CERTPROFILE_FIXED_SCEP_SIGNER     = 11;
 
     /**
      * Constants defining range of id's reserved for fixed certificate types. Observe fixed
@@ -61,6 +63,8 @@ public final class CertificateProfileConstants {
     			profileId == CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA ||
     			profileId == CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA ||
     			profileId == CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER ||
+    			profileId == CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_ENCRYPTOR ||
+    			profileId == CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_SIGNER ||
     			profileId == CertificateProfileConstants.CERTPROFILE_FIXED_SERVER;
     }
 
@@ -70,7 +74,7 @@ public final class CertificateProfileConstants {
      * @see org.ejbca.ui.web.pub.ApplyBean
      */
     public static final int[] DEFAULT_KEY_LENGTHS = new int[] {512, 1024, 2048};
-    
+
     /** QC ETSI Type OID: Electronic Signature */
     public static final String QC_ETSI_TYPE_ESIGN = "0.4.0.1862.1.6.1";
     /** QC ETSI Type OID: Electronic Seal */

@@ -12,10 +12,12 @@
  *************************************************************************/
 package org.cesecore.configuration;
 
+import java.util.Map;
 import java.util.Set;
 
 import jakarta.ejb.Local;
 
+import jakarta.persistence.LockModeType;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 
@@ -24,10 +26,15 @@ import org.cesecore.authorization.AuthorizationDeniedException;
  */
 @Local
 public interface GlobalConfigurationSessionLocal extends GlobalConfigurationSession {
-    
+
     /** @return the found entity instance or null if the entity does not exist */
     GlobalConfigurationData findByConfigurationId(String configurationId);
-    
+
+    /** @return the found entity instance or null if the entity does not exist,
+     * Allows specifying the lock type to prevent concurrent modifications to a same config  */
+    GlobalConfigurationData findByConfigurationId(String configurationId, LockModeType lockModeType, Map<String, Object> dbHints);
+
+
     /** @return all registered configuration IDs. */
     Set<String> getIds();
     
