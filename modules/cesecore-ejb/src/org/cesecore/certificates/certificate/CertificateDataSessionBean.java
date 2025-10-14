@@ -109,6 +109,21 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
         return query.getSingleResult();
     }
 
+    @Override
+    public CertificateData findLastExpiringActiveCertByUsername(final String username, final Date currentTime) {
+        final TypedQuery<CertificateData> query = entityManager.createQuery(
+                                    "SELECT a FROM CertificateData a WHERE a.username=:username AND a.status in (:status1, :status2) "
+                                    + " AND a.expireDate >= :currentTime "
+                                    + " ORDER BY a.expireDate DESC",
+                                    CertificateData.class);
+        query.setParameter("username", username);
+        query.setParameter("status1", CertificateConstants.CERT_ACTIVE);
+        query.setParameter("status2", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION);
+        query.setParameter("currentTime", currentTime.getTime());
+        query.setMaxResults(1);
+        return query.getSingleResult();
+    }
+
     /**
      * @return active certificates that match the specified types and subjectDN
      */

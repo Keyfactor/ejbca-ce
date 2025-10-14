@@ -1184,6 +1184,19 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         return ret;
     }
 
+    @Override
+    public CertificateData findLastExpiringActiveCertByUsername(final String username, final Date currentTime) {
+        if (log.isTraceEnabled()) {
+            log.trace(">findLastExpiryByUsername(),  username=" + username);
+        }
+        // This method on the data bean does the ordering in the database
+        CertificateData ret = certificateDataSession.findLastExpiringActiveCertByUsername(username, currentTime);
+        if (log.isTraceEnabled()) {
+            log.trace("<findLastExpiryByUsername(), username=" + username);
+        }
+        return ret;
+    }
+
     /** Fetch the actual certificate is stored in a separate table and filter out entries where we don't store base64CertData at all */
     private List<Certificate> getAsCertificateListWithoutNulls(List<CertificateData> certificateDatas) {
         final ArrayList<Certificate> ret = new ArrayList<>();

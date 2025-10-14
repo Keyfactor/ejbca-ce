@@ -187,7 +187,7 @@ public class RaRenewBean implements Serializable {
                     raLocaleBean.addMessageError("enroll_token_could_not_be_downloaded", name);
                 }
             } else {
-                log.debug("Admin client certificate renewal was requested, and is waiting for approval.");
+                log.debug("Admin client certificate renewal was requested, but either failed or is waiting for approval.");
             }
         }
         return "";

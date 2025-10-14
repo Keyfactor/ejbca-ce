@@ -308,6 +308,16 @@ public interface CertificateStoreSession {
     Collection<Certificate> findCertificatesByUsernameAndStatusAfterExpireDate(String username, int status, long afterExpireDate);
 
     /**
+     * Finds the certificate with the expiration date (notAfter) farthest in the future.
+     * Only active certificates are considered.
+     *
+     * @param username Username
+     * @param currentTime Current time, used to filter away expired certificates.
+     * @return Certificate or null if no active certificate is found.
+     */
+    CertificateData findLastExpiringActiveCertByUsername(String username, Date currentTime);
+
+    /**
      * Gets certificate info, which is basically all fields except the
      * certificate itself. Note: this method should not be used within a
      * transaction where the reading of this info might depend on something
