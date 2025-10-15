@@ -69,7 +69,7 @@ public class ConfigdumpSetting implements Serializable {
         GLOBALCESECORECONFIG("system-config", "GLOBALCESECORECONFIG"),
         OAUTH("oauth-configuration", "OAUTH"),
         CACONFIG("certification-authorities", "CA Configuration"),
-        GLOBALCONFIG("system-configuration", "GLOBALCONFIG");
+        GLOBALCONFIG("system-config", "GLOBALCONFIG");
         // Unimplemented:
         // ENDENTITY, SYSCONFIG, CMPCONFIG, PEERCONFIG
 
