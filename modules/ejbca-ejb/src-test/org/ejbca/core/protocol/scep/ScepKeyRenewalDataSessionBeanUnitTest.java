@@ -34,7 +34,6 @@ import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.expectLastCall;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
-import static org.ejbca.util.SimpleMock.inject;
 
 public class ScepKeyRenewalDataSessionBeanUnitTest {
 
@@ -157,6 +156,16 @@ public class ScepKeyRenewalDataSessionBeanUnitTest {
 
 		verify(globalConfigSessionMock, scepConfigurationMock, encryptCertificateMock, signingCertificateMock,
 				scepRaCertificateIssuerMock, encryptCertificateRenewedMock, signingCertificateRenewedMock);
+	}
+
+	private void inject(Object target, String fieldName, Object toInject) {
+		try {
+			java.lang.reflect.Field field = target.getClass().getDeclaredField(fieldName);
+			field.setAccessible(true);
+			field.set(target, toInject);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 }
