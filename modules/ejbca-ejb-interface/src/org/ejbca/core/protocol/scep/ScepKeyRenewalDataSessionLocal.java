@@ -13,7 +13,6 @@
 package org.ejbca.core.protocol.scep;
 
 import jakarta.ejb.Local;
-import jakarta.transaction.SystemException;
 
 @Local
 public interface ScepKeyRenewalDataSessionLocal extends ScepKeyRenewalDataSession {

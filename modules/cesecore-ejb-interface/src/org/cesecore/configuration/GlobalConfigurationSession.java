@@ -12,9 +12,9 @@
  *************************************************************************/
 package org.cesecore.configuration;
 
-import jakarta.persistence.LockModeType;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+
 import java.util.Properties;
 
 /** 
