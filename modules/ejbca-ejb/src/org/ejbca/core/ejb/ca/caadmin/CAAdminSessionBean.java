@@ -3750,6 +3750,28 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                         testedKeys.add(caTestKeyHashCode);
                     }
                 }
+                
+                // Check CRL - Code copied from AdminIndexMBean.java
+                boolean crlStatus = true;
+                final Date now = new Date();
+                // TODO GUI support for Partitioned CRLs (ECA-7961)
+                
+                final Date crlNextUpdate = crlStoreSession.getCrlExpireDate(cainfo.getLatestSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false);
+                if (crlNextUpdate != null && now.after(crlNextUpdate)) {
+                    crlStatus = false;
+                }
+                
+                final Date deltaCrlNextUpdate = crlStoreSession.getCrlExpireDate(cainfo.getLatestSubjectDN(), CertificateConstants.NO_CRL_PARTITION, true);
+                if (deltaCrlNextUpdate != null && now.after(deltaCrlNextUpdate)) {
+                    crlStatus = false;
+                }
+ 
+                // Provide error string if CRL expired
+                if (!crlStatus) {
+                    sb.append("\nCA: Error CRL is expired, CA Name : ").append(cainfo.getName());
+                    log.error("Error CRL is expired, CA Name : " + cainfo.getName());
+               }
+
             }
         }   
         return sb.toString();
