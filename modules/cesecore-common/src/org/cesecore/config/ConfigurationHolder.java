@@ -503,7 +503,6 @@ public final class ConfigurationHolder {
      * StringConfigurationCache:
      * - password.encryption.key
      * - password.encryption.count
-     * - forbidden.characters
      * 
      * CryptoProviderConfigurationCache:
      * - pkcs11.disableHashingSignMechanisms
@@ -528,9 +527,6 @@ public final class ConfigurationHolder {
                 } else {
                     log.warn("Failed to updated property password.encryption.count: Value is no positive integer: '" + value + "'.");
                 }
-            } else if ("forbidden.characters".equals(key) && value != null && !value.toCharArray().equals(StringConfigurationCache.INSTANCE.getForbiddenCharacters())) {
-                StringConfigurationCache.INSTANCE.setForbiddenCharacters(value.toCharArray());
-                updated.add(key);
             } else if ("pkcs11.disableHashingSignMechanisms".equals(key) && !Boolean.valueOf(value).equals(CryptoProviderConfigurationCache.INSTANCE.isP11disableHashingSignMechanisms())) {
                 CryptoProviderConfigurationCache.INSTANCE.setP11disableHashingSignMechanisms(Boolean.parseBoolean(value));
                 updated.add(key);
@@ -633,20 +629,6 @@ public final class ConfigurationHolder {
         }
 
         /**
-         * Stops this trigger. The associated {@code ReloadingController} is no more
-         * triggered. If this trigger is already stopped, this invocation has no
-         * effect.
-         */
-        public synchronized void stop()
-        {
-            if (isRunning())
-            {
-                triggerTask.cancel(false);
-                triggerTask = null;
-            }
-        }
-
-        /**
          * Returns a flag whether this trigger is currently active.
          *
          * @return a flag whether this trigger is running
@@ -655,41 +637,7 @@ public final class ConfigurationHolder {
         {
             return triggerTask != null;
         }
-
-        /**
-         * Shuts down this trigger and optionally shuts down the
-         * {@code ScheduledExecutorService} used by this object. This method should
-         * be called if this trigger is no more needed. It ensures that the trigger
-         * is stopped. If the parameter is <b>true</b>, the executor service is also
-         * shut down. This should be done if this trigger is the only user of this
-         * executor service.
-         *
-         * @param shutdownExecutor a flag whether the associated
-         *        {@code ScheduledExecutorService} is to be shut down
-         */
-        public void shutdown(final boolean shutdownExecutor)
-        {
-            stop();
-            if (shutdownExecutor)
-            {
-                if(log.isTraceEnabled()) {
-                    final String path = builder.getFileHandler().getFile().getAbsolutePath();
-                    log.trace("Shutdown executor service for external configuration '" + path + "'.");
-                }
-                getExecutorService().shutdown();
-            }
-        }
-
-        /**
-         * Shuts down this trigger and its {@code ScheduledExecutorService}. This is
-         * a shortcut for {@code shutdown(true)}.
-         *
-         * @see #shutdown(boolean)
-         */
-        public void shutdown() {
-            shutdown(true);
-        }
-
+        
         /**
          * Returns the {@code ScheduledExecutorService} used by this object.
          *

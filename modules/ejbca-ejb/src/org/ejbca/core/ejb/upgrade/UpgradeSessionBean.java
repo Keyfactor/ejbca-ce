@@ -463,6 +463,14 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 return false;
             }
         }
+        if (isLesserThan(oldVersion, "9.4.1")) {
+            try {
+                upgradeSession.migrateDatabase9_4_1();
+            } catch (UpgradeFailedException e) {
+                return false;
+            }
+        }
+           
         setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
     }
@@ -1609,6 +1617,27 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         migrateEEPLimitations940();
     }
 
+    @Override
+    public void migrateDatabase9_4_1() throws UpgradeFailedException {
+        migrateGlobalCesecoreConfiguration9_4_1();
+        
+    }
+    
+    private void migrateGlobalCesecoreConfiguration9_4_1() throws UpgradeFailedException {
+        log.info("Upgrade: Migrating values from properties files into GlobalCesecoreConfiguration.");
+        final String forbiddenCharacters = ConfigurationHolder.instance().getString("forbidden.characters");
+        GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+        globalCesecoreConfiguration.setForbiddenCharacters(forbiddenCharacters);
+        
+        try {
+            globalConfigurationSession.saveConfiguration(authenticationToken, globalCesecoreConfiguration);
+        } catch(AuthorizationDeniedException e) {
+            String msg = "Always allow token was denied authorisation to GlobalConfigurationData table.";
+            log.error(msg, e);
+            throw new UpgradeFailedException(msg, e);
+        }
+    }
+    
     @SuppressWarnings("deprecation")
     private void migrateEEPLimitations940() throws UpgradeFailedException {
         log.info("Upgrade: Migrating EEP Limitations data");

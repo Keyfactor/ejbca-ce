@@ -15,6 +15,8 @@ package org.cesecore.config;
 import java.io.Serializable;
 
 import org.cesecore.configuration.ConfigurationBase;
+
+import com.keyfactor.util.string.StringConfigurationCache;
 /**
  * Handles global CESeCore configuration values. 
  * 
@@ -27,6 +29,7 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase implements Se
     public static final long DEFAULT_QUERY_TIMEOUT = 10000L;
     public static final boolean DEFAULT_REDACT_PII_DATA_BY_DEFAULT = false;
     public static final boolean DEFAULT_REDACT_PII_DATA_ENFORCED = false;
+    private static final String DEFAULT_FORBIDDEN_CHARACTERS = "\n\r;!\u0000%`?$~";
     
     /** A fixed maximum value to ensure that max query count does not exceed sane values  */
     private static final int FIXED_MAXIMUM_QUERY_COUNT = 25_000;
@@ -38,6 +41,8 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase implements Se
     
     private static final String REDACT_PII_DATA_DEFAULT = "redact.pii.default";
     private static final String REDACT_PII_DATA_ENFORCED = "redact.pii.enforced";
+    
+    private static final String FORBIDDEN_CHARACTERS = "forbidden.characters";
     
     @Deprecated(since = "9.4.0")
     private static final String CT_CACHE_ENABLED_KEY = "ct_cache_enabled";
@@ -123,6 +128,18 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase implements Se
         data.put(MAXIMUM_QUERY_TIMEOUT_KEY, Math.max(maximumQueryTimeoutMs, 0L));
     }
     
+    public String getForbiddenCharacters() {
+        return (String) data.getOrDefault(FORBIDDEN_CHARACTERS, DEFAULT_FORBIDDEN_CHARACTERS);
+    }
+
+    /**
+     * 
+     * @param forbiddenCharacters a string containing all characters to be auto-escaped. Setting this to null will use the default value set in x509-common-utils
+     */
+    public void setForbiddenCharacters(final String forbiddenCharacters) {
+        data.put(FORBIDDEN_CHARACTERS, forbiddenCharacters);
+    }
+    
     @Deprecated(since = "9.4.0")
     public boolean getCtCacheEnabled() { return getBoolean(CT_CACHE_ENABLED_KEY, true); }
     @Deprecated(since = "9.4.0")
@@ -178,6 +195,11 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase implements Se
     @Deprecated(since = "9.4.0")
     public void setCtCacheFastFailBackoff(final long backoff) {
         data.put(CT_CACHE_FAST_FAIL_BACKOFF_KEY, backoff);
+    }
+    
+    @Override
+    public void updateExternalCaches() {
+        StringConfigurationCache.INSTANCE.setForbiddenCharacters( getForbiddenCharacters() != null ? getForbiddenCharacters().toCharArray() : null);
     }
     
 }

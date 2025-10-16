@@ -98,6 +98,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
                     log.debug("Reading Configuration: " + configID);
                 }
                 final GlobalConfigurationData globalConfigurationData = findByConfigurationId(configID);
+               
                 if (globalConfigurationData == null) {
                     if (log.isDebugEnabled()) {
                         log.debug("No default GlobalConfiguration exists. Creating a new one.");
@@ -107,6 +108,8 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
                 } else {
                     result = GlobalConfigurationCacheHolder.INSTANCE.getConfiguration(globalConfigurationData.getData(), configID);
                 }
+                //Perform lazy updates into any external caches 
+                result.updateExternalCaches();
                 // Always cache result
                 GlobalConfigurationCacheHolder.INSTANCE.updateConfiguration(result, configID);
             }
@@ -183,6 +186,9 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
                         authenticationToken.toString(), null, null, null, details);
             }
         }
+        //Perform updates into any external caches 
+        conf.updateExternalCaches();
+        
         if (log.isTraceEnabled()) {
             log.trace("<saveGlobalConfiguration()");
         }

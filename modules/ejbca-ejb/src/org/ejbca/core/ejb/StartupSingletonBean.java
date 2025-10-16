@@ -219,13 +219,11 @@ public class StartupSingletonBean {
         CryptoProviderTools.removeBCProvider();
         CryptoProviderTools.installBCProvider();
 
+        GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+        
         // Register forbidden characters
-        // Using 'instance().getString' instead of 'getString' since an empty String (size 0) must be returned when the property is defined without any value.
-        final String forbiddenCharacters = ConfigurationHolder.instance().getString("forbidden.characters");
-        if (forbiddenCharacters != null) {
-            StringConfigurationCache.INSTANCE.setForbiddenCharacters(forbiddenCharacters.toCharArray());
-        }
-
+        StringConfigurationCache.INSTANCE.setForbiddenCharacters(globalCesecoreConfiguration.getForbiddenCharacters().toCharArray());
+        
         //Register password encryption count
         final String encryptionCount = ConfigurationHolder.getString("password.encryption.count");
         if (StringUtils.isNumeric(encryptionCount)) {
