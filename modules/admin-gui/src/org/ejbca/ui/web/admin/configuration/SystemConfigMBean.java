@@ -12,33 +12,21 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.configuration;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Serializable;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.security.MessageDigest;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
+import com.keyfactor.util.FileTools;
+import com.keyfactor.util.StreamSizeLimitExceededException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJB;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.event.ComponentSystemEvent;
+import jakarta.faces.model.ListDataModel;
+import jakarta.faces.model.SelectItem;
+import jakarta.inject.Named;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.Part;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -93,6 +81,7 @@ import org.ejbca.core.model.services.actions.NoAction;
 import org.ejbca.core.model.services.intervals.PeriodicalInterval;
 import org.ejbca.core.model.services.workers.PreCertificateMaintenanceWorkerConstants;
 import org.ejbca.core.model.util.EjbLocalHelper;
+import org.ejbca.core.protocol.scep.ScepKeyRenewalSessionLocal;
 import org.ejbca.statedump.ejb.StatedumpImportOptions;
 import org.ejbca.statedump.ejb.StatedumpImportResult;
 import org.ejbca.statedump.ejb.StatedumpObjectKey;
@@ -106,22 +95,32 @@ import org.primefaces.component.tabview.TabView;
 import org.primefaces.event.TabChangeEvent;
 import org.primefaces.model.file.UploadedFile;
 
-import com.keyfactor.util.FileTools;
-import com.keyfactor.util.StreamSizeLimitExceededException;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-
-import jakarta.annotation.PostConstruct;
-import jakarta.ejb.EJB;
-import jakarta.enterprise.context.SessionScoped;
-import jakarta.faces.application.FacesMessage;
-import jakarta.faces.component.UIComponent;
-import jakarta.faces.context.FacesContext;
-import jakarta.faces.event.ComponentSystemEvent;
-import jakarta.faces.model.ListDataModel;
-import jakarta.faces.model.SelectItem;
-import jakarta.inject.Named;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.Part;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 
 /**
@@ -157,10 +156,12 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private RoleDataSessionLocal roleSession;
     @EJB
     private ServiceSessionLocal serviceSession;
+    @EJB
+    private ScepKeyRenewalSessionLocal scepKeyRenewalSession;
 
-    //StatedumpSession is not available on CE, so using standard EJB injection fails.
+	//StatedumpSession is not available on CE, so using standard EJB injection fails.
     private transient final StatedumpSessionLocal statedumpSession = new EjbLocalHelper().getStatedumpSession();
-    
+
     public UploadedFile getHeaderFile() {
         return headerFile;
     }
@@ -1133,6 +1134,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
                 // Restart OCSP cleanup job timers
                 ocspCleanupSession.restart();
+                scepKeyRenewalSession.restart();
 
                 GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
                 globalCesecoreConfiguration.setMaximumQueryCount(currentConfig.getMaximumQueryCount());
@@ -1167,7 +1169,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 log.info(msg);
                 super.addNonTranslatedErrorMessage(msg);
             }
-            
+
             final GlobalEndEntityProfileConfiguration globalEEPConfiguration = (GlobalEndEntityProfileConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalEndEntityProfileConfiguration.EEP_CONFIGURATION_ID);
             globalEEPConfiguration.setEnableEndEntityProfileLimitations(currentConfig.getEnableEndEntityProfileLimitations());
             try {
@@ -1377,6 +1379,11 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         } else {
             availableProtocolsConfiguration.setProtocolStatus(protocolToToggle.getProtocol(), true);
         }
+
+        if (AvailableProtocols.SCEP.getName().equals(protocolToToggle.getProtocol())) {
+            scepKeyRenewalSession.restart();
+        }
+
         // Save config
         try {
             getEjbcaWebBean().getEjb().getGlobalConfigurationSession().saveConfiguration(getAdmin(), availableProtocolsConfiguration);

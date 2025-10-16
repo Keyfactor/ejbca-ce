@@ -156,7 +156,7 @@ public class LicenseVerifierEnterpriseSessionBean {
     private static void prepareFailureAction(LicenseState licenseState, String message) {
         LicenseStateContainer.setLicenseState(licenseState);
         if (licenseState!=LicenseState.VALID) {
-            decorateLicenseErrorMessage(message + ". Please contact xxxx@keyfactor.com to renew license.");
+            decorateLicenseErrorMessage(message + ". Please contact Keyfactor to renew your license.");
         }
         if (licenseState==LicenseState.EJBCA_SETUP_INVALID || licenseState==LicenseState.INVALID
                 || licenseState==LicenseState.EXPIRED_LONG_BACK ) {
