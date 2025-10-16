@@ -12,21 +12,13 @@
  *************************************************************************/
 package org.cesecore.configuration;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.ServiceLoader;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import jakarta.persistence.PersistenceContext;
-
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
@@ -46,6 +38,15 @@ import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.ServiceLoader;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This bean handled global configurations.
@@ -85,6 +86,16 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public ConfigurationBase getCachedConfiguration(final String configID) {
+        return getCachedConfiguration(configID, false);
+    }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
+    public ConfigurationBase getCachedConfigurationAndLockWrites(final String configID) {
+        return getCachedConfiguration(configID, true);
+    }
+
+    private ConfigurationBase getCachedConfiguration(final String configID, final boolean shouldLockConfigWrites) {
         ConfigurationBase result;
         try {
             if (log.isTraceEnabled()) {
@@ -97,7 +108,10 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
                 if (log.isDebugEnabled()) {
                     log.debug("Reading Configuration: " + configID);
                 }
-                final GlobalConfigurationData globalConfigurationData = findByConfigurationId(configID);
+                final GlobalConfigurationData globalConfigurationData = shouldLockConfigWrites ?
+                        findByConfigurationId(configID, LockModeType.PESSIMISTIC_WRITE,
+                                Map.of("jakarta.persistence.lock.timeout", 0)) :
+                        findByConfigurationId(configID);
                 if (globalConfigurationData == null) {
                     if (log.isDebugEnabled()) {
                         log.debug("No default GlobalConfiguration exists. Creating a new one.");
@@ -248,6 +262,16 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public GlobalConfigurationData findByConfigurationId(String configurationId) {
         return entityManager.find(GlobalConfigurationData.class, configurationId);
+    }
+
+    /**
+     * Allows to find a configuration and specify the lock mode
+     * @return the found entity instance or null if the entity does not exist
+     */
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public GlobalConfigurationData findByConfigurationId(String configurationId, LockModeType lockModeType, Map<String, Object> dbHints) {
+        return entityManager.find(GlobalConfigurationData.class, configurationId, lockModeType, dbHints);
     }
 
     private enum GlobalConfigurationCacheHolder {
