@@ -1990,6 +1990,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         if (subjectAltNames.isIllegal()) {
             throw new EndEntityProfileValidationException("Subject alt names are illegal.");
         }
+		if (areEmailsInSubjectAltNameInvalid(subjectAltName)) {
+			throw new EndEntityProfileValidationException("Invalid email address in subject alt name.");
+		}
         final DNFieldExtractor subjectDirAttrs = new DNFieldExtractor(subjectDirAttr, DNFieldExtractor.TYPE_SUBJECTDIRATTR);
         if (subjectDirAttrs.isIllegal()) {
             throw new EndEntityProfileValidationException("Subject directory attributes are illegal.");
@@ -2061,6 +2064,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             log.debug("SSH principals required: " + requiredFields);
             log.debug("SSH subjectAlternateName(pseudo): " + LogRedactionUtils.getSubjectAltNameLogSafe(subjectAlternateName));
         }
+		if (areEmailsInSubjectAltNameInvalid(subjectAlternateName)) {
+			throw new EndEntityProfileValidationException("Invalid email address in subject alt name.");
+		}
         if(StringUtils.isNotBlank(subjectAlternateName) && subjectAlternateName.startsWith("dnsName=")) {
             subjectAlternateName = subjectAlternateName.substring("dnsName=".length());
             if (subjectAlternateName.indexOf("rfc822Name=")!=-1) {
@@ -2371,6 +2377,17 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 		if (!fulfillsProfile) {
 			throw new EndEntityProfileValidationException("Password doesn't fulfill profile.");
 		}
+	}
+
+	private boolean areEmailsInSubjectAltNameInvalid(String altName) {
+		List<String> sanEmails = DnComponents.getEmailFromDN(altName);
+		for (String email : sanEmails) {
+			if (!StringUtils.isAsciiPrintable(email)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	@Override
