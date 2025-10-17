@@ -23,6 +23,7 @@ import java.util.Map;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
+import org.cesecore.config.InvalidConfigurationException;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
@@ -46,6 +47,15 @@ public class AvailableExtendedKeyUsagesConfigSystemTest {
     @After
     public void tearDown() throws Exception {
         globalConfigSession.saveConfiguration(alwaysAllowToken, ekuConfigBackup);
+    }
+    
+    /**
+     * Regression test to verify that it's impossible to add an EKU with an invalid OID
+     */
+    @Test(expected = InvalidConfigurationException.class)
+    public void testInvalidConfig() throws InvalidConfigurationException {
+        AvailableExtendedKeyUsagesConfiguration ekuConfig = new AvailableExtendedKeyUsagesConfiguration(false);
+        ekuConfig.addExtKeyUsage("foo", "EKU_PKIX_ANYEXTENDEDKEYUSAGE");
     }
     
     @Test
