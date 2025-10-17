@@ -29,7 +29,6 @@ import com.keyfactor.util.keys.KeyTools;
 /**
  * Represents a Certificate Transparency log
  *
- * @version $Id$
  */
 public final class CTLogInfo implements Serializable {
 
@@ -104,6 +103,19 @@ public final class CTLogInfo implements Serializable {
 
     public byte[] getPublicKeyBytes() {
         return publicKeyBytes;
+    }
+
+    public String getPublicKeyBytesAsString() {
+        return java.util.Base64.getEncoder().encodeToString(publicKeyBytes);
+    }
+
+    public void setPublicKeyBytesAsString(final String base64EncodedKey) {
+        if (base64EncodedKey == null) {
+            this.publicKeyBytes = null;
+            return;
+        }
+        this.publicKeyBytes = java.util.Base64.getDecoder().decode(base64EncodedKey);
+        ensureParsed();
     }
 
     public void setLogPublicKey(final byte[] publicKeyBytes) {
