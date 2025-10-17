@@ -891,7 +891,7 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
                 // Setting Extended key usage to clientAuth and emailProtection
                 eku.add(KeyPurposeId.id_kp_clientAuth.getId());
                 eku.add(KeyPurposeId.id_kp_emailProtection.getId());
-                cp.setExtendedKeyUsage(eku);
+                cp.setExtendedKeyUsageOids(eku);
                 cp.setExtendedKeyUsageCritical(false);
 
                 this.certProfileSession.changeCertificateProfile(ADMIN, CP_DN_OVERRIDE_NAME, cp);
