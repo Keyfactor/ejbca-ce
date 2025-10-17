@@ -128,7 +128,7 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
  */
 public class RestResourceSystemTestBase {
 
-    private static final Logger log = Logger.getLogger(RestResourceSystemTestBase.class);
+    public static final Logger log = Logger.getLogger(RestResourceSystemTestBase.class);
     // Shared EJB instances
     protected static final ApprovalExecutionSessionRemote approvalExecutionSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalExecutionSessionRemote.class);
     protected static final ApprovalSessionRemote approvalSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionRemote.class);
