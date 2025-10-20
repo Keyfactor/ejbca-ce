@@ -11,7 +11,7 @@ Define HSM container image with versions
 {{- else if .Values.hsm.dpod.enabled }}
 {{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-dpod/images/hsm-driver-dpod:0.1.0" }}
 {{- else if .Values.hsm.utimaco.enabled }}
-{{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-utimaco/images/hsm-driver-utimaco:0.3.0" }}
+{{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-utimaco/images/hsm-driver-utimaco:0.4.0" }}
 {{- else if .Values.hsm.nshield.enabled }}
 {{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-nshield/images/hsm-driver-nshield:0.4.0" }}
 {{- else if .Values.hsm.awsCloudHsm.enabled }}

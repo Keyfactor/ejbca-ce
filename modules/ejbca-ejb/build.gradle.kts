@@ -31,16 +31,7 @@ dependencies {
     compileOnly(libs.nimbus.jose.jwt)
     compileOnly(libs.x509.common.util)
     compileOnly(libs.bundles.cryptotokens)
-    compileOnly(libs.istack.commons.runtime.jaxb)
-    compileOnly(libs.jakarta.xml.bind.api)
-    compileOnly(libs.jaxb.core.jaxb)
-    compileOnly(libs.jaxb.impl.jaxb)
-    compileOnly(libs.jaxb.runtime)
-    compileOnly(libs.txw2.jaxb)
-    compileOnly(libs.hibernate.validator)
     testRuntimeOnly(libs.jldap)
-    testRuntimeOnly(libs.jboss.logging)
-    testRuntimeOnly(libs.classmate)
 }
 
 sourceSets {

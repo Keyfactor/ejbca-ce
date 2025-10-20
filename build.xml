@@ -1034,9 +1034,8 @@
 				<!-- End of the list of subcommands of ejbca.sh that must be hidden when we are running on limited ejbca (va/ra) installation -->
 
                 <!-- Exclude Licence Validation files unless otherwise specified-->
-                <exclude unless="build.contains.licensing" name="modules/ejbca-ejb/src/org/ejbca/core/ejb/license/**"/>
-                <exclude unless="build.contains.licensing" name="modules/ejbca-ejb/src-test/org/ejbca/core/ejb/license/**"/>
-                <exclude unless="build.contains.licensing" name="modules/ejbca-common/src/org/ejbca/core/ejb/license/**"/>
+                <exclude unless="build.contains.licensing" name="modules/edition-specific-ee/src-ejb/org/ejbca/core/ejb/license/**"/>
+                <exclude unless="build.contains.licensing" name="modules/edition-specific-ee/src-test/org/ejbca/core/ejb/license/**"/>
                 <!--END: Exclude Licence Validation files -->
 
 		    </zipfileset>

@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.model.era;
 
+import static org.easymock.EasyMock.anyObject;
 import static org.easymock.EasyMock.eq;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.expectLastCall;
@@ -19,6 +20,7 @@ import static org.easymock.EasyMock.isNull;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.same;
 import static org.easymock.EasyMock.verify;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
@@ -28,28 +30,42 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
+import java.util.ArrayList;
+import java.util.Arrays;
 
+import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.roles.management.RoleSessionLocal;
+import org.cesecore.roles.member.RoleMember;
+import org.cesecore.roles.member.RoleMemberSessionLocal;
 import org.easymock.EasyMock;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.KeyStoreCreateSessionLocal;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.KeyStoreGeneralRaException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -68,26 +84,35 @@ import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
  */
 public class RaMasterApiSessionUnitTest {
 
-    private static final Integer MOCKED_EEP_ID = 111;
+    private static final int MOCKED_EEP_ID = 111;
     private static final String MOCKED_USERNAME = "TestUser";
     private static final String MOCKED_PASSWORD = "foo123";
     private static final char[] MOCKED_PASSWORD_CHARS = MOCKED_PASSWORD.toCharArray();
     private static final int MOCKED_CAID = 222;
+    private static final int MOCKED_CERTPROFILE_ID = 333;
 
     private RaMasterApiSessionBean raMasterApi;
     private AuthenticationToken adminMock = EasyMock.createStrictMock(AuthenticationToken.class);
+    private CertificateProfileSessionLocal certificateProfileSessionMock = EasyMock.createStrictMock(CertificateProfileSessionLocal.class);
+    private CertificateProfile certificateProfileMock = EasyMock.createStrictMock(CertificateProfile.class);
     private EndEntityInformation endEntityMock = EasyMock.createStrictMock(EndEntityInformation.class);
+    private EndEntityAuthenticationSessionLocal endEntityAuthenticationSessionMock = EasyMock.createStrictMock(EndEntityAuthenticationSessionLocal.class);
     private EndEntityManagementSessionLocal endEntityManagementSessionMock = EasyMock.createStrictMock(EndEntityManagementSessionLocal.class);
     private EndEntityProfileSessionLocal endEntityProfileSessionMock = EasyMock.createStrictMock(EndEntityProfileSessionLocal.class);
     private GlobalConfigurationSessionLocal globalConfigurationSessionMock = EasyMock.createStrictMock(GlobalConfigurationSessionLocal.class);
     private EndEntityAccessSessionLocal endEntityAccessSessionMock = EasyMock.createStrictMock(EndEntityAccessSessionLocal.class);
     private KeyStoreCreateSessionLocal keyStoreCreateSessionMock = EasyMock.createStrictMock(KeyStoreCreateSessionLocal.class);
+    private RoleSessionLocal roleSessionMock = EasyMock.createStrictMock(RoleSessionLocal.class);
+    private RoleMember roleMemberMock = EasyMock.createStrictMock(RoleMember.class);
+    private RoleMemberSessionLocal roleMemberSessionMock = EasyMock.createStrictMock(RoleMemberSessionLocal.class);
     private SignSessionLocal signSessionMock = EasyMock.createStrictMock(SignSessionLocal.class);
     private GlobalConfiguration globalConfigurationMock = EasyMock.createStrictMock(GlobalConfiguration.class);
     private EndEntityProfile endEntityProfileMock = EasyMock.createStrictMock(EndEntityProfile.class);
     private ExtendedInformation extendedInfoMock = EasyMock.createStrictMock(ExtendedInformation.class);
-    private Object[] allMocks = { adminMock, endEntityMock, endEntityManagementSessionMock, endEntityProfileSessionMock,
-            globalConfigurationSessionMock, endEntityAccessSessionMock, keyStoreCreateSessionMock, signSessionMock,
+    private Object[] allMocks = { adminMock, certificateProfileSessionMock, certificateProfileMock, endEntityMock,
+            endEntityAuthenticationSessionMock, endEntityManagementSessionMock, endEntityProfileSessionMock,
+            globalConfigurationSessionMock, endEntityAccessSessionMock, keyStoreCreateSessionMock,
+            roleSessionMock, roleMemberMock, roleMemberSessionMock, signSessionMock,
             globalConfigurationMock, endEntityProfileMock, extendedInfoMock };
     private static final byte[] TEST_P12 = Base64.decode(
             ("MIIGQgIBAzCCBfsGCSqGSIb3DQEHAaCCBewEggXoMIIF5DCCATgGCSqGSIb3DQEHAaCCASkEggEl\n" +
@@ -128,8 +153,8 @@ public class RaMasterApiSessionUnitTest {
     @Before
     public void before() {
         final EjbMocker<RaMasterApiSessionBean> mocker = new EjbMocker<>(RaMasterApiSessionBean.class);
-        mocker.addMockedInjections(endEntityManagementSessionMock, endEntityProfileSessionMock, globalConfigurationSessionMock,
-                endEntityAccessSessionMock, keyStoreCreateSessionMock, signSessionMock);
+        mocker.addMockedInjections(certificateProfileSessionMock, endEntityAuthenticationSessionMock, endEntityManagementSessionMock, endEntityProfileSessionMock, globalConfigurationSessionMock,
+                endEntityAccessSessionMock, keyStoreCreateSessionMock, roleSessionMock, roleMemberSessionMock, signSessionMock);
         raMasterApi = mocker.construct();
     }
 
@@ -232,4 +257,118 @@ public class RaMasterApiSessionUnitTest {
         }
     }
 
+    /**
+     * Tests the final part of self-renewal (the first part is just finding the certificate and username).
+     * This test tests the happy path.
+     */
+    @Test
+    public void selfRenewalFinalizationHappyPath() throws Exception {
+        expectSelfRenewalChecks(KeyPurposeId.id_kp_clientAuth);
+        expectSelfRenewalPreparations();
+        expectGenerateKeyStoreWithoutViewEndEntityAccessRule();
+        endEntityManagementSessionMock.setClearTextPassword(anyObject(), eq(MOCKED_USERNAME), isNull());
+        expectLastCall();
+        replay(allMocks);
+        final RaSelfRenewCertificateData renewalData = new RaSelfRenewCertificateData();
+        renewalData.setClientIPAddress("192.0.2.123");
+        renewalData.setKeyAlg(AlgorithmConstants.KEYALGORITHM_RSA);
+        renewalData.setKeySpec("2048");
+        renewalData.setNewSubjectDn("CN=TestSuperAdmin");
+        renewalData.setUsername(MOCKED_USERNAME);
+        renewalData.setPassword(MOCKED_PASSWORD);
+        raMasterApi.selfRenewCertificate(renewalData);
+        verify(allMocks);
+    }
+
+    /**
+     * Simulates a compromised RA, that attempts to "self-renew" a certificate that is not a
+     * client certificate (in this case, a code signing certificate). That should be rejected
+     * as a security precaution.
+     */
+    @Test
+    public void selfRenewalFinalizationNotPartOfRole() throws Exception {
+        expectSelfRenewalChecks(KeyPurposeId.id_kp_codeSigning); // Not a client certificate
+        replay(allMocks);
+        final RaSelfRenewCertificateData renewalData = new RaSelfRenewCertificateData();
+        renewalData.setClientIPAddress("192.0.2.123");
+        renewalData.setKeyAlg(AlgorithmConstants.KEYALGORITHM_RSA);
+        renewalData.setKeySpec("2048");
+        renewalData.setNewSubjectDn("CN=TestSuperAdmin");
+        renewalData.setUsername(MOCKED_USERNAME);
+        renewalData.setPassword(MOCKED_PASSWORD);
+        try {
+            raMasterApi.selfRenewCertificate(renewalData);
+            fail("Should fail");
+        } catch (AuthorizationDeniedException e) {
+            assertEquals("Self-renewal requires certificate profile to have Extended Key Usage with clientAuthentication", e.getMessage());
+        }
+        verify(allMocks);
+    }
+
+    private void expectSelfRenewalChecks(final KeyPurposeId extendedKeyUsage)
+            throws AuthStatusException, NoSuchEndEntityException, AuthorizationDeniedException {
+        expect(endEntityAuthenticationSessionMock.checkAllowedToEnroll(anyObject(), eq(MOCKED_USERNAME))).andReturn(endEntityMock);
+        expect(endEntityMock.getCertificateProfileId()).andReturn(MOCKED_CERTPROFILE_ID);
+        expect(certificateProfileSessionMock.getCertificateProfile(MOCKED_CERTPROFILE_ID)).andReturn(certificateProfileMock);
+        expect(certificateProfileMock.isTypeEndEntity()).andReturn(true);
+        expect(certificateProfileMock.getKeyUsage(CertificateConstants.DIGITALSIGNATURE)).andReturn(true);
+        expect(certificateProfileMock.getKeyUsage()).andReturn(new boolean[]{true,false,false});
+        expect(certificateProfileMock.getExtendedKeyUsageOids()).andReturn(new ArrayList<>(Arrays.asList(extendedKeyUsage.getId())));
+    }
+
+    private void expectSelfRenewalPreparations() throws Exception {
+        expect(endEntityMock.getType()).andReturn(new EndEntityType(EndEntityTypes.ENDUSER));
+        expect(endEntityMock.getEndEntityProfileId()).andReturn(MOCKED_EEP_ID);
+        expect(endEntityProfileSessionMock.getEndEntityProfile(MOCKED_EEP_ID)).andReturn(endEntityProfileMock);
+        expect(endEntityProfileMock.useAutoGeneratedPasswd()).andReturn(false);
+        endEntityMock.setPassword(eq("foo123"));
+        expectLastCall();
+        // Note that endEntity.setStatus(EndEntityConstants.STATUS_NEW) is NOT called, because user notifications are disabled
+        endEntityManagementSessionMock.changeUser(anyObject(), same(endEntityMock), eq(false));
+        expectLastCall();
+        endEntityMock.setTokenType(eq(EndEntityConstants.TOKEN_SOFT_P12));
+        expectLastCall();
+        expect(endEntityMock.getExtendedInformation()).andReturn(extendedInfoMock).atLeastOnce();
+        expect(extendedInfoMock.getKeyStoreAlgorithmType()).andReturn(AlgorithmConstants.KEYALGORITHM_RSA);
+    }
+
+    private void expectGenerateKeyStoreWithoutViewEndEntityAccessRule() throws Exception {
+        expect(endEntityMock.getEndEntityProfileId()).andReturn(MOCKED_EEP_ID);
+        expect(endEntityProfileSessionMock.getEndEntityProfile(MOCKED_EEP_ID)).andReturn(endEntityProfileMock);
+        expect(globalConfigurationSessionMock.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).andReturn(globalConfigurationMock);
+        expect(globalConfigurationMock.getEnableKeyRecovery()).andReturn(false);
+        expect(endEntityMock.getUsername()).andReturn(MOCKED_USERNAME);
+        expect(endEntityAccessSessionMock.findUser(MOCKED_USERNAME)).andReturn(new EndEntityInformation());
+        expect(endEntityProfileMock.getReUseKeyRecoveredCertificate()).andReturn(false);
+        expect(endEntityMock.getExtendedInformation()).andReturn(extendedInfoMock);
+        expect(extendedInfoMock.getKeyStoreAlternativeKeySpecification()).andReturn(null);
+        expect(extendedInfoMock.getKeyStoreAlternativeKeyAlgorithm()).andReturn(null);
+        expect(extendedInfoMock.getCertificateEndTime()).andReturn(null);
+        // For the call to generateOrKeyRecoverTokenWithoutViewEndEntityAccessRule itself performs, some calls are done for the parameter values:
+        expect(endEntityMock.getUsername()).andReturn(MOCKED_USERNAME);
+        expect(endEntityMock.getPassword()).andReturn(MOCKED_PASSWORD);
+        expect(endEntityMock.getCAId()).andReturn(MOCKED_CAID);
+        expect(extendedInfoMock.getKeyStoreAlgorithmSubType()).andReturn("2048");
+        expect(extendedInfoMock.getKeyStoreAlgorithmType()).andReturn(AlgorithmConstants.KEYALGORITHM_RSA);
+        expect(endEntityMock.getTokenType()).andReturn(EndEntityConstants.TOKEN_SOFT_P12);
+        expect(endEntityMock.getEndEntityProfileId()).andReturn(MOCKED_EEP_ID);
+        expect(keyStoreCreateSessionMock.generateOrKeyRecoverTokenWithoutViewEndEntityAccessRule(anyObject(),
+                eq(MOCKED_USERNAME),
+                eq(MOCKED_PASSWORD),
+                eq(MOCKED_CAID),
+                eq("2048"),
+                eq(AlgorithmConstants.KEYALGORITHM_RSA),
+                isNull(), // No alternative keyalg
+                isNull(), // No alternative keyspec
+                isNull(), // No notAfter
+                isNull(), // No notBefore
+                eq(EndEntityConstants.TOKEN_SOFT_P12), // Type of token
+                eq(false), // Perform key recovery?
+                eq(false), // Save private keys?
+                eq(false), // Reuse recovered cert?
+                eq(MOCKED_EEP_ID))).andReturn(getDummyKeyStore());
+        // At this point it encodes the PKCS#12
+        expect(endEntityMock.getTokenType()).andReturn(EndEntityConstants.TOKEN_SOFT_P12);
+        expect(endEntityMock.getPassword()).andReturn(MOCKED_PASSWORD);
+    }
 }

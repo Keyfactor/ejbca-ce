@@ -38,6 +38,7 @@ import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.certextensions.CustomCertificateExtension;
+import org.cesecore.util.OidUtils;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**

@@ -68,6 +68,7 @@ import org.ejbca.core.ejb.upgrade.UpgradeSessionLocal;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.era.RaMasterApiSessionLocal;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
+import org.ejbca.core.protocol.scep.ScepKeyRenewalSessionLocal;
 
 /**
  * Mocked clalss
@@ -175,6 +176,7 @@ echo "    }"
     private SctDataSessionLocal sctDataSession;
     private OcspDataSessionLocal ocspDataSession;
     private OcspResponseCleanupSessionLocal ocspResponseCleanupSession;
+    private ScepKeyRenewalSessionLocal scepKeyRenewalSessionLocal;
 
     @Override public synchronized AdminPreferenceSessionLocal getAdminPreferenceSession() {
         if (adminPreferenceSession == null) { adminPreferenceSession = EasyMock.createStrictMock(AdminPreferenceSessionLocal.class); }
@@ -376,7 +378,13 @@ echo "    }"
         if (ocspResponseCleanupSession == null) { ocspResponseCleanupSession = EasyMock.createStrictMock(OcspResponseCleanupSessionLocal.class); }
         return ocspResponseCleanupSession;
     }
-    
+
+    @Override
+    public ScepKeyRenewalSessionLocal getScepKeyRenewalSession() {
+        if (scepKeyRenewalSessionLocal == null) { scepKeyRenewalSessionLocal = EasyMock.createStrictMock(ScepKeyRenewalSessionLocal.class); }
+        return scepKeyRenewalSessionLocal;
+    }
+
     public List<Object> getAllMockObjects() {
         final List<Object> list = new ArrayList<>();
         list.add(adminPreferenceSession);

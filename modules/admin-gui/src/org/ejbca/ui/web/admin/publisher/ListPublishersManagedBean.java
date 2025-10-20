@@ -192,6 +192,9 @@ public class ListPublishersManagedBean extends BaseManagedBean implements Serial
             addErrorMessage("YOUHAVETOSELECTAPUBLISHER");
         } else if (StringUtils.isEmpty(StringUtils.trim(newPublisherName))) {
             addErrorMessage("YOUHAVETOENTERAPUBLISHER");
+        } else if (publisherSession.getPublisher(newPublisherName) != null) {
+            addErrorMessage("PUBLISHERALREADYEXISTS", newPublisherName);
+            return null;
         }
 
         selectedPublisherId = null;

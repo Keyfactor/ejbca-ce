@@ -30,6 +30,8 @@ package org.ejbca.util.crypto;
 import java.io.UnsupportedEncodingException;
 import java.security.SecureRandom;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 import org.cesecore.config.CesecoreConfiguration;
 
 import com.keyfactor.util.RandomHelper;
@@ -83,6 +85,8 @@ import com.keyfactor.util.RandomHelper;
  * @version $Id$
  */
 public class BCrypt {
+	private static final Logger log = Logger.getLogger(BCrypt.class);
+
 	// BCrypt parameters
 	private static final int GENSALT_DEFAULT_LOG2_ROUNDS = 10;
 	private static final int BCRYPT_SALT_LEN = 16;
@@ -783,6 +787,10 @@ public class BCrypt {
 	 * @return	true if the passwords match, false otherwise
 	 */
 	public static boolean checkpw(final String plaintext, final String hashed) {
+		if (StringUtils.isEmpty(hashed)) { // Avoid StringIndexOutOfBoundsException in hashpw()
+			log.trace("No password set. Password check fails");
+			return false;
+		}
 		return (hashed.compareTo(hashpw(plaintext, hashed)) == 0);
 	}
 }
