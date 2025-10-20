@@ -129,6 +129,10 @@ public class ScepWithRaKeysSystemTest {
         CaTestUtils.removeCa(admin, ca.getCAInfo());
         CryptoTokenTestUtils.removeCryptoToken(admin, cryptoTokenId);
         endEntityManagementSession.deleteUser(admin, "SCEP_RA_" + ca.getCAId());
+        //Clean up after a test run, this is necessary to avoid creating failures in the ConfigdumpRestResourceSystemTest.shouldExportAllObjects test
+        ScepConfiguration scepConfiguration = (ScepConfiguration) globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
+        scepConfiguration.removeAlias(scepAlias);
+        globalConfigSession.saveConfiguration(admin, scepConfiguration);
     }
 
     @Before

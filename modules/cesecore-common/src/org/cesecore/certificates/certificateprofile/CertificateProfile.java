@@ -53,8 +53,10 @@ import org.cesecore.certificates.certificate.certextensions.standard.CabForumOrg
 import org.cesecore.certificates.certificate.ssh.SshCertificateType;
 import org.cesecore.certificates.certificate.ssh.SshExtension;
 import org.cesecore.certificates.util.DNFieldExtractor;
+import org.cesecore.config.InvalidConfigurationException;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
+import org.cesecore.util.OidUtils;
 
 /**
  * CertificateProfile is a basic class used to customize a certificate configuration or be inherited by fixed certificate profiles.
@@ -481,7 +483,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setKeyUsageCritical(true);
 
         setUseExtendedKeyUsage(false);
-        setExtendedKeyUsage(new ArrayList<>());
+        try {
+            setExtendedKeyUsageOids(new ArrayList<>());
+        } catch (InvalidConfigurationException e) {
+            throw new IllegalStateException(e);
+        }
         setExtendedKeyUsageCritical(false);
 
         setUseDocumentTypeList(false);
@@ -622,25 +628,30 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     public void setDefaultExtendedKeyUsage(final int type) {
         setExtendedKeyUsageCritical(false);
-        if (type == CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA || type == CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA) {
-            setUseExtendedKeyUsage(false);
-            setExtendedKeyUsage(new ArrayList<>());
-        } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER) {
-            setUseExtendedKeyUsage(true);
-            ArrayList<String> eku = new ArrayList<>();
-            eku.add(KeyPurposeId.id_kp_clientAuth.getId());
-            eku.add(KeyPurposeId.id_kp_emailProtection.getId());
-            setExtendedKeyUsage(eku);
-        } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER) {
-            setUseExtendedKeyUsage(true);
-            ArrayList<String> eku = new ArrayList<>();
-            eku.add(KeyPurposeId.id_kp_OCSPSigning.getId());
-            setExtendedKeyUsage(eku);
-        } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_SERVER) {
-            setUseExtendedKeyUsage(true);
-            ArrayList<String> eku = new ArrayList<>();
-            eku.add(KeyPurposeId.id_kp_serverAuth.getId());
-            setExtendedKeyUsage(eku);
+        try {
+            if (type == CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA || type == CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA) {
+                setUseExtendedKeyUsage(false);
+                setExtendedKeyUsageOids(new ArrayList<>());
+            } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER) {
+                setUseExtendedKeyUsage(true);
+                ArrayList<String> eku = new ArrayList<>();
+                eku.add(KeyPurposeId.id_kp_clientAuth.getId());
+                eku.add(KeyPurposeId.id_kp_emailProtection.getId());
+                setExtendedKeyUsageOids(eku);
+            } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER) {
+                setUseExtendedKeyUsage(true);
+                ArrayList<String> eku = new ArrayList<>();
+                eku.add(KeyPurposeId.id_kp_OCSPSigning.getId());
+                setExtendedKeyUsageOids(eku);
+            } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_SERVER) {
+                setUseExtendedKeyUsage(true);
+                ArrayList<String> eku = new ArrayList<>();
+                eku.add(KeyPurposeId.id_kp_serverAuth.getId());
+                setExtendedKeyUsageOids(eku);
+            }
+        } catch (InvalidConfigurationException e) {
+            //Should not happend with hardcoded values
+            throw new IllegalStateException();
         }
     }
 
@@ -1627,22 +1638,24 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     /**
-     * Extended Key Usage is an arraylist of oid Strings. Usually oids comes from KeyPurposeId in BC.
-     */
-    public void setExtendedKeyUsage(final ArrayList<String> extendedkeyusage) {
-        data.put(EXTENDEDKEYUSAGE, extendedkeyusage);
-    }
-
-    /**
      * Extended Key Usage is an arraylist of Strings with eku oids.
      */
     @SuppressWarnings("unchecked")
-    public ArrayList<String> getExtendedKeyUsageOids() {
-        return (ArrayList<String>) data.get(EXTENDEDKEYUSAGE);
+    public List<String> getExtendedKeyUsageOids() {
+        //Only return valid OIDs in case some garbage crept into the database
+        return ((List<String>) data.get(EXTENDEDKEYUSAGE)).stream()
+                .filter(oid -> OidUtils.isOidNumericalOnly(oid))
+                .collect(Collectors.toList());
     }
 
-    public void setExtendedKeyUsageOids(final ArrayList<String> extendedKeyUsageOids) {
-        setExtendedKeyUsage(extendedKeyUsageOids);
+    public void setExtendedKeyUsageOids(final List<String> extendedKeyUsageOids) throws InvalidConfigurationException {
+        for(String oid : extendedKeyUsageOids) {
+            if(!OidUtils.isOidNumericalOnly(oid)) {
+                throw new InvalidConfigurationException("OID " + oid + " was not correctly formatted.");
+            }
+        }
+        
+        data.put(EXTENDEDKEYUSAGE, extendedKeyUsageOids);
     }
 
     public void setUseCustomDnOrder(boolean use) {
