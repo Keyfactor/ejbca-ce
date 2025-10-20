@@ -30,6 +30,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.HashID;
 import org.cesecore.certificates.certificate.internal.CaCertificateCacheLocal;
 import org.cesecore.config.GlobalCaConfiguration;
+import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 
 import com.keyfactor.util.Base64;
@@ -66,7 +67,9 @@ public class CaCertificateCache implements CaCertificateCacheLocal {
     /** Mapping from subject key identifier to key in the certs HashMap. */
     private Map<Integer, X509Certificate> certsFromSubjectKeyIdentifier;
     /** All root certificates. */
-    private Set<X509Certificate> rootCertificates;
+    private Set<X509Certificate> rootCertificates = new HashSet<>();
+    /** All CA certificates. */
+    private Set<X509Certificate> allCaCertificates = new HashSet<>();
 
 	/** Cache time counter, set and used by loadCertificates */
 	private long certValidTo;
@@ -107,6 +110,11 @@ public class CaCertificateCache implements CaCertificateCacheLocal {
     public X509Certificate[] getRootCertificates() {
         return rootCertificates.toArray(new X509Certificate[0]);
     }
+    
+	@Override
+    public X509Certificate[] getAllCaCertificates() {
+        return allCaCertificates.toArray(new X509Certificate[0]);
+    }
 
 	@Override
     public X509Certificate findBySubjectKeyIdentifier(final HashID id) {
@@ -140,6 +148,7 @@ public class CaCertificateCache implements CaCertificateCacheLocal {
         Map<Integer, Set<X509Certificate>> newCertsFromIssuerDN = new HashMap<>();
         Map<Integer, X509Certificate> newCertsFromSubjectKeyIdentifier = new HashMap<>();
         Set<X509Certificate> newRootCertificates = new HashSet<>();
+        Set<X509Certificate> newAllCaCertificates = new HashSet<>();
         if (certs != null) {
             for (final Certificate tmp : certs) {
                 if (!(tmp instanceof X509Certificate)) {
@@ -194,6 +203,7 @@ public class CaCertificateCache implements CaCertificateCacheLocal {
                     isLatest = true;
                 }
                 if (isLatest) {
+                    newAllCaCertificates.add(cert);
                     newCertsFromSubjectDN.put(subjectDNKey, cert);
                     final Integer issuerDNKey = HashID.getFromIssuerDN(cert).getKey();
                     if (!issuerDNKey.equals(subjectDNKey)) { // don't add roots to themselves
@@ -229,7 +239,8 @@ public class CaCertificateCache implements CaCertificateCacheLocal {
         certsFromIssuerDN = newCertsFromIssuerDN;
         certsFromSubjectDN = newCertsFromSubjectDN;
         rootCertificates = newRootCertificates;
+        allCaCertificates = newAllCaCertificates;
+        certValidTo = System.currentTimeMillis() + OcspConfiguration.getSigningCertsValidTimeInMilliseconds();
         GlobalCaConfiguration globalCaConfiguration = (GlobalCaConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCaConfiguration.CA_CONFIGURATION_ID);
-        certValidTo = System.currentTimeMillis() + globalCaConfiguration.getCaCertificateCacheTimeMillis();
     }
 }

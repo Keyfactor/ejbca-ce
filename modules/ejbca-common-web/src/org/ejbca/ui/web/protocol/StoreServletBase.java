@@ -17,6 +17,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.security.cert.X509Certificate;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
@@ -285,7 +287,9 @@ public abstract class StoreServletBase extends HttpServlet {
 	private void printInfo(final HttpServletResponse resp) throws IOException {
 		final StringWriter sw = new StringWriter();
 		final PrintWriter pw = new HtmlPrintWriter(sw);
-		printInfo(caCertificateCache.getRootCertificates(), "", pw);
+		Set<String> consideredSubjectDns = new HashSet<>();
+		printInfo(this.caCertificateCache.getRootCertificates(), "", pw, consideredSubjectDns);
+		printInfo(this.caCertificateCache.getAllCaCertificates(), "", pw, consideredSubjectDns);
 		pw.flush();
 		pw.close();
 		sw.flush();
@@ -310,5 +314,5 @@ public abstract class StoreServletBase extends HttpServlet {
 		}
 	}
 	
-	protected abstract void printInfo(X509Certificate[] certs, String indent, PrintWriter pw);
+	protected abstract void printInfo(X509Certificate[] certs, String indent, PrintWriter pw, Set<String> consideredSubjectDns);
 }
