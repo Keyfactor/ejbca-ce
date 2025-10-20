@@ -316,7 +316,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
 
     /** Returns the default available theme used by administrator preferences. */
     public String getDefaultAvailableTheme(){
-        return getAvailableThemes()[0];
+        return getAvailableThemes().length > 0 ? getAvailableThemes()[0] : "";
     }
 
     public void setDefaultAvailableTheme(final String theme) {
