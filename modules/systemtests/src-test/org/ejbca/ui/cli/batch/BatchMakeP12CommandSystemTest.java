@@ -13,16 +13,14 @@
 
 package org.ejbca.ui.cli.batch;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.Key;
 import java.security.KeyStore;
+
+import com.keyfactor.util.IndefiniteLengthDetectorStream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
@@ -49,8 +47,13 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-/** Tests the batch making of soft cards.
- *
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+/**
+ * Tests the batch making of soft cards.
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class BatchMakeP12CommandSystemTest extends CaTestCase {
@@ -73,12 +76,12 @@ public class BatchMakeP12CommandSystemTest extends CaTestCase {
     public void setUp() throws Exception {
         super.setUp();
         log.trace(">test01CreateNewUser()");
-  
+
         EndEntityInformation endEntityInformation1 = new EndEntityInformation(username1, "C=SE, O=AnaTom, CN=" + username1, caid, "", username1 + "@anatom.se", EndEntityTypes.ENDUSER.toEndEntityType(),
                 EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_P12, null);
         endEntityInformation1.setPassword("foo123");
         EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).addUser(admin, endEntityInformation1, false);
-    
+
         endEntityManagementSession.setClearTextPassword(admin, username1, "foo123");
 
         log.debug("created " + username1 + ", pwd=foo123");
@@ -88,7 +91,7 @@ public class BatchMakeP12CommandSystemTest extends CaTestCase {
                 EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_P12, null);
         endEntityInformation2.setPassword("foo123");
         EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).addUser(admin, endEntityInformation2, false);
-        
+
         endEntityManagementSession.setClearTextPassword(admin, username2, "foo123");
 
         log.debug("created " + username2 + ", pwd=foo123");
@@ -124,8 +127,8 @@ public class BatchMakeP12CommandSystemTest extends CaTestCase {
         assertTrue("No file was created.", tmpfile.exists());
         EndEntityInformation user1 = endEntityAccessSession.findUser(admin, username1);
         EndEntityInformation user2 = endEntityAccessSession.findUser(admin, username1);
-        assertEquals("User1 was not generated.", EndEntityConstants.STATUS_GENERATED, user1.getStatus()); 
-        assertEquals("User2 was not generated.", EndEntityConstants.STATUS_GENERATED, user2.getStatus()); 
+        assertEquals("User1 was not generated.", EndEntityConstants.STATUS_GENERATED, user1.getStatus());
+        assertEquals("User2 was not generated.", EndEntityConstants.STATUS_GENERATED, user2.getStatus());
     }
 
     @Test
@@ -140,10 +143,18 @@ public class BatchMakeP12CommandSystemTest extends CaTestCase {
             // Check the generated keystore
             final KeyStore store = KeyStore.getInstance("PKCS12");
             store.load(new FileInputStream(tempDir.toString()+"/"+username1+".p12"), "foo123".toCharArray());
+            // Verify that keystore returned from server has definite length encoding
+            FileInputStream in = new FileInputStream(tempDir.toString()+"/"+username1+".p12");
+            try (IndefiniteLengthDetectorStream ildStream = new IndefiniteLengthDetectorStream(in)) {
+                while (ildStream.readValue() != null) {
+                    ;
+                }
+                assertFalse("ks.store() with PKCS12StoreParameter(true) is expected to not have indefinitlength encoding", ildStream.isIndefiniteLength());
+            }
             final Key privKey = store.getKey(username1, "foo123".toCharArray());
             assertNotNull("No private key with alias '" + username1 + "' found in generated PKCS#12 file", privKey);
             final PrivateKeyInfo pkInfo = PrivateKeyInfo.getInstance(privKey.getEncoded());
-            assertEquals("Should have generated RSA keys by default", PKCSObjectIdentifiers.rsaEncryption.getId(), pkInfo.getPrivateKeyAlgorithm().getAlgorithm().getId());            
+            assertEquals("Should have generated RSA keys by default", PKCSObjectIdentifiers.rsaEncryption.getId(), pkInfo.getPrivateKeyAlgorithm().getAlgorithm().getId());
         } finally {
             FileUtils.deleteDirectory(tempDir.toFile());
         }
@@ -161,15 +172,23 @@ public class BatchMakeP12CommandSystemTest extends CaTestCase {
             // Check the generated keystore
             final KeyStore store = KeyStore.getInstance("PKCS12");
             store.load(new FileInputStream(tempDir.toString()+"/"+username1+".p12"), "foo123".toCharArray());
+            // Verify that keystore returned from server has definite length encoding
+            FileInputStream in = new FileInputStream(tempDir.toString()+"/"+username1+".p12");
+            try (IndefiniteLengthDetectorStream ildStream = new IndefiniteLengthDetectorStream(in)) {
+                while (ildStream.readValue() != null) {
+                    ;
+                }
+                assertFalse("ks.store() with PKCS12StoreParameter(true) is expected to not have indefinitlength encoding", ildStream.isIndefiniteLength());
+            }
             final Key privKey = store.getKey(username1, "foo123".toCharArray());
             assertNotNull("No private key with alias '" + username1 + "' found in generated PKCS#12 file", privKey);
             final PrivateKeyInfo pkInfo = PrivateKeyInfo.getInstance(privKey.getEncoded());
-            assertEquals("Should have generated ECDSA keys by default", X9ObjectIdentifiers.id_ecPublicKey.getId(), pkInfo.getPrivateKeyAlgorithm().getAlgorithm().getId());            
+            assertEquals("Should have generated ECDSA keys by default", X9ObjectIdentifiers.id_ecPublicKey.getId(), pkInfo.getPrivateKeyAlgorithm().getAlgorithm().getId());
         } finally {
             FileUtils.deleteDirectory(tempDir.toFile());
         }
     }
-    
+
     @Test
     public void testMakeP12ForSingleUserEdDSA25519() throws Exception {
         Path tempDir = Files.createTempDirectory("ejbca");
@@ -182,16 +201,24 @@ public class BatchMakeP12CommandSystemTest extends CaTestCase {
             // Check the generated keystore
             final KeyStore store = KeyStore.getInstance("PKCS12");
             store.load(new FileInputStream(tempDir.toString()+"/"+username1+".p12"), "foo123".toCharArray());
+            // Verify that keystore returned from server has definite length encoding
+            FileInputStream in = new FileInputStream(tempDir.toString()+"/"+username1+".p12");
+            try (IndefiniteLengthDetectorStream ildStream = new IndefiniteLengthDetectorStream(in)) {
+                while (ildStream.readValue() != null) {
+                    ;
+                }
+                assertFalse("ks.store() with PKCS12StoreParameter(true) is expected to not have indefinitlength encoding", ildStream.isIndefiniteLength());
+            }
             final Key privKey = store.getKey(username1, "foo123".toCharArray());
             assertNotNull("No private key with alias '" + username1 + "' found in generated PKCS#12 file", privKey);
             final PrivateKeyInfo pkInfo = PrivateKeyInfo.getInstance(privKey.getEncoded());
-            assertEquals("Should have generated EdDSA keys by default", EdECObjectIdentifiers.id_Ed25519.getId(), pkInfo.getPrivateKeyAlgorithm().getAlgorithm().getId());            
+            assertEquals("Should have generated EdDSA keys by default", EdECObjectIdentifiers.id_Ed25519.getId(), pkInfo.getPrivateKeyAlgorithm().getAlgorithm().getId());
         } finally {
             FileUtils.deleteDirectory(tempDir.toFile());
         }
     }
-    
-    
+
+
     @Test
     public void testMakeP12ForSingleUserEdDSA448() throws Exception {
         Path tempDir = Files.createTempDirectory("ejbca");
@@ -204,15 +231,23 @@ public class BatchMakeP12CommandSystemTest extends CaTestCase {
             // Check the generated keystore
             final KeyStore store = KeyStore.getInstance("PKCS12");
             store.load(new FileInputStream(tempDir.toString()+"/"+username1+".p12"), "foo123".toCharArray());
+            // Verify that keystore returned from server has definite length encoding
+            FileInputStream in = new FileInputStream(tempDir.toString()+"/"+username1+".p12");
+            try (IndefiniteLengthDetectorStream ildStream = new IndefiniteLengthDetectorStream(in)) {
+                while (ildStream.readValue() != null) {
+                    ;
+                }
+                assertFalse("ks.store() with PKCS12StoreParameter(true) is expected to not have indefinitlength encoding", ildStream.isIndefiniteLength());
+            }
             final Key privKey = store.getKey(username1, "foo123".toCharArray());
             assertNotNull("No private key with alias '" + username1 + "' found in generated PKCS#12 file", privKey);
             final PrivateKeyInfo pkInfo = PrivateKeyInfo.getInstance(privKey.getEncoded());
-            assertEquals("Should have generated EdDSA keys by default", EdECObjectIdentifiers.id_Ed448.getId(), pkInfo.getPrivateKeyAlgorithm().getAlgorithm().getId());            
+            assertEquals("Should have generated EdDSA keys by default", EdECObjectIdentifiers.id_Ed448.getId(), pkInfo.getPrivateKeyAlgorithm().getAlgorithm().getId());
         } finally {
             FileUtils.deleteDirectory(tempDir.toFile());
         }
     }
-    
+
 
     /**
      * Gets the clear text password of a user.

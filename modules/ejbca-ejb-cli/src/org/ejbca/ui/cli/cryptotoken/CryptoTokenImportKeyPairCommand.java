@@ -14,7 +14,6 @@ package org.ejbca.ui.cli.cryptotoken;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,6 +27,13 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Properties;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyStoreTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -44,15 +50,9 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.certificate.SimpleCertGenerator;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-
 /**
  * CryptoToken EJB CLI command. See {@link #getDescription()} implementation.
- * 
+ *
  * @version $Id$
  *
  */
@@ -76,7 +76,7 @@ public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
 
     private static final String EC_KEY_HEADER = "-----BEGIN EC PRIVATE KEY-----\n";
     private static final String EC_KEY_FOOTER = "-----END EC PRIVATE KEY-----";
-    
+
     {
         registerParameter(new Parameter(PRIVATEKEYFILEPATH, "Private key file path", MandatoryMode.MANDATORY, StandaloneMode.ALLOW,
                 ParameterMode.ARGUMENT, "Path to the file containing private key."));
@@ -109,16 +109,16 @@ public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
             throws AuthorizationDeniedException, CryptoTokenOfflineException {
         final String alias = parameters.get(ALIAS);
         String keyAlgorithm = parameters.get(KEYALGORITHM);
-        String keySpec = parameters.get(KEYSPEC);                
-        char[] privateKeyPass = null; 
-        
+        String keySpec = parameters.get(KEYSPEC);
+        char[] privateKeyPass = null;
+
         if (keyAlgorithm == null) {
             keyAlgorithm = "RSA";
         }
         if (keySpec == null) {
             keySpec = "SHA256";
         }
-        
+
         if (parameters.get(PRIVKEYPASS) != null) {
             privateKeyPass = parameters.get(PRIVKEYPASS).toCharArray();
         }
@@ -130,23 +130,23 @@ public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
             final InputStream targetStream = new ByteArrayInputStream(currentTokendata);
 
             KeyStore keystore = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
-            
+
             String authCode = parameters.get(AUTHENTICATIONCODE);
             if (authCode == null) {
                 log.info("Enter authentication code for the crypto token: ");
                 // Read the password, but mask it so we don't display it on the console
                 authCode = String.valueOf(System.console().readPassword());
             }
-            
+
             keystore.load(targetStream, authCode.toCharArray());
 
             PrivateKey privateKey = loadPrivateKey(parameters.get(PRIVATEKEYFILEPATH), keyAlgorithm);
             PublicKey publicKey = loadPublicKey(parameters.get(PUBLICKEYFILEPATH), keyAlgorithm);
-            
+
             // Dummy certificate chain to hold keys
             final Certificate[] certchain = new Certificate[1];
             final String signatureAlgorithm = getSignatureAlgorithm(keyAlgorithm + "-" + keySpec);
-            
+
             certchain[0] = SimpleCertGenerator.forTESTCaCert()
                     .setSubjectDn("CN=SignatureKeyHolder")
                     .setIssuerDn("CN=SignatureKeyHolder")
@@ -158,14 +158,10 @@ public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
                     .generateCertificate();
 
             keystore.setKeyEntry(alias, privateKey, privateKeyPass, certchain);
-
-            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            keystore.store(baos, authCode.toCharArray());
-
+            byte[] ksBytes = KeyStoreTools.getAsByteArray(keystore, authCode);
             final Properties properties = currentCryptoToken.getProperties();
             CryptoToken newCryptoToken = new SoftCryptoToken();
-
-            newCryptoToken = CryptoTokenFactory.createCryptoToken(SoftCryptoToken.class.getName(), properties, baos.toByteArray(), cryptoTokenId,
+            newCryptoToken = CryptoTokenFactory.createCryptoToken(SoftCryptoToken.class.getName(), properties, ksBytes, cryptoTokenId,
                     currentCryptoToken.getTokenName());
             cryptoTokenSession.mergeCryptoToken(newCryptoToken);
             return CommandResult.SUCCESS;
@@ -199,11 +195,11 @@ public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
             privateKey = privateKey.replace(RSA_KEY_FOOTER, StringUtils.EMPTY);
             break;
         }
-        
+
         // Sometimes key file contains just these headers
         privateKey = privateKey.replace(PRIV_KEY_HEADER, StringUtils.EMPTY);
         privateKey = privateKey.replace(PRIV_KEY_FOOTER, StringUtils.EMPTY);
-        
+
         final byte[] keyBytes = Base64.decode(privateKey.getBytes());
         final KeyFactory kf = KeyFactory.getInstance(algorithm);
         final PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
@@ -232,7 +228,7 @@ public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
         br.close();
         return strKeyPEM;
     }
-    
+
     private String getSignatureAlgorithm(final String keyAlgorithm) {
         String signatureAlgorithm = null;
         switch (keyAlgorithm) {
@@ -265,7 +261,7 @@ public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
             break;
         case "EC-SHA512":
             signatureAlgorithm = AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA;
-            break; 
+            break;
         case "EC-SHA3-256":
             signatureAlgorithm = AlgorithmConstants.SIGALG_SHA3_256_WITH_ECDSA;
             break;
@@ -281,5 +277,5 @@ public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
         }
         return signatureAlgorithm;
     }
-    
+
 }

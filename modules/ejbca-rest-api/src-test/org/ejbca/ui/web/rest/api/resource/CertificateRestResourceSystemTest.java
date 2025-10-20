@@ -45,6 +45,7 @@ import com.keyfactor.util.Base64;
 import com.keyfactor.util.CeSecoreNameStyle;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.IndefiniteLengthDetectorStream;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
@@ -102,8 +103,8 @@ import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 import org.ejbca.ui.web.rest.api.io.request.AddEndEntityRestRequest;
-import org.ejbca.ui.web.rest.api.io.request.EnrollCertificateWithEntityRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.EnrollCertificateRestRequest;
+import org.ejbca.ui.web.rest.api.io.request.EnrollCertificateWithEntityRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.ExtendedInformationRestRequestComponent;
 import org.ejbca.ui.web.rest.api.io.request.FinalizeRestRequest;
 import org.ejbca.ui.web.rest.api.resource.util.CertificateRestResourceSystemTestUtil;
@@ -128,7 +129,6 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.xml.bind.DatatypeConverter;
 
-import static java.lang.Thread.sleep;
 import static org.cesecore.certificates.crl.RevocationReasons.AACOMPROMISE;
 import static org.cesecore.certificates.crl.RevocationReasons.AFFILIATIONCHANGED;
 import static org.cesecore.certificates.crl.RevocationReasons.CACOMPROMISE;
@@ -151,6 +151,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
+
+import static java.lang.Thread.sleep;
 
 /**
  * A unit test class for CertificateRestResource to test its content.
@@ -2721,6 +2723,14 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             }
             
             keyStore.load(new ByteArrayInputStream(keystoreBytes), "foo123".toCharArray());
+            // Verify that keystore returned from server has definite length encoding
+            ByteArrayInputStream in = new ByteArrayInputStream(keystoreBytes);
+            try (IndefiniteLengthDetectorStream ildStream = new IndefiniteLengthDetectorStream(in)) {
+                while (ildStream.readValue() != null) {
+                    ;
+                }
+                assertFalse("ks.store() with PKCS12StoreParameter(true) is expected to not have indefinitlength encoding", ildStream.isIndefiniteLength());
+            }
             // Verify results
             Enumeration<String> aliases = keyStore.aliases();
             assertTrue("Alias is missing in keystore response", 
