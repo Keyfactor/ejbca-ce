@@ -82,6 +82,7 @@ public class HealthCheckServlet extends HttpServlet {
         final private boolean checkAllCas;
         final private boolean checkOcsp;
         final private boolean checkPublishers;
+        final private boolean checkCrl;
         final private Map<String, String> cryptoTokensAndKeys;
 
         public QueryParameters(HttpServletRequest request) {
@@ -93,6 +94,7 @@ public class HealthCheckServlet extends HttpServlet {
             checkAllCas = caNames.length == 0;
             checkOcsp = safeGetParameter(request, "ocsp", true);
             checkPublishers = safeGetParameter(request, "publishers", EjbcaConfiguration.getHealthCheckPublisherConnections());
+            checkCrl = safeGetParameter(request, "checkCrl", false);
             cryptoTokensAndKeys = collectTokenAndKeyParameters(request);
         }
         
@@ -120,7 +122,7 @@ public class HealthCheckServlet extends HttpServlet {
         }
 
         public void log() {
-            log.debug(String.format("Checking cas=%b ocsp=%b publishers=%b", checkAllCas, checkOcsp, checkPublishers));
+            log.debug(String.format("Checking cas=%b ocsp=%b publishers=%b checkCrlExpiry=%b", checkAllCas, checkOcsp, checkPublishers, checkCrl));
         }
 
         @Override
@@ -128,7 +130,7 @@ public class HealthCheckServlet extends HttpServlet {
             final int prime = 31;
             int result = 1;
             result = prime * result + Arrays.hashCode(caNames);
-            result = prime * result + Objects.hash(checkAllCas, checkOcsp, checkPublishers, cryptoTokensAndKeys);
+            result = prime * result + Objects.hash(checkAllCas, checkOcsp, checkPublishers, cryptoTokensAndKeys, checkCrl);
             return result;
         }
 
@@ -142,7 +144,7 @@ public class HealthCheckServlet extends HttpServlet {
                 return false;
             QueryParameters other = (QueryParameters) obj;
             return Arrays.equals(caNames, other.caNames) && checkAllCas == other.checkAllCas && checkOcsp == other.checkOcsp
-                    && checkPublishers == other.checkPublishers && cryptoTokensAndKeys.equals(cryptoTokensAndKeys);
+                    && checkPublishers == other.checkPublishers && cryptoTokensAndKeys.equals(cryptoTokensAndKeys) && checkCrl == other.checkCrl;
         }
     }
 
@@ -318,7 +320,7 @@ public class HealthCheckServlet extends HttpServlet {
                 if (log.isDebugEnabled()) {
                     log.debug("Checking all CAs with 'include in health check' enabled.");
                 }
-                sb.append(caAdminSession.healthCheck());
+                sb.append(caAdminSession.healthCheck( queryParameters.checkCrl));
             }
             // if checkAllCas not specified, maybe specific cas were
             else if (queryParameters.caNames.length > 0 && !queryParameters.caNames[0].equals("none")) {
@@ -326,7 +328,7 @@ public class HealthCheckServlet extends HttpServlet {
                     log.debug("Checking specified CAs: " + String.join(",", queryParameters.caNames));
                 }
 
-                sb.append(caAdminSession.healthCheck(Arrays.asList(queryParameters.caNames)));
+                sb.append(caAdminSession.healthCheck(Arrays.asList(queryParameters.caNames), queryParameters.checkCrl));
             }
             if (queryParameters.cryptoTokensAndKeys.size() > 0) {
                 if (log.isDebugEnabled()) {
