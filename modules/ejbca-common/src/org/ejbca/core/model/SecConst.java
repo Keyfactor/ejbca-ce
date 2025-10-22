@@ -13,39 +13,13 @@
 
 package org.ejbca.core.model;
 
+import org.cesecore.certificates.endentity.EndEntityConstants;
+
 /**
- * Constants for users and certificates. Constants for Type of user: Type is constructed as a mask
- * since one user can be of several types. To test a user type:
- * <pre>
- * if (((type & USER_ENDUSER) == USER_ENDUSER) && ((type & USER_CAADMIN) == USER_ADMINISTOR) || ...
- *    ...
- * </pre>
- * Bit usage: bits 0-7   (1:st byte):  user types bits 8-15  (2:nd byte):  unused bits 16-23 (3:rd
- * byte):  unused bits 24-30 (4:th byte):  unused Constants for certificates are simple integer
- * types. Constants for Token Types Token type is constructed of integer constants since only one
- * token type can be generated.
+ * Legacy constants still being used in code.
+ * 
  */
 public final class SecConst {
-
-    // Token types.
-
-    /** Indicates that a browser generated token should be used. */
-    public static final int TOKEN_SOFT_BROWSERGEN = 1;
-
-    /** Indicates that a p12 token should be generated. */
-    public static final int TOKEN_SOFT_P12 = 2;
-
-    /** Indicates that a jks token should be generated. */
-    public static final int TOKEN_SOFT_JKS = 3;
-
-    /** Indicates that a pem token should be generated. */
-    public static final int TOKEN_SOFT_PEM = 4;
-
-    /** Indicates that a FIPS compliant P12 should be generated */
-    public static final int TOKEN_SOFT_BCFKS = 5;
-
-    /** All values equal or below this constant should be treated as a soft token. */
-    public static final int TOKEN_SOFT = 100;
 
     public static final String[] TOKENTEXTS = {
             "TOKENSOFTUSERGENERATED",
@@ -56,32 +30,17 @@ public final class SecConst {
     };
 
     public static final int[] TOKENIDS = {
-            SecConst.TOKEN_SOFT_BROWSERGEN,
-            SecConst.TOKEN_SOFT_P12,
-            SecConst.TOKEN_SOFT_BCFKS,
-            SecConst.TOKEN_SOFT_JKS,
-            SecConst.TOKEN_SOFT_PEM
+            EndEntityConstants.TOKEN_USERGEN,
+            EndEntityConstants.TOKEN_SOFT_P12,
+            EndEntityConstants.TOKEN_SOFT_BCFKS,
+            EndEntityConstants.TOKEN_SOFT_JKS,
+            EndEntityConstants.TOKEN_SOFT_PEM
     };
     
-    // ECA-419 Check This!
-    public static final int EMPTY_VALIDATOR = 1;
-
-    /** Used in end entity profiles and service workers
-     * This is duplicated in CAConstants */
-    public static final int ALLCAS = 1;
-
-
     /**
      * Constants used in the SignSessionBean indicating the userdata defined CA should be used.
      */
     public static final int CAID_USEUSERDEFINED = 0;
-
-    /**
-     * Default key lengths. Users are allowed to choose from these key lengths when
-     * lookup of available bit lengths fails.
-     * @see org.ejbca.ui.web.pub.ApplyBean
-     */
-    public static final int[] DEFAULT_KEY_LENGTHS = new int[] {512, 1024, 2048};
 
     /**
      * Prevents creation of new SecConst
@@ -96,18 +55,18 @@ public final class SecConst {
         "REV_CERTIFICATEHOLD",		"REV_UNUSED",			"REV_REMOVEFROMCRL",
         "REV_PRIVILEGEWITHDRAWN",	"REV_AACOMPROMISE"
     };
-    public static final int HIGN_REASON_BOUNDRARY = 11;
+
 
     public static String getKeyStoreTypeAsString(int keystoreType) {
         switch (keystoreType) {
-            case SecConst.TOKEN_SOFT_JKS:
+            case EndEntityConstants.TOKEN_SOFT_JKS:
                 return "JKS";
-            case SecConst.TOKEN_SOFT_PEM:
+            case EndEntityConstants.TOKEN_SOFT_PEM:
                 return "PEM";
-            case SecConst.TOKEN_SOFT_P12:
-            case SecConst.TOKEN_SOFT_BROWSERGEN:
+            case EndEntityConstants.TOKEN_SOFT_P12:
+            case EndEntityConstants.TOKEN_USERGEN:
                 return "PKCS12";
-            case SecConst.TOKEN_SOFT_BCFKS:
+            case EndEntityConstants.TOKEN_SOFT_BCFKS:
                 return "BCFKS";
             default:
                 return "UNKNOWN";

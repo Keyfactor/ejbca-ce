@@ -34,7 +34,6 @@ import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.AuthLoginException;
@@ -116,7 +115,7 @@ public class AuthenticationSessionSystemTest extends CaTestCase {
             throws EndEntityExistsException, AuthorizationDeniedException, EndEntityProfileValidationException, ApprovalException,
             WaitingForApprovalException, Exception {
         log.info("createUser: username=" + username + ", certProfileId=" + certProfileId);
-        EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caID, null, null, new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, certProfileId, SecConst.TOKEN_SOFT_P12, null);
+        EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caID, null, null, new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, certProfileId, EndEntityConstants.TOKEN_SOFT_P12, null);
         ExtendedInformation ei = new ExtendedInformation();
         ei.setMaxLoginAttempts(maxFailedLogins);
         ei.setRemainingLoginAttempts(maxFailedLogins);
@@ -135,7 +134,7 @@ public class AuthenticationSessionSystemTest extends CaTestCase {
         pwd1 = genRandomPwd();
         String email = username1 + "@anatom.se";
         EndEntityInformation endEntityInformation = new EndEntityInformation(username1, "C=SE, O=AnaTom, CN=" + username1, caid, "rfc822name=" + email, email, EndEntityTypes.ENDUSER.toEndEntityType(),
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, null);
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_P12, null);
         endEntityInformation.setPassword(pwd1);
         endEntityManagementSession.addUser(internalAdmin, endEntityInformation, false);
         

@@ -231,14 +231,14 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
 
         String keyStoreFilename = mainStoreDir + "/" + username;
 
-        if (keystoreType == SecConst.TOKEN_SOFT_JKS) {
+        if (keystoreType == EndEntityConstants.TOKEN_SOFT_JKS) {
             keyStoreFilename += ".jks";
         } else {
             keyStoreFilename += ".p12";
         }
 
         // If we should also create PEM-files, do that
-        if (keystoreType == SecConst.TOKEN_SOFT_PEM) {
+        if (keystoreType == EndEntityConstants.TOKEN_SOFT_PEM) {
             String PEMfilename = mainStoreDir + "/pem";
             P12toPEM.createPEM(ks, kspassword, PEMfilename);
         } else {
@@ -370,9 +370,9 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
         // Store keys and certificates in keystore.
         KeyStore ks = null;
 
-        if (keystoreType == SecConst.TOKEN_SOFT_JKS) {
+        if (keystoreType == EndEntityConstants.TOKEN_SOFT_JKS) {
             ks = KeyTools.createJKS(alias, keyPair.getPrivate(), password, cert, cachain);
-        } else if (keystoreType == SecConst.TOKEN_SOFT_BCFKS) {
+        } else if (keystoreType == EndEntityConstants.TOKEN_SOFT_BCFKS) {
             ks = KeyTools.createBcfks(alias, keyPair.getPrivate(), cert, cachain);
         } else {
             EndEntityProfile endEntityProfile = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfile(userdata.getEndEntityProfileId());            
@@ -440,9 +440,9 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
         boolean ret = false;
         // get users Token Type.
         int tokentype = data.getTokenType();
-        boolean createJKS = (tokentype == SecConst.TOKEN_SOFT_JKS);
-        boolean createPEM = (tokentype == SecConst.TOKEN_SOFT_PEM);
-        boolean createP12 = tokentype == SecConst.TOKEN_SOFT_P12 || tokentype == SecConst.TOKEN_SOFT_BCFKS;
+        boolean createJKS = (tokentype == EndEntityConstants.TOKEN_SOFT_JKS);
+        boolean createPEM = (tokentype == EndEntityConstants.TOKEN_SOFT_PEM);
+        boolean createP12 = tokentype == EndEntityConstants.TOKEN_SOFT_P12 || tokentype == EndEntityConstants.TOKEN_SOFT_BCFKS;
         // Only generate supported tokens
         if (createP12 || createPEM || createJKS) {
             if (status == EndEntityConstants.STATUS_KEYRECOVERY) {
@@ -538,8 +538,8 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
         do {
             for (EndEntityInformation data : EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class)
                     .findAllBatchUsersByStatusWithLimit(status)) {
-                if (data.getTokenType() == SecConst.TOKEN_SOFT_JKS || data.getTokenType() == SecConst.TOKEN_SOFT_PEM
-                        || data.getTokenType() == SecConst.TOKEN_SOFT_P12) {
+                if (data.getTokenType() == EndEntityConstants.TOKEN_SOFT_JKS || data.getTokenType() == EndEntityConstants.TOKEN_SOFT_PEM
+                        || data.getTokenType() == EndEntityConstants.TOKEN_SOFT_P12) {
                     result.add(data);
                 }
             }

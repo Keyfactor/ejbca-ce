@@ -33,6 +33,8 @@ import org.ejbca.core.model.SecConst;
 public class RevokedInfoView implements Serializable {
 
 	private static final long serialVersionUID = 1L;
+	
+    private static final int HIGN_REASON_BOUNDRARY = 11;
 
 	// Private fields.
     private CertificateStatus revokedcertinfo;
@@ -75,7 +77,7 @@ public class RevokedInfoView implements Serializable {
     public String getRevocationReason() {
         String ret = null;
         final int reason = this.revokedcertinfo.revocationReason;
-        if ((reason >= 0) && (reason < SecConst.HIGN_REASON_BOUNDRARY)) {
+        if ((reason >= 0) && (reason < HIGN_REASON_BOUNDRARY)) {
             ret = SecConst.reasontexts[reason];
         }
         return ret;

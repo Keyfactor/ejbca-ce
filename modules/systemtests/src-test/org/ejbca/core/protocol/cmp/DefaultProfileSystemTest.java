@@ -77,7 +77,6 @@ import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -647,12 +646,12 @@ public class DefaultProfileSystemTest extends CmpTestCase {
             throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException, EjbcaException, Exception {
 
         EndEntityInformation user = new EndEntityInformation(username, subjectDN, _caid, null, username + "@primekey.se", new EndEntityType(
-                EndEntityTypes.ENDUSER), eepid, cpid, SecConst.TOKEN_SOFT_PEM, null);
+                EndEntityTypes.ENDUSER), eepid, cpid, EndEntityConstants.TOKEN_SOFT_PEM, null);
         user.setPassword(password);
         try {
             EndEntityInformation endEntityInformation = new EndEntityInformation(username, subjectDN, _caid,
                     "rfc822name=" + username + "@primekey.se", username + "@primekey.se", EndEntityTypes.ENDUSER.toEndEntityType(), eepid, cpid,
-                    SecConst.TOKEN_SOFT_PEM, null);
+                    EndEntityConstants.TOKEN_SOFT_PEM, null);
             endEntityInformation.setPassword(password);
             endEntityManagementSession.addUser(ADMIN, endEntityInformation, false);
 

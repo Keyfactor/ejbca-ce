@@ -37,7 +37,6 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.ejbca.config.WebConfiguration;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.services.IAction;
 import org.ejbca.core.model.services.IInterval;
@@ -426,7 +425,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
     public List<SelectItem> getAvailableCAsWithAnyOption() {
         List<SelectItem> availableCANames = new ArrayList<>();
         String caname = EjbcaJSFHelper.getBean().getText().get("ANYCA");
-        availableCANames.add(new SelectItem(String.valueOf(SecConst.ALLCAS), caname));
+        availableCANames.add(new SelectItem(String.valueOf(CAConstants.ALLCAS), caname));
         availableCANames.addAll(getAvailableCAs());
         return availableCANames;
     }
@@ -452,7 +451,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
 
         // Add Any CA first in the list
         final String caname = EjbcaJSFHelper.getBean().getText().get("ANYCA");
-        availableCANames.add(0, new SelectItem(String.valueOf(SecConst.ALLCAS), caname));
+        availableCANames.add(0, new SelectItem(String.valueOf(CAConstants.ALLCAS), caname));
         return availableCANames;
     }
 

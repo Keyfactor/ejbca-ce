@@ -49,7 +49,6 @@ import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ra.NotFoundException;
@@ -375,7 +374,7 @@ public class P10CrMessageHandler extends BaseCmpMessageHandler implements ICmpMe
 
         final EndEntityInformation userdata = new EndEntityInformation(username, dnname.toString(), caId, altNames, email,
                 EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), eeProfileId, certProfileId, null, null,
-                SecConst.TOKEN_SOFT_BROWSERGEN, ei);
+                EndEntityConstants.TOKEN_USERGEN, ei);
         userdata.setPassword(pwd);
         // Set so we have the right params in the call to processCertReq. 
         // Username and pwd in the EndEntityInformation and the IRequestMessage must match

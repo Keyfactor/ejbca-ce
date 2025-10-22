@@ -40,6 +40,7 @@ import org.cesecore.certificates.certificate.certextensions.standard.QcStatement
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.endentity.PSD2RoleOfPSPStatement;
@@ -294,7 +295,7 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
         this.selectedCaId = selectedEeProfile.getDefaultCA();
         this.selectedTokenId = Integer.parseInt(selectedEeProfile.getValue(EndEntityProfile.DEFKEYSTORE,0));
         
-        this.keyRecoveryCheckboxStatus.setLeft(selectedTokenId != SecConst.TOKEN_SOFT_BROWSERGEN && selectedEeProfile.getUse(EndEntityProfile.KEYRECOVERABLE, 0));
+        this.keyRecoveryCheckboxStatus.setLeft(selectedTokenId != EndEntityConstants.TOKEN_USERGEN && selectedEeProfile.getUse(EndEntityProfile.KEYRECOVERABLE, 0));
         this.keyRecoveryCheckboxStatus.setRight(selectedEeProfile.isRequired(EndEntityProfile.KEYRECOVERABLE,0));
         
         final String issuanceRevocationReason = selectedEeProfile.getValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0);
@@ -462,7 +463,7 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
             for (int i = 0; i < availableTokens.length; i++) {
                 for (int j = 0; j < tokenTexts.length; j++) {
                     if (tokenIds[j] == Integer.parseInt(availableTokens[i])) {
-                        if (tokenIds[j] > SecConst.TOKEN_SOFT) {
+                        if (tokenIds[j] > EndEntityConstants.TOKEN_SOFT) {
                             listOfTokens.add(new SelectItem(tokenIds[j], tokenTexts[j]));
                         } else {
                             listOfTokens.add(new SelectItem(tokenIds[j], getEjbcaWebBean().getText(tokenTexts[j])));
@@ -933,7 +934,7 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
         boolean keyRecoveryCheckBoxDisabled = false;
         boolean keyRecoveryCheckBoxChecked = false;
 
-        if (getSelectedTokenId() == SecConst.TOKEN_SOFT_BROWSERGEN) {
+        if (getSelectedTokenId() == EndEntityConstants.TOKEN_USERGEN) {
             keyRecoveryCheckBoxChecked = false;
             keyRecoveryCheckBoxDisabled = true;
         } else {
@@ -1015,7 +1016,7 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
         this.selectedCaId = selectedEeProfile.getDefaultCA();
         this.selectedTokenId = Integer.parseInt(selectedEeProfile.getValue(EndEntityProfile.DEFKEYSTORE,0));
         
-        this.keyRecoveryCheckboxStatus.setLeft(selectedTokenId != SecConst.TOKEN_SOFT_BROWSERGEN && selectedEeProfile.getUse(EndEntityProfile.KEYRECOVERABLE, 0));
+        this.keyRecoveryCheckboxStatus.setLeft(selectedTokenId != EndEntityConstants.TOKEN_USERGEN && selectedEeProfile.getUse(EndEntityProfile.KEYRECOVERABLE, 0));
         this.keyRecoveryCheckboxStatus.setRight(selectedEeProfile.isRequired(EndEntityProfile.KEYRECOVERABLE,0));
         
         this.setSendNotification(selectedEeProfile.getValue(EndEntityProfile.SENDNOTIFICATION,0).equals(EndEntityProfile.TRUE));

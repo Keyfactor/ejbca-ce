@@ -52,7 +52,6 @@ import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertReqHistoryProxySessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.junit.After;
@@ -242,7 +241,7 @@ public class CertificateRequestThrowAwaySystemTest {
         int endEntityProfileId = endEntityProfileSession.getEndEntityProfileId(TESTCA_NAME);
         EndEntityInformation userData = new EndEntityInformation(username, "CN=" + username, CaTestCase.getTestCAId(TESTCA_NAME), null, null,
                 EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, certificateProfileId, null, null,
-                SecConst.TOKEN_SOFT_BROWSERGEN, null);
+                EndEntityConstants.TOKEN_USERGEN, null);
         userData.setPassword(password);
         return userData;
     }

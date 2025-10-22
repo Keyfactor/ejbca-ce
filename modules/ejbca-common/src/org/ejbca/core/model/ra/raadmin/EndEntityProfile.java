@@ -42,6 +42,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.DNFieldExtractor;
@@ -50,7 +51,6 @@ import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.raadmin.validators.RegexFieldValidator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
@@ -292,10 +292,10 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_ENCRYPTOR + ";" +
             CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_SIGNER + ";" +
             CertificateProfileConstants.CERTPROFILE_FIXED_SERVER;
-    private static final String CONST_DEFKEYSTORE = Integer.toString(SecConst.TOKEN_SOFT_BROWSERGEN);
-    private static final String CONST_AVAILKEYSTORE = SecConst.TOKEN_SOFT_BROWSERGEN + ";"
-            + SecConst.TOKEN_SOFT_P12 +  ";" + SecConst.TOKEN_SOFT_BCFKS + ";" + SecConst.TOKEN_SOFT_JKS + ";" + SecConst.TOKEN_SOFT_PEM;
-    private static final String CONST_AVAILCAS = Integer.toString(SecConst.ALLCAS);
+    private static final String CONST_DEFKEYSTORE = Integer.toString(EndEntityConstants.TOKEN_USERGEN);
+    private static final String CONST_AVAILKEYSTORE = EndEntityConstants.TOKEN_USERGEN + ";"
+            + EndEntityConstants.TOKEN_SOFT_P12 +  ";" + EndEntityConstants.TOKEN_SOFT_BCFKS + ";" + EndEntityConstants.TOKEN_SOFT_JKS + ";" + EndEntityConstants.TOKEN_SOFT_PEM;
+    private static final String CONST_AVAILCAS = Integer.toString(CAConstants.ALLCAS);
     private static final String CONST_ISSUANCEREVOCATIONREASON = Integer.toString(RevokedCertInfo.NOT_REVOKED);
     private static final String CONST_AVAILCERTPROFILES2 =
             CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER + ";" +
@@ -999,7 +999,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
      * @return One of the SecConst.TOKEN_SOFT_* constants
      */
     public int getDefaultTokenType() {
-        int ret = SecConst.TOKEN_SOFT_BROWSERGEN;
+        int ret = EndEntityConstants.TOKEN_USERGEN;
         final String str = getValue(EndEntityProfile.DEFKEYSTORE, 0);
         if (StringUtils.isNotEmpty(str)) {
             ret = Integer.parseInt(str);
@@ -1773,7 +1773,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     		throw new EndEntityProfileValidationException("Key Recoverable cannot be used.");
     	}
     	if (isRequired(KEYRECOVERABLE, 0) && getValue(KEYRECOVERABLE, 0).equals(TRUE)) {
-    	    if(tokenType == SecConst.TOKEN_SOFT_BROWSERGEN) {
+    	    if(tokenType == EndEntityConstants.TOKEN_USERGEN) {
     	        throw new EndEntityProfileValidationException("Key Recoverable is required, but can't be used for User Generated Tokens.");
     	    }
     		if (getValue(KEYRECOVERABLE, 0).equals(TRUE) && !keyRecoverable) {
@@ -1852,7 +1852,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	boolean caIdFound = false;
     	for (final String currentAvailableCaId : availableCaIds) {
     		final int tmp = Integer.parseInt(currentAvailableCaId);
-    		if (tmp == caId || tmp == SecConst.ALLCAS) {
+    		if (tmp == caId || tmp == CAConstants.ALLCAS) {
     			caIdFound = true;
     			break;
     		}

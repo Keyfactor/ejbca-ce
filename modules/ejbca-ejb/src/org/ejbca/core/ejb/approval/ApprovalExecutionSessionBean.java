@@ -31,6 +31,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.config.GlobalEndEntityProfileConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.dto.RoleDataDto;
@@ -338,7 +339,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
                 }
             }
         }
-        if (approvalData.getCAId() != ApprovalDataVO.ANY_CA) {
+        if (approvalData.getCAId() != CAConstants.ALLCAS) {
             if (!authorizationSession.isAuthorized(admin, StandardRules.CAACCESS.resource() + approvalData.getCAId())) {
                 final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource",
                         StandardRules.CAACCESS.resource() + approvalData.getCAId(), null);

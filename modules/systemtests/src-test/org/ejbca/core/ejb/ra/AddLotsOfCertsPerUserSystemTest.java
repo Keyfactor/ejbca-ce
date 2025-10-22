@@ -41,7 +41,6 @@ import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
@@ -150,7 +149,7 @@ public class AddLotsOfCertsPerUserSystemTest extends CaTestCase {
             }
 
             EndEntityType type = new EndEntityType(EndEntityTypes.ENDUSER);
-            int token = SecConst.TOKEN_SOFT_P12;
+            int token = EndEntityConstants.TOKEN_SOFT_P12;
             int profileid = EndEntityConstants.EMPTY_END_ENTITY_PROFILE;
             int certificatetypeid = CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER;
             String dn = "C=SE, O=AnaTom, CN=" + username;
