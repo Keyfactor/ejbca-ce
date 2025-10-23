@@ -53,6 +53,7 @@ import org.cesecore.audit.AuditLogEntry;
 import org.cesecore.audit.impl.integrityprotected.IntegrityProtectedDevice;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -67,7 +68,6 @@ import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.db.DatabaseContentRule;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.junit.After;
 import org.junit.Before;
@@ -138,7 +138,7 @@ public class CertificateRequestSessionSystemTest extends CaTestCase {
         // First try a successful request and validate the returned KeyStore
         String username = "softTokenRequestTest-" + random.nextInt();
         EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, getTestCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_JKS, null);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_JKS, null);
         userdata.setPassword(PASSWORD);
         byte[] encodedKeyStore = certificateRequestSession.processSoftTokenReq(admin, userdata, "1024",
                 AlgorithmConstants.KEYALGORITHM_RSA, true);
@@ -188,7 +188,7 @@ public class CertificateRequestSessionSystemTest extends CaTestCase {
         final String username = "certificateRequestTest-user1";
         final  String username2 = "certificateRequestTest-user2";
         EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, getTestCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER),
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, null);
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_USERGEN, null);
         userdata.setPassword(PASSWORD);
         String pkcs10 = new String(Base64.encode(generatePKCS10Req(CN_IGNORED, PASSWORD)));
         byte[] encodedCertificate = certificateRequestSession.processCertReq(admin, userdata, pkcs10, CertificateConstants.CERT_REQ_TYPE_PKCS10, CertificateConstants.CERT_RES_TYPE_CERTIFICATE);
@@ -231,7 +231,7 @@ public class CertificateRequestSessionSystemTest extends CaTestCase {
     	final String suppliedDn = "CN=" + username + ",Name=removed,SN=removed,GIVENNAME= ,GIVENNAME=,SURNAME= ,SURNAME=,O=removed,C=SE";
     	final String expectedDn = "CN=" + username + NAME_SN_O;
         EndEntityInformation userdata = new EndEntityInformation(username, suppliedDn, getTestCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, null);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_USERGEN, null);
         userdata.setPassword(PASSWORD);
         String pkcs10 = new String(Base64.encode(generatePKCS10Req(CN_IGNORED, PASSWORD)));
         byte[] encodedCertificate = certificateRequestSession.processCertReq(admin, userdata, pkcs10, CertificateConstants.CERT_REQ_TYPE_PKCS10, CertificateConstants.CERT_RES_TYPE_CERTIFICATE);
@@ -252,7 +252,7 @@ public class CertificateRequestSessionSystemTest extends CaTestCase {
         final String suppliedDn = "CN=Test" + uniqueId;
 
         EndEntityProfile profile = new EndEntityProfile();
-        profile.setAvailableCAs(Arrays.asList(SecConst.ALLCAS));
+        profile.setAvailableCAs(Arrays.asList(CAConstants.ALLCAS));
         profile.addField(DnComponents.COMMONNAME);
         profile.setDescription("redact");
         profile.setRedactPii(true);
@@ -266,7 +266,7 @@ public class CertificateRequestSessionSystemTest extends CaTestCase {
             EndEntityInformation userdata = new EndEntityInformation(username, suppliedDn, getTestCAId(), null, null,
                                                                      new EndEntityType(EndEntityTypes.ENDUSER), profileId,
                                                                      CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                                                                     SecConst.TOKEN_SOFT_BROWSERGEN, null);
+                                                                     EndEntityConstants.TOKEN_USERGEN, null);
             userdata.setPassword(PASSWORD);
 
             String request = new String(Base64.encode(generatePKCS10Req(CN_IGNORED+uniqueId, PASSWORD)));
@@ -304,7 +304,7 @@ public class CertificateRequestSessionSystemTest extends CaTestCase {
     @Test
     public void testAutoGenerateUserName() throws Exception {
         EndEntityProfile profile = new EndEntityProfile();
-        profile.setAvailableCAs(Arrays.asList(SecConst.ALLCAS));
+        profile.setAvailableCAs(Arrays.asList(CAConstants.ALLCAS));
         profile.addField(DnComponents.COMMONNAME);
         profile.addField(DnComponents.COUNTRY);
         profile.addField(DnComponents.DNSERIALNUMBER);
@@ -322,7 +322,7 @@ public class CertificateRequestSessionSystemTest extends CaTestCase {
             final String expectedDn = "CN=Test" + uniqueId + NAME_SN_O;
 
             EndEntityInformation userdata = new EndEntityInformation(null, suppliedDn, getTestCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), profileId,
-                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, null);
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_USERGEN, null);
 
             userdata.setPassword(PASSWORD);
 
@@ -345,7 +345,7 @@ public class CertificateRequestSessionSystemTest extends CaTestCase {
         final String suppliedDn = "CN=Test" + uniqueId;
 
         EndEntityProfile profile = new EndEntityProfile();
-        profile.setAvailableCAs(Arrays.asList(SecConst.ALLCAS));
+        profile.setAvailableCAs(Arrays.asList(CAConstants.ALLCAS));
         profile.addField(DnComponents.COMMONNAME);
         profile.setAutoGeneratedUsername(true);
         
@@ -357,7 +357,7 @@ public class CertificateRequestSessionSystemTest extends CaTestCase {
             EndEntityInformation userdata = new EndEntityInformation(username, suppliedDn, getTestCAId(), null, null,
                                                                      new EndEntityType(EndEntityTypes.ENDUSER), profileId,
                                                                      CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                                                                     SecConst.TOKEN_SOFT_BROWSERGEN, null);
+                                                                     EndEntityConstants.TOKEN_USERGEN, null);
             userdata.setPassword(PASSWORD);
 
             String request = new String(Base64.encode(generateHybridPKCS10Req(CN_IGNORED+uniqueId)));
@@ -387,7 +387,7 @@ public class CertificateRequestSessionSystemTest extends CaTestCase {
             final String suppliedDn = "CN=" + username + ",GIVENNAME=test,SURNAME=test,O=CertificateRequestTest,C=SE";
             final EndEntityInformation endEntity = new EndEntityInformation(username, suppliedDn, getTestCAId(), null, null,
                     new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, null);
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_USERGEN, null);
             endEntity.setPassword(PASSWORD);
             endEntityManagementSession.addUser(admin, endEntity, false);
             endEntityManagementSession.setUserStatus(admin, username, EndEntityConstants.STATUS_GENERATED); // concurrent requests are only supported if the status is GENERATED

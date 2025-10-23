@@ -46,6 +46,7 @@ import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
@@ -64,7 +65,6 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -321,7 +321,7 @@ public class SignSessionWithEllipticCurveDsaSystemTest extends SignSessionCommon
         for (final String dnComponenent : dnComponents) {
             profile.addField(dnComponenent);
         }
-        profile.setAvailableCAs(Collections.singleton(SecConst.ALLCAS));
+        profile.setAvailableCAs(Collections.singleton(CAConstants.ALLCAS));
         profile.setAvailableCertificateProfileIds(Collections.singleton(cprofile));
         endEntityProfileSession.addEndEntityProfile(internalAdmin, profileName, profile);
         KeyPair anotherKey = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_EC);
@@ -330,7 +330,7 @@ public class SignSessionWithEllipticCurveDsaSystemTest extends SignSessionCommon
         createEndEntity(endEntityName, eeprofile, cprofile, rsacaid);
         try {
             EndEntityInformation user = new EndEntityInformation(endEntityName, requestedDn, rsacaid, null, null,
-                    new EndEntityType(EndEntityTypes.ENDUSER), eeprofile, cprofile, SecConst.TOKEN_SOFT_BROWSERGEN, null);
+                    new EndEntityType(EndEntityTypes.ENDUSER), eeprofile, cprofile, EndEntityConstants.TOKEN_USERGEN, null);
             user.setStatus(EndEntityConstants.STATUS_NEW);
             endEntityManagementSession.changeUser(internalAdmin, user, false);
             log.debug("created user: " + endEntityName + ", foo123, " + requestedDn);
@@ -437,7 +437,7 @@ public class SignSessionWithEllipticCurveDsaSystemTest extends SignSessionCommon
             profile.setRequired(DnComponents.NOCCAT, 1, false);
             profile.addField(DnComponents.NOCCAT);
             profile.setRequired(DnComponents.NOCCAT, 2, false);
-            profile.setAvailableCAs(Collections.singleton(SecConst.ALLCAS));
+            profile.setAvailableCAs(Collections.singleton(CAConstants.ALLCAS));
             profile.setAvailableCertificateProfileIds(Collections.singleton(cprofile));
             endEntityProfileSession.addEndEntityProfile(internalAdmin, profileName, profile);
             KeyPair anotherKey = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_EC);
@@ -445,7 +445,7 @@ public class SignSessionWithEllipticCurveDsaSystemTest extends SignSessionCommon
             createEndEntity(endEntityName, eeprofile, cprofile, icaccaid);
             // See Matter core specification section 6.5.6.4 for Subject DN Example
             EndEntityInformation user = new EndEntityInformation(endEntityName, "NODEID=DEDEDEDE00010001,FABRICID=FAB000000000001D,NOCCAT=ABCD0002,NOCCAT=ABCE0018,NOCCAT=ABCF0002", icaccaid, null, null,
-                    new EndEntityType(EndEntityTypes.ENDUSER), eeprofile, cprofile, SecConst.TOKEN_SOFT_BROWSERGEN, null);
+                    new EndEntityType(EndEntityTypes.ENDUSER), eeprofile, cprofile, EndEntityConstants.TOKEN_USERGEN, null);
             user.setStatus(EndEntityConstants.STATUS_NEW);
             endEntityManagementSession.changeUser(internalAdmin, user, false);
             log.debug("created user: " + endEntityName + ", foo123, NODEID=DEDEDEDE00010001,FABRICID=FAB000000000001D,NOCCAT=ABCD0002,NOCCAT=ABCE0018,NOCCAT=ABCF0002");
@@ -501,7 +501,7 @@ public class SignSessionWithEllipticCurveDsaSystemTest extends SignSessionCommon
         profile.addField(DnComponents.COMMONNAME);
         profile.addField(DnComponents.UNIQUEIDENTIFIER);
         profile.addField(DnComponents.CERTIFICATIONID);
-        profile.setAvailableCAs(Collections.singleton(SecConst.ALLCAS));
+        profile.setAvailableCAs(Collections.singleton(CAConstants.ALLCAS));
         profile.setAvailableCertificateProfileIds(Collections.singleton(cprofile));
         endEntityProfileSession.addEndEntityProfile(internalAdmin, profileName, profile);
         KeyPair anotherKey = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_EC);
@@ -511,7 +511,7 @@ public class SignSessionWithEllipticCurveDsaSystemTest extends SignSessionCommon
         try {
 
             EndEntityInformation user = new EndEntityInformation(endEntityName, "C=SE,O=PrimeKey,CN=Some CN,uniqueIdentifier=N62892,CertificationID=BSI-K-TR-1234-2023", rsacaid, null, null,
-                    new EndEntityType(EndEntityTypes.ENDUSER), eeprofile, cprofile, SecConst.TOKEN_SOFT_BROWSERGEN, null);
+                    new EndEntityType(EndEntityTypes.ENDUSER), eeprofile, cprofile, EndEntityConstants.TOKEN_USERGEN, null);
             user.setStatus(EndEntityConstants.STATUS_NEW);
             endEntityManagementSession.changeUser(internalAdmin, user, false);
             log.debug("created user: " + endEntityName + ", foo123, C=SE,O=PrimeKey,CN=Some CN,uniqueIdentifier=N62892,CertificationID=BSI-K-TR-1234-2023");

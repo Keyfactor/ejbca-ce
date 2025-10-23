@@ -36,6 +36,7 @@ import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.junit.util.TraceLogMethodsTestWatcher;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.GlobalConfiguration;
@@ -170,90 +171,90 @@ public class CertificateRestResourceEnrollKeyStoreSystemTest extends RestResourc
     // enroll RSA key x 3 types of keystore
     @Test
     public void enrollRsaPkcs12() {
-        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_RSA, SecConst.TOKEN_SOFT_P12, TEST_EE_PROFILE_NAME);
-        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_RSA, SecConst.TOKEN_SOFT_P12, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_RSA, EndEntityConstants.TOKEN_SOFT_P12, TEST_EE_PROFILE_NAME);
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_RSA, EndEntityConstants.TOKEN_SOFT_P12, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
     }
     
     @Test
     public void enrollRsaJks() {
-        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_RSA, SecConst.TOKEN_SOFT_JKS, TEST_EE_PROFILE_NAME);
-        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_RSA, SecConst.TOKEN_SOFT_JKS, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_RSA, EndEntityConstants.TOKEN_SOFT_JKS, TEST_EE_PROFILE_NAME);
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_RSA, EndEntityConstants.TOKEN_SOFT_JKS, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
     }
     
     @Test
     public void enrollRsaBcfks() {
-        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_RSA, SecConst.TOKEN_SOFT_BCFKS, TEST_EE_PROFILE_NAME);
-        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_RSA, SecConst.TOKEN_SOFT_BCFKS, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_RSA, EndEntityConstants.TOKEN_SOFT_BCFKS, TEST_EE_PROFILE_NAME);
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_RSA, EndEntityConstants.TOKEN_SOFT_BCFKS, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
     }
     
     // enroll ECDSA key
     @Test
     public void enrollEcdsaPkcs12() {
-        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_ECDSA, SecConst.TOKEN_SOFT_P12, TEST_EE_PROFILE_NAME);
-        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_ECDSA, SecConst.TOKEN_SOFT_P12, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_ECDSA, EndEntityConstants.TOKEN_SOFT_P12, TEST_EE_PROFILE_NAME);
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_ECDSA, EndEntityConstants.TOKEN_SOFT_P12, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
     }
     
     @Test
     public void enrollEcdsaJks() {
-        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_ECDSA, SecConst.TOKEN_SOFT_JKS, TEST_EE_PROFILE_NAME);
-        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_ECDSA, SecConst.TOKEN_SOFT_JKS, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_ECDSA, EndEntityConstants.TOKEN_SOFT_JKS, TEST_EE_PROFILE_NAME);
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_ECDSA, EndEntityConstants.TOKEN_SOFT_JKS, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
     }
     
     @Test
     public void enrollEcdsaBcfks() {
-        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_ECDSA, SecConst.TOKEN_SOFT_BCFKS, TEST_EE_PROFILE_NAME);
-        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_ECDSA, SecConst.TOKEN_SOFT_BCFKS, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_ECDSA, EndEntityConstants.TOKEN_SOFT_BCFKS, TEST_EE_PROFILE_NAME);
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_ECDSA, EndEntityConstants.TOKEN_SOFT_BCFKS, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
     }
 
     // enroll ML-DSA-44 key x 3 types of keystore
     @Test
     public void enrollMLDSA44Pkcs12() {
-        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_MLDSA44, SecConst.TOKEN_SOFT_P12, TEST_EE_PROFILE_NAME);
-        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_MLDSA44, SecConst.TOKEN_SOFT_P12, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_MLDSA44, EndEntityConstants.TOKEN_SOFT_P12, TEST_EE_PROFILE_NAME);
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_MLDSA44, EndEntityConstants.TOKEN_SOFT_P12, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
     }
     
     @Test
     public void enrollMLDSA44Jks() {
-        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_MLDSA44, SecConst.TOKEN_SOFT_JKS, TEST_EE_PROFILE_NAME);
-        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_MLDSA44, SecConst.TOKEN_SOFT_JKS, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_MLDSA44, EndEntityConstants.TOKEN_SOFT_JKS, TEST_EE_PROFILE_NAME);
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_MLDSA44, EndEntityConstants.TOKEN_SOFT_JKS, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
     }
     
     @Test
     public void enrollMLDSA44Bcfks() {
-        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_MLDSA44, SecConst.TOKEN_SOFT_BCFKS, TEST_EE_PROFILE_NAME);
-        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_MLDSA44, SecConst.TOKEN_SOFT_BCFKS, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_MLDSA44, EndEntityConstants.TOKEN_SOFT_BCFKS, TEST_EE_PROFILE_NAME);
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_MLDSA44, EndEntityConstants.TOKEN_SOFT_BCFKS, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
     }
 
     // enroll SLH-DSA- key x 3 types of keystore
     @Test
     public void enrollSLHDSAPkcs12() {
-        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F, SecConst.TOKEN_SOFT_P12, TEST_EE_PROFILE_NAME);
-        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F, SecConst.TOKEN_SOFT_P12, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F, EndEntityConstants.TOKEN_SOFT_P12, TEST_EE_PROFILE_NAME);
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F, EndEntityConstants.TOKEN_SOFT_P12, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
     }
 
     @Test
     public void enrollSLHDSAJks() {
-        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F, SecConst.TOKEN_SOFT_JKS, TEST_EE_PROFILE_NAME);
-        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F, SecConst.TOKEN_SOFT_JKS, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F, EndEntityConstants.TOKEN_SOFT_JKS, TEST_EE_PROFILE_NAME);
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F, EndEntityConstants.TOKEN_SOFT_JKS, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
     }
 
     @Test
     public void enrollSLHDSABcfks() {
-        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F, SecConst.TOKEN_SOFT_BCFKS, TEST_EE_PROFILE_NAME);
-        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F, SecConst.TOKEN_SOFT_BCFKS, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F, EndEntityConstants.TOKEN_SOFT_BCFKS, TEST_EE_PROFILE_NAME);
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F, EndEntityConstants.TOKEN_SOFT_BCFKS, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
     }
     
     // enroll FALCON-512 key x 3 types of keystore
     @Test
     public void enrollFalcon512Pkcs12() {
-        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_FALCON512, SecConst.TOKEN_SOFT_P12, TEST_EE_PROFILE_NAME);
-        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_FALCON512, SecConst.TOKEN_SOFT_P12, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_FALCON512, EndEntityConstants.TOKEN_SOFT_P12, TEST_EE_PROFILE_NAME);
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_FALCON512, EndEntityConstants.TOKEN_SOFT_P12, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
     }
     
     @Test
     public void enrollFalcon512Jks() {
-        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_FALCON512, SecConst.TOKEN_SOFT_JKS, TEST_EE_PROFILE_NAME);
-        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_FALCON512, SecConst.TOKEN_SOFT_JKS, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_FALCON512, EndEntityConstants.TOKEN_SOFT_JKS, TEST_EE_PROFILE_NAME);
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_FALCON512, EndEntityConstants.TOKEN_SOFT_JKS, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
     }
     
     @Test
@@ -262,9 +263,9 @@ public class CertificateRestResourceEnrollKeyStoreSystemTest extends RestResourc
         // com.keyfactor.util.keys.KeyTools.createBcfks
         // Caused by: java.lang.IllegalStateException: java.security.KeyStoreException: BCFKS not found 
         // java.security.NoSuchAlgorithmException: no such algorithm: BCFKS for provider BCPQC
-        // enrollKeyStore(AlgorithmConstants.KEYALGORITHM_FALCON512, SecConst.TOKEN_SOFT_BCFKS, TEST_EE_PROFILE_NAME);
+        // enrollKeyStore(AlgorithmConstants.KEYALGORITHM_FALCON512, EndEntityConstants.TOKEN_SOFT_BCFKS, TEST_EE_PROFILE_NAME);
         // TODO: ECA-12721 Fix. See above. 
-        // enrollKeyStore(AlgorithmConstants.KEYALGORITHM_FALCON512, SecConst.TOKEN_SOFT_BCFKS, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
+        // enrollKeyStore(AlgorithmConstants.KEYALGORITHM_FALCON512, EndEntityConstants.TOKEN_SOFT_BCFKS, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
     }
     
     private void enrollKeyStore(String keyAlgorithm, int tokenType, String eeProfileName) {
@@ -441,7 +442,7 @@ public class CertificateRestResourceEnrollKeyStoreSystemTest extends RestResourc
     @Test
     public void badEnrollNotAllowedBitLength() {
         String userName = createUser(TEST_EE_PROFILE_NAME, TEST_CERT_PROFILE_RSA_ONLY_NAME, 
-                SecConst.TOKEN_SOFT_P12, AlgorithmConstants.KEYALGORITHM_RSA, 
+                EndEntityConstants.TOKEN_SOFT_P12, AlgorithmConstants.KEYALGORITHM_RSA, 
                 "2048");
         
         String responseBody = enrollKeyStoreRestCall(userName, 
@@ -453,7 +454,7 @@ public class CertificateRestResourceEnrollKeyStoreSystemTest extends RestResourc
             final JSONObject keyStoreEnrollResponse = (JSONObject) jsonParser.parse(responseBody);
             X509Certificate enrolledCert = CertTools.extractEndEntityCertificateFromKeyStore(
                     Base64.decode(((String) keyStoreEnrollResponse.get("certificate")).getBytes()), 
-                    SecConst.getKeyStoreTypeAsString(SecConst.TOKEN_SOFT_P12), 
+                    SecConst.getKeyStoreTypeAsString(EndEntityConstants.TOKEN_SOFT_P12), 
                     CertificateRestResourceSystemTestUtil.DEFAULT_PASSWORD).get(0);
             
             assertEquals(enrolledCert.getPublicKey().getAlgorithm(), "RSA"); 
@@ -468,7 +469,7 @@ public class CertificateRestResourceEnrollKeyStoreSystemTest extends RestResourc
     @Test
     public void badEnrollNotAllowedAlgorithm() {
         String userName = createUser(TEST_EE_PROFILE_NAME, TEST_CERT_PROFILE_RSA_ONLY_NAME, 
-                SecConst.TOKEN_SOFT_P12, AlgorithmConstants.KEYALGORITHM_RSA, 
+                EndEntityConstants.TOKEN_SOFT_P12, AlgorithmConstants.KEYALGORITHM_RSA, 
                 "2048");
         
         String responseBody = enrollKeyStoreRestCall(userName, 
@@ -480,7 +481,7 @@ public class CertificateRestResourceEnrollKeyStoreSystemTest extends RestResourc
             final JSONObject keyStoreEnrollResponse = (JSONObject) jsonParser.parse(responseBody);
             X509Certificate enrolledCert = CertTools.extractEndEntityCertificateFromKeyStore(
                     Base64.decode(((String) keyStoreEnrollResponse.get("certificate")).getBytes()), 
-                    SecConst.getKeyStoreTypeAsString(SecConst.TOKEN_SOFT_P12),
+                    SecConst.getKeyStoreTypeAsString(EndEntityConstants.TOKEN_SOFT_P12),
                     CertificateRestResourceSystemTestUtil.DEFAULT_PASSWORD).get(0);
             
             assertEquals(enrolledCert.getPublicKey().getAlgorithm(), "RSA"); 

@@ -103,6 +103,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -159,7 +160,6 @@ import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.DummyCustomPublisher;
@@ -349,7 +349,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         endEntityInformation1.setEmail(null);
         endEntityInformation1.setSubjectAltName(null);
         endEntityInformation1.setStatus(EndEntityConstants.STATUS_NEW);
-        endEntityInformation1.setTokenType(SecConst.TOKEN_SOFT_JKS);
+        endEntityInformation1.setTokenType(EndEntityConstants.TOKEN_SOFT_JKS);
         endEntityInformation1.setEndEntityProfileId(EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
         endEntityInformation1.setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         endEntityInformation1.setType(new EndEntityType(EndEntityTypes.ENDUSER, EndEntityTypes.ADMINISTRATOR));
@@ -368,7 +368,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         endEntityInformation2.setEmail(null);
         endEntityInformation2.setSubjectAltName(null);
         endEntityInformation2.setStatus(EndEntityConstants.STATUS_NEW);
-        endEntityInformation2.setTokenType(SecConst.TOKEN_SOFT_JKS);
+        endEntityInformation2.setTokenType(EndEntityConstants.TOKEN_SOFT_JKS);
         endEntityInformation2.setEndEntityProfileId(EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
         endEntityInformation2.setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         endEntityInformation2.setType(EndEntityTypes.ENDUSER.toEndEntityType());
@@ -680,7 +680,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
             profile.addField(DnComponents.JURISDICTIONSTATE);
             profile.addField(DnComponents.JURISDICTIONCOUNTRY);
             profile.addField(DnComponents.DATEOFBIRTH);
-            profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+            profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(CAConstants.ALLCAS));
             profile.setUse(EndEntityProfile.CLEARTEXTPASSWORD, 0, false); // not allowing clear text password is the most common option
             profile.setUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, true);
             profile.setValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, "" + RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);         
@@ -1901,7 +1901,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
                 adminUser.setEmail(null);
                 adminUser.setSubjectAltName(null);
                 adminUser.setStatus(EndEntityConstants.STATUS_NEW);
-                adminUser.setTokenType(SecConst.TOKEN_SOFT_JKS);
+                adminUser.setTokenType(EndEntityConstants.TOKEN_SOFT_JKS);
                 adminUser.setEndEntityProfileId(endEntityProfileSession.getEndEntityProfileId(WS_EEPROF_EI));
                 adminUser.setCertificateProfileId(cpid);
                 adminUser.setType(new EndEntityType(EndEntityTypes.ENDUSER, EndEntityTypes.ADMINISTRATOR));

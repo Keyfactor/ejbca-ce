@@ -19,7 +19,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.cesecore.certificates.endentity.EndEntityConstants;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 
 /**
@@ -71,9 +70,6 @@ public class ApprovalDataVO implements Serializable {
         APPROVALTYPENAMES.put(APPROVALTYPE_REVOKECERTIFICATE, "APREVOKECERTIFICATE");
         APPROVALTYPENAMES.put(APPROVALTYPE_ACTIVATECATOKEN, "APPROVEACTIVATECA");
 	}
-
-	/** Used to indicate that the approval is applicable to any ca. */
-	public static final int ANY_CA = SecConst.ALLCAS;
 
 	/** Used to indicate that the approval is applicable to any end entity profile. */
     public static final int ANY_ENDENTITYPROFILE = EndEntityConstants.NO_END_ENTITY_PROFILE;

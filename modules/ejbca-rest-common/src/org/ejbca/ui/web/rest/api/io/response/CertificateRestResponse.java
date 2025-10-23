@@ -16,7 +16,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.keyfactor.util.CertTools;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.ejbca.core.model.SecConst;
+
+import org.cesecore.certificates.endentity.EndEntityConstants;
 
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
@@ -133,17 +134,17 @@ public class CertificateRestResponse {
 
         public CertificateRestResponseBuilder setResponseFormat(int keystoreType) {
             switch (keystoreType) {
-            case SecConst.TOKEN_SOFT_JKS:
+            case EndEntityConstants.TOKEN_SOFT_JKS:
                 this.responseFormat = "JKS";
                 break;
-            case SecConst.TOKEN_SOFT_PEM:
+            case EndEntityConstants.TOKEN_SOFT_PEM:
                 this.responseFormat = "PEM";
                 break;
-            case SecConst.TOKEN_SOFT_P12:
-            case SecConst.TOKEN_SOFT_BROWSERGEN:
+            case EndEntityConstants.TOKEN_SOFT_P12:
+            case EndEntityConstants.TOKEN_USERGEN:
                 this.responseFormat = "PKCS12";
                 break;
-            case SecConst.TOKEN_SOFT_BCFKS:
+            case EndEntityConstants.TOKEN_SOFT_BCFKS:
                 this.responseFormat = "BCFKS";
                 break;
             default:

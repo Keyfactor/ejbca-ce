@@ -42,7 +42,6 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.junit.After;
 import org.junit.Before;
@@ -76,7 +75,7 @@ public class BatchMakeP12CommandSystemTest extends CaTestCase {
         log.trace(">test01CreateNewUser()");
   
         EndEntityInformation endEntityInformation1 = new EndEntityInformation(username1, "C=SE, O=AnaTom, CN=" + username1, caid, "", username1 + "@anatom.se", EndEntityTypes.ENDUSER.toEndEntityType(),
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, null);
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_P12, null);
         endEntityInformation1.setPassword("foo123");
         EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).addUser(admin, endEntityInformation1, false);
     
@@ -86,7 +85,7 @@ public class BatchMakeP12CommandSystemTest extends CaTestCase {
         assertEquals("end entity password wasn't set", "foo123", findPassword(username1));
 
         EndEntityInformation endEntityInformation2 = new EndEntityInformation(username2, "C=SE, O=AnaTom, CN=" + username2, caid, "", username2 + "@anatom.se", EndEntityTypes.ENDUSER.toEndEntityType(),
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, null);
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_P12, null);
         endEntityInformation2.setPassword("foo123");
         EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).addUser(admin, endEntityInformation2, false);
         

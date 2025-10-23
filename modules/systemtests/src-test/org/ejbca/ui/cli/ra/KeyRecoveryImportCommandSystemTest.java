@@ -55,7 +55,6 @@ import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.KeyStoreCreateSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
@@ -128,7 +127,7 @@ public class KeyRecoveryImportCommandSystemTest {
         final String username = TESTCLASS_NAME+"User";
         final EndEntityInformation userdata = new EndEntityInformation(username, END_ENTITY_SUBJECT_DN, x509ca.getCAId(), null, null,
                 EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, null);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), EndEntityConstants.TOKEN_SOFT_P12, null);
         final String password = "foo123";
         userdata.setPassword(password);
         try {
@@ -167,7 +166,7 @@ public class KeyRecoveryImportCommandSystemTest {
         final String username = TESTCLASS_NAME+"User";
         final EndEntityInformation userdata = new EndEntityInformation(username, END_ENTITY_SUBJECT_DN, x509ca.getCAId(), null, null,
                 EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, null);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), EndEntityConstants.TOKEN_SOFT_P12, null);
         final String password = "foo123";
         userdata.setPassword(password);
         Certificate certificate = null;
@@ -211,7 +210,7 @@ public class KeyRecoveryImportCommandSystemTest {
         final String username = TESTCLASS_NAME+"User";
         final EndEntityInformation userdata = new EndEntityInformation(username, END_ENTITY_SUBJECT_DN, temporaryca.getCAId(), null, null,
                 EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, null);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), EndEntityConstants.TOKEN_SOFT_P12, null);
         final String password = "foo123";
         userdata.setPassword(password);
         Certificate certificate = null;
@@ -257,7 +256,7 @@ public class KeyRecoveryImportCommandSystemTest {
         final String username = TESTCLASS_NAME+"User";
         final EndEntityInformation userdata = new EndEntityInformation(username, END_ENTITY_SUBJECT_DN, x509ca.getCAId(), null, null,
                 EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, null);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), EndEntityConstants.TOKEN_SOFT_P12, null);
         final String password = "foo123";
         userdata.setPassword(password);
         Certificate certificate = null;
@@ -301,7 +300,7 @@ public class KeyRecoveryImportCommandSystemTest {
         final String username = TESTCLASS_NAME+"User";
         final EndEntityInformation userdata = new EndEntityInformation(username, END_ENTITY_SUBJECT_DN, x509ca.getCAId(), null, null,
                 EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, null);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), EndEntityConstants.TOKEN_SOFT_P12, null);
         final String password = "foo123";
         userdata.setPassword(password);
         String fingerprint = null;
@@ -340,7 +339,7 @@ public class KeyRecoveryImportCommandSystemTest {
         final String username = TESTCLASS_NAME+"User";
         final EndEntityInformation userdata = new EndEntityInformation(username, END_ENTITY_SUBJECT_DN, x509ca.getCAId(), null, null,
                 EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, null);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), EndEntityConstants.TOKEN_SOFT_P12, null);
         final String password = "foo123";
         userdata.setPassword(password);
         String fingerprint = null;
