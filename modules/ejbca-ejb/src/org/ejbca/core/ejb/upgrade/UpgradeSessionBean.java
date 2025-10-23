@@ -1513,7 +1513,12 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         final AvailableExtendedKeyUsagesConfiguration config =
                 (AvailableExtendedKeyUsagesConfiguration) globalConfigurationSession.getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.CONFIGURATION_ID);
         if (!config.isExtendedKeyUsageSupported("1.3.6.1.5.5.7.3.36")) {
-            config.addExtKeyUsage("1.3.6.1.5.5.7.3.36", "EKU_PKIX_DOCUMENTSIGNING");
+            try {
+                config.addExtKeyUsage("1.3.6.1.5.5.7.3.36", "EKU_PKIX_DOCUMENTSIGNING");
+            } catch (InvalidConfigurationException e) {
+                //Should not happen with a hard-coded OID
+                throw new IllegalStateException(e);
+            }
         }
         log.debug("Added RFC9336 Extended Key Usage to availabe key usages list");
         try {

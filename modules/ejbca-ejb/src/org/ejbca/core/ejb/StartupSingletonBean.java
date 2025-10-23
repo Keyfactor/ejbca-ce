@@ -76,6 +76,7 @@ import org.ejbca.core.ejb.upgrade.UpgradeSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.protocol.scep.ScepKeyRenewalSessionLocal;
 import org.ejbca.util.DatabaseIndexUtil;
 import org.ejbca.util.JDBCUtil;
 
@@ -138,6 +139,8 @@ public class StartupSingletonBean {
     private ServiceSessionLocal serviceSession;
     @EJB
     private OcspResponseCleanupSessionLocal ocspResponseCleanupSession;
+    @EJB
+    private ScepKeyRenewalSessionLocal scepKeyRenewalSession;
 
     @PreDestroy
     private void shutdown() {
@@ -407,6 +410,10 @@ public class StartupSingletonBean {
         // Start the clean up job to remove old OCSP responses
         log.debug(">startup start OCSP clean up job");
         ocspResponseCleanupSession.start();
+
+        // Start the SCEP key renewal job, if SCEP is enabled
+        log.debug(">startup start SCEP keys renewal job job");
+        scepKeyRenewalSession.start();
 
         log.debug(">startup completed");
     }

@@ -89,7 +89,6 @@ import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
@@ -813,7 +812,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
 
         final EndEntityInformation userdata = new EndEntityInformation(userName, "C=SE, O=AnaTom, CN=" + userName, caId, null, null,
                 EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), eepId,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, null);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), EndEntityConstants.TOKEN_SOFT_P12, null);
         userdata.setPassword("foo123");
 
         return new AddEndEntityApprovalRequest(userdata, false, internalAdmin, null, caId,

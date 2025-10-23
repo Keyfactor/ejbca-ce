@@ -37,12 +37,12 @@ import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
 import org.ejbca.core.ejb.ra.KeyImportSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.keyimport.KeyImportException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 import com.keyfactor.util.CryptoProviderTools;
 
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.keys.keyimport.KeyImportFailure;
@@ -105,7 +105,7 @@ public class KeyImportSystemTest extends CaTestCase {
         eeProfile.addField(DnComponents.COMMONNAME);
         eeProfile.addField(DnComponents.ORGANIZATION);
         eeProfile.addField(DnComponents.ORGANIZATIONALUNIT);
-        eeProfile.setAvailableCAs(List.of(SecConst.ALLCAS));
+        eeProfile.setAvailableCAs(List.of(CAConstants.ALLCAS));
         int certProfileId = certificateProfileSession.getCertificateProfileId(TEST_CP_NAME);
         eeProfile.setAvailableCertificateProfileIds(List.of(certProfileId));
         endEntityProfileSession.addEndEntityProfile(authenticationToken, TEST_EEP_NAME, eeProfile);

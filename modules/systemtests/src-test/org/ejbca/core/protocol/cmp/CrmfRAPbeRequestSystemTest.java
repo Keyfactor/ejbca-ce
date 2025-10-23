@@ -78,7 +78,6 @@ import org.ejbca.core.ejb.approval.ApprovalSessionProxyRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
@@ -601,7 +600,7 @@ public class CrmfRAPbeRequestSystemTest extends CmpTestCase {
             X509Certificate newCACert = (X509Certificate) cainfo.getCertificateChain().iterator().next();
             // Create a user and generate the cert
             EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, cainfo.getCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER),
-                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, null);
+                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_P12, null);
             userdata.setPassword("foo123");
             userdata.setStatus(EndEntityConstants.STATUS_NEW);
             this.endEntityManagementSession.addUser(ADMIN, userdata, true);

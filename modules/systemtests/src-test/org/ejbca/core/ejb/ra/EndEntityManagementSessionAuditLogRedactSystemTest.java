@@ -28,6 +28,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.audit.AuditLogEntry;
 import org.cesecore.audit.impl.integrityprotected.IntegrityProtectedDevice;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
@@ -51,7 +52,6 @@ import org.ejbca.core.ejb.ca.publisher.PublisherTestSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.db.DatabaseContentRule;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -119,7 +119,7 @@ public class EndEntityManagementSessionAuditLogRedactSystemTest extends CaTestCa
         profile.addField(DnComponents.DNSNAME);
         profile.addField(DnComponents.RFC822NAME);
         profile.setRedactPii(true); // enable redaction
-        profile.setAvailableCAs(Arrays.asList(SecConst.ALLCAS));
+        profile.setAvailableCAs(Arrays.asList(CAConstants.ALLCAS));
         endEntityProfileSession.addEndEntityProfile(admin, REDACTED_EEP, profile);
         redactedEepId = endEntityProfileSession.getEndEntityProfileId(REDACTED_EEP);
         
@@ -129,7 +129,7 @@ public class EndEntityManagementSessionAuditLogRedactSystemTest extends CaTestCa
         profile.addField(DnComponents.ORGANIZATIONALUNIT);
         profile.addField(DnComponents.DNSNAME);
         profile.addField(DnComponents.RFC822NAME);
-        profile.setAvailableCAs(Arrays.asList(SecConst.ALLCAS));
+        profile.setAvailableCAs(Arrays.asList(CAConstants.ALLCAS));
         endEntityProfileSession.addEndEntityProfile(admin, NON_REDACTED_EEP, profile);
         nonRedactedEepId = endEntityProfileSession.getEndEntityProfileId(NON_REDACTED_EEP);
         
@@ -219,7 +219,7 @@ public class EndEntityManagementSessionAuditLogRedactSystemTest extends CaTestCa
                 subjectDn, caId, san, null, 
                 EndEntityTypes.ENDUSER.toEndEntityType(), 
                 endEntityProfileId, 
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, null);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_P12, null);
         endEntityInformation.setPassword(userName);
         endEntityInformation.setStatus(EndEntityConstants.STATUS_NEW);
         
@@ -309,7 +309,7 @@ public class EndEntityManagementSessionAuditLogRedactSystemTest extends CaTestCa
                     subjectDn, cainfo.getCAId(), san, null, 
                     EndEntityTypes.ENDUSER.toEndEntityType(), 
                     endEntityProfileId, 
-                    certProfileId, SecConst.TOKEN_SOFT_P12, null);
+                    certProfileId, EndEntityConstants.TOKEN_SOFT_P12, null);
             endEntityInformation.setPassword(userName);
             endEntityInformation.setStatus(EndEntityConstants.STATUS_NEW);
             

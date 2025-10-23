@@ -37,7 +37,6 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -102,7 +101,7 @@ public class UserNotificationParamGenSystemTest {
                                          new EndEntityType(EndEntityTypes.ENDUSER), 
                                          EndEntityConstants.EMPTY_END_ENTITY_PROFILE, 
                                          CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, 
-                                         now, null, SecConst.TOKEN_SOFT_P12, null);
+                                         now, null, EndEntityConstants.TOKEN_SOFT_P12, null);
         userdata.setPassword("foo123");
         userkeys = KeyTools.genKeys("1024", "RSA");
         endEntityManagementSession.addUser(TOKEN, userdata, true);

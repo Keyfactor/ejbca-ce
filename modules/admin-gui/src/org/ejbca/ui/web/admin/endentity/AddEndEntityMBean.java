@@ -12,18 +12,8 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.endentity;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.certificate.DnComponents;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
@@ -35,7 +25,6 @@ import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.MutablePair;
@@ -51,6 +40,7 @@ import org.cesecore.certificates.certificate.certextensions.standard.QcStatement
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.endentity.PSD2RoleOfPSPStatement;
@@ -74,8 +64,17 @@ import org.ejbca.ui.web.admin.rainterface.RAInterfaceBean;
 import org.ejbca.ui.web.admin.rainterface.UserView;
 import org.ietf.ldap.LDAPDN;
 
-import com.keyfactor.ErrorCode;
-import com.keyfactor.util.certificate.DnComponents;
+import java.io.IOException;
+import java.io.Serializable;
+import java.math.BigInteger;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
 *
@@ -296,7 +295,7 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
         this.selectedCaId = selectedEeProfile.getDefaultCA();
         this.selectedTokenId = Integer.parseInt(selectedEeProfile.getValue(EndEntityProfile.DEFKEYSTORE,0));
         
-        this.keyRecoveryCheckboxStatus.setLeft(selectedTokenId != SecConst.TOKEN_SOFT_BROWSERGEN && selectedEeProfile.getUse(EndEntityProfile.KEYRECOVERABLE, 0));
+        this.keyRecoveryCheckboxStatus.setLeft(selectedTokenId != EndEntityConstants.TOKEN_USERGEN && selectedEeProfile.getUse(EndEntityProfile.KEYRECOVERABLE, 0));
         this.keyRecoveryCheckboxStatus.setRight(selectedEeProfile.isRequired(EndEntityProfile.KEYRECOVERABLE,0));
         
         final String issuanceRevocationReason = selectedEeProfile.getValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0);
@@ -464,7 +463,7 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
             for (int i = 0; i < availableTokens.length; i++) {
                 for (int j = 0; j < tokenTexts.length; j++) {
                     if (tokenIds[j] == Integer.parseInt(availableTokens[i])) {
-                        if (tokenIds[j] > SecConst.TOKEN_SOFT) {
+                        if (tokenIds[j] > EndEntityConstants.TOKEN_SOFT) {
                             listOfTokens.add(new SelectItem(tokenIds[j], tokenTexts[j]));
                         } else {
                             listOfTokens.add(new SelectItem(tokenIds[j], getEjbcaWebBean().getText(tokenTexts[j])));
@@ -894,8 +893,8 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
         return new ImmutablePair<>(addedUsersList, (addedUsers != null && addedUsers.length > 0));
     }
     
-    public String encodeUserName(final String userName) throws UnsupportedEncodingException {
-        return java.net.URLEncoder.encode(userName, StandardCharsets.UTF_8);
+    public String encodeUserName(final String userName) {
+        return URLEncoder.encode(userName, StandardCharsets.UTF_8);
     }
     
     public String getAddedUserCN(final UserView addedUser) {
@@ -911,11 +910,11 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     }
 
     public String getViewEndEntityPopupLink(final String username) {
-        return getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH + "ra/viewendentity.xhtml?username=" + username;
+        return getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH + "ra/viewendentity.xhtml?username=" + encodeUserName(username);
     }
 
     public String getEditEndEntityPopupLink(final String username) {
-        return getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH + "ra/editendentity.xhtml?username=" + username;
+        return getEjbcaWebBean().getBaseUrl() + GlobalConfiguration.ADMIN_WEB_PATH + "ra/editendentity.xhtml?username=" + encodeUserName(username);
     }
 
     public void setConfirmPasswordFieldValue(String confirmPasswordFieldValue) {
@@ -935,7 +934,7 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
         boolean keyRecoveryCheckBoxDisabled = false;
         boolean keyRecoveryCheckBoxChecked = false;
 
-        if (getSelectedTokenId() == SecConst.TOKEN_SOFT_BROWSERGEN) {
+        if (getSelectedTokenId() == EndEntityConstants.TOKEN_USERGEN) {
             keyRecoveryCheckBoxChecked = false;
             keyRecoveryCheckBoxDisabled = true;
         } else {
@@ -1017,7 +1016,7 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
         this.selectedCaId = selectedEeProfile.getDefaultCA();
         this.selectedTokenId = Integer.parseInt(selectedEeProfile.getValue(EndEntityProfile.DEFKEYSTORE,0));
         
-        this.keyRecoveryCheckboxStatus.setLeft(selectedTokenId != SecConst.TOKEN_SOFT_BROWSERGEN && selectedEeProfile.getUse(EndEntityProfile.KEYRECOVERABLE, 0));
+        this.keyRecoveryCheckboxStatus.setLeft(selectedTokenId != EndEntityConstants.TOKEN_USERGEN && selectedEeProfile.getUse(EndEntityProfile.KEYRECOVERABLE, 0));
         this.keyRecoveryCheckboxStatus.setRight(selectedEeProfile.isRequired(EndEntityProfile.KEYRECOVERABLE,0));
         
         this.setSendNotification(selectedEeProfile.getValue(EndEntityProfile.SENDNOTIFICATION,0).equals(EndEntityProfile.TRUE));

@@ -31,6 +31,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionRemote;
@@ -60,7 +61,6 @@ import org.ejbca.core.ejb.ra.KeyStoreCreateSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.CertificateSignatureException;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.AuthLoginException;
@@ -189,7 +189,7 @@ public class GenerateTokenSystemTest extends CaTestCase {
 
             EndEntityInformation eeinfo = new EndEntityInformation(GENERATETOKENTEST_USERNAME, "CN=GENERATETOKENTEST" + new Random().nextLong(), caId, "", null,
                     EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(), eeProfileId,
-                    certProfileId, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, null);
+                    certProfileId, new Date(), new Date(), EndEntityConstants.TOKEN_SOFT_P12, null);
             eeinfo.setPassword("foo123");
             if (eeinfo.getExtendedInformation() == null) {
                 eeinfo.setExtendedInformation(new ExtendedInformation());
@@ -206,7 +206,7 @@ public class GenerateTokenSystemTest extends CaTestCase {
 
             //Providing separately algorithm RSA_1024 that is going to be overridden with ECDSA_secp256r1
             final byte[] keyStore = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, GENERATETOKENTEST_USERNAME, "foo123", caId, "1024",
-                    AlgorithmConstants.KEYALGORITHM_RSA, SecConst.TOKEN_SOFT_P12, false, true, false, eeProfileId);
+                    AlgorithmConstants.KEYALGORITHM_RSA, EndEntityConstants.TOKEN_SOFT_P12, false, true, false, eeProfileId);
             KeyStore ks = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
             ks.load(new ByteArrayInputStream(keyStore), eeinfo.getPassword().toCharArray());
             Certificate cert = null;
@@ -247,21 +247,21 @@ public class GenerateTokenSystemTest extends CaTestCase {
         final EndEntityProfile eeprofile = new EndEntityProfile();
         eeprofile.setAvailableCertificateProfileIds(Collections.singleton(certProfileId));
         eeprofile.setP12Cipher(KeyStoreCipher.PKCS12_3DES_3DES);
-        eeprofile.setAvailableCAs(Arrays.asList(SecConst.ALLCAS));
+        eeprofile.setAvailableCAs(Arrays.asList(CAConstants.ALLCAS));
         int endEntityProfileId = endEntityProfileSession.addEndEntityProfile(internalAdmin, profileName, eeprofile);
         final int caId = caSession.getCAInfo(internalAdmin, TESTGENERATETOKENCA).getCAId();
 
         try  {
             EndEntityInformation eeinfo = new EndEntityInformation(username, "CN="+username, caId, "", null,
                     EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(), endEntityProfileId,
-                    certProfileId, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, null);
+                    certProfileId, new Date(), new Date(), EndEntityConstants.TOKEN_SOFT_P12, null);
             eeinfo.setPassword("foo123");
             endEntityManagementSession.addUser(internalAdmin, eeinfo, false);
             endEntityManagementSession.setPassword(internalAdmin, username, "foo123");
             eeinfo = eeAccessSession.findUser(internalAdmin, username);
             eeinfo.setPassword("foo123");
             final byte[] tripleDesKeyStore = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, username, "foo123", caId, "1024",
-                    AlgorithmConstants.KEYALGORITHM_RSA, SecConst.TOKEN_SOFT_P12, false, true, false, endEntityProfileId);
+                    AlgorithmConstants.KEYALGORITHM_RSA, EndEntityConstants.TOKEN_SOFT_P12, false, true, false, endEntityProfileId);
             assertEquals("PKCS#12 was not encrypted with 3DES", PKCSObjectIdentifiers.pbeWithSHAAnd3_KeyTripleDES_CBC.getId(), getEncryptionAlgorithmFromKeystore(tripleDesKeyStore));
             //Modify profile to take AES instead
             eeprofile.setP12Cipher(KeyStoreCipher.PKCS12_AES256_AES128);
@@ -269,7 +269,7 @@ public class GenerateTokenSystemTest extends CaTestCase {
             endEntityManagementSession.setUserStatus(internalAdmin, username, EndEntityConstants.STATUS_NEW);
             endEntityManagementSession.setPassword(internalAdmin, username, "foo123");
             final byte[] aesKeystore = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, username, "foo123", caId, "1024",
-                    AlgorithmConstants.KEYALGORITHM_RSA, SecConst.TOKEN_SOFT_P12, false, true, false, endEntityProfileId);
+                    AlgorithmConstants.KEYALGORITHM_RSA, EndEntityConstants.TOKEN_SOFT_P12, false, true, false, endEntityProfileId);
             assertEquals("PKCS#12 was not encrypted with AES",  NISTObjectIdentifiers.id_aes128_CBC.getId(), getEncryptionAlgorithmFromKeystore(aesKeystore));
             
         } finally {
@@ -318,7 +318,7 @@ public class GenerateTokenSystemTest extends CaTestCase {
             
             EndEntityInformation eeinfo = new EndEntityInformation(GENERATETOKENTEST_USERNAME, "CN=GENERATETOKENTEST" + new Random().nextLong(), caId, "", null,
                     EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(), eeProfileId,
-                    certProfileId, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, null);
+                    certProfileId, new Date(), new Date(), EndEntityConstants.TOKEN_SOFT_P12, null);
             eeinfo.setPassword("foo123");
             if (eeinfo.getExtendedInformation() == null) {
                 eeinfo.setExtendedInformation(new ExtendedInformation());
@@ -335,7 +335,7 @@ public class GenerateTokenSystemTest extends CaTestCase {
             eeinfo.setPassword("foo123");
             //Providing separately algorithm RSA_1024 that is going to be overridden with ECDSA_secp256r1
             final byte[] keyStore = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, GENERATETOKENTEST_USERNAME, "foo123", caId, "1024",
-                    AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmConstants.KEYALGORITHM_FALCON1024, AlgorithmConstants.KEYALGORITHM_FALCON1024, SecConst.TOKEN_SOFT_P12, false, true, false, eeProfileId);
+                    AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmConstants.KEYALGORITHM_FALCON1024, AlgorithmConstants.KEYALGORITHM_FALCON1024, EndEntityConstants.TOKEN_SOFT_P12, false, true, false, eeProfileId);
             KeyStore ks = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
             ks.load(new ByteArrayInputStream(keyStore), eeinfo.getPassword().toCharArray());
             assertEquals("Re-loaded keystore was not created with the correct cipher.", KeyStoreCipher.PKCS12_AES256_AES128.getLabel(), ks.getType());

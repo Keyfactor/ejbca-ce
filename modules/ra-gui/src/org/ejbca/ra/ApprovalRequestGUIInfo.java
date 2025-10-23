@@ -27,6 +27,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.dto.RoleDataDto;
 import org.cesecore.util.ValidityDate;
@@ -321,7 +322,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
         requestData.add(new RequestDataRow(raLocaleBean, new ApprovalDataText("REQUESTDATE", getRequestDate(), true, false), false, null));
         requestData.add(new RequestDataRow(raLocaleBean, new ApprovalDataText("REQUESTEXPIRATIONDATE", getRequestExpireDate(), true, false), false, null));
         
-        if (approvalData.getCAId() == ApprovalDataVO.ANY_CA) {
+        if (approvalData.getCAId() == CAConstants.ALLCAS) {
             caName = raLocaleBean.getMessage("manage_requests_no_ca");
         } else if (request.getCaName() == null) {
             caName = "Missing CA id " + approvalData.getCAId();

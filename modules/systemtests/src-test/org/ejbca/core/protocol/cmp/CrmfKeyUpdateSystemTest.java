@@ -111,7 +111,6 @@ import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.AuthLoginException;
@@ -1754,7 +1753,7 @@ public class CrmfKeyUpdateSystemTest extends CmpTestCase {
             //--------------- create the user and issue its certificate, expired -----------------
             EndEntityInformation endEntityInformation = new EndEntityInformation(RENEWAL_USERNAME, RENEWAL_USER_DN.toString(), this.caid, "rfc822name=" + RENEWAL_USERNAME + "@primekey.se", RENEWAL_USERNAME + "@primekey.se",
                     EndEntityTypes.ENDUSER.toEndEntityType(),
-                    endEntityProfileId, certificateProfileId, SecConst.TOKEN_SOFT_PEM, null);
+                    endEntityProfileId, certificateProfileId, EndEntityConstants.TOKEN_SOFT_PEM, null);
             endEntityInformation.setPassword(password);
             endEntityManagementSession.addUser(ADMIN, endEntityInformation, true);      
             
@@ -1823,7 +1822,7 @@ public class CrmfKeyUpdateSystemTest extends CmpTestCase {
         //--------------- create the user and issue its certificate, expired -----------------
         EndEntityInformation endEntityInformation = new EndEntityInformation(RENEWAL_USERNAME, RENEWAL_USER_DN.toString(), this.caid,
                 "rfc822name=" + RENEWAL_USERNAME + "@primekey.se", RENEWAL_USERNAME + "@primekey.se", EndEntityTypes.ENDUSER.toEndEntityType(),
-                endEntityProfileId, certificateProfileId, SecConst.TOKEN_SOFT_PEM, null);
+                endEntityProfileId, certificateProfileId, EndEntityConstants.TOKEN_SOFT_PEM, null);
         endEntityInformation.setPassword(password);
         endEntityManagementSession.addUser(ADMIN, endEntityInformation, true);  
 
