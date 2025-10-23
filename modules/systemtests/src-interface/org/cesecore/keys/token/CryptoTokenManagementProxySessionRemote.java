@@ -16,6 +16,7 @@ import java.security.PrivateKey;
 
 import jakarta.ejb.Remote;
 
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.keys.util.PublicKeyWrapper;
 
 import com.keyfactor.util.keys.token.CryptoToken;
@@ -43,4 +44,6 @@ public interface CryptoTokenManagementProxySessionRemote {
     void flushCache();
 
     int mergeCryptoToken(CryptoToken cryptoToken) throws CryptoTokenNameInUseException;
+
+    void deleteCryptoToken(String cryptoTokenName) throws AuthorizationDeniedException;
 }

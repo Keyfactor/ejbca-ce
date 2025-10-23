@@ -401,6 +401,30 @@ public class CertificateRestResourceEnrollKeyStoreSystemTest extends RestResourc
         String responseBody = enrollKeyStoreRestCall("user", "foo123", "", "256", true);
         log.error("badEnrollEmptyAlgo" + responseBody);
     }
+    
+    @Test
+    public void badEnrollInvalidAlgoSpec() {
+        String userName = createUser(TEST_EE_PROFILE_NAME, TEST_CERT_PROFILE_NAME, SecConst.TOKEN_SOFT_P12, "RSA", 
+                "2048");
+        String responseBody = enrollKeyStoreRestCall(userName, "foo123", "RSA", "2048", true);
+        log.error("badEnrollInvalidAlgoSpec" + responseBody);
+    }
+    
+    @Test
+    public void badEnrollInvalidAlgo() {
+        String userName = createUser(TEST_EE_PROFILE_NAME, TEST_CERT_PROFILE_NAME, SecConst.TOKEN_SOFT_P12, "RSA", 
+                "2048");
+        String responseBody = enrollKeyStoreRestCall(userName, "foo123", "SSH", "256", true);
+        log.error("badEnrollInvalidAlgo" + responseBody);
+    }
+    
+    @Test
+    public void badEnrollInvalidTokenType() {
+        String userName = createUser(TEST_EE_PROFILE_NAME, TEST_CERT_PROFILE_NAME, SecConst.TOKEN_SOFT_BROWSERGEN, "RSA", 
+                "2048");
+        String responseBody = enrollKeyStoreRestCall(userName, "foo123", "RSA", "2048", true);
+        log.error("badEnrollInvalidTokenType" + responseBody);
+    }
 
     @Test
     public void badEnrollEmptySpec() {
