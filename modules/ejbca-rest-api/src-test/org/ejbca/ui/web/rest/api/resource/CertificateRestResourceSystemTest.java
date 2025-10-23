@@ -2597,9 +2597,49 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             certificateProfileSession.removeCertificateProfile(INTERNAL_ADMIN_TOKEN, profileName);
         }
     }
-
+    
     @Test
     public void finalizeKeyStoreExpectPkcs12Response() throws Exception {
+        finalizeKeyStoreExpectResponse(SecConst.TOKEN_SOFT_P12, "P12", "PKCS12");
+    }
+    
+    @Test
+    public void finalizeKeyStoreApprovalReject() throws Exception {
+        finalizeKeyStoreExpectResponse(SecConst.TOKEN_SOFT_P12, "P12", "PKCS12", true);
+    }
+    
+    @Test
+    public void finalizeKeyStoreExpectJksResponse() throws Exception {
+        finalizeKeyStoreExpectResponse(SecConst.TOKEN_SOFT_JKS, "JKS", "JKS");
+    }
+    
+    @Test
+    public void finalizeKeyStoreExpectBcfksResponse() throws Exception {
+        finalizeKeyStoreExpectResponse(SecConst.TOKEN_SOFT_BCFKS, "BCFKS", "BCFKS");
+    }
+    
+    @Test
+    public void finalizeKeyStoreExpectPemResponse() throws Exception {
+        finalizeKeyStoreExpectResponse(SecConst.TOKEN_SOFT_PEM, "PEM", "PEM");
+    }
+    
+    @Test
+    public void finalizeKeyStoreExpectCsrDerResponse() throws Exception {
+        finalizeKeyStoreExpectResponse(SecConst.TOKEN_SOFT_BROWSERGEN, "DER", "DER");
+    }
+    
+    @Test
+    public void finalizeKeyStoreExpectCsrPemResponse() throws Exception {
+        finalizeKeyStoreExpectResponse(SecConst.TOKEN_SOFT_BROWSERGEN, "PEM", "PEM");
+    }
+    
+    private void finalizeKeyStoreExpectResponse(int tokenType, String tokenTypeRequestExpected, 
+            String tokenTypeResponseExpected) throws Exception {
+        finalizeKeyStoreExpectResponse(tokenType, tokenTypeRequestExpected, tokenTypeResponseExpected, false);
+    }
+
+    private void finalizeKeyStoreExpectResponse(int tokenType, String tokenTypeRequestExpected, 
+            String tokenTypeResponseExpected, boolean rejectApproval) throws Exception {
         // Create an add end entity approval request
         final AuthenticationToken approvalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EjbcaRestApiApprovalTestAdmin"));
         AccumulativeApprovalProfile approvalProfile = new AccumulativeApprovalProfile("Test Approval Profile");
@@ -2617,11 +2657,14 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             caSession.editCA(INTERNAL_ADMIN_TOKEN, x509TestCa.getCAInfo());
             EndEntityInformation userdata = new EndEntityInformation(testUsername, "CN=" + testUsername, x509TestCa.getCAId(), null, null, new EndEntityType(
                     EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                    SecConst.TOKEN_SOFT_P12, new ExtendedInformation());
+                    tokenType, new ExtendedInformation());
             userdata.setPassword("foo123");
             userdata.setStatus(EndEntityConstants.STATUS_NEW);
             userdata.getExtendedInformation().setKeyStoreAlgorithmType(AlgorithmConstants.KEYALGORITHM_RSA);
-            userdata.getExtendedInformation().setKeyStoreAlgorithmSubType("1024");
+            userdata.getExtendedInformation().setKeyStoreAlgorithmSubType("2048");
+            if (tokenType==SecConst.TOKEN_SOFT_BROWSERGEN) {
+                userdata.getExtendedInformation().setCertificateRequest(CSR_WITHOUT_HEADERS.replace("\n", "").getBytes());
+            }
             int requestId = -1;
             try {
                 endEntityManagementSession.addUser(INTERNAL_ADMIN_TOKEN, userdata, false);
@@ -2629,31 +2672,49 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             } catch (WaitingForApprovalException e) {
                 requestId = e.getRequestId();
             }
+
+            // Attempt REST finalize
+            final FinalizeRestRequest requestObject = new FinalizeRestRequest(tokenTypeRequestExpected, "foo123");
+            final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
+            final String requestBody = objectMapper.writeValueAsString(requestObject);
+            final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
+            final Response actualResponseFailed = newRequest("/v1/certificate/" + requestId + "/finalize").request().post(requestEntity);
+            final String actualJsonStringFailed = actualResponseFailed.readEntity(String.class);
+            assertEquals(actualResponseFailed.getStatus(), 202);
+            assertJsonContentType(actualResponseFailed);
+            assertTrue(actualJsonStringFailed.contains("Request with Id '" + requestId + "' is still waiting for approval"));
+            
             Approval approval = new Approval("REST System Test Approval", AccumulativeApprovalProfile.FIXED_STEP_ID,
                     approvalProfile.getStep(AccumulativeApprovalProfile.FIXED_STEP_ID).getPartitions().
                             values().iterator().next().getPartitionIdentifier());
             approvalId = getApprovalDataNoAuth(requestId).getApprovalId();
-            approvalExecutionSession.approve(approvalAdmin, approvalId, approval);
-
-            // Attempt REST finalize
-            final FinalizeRestRequest requestObject = new FinalizeRestRequest("P12", "foo123");
-            final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
-            final String requestBody = objectMapper.writeValueAsString(requestObject);
-            final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
+            if (!rejectApproval) {
+                approvalExecutionSession.approve(approvalAdmin, approvalId, approval);
+            } else {
+                approvalExecutionSession.reject(approvalAdmin, approvalId, approval);
+            }
+            
             final Response actualResponse = newRequest("/v1/certificate/" + requestId + "/finalize").request().post(requestEntity);
             final String actualJsonString = actualResponse.readEntity(String.class);
             assertJsonContentType(actualResponse);
+            if (rejectApproval) {
+                assertTrue(actualJsonString.contains("Request with Id '" + requestId + "' has been rejected"));
+                return;
+            }
             final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
             final String responseFormat = (String) actualJsonObject.get("response_format");
             final String base64Keystore = (String) actualJsonObject.get("certificate");
-            final byte[] keystoreBytes = Base64.decode(base64Keystore.getBytes());
-            KeyStore keyStore = KeyStore.getInstance("PKCS12-3DES-3DES");
-            keyStore.load(new ByteArrayInputStream(keystoreBytes), "foo123".toCharArray());
-            // Verify results
-            Enumeration<String> aliases = keyStore.aliases();
-            assertTrue("Alias is missing in keystore response", Collections.list(aliases).contains(testUsername));
-            assertEquals("Unexpected response format", "PKCS12", responseFormat);
-            assertEquals("Unexpected keystore format", "PKCS12-3DES-3DES", keyStore.getType());
+            assertEquals("Unexpected response format", tokenTypeResponseExpected, responseFormat);
+            
+            if (tokenType==SecConst.TOKEN_SOFT_P12) {
+                final byte[] keystoreBytes = Base64.decode(base64Keystore.getBytes());
+                KeyStore keyStore = KeyStore.getInstance("PKCS12-3DES-3DES");
+                keyStore.load(new ByteArrayInputStream(keystoreBytes), "foo123".toCharArray());
+                // Verify results
+                Enumeration<String> aliases = keyStore.aliases();
+                assertTrue("Alias is missing in keystore response", Collections.list(aliases).contains(testUsername));
+                assertEquals("Unexpected keystore format", "PKCS12-3DES-3DES", keyStore.getType());
+            }
         } finally {
             // Clean up
             approvalSession.removeApprovalRequest(INTERNAL_ADMIN_TOKEN, approvalId);
