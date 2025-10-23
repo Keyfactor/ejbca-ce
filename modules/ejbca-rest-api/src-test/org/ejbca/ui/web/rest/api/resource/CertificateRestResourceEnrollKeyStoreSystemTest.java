@@ -405,7 +405,7 @@ public class CertificateRestResourceEnrollKeyStoreSystemTest extends RestResourc
     
     @Test
     public void badEnrollInvalidAlgoSpec() {
-        String userName = createUser(TEST_EE_PROFILE_NAME, TEST_CERT_PROFILE_NAME, SecConst.TOKEN_SOFT_P12, "RSA", 
+        String userName = createUser(TEST_EE_PROFILE_NAME, TEST_CERT_PROFILE_NAME, EndEntityConstants.TOKEN_SOFT_P12, "RSA", 
                 "2048");
         String responseBody = enrollKeyStoreRestCall(userName, "foo123", "RSA", "2048", true);
         log.error("badEnrollInvalidAlgoSpec" + responseBody);
@@ -413,7 +413,7 @@ public class CertificateRestResourceEnrollKeyStoreSystemTest extends RestResourc
     
     @Test
     public void badEnrollInvalidAlgo() {
-        String userName = createUser(TEST_EE_PROFILE_NAME, TEST_CERT_PROFILE_NAME, SecConst.TOKEN_SOFT_P12, "RSA", 
+        String userName = createUser(TEST_EE_PROFILE_NAME, TEST_CERT_PROFILE_NAME, EndEntityConstants.TOKEN_SOFT_P12, "RSA", 
                 "2048");
         String responseBody = enrollKeyStoreRestCall(userName, "foo123", "SSH", "256", true);
         log.error("badEnrollInvalidAlgo" + responseBody);
@@ -421,7 +421,7 @@ public class CertificateRestResourceEnrollKeyStoreSystemTest extends RestResourc
     
     @Test
     public void badEnrollInvalidTokenType() {
-        String userName = createUser(TEST_EE_PROFILE_NAME, TEST_CERT_PROFILE_NAME, SecConst.TOKEN_SOFT_BROWSERGEN, "RSA", 
+        String userName = createUser(TEST_EE_PROFILE_NAME, TEST_CERT_PROFILE_NAME, EndEntityConstants.TOKEN_USERGEN, "RSA", 
                 "2048");
         String responseBody = enrollKeyStoreRestCall(userName, "foo123", "RSA", "2048", true);
         log.error("badEnrollInvalidTokenType" + responseBody);

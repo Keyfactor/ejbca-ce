@@ -2599,37 +2599,37 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     
     @Test
     public void finalizeKeyStoreExpectPkcs12Response() throws Exception {
-        finalizeKeyStoreExpectResponse(SecConst.TOKEN_SOFT_P12, "P12", "PKCS12");
+        finalizeKeyStoreExpectResponse(EndEntityConstants.TOKEN_SOFT_P12, "P12", "PKCS12");
     }
     
     @Test
     public void finalizeKeyStoreApprovalReject() throws Exception {
-        finalizeKeyStoreExpectResponse(SecConst.TOKEN_SOFT_P12, "P12", "PKCS12", true);
+        finalizeKeyStoreExpectResponse(EndEntityConstants.TOKEN_SOFT_P12, "P12", "PKCS12", true);
     }
     
     @Test
     public void finalizeKeyStoreExpectJksResponse() throws Exception {
-        finalizeKeyStoreExpectResponse(SecConst.TOKEN_SOFT_JKS, "JKS", "JKS");
+        finalizeKeyStoreExpectResponse(EndEntityConstants.TOKEN_SOFT_JKS, "JKS", "JKS");
     }
     
     @Test
     public void finalizeKeyStoreExpectBcfksResponse() throws Exception {
-        finalizeKeyStoreExpectResponse(SecConst.TOKEN_SOFT_BCFKS, "BCFKS", "BCFKS");
+        finalizeKeyStoreExpectResponse(EndEntityConstants.TOKEN_SOFT_BCFKS, "BCFKS", "BCFKS");
     }
     
     @Test
     public void finalizeKeyStoreExpectPemResponse() throws Exception {
-        finalizeKeyStoreExpectResponse(SecConst.TOKEN_SOFT_PEM, "PEM", "PEM");
+        finalizeKeyStoreExpectResponse(EndEntityConstants.TOKEN_SOFT_PEM, "PEM", "PEM");
     }
     
     @Test
     public void finalizeKeyStoreExpectCsrDerResponse() throws Exception {
-        finalizeKeyStoreExpectResponse(SecConst.TOKEN_SOFT_BROWSERGEN, "DER", "DER");
+        finalizeKeyStoreExpectResponse(EndEntityConstants.TOKEN_USERGEN, "DER", "DER");
     }
     
     @Test
     public void finalizeKeyStoreExpectCsrPemResponse() throws Exception {
-        finalizeKeyStoreExpectResponse(SecConst.TOKEN_SOFT_BROWSERGEN, "PEM", "PEM");
+        finalizeKeyStoreExpectResponse(EndEntityConstants.TOKEN_USERGEN, "PEM", "PEM");
     }
     
     private void finalizeKeyStoreExpectResponse(int tokenType, String tokenTypeRequestExpected, 
@@ -2661,7 +2661,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             userdata.setStatus(EndEntityConstants.STATUS_NEW);
             userdata.getExtendedInformation().setKeyStoreAlgorithmType(AlgorithmConstants.KEYALGORITHM_RSA);
             userdata.getExtendedInformation().setKeyStoreAlgorithmSubType("2048");
-            if (tokenType==SecConst.TOKEN_SOFT_BROWSERGEN) {
+            if (tokenType==EndEntityConstants.TOKEN_USERGEN) {
                 userdata.getExtendedInformation().setCertificateRequest(CSR_WITHOUT_HEADERS.replace("\n", "").getBytes());
             }
             int requestId = -1;
@@ -2705,7 +2705,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             final String base64Keystore = (String) actualJsonObject.get("certificate");
             assertEquals("Unexpected response format", tokenTypeResponseExpected, responseFormat);
             
-            if (tokenType==SecConst.TOKEN_SOFT_P12) {
+            if (tokenType==EndEntityConstants.TOKEN_SOFT_P12) {
                 final byte[] keystoreBytes = Base64.decode(base64Keystore.getBytes());
                 KeyStore keyStore = KeyStore.getInstance("PKCS12-3DES-3DES");
                 keyStore.load(new ByteArrayInputStream(keystoreBytes), "foo123".toCharArray());
