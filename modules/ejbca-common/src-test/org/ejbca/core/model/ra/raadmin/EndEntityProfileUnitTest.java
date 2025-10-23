@@ -133,6 +133,13 @@ public class EndEntityProfileUnitTest {
         } catch (EndEntityProfileValidationException e) {
             fail("rfc822Name was in and should be ok: "+e.getMessage());
         }
+		userdata.setSubjectAltName("rfc822Name=hejpådigéöńść@test.example");
+		try {
+			profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);
+			fail("Invalid rfc822Name should not be allowed");
+		} catch (EndEntityProfileValidationException e) {
+			assertEquals("Error message was not the expected", "Invalid email address in subject alt name.", e.getMessage());
+		}
         userdata.setSubjectAltName("rfc822Name=AB:CD:32:45");
         try {
             profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);

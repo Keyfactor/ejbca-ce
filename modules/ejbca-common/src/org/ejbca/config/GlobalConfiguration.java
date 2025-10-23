@@ -19,12 +19,16 @@ import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -75,7 +79,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     public static byte[] DEFAULT_HEADER_LOGO = new byte[0];
 
     // Default list of nodes in cluster
-    private static final Set<String> NODESINCLUSTER_DEFAULT      = new LinkedHashSet<>();
+    private static final Set<String> NODESINCLUSTER_DEFAULT = new LinkedHashSet<>();
 
     // Title of ra admin web interface.
     public static final String DEFAULT_EJBCA_TITLE = InternalConfiguration.getAppNameCapital() + " Administration";
@@ -298,10 +302,36 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
         return new String[0];
     }
 
+    public void setAvailableThemes(final String[] themes) {
+        String themesWithExtension = Arrays.stream(themes)
+                .map(theme -> {
+                    // Remove .css if it exists before adding it to ensure we don't double-add
+                    String normalized = theme.endsWith(".css") ? theme.substring(0, theme.length() - 4) : theme;
+                    return normalized + ".css";
+                })
+                .collect(Collectors.joining(","));
+        data.put(AVAILABLETHEMES, themesWithExtension);
+    }
+
+
     /** Returns the default available theme used by administrator preferences. */
     public String getDefaultAvailableTheme(){
-      return getAvailableThemes()[0];
+        return getAvailableThemes().length > 0 ? getAvailableThemes()[0] : "";
     }
+
+    public void setDefaultAvailableTheme(final String theme) {
+        String[] themes = getAvailableThemes();
+        List<String> newThemesList = new ArrayList<>();
+        String normalizedTheme = theme.endsWith(".css") ? theme.substring(0, theme.length() - 4) : theme;
+        newThemesList.add(normalizedTheme);
+        for (String existingTheme : themes) {
+            if (!existingTheme.equals(normalizedTheme)) {
+                newThemesList.add(existingTheme);
+            }
+        }
+        setAvailableThemes(newThemesList.toArray(new String[0]));
+    }
+
 
     public byte[] getHeadBannerLogo() {
         return (byte[]) data.get(HEADLOGO);

@@ -180,7 +180,7 @@ public class CertificateCreateSessionSystemTest extends RoleUsingTestCase {
         ArrayList<String> list = new ArrayList<String>();
         list.add("1.3.6.1.4.1.311.2.1.21"); // MS individual code signing
         list.add("1.3.6.1.4.1.311.2.1.22"); // MS commercial code signing
-        certprof.setExtendedKeyUsage(list);
+        certprof.setExtendedKeyUsageOids(list);
         String fingerprint = null;
         try {
             int cpId = certProfileSession.addCertificateProfile(roleMgmgToken, "createCertTest", certprof);
@@ -218,7 +218,7 @@ public class CertificateCreateSessionSystemTest extends RoleUsingTestCase {
     public void testSSHExtKeyUsage() throws Exception {
         final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         ArrayList<String> list = new ArrayList<String>();
-        certprof.setExtendedKeyUsage(list);
+        certprof.setExtendedKeyUsageOids(list);
 
         String fingerprint = null;
         try {
@@ -243,7 +243,7 @@ public class CertificateCreateSessionSystemTest extends RoleUsingTestCase {
             // Now add the SSH extended key usages
             list.add("1.3.6.1.5.5.7.3.21"); // SSH client
             list.add("1.3.6.1.5.5.7.3.22"); // SSH server
-            certprof.setExtendedKeyUsage(list);
+            certprof.setExtendedKeyUsageOids(list);
             certProfileSession.changeCertificateProfile(roleMgmgToken, "createCertTest", certprof);
 
             resp = (X509ResponseMessage) certificateCreateSession.createCertificate(roleMgmgToken, user, req,

@@ -12,15 +12,17 @@
  *************************************************************************/
 package org.cesecore.certificates.crl;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
  * An expired CRL deletion DTO which holds all the necessary fields for a corresponding grouping and deletion itself
  * afterward.
  */
-public class CrlMetadataHolderDto {
+public class CrlMetadataHolderDto implements Serializable {
 
-	private final String fingerprint;
+	private static final long serialVersionUID = 1L;
+    private final String fingerprint;
 	private final String issuerDN;
 	private final int cRLNumber;
 	private final int deltaCRLIndicator;
