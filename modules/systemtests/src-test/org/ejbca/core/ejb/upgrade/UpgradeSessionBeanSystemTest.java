@@ -1221,7 +1221,7 @@ public class UpgradeSessionBeanSystemTest {
         } finally {
             cesecoreConfigSession.setConfigurationValue("forbidden.characters", String.valueOf(originalForbiddenCharacters));
             GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
-            globalCesecoreConfiguration.setForbiddenCharacters(String.valueOf(originalForbiddenCharacters));
+            globalCesecoreConfiguration.setForbiddenCharacters(originalForbiddenCharacters);
             globalConfigSession.saveConfiguration(alwaysAllowtoken, globalCesecoreConfiguration);
         }
     }

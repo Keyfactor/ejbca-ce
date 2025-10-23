@@ -541,8 +541,7 @@ public final class ConfigurationHolder {
         }
     }
     
-    private static class InternalPeriodicReloadingTrigger
-    {
+    private static class InternalPeriodicReloadingTrigger {
         /** The executor service used by this trigger. */
         private final ScheduledExecutorService executorService;
 
@@ -578,10 +577,8 @@ public final class ConfigurationHolder {
          * @throws IllegalArgumentException if a required argument is missing
          */
         public InternalPeriodicReloadingTrigger(final ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration> builder, final Object ctrlParam,
-                final long triggerPeriod, final TimeUnit unit, final ManagedScheduledExecutorService exec)
-        {
-            if (builder.getReloadingController() == null)
-            {
+                final long triggerPeriod, final TimeUnit unit, final ManagedScheduledExecutorService exec) {
+            if (builder.getReloadingController() == null) {
                 throw new IllegalArgumentException(
                         "ReloadingController must not be null!");
             }
@@ -590,8 +587,7 @@ public final class ConfigurationHolder {
             controllerParam = ctrlParam;
             period = triggerPeriod;
             timeUnit = unit;
-            executorService =
-                    exec != null ? exec : createDefaultExecutorService();
+            executorService = exec != null ? exec : createDefaultExecutorService();
         }
 
         /**
@@ -603,11 +599,9 @@ public final class ConfigurationHolder {
          *        when doing reloading checks
          * @param triggerPeriod the period in which the controller is triggered
          * @param unit the time unit for the period
-         * @throws IllegalArgumentException if a required argument is missing
          */
         public InternalPeriodicReloadingTrigger(ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration> builder, final Object ctrlParam,
-                final long triggerPeriod, final TimeUnit unit)
-        {
+                final long triggerPeriod, final TimeUnit unit) {
             this(builder, ctrlParam, triggerPeriod, unit, null);
         }
 
@@ -617,14 +611,9 @@ public final class ConfigurationHolder {
          * after a period. If this trigger is already started, this invocation has
          * no effect.
          */
-        public synchronized void start()
-        {
-            if (!isRunning())
-            {
-                triggerTask =
-                        getExecutorService().scheduleAtFixedRate(
-                                createTriggerTaskCommand(), period, period,
-                                timeUnit);
+        public synchronized void start()  {
+            if (!isRunning()) {
+                triggerTask = getExecutorService().scheduleAtFixedRate(createTriggerTaskCommand(), period, period, timeUnit);
             }
         }
 
@@ -633,8 +622,7 @@ public final class ConfigurationHolder {
          *
          * @return a flag whether this trigger is running
          */
-        public synchronized boolean isRunning()
-        {
+        public synchronized boolean isRunning() {
             return triggerTask != null;
         }
         
@@ -652,8 +640,7 @@ public final class ConfigurationHolder {
          *
          * @return the newly created trigger task
          */
-        private Runnable createTriggerTaskCommand()
-        {
+        private Runnable createTriggerTaskCommand() {
             return () -> {
                 final String path = builder.getFileHandler().getFile().getAbsolutePath();
                 final boolean reloadingRequired = controller.getDetector().isReloadingRequired();
@@ -687,12 +674,8 @@ public final class ConfigurationHolder {
          *
          * @return the default executor service
          */
-        private static ScheduledExecutorService createDefaultExecutorService()
-        {
-            final ThreadFactory factory =
-                    new BasicThreadFactory.Builder()
-                            .namingPattern("ReloadingTrigger-%s").daemon(true)
-                            .build();
+        private static ScheduledExecutorService createDefaultExecutorService() {
+            final ThreadFactory factory = BasicThreadFactory.builder().namingPattern("ReloadingTrigger-%s").daemon(true).build();
             return Executors.newScheduledThreadPool(2, factory);
         }
     }

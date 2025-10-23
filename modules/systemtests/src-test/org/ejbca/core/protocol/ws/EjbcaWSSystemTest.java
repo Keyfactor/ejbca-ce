@@ -307,7 +307,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
         final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
         GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
         
-        originalForbiddenChars = globalCesecoreConfiguration.getForbiddenCharacters().toCharArray();
+        originalForbiddenChars = globalCesecoreConfiguration.getForbiddenCharacters();
         CertificateImplementationRegistry.INSTANCE.addCertificateImplementation(new CvCertificateUtility());
         Security.addProvider(new CVCProvider());
     }
@@ -324,7 +324,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
         cleanUpAdmins(WS_TEST_ROLENAME);
         final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
         GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
-        globalCesecoreConfiguration.setForbiddenCharacters(String.valueOf(originalForbiddenChars));
+        globalCesecoreConfiguration.setForbiddenCharacters(originalForbiddenChars);
         globalConfigurationSession.saveConfiguration(intAdmin, globalCesecoreConfiguration);
         CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
         certificateProfileSession.removeCertificateProfile(intAdmin, WS_TEST_CERTIFICATE_PROFILE_NAME);
@@ -2534,7 +2534,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
     public void test49CertificateRequestWithForbiddenCharsDefinedAsDefault() throws Exception {
         long rnd = secureRandom.nextLong();
         GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
-        globalCesecoreConfiguration.setForbiddenCharacters("\n\r;!\u0000%`?$~");
+        globalCesecoreConfiguration.setForbiddenCharacters("\n\r;!\u0000%`?$~".toCharArray());
         globalConfigurationSession.saveConfiguration(intAdmin, globalCesecoreConfiguration);        
         testCertificateRequestWithSpecialChars(
                 "CN=test49CertificateRequestWithForbiddenCharsDefinedAsDefault" + rnd + ",O=|\n|\r|;|A|!|`|?|$|~|, C=SE",
@@ -2547,7 +2547,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
     @Test
     public void test50CertificateRequestWithForbiddenCharsDefinedBogus() throws Exception {
         GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
-        globalCesecoreConfiguration.setForbiddenCharacters("tset");
+        globalCesecoreConfiguration.setForbiddenCharacters("tset".toCharArray());
         globalConfigurationSession.saveConfiguration(intAdmin, globalCesecoreConfiguration);    
         try {
             testCertificateRequestWithSpecialChars(
@@ -2568,7 +2568,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
     public void test51CertificateRequestWithNoForbiddenChars() throws Exception {
         final String testName = "test50CertificateRequestWithForbiddenCharsDefinedBogus";
         GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
-        globalCesecoreConfiguration.setForbiddenCharacters("");
+        globalCesecoreConfiguration.setForbiddenCharacters(new char[0]);
         globalConfigurationSession.saveConfiguration(intAdmin, globalCesecoreConfiguration);   
         // Using JDK8 \r is transformed into \n for some reason, expected will work if: O=|\n|\r|\\;|A|!|`|?|$|~|,C=SE
         testCertificateRequestWithSpecialChars(
@@ -2747,7 +2747,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
     public void test57CertificateRequestWithDnOverrideFromEndEntityInformation() throws Exception {
         final String testName = "test50CertificateRequestWithForbiddenCharsDefinedBogus";
         GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
-        globalCesecoreConfiguration.setForbiddenCharacters("\n\r;!\u0000%`?$~");
+        globalCesecoreConfiguration.setForbiddenCharacters("\n\r;!\u0000%`?$~".toCharArray());
         globalConfigurationSession.saveConfiguration(intAdmin, globalCesecoreConfiguration); 
         
         final long rnd = Math.abs(secureRandom.nextLong());
@@ -2763,7 +2763,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
     @Test
     public void test58SoftTokenRequestWithDnOverrideFromEndEntityInformation() throws Exception {
         GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
-        globalCesecoreConfiguration.setForbiddenCharacters("\n\r;!\u0000%`?$~");
+        globalCesecoreConfiguration.setForbiddenCharacters("\n\r;!\u0000%`?$~".toCharArray());
         globalConfigurationSession.saveConfiguration(intAdmin, globalCesecoreConfiguration); 
         final long rnd = Math.abs(secureRandom.nextLong());
         // Behavior changed with introduction of multi-valued RDNs and using IETFUtils.rDNsFromString, in ECA-3934

@@ -222,7 +222,7 @@ public class StartupSingletonBean {
         GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
         
         // Register forbidden characters
-        StringConfigurationCache.INSTANCE.setForbiddenCharacters(globalCesecoreConfiguration.getForbiddenCharacters().toCharArray());
+        StringConfigurationCache.INSTANCE.setForbiddenCharacters(globalCesecoreConfiguration.getForbiddenCharacters());
         
         //Register password encryption count
         final String encryptionCount = ConfigurationHolder.getString("password.encryption.count");

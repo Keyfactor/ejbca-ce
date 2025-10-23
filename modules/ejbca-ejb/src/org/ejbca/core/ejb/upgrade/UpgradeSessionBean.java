@@ -1627,7 +1627,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         log.info("Upgrade: Migrating values from properties files into GlobalCesecoreConfiguration.");
         final String forbiddenCharacters = ConfigurationHolder.instance().getString("forbidden.characters");
         GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
-        globalCesecoreConfiguration.setForbiddenCharacters(forbiddenCharacters);
+        globalCesecoreConfiguration.setForbiddenCharacters(forbiddenCharacters.toCharArray());
         
         try {
             globalConfigurationSession.saveConfiguration(authenticationToken, globalCesecoreConfiguration);
