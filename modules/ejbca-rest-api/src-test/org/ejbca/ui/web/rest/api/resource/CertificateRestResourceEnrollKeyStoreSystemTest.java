@@ -407,7 +407,7 @@ public class CertificateRestResourceEnrollKeyStoreSystemTest extends RestResourc
     public void badEnrollInvalidAlgoSpec() {
         String userName = createUser(TEST_EE_PROFILE_NAME, TEST_CERT_PROFILE_NAME, EndEntityConstants.TOKEN_SOFT_P12, "RSA", 
                 "2048");
-        String responseBody = enrollKeyStoreRestCall(userName, "foo123", "RSA", "2048", true);
+        String responseBody = enrollKeyStoreRestCall(userName, "foo123", "RSA", "256", true);
         log.error("badEnrollInvalidAlgoSpec" + responseBody);
     }
     

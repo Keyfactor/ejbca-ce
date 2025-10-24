@@ -2705,15 +2705,27 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             final String base64Keystore = (String) actualJsonObject.get("certificate");
             assertEquals("Unexpected response format", tokenTypeResponseExpected, responseFormat);
             
-            if (tokenType==EndEntityConstants.TOKEN_SOFT_P12) {
-                final byte[] keystoreBytes = Base64.decode(base64Keystore.getBytes());
-                KeyStore keyStore = KeyStore.getInstance("PKCS12-3DES-3DES");
-                keyStore.load(new ByteArrayInputStream(keystoreBytes), "foo123".toCharArray());
-                // Verify results
-                Enumeration<String> aliases = keyStore.aliases();
-                assertTrue("Alias is missing in keystore response", Collections.list(aliases).contains(testUsername));
-                assertEquals("Unexpected keystore format", "PKCS12-3DES-3DES", keyStore.getType());
+            if (!(tokenType==EndEntityConstants.TOKEN_SOFT_P12 || tokenType==EndEntityConstants.TOKEN_SOFT_JKS ||
+                    tokenType==EndEntityConstants.TOKEN_SOFT_BCFKS)) {
+                return;
             }
+            
+            final byte[] keystoreBytes = Base64.decode(base64Keystore.getBytes());
+            KeyStore keyStore = null;
+            if (tokenType==EndEntityConstants.TOKEN_SOFT_P12) {
+                keyStore = KeyStore.getInstance("PKCS12-3DES-3DES");
+            } else if (tokenType==EndEntityConstants.TOKEN_SOFT_JKS) {
+                keyStore = KeyStore.getInstance("JKS");
+            } else if (tokenType==EndEntityConstants.TOKEN_SOFT_BCFKS) {
+                keyStore = KeyStore.getInstance("BCFKS");
+            }
+            
+            keyStore.load(new ByteArrayInputStream(keystoreBytes), "foo123".toCharArray());
+            // Verify results
+            Enumeration<String> aliases = keyStore.aliases();
+            assertTrue("Alias is missing in keystore response", 
+                    Collections.list(aliases).stream().anyMatch(x -> x.equalsIgnoreCase(testUsername)));
+            
         } finally {
             // Clean up
             approvalSession.removeApprovalRequest(INTERNAL_ADMIN_TOKEN, approvalId);
