@@ -170,19 +170,32 @@
                   <h:panelGroup>
                     &nbsp;
                   </h:panelGroup>
+                  <!-- Signing Certificate Cache Time -->
+                  <h:panelGroup>
+                     <h:outputText value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_SIGNING_CERTIFICATE_CACHE_TIME}"/>
+                  </h:panelGroup>
+                  <h:panelGroup>
+                    <h:inputText disabled="#{not ocspResponderMBean.allowedToEdit}" value="#{ocspResponderMBean.signingCertificateCacheTime}"
+                        styleClass="ui-md-11" id="signingCertificateCacheTime">
+                            <f:converter converterId="jakarta.faces.Long"/>
+                    </h:inputText>
+                  </h:panelGroup>
+                  <h:outputLabel value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_SIGNING_CERTIFICATE_CACHE_TIME_HELP}" styleClass="smallHelp"/>
+                  
                   <!-- Signer Certificate Revocation Check Cache Time -->
                   <h:panelGroup>
                      <h:outputText value="#{web.text.INTERNALKEYBINDING_REQUEST_SIGNER_REVOCATION_CHECK_CACHE_TIME}"/>
                   </h:panelGroup>
                   <h:panelGroup>
                     <h:inputText disabled="#{not ocspResponderMBean.allowedToEdit}" value="#{ocspResponderMBean.requestSignerCertificateRevocationCacheTime}"
-                        onchange="this.form.submit()" styleClass="ui-md-11" id="requestSignerRevocationCheckCacheTime">
+                        styleClass="ui-md-11" id="requestSignerRevocationCheckCacheTime">
                             <f:converter converterId="jakarta.faces.Long"/>
                     </h:inputText>
                   </h:panelGroup>
                   <h:panelGroup>
                     <h:outputLabel value="#{web.text.INTERNALKEYBINDING_REQUEST_SIGNER_REVOCATION_CHECK_CACHE_TIME_HELP}" styleClass="smallHelp"/>
                   </h:panelGroup>
+                  
 	              <!-- Enable cache for unknown status -->
 	              <h:outputText value="#{web.text.INTERNALKEYBINDING_ENABLE_CACHE_FOR_UNAUTHORIZED_RESPONSES}"/>
 	              <p:selectBooleanCheckbox id="globallyEnableOcspBrowserCacheUnknownStatus"

@@ -26,6 +26,7 @@ import org.bouncycastle.asn1.DERSet;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -33,7 +34,6 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
 import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
@@ -109,7 +109,7 @@ public class DnFieldsSystemTest extends CommonEjbcaWs {
         endEntityProfile.addField(DnComponents.COUNTRY);
         endEntityProfile.addField(DnComponents.RFC822NAME);     
         endEntityProfile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(certificateProfileSession.getCertificateProfileId(PROFILE_NAME)));
-        endEntityProfile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+        endEntityProfile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(CAConstants.ALLCAS));
         if (endEntityProfileSession.getEndEntityProfile(PROFILE_NAME) == null) {
             endEntityProfileSession.addEndEntityProfile(internalAdmin, PROFILE_NAME, endEntityProfile);
         }

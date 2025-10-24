@@ -95,7 +95,6 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.unidfnr.UnidFnrHandlerMock;
 import org.ejbca.core.ejb.unidfnr.UnidfnrProxySessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -2316,7 +2315,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
                 new EndEntityType(EndEntityTypes.ENDUSER),
                 endEntityProfileId,
                 certificateProfileId,
-                SecConst.TOKEN_SOFT_BROWSERGEN,
+                EndEntityConstants.TOKEN_USERGEN,
                 new ExtendedInformation());
             user.setPassword("foo123");
             user.setStatus(EndEntityConstants.STATUS_NEW);
@@ -2465,7 +2464,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             caSession.editCA(INTERNAL_ADMIN_TOKEN, x509TestCa.getCAInfo());
             EndEntityInformation userdata = new EndEntityInformation(testUsername, "CN=" + testUsername, x509TestCa.getCAId(), null, null, new EndEntityType(
                     EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                    SecConst.TOKEN_SOFT_P12, new ExtendedInformation());
+                    EndEntityConstants.TOKEN_SOFT_P12, new ExtendedInformation());
             userdata.setPassword("foo123");
             userdata.setStatus(EndEntityConstants.STATUS_NEW);
             userdata.getExtendedInformation().setKeyStoreAlgorithmType(AlgorithmConstants.KEYALGORITHM_RSA);
@@ -2676,7 +2675,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
                 x509TestCa.getCAId(),
                 keySpec,
                 keyAlg,
-                SecConst.TOKEN_SOFT_P12,
+                EndEntityConstants.TOKEN_SOFT_P12,
                 false,
                 false,
                 false,

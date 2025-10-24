@@ -18,6 +18,7 @@ import org.cesecore.audit.AuditLogEntry;
 import org.cesecore.audit.impl.integrityprotected.IntegrityProtectedDevice;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -35,7 +36,6 @@ import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionRemote;
 import org.ejbca.core.ejb.db.DatabaseContentRule;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
@@ -138,7 +138,7 @@ public class EndEntityManagementSystemTest extends CaTestCase {
         
         EndEntityInformation endEntityInformation = new EndEntityInformation(username, "C=SE,O=AnaTom,CN=" + username, caid,
                 null, null, EndEntityTypes.INVALID.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                SecConst.TOKEN_SOFT_PEM, null);
+                EndEntityConstants.TOKEN_SOFT_PEM, null);
         endEntityInformation.setPassword(pwd);
         endEntityManagementSession.addUser(admin, endEntityInformation, false);
         
@@ -153,7 +153,7 @@ public class EndEntityManagementSystemTest extends CaTestCase {
         final String san = "rfc822name=test@test.com";
 
         EndEntityProfile profile = new EndEntityProfile();
-        profile.setAvailableCAs(Arrays.asList(SecConst.ALLCAS));
+        profile.setAvailableCAs(Arrays.asList(CAConstants.ALLCAS));
         profile.addField(DnComponents.COMMONNAME);
         profile.addField(DnComponents.RFC822NAME);
         profile.setDescription("redact");
@@ -168,7 +168,7 @@ public class EndEntityManagementSystemTest extends CaTestCase {
             // User
             EndEntityInformation endEntityInformation = new EndEntityInformation(username,"CN=" + username, caid,
                     null, null, EndEntityTypes.INVALID.toEndEntityType(), profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                    SecConst.TOKEN_SOFT_PEM, null);
+                    EndEntityConstants.TOKEN_SOFT_PEM, null);
             endEntityInformation.setPassword(password);
             endEntityManagementSession.addUser(admin, endEntityInformation, false);
             
@@ -224,7 +224,7 @@ public class EndEntityManagementSystemTest extends CaTestCase {
         EndEntityInformation endEntity = new EndEntityInformation(username,  "C=SE,O=AnaTom,OU=Engineering,CN=" + username,
                 caid, null,
                 username + "@anatom.se", EndEntityConstants.STATUS_GENERATED, EndEntityTypes.ENDUSER.toEndEntityType(),
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE,  CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, null);
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE,  CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, EndEntityConstants.TOKEN_SOFT_PEM, null);
         endEntity.setPassword("foo123");
         endEntityManagementSession.changeUser(admin, endEntity, false);
         log.debug("Changed it");
@@ -251,7 +251,7 @@ public class EndEntityManagementSystemTest extends CaTestCase {
         EndEntityInformation user = new EndEntityInformation(username,  "C=SE,O=AnaTom,CN=" + username,
                 caid, null,
                 username + "@anatom.nu", EndEntityConstants.STATUS_GENERATED, EndEntityTypes.ENDUSER.toEndEntityType(),
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE,  CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, null);
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE,  CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, EndEntityConstants.TOKEN_SOFT_PEM, null);
         user.setPassword("foo234");
         endEntityManagementSession.changeUser(admin, user, true);
         log.trace("<test03LookupChangedUser()");
@@ -381,7 +381,7 @@ public class EndEntityManagementSystemTest extends CaTestCase {
 
         // Change already existing user to add extended information with counter
         EndEntityInformation user = new EndEntityInformation(username, "C=SE,O=AnaTom,CN=" + username, caid, null, null, EndEntityTypes.INVALID.toEndEntityType(),
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, null);
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_PEM, null);
         user.setStatus(EndEntityConstants.STATUS_GENERATED);
         endEntityManagementSession.changeUser(admin, user, false);
 
@@ -397,7 +397,7 @@ public class EndEntityManagementSystemTest extends CaTestCase {
         int allowedrequests = 2;
         ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));
         user = new EndEntityInformation(username, "C=SE,O=AnaTom,CN=" + username, caid, null, null, EndEntityTypes.INVALID.toEndEntityType(),
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, ei);
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_PEM, ei);
         boolean thrown = false;
         try {
             endEntityManagementSession.changeUser(admin, user, false);
@@ -429,7 +429,7 @@ public class EndEntityManagementSystemTest extends CaTestCase {
         allowedrequests = 2;
         ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));
         user = new EndEntityInformation(username, "C=SE,O=AnaTom,CN=" + username, caid, null, null, EndEntityTypes.INVALID.toEndEntityType(), pid,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, ei);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_PEM, ei);
         thrown = false;
         try {
             endEntityManagementSession.changeUser(admin, user, false);
@@ -750,14 +750,14 @@ public class EndEntityManagementSystemTest extends CaTestCase {
         final String pwd = genRandomPwd();
         EndEntityInformation firstUser = new EndEntityInformation(username1, "C=SE,O=EJBCA Sample,CN=" + username1, caid,
                 null, null, EndEntityTypes.INVALID.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                SecConst.TOKEN_SOFT_PEM, null);
+                EndEntityConstants.TOKEN_SOFT_PEM, null);
         firstUser.setPassword(pwd);
         endEntityManagementSession.addUser(admin, firstUser, false);
         
         try {
             EndEntityInformation secondUser = new EndEntityInformation(username2, "C=SE,O=EJBCA Sample,CN=" + username2, caid,
                     null, null, EndEntityTypes.INVALID.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                    SecConst.TOKEN_SOFT_PEM, null);
+                    EndEntityConstants.TOKEN_SOFT_PEM, null);
             secondUser.setPassword(pwd);
             endEntityManagementSession.addUser(admin, secondUser, false);
         } catch (Exception e) {
@@ -780,7 +780,7 @@ public class EndEntityManagementSystemTest extends CaTestCase {
         String pwd = genRandomPwd();
         EndEntityInformation firstUser = new EndEntityInformation(username, "C=SE,O=EJBCA Sample,CN=" + username, caid,
                 null, null, EndEntityTypes.INVALID.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                SecConst.TOKEN_SOFT_PEM, null);
+                EndEntityConstants.TOKEN_SOFT_PEM, null);
         firstUser.setPassword(pwd);
         endEntityManagementSession.addUser(admin, firstUser, false);
         
@@ -788,7 +788,7 @@ public class EndEntityManagementSystemTest extends CaTestCase {
         try {
             EndEntityInformation secondUser = new EndEntityInformation(username, "C=SE,O=EJBCA Sample,CN=" + username, caid,
                     null, null, EndEntityTypes.INVALID.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                    SecConst.TOKEN_SOFT_PEM, null);
+                    EndEntityConstants.TOKEN_SOFT_PEM, null);
             secondUser.setPassword(pwd);
             endEntityManagementSession.addUser(admin, secondUser, false);
             

@@ -38,7 +38,7 @@
 				<f:converter converterId="trimConverter"/>
 			</h:inputText>
 		</h:panelGroup>
- 
+
 		<h:outputLabel for="currentMode" value="#{web.text.SCEP_OPERATIONAL_MODE}"/>
 		<h:panelGroup id="currentMode">
 			<h:panelGroup rendered="#{scepConfigMBean.currentAliasEditMode}">
@@ -103,7 +103,7 @@
 			</h:panelGroup>
 			<h:outputText value="#{scepConfigMBean.currentAlias.raCertProfile}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
-
+		
 		<h:outputLabel for="raca" value="#{web.text.SCEP_RA_CA}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
 		<h:panelGroup id="raca" rendered="#{scepConfigMBean.currentAlias.modeRa}">
 			<h:panelGroup rendered="#{scepConfigMBean.currentAliasEditMode}">
@@ -114,6 +114,99 @@
 			</h:panelGroup>
 			<h:outputText value="#{scepConfigMBean.currentAlias.raDefaultCA}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
+
+        <!-- Use RA keys instead of the key for the CA when decrypting SCEP requests and signing SCEP responses -->
+        <h:outputLabel for="useRaKeys" value="#{web.text.SCEP_RA_USE_RA_KEYS}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
+        <h:panelGroup id="useRaKeys" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+            <h:selectBooleanCheckbox id="useRaKeyCheckbox" value="#{scepConfigMBean.currentAlias.useRaKeys}" disabled="#{!scepConfigMBean.currentAliasEditMode}">
+                <f:ajax execute="@this" render="
+                    raEncryptionCryptoTokenLabelWrapper raEncryptionCryptoTokenWrapper
+                    raEncryptionKeyLabelWrapper raEncryptionKeyWrapper
+                    raSigningAlgorithmLabelWrapper raSigningAlgorithmWrapper
+                    raSigningCryptoTokenLabelWrapper raSigningCryptoTokenWrapper
+                    raSigningKeyLabelWrapper raSigningKeyWrapper
+                    "/>
+            </h:selectBooleanCheckbox>
+        </h:panelGroup>
+        
+        <!-- Separate key (token + alias) for SCEP request encryption fields token/key -->
+        <h:panelGroup id="raEncryptionCryptoTokenLabelWrapper" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+	        <h:outputLabel id="raEncryptionCryptoTokenLabel" for="raEncryptionCryptoToken" value="#{web.text.SCEP_RA_ENCRYPTION_TOKEN}" 
+	           rendered="#{scepConfigMBean.currentAlias.useRaKeys}"/>
+        </h:panelGroup>
+        <h:panelGroup id="raEncryptionCryptoTokenWrapper" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+            <h:panelGroup id="raEncryptionCryptoToken" rendered="#{scepConfigMBean.currentAlias.useRaKeys}">
+                <h:outputText value="#{web.text.SCEP_RA_NO_TOKENS}"
+	                   rendered="#{!scepConfigMBean.currentAliasEditMode and empty scepConfigMBean.availableEncryptionCryptoTokens}"/>
+	            <h:selectOneMenu id="selectOneMenuEncryptionCryptoToken" value="#{scepConfigMBean.currentAlias.encryptionCryptoTokenId}" 
+	                   rendered="#{scepConfigMBean.currentAliasEditMode and not empty scepConfigMBean.availableEncryptionCryptoTokens}">
+	                <f:selectItems value="#{scepConfigMBean.availableEncryptionCryptoTokens}"/>
+                 	<f:ajax render="raEncryptionKey"/>
+	            </h:selectOneMenu>
+	            <h:outputText value="#{scepConfigMBean.currentAliasEncryptionCryptoTokenName}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
+            </h:panelGroup>
+        </h:panelGroup>
+        <h:panelGroup id="raEncryptionKeyLabelWrapper" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+            <h:outputLabel id="raEncryptionKeyLabel" for="raEncryptionKey" value="#{web.text.SCEP_RA_ENCRYPTION_KEY}" rendered="#{scepConfigMBean.currentAlias.useRaKeys}"/>
+        </h:panelGroup>
+        <h:panelGroup id="raEncryptionKeyWrapper" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+            <h:panelGroup id="raEncryptionKey" rendered="#{scepConfigMBean.currentAlias.useRaKeys}">
+                <h:outputText value="#{web.text.SCEP_RA_NO_KEYS}" 
+                        rendered="#{scepConfigMBean.currentAliasEditMode and empty scepConfigMBean.availableEncryptionKeys}"/>
+                <h:selectOneMenu id="selectOneMenuEncryptionKey" value="#{scepConfigMBean.currentAlias.encryptionKeyAlias}" 
+                        rendered="#{scepConfigMBean.currentAliasEditMode and not empty scepConfigMBean.availableEncryptionKeys}">
+                    <f:selectItems value="#{scepConfigMBean.availableEncryptionKeys}"/>
+                </h:selectOneMenu>
+                <h:outputText value="#{scepConfigMBean.currentAlias.encryptionKeyAlias}" 
+                        rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
+            </h:panelGroup>
+        </h:panelGroup>
+
+        <!-- Separate key (token + alias) for SCEP request signing fields token/key -->
+        <h:panelGroup id="raSigningAlgorithmLabelWrapper" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+            <h:outputLabel id="raSigningAlgorithmLabel" for="raSigningAlgorithm" value="#{web.text.SCEP_RA_SIGNING_ALGORITHM}" rendered="#{scepConfigMBean.currentAlias.useRaKeys}"/>
+        </h:panelGroup>
+        <h:panelGroup id="raSigningAlgorithmWrapper" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+            <h:panelGroup id="raSigningAlgorithm" rendered="#{scepConfigMBean.currentAlias.useRaKeys}">
+                <h:selectOneMenu id="selectOneMenuSigningAlgorithm" value="#{scepConfigMBean.currentAlias.signingAlgorithm}"
+                       rendered="#{scepConfigMBean.currentAliasEditMode}">
+                    <f:selectItems value="#{scepConfigMBean.availableSigningAlgorithms}"/>
+                    <f:ajax render="raSigningKey"/>
+                </h:selectOneMenu>
+                <h:outputText value="#{scepConfigMBean.currentAlias.signingAlgorithm}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
+            </h:panelGroup>
+        </h:panelGroup>
+        <h:panelGroup id="raSigningCryptoTokenLabelWrapper" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+            <h:outputLabel id="raSigningCryptoTokenLabel" for="raSigningCryptoToken" value="#{web.text.SCEP_RA_SIGNING_TOKEN}" rendered="#{scepConfigMBean.currentAlias.useRaKeys}"/>
+        </h:panelGroup>
+        <h:panelGroup id="raSigningCryptoTokenWrapper" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+            <h:panelGroup id="raSigningCryptoToken" rendered="#{scepConfigMBean.currentAlias.useRaKeys}">
+                <h:outputText value="#{web.text.SCEP_RA_NO_TOKENS}" 
+                       rendered="#{!scepConfigMBean.currentAliasEditMode and empty scepConfigMBean.availableSigningCryptoTokens}"/>
+                <h:selectOneMenu id="selectOneMenuSigningCryptoToken" value="#{scepConfigMBean.currentAlias.signingCryptoTokenId}" 
+                       rendered="#{scepConfigMBean.currentAliasEditMode and not empty scepConfigMBean.availableSigningCryptoTokens}">
+                    <f:selectItems value="#{scepConfigMBean.availableSigningCryptoTokens}"/>
+                    <f:ajax render="raSigningKey"/>
+                </h:selectOneMenu>
+                <h:outputText value="#{scepConfigMBean.currentAliasSigningCryptoTokenName}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
+            </h:panelGroup>
+        </h:panelGroup>
+        <h:panelGroup id="raSigningKeyLabelWrapper" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+            <h:outputLabel id="raSigningKeyLabel" for="raSigningKey" value="#{web.text.SCEP_RA_SIGNING_KEY}" rendered="#{scepConfigMBean.currentAlias.useRaKeys}"/>
+        </h:panelGroup>
+        <h:panelGroup id="raSigningKeyWrapper" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+            <h:panelGroup id="raSigningKey" rendered="#{scepConfigMBean.currentAlias.useRaKeys}">
+                <h:outputText value="#{web.text.SCEP_RA_NO_KEYS}" 
+                        rendered="#{scepConfigMBean.currentAliasEditMode and empty scepConfigMBean.availableSigningKeys}"/>
+                <h:selectOneMenu id="selectOneMenuSigningKey" value="#{scepConfigMBean.currentAlias.signingKeyAlias}" 
+                        rendered="#{scepConfigMBean.currentAliasEditMode and not empty scepConfigMBean.availableSigningKeys}">
+                    <f:selectItems value="#{scepConfigMBean.availableSigningKeys}"/>
+                </h:selectOneMenu>
+                <h:outputText value="#{scepConfigMBean.currentAlias.signingKeyAlias}" 
+                        rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
+            </h:panelGroup>
+        </h:panelGroup>
+        <!-- End of RA keys -->                
 
 		<h:outputLabel for="rapwd" value="#{web.text.SCEP_RA_AUTH_PASSWORD}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
 		<h:panelGroup id="rapwd" rendered="#{scepConfigMBean.currentAlias.modeRa}">
@@ -169,7 +262,7 @@
 	    	</h:inputText>
 	    	<h:outputText value="#{scepConfigMBean.currentAlias.raNameGenPostfix}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
-		
+
 	</h:panelGrid>		
 		
 	<!-- Intune Configuration Values -->	
@@ -271,6 +364,7 @@
 	    	</h:inputSecret>
 	    	<h:outputText value="*****" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>	    	
 		</h:panelGroup>
+
 		
 	</h:panelGrid>
 	<h:panelGrid columns="2" id="actions">

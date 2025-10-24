@@ -46,7 +46,6 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.After;
 import org.junit.Before;
@@ -101,7 +100,7 @@ public class CaImportCertCommandSystemTest {
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         EndEntityInformation endEntityInformation = new EndEntityInformation(USERNAME, CERTIFICATE_DN, ca.getCAId(), null, null,
                 EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                SecConst.TOKEN_SOFT_PEM, null);
+                EndEntityConstants.TOKEN_SOFT_PEM, null);
         endEntityInformation.setPassword("foo123");
         endEntityManagementSession.addUser(authenticationToken, endEntityInformation, false);
         SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), endEntityInformation.getUsername(), endEntityInformation.getPassword());
@@ -212,7 +211,7 @@ public class CaImportCertCommandSystemTest {
         caSession.addCA(authenticationTokenWrong, ca2);
         EndEntityInformation endEntityInformation = new EndEntityInformation(USERNAME_StrictParameterfailure, CERTIFICATE_DN_StrictParameterfailure,
                 ca2.getCAId(), null, null, EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, null);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_PEM, null);
         endEntityInformation.setPassword("foo12356");
         endEntityManagementSession.addUser(authenticationToken, endEntityInformation, false);
 

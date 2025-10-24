@@ -157,6 +157,11 @@
 	<classpathentry kind="lib" path="lib/ext/jaxb/jaxb-runtime-4.0.5.jar"/>
 	<classpathentry kind="lib" path="lib/ext/jaxb/jaxb-impl-4.0.5.jar"/>
 	<classpathentry kind="lib" path="lib/ext/jaxb/txw2-4.0.5.jar"/>
+	<classpathentry kind="lib" path="lib/ext/test/byte-buddy-1.17.7.jar"/>
+	<classpathentry kind="lib" path="lib/ext/test/byte-buddy-agent-1.17.7.jar"/>
+	<classpathentry kind="lib" path="lib/ext/test/easymock-5.2.0.jar"/>
+	<classpathentry kind="lib" path="lib/ext/test/mockito-core-5.19.0.jar"/>
+	<classpathentry kind="lib" path="lib/ext/test/objenesis-3.3.jar"/>
 	<classpathentry kind="lib" path="lib/cert-cvc-1.6.2.jar"/>
 	<classpathentry kind="lib" path="lib/commons-configuration2-2.11.0.jar"/>
 	<classpathentry kind="lib" path="lib/xstream/xstream-1.4.21.jar"/>
@@ -181,7 +186,7 @@
 	<classpathentry kind="lib" path="lib/jee/soapclient/saaj-impl-3.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/gmbal-api-only-4.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/ejbca-ws-client-gen.jar"/>
-	<classpathentry kind="lib" path="lib/x509-common-util-5.3.6.jar" sourcepath="/x509-common-util"/>
+	<classpathentry kind="lib" path="lib/x509-common-util-5.4.1.jar" sourcepath="/x509-common-util"/>
 	<classpathentry kind="lib" path="lib/cryptotokens-api-3.4.0.jar"/>
 	<classpathentry kind="lib" path="lib/cryptotokens-impl-3.4.0.jar"/>
 	<classpathentry kind="lib" path="lib/cryptotokens-impl-ee-3.4.0.jar"/>
@@ -239,14 +244,9 @@
 	<classpathentry kind="lib" path="lib/hibernate/hibernate-community-dialects-6.5.2.Final.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/hibernate-core-6.5.2.Final.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/hibernate-validator-8.0.1.Final.jar"/>
-	<classpathentry kind="lib" path="lib/ext/test/easymock-5.2.0.jar"/>
-	<classpathentry kind="lib" path="lib/ext/test/objenesis-3.3.jar"/>
-	<classpathentry kind="lib" path="lib/ext/test/byte-buddy-1.17.7.jar"/>
-	<classpathentry kind="lib" path="lib/ext/test/byte-buddy-agent-1.17.7.jar"/>
-	<classpathentry kind="lib" path="lib/ext/test/mockito-core-5.19.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-text-1.10.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-codec-1.17.1.jar"/>
-	<classpathentry kind="lib" path="lib/nimbus-jose-jwt-9.37.3.jar"/>
+	<classpathentry kind="lib" path="lib/nimbus-jose-jwt-9.37.4.jar"/>
 	<classpathentry kind="lib" path="lib/jcip-annotations-1.0-1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang3-3.18.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-fileupload2-core-2.0.0-M4.jar"/>

@@ -111,7 +111,7 @@ import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
-import org.cesecore.certificates.ca.internal.CaCertificateCache;
+import org.cesecore.certificates.ca.internal.CaCertificateCacheTestSessionRemote;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.HashID;
 import org.cesecore.certificates.certificate.IllegalKeyException;
@@ -143,7 +143,6 @@ import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.AuthLoginException;
@@ -261,6 +260,7 @@ public class ProtocolOcspHttpSystemTest extends ProtocolOcspTestBase {
             .getBytes());
 
     private final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+    private final CaCertificateCacheTestSessionRemote caCertificateCacheTestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaCertificateCacheTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private static final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private final RevocationSessionRemote revocationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RevocationSessionRemote.class);
@@ -429,9 +429,8 @@ public class ProtocolOcspHttpSystemTest extends ProtocolOcspTestBase {
             // First test with a signed OCSP request that can be verified
             Collection<Certificate> cacerts = new ArrayList<>();
             cacerts.add(cacert);
-            CaCertificateCache certcache = CaCertificateCache.INSTANCE;
-            certcache.loadCertificates(cacerts);
-            X509Certificate signer = checkRequestSignature(LOOPBACK_IP, req, certcache);
+            caCertificateCacheTestSession.loadCertificates(cacerts);
+            X509Certificate signer = checkRequestSignature(LOOPBACK_IP, req);
             assertNotNull(signer);
             assertEquals(ocspTestCert.getSerialNumber().toString(16), signer.getSerialNumber().toString(16));
 
@@ -439,7 +438,7 @@ public class ProtocolOcspHttpSystemTest extends ProtocolOcspTestBase {
             req = gen.build();
             boolean caught = false;
             try {
-                checkRequestSignature(LOOPBACK_IP, req, certcache);
+                checkRequestSignature(LOOPBACK_IP, req);
             } catch (SignRequestException e) {
                 caught = true;
             }
@@ -458,7 +457,7 @@ public class ProtocolOcspHttpSystemTest extends ProtocolOcspTestBase {
             // throw an SignRequestSignatureException
             caught = false;
             try {
-                checkRequestSignature(LOOPBACK_IP, req, certcache);
+                checkRequestSignature(LOOPBACK_IP, req);
             } catch (SignRequestSignatureException e) {
                 caught = true;
             }
@@ -477,7 +476,7 @@ public class ProtocolOcspHttpSystemTest extends ProtocolOcspTestBase {
             // throw an SignRequestSignatureException
             caught = false;
             try {
-                checkRequestSignature(LOOPBACK_IP, req, certcache);
+                checkRequestSignature(LOOPBACK_IP, req);
             } catch (SignRequestSignatureException e) {
                 caught = true;
             }
@@ -1073,7 +1072,7 @@ Content-Type: text/html; charset=iso-8859-1
             if (!endEntityManagementSession.existsUser(username)) {
                 EndEntityInformation endEntityInformation = new EndEntityInformation(username, "CN=certUsername", caid,
                         null, "ocsptest@anatom.se", EndEntityTypes.ENDUSER.toEndEntityType(), eepId, cpId,
-                        SecConst.TOKEN_SOFT_P12, null);
+                        EndEntityConstants.TOKEN_SOFT_P12, null);
                 endEntityInformation.setPassword(FOO123_PASSWORD);
                 endEntityManagementSession.addUser(admin, endEntityInformation, false);
                 log.debug("created user: certUsername, foo123, CN=certUsername");
@@ -1081,7 +1080,7 @@ Content-Type: text/html; charset=iso-8859-1
                 log.debug("User certUsername already exists.");
                 EndEntityInformation userData = new EndEntityInformation(username, "CN=certUsername",
                         caid, null, "ocsptest@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
-                        eepId, cpId, null, null, SecConst.TOKEN_SOFT_PEM, null);
+                        eepId, cpId, null, null, EndEntityConstants.TOKEN_SOFT_PEM, null);
                 userData.setPassword(FOO123_PASSWORD);
                 endEntityManagementSession.changeUser(admin, userData, false);
                 log.debug("Reset status to NEW");
@@ -1224,7 +1223,7 @@ Content-Type: text/html; charset=iso-8859-1
                 log.debug("User certUsername already exists.");
                 EndEntityInformation userData = new EndEntityInformation(username, "CN=certUsername",
                         caid, null, "ocsptest@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
-                        eepId, cpId, null, null, SecConst.TOKEN_SOFT_PEM, null);
+                        eepId, cpId, null, null, EndEntityConstants.TOKEN_SOFT_PEM, null);
                 userData.setPassword(FOO123_PASSWORD);
                 endEntityManagementSession.changeUser(admin, userData, false);
                 log.debug("Reset status to NEW");
@@ -1824,7 +1823,7 @@ Content-Type: text/html; charset=iso-8859-1
             log.debug("User ocsptest already exists.");
             EndEntityInformation userData = new EndEntityInformation(USERNAME, "C=SE,O=AnaTom,CN=OCSPTest",
                     caid, null, "ocsptest@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
-                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, null);
+                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, EndEntityConstants.TOKEN_SOFT_PEM, null);
             userData.setPassword(FOO123_PASSWORD);
             endEntityManagementSession.changeUser(admin, userData, false);
             log.debug("Reset status to NEW");
@@ -1843,7 +1842,6 @@ Content-Type: text/html; charset=iso-8859-1
      *
      * @param clientRemoteAddr The ip address or hostname of the remote client that sent the request, can be null.
      * @param req The signed OCSPReq
-     * @param cacerts a CertificateCache of Certificates, the authorized CA-certificates. The signer certificate must be issued by one of these.
      * @return X509Certificate which is the certificate that signed the OCSP request
      * @throws SignRequestSignatureException if signature verification fail, or if the signing certificate is not authorized
      * @throws SignRequestException if there is no signature on the OCSPReq
@@ -1854,7 +1852,7 @@ Content-Type: text/html; charset=iso-8859-1
      * @throws InvalidKeyException if the certificate, or CA key is invalid
      * @throws OperatorCreationException
      */
-    public static X509Certificate checkRequestSignature(String clientRemoteAddr, OCSPReq req, CaCertificateCache cacerts) throws SignRequestException,
+    public X509Certificate checkRequestSignature(String clientRemoteAddr, OCSPReq req) throws SignRequestException,
             OCSPException, NoSuchProviderException, CertificateException, NoSuchAlgorithmException, InvalidKeyException,
             SignRequestSignatureException, OperatorCreationException {
 
@@ -1887,7 +1885,15 @@ Content-Type: text/html; charset=iso-8859-1
                 verifyOK = true;
                 // Also check that the signer certificate can be verified by one of the CA-certificates
                 // that we answer for
-                X509Certificate signerca = cacerts.findLatestBySubjectDN(HashID.getFromIssuerDN(certs[i]));
+                JcaX509CertificateHolder signercaHolder = caCertificateCacheTestSession.findLatestBySubjectDN(HashID.getFromIssuerDN(certs[i]));
+                final X509Certificate signerca;
+                if(signercaHolder != null) {
+                    final JcaX509CertificateConverter jcaX509CertificateConverter = new JcaX509CertificateConverter();
+                    signerca = jcaX509CertificateConverter.getCertificate(signercaHolder);
+                } else {
+                    signerca = null;
+                }
+                
                 String subject = signer;
                 String issuer = signerissuer;
                 if (signerca != null) {

@@ -10,34 +10,17 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.ui.web.admin.configuration;
+
+package org.ejbca.core.protocol.scep;
+
 
 /**
- * Utility methods for parsing OIDs used by system configuration beans.
- * 
- * @author Marcus Lundblad
+ * Exception for when the issuer is unable to automatically issue a certificate for SCEP encryption
  */
-public class OidUtils {
-    /**
-     * Checks that OID represented in string form consists of only numeric parts.
-     * 
-     * @param oid String representing an OID
-     * @return True if string contains an OID only consisting of numeric parts
-     */
-    public static boolean isOidNumericalOnly(String oid) {
-        final String[] oidParts = oid.split("\\.");
+public class ScepEncryptionCertificateIssuanceException extends Exception {
+	private static final long serialVersionUID = 1L;
 
-        for (final String oidPart : oidParts) {
-            if (oidPart.equals("*")) {
-                // Allow wildcard characters
-                continue;
-            }
-            try {
-                Integer.parseInt(oidPart);
-            } catch (NumberFormatException e) {
-                return false;
-            }
-        }
-        return true;
-    }
+	public ScepEncryptionCertificateIssuanceException(Exception e) {
+		super(e);
+	}
 }

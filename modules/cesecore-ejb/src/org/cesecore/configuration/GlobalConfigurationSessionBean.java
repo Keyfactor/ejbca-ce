@@ -12,21 +12,13 @@
  *************************************************************************/
 package org.cesecore.configuration;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.ServiceLoader;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import jakarta.persistence.PersistenceContext;
-
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
@@ -46,6 +38,15 @@ import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.ServiceLoader;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This bean handled global configurations.
@@ -85,6 +86,16 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public ConfigurationBase getCachedConfiguration(final String configID) {
+        return getCachedConfiguration(configID, false);
+    }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
+    public ConfigurationBase getCachedConfigurationAndLockWrites(final String configID) {
+        return getCachedConfiguration(configID, true);
+    }
+
+    private ConfigurationBase getCachedConfiguration(final String configID, final boolean shouldLockConfigWrites) {
         ConfigurationBase result;
         try {
             if (log.isTraceEnabled()) {
@@ -97,7 +108,10 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
                 if (log.isDebugEnabled()) {
                     log.debug("Reading Configuration: " + configID);
                 }
-                final GlobalConfigurationData globalConfigurationData = findByConfigurationId(configID);
+                final GlobalConfigurationData globalConfigurationData = shouldLockConfigWrites ?
+                        findByConfigurationId(configID, LockModeType.PESSIMISTIC_WRITE,
+                                Map.of("jakarta.persistence.lock.timeout", 0)) :
+                        findByConfigurationId(configID);
                 if (globalConfigurationData == null) {
                     if (log.isDebugEnabled()) {
                         log.debug("No default GlobalConfiguration exists. Creating a new one.");
@@ -139,7 +153,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
             final Map<Object, Object> diff = UpgradeableDataHashMap.diffMaps(orgmap, newmap);
             // Make security audit log record, but first have the object itself filter out any sensitive information
             conf.filterDiffMapForLogging(diff);
-            final String msg = intres.getLocalizedMessage("globalconfig.savedconf", gcdata.getConfigurationId());
+            final String msg = "Saved global configuration with id " + gcdata.getConfigurationId() + ".";
             final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             for (Map.Entry<Object, Object> entry : diff.entrySet()) {
@@ -170,7 +184,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
                 GlobalConfigurationData gcd = new GlobalConfigurationData(configID, conf);
                 entityManager.persist(gcd);
                 GlobalConfigurationCacheHolder.INSTANCE.updateConfiguration(conf, configID);
-                final String msg = intres.getLocalizedMessage("globalconfig.createdconf", configID);
+                final String msg = "Global configuration with id " + configID + " created.";
                 auditSession.log(EventTypes.SYSTEMCONF_CREATE, EventStatus.SUCCESS, ModuleTypes.GLOBALCONF, ServiceTypes.CORE,
                         authenticationToken.toString(), null, null, null, msg);
             } catch (Exception e) {
@@ -248,6 +262,16 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public GlobalConfigurationData findByConfigurationId(String configurationId) {
         return entityManager.find(GlobalConfigurationData.class, configurationId);
+    }
+
+    /**
+     * Allows to find a configuration and specify the lock mode
+     * @return the found entity instance or null if the entity does not exist
+     */
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public GlobalConfigurationData findByConfigurationId(String configurationId, LockModeType lockModeType, Map<String, Object> dbHints) {
+        return entityManager.find(GlobalConfigurationData.class, configurationId, lockModeType, dbHints);
     }
 
     private enum GlobalConfigurationCacheHolder {

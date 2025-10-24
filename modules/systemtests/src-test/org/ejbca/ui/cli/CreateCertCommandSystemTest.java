@@ -31,7 +31,6 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -80,7 +79,7 @@ public class CreateCertCommandSystemTest {
         caSession.addCA(authenticationToken, ca);
         EndEntityInformation endEntityInformation = new EndEntityInformation(USERNAME, "CN=" + USERNAME, ca.getCAId(), null, null,
                 EndEntityTypes.ENDUSER.toEndEntityType(),
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, null);
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_P12, null);
         endEntityInformation.setPassword(PASSWORD);
         endEntityManagementSession.addUser(authenticationToken, endEntityInformation, false);       
         

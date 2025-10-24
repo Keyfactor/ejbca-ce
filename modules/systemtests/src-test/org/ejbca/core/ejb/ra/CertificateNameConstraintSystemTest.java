@@ -34,6 +34,7 @@ import org.bouncycastle.asn1.x509.NameConstraints;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
@@ -57,7 +58,6 @@ import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -266,7 +266,7 @@ public class CertificateNameConstraintSystemTest extends CaTestCase {
         List<Integer> availableCertProfiles = endEntityProfile.getAvailableCertificateProfileIds();
         availableCertProfiles.add(endEntityCertificateProfileId);
         endEntityProfile.setAvailableCertificateProfileIds(availableCertProfiles);
-        endEntityProfile.setAvailableCAs(Arrays.asList(SecConst.ALLCAS));
+        endEntityProfile.setAvailableCAs(Arrays.asList(CAConstants.ALLCAS));
         endEntityProfile.addField(DnComponents.COUNTRY);
 
         endEntityProfileId = endEntityProfileSession.addEndEntityProfile(admin, TEST_NC_EE_PROFILE_NAME, endEntityProfile);
@@ -337,7 +337,7 @@ public class CertificateNameConstraintSystemTest extends CaTestCase {
 
         endEntityManagementSession.changeUser(admin, lastCreatedUser, false);
         byte[] encodedKeyStore = keyStoreCreateSessionBean.generateOrKeyRecoverTokenAsByteArray(admin, lastCreatedUser.getUsername(),
-                lastCreatedUser.getPassword(), lastCreatedUser.getCAId(), "2048", AlgorithmConstants.KEYALGORITHM_RSA, SecConst.TOKEN_SOFT_JKS, false,
+                lastCreatedUser.getPassword(), lastCreatedUser.getCAId(), "2048", AlgorithmConstants.KEYALGORITHM_RSA, EndEntityConstants.TOKEN_SOFT_JKS, false,
                 false, false, endEntityProfileId);
 
         verifyGeneratedKeystore(testCase, encodedKeyStore, lastCreatedUser, permittedNCUpdated, excludedNCUpdated, false);
@@ -394,7 +394,7 @@ public class CertificateNameConstraintSystemTest extends CaTestCase {
         byte[] encodedKeyStore = null;
         try {
             encodedKeyStore = keyStoreCreateSessionBean.generateOrKeyRecoverTokenAsByteArray(admin, createdUser.getUsername(),
-                    createdUser.getPassword(), createdUser.getCAId(), "2048", AlgorithmConstants.KEYALGORITHM_RSA, SecConst.TOKEN_SOFT_JKS, false,
+                    createdUser.getPassword(), createdUser.getCAId(), "2048", AlgorithmConstants.KEYALGORITHM_RSA, EndEntityConstants.TOKEN_SOFT_JKS, false,
                     false, false, endEntityProfileId);
         } catch (Exception e) {
             if (exceptionOnKeyStoreCreationExpected) {
@@ -625,7 +625,7 @@ public class CertificateNameConstraintSystemTest extends CaTestCase {
         List<Integer> availableCertProfiles = endEntityProfile.getAvailableCertificateProfileIds();
         availableCertProfiles.add(dummyProfileId);
         endEntityProfile.setAvailableCertificateProfileIds(availableCertProfiles);
-        endEntityProfile.setAvailableCAs(Arrays.asList(SecConst.ALLCAS));
+        endEntityProfile.setAvailableCAs(Arrays.asList(CAConstants.ALLCAS));
 
         int eeProfileId = endEntityProfileSession.addEndEntityProfile(admin, dummyEEProfileName, endEntityProfile);
         log.info("Created end entity profile id: " + eeProfileId);
@@ -1169,7 +1169,7 @@ public class CertificateNameConstraintSystemTest extends CaTestCase {
         byte[] encodedKeyStore = null;
         try {
             encodedKeyStore = keyStoreCreateSessionBean.generateOrKeyRecoverTokenAsByteArray(admin, createdUser.getUsername(),
-                    createdUser.getPassword(), createdUser.getCAId(), "2048", AlgorithmConstants.KEYALGORITHM_RSA, SecConst.TOKEN_SOFT_JKS, false,
+                    createdUser.getPassword(), createdUser.getCAId(), "2048", AlgorithmConstants.KEYALGORITHM_RSA, EndEntityConstants.TOKEN_SOFT_JKS, false,
                     false, false, endEntityProfileId);
         } catch (Exception e) {
 

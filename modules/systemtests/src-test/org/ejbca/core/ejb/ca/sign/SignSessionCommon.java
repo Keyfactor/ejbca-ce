@@ -33,7 +33,6 @@ import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 import com.keyfactor.util.CertTools;
@@ -69,7 +68,7 @@ public abstract class SignSessionCommon extends CaTestCase{
             EndEntityInformation endEntityInformation = new EndEntityInformation(username,  "C=SE,CN="+username,
                     caId, null, 
                     "foo@anatom.nu", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
-                    endEntityProfileId, certificateProfileId, null, null, SecConst.TOKEN_SOFT_PEM, null);
+                    endEntityProfileId, certificateProfileId, null, null, EndEntityConstants.TOKEN_SOFT_PEM, null);
             endEntityInformation.setPassword("foo123");
             endEntityManagementSession.changeUser(internalAdmin, endEntityInformation, false);
             if (log.isDebugEnabled()) {

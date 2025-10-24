@@ -18,14 +18,15 @@ import java.util.Map;
 import com.keyfactor.util.certificate.DnComponents;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.ejbca.core.model.SecConst;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -64,7 +65,7 @@ public class EndEntityProfileUnitTest {
         profile.addField(DnComponents.DATEOFBIRTH);
         profile.addField(DnComponents.ORGANIZATIONIDENTIFIER);
         profile.addField("Foo");
-        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(CAConstants.ALLCAS));
         profile.setUse(EndEntityProfile.CLEARTEXTPASSWORD, 0, true);
         profile.setUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, true);
         profile.setValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, "" + RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
@@ -77,14 +78,14 @@ public class EndEntityProfileUnitTest {
     @Test
     public void testUserFulfillEndEntityProfile() {
         final EndEntityProfile profile = new EndEntityProfile();
-        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(CAConstants.ALLCAS));
 
         // First an end entity without subjectDN. It's uncommon, but the RFC supports certificates with only altName and no subjectDN
         // we need to unset the default required DN component in order to pass with empty DN
         profile.setRequired(DnComponents.COMMONNAME,0,false);
         EndEntityInformation userdata = new EndEntityInformation("foo", "", 123, "", "", new EndEntityType(EndEntityTypes.ENDUSER),
                 123, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                SecConst.TOKEN_SOFT_PEM, null);
+                EndEntityConstants.TOKEN_SOFT_PEM, null);
         userdata.setPassword("foo123");
         try {
             // Should pass
@@ -102,7 +103,7 @@ public class EndEntityProfileUnitTest {
         // Test generic that required fields are required
         userdata = new EndEntityInformation("foo", "CN=foo", 123, "", "", new EndEntityType(EndEntityTypes.ENDUSER),
                 123, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                SecConst.TOKEN_SOFT_PEM, null);
+                EndEntityConstants.TOKEN_SOFT_PEM, null);
         userdata.setPassword("foo123");
         try {
             profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);
@@ -133,6 +134,13 @@ public class EndEntityProfileUnitTest {
         } catch (EndEntityProfileValidationException e) {
             fail("rfc822Name was in and should be ok: "+e.getMessage());
         }
+		userdata.setSubjectAltName("rfc822Name=hejpådigéöńść@test.example");
+		try {
+			profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);
+			fail("Invalid rfc822Name should not be allowed");
+		} catch (EndEntityProfileValidationException e) {
+			assertEquals("Error message was not the expected", "Invalid email address in subject alt name.", e.getMessage());
+		}
         userdata.setSubjectAltName("rfc822Name=AB:CD:32:45");
         try {
             profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);
@@ -188,7 +196,7 @@ public class EndEntityProfileUnitTest {
         profile.setValue(EndEntityProfile.AVAILCAS, 0, "123");
         EndEntityInformation userdata = new EndEntityInformation("foo", "CN=User,SN=134566,O=PrimeKey,C=SE", 123, "", "", new EndEntityType(EndEntityTypes.ENDUSER),
                 123, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                SecConst.TOKEN_SOFT_PEM, null);
+                EndEntityConstants.TOKEN_SOFT_PEM, null);
         userdata.setPassword("foo123");
         try {
             // Should pass
@@ -238,10 +246,10 @@ public class EndEntityProfileUnitTest {
         profile.addField(DnComponents.DNSNAME);
         profile.setRequired(DnComponents.DNSNAME, 0, true);
         profile.setCopy(DnComponents.DNSNAME, 0, true);
-        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(CAConstants.ALLCAS));
         EndEntityInformation userdata = new EndEntityInformation("foo", "CN=UserDns", 123, "", "", new EndEntityType(EndEntityTypes.ENDUSER),
                 123, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                SecConst.TOKEN_SOFT_PEM, null);
+                EndEntityConstants.TOKEN_SOFT_PEM, null);
         userdata.setPassword("foo123");
         profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);
     }
@@ -253,10 +261,10 @@ public class EndEntityProfileUnitTest {
         profile.addField(DnComponents.DNSNAME);
         profile.setRequired(DnComponents.DNSNAME, 0, true);
         profile.setCopy(DnComponents.DNSNAME, 0, true);
-        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(CAConstants.ALLCAS));
         EndEntityInformation userdata = new EndEntityInformation("foo", "CN=UserDns", 123, "DNSNAME=UserDns", "", new EndEntityType(EndEntityTypes.ENDUSER),
                 123, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                SecConst.TOKEN_SOFT_PEM, null);
+                EndEntityConstants.TOKEN_SOFT_PEM, null);
         userdata.setPassword("foo123");
         profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);
     }
@@ -269,10 +277,10 @@ public class EndEntityProfileUnitTest {
         profile.setRequired(DnComponents.DNSNAME, 0, true);
         profile.setCopy(DnComponents.DNSNAME, 0, true);
         profile.setModifyable(DnComponents.DNSNAME, 0, false);
-        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(CAConstants.ALLCAS));
         EndEntityInformation userdata = new EndEntityInformation("foo", "CN=UserDns", 123, "DNSNAME=wrong", "", new EndEntityType(EndEntityTypes.ENDUSER),
                 123, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                SecConst.TOKEN_SOFT_PEM, null);
+                EndEntityConstants.TOKEN_SOFT_PEM, null);
         userdata.setPassword("foo123");
         profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);
     }
@@ -290,10 +298,10 @@ public class EndEntityProfileUnitTest {
         profile.addField(DnComponents.DNSNAME);
         profile.setRequired(DnComponents.DNSNAME, 1, true);
 
-        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(CAConstants.ALLCAS));
         EndEntityInformation userdata = new EndEntityInformation("foo", "CN=UserDns", 123, "DNSNAME=UserDns, DNSNAME=wrong", "", new EndEntityType(EndEntityTypes.ENDUSER),
                 123, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                SecConst.TOKEN_SOFT_PEM, null);
+                EndEntityConstants.TOKEN_SOFT_PEM, null);
         userdata.setPassword("foo123");
         profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);
     }
@@ -302,10 +310,10 @@ public class EndEntityProfileUnitTest {
     public void testUserFulfillEndEntityProfilePsd2QcStatementAssertFailure() throws EndEntityProfileValidationException {
         EndEntityProfile profile = new EndEntityProfile();
         profile.setPsd2QcStatementUsed(false);
-        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(CAConstants.ALLCAS));
         EndEntityInformation userdata = new EndEntityInformation("foo", "CN=Psd2User", 123, "", "", new EndEntityType(EndEntityTypes.ENDUSER),
                 123, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                SecConst.TOKEN_SOFT_PEM, null);
+                EndEntityConstants.TOKEN_SOFT_PEM, null);
         userdata.setPassword("foo123");
         userdata.setExtendedInformation(new ExtendedInformation());
         userdata.getExtendedInformation().setQCEtsiPSD2NcaName("SomePsd2NCName");
@@ -316,10 +324,10 @@ public class EndEntityProfileUnitTest {
     public void testUserFulfillEndEntityProfilePsd2QcStatementAssertSuccess() throws EndEntityProfileValidationException {
         EndEntityProfile profile = new EndEntityProfile();
         profile.setPsd2QcStatementUsed(true);
-        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(CAConstants.ALLCAS));
         EndEntityInformation userdata = new EndEntityInformation("foo", "CN=Psd2User", 123, "", "", new EndEntityType(EndEntityTypes.ENDUSER),
                 123, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                SecConst.TOKEN_SOFT_PEM, null);
+                EndEntityConstants.TOKEN_SOFT_PEM, null);
         userdata.setPassword("foo123");
         userdata.setExtendedInformation(new ExtendedInformation());
         userdata.getExtendedInformation().setQCEtsiPSD2NcaName("SomePsd2NCName");
@@ -337,10 +345,10 @@ public class EndEntityProfileUnitTest {
         final CertificateProfile certProfileWithExt = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         certProfileWithExt.setUseCabfOrganizationIdentifier(true); // use extension in CP
         final EndEntityProfile profile = new EndEntityProfile();
-        profile.setAvailableCAs(Collections.singletonList(SecConst.ALLCAS));
+        profile.setAvailableCAs(Collections.singletonList(CAConstants.ALLCAS));
         profile.setCabfOrganizationIdentifierUsed(true);
         EndEntityInformation userdata = new EndEntityInformation("foo", "CN=CP Extension Check", 123, "", "", new EndEntityType(EndEntityTypes.ENDUSER),
-                123, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, null);
+                123, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_PEM, null);
         userdata.setPassword("foo123");
         userdata.setExtendedInformation(new ExtendedInformation());
         userdata.getExtendedInformation().setCabfOrganizationIdentifier("SEVAT-112233123401"); // use extension in EE
@@ -352,10 +360,10 @@ public class EndEntityProfileUnitTest {
     public void testUserEepCpExtensionsNoMatch() {
         log.trace(">testUserEepCpExtensionsNoMatch");
         final EndEntityProfile profile = new EndEntityProfile();
-        profile.setAvailableCAs(Collections.singletonList(SecConst.ALLCAS));
+        profile.setAvailableCAs(Collections.singletonList(CAConstants.ALLCAS));
         profile.setCabfOrganizationIdentifierUsed(true);
         EndEntityInformation userdata = new EndEntityInformation("foo", "CN=CP Extension Check", 123, "", "", new EndEntityType(EndEntityTypes.ENDUSER),
-                123, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, null);
+                123, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_PEM, null);
         userdata.setPassword("foo123");
         userdata.setExtendedInformation(new ExtendedInformation());
         userdata.getExtendedInformation().setCabfOrganizationIdentifier("SEVAT-112233123401");
@@ -376,7 +384,7 @@ public class EndEntityProfileUnitTest {
         foo.addField(DnComponents.COUNTRY);
         foo.addField(DnComponents.COMMONNAME);
         foo.addField(DnComponents.JURISDICTIONLOCALITY);
-        foo.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+        foo.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(CAConstants.ALLCAS));
         foo.setValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, "" + RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
         foo.setUse(EndEntityProfile.CLEARTEXTPASSWORD, 0, true);
         foo.setUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, true);
@@ -394,10 +402,10 @@ public class EndEntityProfileUnitTest {
     @Test
     public void testUserFulfillEndEntityProfilePasswordBotLength() throws EndEntityProfileValidationException {
         final EndEntityProfile profile = new EndEntityProfile();
-        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(CAConstants.ALLCAS));
         final EndEntityInformation userdata = new EndEntityInformation("foo", "CN=foo", 123, "", "", new EndEntityType(EndEntityTypes.ENDUSER),
                 123, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                SecConst.TOKEN_SOFT_PEM, null);
+                EndEntityConstants.TOKEN_SOFT_PEM, null);
         userdata.setPassword("foobar123"); // 9 characters should be 55 bits
         profile.setMinPwdStrength(55); // should pass
         profile.doesUserFulfillEndEntityProfile(userdata, certProfile, false, null);

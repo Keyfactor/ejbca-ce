@@ -154,7 +154,6 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.unidfnr.UnidFnrHandlerMock;
 import org.ejbca.core.ejb.unidfnr.UnidfnrProxySessionRemote;
 import org.ejbca.core.ejb.ws.EjbcaWSHelperSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalRequest;
@@ -1729,7 +1728,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
             createTestCA();
             EndEntityInformation approvingAdmin = new EndEntityInformation(adminUsername, "CN=" + adminUsername, getTestCAId(), null, null, new EndEntityType(
                     EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                    SecConst.TOKEN_SOFT_P12, null);
+                    EndEntityConstants.TOKEN_SOFT_P12, null);
             approvingAdmin.setPassword("foo123");
             try {
                 endEntityManagementSession.addUser(intAdmin, approvingAdmin, true);
@@ -1754,7 +1753,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
             AuthenticationToken approvingAdminToken = simpleAuthenticationProvider.authenticate(makeAuthenticationSubject(admincert));
             EndEntityInformation endEntityInformation = new EndEntityInformation(username, "CN=" + username, caId, "", "",
                     new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                    SecConst.TOKEN_SOFT_P12, null);
+                    EndEntityConstants.TOKEN_SOFT_P12, null);
             ApprovalRequest approvalRequest = new AddEndEntityApprovalRequest(endEntityInformation, false, intAdmin, null, caId,
                     EndEntityConstants.EMPTY_END_ENTITY_PROFILE, approvalProfileSession.getApprovalProfile(approvalProfileId),
                     /* validation results */ null);
@@ -1819,7 +1818,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
         profile.setUse(EndEntityProfile.KEYRECOVERABLE, 0, true);
         profile.setUse(EndEntityProfile.CLEARTEXTPASSWORD, 0, true);
         profile.setReUseKeyRecoveredCertificate(true);
-        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(CAConstants.ALLCAS));
         endEntityProfileSession.addEndEntityProfile(intAdmin, KEY_RECOVERY_EEP, profile);
         assertTrue("Unable to create KEYRECOVERY end entity profile.", endEntityProfileSession.getEndEntityProfile(KEY_RECOVERY_EEP) != null);
 
@@ -1914,7 +1913,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
             profile.setUse(EndEntityProfile.KEYRECOVERABLE, 0, true);
             profile.setUse(EndEntityProfile.CLEARTEXTPASSWORD, 0, true);
             profile.setReUseKeyRecoveredCertificate(true);
-            profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+            profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(CAConstants.ALLCAS));
             endEntityProfileSession.addEndEntityProfile(intAdmin, KEY_RECOVERY_EEP, profile);
         }
 
@@ -3107,7 +3106,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
                 adminUser.setEmail(null);
                 adminUser.setSubjectAltName(null);
                 adminUser.setStatus(EndEntityConstants.STATUS_NEW);
-                adminUser.setTokenType(SecConst.TOKEN_SOFT_JKS);
+                adminUser.setTokenType(EndEntityConstants.TOKEN_SOFT_JKS);
                 adminUser.setEndEntityProfileId(EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
                 adminUser.setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
                 adminUser.setType(new EndEntityType(EndEntityTypes.ENDUSER, EndEntityTypes.ADMINISTRATOR));
@@ -3583,7 +3582,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
             eeProf.addField("COUNTRYOFRESIDENCE");
             eeProf.setAvailableCertificateProfileIds(Collections.singleton(certProfId));
             eeProf.setDefaultCertificateProfile(certProfId);
-            eeProf.setAvailableCAs(Collections.singleton(SecConst.ALLCAS));
+            eeProf.setAvailableCAs(Collections.singleton(CAConstants.ALLCAS));
             endEntityProfileSession.addEndEntityProfile(admin, profileName, eeProf);
             // Issue the certificate
             final CertificateResponse resp = ejbcaraws.certificateRequest(userdata, getP10(), CertificateHelper.CERT_REQ_TYPE_PKCS10, null,
@@ -3744,7 +3743,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
             internalCertificateStoreSession.removeCertificatesByUsername(username);
         }
         final EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caID, null, null, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, null);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_P12, null);
         userdata.setPassword(PASSWORD);
         endEntityManagementSession.addUser(intAdmin, userdata, true);
         fileHandles.addAll(BatchCreateTool.createAllNew(intAdmin, new File(P12_FOLDER_NAME)));
@@ -3814,7 +3813,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
             profile.addField(DnComponents.JURISDICTIONSTATE);
             profile.addField(DnComponents.JURISDICTIONCOUNTRY);
             profile.addField(DnComponents.DATEOFBIRTH);
-            profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+            profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(CAConstants.ALLCAS));
             profile.setUse(EndEntityProfile.CLEARTEXTPASSWORD, 0, false); // not allowing clear text password is the most common option
             profile.setUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, true);
             profile.setValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, "" + RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
