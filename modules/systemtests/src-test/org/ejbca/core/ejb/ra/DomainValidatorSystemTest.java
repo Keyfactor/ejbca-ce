@@ -20,6 +20,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
@@ -37,7 +38,6 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.validation.DomainAllowlistValidator;
 import org.ejbca.core.model.validation.DomainBlacklistValidator;
@@ -140,7 +140,7 @@ public class DomainValidatorSystemTest extends CaTestCase {
         List<Integer> availableCertProfiles = endEntityProfile.getAvailableCertificateProfileIds();
         availableCertProfiles.add(endEntityCertificateProfileId);
         endEntityProfile.setAvailableCertificateProfileIds(availableCertProfiles);
-        endEntityProfile.setAvailableCAs(Arrays.asList(new Integer[]{SecConst.ALLCAS}));
+        endEntityProfile.setAvailableCAs(Arrays.asList(new Integer[]{CAConstants.ALLCAS}));
         endEntityProfile.addField(DnComponents.DNSNAME);
         endEntityProfile.addField(DnComponents.DNSNAME);
         endEntityProfile.setRequired(DnComponents.COMMONNAME, 0, false);
@@ -234,7 +234,7 @@ public class DomainValidatorSystemTest extends CaTestCase {
         try {
              keyStoreCreateSessionBean.generateOrKeyRecoverTokenAsByteArray(admin, 
                 user.getUsername(),  user.getPassword(), user.getCAId(), 
-                "2048", AlgorithmConstants.KEYALGORITHM_RSA, SecConst.TOKEN_SOFT_JKS, 
+                "2048", AlgorithmConstants.KEYALGORITHM_RSA, EndEntityConstants.TOKEN_SOFT_JKS, 
                 false, false, false, endEntityProfileId);
         } catch (Exception e) {
             return false;

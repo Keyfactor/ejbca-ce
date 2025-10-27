@@ -52,6 +52,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
@@ -65,7 +66,6 @@ import org.ejbca.core.ejb.ra.CertificateRequestSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
@@ -149,7 +149,7 @@ public class CustomCertSerialnumberSystemTest extends CaTestCase {
         final EndEntityProfile profile = new EndEntityProfile(true);
         profile.setDefaultCertificateProfile(fooCertProfileId);
         profile.setAvailableCertificateProfileIds(Arrays.asList(fooCertProfileId));
-        profile.setAvailableTokenTypes(Arrays.asList(SecConst.TOKEN_SOFT_BROWSERGEN));
+        profile.setAvailableTokenTypes(Arrays.asList(EndEntityConstants.TOKEN_USERGEN));
         assertTrue(profile.isCustomSerialNumberUsed());
         endEntityProfileSession.addEndEntityProfile(internalAdmin, fooEEProfileName, profile);
         fooEEProfileId = endEntityProfileSession.getEndEntityProfileId(fooEEProfileName);
@@ -199,7 +199,7 @@ public class CustomCertSerialnumberSystemTest extends CaTestCase {
         p10.setPassword("foo123");
 
         EndEntityInformation user = new EndEntityInformation("foo", "C=SE,O=AnaTom,CN=foo", caInfo.getCAId(), null, "foo@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER),
-                fooEEProfileId, fooCertProfileId, SecConst.TOKEN_SOFT_BROWSERGEN, null);
+                fooEEProfileId, fooCertProfileId, EndEntityConstants.TOKEN_USERGEN, null);
         user.setPassword("foo123");
         ExtendedInformation ei = new ExtendedInformation();
         ei.setCertificateSerialNumber(serno);
@@ -236,7 +236,7 @@ public class CustomCertSerialnumberSystemTest extends CaTestCase {
         p10.setPassword("foo123");
 
         EndEntityInformation user = new EndEntityInformation("foo2", "C=SE,O=AnaTom,CN=foo2", caInfo.getCAId(), null, "foo@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER),
-                fooEEProfileId, fooCertProfileId, SecConst.TOKEN_SOFT_BROWSERGEN, null);
+                fooEEProfileId, fooCertProfileId, EndEntityConstants.TOKEN_USERGEN, null);
         user.setPassword("foo123");
 
         ResponseMessage resp = certificateRequestSession.processCertReq(internalAdmin, user, p10, X509ResponseMessage.class);
@@ -270,7 +270,7 @@ public class CustomCertSerialnumberSystemTest extends CaTestCase {
         p10.setPassword("foo123");
 
         EndEntityInformation user = new EndEntityInformation("foo3", "C=SE,O=AnaTom,CN=foo3", caInfo.getCAId(), null, "foo@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER),
-                fooEEProfileId, fooCertProfileId, SecConst.TOKEN_SOFT_BROWSERGEN, null);
+                fooEEProfileId, fooCertProfileId, EndEntityConstants.TOKEN_USERGEN, null);
         user.setPassword("foo123");
         ExtendedInformation ei = new ExtendedInformation();
         ei.setCertificateSerialNumber(serno);
@@ -314,7 +314,7 @@ public class CustomCertSerialnumberSystemTest extends CaTestCase {
         certificateProfileSession.changeCertificateProfile(internalAdmin, fooCertProfileName, fooCertProfile);
 
         EndEntityInformation user = new EndEntityInformation("foo", "C=SE,O=AnaTom,CN=foo", caInfo.getCAId(), null, "foo@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER),
-                fooEEProfileId, fooCertProfileId, SecConst.TOKEN_SOFT_BROWSERGEN, null);
+                fooEEProfileId, fooCertProfileId, EndEntityConstants.TOKEN_USERGEN, null);
         user.setPassword("foo123");
         ExtendedInformation ei = new ExtendedInformation();
         ei.setCertificateSerialNumber(serno);

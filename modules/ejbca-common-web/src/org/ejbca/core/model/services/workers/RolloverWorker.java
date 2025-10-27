@@ -29,7 +29,6 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 import org.ejbca.core.model.services.ServiceExecutionResult;
@@ -54,7 +53,7 @@ public class RolloverWorker extends BaseWorker {
         final CryptoTokenManagementSessionLocal cryptoTokenManagementSession = (CryptoTokenManagementSessionLocal) ejbs
                 .get(CryptoTokenManagementSessionLocal.class);
         Collection<Integer> caids = getCAIdsToCheck(false);
-        if (caids.contains(SecConst.ALLCAS)) {
+        if (caids.contains(CAConstants.ALLCAS)) {
             for (CAInfo caInfo : caSession.getAuthorizedAndNonExternalCaInfos(getAdmin())) {
                 if (caInfo.getStatus() == CAConstants.CA_ACTIVE && caInfo.getIncludeInHealthCheck()) {
                     testKey(cryptoTokenManagementSession, caInfo);
@@ -95,7 +94,7 @@ public class RolloverWorker extends BaseWorker {
             log.debug("Checking " + caids.size() + " CAs for rollover");
         }
         List<String> rolledOverCas = new ArrayList<>();
-        if (caids.contains(SecConst.ALLCAS)) {
+        if (caids.contains(CAConstants.ALLCAS)) {
             for (CAInfo caInfo : caSession.getAuthorizedAndNonExternalCaInfos(getAdmin())) {
                 if (attemptToPerformRollover(ejbs, caInfo.getCAId(), now)) {
                     rolledOverCas.add(caInfo.getName());

@@ -65,7 +65,6 @@ import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
@@ -421,7 +420,7 @@ public class ApprovalEnforcedByCertificateProfileSystemTest extends CaTestCase {
             String email = "test@example.com";
             KeyPair keypair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);            
             EndEntityInformation endEntityInformation = new EndEntityInformation(username1, "CN=TESTKEYREC1" + username1, approvalCAID, null, email, EndEntityTypes.ENDUSER.toEndEntityType(),
-                    endEntityProfileId, certProfileIdNoApprovals, SecConst.TOKEN_SOFT_P12, null);
+                    endEntityProfileId, certProfileIdNoApprovals, EndEntityConstants.TOKEN_SOFT_P12, null);
             endEntityInformation.setPassword("foo123");
             endEntityManagementSession.addUser(admin1, endEntityInformation, false);
             
@@ -448,7 +447,7 @@ public class ApprovalEnforcedByCertificateProfileSystemTest extends CaTestCase {
             KeyPair keypair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
            
             EndEntityInformation endEntityInformation = new EndEntityInformation(username2, "CN=TESTKEYREC1" + username2, approvalCAID, null, email, EndEntityTypes.ENDUSER.toEndEntityType(),
-                    endEntityProfileId, certProfileIdKeyRecoveryApprovals, SecConst.TOKEN_SOFT_P12, null);
+                    endEntityProfileId, certProfileIdKeyRecoveryApprovals, EndEntityConstants.TOKEN_SOFT_P12, null);
             endEntityInformation.setPassword("foo123");
             endEntityManagementSession.addUser(admin1, endEntityInformation, false);
             
@@ -526,7 +525,7 @@ public class ApprovalEnforcedByCertificateProfileSystemTest extends CaTestCase {
             WaitingForApprovalException, Exception {
         log.info("createUser: username=" + username + ", certProfileId=" + certProfileId);
         EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caID, null, null, new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, certProfileId,
-                SecConst.TOKEN_SOFT_P12, null);
+                EndEntityConstants.TOKEN_SOFT_P12, null);
         userdata.setPassword("foo123");
         // userdata.setKeyRecoverable(true);
         createUser(cliUserName, cliPassword, userdata);

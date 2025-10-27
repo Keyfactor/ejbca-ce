@@ -52,7 +52,6 @@ import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
@@ -106,7 +105,7 @@ public class UnRevokeEndEntityCommandSystemTest {
     {
         userdata = new EndEntityInformation(TESTCLASS_NAME, END_ENTITY_SUBJECT_DN, x509ca.getCAId(), null, null, EndEntityConstants.STATUS_NEW,
                 new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                new Date(), new Date(), SecConst.TOKEN_SOFT_P12, null);
+                new Date(), new Date(), EndEntityConstants.TOKEN_SOFT_P12, null);
         userdata.setPassword("foo123");
     }
     

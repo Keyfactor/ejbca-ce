@@ -49,7 +49,6 @@ import org.ejbca.core.ejb.ra.KeyStoreCreateSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.CertificateSignatureException;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.AuthLoginException;
@@ -207,7 +206,7 @@ public class CMPKeyUpdateStressTestCommandSystemTest {
             EndEntityInformation eeinfo = new EndEntityInformation(name, "CN=" + name,
                     x509ca.getCAId(), "", null, EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
                     endEntityProfileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                    new Date(), new Date(), SecConst.TOKEN_SOFT_P12, null);
+                    new Date(), new Date(), EndEntityConstants.TOKEN_SOFT_P12, null);
             eeinfo.setPassword("foo123");
             endEntityManagementSession.addUser(authToken, eeinfo, false);
             endEntityManagementSession.setPassword(authToken, name, "foo123");
@@ -216,7 +215,7 @@ public class CMPKeyUpdateStressTestCommandSystemTest {
             eeinfo.setPassword(PASSWORD);
 
             final byte[] ks1 = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(authToken,
-                    name, PASSWORD, x509ca.getCAId(), "2048", AlgorithmConstants.KEYALGORITHM_RSA, SecConst.TOKEN_SOFT_P12,
+                    name, PASSWORD, x509ca.getCAId(), "2048", AlgorithmConstants.KEYALGORITHM_RSA, EndEntityConstants.TOKEN_SOFT_P12,
                     false, true,
                     true, endEntityProfileId);
 

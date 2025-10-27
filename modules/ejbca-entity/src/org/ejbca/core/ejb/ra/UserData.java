@@ -108,7 +108,7 @@ public class UserData extends ProtectedData implements Serializable {
      * @param type user type, i.e. EndEntityTypes.USER_ENDUSER etc
      * @param eeprofileid end entity profile id, can be 0
      * @param certprofileid certificate profile id, can be 0
-     * @param tokentype token type to issue to the user, i.e. SecConst.TOKEN_SOFT_BROWSERGEN
+     * @param tokentype token type to issue to the user, i.e. EndEntityConstants.TOKEN_USERGEN
      * @param extendedInformation ExtendedInformation object
      *
      * @throws NoSuchAlgorithmException
@@ -137,7 +137,7 @@ public class UserData extends ProtectedData implements Serializable {
      * @param type user type, i.e. EndEntityTypes.USER_ENDUSER etc
      * @param eeprofileid end entity profile id, can be 0
      * @param certprofileid certificate profile id, can be 0
-     * @param tokentype token type to issue to the user, i.e. SecConst.TOKEN_SOFT_BROWSERGEN
+     * @param tokentype token type to issue to the user, i.e. EndEntityConstants.TOKEN_USERGEN
      * @param extendedInformation ExtendedInformation object
      * @param isForKeyImport true if this userdata is generated as part of the key import process. If yes, status will be set as generated when creating the EE.
      *

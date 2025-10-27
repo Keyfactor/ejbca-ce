@@ -35,4 +35,6 @@ public interface CaCertificateCacheLocal {
     
     void loadCertificates(final Collection<Certificate> certs);
 
+    X509Certificate[] getAllCaCertificates();
+
 }

@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -28,7 +29,6 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.UserNotificationParamGen;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 import org.ejbca.core.model.services.ServiceExecutionResult;
@@ -74,8 +74,8 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
         Collection<Integer> caIds = getCAIdsToCheck(false);
         Collection<Integer> certificateProfileIds = getCertificateProfileIdsToCheck();
         if (!caIds.isEmpty()) {
-            //if caIds contains SecConst.ALLCAS, reassign caIds to contain just that.
-            if(caIds.contains(SecConst.ALLCAS)) {
+            //if caIds contains CAConstants.ALLCAS, reassign caIds to contain just that.
+            if(caIds.contains(CAConstants.ALLCAS)) {
                 caIds = caSession.getAllCaIds();
             }
             for(Integer caid : caIds) {
