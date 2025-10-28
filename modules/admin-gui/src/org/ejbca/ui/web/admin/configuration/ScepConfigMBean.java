@@ -121,7 +121,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         private String intuneProxyPort;
         private String intuneProxyUser;
         private String intuneProxyPass;
-        private Boolean useRaKeys = false;
+        private Boolean useRaKeys;
         private Integer encryptionCryptoTokenId;
         private String encryptionKeyAlias;
         private ScepRaCertificate encryptionCertificate;
@@ -809,6 +809,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             scepConfig.setIntuneProxyHost(alias, currentAlias.getIntuneProxyHost());
             scepConfig.setIntuneProxyPort(alias, currentAlias.getIntuneProxyPort());
             scepConfig.setIntuneProxyUser(alias, currentAlias.getIntuneProxyUser());
+            scepConfig.setUseRaKeys(alias, currentAlias.getUseRaKeys());
             // If the client secret was not changed from the placeholder value in the UI, set the old value, i.e. no change
             if (!currentAlias.getIntuneProxyPass().equals(ScepConfigMBean.HIDDEN_PWD)) {
                 scepConfig.setIntuneProxyPass(alias, currentAlias.getIntuneProxyPass());
