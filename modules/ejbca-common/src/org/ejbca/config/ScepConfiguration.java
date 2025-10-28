@@ -100,6 +100,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public static final String PROXY_PORT = "intuneProxyPort";
     public static final String PROXY_USER = "intuneProxyUser";
     public static final String PROXY_PASS = "intuneProxyPass";
+    public static final String USE_RA_KEYS = "useRaKeys";
     public static final String ENCRYPTION_TOKEN_ID = "encryptionTokenId";
     public static final String ENCRYPTION_KEY_ALIAS = "encryptionKeyAlias";
     public static final String ENCRYPTION_CERTIFICATE = "encryptionCertificate";
@@ -190,6 +191,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         data.put(alias + PROXY_PORT, "");
         data.put(alias + PROXY_USER, "");
         data.put(alias + PROXY_PASS, "");
+        data.put(alias + USE_RA_KEYS, "false");
         data.put(alias + ENCRYPTION_TOKEN_ID, "");
         data.put(alias + ENCRYPTION_KEY_ALIAS, "");
         data.put(alias + ENCRYPTION_CERTIFICATE, "");
@@ -233,6 +235,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         keys.add(alias + PROXY_PORT);
         keys.add(alias + PROXY_USER);
         keys.add(alias + PROXY_PASS);
+        keys.add(alias + USE_RA_KEYS);
         keys.add(alias + ENCRYPTION_TOKEN_ID);
         keys.add(alias + ENCRYPTION_KEY_ALIAS);
         keys.add(alias + ENCRYPTION_CERTIFICATE);
@@ -907,6 +910,9 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
                 if (data.get(alias + SCEP_CHAIN_ROOT_FIRST) == null) {
                     data.put(alias + SCEP_CHAIN_ROOT_FIRST, Boolean.TRUE.toString());
                 }
+                if (data.get(alias + USE_RA_KEYS) == null) {
+                    data.put(alias + USE_RA_KEYS, "false");
+                }
                 if (data.get(alias + ENCRYPTION_TOKEN_ID) == null) {
                     data.put(alias + ENCRYPTION_TOKEN_ID, "");
                 }
@@ -948,6 +954,11 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
             filterDiffMapForLogging(diff, alias + "." + PROXY_PASS);
         }
     }
+    
+    public void setUseRaKeys(String alias, Boolean useRAKeys) {
+        String useRaKeys = (useRAKeys == null) ? "false" : useRAKeys.toString();
+        setValue(alias + "." + USE_RA_KEYS, useRaKeys, alias);
+    }
 
     public void setEncryptionCryptoTokenId(String alias, Integer cryptoTokenId) {
         String encryptionTokenIdString = (cryptoTokenId == null) ? "" : cryptoTokenId.toString();
@@ -962,6 +973,20 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         setValue(alias + "." + ENCRYPTION_CERTIFICATE, pemEncodedCertificate == null ? "" : pemEncodedCertificate, alias);
     }
 
+    public Boolean getUseRaKeys(String alias) {
+        String stringValue = getValue(alias + "." + USE_RA_KEYS, alias);
+        if (stringValue == null) {
+            // Lazy initialization for SCEP configurations older than 9.4
+            setValue(alias + "." + USE_RA_KEYS, "", alias);
+            return null;
+        }
+        else if ("".equals(stringValue)) {
+            return null;
+        } else {
+            return Boolean.parseBoolean(stringValue);
+        }
+    }
+    
     public String getEncryptionKeyAlias(String alias) {
         String value = getValue(alias + "." + ENCRYPTION_KEY_ALIAS, alias);
         if (value == null) {
