@@ -121,7 +121,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         private String intuneProxyPort;
         private String intuneProxyUser;
         private String intuneProxyPass;
-        private Boolean useRaKeys;
+        private Boolean useRaKeys = false;
         private Integer encryptionCryptoTokenId;
         private String encryptionKeyAlias;
         private ScepRaCertificate encryptionCertificate;
