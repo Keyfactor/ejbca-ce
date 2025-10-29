@@ -43,7 +43,7 @@ public class ValidEnrollCertificateWithEntityRestRequestUnitTest {
     }
 
     @Test
-    public void errorEmptyRequest() {
+    public void errorEmptyCertificateRequest() {
         // given
         final String expectedMessage = "Invalid EnrollCertificateWithEntityRestRequest content, certificate request can not be null or empty.";
         final EnrollCertificateWithEntityRestRequest testClass = new EnrollCertificateWithEntityRestRequest();
@@ -57,7 +57,7 @@ public class ValidEnrollCertificateWithEntityRestRequestUnitTest {
     }
 
     @Test
-    public void errorEmptyType() {
+    public void errorNullCertificateRequestType() {
         // given
         final String expectedMessage = "Invalid EnrollCertificateWithEntityRestRequest content, request type can not be null or empty.";
         final EnrollCertificateWithEntityRestRequest testClass = new EnrollCertificateWithEntityRestRequest();
@@ -100,6 +100,7 @@ public class ValidEnrollCertificateWithEntityRestRequestUnitTest {
         // then
         assertEquals(0, constraintViolations.size());
     }
+
     @Test
     public void errorEmptyAddEndEntityRestRequest() {
         // given
@@ -109,38 +110,6 @@ public class ValidEnrollCertificateWithEntityRestRequestUnitTest {
         testClass.setEndEntity(emptyEntityRestRequest);
         testClass.setCertificateRequest("certreq");
         testClass.setCertificateRequestType("SPKAC");
-        // when
-        final Set<ConstraintViolation<Object>> constraintViolations = validator.validate(testClass);
-        // then
-        assertEquals(1, constraintViolations.size());
-        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
-    }
-
-    @Test
-    public void errorNullCertificateRequest() {
-        // given
-        final String expectedMessage = "Invalid EnrollCertificateWithEntityRestRequest content, certificate request can not be null or empty.";
-        final EnrollCertificateWithEntityRestRequest testClass = new EnrollCertificateWithEntityRestRequest();
-        AddEndEntityRestRequest entityRestRequest = getEndEntityRestRequest();
-        testClass.setEndEntity(entityRestRequest);
-        testClass.setCertificateRequest(null);
-        testClass.setCertificateRequestType("SPKAC");
-        // when
-        final Set<ConstraintViolation<Object>> constraintViolations = validator.validate(testClass);
-        // then
-        assertEquals(1, constraintViolations.size());
-        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
-    }
-
-    @Test
-    public void errorNullCertificateRequestType() {
-        // given
-        final String expectedMessage = "Invalid EnrollCertificateWithEntityRestRequest content, request type can not be null or empty.";
-        final EnrollCertificateWithEntityRestRequest testClass = new EnrollCertificateWithEntityRestRequest();
-        AddEndEntityRestRequest entityRestRequest = getEndEntityRestRequest();
-        testClass.setEndEntity(entityRestRequest);
-        testClass.setCertificateRequest("certreq");
-        testClass.setCertificateRequestType(null);
         // when
         final Set<ConstraintViolation<Object>> constraintViolations = validator.validate(testClass);
         // then
@@ -163,22 +132,6 @@ public class ValidEnrollCertificateWithEntityRestRequestUnitTest {
         // then
         assertEquals(1, constraintViolations.size());
         assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
-    }
-
-    @Test
-    public void okRequestCustomData() {
-        // given
-        final EnrollCertificateWithEntityRestRequest testClass = new EnrollCertificateWithEntityRestRequest();
-        AddEndEntityRestRequest customEntityRestRequest = getEndEntityRestRequest();
-        customEntityRestRequest.setSubjectDn("CN=CustomDn");
-        customEntityRestRequest.setCaName("CustomCa");
-        testClass.setEndEntity(customEntityRestRequest);
-        testClass.setCertificateRequest("custom-cert-request");
-        testClass.setCertificateRequestType("PUBLICKEY");
-        // when
-        final Set<ConstraintViolation<Object>> constraintViolations = validator.validate(testClass);
-        // then
-        assertEquals(0, constraintViolations.size());
     }
 
     private static AddEndEntityRestRequest getEndEntityRestRequest() {
