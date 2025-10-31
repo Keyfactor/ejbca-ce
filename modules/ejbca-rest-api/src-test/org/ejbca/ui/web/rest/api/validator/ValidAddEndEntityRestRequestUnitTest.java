@@ -122,6 +122,52 @@ public class ValidAddEndEntityRestRequestUnitTest {
         assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
     }
 
+
+    @Test
+    public void errorStartTime() {
+        // Given
+        final String expectedMessage = "Invalid AddEndEntityRestRequest property, invalid date format.";
+        final AddEndEntityRestRequest testClass = new AddEndEntityRestRequest();
+        testClass.setUsername("username");
+        testClass.setSubjectDn("CN=abc");
+        testClass.setCaName("caName");
+        testClass.setCertificateProfileName("CertificateProfileName");
+        testClass.setEndEntityProfileName("EndEntityProfileName");
+        testClass.setToken("Token");
+        testClass.setToken("P12");
+        testClass.setStartTime("2019-01-41");
+
+        // When
+        final Set<ConstraintViolation<Object>> constraintViolations = validator.validate(testClass);
+
+        // Then
+        assertEquals(1, constraintViolations.size());
+        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
+    }
+
+    @Test
+    public void errorEndTime() {
+        // Given
+        final String expectedMessage = "Invalid AddEndEntityRestRequest property, invalid date format.";
+        final AddEndEntityRestRequest testClass = new AddEndEntityRestRequest();
+        testClass.setUsername("username");
+        testClass.setSubjectDn("CN=abc");
+        testClass.setCaName("caName");
+        testClass.setCertificateProfileName("CertificateProfileName");
+        testClass.setEndEntityProfileName("EndEntityProfileName");
+        testClass.setToken("Token");
+        testClass.setToken("P12");
+        testClass.setStartTime("2019-01-01");
+        testClass.setStartTime("2020-01-41");
+
+        // When
+        final Set<ConstraintViolation<Object>> constraintViolations = validator.validate(testClass);
+
+        // Then
+        assertEquals(1, constraintViolations.size());
+        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
+    }
+
     @Test
     public void okRequest() {
         // given
