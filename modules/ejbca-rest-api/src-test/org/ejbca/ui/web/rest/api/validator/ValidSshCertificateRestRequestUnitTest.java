@@ -21,7 +21,6 @@ import org.hibernate.validator.messageinterpolation.ParameterMessageInterpolator
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 
 public class ValidSshCertificateRestRequestUnitTest {
     private static final Validator validator = Validation.byDefaultProvider().configure().
