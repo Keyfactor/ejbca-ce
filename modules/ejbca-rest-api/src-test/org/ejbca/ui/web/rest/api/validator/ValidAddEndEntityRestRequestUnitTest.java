@@ -12,13 +12,17 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.validator;
 
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.ejbca.ui.web.rest.api.io.request.AddEndEntityRestRequest;
+import org.ejbca.ui.web.rest.api.io.request.ExtendedInformationRestRequestComponent;
 import org.hibernate.validator.messageinterpolation.ParameterMessageInterpolator;
 import org.junit.Test;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
+
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
@@ -29,7 +33,7 @@ public class ValidAddEndEntityRestRequestUnitTest {
         messageInterpolator(new ParameterMessageInterpolator()).buildValidatorFactory().getValidator();
 
     @Test
-    public void errorSubjectDn() {
+    public void errorSubjectDnMalformed() {
         // given
         final String expectedMessage = "Invalid AddEndEntityRestRequest content, subjectDn is malformed";
         final AddEndEntityRestRequest testClass = new AddEndEntityRestRequest();
@@ -38,6 +42,38 @@ public class ValidAddEndEntityRestRequestUnitTest {
         // when
         final Set<ConstraintViolation<Object>> constraintViolations = validator.validate(testClass);
         // then
+        assertEquals(1, constraintViolations.size());
+        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
+    }
+
+    @Test
+    public void errorSubjectDnNull() {
+        // Given
+        final String expectedMessage = "Invalid AddEndEntityRestRequest content, subjectDn can not be null or empty.";
+        final AddEndEntityRestRequest testClass = new AddEndEntityRestRequest();
+        testClass.setUsername("username");
+        testClass.setSubjectDn(null);
+
+        // When
+        Set<ConstraintViolation<Object>> constraintViolations = validator.validate(testClass);
+
+        // Then
+        assertEquals(1, constraintViolations.size());
+        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
+    }
+
+    @Test
+    public void errorSubjectDnEmpty() {
+        // Given
+        final String expectedMessage = "Invalid AddEndEntityRestRequest content, subjectDn can not be null or empty.";
+        final AddEndEntityRestRequest testClass = new AddEndEntityRestRequest();
+        testClass.setUsername("username");
+        testClass.setSubjectDn("");
+
+        // When
+        Set<ConstraintViolation<Object>> constraintViolations = validator.validate(testClass);
+
+        // Then
         assertEquals(1, constraintViolations.size());
         assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
     }
@@ -122,7 +158,6 @@ public class ValidAddEndEntityRestRequestUnitTest {
         assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
     }
 
-
     @Test
     public void errorStartTime() {
         // Given
@@ -169,6 +204,105 @@ public class ValidAddEndEntityRestRequestUnitTest {
     }
 
     @Test
+    public void errorStatus() {
+        final String expectedMessage = "Invalid AddEndEntityRestRequest property, unrecognized status.";
+        final AddEndEntityRestRequest testClass = new AddEndEntityRestRequest();
+        testClass.setUsername("username");
+        testClass.setSubjectDn("CN=abc");
+        testClass.setCaName("caName");
+        testClass.setCertificateProfileName("CertificateProfileName");
+        testClass.setEndEntityProfileName("EndEntityProfileName");
+        testClass.setToken("Token");
+        testClass.setToken("P12");
+        testClass.setStatus("BAD STATUS"); // for example: not REVOKED etc.
+
+        // When
+        final Set<ConstraintViolation<Object>> constraintViolations = validator.validate(testClass);
+
+        // Then
+        assertEquals(1, constraintViolations.size());
+        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
+    }
+
+    @Test
+    public void errorSerialNumber() {
+        // Given
+        final String expectedMessage = "Invalid SetEndEntityStatusRestRequest content, serial number is not valid Base64 formatted string.";
+        final AddEndEntityRestRequest testClass = new AddEndEntityRestRequest();
+        testClass.setUsername("username");
+        testClass.setSubjectDn("CN=abc");
+        testClass.setCaName("caName");
+        testClass.setCertificateProfileName("CertificateProfileName");
+        testClass.setEndEntityProfileName("EndEntityProfileName");
+        testClass.setToken("Token");
+        testClass.setToken("P12");
+
+        ExtendedInformationRestRequestComponent component = ExtendedInformationRestRequestComponent
+                .builder().setName(ExtendedInformation.CERTIFICATESERIALNUMBER)
+                .setValue("BadBASE64").build();
+        testClass.setCustomData(List.of(component));
+
+        // When
+        final Set<ConstraintViolation<Object>> constraintViolations = validator.validate(testClass);
+
+        // Then
+        assertEquals(1, constraintViolations.size());
+        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
+    }
+
+    @Test
+    public void errorSequenceNumberLength() {
+        // Given
+        final String expectedMessage = "Invalid SetEndEntityStatusRestRequest content, sequence number should not be longer than 5 symbols.";
+        final AddEndEntityRestRequest testClass = new AddEndEntityRestRequest();
+        testClass.setUsername("username");
+        testClass.setSubjectDn("CN=abc");
+        testClass.setCaName("caName");
+        testClass.setCertificateProfileName("CertificateProfileName");
+        testClass.setEndEntityProfileName("EndEntityProfileName");
+        testClass.setToken("Token");
+        testClass.setToken("P12");
+
+        ExtendedInformationRestRequestComponent component = ExtendedInformationRestRequestComponent
+                .builder().setName(ExtendedInformation.CERTIFICATESEQUENCENUMBER)
+                .setValue("123456").build();
+        testClass.setCustomData(List.of(component));
+
+        // When
+        final Set<ConstraintViolation<Object>> constraintViolations = validator.validate(testClass);
+
+        // Then
+        assertEquals(1, constraintViolations.size());
+        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
+    }
+
+    @Test
+    public void errorSequenceNumberFormat() {
+        // Given
+        final String expectedMessage = "Invalid SetEndEntityStatusRestRequest content, sequence number should be alphanumeric.";
+        final AddEndEntityRestRequest testClass = new AddEndEntityRestRequest();
+        testClass.setUsername("username");
+        testClass.setSubjectDn("CN=abc");
+        testClass.setCaName("caName");
+        testClass.setCertificateProfileName("CertificateProfileName");
+        testClass.setEndEntityProfileName("EndEntityProfileName");
+        testClass.setToken("Token");
+        testClass.setToken("P12");
+
+        ExtendedInformationRestRequestComponent component = ExtendedInformationRestRequestComponent
+                .builder().setName(ExtendedInformation.CERTIFICATESEQUENCENUMBER)
+                .setValue("1_BAD").build();
+        testClass.setCustomData(List.of(component));
+
+        // When
+        final Set<ConstraintViolation<Object>> constraintViolations = validator.validate(testClass);
+
+        // Then
+        assertEquals(1, constraintViolations.size());
+        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
+    }
+
+    @Test
     public void okRequest() {
         // given
         final AddEndEntityRestRequest testClass = new AddEndEntityRestRequest();
@@ -183,5 +317,4 @@ public class ValidAddEndEntityRestRequestUnitTest {
         // then
         assertEquals(0, constraintViolations.size());
     }
-
 }

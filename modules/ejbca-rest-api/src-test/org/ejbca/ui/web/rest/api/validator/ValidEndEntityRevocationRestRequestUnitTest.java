@@ -43,4 +43,16 @@ public class ValidEndEntityRevocationRestRequestUnitTest {
         assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
     }
 
+    @Test
+    public void okRequest() {
+        // Given
+        final EndEntityRevocationRestRequest testClass = new EndEntityRevocationRestRequest();
+        testClass.setReasonCode(1);
+
+        // When
+        final Set<ConstraintViolation<Object>> constraintViolations = validator.validate(testClass);
+
+        // Then
+        assertEquals(0, constraintViolations.size());
+    }
 }
