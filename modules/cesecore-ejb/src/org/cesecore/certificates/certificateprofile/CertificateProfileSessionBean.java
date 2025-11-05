@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
@@ -244,26 +245,36 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         final boolean rootAccess = authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.ROLE_ROOT.resource());
         for (final Entry<Integer,CertificateProfile> certificateProfileEntry : CertificateProfileCache.INSTANCE.getProfileCache(entityManager).entrySet()) {
             final CertificateProfile profile = certificateProfileEntry.getValue();
-            // Check if all profiles available CAs exists in authorizedcaids.
+            // Check if at least one profile's available CAs exist in authorizedcaids.
             if (certificateProfileType == 0 || certificateProfileType == profile.getType()) {
-                boolean allExists = true;
+                boolean atLeastOneCAExists = false;
                 for (final Integer nextCaId : profile.getAvailableCAs()) {
                     if (nextCaId == CertificateProfile.ANYCA) {
+                        atLeastOneCAExists = true;
                         break;
                     }
                     // superadmin should be able to access profiles with missing CA Ids
-                    if (!authorizedCaIds.contains(nextCaId) && (!rootAccess || allCaIds.contains(nextCaId))) {
-                        allExists = false;
+                    if (isAuthorizedForCa(nextCaId, authorizedCaIds, allCaIds, rootAccess)) {
+                        atLeastOneCAExists = true;
                         break;
                     }
+
                 }
-                if (allExists) {
+                if (atLeastOneCAExists) {
                     returnValues.add(certificateProfileEntry.getKey());
                 }
             }
         }
         return returnValues;
     }
+
+    private boolean isAuthorizedForCa(Integer caId, Set<Integer> authorizedCaIds, Set<Integer> allCaIds, boolean rootAccess) {
+        boolean caExists = allCaIds.contains(caId);
+        boolean isAuthorized = authorizedCaIds.contains(caId);
+
+        return caExists && (isAuthorized || rootAccess);
+    }
+
 
     @Override
     public List<Integer> getAuthorizedCertificateProfileWithMissingCAs(final AuthenticationToken authenticationToken) {

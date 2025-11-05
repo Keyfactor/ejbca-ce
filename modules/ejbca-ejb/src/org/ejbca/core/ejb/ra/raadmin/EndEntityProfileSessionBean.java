@@ -277,13 +277,12 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         boolean authorizedToProfile = false;
         // Check authorization for the endentityAccessRule here. The built in EMPTY EE profile is obviously not included in the cache, so added manually above
         if (authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEBASE + "/" + String.valueOf(profileId) + endentityAccessRule)) {
-            authorizedToProfile = true;
             for (final int caId : availableCaIds) {
                 // with root rule access you can edit profiles with missing CA ids
-                if (!authorizedCaIds.contains(caId) && (!hasRootRuleAccess || allCaIds.contains(caId))) {
-                    authorizedToProfile = false;
+                if (isAuthorizedForCA(caId, hasRootRuleAccess, authorizedCaIds, allCaIds)) {
+                    authorizedToProfile = true;
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug("Profile " + profileId + " not authorized to CA with ID " + caId);
+                        LOG.debug("Profile " + profileId + " at least authorized to CA with ID " + caId);
                     }
                     break;
                 }
@@ -291,6 +290,16 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         }
         return authorizedToProfile;
     }
+
+    private boolean isAuthorizedForCA(final int caId, final boolean hasRootRuleAccess,
+                                      final Set<Integer> authorizedCaIds, final Set<Integer> allCaIds) {
+        final boolean isValidCA = allCaIds.contains(caId);
+        final boolean hasDirectAccess = authorizedCaIds.contains(caId) && isValidCA;
+        final boolean hasRootAccess = hasRootRuleAccess && isValidCA;
+
+        return hasDirectAccess || hasRootAccess;
+    }
+
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
