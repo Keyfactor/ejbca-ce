@@ -63,6 +63,10 @@
 		<path location="${mod.edition-specific-interface.lib}"/>
 		<path location="${mod.edition-specific-ejb.lib}"/>
 		<path refid="lib.cryptotokens.classpath"/>
+        <fileset dir="${ejbca.home}/lib/ext/test">
+            <include name="mockito-core-*.jar"/>
+            <include name="byte-buddy*.jar"/>
+        </fileset>
 	</path>
 	
 	<path id="test.classpath">
@@ -74,6 +78,7 @@
 		<path refid="lib.xmlpull.classpath"/>
 		<path refid="lib.junit.classpath"/>
 		<path refid="lib.nimbus-jose-jwt.classpath"/>
+        <path refid="lib.slf4japi.classpath"/>
 	</path>
 
 	<target name="build-common" description="Build the ejbca-common JAR" depends="compile-common">
