@@ -13,6 +13,7 @@
 package org.ejbca.core.protocol.msae;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -52,7 +53,7 @@ public record TemplateRecord(
         supersededTemplateCNs = supersededTemplateCNs == null ? Collections.emptyList() : List.copyOf(supersededTemplateCNs);
         criticalExtensions = criticalExtensions == null ? Collections.emptyList() : List.copyOf(criticalExtensions);
         extendedKeyUsages = extendedKeyUsages == null ? Collections.emptyList() : List.copyOf(extendedKeyUsages);
-        keyUsages = keyUsages == null ? new String[0] : keyUsages.clone();
-        securityDescriptor = securityDescriptor == null ? null : securityDescriptor.clone();
+        keyUsages = keyUsages == null ? new String[0] : Arrays.copyOf(keyUsages, keyUsages.length);
+        securityDescriptor = securityDescriptor == null ? null : Arrays.copyOf(securityDescriptor, securityDescriptor.length);
     }
 }
