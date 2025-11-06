@@ -63,10 +63,7 @@
 		<path location="${mod.edition-specific-interface.lib}"/>
 		<path location="${mod.edition-specific-ejb.lib}"/>
 		<path refid="lib.cryptotokens.classpath"/>
-        <fileset dir="${ejbca.home}/lib/ext/test">
-            <include name="mockito-core-*.jar"/>
-            <include name="byte-buddy*.jar"/>
-        </fileset>
+        <path refid="lib.mockito.classpath"/>
 	</path>
 	
 	<path id="test.classpath">
