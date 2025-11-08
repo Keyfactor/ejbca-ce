@@ -13,9 +13,32 @@
 
 package org.ejbca.core.protocol.scep;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.math.BigInteger;
+import java.security.GeneralSecurityException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.certificate.DnComponents;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1Encoding;
@@ -64,24 +87,6 @@ import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.config.ScepConfiguration;
 import org.ejbca.core.model.ra.UsernameGenerator;
 import org.ejbca.core.model.ra.UsernameGeneratorParams;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.math.BigInteger;
-import java.security.GeneralSecurityException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.Iterator;
 
 
 /**
@@ -167,6 +172,10 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
     /** certificate used when message signed with different key from the CA key */
     private String pemEncodedSigningCertificate = null;
 
+    /** certificate used when message signed with different key from the CA key,
+     * when in CA mode.
+     */
+    private HashMap<String, String> caToSigningCertificate;
 
     /** Issuer DN the message is sent to (CAs Issuer DN), contained in the
      * request as recipientInfo.issuerAndSerialNumber in EnvelopeData part */
@@ -228,16 +237,52 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
      * Constructs a new SCEP/PKCS7 message handler object.
      *
      * @param msg The DER encoded PKCS7 request.
-     * @param incCACert if the CA certificate should be included in the response or not
+     * @param incCACertKeyAlias if the CA certificate should be included in the response or not
      *
      * @throws IOException if the request can not be parsed.
      */
 	public ScepRequestMessage(byte[] msg, boolean incCACertKeyAlias) throws IOException {
-	    this(msg, incCACertKeyAlias, null, null, null, null, null);
+	    this(msg, incCACertKeyAlias, null, null, null, null, (String) null);	
 	}
-
+	
+	/**
+     * Constructs a new SCEP/PKCS7 message handler object for a SCEP alias in CA mode with separate SCEP keys.
+     *
+     * @param msg The DER encoded PKCS7 request.
+     * @param incCACert if the CA certificate should be included in the response or not.
+     * @param encryptionCryptoTokenId the crypto token holding the dedicated SCEP decryption key.  May be null.
+     * @param encryptionKeyAlias the dedicated SCEP decryption key alias.  May be null.
+     * @param signingCryptoTokenId the crypto token holding the dedicated SCEP response signing key.  May be null.
+     * @param signingKeyAlias the dedicated SCEP response signing key alias.  May be null.
+     * @param caToSigningCertificate the signing certificate for each CA.  May be null.
+     *
+     * @throws IOException if the request can not be parsed.
+     */
+    public ScepRequestMessage(byte[] msg, boolean incCACert, 
+            Integer encryptionCryptoTokenId, String encryptionKeyAlias,
+            Integer signingCryptoTokenId, String signingKeyAlias, 
+            HashMap<String, String> caToSigningCertificate
+            ) throws IOException {
+        if (log.isTraceEnabled()) {
+            log.trace(">ScepRequestMessage");
+        }
+        this.scepmsg = msg;
+        this.includeCACert = incCACert;
+        this.encryptionCryptoTokenId = encryptionCryptoTokenId;
+        this.encryptionKeyAlias = encryptionKeyAlias;
+        this.signingCryptoTokenId = signingCryptoTokenId;
+        this.signingKeyAlias = signingKeyAlias;
+        this.pemEncodedSigningCertificate = null;
+        this.caToSigningCertificate = caToSigningCertificate;
+        
+        init();
+        if (log.isTraceEnabled()) {
+            log.trace("<ScepRequestMessage");
+        }
+    }
+    
     /**
-     * Constructs a new SCEP/PKCS7 message handler object.
+     * Constructs a new SCEP/PKCS7 message handler object for a SCEP alias in RA mode with separate SCEP keys.
      *
      * @param msg The DER encoded PKCS7 request.
      * @param incCACert if the CA certificate should be included in the response or not.
@@ -269,6 +314,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
         }
     }
 
+    
     /**
      * Recreate a request message from an encoded
      *
@@ -1068,6 +1114,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
         if (pemEncodedSigningCertificate == null) {
             return null;
         }
+
         try {
             return CertificateFactory.getInstance("X509").generateCertificate(new ByteArrayInputStream(pemEncodedSigningCertificate.getBytes()));
         } catch (CertificateException e) {
@@ -1075,5 +1122,22 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
             log.error("Internal error: bad signing certificate", e);
             return null;
         }
+    }
+    
+    @Override
+    public Map<String, Certificate> getSigningCertificates() {
+        if (caToSigningCertificate == null)
+            return null;
+
+        var out = new HashMap<String, Certificate>();
+        for (Entry<String, String> entry : caToSigningCertificate.entrySet()) {
+            try {
+                out.put(entry.getKey(), CertTools.getCertsFromPEM(new ByteArrayInputStream(entry.getValue().getBytes()), Certificate.class).get(0));
+            } catch (CertificateParsingException e) {
+                // this should never happen
+                log.error("Bad certificate in request data.", e);
+            }
+        }
+        return out;
     }
 }
