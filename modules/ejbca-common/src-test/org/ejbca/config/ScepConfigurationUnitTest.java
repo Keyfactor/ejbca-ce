@@ -12,27 +12,30 @@
  *************************************************************************/
 package org.ejbca.config;
 
-import static org.junit.Assert.assertEquals;
-
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
-import org.junit.BeforeClass;
-import org.junit.Test;
+import java.util.TreeMap;
 
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.string.StringConfigurationCache;
+
+import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * A unit test for static configuration and log value filtering.
  */
 public class ScepConfigurationUnitTest {
-    
+
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProviderIfNotAvailable();
     }
-    
+
     @Test
     public void testGetSetAndFiltering() {
 
@@ -55,7 +58,7 @@ public class ScepConfigurationUnitTest {
         assertEquals("", config.getRAAuthPassword("alias1"));
         assertEquals("", config.getIntuneProxyPass("alias2"));
         assertEquals("", config.getIntuneAadAppKey("alias2"));
-        
+
         @SuppressWarnings("unchecked")
         ScepConfiguration config2 = new ScepConfiguration((LinkedHashMap<Object, Object>) config.saveData());
         config2.setRAAuthpassword("alias2", "bar123");
@@ -65,11 +68,15 @@ public class ScepConfigurationUnitTest {
         config2.setIntuneProxyPass("alias2", "pass");
         assertEquals("pass", config2.getIntuneProxyPass("alias2"));
         assertEquals("appkey123", config2.getIntuneAadAppKey("alias2"));
-        Map<Object,Object> diff = config.diff(config2);
+        Map<Object, Object> diff = config.diff(config2);
         // Default encryption password gives the same value all the time
-        assertEquals("{changed:alias2.ra.entityProfile=name2, changed:alias2.ra.authPwd=4794b442dc3e3d400ba2ed53b1893d19, changed:alias2.intuneAadAppKey=d4dadc043bf1580f6c5ef8130c92ecde, changed:alias2.intuneProxyHost=, changed:alias2.intuneProxyPass=5ff8352c1dd5e17733df37922498cb90}", diff.toString());
+        assertEquals(
+                "{changed:alias2.ra.entityProfile=name2, changed:alias2.ra.authPwd=4794b442dc3e3d400ba2ed53b1893d19, changed:alias2.intuneAadAppKey=d4dadc043bf1580f6c5ef8130c92ecde, changed:alias2.intuneProxyHost=, changed:alias2.intuneProxyPass=5ff8352c1dd5e17733df37922498cb90}",
+                diff.toString());
         config.filterDiffMapForLogging(diff);
-        assertEquals("{changed:alias2.ra.entityProfile=name2, changed:alias2.ra.authPwd=hidden, changed:alias2.intuneAadAppKey=hidden, changed:alias2.intuneProxyHost=, changed:alias2.intuneProxyPass=hidden}", diff.toString());
-        
+        assertEquals(
+                "{changed:alias2.ra.entityProfile=name2, changed:alias2.ra.authPwd=hidden, changed:alias2.intuneAadAppKey=hidden, changed:alias2.intuneProxyHost=, changed:alias2.intuneProxyPass=hidden}",
+                diff.toString());
+
     }
 }

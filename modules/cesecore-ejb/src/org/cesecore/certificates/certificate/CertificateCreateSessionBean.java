@@ -210,6 +210,10 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 if (signingCryptoTokenId != null) {
                     // SCEP response should be signed by dedicated signing key.  Return it in the response's chain of trust
                     var signingCertificate = requestMessage.getSigningCertificate();
+                    if (signingCertificate == null) {
+                        signingCertificate = requestMessage.getSigningCertificates().get(ca.getName());
+                    }
+                            
                     if (signingCertificate != null) {
                         log.debug("adding signing certificate to chain: " + ((X509Certificate) signingCertificate).getSubjectX500Principal());
                         var caChainWithSigningCert = new java.util.ArrayList<Certificate>();
@@ -226,7 +230,6 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                     }
                     signingKey = signingCryptoToken.getPrivateKey(signingKeyAlias);
                     signatureProviderName = signingCryptoToken.getEncProviderName();
-                    // MSW TODO get from config
                     signatureAlgorithm = "SHA256WithRSA";
                 }
             }

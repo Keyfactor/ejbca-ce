@@ -514,6 +514,13 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         CertificateResponseMessage ret = null;
         // Get CA object and make sure it is active
         // Do not log access control to the CA here, that is logged later on when we use the CA to issue a certificate (if we get that far).
+        
+        // if the request has a decryption token defined, set it in the request object
+        if (req.getEncryptionCryptoTokenId() != null) {
+            final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(req.getEncryptionCryptoTokenId());
+            req.setKeyInfo(null, cryptoToken.getPrivateKey(req.getEncryptionKeyAlias()), cryptoToken.getEncProviderName());
+        } 
+            
         final CA ca;
         if (suppliedUserData == null) {
             ca = getCAFromRequest(admin, req, false);
@@ -525,9 +532,11 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             throw new CAOfflineException(msg);
         }
         try {
-            // See if we need some key material to decrypt request
-            final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
-            setDecryptInfo(cryptoToken, req, ca);
+            // See if we need some key material to decrypt request that wasn't set above
+            if (req.getEncryptionCryptoTokenId() == null) {
+                final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
+                setDecryptInfo(cryptoToken, req, ca);
+            }
             if (ca.isUseUserStorage() && req.getUsername() == null) {
                 String msg = intres.getLocalizedMessage("signsession.nouserinrequest", req.getRequestDN());
                 throw new SignRequestException(msg);
@@ -1052,14 +1061,32 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         CertificateResponseMessage ret = null;
         final CA ca = getCAFromRequest(admin, req, true);
         try {
-            final CAToken catoken = ca.getCAToken();
-            final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(catoken.getCryptoTokenId());
-            setDecryptInfo(cryptoToken, req, ca);
-            //Create the response message with all nonces and checks etc
-            ret = ResponseMessageUtils.createResponseMessage(responseClass, req, ca.getCertificateChain(),
-                    cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),
-                    ca.getCAToken().getSignatureAlgorithm(),
-                    cryptoToken.getSignProviderName());
+            if (req.getEncryptionCryptoTokenId() != null) {
+                // sign and encrypt using keys separate from the CA's
+                final CryptoToken encryptionToken = cryptoTokenManagementSession.getCryptoToken(req.getEncryptionCryptoTokenId());
+                req.setKeyInfo(null, encryptionToken.getPrivateKey(req.getEncryptionKeyAlias()), encryptionToken.getEncProviderName());
+                
+                Certificate signingCertificate = req.getSigningCertificate();
+                if (signingCertificate == null) {
+                    req.getSigningCertificates().get(ca.getName());
+                }
+                final CryptoToken signingToken = cryptoTokenManagementSession.getCryptoToken(req.getSigningCryptoTokenId());
+                var signingKey = signingToken.getPrivateKey(req.getSigningKeyAlias());
+                
+                //Create the response message with all nonces and checks etc
+                var signingCertificateChain = new ArrayList<>(ca.getCertificateChain());
+                signingCertificateChain.add(0, signingCertificate);
+                ret = ResponseMessageUtils.createResponseMessage(responseClass, req, signingCertificateChain, signingKey,
+                        ca.getCAToken().getSignatureAlgorithm(), signingToken.getSignProviderName());
+            } else {
+                final CAToken catoken = ca.getCAToken();
+                final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(catoken.getCryptoTokenId());
+                setDecryptInfo(cryptoToken, req, ca);
+                //Create the response message with all nonces and checks etc
+                ret = ResponseMessageUtils.createResponseMessage(responseClass, req, ca.getCertificateChain(),
+                        cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),
+                        ca.getCAToken().getSignatureAlgorithm(), cryptoToken.getSignProviderName());
+            }
             ret.setStatus(ResponseStatus.FAILURE);
             ret.setFailInfo(failInfo);
             ret.setFailText(failText);
@@ -1095,8 +1122,17 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         final CA ca = getCAFromRequest(admin, req, true);
         try {
             // See if we need some key material to decrypt request
-            final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
-            setDecryptInfo(cryptoToken, req, ca);
+            if (req.getEncryptionCryptoTokenId() == null) {
+                final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
+                setDecryptInfo(cryptoToken, req, ca);
+            }
+
+            // SCEP configuration has encryption key separate from CAs key
+            else {
+                final CryptoToken encryptionToken = cryptoTokenManagementSession.getCryptoToken(req.getEncryptionCryptoTokenId());
+                req.setKeyInfo(null, encryptionToken.getPrivateKey(req.getEncryptionKeyAlias()), encryptionToken.getEncProviderName());
+            }
+            
             // Verify the request
             if (req.verify() == false) {
                 String msg = intres.getLocalizedMessage("createcert.popverificationfailed");
@@ -1258,8 +1294,10 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             if (log.isDebugEnabled()) {
                 log.debug("Using CA (from issuerDN) with id: " + ca.getCAId() + " and DN: " + ca.getSubjectDN());
             }
-
-        } else if (req.getUsername() != null) {
+        } 
+        
+        else if (req.getUsername() != null) {
+            setDecryptionKey(req);
             ca = getCAFromUsername(admin, req, doLog);
             if (log.isDebugEnabled()) {
                 log.debug("Using CA from username: " + req.getUsername());
@@ -1274,6 +1312,20 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             throw new EJBException(msg);
         }
         return ca;
+    }
+
+    private void setDecryptionKey(final RequestMessage req) {
+        // if we have a separate decryption key, set it so the request can be decrypted and the user name extracted
+        if (req.getEncryptionCryptoTokenId() != null) {
+            log.debug("Setting decryption token/key to " + req.getEncryptionCryptoTokenId() + "/" + req.getEncryptionKeyAlias());
+            CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(req.getEncryptionCryptoTokenId());
+            try {
+                PrivateKey decryptionKey = cryptoToken.getPrivateKey(req.getEncryptionKeyAlias());
+                req.setKeyInfo(null, decryptionKey, cryptoToken.getEncProviderName());
+            } catch (CryptoTokenOfflineException e) {
+                log.error("Unable to set decryption token/key to " + req.getEncryptionCryptoTokenId() + "/" + req.getEncryptionKeyAlias(), e);
+            }
+        }
     }
 
     /**

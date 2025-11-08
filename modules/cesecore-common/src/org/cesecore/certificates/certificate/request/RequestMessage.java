@@ -22,6 +22,7 @@ import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extensions;
@@ -334,5 +335,10 @@ public interface RequestMessage extends Serializable {
     default Certificate getSigningCertificate() {
         return null;
     }
+
+    default Map<String, Certificate> getSigningCertificates() {
+        return null;
+    }
+
 
 }
