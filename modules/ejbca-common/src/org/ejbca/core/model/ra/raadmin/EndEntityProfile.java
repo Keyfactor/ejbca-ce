@@ -309,8 +309,6 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     private static final String CONST_AVAILCERTPROFILES1 =
             CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER + ";" +
             CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER + ";" +
-            CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_ENCRYPTOR + ";" +
-            CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_SIGNER + ";" +
             CertificateProfileConstants.CERTPROFILE_FIXED_SERVER;
     private static final String CONST_DEFKEYSTORE = Integer.toString(SecConst.TOKEN_SOFT_BROWSERGEN);
     private static final String CONST_AVAILKEYSTORE = SecConst.TOKEN_SOFT_BROWSERGEN + ";"
