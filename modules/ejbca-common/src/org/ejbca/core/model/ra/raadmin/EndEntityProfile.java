@@ -304,6 +304,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
      */
     private static final String USEEXTENSIONDATA       = "USEEXTENSIONDATA";
 
+    // Note: Internal profiles (e.g. SSH, SCEPSIGNER, etc.) should NOT be added here
     // String constants that never change, so we can do the String concat/conversion once
     private static final String CONST_DEFAULTCERTPROFILE = Integer.toString(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
     private static final String CONST_AVAILCERTPROFILES1 =
