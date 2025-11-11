@@ -1,8 +1,3 @@
-alter table AccessRulesData drop foreign key FKABB4C1DFDBBC970;
-alter table AdminEntityData drop foreign key FKD9A99EBCB3A110AD;
-drop table if exists AccessRulesData;
-drop table if exists AdminEntityData;
-drop table if exists AdminGroupData;
 drop table if exists AdminPreferencesData;
 drop table if exists ApprovalData;
 drop table if exists AuditRecordData;
