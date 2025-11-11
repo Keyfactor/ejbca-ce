@@ -1,6 +1,3 @@
-drop table AccessRulesData;
-drop table AdminEntityData;
-drop table AdminGroupData;
 drop table AdminPreferencesData;
 drop table ApprovalData;
 drop table AuditRecordData;
