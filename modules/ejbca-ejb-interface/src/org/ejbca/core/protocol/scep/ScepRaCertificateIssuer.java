@@ -100,20 +100,15 @@ public class ScepRaCertificateIssuer {
             endEntityInformation.setTokenType(EndEntityConstants.TOKEN_SOFT_P12);
             endEntityInformation.setCAId(caId);
 
-            if (!endEntityManagementSession.existsUser(userName)) {
-                endEntityManagementSession.addUser(authenticationToken, endEntityInformation, true);
-                endEntityManagementSession.finishUser(endEntityInformation);
-            }
-
             var requestMessage = new SimpleRequestMessage(publicKeyWrapper.getPublicKey(), userName, password);
             certificateResponse = certificateCreateSession.createCertificate(authenticationToken, endEntityInformation, requestMessage,
                     X509ResponseMessage.class, new CertificateGenerationParams());
             return (X509Certificate) certificateResponse.getCertificate();
-        } catch (CryptoTokenOfflineException | EndEntityExistsException | CADoesntExistsException | IllegalNameException | CustomFieldException
-                | ApprovalException | CertificateSerialNumberException | CustomCertificateSerialNumberException | IllegalKeyException
+        } catch (CryptoTokenOfflineException | CADoesntExistsException | IllegalNameException
+                | CertificateSerialNumberException | CustomCertificateSerialNumberException | IllegalKeyException
                 | CertificateCreateException | SignRequestSignatureException | CertificateRevokeException | IllegalValidityException
-                | CAOfflineException | InvalidAlgorithmException | AuthorizationDeniedException | EndEntityProfileValidationException
-                | WaitingForApprovalException | CertificateExtensionException | NoSuchEndEntityException e) {
+                | CAOfflineException | InvalidAlgorithmException | AuthorizationDeniedException
+                | CertificateExtensionException e) {
             throw new ScepEncryptionCertificateIssuanceException(e);
         }
     }
