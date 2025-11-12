@@ -40,15 +40,7 @@ logger $0 "Securing EJBCA with iptables firewall"
 echo "Securing EJBCA with iptables firewall"
 
 ###################
-<<<<<<< HEAD
-<<<<<<< HEAD
-# peers definitions  
-=======
 # peers definitions
->>>>>>> 015637f1da (ECA-13453: Fix line endings in doc/howto/ejbcafirewall.sh)
-=======
-# peers definitions
->>>>>>> 523ce522bf (ECA-13453: Fix line endings in doc/howto/ejbcafirewall.sh)
 WORLD=0.0.0.0/0
 BROADCAST="255.255.255.255"
 
@@ -84,21 +76,9 @@ echo "done"
 ################ DEFAULT POLICES ###############################
 echo -n "Setting default polices to DROP... "
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-$IPTABLES -P INPUT      DROP 
-$IPTABLES -P FORWARD    DROP
-$IPTABLES -P OUTPUT     DROP 
-=======
 $IPTABLES -P INPUT      DROP
 $IPTABLES -P FORWARD    DROP
 $IPTABLES -P OUTPUT     DROP
->>>>>>> 015637f1da (ECA-13453: Fix line endings in doc/howto/ejbcafirewall.sh)
-=======
-$IPTABLES -P INPUT      DROP
-$IPTABLES -P FORWARD    DROP
-$IPTABLES -P OUTPUT     DROP
->>>>>>> 523ce522bf (ECA-13453: Fix line endings in doc/howto/ejbcafirewall.sh)
 echo "done"
 
 ############ LOOPBACK access rules ###########################
@@ -129,15 +109,7 @@ $IPTABLES -A INPUT -j DROP	# Drop them
 echo "done"
 ############ OUTPUT access rules ##########################
 echo -n "Setting OUTPUT access rules... "
-<<<<<<< HEAD
-<<<<<<< HEAD
- 
-=======
 
->>>>>>> 015637f1da (ECA-13453: Fix line endings in doc/howto/ejbcafirewall.sh)
-=======
-
->>>>>>> 523ce522bf (ECA-13453: Fix line endings in doc/howto/ejbcafirewall.sh)
 $IPTABLES -A OUTPUT -o $INET_IFACE -m state --state ESTABLISHED	-j ACCEPT # Use the statefulfiltering capability
 ### Add dns servers, this loop grabs all dns server you have in your /etc/resolv.conf and allows dns traffic to them
 for dnsserv in `cat /etc/resolv.conf | awk '/nameserver/ { print $2 }'` ; do $IPTABLES -A OUTPUT -p udp -o $INET_IFACE -d $dnsserv --dport 53 -m state --state NEW       -j ACCEPT ; done
