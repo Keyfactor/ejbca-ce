@@ -2,33 +2,20 @@ apiVersion: v2
 name: ejbca
 description: Official Keyfactor EJBCA Chart
 type: application
-# This is the chart version. This version number should be incremented each time you make changes
-# to the chart and its templates, including the app version.
-# Versions are expected to follow Semantic Versioning (https://semver.org/)
 version: "0.0.0"
-# This is the version number of the application being deployed. This version number should be
-# incremented each time you make changes to the application. Versions are not expected to
-# follow Semantic Versioning. They should reflect the version the application is using.
-# It is recommended to use it with quotes.
 appVersion: "0.0.0"
 home: https://www.ejbca.org
 icon: https://raw.githubusercontent.com/Keyfactor/ejbca-ce/main/.github/images/community-ejbca-icon.png
 keywords: ["pki", "security", "encryption", "certificates", "management", "automation", "infrastructure", "pqc", "protocol", "tls"]
 sources:
-  - https://www.ejbca.org
   - https://github.com/Keyfactor/ejbca-ce
-  - https://docs.keyfactor.com/ejbca/latest
   - https://docs.keyfactor.com/container/latest/ejbca
-#dependencies:
-#- name: postgresql
-#  repository: "https://charts.bitnami.com/bitnami"
-#  version: 12.1.6
-#  condition: postgresql.enabled
-#  tags:
-#    - database
-#- name: mariadb
-#  repository: "https://charts.bitnami.com/bitnami"
-#  version: 11.4.2
-#  condition: mariadb.enabled
-#  tags:
-#    - database
+annotations:
+  artifacthub.io/alternativeName: ejbca
+  artifacthub.io/category: security
+  artifacthub.io/license: LGPL-2.1+
+  artifacthub.io/links: |
+    - name: "Source"
+      url: https://github.com/Keyfactor/ejbca-ce
+    - name: "Documentation"
+      url: https://docs.keyfactor.com/container/latest/ejbca
