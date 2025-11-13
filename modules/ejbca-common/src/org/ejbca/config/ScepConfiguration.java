@@ -34,8 +34,8 @@ import java.util.Set;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.Strings;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.configuration.ConfigurationBase;
 import org.ejbca.core.model.UsernameGenerateMode;
