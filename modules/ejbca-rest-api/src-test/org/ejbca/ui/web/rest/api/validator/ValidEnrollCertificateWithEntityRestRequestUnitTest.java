@@ -43,9 +43,9 @@ public class ValidEnrollCertificateWithEntityRestRequestUnitTest {
     }
 
     @Test
-    public void errorEmptyRequest() {
+    public void errorEmptyCertificateRequest() {
         // given
-        final String expectedMessage = "Invalid EnrollCertificateWithEntityRestRequest content,end certificate request can not be null or empty.";
+        final String expectedMessage = "Invalid EnrollCertificateWithEntityRestRequest content, certificate request can not be null or empty.";
         final EnrollCertificateWithEntityRestRequest testClass = new EnrollCertificateWithEntityRestRequest();
         AddEndEntityRestRequest entityRestRequest = getEndEntityRestRequest();
         testClass.setEndEntity(entityRestRequest);
@@ -57,7 +57,7 @@ public class ValidEnrollCertificateWithEntityRestRequestUnitTest {
     }
 
     @Test
-    public void errorEmptyType() {
+    public void errorNullCertificateRequestType() {
         // given
         final String expectedMessage = "Invalid EnrollCertificateWithEntityRestRequest content, request type can not be null or empty.";
         final EnrollCertificateWithEntityRestRequest testClass = new EnrollCertificateWithEntityRestRequest();
@@ -101,6 +101,38 @@ public class ValidEnrollCertificateWithEntityRestRequestUnitTest {
         assertEquals(0, constraintViolations.size());
     }
 
+    @Test
+    public void errorEmptyAddEndEntityRestRequest() {
+        // given
+        final String expectedMessage = "Invalid AddEndEntityRestRequest content, subjectDn can not be null or empty.";
+        final EnrollCertificateWithEntityRestRequest testClass = new EnrollCertificateWithEntityRestRequest();
+        AddEndEntityRestRequest emptyEntityRestRequest = new AddEndEntityRestRequest();
+        testClass.setEndEntity(emptyEntityRestRequest);
+        testClass.setCertificateRequest("certreq");
+        testClass.setCertificateRequestType("SPKAC");
+        // when
+        final Set<ConstraintViolation<Object>> constraintViolations = validator.validate(testClass);
+        // then
+        assertEquals(1, constraintViolations.size());
+        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
+    }
+
+    @Test
+    public void errorInvalidTokenType() {
+        // given
+        final String expectedMessage = "Invalid AddEndEntityRestRequest property, unrecognized token.";
+        final EnrollCertificateWithEntityRestRequest testClass = new EnrollCertificateWithEntityRestRequest();
+        AddEndEntityRestRequest customEntityRestRequest = getEndEntityRestRequest();
+        customEntityRestRequest.setToken("INVALID_TYPE");
+        testClass.setEndEntity(customEntityRestRequest);
+        testClass.setCertificateRequest("certreq");
+        testClass.setCertificateRequestType("SPKAC");
+        // when
+        final Set<ConstraintViolation<Object>> constraintViolations = validator.validate(testClass);
+        // then
+        assertEquals(1, constraintViolations.size());
+        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
+    }
 
     private static AddEndEntityRestRequest getEndEntityRestRequest() {
         AddEndEntityRestRequest entityRestRequest = new AddEndEntityRestRequest();

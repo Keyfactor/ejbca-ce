@@ -1,8 +1,3 @@
-alter table AccessRulesData drop constraint FKABB4C1DFDBBC970;
-alter table AdminEntityData drop constraint FKD9A99EBCB3A110AD;
-drop table if exists AccessRulesData cascade;
-drop table if exists AdminEntityData cascade;
-drop table if exists AdminGroupData cascade;
 drop table if exists AdminPreferencesData cascade;
 drop table if exists ApprovalData cascade;
 drop table if exists AuditRecordData cascade;

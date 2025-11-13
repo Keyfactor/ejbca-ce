@@ -237,6 +237,13 @@
 		</fileset>
 	</path>
 
+    <path id="lib.mockito.classpath">
+        <fileset dir="${ejbca.home}/lib/ext/test">
+            <include name="mockito-core-*.jar"/>
+            <include name="byte-buddy*.jar"/>
+        </fileset>
+    </path>
+
 	<path id="lib.test.classpath">
 		<fileset dir="${ejbca.home}/lib/ext/test">
 			<include name="*.jar"/>

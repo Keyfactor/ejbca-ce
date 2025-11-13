@@ -17,6 +17,8 @@ import java.security.PrivateKey;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.keys.util.PublicKeyWrapper;
 
 import com.keyfactor.util.keys.token.CryptoToken;
@@ -37,6 +39,13 @@ public class CryptoTokenManagementProxySessionBean implements CryptoTokenManagem
     @Override
     public CryptoToken getCryptoToken(int cryptoTokenId) {
         return cryptoTokenManagementSession.getCryptoToken(cryptoTokenId);
+    }
+    
+    @Override
+    public void deleteCryptoToken(String cryptoTokenName) throws AuthorizationDeniedException {
+        cryptoTokenManagementSession.deleteCryptoToken(
+                new AlwaysAllowLocalAuthenticationToken("CryptoTokenManagementProxySessionBean"), 
+                            cryptoTokenManagementSession.getIdFromName(cryptoTokenName));
     }
 
     @Override

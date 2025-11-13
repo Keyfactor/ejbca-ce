@@ -1124,7 +1124,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         final ArrayList<Pair<Integer, String>> availableCryptoTokens = new ArrayList<>();
         for (CryptoTokenInfo current : cryptoTokenManagementSession.getCryptoTokenInfos(authenticationToken)) {
             if (current.isActive()
-                    && authorizationSession.isAuthorizedNoLogging(authenticationToken,
+                    && getAuthorizationSession().isAuthorizedNoLogging(authenticationToken,
                             CryptoTokenRules.USE.resource() + "/" + current.getCryptoTokenId())) {
                 availableCryptoTokens.add(Pair.of(current.getCryptoTokenId(), current.getName()));
             }
