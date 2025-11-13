@@ -460,7 +460,7 @@ public class CrlCreateSessionSystemTest {
         final AuthorityKeyIdentifier akid = AuthorityKeyIdentifier.getInstance(keyidAis.readObject());
         keyidAis.close();
         octAis.close();
-        assertArrayEquals("Incorrect Authority Key Id in CRL.", TEST_AKID, akid.getKeyIdentifier());
+        assertArrayEquals("Incorrect Authority Key Id in CRL.", TEST_AKID, akid.getKeyIdentifierOctets());
     }
     
     private void forceDeltaCRL(final CA ca) throws AuthorizationDeniedException, CryptoTokenOfflineException, CRLException {
