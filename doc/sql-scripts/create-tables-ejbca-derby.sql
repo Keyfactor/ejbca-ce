@@ -346,16 +346,6 @@ CREATE TABLE UserData (
     PRIMARY KEY (username)
 );
 
-CREATE TABLE UserDataSourceData (
-    id INTEGER NOT NULL,
-    data CLOB,
-    name VARCHAR(256) NOT NULL,
-    rowProtection CLOB(10 K),
-    rowVersion INTEGER NOT NULL,
-    updateCounter INTEGER NOT NULL,
-    PRIMARY KEY (id)
-);
-
 CREATE TABLE AcmeNonceData (
     nonce VARCHAR(256) NOT NULL,
     timeExpires BIGINT NOT NULL,
