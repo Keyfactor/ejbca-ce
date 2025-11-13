@@ -72,11 +72,6 @@ import com.keyfactor.util.StringTools;
 public class CertProfilesBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(CertProfilesBean.class);
-    
-    // This restriction in certificate profile naming can be removed when the current running version no longer has
-    // to be able to run side by side (share the db) with an EJBCA 6.1.x or earlier
-    @Deprecated
-    private static final String LEGACY_FIXED_MARKER = "(FIXED)";
 
     @EJB
     private CAAdminSessionLocal caAdminSession;
@@ -263,9 +258,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
 
     public void actionAddFromTemplateConfirm() {
         final String certProfileName = getCertProfileName();
-        if (certProfileName.endsWith(LEGACY_FIXED_MARKER)) {
-            addErrorMessage("YOUCANTEDITFIXEDCERTPROFS");
-        } else if (StringUtils.isBlank(certProfileName)) {
+        if (StringUtils.isBlank(certProfileName)) {
             addNonTranslatedErrorMessage("Error: Certificate profile name cannot be empty.");
         } else if (certProfileName.length() > 0) {
             if (!StringTools.checkFieldForLegalChars(certProfileName)) {
