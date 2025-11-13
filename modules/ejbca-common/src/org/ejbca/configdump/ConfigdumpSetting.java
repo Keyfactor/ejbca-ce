@@ -61,6 +61,7 @@ public class ConfigdumpSetting implements Serializable {
         ESTCONFIG("est-config", "ESTCONFIG"),
         VALIDATOR("validators", "Validator"),
         CTLOG("ct-logs", "CT Log"),
+        CTCONFIG("ct-logs", "Global CT Configuration"),
         EXTENDEDKEYUSAGE("extended-key-usage", "EXTENDEDKEYUSAGE"),
         CERTEXTENSION("custom-certificate-extensions", "CERTEXTENSION"),
         OAUTHKEY("trusted-oauth-providers", "OAUTHKEY"),
@@ -68,7 +69,8 @@ public class ConfigdumpSetting implements Serializable {
         EXTERNALACCOUNTBINDING("external-account-bindings", "EXTERNALACCOUNTBINDINGS"),
         GLOBALCESECORECONFIG("system-config", "GLOBALCESECORECONFIG"),
         OAUTH("oauth-configuration", "OAUTH"),
-        CACONFIG("certification-authorities", "CA Configuration");
+        CACONFIG("certification-authorities", "CA Configuration"),
+        GLOBALCONFIG("system-config", "GLOBALCONFIG");
         // Unimplemented:
         // ENDENTITY, SYSCONFIG, CMPCONFIG, PEERCONFIG
 

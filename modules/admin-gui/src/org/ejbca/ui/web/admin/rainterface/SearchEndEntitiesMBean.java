@@ -20,6 +20,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -681,6 +682,10 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
 
         return raAuthorization;
     }
+
+	public String encodeRowKey(String username) {
+		return Base64.getUrlEncoder().encodeToString(username.getBytes(StandardCharsets.UTF_8));
+	}
 
     public class EndEntitySearchResult implements Serializable {
         private static final long serialVersionUID = 1L;

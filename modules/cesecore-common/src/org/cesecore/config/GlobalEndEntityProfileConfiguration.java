@@ -16,7 +16,7 @@ import org.cesecore.configuration.ConfigurationBase;
 
 public class GlobalEndEntityProfileConfiguration extends ConfigurationBase {
     private static final long serialVersionUID = 1L;
-    public static final String EEP_CONFIGURATION_ID = "global-endentityprofile-configuration";
+    public static final String EEP_CONFIGURATION_ID = "GLOBAL_EEP_CONFIG";
 
     private static final   String ENABLEEEPROFILELIMITATIONS   = "endentityprofilelimitations";
 

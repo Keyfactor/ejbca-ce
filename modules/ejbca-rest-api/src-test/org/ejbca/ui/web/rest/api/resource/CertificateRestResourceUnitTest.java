@@ -25,6 +25,7 @@ import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertProperJsonStatu
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -32,22 +33,32 @@ import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.Invocation;
+import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.keyfactor.util.CertTools;
+
+import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.X509CAInfo.X509CAInfoBuilder;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.crl.RevocationReasons;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.mock.authentication.tokens.UsernameBasedAuthenticationToken;
 import org.easymock.Capture;
 import org.easymock.EasyMock;
@@ -55,10 +66,14 @@ import org.easymock.EasyMockRunner;
 import org.easymock.Mock;
 import org.easymock.TestSubject;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.dto.CertRevocationDto;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.InMemoryRestServer;
 import org.ejbca.ui.web.rest.api.config.JsonDateSerializer;
+import org.ejbca.ui.web.rest.api.config.ObjectMapperContextResolver;
+import org.ejbca.ui.web.rest.api.io.request.AddEndEntityRestRequest;
+import org.ejbca.ui.web.rest.api.io.request.EnrollCertificateWithEntityRestRequest;
 import org.ejbca.ui.web.rest.api.resource.swagger.CertificateRestResourceSwagger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -79,8 +94,11 @@ import com.keyfactor.util.EJBTools;
 @RunWith(EasyMockRunner.class)
 public class CertificateRestResourceUnitTest {
 
+    private static final Logger log = Logger.getLogger(CertificateRestResourceUnitTest.class);
     private static final DateFormat DATE_FORMAT_ISO8601 = JsonDateSerializer.DATE_FORMAT_ISO8601;
     private static final JSONParser jsonParser = new JSONParser();
+    private static final ObjectMapperContextResolver objectMapperContextResolver = new ObjectMapperContextResolver();
+
     private static final AuthenticationToken authenticationToken = new UsernameBasedAuthenticationToken(new UsernamePrincipal("TestRunner"));
     private static final String testCertPem = "-----BEGIN CERTIFICATE-----\n"
         + "MIID+zCCAuOgAwIBAgIULyZUBiXtcmi2U6C4maDQLnvei5swDQYJKoZIhvcNAQEL\n"
@@ -381,5 +399,68 @@ public class CertificateRestResourceUnitTest {
         final Response actualResponse = request.get();
         final int actualStatus = actualResponse.getStatus();
         assertEquals(Status.BAD_REQUEST.getStatusCode(), actualStatus);
+    }
+    
+    @Test
+    public void enrollCertificateEjbcaException() throws Exception {
+        // given
+        List<CAInfo> caInfos = new ArrayList<>();
+        caInfos.add(new X509CAInfoBuilder().setCaType(CAInfo.CATYPE_X509).setName("TestCa")
+                    .setSubjectDn("CN=TestCa").setCaId("CN=TestCa".hashCode()).build());
+        expect(raMasterApiProxy.getAuthorizedCas(anyObject(AuthenticationToken.class))).andReturn(caInfos);
+        
+        Map<Integer, String> eeProfileMap = new HashMap<>();
+        eeProfileMap.put(1, "EMPTY");
+        expect(raMasterApiProxy.getAuthorizedEndEntityProfileIdsToNameMap(anyObject(AuthenticationToken.class))).andReturn(eeProfileMap);
+        
+        Map<Integer, String> certProfileMap = new HashMap<>();
+        certProfileMap.put(1, "ENDUSER");
+        expect(raMasterApiProxy.getAuthorizedCertificateProfileIdsToNameMap(anyObject(AuthenticationToken.class))).andReturn(certProfileMap);
+        
+        expect(raMasterApiProxy.createCertificateWithEntity(anyObject(AuthenticationToken.class), anyObject(EndEntityInformation.class), 
+                                                    anyString(), anyInt(), anyInt())).andThrow(new EjbcaException("test error message"));
+        replay(raMasterApiProxy);
+        // when
+
+        enrollCertificateInvalid("test error message");
+        verify(raMasterApiProxy);
+    }
+    
+    private void enrollCertificateInvalid(String errorMessage) throws Exception {
+        try {
+            EnrollCertificateWithEntityRestRequest request = new EnrollCertificateWithEntityRestRequest();
+            request.setCertificateRequestType("PUBLICKEY");
+            request.setResponseFormat("PKCS7");
+            request.setIncludeChain(false);
+            request.setCertificateRequest(CertificateRestResourceSystemTest.PUBLIC_KEY);
+            AddEndEntityRestRequest eeRequest = new AddEndEntityRestRequest.Builder().
+                    caName("TestCa").
+                    certificateProfileName("ENDUSER").
+                    endEntityProfileName("EMPTY").
+                    username("dummy").
+                    password("foo123").
+                    subjectDn("O=NoResponseFormat,CN=dummy").
+                    token("USERGENERATED").build();
+            request.setEndEntity(eeRequest);
+
+            // Construct POST  request
+            final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
+            final String requestBody = objectMapper.writeValueAsString(request);
+            final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
+
+            // send request
+            final Invocation.Builder restRequest = server
+                    .newRequest("/v1/certificate/enroll")
+                    .request();
+            final Response actualResponse = restRequest.post(requestEntity);
+            final String actualJsonString = actualResponse.readEntity(String.class);
+            log.error(actualJsonString);
+            final int actualStatus = actualResponse.getStatus();
+            assertEquals(Status.BAD_REQUEST.getStatusCode(), actualStatus);
+            assertTrue(actualJsonString.contains(errorMessage));
+            
+        } catch (Exception e) {
+            fail("Exception while testing certificate creation from public key");
+        }
     }
 }

@@ -360,9 +360,6 @@ ij> run '/home/tomas/dev/workspace/ejbca/doc/howto/create-tables-ejbca3-derby.sq
 ij> select tablename from sys.systables;
 TABLENAME
 --------------------------------------------------------------------------------------------------------------------------------
-AccessRulesData
-AdminEntityData
-AdminGroupData
 AdminPreferencesData
 ApprovalData
 AuthorizationTreeUpdateData

@@ -95,7 +95,6 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.unidfnr.UnidFnrHandlerMock;
 import org.ejbca.core.ejb.unidfnr.UnidfnrProxySessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -307,7 +306,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             + "hKyNv2RBgfyehJioap8wLA0dCe1oJIz9Jy4WNGTNSXSB/Okj/3dZhDjB+qfnXe/k"
             + "GesEGlVKuoZFbjVE06+a0ja/0QlDjSW6xBdrtECWhD7rHZvPid1OdA==";
 
-    private static final String PUBLIC_KEY = "-----BEGIN PUBLIC KEY-----\n" +
+    protected static final String PUBLIC_KEY = "-----BEGIN PUBLIC KEY-----\n" +
             "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArbwiELd8/j5IzAfW/uye\n" +
             "jAuhovv2hVDcWCG9+/3438jgQRotGWlnD7+uSzrfpdsiYYcskbm04bT/52/UyDaS\n" +
             "MvefhvtGJBqqKkisEc/4F+Zu0MdQHjMvs4A/0rbN1cOpj6lA9N8yfMUGN+9KK4wW\n" +
@@ -553,6 +552,68 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         CertificateData certificateData = internalCertificateStoreSession.getCertificateData(fingerPrint);
         String databaseReason = RevocationReasons.getFromDatabaseValue(certificateData.getRevocationReason()).getStringValue();
         assertEquals("KEY_COMPROMISE", databaseReason);
+    }
+    
+    @Test
+    public void shouldRevocationStatusBeNotRevoked() throws Exception {
+        final String serialNumber = generateTestSerialNumber();
+        revocationStatusCheck(testIssuerDn, serialNumber, 200, "\"revoked\":false");
+    }
+    
+    @Test
+    public void shouldRevocationStatusBeUnspecified() throws Exception {
+        
+        final String serialNumber = generateTestSerialNumber();
+        final String revocationReason = UNSPECIFIED.getStringValue();
+        // when
+        revokeCertificate(testIssuerDn, serialNumber, revocationReason, null);
+        // then
+        revocationStatusCheck(testIssuerDn, serialNumber, 200, "UNSPECIFIED");
+        
+    }
+    
+    @Test
+    public void shouldRevocationStatusBeSuperseded() throws Exception {
+        final String serialNumber = generateTestSerialNumber();
+        final String revocationReason = SUPERSEDED.getStringValue();
+        // when
+        revokeCertificate(testIssuerDn, serialNumber, revocationReason, null);
+        // then
+        revocationStatusCheck(testIssuerDn, serialNumber, 200, "SUPERSEDED");
+    }
+    
+    @Test
+    public void shouldRevocationStatusBeKeyCompromise() throws Exception {
+        final String serialNumber = generateTestSerialNumber();
+        final String revocationReason = KEYCOMPROMISE.getStringValue();
+        // when
+        revokeCertificate(testIssuerDn, serialNumber, revocationReason, null);
+        // then
+        revocationStatusCheck(testIssuerDn, "0x" + serialNumber, 200, "KEY_COMPROMISE");
+    }
+    
+    @Test
+    public void shouldFailRevocationStatusUnknownCa() throws Exception {
+        revocationStatusCheck("CN=whatever", "11223344556677889900112233445566", 404, "CA 'CN=whatever' does not exist.");
+    }
+    
+    @Test
+    public void shouldFailRevocationStatusNonExistingCertificate() throws Exception {
+        revocationStatusCheck(testIssuerDn, "11223344556677889900112233445566", 404, "Certificate with serial number '11223344556677889900112233445566' and issuer "
+                + "DN '" + testIssuerDn + "' was not found");
+    }
+    
+    @Test
+    public void shouldFailRevocationStatusInvalidSerialNumber() throws Exception {
+        revocationStatusCheck(testIssuerDn, "JK223344556677889900112233445566", 400, "Invalid serial number format");
+    }
+    
+    private void revocationStatusCheck(final String issuerDn, final String serialNumber, final int statusCode, final String message) throws Exception {
+        final Response actualResponse = newRequest("/v1/certificate/" + issuerDn + "/" + serialNumber + "/revocationstatus").request().get();
+        final String actualJsonString = actualResponse.readEntity(String.class);
+        assertJsonContentType(actualResponse);
+        assertEquals("Status code mismatch", statusCode, actualResponse.getStatus());
+        assertTrue("Response does not contain expected phrase", actualJsonString.contains(message));
     }
 
     @Test
@@ -1317,6 +1378,21 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     public void enrollPkcs10ExpectResponseFormatPKCS7() throws Exception {
         enrollPkcs10("ENDUSER", "EMPTY", "PKCS7", CSR_WITHOUT_HEADERS, 201, null, false);
     }
+    
+    @Test
+    public void enrollPkcs10ExpectResponseFormatDER() throws Exception {
+        enrollPkcs10("ENDUSER", "EMPTY", "DER", CSR_WITHOUT_HEADERS, 201, null, false);
+    }
+    
+    @Test
+    public void enrollPkcs10ExpectResponseFormatInvalid() throws Exception {
+        enrollPkcs10("ENDUSER", "EMPTY", "", CSR_WITHOUT_HEADERS, 400, "Invalid input. Response format can only be DER or PKCS7", false);
+    }
+    
+    @Test
+    public void enrollPkcs10ExpectResponseFormatNull() throws Exception {
+        enrollPkcs10("ENDUSER", "EMPTY", null, CSR_WITHOUT_HEADERS, 400, "Invalid input. Incorrect response format", false);
+    }
 
     @Test
     public void enrollPkcs10WithSan() throws Exception {
@@ -1446,19 +1522,30 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertEquals("Extension overwrite value is wrong", obj.toString(), "#040a30080101010104040404");
 
     }
-
+    
+    @Test
+    public void enrollPkcs10InvalidCa() throws Exception {
+        enrollPkcs10("SomeInvalidCA", "ENDUSER", testEeProfileNameWithSan, "PKCS7", CSR_WITH_SAN_WITHOUT_HEADERS, 400, "CA with name \"SomeInvalidCA\" doesn't exist", false);
+    }
+    
+    @Test
+    public void enrollPkcs10InvalidEeProfile() throws Exception {
+        enrollPkcs10("ENDUSER", "SomeInvalidEep", "PKCS7", CSR_WITH_SAN_WITHOUT_HEADERS, 400, "End Entity Profile of name \"SomeInvalidEep\" was not found", false);
+    }
+        
     private Certificate enrollPkcs10(
-            final String cpName,
-            final String eepName,
-            final String responseFormat,
-            final String pemCsrWithoutHeaders,
-            final int responseStatus,
-            final String error,
-            final boolean overwrite
-    ) throws Exception {
+                final String caName,
+                final String cpName,
+                final String eepName,
+                final String responseFormat,
+                final String pemCsrWithoutHeaders,
+                final int responseStatus,
+                final String error,
+                final boolean overwrite
+        ) throws Exception {
 
         final EnrollCertificateRestRequest pkcs10req = new EnrollCertificateRestRequest();
-        pkcs10req.setCertificateAuthorityName(testCaName);
+        pkcs10req.setCertificateAuthorityName(caName);
         pkcs10req.setCertificateProfileName(cpName);
         pkcs10req.setEndEntityProfileName(eepName);
         pkcs10req.setUsername(testUsername);
@@ -1504,11 +1591,16 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertJsonContentType(actualResponse);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
         final String responseFormatREST = (String) actualJsonObject.get("response_format");
-        assertEquals("The response format is not PKCS7", responseFormat, responseFormatREST);
+        assertEquals("The response format is not matched", responseFormat, responseFormatREST);
         final String responseCertificate = (String) actualJsonObject.get("certificate");
         assertNotNull(responseCertificate);
         // Verify certificate is a pkcs7
         String pkcs7CertificatePem = new String(Base64.decode(responseCertificate.getBytes()), StandardCharsets.UTF_8);
+        if (responseFormat.equals("DER")) {
+            assertFalse("The response is not a pkcs7", pkcs7CertificatePem.contains(CertTools.BEGIN_PKCS7));
+            assertFalse("The response is not a pkcs7", pkcs7CertificatePem.contains(CertTools.END_PKCS7));
+            return null;
+        } 
         assertTrue("The response is not a pkcs7", pkcs7CertificatePem.contains(CertTools.BEGIN_PKCS7));
         assertTrue("The response is not a pkcs7", pkcs7CertificatePem.contains(CertTools.END_PKCS7));
         // Verify certificate
@@ -1519,6 +1611,65 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         final String responseSerialNo = (String) actualJsonObject.get("serial_number");
         assertEquals("The certificate serial number does not match.", CertTools.getSerialNumber(cert), CertTools.getSerialNumberFromString(responseSerialNo));
         return cert;
+    }
+    
+    private Certificate enrollPkcs10(
+            final String cpName,
+            final String eepName,
+            final String responseFormat,
+            final String pemCsrWithoutHeaders,
+            final int responseStatus,
+            final String error,
+            final boolean overwrite
+    ) throws Exception {
+        return enrollPkcs10(testCaName, cpName, eepName, responseFormat, pemCsrWithoutHeaders, responseStatus, error, overwrite);
+    }
+    
+    @Test
+    public void enrollCertificateInvalidCa() throws Exception {
+        enrollCertificateInvalid("SomeInvalidCa", "EMPTY", "No CA found by name of SomeInvalidCa");
+    }
+    
+    @Test
+    public void enrollCertificateInvalidEeProfile() throws Exception {
+        enrollCertificateInvalid(testCaName, "SomeInvalidEep", "No End Entity profile found by name of SomeInvalidEep");
+    }
+        
+    private void enrollCertificateInvalid(String ca, String eeProfile, String errorMessage) throws Exception {
+        try {
+            EnrollCertificateWithEntityRestRequest request = new EnrollCertificateWithEntityRestRequest();
+            request.setCertificateRequestType("PUBLICKEY");
+            request.setResponseFormat("PKCS7");
+            request.setIncludeChain(false);
+            request.setCertificateRequest(PUBLIC_KEY);
+            AddEndEntityRestRequest eeRequest = new AddEndEntityRestRequest.Builder().
+                    caName(ca).
+                    certificateProfileName("ENDUSER").
+                    endEntityProfileName(eeProfile).
+                    username("dummy").
+                    password("foo123").
+                    subjectDn("O=NoResponseFormat,CN=dummy").
+                    token("USERGENERATED").build();
+            request.setEndEntity(eeRequest);
+
+            // Construct POST  request
+            final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
+            final String requestBody = objectMapper.writeValueAsString(request);
+            final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
+
+            // send request
+            final Response actualResponse = newRequest("/v1/certificate/enroll").request().post(requestEntity);
+            assertEquals("Unexpected HTTP response code.", 404, actualResponse.getStatus());
+            final String actualJsonString = actualResponse.readEntity(String.class);
+            // Verify response
+            assertJsonContentType(actualResponse);
+            final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+            assertEquals("The response error message does not match.",
+                    errorMessage, actualJsonObject.get("error_message"));
+        } catch (Exception e) {
+            log.error("Exception while testing certificate creation from public key: ", e);
+            fail("Exception while testing certificate creation from public key");
+        }
     }
 
     @Test
@@ -2316,7 +2467,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
                 new EndEntityType(EndEntityTypes.ENDUSER),
                 endEntityProfileId,
                 certificateProfileId,
-                SecConst.TOKEN_SOFT_BROWSERGEN,
+                EndEntityConstants.TOKEN_USERGEN,
                 new ExtendedInformation());
             user.setPassword("foo123");
             user.setStatus(EndEntityConstants.STATUS_NEW);
@@ -2445,9 +2596,49 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             certificateProfileSession.removeCertificateProfile(INTERNAL_ADMIN_TOKEN, profileName);
         }
     }
-
+    
     @Test
     public void finalizeKeyStoreExpectPkcs12Response() throws Exception {
+        finalizeKeyStoreExpectResponse(EndEntityConstants.TOKEN_SOFT_P12, "P12", "PKCS12");
+    }
+    
+    @Test
+    public void finalizeKeyStoreApprovalReject() throws Exception {
+        finalizeKeyStoreExpectResponse(EndEntityConstants.TOKEN_SOFT_P12, "P12", "PKCS12", true);
+    }
+    
+    @Test
+    public void finalizeKeyStoreExpectJksResponse() throws Exception {
+        finalizeKeyStoreExpectResponse(EndEntityConstants.TOKEN_SOFT_JKS, "JKS", "JKS");
+    }
+    
+    @Test
+    public void finalizeKeyStoreExpectBcfksResponse() throws Exception {
+        finalizeKeyStoreExpectResponse(EndEntityConstants.TOKEN_SOFT_BCFKS, "BCFKS", "BCFKS");
+    }
+    
+    @Test
+    public void finalizeKeyStoreExpectPemResponse() throws Exception {
+        finalizeKeyStoreExpectResponse(EndEntityConstants.TOKEN_SOFT_PEM, "PEM", "PEM");
+    }
+    
+    @Test
+    public void finalizeKeyStoreExpectCsrDerResponse() throws Exception {
+        finalizeKeyStoreExpectResponse(EndEntityConstants.TOKEN_USERGEN, "DER", "DER");
+    }
+    
+    @Test
+    public void finalizeKeyStoreExpectCsrPemResponse() throws Exception {
+        finalizeKeyStoreExpectResponse(EndEntityConstants.TOKEN_USERGEN, "PEM", "PEM");
+    }
+    
+    private void finalizeKeyStoreExpectResponse(int tokenType, String tokenTypeRequestExpected, 
+            String tokenTypeResponseExpected) throws Exception {
+        finalizeKeyStoreExpectResponse(tokenType, tokenTypeRequestExpected, tokenTypeResponseExpected, false);
+    }
+
+    private void finalizeKeyStoreExpectResponse(int tokenType, String tokenTypeRequestExpected, 
+            String tokenTypeResponseExpected, boolean rejectApproval) throws Exception {
         // Create an add end entity approval request
         final AuthenticationToken approvalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EjbcaRestApiApprovalTestAdmin"));
         AccumulativeApprovalProfile approvalProfile = new AccumulativeApprovalProfile("Test Approval Profile");
@@ -2465,11 +2656,14 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             caSession.editCA(INTERNAL_ADMIN_TOKEN, x509TestCa.getCAInfo());
             EndEntityInformation userdata = new EndEntityInformation(testUsername, "CN=" + testUsername, x509TestCa.getCAId(), null, null, new EndEntityType(
                     EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                    SecConst.TOKEN_SOFT_P12, new ExtendedInformation());
+                    tokenType, new ExtendedInformation());
             userdata.setPassword("foo123");
             userdata.setStatus(EndEntityConstants.STATUS_NEW);
             userdata.getExtendedInformation().setKeyStoreAlgorithmType(AlgorithmConstants.KEYALGORITHM_RSA);
-            userdata.getExtendedInformation().setKeyStoreAlgorithmSubType("1024");
+            userdata.getExtendedInformation().setKeyStoreAlgorithmSubType("2048");
+            if (tokenType==EndEntityConstants.TOKEN_USERGEN) {
+                userdata.getExtendedInformation().setCertificateRequest(CSR_WITHOUT_HEADERS.replace("\n", "").getBytes());
+            }
             int requestId = -1;
             try {
                 endEntityManagementSession.addUser(INTERNAL_ADMIN_TOKEN, userdata, false);
@@ -2477,31 +2671,61 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             } catch (WaitingForApprovalException e) {
                 requestId = e.getRequestId();
             }
+
+            // Attempt REST finalize
+            final FinalizeRestRequest requestObject = new FinalizeRestRequest(tokenTypeRequestExpected, "foo123");
+            final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
+            final String requestBody = objectMapper.writeValueAsString(requestObject);
+            final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
+            final Response actualResponseFailed = newRequest("/v1/certificate/" + requestId + "/finalize").request().post(requestEntity);
+            final String actualJsonStringFailed = actualResponseFailed.readEntity(String.class);
+            assertEquals(actualResponseFailed.getStatus(), 202);
+            assertJsonContentType(actualResponseFailed);
+            assertTrue(actualJsonStringFailed.contains("Request with Id '" + requestId + "' is still waiting for approval"));
+            
             Approval approval = new Approval("REST System Test Approval", AccumulativeApprovalProfile.FIXED_STEP_ID,
                     approvalProfile.getStep(AccumulativeApprovalProfile.FIXED_STEP_ID).getPartitions().
                             values().iterator().next().getPartitionIdentifier());
             approvalId = getApprovalDataNoAuth(requestId).getApprovalId();
-            approvalExecutionSession.approve(approvalAdmin, approvalId, approval);
-
-            // Attempt REST finalize
-            final FinalizeRestRequest requestObject = new FinalizeRestRequest("P12", "foo123");
-            final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
-            final String requestBody = objectMapper.writeValueAsString(requestObject);
-            final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
+            if (!rejectApproval) {
+                approvalExecutionSession.approve(approvalAdmin, approvalId, approval);
+            } else {
+                approvalExecutionSession.reject(approvalAdmin, approvalId, approval);
+            }
+            
             final Response actualResponse = newRequest("/v1/certificate/" + requestId + "/finalize").request().post(requestEntity);
             final String actualJsonString = actualResponse.readEntity(String.class);
             assertJsonContentType(actualResponse);
+            if (rejectApproval) {
+                assertTrue(actualJsonString.contains("Request with Id '" + requestId + "' has been rejected"));
+                return;
+            }
             final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
             final String responseFormat = (String) actualJsonObject.get("response_format");
             final String base64Keystore = (String) actualJsonObject.get("certificate");
+            assertEquals("Unexpected response format", tokenTypeResponseExpected, responseFormat);
+            
+            if (!(tokenType==EndEntityConstants.TOKEN_SOFT_P12 || tokenType==EndEntityConstants.TOKEN_SOFT_JKS ||
+                    tokenType==EndEntityConstants.TOKEN_SOFT_BCFKS)) {
+                return;
+            }
+            
             final byte[] keystoreBytes = Base64.decode(base64Keystore.getBytes());
-            KeyStore keyStore = KeyStore.getInstance("PKCS12-3DES-3DES");
+            KeyStore keyStore = null;
+            if (tokenType==EndEntityConstants.TOKEN_SOFT_P12) {
+                keyStore = KeyStore.getInstance("PKCS12-3DES-3DES");
+            } else if (tokenType==EndEntityConstants.TOKEN_SOFT_JKS) {
+                keyStore = KeyStore.getInstance("JKS");
+            } else if (tokenType==EndEntityConstants.TOKEN_SOFT_BCFKS) {
+                keyStore = KeyStore.getInstance("BCFKS");
+            }
+            
             keyStore.load(new ByteArrayInputStream(keystoreBytes), "foo123".toCharArray());
             // Verify results
             Enumeration<String> aliases = keyStore.aliases();
-            assertTrue("Alias is missing in keystore response", Collections.list(aliases).contains(testUsername));
-            assertEquals("Unexpected response format", "PKCS12", responseFormat);
-            assertEquals("Unexpected keystore format", "PKCS12-3DES-3DES", keyStore.getType());
+            assertTrue("Alias is missing in keystore response", 
+                    Collections.list(aliases).stream().anyMatch(x -> x.equalsIgnoreCase(testUsername)));
+            
         } finally {
             // Clean up
             approvalSession.removeApprovalRequest(INTERNAL_ADMIN_TOKEN, approvalId);
@@ -2676,7 +2900,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
                 x509TestCa.getCAId(),
                 keySpec,
                 keyAlg,
-                SecConst.TOKEN_SOFT_P12,
+                EndEntityConstants.TOKEN_SOFT_P12,
                 false,
                 false,
                 false,

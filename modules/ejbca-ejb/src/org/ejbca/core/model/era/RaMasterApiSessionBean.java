@@ -695,7 +695,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     private RaApprovalRequestInfo getApprovalRequest(final AuthenticationToken authenticationToken, final ApprovalDataVO approvalDataVO) {
         // By getting the CA we perform an implicit auth check
         String caName;
-        if (approvalDataVO.getCAId() == ApprovalDataVO.ANY_CA) {
+        if (approvalDataVO.getCAId() == CAConstants.ALLCAS) {
             caName = null;
         } else {
             try {

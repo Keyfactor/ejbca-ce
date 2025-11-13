@@ -27,6 +27,7 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
@@ -110,7 +111,7 @@ public class CertificateExpireSystemTest extends CaTestCase {
         certificatesToRemove = new ArrayList<Certificate>();
         EndEntityInformation endEntityInformation = new EndEntityInformation(USERNAME, "C=SE,O=AnaTom,CN=" + USERNAME, caid, null, null,
                 EndEntityTypes.ENDUSER.toEndEntityType(),
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, null);
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_PEM, null);
         endEntityInformation.setPassword(PASSWORD);
         endEntityManagementSession.addUser(admin, endEntityInformation, false);         
     }
@@ -249,7 +250,7 @@ public class CertificateExpireSystemTest extends CaTestCase {
         workerprop.setProperty(EmailSendingWorkerConstants.PROP_SENDTOADMINS, "FALSE");
         workerprop.setProperty(EmailSendingWorkerConstants.PROP_SENDTOENDUSERS, "FALSE");
         //Here is the line that matters for this test
-        workerprop.setProperty(BaseWorker.PROP_CAIDSTOCHECK, String.valueOf(SecConst.ALLCAS));
+        workerprop.setProperty(BaseWorker.PROP_CAIDSTOCHECK, String.valueOf(CAConstants.ALLCAS));
         
         workerprop.setProperty(BaseWorker.PROP_TIMEBEFOREEXPIRING, String.valueOf(seconds - 5));
         workerprop.setProperty(BaseWorker.PROP_TIMEUNIT, BaseWorker.UNIT_SECONDS);
