@@ -1086,52 +1086,6 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         return ret;
     }
 
-    @Override
-    public RequestMessage decryptAndVerifyRequest(final AuthenticationToken admin, final RequestMessage req)
-            throws CADoesntExistsException, SignRequestSignatureException, CryptoTokenOfflineException, AuthorizationDeniedException {
-        if (log.isTraceEnabled()) {
-            log.trace(">decryptAndVerifyRequest(IRequestMessage)");
-        }
-        // Get CA that will receive request
-        final CA ca = getCAFromRequest(admin, req, true);
-        try {
-            // See if we need some key material to decrypt request
-            if (req.getEncryptionCryptoTokenId() == null) {
-                final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
-                setDecryptInfo(cryptoToken, req, ca);
-            }
-
-            // SCEP configuration has encryption key separate from CAs key
-            else {
-                final CryptoToken encryptionToken = cryptoTokenManagementSession.getCryptoToken(req.getEncryptionCryptoTokenId());
-                req.setKeyInfo(null, encryptionToken.getPrivateKey(req.getEncryptionKeyAlias()), encryptionToken.getEncProviderName());
-            }
-            
-            // Verify the request
-            if (req.verify() == false) {
-                String msg = intres.getLocalizedMessage("createcert.popverificationfailed");
-                throw new SignRequestSignatureException(msg);
-            }
-        } catch (NoSuchProviderException e) {
-            log.error("NoSuchProvider provider: ", e);
-        } catch (InvalidKeyException e) {
-            log.info("Invalid key in request: " + e.getMessage());
-            if (log.isDebugEnabled()) {
-                log.debug("Invalid key in request: ", e);
-            }
-        } catch (NoSuchAlgorithmException e) {
-            log.error("No such algorithm: ", e);
-        } catch (CryptoTokenOfflineException ctoe) {
-            String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getSubjectDN());
-            log.error(msg, ctoe);
-            throw ctoe;
-        }
-        if (log.isTraceEnabled()) {
-            log.trace("<decryptAndVerifyRequest(IRequestMessage)");
-        }
-        return req;
-    }
-
     /**
      * Sets information needed to decrypt a message, if such information is needed(i.e. CA private key for SCEP messages)
      *
