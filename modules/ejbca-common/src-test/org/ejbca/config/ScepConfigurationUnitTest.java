@@ -12,15 +12,12 @@
  *************************************************************************/
 package org.ejbca.config;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.TreeMap;
 
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.string.StringConfigurationCache;
 
-import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
