@@ -66,20 +66,17 @@ public enum CertificateProfileCache {
     private final ReentrantLock lock = new ReentrantLock(false);
 
     private CertificateProfileCache() {
+        // Note: Internal profiles (e.g. SSH, SCEPSIGNER, etc.) should NOT be added here
         idNameMapCacheTemplate.put(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER), CertificateProfile.ENDUSERPROFILENAME);
         idNameMapCacheTemplate.put(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA), CertificateProfile.SUBCAPROFILENAME);
         idNameMapCacheTemplate.put(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA), CertificateProfile.ROOTCAPROFILENAME);
         idNameMapCacheTemplate.put(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER), CertificateProfile.OCSPSIGNERPROFILENAME);
         idNameMapCacheTemplate.put(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_SERVER), CertificateProfile.SERVERPROFILENAME);
-        idNameMapCacheTemplate.put(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_ENCRYPTOR), CertificateProfile.SCEPSIGNERPROFILENAME);
-        idNameMapCacheTemplate.put(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_SIGNER), CertificateProfile.SCEPENCRYPTORPROFILENAME);
         nameIdMapCacheTemplate.put(CertificateProfile.ENDUSERPROFILENAME, Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER));
         nameIdMapCacheTemplate.put(CertificateProfile.SUBCAPROFILENAME, Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA));
         nameIdMapCacheTemplate.put(CertificateProfile.ROOTCAPROFILENAME, Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA));
         nameIdMapCacheTemplate.put(CertificateProfile.OCSPSIGNERPROFILENAME, Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER));
         nameIdMapCacheTemplate.put(CertificateProfile.SERVERPROFILENAME, Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_SERVER));
-        nameIdMapCacheTemplate.put(CertificateProfile.SCEPENCRYPTORPROFILENAME, Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_ENCRYPTOR));
-        nameIdMapCacheTemplate.put(CertificateProfile.SCEPSIGNERPROFILENAME, Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_SIGNER));
     }
 
     /**
