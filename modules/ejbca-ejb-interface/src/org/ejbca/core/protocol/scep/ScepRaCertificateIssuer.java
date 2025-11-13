@@ -39,13 +39,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.keys.token.CryptoTokenManagementSession;
-import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
-import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
-import org.ejbca.core.model.approval.ApprovalException;
-import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.ra.CustomFieldException;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
 
 import java.security.cert.X509Certificate;
@@ -100,20 +94,15 @@ public class ScepRaCertificateIssuer {
             endEntityInformation.setTokenType(EndEntityConstants.TOKEN_SOFT_P12);
             endEntityInformation.setCAId(caId);
 
-            if (!endEntityManagementSession.existsUser(userName)) {
-                endEntityManagementSession.addUser(authenticationToken, endEntityInformation, true);
-                endEntityManagementSession.finishUser(endEntityInformation);
-            }
-
             var requestMessage = new SimpleRequestMessage(publicKeyWrapper.getPublicKey(), userName, password);
             certificateResponse = certificateCreateSession.createCertificate(authenticationToken, endEntityInformation, requestMessage,
                     X509ResponseMessage.class, new CertificateGenerationParams());
             return (X509Certificate) certificateResponse.getCertificate();
-        } catch (CryptoTokenOfflineException | EndEntityExistsException | CADoesntExistsException | IllegalNameException | CustomFieldException
-                | ApprovalException | CertificateSerialNumberException | CustomCertificateSerialNumberException | IllegalKeyException
+        } catch (CryptoTokenOfflineException | CADoesntExistsException | IllegalNameException
+                | CertificateSerialNumberException | CustomCertificateSerialNumberException | IllegalKeyException
                 | CertificateCreateException | SignRequestSignatureException | CertificateRevokeException | IllegalValidityException
-                | CAOfflineException | InvalidAlgorithmException | AuthorizationDeniedException | EndEntityProfileValidationException
-                | WaitingForApprovalException | CertificateExtensionException | NoSuchEndEntityException e) {
+                | CAOfflineException | InvalidAlgorithmException | AuthorizationDeniedException
+                | CertificateExtensionException e) {
             throw new ScepEncryptionCertificateIssuanceException(e);
         }
     }
