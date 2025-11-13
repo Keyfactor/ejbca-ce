@@ -3147,9 +3147,12 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
             // v53: Remove support for GOST and DSTU if present
             List<String> availableKeyAlgorithms = getAvailableKeyAlgorithmsAsList();
-            availableKeyAlgorithms.remove("ECGOST3410");
-            availableKeyAlgorithms.remove("DSTU4145");
-            setAvailableKeyAlgorithmsAsList(availableKeyAlgorithms);
+            if (availableKeyAlgorithms != null && !availableKeyAlgorithms.isEmpty()) {
+                availableKeyAlgorithms.remove("ECGOST3410");
+                availableKeyAlgorithms.remove("DSTU4145");
+                setAvailableKeyAlgorithmsAsList(availableKeyAlgorithms);
+            }
+
             // Make sure that they didn't sneak into the alternate set
             List<String> alternativeAvailableKeyAlgorithms = getAlternativeAvailableKeyAlgorithmsAsList();
             if (alternativeAvailableKeyAlgorithms != null && !alternativeAvailableKeyAlgorithms.isEmpty()) {

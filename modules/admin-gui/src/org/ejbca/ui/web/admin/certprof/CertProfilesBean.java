@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.certprof;
 
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.Serializable;
@@ -618,6 +619,18 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
                         + "'.");
                 publishers.remove(toRemove);
             }
+            //Make sure required defaults are set
+            cprofile.setAvailableKeyAlgorithmsAsList(AlgorithmTools.getAvailableKeyAlgorithms());
+            cprofile.setAvailableEcCurvesAsList(Collections.singletonList(CertificateProfile.ANY_EC_CURVE));
+            cprofile.setUseExpirationRestrictionForWeekdays(false);
+            cprofile.setStoreSubjectAlternativeName(true);
+            cprofile.setUseIssuerAlternativeName(true);
+            cprofile.setIssuerAlternativeNameCritical(false);
+            cprofile.setUseMsObjectSidSecurityExtension(true);
+            cprofile.setUseDocumentTypeList(false);
+            cprofile.setDocumentTypeListCritical(false);
+            cprofile.setEncodedValidity(CertificateProfile.DEFAULT_CERTIFICATE_VALIDITY);
+
             cprofile.setPublisherList(publishers);
 
         } finally {
