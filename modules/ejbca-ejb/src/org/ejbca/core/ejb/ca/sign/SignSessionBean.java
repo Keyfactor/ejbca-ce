@@ -1264,19 +1264,24 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             if (log.isDebugEnabled()) {
                 log.debug(">getCAFromRequest, dn: " + dn + ": " + keySequence);
             }
-            if (doLog) {
-                ca = (CA) caSession.getCA(admin, dn.hashCode(), keySequence);
+            if (caSession.existsCa(dn.hashCode())) {
+                if (doLog) {
+                    ca = (CA) caSession.getCA(admin, dn.hashCode(), keySequence);
+                } else {
+                    ca = (CA) caSession.getCANoLog(admin, dn.hashCode(), keySequence);
+                }
                 if (log.isDebugEnabled()) {
-                    log.debug(">getCAFromRequest, CA from hash: " + dn.hashCode() + ": " + (ca == null
+                    var msg = doLog ? ">getCAFromRequest, CA from hash: " : ">getCAFromRequest, CA (nolog) from hash: ";
+                    log.debug(msg + dn.hashCode() + ": " + (ca == null
                             ? "null"
                             : ca.getCAId()));
                 }
             } else {
-                ca = (CA) caSession.getCANoLog(admin, dn.hashCode(), keySequence);
+                // This can happen when the AuthenticationToken is from an RA, and the peer connector
+                // does not allow access to unknown CAs and there's no CA. If so, continue below by username.
+                ca = null;
                 if (log.isDebugEnabled()) {
-                    log.debug(">getCAFromRequest, CA (nolog) from hash: " + dn.hashCode() + ": " + (ca == null
-                            ? "null"
-                            : ca.getCAId()));
+                    log.debug("No CA with DN '" + dn + "' exists. Trying with username instead.");
                 }
             }
             if (ca == null) {
