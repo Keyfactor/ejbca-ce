@@ -13,10 +13,7 @@
 
 package org.ejbca.config;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.Serializable;
-import java.io.StringWriter;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -34,8 +31,8 @@ import java.util.Set;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 
-import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.configuration.ConfigurationBase;
 import org.ejbca.core.model.UsernameGenerateMode;
@@ -1139,49 +1136,19 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         setMapValue(alias + "." + ENCRYPTION_CERTIFICATES, caToEncryptionCertificate, alias);
     }
 
-    /**
-     * Configs don't like collections as values, so serialize it to a string when storing.
-     * 
-     * @param caToEncryptionCertificate
-     * @return
-     */
-    public static String serializeToString(HashMap<String, String> caToEncryptionCertificate) {
-        // convert to serialization safe string
-        Properties caToCertProperties = new Properties();
-        caToEncryptionCertificate.entrySet().forEach(e -> caToCertProperties.setProperty(e.getKey(), e.getValue()));
-        StringWriter serialized = new StringWriter();
-        try {
-            caToCertProperties.store(serialized, null);
-        } catch (IOException e1) {
-            // we're serializing strings to strings - this shouldn't happen
-            throw new IllegalStateException(e1);
-        };
-        
-        return serialized.toString();
-    }
-    
-    public static HashMap<String, String> deserializeFromString(String serialized) {
-        try {
-            Properties properties = new Properties();
-            properties.load(new ByteArrayInputStream(serialized.getBytes()));
-            var out = new HashMap<String, String>();
-            properties.keySet().forEach(k -> out.put((String) k, properties.getProperty((String) k)));
-            return out;
-        } catch (IOException e) {
-            log.error("Unable to deserialize configuration property", e);
-            return null;
-        }
-    }
-
     public void setSigningCertificates(String alias, HashMap<String, String> perCaCertificates) {
         setMapValue(alias + "." + SIGNING_CERTIFICATES, perCaCertificates, alias);
     }
 
     public void setEncryptionCAs(String alias, Collection<String> encryptionCAs) {
-        ArrayList<String> value = new ArrayList<String>();
-        value.addAll(encryptionCAs);
-        value.sort(String::compareTo);
-        setListValue(alias + "." + ENCRYPTION_CAS, value, alias);
+        if (encryptionCAs == null) {
+            setListValue(alias + "." + ENCRYPTION_CAS, null, alias);
+        } else {
+            ArrayList<String> value = new ArrayList<String>();
+            value.addAll(encryptionCAs);
+            value.sort(String::compareTo);
+            setListValue(alias + "." + ENCRYPTION_CAS, value, alias);
+        }
     }
 
     public ArrayList<String> getEncryptionCAs(String alias) {
