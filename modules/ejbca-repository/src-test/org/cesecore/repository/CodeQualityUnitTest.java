@@ -21,27 +21,33 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import static org.junit.Assert.fail;
 
 public class CodeQualityUnitTest {
 
-    private File rootDir;
     private int rootDirLength;
     private List<File> allJavaFiles;
 
     @Before
     public void setUp() throws IOException {
-        this.rootDir = getRootDir();
+        final var rootDir = getRootDir();
         this.rootDirLength = rootDir.getCanonicalPath().length()+1;
         this.allJavaFiles = new ArrayList<>();
         appendFiles(rootDir);
     }
 
+    private File[] getFiles(File file) {
+        return Objects.requireNonNull(
+                file.listFiles(),
+                "There are no files in folder: " + file.getAbsolutePath());
+    }
+
     private boolean isRootDir(File file) {
         return file.isDirectory() &&
-                Stream.of(file.listFiles()).anyMatch(f -> "settings.gradle.kts".equals(f.getName()));
+                Stream.of(getFiles(file)).anyMatch(f -> "settings.gradle.kts".equals(f.getName()));
     }
 
     private File getRootDir() throws IOException {
@@ -76,7 +82,7 @@ public class CodeQualityUnitTest {
     }
 
     private void appendFiles(final File dir) throws IOException {
-        for (final File file : dir.listFiles()) {
+        for (final File file : getFiles(dir)) {
             if (file.getName().startsWith(".")) {
                 continue;
             }
