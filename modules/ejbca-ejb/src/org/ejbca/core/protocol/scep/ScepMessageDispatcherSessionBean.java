@@ -528,7 +528,9 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 }
             }
             try {
-                if (scepClientCertificateRenewal != null && scepConfig.getClientCertificateRenewal(alias)) {
+                // Certificate renewal isn't allowed in RA mode.  But sometimes the GUI leaves getClientCertificateRenewal as true 
+                // when changing the mode to RA.  Make sure we're in CA mode if we're going to do a renewal.
+                if (scepClientCertificateRenewal != null && !scepConfig.getRAMode(alias) && scepConfig.getClientCertificateRenewal(alias)) {
                     if (log.isDebugEnabled()) {
                         log.debug("SCEP client certificate renewal/enrollment with alias '" + alias + "'");
                     }

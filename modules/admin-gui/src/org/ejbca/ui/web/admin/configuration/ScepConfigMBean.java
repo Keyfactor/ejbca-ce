@@ -902,8 +902,13 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             scepConfig.setRANameGenerationParameters(alias, currentAlias.getRaNameGenParams());
             scepConfig.setRANameGenerationPrefix(alias, currentAlias.getRaNameGenPrefix());
             scepConfig.setRANameGenerationPostfix(alias, currentAlias.getRaNameGenPostfix());
-            scepConfig.setClientCertificateRenewal(alias, currentAlias.getClientCertificateRenewal());
-            scepConfig.setAllowClientCertificateRenewalWithOldKey(alias, currentAlias.getAllowClientCertificateRenewaWithOldKey());
+            if ("ra".equalsIgnoreCase(currentAlias.getMode())) {
+                scepConfig.setClientCertificateRenewal(alias, false);
+                scepConfig.setAllowClientCertificateRenewalWithOldKey(alias, false);
+            } else {
+                scepConfig.setClientCertificateRenewal(alias, currentAlias.getClientCertificateRenewal());
+                scepConfig.setAllowClientCertificateRenewalWithOldKey(alias, currentAlias.getAllowClientCertificateRenewaWithOldKey());
+            }
             scepConfig.setUseIntune(alias, currentAlias.isUseIntune());
             scepConfig.setIntuneAuthority(alias, currentAlias.getIntuneAuthority());
             scepConfig.setIntuneAadAppId(alias, currentAlias.getIntuneAadAppId());
