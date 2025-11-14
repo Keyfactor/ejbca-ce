@@ -320,16 +320,6 @@ CREATE TABLE UserData (
     PRIMARY KEY (username)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
-CREATE TABLE UserDataSourceData (
-    id INT(11) NOT NULL,
-    data LONGTEXT,
-    name VARCHAR(250) BINARY NOT NULL,
-    rowProtection LONGTEXT,
-    rowVersion INT(11) NOT NULL,
-    updateCounter INT(11) NOT NULL,
-    PRIMARY KEY (id)
-) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
-
 CREATE TABLE NoConflictCertificateData (
     id VARCHAR(250) BINARY NOT NULL,
     fingerprint VARCHAR(250) BINARY NOT NULL,
