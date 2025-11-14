@@ -247,7 +247,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             }
 
             // if there is a dedicated SCEP encryption certificate, add it to the chain
-            var encryptionCertificate = scepConfig.decodeEncryptionCertificate(scepConfigurationAlias);
+            var encryptionCertificate = scepConfig.getEncryptionCertificateForCa(scepConfigurationAlias, caname);
             if (encryptionCertificate != null) {
                 if (log.isDebugEnabled()) {
                     log.debug("Adding encryption certificate to certificate chain " + encryptionCertificate.getIssuerX500Principal() + ":"
@@ -261,7 +261,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             }
             
             // if there is a dedicated SCEP signing certificate, add it to the chain
-            var signingCertificate = scepConfig.decodeSigningCertificate(scepConfigurationAlias);
+            var signingCertificate = scepConfig.getSigningCertificateForCa(scepConfigurationAlias, cainfo.getName());
             if (signingCertificate != null) {
                 if (log.isDebugEnabled()) {
                     log.debug("Adding signing certificate to certificate chain " + signingCertificate.getIssuerX500Principal() + ":"
@@ -477,8 +477,14 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
         boolean includeCACert = scepConfig.getIncludeCA(alias);
         ScepRequestMessage reqmsg;
         try {
-            reqmsg = new ScepRequestMessage(msg, includeCACert, scepConfig.getEncryptionCryptoTokenId(alias), scepConfig.getEncryptionKeyAlias(alias),
-                    scepConfig.getSigningCryptoTokenId(alias), scepConfig.getSigningKeyAlias(alias), scepConfig.getSigningCertificate(alias));
+            if (scepConfig.getRAMode(alias)) {
+                reqmsg = new ScepRequestMessage(msg, includeCACert, scepConfig.getEncryptionCryptoTokenId(alias), scepConfig.getEncryptionKeyAlias(alias),
+                        scepConfig.getSigningCryptoTokenId(alias), scepConfig.getSigningKeyAlias(alias), scepConfig.getSigningCertificate(alias));
+            } else {
+                reqmsg = new ScepRequestMessage(msg, includeCACert, scepConfig.getEncryptionCryptoTokenId(alias), scepConfig.getEncryptionKeyAlias(alias),
+                        scepConfig.getSigningCryptoTokenId(alias), scepConfig.getSigningKeyAlias(alias), scepConfig.getSigningCertificates(alias));
+            }
+                
         } catch (IOException e) {
             log.info("Error receiving ScepMessage: ", LogRedactionUtils.getRedactedException(e));
             return null;
@@ -923,15 +929,15 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
         }
         try {
             // decrypt using dedicated encryption key
-            if (scepConfig.getEncryptionCertificate(alias) != null) {
-                int encryptionCryptoTokenId = scepConfig.getEncryptionCryptoTokenId(alias);
-                String encryptionKeyAlias = scepConfig.getEncryptionKeyAlias(alias);
+            Integer encryptionCryptoTokenId = scepConfig.getEncryptionCryptoTokenId(alias);
+            String encryptionKeyAlias = scepConfig.getEncryptionKeyAlias(alias);
+            if (encryptionCryptoTokenId != null) {
                 if (log.isDebugEnabled()) {
                     log.debug("Decrypting SCEP message using dedicated decryption key token = " + encryptionCryptoTokenId + ", key alias = " + encryptionKeyAlias);
                 }
+                X509Certificate encryptionCertificate = scepConfig.getEncryptionCertificateForCa(alias, caName);
                 final CryptoToken decryptionToken = cryptoTokenSession.getCryptoToken(encryptionCryptoTokenId);
-                reqmsg.setKeyInfo(scepConfig.decodeEncryptionCertificate(alias), decryptionToken.getPrivateKey(encryptionKeyAlias),
-                        decryptionToken.getSignProviderName());
+                reqmsg.setKeyInfo(encryptionCertificate, decryptionToken.getPrivateKey(encryptionKeyAlias), decryptionToken.getSignProviderName());
             } else {
                 final CAToken caToken = caInfo.getCAToken();
                 final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(caToken.getCryptoTokenId());

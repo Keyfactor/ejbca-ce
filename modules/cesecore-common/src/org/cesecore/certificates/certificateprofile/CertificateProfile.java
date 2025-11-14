@@ -740,7 +740,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_ENCRYPTOR) {
             setUseKeyUsage(true);
             setKeyUsage(new boolean[9]);
-            setKeyUsage(CertificateConstants.DATAENCIPHERMENT, true);
             setKeyUsage(CertificateConstants.KEYENCIPHERMENT, true);
             setKeyUsageCritical(true);
         } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_SIGNER) {

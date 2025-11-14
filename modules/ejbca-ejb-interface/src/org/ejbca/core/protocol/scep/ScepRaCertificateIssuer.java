@@ -62,18 +62,18 @@ public class ScepRaCertificateIssuer {
         this.certificateCreateSession = certificateCreateSession;
     }
 
-    public X509Certificate issueEncryptionCertificate(AuthenticationToken authenticationToken, String caName, int cryptoTokenId,
-            String keyAlias) throws ScepEncryptionCertificateIssuanceException {
+    public X509Certificate issueEncryptionCertificate(AuthenticationToken authenticationToken, String caName, int cryptoTokenId, String keyAlias)
+            throws ScepEncryptionCertificateIssuanceException {
         return issueCertificate(authenticationToken, caName, cryptoTokenId, keyAlias, CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_ENCRYPTOR);
     }
 
-    public X509Certificate issueSigningCertificate(AuthenticationToken authenticationToken, String caName, int cryptoTokenId,
-            String keyAlias) throws ScepEncryptionCertificateIssuanceException {
+    public X509Certificate issueSigningCertificate(AuthenticationToken authenticationToken, String caName, int cryptoTokenId, String keyAlias)
+            throws ScepEncryptionCertificateIssuanceException {
         return issueCertificate(authenticationToken, caName, cryptoTokenId, keyAlias, CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_SIGNER);
     }
 
-    private X509Certificate issueCertificate(AuthenticationToken authenticationToken, String caName, int cryptoTokenId,
-            String keyAlias, int fixedCertificateProfileId) throws ScepEncryptionCertificateIssuanceException {
+    private X509Certificate issueCertificate(AuthenticationToken authenticationToken, String caName, int cryptoTokenId, String keyAlias,
+            int fixedCertificateProfileId) throws ScepEncryptionCertificateIssuanceException {
         CertificateResponseMessage certificateResponse;
         try {
             var publicKeyWrapper = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, keyAlias);
