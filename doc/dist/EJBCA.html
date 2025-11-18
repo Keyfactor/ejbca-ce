@@ -4,23 +4,14 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta http-equiv="pragma" content="no-cache" />
-<title>EJBCA - Documentation Placeholder</title>
+<title>EJBCA - Documentation</title>
 
 <meta name="description" content="">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=2.0, user-scalable=yes">
 
 <script type="text/javascript" src="assets/js/jquery.min.js"></script>
-<script type="text/javascript" src="assets/js/jquery.scrollTo.min.js"></script>
-
-
 <script type="text/javascript" src="assets/js/translate.js"></script>
-
-
-<script type="text/javascript" src="assets/js/scroll-tree.js"></script>
-
 <script type="text/javascript" src="assets/js/theme.main.js"></script>
-
-    <script type="text/javascript" src="assets/js/iframeResizer.min.js"></script>
 
 <link rel="stylesheet" href="assets/css/content-style.css">
 <link rel="stylesheet" href="assets/css/search.css">
@@ -28,40 +19,6 @@
 <link rel="stylesheet" href="assets/css/theme.main.css">
 <link rel="stylesheet" href="assets/css/theme.colors.css">
 
-<!-- ES5 support for older browsers, needed by lunr -->
-<script src="js/augment.js"></script>
-<script id="worker" type="javascript/worker">
-
-        startIndex = function() {
-            idx = lunr.Index.load(lunrIndex);
-            idx.pipeline.remove(lunr.stopWordFilter);
-            postMessage({type: "setup-complete"});
-        }
-
-        onmessage = function (event) {
-            var message = event.data;
-
-            if ((message.type === 'setup') && message.baseUrl) {
-                var url = message.baseUrl;
-                importScripts(url + 'js/lunr.js');
-                importScripts(url + 'js/lunr-extras.js');
-                importScripts(url + 'js/lunr-index.js');
-                importScripts(url + 'js/lunr-data.js');
-                startIndex();
-            }
-
-            if (idx && (message.type === 'search-request') && message.query) {
-                var searchWord = message.query;
-                var results = idx.search(searchWord).map(function (result) {
-                    return lunrData.filter(function (d) {
-                        return d.id === parseInt(result.ref, 10)
-                    })[0]
-                });
-                postMessage({type: 'search-results', results: results, query: searchWord, queryId: message.queryId});
-            }
-        }
-
-    </script>
 </head>
 
 <body>
@@ -91,7 +48,7 @@
 							<span class="ht-logo-label">EJBCADS</span> <img class="space-logo" src="EJBCADS.png" />
 						</h1>
 						<a href="EJBCA.html" class="ht-space-link">
-							<h2>EJBCA - Documentation Placeholder</h2>
+							<h2>EJBCA - Documentation</h2>
 						</a>
 					</header>
 				</div>
@@ -109,7 +66,7 @@
 			<header class="ht-content-header">
 				<div id="ht-breadcrumb">
 					<ul>
-						<li><a href="EJBCA.html">EJBCA - Documentation Space</a></li>
+						<li><a href="EJBCA.html">EJBCA - Documentation</a></li>
 					</ul>
 				</div>
 				<h1 id="src-11569681">
@@ -117,9 +74,8 @@
 				</h1>
 			</header>
 			<div id="main-content" class="wiki-content sp-grid-section" data-index-for-search="true">
-				<p>If you're seeing this page then EJBCA has been built directly from GIT without access to PrimeKey's Confluence server.</p>
-				<p>Build using <i>ant doc -Ddoc.update=true</i> to update.</p>
-				<p>For the time being, you can browse the <a href="https://doc.primekey.com/ejbca/versions">online EJBCA documentation</a>.</p>
+				<p>If you're seeing this page then EJBCA has been built without including the documentation in the webapp.</p>
+				<p>You can view the <a href="https://docs.keyfactor.com/ejbca/">online EJBCA documentation</a>.</p>
 			</div>
 		</article>
 
