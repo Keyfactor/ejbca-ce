@@ -110,8 +110,8 @@
                             <h:panelGroup rendered="#{ejbcawebbean.runningBuildWithCA}">
                                 <h:commandButton
                                         id="buttonimportca" ajax="false"
-                                        value="#{ejbcawebbean.runningBuildWithCA and manageCAsMBean.importKeystoreText}"
-                                        rendered="#{manageCAsMBean.canAddResource}"
+                                        value="#{manageCAsMBean.importKeystoreText}"
+                                        rendered="#{ejbcawebbean.runningBuildWithCA and manageCAsMBean.canAddResource}"
                                         action="importca"/>
                             </h:panelGroup>
                             <h:panelGroup>
