@@ -128,7 +128,13 @@ public class CustomWorkerType extends WorkerType {
             retval.load(new ByteArrayInputStream(getPropertyText().getBytes()));        
 		} else {
 		    for (final CustomServiceWorkerProperty customUiProperty : (List<CustomServiceWorkerProperty>)customUiPropertyListDataModel.getWrappedData()) {
-	            retval.setProperty(customUiProperty.getName(), customUiProperty.getValue());
+		        // The value can be null, which renders the NPE title on a blank page.
+                // Do input validation at EditServiceManagedBean.
+		        if (customUiProperty.getValue() != null) {
+                    retval.setProperty(customUiProperty.getName(), customUiProperty.getValue());
+                } else if (log.isTraceEnabled()) {
+                    log.trace("Null value property '" + customUiProperty.getName() + "' not stored.");
+                }
 		    }
 		}
 		return retval;
