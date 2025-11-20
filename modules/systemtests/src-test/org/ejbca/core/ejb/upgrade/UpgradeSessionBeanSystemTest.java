@@ -1200,7 +1200,7 @@ public class UpgradeSessionBeanSystemTest {
     }
 
     @Test
-    public void testMigrateForbiddenCharacters_9_4_1() throws AuthorizationDeniedException {
+    public void testMigrateForbiddenCharacters_9_5_0() throws AuthorizationDeniedException {
         //Stash the orginal value 
         char[] originalForbiddenCharacters = cesecoreConfigSession.getForbiddenCharacters();
             //Set the forbidden characters to a verifiable value
@@ -1217,7 +1217,7 @@ public class UpgradeSessionBeanSystemTest {
             upgradeSession.upgrade(/* database */ null, /* upgrade from */ "9.4.0", /* post upgrade? */ false);
             //Retrieve GlobalCesecoreConfig and verify that the value was migrated
             GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
-            assertEquals("forbidden.characters was not migrated into GlobalCesecoreConfiguration", "foobar", globalCesecoreConfiguration.getForbiddenCharacters());
+            assertEquals("forbidden.characters was not migrated into GlobalCesecoreConfiguration", "foobar", new String(globalCesecoreConfiguration.getForbiddenCharacters()));
         } finally {
             cesecoreConfigSession.setConfigurationValue("forbidden.characters", String.valueOf(originalForbiddenCharacters));
             GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
