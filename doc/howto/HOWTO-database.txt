@@ -376,7 +376,6 @@ AuditRecordData
 PublisherData
 ServiceData
 UserData
-UserDataSourceData
 ... some SYS tables ...
 42 rows selected
 ij> exit;

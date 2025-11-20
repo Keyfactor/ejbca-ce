@@ -23,7 +23,6 @@ drop table RoleData;
 drop table RoleMemberData;
 drop table ServiceData;
 drop table UserData;
-drop table UserDataSourceData;
 drop table NoConflictCertificateData;
 drop table AcmeAuthorizationData;
 drop table AcmeChallengeData;

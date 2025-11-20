@@ -317,16 +317,6 @@ CREATE TABLE UserData (
     PRIMARY KEY (username)
 );
 
-CREATE TABLE UserDataSourceData (
-    id INT4 NOT NULL,
-    data TEXT,
-    name TEXT NOT NULL,
-    rowProtection TEXT,
-    rowVersion INT4 NOT NULL,
-    updateCounter INT4 NOT NULL,
-    PRIMARY KEY (id)
-);
-
 CREATE TABLE NoConflictCertificateData (
     id TEXT NOT NULL,
     fingerprint TEXT NOT NULL,
