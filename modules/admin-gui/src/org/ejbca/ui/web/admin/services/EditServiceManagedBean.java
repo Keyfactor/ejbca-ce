@@ -48,7 +48,6 @@ import org.ejbca.core.model.services.workers.RenewCAWorker;
 import org.ejbca.core.model.services.workers.RolloverWorker;
 import org.ejbca.core.model.services.workers.UserPasswordExpireWorker;
 import org.ejbca.core.model.util.EjbLocalHelper;
-import org.ejbca.peerconnector.keybind.PeerInternalKeyBindingUpdaterWorker;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.CustomLoader;
 import org.ejbca.ui.web.admin.services.servicetypes.ActionType;
@@ -215,7 +214,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
             if (errorMessages.isEmpty()) {
             	// This is some kind of temporary solution since CustomServiceWorkerUiSupport does not support input validation.
                 final Properties properties = newServiceConfiguration.getWorkerProperties();
-                if (PeerInternalKeyBindingUpdaterWorker.class.getName().equals(newServiceConfiguration.getWorkerClassPath())) {
+                if ("org.ejbca.peerconnector.keybind.PeerInternalKeyBindingUpdaterWorker".equals(newServiceConfiguration.getWorkerClassPath())) {
                     validatePeerInternalKeyBindingUpdaterWorker(properties);
                     if (!FacesContext.getCurrentInstance().getMessageList().isEmpty()) {
                         return StringUtils.EMPTY;
