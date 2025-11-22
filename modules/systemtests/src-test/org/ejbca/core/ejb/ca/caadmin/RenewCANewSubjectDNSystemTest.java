@@ -30,6 +30,7 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.config.GlobalCaConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
@@ -116,7 +117,7 @@ public class RenewCANewSubjectDNSystemTest extends CaTestCase {
 
         //Renewal 1
         caAdminSession.renewCANewSubjectDn(internalAdmin, info.getCAId(), /*regenerateKeys=*/true, /*customNotBefore=*/null,
-                /*createLinkCertificates=*/true, newSubjectDN);
+                /*createLinkCertificates=*/true, CertificateProfileConstants.NO_CERTIFICATE_PROFILE, newSubjectDN);
         X509CAInfo newinfo = (X509CAInfo) caSession.getCAInfo(internalAdmin, newCAName);
         assertTrue("CA Info NameChanged field is not true after CA name-change renewal with same keys", newinfo.getNameChanged());
         X509Certificate caCertificateAfterRenewal1 = (X509Certificate) newinfo.getCertificateChain().iterator().next();
@@ -152,7 +153,7 @@ public class RenewCANewSubjectDNSystemTest extends CaTestCase {
 
         //Renewal 2: Renew CA with name change again and check that the link certificate has been signed with previous CA (and not with the first one)
         caAdminSession.renewCANewSubjectDn(internalAdmin, newinfo.getCAId(), /*regenerateKeys=*/true, /*customNotBefore=*/null,
-                /*createLinkCertificates=*/true, newSubjectDN2);
+                /*createLinkCertificates=*/true, CertificateProfileConstants.NO_CERTIFICATE_PROFILE, newSubjectDN2);
         X509CAInfo newinfo2 = (X509CAInfo) caSession.getCAInfo(internalAdmin, newCAName2);
         X509Certificate caCertificateAfterRenewal2 = (X509Certificate) newinfo2.getCertificateChain().iterator().next();
         X509Certificate linkCertificateAfterRenewal2 = (X509Certificate) CertTools.getCertfromByteArray(caAdminSession.getLatestLinkCertificate(newinfo2.getCAId()), X509Certificate.class);
@@ -181,7 +182,7 @@ public class RenewCANewSubjectDNSystemTest extends CaTestCase {
         byte[] orgkey = orgcert.getPublicKey().getEncoded();
 
         caAdminSession.renewCANewSubjectDn(internalAdmin, info.getCAId(), /*regenerateKeys=*/false, /*customNotBefore=*/null,
-                /*createLinkCertificates=*/true, newSubjectDN);
+                /*createLinkCertificates=*/true, CertificateProfileConstants.NO_CERTIFICATE_PROFILE, newSubjectDN);
         X509CAInfo newinfo2 = (X509CAInfo) caSession.getCAInfo(internalAdmin, newCAName);
         assertTrue("CA Info NameChanged field is not true after CA name-change renewal with same keys", newinfo2.getNameChanged());
         X509Certificate newcertsamekeys = (X509Certificate) newinfo2.getCertificateChain().iterator().next();
@@ -226,12 +227,12 @@ public class RenewCANewSubjectDNSystemTest extends CaTestCase {
         X509CAInfo info = (X509CAInfo) caSession.getCAInfo(internalAdmin, "TEST");
         
         caAdminSession.renewCA(internalAdmin, info.getCAId(), /*regenerateKeys=*/false, /*customNotBefore=*/null,
-                /*createLinkCertificates=*/false);
+                /*createLinkCertificates=*/false, CertificateProfileConstants.NO_CERTIFICATE_PROFILE);
         X509CAInfo newinfo1 = (X509CAInfo) caSession.getCAInfo(internalAdmin, "TEST");
         assertFalse("CA Info NameChanged field is true after CA renewal (No Name Change process)", newinfo1.getNameChanged());
 
         caAdminSession.renewCANewSubjectDn(internalAdmin, info.getCAId(), /*regenerateKeys=*/false, /*customNotBefore=*/null,
-                /*createLinkCertificates=*/false, newSubjectDN);
+                /*createLinkCertificates=*/false, CertificateProfileConstants.NO_CERTIFICATE_PROFILE, newSubjectDN);
         X509CAInfo newinfo2 = (X509CAInfo) caSession.getCAInfo(internalAdmin, newCAName);
         assertTrue("CA Info NameChanged field is false after CA Name Change Renewal", newinfo2.getNameChanged());
 
@@ -258,7 +259,7 @@ public class RenewCANewSubjectDNSystemTest extends CaTestCase {
             crlFullNumberBeforeRenaming = newNumber;
         }
         caAdminSession.renewCANewSubjectDn(internalAdmin, info.getCAId(), /*regenerateKeys=*/true, /*customNotBefore=*/null,
-                /*createLinkCertificates=*/false, newSubjectDN);
+                /*createLinkCertificates=*/false, CertificateProfileConstants.NO_CERTIFICATE_PROFILE, newSubjectDN);
         final int crlFullNumberAfterRenaming = getLastCrlNumber(newSubjectDN, false);
         assertEquals("After CA Name Change, CA doesn't continue CRL numbering",
                 Math.max(crlFullNumberBeforeRenaming, crlDeltaNumberBeforeRenaming) + 1, crlFullNumberAfterRenaming);
@@ -278,7 +279,7 @@ public class RenewCANewSubjectDNSystemTest extends CaTestCase {
         int crlFullNumberBeforeRenaming2 = getLastCrlNumber(info.getSubjectDN(), false);
         final int crlDeltaNumberBeforeRenaming2 = getLastCrlNumber(info.getSubjectDN(), true);
         caAdminSession.renewCANewSubjectDn(internalAdmin, info.getCAId(), /*regenerateKeys=*/true, /*customNotBefore=*/null,
-                /*createLinkCertificates=*/false, newSubjectDN2);
+                /*createLinkCertificates=*/false, CertificateProfileConstants.NO_CERTIFICATE_PROFILE, newSubjectDN2);
         final int crlFullNumberAfterRenaming2 = getLastCrlNumber(newSubjectDN2, false);
         assertEquals("After CA Name Change, CA doesn't continue CRL numbering",
                 Math.max(crlFullNumberBeforeRenaming2, crlDeltaNumberBeforeRenaming2) + 1, crlFullNumberAfterRenaming2);
@@ -293,7 +294,7 @@ public class RenewCANewSubjectDNSystemTest extends CaTestCase {
 
         try {
             caAdminSession.renewCANewSubjectDn(internalAdmin, info.getCAId(), /*regenerateKeys=*/false, /*customNotBefore=*/null,
-                    /*createLinkCertificates=*/true, "CN=TEST");
+                    /*createLinkCertificates=*/true, CertificateProfileConstants.NO_CERTIFICATE_PROFILE, "CN=TEST");
             fail("CANameChangeRenewalException is not thrown for CA-new-name-same-as-current error");
         } catch (CANameChangeRenewalException e) {
             //Good
@@ -313,7 +314,7 @@ public class RenewCANewSubjectDNSystemTest extends CaTestCase {
         createTestCA(cAName);
         try {
             caAdminSession.renewCANewSubjectDn(internalAdmin, info.getCAId(), /*regenerateKeys=*/false, /*customNotBefore=*/null,
-                    /*createLinkCertificates=*/true, "CN=testNewCANameDoesNotExist");
+                    /*createLinkCertificates=*/true, CertificateProfileConstants.NO_CERTIFICATE_PROFILE, "CN=testNewCANameDoesNotExist");
             fail("CANameChangeRenewalException is not thrown for CA-new-name-already-exists error");
         } catch (CANameChangeRenewalException e) {
             //Good

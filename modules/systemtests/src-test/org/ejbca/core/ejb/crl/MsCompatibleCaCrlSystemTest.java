@@ -29,6 +29,7 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -82,7 +83,7 @@ public class MsCompatibleCaCrlSystemTest {
     @Test
     public void testPartitionCrlSettingsSetInMsCompatabilityMode() throws Exception {
         // Given (Renew CA, with new key pair and MS compatibility mode enabled)
-        caAdminSession.renewCA(admin, caId, true, null, true);
+        caAdminSession.renewCA(admin, caId, true, null, true, CertificateProfileConstants.NO_CERTIFICATE_PROFILE);
         
         // Then (Partition CRLs should be enabled "under the hood")
         X509CAInfo caInfo = (X509CAInfo) caSession.getCAInfo(admin, caId);
@@ -94,7 +95,7 @@ public class MsCompatibleCaCrlSystemTest {
                 0, caInfo.getSuspendedCrlPartitions());
         
         // Another re-key (Should suspend active partition and open a new one)
-        caAdminSession.renewCA(admin, caId, true, null, true);
+        caAdminSession.renewCA(admin, caId, true, null, true, CertificateProfileConstants.NO_CERTIFICATE_PROFILE);
         caInfo = (X509CAInfo) caSession.getCAInfo(admin, caId);
         assertEquals("Wrong number of CRL partitions set after MS Compatible CA re-keying", 
                 2, caInfo.getCrlPartitions());
@@ -105,7 +106,7 @@ public class MsCompatibleCaCrlSystemTest {
     @Test
     public void testCrlPartitionShiftUponRekey() throws Exception {
         // Given (Renew CA, with new key pair, MS compatibility mode enabled and generate new CRL)
-        caAdminSession.renewCA(admin, caId, true, null, true);
+        caAdminSession.renewCA(admin, caId, true, null, true, CertificateProfileConstants.NO_CERTIFICATE_PROFILE);
         publishingCrlSession.forceCRL(admin, caId);
         
         // Then (Initial CRL and CRL new CRL partition should exist)
@@ -119,7 +120,7 @@ public class MsCompatibleCaCrlSystemTest {
     public void testDontPartitionSameCaKey() throws Exception {
         // Given (Renew the CA with existing key pair)
         final String currentCrlSignKey = caSession.getCAInfo(admin, caId).getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN);
-        caAdminSession.renewCA(admin, caId, currentCrlSignKey, null, true);
+        caAdminSession.renewCA(admin, caId, currentCrlSignKey, null, true, CertificateProfileConstants.NO_CERTIFICATE_PROFILE);
         publishingCrlSession.forceCRL(admin, caId);
         
         // Then (New CRL partition should not be created)
@@ -139,9 +140,9 @@ public class MsCompatibleCaCrlSystemTest {
     public void testSignCrlWithKeyCorrespondingToPartition() throws Exception {
         // Given (Renew CA twice, with new key pair, MS compatibility mode enabled and generate new CRLs)
         final String crlSignKeyAlias0 = caSession.getCAInfo(admin, caId).getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN);
-        caAdminSession.renewCA(admin, caId, true, null, true);
+        caAdminSession.renewCA(admin, caId, true, null, true, CertificateProfileConstants.NO_CERTIFICATE_PROFILE);
         final String crlSignKeyAlias1 = caSession.getCAInfo(admin, caId).getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN);
-        caAdminSession.renewCA(admin, caId, true, null, true);
+        caAdminSession.renewCA(admin, caId, true, null, true, CertificateProfileConstants.NO_CERTIFICATE_PROFILE);
         final String crlSignKeyAlias2 = caSession.getCAInfo(admin, caId).getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN);
         publishingCrlSession.forceCRL(admin, caId);
         

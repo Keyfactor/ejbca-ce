@@ -100,7 +100,7 @@ public class RenewCASystemTest extends CaTestCase {
         X509Certificate orgcert = (X509Certificate) info.getCertificateChain().iterator().next();
         // Sleep at least for one second so we are not so fast that we create a new cert with the same time
         Thread.sleep(2000);
-        caAdminSession.renewCA(internalAdmin, info.getCAId(), false, null, false);
+        caAdminSession.renewCA(internalAdmin, info.getCAId(), false, null, false, CertificateProfileConstants.NO_CERTIFICATE_PROFILE);
         X509CAInfo newinfo = (X509CAInfo) caSession.getCAInfo(internalAdmin, getTestCAName());
         X509Certificate newcertsamekeys = (X509Certificate) newinfo.getCertificateChain().iterator().next();
         assertTrue(!orgcert.getSerialNumber().equals(newcertsamekeys.getSerialNumber()));
@@ -110,7 +110,7 @@ public class RenewCASystemTest extends CaTestCase {
         // The new certificate must have a validity greater than the old cert
         assertTrue("newcertsamekeys.getNotAfter: " + newcertsamekeys.getNotAfter() + " orgcert.getNotAfter: " + orgcert.getNotAfter(),
                 newcertsamekeys.getNotAfter().after(orgcert.getNotAfter()));
-        caAdminSession.renewCA(internalAdmin, info.getCAId(), true, null, false);
+        caAdminSession.renewCA(internalAdmin, info.getCAId(), true, null, false, CertificateProfileConstants.NO_CERTIFICATE_PROFILE);
         X509CAInfo newinfo2 = (X509CAInfo) caSession.getCAInfo(internalAdmin, getTestCAName());
         X509Certificate newcertnewkeys = (X509Certificate) newinfo2.getCertificateChain().iterator().next();
         assertTrue(!orgcert.getSerialNumber().equals(newcertnewkeys.getSerialNumber()));
@@ -144,7 +144,7 @@ public class RenewCASystemTest extends CaTestCase {
             caSession.editCA(internalAdmin, info);
 
             // We are all set and now ready to renew the CA
-            caAdminSession.renewCA(internalAdmin, info.getCAId(), nextKeyAlias, null, /*CreateLinkCert*/true);
+            caAdminSession.renewCA(internalAdmin, info.getCAId(), nextKeyAlias, null, /*CreateLinkCert*/true, CertificateProfileConstants.NO_CERTIFICATE_PROFILE);
             // Check the CA's new certificate has the ECDSA based signing algorithm
             final X509CAInfo newinfo = (X509CAInfo) caSession.getCAInfo(internalAdmin, getTestCAName());
             final X509Certificate newcert = (X509Certificate) newinfo.getCertificateChain().iterator().next();
@@ -192,7 +192,7 @@ public class RenewCASystemTest extends CaTestCase {
             caSession.editCA(internalAdmin, info);
 
             // We are all set and now ready to renew the CA
-            caAdminSession.renewCA(internalAdmin, info.getCAId(), nextKeyAlias, null, /*CreateLinkCert*/true);
+            caAdminSession.renewCA(internalAdmin, info.getCAId(), nextKeyAlias, null, /*CreateLinkCert*/true, CertificateProfileConstants.NO_CERTIFICATE_PROFILE);
             // Check the CA's new certificate has the ML-DSA based signing algorithm
             final X509CAInfo newinfo = (X509CAInfo) caSession.getCAInfo(internalAdmin, getTestCAName());
             final X509Certificate newcert = (X509Certificate) newinfo.getCertificateChain().iterator().next();
@@ -238,7 +238,7 @@ public class RenewCASystemTest extends CaTestCase {
 
             // We are all set and now ready to renew the CA, which should fail
             try {
-                caAdminSession.renewCA(internalAdmin, info.getCAId(), nextKeyAlias, null, /*CreateLinkCert*/true);
+                caAdminSession.renewCA(internalAdmin, info.getCAId(), nextKeyAlias, null, /*CreateLinkCert*/true, CertificateProfileConstants.NO_CERTIFICATE_PROFILE);
             } catch (EJBException e) {
                 assertTrue(e.getMessage(), e.getMessage().contains("Supplied key (org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey) is not a RSAPrivateKey instance"));
             }
@@ -294,7 +294,7 @@ public class RenewCASystemTest extends CaTestCase {
             globalConfigSession.saveConfiguration(internalAdmin, globalCaConfiguration);
 
             // We are all set and now ready to renew the CA with the name change
-            caAdminSession.renewCANewSubjectDn(internalAdmin, info.getCAId(), nextKeyAlias, null, /*CreateLinkCert*/true, newSubjectDN);
+            caAdminSession.renewCANewSubjectDn(internalAdmin, info.getCAId(), nextKeyAlias, null, /*CreateLinkCert*/true, CertificateProfileConstants.NO_CERTIFICATE_PROFILE, newSubjectDN);
 
             // Check the CA's new certificate has the ECDSA based signing algorithm
             final X509CAInfo newinfo = (X509CAInfo) caSession.getCAInfo(internalAdmin, newCAName);

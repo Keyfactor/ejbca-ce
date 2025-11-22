@@ -694,7 +694,7 @@ public class CertificateNameConstraintSystemTest extends CaTestCase {
         assertNameConstraint("Verify renewed root CA", formatedNCPermitted, formatedNCExcluded, cainfoRefetched.getCertificateChain().get(0), false);
 
         // renew CA and verify updated certificate
-        caAdminSession.renewCA(admin, rootCaId, false, null, true);
+        caAdminSession.renewCA(admin, rootCaId, false, null, true, CertificateProfileConstants.NO_CERTIFICATE_PROFILE);
         CAInfo cainfoRenewed = caSession.getCAInfo(admin, TEST_NC_ROOT_CA_NAME);
 
         Assert.assertEquals("Expected root certificate chain length is 1.", 1, cainfoRenewed.getCertificateChain().size());
@@ -747,7 +747,7 @@ public class CertificateNameConstraintSystemTest extends CaTestCase {
         caAdminSession.editCA(admin, cainfo);
 
         // renew subca
-        caAdminSession.renewCA(admin, subCaId, false, null, true);
+        caAdminSession.renewCA(admin, subCaId, false, null, true, CertificateProfileConstants.NO_CERTIFICATE_PROFILE);
         CAInfo cainfoRenewed = caSession.getCAInfo(admin, subCAName);
 
         Assert.assertEquals("Expected sub ca certificate chain length is 2.", 2, cainfoRenewed.getCertificateChain().size());
@@ -776,7 +776,7 @@ public class CertificateNameConstraintSystemTest extends CaTestCase {
         assertNameConstraint(testCase, null, null, subCaInfo.getCertificateChain().get(0), false);
 
         // renew subca
-        caAdminSession.renewCA(admin, subCaId, false, null, true);
+        caAdminSession.renewCA(admin, subCaId, false, null, true, CertificateProfileConstants.NO_CERTIFICATE_PROFILE);
         CAInfo cainfoRenewed = caSession.getCAInfo(admin, subCAName);
 
         Assert.assertEquals("Expected sub ca certificate chain length is 2.", 2, cainfoRenewed.getCertificateChain().size());
