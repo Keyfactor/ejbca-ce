@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.model.era;
 
+import static java.util.function.Function.identity;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -19,6 +20,7 @@ import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.lang.reflect.Field;
@@ -32,11 +34,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
-import org.cesecore.dto.RoleDataDto;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -45,10 +47,12 @@ import com.keyfactor.util.test.MethodApiDescriptor;
 
 /**
  * Test to verify implementation constraints of RaMasterApi.
- * 
+ * <p>
  * Verifies that:
- * - all defined classes are Serializable
- * - method names are unique
+ * <ul>
+ * <li>all defined classes are Serializable
+ * <li>method names are unique
+ * </ul>
  */
 public class RaMasterApiSystemTest {
 
@@ -61,7 +65,7 @@ public class RaMasterApiSystemTest {
 
         private final String classListFilename;
 
-        private EjbcaVersion(final String classListFilename) {
+        EjbcaVersion(final String classListFilename) {
             this.classListFilename = classListFilename;
         }
 
@@ -77,9 +81,9 @@ public class RaMasterApiSystemTest {
 
     /**
      * List of all methods in the RA Master API.
-     *
+     * <p>
      * When adding a NEW method in the RA Master API, please run this test and copy-paste the method definition from the error log.
-     *
+     * <p>
      * DO NOT CHANGE already released methods in this list. They are duplicated here for a reason
      * (because changes will break the API, and this must not happen).
      */
@@ -432,7 +436,7 @@ public class RaMasterApiSystemTest {
         if (violatorsInInterface.isEmpty()) {
             for (final String className : violators) {
                 log.debug(" " + className + " matched violation rule.");
-                if (sb.length()>0) {
+                if (!sb.isEmpty()) {
                     sb.append(", ");
                 }
                 sb.append(className);
@@ -441,21 +445,21 @@ public class RaMasterApiSystemTest {
             // No need to show every referenced violation if there is a clear source of this
             for (final String className : violatorsInInterface) {
                 log.debug(" " + className + " matched violationInterface rule.");
-                if (sb.length()>0) {
+                if (!sb.isEmpty()) {
                     sb.append(", ");
                 }
                 sb.append(className);
             }
         }
-        assertEquals("Design violation. The following referenced classes of RaMasterApi are not Serializable: " + sb.toString(), 0, sb.length());
+        assertEquals("Design violation. The following referenced classes of RaMasterApi are not Serializable: " + sb, 0, sb.length());
     }
 
     /**
      * Checks that no peers method declarations have changed. Changes to the interface are
      * NOT allowed, since it would break the API compatibility.
-     *
+     * <p>
      * DO NOT CHANGE the MethodApiDescriptors above. A test failure here is a real issue that we need to deal with.
-     *
+     * <p>
      * DO NOT disable the test, test failures here are real problems.
      */
     @Test
@@ -509,7 +513,7 @@ public class RaMasterApiSystemTest {
             doApiCheckMethods(expected);
             fail("Should throw when a new method has been renamed");
         } catch (AssertionError e) { // should throw
-            if (!e.getMessage().equals("Method youThinkYouCanRenameThis has been removed, and this is an incompatible API change.")) {
+            if (!"Method youThinkYouCanRenameThis has been removed, and this is an incompatible API change.".equals(e.getMessage())) {
                 throw e;
             }
         }
@@ -532,17 +536,17 @@ public class RaMasterApiSystemTest {
     /**
      * Checks that all classes that are available in the 7.12.x API do not reference
      * any classes that were added in later versions.
-     *
+     * <p>
      * It is probably not necessary to have a test for ALL versions, but if we add significant
      * functionality in a new version, then we might want to add a new version, to prevent breakage
      * of that versions in later versions.
-     *
+     * <p>
      * DO NOT CHANGE the MethodApiDescriptors above. A test failure here is a real issue that we need to deal with.
-     *
+     * <p>
      * DO NOT disable the test, test failures here are real problems.
      */
     @Test
-    public void checkExistanceOfClassesByVersion() throws IOException, ClassNotFoundException {
+    public void checkExistenceOfClassesByVersion() throws IOException {
         /*
          * The resource was generated by running this command in 7.12.0:
          * find modules/caa/src modules/cesecore-common/src modules/cesecore-cvcca/src modules/cesecore-ejb/src modules/cesecore-ejb-interface/src modules/cesecore-entity/src modules/cesecore-x509ca/src modules/ct/src modules/ejbca-common/src modules/ejbca-ejb/src modules/ejbca-ejb-interface/src modules/ejbca-ws/src modules/peerconnector/src-{common,ejb,interface,ra} -name '*.java' | LC_ALL=C.UTF-8 sort > ~/workspace/ejbca/modules/systemtests/resources/classes_in_7_12_0.txt
@@ -563,14 +567,16 @@ public class RaMasterApiSystemTest {
 
     private void doCheckExistenceOfClasses(final String resourceName, final ApiVersion ejbcaVersion) throws IOException {
         final Set<String> classesInVersion;
+        final InputStream resource = getClass().getClassLoader().getResourceAsStream(resourceName);
+        Objects.requireNonNull(resource, "Resource file '" + resourceName + "' is missing.");
         try (final BufferedReader reader = new BufferedReader(
-                new InputStreamReader(getClass().getClassLoader().getResourceAsStream(resourceName), StandardCharsets.UTF_8))) {
-            classesInVersion = new HashSet<>(reader.lines()
+                new InputStreamReader(resource, StandardCharsets.UTF_8))) {
+            classesInVersion = reader.lines()
                     .map(line -> line.replaceFirst(".*/src(-[^/]+)?/", ""))
                     .map(line -> line.replaceFirst("#.*", "").trim())
                     .filter(line -> !line.isEmpty())
                     .map(line -> line.replace(".java", "").replace('/', '.'))
-                    .collect(Collectors.toList()));
+                    .collect(Collectors.toSet());
         }
         doCheckExistenceOfClasses(classesInVersion, ejbcaVersion);
     }
@@ -578,10 +584,10 @@ public class RaMasterApiSystemTest {
     /**  Checks that all classes in RaMasterApi existed in a specific version. */
     private void doCheckExistenceOfClasses(final Set<String> classesInVersion, final ApiVersion ejbcaVersion) {
         final Set<Class<?>> classesInApi = getReferencedClassesInInterface(RaMasterApi.class, ejbcaVersion, false);
-        final Set<Class<?>> classesToCheck = new HashSet<>(classesInApi.stream()
+        final Set<Class<?>> classesToCheck = classesInApi.stream()
                 .filter(cl -> !cl.isPrimitive())
                 .map(cl -> cl.isArray() ? cl.getComponentType() : cl)
-                .collect(Collectors.toList()));
+                .collect(Collectors.toSet());
         final Set<Class<?>> alreadyCheckedClasses = new HashSet<>();
         for (final Class<?> cl : classesToCheck) {
             checkClassExistence(cl, classesInVersion, alreadyCheckedClasses, ejbcaVersion);
@@ -615,7 +621,7 @@ public class RaMasterApiSystemTest {
      */
     private void doApiCheckMethods(final List<MethodApiDescriptor> expectedMethods) {
         final Map<String, Method> availableMethods = new HashMap<>(
-                Arrays.stream(RaMasterApi.class.getDeclaredMethods()).collect(Collectors.toMap(method -> method.getName(), method -> method)));
+                Arrays.stream(RaMasterApi.class.getDeclaredMethods()).collect(Collectors.toMap(Method::getName, identity())));
         int i = 0;
         for (final MethodApiDescriptor methodDesc : expectedMethods) {
             System.out.println("i="+i);
@@ -633,7 +639,7 @@ public class RaMasterApiSystemTest {
                 code.append(MethodApiDescriptor.formatAsJavaCode(untestedMethod));
             }
             if (logApiErrors) {
-                log.error("Untested methods:" + code.toString());
+                log.error("Untested methods:" + code);
             }
             fail("Untested methods. The following methods are not tested for API compatibility (please check the error log): "
                     + String.join(", ", availableMethods.keySet()));
@@ -659,14 +665,10 @@ public class RaMasterApiSystemTest {
 
     private void addReferencedClassesFromMethod(final Set<Class<?>> acceptedClasses, final Method method, final boolean includeExceptions) {
         final Class<?>[] methodParamClasses = method.getParameterTypes();
-        for (final Class<?> c : methodParamClasses) {
-            acceptedClasses.add(c);
-        }
+        acceptedClasses.addAll(Arrays.asList(methodParamClasses));
         if (includeExceptions) {
             final Class<?>[] methodExceptionClasses = method.getExceptionTypes();
-            for (final Class<?> c : methodExceptionClasses) {
-                acceptedClasses.add(c);
-            }
+            acceptedClasses.addAll(Arrays.asList(methodExceptionClasses));
         }
         acceptedClasses.add(method.getReturnType());
     }
