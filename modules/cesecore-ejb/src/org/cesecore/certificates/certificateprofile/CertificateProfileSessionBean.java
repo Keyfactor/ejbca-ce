@@ -21,7 +21,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
@@ -245,36 +244,29 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         final boolean rootAccess = authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.ROLE_ROOT.resource());
         for (final Entry<Integer,CertificateProfile> certificateProfileEntry : CertificateProfileCache.INSTANCE.getProfileCache(entityManager).entrySet()) {
             final CertificateProfile profile = certificateProfileEntry.getValue();
-            // Check if at least one profile's available CAs exist in authorizedcaids.
+
+            // Check if any profiles available CAs exists in authorizedcaids.
             if (certificateProfileType == 0 || certificateProfileType == profile.getType()) {
-                boolean atLeastOneCAExists = false;
+                boolean anyExists = false;
                 for (final Integer nextCaId : profile.getAvailableCAs()) {
-                    if (nextCaId == CertificateProfile.ANYCA) {
-                        atLeastOneCAExists = true;
+                    if (nextCaId == CertificateProfile.ANYCA && authorizedCaIds.contains(CertificateProfile.ANYCA)) {
+                        anyExists = true;
                         break;
                     }
                     // superadmin should be able to access profiles with missing CA Ids
-                    if (isAuthorizedForCa(nextCaId, authorizedCaIds, allCaIds, rootAccess)) {
-                        atLeastOneCAExists = true;
+                    if (authorizedCaIds.contains(nextCaId) || (rootAccess && !allCaIds.contains(nextCaId))) {
+                        anyExists = true;
                         break;
                     }
 
                 }
-                if (atLeastOneCAExists) {
+                if (anyExists) {
                     returnValues.add(certificateProfileEntry.getKey());
                 }
             }
         }
         return returnValues;
     }
-
-    private boolean isAuthorizedForCa(Integer caId, Set<Integer> authorizedCaIds, Set<Integer> allCaIds, boolean rootAccess) {
-        boolean caExists = allCaIds.contains(caId);
-        boolean isAuthorized = authorizedCaIds.contains(caId);
-
-        return caExists && (isAuthorized || rootAccess);
-    }
-
 
     @Override
     public List<Integer> getAuthorizedCertificateProfileWithMissingCAs(final AuthenticationToken authenticationToken) {
