@@ -476,6 +476,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
      * @param role the {@code Role} object to be mapped
      * @return a {@code RoleDataDto} instance containing the mapped data from the {@code Role} object
      */
+    @SuppressWarnings("deprecation")
     private RoleDataDto mapToRoleDataDto(final Role role) {
         RoleDataDto roleDataDto = new RoleDataDtoBuilder().setAccessRules(role.getAccessRules())
                 .setName(role.getRoleName())
@@ -490,7 +491,10 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
      *
      * @param roleDataDto the data transfer object containing role information
      * @return a Role object populated with the data from the provided RoleDataDto
+     * 
+     * @deprecated use mapToRoleDataDto
      */
+    @Deprecated(since = "9.4.1")
     private Role mapToRole(RoleDataDto roleDataDto) {
         Role role = new Role(roleDataDto.getNameSpace(), roleDataDto.getName());
         role.setAccessRules(new LinkedHashMap<String, Boolean>(roleDataDto.getAccessRules()));
@@ -500,6 +504,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
 
+    @SuppressWarnings("deprecation")
     @Override
     public List<RoleDataDto> getAuthorizedRolesV2(final AuthenticationToken authenticationToken) {
         final Map<Integer, RoleDataDto> roleDataMap = new HashMap<>();
@@ -514,7 +519,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                 }
             } else if (raMasterApi.isBackendAvailable()) {
                 List<Role> roles = getAuthorizedRoles(authenticationToken);
-                for (Role role : roles) {
+                for ( Role role : roles) {
                     roleDataMap.put(role.getRoleId(), mapToRoleDataDto(role));
                 }
             }
@@ -540,6 +545,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         return new ArrayList<>(roleMap.values());
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public List<RoleDataDto> getRolesAuthenticationTokenIsMemberOfV2(final AuthenticationToken authenticationToken) {
         final Map<Integer, RoleDataDto> roleDataMap = new HashMap<>();
@@ -580,6 +586,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         return new ArrayList<>(roleMap.values());
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public RoleDataDto getRoleV2(final AuthenticationToken authenticationToken, final int roleId) throws AuthorizationDeniedException {
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
@@ -602,7 +609,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         return null;
     }
 
-    @Deprecated
+    @Deprecated(since = "9.4.1")
     @Override
     public Role getRole(final AuthenticationToken authenticationToken, final int roleId) throws AuthorizationDeniedException {
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
@@ -673,6 +680,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                         return savedRole;
                     }
                 } else if (raMasterApi.isBackendAvailable()) {
+                    @SuppressWarnings("deprecation")
                     Role savedRole = saveRole(authenticationToken, mapToRole(roleData));
                     if (savedRole != null) {
                         return mapToRoleDataDto(savedRole);
@@ -1096,6 +1104,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         return searchForCertificates(authenticationToken, request);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public RaRoleSearchResponseV2 searchForRolesV2(AuthenticationToken authenticationToken,
                                                    RaRoleSearchRequest raRoleSearchRequest) {

@@ -23,6 +23,7 @@ import org.cesecore.roles.Role;
 /**
  * Response of role search from RA UI.
  */
+@Deprecated(since = "9.4.1")
 public class RaRoleSearchResponse implements Serializable {
 
     private static final long serialVersionUID = 1L;
