@@ -365,8 +365,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         isCvcAvailable = getCaBean().isCvcAvailable();
         
         // for link certificates allow all RootCA and SubCA profiles, no SSH CA profile
-        getEjbcaWebBean().getAuthorizedRootCACertificateProfileNames().forEach((k,v) -> certProfilesOfCaType.put(k,  v));
-        getEjbcaWebBean().getAuthorizedSubCACertificateProfileNames().forEach((k,v) -> certProfilesOfCaType.put(k,  v));
+        getEjbcaWebBean().getAuthorizedRootCACertificateProfileNames().forEach((k,v) -> certProfilesOfCaType.put(k, v));
+        getEjbcaWebBean().getAuthorizedSubCACertificateProfileNames().forEach((k,v) -> certProfilesOfCaType.put(k, v));
 
         final Map<String, Object> requestMap = FacesContext.getCurrentInstance().getExternalContext().getRequestMap();
         initPageVariables(requestMap);
@@ -1562,6 +1562,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     public List<SelectItem> getAvailableLinkCertificateProfiles() {
         final List<SelectItem> ret = new ArrayList<>();
 
+        ret.add(new SelectItem(CertificateProfileConstants.NO_CERTIFICATE_PROFILE, "-"));
         for (final var entry: certProfilesOfCaType.entrySet()) {
             ret.add(new SelectItem(entry.getValue(), entry.getKey()));
         }

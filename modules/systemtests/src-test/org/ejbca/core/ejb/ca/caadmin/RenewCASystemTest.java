@@ -17,6 +17,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.security.cert.X509Certificate;
@@ -35,7 +36,9 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.config.GlobalCaConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
@@ -69,6 +72,7 @@ public class RenewCASystemTest extends CaTestCase {
     private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("RenewCASystemTest"));
 
     private CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+    private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private ServiceSessionRemote serviceSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ServiceSessionRemote.class);
     private final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
@@ -117,6 +121,52 @@ public class RenewCASystemTest extends CaTestCase {
         byte[] newkey = newcertnewkeys.getPublicKey().getEncoded();
         assertFalse(Arrays.equals(orgkey, newkey));
         log.trace("<test01renewCA()");
+    }
+    
+    /** Test renewal of a CA with specified certificate profile for link certificate. */
+    @Test
+    public void test011renewCAWithCertifcateProfileForLinkCertificate() throws Exception {
+        log.trace(">test011renewCAWithCertifcateProfileForLinkCertificate()");
+        X509CAInfo info = (X509CAInfo) caSession.getCAInfo(internalAdmin, getTestCAName());
+        X509Certificate orgcert = (X509Certificate) info.getCertificateChain().iterator().next();
+        // Sleep at least for one second so we are not so fast that we create a new cert with the same time
+        Thread.sleep(2000);
+        final String linkCertificateProfileName = "RootLinkCertProfile";
+        CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
+        certificateProfile.setUseAuthorityKeyIdentifier(false);
+        try {
+            int linkCertificateProfileId = certificateProfileSession.addCertificateProfile(internalAdmin, linkCertificateProfileName, certificateProfile);
+            caAdminSession.renewCA(internalAdmin, info.getCAId(), false, null, true, linkCertificateProfileId);
+            X509CAInfo newinfo = (X509CAInfo) caSession.getCAInfo(internalAdmin, getTestCAName());
+            X509Certificate newcertsamekeys = (X509Certificate) newinfo.getCertificateChain().iterator().next();
+            @SuppressWarnings("deprecation")
+            X509Certificate linkCertificate = (X509Certificate) CertTools.getCertfromByteArray(
+                                                        caAdminSession.getLatestLinkCertificate(newinfo.getCAId()));
+            assertNull(CertTools.getAuthorityKeyId(linkCertificate));
+            assertTrue(!orgcert.getSerialNumber().equals(newcertsamekeys.getSerialNumber()));
+            byte[] orgkey = orgcert.getPublicKey().getEncoded();
+            byte[] samekey = newcertsamekeys.getPublicKey().getEncoded();
+            assertTrue(Arrays.equals(orgkey, samekey));
+            // The new certificate must have a validity greater than the old cert
+            assertTrue("newcertsamekeys.getNotAfter: " + newcertsamekeys.getNotAfter() + " orgcert.getNotAfter: " + orgcert.getNotAfter(),
+                    newcertsamekeys.getNotAfter().after(orgcert.getNotAfter()));
+            
+            certificateProfile.setUseAuthorityKeyIdentifier(true);
+            certificateProfileSession.changeCertificateProfile(internalAdmin, linkCertificateProfileName, certificateProfile);
+            caAdminSession.renewCA(internalAdmin, info.getCAId(), true, null, true, linkCertificateProfileId);
+            @SuppressWarnings("deprecation")
+            X509Certificate linkCertificateWithAuthorityKeyId = (X509Certificate) CertTools.getCertfromByteArray(
+                                                caAdminSession.getLatestLinkCertificate(newinfo.getCAId()));
+            assertNotNull(CertTools.getAuthorityKeyId(linkCertificateWithAuthorityKeyId));
+            X509CAInfo newinfo2 = (X509CAInfo) caSession.getCAInfo(internalAdmin, getTestCAName());
+            X509Certificate newcertnewkeys = (X509Certificate) newinfo2.getCertificateChain().iterator().next();
+            assertTrue(!orgcert.getSerialNumber().equals(newcertnewkeys.getSerialNumber()));
+            byte[] newkey = newcertnewkeys.getPublicKey().getEncoded();
+            assertFalse(Arrays.equals(orgkey, newkey));
+        } finally {
+            certificateProfileSession.removeCertificateProfile(internalAdmin, linkCertificateProfileName);
+        }
+        log.trace("<test011renewCAWithCertifcateProfileForLinkCertificate()");
     }
 
 
