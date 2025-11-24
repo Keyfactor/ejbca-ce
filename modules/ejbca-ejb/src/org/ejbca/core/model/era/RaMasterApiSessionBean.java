@@ -138,6 +138,7 @@ import org.cesecore.keys.keyimport.KeyImportRequestData;
 import org.cesecore.keys.validation.CaaIdentitiesValidator;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.keys.validation.Validator;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMember;
@@ -390,10 +391,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
      * <tr><th>18<td>=<td>8.3.0
      * <tr><th>19<td>=<td>9.2.0
      * <tr><th>20<td>=<td>9.3.0
-     * <tr><th>21<td>=<td>9.4.0
+     * <tr><th>21<td>=<td>9.3.4
+     * <tr><th>22<td>=<td>9.4.1
      * </table>
      */
-    private static final int RA_MASTER_API_VERSION = 21;
+    private static final int RA_MASTER_API_VERSION = 22;
 
     /**
      * Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time
@@ -485,25 +487,46 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public List<RoleDataDto> getAuthorizedRoles(AuthenticationToken authenticationToken) {
+    public List<RoleDataDto> getAuthorizedRolesV2(AuthenticationToken authenticationToken) {
         return roleSession.getAuthorizedRoles(authenticationToken);
     }
 
     @Override
-    public List<RoleDataDto> getRolesAuthenticationTokenIsMemberOf(AuthenticationToken authenticationToken) {
+    public List<Role> getAuthorizedRoles(AuthenticationToken authenticationToken) {
+        // Only kept for backwards compatibility.
+        log.warn("getAuthorizedRoles invoked on wrong instance");
+        throw new UnsupportedOperationException("getAuthorizedRoles invoked on wrong instance");
+    }
+
+    @Override
+    public List<RoleDataDto> getRolesAuthenticationTokenIsMemberOfV2(AuthenticationToken authenticationToken) {
         return roleSession.getRolesAuthenticationTokenIsMemberOf(authenticationToken);
     }
 
     @Override
-    public RoleDataDto getRole(final AuthenticationToken authenticationToken, final int roleId) throws AuthorizationDeniedException {
+    public List<Role> getRolesAuthenticationTokenIsMemberOf(AuthenticationToken authenticationToken) {
+        // Only kept for backwards compatibility.
+        log.warn("getRolesAuthenticationTokenIsMemberOf invoked on wrong instance");
+        throw new UnsupportedOperationException("getRolesAuthenticationTokenIsMemberOf invoked on wrong instance");
+    }
+
+    @Override
+    public RoleDataDto getRoleV2(final AuthenticationToken authenticationToken, final int roleId) throws AuthorizationDeniedException {
         return roleSession.getRole(authenticationToken, roleId);
+    }
+
+    @Override
+    public Role getRole(final AuthenticationToken authenticationToken, final int roleId) throws AuthorizationDeniedException {
+        // Only kept for backwards compatibility.
+        log.warn("getRole invoked on wrong instance");
+        throw new UnsupportedOperationException("getRole invoked on wrong instance");
     }
 
     @Override
     public List<String> getAuthorizedRoleNamespaces(final AuthenticationToken authenticationToken, final int roleId) {
         // Skip roles that come from other peers if roleId is set
         try {
-            if (roleId != RoleDataDto.ROLE_ID_UNASSIGNED && getRole(authenticationToken, roleId) == null) {
+            if (roleId != RoleDataDto.ROLE_ID_UNASSIGNED && getRoleV2(authenticationToken, roleId) == null) {
                 if (log.isDebugEnabled()) {
                     log.debug("Requested role with ID " + roleId + " does not exist on this system, returning empty list of namespaces");
                 }
@@ -547,7 +570,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public RoleDataDto saveRole(final AuthenticationToken authenticationToken, final RoleDataDto role) throws AuthorizationDeniedException, RoleExistsException {
+    public RoleDataDto saveRoleV2(final AuthenticationToken authenticationToken, final RoleDataDto role) throws AuthorizationDeniedException, RoleExistsException {
         if (role.id() != RoleDataDto.ROLE_ID_UNASSIGNED) {
             // Updating a role
             RoleDataDto oldRoleData = roleSession.getRole(authenticationToken, role.id());
@@ -562,6 +585,13 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             log.debug("Persisting a role with ID " + role.id() + " and name '" + role.fullName() + "'");
         }
         return roleSession.persistRole(authenticationToken, role);
+    }
+
+    @Override
+    public Role saveRole(final AuthenticationToken authenticationToken, final Role role) throws AuthorizationDeniedException, RoleExistsException {
+        // Only kept for backwards compatibility.
+        log.warn("saveRole invoked on wrong instance"); //TODO REMOVE
+        throw new UnsupportedOperationException("saveRole invoked on wrong instance");
     }
 
     @Override
@@ -923,7 +953,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             response.setMightHaveMoreResults(true);
         }
 
-        final List<RoleDataDto> rolesTokenIsMemberOf = getRolesAuthenticationTokenIsMemberOf(authenticationToken);
+        final List<RoleDataDto> rolesTokenIsMemberOf = getRolesAuthenticationTokenIsMemberOfV2(authenticationToken);
         for (final ApprovalDataVO approvalDataVO : approvals) {
             final List<ApprovalDataText> requestDataLite = approvalDataVO.getApprovalRequest().getNewRequestDataAsText(authenticationToken); // this method isn't guaranteed to return the full information
             final RaEditableRequestData editableData = getRequestEditableData(approvalDataVO);
@@ -2009,10 +2039,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public RaRoleSearchResponse searchForRoles(AuthenticationToken authenticationToken, RaRoleSearchRequest request) {
+    public RaRoleSearchResponseV2 searchForRolesV2(AuthenticationToken authenticationToken, RaRoleSearchRequest request) {
         // TODO optimize this (ECA-5721), should filter with a database query
-        final List<RoleDataDto> authorizedRoles = getAuthorizedRoles(authenticationToken);
-        final RaRoleSearchResponse searchResponse = new RaRoleSearchResponse();
+        final List<RoleDataDto> authorizedRoles = getAuthorizedRolesV2(authenticationToken);
+        final RaRoleSearchResponseV2 searchResponse = new RaRoleSearchResponseV2();
         final String searchString = request.getGenericSearchString();
         for (final RoleDataDto role : authorizedRoles) {
             if (searchString == null || Strings.CI.contains(role.name(), searchString) ||
@@ -2021,6 +2051,13 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
         }
         return searchResponse;
+    }
+
+    @Override
+    public RaRoleSearchResponse searchForRoles(AuthenticationToken authenticationToken, RaRoleSearchRequest request) {
+        // Only kept for backwards compatibility.
+        log.warn("searchForRoles invoked on wrong instance"); //TODO REMOVE
+        throw new UnsupportedOperationException("searchForRoles invoked on wrong instance");
     }
 
     @SuppressWarnings("unchecked")

@@ -35,10 +35,7 @@
 		<path refid="lib.junit.classpath"/>
 		<path location="${ejbca-repository.build.dir}"/>
 		<path location="${ejbca-repository.build-test.dir}"/>
-        <fileset dir="${ejbca.home}/lib/ext/test">
-            <include name="mockito-core-*.jar"/>
-            <include name="byte-buddy*.jar"/>
-        </fileset>
+        <path refid="lib.mockito.classpath"/>
 	</path>
 
 	<path id="compile.classpath">
@@ -75,10 +72,7 @@
 		<path refid="lib.junit.classpath"/>
 		<path location="${mod.ejbca-repository.lib}" />
 		<path location="${ejbca-repository.build-test.dir}" />
-        <fileset dir="${ejbca.home}/lib/ext/test">
-            <include name="mockito-core-*.jar"/>
-            <include name="byte-buddy*.jar"/>
-        </fileset>
+        <path refid="lib.mockito.classpath"/>
 	</path>
 
     <target name="clean" description="Clean up this module">

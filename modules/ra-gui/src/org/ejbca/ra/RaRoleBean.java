@@ -144,7 +144,7 @@ public class RaRoleBean implements Serializable {
         // Get role
         if (roleId != null || cloneFromRoleId != null) {
             int roleToFetch = (roleId != null ? roleId : cloneFromRoleId);
-            role = raMasterApiProxyBean.getRole(raAuthenticationBean.getAuthenticationToken(), roleToFetch);
+            role = raMasterApiProxyBean.getRoleV2(raAuthenticationBean.getAuthenticationToken(), roleToFetch);
             name = role.name();
             namespace = role.nameSpace();
             if (roleId == null) {
@@ -348,7 +348,7 @@ public class RaRoleBean implements Serializable {
         final var roleWithChanges = roleDataBuilder.setAccessRules(accessRules).build();
 
         try {
-            role = raMasterApiProxyBean.saveRole(raAuthenticationBean.getAuthenticationToken(), roleWithChanges);
+            role = raMasterApiProxyBean.saveRoleV2(raAuthenticationBean.getAuthenticationToken(), roleWithChanges);
         } catch (RoleExistsException e) {
             if (log.isDebugEnabled()) {
                 log.debug("Role named '" + roleWithChanges.name() + "' in namespace '" + roleWithChanges.nameSpace() + "' already exists.");
@@ -371,7 +371,7 @@ public class RaRoleBean implements Serializable {
     public String getDeleteConfirmationText() {
         // Find out how many role members this role has
         final RaRoleMemberSearchRequest searchRequest = new RaRoleMemberSearchRequest();
-        searchRequest.setRoleIds(Collections.singletonList(role.id()));
+        searchRequest.setRoleIds(Arrays.asList(role.id()));
         final RaRoleMemberSearchResponse response = raMasterApiProxyBean.searchForRoleMembers(raAuthenticationBean.getAuthenticationToken(), searchRequest);
         return raLocaleBean.getMessage("delete_role_page_confirm", response.getRoleMembers().size());
     }
