@@ -1,35 +1,3 @@
-CREATE TABLE AccessRulesData (
-    pK INTEGER NOT NULL,
-    accessRule VARCHAR(255) NOT NULL,
-    isRecursive BIT NOT NULL,
-    rowProtection TEXT,
-    rowVersion INTEGER NOT NULL,
-    rule_ INTEGER NOT NULL,
-    AdminGroupData_accessRules INTEGER,
-    PRIMARY KEY (pK)
-);
-
-CREATE TABLE AdminEntityData (
-    pK INTEGER NOT NULL,
-    cAId INTEGER NOT NULL,
-    matchType INTEGER NOT NULL,
-    matchValue VARCHAR(255),
-    matchWith INTEGER NOT NULL,
-    rowProtection TEXT,
-    rowVersion INTEGER NOT NULL,
-    tokenType VARCHAR(255),
-    AdminGroupData_adminEntities INTEGER,
-    PRIMARY KEY (pK)
-);
-
-CREATE TABLE AdminGroupData (
-    pK INTEGER NOT NULL,
-    adminGroupName VARCHAR(255) NOT NULL,
-    rowProtection TEXT,
-    rowVersion INTEGER NOT NULL,
-    PRIMARY KEY (pK)
-);
-
 CREATE TABLE AdminPreferencesData (
     id VARCHAR(255) NOT NULL,
     data IMAGE NOT NULL,
@@ -348,20 +316,6 @@ CREATE TABLE UserData (
     type INTEGER NOT NULL,
     PRIMARY KEY (username)
 );
-
-CREATE TABLE UserDataSourceData (
-    id INTEGER NOT NULL,
-    data TEXT,
-    name VARCHAR(255) NOT NULL,
-    rowProtection TEXT,
-    rowVersion INTEGER NOT NULL,
-    updateCounter INTEGER NOT NULL,
-    PRIMARY KEY (id)
-);
-
-alter table AccessRulesData add constraint FKABB4C1DFDBBC970 foreign key (AdminGroupData_accessRules) references AdminGroupData;
-
-alter table AdminEntityData add constraint FKD9A99EBCB3A110AD foreign key (AdminGroupData_adminEntities) references AdminGroupData;
 
 CREATE TABLE NoConflictCertificateData (
     id VARCHAR(255) NOT NULL,

@@ -284,13 +284,12 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
      */
     private static final String USEEXTENSIONDATA       = "USEEXTENSIONDATA";
 
+    // Note: Internal profiles (e.g. SSH, SCEPSIGNER, etc.) should NOT be added here
     // String constants that never change, so we can do the String concat/conversion once
     private static final String CONST_DEFAULTCERTPROFILE = Integer.toString(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
     private static final String CONST_AVAILCERTPROFILES1 =
             CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER + ";" +
             CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER + ";" +
-            CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_ENCRYPTOR + ";" +
-            CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_SIGNER + ";" +
             CertificateProfileConstants.CERTPROFILE_FIXED_SERVER;
     private static final String CONST_DEFKEYSTORE = Integer.toString(EndEntityConstants.TOKEN_USERGEN);
     private static final String CONST_AVAILKEYSTORE = EndEntityConstants.TOKEN_USERGEN + ";"
@@ -2685,12 +2684,20 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     				throw new EndEntityProfileValidationException("Subject DN field '" + currentDnField + "' must exist.");
     			}
     		} else {
-    			final int size = getNumberOfField(currentDnField);
-    			for (int j = 0; j < size; j++) {
-    				if (isRequired(currentDnField, j) && StringUtils.isBlank(subjectDnFields.getField(dnFieldExtractorIds.get(i), j))) {
-    					throw new EndEntityProfileValidationException("Subject DN field '" + currentDnField + "' must exist.");
-    				}
-    			}
+                final int size = getNumberOfField(currentDnField);
+                int numberOfRequiredFields = 0;
+                int numberOfNonBlankFields = 0;
+                for (int j = 0; j < size; j++) {
+                    if (isRequired(currentDnField, j)) {
+                        numberOfRequiredFields++;
+                    }
+                    if (!StringUtils.isBlank(subjectDnFields.getField(dnFieldExtractorIds.get(i), j))) {
+                        numberOfNonBlankFields++;
+                    }
+                }
+                if (numberOfRequiredFields > numberOfNonBlankFields) {
+                    throw new EndEntityProfileValidationException("Subject DN field '" + currentDnField + "' must exist." );
+                }
     		}
     	}
 
@@ -2708,11 +2715,19 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         			}
         		} else {
         			final int size = subjectAltNames.getNumberOfFields(altNameFieldExtractorIds.get(i));
-        			for (int j = 0; j < size; j++) {
-        				if (isRequired(currentAnField, j) && StringUtils.isBlank(subjectAltNames.getField(altNameFieldExtractorIds.get(i), j))) {
-        					throw new EndEntityProfileValidationException("Subject Alterntive Name field '" + currentAnField + "' must exist.");
-        				}
-        			}
+                    int numberOfRequiredFields = 0;
+                    int numberOfNonBlankFields = 0;
+                    for (int j = 0; j < size; j++) {
+                        if (isRequired(currentAnField, j)) {
+                            numberOfRequiredFields++;
+                        }
+                        if (!StringUtils.isBlank(subjectAltNames.getField(altNameFieldExtractorIds.get(i), j))) {
+                            numberOfNonBlankFields++;
+                        }
+                    }
+                    if (numberOfRequiredFields > numberOfNonBlankFields) {
+                        throw new EndEntityProfileValidationException("Subject Alterntive Name field '" + currentAnField + "' must exist.");
+                    }
         		}
         	}
     	}

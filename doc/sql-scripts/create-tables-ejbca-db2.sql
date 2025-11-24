@@ -1,35 +1,3 @@
-CREATE TABLE AccessRulesData (
-    pK INTEGER NOT NULL,
-    accessRule VARCHAR(254) NOT NULL,
-    isRecursive SMALLINT NOT NULL,
-    rowProtection CLOB(10K),
-    rowVersion INTEGER NOT NULL,
-    rule INTEGER NOT NULL,
-    AdminGroupData_accessRules INTEGER,
-    PRIMARY KEY (pK)
-);
-
-CREATE TABLE AdminEntityData (
-    pK INTEGER NOT NULL,
-    cAId INTEGER NOT NULL,
-    matchType INTEGER NOT NULL,
-    matchValue VARCHAR(254),
-    matchWith INTEGER NOT NULL,
-    rowProtection CLOB(10K),
-    rowVersion INTEGER NOT NULL,
-    tokenType VARCHAR(254),
-    AdminGroupData_adminEntities INTEGER,
-    PRIMARY KEY (pK)
-);
-
-CREATE TABLE AdminGroupData (
-    pK INTEGER NOT NULL,
-    adminGroupName VARCHAR(254) NOT NULL,
-    rowProtection CLOB(10K),
-    rowVersion INTEGER NOT NULL,
-    PRIMARY KEY (pK)
-);
-
 CREATE TABLE AdminPreferencesData (
     id VARCHAR(254) NOT NULL,
     data BLOB(200K) NOT NULL,
@@ -378,16 +346,6 @@ CREATE TABLE UserData (
     PRIMARY KEY (username)
 );
 
-CREATE TABLE UserDataSourceData (
-    id INTEGER NOT NULL,
-    data CLOB,
-    name VARCHAR(254) NOT NULL,
-    rowProtection CLOB(10K),
-    rowVersion INTEGER NOT NULL,
-    updateCounter INTEGER NOT NULL,
-    PRIMARY KEY (id)
-);
-
 CREATE TABLE AcmeNonceData (
     nonce VARCHAR(254) NOT NULL,
     timeExpires BIGINT NOT NULL,
@@ -471,8 +429,3 @@ CREATE TABLE IncompleteIssuanceJournalData (
     rowVersion INTEGER NOT NULL,
     PRIMARY KEY (serialNumberAndCaId)
 );
-
-alter table AccessRulesData add constraint FKABB4C1DFDBBC970 foreign key (AdminGroupData_accessRules) references AdminGroupData;
-
-alter table AdminEntityData add constraint FKD9A99EBCB3A110AD foreign key (AdminGroupData_adminEntities) references AdminGroupData;
-

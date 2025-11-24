@@ -91,7 +91,7 @@ public final class CTLogInfo implements Serializable {
         }
     }
 
-    /** @return Internal Id consisting of the hashcode of the URL */
+    /** @return Internal id, based on a random value */
     public int getLogId() {
         return logId;
     }

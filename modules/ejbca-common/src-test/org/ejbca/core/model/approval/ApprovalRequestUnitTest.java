@@ -102,7 +102,7 @@ public class ApprovalRequestUnitTest {
     	assertTrue(readrequest.getApprovalRequestType() == ApprovalRequest.REQUESTTYPE_SIMPLE);
     	assertTrue(readrequest.getRequestSignature() == null);
     	assertTrue(CertTools.getSerialNumber(readrequest.getRequestAdminCert()).equals(CertTools.getSerialNumber(testcert)));
-    	assertTrue(readrequest.getCAId() == 1);
+    	assertEquals(1, readrequest.getCAId());
     	assertTrue(readrequest.getEndEntityProfileId() == 2);
     	assertTrue(readrequest.getApprovalProfile()!=null);
     	assertTrue(readrequest.getApprovalProfile().getProfileName().equals(approvalProfile.getProfileName()));
