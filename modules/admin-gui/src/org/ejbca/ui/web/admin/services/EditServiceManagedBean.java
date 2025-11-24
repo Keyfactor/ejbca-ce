@@ -18,14 +18,8 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.TreeMap;
-
-import jakarta.enterprise.context.SessionScoped;
-import jakarta.faces.application.Application;
-import jakarta.faces.context.FacesContext;
-import jakarta.faces.event.ValueChangeEvent;
-import jakarta.faces.model.SelectItem;
-import jakarta.inject.Named;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
@@ -77,6 +71,13 @@ import org.ejbca.ui.web.admin.services.servicetypes.RolloverWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.UserPasswordExpireWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.WorkerType;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
+
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.faces.application.Application;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.event.ValueChangeEvent;
+import jakarta.faces.model.SelectItem;
+import jakarta.inject.Named;
 
 /**
  * Class used to manage the GUI editing of a Service Configuration
@@ -211,6 +212,15 @@ public class EditServiceManagedBean extends BaseManagedBean {
         try {
             final ServiceConfiguration newServiceConfiguration = serviceConfigurationView.getServiceConfiguration(errorMessages);
             if (errorMessages.isEmpty()) {
+            	// This is some kind of temporary solution since CustomServiceWorkerUiSupport does not support input validation.
+                final Properties properties = newServiceConfiguration.getWorkerProperties();
+                if ("org.ejbca.peerconnector.keybind.PeerInternalKeyBindingUpdaterWorker".equals(newServiceConfiguration.getWorkerClassPath())) {
+                    validatePeerInternalKeyBindingUpdaterWorker(properties);
+                    if (!FacesContext.getCurrentInstance().getMessageList().isEmpty()) {
+                        return StringUtils.EMPTY;
+                    }
+                }
+
                 if (isNewService()) {
                     getEjb().getServiceSession().addService(getAdmin(), serviceName, newServiceConfiguration);
                 }
@@ -545,5 +555,27 @@ public class EditServiceManagedBean extends BaseManagedBean {
 
     public void setViewOnly(boolean viewOnly) {
         this.viewOnly = viewOnly;
+    }
+    
+    /**
+     * Validates the PeerInternalKeyBindingUpdaterWorker properties and adds an error message into the faces context if required.
+     * 
+     * @param properties the worker properties.
+     */
+    private void validatePeerInternalKeyBindingUpdaterWorker(final Properties properties) {
+        // Is a null (empty) or a number.
+        if (StringUtils.isEmpty((String) properties.get("peerConnectorId"))) {
+            addErrorMessage("ERROR: You must select a peer connector.");
+            return;
+        }
+        // Can be null or NaN.
+        try {
+            final int timeBeforeCertificateExpires = Integer.parseInt((String) properties.get("timeBeforeCertificateExpires"));
+            if (timeBeforeCertificateExpires < 1) {
+                addErrorMessage("ERROR: Time before certificate expires must be a positive number: '" + timeBeforeCertificateExpires + "'.");
+            }
+        } catch(NumberFormatException e) {
+            addErrorMessage("ERROR: Time before certificate expires must be a positive number in range: '" + properties.get("timeBeforeCertificateExpires") + "'.");
+        }
     }
 }
