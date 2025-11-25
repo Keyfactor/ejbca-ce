@@ -113,8 +113,6 @@ import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ui.web.rest.api.config.ObjectMapperContextResolver;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
-import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClient43Engine;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
@@ -325,30 +323,36 @@ public class RestResourceSystemTestBase {
      *
      * @see org.jboss.resteasy.client.ClientRequest
      */
-    static WebTarget newRequest(final String uriPath) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {
-        return newRequest(uriPath, getHttpClient(true));
+    static WebTarget newRequest(final String uriPath) throws UnrecoverableKeyException, KeyManagementException, NoSuchAlgorithmException, KeyStoreException {
+        return newRequest(uriPath, ADMIN_KEYSTORE);
     }
     
-    static WebTarget newRequest(final String uriPath, HttpClient httpClient) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {
-        ApacheHttpClient43Engine engine = new ApacheHttpClient43Engine(httpClient);
-        ResteasyClientBuilder builder = (ResteasyClientBuilder)ClientBuilder.newBuilder();
-        Client newClient = builder.httpEngine(engine).build();
+    static WebTarget newRequest(final String uriPath, KeyStore keyStore) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {
+        Client newClient = ClientBuilder.newBuilder().sslContext(getSslContext(keyStore)).hostnameVerifier(new NoopHostnameVerifier()).build();
         return newClient.target(getBaseUrl() + uriPath);
     }
 
     WebTarget newRequestNoAdmin(final String uriPath) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {
-        ApacheHttpClient43Engine engine = new ApacheHttpClient43Engine(getHttpClient(false));
-        ResteasyClientBuilder builder = (ResteasyClientBuilder)ClientBuilder.newBuilder();
-        Client newClient = builder.httpEngine(engine).build();
+        Client newClient = ClientBuilder.newBuilder().build();
         WebTarget webTarget = newClient.target(getBaseUrl() +uriPath);
         return webTarget;
     }
-
-    static HttpClient getHttpClient(boolean isAdmin) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException{
-        return getHttpClient(isAdmin ? ADMIN_KEYSTORE : NOADMIN_KEYSTORE);
+    
+    private static SSLContext getSslContext(KeyStore keyStore) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {
+        final SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+        final TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        trustManagerFactory.init(TRUST_KEYSTORE);
+        final KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
+        keyManagerFactory.init(keyStore, KEY_STORE_PASSWORD.toCharArray());
+        sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
+        return sslContext;
     }
     
     static HttpClient getHttpClient(KeyStore keyStore) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException{
+        if(keyStore == null) {
+            keyStore = ADMIN_KEYSTORE;
+        }
+        
         // Setup the SSL Context using prepared trustedKeyStore and loginKeyStore
         final SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
         final TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
