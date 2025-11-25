@@ -492,6 +492,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
+    @Deprecated(since = "9.4.1")
     public List<Role> getAuthorizedRoles(AuthenticationToken authenticationToken) {
         // Only kept for backwards compatibility.
         log.warn("getAuthorizedRoles invoked on wrong instance");
@@ -504,6 +505,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
+    @Deprecated(since = "9.4.1")
     public List<Role> getRolesAuthenticationTokenIsMemberOf(AuthenticationToken authenticationToken) {
         // Only kept for backwards compatibility.
         log.warn("getRolesAuthenticationTokenIsMemberOf invoked on wrong instance");
@@ -516,6 +518,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
+    @Deprecated(since = "9.4.1")
     public Role getRole(final AuthenticationToken authenticationToken, final int roleId) throws AuthorizationDeniedException {
         // Only kept for backwards compatibility.
         log.warn("getRole invoked on wrong instance");
@@ -588,6 +591,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
+    @Deprecated(since = "9.4.1")
     public Role saveRole(final AuthenticationToken authenticationToken, final Role role) throws AuthorizationDeniedException, RoleExistsException {
         // Only kept for backwards compatibility.
         log.warn("saveRole invoked on wrong instance"); //TODO REMOVE
@@ -2054,6 +2058,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
+    @Deprecated(since = "9.4.1")
     public RaRoleSearchResponse searchForRoles(AuthenticationToken authenticationToken, RaRoleSearchRequest request) {
         // Only kept for backwards compatibility.
         log.warn("searchForRoles invoked on wrong instance"); //TODO REMOVE
