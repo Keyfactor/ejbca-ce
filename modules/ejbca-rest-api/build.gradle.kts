@@ -65,6 +65,7 @@ dependencies {
     testRuntimeOnly(libs.jldap)
     testRuntimeOnly(libs.classmate)
     testRuntimeOnly(libs.commons.lang3)
+    testRuntimeOnly(libs.resteasy.undertow)
 }
 
 sourceSets {
