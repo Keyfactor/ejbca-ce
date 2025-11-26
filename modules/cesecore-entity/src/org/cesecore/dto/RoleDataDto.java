@@ -22,8 +22,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.TreeMap;
 
 public record RoleDataDto(
                        Integer id,
@@ -39,15 +38,10 @@ public record RoleDataDto(
     public static final boolean STATE_ALLOW = true;
     public static final boolean STATE_DENY = false;
 
-    private static Map<String, Boolean> getNormalizedAccessRules(Map<String, Boolean> accessRules) {
-        Map<String, Boolean> modifiableAccessRules = new LinkedHashMap<>(accessRules);
-        AccessRulesHelper.normalizeResources(modifiableAccessRules);
-        Map<String, Boolean> sortedAccessRules = new LinkedHashMap<>();
-        Set<String> keys = new TreeSet<>(modifiableAccessRules.keySet());
-        for (String key : keys) {
-            sortedAccessRules.put(key, modifiableAccessRules.get(key));
-        }
-        return Collections.unmodifiableMap(sortedAccessRules);
+    private static Map<String, Boolean> getNormalizedAccessRules(final Map<String, Boolean> accessRules) {
+        Map<String, Boolean> normalizedAccessRules = new LinkedHashMap<>(accessRules);
+        AccessRulesHelper.normalizeResources(normalizedAccessRules);
+        return new LinkedHashMap<>(new TreeMap<>(normalizedAccessRules));
     }
 
     public RoleDataDto(
@@ -63,8 +57,8 @@ public record RoleDataDto(
         this.nameSpace = StringUtils.isEmpty(nameSpace) ? "" : nameSpace.trim();
         this.styleId = styleId;
         this.accessRules = accessRules == null ?
-                Collections.emptyMap() :
-                getNormalizedAccessRules(accessRules);
+                Map.of() :
+                Collections.unmodifiableMap(getNormalizedAccessRules(accessRules));
     }
 
     @Override

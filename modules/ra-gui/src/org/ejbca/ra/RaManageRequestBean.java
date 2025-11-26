@@ -246,7 +246,7 @@ public class RaManageRequestBean implements Serializable {
             final ApprovalStep step = requestInfo.request.getNextApprovalStep();
             final ApprovalProfile approvalProfile = requestInfo.request.getApprovalProfile();
             if (step != null) {
-                List<RoleDataDto> roles = raMasterApiProxyBean.getRolesAuthenticationTokenIsMemberOf(raAuthenticationBean.getAuthenticationToken());
+                List<RoleDataDto> roles = raMasterApiProxyBean.getRolesAuthenticationTokenIsMemberOfV2(raAuthenticationBean.getAuthenticationToken());
                 for (ApprovalPartition approvalPartition : step.getPartitions().values()) {
                     boolean canApprove = false;
                     boolean canView = false;
