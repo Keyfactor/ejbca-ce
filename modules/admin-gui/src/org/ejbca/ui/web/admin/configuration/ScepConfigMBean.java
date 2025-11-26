@@ -38,7 +38,6 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
-import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
@@ -521,7 +520,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                 encryptionKeyAlias = null;
             } else {
                 // token has changed - choose the first 
-                var availableKeyAliases = getAvailableKeyAliases(encryptionCryptoTokenId, REQUIRED_ENCRYPTION_KEY_USAGES, "RSA");
+                var availableKeyAliases = getAvailableKeyAliases(encryptionCryptoTokenId, "RSA");
                 if (availableKeyAliases.size() > 0) {
                     encryptionKeyAlias = availableKeyAliases.get(0);
                 } else {
@@ -684,7 +683,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                     ArrayList<Pair<Integer,String>> availableTokens = getAvailableTokens();
                     if (availableTokens.size() > 0) {
                         encryptionCryptoTokenId = availableTokens.get(0).getKey();
-                        var availableKeyAliases = getAvailableKeyAliases(encryptionCryptoTokenId, REQUIRED_ENCRYPTION_KEY_USAGES, "RSA");
+                        var availableKeyAliases = getAvailableKeyAliases(encryptionCryptoTokenId, "RSA");
                         if (availableKeyAliases.size() > 0) {
                             encryptionKeyAlias = availableKeyAliases.get(0);
                         }
@@ -696,7 +695,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                     ArrayList<Pair<Integer,String>> availableTokens = getAvailableTokens();
                     if (availableTokens.size() > 0) {
                         signingCryptoTokenId = availableTokens.get(0).getKey();
-                        var availableKeyAliases = getAvailableKeyAliases(signingCryptoTokenId, REQUIRED_SIGNING_KEY_USAGES,
+                        var availableKeyAliases = getAvailableKeyAliases(signingCryptoTokenId,
                                 AlgorithmTools.getKeyAlgorithmFromSigAlg(signingAlgorithm));
                         if (availableKeyAliases.size() > 0) {
                             signingKeyAlias = availableKeyAliases.get(0);
@@ -732,8 +731,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                 signingKeyAlias = null;
             } else {
                 // token has changed, so the old alias may no longer be valid
-                var availableKeyAliases = getAvailableKeyAliases(signingCryptoTokenId, REQUIRED_SIGNING_KEY_USAGES,
-                        AlgorithmTools.getKeyAlgorithmFromSigAlg(signingAlgorithm));
+                var availableKeyAliases = getAvailableKeyAliases(signingCryptoTokenId, AlgorithmTools.getKeyAlgorithmFromSigAlg(signingAlgorithm));
                 if (availableKeyAliases.size() > 0) {
                     signingKeyAlias = availableKeyAliases.get(0);
                 } else {
@@ -1289,22 +1287,17 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
      * Find all key aliases on tokenId that match the required usages and algorithm
      * 
      * @param tokenId token to search
-     * @param requiredUsages only keys with all these usages will be returned
      * @param requiredAlgorithm only keys matching this algorithm will be returned.  May be null.
      * @return List of matching key aliases
      */
-    private ArrayList<String> getAvailableKeyAliases(Integer tokenId, Set<Long> requiredUsages, String requiredAlgorithm) {
+    private ArrayList<String> getAvailableKeyAliases(Integer tokenId, String requiredAlgorithm) {
         final var availableKeys = new ArrayList<String>();
         try {
             CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(tokenId);
             for (String alias : cryptoToken.getAliases()) {
-                // algorithm is required and differs
-                if (requiredAlgorithm != null && !cryptoToken.getPublicKey(alias).getAlgorithm().equals(requiredAlgorithm)) {
-                    continue;
-                }
-
-                Set<Long> keyUsages = cryptoToken.getKeyUsagesFromPublicKey(alias);
-                if (keyUsages == null || keyUsages.isEmpty() || keyUsages.containsAll(requiredUsages)) {
+                String algorithm = cryptoToken.getPublicKey(alias).getAlgorithm();
+                log.debug("Token:" + tokenId + " Key:" + alias + " Algorithm:" + algorithm + " requiredAlgorithm:" + requiredAlgorithm);
+                if (algorithm.equals(requiredAlgorithm)) {
                     availableKeys.add(alias);
                 }
             }
@@ -1324,21 +1317,18 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         return getAvailableTokens().stream().map(t -> new SelectItem(t.getKey(), t.getValue())).collect(Collectors.toList());
     }
 
-    static final Set<Long> REQUIRED_SIGNING_KEY_USAGES = Set.of((long) X509KeyUsage.digitalSignature);
-    static final Set<Long> REQUIRED_ENCRYPTION_KEY_USAGES = Set.of((long) X509KeyUsage.keyEncipherment);
-    
     public List<SelectItem> getAvailableSigningKeys() {
         if (currentAlias == null || currentAlias.signingCryptoTokenId == null || currentAlias.signingAlgorithm == null) {
             return new ArrayList<>();
         }
-        return getAvailableKeyAliases(currentAlias.signingCryptoTokenId, REQUIRED_SIGNING_KEY_USAGES, AlgorithmTools.getKeyAlgorithmFromSigAlg(currentAlias.signingAlgorithm)).stream().map(a -> new SelectItem(a)).toList();
+        return getAvailableKeyAliases(currentAlias.signingCryptoTokenId, AlgorithmTools.getKeyAlgorithmFromSigAlg(currentAlias.signingAlgorithm)).stream().map(a -> new SelectItem(a)).toList();
     }
 
     public List<SelectItem> getAvailableEncryptionKeys() {
         if (currentAlias == null || currentAlias.encryptionCryptoTokenId == null) {
             return new ArrayList<>();
         }
-        return getAvailableKeyAliases(currentAlias.encryptionCryptoTokenId, REQUIRED_ENCRYPTION_KEY_USAGES, "RSA").stream().map(a -> new SelectItem(a)).toList();
+        return getAvailableKeyAliases(currentAlias.encryptionCryptoTokenId, "RSA").stream().map(a -> new SelectItem(a)).toList();
     }
 
     public String getCurrentAliasEncryptionCryptoTokenName() {
