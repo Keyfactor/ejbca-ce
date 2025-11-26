@@ -522,7 +522,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
     public boolean isRequestedByMe() { return request.isRequestedByMe(); }
     public boolean isApprovedByMe() { return request.isApprovedByMe(); }
     public boolean isPending(final AuthenticationToken admin) { 
-        List<RoleDataDto> roles = raMasterApi.getRolesAuthenticationTokenIsMemberOf(admin);
+        List<RoleDataDto> roles = raMasterApi.getRolesAuthenticationTokenIsMemberOfV2(admin);
         return request.isPending(roles); 
     }
     public boolean isPendingExecution() { return request.getStatus() == ApprovalDataVO.STATUS_APPROVED; /* = approved but not executed */ }
@@ -531,7 +531,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
     public boolean isUnsuccessful() { return !isWaitingForApproval() && !isSuccessful(); }
     public boolean isExecutionFailed() { return request.getStatus() == ApprovalDataVO.STATUS_EXECUTIONFAILED; }
     public boolean isWaitingForMe(final AuthenticationToken admin) {
-        List<RoleDataDto> roles = raMasterApi.getRolesAuthenticationTokenIsMemberOf(admin);
+        List<RoleDataDto> roles = raMasterApi.getRolesAuthenticationTokenIsMemberOfV2(admin);
         return request.isWaitingForMe(roles); 
     }
     public boolean isWaitingForApproval() { return request.getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL; }

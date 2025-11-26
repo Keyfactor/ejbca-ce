@@ -310,7 +310,7 @@ public class RaRoleMembersBean implements Serializable {
     public List<SelectItem> getAvailableRoles() {
         if (availableRoles == null) {
             availableRoles = new ArrayList<>();
-            final List<RoleDataDto> roles = new ArrayList<>(raMasterApiProxyBean.getAuthorizedRoles(raAuthenticationBean.getAuthenticationToken()));
+            final List<RoleDataDto> roles = new ArrayList<>(raMasterApiProxyBean.getAuthorizedRolesV2(raAuthenticationBean.getAuthenticationToken()));
             Collections.sort(roles);
             roleIdToNameMap = new HashMap<>();
             roleIdToNamespaceMap = new HashMap<>();
