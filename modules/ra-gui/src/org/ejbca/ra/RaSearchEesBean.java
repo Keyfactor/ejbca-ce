@@ -58,7 +58,6 @@ import org.ejbca.core.model.era.RaEndEntitySearchResponse;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
-import org.ejbca.ra.EnrollMakeNewRequestBean.KeyPairGeneration;
 import org.ejbca.ra.RaEndEntityDetails.Callbacks;
 
 /**

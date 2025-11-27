@@ -47,6 +47,7 @@ import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.dto.RoleDataDto;
 import org.cesecore.keys.keyimport.KeyImportFailure;
 import org.cesecore.keys.keyimport.KeyImportRequestData;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.member.RoleMember;
 import org.ejbca.config.GlobalAcmeConfiguration;
@@ -218,22 +219,47 @@ public interface RaMasterApi {
 
     /**
      * @return a list with roles that the caller is authorized to see.
-     * @since Master RA API version 1 (EJBCA 6.8.0)
+     * @since Master RA API version 21 (EJBCA 9.4.1)
      */
-    List<RoleDataDto> getAuthorizedRoles(AuthenticationToken authenticationToken);
-    
+    List<RoleDataDto> getAuthorizedRolesV2(AuthenticationToken authenticationToken);
+
+    /**
+     * @return a list with roles that the caller is authorized to see.
+     * @since Master RA API version 1 (EJBCA 6.8.0)
+     * @deprecated should only be used for backwards compatibility with versions < 9.4.1
+     */
+    @Deprecated(since="9.4.1")
+    List<Role> getAuthorizedRoles(AuthenticationToken authenticationToken);
+
+    /**
+     * @return a list with roles that the caller is a member of.
+     * @since Master RA API version 21 (EJBCA 9.4.1)
+     */
+    List<RoleDataDto> getRolesAuthenticationTokenIsMemberOfV2(AuthenticationToken authenticationToken);
+
     /**
      * @return a list with roles that the caller is a member of.
      * @since Master RA API version 15 (EJBCA 7.11.0)
+     * @deprecated should only be used for backwards compatibility with versions < 9.4.1
      */
-    List<RoleDataDto> getRolesAuthenticationTokenIsMemberOf(AuthenticationToken authenticationToken);
+    @Deprecated(since="9.4.1")
+    List<Role> getRolesAuthenticationTokenIsMemberOf(AuthenticationToken authenticationToken);
 
     /**
      * @return the RoleDataDto with the given ID, or null if it does not exist
      * @throws AuthorizationDeniedException if missing view access.
-     * @since Master RA API version 1 (EJBCA 6.8.0)
+     * @since Master RA API version 21 (EJBCA 9.4.1)
      */
-    RoleDataDto getRole(AuthenticationToken authenticationToken, int roleId) throws AuthorizationDeniedException;
+    RoleDataDto getRoleV2(AuthenticationToken authenticationToken, int roleId) throws AuthorizationDeniedException;
+
+    /**
+     * @return the Role with the given ID, or null if it does not exist
+     * @throws AuthorizationDeniedException if missing view access.
+     * @since Master RA API version 1 (EJBCA 6.8.0)
+     * @deprecated should only be used for backwards compatibility with versions < 9.4.1
+     */
+    @Deprecated(since="9.4.1")
+    Role getRole(AuthenticationToken authenticationToken, int roleId) throws AuthorizationDeniedException;
 
     /**
      * @param roleId Only include namespaces from peers where this role is present. Set to 0 to include all.
@@ -257,9 +283,23 @@ public interface RaMasterApi {
      * @return The role object if the role was added/updated, otherwise null.
      * @throws AuthorizationDeniedException if unauthorized to update this role, or not authorized on any system to add it.
      * @throws RoleExistsException if a role with the given name already exists (can happen when adding or renaming)
-     * @since Master RA API version 1 (EJBCA 6.8.0)
+     * @since Master RA API version 22 (EJBCA 9.4.1)
      */
-    RoleDataDto saveRole(AuthenticationToken authenticationToken, RoleDataDto role) throws AuthorizationDeniedException, RoleExistsException;
+    RoleDataDto saveRoleV2(AuthenticationToken authenticationToken, RoleDataDto role) throws AuthorizationDeniedException, RoleExistsException;
+
+    /**
+     * Adds or updates a role in the database. If the role has an ID, it will be updated, but only on the system where it exists.
+     * Otherwise, this method will try to create it on any of the configured systems.
+     * @param authenticationToken Admin
+     * @param role Role to persist. The roleId controls whether it should be added or updated.
+     * @return The role object if the role was added/updated, otherwise null.
+     * @throws AuthorizationDeniedException if unauthorized to update this role, or not authorized on any system to add it.
+     * @throws RoleExistsException if a role with the given name already exists (can happen when adding or renaming)
+     * @since Master RA API version 1 (EJBCA 6.8.0)
+     * @deprecated should only be used for backwards compatibility with versions < 9.4.1
+     */
+    @Deprecated(since="9.4.1")
+    Role saveRole(AuthenticationToken authenticationToken, Role role) throws AuthorizationDeniedException, RoleExistsException;
 
     /**
      * Deletes a role.
@@ -421,8 +461,19 @@ public interface RaMasterApi {
      * @param authenticationToken administrator (affects the search results)
      * @param raRoleSearchRequest Object specifying the search criteria.
      * @return Object containing list of roles and search status.
-     * @since Master RA API version 1 (EJBCA 6.8.0)
+     * @since Master RA API version 21 (EJBCA 9.4.1)
      */
+    RaRoleSearchResponseV2 searchForRolesV2(AuthenticationToken authenticationToken, RaRoleSearchRequest raRoleSearchRequest);
+
+    /**
+     * Searches for roles that the given authentication token has access to.
+     * @param authenticationToken administrator (affects the search results)
+     * @param raRoleSearchRequest Object specifying the search criteria.
+     * @return Object containing list of roles and search status.
+     * @since Master RA API version 1 (EJBCA 6.8.0)
+     * @deprecated should only be used for backwards compatibility with versions < 9.4.1
+     */
+    @Deprecated(since="9.4.1")
     RaRoleSearchResponse searchForRoles(AuthenticationToken authenticationToken, RaRoleSearchRequest raRoleSearchRequest);
 
     /**

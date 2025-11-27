@@ -824,7 +824,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             byte[] certAuthKeyID = CertTools.getAuthorityKeyId(cert);
             JcaX509ExtensionUtils extensionUtils = new JcaX509ExtensionUtils(SHA1DigestCalculator.buildSha1Instance());
             AuthorityKeyIdentifier aki = extensionUtils.createAuthorityKeyIdentifier(x509ca.getCACertificate().getPublicKey());
-            assertEquals("authority key identifier should be from the CA key", Base64.toBase64String(aki.getKeyIdentifier()), Base64.toBase64String(certAuthKeyID));
+            assertEquals("authority key identifier should be from the CA key", Base64.toBase64String(aki.getKeyIdentifierOctets()), Base64.toBase64String(certAuthKeyID));
             // No poison extension in final certificate
             assertNull("There must not be a CT poison extension in the final certificate.", ((X509Certificate)cert).getExtensionValue(CertTools.PRECERT_POISON_EXTENSION_OID));
         }
@@ -871,7 +871,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
                     byte[] certAuthKeyID = CertTools.getAuthorityKeyId(certificate);
                     JcaX509ExtensionUtils extensionUtils = new JcaX509ExtensionUtils(SHA1DigestCalculator.buildSha1Instance());
                     AuthorityKeyIdentifier aki = extensionUtils.createAuthorityKeyIdentifier(pubK);
-                    assertEquals("authority key identifier should be from the hardcoded presign key", Base64.toBase64String(aki.getKeyIdentifier()), Base64.toBase64String(certAuthKeyID));
+                    assertEquals("authority key identifier should be from the hardcoded presign key", Base64.toBase64String(aki.getKeyIdentifierOctets()), Base64.toBase64String(certAuthKeyID));
                     // No poison extension in presign certificate
                     assertNull("There must not be a CT poison extension in the presign certificate.", certificate.getExtensionValue(CertTools.PRECERT_POISON_EXTENSION_OID));
                     throw new ValidationException("PRESIGN_CERTIFICATE_VALIDATION");
@@ -916,7 +916,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
                     byte[] certAuthKeyID = CertTools.getAuthorityKeyId(certificate);
                     JcaX509ExtensionUtils extensionUtils = new JcaX509ExtensionUtils(SHA1DigestCalculator.buildSha1Instance());
                     AuthorityKeyIdentifier aki = extensionUtils.createAuthorityKeyIdentifier(ca.getCACertificate().getPublicKey());
-                    assertEquals("authority key identifier should be from the CA key", Base64.toBase64String(aki.getKeyIdentifier()), Base64.toBase64String(certAuthKeyID));
+                    assertEquals("authority key identifier should be from the CA key", Base64.toBase64String(aki.getKeyIdentifierOctets()), Base64.toBase64String(certAuthKeyID));
                     throw new ValidationException("PRE_CERTIFICATE_VALIDATION");
                 case PRESIGN_CERTIFICATE_VALIDATION:
                     break;
@@ -985,7 +985,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
                     byte[] certAuthKeyID = CertTools.getAuthorityKeyId(certificate);
                     JcaX509ExtensionUtils extensionUtils = new JcaX509ExtensionUtils(SHA1DigestCalculator.buildSha1Instance());
                     AuthorityKeyIdentifier aki = extensionUtils.createAuthorityKeyIdentifier(ca.getCACertificate().getPublicKey());
-                    assertEquals("authority key identifier should be from the CA key", Base64.toBase64String(aki.getKeyIdentifier()), Base64.toBase64String(certAuthKeyID));
+                    assertEquals("authority key identifier should be from the CA key", Base64.toBase64String(aki.getKeyIdentifierOctets()), Base64.toBase64String(certAuthKeyID));
                     break;
                 case PRESIGN_CERTIFICATE_VALIDATION:
                     break;

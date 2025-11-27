@@ -17,12 +17,15 @@ import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.EOFException;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StreamCorruptedException;
 import java.math.BigInteger;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -154,7 +157,7 @@ public class Ocsp extends ClientToolBox {
             @Override
             public boolean doIt() throws Exception {
                 final BigInteger currentSerialNumber = StressTest.this.serialNrs.getRandom();
-                final OCSPUnidResponse response = this.client.lookup(currentSerialNumber, StressTest.this.cacert, StressTest.this.useGet);
+                final OCSPUnidResponse response = this.client.lookupWithSerialNumbers(List.of(currentSerialNumber), StressTest.this.cacert, StressTest.this.useGet);
                 if (response.getErrorCode() != OCSPUnidResponse.ERROR_NO_ERROR) {
                     StressTest.this.performanceTest.getLog().error(
                             "Error querying OCSP server for " + currentSerialNumber + " . Error code is: " + response.getErrorCode());
@@ -225,6 +228,23 @@ public class Ocsp extends ClientToolBox {
         return CertTools.getCertfromByteArray(bytes, X509Certificate.class);
     }
 
+    static List<X509Certificate> getCertsFromPemFiles(String folderName) throws CertificateException, IOException {
+        List<X509Certificate> certs = new ArrayList<>();
+        File folder = new File(folderName);
+
+        if (folder.exists() && folder.isDirectory()) {
+            File[] files = folder.listFiles();
+
+            if (files != null) {
+                for (File file: files) {
+                    certs.add(getCertFromPemFile(file.getAbsolutePath()));
+                }
+            }
+        }
+
+        return certs;
+    }
+
     /* (non-Javadoc)
      * @see org.ejbca.ui.cli.ClientToolBox#execute(java.lang.String[])
      */
@@ -253,6 +273,15 @@ public class Ocsp extends ClientToolBox {
                 if (args.length == 7) {
                     useGet = "GET".equalsIgnoreCase(args[6]);
                 }
+            } else if (args.length >= 5) {
+                ksfilename = null;
+                kspwd = null;
+                ocspUrlFromCLI = args[2].equals("null") ? null : args[2];
+                certfilename = args[3];
+                cacertfilename = args[4];
+                if (args.length == 6) {
+                    useGet = "GET".equalsIgnoreCase(args[5]);
+                }
             } else if (args.length >= 4) {
                 ksfilename = null;
                 kspwd = null;
@@ -263,10 +292,9 @@ public class Ocsp extends ClientToolBox {
                     useGet = "GET".equalsIgnoreCase(args[4]);
                 }
             } else {
-                System.out
-                        .println("Usage 1: OCSP <KeyStoreFilename> <KeyStorePassword> <OCSPUrl | null> <CertificateFileName | HexEncodedCertificateSerialNumber> <CA-CertificateFileName>  [<POST | GET>]");
-                System.out
-                        .println("Usage 2: OCSP <OCSPUrl | null> <CertificateFileName | HexEncodedCertificateSerialNumber> <CA-CertificateFileName> [<POST | GET>]");
+                System.out.println("Usage 1: OCSP <KeyStoreFilename> <KeyStorePassword> <OCSPUrl | null> <CertificateFileName | HexEncodedCertificateSerialNumber> <CA-CertificateFileName>  [<POST | GET>]");
+                System.out.println("Usage 2: OCSP multiple <OCSPUrl | null> <CertificateFileName | HexEncodedCertificateSerialNumber> <CA-CertificateFileName> [<POST | GET>]");
+                System.out.println("Usage 2: OCSP <OCSPUrl | null> <CertificateFileName | HexEncodedCertificateSerialNumber> <CA-CertificateFileName> [<POST | GET>]");
                 System.out.println("Usage 3: OCSP stress ...");
                 System.out.println("Keystore should be a PKCS12. Only POST requests use a nonce, by default 32 bytes.");
                 System.out.println("Nonce length is overrideable by environment variable "+ NONCE_LENGTH_ENV_VAR +"");
@@ -291,25 +319,45 @@ public class Ocsp extends ClientToolBox {
                     }
                     final OCSPUnidClient client = OCSPUnidClient
                             .getOCSPUnidClient(ksfilename, kspwd, ocspUrlFromCLI, nonceLength, signRequest, ksfilename != null);
-                    response = client.lookup(new BigInteger(certfilename, 16), getCertFromPemFile(cacertfilename), useGet);
+                    response = client.lookupWithSerialNumbers(List.of(new BigInteger(certfilename, 16)), getCertFromPemFile(cacertfilename), useGet);
                 } catch (NumberFormatException e) {
                     // Not a hex serial number
                     System.out.println("The input that looked like a serial number was not one, try to read it as a file.");
                 }
             }
             if (serial == null) {
-                // It's not a certificate serial number, so treat it as a filename
-                final X509Certificate userCert = getCertFromPemFile(certfilename);
-                String ocspUrl = ocspUrlFromCLI;
-                if (ocspUrl == null) {
-                    ocspUrl = CertTools.getAuthorityInformationAccessOcspUrl(userCert);
+
+                if (Files.isDirectory(Path.of(certfilename))) {
+                    // It's not a certificate serial number, so treat it as a filename
+                    String ocspUrl = ocspUrlFromCLI;
+                    final List<X509Certificate> userCerts = getCertsFromPemFiles(certfilename);
+
                     if (ocspUrl == null) {
-                        System.out.println("OCSP URL is required since none was found in the certificate.");
-                        System.exit(-1); // NOPMD, it's not a JEE app
+                        ocspUrl = CertTools.getAuthorityInformationAccessOcspUrl(userCerts.get(0));
+                        if (ocspUrl == null) {
+                            System.out.println("OCSP URL is required since none was found in the certificate.");
+                            System.exit(-1); // NOPMD, it's not a JEE app
+                        }
                     }
+                    final OCSPUnidClient client = OCSPUnidClient.getOCSPUnidClient(ksfilename, kspwd, ocspUrl, nonceLength, signRequest, true);
+                    response = client.lookupWithCertificates(userCerts, getCertFromPemFile(cacertfilename), useGet);
+
+                } else {
+                    // It's not a certificate serial number, so treat it as a filename
+                    String ocspUrl = ocspUrlFromCLI;
+                    final X509Certificate userCert = getCertFromPemFile(certfilename);
+                    if (ocspUrl == null) {
+                        ocspUrl = CertTools.getAuthorityInformationAccessOcspUrl(userCert);
+                        if (ocspUrl == null) {
+                            System.out.println("OCSP URL is required since none was found in the certificate.");
+                            System.exit(-1); // NOPMD, it's not a JEE app
+                        }
+                    }
+                    final OCSPUnidClient client = OCSPUnidClient.getOCSPUnidClient(ksfilename, kspwd, ocspUrl, nonceLength, signRequest, true);
+                    response = client.lookupWithCertificates(List.of(userCert), getCertFromPemFile(cacertfilename), useGet);
                 }
-                final OCSPUnidClient client = OCSPUnidClient.getOCSPUnidClient(ksfilename, kspwd, ocspUrl, nonceLength, signRequest, true);
-                response = client.lookup(userCert, getCertFromPemFile(cacertfilename), useGet);
+
+
             }
             if (response.getErrorCode() != OCSPUnidResponse.ERROR_NO_ERROR) {
                 System.out.println("Error querying OCSP server.");
