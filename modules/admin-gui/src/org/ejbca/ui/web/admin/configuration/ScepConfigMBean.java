@@ -779,7 +779,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
     private boolean currentAliasEditMode = false;
     private transient GlobalConfigurationSessionLocal globalConfigSession;
     private transient AuthorizationSessionLocal authorizationSession;
-    private transient AuthenticationToken authenticationToken;
+    private transient AuthenticationToken cachedAuthenticationToken;
     private transient CaSessionLocal caSession;
     private transient CertificateProfileSessionLocal certProfileSession;
     private transient EndEntityProfileSessionLocal endentityProfileSession;
@@ -1005,7 +1005,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                     HashMap<String, String> caToEncryptionCertificate = new HashMap<>();
                     for (var caName : currentAlias.encryptionCAs) {
                         if (!currentAlias.casThatAlreadyHaveEncryptionCerts().contains(caName)) {
-                            var certificate = issuer.issueEncryptionCertificate(authenticationToken, caName, currentAlias.encryptionCryptoTokenId, currentAlias.encryptionKeyAlias);
+                            var certificate = issuer.issueEncryptionCertificate(getAuthenticationToken(), caName, currentAlias.encryptionCryptoTokenId, currentAlias.encryptionKeyAlias);
                             var pemEncodedCertificate = CertTools.getPemFromCertificate(certificate);
                             caToEncryptionCertificate.put(caName, pemEncodedCertificate);
                         } 
@@ -1019,7 +1019,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                     HashMap<String, String> caToSigningCertificate = new HashMap<>();
                     for (var caName : currentAlias.encryptionCAs) {
                         if (!currentAlias.casThatAlreadyHaveSigningCerts().contains(caName)) {
-                            var certificate = issuer.issueSigningCertificate(authenticationToken, caName, currentAlias.signingCryptoTokenId, currentAlias.signingKeyAlias);
+                            var certificate = issuer.issueSigningCertificate(getAuthenticationToken(), caName, currentAlias.signingCryptoTokenId, currentAlias.signingKeyAlias);
                             var pemEncodedCertificate = CertTools.getPemFromCertificate(certificate);
                             caToSigningCertificate.put(caName, pemEncodedCertificate);
                         } 
@@ -1279,9 +1279,10 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     public AuthenticationToken getAuthenticationToken() {
-        if (authenticationToken == null)
-            authenticationToken = getAdmin();
-        return authenticationToken;
+        if (cachedAuthenticationToken == null) {
+            cachedAuthenticationToken = getAdmin();
+        }
+        return cachedAuthenticationToken;
     }
 
     public CaSessionLocal getCaSession() {
@@ -1316,9 +1317,9 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
 
     private ArrayList<Pair<Integer, String>> getAvailableTokens() {
         final ArrayList<Pair<Integer, String>> availableCryptoTokens = new ArrayList<>();
-        for (CryptoTokenInfo current : cryptoTokenManagementSession.getCryptoTokenInfos(authenticationToken)) {
+        for (CryptoTokenInfo current : cryptoTokenManagementSession.getCryptoTokenInfos(getAuthenticationToken())) {
             if (current.isActive()
-                    && getAuthorizationSession().isAuthorizedNoLogging(authenticationToken,
+                    && getAuthorizationSession().isAuthorizedNoLogging(getAuthenticationToken(),
                             CryptoTokenRules.USE.resource() + "/" + current.getCryptoTokenId())) {
                 availableCryptoTokens.add(Pair.of(current.getCryptoTokenId(), current.getName()));
             }
