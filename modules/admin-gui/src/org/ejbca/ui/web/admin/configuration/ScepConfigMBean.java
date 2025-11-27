@@ -991,7 +991,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                     }
                     else if (currentAlias.encryptionCAs.isEmpty()) {
                         log.debug("User attempted to save SCEP configuration using RA keys without choosing a CA");
-                        addErrorMessage("SELECTRAKEYS");
+                        addErrorMessage("SCEP_SELECT_AVAILABLE_CA");
                         return null;
                     }
                     
