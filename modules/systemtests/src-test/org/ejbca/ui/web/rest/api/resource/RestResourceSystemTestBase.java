@@ -333,7 +333,7 @@ public class RestResourceSystemTestBase {
     }
 
     WebTarget newRequestNoAdmin(final String uriPath) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {
-        Client newClient = ClientBuilder.newBuilder().build();
+        Client newClient = ClientBuilder.newBuilder().sslContext(getSslContext(NOADMIN_KEYSTORE)).build();
         WebTarget webTarget = newClient.target(getBaseUrl() +uriPath);
         return webTarget;
     }
