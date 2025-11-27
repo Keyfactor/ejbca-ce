@@ -645,7 +645,9 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
                 if (data.get(key) instanceof Boolean) {
                     return Boolean.toString((Boolean) data.get(key));
                 }
-                return (String) data.get(key);
+                if(data.get(key)!=null)
+                    return (data.get(key).toString());
+                else return (String) data.get(key);
             } else {
                 log.info("Could not find key '" + key + "' in the SCEP configuration data");
             }
