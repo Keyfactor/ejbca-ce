@@ -27,14 +27,16 @@ import static org.junit.Assert.assertNotSame;
 public class RoleDataDtoUnitTest {
 
     private byte[] getBytes(final RoleDataDto roleDataDto) throws IOException {
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); ObjectOutputStream oos = new ObjectOutputStream(baos)) {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
+             ObjectOutputStream oos = new ObjectOutputStream(baos)) {
             oos.writeObject(roleDataDto);
             return baos.toByteArray();
         }
     }
 
     private RoleDataDto getRoleDataRecord(final byte[] bytes) throws IOException, ClassNotFoundException {
-        try (ByteArrayInputStream bais = new ByteArrayInputStream(bytes); ObjectInputStream ois = new ObjectInputStream(bais)) {
+        try (ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+             ObjectInputStream ois = new ObjectInputStream(bais)) {
             return (RoleDataDto)ois.readObject();
         }
     }
@@ -42,15 +44,15 @@ public class RoleDataDtoUnitTest {
     @Test
     public void testSerializeAndDeserialize() throws Exception {
         // Given
-        RoleDataDto original = new RoleDataDto(1, "someName", "someNameSpace", 10, Map.of("A", true, "B", false));
+        RoleDataDto expected = new RoleDataDto(1, "someName", "someNameSpace", 10, Map.of("A", true, "B", false));
 
         // When
-        var bytes = getBytes(original);
-        var copy = getRoleDataRecord(bytes);
+        var bytes = getBytes(expected);
+        var actual = getRoleDataRecord(bytes);
 
         // Then
-        assertEquals(original.toString(), copy.toString());
-        assertNotSame(original, copy);
+        assertEquals(expected, actual);
+        assertNotSame(expected, actual);
     }
 
 }

@@ -201,8 +201,8 @@
 				rows="10"
 				selection="#{searchEndEntitiesMBean.selectedResults}"
 				selectionRowMode="add"
-				rowKey="#{searchResult.username}"
-				allowUnsorting="true" 
+				rowKey="#{searchEndEntitiesMBean.encodeRowKey(searchResult.username)}"
+				allowUnsorting="true"
 				sortMode="single"
 				disabledTextSelection="false">
 				<p:ajax event="toggleSelect" update="results:selectionActionButtons" />
