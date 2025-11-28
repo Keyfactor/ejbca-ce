@@ -146,6 +146,8 @@
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-multipart-provider-7.0.0.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/xnio-api-3.8.16.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/xnio-nio-3.8.16.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/jboss-threads-2.3.3.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/wildfly-common-1.5.4.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/reactive-streams-1.0.4.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/jakarta.servlet-api-6.1.0.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/jboss-logging-3.6.1.Final.jar"/>
@@ -224,7 +226,6 @@
 	<classpathentry kind="lib" path="lib/bcprov-jdk18on-1.82.jar"/>
 	<classpathentry kind="lib" path="lib/bctls-jdk18on-1.82.jar"/>
 	<classpathentry kind="lib" path="lib/bcutil-jdk18on-1.82.jar"/>
-	<classpathentry kind="lib" path="lib/hibernate/jboss-logging-3.6.0.Final.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/parsson-1.1.7.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/yasson-3.0.4.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/hibernate-commons-annotations-6.0.6.Final.jar"/>

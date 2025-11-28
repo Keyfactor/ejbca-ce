@@ -181,7 +181,6 @@ dependencyResolutionManagement {
             library("jackson-jakarta-rs-base", ":jackson-jakarta-rs-base:2.17.2")
             library("jackson-jakarta-rs-json-provider", ":jackson-jakarta-rs-json-provider:2.17.2")
             library("jackson-module-jaxb-annotations", ":jackson-module-jaxb-annotations:2.17.2")
-            library("jboss-logging", ":jboss-logging:3.6.0.Final")
             library("el-impl", ":el-impl:2.2")
             library("jakarta.mail", ":jakarta.mail:2.0.3")
             library("jaxb.core", ":jaxb-core:4.0.2")

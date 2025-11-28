@@ -263,6 +263,8 @@
 			<include name="xnio-api-3.*.jar"/>
 			<include name="xnio-nio-3.*.jar"/>
 			<include name="jboss-logging-*.jar"/>
+			<include name="wildfly-common-1.*.jar"/>
+			<include name="jboss-threads-2.*.jar"/>
 			<include name="jakarta.servlet-api-*.jar"/>
 			<include name="resteasy-jackson2-provider-*.jar"/>
 			<include name="resteasy-multipart-provider-*.jar"/>
