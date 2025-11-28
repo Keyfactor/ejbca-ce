@@ -867,9 +867,9 @@ public abstract class CATokenTestBase {
 				cryptoToken.activate((TOKEN_PIN+"x").toCharArray());
 				assertTrue("should throw", false);
 			} catch (CryptoTokenAuthenticationFailedException e) {
-				String strsoft = "PKCS12 key store mac invalid - wrong password or corrupted file.";
+				String strsoft = "PKCS12 key store mac invalid - wrong password or corrupted file";
 				String strp11 = "Failed to initialize PKCS11 provider slot '" + PKCS11TestUtils.getPkcs11SlotValue() + "'.";
-				assert(e.getMessage().equals(strsoft)||e.getMessage().equals(strp11));
+				assertTrue("Not the expected error message: " + e.getMessage(), e.getMessage().equals(strsoft) || e.getMessage().equals(strp11));
 			}
 			cryptoToken.activate(TOKEN_PIN.toCharArray());
 			KeyTools.testKey(cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),
