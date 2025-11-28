@@ -172,6 +172,8 @@ dependencyResolutionManagement {
             library("undertow-servlet", ":undertow-servlet:2.3.19.Final")
             library("xnio-api", ":xnio-api:3.8.16.Final")
             library("xnio-nio", ":xnio-nio:3.8.16.Final")
+            library("wildfly-common", ":wildfly-common:1.5.4.Final")
+            library("jboss-threads", ":jboss-threads:2.3.3.Final")
             library("jboss-logging", ":jboss-logging:3.6.1.Final")
             library("jakarta.servlet-api", ":jakarta.servlet-api:6.1.0")
             library("resteasy-jackson2-provider", ":resteasy-jackson2-provider:7.0.0.Final")
@@ -230,6 +232,8 @@ dependencyResolutionManagement {
                     "undertow-servlet",
                     "xnio-api",
                     "xnio-nio",
+                    "wildfly-common",
+                    "jboss-threads",
                     "jboss-logging",
                     "jakarta-servlet-api",
                     "resteasy-jackson2-provider",
