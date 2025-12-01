@@ -337,6 +337,10 @@ public class RestResourceSystemTestBase {
     }
     
     private static SSLContext getSslContext(KeyStore keyStore) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {
+        if(keyStore == null) {
+            keyStore = ADMIN_KEYSTORE;
+        }
+        
         final SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
         final TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         trustManagerFactory.init(TRUST_KEYSTORE);
