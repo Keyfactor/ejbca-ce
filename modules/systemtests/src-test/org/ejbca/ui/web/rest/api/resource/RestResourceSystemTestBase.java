@@ -41,9 +41,7 @@ import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.WebTarget;
 
-import org.apache.http.client.HttpClient;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.log4j.Logger;
 import org.cesecore.CaTestUtils;
 import org.cesecore.SystemTestsConfiguration;
@@ -346,25 +344,6 @@ public class RestResourceSystemTestBase {
         keyManagerFactory.init(keyStore, KEY_STORE_PASSWORD.toCharArray());
         sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
         return sslContext;
-    }
-    
-    static HttpClient getHttpClient(KeyStore keyStore) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException{
-        if(keyStore == null) {
-            keyStore = ADMIN_KEYSTORE;
-        }
-        
-        // Setup the SSL Context using prepared trustedKeyStore and loginKeyStore
-        final SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
-        final TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-        trustManagerFactory.init(TRUST_KEYSTORE);
-        final KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
-        keyManagerFactory.init(keyStore, KEY_STORE_PASSWORD.toCharArray());
-        sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
-        HttpClient client = HttpClients.custom()
-                .setSSLContext(sslContext)
-                .setSSLHostnameVerifier(new NoopHostnameVerifier())
-                .build();
-        return client;
     }
 
     public static String getBaseUrl() {
