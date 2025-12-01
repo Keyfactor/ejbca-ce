@@ -647,9 +647,9 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
                     return Boolean.toString((Boolean) data.get(key));
                 }
                 if (data.get(key) != null) {
-                   return String.valueOf(data.get(key)).replaceAll("[\\[\\]',]", "");
-                   // replaceAll("[\\[\\]',]", "");
-                   // return (data.get(key).toString());
+                    return String.valueOf(data.get(key)).replaceAll("[\\[\\]',]", "");
+                    // replaceAll("[\\[\\]',]", "");
+                    // return (data.get(key).toString());
                 } else {
                     return (String) data.get(key);
                 }
