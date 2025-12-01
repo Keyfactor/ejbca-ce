@@ -43,6 +43,11 @@
           <fileset dir="." includes="**/jacoco.exec"/>
         </delete>
         <ant antfile="modules/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <!-- Remove all directories named "build" recursively -->
+        <delete includeemptydirs="true">
+            <fileset dir="." includes="**/build/**" />
+            <dirset dir="." includes="**/build" />
+        </delete>
     </target>
 	
 	<!-- =================================================================== -->
