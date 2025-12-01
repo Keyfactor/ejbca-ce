@@ -49,18 +49,18 @@ public class ScepKeyRenewalDataSessionBean implements ScepKeyRenewalDataSessionL
 	@PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
 	private EntityManager entityManager;
 
-	@EJB
-	private GlobalConfigurationSessionLocal globalConfigSession;
-	@EJB
-	private EndEntityManagementSessionLocal endEntityManagementSession;
-	@EJB
-	private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
-	@EJB
-	private CertificateCreateSessionLocal certificateCreateSession;
-	@EJB
-	private CaSessionLocal caSession;
-
-	private ScepRaCertificateIssuer scepRaCertificateIssuer;
+    @EJB
+    private CaSessionLocal caSession;
+    @EJB
+    private CertificateCreateSessionLocal certificateCreateSession;
+    @EJB
+    private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
+    @EJB
+    private EndEntityManagementSessionLocal endEntityManagementSession;
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigSession;
+    @EJB
+    private ScepRaCertificateIssuerSessionLocal scepRaCertificateIssuer;
 
 	private final AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken(
 			new UsernamePrincipal(ScepKeyRenewalSessionBean.class.getSimpleName()));
@@ -81,10 +81,10 @@ public class ScepKeyRenewalDataSessionBean implements ScepKeyRenewalDataSessionL
                         var caName = scepConfiguration.getRADefaultCA(alias);
                         var cryptoTokenId = scepConfiguration.getEncryptionCryptoTokenId(alias);
                         var encryptionKeyAlias = scepConfiguration.getEncryptionKeyAlias(alias);
-                        var encryptionCertificate = getScepRaCertificateIssuer().issueEncryptionCertificate(authenticationToken, caName,
+                        var encryptionCertificate = scepRaCertificateIssuer.issueEncryptionCertificate(authenticationToken, caName,
                                 cryptoTokenId, encryptionKeyAlias);
                         var pemEncryptionCertificate = CertTools.getPemFromCertificate(encryptionCertificate);
-                        log.info(String.format("Renewed SCEP certificate %s %s %s", encryptionCertificate.getSubjectDN(),
+                        log.info(String.format("Renewed SCEP certificate %s %s %s", encryptionCertificate.getSubjectX500Principal(),
                                 encryptionCertificate.getNotAfter(), encryptionCertificate.getSerialNumber()));
                         scepConfiguration.setEncryptionCertificate(alias, pemEncryptionCertificate);
                         updatedKeys = true;
@@ -93,10 +93,10 @@ public class ScepKeyRenewalDataSessionBean implements ScepKeyRenewalDataSessionL
                         var caName = scepConfiguration.getRADefaultCA(alias);
                         var cryptoTokenId = scepConfiguration.getSigningCryptoTokenId(alias);
                         var signingKeyAlias = scepConfiguration.getSigningKeyAlias(alias);
-                        var signingCertificate = getScepRaCertificateIssuer().issueSigningCertificate(authenticationToken, caName, cryptoTokenId,
+                        var signingCertificate = scepRaCertificateIssuer.issueSigningCertificate(authenticationToken, caName, cryptoTokenId,
                                 signingKeyAlias);
                         var pemSigningCertificate = CertTools.getPemFromCertificate(signingCertificate);
-                        log.info(String.format("Renewed SCEP certificate %s %s %s", signingCertificate.getSubjectDN(),
+                        log.info(String.format("Renewed SCEP certificate %s %s %s", signingCertificate.getSubjectX500Principal(),
                                 signingCertificate.getNotAfter(), signingCertificate.getSerialNumber()));
                         scepConfiguration.setSigningCertificate(alias, pemSigningCertificate);
                         updatedKeys = true;
@@ -124,7 +124,7 @@ public class ScepKeyRenewalDataSessionBean implements ScepKeyRenewalDataSessionL
                         try {
                             X509Certificate encryptionCertificate = scepConfiguration.getEncryptionCertificateForCa(alias, ca);
                             if (shouldRenew(encryptionCertificate)) {
-                                var newEncryptionCertificate = getScepRaCertificateIssuer().issueEncryptionCertificate(authenticationToken, ca,
+                                var newEncryptionCertificate = scepRaCertificateIssuer.issueEncryptionCertificate(authenticationToken, ca,
                                         encryptionCryptoTokenId, encryptionKeyAlias);
                                 var pemCertificate = CertTools.getPemFromCertificate(newEncryptionCertificate);
                                 log.info(String.format("Renewed SCEP encryption certificate %s %s %s",
@@ -144,7 +144,7 @@ public class ScepKeyRenewalDataSessionBean implements ScepKeyRenewalDataSessionL
                         try {
                             X509Certificate SigningCertificate = scepConfiguration.getSigningCertificateForCa(alias, ca);
                             if (shouldRenew(SigningCertificate)) {
-                                var newSigningCertificate = getScepRaCertificateIssuer().issueSigningCertificate(authenticationToken, ca,
+                                var newSigningCertificate = scepRaCertificateIssuer.issueSigningCertificate(authenticationToken, ca,
                                         signingCryptoTokenId, signingKeyAlias);
                                 var pemCertificate = CertTools.getPemFromCertificate(newSigningCertificate);
                                 log.info(String.format("Renewed SCEP signing certificate %s %s %s",
@@ -183,23 +183,12 @@ public class ScepKeyRenewalDataSessionBean implements ScepKeyRenewalDataSessionL
 		var thresholdDate = new Date(now.getTime() + millisThreshold);
 
 		if (keyCertificate.getNotAfter().before(thresholdDate)) {
-			log.info(String.format("SCEP certificate %s %s %s will be renewed", keyCertificate.getSubjectDN(),
+			log.info(String.format("SCEP certificate %s %s %s will be renewed", keyCertificate.getSubjectX500Principal().toString(),
 					keyCertificate.getNotAfter(), keyCertificate.getSerialNumber()));
 			return true;
 		} else {
 			return false;
 		}
-	}
-
-	/**
-	 * Creates or get the Scep Cerificate Issuer
-	 */
-	public ScepRaCertificateIssuer getScepRaCertificateIssuer() {
-		if (scepRaCertificateIssuer == null) {
-			scepRaCertificateIssuer = new ScepRaCertificateIssuer(cryptoTokenManagementSession, caSession,
-					endEntityManagementSession, certificateCreateSession);
-		}
-		return scepRaCertificateIssuer;
 	}
 
 }

@@ -219,7 +219,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             CertificateRevokeException, CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             SignatureException, CertificateException, CertificateExtensionException, CertificateRenewalException {
 
-        ScepConfiguration scepConfig = (ScepConfiguration) this.globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
+        ScepConfiguration scepConfig = (ScepConfiguration) globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
         if (!scepConfig.aliasExists(scepConfigurationAlias)) {
             throw new NoSuchAliasException();
         }
