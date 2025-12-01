@@ -83,7 +83,6 @@
         <ant antfile="${mod.path}/peerconnector/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
         <ant antfile="${mod.path}/plugins/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
         <ant antfile="${mod.path}/plugins-ee/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
-        <ant antfile="${mod.path}/proxy-ca/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
         <ant antfile="${mod.path}/ra-gui/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
         <ant antfile="${mod.path}/ssh/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
         <ant antfile="${mod.path}/statedump/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
