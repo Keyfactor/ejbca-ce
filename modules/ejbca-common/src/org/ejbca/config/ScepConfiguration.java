@@ -198,6 +198,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         data.put(alias + SIGNING_TOKEN_ID, "");
         data.put(alias + SIGNING_KEY_ALIAS, "");
         data.put(alias + SIGNING_CERTIFICATE, "");
+        data.put(alias + ENCRYPTION_CAS, "");
     }
 
     // return all the key with an alias
@@ -645,9 +646,13 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
                 if (data.get(key) instanceof Boolean) {
                     return Boolean.toString((Boolean) data.get(key));
                 }
-                if(data.get(key)!=null)
-                    return (data.get(key).toString());
-                else return (String) data.get(key);
+                if (data.get(key) != null) {
+                   return String.valueOf(data.get(key)).replaceAll("[\\[\\]',]", "");
+                   // replaceAll("[\\[\\]',]", "");
+                   // return (data.get(key).toString());
+                } else {
+                    return (String) data.get(key);
+                }
             } else {
                 log.info("Could not find key '" + key + "' in the SCEP configuration data");
             }
@@ -954,6 +959,9 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
                 if (data.get(alias + SIGNING_CERTIFICATE) == null) {
                     data.put(alias + SIGNING_CERTIFICATE, "");
                 }
+                if (data.get(alias + ENCRYPTION_CAS) == null) {
+                    data.put(alias + ENCRYPTION_CAS, "");
+                }
             }
             data.put(VERSION, Float.valueOf(LATEST_VERSION));
         }
@@ -1064,16 +1072,27 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
      * 
      * @return map of string to string
      */
+    
     @SuppressWarnings("unchecked")
     private ArrayList<String> getListValue(String key, String alias) {
         if (aliasExists(alias)) {
-            return (ArrayList<String>) data.get(key);
+            try {
+                return (ArrayList<String>) data.get(key);
+            } catch (ClassCastException e) {
+                final ArrayList<String> result = new ArrayList<String>();
+                final String Cas = data.get(key).toString();
+                if (Cas != null && Cas.length() > 0) {
+                    Cas.replaceAll("[\\[\\]',]", "");
+                    result.addAll(Arrays.asList(Cas.split(" ")));
+                }
+                return result;
+            }
         } else {
             log.info("SCEP alias '" + alias + "' does not exist trying to get value for '" + key + "'");
         }
         return null;
     }
-
+    
     public void setSigningAlgorithm(final String alias, final String sigAlg) {
         setValue(alias + "." + SIGNING_ALGORITHM, sigAlg, alias);
     }
