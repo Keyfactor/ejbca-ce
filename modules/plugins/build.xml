@@ -122,8 +122,7 @@
                    else="-ea">
             <istrue value="${remoteDebug}"/>
         </condition>
-        <junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${
-        }" fork="true">
+        <junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${plugins.dir}" fork="true">
             <classpath>
                 <path refid="test.classpath"/>
             </classpath>
