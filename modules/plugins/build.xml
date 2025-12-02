@@ -54,7 +54,8 @@
     <target name="clean" description="Clean up this module">
         <delete dir="${plugins.build-test.dir}" />
         <delete dir="${plugins.build.dir}" />
-         <delete file="${mod.plugins.lib}" />
+        <delete dir="${plugins.dir}/build" />
+        <delete file="${mod.plugins.lib}" />
     </target>
 
     <condition property="src.exists">
@@ -121,7 +122,8 @@
                    else="-ea">
             <istrue value="${remoteDebug}"/>
         </condition>
-        <junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${plugins.dir}" fork="true">
+        <junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${
+        }" fork="true">
             <classpath>
                 <path refid="test.classpath"/>
             </classpath>

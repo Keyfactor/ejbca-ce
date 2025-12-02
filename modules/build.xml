@@ -27,29 +27,68 @@
 	<target name="proxy-ca" depends="cesecore-common, -build-proxy-ca, -copy-proxy-ca"/>
 
 	<target name="clean" depends="clean-optional" description="Clean all modules">
-		<ant antfile="${mod.ejbca-ejb.path}/build.xml" target="clean" inheritall="true"/>
-		<ant antfile="${mod.ejbca-ejb-cli.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
-		<ant antfile="${mod.ejbca-ejb-interface.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
-		<ant antfile="${mod.ejbca-entity.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
-		<ant antfile="${mod.ejbca-common.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
-		<ant antfile="${mod.ejbca-common-web.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
-		<ant antfile="${mod.ejbca-properties.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
-		<ant antfile="${mod.ejbca-ws.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
-		<ant antfile="${mod.ejbca-ws-cli.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
-		<ant antfile="${mod.clientToolBox.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
-		<ant antfile="${mod.systemtests.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
-		<ant antfile="${mod.admin-gui.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
-		<ant antfile="${mod.cmp-war.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
-		<ant antfile="${mod.healthcheck-war.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
-		<ant antfile="${mod.clearcache-war.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
-		<ant antfile="${mod.cerstore.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
-		<ant antfile="${mod.crlstore.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
-		<ant antfile="${mod.scep-war.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
-		<ant antfile="${mod.webdist-war.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
-        <ant antfile="${mod.cesecore-common.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
-        <ant antfile="${mod.cesecore-entity.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
-        <ant antfile="${mod.cesecore-ejb-interface.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
-        <ant antfile="${mod.cesecore-ejb.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <!--
+        The list below contains all build.xml-files that contains a target named "clean"
+        $ find modules/ -name "build.xml" |xargs grep 'target name="clean"'
+        -->
+        <ant antfile="${mod.path}/acme/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/admin-gui/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/caa/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/certificatestore/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/cesecore-common/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/cesecore-cvcca/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/cesecore-ejb/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/cesecore-ejb-interface/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/cesecore-entity/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/cesecore-x509ca/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/cits/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/clearcache-war/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/clientToolBox/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/cmpclient/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/configdump/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/crlstore/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/ct/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/edition-specific/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/edition-specific-ee/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/ejbca-cmp-war/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/ejbca-common/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/ejbca-common-web/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/ejbca-ejb/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/ejbca-ejb-cli/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/ejbca-ejb-interface/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/ejbca-entity/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/ejbca-properties/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/ejbca-repository/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/ejbca-rest-api/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/ejbca-rest-ca/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/ejbca-rest-camanagement/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/ejbca-rest-certificate/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/ejbca-rest-coap/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/ejbca-rest-common/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/ejbca-rest-configdump/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/ejbca-rest-cryptotoken/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/ejbca-rest-endentity/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/ejbca-rest-ssh/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/ejbca-rest-system/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/ejbca-scep-war/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/ejbca-webdist-war/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/ejbca-ws/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/ejbca-ws-cli/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/est/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/healthcheck-war/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/iodef/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/mpic/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/msae/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/p11ng-cli/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/peerconnector/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/plugins/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/plugins-ee/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/ra-gui/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/ssh/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/statedump/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/systemtests/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/unidfnr/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.path}/va/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
         <delete failonerror="false" dir="${modules.basedir}/dist" />
 	</target>
 	
