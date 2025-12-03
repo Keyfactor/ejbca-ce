@@ -355,6 +355,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                 } catch (CryptoTokenOfflineException | RuntimeException e) { // CKRException is a RuntimeException
                                     log.warn("Referenced private key with alias " + signKeyAlias
                                             + " could not be used. CryptoToken is off-line for CA with id " + caId + ": " + e.getMessage());
+                                    log.debug("Referenced private key could not be used", e); // include stack trace at debug level
                                     continue;
                                 }
 
@@ -389,6 +390,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             } catch (CryptoTokenOfflineException | RuntimeException e) { // CKRException is a RuntimeException
                                 log.warn("Referenced private key with alias " + keyPairAlias
                                         + " could not be used. CryptoToken is off-line for CA with id " + caId + ": " + e.getMessage());
+                                log.debug("Referenced private key could not be used", e); // include stack trace at debug level
                                 continue;
                             }
                             if (privateKey == null) {
