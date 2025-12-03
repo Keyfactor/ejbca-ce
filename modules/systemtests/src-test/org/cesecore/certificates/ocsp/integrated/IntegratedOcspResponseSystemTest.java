@@ -512,7 +512,7 @@ public class IntegratedOcspResponseSystemTest {
             ocspResponseGeneratorTestSession.reloadOcspSigningCache();
             testOcspSignerIssuerRenewalInternal(eeCertificate, caCertificateRenew, OCSPResp.SUCCESSFUL);
             // Try the same thing after CA has been renewed
-            caAdminSession.renewCA(internalAdmin, testx509ca.getCAId(), true, null, false);
+            caAdminSession.renewCA(internalAdmin, testx509ca.getCAId(), true, null, false, CertificateProfileConstants.NO_CERTIFICATE_PROFILE);
             final X509Certificate caCertificateRenewed = (X509Certificate) caSession.getCAInfo(internalAdmin, testx509ca.getCAId())
                     .getCertificateChain().iterator().next();
             ocspResponseGeneratorTestSession.reloadOcspSigningCache();
