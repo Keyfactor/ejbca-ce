@@ -352,7 +352,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                                 "Referenced private key with alias " + signKeyAlias + " does not exist. Ignoring CA with id " + caId);
                                         continue;
                                     }
-                                } catch (CryptoTokenOfflineException e) {
+                                } catch (CryptoTokenOfflineException | RuntimeException e) { // CKRException is a RuntimeException
                                     log.warn("Referenced private key with alias " + signKeyAlias
                                             + " could not be used. CryptoToken is off-line for CA with id " + caId + ": " + e.getMessage());
                                     continue;
@@ -364,7 +364,11 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                 
                                 final String signatureProviderName = cryptoToken.getSignProviderName();
                                 if (!caCertificateChain.isEmpty()) {
-                                    generateOcspSigningCacheEntries(caCertificateChain, signatureProviderName, privateKey, ocspConfiguration, caToken);
+                                    try {
+                                        generateOcspSigningCacheEntries(caCertificateChain, signatureProviderName, privateKey, ocspConfiguration, caToken);
+                                    } catch (RuntimeException e) {
+                                        log.warn("Failed to generate OCSP signing cache entries for CA with ID " + caId + ": " + e.getMessage(), e);
+                                    }
                                 } else {
                                     log.warn("CA with ID " + caId
                                             + " appears to lack a certificate in the database. This may be a serious error if not in a test environment.");
@@ -382,7 +386,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             final PrivateKey privateKey;
                             try {
                                 privateKey = cryptoToken.getPrivateKey(keyPairAlias);
-                            } catch (CryptoTokenOfflineException e) {
+                            } catch (CryptoTokenOfflineException | RuntimeException e) { // CKRException is a RuntimeException
                                 log.warn("Referenced private key with alias " + keyPairAlias
                                         + " could not be used. CryptoToken is off-line for CA with id " + caId + ": " + e.getMessage());
                                 continue;
@@ -393,8 +397,12 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             }
                             final String signatureProviderName = cryptoToken.getSignProviderName();
                             if (!caCertificateChain.isEmpty()) {
-                                generateOcspSigningCacheEntries(caCertificateChain, signatureProviderName, privateKey, ocspConfiguration, caToken);
-                                generateOcspConfigCacheEntry(caCertificateChain.get(0), caId, preProduceOcspResponse, storeOcspResponseOnDemand, isMsCaCompatible);
+                                try {
+                                    generateOcspSigningCacheEntries(caCertificateChain, signatureProviderName, privateKey, ocspConfiguration, caToken);
+                                    generateOcspConfigCacheEntry(caCertificateChain.get(0), caId, preProduceOcspResponse, storeOcspResponseOnDemand, isMsCaCompatible);
+                                } catch (RuntimeException e) {
+                                    log.warn("Failed to generate OCSP signing cache entries for CA with ID " + caId + ": " + e.getMessage(), e);
+                                }
 
                             } else {
                                 log.warn("CA with ID " + caId
