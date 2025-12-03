@@ -87,9 +87,11 @@ import org.cesecore.config.RaStyleInfo;
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.dto.RoleDataDto;
+import org.cesecore.dto.RoleDataDtoBuilder;
 import org.cesecore.keys.keyimport.KeyImportFailure;
 import org.cesecore.keys.keyimport.KeyImportRequestData;
 import org.cesecore.roles.AccessRulesHelper;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.util.LogRedactionUtils;
@@ -468,46 +470,152 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         return new ArrayList<>();
     }
 
+    /**
+     * Maps a {@code Role} object to a {@code RoleDataDto} data transfer object.
+     *
+     * @param role the {@code Role} object to be mapped
+     * @return a {@code RoleDataDto} instance containing the mapped data from the {@code Role} object
+     */
+    @SuppressWarnings("deprecation")
+    private RoleDataDto mapToRoleDataDto(final Role role) {
+        RoleDataDto roleDataDto = new RoleDataDtoBuilder().setAccessRules(role.getAccessRules())
+                .setName(role.getRoleName())
+                .setNameSpace(role.getNameSpace())
+                .setStyleId(role.getStyleId())
+                .setId(role.getRoleId()).build();
+        return roleDataDto;
+    }
+
+    /**
+     * Maps a RoleDataDto object to a Role object.
+     *
+     * @param roleDataDto the data transfer object containing role information
+     * @return a Role object populated with the data from the provided RoleDataDto
+     * 
+     * @deprecated use mapToRoleDataDto
+     */
+    @Deprecated(since = "9.4.1")
+    private Role mapToRole(RoleDataDto roleDataDto) {
+        Role role = new Role(roleDataDto.getNameSpace(), roleDataDto.getName());
+        role.setAccessRules(new LinkedHashMap<String, Boolean>(roleDataDto.getAccessRules()));
+        role.setRoleId(roleDataDto.id());
+        role.setStyleId(roleDataDto.styleId());
+        return role;
+    }
+
+
+    @SuppressWarnings("deprecation")
     @Override
-    public List<RoleDataDto> getAuthorizedRoles(final AuthenticationToken authenticationToken) {
+    public List<RoleDataDto> getAuthorizedRolesV2(final AuthenticationToken authenticationToken) {
         final Map<Integer, RoleDataDto> roleDataMap = new HashMap<>();
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
-            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 1) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 22) {
                 try {
-                    for (final RoleDataDto roleData : raMasterApi.getAuthorizedRoles(authenticationToken)) {
+                    for (final RoleDataDto roleData : raMasterApi.getAuthorizedRolesV2(authenticationToken)) {
                         roleDataMap.put(roleData.id(), roleData);
                     }
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
-            }
-        }
-        return new ArrayList<>(roleDataMap.values());
-    }
-    
-    @Override
-    public List<RoleDataDto> getRolesAuthenticationTokenIsMemberOf(final AuthenticationToken authenticationToken) {
-        final Map<Integer, RoleDataDto> roleDataMap = new HashMap<>();
-        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
-            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 15) {
-                try {
-                    for (final RoleDataDto role : raMasterApi.getRolesAuthenticationTokenIsMemberOf(authenticationToken)) {
-                        roleDataMap.put(role.id(), role);
-                    }
-                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
-                    // Just try next implementation
+            } else if (raMasterApi.isBackendAvailable()) {
+                List<Role> roles = getAuthorizedRoles(authenticationToken);
+                for ( Role role : roles) {
+                    roleDataMap.put(role.getRoleId(), mapToRoleDataDto(role));
                 }
             }
         }
         return new ArrayList<>(roleDataMap.values());
     }
 
+    @Deprecated
     @Override
-    public RoleDataDto getRole(final AuthenticationToken authenticationToken, final int roleId) throws AuthorizationDeniedException {
+    public List<Role> getAuthorizedRoles(final AuthenticationToken authenticationToken) {
+        final Map<Integer, Role> roleMap = new HashMap<>();
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 1) {
                 try {
-                    RoleDataDto role = raMasterApi.getRole(authenticationToken, roleId);
+                    for (final Role role : raMasterApi.getAuthorizedRoles(authenticationToken)) {
+                        roleMap.put(role.getRoleId(), role);
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return new ArrayList<>(roleMap.values());
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public List<RoleDataDto> getRolesAuthenticationTokenIsMemberOfV2(final AuthenticationToken authenticationToken) {
+        final Map<Integer, RoleDataDto> roleDataMap = new HashMap<>();
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 22) {
+                try {
+                    for (final RoleDataDto role : raMasterApi.getRolesAuthenticationTokenIsMemberOfV2(authenticationToken)) {
+                        roleDataMap.put(role.id(), role);
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            } else if (raMasterApi.isBackendAvailable()) {
+                List<Role> roles = getRolesAuthenticationTokenIsMemberOf(authenticationToken);
+                for (Role role : roles) {
+                    roleDataMap.put(role.getRoleId(), mapToRoleDataDto(role));
+                }
+            }
+        }
+        return new ArrayList<>(roleDataMap.values());
+    }
+
+    @Deprecated
+    @Override
+    public List<Role> getRolesAuthenticationTokenIsMemberOf(final AuthenticationToken authenticationToken) {
+        final Map<Integer, Role> roleMap = new HashMap<>();
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 15) {
+                try {
+                    for (final Role role : raMasterApi.getRolesAuthenticationTokenIsMemberOf(authenticationToken)) {
+                        roleMap.put(role.getRoleId(), role);
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return new ArrayList<>(roleMap.values());
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public RoleDataDto getRoleV2(final AuthenticationToken authenticationToken, final int roleId) throws AuthorizationDeniedException {
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 22) {
+                try {
+                    RoleDataDto role = raMasterApi.getRoleV2(authenticationToken, roleId);
+                    if (role != null) {
+                        return role;
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            } else if (raMasterApi.isBackendAvailable()) {
+                Role role = getRole(authenticationToken, roleId);
+                if (role != null) {
+                    return mapToRoleDataDto(role);
+                }
+            }
+        }
+        return null;
+    }
+
+    @Deprecated(since = "9.4.1")
+    @Override
+    public Role getRole(final AuthenticationToken authenticationToken, final int roleId) throws AuthorizationDeniedException {
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 1) {
+                try {
+                    Role role = raMasterApi.getRole(authenticationToken, roleId);
                     if (role != null) {
                         return role;
                     }
@@ -560,14 +668,49 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public RoleDataDto saveRole(final AuthenticationToken authenticationToken, final RoleDataDto roleData) throws AuthorizationDeniedException, RoleExistsException {
+    public RoleDataDto saveRoleV2(final AuthenticationToken authenticationToken, final RoleDataDto roleData) throws AuthorizationDeniedException, RoleExistsException {
         AuthorizationDeniedException authorizationDeniedException = null;
-        // Try to save/update on the systems until successful, starting with the remote systems first.
-        // (The save operation might be unsuccessful if we're editing an existing role that belongs to another system, for instance)
+        // Try to save/update on the systems until successful
+        // The save operation might be unsuccessful if we're editing an existing role that belongs to another system, for instance
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            try {
+                if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 22) {
+                    final RoleDataDto savedRole = raMasterApi.saveRoleV2(authenticationToken, roleData);
+                    if (savedRole != null) {
+                        return savedRole;
+                    }
+                } else if (raMasterApi.isBackendAvailable()) {
+                    @SuppressWarnings("deprecation")
+                    Role savedRole = saveRole(authenticationToken, mapToRole(roleData));
+                    if (savedRole != null) {
+                        return mapToRoleDataDto(savedRole);
+                    }
+                }
+            } catch (AuthorizationDeniedException e) {
+                if (authorizationDeniedException == null) {
+                    authorizationDeniedException = e;
+                }
+                // Just try next implementation
+            } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                // Just try next implementation
+            }
+        }
+        if (authorizationDeniedException != null) {
+            throw authorizationDeniedException;
+        }
+        return null;
+    }
+
+    @Deprecated
+    @Override
+    public Role saveRole(final AuthenticationToken authenticationToken, final Role role) throws AuthorizationDeniedException, RoleExistsException {
+        AuthorizationDeniedException authorizationDeniedException = null;
+        // Try to save/update on the systems until successful
+        // The save operation might be unsuccessful if we're editing an existing role that belongs to another system, for instance
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             try {
                 if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 1) {
-                    final RoleDataDto savedRole = raMasterApi.saveRole(authenticationToken, roleData);
+                    final Role savedRole = raMasterApi.saveRole(authenticationToken, role);
                     if (savedRole != null) {
                         return savedRole;
                     }
@@ -961,9 +1104,36 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         return searchForCertificates(authenticationToken, request);
     }
 
+    @SuppressWarnings("deprecation")
+    @Override
+    public RaRoleSearchResponseV2 searchForRolesV2(AuthenticationToken authenticationToken,
+                                                   RaRoleSearchRequest raRoleSearchRequest) {
+        final RaRoleSearchResponseV2 ret = new RaRoleSearchResponseV2();
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 22) {
+                try {
+                    ret.merge(raMasterApi.searchForRolesV2(authenticationToken, raRoleSearchRequest));
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            } else if (raMasterApi.isBackendAvailable()) {
+                final List<RoleDataDto> convertedRoles = new ArrayList<>();
+                final RaRoleSearchResponseV2 response = new RaRoleSearchResponseV2();
+                RaRoleSearchResponse legacyResponse = searchForRoles(authenticationToken, raRoleSearchRequest);
+                for (Role role : legacyResponse.getRoles()) {
+                    convertedRoles.add(mapToRoleDataDto(role));
+                }
+                response.setRoles(convertedRoles);
+                ret.merge(response);
+            }
+        }
+        return ret;
+    }
+
+    @Deprecated
     @Override
     public RaRoleSearchResponse searchForRoles(AuthenticationToken authenticationToken,
-            RaRoleSearchRequest raRoleSearchRequest) {
+                                               RaRoleSearchRequest raRoleSearchRequest) {
         final RaRoleSearchResponse ret = new RaRoleSearchResponse();
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 1) {

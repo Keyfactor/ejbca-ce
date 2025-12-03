@@ -54,7 +54,8 @@
     <target name="clean" description="Clean up this module">
         <delete dir="${plugins.build-test.dir}" />
         <delete dir="${plugins.build.dir}" />
-         <delete file="${mod.plugins.lib}" />
+        <delete dir="${plugins.dir}/build" />
+        <delete file="${mod.plugins.lib}" />
     </target>
 
     <condition property="src.exists">
