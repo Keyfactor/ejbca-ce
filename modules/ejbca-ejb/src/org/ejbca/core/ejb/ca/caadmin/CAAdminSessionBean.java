@@ -2099,16 +2099,16 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     @Override
     public void renewCA(AuthenticationToken authenticationToken, int caid, boolean regenerateKeys, Date customNotBefore,
-                        final boolean createLinkCertificate) throws AuthorizationDeniedException, CryptoTokenOfflineException {
+                        final boolean createLinkCertificate, final int linkCertificateProfileId) throws AuthorizationDeniedException, CryptoTokenOfflineException {
         try {
-            renewCAInternal(authenticationToken, caid, regenerateKeys, customNotBefore, createLinkCertificate, /*newSubjectDN=*/null);
+            renewCAInternal(authenticationToken, caid, regenerateKeys, customNotBefore, createLinkCertificate, linkCertificateProfileId, /*newSubjectDN=*/null);
         } catch (CANameChangeRenewalException e) {
             throw new IllegalStateException(e);
         }
     }
 
     private void renewCAInternal(AuthenticationToken authenticationToken, int caid, boolean regenerateKeys, Date customNotBefore,
-                                 final boolean createLinkCertificate, String newSubjectDn)
+                                 final boolean createLinkCertificate, final int linkCertificateProfileId, String newSubjectDn)
             throws AuthorizationDeniedException, CryptoTokenOfflineException, CANameChangeRenewalException {
         final CACommon ca = caSession.getCAForEdit(authenticationToken, caid);
         final CAToken caToken = ca.getCAToken();
@@ -2148,14 +2148,14 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                         + " and alias=" + nextSignKeyAlias);
             }
         }
-        renewCAInternal(authenticationToken, caid, nextSignKeyAlias, customNotBefore, createLinkCertificate, newSubjectDn);
+        renewCAInternal(authenticationToken, caid, nextSignKeyAlias, customNotBefore, createLinkCertificate, linkCertificateProfileId, newSubjectDn);
     }
 
     @Override
     public void renewCA(final AuthenticationToken authenticationToken, final int caid, final String nextSignKeyAlias, Date customNotBefore,
-                        final boolean createLinkCertificate) throws AuthorizationDeniedException, CryptoTokenOfflineException {
+                        final boolean createLinkCertificate, final int linkCertificateProfileId) throws AuthorizationDeniedException, CryptoTokenOfflineException {
         try {
-            renewCAInternal(authenticationToken, caid, nextSignKeyAlias, customNotBefore, createLinkCertificate, /*newSubjectDN=*/null);
+            renewCAInternal(authenticationToken, caid, nextSignKeyAlias, customNotBefore, createLinkCertificate, linkCertificateProfileId, /*newSubjectDN=*/null);
         } catch (CANameChangeRenewalException e) {
             throw new IllegalStateException(e);
         }
@@ -2163,20 +2163,20 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     @Override
     public void renewCANewSubjectDn(AuthenticationToken admin, int caid, boolean regenerateKeys, Date customNotBefore,
-                                    final boolean createLinkCertificate, String newSubjectDn)
+                                    final boolean createLinkCertificate, final int linkCertificateProfileId, String newSubjectDn)
             throws AuthorizationDeniedException, CryptoTokenOfflineException, CANameChangeRenewalException {
-        renewCAInternal(admin, caid, regenerateKeys, customNotBefore, createLinkCertificate, newSubjectDn);
+        renewCAInternal(admin, caid, regenerateKeys, customNotBefore, createLinkCertificate, linkCertificateProfileId, newSubjectDn);
     }
 
     @Override
     public void renewCANewSubjectDn(AuthenticationToken admin, int caid, final String nextSignKeyAlias, Date customNotBefore,
-                                    final boolean createLinkCertificate, String newSubjectDn)
+                                    final boolean createLinkCertificate, final int linkCertificateProfileId, String newSubjectDn)
             throws AuthorizationDeniedException, CryptoTokenOfflineException, CANameChangeRenewalException {
-        renewCAInternal(admin, caid, nextSignKeyAlias, customNotBefore, createLinkCertificate, newSubjectDn);
+        renewCAInternal(admin, caid, nextSignKeyAlias, customNotBefore, createLinkCertificate, linkCertificateProfileId, newSubjectDn);
     }
 
     private void renewCAInternal(final AuthenticationToken authenticationToken, int caid, final String nextSignKeyAlias, Date customNotBefore,
-                                 final boolean createLinkCertificate, String newSubjectDN)
+                                 final boolean createLinkCertificate, final int linkCertificateProfileId, String newSubjectDN)
             throws AuthorizationDeniedException, CryptoTokenOfflineException, CANameChangeRenewalException {
         if (log.isTraceEnabled()) {
             log.trace(">CAAdminSession, renewCA(), caid=" + caid);
@@ -2349,7 +2349,10 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             if (log.isDebugEnabled()) {
                 log.debug("Signature algorithm for link certificate (if issued) for CA '" + ca.getName() + "' will use the old CA certificate signature algorithm "+previousSigAlg+".");
             }
-            final CertificateProfile linkCertProfile = certprofile.clone();
+            CertificateProfile linkCertProfile = certprofile.clone();
+            if (linkCertificateProfileId!=CertificateProfileConstants.NO_CERTIFICATE_PROFILE) {
+                linkCertProfile = certificateProfileSession.getCertificateProfile(linkCertificateProfileId);
+            }
             linkCertProfile.setSignatureAlgorithm(previousSigAlg);
             // We need to save the CAID, for audit logging that the CA has changed as subjectDN change means a change of CAId
             int caidBeforeNameChange = -1;

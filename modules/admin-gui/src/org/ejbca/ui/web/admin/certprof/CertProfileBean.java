@@ -26,6 +26,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -63,6 +64,7 @@ import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
+import org.cesecore.util.OidUtils;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.config.GlobalConfiguration;
@@ -89,9 +91,7 @@ import jakarta.inject.Named;
 public class CertProfileBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(CertProfileBean.class);
-
-    private static final String LEGACY_FIXED_MARKER = "(FIXED)";
-
+    
     @EJB
     private CaSessionLocal caSession;
 
@@ -208,10 +208,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         boolean success = true;
         try {
             // Perform last minute validations before saving
-            if (profileName.endsWith(LEGACY_FIXED_MARKER)) {
-                addErrorMessage("YOUCANTEDITFIXEDCERTPROFS");
-                success = false;
-            } else if (StringUtils.isBlank(profileName)) {
+            if (StringUtils.isBlank(profileName)) {
                 addNonTranslatedErrorMessage("Error: Certificate profile name cannot be empty.");
                 success = false;
             } else if (!StringTools.checkFieldForLegalChars(profileName)) {
@@ -819,7 +816,8 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         final List<SelectItem> ret = new ArrayList<>();
         AvailableExtendedKeyUsagesConfiguration ekuConfig = getEjbcaWebBean().getAvailableExtendedKeyUsagesConfiguration();
         Map<String, String> ekus = ekuConfig.getAllEKUOidsAndNames();
-        ArrayList<String> usedEKUs = getCertificateProfile().getExtendedKeyUsageOids();
+        //Clean list to only valid eku OIDs
+        List<String> usedEKUs = getCertificateProfile().getExtendedKeyUsageOids().stream().filter(oid -> OidUtils.isOidNumericalOnly(oid)).collect(Collectors.toList());        
         //If in view only mode, display only used EKU's
         if (isViewOnly()) {
             for(String oid : usedEKUs) {
@@ -830,7 +828,8 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                 }
             }
         } else {
-            for (Entry<String, String> eku : ekus.entrySet()) {
+            //Clean list to only valid eku OIDs
+            for (Entry<String, String> eku : ekus.entrySet().stream().filter(eku -> OidUtils.isOidNumericalOnly(eku.getKey())).collect(Collectors.toSet())) {
                 ret.add(new SelectItem(eku.getKey(), getEjbcaWebBean().getText(eku.getValue())));
             }
             for (String oid : usedEKUs) {

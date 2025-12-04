@@ -13,8 +13,6 @@
 
 package org.cesecore.dto;
 
-import org.cesecore.dto.Dto;
-
 public interface RoleMemberData extends Dto<Integer>, Comparable<RoleMemberData> {
 
     Integer primaryKey();

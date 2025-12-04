@@ -43,7 +43,6 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.keys.keyimport.KeyImportKeystoreData;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.keyimport.KeyImportException;
 
@@ -226,7 +225,7 @@ public class ProcessKeystoreSessionBean implements ProcessKeystoreSessionLocal, 
                 endEntityInformation = new EndEntityInformation(keystore.getUsername(), CertTools.getSubjectDN(userCertificate), ca.getCaId(),
                         DnComponents.getSubjectAlternativeName(userCertificate), DnComponents.getEMailAddress(userCertificate), EndEntityConstants.STATUS_GENERATED,
                         new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, certificateProfileId, null, null,
-                        SecConst.TOKEN_SOFT_P12, null);
+                        EndEntityConstants.TOKEN_SOFT_P12, null);
                 endEntityInformation.setPassword(password);
                 endEntityManagementSession.addUserForKeyImport(authenticationToken, endEntityInformation, false);
             } catch (Exception e) {

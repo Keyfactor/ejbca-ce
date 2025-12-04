@@ -60,7 +60,6 @@ import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -448,7 +447,7 @@ public class CrlGenerationUponRevocationSystemTest extends CaTestCase {
         final int endEntityProfileId = endEntityProfileSession.getEndEntityProfileId(endEntityProfileName);
         final int certificateProfileId = certificateProfileSession.getCertificateProfileId(certificateProfileName);
         final EndEntityInformation eeInfo = new EndEntityInformation(username, "C=SE, O=PrimeKey, CN=" + username, caId, "rfc822name=" + email, email,
-                EndEntityTypes.ENDUSER.toEndEntityType(), endEntityProfileId, certificateProfileId, SecConst.TOKEN_SOFT_P12, null);
+                EndEntityTypes.ENDUSER.toEndEntityType(), endEntityProfileId, certificateProfileId, EndEntityConstants.TOKEN_SOFT_P12, null);
         eeInfo.setStatus(EndEntityConstants.STATUS_NEW);
         eeInfo.setPassword(pwd);
         endEntityManagementSession.addUser(admin, eeInfo, false);

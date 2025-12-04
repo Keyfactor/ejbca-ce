@@ -111,7 +111,7 @@ public class RaRoleMemberBean implements Serializable {
                 matchValue = roleMember.getTokenMatchValue();
                 description = roleMember.getDescription();
                 if (roleId != RoleMember.NO_ROLE) {
-                    role = raMasterApiProxyBean.getRole(raAuthenticationBean.getAuthenticationToken(), roleId);
+                    role = raMasterApiProxyBean.getRoleV2(raAuthenticationBean.getAuthenticationToken(), roleId);
                     if (role == null) {
                         log.debug("Reference to missing role with ID " + roleId + " in role member with ID " + roleMemberId);
                     }
@@ -126,7 +126,7 @@ public class RaRoleMemberBean implements Serializable {
             roleMember = new RoleMember("", RoleMember.NO_ISSUER, RoleMember.NO_PROVIDER, 0, 0, "", 0, "");
             // Default values
             if (StringUtils.isEmpty(tokenType)) {
-                tokenType = "CertificateAuthenticationToken";
+                tokenType = X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE;
             }
 
             if (matchKey == null) {
@@ -214,7 +214,7 @@ public class RaRoleMemberBean implements Serializable {
     public List<SelectItem> getAvailableRoles() {
         if (availableRoles == null) {
             availableRoles = new ArrayList<>();
-            final List<RoleDataDto> roles = new ArrayList<>(raMasterApiProxyBean.getAuthorizedRoles(raAuthenticationBean.getAuthenticationToken()));
+            final List<RoleDataDto> roles = new ArrayList<>(raMasterApiProxyBean.getAuthorizedRolesV2(raAuthenticationBean.getAuthenticationToken()));
             Collections.sort(roles);
             boolean hasNamespaces = false;
             for (final RoleDataDto role : roles) {

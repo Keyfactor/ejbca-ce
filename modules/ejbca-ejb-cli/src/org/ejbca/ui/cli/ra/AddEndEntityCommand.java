@@ -40,7 +40,6 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -74,8 +73,8 @@ public class AddEndEntityCommand extends BaseRaCommand {
     private static final String SUBCOMMAND = "addendentity";
 
     private static final String[] SOFT_TOKEN_NAMES = { USERGENERATED, P12, JKS, PEM, BCFKS };
-    private static final int[] SOFT_TOKEN_IDS = { SecConst.TOKEN_SOFT_BROWSERGEN, SecConst.TOKEN_SOFT_P12, SecConst.TOKEN_SOFT_JKS,
-            SecConst.TOKEN_SOFT_PEM, SecConst.TOKEN_SOFT_BCFKS };
+    private static final int[] SOFT_TOKEN_IDS = { EndEntityConstants.TOKEN_USERGEN, EndEntityConstants.TOKEN_SOFT_P12, EndEntityConstants.TOKEN_SOFT_JKS,
+            EndEntityConstants.TOKEN_SOFT_PEM, EndEntityConstants.TOKEN_SOFT_BCFKS };
 
     private static final Set<String> ALIASES = new HashSet<String>();
     static {

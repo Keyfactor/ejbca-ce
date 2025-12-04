@@ -49,8 +49,6 @@ import java.util.TimeZone;
 
 import javax.security.auth.x500.X500Principal;
 
-import org.apache.commons.lang3.Strings;
-
 import com.keyfactor.util.CeSecoreNameStyle;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.SHA1DigestCalculator;
@@ -63,6 +61,7 @@ import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
+import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
@@ -254,7 +253,9 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         case AlgorithmConstants.SIGALG_MLDSA44:
         case AlgorithmConstants.SIGALG_MLDSA65:
         case AlgorithmConstants.SIGALG_MLDSA87:
-            expectedDigest = NISTObjectIdentifiers.id_shake256.getId();
+            // SHA-512 is the one that MUST be supported according to RFC 9882,
+            // and CNSA2.0 only approves SHA-512
+            expectedDigest = NISTObjectIdentifiers.id_sha512.getId();
             break;
         case AlgorithmConstants.SIGALG_SLHDSA_SHA2_128S:
         case AlgorithmConstants.SIGALG_SLHDSA_SHA2_128F:
@@ -280,7 +281,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             expectedDigest = CMSSignedGenerator.DIGEST_SHA256;
             break;
         }
-        assertEquals("CMS/PKCS#7 signature algorithm should use hash algorithm defined by signature algo", expectedDigest, s.getSignerInfos().getSigners().iterator().next().getDigestAlgOID());
+        assertEquals("CMS/PKCS#7 signature algorithm should use hash algorithm defined by signature algo: " + algName, expectedDigest, s.getSignerInfos().getSigners().iterator().next().getDigestAlgOID());
         p7 = x509ca.createPKCS7(cryptoToken, cacert, false);
         assertNotNull(p7);
         s = new CMSSignedData(p7);
@@ -824,7 +825,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             byte[] certAuthKeyID = CertTools.getAuthorityKeyId(cert);
             JcaX509ExtensionUtils extensionUtils = new JcaX509ExtensionUtils(SHA1DigestCalculator.buildSha1Instance());
             AuthorityKeyIdentifier aki = extensionUtils.createAuthorityKeyIdentifier(x509ca.getCACertificate().getPublicKey());
-            assertEquals("authority key identifier should be from the CA key", Base64.toBase64String(aki.getKeyIdentifier()), Base64.toBase64String(certAuthKeyID));
+            assertEquals("authority key identifier should be from the CA key", Base64.toBase64String(aki.getKeyIdentifierOctets()), Base64.toBase64String(certAuthKeyID));
             // No poison extension in final certificate
             assertNull("There must not be a CT poison extension in the final certificate.", ((X509Certificate)cert).getExtensionValue(CertTools.PRECERT_POISON_EXTENSION_OID));
         }
@@ -871,7 +872,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
                     byte[] certAuthKeyID = CertTools.getAuthorityKeyId(certificate);
                     JcaX509ExtensionUtils extensionUtils = new JcaX509ExtensionUtils(SHA1DigestCalculator.buildSha1Instance());
                     AuthorityKeyIdentifier aki = extensionUtils.createAuthorityKeyIdentifier(pubK);
-                    assertEquals("authority key identifier should be from the hardcoded presign key", Base64.toBase64String(aki.getKeyIdentifier()), Base64.toBase64String(certAuthKeyID));
+                    assertEquals("authority key identifier should be from the hardcoded presign key", Base64.toBase64String(aki.getKeyIdentifierOctets()), Base64.toBase64String(certAuthKeyID));
                     // No poison extension in presign certificate
                     assertNull("There must not be a CT poison extension in the presign certificate.", certificate.getExtensionValue(CertTools.PRECERT_POISON_EXTENSION_OID));
                     throw new ValidationException("PRESIGN_CERTIFICATE_VALIDATION");
@@ -916,7 +917,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
                     byte[] certAuthKeyID = CertTools.getAuthorityKeyId(certificate);
                     JcaX509ExtensionUtils extensionUtils = new JcaX509ExtensionUtils(SHA1DigestCalculator.buildSha1Instance());
                     AuthorityKeyIdentifier aki = extensionUtils.createAuthorityKeyIdentifier(ca.getCACertificate().getPublicKey());
-                    assertEquals("authority key identifier should be from the CA key", Base64.toBase64String(aki.getKeyIdentifier()), Base64.toBase64String(certAuthKeyID));
+                    assertEquals("authority key identifier should be from the CA key", Base64.toBase64String(aki.getKeyIdentifierOctets()), Base64.toBase64String(certAuthKeyID));
                     throw new ValidationException("PRE_CERTIFICATE_VALIDATION");
                 case PRESIGN_CERTIFICATE_VALIDATION:
                     break;
@@ -985,7 +986,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
                     byte[] certAuthKeyID = CertTools.getAuthorityKeyId(certificate);
                     JcaX509ExtensionUtils extensionUtils = new JcaX509ExtensionUtils(SHA1DigestCalculator.buildSha1Instance());
                     AuthorityKeyIdentifier aki = extensionUtils.createAuthorityKeyIdentifier(ca.getCACertificate().getPublicKey());
-                    assertEquals("authority key identifier should be from the CA key", Base64.toBase64String(aki.getKeyIdentifier()), Base64.toBase64String(certAuthKeyID));
+                    assertEquals("authority key identifier should be from the CA key", Base64.toBase64String(aki.getKeyIdentifierOctets()), Base64.toBase64String(certAuthKeyID));
                     break;
                 case PRESIGN_CERTIFICATE_VALIDATION:
                     break;
@@ -1937,7 +1938,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
     }
 
     /**
-     * Test if the DN attributes such as CN which has printable sting format inside 
+     * Test if the DN attributes such as CN which has printable sting format inside
      * CSR preserve their formatting in the final generated cert or not.
      * Note that for this to pass "Allow Subject DN Override by CSR" must be selected in the associated CP and
      * in the used CA there must be the option of "PrintableString encoding in DN" enabled.

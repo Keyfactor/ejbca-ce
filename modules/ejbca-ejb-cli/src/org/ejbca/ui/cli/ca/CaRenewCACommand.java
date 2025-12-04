@@ -33,6 +33,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenNameInUseException;
@@ -175,7 +176,7 @@ public class CaRenewCACommand extends BaseCaAdminCommand {
 
             try {
                 EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class).renewCA(getAuthenticationToken(), cainfo.getCAId(),
-                        regenerateKeys, customNotBefore, regenerateKeys);
+                        regenerateKeys, customNotBefore, regenerateKeys, CertificateProfileConstants.NO_CERTIFICATE_PROFILE);
             } catch (CryptoTokenOfflineException e) {
                 log.error("ERROR: Could not create keys, crypto token was unavailable: " + e.getMessage());
             }

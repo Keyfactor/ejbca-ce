@@ -1,38 +1,6 @@
 -- This script assumes that the tablespace 'ejbca_ts' exists.
 -- NDB support has not been verified in a very long time
 
-CREATE TABLE AccessRulesData (
-    pK INT(11) NOT NULL,
-    accessRule VARCHAR(250) BINARY NOT NULL,
-    isRecursive TINYINT(4) NOT NULL,
-    rowProtection LONGTEXT,
-    rowVersion INT(11) NOT NULL,
-    rule INT(11) NOT NULL,
-    AdminGroupData_accessRules INT(11),
-    PRIMARY KEY (pK)
-) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
-
-CREATE TABLE AdminEntityData (
-    pK INT(11) NOT NULL,
-    cAId INT(11) NOT NULL,
-    matchType INT(11) NOT NULL,
-    matchValue VARCHAR(250) BINARY,
-    matchWith INT(11) NOT NULL,
-    rowProtection LONGTEXT,
-    rowVersion INT(11) NOT NULL,
-    tokenType VARCHAR(250) BINARY,
-    AdminGroupData_adminEntities INT(11),
-    PRIMARY KEY (pK)
-) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
-
-CREATE TABLE AdminGroupData (
-    pK INT(11) NOT NULL,
-    adminGroupName VARCHAR(250) BINARY NOT NULL,
-    rowProtection LONGTEXT,
-    rowVersion INT(11) NOT NULL,
-    PRIMARY KEY (pK)
-) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
-
 CREATE TABLE AdminPreferencesData (
     id VARCHAR(250) BINARY NOT NULL,
     data LONGBLOB NOT NULL,
@@ -351,21 +319,6 @@ CREATE TABLE UserData (
     type INT(11) NOT NULL,
     PRIMARY KEY (username)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
-
-CREATE TABLE UserDataSourceData (
-    id INT(11) NOT NULL,
-    data LONGTEXT,
-    name VARCHAR(250) BINARY NOT NULL,
-    rowProtection LONGTEXT,
-    rowVersion INT(11) NOT NULL,
-    updateCounter INT(11) NOT NULL,
-    PRIMARY KEY (id)
-) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
-
-
-alter table AccessRulesData add index FKABB4C1DFDBBC970 (AdminGroupData_accessRules), add constraint FKABB4C1DFDBBC970 foreign key (AdminGroupData_accessRules) references AdminGroupData (pK);
-
-alter table AdminEntityData add index FKD9A99EBCB3A110AD (AdminGroupData_adminEntities), add constraint FKD9A99EBCB3A110AD foreign key (AdminGroupData_adminEntities) references AdminGroupData (pK);
 
 CREATE TABLE NoConflictCertificateData (
     id VARCHAR(250) BINARY NOT NULL,

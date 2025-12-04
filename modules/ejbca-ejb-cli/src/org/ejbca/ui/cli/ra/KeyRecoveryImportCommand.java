@@ -54,7 +54,6 @@ import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.CustomFieldException;
@@ -275,8 +274,9 @@ public class KeyRecoveryImportCommand extends BaseRaCommand {
                 // Use status GENERATED so that we don't create end entities that can be enrolled
                 final EndEntityInformation userdata = new EndEntityInformation(username, CertTools.getSubjectDN(userCertificate), cainfo.getCAId(), DnComponents.getSubjectAlternativeName(userCertificate), 
                         DnComponents.getEMailAddress(userCertificate), EndEntityConstants.STATUS_GENERATED, new EndEntityType(EndEntityTypes.ENDUSER), endentityprofileid, certificateprofileid, null,
-                        null, SecConst.TOKEN_SOFT_P12, null);
+                        null, EndEntityConstants.TOKEN_SOFT_P12, null);
                 final String randompwd = RandomStringUtils.secure().nextAlphanumeric(20);
+
                 userdata.setPassword(randompwd);
                 userdata.setKeyRecoverable(true);
                 endEntityManagementSession.addUser(getAuthenticationToken(), userdata, false);                

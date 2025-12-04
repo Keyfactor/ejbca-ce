@@ -38,7 +38,6 @@ import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.bean.SessionBeans;
@@ -192,7 +191,7 @@ public class AdminCertReqServlet extends BaseAdminServlet {
         newuser.setUsername(username);
 
         newuser.setSubjectDN(dn);
-        newuser.setTokenType(SecConst.TOKEN_SOFT_BROWSERGEN);
+        newuser.setTokenType(EndEntityConstants.TOKEN_USERGEN);
         newuser.setKeyRecoverable(false);
 
         String email = DnComponents.getPartFromDN(dn, "E"); // BC says VeriSign

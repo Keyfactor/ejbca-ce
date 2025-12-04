@@ -19,18 +19,23 @@ import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.certificatetransparency.GoogleCtPolicy;
 import org.cesecore.config.ExternalScriptsConfiguration;
+import org.cesecore.config.InvalidConfigurationException;
 import org.cesecore.configuration.ConfigurationBase;
 import org.ejbca.util.URIUtil;
 
@@ -74,7 +79,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     public static byte[] DEFAULT_HEADER_LOGO = new byte[0];
 
     // Default list of nodes in cluster
-    private static final Set<String> NODESINCLUSTER_DEFAULT      = new LinkedHashSet<>();
+    private static final Set<String> NODESINCLUSTER_DEFAULT = new LinkedHashSet<>();
 
     // Title of ra admin web interface.
     public static final String DEFAULT_EJBCA_TITLE = InternalConfiguration.getAppNameCapital() + " Administration";
@@ -123,7 +128,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final int DEFAULT_VA_STATUS_TIME_CONSTRAINT = 14400;
 
     private static final int SESSION_TIMEOUT_MIN = 1;
-    private static final int SESSION_TIMEOUT_MAX = Integer.MAX_VALUE;
+    private static final int SESSION_TIMEOUT_MAX = Integer.MAX_VALUE / (60*1000) -1;
 
     // Default CT Logs
     private static final LinkedHashMap<Integer,CTLogInfo> CTLOGS_DEFAULT = new LinkedHashMap<>();
@@ -297,10 +302,36 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
         return new String[0];
     }
 
+    public void setAvailableThemes(final String[] themes) {
+        String themesWithExtension = Arrays.stream(themes)
+                .map(theme -> {
+                    // Remove .css if it exists before adding it to ensure we don't double-add
+                    String normalized = theme.endsWith(".css") ? theme.substring(0, theme.length() - 4) : theme;
+                    return normalized + ".css";
+                })
+                .collect(Collectors.joining(","));
+        data.put(AVAILABLETHEMES, themesWithExtension);
+    }
+
+
     /** Returns the default available theme used by administrator preferences. */
     public String getDefaultAvailableTheme(){
-      return getAvailableThemes()[0];
+        return getAvailableThemes().length > 0 ? getAvailableThemes()[0] : "";
     }
+
+    public void setDefaultAvailableTheme(final String theme) {
+        String[] themes = getAvailableThemes();
+        List<String> newThemesList = new ArrayList<>();
+        String normalizedTheme = theme.endsWith(".css") ? theme.substring(0, theme.length() - 4) : theme;
+        newThemesList.add(normalizedTheme);
+        for (String existingTheme : themes) {
+            if (!existingTheme.equals(normalizedTheme)) {
+                newThemesList.add(existingTheme);
+            }
+        }
+        setAvailableThemes(newThemesList.toArray(new String[0]));
+    }
+
 
     public byte[] getHeadBannerLogo() {
         return (byte[]) data.get(HEADLOGO);
@@ -435,9 +466,10 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
         }
     }
 
-    public void setSessionTimeoutTime(int timeInMinutes) {
+    public void setSessionTimeoutTime(int timeInMinutes) throws InvalidConfigurationException {
         if (timeInMinutes < SESSION_TIMEOUT_MIN || timeInMinutes > SESSION_TIMEOUT_MAX) {
             data.put(SESSIONTIMEOUTTIME, DEFAULTSESSIONTIMEOUTTIME);
+                throw new InvalidConfigurationException("Session timeout time must be between " + SESSION_TIMEOUT_MIN + " and " + SESSION_TIMEOUT_MAX + " minutes.");
         } else {
             data.put(SESSIONTIMEOUTTIME, timeInMinutes);
         }

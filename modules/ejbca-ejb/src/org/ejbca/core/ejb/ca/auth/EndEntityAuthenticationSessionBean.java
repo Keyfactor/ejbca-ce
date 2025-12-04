@@ -24,7 +24,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -46,7 +46,6 @@ import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 import com.keyfactor.ErrorCode;
-import com.keyfactor.util.CertTools;
 
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
@@ -56,8 +55,6 @@ import jakarta.ejb.TransactionAttributeType;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.Certificate;
-import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -93,7 +90,22 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     @Override
+    public EndEntityInformation checkAllowedToEnroll(final AuthenticationToken admin, final String username)
+            throws AuthStatusException, NoSuchEndEntityException {
+        try {
+            return authenticateUserInternal(admin, username, null, false);
+        } catch (AuthLoginException e) { // Should not happen when no password authentication happens
+            throw new IllegalStateException(e);
+        }
+    }
+
+    @Override
     public EndEntityInformation authenticateUser(final AuthenticationToken admin, final String username, final String password)
+        throws AuthStatusException, AuthLoginException, NoSuchEndEntityException {
+        return authenticateUserInternal(admin, username, password, true);
+    }
+
+    private EndEntityInformation authenticateUserInternal(final AuthenticationToken admin, final String username, final String password, final boolean checkPassword)
         throws AuthStatusException, AuthLoginException, NoSuchEndEntityException {
     	if (log.isTraceEnabled()) {
             log.trace(">authenticateUser(" + username + ", hiddenpwd)");
@@ -103,6 +115,8 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
             // Find the user with username username, or throw ObjectNotFoundException
             final UserData data = endEntityAccessSession.findByUsername(username);
             if (data == null) {
+                final String msg = intres.getLocalizedMessage("authentication.usernotfound", username);
+                log.info(msg);
             	throw new NoSuchEndEntityException("Could not find username " + username);
             }
             // Decrease the remaining login attempts. When zero, the status is set to STATUS_GENERATED
@@ -114,7 +128,7 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
             	if (log.isDebugEnabled()) {
             		log.debug("Trying to authenticate user: username="+username+", dn="+ LogRedactionUtils.getSubjectDnLogSafe(data.getSubjectDnNeverNull())+", email="+data.getSubjectEmail()+", status="+status+", type="+data.getType());
             	}
-                if (!data.comparePassword(password)) {
+                if (checkPassword && !data.comparePassword(password)) {
                 	final String msg = intres.getLocalizedMessage("authentication.invalidpwd", username);            	
                     final Map<String, Object> details = new LinkedHashMap<>();
                     details.put("msg", msg);
@@ -150,13 +164,7 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
                 log.info(msg);
                 throw new AuthStatusException(msg);
             }
-        } catch (NoSuchEndEntityException oe) {
-        	final String msg = intres.getLocalizedMessage("authentication.usernotfound", username);
-        	log.info(msg);
-            throw oe;
-        } catch (AuthStatusException | AuthLoginException se) {
-            throw se;
-        }  catch (Exception e) {
+        }  catch (RuntimeException | NoSuchAlgorithmException e) {
             log.error(intres.getLocalizedMessage("error.unknown"), LogRedactionUtils.getRedactedException(e));
             throw new EJBException(LogRedactionUtils.getRedactedException(e));
         }
@@ -276,15 +284,12 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
                 final long maximumExpirationDate = System.currentTimeMillis() + (long)eep.getRenewDaysBeforeExpiration() *24*60*60*1000;
                 Date maxDate = new Date(maximumExpirationDate);
                 final Date now = new Date();
-                final Collection<Certificate> certs = certificateStoreSession.findCertificatesByUsernameAndStatusAfterExpireDate(
-                        username, CertificateConstants.CERT_ACTIVE, now.getTime());
-                for (final Certificate cert : certs) {
-                    if (maxDate.after(CertTools.getNotAfter(cert))) {
-                        return true;
-                    }
+                final CertificateData certData = certificateStoreSession.findLastExpiringActiveCertByUsername(username, now);
+                if (certData != null && maxDate.getTime() >= certData.getExpireDate()) {
+                    return true;
                 }
                 if (log.isDebugEnabled()) {
-                    if (certs.isEmpty()) {
+                    if (certData == null) {
                         log.debug("End entity is in status GENERATED but has no certificates. Not allowing renewal. Username: " + username);
                     } else {
                         log.debug("Certificates of end entity will expire after allowed period. Not allowing renewal. Username: " + username);

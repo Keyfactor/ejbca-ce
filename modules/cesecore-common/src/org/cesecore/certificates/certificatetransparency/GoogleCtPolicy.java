@@ -140,4 +140,13 @@ public final class GoogleCtPolicy implements Serializable {
         sb.append('}');
         return sb.toString();
     }
+
+    public static GoogleCtPolicy getDefaultPolicy() {
+        final GoogleCtPolicy policy = new GoogleCtPolicy();
+        // GoogleCTPolicty is not initialized with default breakpoints. So it breaks comparison with GooglePolicy
+        // created from values in UI.
+        policy.setBreakpoints(policy.getBreakpoints());
+
+        return policy;
+    }
 }

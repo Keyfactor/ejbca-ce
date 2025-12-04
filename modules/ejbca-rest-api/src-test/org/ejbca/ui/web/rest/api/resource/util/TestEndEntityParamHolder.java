@@ -15,9 +15,9 @@ package org.ejbca.ui.web.rest.api.resource.util;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.model.SecConst;
 
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 
@@ -180,7 +180,7 @@ public class TestEndEntityParamHolder {
 
 		public TestEndEntityParamHolder build() {
 		    if (this.tokenType==-1) {
-		        this.tokenType = SecConst.TOKEN_SOFT_P12;
+		        this.tokenType = EndEntityConstants.TOKEN_SOFT_P12;
 		    }
 		    if (this.keyAlgo==null) {
                 this.keyAlgo = AlgorithmConstants.KEYALGORITHM_RSA;

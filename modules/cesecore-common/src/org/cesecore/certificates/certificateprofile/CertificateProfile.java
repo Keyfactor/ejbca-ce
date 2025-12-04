@@ -53,8 +53,10 @@ import org.cesecore.certificates.certificate.certextensions.standard.CabForumOrg
 import org.cesecore.certificates.certificate.ssh.SshCertificateType;
 import org.cesecore.certificates.certificate.ssh.SshExtension;
 import org.cesecore.certificates.util.DNFieldExtractor;
+import org.cesecore.config.InvalidConfigurationException;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
+import org.cesecore.util.OidUtils;
 
 /**
  * CertificateProfile is a basic class used to customize a certificate configuration or be inherited by fixed certificate profiles.
@@ -75,6 +77,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public static final String ENDUSERPROFILENAME = "ENDUSER";
     public static final String OCSPSIGNERPROFILENAME = "OCSPSIGNER";
     public static final String SERVERPROFILENAME = "SERVER";
+    public static final String SCEPENCRYPTORPROFILENAME = "SCEPENCRYPTOR";
+    public static final String SCEPSIGNERPROFILENAME = "SCEPSIGNER";
     public static final String SSHPROFILENAME = "SSH";
     public static final String ITSPROFILENAME = "ITS";
 
@@ -86,6 +90,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         FIXED_PROFILENAMES.add(OCSPSIGNERPROFILENAME);
         FIXED_PROFILENAMES.add(SERVERPROFILENAME);
         FIXED_PROFILENAMES.add(SSHPROFILENAME);
+        FIXED_PROFILENAMES.add(SCEPENCRYPTORPROFILENAME);
+        FIXED_PROFILENAMES.add(SCEPSIGNERPROFILENAME);
         FIXED_PROFILENAMES.add(ITSPROFILENAME);
     }
 
@@ -153,6 +159,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public static final String DEFAULT_CERTIFICATE_VALIDITY = "2y";
     /** Constant for default validity for fixed profiles is 25 years including 6 or 7 leap days. */
     public static final String DEFAULT_CERTIFICATE_VALIDITY_FOR_FIXED_CA = "25y7d";
+    /** SCEP encryption and signing certs have short validity - 30 days */
+    public static final String DEFAULT_CERTIFICATE_VALIDITY_FOR_FIXED_SCEP_RA = "30d";
     /** Constant for default validity offset (for backward compatibility': -10m'!) */
     public static final String DEFAULT_CERTIFICATE_VALIDITY_OFFSET = "-10m";
     public static final long DEFAULT_PRIVATE_KEY_USAGE_PERIOD_OFFSET = 0;
@@ -475,7 +483,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setKeyUsageCritical(true);
 
         setUseExtendedKeyUsage(false);
-        setExtendedKeyUsage(new ArrayList<>());
+        try {
+            setExtendedKeyUsageOids(new ArrayList<>());
+        } catch (InvalidConfigurationException e) {
+            throw new IllegalStateException(e);
+        }
         setExtendedKeyUsageCritical(false);
 
         setUseDocumentTypeList(false);
@@ -587,6 +599,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             setUseOcspNoCheck(true);
         } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_SERVER) {
             setType(CertificateConstants.CERTTYPE_ENDENTITY);
+        } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_ENCRYPTOR) {
+            setType(CertificateConstants.CERTTYPE_ENDENTITY);
+        } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_SIGNER) {
+            setType(CertificateConstants.CERTTYPE_ENDENTITY);
         }
     }
 
@@ -599,6 +615,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public void setDefaultEncodedValidity(final int type) {
         if (type == CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA || type == CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA) {
             setEncodedValidity(DEFAULT_CERTIFICATE_VALIDITY_FOR_FIXED_CA);
+        } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_ENCRYPTOR || type == CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_SIGNER) {
+            setEncodedValidity(DEFAULT_CERTIFICATE_VALIDITY_FOR_FIXED_SCEP_RA);
         } else {
             setEncodedValidity(DEFAULT_CERTIFICATE_VALIDITY);
         }
@@ -610,25 +628,30 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     public void setDefaultExtendedKeyUsage(final int type) {
         setExtendedKeyUsageCritical(false);
-        if (type == CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA || type == CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA) {
-            setUseExtendedKeyUsage(false);
-            setExtendedKeyUsage(new ArrayList<>());
-        } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER) {
-            setUseExtendedKeyUsage(true);
-            ArrayList<String> eku = new ArrayList<>();
-            eku.add(KeyPurposeId.id_kp_clientAuth.getId());
-            eku.add(KeyPurposeId.id_kp_emailProtection.getId());
-            setExtendedKeyUsage(eku);
-        } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER) {
-            setUseExtendedKeyUsage(true);
-            ArrayList<String> eku = new ArrayList<>();
-            eku.add(KeyPurposeId.id_kp_OCSPSigning.getId());
-            setExtendedKeyUsage(eku);
-        } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_SERVER) {
-            setUseExtendedKeyUsage(true);
-            ArrayList<String> eku = new ArrayList<>();
-            eku.add(KeyPurposeId.id_kp_serverAuth.getId());
-            setExtendedKeyUsage(eku);
+        try {
+            if (type == CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA || type == CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA) {
+                setUseExtendedKeyUsage(false);
+                setExtendedKeyUsageOids(new ArrayList<>());
+            } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER) {
+                setUseExtendedKeyUsage(true);
+                ArrayList<String> eku = new ArrayList<>();
+                eku.add(KeyPurposeId.id_kp_clientAuth.getId());
+                eku.add(KeyPurposeId.id_kp_emailProtection.getId());
+                setExtendedKeyUsageOids(eku);
+            } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER) {
+                setUseExtendedKeyUsage(true);
+                ArrayList<String> eku = new ArrayList<>();
+                eku.add(KeyPurposeId.id_kp_OCSPSigning.getId());
+                setExtendedKeyUsageOids(eku);
+            } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_SERVER) {
+                setUseExtendedKeyUsage(true);
+                ArrayList<String> eku = new ArrayList<>();
+                eku.add(KeyPurposeId.id_kp_serverAuth.getId());
+                setExtendedKeyUsageOids(eku);
+            }
+        } catch (InvalidConfigurationException e) {
+            //Should not happend with hardcoded values
+            throw new IllegalStateException();
         }
     }
 
@@ -675,6 +698,16 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             setKeyUsage(new boolean[9]);
             setKeyUsage(CertificateConstants.DIGITALSIGNATURE, true);
             setKeyUsage(CertificateConstants.KEYENCIPHERMENT, true);
+            setKeyUsageCritical(true);
+        } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_ENCRYPTOR) {
+            setUseKeyUsage(true);
+            setKeyUsage(new boolean[9]);
+            setKeyUsage(CertificateConstants.KEYENCIPHERMENT, true);
+            setKeyUsageCritical(true);
+        } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_SIGNER) {
+            setUseKeyUsage(true);
+            setKeyUsage(new boolean[9]);
+            setKeyUsage(CertificateConstants.DIGITALSIGNATURE, true);
             setKeyUsageCritical(true);
         }
     }
@@ -1604,22 +1637,24 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     /**
-     * Extended Key Usage is an arraylist of oid Strings. Usually oids comes from KeyPurposeId in BC.
-     */
-    public void setExtendedKeyUsage(final ArrayList<String> extendedkeyusage) {
-        data.put(EXTENDEDKEYUSAGE, extendedkeyusage);
-    }
-
-    /**
      * Extended Key Usage is an arraylist of Strings with eku oids.
      */
     @SuppressWarnings("unchecked")
-    public ArrayList<String> getExtendedKeyUsageOids() {
-        return (ArrayList<String>) data.get(EXTENDEDKEYUSAGE);
+    public List<String> getExtendedKeyUsageOids() {
+        //Only return valid OIDs in case some garbage crept into the database
+        return ((List<String>) data.get(EXTENDEDKEYUSAGE)).stream()
+                .filter(oid -> OidUtils.isOidNumericalOnly(oid))
+                .collect(Collectors.toList());
     }
 
-    public void setExtendedKeyUsageOids(final ArrayList<String> extendedKeyUsageOids) {
-        setExtendedKeyUsage(extendedKeyUsageOids);
+    public void setExtendedKeyUsageOids(final List<String> extendedKeyUsageOids) throws InvalidConfigurationException {
+        for(String oid : extendedKeyUsageOids) {
+            if(!OidUtils.isOidNumericalOnly(oid)) {
+                throw new InvalidConfigurationException("OID " + oid + " was not correctly formatted.");
+            }
+        }
+        
+        data.put(EXTENDEDKEYUSAGE, extendedKeyUsageOids);
     }
 
     public void setUseCustomDnOrder(boolean use) {
@@ -3111,9 +3146,12 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
             // v53: Remove support for GOST and DSTU if present
             List<String> availableKeyAlgorithms = getAvailableKeyAlgorithmsAsList();
-            availableKeyAlgorithms.remove("ECGOST3410");
-            availableKeyAlgorithms.remove("DSTU4145");
-            setAvailableKeyAlgorithmsAsList(availableKeyAlgorithms);
+            if (availableKeyAlgorithms != null && !availableKeyAlgorithms.isEmpty()) {
+                availableKeyAlgorithms.remove("ECGOST3410");
+                availableKeyAlgorithms.remove("DSTU4145");
+                setAvailableKeyAlgorithmsAsList(availableKeyAlgorithms);
+            }
+
             // Make sure that they didn't sneak into the alternate set
             List<String> alternativeAvailableKeyAlgorithms = getAlternativeAvailableKeyAlgorithmsAsList();
             if (alternativeAvailableKeyAlgorithms != null && !alternativeAvailableKeyAlgorithms.isEmpty()) {

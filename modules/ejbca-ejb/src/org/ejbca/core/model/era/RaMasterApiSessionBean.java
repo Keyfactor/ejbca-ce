@@ -54,6 +54,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.util.Properties;
@@ -137,6 +138,7 @@ import org.cesecore.keys.keyimport.KeyImportRequestData;
 import org.cesecore.keys.validation.CaaIdentitiesValidator;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.keys.validation.Validator;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMember;
@@ -251,7 +253,9 @@ import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
+import jakarta.annotation.Resource;
 import jakarta.ejb.EJB;
+import jakarta.ejb.SessionContext;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
@@ -358,6 +362,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
+    @Resource
+    private SessionContext sessionContext;
 
     /**
      * Defines the current RA Master API version.
@@ -385,10 +391,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
      * <tr><th>18<td>=<td>8.3.0
      * <tr><th>19<td>=<td>9.2.0
      * <tr><th>20<td>=<td>9.3.0
-     * <tr><th>21<td>=<td>9.4.0
+     * <tr><th>21<td>=<td>9.3.4
+     * <tr><th>22<td>=<td>9.4.1
      * </table>
      */
-    private static final int RA_MASTER_API_VERSION = 21;
+    private static final int RA_MASTER_API_VERSION = 22;
 
     /**
      * Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time
@@ -480,25 +487,49 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public List<RoleDataDto> getAuthorizedRoles(AuthenticationToken authenticationToken) {
+    public List<RoleDataDto> getAuthorizedRolesV2(AuthenticationToken authenticationToken) {
         return roleSession.getAuthorizedRoles(authenticationToken);
     }
 
     @Override
-    public List<RoleDataDto> getRolesAuthenticationTokenIsMemberOf(AuthenticationToken authenticationToken) {
+    @Deprecated(since = "9.4.1")
+    public List<Role> getAuthorizedRoles(AuthenticationToken authenticationToken) {
+        // Only kept for backwards compatibility.
+        log.warn("getAuthorizedRoles invoked on wrong instance");
+        throw new UnsupportedOperationException("getAuthorizedRoles invoked on wrong instance");
+    }
+
+    @Override
+    public List<RoleDataDto> getRolesAuthenticationTokenIsMemberOfV2(AuthenticationToken authenticationToken) {
         return roleSession.getRolesAuthenticationTokenIsMemberOf(authenticationToken);
     }
 
     @Override
-    public RoleDataDto getRole(final AuthenticationToken authenticationToken, final int roleId) throws AuthorizationDeniedException {
+    @Deprecated(since = "9.4.1")
+    public List<Role> getRolesAuthenticationTokenIsMemberOf(AuthenticationToken authenticationToken) {
+        // Only kept for backwards compatibility.
+        log.warn("getRolesAuthenticationTokenIsMemberOf invoked on wrong instance");
+        throw new UnsupportedOperationException("getRolesAuthenticationTokenIsMemberOf invoked on wrong instance");
+    }
+
+    @Override
+    public RoleDataDto getRoleV2(final AuthenticationToken authenticationToken, final int roleId) throws AuthorizationDeniedException {
         return roleSession.getRole(authenticationToken, roleId);
+    }
+
+    @Override
+    @Deprecated(since = "9.4.1")
+    public Role getRole(final AuthenticationToken authenticationToken, final int roleId) throws AuthorizationDeniedException {
+        // Only kept for backwards compatibility.
+        log.warn("getRole invoked on wrong instance");
+        throw new UnsupportedOperationException("getRole invoked on wrong instance");
     }
 
     @Override
     public List<String> getAuthorizedRoleNamespaces(final AuthenticationToken authenticationToken, final int roleId) {
         // Skip roles that come from other peers if roleId is set
         try {
-            if (roleId != RoleDataDto.ROLE_ID_UNASSIGNED && getRole(authenticationToken, roleId) == null) {
+            if (roleId != RoleDataDto.ROLE_ID_UNASSIGNED && getRoleV2(authenticationToken, roleId) == null) {
                 if (log.isDebugEnabled()) {
                     log.debug("Requested role with ID " + roleId + " does not exist on this system, returning empty list of namespaces");
                 }
@@ -542,7 +573,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public RoleDataDto saveRole(final AuthenticationToken authenticationToken, final RoleDataDto role) throws AuthorizationDeniedException, RoleExistsException {
+    public RoleDataDto saveRoleV2(final AuthenticationToken authenticationToken, final RoleDataDto role) throws AuthorizationDeniedException, RoleExistsException {
         if (role.id() != RoleDataDto.ROLE_ID_UNASSIGNED) {
             // Updating a role
             RoleDataDto oldRoleData = roleSession.getRole(authenticationToken, role.id());
@@ -557,6 +588,14 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             log.debug("Persisting a role with ID " + role.id() + " and name '" + role.fullName() + "'");
         }
         return roleSession.persistRole(authenticationToken, role);
+    }
+
+    @Override
+    @Deprecated(since = "9.4.1")
+    public Role saveRole(final AuthenticationToken authenticationToken, final Role role) throws AuthorizationDeniedException, RoleExistsException {
+        // Only kept for backwards compatibility.
+        log.warn("saveRole invoked on wrong instance"); //TODO REMOVE
+        throw new UnsupportedOperationException("saveRole invoked on wrong instance");
     }
 
     @Override
@@ -690,7 +729,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     private RaApprovalRequestInfo getApprovalRequest(final AuthenticationToken authenticationToken, final ApprovalDataVO approvalDataVO) {
         // By getting the CA we perform an implicit auth check
         String caName;
-        if (approvalDataVO.getCAId() == ApprovalDataVO.ANY_CA) {
+        if (approvalDataVO.getCAId() == CAConstants.ALLCAS) {
             caName = null;
         } else {
             try {
@@ -918,7 +957,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             response.setMightHaveMoreResults(true);
         }
 
-        final List<RoleDataDto> rolesTokenIsMemberOf = getRolesAuthenticationTokenIsMemberOf(authenticationToken);
+        final List<RoleDataDto> rolesTokenIsMemberOf = getRolesAuthenticationTokenIsMemberOfV2(authenticationToken);
         for (final ApprovalDataVO approvalDataVO : approvals) {
             final List<ApprovalDataText> requestDataLite = approvalDataVO.getApprovalRequest().getNewRequestDataAsText(authenticationToken); // this method isn't guaranteed to return the full information
             final RaEditableRequestData editableData = getRequestEditableData(approvalDataVO);
@@ -2004,10 +2043,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public RaRoleSearchResponse searchForRoles(AuthenticationToken authenticationToken, RaRoleSearchRequest request) {
+    public RaRoleSearchResponseV2 searchForRolesV2(AuthenticationToken authenticationToken, RaRoleSearchRequest request) {
         // TODO optimize this (ECA-5721), should filter with a database query
-        final List<RoleDataDto> authorizedRoles = getAuthorizedRoles(authenticationToken);
-        final RaRoleSearchResponse searchResponse = new RaRoleSearchResponse();
+        final List<RoleDataDto> authorizedRoles = getAuthorizedRolesV2(authenticationToken);
+        final RaRoleSearchResponseV2 searchResponse = new RaRoleSearchResponseV2();
         final String searchString = request.getGenericSearchString();
         for (final RoleDataDto role : authorizedRoles) {
             if (searchString == null || Strings.CI.contains(role.name(), searchString) ||
@@ -2016,6 +2055,14 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
         }
         return searchResponse;
+    }
+
+    @Override
+    @Deprecated(since = "9.4.1")
+    public RaRoleSearchResponse searchForRoles(AuthenticationToken authenticationToken, RaRoleSearchRequest request) {
+        // Only kept for backwards compatibility.
+        log.warn("searchForRoles invoked on wrong instance"); //TODO REMOVE
+        throw new UnsupportedOperationException("searchForRoles invoked on wrong instance");
     }
 
     @SuppressWarnings("unchecked")
@@ -3986,31 +4033,82 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return null;
     }
 
+    // Requires a transaction since it set the status and password. If the operation fails, then the status must not be left as NEW.
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
     public byte[] selfRenewCertificate(RaSelfRenewCertificateData renewCertificateData)
             throws AuthorizationDeniedException, EjbcaException, NoSuchEndEntityException, WaitingForApprovalException,
             CertificateSerialNumberException, EndEntityProfileValidationException, IllegalNameException,
             CADoesntExistsException {
-        AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new WebPrincipal(
+        // Note that the certificate being renewed need not be an administrator certificate, it can also be some client
+        // certificate that is used for some external service (but issued by EJBCA).
+        final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new WebPrincipal(
                 "RenewSelfCertificate", renewCertificateData.getClientIPAddress()));
-        EndEntityInformation userData = endEntityAccessSession.findUser(admin, renewCertificateData.getUsername());
-        if (userData.getType().contains(EndEntityTypes.SENDNOTIFICATION)) {
-            EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(userData.getEndEntityProfileId());
+        final EndEntityInformation userData = endEntityAuthenticationSession.checkAllowedToEnroll(admin, renewCertificateData.getUsername());
+        requireClientAuthProfileAndCa(userData);
+        final boolean sendNotification = userData.getType().contains(EndEntityTypes.SENDNOTIFICATION);
+        final EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(userData.getEndEntityProfileId());
+        // The password is used for:
+        // * The PKCS#12 file
+        // * Notifications, if enabled
+        // * Internally, for authentication in SignSessionBean.createCertificate (which is called during keystore generation)
+        if (profile.useAutoGeneratedPasswd()) {
             userData.setPassword(profile.makeAutoGeneratedPassword());
         } else {
             userData.setPassword(renewCertificateData.getPassword());
         }
-        userData.setStatus(EndEntityConstants.STATUS_NEW);
-        endEntityManagementSession.changeUser(admin, userData, false);
-        userData.setTokenType(EndEntityConstants.TOKEN_SOFT_P12);
-        if (userData.getExtendedInformation() == null || userData.getExtendedInformation().getKeyStoreAlgorithmType() == null) {
-            if (userData.getExtendedInformation() == null) {
-                userData.setExtendedInformation(new ExtendedInformation());
-            }
-            userData.getExtendedInformation().setKeyStoreAlgorithmType(renewCertificateData.getKeyAlg());
-            userData.getExtendedInformation().setKeyStoreAlgorithmSubType(renewCertificateData.getKeySpec());
+        if (sendNotification) {
+            // Notification is triggered on status change, so in this case, the status needs to be
+            // flipped back (to NEW) and forth (to GENERATED, which happens after successful keystore generation)
+            userData.setStatus(EndEntityConstants.STATUS_NEW);
         }
-        return generateKeyStoreWithoutViewEndEntityAccessRule(admin, userData);
+        endEntityManagementSession.changeUser(admin, userData, false);
+        boolean success = false;
+        try {
+            userData.setTokenType(EndEntityConstants.TOKEN_SOFT_P12); // This is checked against the allowed types in the profile in EndEntityProfile.doesUserFulfillEndEntityProfileWithoutPassword
+            if (userData.getExtendedInformation() == null || userData.getExtendedInformation().getKeyStoreAlgorithmType() == null) {
+                if (userData.getExtendedInformation() == null) {
+                    userData.setExtendedInformation(new ExtendedInformation());
+                }
+                userData.getExtendedInformation().setKeyStoreAlgorithmType(renewCertificateData.getKeyAlg());
+                userData.getExtendedInformation().setKeyStoreAlgorithmSubType(renewCertificateData.getKeySpec());
+            }
+            final byte[] ret = generateKeyStoreWithoutViewEndEntityAccessRule(admin, userData);
+
+            // Ensure that the password is always cleared when renewing with client certificate,
+            // even if isRenewDaysBeforeExpirationUsed is enabled in the profile.
+            // (This ignores if "Finish User" is disabled, or if multiple requests are allowed,
+            // but I don't think there's any good reason to use such configurations with self-renewal.)
+            endEntityManagementSession.setClearTextPassword(admin, renewCertificateData.getUsername(), null);
+            success = true;
+            return ret;
+        } finally { // Note: This `try` block never does NOT throw WaitingForApprovalException, that's thrown by changeUser() before
+            if (!success) {
+                // Roll back the status change to NEW if an error happens
+                sessionContext.setRollbackOnly();
+            }
+        }
+    }
+
+    private void requireClientAuthProfileAndCa(final EndEntityInformation userData) throws AuthorizationDeniedException {
+        // Safety checks that the certificate profile makes sense for self-renewal
+        final CertificateProfile certProf = certificateProfileSession.getCertificateProfile(userData.getCertificateProfileId());
+        if (!certProf.isTypeEndEntity()) { // Safety check to prevent "self-renewal" of CAs that have an end-entity (e.g. locally signed SubCAs)
+            throw new AuthorizationDeniedException("Cannot self-renew user with certificate profile that is not of end entity type");
+        }
+        if (!certProf.getKeyUsage(CertificateConstants.DIGITALSIGNATURE)) {
+            throw new AuthorizationDeniedException("Self-renewal requires certificate profile to have KeyUsage with digitalSignature");
+        }
+        final boolean[] allowedKU = certProf.getKeyUsage();
+        for (int keyUsage = 0; keyUsage < allowedKU.length; keyUsage++) {
+            if (allowedKU[keyUsage] && keyUsage != CertificateConstants.DIGITALSIGNATURE && keyUsage != CertificateConstants.NONREPUDIATION &&
+                    keyUsage != CertificateConstants.KEYENCIPHERMENT) {
+                throw new AuthorizationDeniedException("Key Usage " + keyUsage + " is not allowed for self-renewal. Only Digital Signature, Non-Repudiation and Key Encipherment are allowed.");
+            }
+        }
+        if (!certProf.getExtendedKeyUsageOids().contains(KeyPurposeId.id_kp_clientAuth.getId())) {
+            throw new AuthorizationDeniedException("Self-renewal requires certificate profile to have Extended Key Usage with clientAuthentication");
+        }
     }
 
     @Override

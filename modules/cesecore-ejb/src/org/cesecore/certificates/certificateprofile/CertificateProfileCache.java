@@ -25,18 +25,18 @@ import org.cesecore.config.CesecoreConfiguration;
 /**
  * Class Holding cache variable. Needed because EJB spec does not allow volatile, non-final fields
  * in session beans.
- * 
+ *
  * This cache is designed so only one thread at the time will update the cache if it is too old. Other
  * threads will happily return a bit too old object. If a cache update is forced, for example when
  * a profile is edited, it will always update the cache even if the commit of the transaction fails.
- * 
+ *
  * Another known issue during forced updates is the race condition exists, so an update in progress
  * might overwrite the result from forced update's database query.
- * 
+ *
  * The intention of this design is better throughput than fully ordered sequential updates.
- * 
+ *
  * Probably based on EJBCA's org.ejbca.core.ejb.ca.store.CertificateProfileCache r11155
- * 
+ *
  * @version $Id$
  */
 public enum CertificateProfileCache {
@@ -66,6 +66,7 @@ public enum CertificateProfileCache {
     private final ReentrantLock lock = new ReentrantLock(false);
 
     private CertificateProfileCache() {
+        // Note: Internal profiles (e.g. SSH, SCEPSIGNER, etc.) should NOT be added here
         idNameMapCacheTemplate.put(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER), CertificateProfile.ENDUSERPROFILENAME);
         idNameMapCacheTemplate.put(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA), CertificateProfile.SUBCAPROFILENAME);
         idNameMapCacheTemplate.put(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA), CertificateProfile.ROOTCAPROFILENAME);
@@ -80,7 +81,7 @@ public enum CertificateProfileCache {
 
     /**
      * Fetch all profiles from the database, unless cache is enabled, valid and we do not force an update.
-     * 
+     *
      * @param entityManager is required for reading the profiles from the database if we need to update the cache
      * @param force if true, this will force an update even if the cache is not yet invalid
      */

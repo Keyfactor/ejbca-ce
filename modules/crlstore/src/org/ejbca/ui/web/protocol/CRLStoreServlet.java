@@ -16,6 +16,7 @@ package org.ejbca.ui.web.protocol;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.security.cert.X509Certificate;
+import java.util.Set;
 
 import jakarta.ejb.EJB;
 import jakarta.servlet.ServletConfig;
@@ -28,6 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.HashID;
+import org.cesecore.certificates.certificate.internal.CaCertificateCacheLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.ejbca.core.protocol.crlstore.CRLCache;
 import org.ejbca.util.HTMLTools;
@@ -55,14 +57,15 @@ public class CRLStoreServlet extends StoreServletBase {
 	private static final String PARAM_PARTITION = "partition";
 
 	@EJB
+	private CaCertificateCacheLocal caCertificateCache;
+	@EJB
 	private CrlStoreSessionLocal crlStoreSession;
-	
+	@EJB
 	private CRLCache crlCache;
 
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
-		this.crlCache = CRLCache.getInstance(crlStoreSession, certCache);		
 	}
 
 	@Override
@@ -143,18 +146,23 @@ public class CRLStoreServlet extends StoreServletBase {
 	}
 	
     @Override
-    protected void printInfo(X509Certificate[] certs, String indent, PrintWriter pw) {
+    protected void printInfo(X509Certificate[] certs, String indent, PrintWriter pw, Set<String> consideredSubjectDns) {
         for (X509Certificate cert : certs) {
+            if (consideredSubjectDns.contains(CertTools.getSubjectDN(cert))) {
+                continue;
+            } else {
+                consideredSubjectDns.add(CertTools.getSubjectDN(cert));
+            }
             //Verify that there is a CRL to download
             if (crlStoreSession.crlExistsForCa(CertTools.getSubjectDN(cert))) {
                 printInfo(cert, indent, pw);
                 pw.println();
             }
-            final X509Certificate[] issuedCerts = this.certCache.findLatestByIssuerDN(HashID.getFromSubjectDN(cert));
+            final X509Certificate[] issuedCerts = caCertificateCache.findLatestByIssuerDN(HashID.getFromSubjectDN(cert));
             if (ArrayUtils.isEmpty(issuedCerts)) {
                 continue;
             }
-            printInfo(issuedCerts, SPACE + indent, pw);
+            printInfo(issuedCerts, SPACE + indent, pw, consideredSubjectDns);
         }
     }
 }
