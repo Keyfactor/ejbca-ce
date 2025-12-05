@@ -475,6 +475,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
      * @return true if approvals are required as determined by state of dependencies by checking the RA API.
      */
     private boolean isApprovalRequired() {
+
+        final CAInfo caInfo = getCAInfo();
+
+        if (caInfo == null) {
+            throw new IllegalStateException("No authorized CAs are available for the selected certificate profile of current admin user.");
+        }
+
         try {
             return raMasterApiProxyBean.getApprovalProfileForAction(raAuthenticationBean.getAuthenticationToken(),
                     ApprovalRequestType.ADDEDITENDENTITY, getCAInfo().getCAId(),
