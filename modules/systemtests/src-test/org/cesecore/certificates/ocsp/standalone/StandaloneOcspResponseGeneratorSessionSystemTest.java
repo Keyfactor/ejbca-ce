@@ -288,7 +288,7 @@ public class StandaloneOcspResponseGeneratorSessionSystemTest {
             ocspResponseGeneratorSession.reloadOcspSigningCache();
             assertEquals("Status is not null (good)", null, testOcspSignerIssuerRenewalInternal(eeCertificate, caCertificate, ocspSigningCertificate, OCSPResp.SUCCESSFUL, true));
             // Try the same thing after CA has been renewed
-            caAdminSession.renewCA(authenticationToken, x509ca.getCAId(), true, null, false);
+            caAdminSession.renewCA(authenticationToken, x509ca.getCAId(), true, null, false, CertificateProfileConstants.NO_CERTIFICATE_PROFILE);
             final X509Certificate caCertificateRenewed = (X509Certificate) caSession.getCAInfo(authenticationToken, x509ca.getCAId()).getCertificateChain().iterator().next();
             ocspResponseGeneratorSession.reloadOcspSigningCache();
             /*

@@ -14,7 +14,6 @@
 package org.cesecore.dto;
 
 import java.util.Map;
-import org.cesecore.dto.Dto;
 
 public interface DummyCertWithoutIndex extends Dto<Long>, Comparable<DummyCertWithoutIndex> {
 
