@@ -127,7 +127,7 @@ public class CreateCsrCommand extends EjbcaCommandBase {
                         + signatureAlgorithmsFormatted));
         registerParameter(new Parameter(ALT_SIGALG_ARG, "Alternative Signature Algorithm", MandatoryMode.OPTIONAL, StandaloneMode.FORBID,
                 ParameterMode.ARGUMENT,
-                "Alternative signature algorithm to sign the CSR with, if making a hyrid CSR. If omitted, the default 256 bit algorithm for the assigned key will be used. Must be one of: "
+                "Alternative signature algorithm to sign the CSR with, if making a hybrid CSR. If omitted, the default 256 bit algorithm for the assigned key will be used. Must be one of: "
                         + signatureAlgorithmsFormatted));
 
         registerParameter(new Parameter(KEYALG_ARG, "cipher", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
@@ -141,8 +141,10 @@ public class CreateCsrCommand extends EjbcaCommandBase {
                         + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_192S + ", " + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_192S + ", "
                         + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_192F + ", " + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_192F + ", "
                         + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_256S + ", " + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_256S + ", "
-                        + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_256F + ", " + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_256F
-                         + "].  Omit if using existing keys."));
+                        + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_256F + ", " + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_256F + ", "
+                        + AlgorithmConstants.KEYALGORITHM_MLDSA87_RSA3072_PSS_SHA512 + ", " + AlgorithmConstants.KEYALGORITHM_MLDSA87_RSA4096_PSS_SHA512 + ", "
+                        + AlgorithmConstants.KEYALGORITHM_MLDSA87_ECDSA_P384_SHA512 + ", " + AlgorithmConstants.KEYALGORITHM_MLDSA87_ECDSA_P521_SHA512 + ", "
+                        + "].  Omit if using existing keys."));
 
         StringBuilder ecCurvesFormatted = new StringBuilder();
         ecCurvesFormatted.append("[");
@@ -499,6 +501,18 @@ public class CreateCsrCommand extends EjbcaCommandBase {
             break;
         case "FALCON-1024":
             keyAlgorithm = AlgorithmConstants.KEYALGORITHM_FALCON1024;
+            break;
+        case "MLDSA87-RSA3072-PSS-SHA512":
+            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_MLDSA87_RSA3072_PSS_SHA512;
+            break;
+        case "MLDSA87-RSA4096-PSS-SHA512":
+            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_MLDSA87_RSA4096_PSS_SHA512;
+            break;
+        case "MLDSA87-ECDSA-P384-SHA512":
+            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_MLDSA87_ECDSA_P384_SHA512;
+            break;
+        case "MLDSA87-ECDSA-P521-SHA512":
+            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_MLDSA87_ECDSA_P521_SHA512;
             break;
         default:
             throw new IOException("Key Algorithm " + keyAlg + " was unknown.");
