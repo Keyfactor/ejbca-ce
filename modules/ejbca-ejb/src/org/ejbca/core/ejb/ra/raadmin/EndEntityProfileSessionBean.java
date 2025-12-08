@@ -277,13 +277,18 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         boolean authorizedToProfile = false;
         // Check authorization for the endentityAccessRule here. The built in EMPTY EE profile is obviously not included in the cache, so added manually above
         if (authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEBASE + "/" + String.valueOf(profileId) + endentityAccessRule)) {
-            authorizedToProfile = true;
             for (final int caId : availableCaIds) {
+
+                if (caId == CAConstants.ALLCAS && authorizedCaIds.contains(caId)) {
+                    authorizedToProfile = true;
+                    break;
+                }
+
                 // with root rule access you can edit profiles with missing CA ids
-                if (!authorizedCaIds.contains(caId) && (!hasRootRuleAccess || allCaIds.contains(caId))) {
-                    authorizedToProfile = false;
+                if (authorizedCaIds.contains(caId) || (hasRootRuleAccess && !allCaIds.contains(caId))) {
+                    authorizedToProfile = true;
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug("Profile " + profileId + " not authorized to CA with ID " + caId);
+                        LOG.debug("Profile " + profileId + " at least authorized to CA with ID " + caId);
                     }
                     break;
                 }
@@ -302,6 +307,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     	authorizedCaIds.add(CAConstants.ALLCAS);
 
     	final boolean rootAccess = authorizationSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource());
+
         // We have to manually add the EMPTY end entity profile because it is not included in the profile cache
         if (authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEBASE + "/" + EndEntityConstants.EMPTY_END_ENTITY_PROFILE + endentityAccessRule)) {
             returnval.add(EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
@@ -317,8 +323,8 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public List<Integer> getAuthorizedEndEntityProfileIdsWithMissingCAs(final AuthenticationToken admin) {
-        final ArrayList<Integer> returnval = new ArrayList<Integer>();
-        final HashSet<Integer> allcaids = new HashSet<Integer>(caSession.getAllCaIds());
+        final ArrayList<Integer> returnval = new ArrayList<>();
+        final HashSet<Integer> allcaids = new HashSet<>(caSession.getAllCaIds());
         allcaids.add(CAConstants.ALLCAS);
         if (!authorizationSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource())) {
             // we can only see profiles with missing CA Ids if we have root rule access
