@@ -49,9 +49,11 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.certificate.Base64CertData;
 import org.cesecore.certificates.certificate.BaseCertificateData;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateData;
+import org.cesecore.certificates.certificate.CertificateDataSessionLocal;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
@@ -103,6 +105,8 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
     private CertificateProfileSessionLocal certificateProfileSession;
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
+    @EJB
+    private CertificateDataSessionLocal certificateDataSession;
     @EJB
     private CrlStoreSessionLocal crlStoreSession;
     @EJB
@@ -349,14 +353,22 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
             try {
                 final Certificate cert = CertTools.getCertfromByteArray(incompleteIssuedCert.getCertBytes(), BouncyCastleProvider.PROVIDER_NAME,
                         Certificate.class);
-
-                // Sets the status of the pre certs in CertificateData to ACTIVE
-                certificateStoreSession.storeCertificateNoAuth(admin, cert, incompleteIssuedCert.getUsername(),
-                        incompleteIssuedCert.getCaFingerprint(), null, CertificateConstants.CERT_ACTIVE, certProfile.getType(),
-                        incompleteIssuedCert.getCertificateProfileId(), incompleteIssuedCert.getEndEntityProfileId(),
-                        incompleteIssuedCert.getCrlPartitionIndex(), CertificateConstants.CERT_TAG_PRECERT, now.getTime(),
-                        incompleteIssuedCert.getAccountBindingId());
-
+                
+                List<CertificateData> currentlyPersistedCerts = 
+                        certificateDataSession.findByIssuerDNSerialNumber(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert).toString());
+                
+                if(currentlyPersistedCerts.isEmpty()) {
+                    // Sets the status of the pre certs in CertificateData to ACTIVE
+                    certificateStoreSession.storeCertificateNoAuth(admin, cert, incompleteIssuedCert.getUsername(),
+                            incompleteIssuedCert.getCaFingerprint(), null, CertificateConstants.CERT_ACTIVE, certProfile.getType(),
+                            incompleteIssuedCert.getCertificateProfileId(), incompleteIssuedCert.getEndEntityProfileId(),
+                            incompleteIssuedCert.getCrlPartitionIndex(), CertificateConstants.CERT_TAG_PRECERT, now.getTime(),
+                            incompleteIssuedCert.getAccountBindingId());
+                } else {
+                    log.info("Certificate or Pre-certificate is already stored in database with issuerDn: " + CertTools.getIssuerDN(cert)
+                                        + " and serial number: " + CertTools.getSerialNumber(cert) + ". Skipping duplicate entry.");
+                }
+                
                 // The certificate is now in a meaningful state, so it can be removed from IncompleteIssuanceJournalData
                 incompleteIssuanceJournalDataSession.removeFromJournal(incompleteIssuedCert.getCaId(), incompleteIssuedCert.getSerialNumber());
             } catch (CertificateParsingException e) {
@@ -379,19 +391,39 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
                 // Add certificate in revoked state
                 final Certificate cert = CertTools.getCertfromByteArray(incompleteIssuedCert.getCertBytes(), BouncyCastleProvider.PROVIDER_NAME,
                         Certificate.class);
-                final CertificateDataWrapper cdw = certificateStoreSession.storeCertificateRevokedNoAuth(admin, cert,
-                        incompleteIssuedCert.getUsername(), incompleteIssuedCert.getCaFingerprint(), null, CertificateConstants.CERT_REVOKED,
-                        certProfile.getType(), incompleteIssuedCert.getCertificateProfileId(), incompleteIssuedCert.getEndEntityProfileId(),
-                        incompleteIssuedCert.getCrlPartitionIndex(), CertificateConstants.CERT_TAG_PRECERT, now.getTime(),
-                        incompleteIssuedCert.getAccountBindingId(), revocationReason, now);
-                // Publish revocation information
-                final BaseCertificateData certificateData = cdw.getBaseCertificateData();
-                final String password = null;
-                publisherSession.storeCertificate(admin, publishers, cdw, password, certificateData.getSubjectDN(), null);
-                postRevokeCertificate(admin, cdw);
+                List<CertificateData> currentlyPersistedCerts = 
+                        certificateDataSession.findByIssuerDNSerialNumber(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert).toString());
+                
+                if(currentlyPersistedCerts.isEmpty()) {
+                    final CertificateDataWrapper cdw = certificateStoreSession.storeCertificateRevokedNoAuth(admin, cert,
+                            incompleteIssuedCert.getUsername(), incompleteIssuedCert.getCaFingerprint(), null, CertificateConstants.CERT_REVOKED,
+                            certProfile.getType(), incompleteIssuedCert.getCertificateProfileId(), incompleteIssuedCert.getEndEntityProfileId(),
+                            incompleteIssuedCert.getCrlPartitionIndex(), CertificateConstants.CERT_TAG_PRECERT, now.getTime(),
+                            incompleteIssuedCert.getAccountBindingId(), revocationReason, now);
+                    // Publish revocation information
+                    final BaseCertificateData certificateData = cdw.getBaseCertificateData();
+                    final String password = null;
+                    publisherSession.storeCertificate(admin, publishers, cdw, password, certificateData.getSubjectDN(), null);
+                    postRevokeCertificate(admin, cdw);
+                } else if(currentlyPersistedCerts.size()==1 && 
+                        currentlyPersistedCerts.get(0).getTag()==CertificateConstants.CERT_TAG_PRECERT &&
+                        currentlyPersistedCerts.get(0).getStatus()!=CertificateConstants.CERT_REVOKED) {
+                    // pre-certificate exists and not revoked
+                    CertificateDataWrapper cdw = new CertificateDataWrapper(currentlyPersistedCerts.get(0), new Base64CertData(cert));
+                    certificateStoreSession.setRevokeStatus(admin, cdw, now, null, revocationReason.getDatabaseValue());
+                    publisherSession.storeCertificate(admin, publishers, cdw, null, CertTools.getSubjectDN(cert), null);
+                    postRevokeCertificate(admin, cdw);
+                } else {
+                    // if currentlyPersistedCerts is more than 1, then at least one of them is Issued Certificate.
+                    // Leave the Issued Certificate be and ignore pre-certificate.
+                    // Both Pre-certificate and Issued Certificate may be persisted on older installations without certificatedata_idx12
+                    log.info("Issued Certificate is already stored in database with issuerDn: " + CertTools.getIssuerDN(cert)
+                            + " and serial number: " + CertTools.getSerialNumber(cert) + ". Not revoking Pre-certificate.");
+
+                }
                 // The certificate is now in a meaningful state, so it can be removed from IncompleteIssuanceJournalData
                 incompleteIssuanceJournalDataSession.removeFromJournal(incompleteIssuedCert.getCaId(), incompleteIssuedCert.getSerialNumber());
-            } catch (CertificateParsingException e) {
+            } catch (CertificateParsingException|CertificateRevokeException | AuthorizationDeniedException e) {
                 log.error("Failed to revoke incompletely issued certificate, with CA ID " + incompleteIssuedCert.getCaId() + " and serial "
                         + incompleteIssuedCert.getSerialNumber().toString(16));
             }
