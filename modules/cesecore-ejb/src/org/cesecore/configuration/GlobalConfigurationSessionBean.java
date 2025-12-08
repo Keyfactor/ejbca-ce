@@ -360,6 +360,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
         }
 
     }
+    
 }
 
 

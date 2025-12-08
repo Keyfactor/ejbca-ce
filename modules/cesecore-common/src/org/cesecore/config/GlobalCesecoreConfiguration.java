@@ -129,8 +129,9 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase implements Se
         data.put(MAXIMUM_QUERY_TIMEOUT_KEY, Math.max(maximumQueryTimeoutMs, 0L));
     }
     
-    public char[] getForbiddenCharacters() {
-        return (char[]) data.getOrDefault(FORBIDDEN_CHARACTERS, DEFAULT_FORBIDDEN_CHARACTERS);
+    public char[] getForbiddenCharacters() {    
+        Object databaseValue = data.getOrDefault(FORBIDDEN_CHARACTERS, new String(DEFAULT_FORBIDDEN_CHARACTERS));
+        return unescapeSqlChars(((String) databaseValue)).toCharArray();        
     }
 
     /**
@@ -138,8 +139,17 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase implements Se
      * @param forbiddenCharacters a char array containing all characters to be auto-escaped. Setting this to null will use the default value set in x509-common-utils
      */
     public void setForbiddenCharacters(final char[] forbiddenCharacters) {
-        data.put(FORBIDDEN_CHARACTERS, forbiddenCharacters);
+        data.put(FORBIDDEN_CHARACTERS, escapeSqlChars(new String(forbiddenCharacters) ));
     }
+    
+    private String escapeSqlChars(String input) {
+        return input.replace("'", "''").replace("/", "//");
+    }
+    
+    private String unescapeSqlChars(String input) {
+        return input.replace("''", "'").replace("//", "/");
+    }
+    
     
     @Deprecated(since = "9.4.0")
     public boolean getCtCacheEnabled() { return getBoolean(CT_CACHE_ENABLED_KEY, true); }
