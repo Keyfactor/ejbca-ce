@@ -173,24 +173,32 @@ public class OCSPUnidClient {
 		}
 	}
 	/**
-	 * @param cert X509Certificate to query, the DN should contain serialNumber which is Unid to be looked up
-	 * @param cacert CA certificate that issued the certificate to be queried
-     * @param useGet if true GET will be used instead of POST as HTTP method
-	 * @return OCSPUnidResponse conatining the response and the fnr, can contain and an error code and the fnr can be null, never returns null.
+	 * @param certificates  X509Certificates to query, the DN should contain serialNumber which is
+     *                      Unid to be looked up
+	 * @param cacert        CA certificate that issued the certificate to be queried
+     * @param useGet        if true, GET will be used instead of POST as the HTTP method
+	 * @return              OCSPUnidResponse containing the response and the fnr, can contain and an error code,
+     *                      and the fnr can be null, never returns null.
 	 * @throws OCSPException
 	 * @throws IOException
 	 * @throws GeneralSecurityException
 	 * @throws OperatorCreationException 
 	 * @throws IllegalArgumentException 
 	 */
-	public OCSPUnidResponse lookup(Certificate cert, X509Certificate cacert, boolean useGet) throws OCSPException, IOException, GeneralSecurityException, IllegalArgumentException, OperatorCreationException {
-        return lookup( CertTools.getSerialNumber(cert), cacert, useGet);
+	public OCSPUnidResponse lookupWithCertificates(List<X509Certificate> certificates, X509Certificate cacert, boolean useGet) throws OCSPException, IOException, GeneralSecurityException, IllegalArgumentException, OperatorCreationException {
+        List<BigInteger> certificateSerialNumbers = certificates.stream()
+                                                                .map(CertTools::getSerialNumber)
+                                                                .toList();
+
+        return lookupWithSerialNumbers(certificateSerialNumbers, cacert, useGet);
     }
+
     /**
-     * @param serialNr serial number of the certificate to verify
-     * @param cacert issuer of the certificate to verify
-     * @param useGet if true GET will be used instead of POST as HTTP method
-     * @return response can contain and an error code but the fnr is allways null, never returns null.
+     * @param serialNumbers     serial numbers of the certificates to verify
+     * @param cacert            issuer of the certificate to verify
+     * @param useGet            if true, GET will be used instead of POST as the HTTP method
+     * @return                  response can contain and an error code, but the fnr is always null,
+     *                          never returns null.
      * @throws OCSPException 
      * @throws IOException
      * @throws OperatorCreationException if Signer couldn't be created
@@ -200,7 +208,7 @@ public class OCSPUnidClient {
      * @throws KeyManagementException 
      * @throws UnrecoverableKeyException 
      */
-    public OCSPUnidResponse lookup(BigInteger serialNr, X509Certificate cacert, boolean useGet) throws OCSPException, IOException,
+    public OCSPUnidResponse lookupWithSerialNumbers(List<BigInteger> serialNumbers, X509Certificate cacert, boolean useGet) throws OCSPException, IOException,
              OperatorCreationException, UnrecoverableKeyException, KeyManagementException, CertificateException, NoSuchAlgorithmException, KeyStoreException {
         if (this.httpReqPath == null) {
             // If we didn't pass a url to the constructor and the cert does not have the URL, we will fail...
@@ -209,12 +217,17 @@ public class OCSPUnidClient {
             return ret;
         }
         final OCSPReqBuilder gen = new OCSPReqBuilder();
-        final CertificateID certId = new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, serialNr);
-        gen.addRequest(certId);
+
+        for (BigInteger serialNumber : serialNumbers) {
+            final CertificateID certId = new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, serialNumber);
+            gen.addRequest(certId);
+        }
+
         if (!useGet) {
             // Add a nonce to the request
             gen.setRequestExtensions(this.extensions);        	
         }
+
         final OCSPReq req;
         if (this.signKey != null) {
             final X509Certificate localCertChain[] = this.certChain != null ? this.certChain : new X509Certificate[] { cacert };
@@ -228,7 +241,7 @@ public class OCSPUnidClient {
         // write request if directory exists.
         File  ocspReqDir = new File(requestDirectory);
         if ( ocspReqDir.isDirectory() ) {
-            OutputStream os = new FileOutputStream(new File( ocspReqDir, serialNr.toString()));
+            OutputStream os = new FileOutputStream(new File( ocspReqDir, serialNumbers.get(0).toString()));
             os.write(req.getEncoded());
             os.close();
         }

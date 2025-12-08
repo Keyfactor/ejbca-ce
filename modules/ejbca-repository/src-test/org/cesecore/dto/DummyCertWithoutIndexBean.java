@@ -20,8 +20,6 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
-import org.cesecore.dto.DummyCertWithoutIndex;
-import org.cesecore.dto.DummyCertWithoutIndexRecord;
 import org.cesecore.util.XmlUtil;
 import org.ejbca.dto.EntityManagerBean;
 
@@ -33,6 +31,7 @@ import java.util.Objects;
 @Table(name = "DummyCertWithoutIndex")
 public final class DummyCertWithoutIndexBean implements Serializable, EntityManagerBean<DummyCertWithoutIndex> {
 
+    private static final long serialVersionUID = 1L;
     private Long id;
     private String name;
     private String data;

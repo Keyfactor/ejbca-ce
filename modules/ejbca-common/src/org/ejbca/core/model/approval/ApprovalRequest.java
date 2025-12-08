@@ -356,6 +356,7 @@ public abstract class ApprovalRequest implements Externalizable {
         out.writeObject(this.requestAdmin);
         out.writeObject(this.requestSignature);
         out.writeInt(this.approvalRequestType);
+        out.writeInt(0); //To retain compatability between <= 9.3 (CA) and >= 9.4 (RA) when sending over Peers
         out.writeInt(this.cAId);
         out.writeInt(this.endEntityProfileId);
         out.writeInt(this.approvalSteps.length);
@@ -396,7 +397,8 @@ public abstract class ApprovalRequest implements Externalizable {
             }
             this.requestSignature = (String) in.readObject();
             this.approvalRequestType = in.readInt();
-            this.cAId = in.readInt();
+            in.readInt(); // to fill for numOfRequiredApprovals, which was removed in 9.4
+            this.cAId = in.readInt();     
             this.endEntityProfileId = in.readInt();
             final int stepSize = in.readInt();
             if (log.isTraceEnabled()) {

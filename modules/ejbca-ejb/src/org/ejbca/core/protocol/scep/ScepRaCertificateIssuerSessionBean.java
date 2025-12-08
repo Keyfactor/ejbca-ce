@@ -12,19 +12,20 @@
  *************************************************************************/
 package org.ejbca.core.protocol.scep;
 
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import java.security.cert.X509Certificate;
+
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAOfflineException;
-import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.CertificateGenerationParams;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.CertificateCreateException;
-import org.cesecore.certificates.certificate.CertificateCreateSession;
+import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
@@ -38,35 +39,37 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.keys.token.CryptoTokenManagementSession;
-import org.ejbca.core.ejb.ra.EndEntityManagementSession;
+import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
 
-import java.security.cert.X509Certificate;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
-/**
- * I generate certificates to encrypt/sign SCEP messages.
- */
-public class ScepRaCertificateIssuer {
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 
-    private CryptoTokenManagementSession cryptoTokenManagementSession;
-    private CaSession caSession;
-    private EndEntityManagementSession endEntityManagementSession;
-    private CertificateCreateSession certificateCreateSession;
+@Stateless
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+public class ScepRaCertificateIssuerSessionBean implements ScepRaCertificateIssuerSessionLocal {
 
-    public ScepRaCertificateIssuer(CryptoTokenManagementSession cryptoTokenManagementSession, CaSession caSession,
-            EndEntityManagementSession endEntityManagementSession, CertificateCreateSession certificateCreateSession) {
-        this.cryptoTokenManagementSession = cryptoTokenManagementSession;
-        this.caSession = caSession;
-        this.endEntityManagementSession = endEntityManagementSession;
-        this.certificateCreateSession = certificateCreateSession;
-    }
-
+    @EJB
+    private CaSessionLocal caSession;
+    @EJB
+    private CertificateCreateSessionLocal certificateCreateSession;
+    @EJB
+    private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
+    @EJB
+    private EndEntityManagementSessionLocal endEntityManagementSession;
+    
+    @Override
     public X509Certificate issueEncryptionCertificate(AuthenticationToken authenticationToken, String caName, int cryptoTokenId,
             String keyAlias) throws ScepEncryptionCertificateIssuanceException {
         return issueCertificate(authenticationToken, caName, cryptoTokenId, keyAlias, CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_ENCRYPTOR);
     }
 
+    @Override
     public X509Certificate issueSigningCertificate(AuthenticationToken authenticationToken, String caName, int cryptoTokenId,
             String keyAlias) throws ScepEncryptionCertificateIssuanceException {
         return issueCertificate(authenticationToken, caName, cryptoTokenId, keyAlias, CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_SIGNER);
