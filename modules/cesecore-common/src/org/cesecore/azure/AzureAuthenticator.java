@@ -47,7 +47,7 @@ public abstract class AzureAuthenticator {
     }
 
     // this should end in a '/'
-    final private String azureLoginUrl;
+    private final String azureLoginUrl;
 
     public AzureAuthenticator(String azureLoginUrl) {
         if (!azureLoginUrl.endsWith("/"))
@@ -55,7 +55,7 @@ public abstract class AzureAuthenticator {
         this.azureLoginUrl = azureLoginUrl;
     }
 
-    abstract public BearerToken getBearerTokenForResource(String resource) throws IOException, AzureException;
+    public abstract BearerToken getBearerTokenForResource(String resource) throws IOException, AzureException;
 
     protected String getAzureLoginUrl() {
         return azureLoginUrl;

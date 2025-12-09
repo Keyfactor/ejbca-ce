@@ -407,6 +407,7 @@ include(
     "modules:clientToolBox",
     "modules:ejbca-repository",
     "modules:cmpclient",
+    "modules:systemtests-jscep",
 )
 
 fun loadPropertiesFromFiles(vararg filePaths: String): Properties {
