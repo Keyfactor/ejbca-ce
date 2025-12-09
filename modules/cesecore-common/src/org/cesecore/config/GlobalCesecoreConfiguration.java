@@ -138,7 +138,10 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase implements Se
      * 
      * @param forbiddenCharacters a char array containing all characters to be auto-escaped. Setting this to null will use the default value set in x509-common-utils
      */
-    public void setForbiddenCharacters(final char[] forbiddenCharacters) {
+    public void setForbiddenCharacters(char[] forbiddenCharacters) {
+        if(forbiddenCharacters == null) {
+            forbiddenCharacters = DEFAULT_FORBIDDEN_CHARACTERS;
+        }
         data.put(FORBIDDEN_CHARACTERS, escapeSqlChars(new String(forbiddenCharacters) ));
     }
     
