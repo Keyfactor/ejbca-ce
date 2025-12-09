@@ -57,7 +57,7 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.protocol.scep.ScepEncryptionCertificateIssuanceException;
-import org.ejbca.core.protocol.scep.ScepRaCertificateIssuer;
+import org.ejbca.core.protocol.scep.ScepRaCertificateIssuerSessionLocal;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.util.SelectItemComparator;
 
@@ -147,6 +147,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         private ArrayList<String> encryptionCAs;
 
         public ScepAliasGuiInfo(final String alias) {
+            ScepConfiguration scepConfig = (ScepConfiguration) globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
             this.alias = alias;
             this.mode = (scepConfig.getRAMode(alias) ? ScepConfiguration.Mode.RA.getResource() : ScepConfiguration.Mode.CA.getResource());
             this.includeCA = scepConfig.getIncludeCA(alias);
@@ -762,40 +763,52 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             this.signingCertificateInfo = new ScepRaCertificate(tokenId, keyAlias, caToCertificate);
         }
     }
+    
+    
+
+
 
     @EJB
-    private EndEntityManagementSessionLocal endEntityManagementSession;
+    private AuthorizationSessionLocal authorizationSession;
+    @EJB
+    private CaSessionLocal caSession;
+    @EJB
+    private CertificateCreateSessionLocal certificateCreateSession;
+    @EJB
+    private CertificateProfileSessionLocal certProfileSession;
     @EJB
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
     @EJB
-    private CertificateCreateSessionLocal certificateCreateSession;
+    private EnterpriseEditionEjbBridgeSessionLocal editionEjbBridgeSession;
+    @EJB
+    private EndEntityManagementSessionLocal endEntityManagementSession;
+    @EJB
+    private EndEntityProfileSessionLocal endentityProfileSession;
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigSession;
+    @EJB
+    private ScepRaCertificateIssuerSessionLocal scepRaCertificateIssuerSession;
 
     private static final long serialVersionUID = 2L;
     private static final Logger log = Logger.getLogger(ScepConfigMBean.class);
     private ScepAliasGuiInfo currentAlias = null;
     private String selectedAlias;
-    private ScepConfiguration scepConfig;
     private boolean currentAliasEditMode = false;
-    private transient GlobalConfigurationSessionLocal globalConfigSession;
-    private transient AuthorizationSessionLocal authorizationSession;
+
+    
     private transient AuthenticationToken cachedAuthenticationToken;
-    private transient CaSessionLocal caSession;
-    private transient CertificateProfileSessionLocal certProfileSession;
-    private transient EndEntityProfileSessionLocal endentityProfileSession;
-    private transient EnterpriseEditionEjbBridgeSessionLocal editionEjbBridgeSession;
 
     public ScepConfigMBean() {
         super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.SYSTEMCONFIGURATION_VIEW.resource());
-        scepConfig = (ScepConfiguration) getGlobalConfigSession().getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
+       
     }
-
+    
     /**
      * Force reload from underlying (cache) layer for the current SCEP configuration alias
      */
     private void flushCache() {
         currentAlias = null;
         currentAliasEditMode = false;
-        scepConfig = (ScepConfiguration) getGlobalConfigSession().getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
     }
 
     public String getSelectedAlias() {
@@ -811,7 +824,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     public boolean isAllowedToEdit() {
-        return getAuthorizationSession().isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_EDIT.resource());
+        return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_EDIT.resource());
     }
 
     public void setCurrentAliasEditMode(boolean currentAliasEditMode) {
@@ -823,6 +836,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
      */
     public ListDataModel<ScepAliasGuiInfo> getAliasGuiList() {
         flushCache();
+        ScepConfiguration scepConfig = (ScepConfiguration) globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
         return new ListDataModel<>(
                 scepConfig.getAliasList()
                         .stream()
@@ -833,10 +847,12 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     public boolean isAliasListEmpty(){
+        ScepConfiguration scepConfig = (ScepConfiguration) globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
         return scepConfig.getAliasList().isEmpty();
     }
 
     public ScepAliasGuiInfo getCurrentAlias() {
+        ScepConfiguration scepConfig = (ScepConfiguration) globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
         if (this.currentAlias == null && selectedAlias != null && scepConfig.aliasExists(selectedAlias)) {
             this.currentAlias = new ScepAliasGuiInfo(selectedAlias);
         }
@@ -844,7 +860,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     protected boolean renameOrAddAlias() {
-
+        ScepConfiguration scepConfig = (ScepConfiguration) globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
         String oldAlias = selectedAlias;
         String newAlias = currentAlias.getAlias();
 
@@ -878,6 +894,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     public String saveCurrentAlias() {
+        ScepConfiguration scepConfig = (ScepConfiguration) globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
         if (currentAlias != null) {
 
             if (!renameOrAddAlias()) {
@@ -952,15 +969,14 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                     }
 
                     // if a new encryption/signing certificates need to be issued for this SCEP profile, issue them and set them in the config
-                    var issuer = new ScepRaCertificateIssuer(cryptoTokenManagementSession, caSession, endEntityManagementSession,
-                            certificateCreateSession);
+
                     if (currentAlias.encryptionCertificateMustBeGenerated()) {
-                        var certificate = issuer.issueEncryptionCertificate(getAuthenticationToken(), currentAlias.getRaDefaultCA(),
+                        var certificate = scepRaCertificateIssuerSession.issueEncryptionCertificate(getAuthenticationToken(), currentAlias.getRaDefaultCA(),
                                 currentAlias.encryptionCryptoTokenId, currentAlias.encryptionKeyAlias);
                         currentAlias.setEncryptionCertificate(currentAlias.encryptionCryptoTokenId, currentAlias.encryptionKeyAlias, certificate);
                     }
                     if (currentAlias.signingCertificateMustBeGenerated()) {
-                        var certificate = issuer.issueSigningCertificate(getAuthenticationToken(), currentAlias.getRaDefaultCA(),
+                        var certificate = scepRaCertificateIssuerSession.issueSigningCertificate(getAuthenticationToken(), currentAlias.getRaDefaultCA(),
                                 currentAlias.signingCryptoTokenId, currentAlias.signingKeyAlias);
                         currentAlias.setSigningCertificate(currentAlias.signingCryptoTokenId, currentAlias.signingKeyAlias, certificate);
                     }
@@ -995,16 +1011,12 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                         addErrorMessage("SCEP_SELECT_AVAILABLE_CA");
                         return null;
                     }
-                    
-                    // if a new encryption/signing certificates need to be issued for this SCEP profile, issue them and set them in the config
-                    var issuer = new ScepRaCertificateIssuer(cryptoTokenManagementSession, caSession, endEntityManagementSession,
-                            certificateCreateSession);
 
                     // issue any new scep encryption certificates
                     HashMap<String, String> caToEncryptionCertificate = new HashMap<>();
                     for (var caName : currentAlias.encryptionCAs) {
                         if (!currentAlias.casThatAlreadyHaveEncryptionCerts().contains(caName)) {
-                            var certificate = issuer.issueEncryptionCertificate(getAuthenticationToken(), caName, currentAlias.encryptionCryptoTokenId, currentAlias.encryptionKeyAlias);
+                            var certificate = scepRaCertificateIssuerSession.issueEncryptionCertificate(getAuthenticationToken(), caName, currentAlias.encryptionCryptoTokenId, currentAlias.encryptionKeyAlias);
                             var pemEncodedCertificate = CertTools.getPemFromCertificate(certificate);
                             caToEncryptionCertificate.put(caName, pemEncodedCertificate);
                         } 
@@ -1018,7 +1030,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                     HashMap<String, String> caToSigningCertificate = new HashMap<>();
                     for (var caName : currentAlias.encryptionCAs) {
                         if (!currentAlias.casThatAlreadyHaveSigningCerts().contains(caName)) {
-                            var certificate = issuer.issueSigningCertificate(getAuthenticationToken(), caName, currentAlias.signingCryptoTokenId, currentAlias.signingKeyAlias);
+                            var certificate = scepRaCertificateIssuerSession.issueSigningCertificate(getAuthenticationToken(), caName, currentAlias.signingCryptoTokenId, currentAlias.signingKeyAlias);
                             var pemEncodedCertificate = CertTools.getPemFromCertificate(certificate);
                             caToSigningCertificate.put(caName, pemEncodedCertificate);
                         } 
@@ -1048,7 +1060,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                     scepConfig.setEncryptionCAs(alias, currentAlias.getEncryptionCAs());
                 }
 
-                getGlobalConfigSession().saveConfiguration(getAuthenticationToken(), scepConfig);
+                globalConfigSession.saveConfiguration(getAuthenticationToken(), scepConfig);
             } catch (AuthorizationDeniedException e) {
                 String msg = "Cannot save alias. Administrator is not authorized.";
                 log.info(msg + e.getLocalizedMessage());
@@ -1075,10 +1087,11 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     public String deleteAlias() {
+        ScepConfiguration scepConfig = (ScepConfiguration) globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
         if (scepConfig.aliasExists(selectedAlias)) {
             scepConfig.removeAlias(selectedAlias);
             try {
-                getGlobalConfigSession().saveConfiguration(getAuthenticationToken(), scepConfig);
+                globalConfigSession.saveConfiguration(getAuthenticationToken(), scepConfig);
             } catch (AuthorizationDeniedException e) {
                 String msg = "Failed to remove alias: " + e.getLocalizedMessage();
                 log.info(msg, e);
@@ -1149,7 +1162,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
      * @return a list of all CA names
      */
     public List<SelectItem> getAvailableCAs() {
-        final Collection<String> cas = getCaSession().getAuthorizedCaNames(getAuthenticationToken());
+        final Collection<String> cas = caSession.getAuthorizedCaNames(getAuthenticationToken());
         return cas.stream()
                 .map(SelectItem::new)
                 .sorted(new SelectItemComparator())
@@ -1160,8 +1173,8 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
      * @return a list of EndEntity profiles that this admin is authorized to
      */
     public List<SelectItem> getAuthorizedEEProfileNames() {
-        final Collection<Integer> endEntityProfileIds = getEndentityProfileSession().getAuthorizedEndEntityProfileIds(getAdmin(), AccessRulesConstants.CREATE_END_ENTITY);
-        final Map<Integer, String> nameMap = getEndentityProfileSession().getEndEntityProfileIdToNameMap();
+        final Collection<Integer> endEntityProfileIds = endentityProfileSession.getAuthorizedEndEntityProfileIds(getAdmin(), AccessRulesConstants.CREATE_END_ENTITY);
+        final Map<Integer, String> nameMap = endentityProfileSession.getEndEntityProfileIdToNameMap();
         return endEntityProfileIds.stream()
                 .map(nameMap::get)
                 .map(SelectItem::new)
@@ -1177,10 +1190,10 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         if (StringUtils.isEmpty(eep)) {
             eep = ScepConfiguration.DEFAULT_RA_ENTITYPROFILE;
         }
-        final EndEntityProfile p = getEndentityProfileSession().getEndEntityProfile(eep);
+        final EndEntityProfile p = endentityProfileSession.getEndEntityProfile(eep);
         if (p != null) {
             return p.getAvailableCertificateProfileIds().stream()
-                    .map(getCertProfileSession()::getCertificateProfileName)
+                    .map(certProfileSession::getCertificateProfileName)
                     .map(SelectItem::new)
                     .sorted(new SelectItemComparator())
                     .collect(Collectors.toList());
@@ -1196,12 +1209,12 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         if (StringUtils.isEmpty(eep)) {
             eep = ScepConfiguration.DEFAULT_RA_ENTITYPROFILE;
         }
-        final EndEntityProfile p = getEndentityProfileSession().getEndEntityProfile(eep);
+        final EndEntityProfile p = endentityProfileSession.getEndEntityProfile(eep);
         if (p != null) {
             if (p.getAvailableCAs().contains(CAConstants.ALLCAS)) {
                 return getAvailableCAs();
             } else {
-                final Map<Integer, String> caidname = getCaSession().getCAIdToNameMap();
+                final Map<Integer, String> caidname = caSession.getCAIdToNameMap();
                 return p.getAvailableCAs().stream()
                         .map(caidname::get)
                         .map(SelectItem::new)
@@ -1262,7 +1275,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     public boolean isExistsClientCertificateRenewalExtension() {
-        return getEditionEjbBridgeSession().isRunningEnterprise();
+        return editionEjbBridgeSession.isRunningEnterprise();
     }
 
     public GlobalConfigurationSessionLocal getGlobalConfigSession() {
@@ -1284,29 +1297,8 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         return cachedAuthenticationToken;
     }
 
-    public CaSessionLocal getCaSession() {
-        if (caSession == null)
-            caSession = getEjbcaWebBean().getEjb().getCaSession();
-        return caSession;
-    }
 
-    public CertificateProfileSessionLocal getCertProfileSession() {
-        if (certProfileSession == null)
-            certProfileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
-        return certProfileSession;
-    }
 
-    public EndEntityProfileSessionLocal getEndentityProfileSession() {
-        if (endentityProfileSession == null)
-            endentityProfileSession = getEjbcaWebBean().getEjb().getEndEntityProfileSession();
-        return endentityProfileSession;
-    }
-
-    public EnterpriseEditionEjbBridgeSessionLocal getEditionEjbBridgeSession() {
-        if (editionEjbBridgeSession == null)
-            editionEjbBridgeSession = (EnterpriseEditionEjbBridgeSessionLocal) getEjbcaWebBean().getEnterpriseEjb();
-        return editionEjbBridgeSession;
-    }
 
     public List<String> getAvailableSigningAlgorithms() {
         // Return all algorithms except the SHA1 ones (otherwise SHA1WithRSA would come first, and serve as a very bad default option)
@@ -1318,7 +1310,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         final ArrayList<Pair<Integer, String>> availableCryptoTokens = new ArrayList<>();
         for (CryptoTokenInfo current : cryptoTokenManagementSession.getCryptoTokenInfos(getAuthenticationToken())) {
             if (current.isActive()
-                    && getAuthorizationSession().isAuthorizedNoLogging(getAuthenticationToken(),
+                    && authorizationSession.isAuthorizedNoLogging(getAuthenticationToken(),
                             CryptoTokenRules.USE.resource() + "/" + current.getCryptoTokenId())) {
                 availableCryptoTokens.add(Pair.of(current.getCryptoTokenId(), current.getName()));
             }

@@ -50,6 +50,7 @@
         <ant antfile="${mod.cesecore-entity.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
         <ant antfile="${mod.cesecore-ejb-interface.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
         <ant antfile="${mod.cesecore-ejb.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.ejbca-repository.path}/build.xml" target="clean" inheritall="true"/>
         <delete failonerror="false" dir="${modules.basedir}/dist" />
 	</target>
 	
