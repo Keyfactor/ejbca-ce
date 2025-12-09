@@ -16,6 +16,7 @@ import java.io.Serializable;
 
 import org.cesecore.configuration.ConfigurationBase;
 
+import com.keyfactor.util.Base64;
 import com.keyfactor.util.string.StringConfigurationCache;
 /**
  * Handles global CESeCore configuration values. 
@@ -145,12 +146,12 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase implements Se
         data.put(FORBIDDEN_CHARACTERS, escapeSqlChars(new String(forbiddenCharacters) ));
     }
     
-    private String escapeSqlChars(String input) {
-        return input.replace("'", "''").replace("/", "//");
+    private String escapeSqlChars(String input) {       
+        return new String(Base64.encode(input.getBytes()));
     }
     
     private String unescapeSqlChars(String input) {
-        return input.replace("''", "'").replace("//", "/");
+        return new String(Base64.decode(input.getBytes()));
     }
     
     
