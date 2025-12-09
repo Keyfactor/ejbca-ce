@@ -114,6 +114,7 @@
 	<classpathentry kind="src" path="modules/systemtests/src-interface"/>
 	<classpathentry kind="src" path="modules/systemtests/resources"/>
 	<classpathentry kind="src" path="modules/systemtests/src"/>
+	<classpathentry kind="src" path="modules/systemtests-jscep/src-test"/>
 	<classpathentry kind="src" path="modules/unidfnr/src-ejb"/>
 	<classpathentry kind="src" path="modules/va/src-war"/>
 	<classpathentry kind="src" path="src/java"/>
