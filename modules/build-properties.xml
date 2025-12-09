@@ -276,6 +276,7 @@
 			<include name="jackson-jakarta-rs-base-2.*.jar"/>
 			<include name="jackson-jakarta-rs-json-provider-2.*.jar"/>
 			<include name="jackson-module-jaxb-annotations-2.*.jar"/>
+			<include name="jaxb-api-2.*.jar"/>
 		</fileset>
 	</path>
 	
@@ -345,7 +346,6 @@
 	<path id="lib.kerby.asn1.classpath"><fileset dir="${ejbca.home}/lib" includes="kerby-asn1-*.jar"/></path> 
 	<path id="lib.kerb.crypto.classpath"><fileset dir="${ejbca.home}/lib" includes="kerb-crypto-*.jar"/></path> 
 	<path id="lib.primefaces.classpath"><fileset dir="${ejbca.home}/lib/primefaces" includes="primefaces-*.jar"/></path>
-
 
 	<path id="lib.x509-common-util.classpath"><fileset dir="${ejbca.home}/lib" includes="x509-common-util*.jar"/></path> 
 	<path id="lib.cryptotokens.classpath"><fileset dir="${ejbca.home}/lib" includes="cryptotokens-*.jar"/></path>
