@@ -244,20 +244,23 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         final boolean rootAccess = authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.ROLE_ROOT.resource());
         for (final Entry<Integer,CertificateProfile> certificateProfileEntry : CertificateProfileCache.INSTANCE.getProfileCache(entityManager).entrySet()) {
             final CertificateProfile profile = certificateProfileEntry.getValue();
-            // Check if all profiles available CAs exists in authorizedcaids.
+
+            // Check if any profiles available CAs exists in authorizedcaids.
             if (certificateProfileType == 0 || certificateProfileType == profile.getType()) {
-                boolean allExists = true;
+                boolean anyExists = false;
                 for (final Integer nextCaId : profile.getAvailableCAs()) {
-                    if (nextCaId == CertificateProfile.ANYCA) {
+                    if (nextCaId == CertificateProfile.ANYCA && authorizedCaIds.contains(CertificateProfile.ANYCA)) {
+                        anyExists = true;
                         break;
                     }
                     // superadmin should be able to access profiles with missing CA Ids
-                    if (!authorizedCaIds.contains(nextCaId) && (!rootAccess || allCaIds.contains(nextCaId))) {
-                        allExists = false;
+                    if (authorizedCaIds.contains(nextCaId) || (rootAccess && !allCaIds.contains(nextCaId))) {
+                        anyExists = true;
                         break;
                     }
+
                 }
-                if (allExists) {
+                if (anyExists) {
                     returnValues.add(certificateProfileEntry.getKey());
                 }
             }

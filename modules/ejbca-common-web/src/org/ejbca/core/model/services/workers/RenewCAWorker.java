@@ -24,6 +24,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.util.PropertyTools;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
@@ -98,7 +99,7 @@ public class RenewCAWorker extends BaseWorker {
 						// There should be other monitoring available to check if CAs that should not be off-line are off-line (HealthCheck)
 					    try {
 					        final boolean createLinkCertificate = isRenewKeys() && (CAInfo.SELFSIGNED == info.getSignedBy());   // We want link certs for new key if CA is selfsigned..
-					        caAdminSession.renewCA(getAdmin(), info.getCAId(), isRenewKeys(), null, createLinkCertificate);
+					        caAdminSession.renewCA(getAdmin(), info.getCAId(), isRenewKeys(), null, createLinkCertificate, CertificateProfileConstants.NO_CERTIFICATE_PROFILE);
 					        renewedCas.add(caname);
 					    } catch (CryptoTokenOfflineException e) {
 					        log.info("Not trying to renew CA because CA and token status are not on-line.");

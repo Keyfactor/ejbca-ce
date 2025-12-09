@@ -93,6 +93,7 @@ import org.cesecore.certificates.certificate.certextensions.standard.NameConstra
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -186,6 +187,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private List<String> availableCryptoTokenEncryptionAliases;
     private List<String> availableCryptoTokenAlternativeKeyAliases;
     private boolean createLinkCertificate;
+    private int linkCertificateProfileId = CertificateProfileConstants.CERTPROFILE_NO_PROFILE;
 
     private CAInfo cainfo = null;
     private CAToken catoken = null;
@@ -194,6 +196,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private Map<Integer, String> keyValidatorMap = getEjbcaWebBean().getEjb().getKeyValidatorSession().getKeyValidatorIdToNameMap();
     private final Map<Integer, String> approvalProfileMap = getEjbcaWebBean().getApprovalProfileIdToNameMap();
     private final TreeMap<String, Integer> certProfilesOfEndEntityType = getEjbcaWebBean().getAuthorizedEndEntityCertificateProfileNames();
+    private final TreeMap<String, Integer> certProfilesOfCaType = new TreeMap<>();
+    
     private boolean isUniqueIssuerDnSerialNoIndexPresent;
     private boolean isCvcAvailable;
     private boolean signbyexternal = false;
@@ -359,6 +363,10 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         caIdToNameMap = caSession.getCAIdToNameMap();
         isUniqueIssuerDnSerialNoIndexPresent = getCaBean().isUniqueIssuerDNSerialNoIndexPresent();
         isCvcAvailable = getCaBean().isCvcAvailable();
+        
+        // for link certificates allow all RootCA and SubCA profiles, no SSH CA profile
+        getEjbcaWebBean().getAuthorizedRootCACertificateProfileNames().forEach((k,v) -> certProfilesOfCaType.put(k, v));
+        getEjbcaWebBean().getAuthorizedSubCACertificateProfileNames().forEach((k,v) -> certProfilesOfCaType.put(k, v));
 
         final Map<String, Object> requestMap = FacesContext.getCurrentInstance().getExternalContext().getRequestMap();
         initPageVariables(requestMap);
@@ -1550,6 +1558,24 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     public void setCreateLinkCertificate(final boolean createLinkCertificate) {
         this.createLinkCertificate = createLinkCertificate;
     }
+    
+    public List<SelectItem> getAvailableLinkCertificateProfiles() {
+        final List<SelectItem> ret = new ArrayList<>();
+
+        ret.add(new SelectItem(CertificateProfileConstants.NO_CERTIFICATE_PROFILE, "-"));
+        for (final var entry: certProfilesOfCaType.entrySet()) {
+            ret.add(new SelectItem(entry.getValue(), entry.getKey()));
+        }
+        return ret;
+    }
+    
+    public int getLinkCertificateProfileId() {
+        return linkCertificateProfileId;
+    }
+    
+    public void setLinkCertificateProfileId(int linkCertProfileId) {
+        linkCertificateProfileId = linkCertProfileId;
+    }
 
     public void resetSigningAlgorithmTokenParam() {
         caInfoDto.setSignatureAlgorithmParam(StringUtils.EMPTY);
@@ -1715,20 +1741,20 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         }
         if (nextSignKeyAlias == null || nextSignKeyAlias.length()==0) {
             // Generate new keys
-            caAdminSession.renewCA(getAdministrator(), caid, true, null, createLinkCertificate);
+            caAdminSession.renewCA(getAdministrator(), caid, true, null, createLinkCertificate, linkCertificateProfileId);
         } else {
             // Use existing keys
-            caAdminSession.renewCA(getAdministrator(), caid, nextSignKeyAlias, null, createLinkCertificate);
+            caAdminSession.renewCA(getAdministrator(), caid, nextSignKeyAlias, null, createLinkCertificate, linkCertificateProfileId);
         }
     }
     
     private void renewAndRenameCA(int caid, String nextSignKeyAlias, boolean createLinkCertificate, String newSubjectDn) throws Exception {
         if (nextSignKeyAlias == null || nextSignKeyAlias.length()==0) {
             // Generate new keys
-            caAdminSession.renewCANewSubjectDn(getAdministrator(), caid, true, null, createLinkCertificate, newSubjectDn);
+            caAdminSession.renewCANewSubjectDn(getAdministrator(), caid, true, null, createLinkCertificate, linkCertificateProfileId, newSubjectDn);
         } else {
             // Use existing keys
-            caAdminSession.renewCANewSubjectDn(getAdministrator(), caid, nextSignKeyAlias, null, createLinkCertificate, newSubjectDn);
+            caAdminSession.renewCANewSubjectDn(getAdministrator(), caid, nextSignKeyAlias, null, createLinkCertificate, linkCertificateProfileId, newSubjectDn);
         }
     }
 

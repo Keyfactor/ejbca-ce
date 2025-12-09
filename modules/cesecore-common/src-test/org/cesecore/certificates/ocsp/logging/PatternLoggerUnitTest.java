@@ -13,11 +13,13 @@
 
 package org.cesecore.certificates.ocsp.logging;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.Method;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.util.encoders.Hex;
 import org.junit.Test;
 
 /**
@@ -41,6 +43,24 @@ public class PatternLoggerUnitTest {
         testPatternLoggerInternal(LOG_PATTERN, "yyyy-MM-dd'T'HH:mm:ssZ", "CET",
                 "^content1;\"content2\";\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\+0\\d00;0;content3$");
         log.trace("<testPatternLogger");
+    }
+
+    @Test
+    public void testParamAppend() throws Exception {
+        log.trace(">testParamAppend");
+        final String LOG_PATTERN = "VAR1=${VAR1}";
+        final PatternLogger patternLogger = new TestPatternLogger("\\$\\{(.+?)\\}", LOG_PATTERN, "yyyy-MM-dd:HH:mm:ss:z", "GMT");
+        patternLogger.paramAppend("VAR1", "1234".getBytes());
+        patternLogger.paramAppend("VAR1", "2345".getBytes());
+
+        // We reference the private method here, which is a bit ugly but works.
+        final Method m = PatternLogger.class.getDeclaredMethod("interpolate", new Class[0]);
+        m.setAccessible(true);
+        final String result = (String) m.invoke(patternLogger);
+
+        final String expected = "VAR1=" + new String(Hex.encode("1234".getBytes())) + " - " + new String(Hex.encode("2345".getBytes()));
+        assertEquals("Log result did not match.", expected, result);
+        log.trace("<testParamAppend");
     }
 
     /** Helper method that replaces all ${VARx} where x={0..10} with "contentx" and asserts that the result is the expected using regexp. */
