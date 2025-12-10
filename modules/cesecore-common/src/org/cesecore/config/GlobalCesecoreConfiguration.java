@@ -130,9 +130,13 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase implements Se
         data.put(MAXIMUM_QUERY_TIMEOUT_KEY, Math.max(maximumQueryTimeoutMs, 0L));
     }
     
-    public char[] getForbiddenCharacters() {    
-        Object databaseValue = data.getOrDefault(FORBIDDEN_CHARACTERS, new String(DEFAULT_FORBIDDEN_CHARACTERS));
-        return unescapeSqlChars(((String) databaseValue)).toCharArray();        
+    public char[] getForbiddenCharacters() {
+        Object databaseValue = data.get(FORBIDDEN_CHARACTERS);
+        if (databaseValue == null) {
+            return unescapeSqlChars(((String) databaseValue)).toCharArray();
+        } else {
+            return DEFAULT_FORBIDDEN_CHARACTERS;
+        }
     }
 
     /**
