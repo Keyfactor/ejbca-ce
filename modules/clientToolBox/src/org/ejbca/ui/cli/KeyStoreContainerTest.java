@@ -38,6 +38,7 @@ import java.util.Set;
 
 import javax.crypto.Cipher;
 
+import com.keyfactor.util.keys.AnyAvailableAlgorithmSigner;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.ejbca.util.PerformanceTest;
@@ -46,11 +47,8 @@ import org.ejbca.util.PerformanceTest.CommandFactory;
 import org.ejbca.util.keystore.KeyStoreToolsFactory;
 
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.ISignOperation;
 import com.keyfactor.util.keys.KeyStoreTools;
 import com.keyfactor.util.keys.KeyTools;
-import com.keyfactor.util.keys.SignWithWorkingAlgorithm;
-import com.keyfactor.util.keys.TaskWithSigningException;
 import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
 
 /**
@@ -315,10 +313,10 @@ class KeyStoreContainerTest {
         }
     }
 
-    private class SignOperation implements ISignOperation {
+    private class SignOperation {
         private String workingAlgorithm;
-        @Override
-        public void taskWithSigning(String signAlgorithm, Provider provider) throws TaskWithSigningException {
+
+        public void taskWithSigning(String signAlgorithm, Provider provider) {
             final Signature sign;
             try {
                 sign = Signature.getInstance(signAlgorithm, provider);
@@ -326,7 +324,7 @@ class KeyStoreContainerTest {
                 sign.update("Kort string att signera!".getBytes());
                 sign.sign();
             } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
-                throw new TaskWithSigningException("Signing failed", e);
+                throw new RuntimeException("Signing failed", e);
             }
             this.workingAlgorithm = signAlgorithm;
         }
@@ -340,11 +338,12 @@ class KeyStoreContainerTest {
         private Signature signature;
         private boolean result;
         @SuppressWarnings("synthetic-access")
-        Sign() throws GeneralSecurityException, TaskWithSigningException {
+        Sign() throws GeneralSecurityException {
             final SignOperation operation = new SignOperation();
             // Candidate algorithms. The first working one will be selected by SignWithWorkingAlgorithm
             final List<String> availableAlogorithms = AlgorithmTools.getSignatureAlgorithms(KeyStoreContainerTest.this.keyPair.getPublic());
-            SignWithWorkingAlgorithm.doSignTask(availableAlogorithms, KeyStoreContainerTest.this.providerName, operation);
+            AnyAvailableAlgorithmSigner.INSTANCE.signData(BouncyCastleProvider.PROVIDER_NAME, availableAlogorithms, keyPair.getPrivate(), signBA);
+
             this.sigAlgName = operation.getWorkingAlgorithm();
             if ( this.sigAlgName==null ) {
                 throw new GeneralSecurityException(
