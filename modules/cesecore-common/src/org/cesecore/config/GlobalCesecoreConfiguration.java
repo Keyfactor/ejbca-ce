@@ -132,7 +132,7 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase implements Se
     
     public char[] getForbiddenCharacters() {
         Object databaseValue = data.get(FORBIDDEN_CHARACTERS);
-        if (databaseValue == null) {
+        if (databaseValue != null) {
             return unescapeSqlChars(((String) databaseValue)).toCharArray();
         } else {
             return DEFAULT_FORBIDDEN_CHARACTERS;
