@@ -65,15 +65,6 @@ dependencies {
     testRuntimeOnly(libs.jldap)
     testRuntimeOnly(libs.classmate)
     testRuntimeOnly(libs.commons.lang3)
-    testRuntimeOnly(libs.resteasy.client)
-    testRuntimeOnly(libs.resteasy.client.api)
-    testRuntimeOnly(libs.resteasy.core)
-    testRuntimeOnly(libs.resteasy.core.spi)
-    testRuntimeOnly(libs.resteasy.jackson2.provider)
-    testRuntimeOnly(libs.resteasy.multipart.provider)
-    testRuntimeOnly(libs.resteasy.undertow)
-    testRuntimeOnly(libs.undertow.core)
-    testRuntimeOnly(libs.undertow.servlet)
 }
 
 sourceSets {
