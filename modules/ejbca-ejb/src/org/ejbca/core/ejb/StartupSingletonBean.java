@@ -448,9 +448,9 @@ public class StartupSingletonBean {
                     // create method ProtectedDataConfiguration.getKeyId(String)
                     Method getKeyId = c.getMethod("getKeyId", String.class);
                     // create method ProtectedDataConfiguration.getProtectVersion(int)
-                    Method getProtectVersion = c.getMethod("getProtectVersion", Integer.TYPE);
+                    Method getProtectVersion = c.getMethod("getProtectVersion", Integer.class);
                     // create method ProtectedDataConfiguration.getKeyLabel(int)
-                    Method getKeyLabel = c.getMethod("getKeyLabel", Integer.TYPE);
+                    Method getKeyLabel = c.getMethod("getKeyLabel", Integer.class);
                     // Call ProtectedDataConfiguration.instance().getKeyId
                     final String auditTableName = AuditRecordData.class.getSimpleName();
                     final Integer keyid = (Integer)getKeyId.invoke(config, auditTableName);
