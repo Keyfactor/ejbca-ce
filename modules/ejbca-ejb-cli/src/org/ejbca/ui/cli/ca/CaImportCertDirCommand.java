@@ -14,6 +14,8 @@
 package org.ejbca.ui.cli.ca;
 
 import java.io.File;
+import java.io.IOException;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -25,7 +27,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import org.apache.commons.lang.StringUtils;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.DnComponents;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -35,6 +41,7 @@ import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
@@ -42,13 +49,8 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.certificate.DnComponents;
-
 /**
  * Imports certificate files to the database for a given CA
- *
- * @version $Id$
  */
 public class CaImportCertDirCommand extends BaseCaAdminCommand {
 
@@ -66,6 +68,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
     private static final String REVOCATION_REASON = "--revocation-reason";
     private static final String REVOCATION_TIME = "--revocation-time";
     private static final String THREAD_COUNT = "--threads";
+    private static final String ALTCACERT = "--altcacert";
 
     private static final String ACTIVE = "ACTIVE";
     private static final String REVOKED = "REVOKED";
@@ -92,6 +95,11 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
                         + DATE_FORMAT + ", i.e. 2015.05.04-10:15"));
         registerParameter(new Parameter(THREAD_COUNT, "Thread count", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "Number of threads used during the import. Default is 1 thread."));
+        registerParameter(new Parameter(ALTCACERT, "Alternative CA Certificate", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                "An alternative CA certificate file in PEM format. The CA certificate to verify imported certificates is normally taken from CA Name and this option can be used when "
+                + "importing certificates that were issued by a CA certificate that is not present in EJBCA, for example if the CA was renewed before importing the CA into EJBCA, and "
+                + "we need to import certificates signed by the previous CA certificate. "
+                + "Note: this CA certificate is not verified itself so caller care is important."));
     }
 
     @Override
@@ -115,12 +123,41 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
         final String revocationReasonString = parameters.get(REVOCATION_REASON);
         final String revocationTimeString = parameters.get(REVOCATION_TIME);
         final int threadCount = parameters.get(THREAD_COUNT) == null ? 1 : Integer.valueOf(StringUtils.strip(parameters.get(THREAD_COUNT)));
-
         if (threadCount > 1 && !usernameFilter.equalsIgnoreCase("FILE")) {
             log.error("If more than one thread is being used, filename must be used as filter (use the argument --filter FILE).");
             return CommandResult.CLI_FAILURE;
         }
+        final String caCertFileName = parameters.get(ALTCACERT);
+        final X509Certificate alternativeCaCert;
+        if (caCertFileName != null) {
+            final File caCertFile = new File(caCertFileName);
+            if (!caCertFile.isFile()) {
+                log.error("Provided alternative CA certificate file '" + caCertFileName + "' is not a valid file name.");
+                return CommandResult.CLI_FAILURE;
+            }
+            // Override the CA certificate if other cert provided as option
+            try {
+                List<X509Certificate> certs = CertTools.getCertsFromPEM(caCertFile.getCanonicalPath(), X509Certificate.class);
+                if (certs.isEmpty()) {
+                    log.error("Alternative CA certificate file '" + caCertFileName + "' does not contain any parseable certificates.");
+                    return CommandResult.CLI_FAILURE;
+                }
+                if (certs.size() > 1) {
+                    log.warn("Alternative CA certificate file '" + caCertFileName + "' contains more than one certificate. Will use the first one.");
+                }
+                alternativeCaCert = certs.get(0);
+            } catch (CertificateParsingException | IOException e) {
+                log.error("Alternative CA certificate file '" + caCertFileName + "' does not contain any parseable certificates: " + e.getMessage());
+                return CommandResult.CLI_FAILURE;
+            }
+            log.info("The certificate used to verify imported certificates has been overidden. Alternative CA certificate: " +
+                    "Subject DN: " + CertTools.getSubjectDN(alternativeCaCert) +
+                    "Issuer DN: " + CertTools.getIssuerDN(alternativeCaCert) +
+                    "Serial number: " + CertTools.getSerialNumberAsString(alternativeCaCert));
 
+        } else {
+            alternativeCaCert = null;
+        }
         // Specifies whether the import should resume in case of errors, or stop
         // on first one. Default is stop.
         final boolean resumeOnError = parameters.containsKey(RESUME_ON_ERROR_KEY);
@@ -174,20 +211,26 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 
             // Fetch CA info
             final CAInfo caInfo = getCAInfo(getAuthenticationToken(), caName);
-            final X509Certificate cacert = (X509Certificate) caInfo.getCertificateChain().iterator().next();
+            final X509Certificate cacert = (alternativeCaCert != null ? alternativeCaCert : (X509Certificate)caInfo.getCertificateChain().iterator().next());
             final String issuer = DnComponents.stringToBCDNString(cacert.getSubjectX500Principal().toString());
-            log.info("CA: " + issuer);
+            log.info("CA cert issuer: " + issuer);
             // Fetch End Entity Profile info
             log.debug("Searching for End Entity Profile " + eeProfile);
-            final int endEntityProfileId = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class)
+            final int endEntityProfileId;
+            try {
+            endEntityProfileId = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class)
                     .getEndEntityProfileId(eeProfile);
+            } catch (EndEntityProfileNotFoundException e) {
+                log.error("ERROR: Certificate Profile " + certificateProfile + " does not exist.");
+                return CommandResult.CLI_FAILURE;
+            }
             // Fetch Certificate Profile info
             log.debug("Searching for Certificate Profile " + certificateProfile);
             final int certificateProfileId = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfileId(
                     certificateProfile);
             if (certificateProfileId == CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
                 log.error("ERROR: Certificate Profile " + certificateProfile + " does not exist.");
-                throw new Exception("Certificate Profile '" + certificateProfile + "' does not exist.");
+                return CommandResult.CLI_FAILURE;
             }
             // Get all files in the directory to import from and try to read and import each as a certificate
             final File dir = new File(certificateDir);
