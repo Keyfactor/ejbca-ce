@@ -30,7 +30,7 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase implements Se
     public static final long DEFAULT_QUERY_TIMEOUT = 10000L;
     public static final boolean DEFAULT_REDACT_PII_DATA_BY_DEFAULT = false;
     public static final boolean DEFAULT_REDACT_PII_DATA_ENFORCED = false;
-    public static final char[] DEFAULT_FORBIDDEN_CHARACTERS = new char[] {'\n', '\r',';','!','\u0000','%','`', '?', '$', '~', '"'};
+    public static final char[] DEFAULT_FORBIDDEN_CHARACTERS = new char[] {'\n', '\r',';','!','\u0000','%','`', '?', '$', '~'};
     
     
     /** A fixed maximum value to ensure that max query count does not exceed sane values  */

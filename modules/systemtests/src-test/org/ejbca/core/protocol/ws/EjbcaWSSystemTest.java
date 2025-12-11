@@ -2457,6 +2457,11 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
      */
     @Test
     public void test45CertificateRequestWithSpecialChars05() throws Exception {
+        //Set default forbidden characters to default
+        GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+        globalCesecoreConfiguration.setForbiddenCharacters(null);
+        globalConfigurationSession.saveConfiguration(intAdmin, globalCesecoreConfiguration);
+        
         long rnd = secureRandom.nextLong();
         testCertificateRequestWithSpecialChars(
                 "CN=test45CertificateRequestWithSpecialChars05" + rnd + ", O=\"foo=bar, C=SE\"",
