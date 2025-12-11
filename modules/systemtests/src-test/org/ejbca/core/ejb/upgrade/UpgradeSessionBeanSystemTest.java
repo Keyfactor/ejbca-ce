@@ -1203,8 +1203,8 @@ public class UpgradeSessionBeanSystemTest {
     public void testMigrateForbiddenCharacters_9_5_0() throws AuthorizationDeniedException {
         //Stash the orginal value 
         char[] originalForbiddenCharacters = cesecoreConfigSession.getForbiddenCharacters();
-            //Set the forbidden characters to a verifiable value
-            cesecoreConfigSession.setConfigurationValue("forbidden.characters", "foobar");
+        //Set the forbidden characters to a verifiable value
+        cesecoreConfigSession.setConfigurationValue("forbidden.characters", "foobar");
           
         try {
           //Set the upgrade-from version 

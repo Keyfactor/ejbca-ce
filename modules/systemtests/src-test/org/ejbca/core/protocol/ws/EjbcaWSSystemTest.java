@@ -2394,6 +2394,11 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
      */
     @Test
     public void test41CertificateRequestWithSpecialChars01() throws Exception {
+        //Set default forbidden characters to default
+        GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+        globalCesecoreConfiguration.setForbiddenCharacters(null);
+        globalConfigurationSession.saveConfiguration(intAdmin, globalCesecoreConfiguration);
+        
         long rnd = secureRandom.nextLong();
         testCertificateRequestWithSpecialChars(
                 "CN=test" + rnd + ", O=foo\\+bar\\\"\\,, C=SE",
@@ -2744,7 +2749,6 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
 
     @Test
     public void test57CertificateRequestWithDnOverrideFromEndEntityInformation() throws Exception {
-        final String testName = "test50CertificateRequestWithForbiddenCharsDefinedBogus";
         GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
         globalCesecoreConfiguration.setForbiddenCharacters("\n\r;!\u0000%`?$~".toCharArray());
         globalConfigurationSession.saveConfiguration(intAdmin, globalCesecoreConfiguration); 
@@ -3749,6 +3753,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
                     resultingSubjectDN);
         } finally {
             deleteUser(userName);
+            internalCertificateStoreSession.removeCertificate(cert);
         }
     }
 
