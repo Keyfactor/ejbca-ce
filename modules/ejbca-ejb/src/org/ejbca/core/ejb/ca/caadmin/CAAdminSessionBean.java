@@ -3691,13 +3691,13 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public String healthCheck() {
-        return healthCheckInternal(caSession.getAllCaIds());
+    public String healthCheck( boolean doCrlChecks) {
+        return healthCheckInternal(caSession.getAllCaIds(), doCrlChecks);
     }
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public String healthCheck(Collection<String> caNames) {
+    public String healthCheck(Collection<String> caNames, boolean doCrlChecks) {
         HashSet<String> caNamesSet = new HashSet<>();
         for (String caName : caNames) {
             caNamesSet.add(caName);
@@ -3711,10 +3711,10 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 .collect(Collectors.toList());
         //@formatter:on
 
-        return healthCheckInternal(caIds);
+        return healthCheckInternal(caIds, doCrlChecks);
     }
     
-    private String healthCheckInternal(List<Integer> caIds) {
+    private String healthCheckInternal(List<Integer> caIds, boolean doCrlChecks) {
         final boolean caTokenSignTest = EjbcaConfiguration.getHealthCheckCaTokenSignTest();
         if (log.isDebugEnabled()) {
             log.debug("CaTokenSignTest: " + caTokenSignTest);
@@ -3750,6 +3750,57 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                         testedKeys.add(caTestKeyHashCode);
                     }
                 }
+                
+                if (doCrlChecks) {
+                    // Check CRL is expired 
+                    final Date now = new Date();
+
+                    final Date crlNextUpdate = crlStoreSession.getCrlExpireDate(cainfo.getLatestSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false);
+                    if (crlNextUpdate != null && now.after(crlNextUpdate)) {
+                        sb.append("\nCA: Error, CRL is expired, CA Name : ").append(cainfo.getName());
+                        log.error("Error, CRL is expired, CA Name : " + cainfo.getName());
+                    }
+
+                    final Date deltaCrlNextUpdate = crlStoreSession.getCrlExpireDate(cainfo.getLatestSubjectDN(), CertificateConstants.NO_CRL_PARTITION, true);
+                    if (deltaCrlNextUpdate != null && now.after(deltaCrlNextUpdate)) {
+                        sb.append("\nCA: Error, delta CRL is expired, CA Name : ").append(cainfo.getName());
+                        log.error("Error, delta CRL is expired, CA Name : " + cainfo.getName());
+                    }
+
+                   
+                    final long timeNow = now.getTime();
+                    
+                    // Check if a CRL should have been generated at this time, based upon the CRL Issue interval.
+                    if (crlNextUpdate != null && cainfo.getCRLIssueInterval() > 0) {
+                        // Calculate the expected time the CRL is to be generated. Allow a grace of 10 minutes for CRL processing time. 
+                        long crlIssueTime = crlNextUpdate.getTime() - cainfo.getCRLPeriod() + cainfo.getCRLIssueInterval() + 600000;
+                        if (timeNow > crlIssueTime) {
+                            sb.append("\nCA: Warning, CRL update should have been issued, CA Name : ").append(cainfo.getName());
+                            log.error("Warning, CRL update should have been issued, CA Name : " + cainfo.getName());
+                        }
+                    }
+                    
+                    // Check if a CRL should have been generated at this time, based upon the CRL overlap time (if overlap time greater than 10 minutes).
+                    if (crlNextUpdate != null && cainfo.getCRLOverlapTime() > 60000) {
+                        // Calculate the expected time the CRL is to be generated. Allow a grace of 10 minutes for CRL processing time. 
+                        long crlIssueTime = crlNextUpdate.getTime() - cainfo.getCRLOverlapTime() + 600000;
+                        if (timeNow > crlIssueTime) {
+                            sb.append("\nCA: Warning, CRL update should have been issued, CA Name : ").append(cainfo.getName());
+                            log.error("Warning, CRL update should have been issued, CA Name : " + cainfo.getName());
+                        }
+                    }
+                    
+                    // Check if a delta CRL should have been generated at this time, based upon the CRL overlap time (if overlap time greater than 10 minutes).
+                    if (deltaCrlNextUpdate != null && cainfo.getCRLOverlapTime() > 60000) {
+                        // Calculate the expected time the CRL is to be generated. Allow a grace of 10 minutes for CRL processing time. 
+                        long crlIssueTime = deltaCrlNextUpdate.getTime() - cainfo.getCRLOverlapTime() + 600000;
+                        if (timeNow > crlIssueTime) {
+                            sb.append("\nCA: Warning, deltaCRL update should have been issued, CA Name : ").append(cainfo.getName());
+                            log.error("Warning, delta CRL update should have been issued, CA Name : " + cainfo.getName());
+                        }
+                    }
+                }
+
             }
         }   
         return sb.toString();

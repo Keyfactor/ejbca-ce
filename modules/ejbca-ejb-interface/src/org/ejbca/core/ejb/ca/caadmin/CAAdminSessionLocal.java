@@ -44,19 +44,19 @@ public interface CAAdminSessionLocal extends CAAdminSession {
 
     /**
      * Used by health-check. Validate that CAs are online and optionally performs
-     * a signature test.
+     * a signature test. An optional CRL test can also be requested. 
      * 
      * @return an error message or an empty String if all are ok.
      */
-    String healthCheck();
+    String healthCheck( boolean doCrlChecks);
   
     /**
      * Used by health-check. Validate that specified CAs are online and optionally performs
-     * a signature test.
+     * a signature test. An optional CRL test can also be requested.
      * 
      * @return an error message or an empty String if all are ok.
      */
-    String healthCheck(Collection<String> caNames);
+    String healthCheck(Collection<String> caNames, boolean doCrlChecks);
     
     /** 
      * This method returns a set containing IDs of all authorized key validators. This set will be the sum of the following:
