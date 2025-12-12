@@ -59,6 +59,7 @@ import com.keyfactor.util.keys.KeyTools;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 /**
  * @version $Id$
@@ -190,5 +191,42 @@ public class CaImportCertDirCommandSystemTest {
                 certificateStatus.revocationReason);
         assertEquals("Certificate revocation date was incorrectly imported.", new SimpleDateFormat(CaImportCertDirCommand.DATE_FORMAT).parse("2015.05.04-10:15"),
                 certificateStatus.revocationDate);
+    }
+    
+    @Test
+    public void testImportFromAnotherCA() throws Exception {
+        // Import a certificate from another CA. One way to do this is to save the current CA cert, re-create the CA, then import EE cert.
+        // Get the CA cert and save it to file
+        Certificate caCert = ca.getCACertificate();
+        File caCertFile = File.createTempFile("cacert", null, tempDirectory);
+        FileOutputStream fileOutputStream = new FileOutputStream(caCertFile);
+        try {
+            fileOutputStream.write(CertTools.getPemFromCertificateChain(Arrays.asList(caCert)));
+        } finally {
+            fileOutputStream.close();
+        }
+        // Delete the CA
+        CaTestUtils.removeCa(authenticationToken, ca.getCAInfo());
+
+        // Create a new CA
+        ca = CaTestUtils.createTestX509CA(CA_DN, null, false);
+        caSession.addCA(authenticationToken, ca);
+        
+        // First check that the EE certificate cannot be imported as the current CA's key is different 
+        String[] args = new String[] { "DN", CA_NAME, "ACTIVE", tempDirectory.getAbsolutePath(), "--eeprofile", "EMPTY", "--certprofile", "ENDUSER"};
+        assertEquals(CommandResult.SUCCESS, command.execute(args));
+        EndEntityInformation endEntityInformation = endEntityAccessSession.findUser(authenticationToken, CERTIFICATE_DN);
+        assertNull("Certificate should not have been imported.", endEntityInformation);
+        
+        // Now check the EE cert can be imported with the --cacert option
+        args = new String[] { "DN", CA_NAME, "ACTIVE", tempDirectory.getAbsolutePath(), "--eeprofile", "EMPTY", "--certprofile", "ENDUSER",
+                "--cacert", caCertFile.getCanonicalPath()};
+        assertEquals(CommandResult.SUCCESS, command.execute(args));
+        endEntityInformation = endEntityAccessSession.findUser(authenticationToken, CERTIFICATE_DN);
+        assertNotNull("Certificate was not imported.", endEntityInformation);
+
+        assertEquals("Certificate was imported with incorrect status", EndEntityConstants.STATUS_GENERATED, endEntityInformation.getStatus());
+        CertificateStatus certificateStatus = certificateStoreSession.getStatus(CA_DN, certificateSerialNumber);
+        assertEquals("Certificate was revoked but should have been Active.", false, certificateStatus.isRevoked());
     }
 }

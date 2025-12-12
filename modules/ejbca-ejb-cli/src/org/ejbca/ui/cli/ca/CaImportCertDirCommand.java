@@ -42,6 +42,7 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
+import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.certificate.DnComponents;
 
@@ -55,7 +56,6 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
     private static final Logger log = Logger.getLogger(CaImportCertDirCommand.class);
 
     public static final String DATE_FORMAT = "yyyy.MM.dd-HH:mm";
-
     private static final String USERNAME_FILTER_KEY = "--filter";
     private static final String CA_NAME_KEY = "--caname";
     private static final String ACTIVE_KEY = "-a";
@@ -66,6 +66,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
     private static final String REVOCATION_REASON = "--revocation-reason";
     private static final String REVOCATION_TIME = "--revocation-time";
     private static final String THREAD_COUNT = "--threads";
+    private static final String CACERT = "--cacert";
 
     private static final String ACTIVE = "ACTIVE";
     private static final String REVOKED = "REVOKED";
@@ -92,7 +93,9 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
                         + DATE_FORMAT + ", i.e. 2015.05.04-10:15"));
         registerParameter(new Parameter(THREAD_COUNT, "Thread count", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "Number of threads used during the import. Default is 1 thread."));
-    }
+        registerParameter(new Parameter(CACERT, "CA Certificate File", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                "Specify an alternate CA certificate file (in PEM). Use this option when importing certificates that were issued by the previous CA certificate. Please note that the supplied certificate is not verified."));
+   }
 
     @Override
     public String getMainCommand() {
@@ -115,6 +118,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
         final String revocationReasonString = parameters.get(REVOCATION_REASON);
         final String revocationTimeString = parameters.get(REVOCATION_TIME);
         final int threadCount = parameters.get(THREAD_COUNT) == null ? 1 : Integer.valueOf(StringUtils.strip(parameters.get(THREAD_COUNT)));
+        final String caCertFile = parameters.get(CACERT);
 
         if (threadCount > 1 && !usernameFilter.equalsIgnoreCase("FILE")) {
             log.error("If more than one thread is being used, filename must be used as filter (use the argument --filter FILE).");
@@ -174,7 +178,29 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 
             // Fetch CA info
             final CAInfo caInfo = getCAInfo(getAuthenticationToken(), caName);
-            final X509Certificate cacert = (X509Certificate) caInfo.getCertificateChain().iterator().next();
+            
+            X509Certificate cacert = (X509Certificate) caInfo.getCertificateChain().iterator().next();
+            // Override the CA certificate if provided in the options
+            if ( caCertFile != null) {
+                final File fileCaCertFile = new File(caCertFile);
+                if (!fileCaCertFile.isFile()) {
+                    log.error("CA Certificate file '" + caCertFile + "' is not found. Please check the supplied parameters.");
+                    return CommandResult.CLI_FAILURE;
+                } else {
+                    List<X509Certificate> certsInFile = CertTools.getCertsFromPEM( fileCaCertFile.getCanonicalPath(), X509Certificate.class);
+                    if ( (certsInFile == null) || (certsInFile.size()<1)) {
+                        log.error("CA Certificate file '" + caCertFile + "' could not be processed. Please check the file.");
+                        return CommandResult.CLI_FAILURE;
+                    }
+                    if ( certsInFile.size()>1) {
+                        log.warn("CA Certificate file '" + caCertFile + "' contains more than one certificate. Assuming the first certificate.");
+                    }
+                   // Assume the first certificate, in case more than one provided.
+                    cacert = certsInFile.get(0);
+                    log.warn("The certificate for the CA has been overidden. This certificate has not been verified. Use at your own risk. Certificate details: "+cacert.toString());
+                }
+            }
+            
             final String issuer = DnComponents.stringToBCDNString(cacert.getSubjectDN().toString());
             log.info("CA: " + issuer);
             // Fetch End Entity Profile info
