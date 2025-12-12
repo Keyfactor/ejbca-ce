@@ -37,9 +37,14 @@ import java.util.List;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.ClientBuilder;
-import jakarta.ws.rs.client.WebTarget;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyStoreTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.log4j.Logger;
@@ -112,12 +117,9 @@ import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ui.web.rest.api.config.ObjectMapperContextResolver;
 
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.keys.KeyTools;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.WebTarget;
 
 /**
  * An intermediate class to support REST API system tests and setup the SSL connection/authentication.
@@ -169,11 +171,11 @@ public class RestResourceSystemTestBase {
     private static KeyStore NOADMIN_KEYSTORE;
     private static KeyStore TRUST_KEYSTORE;
     private static AvailableProtocolsConfiguration protocolConfigBackup;
-    
+
     protected static final AuthenticationToken INTERNAL_ADMIN_TOKEN = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EjbcaRestApiTest"));
-    
+
     protected static final int HTTP_STATUS_CODE_UNPROCESSABLE_ENTITY = 422;
-    protected static final int HTTP_STATUS_CODE_BAD_REQUEST = 400;    
+    protected static final int HTTP_STATUS_CODE_BAD_REQUEST = 400;
     protected static final int HTTP_STATUS_CODE_OK = 200;
     protected static final int HTTP_STATUS_CODE_ACCEPTED = 202;
     protected static final int HTTP_STATUS_CODE_NOT_FOUND = 404;
@@ -250,9 +252,9 @@ public class RestResourceSystemTestBase {
         globalCesecoreConfiguration.setMaximumQueryCount(maxResults);
         globalConfigurationSession.saveConfiguration(INTERNAL_ADMIN_TOKEN, globalCesecoreConfiguration);
     }
-    
+
     protected static void enableRestProtocolConfiguration() throws AuthorizationDeniedException {
-        AvailableProtocolsConfiguration availableProtocolsConfiguration = (AvailableProtocolsConfiguration) 
+        AvailableProtocolsConfiguration availableProtocolsConfiguration = (AvailableProtocolsConfiguration)
                 globalConfigurationSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CA_MANAGEMENT.getName(), true);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_COAP_MANAGEMENT.getName(), true);
@@ -266,9 +268,9 @@ public class RestResourceSystemTestBase {
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_SYSTEM_V1.getName(), true);
         globalConfigurationSession.saveConfiguration(INTERNAL_ADMIN_TOKEN, availableProtocolsConfiguration);
     }
-    
+
     protected static void disableRestProtocolConfiguration() throws AuthorizationDeniedException {
-        AvailableProtocolsConfiguration availableProtocolsConfiguration = (AvailableProtocolsConfiguration) 
+        AvailableProtocolsConfiguration availableProtocolsConfiguration = (AvailableProtocolsConfiguration)
                 globalConfigurationSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_CA_MANAGEMENT.getName(), false);
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_COAP_MANAGEMENT.getName(), false);
@@ -282,16 +284,16 @@ public class RestResourceSystemTestBase {
         availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST_SYSTEM_V1.getName(), false);
         globalConfigurationSession.saveConfiguration(INTERNAL_ADMIN_TOKEN, availableProtocolsConfiguration);
     }
-    
+
     protected static void backupProtocolConfiguration() {
-        protocolConfigBackup = (AvailableProtocolsConfiguration) 
+        protocolConfigBackup = (AvailableProtocolsConfiguration)
                 globalConfigurationSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
     }
 
     protected static void restoreProtocolConfiguration() throws AuthorizationDeniedException {
         globalConfigurationSession.saveConfiguration(INTERNAL_ADMIN_TOKEN, protocolConfigBackup);
     }
-    
+
     public static void afterClass() throws Exception {
         clearLoginCertificateSetup();
         // Remove keystores
@@ -314,17 +316,17 @@ public class RestResourceSystemTestBase {
      * @param uriPath a part of URL to make request on.
      *
      * @return An instance of WebTarget.
-     * @throws NoSuchAlgorithmException 
-     * @throws KeyStoreException 
-     * @throws UnrecoverableKeyException 
-     * @throws KeyManagementException 
+     * @throws NoSuchAlgorithmException
+     * @throws KeyStoreException
+     * @throws UnrecoverableKeyException
+     * @throws KeyManagementException
      *
      * @see org.jboss.resteasy.client.ClientRequest
      */
     static WebTarget newRequest(final String uriPath) throws UnrecoverableKeyException, KeyManagementException, NoSuchAlgorithmException, KeyStoreException {
         return newRequest(uriPath, ADMIN_KEYSTORE);
     }
-    
+
     static WebTarget newRequest(final String uriPath, KeyStore keyStore) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {
         Client newClient = ClientBuilder.newBuilder().sslContext(getSslContext(keyStore)).hostnameVerifier(new NoopHostnameVerifier()).build();
         return newClient.target(getBaseUrl() + uriPath);
@@ -335,12 +337,12 @@ public class RestResourceSystemTestBase {
         WebTarget webTarget = newClient.target(getBaseUrl() +uriPath);
         return webTarget;
     }
-    
+
     private static SSLContext getSslContext(KeyStore keyStore) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {
         if(keyStore == null) {
             keyStore = ADMIN_KEYSTORE;
         }
-        
+
         final SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
         final TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         trustManagerFactory.init(TRUST_KEYSTORE);
@@ -361,7 +363,7 @@ public class RestResourceSystemTestBase {
             keyStore.load(new FileInputStream(file), KEY_STORE_PASSWORD.toCharArray());
         } else {
             keyStore.load(null, null);
-            keyStore.store(new FileOutputStream(file), KEY_STORE_PASSWORD.toCharArray());
+            KeyStoreTools.storeKeyStore(keyStore, new FileOutputStream(file), KEY_STORE_PASSWORD.toCharArray());
         }
         return keyStore;
     }
@@ -387,7 +389,7 @@ public class RestResourceSystemTestBase {
         }
         // Save the new keystore contents
         final FileOutputStream fileOutputStream = new FileOutputStream(keyStoreFilePath);
-        keyStore.store(fileOutputStream, KEY_STORE_PASSWORD.toCharArray());
+        KeyStoreTools.storeKeyStore(keyStore, fileOutputStream, KEY_STORE_PASSWORD.toCharArray());
         fileOutputStream.close();
     }
 
@@ -456,7 +458,7 @@ public class RestResourceSystemTestBase {
             }
         }
     }
-    
+
     public String encodeUrl(String path) {
         try {
             path = URLEncoder.encode(path, "UTF-8");
@@ -465,15 +467,15 @@ public class RestResourceSystemTestBase {
         }
         return path;
     }
-    
+
     public static void setUpAuthTokenAndRole(
-            final X509Certificate limitedAdminCertificate, final String roleName, final List<String> resourcesAllowed, 
+            final X509Certificate limitedAdminCertificate, final String roleName, final List<String> resourcesAllowed,
             final List<String> resourcesDenied) throws RoleExistsException, RoleNotFoundException {
         roleInitializationSession.createRoleAndAddCertificateAsRoleMember(limitedAdminCertificate, null, roleName,
                 resourcesAllowed, resourcesDenied);
     }
 
-    public static void tearDownRemoveRole(TestX509CertificateAuthenticationToken authenticationToken) 
+    public static void tearDownRemoveRole(TestX509CertificateAuthenticationToken authenticationToken)
             throws RoleNotFoundException, AuthorizationDeniedException {
         roleInitializationSession.removeAllAuthenticationTokensRoles(authenticationToken);
     }
