@@ -364,8 +364,8 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         final Response crlImportResponse = crlImportRequest.request().post(crlImportRequestEntity);
         final String actualJsonString = crlImportResponse.readEntity(String.class);
         // then
-        assertProperJsonExceptionErrorResponse(Status.INTERNAL_SERVER_ERROR.getStatusCode(),
-                "General failure.", actualJsonString);
+        assertProperJsonExceptionErrorResponse(Status.BAD_REQUEST.getStatusCode(),
+                "Could not parse CRL. It must be in DER format.", actualJsonString);
     }
 
     @Test

@@ -1206,7 +1206,7 @@ public class CAInterfaceBean implements Serializable {
     public List<String> getAvailableCryptoTokenAliases(final List<KeyPairInfo> keyPairInfos, final String caSigningAlgorithm) {
         final List<String> aliases = new ArrayList<>();
         for (final KeyPairInfo cryptoTokenKeyPairInfo : keyPairInfos) {
-            if (AlgorithmTools.getKeyAlgorithmFromSigAlg(caSigningAlgorithm).equals(cryptoTokenKeyPairInfo.getKeyAlgorithm())) {
+            if (AlgorithmTools.getKeyAlgorithmFromSigAlg(caSigningAlgorithm).equalsIgnoreCase(cryptoTokenKeyPairInfo.getKeyAlgorithm())) {
                 aliases.add(cryptoTokenKeyPairInfo.getAlias());
             }
         }
