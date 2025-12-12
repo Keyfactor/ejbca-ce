@@ -71,7 +71,7 @@ public class LdapPublisher extends BasePublisher {
 	/** Internal localization of logs and errors */
 	private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
-	public static final float LATEST_VERSION = 12;
+	public static final float LATEST_VERSION = 13;
 	
 	// Create some constraints used when connecting, disconnecting, reading and storing in LDAP servers
 	/** Use a time limit for generic (non overridden) LDAP operations */
@@ -112,12 +112,12 @@ public class LdapPublisher extends BasePublisher {
 
 	// Default Values
 
-	protected static final String HOSTNAMES                = "hostname";
+	protected static final String HOSTNAMES                = "hostnames";
 	protected static final String CONNECTIONSECURITY       = "connectionsecurity";
 	// USESSL was removed in v12, but is kept for backwards compatibility
 	protected static final String USESSL                   = "usessl";
 	protected static final String PORT                     = "port";
-	protected static final String BASEDN                   = "baswdn";
+	protected static final String BASEDN                   = "basedn";
 	protected static final String LOGINDN                  = "logindn";
 	public static final String LOGINPASSWORD            = "loginpassword";
 	protected static final String TIMEOUT                  = "timeout";
@@ -346,16 +346,7 @@ public class LdapPublisher extends BasePublisher {
     							// Check if the intermediate parent node is present, and if it is not
     							// we can create it, of allowed to do so by the publisher configuration
     							if(getCreateIntermediateNodes()) {
-    								final String parentDN = DnComponents.getParentDN(dn);
-    								try {
-    									lc.read(parentDN, ldapSearchConstraints);
-    								} catch(LDAPException e) {
-    									if(e.getResultCode() == LDAPException.NO_SUCH_OBJECT) {
-    										this.createIntermediateNodes(lc, dn);
-    										String msg = intres.getLocalizedMessage("publisher.ldapaddedintermediate", "CERT", LogRedactionUtils.getSubjectDnLogSafe(parentDN));
-    										log.info(msg);
-    									}
-    								}
+                                    createIntermediateNodes(lc, dn);
     							}
     							newEntry = new LDAPEntry(dn, attributeSet);
     							if (log.isDebugEnabled()) {
@@ -404,60 +395,81 @@ public class LdapPublisher extends BasePublisher {
 	}
 
 	/**
-	 * Creates intermediate nodes to host an LDAP entry at <code>dn</code>.
+	 * Creates intermediate nodes as necessary to store an LDAP entry given by <code>dn</code>.
+	 * The code recursively checks each parent node and create that node if it doesn't exist.
 	 * @param lc Active LDAP connection
 	 * @param dn Distinguished name
 	 * @throws PublisherException
 	 */
-	private void createIntermediateNodes(LDAPConnection lc, String dn) throws PublisherException {
-		LDAPAttributeSet attrSet;
-		LDAPEntry entry;
-	    for (String dnFragment : LdapTools.getIntermediateDNs(dn, getBaseDN())) {
-			try {
-				lc.read(dnFragment, ldapSearchConstraints);
-			} catch(LDAPException e) {
-				if(e.getResultCode() == LDAPException.NO_SUCH_OBJECT) {
-				    final String rdn = LdapTools.getFirstDNComponent(dnFragment);
-				    final String field = new String(rdn.substring(0, rdn.indexOf('=')));
-				    final String value = new String(rdn.substring(rdn.indexOf('=') + 1));
-				    
-					attrSet = new LDAPAttributeSet();
-					attrSet.add(getObjectClassAttribute(field));
-					attrSet.add(new LDAPAttribute(field.toLowerCase(), value));
-					entry = new LDAPEntry(dnFragment, attrSet);
+	protected void createIntermediateNodes(LDAPConnection lc, String dn) throws PublisherException {
+        // Get the parent node. First check the the DN value is not null or blank.
+        final String parentDN = DnComponents.getParentDN(dn);
+        if (parentDN==null || parentDN.isBlank()) {
+            // We can't get the parent DN, log error and return.
+            log.warn( "Cannot get the parent node for this DN="+LogRedactionUtils.getSubjectDnLogSafe(dn));
+            return;
+        }
+        try {
+            lc.read(parentDN, ldapSearchConstraints);
+            // Successfully read this parent node, lets return.
+            return;
+        } catch(LDAPException e) {
+            if(e.getResultCode() == LDAPException.NO_SUCH_OBJECT) {
+                // Recursively try again till we find a valid node.
+                createIntermediateNodes(lc, parentDN);
+                
+                // Lets create this node
+                LDAPAttributeSet attrSet;
+                LDAPEntry entry;
+                
+                final String rdn = LdapTools.getFirstDNComponent(parentDN);
+                final String field = new String(rdn.substring(0, rdn.indexOf('=')));
+                final String value = new String(rdn.substring(rdn.indexOf('=') + 1));
+                
+                attrSet = new LDAPAttributeSet();
+                attrSet.add(getObjectClassAttribute(field));
+                attrSet.add(new LDAPAttribute(field.toLowerCase(), value));
+                entry = new LDAPEntry(parentDN, attrSet);
 
-					try {
-						lc.add(entry, ldapStoreConstraints);
-						if (log.isDebugEnabled()) {
-							log.debug("Created node " + LogRedactionUtils.getSubjectDnLogSafe(dnFragment));
-						}
-					} catch(LDAPException e1) {
-						String msg = intres.getLocalizedMessage("publisher.ldapaddedintermediate", LogRedactionUtils.getSubjectDnLogSafe(dnFragment));
-						log.error(msg, LogRedactionUtils.getRedactedException(e1));
-						throw new PublisherException(msg);            
-					}
-				}
-			}
-		}
+                try {
+                    lc.add(entry, ldapStoreConstraints);
+                    if (log.isDebugEnabled()) {
+                        String msg = intres.getLocalizedMessage("publisher.ldapaddedintermediate", "", LogRedactionUtils.getSubjectDnLogSafe(parentDN));
+                        log.debug(msg);
+                    }
+                } catch(LDAPException e1) {
+                    String msg = intres.getLocalizedMessage("publisher.ldapaddedintermediate", "ERROR", LogRedactionUtils.getSubjectDnLogSafe(parentDN));
+                    log.error(msg, LogRedactionUtils.getRedactedException(e1));
+                    throw new PublisherException(msg);            
+                }
+            }
+        }
 	}
 
 	/**
 	 * Returns an LDAPAttribute initialized with the LDAP object class
-	 * definition that corresponds to a DN <code>field</code>.
-	 * <p>The only allowed fields are </code>O</code> (organization) and
-	 * <code>OU</code> (organizationalUnit).</p>
+     * definition that corresponds to a DN <code>field</code>.
+     * <p>The only allowed fields are </code>O</code> (organization),
+     * <code>OU</code> (organizationalUnit), </code>DC</code> (domain), </code>C</code> (country), </code>L</code> (locality), and
+     * </code>ST</code> (locality).</p>
 	 *
-	 * @param field A DN field (case-insensitive). Only <code>O</code> and
-	 * <code>OU</code> are allowed. 
+	 * @param field A DN field (case-insensitive). Only <code>O</code>,
+	 * <code>OU</code>, <code>DC</code>, <code>C</code>, <code>L</code>, and <code>ST</code> are allowed. 
 	 * @return LDAPAttribute initialized with the LDAP object class definition
 	 * that corresponds to a DN <code>field</code>.
 	 */
-	private LDAPAttribute getObjectClassAttribute(String field) {
+	protected LDAPAttribute getObjectClassAttribute(String field) {
 		final String lowCaseField = field.toLowerCase();
 		if(lowCaseField.equals("o")) {
 			return new LDAPAttribute("objectclass", new String[] { "top", "organization" });
 		} else if(lowCaseField.equals("ou")) {
 			return new LDAPAttribute("objectclass", new String[] { "top", "organizationalUnit" });
+        } else if(lowCaseField.equals("dc")) {
+            return new LDAPAttribute("objectclass", new String[] { "top", "domain" });
+        } else if(lowCaseField.equals("c")) {
+            return new LDAPAttribute("objectclass", new String[] { "top", "country" });
+        } else if(lowCaseField.equals("l") || lowCaseField.equals("st")) {
+            return new LDAPAttribute("objectclass", new String[] { "top", "locality" });
 		} else {
 			String msg = intres.getLocalizedMessage("publisher.ldapintermediatenotappropriate", field);
 			log.warn(msg);
@@ -653,20 +665,43 @@ public class LdapPublisher extends BasePublisher {
 			}
 			if (oldEntry != null) {          
 				if (removecert) {
-					// Don't try to remove the cert if there does not exist any
-					LDAPAttribute oldAttr = oldEntry.getAttribute(getUserCertAttribute());
-					if (oldAttr != null) {
-						modSet = getModificationSet(oldEntry, certdn, null, false, true, null, cert);
-						LDAPAttribute attr = new LDAPAttribute(getUserCertAttribute());
-						modSet.add(new LDAPModification(LDAPModification.DELETE, attr));                    
-					} else {
-						String msg = intres.getLocalizedMessage("publisher.inforevokenocert");
-						log.info(msg);
-					}            		
+                    // Get the current set of certificates
+                    LDAPAttribute oldAttr = oldEntry.getAttribute(getUserCertAttribute());
+                    if (oldAttr != null) {
+                        modSet = getModificationSet(oldEntry, certdn, null, false, true, null, cert);
+                        // Remove the revoked cert from the attribute
+                        try {
+                            oldAttr.removeValue(cert.getEncoded());
+                        } catch (CertificateEncodingException e) {
+                            // Exception should not happen!
+                            String msg = "Unexpected certificate encoding issue. Cannot remove the certificate from LDAP.";
+                            log.error(msg);
+                            return;
+                        }
+
+                        // Check if there are remaining certificates to keep
+                        if ( oldAttr.size() >= 1) {
+                            // Update the LDAP entry to keep other certificates
+                            modSet.add(new LDAPModification(LDAPModification.REPLACE, oldAttr));
+                            // Even if 'removeuser' is enabled, lets overwrite this to prevent the user being deleted.
+                            removeuser = false;
+                        } else {
+                            // Delete the userCertificate attribute as no certificates remains.
+                            LDAPAttribute attr = new LDAPAttribute(getUserCertAttribute());
+                            modSet.add(new LDAPModification(LDAPModification.DELETE, attr));
+                        }
+                    } else {
+                        // No userCertificate attribute, nothing to do.
+                        String msg = intres.getLocalizedMessage("publisher.inforevokenocert");
+                        log.info(msg);
+                        return;
+                    }                   
 				}
 			} else {
+                // No LDAP entry, nothing to do.
 				String msg = intres.getLocalizedMessage("publisher.errorrevokenoentry");
 				log.warn(msg);
+				return;
 			}
 		} else  {
 			oldEntry = null;
@@ -674,6 +709,8 @@ public class LdapPublisher extends BasePublisher {
 			if (log.isDebugEnabled()) {
 				log.debug("Not removing CA certificate from first available server of " + getHostnames() + ", because of object class restrictions.");
 			}
+			// Nothing further to do.
+			return;
 		}
 
 		// Try all the listed servers
@@ -706,9 +743,15 @@ public class LdapPublisher extends BasePublisher {
 						LDAPModification[] mods = new LDAPModification[modSet.size()]; 
 						mods = (LDAPModification[])modSet.toArray(mods);
 						lc.modify(oldEntry.getDN(), mods, ldapStoreConstraints);            		
+                        if (log.isDebugEnabled()) {
+                            log.debug("Removing revoked certificate (SN: "+CertTools.getSerialNumberAsString(cert)+") from the LDAP entry at DN="+LogRedactionUtils.getSubjectDnLogSafe(dn));                        
+                        }
 					}
 					if (removeuser) {
-						lc.delete(oldEntry.getDN(), ldapStoreConstraints);            		
+					    lc.delete(oldEntry.getDN(), ldapStoreConstraints);     
+					    if (log.isDebugEnabled()) {
+					        log.debug("Deleting the LDAP entry at DN="+LogRedactionUtils.getSubjectDnLogSafe(dn));                        
+					    }
 					}
 					String msg = intres.getLocalizedMessage("publisher.ldapremove", LogRedactionUtils.getSubjectDnLogSafe(dn));
 					log.info(msg);
@@ -1369,17 +1412,14 @@ public class LdapPublisher extends BasePublisher {
 		for (int i =0; i<attributes.length;i++){
 			String attribute = DnComponents.getPartFromDN(dn, attributes[i]);
 			LDAPAttribute oldattribute = oldEntry.getAttribute(attributes[i]);
-			if (log.isDebugEnabled()) {
-				if (oldattribute!=null) {
-					log.debug("removeme, oldattributename=" + oldattribute.getName() + ", oldattribute="+LogRedactionUtils.getContentLogSafe(oldattribute.toString()));
-				}
-				if (dn!=null) {
-					log.debug("removeme, dn=" + LogRedactionUtils.getSubjectDnLogSafe(dn));
-				}
-			}
 			if ( ((attribute != null) && (oldattribute == null) && addNonExisting) || ( ((attribute != null) && (oldattribute != null )) && modifyExisting) ) {
 				LDAPAttribute attr = new LDAPAttribute(attributes[i], attribute);
 				modset.add(new LDAPModification(LDAPModification.REPLACE, attr));
+	            if (log.isDebugEnabled()) {
+	                if (dn!=null) {
+	                    log.debug("Updating attribute " + LogRedactionUtils.getContentLogSafe(oldattribute.toString()) + " into LDAP DN="+LogRedactionUtils.getSubjectDnLogSafe(dn));
+	                }
+	            }
 			}
 		}
 		return modset;
@@ -1687,7 +1727,9 @@ public class LdapPublisher extends BasePublisher {
 			}
 		}
 		
-		String retval = nameBuilder.build().toString() + "," + this.getBaseDN(); 
+		// Complete the LDAP DN by adding the BaseDN (but only if not blank)
+		String retval = nameBuilder.build().toString() + ( getBaseDN().isBlank()?"":","+getBaseDN()); 
+		
 		if (log.isDebugEnabled()) {
 			log.debug("LdapPublisher: constructed DN: " + LogRedactionUtils.getSubjectDnLogSafe(retval) );
 		}
@@ -1784,6 +1826,14 @@ public class LdapPublisher extends BasePublisher {
 					setConnectionSecurity(ConnectionSecurity.PLAIN);
 				}
 			}
+            if (data.get("hostname") != null) { // v13
+                setHostnames( (String)data.get("hostname"));
+                data.remove("hostname");
+            }
+            if (data.get("baswdn") != null) { // v13
+                setBaseDN( (String)data.get("baswdn"));
+                data.remove("baswdn");
+             }
 				
 			data.put(VERSION, Float.valueOf(LATEST_VERSION));
 		}
