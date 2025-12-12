@@ -79,7 +79,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
         registerParameter(new Parameter(CA_NAME_KEY, "CA Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Name of the issuing CA."));
         registerParameter(new Parameter(ACTIVE_KEY, ACTIVE + "|" + REVOKED, MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Set the status of the imported end entity."));
+                "Set the status of the imported end entity, ACTIVE or REVOKED"));
         registerParameter(new Parameter(DIRECTORY_KEY, "Certificate Directory", MandatoryMode.MANDATORY, StandaloneMode.ALLOW,
                 ParameterMode.ARGUMENT, "Directory of PEM certificates, which must be PEM encoded"));
         registerParameter(new Parameter(EE_PROFILE_KEY, "Profile Name", MandatoryMode.MANDATORY, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
