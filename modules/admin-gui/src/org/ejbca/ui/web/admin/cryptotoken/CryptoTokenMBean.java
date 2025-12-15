@@ -31,7 +31,6 @@ import jakarta.ejb.EJBException;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.ExternalContext;
 import jakarta.faces.context.FacesContext;
-import jakarta.faces.context.Flash;
 import jakarta.faces.model.ListDataModel;
 import jakarta.faces.model.SelectItem;
 import jakarta.faces.view.ViewScoped;
@@ -78,6 +77,7 @@ import org.ejbca.util.SlotList;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -125,13 +125,8 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        final Flash flashContext = FacesContext.getCurrentInstance().getExternalContext().getFlash();
-
-        String modeParam = "";
-        if (flashContext != null) {
-            modeParam = (String) flashContext.get("mode");
-        }
-
+        final Map<String, String> params = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
+        final String modeParam = params.getOrDefault("mode", "");
         currentCryptoTokenEditMode = getCurrentCryptoTokenId() == 0 || "edit".equals(modeParam);
     }
 
@@ -994,7 +989,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
 
     public String getSelectedCryptoTokenName() {
         if (selectedCryptoTokenName == null) {
-            selectedCryptoTokenName = (String) FacesContext.getCurrentInstance().getExternalContext().getFlash().get("tokenName");
+            selectedCryptoTokenName = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("tokenName");
         }
         return selectedCryptoTokenName;
     }
@@ -1005,7 +1000,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
 
     public String getSelectedCryptoTokenId() {
         if (selectedCryptoTokenId == null) {
-            selectedCryptoTokenId = (String) FacesContext.getCurrentInstance().getExternalContext().getFlash().get("tokenId");
+            selectedCryptoTokenId = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("tokenId");
         }
         return selectedCryptoTokenId;
     }
@@ -1188,30 +1183,13 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     }
 
     public void editCryptoToken(final String cryptoTokenId) {
-        final ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
-        final Flash flashContext = externalContext.getFlash();
-        if (flashContext == null) {
-            redirect("cryptotokens.xhtml");
-            return;
-        }
-
-        flashContext.setKeepMessages(true);
-        flashContext.put("mode", "edit");
-
-        redirect("cryptotoken.xhtml", "cryptoTokenId", cryptoTokenId, "ref", "default");
+        redirect("cryptotoken.xhtml", "cryptoTokenId", cryptoTokenId, "ref", "default", "mode", "edit");
     }
 
     public String prepareDelete(final String cryptoTokenId, final String cryptoTokenName) {
-        final Flash flashContext = FacesContext.getCurrentInstance().getExternalContext().getFlash();
-        if (flashContext == null) {
-            return "cryptotokens.xhtml?faces-redirect=true";
-        }
-
-        flashContext.setKeepMessages(true);
-        flashContext.put("tokenName", cryptoTokenName);
-        flashContext.put("tokenId", cryptoTokenId);
-
-        return "deletecryptotoken.xhtml?faces-redirect=true";
+        final String tokenIdParam = URLEncoder.encode(String.valueOf(cryptoTokenId), StandardCharsets.UTF_8);
+        final String tokenNameParam = URLEncoder.encode(String.valueOf(cryptoTokenName), StandardCharsets.UTF_8);
+        return "deletecryptotoken.xhtml?faces-redirect=true&tokenId=" + tokenIdParam + "&tokenName=" + tokenNameParam;
     }
 
     public void prepareDeleteKey(final String... cryptoTokenKeyAlias) throws AuthorizationDeniedException {
@@ -1219,13 +1197,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             addNonTranslatedErrorMessage("Crypto Token key pair must be selected.");
             return;
         }
-
-        final Flash flashContext = FacesContext.getCurrentInstance().getExternalContext().getFlash();
-        flashContext.setKeepMessages(true);
-        flashContext.put("mode", "edit");
-        flashContext.put("tokenName", getCurrentCryptoToken().getName());
-
-        Object[] params = {"cryptoTokenId", getCurrentCryptoTokenId(), "ref", "default"};
+        Object[] params = {"cryptoTokenId", getCurrentCryptoTokenId(), "ref", "default", "mode", "edit", "tokenName", getCurrentCryptoToken().getName()};
         final Object[] keyAliases = Arrays.stream(cryptoTokenKeyAlias)
                 .flatMap(keyAlias -> Stream.of("keyalias", keyAlias))
                 .toArray(Object[]::new);
@@ -1860,6 +1832,10 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_256F, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_256F));
             availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_256S, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_256S));
             availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_256S, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_256S));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_MLDSA87_RSA3072_PSS_SHA512, AlgorithmConstants.KEYALGORITHM_MLDSA87_RSA3072_PSS_SHA512));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_MLDSA87_RSA4096_PSS_SHA512, AlgorithmConstants.KEYALGORITHM_MLDSA87_RSA4096_PSS_SHA512));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_MLDSA87_ECDSA_P384_SHA512, AlgorithmConstants.KEYALGORITHM_MLDSA87_ECDSA_P384_SHA512));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_MLDSA87_ECDSA_P521_SHA512, AlgorithmConstants.KEYALGORITHM_MLDSA87_ECDSA_P521_SHA512));
         }
         return availableKeySpecs;
     }

@@ -1133,7 +1133,7 @@ public class CAsSystemTest extends CaTestCase {
             caSession.editCA(admin, xinfo);
 
             int lastCrlNumberBeforeRenewCA = crlStoreSession.getLastCRLNumber(info.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false);
-            caAdminSession.renewCA(admin, getTestCAId(), false, null, false);
+            caAdminSession.renewCA(admin, getTestCAId(), false, null, false, CertificateProfileConstants.NO_CERTIFICATE_PROFILE);
             int lastCrlNumberAfterRenewCA = crlStoreSession.getLastCRLNumber(info.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false);
             assertCrlGenerationAfterCARenewal(lastCrlNumberBeforeRenewCA, lastCrlNumberAfterRenewCA);
 
@@ -1162,7 +1162,7 @@ public class CAsSystemTest extends CaTestCase {
 
             // Now we have edited the CA with the new Certificate Profile, let's renew it
             lastCrlNumberBeforeRenewCA = crlStoreSession.getLastCRLNumber(info.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false);
-            caAdminSession.renewCA(admin, getTestCAId(), false, null, false);
+            caAdminSession.renewCA(admin, getTestCAId(), false, null, false, CertificateProfileConstants.NO_CERTIFICATE_PROFILE);
             lastCrlNumberAfterRenewCA = crlStoreSession.getLastCRLNumber(info.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false);
             assertCrlGenerationAfterCARenewal(lastCrlNumberBeforeRenewCA, lastCrlNumberAfterRenewCA);
 
@@ -1178,7 +1178,7 @@ public class CAsSystemTest extends CaTestCase {
 
             // Test renew CA keys
             lastCrlNumberBeforeRenewCA = crlStoreSession.getLastCRLNumber(info.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false);
-            caAdminSession.renewCA(admin, getTestCAId(), true, null, true);
+            caAdminSession.renewCA(admin, getTestCAId(), true, null, true, CertificateProfileConstants.NO_CERTIFICATE_PROFILE);
             lastCrlNumberAfterRenewCA = crlStoreSession.getLastCRLNumber(info.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false);
             assertCrlGenerationAfterCARenewal(lastCrlNumberBeforeRenewCA, lastCrlNumberAfterRenewCA);
 
@@ -1247,7 +1247,7 @@ public class CAsSystemTest extends CaTestCase {
             caAdminSession.editCA(admin, info);
 
             lastCrlNumberBeforeRenewCA = crlStoreSession.getLastCRLInfo(info.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false).getLastCRLNumber();
-            caAdminSession.renewCA(admin, getTestCAId(), false, null, false);
+            caAdminSession.renewCA(admin, getTestCAId(), false, null, false, CertificateProfileConstants.NO_CERTIFICATE_PROFILE);
             lastCrlNumberAfterRenewCA = crlStoreSession.getLastCRLInfo(info.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false).getLastCRLNumber();
             int lastDeltaCrlNumberAfterRenewCA = crlStoreSession.getLastCRLInfo(info.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, true).getLastCRLNumber();
             assertCrlGenerationAfterCARenewal(lastCrlNumberBeforeRenewCA, lastCrlNumberAfterRenewCA);
@@ -1321,8 +1321,8 @@ public class CAsSystemTest extends CaTestCase {
             // Renew the CA, twice, we have to unrevoke it first though
             info.setStatus(CAConstants.CA_ACTIVE);
             caSession.editCA(admin, info);
-            caAdminSession.renewCA(admin, info.getCAId(), false, null, false);
-            caAdminSession.renewCA(admin, info.getCAId(), false, null, false);
+            caAdminSession.renewCA(admin, info.getCAId(), false, null, false, CertificateProfileConstants.NO_CERTIFICATE_PROFILE);
+            caAdminSession.renewCA(admin, info.getCAId(), false, null, false, CertificateProfileConstants.NO_CERTIFICATE_PROFILE);
             certs = certificateStoreSession.findCertificatesBySubject(info.getSubjectDN());
             toremove.addAll(certs);
             assertEquals("Test CA should have three certificates", 3, certs.size());

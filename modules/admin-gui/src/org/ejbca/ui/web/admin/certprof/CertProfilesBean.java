@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.certprof;
 
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.Serializable;
@@ -72,11 +73,6 @@ import com.keyfactor.util.StringTools;
 public class CertProfilesBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(CertProfilesBean.class);
-    
-    // This restriction in certificate profile naming can be removed when the current running version no longer has
-    // to be able to run side by side (share the db) with an EJBCA 6.1.x or earlier
-    @Deprecated
-    private static final String LEGACY_FIXED_MARKER = "(FIXED)";
 
     @EJB
     private CAAdminSessionLocal caAdminSession;
@@ -263,9 +259,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
 
     public void actionAddFromTemplateConfirm() {
         final String certProfileName = getCertProfileName();
-        if (certProfileName.endsWith(LEGACY_FIXED_MARKER)) {
-            addErrorMessage("YOUCANTEDITFIXEDCERTPROFS");
-        } else if (StringUtils.isBlank(certProfileName)) {
+        if (StringUtils.isBlank(certProfileName)) {
             addNonTranslatedErrorMessage("Error: Certificate profile name cannot be empty.");
         } else if (certProfileName.length() > 0) {
             if (!StringTools.checkFieldForLegalChars(certProfileName)) {
@@ -625,6 +619,18 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
                         + "'.");
                 publishers.remove(toRemove);
             }
+            //Make sure required defaults are set
+            cprofile.setAvailableKeyAlgorithmsAsList(AlgorithmTools.getAvailableKeyAlgorithms());
+            cprofile.setAvailableEcCurvesAsList(Collections.singletonList(CertificateProfile.ANY_EC_CURVE));
+            cprofile.setUseExpirationRestrictionForWeekdays(false);
+            cprofile.setStoreSubjectAlternativeName(true);
+            cprofile.setUseIssuerAlternativeName(true);
+            cprofile.setIssuerAlternativeNameCritical(false);
+            cprofile.setUseMsObjectSidSecurityExtension(true);
+            cprofile.setUseDocumentTypeList(false);
+            cprofile.setDocumentTypeListCritical(false);
+            cprofile.setEncodedValidity(CertificateProfile.DEFAULT_CERTIFICATE_VALIDITY);
+
             cprofile.setPublisherList(publishers);
 
         } finally {

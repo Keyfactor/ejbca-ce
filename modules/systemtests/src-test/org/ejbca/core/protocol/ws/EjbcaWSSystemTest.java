@@ -12,14 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
-
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -58,6 +50,23 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
+
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CeSecoreNameStyle;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.FileTools;
+import com.keyfactor.util.IndefiniteLengthDetectorStream;
+import com.keyfactor.util.RandomHelper;
+import com.keyfactor.util.certificate.CertificateImplementationRegistry;
+import com.keyfactor.util.certificate.CertificateWrapper;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.KeyGenParams;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -197,21 +206,13 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-import com.keyfactor.ErrorCode;
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.CeSecoreNameStyle;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.EJBTools;
-import com.keyfactor.util.FileTools;
-import com.keyfactor.util.RandomHelper;
-import com.keyfactor.util.certificate.CertificateImplementationRegistry;
-import com.keyfactor.util.certificate.CertificateWrapper;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.keys.KeyTools;
-import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-import com.keyfactor.util.keys.token.KeyGenParams;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 
 /**
@@ -616,7 +617,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
         endEntity.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
         endEntity.setEndEntityProfileName(profileName);
         endEntity.setCertificateProfileName(profileName);
-        endEntity.setExtendedInformation(new ArrayList<ExtendedInformationWS>());
+        endEntity.setExtendedInformation(new ArrayList<>());
 
         try {
             ejbcaraws.editUser(endEntity);
@@ -698,7 +699,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
         endEntity.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
         endEntity.setEndEntityProfileName(profileName);
         endEntity.setCertificateProfileName(profileName);
-        endEntity.setExtendedInformation(new ArrayList<ExtendedInformationWS>());
+        endEntity.setExtendedInformation(new ArrayList<>());
 
         try {
             ejbcaraws.editUser(endEntity);
@@ -779,7 +780,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
         endEntity.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
         endEntity.setEndEntityProfileName(profileName);
         endEntity.setCertificateProfileName(profileName);
-        endEntity.setExtendedInformation(new ArrayList<ExtendedInformationWS>());
+        endEntity.setExtendedInformation(new ArrayList<>());
 
         try {
             ejbcaraws.editUser(endEntity);
@@ -860,7 +861,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
         endEntity.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
         endEntity.setEndEntityProfileName(profileName);
         endEntity.setCertificateProfileName(profileName);
-        endEntity.setExtendedInformation(new ArrayList<ExtendedInformationWS>());
+        endEntity.setExtendedInformation(new ArrayList<>());
         try {
             CertificateResponse certificateResponse = ejbcaraws.certificateRequest(endEntity, new String(Base64.encode(request.getEncoded())),
                     CertificateHelper.CERT_REQ_TYPE_PKCS10, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
@@ -931,7 +932,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
         endEntity.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
         endEntity.setEndEntityProfileName(profileName);
         endEntity.setCertificateProfileName(profileName);
-        endEntity.setExtendedInformation(new ArrayList<ExtendedInformationWS>());
+        endEntity.setExtendedInformation(new ArrayList<>());
         try {
             CertificateResponse certificateResponse = ejbcaraws.certificateRequest(endEntity, new String(Base64.encode(request.getEncoded())),
                     CertificateHelper.CERT_REQ_TYPE_PKCS10, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
@@ -1002,7 +1003,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
         endEntity.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
         endEntity.setEndEntityProfileName(profileName);
         endEntity.setCertificateProfileName(profileName);
-        endEntity.setExtendedInformation(new ArrayList<ExtendedInformationWS>());
+        endEntity.setExtendedInformation(new ArrayList<>());
         try {
             CertificateResponse certificateResponse = ejbcaraws.certificateRequest(endEntity, new String(Base64.encode(request.getEncoded())),
                     CertificateHelper.CERT_REQ_TYPE_PKCS10, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
@@ -1188,7 +1189,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
         }
 
         // Clean up.
-        caInfo.setValidators(new ArrayList<Integer>());
+        caInfo.setValidators(new ArrayList<>());
         caSession.editCA(intAdmin, caInfo);
         userdatas.get(0).setTokenType(oldTokenType);
         userdatas.get(0).setSubjectDN(oldSubjectDn);
@@ -1841,6 +1842,14 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
 
         KeyStore ksenv = ejbcaraws.pkcs12Req("WSTESTUSERKEYREC1", "foo456", null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
         java.security.KeyStore ks = KeyStoreHelper.getKeyStore(ksenv.getKeystoreData(), "PKCS12", "foo456");
+        // Verify that keystore returned from server has definite length encoding
+        ByteArrayInputStream in1 = new ByteArrayInputStream(ksenv.getKeystoreData());
+        try (IndefiniteLengthDetectorStream ildStream = new IndefiniteLengthDetectorStream(in1)) {
+            while (ildStream.readValue() != null) {
+                ;
+            }
+            assertFalse("ks.store() with PKCS12StoreParameter(true) is expected to not have indefinitlength encoding", ildStream.isIndefiniteLength());
+        }
         assertNotNull(ks);
         Enumeration<String> en = ks.aliases();
         String alias = en.nextElement();
@@ -1868,7 +1877,16 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
         ejbcaraws.editUser(userdatas.get(0));
         // A new PK12 request now should return the same key and certificate
         KeyStore ksenv2 = ejbcaraws.pkcs12Req("WSTESTUSERKEYREC1", "foo456", null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        java.security.KeyStore ks2 = KeyStoreHelper.getKeyStore(ksenv2.getKeystoreData(), "PKCS12", "foo456");
+        byte[] ksbytes = ksenv2.getKeystoreData();
+        java.security.KeyStore ks2 = KeyStoreHelper.getKeyStore(ksbytes, "PKCS12", "foo456");
+        // Verify that keystore returned from server has definite length encoding
+        ByteArrayInputStream in2 = new ByteArrayInputStream(ksbytes);
+        try (IndefiniteLengthDetectorStream ildStream = new IndefiniteLengthDetectorStream(in2)) {
+            while (ildStream.readValue() != null) {
+                ;
+            }
+            assertFalse("ks.store() with PKCS12StoreParameter(true) is expected to not have indefinitlength encoding", ildStream.isIndefiniteLength());
+        }
         assertNotNull(ks2);
         en = ks2.aliases();
         alias = en.nextElement();
@@ -1976,7 +1994,16 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
                         AccessRulesConstants.REGULAR_KEYRECOVERY
                 ), null);
                 KeyStore ksenv = ejbcaraws.pkcs12Req(username, "foo456", null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
-                java.security.KeyStore ks = KeyStoreHelper.getKeyStore(ksenv.getKeystoreData(), "PKCS12", "foo456");
+                byte[] ksbytes = ksenv.getKeystoreData();
+                java.security.KeyStore ks = KeyStoreHelper.getKeyStore(ksbytes, "PKCS12", "foo456");
+                // Verify that keystore returned from server has definite length encoding
+                ByteArrayInputStream in = new ByteArrayInputStream(ksbytes);
+                try (IndefiniteLengthDetectorStream ildStream = new IndefiniteLengthDetectorStream(in)) {
+                    while (ildStream.readValue() != null) {
+                        ;
+                    }
+                    assertFalse("ks.store() with PKCS12StoreParameter(true) is expected to not have indefinitlength encoding", ildStream.isIndefiniteLength());
+                }
                 assertNotNull(ks);
                 keyStores.add(ks);
             }
@@ -2031,6 +2058,14 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
                 ejbcaraws.editUser(userdatas.get(0));
                 KeyStore ksenv = ejbcaraws.pkcs12Req(username, "foo456", null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
                 java.security.KeyStore ks2 = KeyStoreHelper.getKeyStore(ksenv.getKeystoreData(), "PKCS12", "foo456");
+                // Verify that keystore returned from server has definite length encoding
+                ByteArrayInputStream in = new ByteArrayInputStream(ksenv.getKeystoreData());
+                try (IndefiniteLengthDetectorStream ildStream = new IndefiniteLengthDetectorStream(in)) {
+                    while (ildStream.readValue() != null) {
+                        ;
+                    }
+                    assertFalse("ks.store() with PKCS12StoreParameter(true) is expected to not have indefinitlength encoding", ildStream.isIndefiniteLength());
+                }
                 assertNotNull(ks2);
                 en = ks2.aliases();
                 alias = en.nextElement();
@@ -2065,6 +2100,14 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
                 // Try the single keyRecoverEnroll command
                 KeyStore ksenv = ejbcaraws.keyRecoverEnroll(username, cert.getSerialNumber().toString(16), cert.getIssuerX500Principal().toString(), "foo456", null);
                 java.security.KeyStore ks2 = KeyStoreHelper.getKeyStore(ksenv.getKeystoreData(), "PKCS12", "foo456");
+                // Verify that keystore returned from server has definite length encoding
+                ByteArrayInputStream in = new ByteArrayInputStream(Base64.decode(ksenv.getKeystoreData()));
+                try (IndefiniteLengthDetectorStream ildStream = new IndefiniteLengthDetectorStream(in)) {
+                    while (ildStream.readValue() != null) {
+                        ;
+                    }
+                    assertFalse("ks.store() with PKCS12StoreParameter(true) is expected to not have indefinitlength encoding", ildStream.isIndefiniteLength());
+                }
                 assertNotNull(ks2);
                 en = ks2.aliases();
                 alias = en.nextElement();
@@ -3622,7 +3665,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
             assertEquals("Error code:",  errorCode.getInternalErrorCode(), ((EjbcaException_Exception) exception).getFaultInfo().getErrorCode().getInternalErrorCode());
         }
         if (StringUtils.isNotEmpty(errorMessage)) {
-            assertEquals("Error message:", errorMessage, ((EjbcaException_Exception) exception).getMessage());
+            assertEquals("Error message:", errorMessage, exception.getMessage());
         }
     }
 
@@ -3666,6 +3709,14 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
             } else {
                 KeyStore ksenv = ejbcaraws.softTokenRequest(userData, null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
                 java.security.KeyStore keyStore = KeyStoreHelper.getKeyStore(ksenv.getKeystoreData(), "PKCS12", PASSWORD);
+                // Verify that keystore returned from server has definite length encoding
+                ByteArrayInputStream in = new ByteArrayInputStream(Base64.decode(ksenv.getKeystoreData()));
+                try (IndefiniteLengthDetectorStream ildStream = new IndefiniteLengthDetectorStream(in)) {
+                    while (ildStream.readValue() != null) {
+                        ;
+                    }
+                    assertFalse("ks.store() with PKCS12StoreParameter(true) is expected to not have indefinitlength encoding", ildStream.isIndefiniteLength());
+                }
                 assertNotNull(keyStore);
                 Enumeration<String> en = keyStore.aliases();
                 String alias = en.nextElement();
@@ -3707,6 +3758,14 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
 
         KeyStore ksenv = ejbcaraws.softTokenRequest(userData, null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
         java.security.KeyStore keyStore = KeyStoreHelper.getKeyStore(ksenv.getKeystoreData(), "PKCS12", PASSWORD);
+        // Verify that keystore returned from server has definite length encoding
+        ByteArrayInputStream in = new ByteArrayInputStream(Base64.decode(ksenv.getKeystoreData()));
+        try (IndefiniteLengthDetectorStream ildStream = new IndefiniteLengthDetectorStream(in)) {
+            while (ildStream.readValue() != null) {
+                ;
+            }
+            assertFalse("ks.store() with PKCS12StoreParameter(true) is expected to not have indefinitlength encoding", ildStream.isIndefiniteLength());
+        }
         assertNotNull(keyStore);
         Enumeration<String> en = keyStore.aliases();
         String alias = en.nextElement();

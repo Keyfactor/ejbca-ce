@@ -210,6 +210,14 @@ public class X509CAUnitTestBase {
             return AlgorithmConstants.KEYALGORITHM_FALCON512;
         } else if (algName.equals(AlgorithmConstants.SIGALG_LMS)) {
             return AlgorithmConstants.KEYALGORITHM_LMS;
+        } else if (algName.equals(AlgorithmConstants.SIGALG_MLDSA87_RSA3072_PSS_SHA512)) {
+            return AlgorithmConstants.KEYALGORITHM_MLDSA87_RSA3072_PSS_SHA512;
+        } else if (algName.equals(AlgorithmConstants.SIGALG_MLDSA87_RSA4096_PSS_SHA512)) {
+            return AlgorithmConstants.KEYALGORITHM_MLDSA87_RSA4096_PSS_SHA512;
+        } else if (algName.equals(AlgorithmConstants.SIGALG_MLDSA87_ECDSA_P384_SHA512)) {
+            return AlgorithmConstants.KEYALGORITHM_MLDSA87_ECDSA_P384_SHA512;
+        } else if (algName.equals(AlgorithmConstants.SIGALG_MLDSA87_ECDSA_P521_SHA512)) {
+            return AlgorithmConstants.KEYALGORITHM_MLDSA87_ECDSA_P521_SHA512;
         } else {
             return "1024"; // Assume RSA
         }

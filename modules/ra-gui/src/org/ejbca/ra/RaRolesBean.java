@@ -30,7 +30,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.dto.RoleDataDto;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.era.RaRoleSearchRequest;
-import org.ejbca.core.model.era.RaRoleSearchResponse;
+import org.ejbca.core.model.era.RaRoleSearchResponseV2;
 
 
 /**
@@ -58,7 +58,7 @@ public class RaRolesBean implements Serializable {
     
     private String roleSearchString;
     
-    private RaRoleSearchResponse lastExecutedResponse = null;
+    private RaRoleSearchResponseV2 lastExecutedResponse = null;
     
     private List<RoleDataDto> resultsFiltered = new ArrayList<>();
     private boolean hasNamespaces;
@@ -96,7 +96,7 @@ public class RaRolesBean implements Serializable {
         // Get data
         final RaRoleSearchRequest searchRequest = new RaRoleSearchRequest();
         searchRequest.setGenericSearchString(roleSearchString);
-        lastExecutedResponse = raMasterApiProxyBean.searchForRoles(raAuthenticationBean.getAuthenticationToken(), searchRequest);
+        lastExecutedResponse = raMasterApiProxyBean.searchForRolesV2(raAuthenticationBean.getAuthenticationToken(), searchRequest);
         resultsFiltered = lastExecutedResponse.getRoles();
         
         // Check if we should show the namespace column

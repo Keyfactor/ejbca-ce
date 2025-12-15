@@ -30,7 +30,6 @@ import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.HashID;
 import org.cesecore.certificates.certificate.internal.CaCertificateCacheLocal;
 import org.cesecore.config.GlobalCaConfiguration;
-import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 
 import com.keyfactor.util.Base64;
@@ -240,7 +239,7 @@ public class CaCertificateCache implements CaCertificateCacheLocal {
         certsFromSubjectDN = newCertsFromSubjectDN;
         rootCertificates = newRootCertificates;
         allCaCertificates = newAllCaCertificates;
-        certValidTo = System.currentTimeMillis() + OcspConfiguration.getSigningCertsValidTimeInMilliseconds();
         GlobalCaConfiguration globalCaConfiguration = (GlobalCaConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCaConfiguration.CA_CONFIGURATION_ID);
+        certValidTo = globalCaConfiguration.getCaCertificateCacheTimeMillis();
     }
 }
