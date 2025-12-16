@@ -219,7 +219,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             CertificateRevokeException, CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             SignatureException, CertificateException, CertificateExtensionException, CertificateRenewalException {
 
-        ScepConfiguration scepConfig = (ScepConfiguration) this.globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
+        ScepConfiguration scepConfig = (ScepConfiguration) globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
         if (!scepConfig.aliasExists(scepConfigurationAlias)) {
             throw new NoSuchAliasException();
         }
@@ -834,10 +834,8 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
      * @param scepConfig configuration used to build the client
      * @return client for sending commands to Intune
      * @throws CertificateCreateException Unable to create the client
-     * @throws AzureException
-     * @throws IOException
      */
-    private IntuneRestApi getIntuneScepServiceClient(final String alias, final ScepConfiguration scepConfig) throws CertificateCreateException, IOException, AzureException {
+    private IntuneRestApi getIntuneScepServiceClient(final String alias, final ScepConfiguration scepConfig) throws CertificateCreateException {
         try {
             Builder builder = new IntuneRestApi.Builder(scepConfig.getIntuneTenant(alias), scepConfig.getIntuneAadAppId(alias), GlobalConfiguration.EJBCA_VERSION);
             if (isNotBlank(scepConfig.getIntuneProxyHost(alias))) {

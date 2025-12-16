@@ -30,12 +30,9 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import jakarta.ejb.EJB;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.keys.KeyStoreTools;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.log4j.Logger;
@@ -53,8 +50,12 @@ import org.ejbca.ui.web.pub.ServletUtils;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.StringTools;
+import jakarta.ejb.EJB;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Servlet for download of CA certificates and chains.
@@ -140,10 +141,7 @@ public class RaCertDistServlet extends HttpServlet {
                                 for (int i = 0; i < chain.size(); i++) {
                                     keyStore.setCertificateEntry("cacert" + i, chain.get(i));
                                 }
-                                try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-                                    keyStore.store(out, "changeit".toCharArray());
-                                    response = out.toByteArray();
-                                }
+                                response = KeyStoreTools.getAsByteArray(keyStore, "changeit");
                                 filename += "-chain.jks";
                                 break;
                             }

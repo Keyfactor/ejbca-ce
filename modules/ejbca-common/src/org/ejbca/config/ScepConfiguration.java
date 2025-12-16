@@ -645,6 +645,8 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
             if (data.containsKey(key)) {
                 if (data.get(key) instanceof Boolean) {
                     return Boolean.toString((Boolean) data.get(key));
+                } else if (data.get(key) instanceof Map<?,?> || data.get(key) instanceof ArrayList<?>) {
+                    return null; //TODO: this must return proper value when fixing Configdump for scep. See ECA-13877
                 }
                 if (data.get(key) != null) {
                     return String.valueOf(data.get(key)).replaceAll("[\\[\\]',]", "");

@@ -42,10 +42,10 @@ public class HttpClientWithProxySupport {
         // and customers can set this on java startup.
     }
 
-    final private String proxyUser;
-    final private String proxyPassword;
-    final private String proxyHost;
-    final private int proxyPort;
+    private final String proxyUser;
+    private final String proxyPassword;
+    private final String proxyHost;
+    private final int proxyPort;
 
     /**
      * This is only public for tests.  Use one of the static constructor methods.

@@ -1832,6 +1832,10 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_256F, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_256F));
             availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_256S, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_256S));
             availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_256S, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_256S));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_MLDSA87_RSA3072_PSS_SHA512, AlgorithmConstants.KEYALGORITHM_MLDSA87_RSA3072_PSS_SHA512));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_MLDSA87_RSA4096_PSS_SHA512, AlgorithmConstants.KEYALGORITHM_MLDSA87_RSA4096_PSS_SHA512));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_MLDSA87_ECDSA_P384_SHA512, AlgorithmConstants.KEYALGORITHM_MLDSA87_ECDSA_P384_SHA512));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_MLDSA87_ECDSA_P521_SHA512, AlgorithmConstants.KEYALGORITHM_MLDSA87_ECDSA_P521_SHA512));
         }
         return availableKeySpecs;
     }

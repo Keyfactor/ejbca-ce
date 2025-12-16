@@ -13,7 +13,6 @@
 
 package org.ejbca.ui.web.pub;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -31,6 +30,13 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+
+import com.keyfactor.CesecoreException;
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.keys.KeyStoreTools;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -54,12 +60,6 @@ import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.util.HTMLTools;
-
-import com.keyfactor.CesecoreException;
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.certificate.DnComponents;
 
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
@@ -227,7 +227,7 @@ public class CertDistServlet extends HttpServlet {
                 ServletUtils.removeCacheHeaders(res);
 
                 final String filename = getCrlFilename(dn, crlPartitionIndex, command.equalsIgnoreCase(COMMAND_DELTACRL));
-                res.setHeader("Content-disposition", "attachment; filename=\"" + StringTools.stripFilename(filename) + "\"");                
+                res.setHeader("Content-disposition", "attachment; filename=\"" + StringTools.stripFilename(filename) + "\"");
                 res.setContentType("application/pkix-crl");
                 if (Strings.CS.equals(format, "PEM")) {
                     RequestHelper.sendNewB64File(Base64.encode(crl, true), res, filename, RequestHelper.BEGIN_CRL_WITH_NL, RequestHelper.END_CRL_WITH_NL);
@@ -649,10 +649,7 @@ public class CertDistServlet extends HttpServlet {
 			        	alias = StringUtils.replaceChars(alias, ' ', '_');
 			        	alias = StringUtils.substring(alias, 0, 15);
 			            store.setCertificateEntry(alias, chain[i]);
-                        ByteArrayOutputStream out = new ByteArrayOutputStream();
-                        store.store(out, "changeit".toCharArray());
-                        out.close();
-                        outbytes = out.toByteArray();
+			            outbytes = KeyStoreTools.getAsByteArray(store, "changeit");
 			        }
 				}
 				// We must remove cache headers for IE

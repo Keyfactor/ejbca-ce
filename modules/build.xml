@@ -38,6 +38,7 @@
 		<ant antfile="${mod.ejbca-ws-cli.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.clientToolBox.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.systemtests.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+		<ant antfile="${mod.systemtests-jscep.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.admin-gui.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.cmp-war.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.healthcheck-war.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
@@ -50,6 +51,7 @@
         <ant antfile="${mod.cesecore-entity.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
         <ant antfile="${mod.cesecore-ejb-interface.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
         <ant antfile="${mod.cesecore-ejb.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.ejbca-repository.path}/build.xml" target="clean" inheritall="true"/>
         <delete failonerror="false" dir="${modules.basedir}/dist" />
 	</target>
 	
@@ -334,7 +336,7 @@
 		<ant antfile="${mod.ejbca-ws.path}/build.xml" target="generate-wsdl" inheritall="true" inheritrefs="true"/>
 	</target>
 	
-	<target name="ejbca-ws-generate" depends="ejbca-common-web, ejbca-ws-wsdl" description="Generate the EJBCA Web Services client source code files (used by developers of new WS API calls)">
+	<target name="ejbca-ws-generate" depends="ejbca-common-web, ejbca-ws-wsdl" description="Generate the EJBCA Web Services client source code files (used by developers of new WS API calls). NOTE: must run 'ant clean' first to avoid redundant classes in jar.">
 		<ant antfile="${mod.ejbca-ws-cli.path}/build.xml" target="generate" inheritall="true" inheritrefs="true"/>
 	</target>
 

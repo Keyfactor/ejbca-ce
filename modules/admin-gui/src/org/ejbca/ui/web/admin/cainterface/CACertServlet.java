@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package org.ejbca.ui.web.admin.cainterface;
 
 import java.io.IOException;
@@ -21,11 +21,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import jakarta.ejb.EJB;
-import jakarta.servlet.ServletConfig;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.keys.KeyStoreTools;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -39,9 +38,11 @@ import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.pub.ServletUtils;
 
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.certificate.DnComponents;
+import jakarta.ejb.EJB;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Servlet used to distribute CA certificates <br>
@@ -70,7 +71,7 @@ public class CACertServlet extends BaseAdminServlet {
     private static final String LEVEL_PROPERTY = "level";
     private static final String ISSUER_PROPERTY = "issuer";
     private static final String JKSPASSWORD_PROPERTY = "password";
-    
+
     private static final String CROSS_CHAIN_ROOT_PROPERTY = "root";
 
     @EJB
@@ -87,7 +88,7 @@ public class CACertServlet extends BaseAdminServlet {
     		log.error("Local EJB injection failed.");
     	}
     }
-    
+
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException {
         log.trace(">doPost()");
@@ -115,7 +116,7 @@ public class CACertServlet extends BaseAdminServlet {
             // Root CA is level 0, next below root level 1 etc etc
             try {
                 Certificate[] chain = caSessionBean.getCertificateChain(issuerDn.hashCode()).toArray(new Certificate[0]);
-                                                            
+
                 // chain.length-1 is last cert in chain (root CA)
                 if ( (chain.length-1-level) < 0 ) {
                     PrintStream ps = new PrintStream(res.getOutputStream());
@@ -126,7 +127,7 @@ public class CACertServlet extends BaseAdminServlet {
                 Certificate cacert = chain[level];
                 byte[] enccert = cacert.getEncoded();
                 // Try to name the file as the CAs CN, if that does not exist try serialnumber, and if that does not exist, use the full O
-                // and if that does not exist, use the fixed string CertificateAuthority. 
+                // and if that does not exist, use the fixed string CertificateAuthority.
                 String filename = RequestHelper.getFileNameFromCertNoEnding(cacert, "CertificateAuthority");
                 // We must remove cache headers for IE
                 ServletUtils.removeCacheHeaders(res);
@@ -158,7 +159,7 @@ public class CACertServlet extends BaseAdminServlet {
                         throw new IllegalArgumentException("Cross CA certificate root is not set.");
                     }
                     AuthenticationToken admin = getAuthenticationToken(req);
-                    CAInfo caInfo = (X509CAInfo) caSessionBean.getCAInfo(admin, issuerDn.hashCode());
+                    CAInfo caInfo = caSessionBean.getCAInfo(admin, issuerDn.hashCode());
                     if(caInfo==null || !(caInfo instanceof X509CAInfo)) {
                         throw new IllegalArgumentException("Invalid CA subjectDn.");
                     }
@@ -189,7 +190,7 @@ public class CACertServlet extends BaseAdminServlet {
                     	ks.setCertificateEntry(filename, cacert);
                         res.setHeader("Content-disposition", "attachment; filename=\"" + StringTools.stripFilename(filename + ".cacert.jks") + "\"");
                         res.setContentType("application/octet-stream");
-                    	ks.store(res.getOutputStream(), jksPassword.toCharArray());
+                        KeyStoreTools.storeKeyStore(ks, res.getOutputStream(), jksPassword.toCharArray());
                     } else {
                         res.setContentType("text/plain");
                         res.getOutputStream().println(COMMAND_JKSTRUSTSTORE + " requires " + JKSPASSWORD_PROPERTY +

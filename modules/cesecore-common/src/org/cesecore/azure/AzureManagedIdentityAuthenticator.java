@@ -31,7 +31,7 @@ import org.json.simple.JSONValue;
 
 public class AzureManagedIdentityAuthenticator extends AzureAuthenticator {
     private Logger logger = Logger.getLogger(getClass());
-    final private HttpClientWithProxySupport client;
+    private final HttpClientWithProxySupport client;
 
     public AzureManagedIdentityAuthenticator(String azureLoginUrl, HttpClientWithProxySupport client) {
         super(azureLoginUrl);

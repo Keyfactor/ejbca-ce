@@ -13,11 +13,6 @@
 
 package org.ejbca.core.protocol.est;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -52,7 +47,12 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-import jakarta.servlet.http.HttpServletResponse;
+
+import com.keyfactor.util.CeSecoreNameStyle;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.RandomHelper;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.keys.KeyStoreTools;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -106,14 +106,16 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 
-import com.keyfactor.util.CeSecoreNameStyle;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.RandomHelper;
-import com.keyfactor.util.certificate.DnComponents;
+import jakarta.servlet.http.HttpServletResponse;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
- * Helper class for EST Junit tests. 
- * You can run this test against a EST Proxy instead of direct to the CA by setting the system property httpEstProxyURL, 
+ * Helper class for EST Junit tests.
+ * You can run this test against a EST Proxy instead of direct to the CA by setting the system property httpEstProxyURL,
  * for example to "https://ra-host:8442/.well-known/est"
  */
 public abstract class EstTestCase extends CaTestCase {
@@ -137,13 +139,13 @@ public abstract class EstTestCase extends CaTestCase {
     protected final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     protected final CertificateProfileSession certProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     protected final EndEntityProfileSession endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
-    protected final InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);            
+    protected final InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     protected final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
     protected final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
 
     protected final static AuthenticationToken ADMIN = new TestAlwaysAllowLocalAuthenticationToken("EstTestCase");
 
-    /** Keystore used for TLS client authentication, which is used for EST simplereenroll and RA mode with client cert authentication */ 
+    /** Keystore used for TLS client authentication, which is used for EST simplereenroll and RA mode with client cert authentication */
     private static KeyStore CLIENT_KEYSTORE;
     private static final String KEY_STORE_PASSWORD = "changeit";
     private static final String LOGIN_STORE_PATH = System.getProperty("java.io.tmpdir") + File.separator + "esttestuser_" + new Date().getTime() + ".jks";
@@ -155,7 +157,7 @@ public abstract class EstTestCase extends CaTestCase {
         this.httpsPubReqPath = "https://" + this.EST_HOST + ":" + httpServerPubHttps + "/.well-known/est/";
         this.httpsPrivReqPath = "https://" + this.EST_HOST + ":" + httpServerPrivHttps + "/.well-known/est/";
     }
-    
+
     @Override
     protected void setUp() throws Exception { // NOPMD: this is a test base class
         super.setUp();
@@ -164,24 +166,24 @@ public abstract class EstTestCase extends CaTestCase {
         // check "Allow validity override".
         this.cpId = addCertificateProfile(CP_NAME);
         this.eepId = addEndEntityProfile(EEP_NAME, this.cpId, true);
-    } 
-    
+    }
+
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
         cleanup();
     }
-    
+
     private void cleanup() throws AuthorizationDeniedException {
         endEntityProfileSession.removeEndEntityProfile(ADMIN, EEP_NAME);
         certProfileSession.removeCertificateProfile(ADMIN, CP_NAME);
     }
 
 
-    
+
     /**
      * Adds a certificate profile for end entities.
-     * 
+     *
      * @param name the name.
      * @return the id of the newly created certificate profile.
      */
@@ -199,14 +201,14 @@ public abstract class EstTestCase extends CaTestCase {
         }
         return id;
     }
-    
+
     /**
      * Adds an end entity profile and links it with the default certificate profile for test {@link EndEntityProfile#setDefaultCertificateProfile(int)}.
-     * 
+     *
      * @param name the name of the end entity profile.
      * @param certificateProfileId the default certificate profiles ID.
      * @param emptyProfile if true the profile is initialized as 'EMPTY' profile.
-     * @return the ID of the newly created end entity profile. 
+     * @return the ID of the newly created end entity profile.
      */
     protected final int addEndEntityProfile(final String name, final int certificateProfileId, final boolean emptyProfile) {
         assertTrue("End entity profile with name " + name + " already exists. Clear test data first.", this.endEntityProfileSession.getEndEntityProfile(name)  == null);
@@ -222,8 +224,9 @@ public abstract class EstTestCase extends CaTestCase {
         }
         return id;
     }
-        
+
     class SimpleVerifier implements HostnameVerifier {
+        @Override
         public boolean verify(String hostname, SSLSession session) {
             return true;
         }
@@ -237,14 +240,14 @@ public abstract class EstTestCase extends CaTestCase {
      * @param operation the EST operation, i.e. cacerts, simpleenroll, simplereenroll, etc
      * @param expectedReturnCode the HTTP return code that we expect for this request, i.e. success vs failure
      * @param expectedErrMsg the error message returned when expectedReturnCode is not OK, f.ex "<html><head><title>Error</title></head><body>No client certificate supplied</body></html>"
-     * @throws KeyStoreException 
-     * @throws UnrecoverableKeyException 
+     * @throws KeyStoreException
+     * @throws UnrecoverableKeyException
      * @throws Exception if connection to server can not be established
      */
     protected byte[] sendEstRequest(final String estAlias, final String operation, final byte[] message, final int expectedReturnCode, final String expectedErrMsg) throws IOException, NoSuchAlgorithmException, KeyManagementException, UnrecoverableKeyException, KeyStoreException {
         return sendEstRequest(estAlias, operation, message, expectedReturnCode, expectedErrMsg, null, null);
     }
-    
+
     /**
      * Sends a EST request with the alias requestAlias in the URL and expects a HTTP response
      *
@@ -255,8 +258,8 @@ public abstract class EstTestCase extends CaTestCase {
      * @param expectedErrMsg the error message returned when expectedReturnCode is not OK, f.ex "<html><head><title>Error</title></head><body>No client certificate supplied</body></html>"
      * @param username for basic authentication, if null no basic auth header will be added
      * @param password for basic authentication
-     * @throws KeyStoreException 
-     * @throws UnrecoverableKeyException 
+     * @throws KeyStoreException
+     * @throws UnrecoverableKeyException
      * @throws Exception if connection to server can not be established
      */
     protected byte[] sendEstRequest(final String estAlias, final String operation, final byte[] message, final int expectedReturnCode, final String expectedErrMsg, final String username, final String password) throws IOException, NoSuchAlgorithmException, KeyManagementException, UnrecoverableKeyException, KeyStoreException {
@@ -266,7 +269,7 @@ public abstract class EstTestCase extends CaTestCase {
         // POST the ESTrequest (URL can be set in systemtests.properties, and overridden by system property)
         final String urlString;
         if (useTLSClientCert) {
-            urlString = getProperty("httpEstClientCertProxyURL", this.httpsPrivReqPath) + estAlias + '/' + operation;            
+            urlString = getProperty("httpEstClientCertProxyURL", this.httpsPrivReqPath) + estAlias + '/' + operation;
         } else {
             urlString = getProperty("httpEstNoClientCertProxyURL", this.httpsPubReqPath) + estAlias + '/' + operation;
         }
@@ -280,7 +283,7 @@ public abstract class EstTestCase extends CaTestCase {
         if (useTLSClientCert) {
             final KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
             keyManagerFactory.init(CLIENT_KEYSTORE, KEY_STORE_PASSWORD.toCharArray());
-            km = keyManagerFactory.getKeyManagers();            
+            km = keyManagerFactory.getKeyManagers();
         } else {
             km = null;
         }
@@ -382,7 +385,7 @@ public abstract class EstTestCase extends CaTestCase {
         return StringUtils.defaultIfEmpty(result, defaultValue);
     }
 
-    protected PKCS10CertificationRequest generateCertReq(String dn, String challengePassword, String changeToSubjectDN, String changeToSubjectAltName, 
+    protected PKCS10CertificationRequest generateCertReq(String dn, String challengePassword, String changeToSubjectDN, String changeToSubjectAltName,
             Extensions exts, final KeyPair keys, String signatureAlgorithm) throws OperatorCreationException {
         // Generate keys
 
@@ -407,7 +410,7 @@ public abstract class EstTestCase extends CaTestCase {
             final ASN1EncodableVector pwdvalues = new ASN1EncodableVector();
             pwdvalues.add(new DERUTF8String(challengePassword)); // DirectoryString CHOICE of UTF8String
             final DERSet values = new DERSet(pwdvalues); // values
-            challpwdattr.add(values);       
+            challpwdattr.add(values);
             attributesVec.add(new DERSequence(challpwdattr));
         }
         // ChangeSubjectName, RFC7030 section 4.2.1, RFC6402, section 2.8
@@ -437,7 +440,7 @@ public abstract class EstTestCase extends CaTestCase {
             useChangeSubjectNameAttribute = true;
         }
         if (useChangeSubjectNameAttribute) {
-            final ASN1EncodableVector changevalues = new ASN1EncodableVector();    
+            final ASN1EncodableVector changevalues = new ASN1EncodableVector();
             changevalues.add(new DERSequence(changeSubjectName));
             final DERSet values = new DERSet(changevalues); // values
             changesubjectnameattr.add(values);
@@ -458,17 +461,17 @@ public abstract class EstTestCase extends CaTestCase {
     }
 
     /**
-     * 
+     *
      * @param serverCertCaInfo CA that issued the client certificate, a CA trusted for TLS connections (configurable with target.servercert.ca)
      * @param clientKeys client keys to be imported into client keystore
      * @param clientCert client certificate to be imported into client keystore, need to be issued by serverCertCa in order for clint TLS to work
-     * @throws CertificateEncodingException 
+     * @throws CertificateEncodingException
      * @throws KeyStoreException
      * @throws CertificateException
      * @throws NoSuchAlgorithmException
      * @throws IOException
      */
-    protected void setupClientKeyStore(final CAInfo serverCertCaInfo, final KeyPair clientKeys, final X509Certificate clientCert) 
+    protected void setupClientKeyStore(final CAInfo serverCertCaInfo, final KeyPair clientKeys, final X509Certificate clientCert)
             throws CertificateEncodingException, KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
         final List<Certificate> trustedCaCertificateChain = serverCertCaInfo.getCertificateChain();
         // Login Certificate setup:
@@ -479,7 +482,7 @@ public abstract class EstTestCase extends CaTestCase {
         CLIENT_KEYSTORE = initJksKeyStore(LOGIN_STORE_PATH);
         /*
         Only when we need to add the user to a role, which we don't for EST re-enroll
-        
+
         final RoleDataDto role = roleSession.getRole(ADMIN, null, SUPER_ADMINISTRATOR_ROLE_NAME);
         ROLE_MEMBER = roleMemberSession.persist(ADMIN,
                 new RoleMember(
@@ -493,11 +496,11 @@ public abstract class EstTestCase extends CaTestCase {
                 )
         );
         */
-        importDataIntoJksKeystore(LOGIN_STORE_PATH, CLIENT_KEYSTORE, DnComponents.getPartFromDN(CertTools.getSubjectDN(clientCert), "CN"), 
+        importDataIntoJksKeystore(LOGIN_STORE_PATH, CLIENT_KEYSTORE, DnComponents.getPartFromDN(CertTools.getSubjectDN(clientCert), "CN"),
                 trustedCaCertificateChain.get(0).getEncoded(), clientKeys, clientCert.getEncoded());
 
     }
-    private static KeyStore initJksKeyStore(final String keyStoreFilePath) 
+    private static KeyStore initJksKeyStore(final String keyStoreFilePath)
             throws KeyStoreException, NoSuchAlgorithmException, CertificateException, FileNotFoundException, IOException {
         final File file = new File(keyStoreFilePath);
         final KeyStore keyStore = KeyStore.getInstance("JKS");
@@ -505,14 +508,14 @@ public abstract class EstTestCase extends CaTestCase {
             keyStore.load(new FileInputStream(file), KEY_STORE_PASSWORD.toCharArray());
         } else {
             keyStore.load(null, null);
-            keyStore.store(new FileOutputStream(file), KEY_STORE_PASSWORD.toCharArray());
+            KeyStoreTools.storeKeyStore(keyStore, new FileOutputStream(file), KEY_STORE_PASSWORD.toCharArray());
         }
-        file.deleteOnExit(); // When this process stops (test completed) remove the temporary file 
+        file.deleteOnExit(); // When this process stops (test completed) remove the temporary file
         return keyStore;
     }
-    
+
     /** Adds the common name to the Super Administrator Role
-     * 
+     *
      * @param clientCertCaID the CA that issued the certificate to add to role
      * @param certCN the common name of the certificate to add to role
      * @throws AuthorizationDeniedException if unauthorized to modify role
@@ -534,7 +537,7 @@ public abstract class EstTestCase extends CaTestCase {
     }
 
     /** Removed the common name from the Super Administrator Role
-     * 
+     *
      * @param roleMemberId the ID of the RoleMember that should be removed
      * @throws AuthorizationDeniedException if unauthorized to modify role
      */
@@ -542,7 +545,7 @@ public abstract class EstTestCase extends CaTestCase {
         roleMemberSession.remove(ADMIN, roleMemberId);
     }
 
-    /** 
+    /**
      * Assumes that keyStore already exists in keyStoreFilePath and simply adds content to this already existing keystore
      */
     private static void importDataIntoJksKeystore(
@@ -557,7 +560,7 @@ public abstract class EstTestCase extends CaTestCase {
         @SuppressWarnings("rawtypes")
         final Enumeration aliases = keyStore.aliases();
         while (aliases.hasMoreElements()) {
-            keyStore.deleteEntry((String)aliases.nextElement());            
+            keyStore.deleteEntry((String)aliases.nextElement());
         }
         // Add the certificate
         keyStore.setCertificateEntry(keyStoreAlias, CertTools.getCertfromByteArray(issuerCertificateBytes, Certificate.class));
@@ -568,10 +571,10 @@ public abstract class EstTestCase extends CaTestCase {
         }
         // Save the new keystore contents
         final FileOutputStream fileOutputStream = new FileOutputStream(keyStoreFilePath);
-        keyStore.store(fileOutputStream, KEY_STORE_PASSWORD.toCharArray());
+        KeyStoreTools.storeKeyStore(keyStore, fileOutputStream, KEY_STORE_PASSWORD.toCharArray());
         fileOutputStream.close();
     }
-    
+
     protected static X509Certificate getCertFromResponse(byte[] resp) throws Exception {
         final CMSSignedData respmsg = new CMSSignedData(Base64.decode(resp));
         final Store<X509CertificateHolder> certstore = respmsg.getCertificates();
@@ -580,7 +583,7 @@ public abstract class EstTestCase extends CaTestCase {
         final X509CertificateHolder certHolder = certs.iterator().next();
         return CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
     }
-    
+
     protected static X509Certificate getCertFromKeygenResponse(byte[] resp) throws Exception {
         String response = new String(resp);
         int startBoundary = response.indexOf(MULTIPART_MIXED_CONTENT_BOUNDARY);

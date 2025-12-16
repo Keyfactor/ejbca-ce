@@ -29,6 +29,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.ocsp.OcspTestUtils;
 import org.cesecore.certificates.ocsp.logging.AuditLogger;
 import org.cesecore.certificates.ocsp.logging.GuidHolder;
@@ -128,7 +129,7 @@ public class GenerationalOcspSystemTest {
         X509CAInfo issuingX509Ca = cryptoTokenRunner.createX509Ca("CN=" + issuingCaName, rootSubjectDn, issuingCaName, "1y");
         X509Certificate gen0CaCertificate = (X509Certificate) issuingX509Ca.getCertificateChain().get(0);
         //Renew this CA
-        caAdminSession.renewCA(authenticationToken, issuingX509Ca.getCAId(), false, null, false);
+        caAdminSession.renewCA(authenticationToken, issuingX509Ca.getCAId(), false, null, false, CertificateProfileConstants.NO_CERTIFICATE_PROFILE);
         X509Certificate gen1CaCertificate = (X509Certificate) caSession.getCaChain(authenticationToken, issuingCaName).get(0).getCertificate();
         //Create an ocsp responder that uses this CA – verify that the current chain is included
         int cryptoTokenId = cryptoTokenRunner.createCryptoToken(testName.getMethodName());

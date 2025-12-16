@@ -87,7 +87,7 @@ public abstract class StressTestCommandBase extends EJBCAWSRABaseCommand impleme
                     keyAlgorithm.equals("RSA") ? "1024" : "571"));
 
 
-            this.PERFORMANCE_TEST.execute(
+            PERFORMANCE_TEST.execute(
                     getCommandFactory(
                             caName,
                             endEntityProfileName,
@@ -113,7 +113,7 @@ public abstract class StressTestCommandBase extends EJBCAWSRABaseCommand impleme
         } catch( Exception e) {
             throw new ErrorAdminCommandException(e);
         }finally{
-            this.PERFORMANCE_TEST.getLog().close();
+            PERFORMANCE_TEST.getLog().close();
         }
     }
 
