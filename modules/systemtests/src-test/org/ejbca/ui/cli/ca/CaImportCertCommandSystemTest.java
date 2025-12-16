@@ -12,9 +12,6 @@
  *************************************************************************/
 package org.ejbca.ui.cli.ca;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.math.BigInteger;
@@ -24,6 +21,13 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.List;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.FileTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
 
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -53,12 +57,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.EJBTools;
-import com.keyfactor.util.FileTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.keys.KeyTools;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class CaImportCertCommandSystemTest {
 
@@ -156,7 +156,7 @@ public class CaImportCertCommandSystemTest {
         assertEquals(CommandResult.SUCCESS, command.execute(args));
         assertNotNull("Certificate was not imported.", endEntityAccessSession.findUser(authenticationToken, USERNAME));
     }
-    
+
     @Test
     public void testCommand2() throws AuthorizationDeniedException {
         String[] args = new String[] { USERNAME, "foo123", CA_NAME, "ACTIVE", certificateFile.getAbsolutePath(),
@@ -165,7 +165,7 @@ public class CaImportCertCommandSystemTest {
         assertNotNull("Certificate was not imported.", endEntityAccessSession.findUser(authenticationToken, USERNAME));
     }
 
-    
+
     @Test
     public void testImportRevoked() throws AuthorizationDeniedException {
         String[] args = new String[] { USERNAME, "foo123", CA_NAME, "REVOKED", certificateFile.getAbsolutePath(),
@@ -177,7 +177,7 @@ public class CaImportCertCommandSystemTest {
         CertificateStatus certificateStatus = certificateStoreSession.getStatus(CA_DN, certificateSerialNumber);
         assertEquals("Certificate revocation reason was incorrectly imported.", RevocationReasons.UNSPECIFIED.getDatabaseValue(), certificateStatus.revocationReason);
     }
-    
+
     @Test
     public void testImportRevokedWithReasonAndTime() throws AuthorizationDeniedException, ParseException {
         String[] args = new String[] { USERNAME, "foo123", CA_NAME, "REVOKED", certificateFile.getAbsolutePath(),
@@ -225,5 +225,5 @@ public class CaImportCertCommandSystemTest {
         endEntityManagementSession.deleteUser(authenticationTokenWrong, USERNAME_StrictParameterfailure);
 
     }
-    
+
 }

@@ -46,6 +46,7 @@ dependencies {
     testImplementation(libs.caffeine)
     testImplementation(libs.cert.cvc)
     testImplementation(libs.ejbca.ws.client.gen)
+    testImplementation(libs.guava)
     testImplementation(libs.hibernate.core)
     testImplementation(libs.jakarta.xml.bind.api)
     testImplementation(libs.jakarta.xml.ws.api)
