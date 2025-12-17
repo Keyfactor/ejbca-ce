@@ -115,6 +115,41 @@
 			<h:outputText value="#{scepConfigMBean.currentAlias.raDefaultCA}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
 
+		<!--	ProxyCA fields. Only visible when ProxyCA is available	-->
+		<h:panelGroup id="proxyCaEncryptionCertTemplateLableWrapper"
+					  rendered="#{scepConfigMBean.currentAlias.modeRa and scepConfigMBean.proxyCaAvailable}">
+			<h:outputText value="#{web.text.SCEP_PROXYCA_ENCRYPTION_CERT}" />
+		</h:panelGroup>
+		<h:panelGroup id="proxyCaEncryptionCertTemplateWrapper"
+					  rendered="#{scepConfigMBean.currentAlias.modeRa and scepConfigMBean.proxyCaAvailable}">
+			<h:inputText value="#{scepConfigMBean.currentAlias.proxyCaEncryptionCertTemplate}" >
+				<f:converter converterId="trimConverter"/>
+			</h:inputText>
+		</h:panelGroup>
+
+		<h:panelGroup id="proxyCaSigningCertTemplateLabelWrapper"
+					  rendered="#{scepConfigMBean.currentAlias.modeRa and scepConfigMBean.proxyCaAvailable}">
+			<h:outputText value="#{web.text.SCEP_PROXYCA_SIGNING_CERT}" />
+		</h:panelGroup>
+		<h:panelGroup id="proxyCaSigningCertTemplateWrapper"
+					  rendered="#{scepConfigMBean.currentAlias.modeRa and scepConfigMBean.proxyCaAvailable}">
+			<h:inputText value="#{scepConfigMBean.currentAlias.proxyCaSigningCertTemplate}" >
+				<f:converter converterId="trimConverter"/>
+			</h:inputText>
+		</h:panelGroup>
+
+		<h:panelGroup id="proxyCaCaEnrollmentTemplateLabelWrapper"
+					  rendered="#{scepConfigMBean.proxyCaAvailable}">
+			<h:outputText value="#{web.text.SCEP_PROXYCA_ENROLLMENT_TEMPLATE}" />
+		</h:panelGroup>
+		<h:panelGroup id="proxyCaCaEnrollmentTemplateWrapper"
+					  rendered="#{scepConfigMBean.proxyCaAvailable}">
+			<h:inputText value="#{scepConfigMBean.currentAlias.proxyCaCaEnrollmentTemplate}" >
+				<f:converter converterId="trimConverter"/>
+			</h:inputText>
+		</h:panelGroup>
+		<!--		-->
+
         <!-- Use RA keys instead of the key for the CA when decrypting SCEP requests and signing SCEP responses -->
         <h:outputLabel for="useRaKeys" value="#{web.text.SCEP_RA_USE_RA_KEYS}"/>
         <h:panelGroup id="useRaKeys">
@@ -278,10 +313,10 @@
 	    	<h:outputText value="#{scepConfigMBean.currentAlias.raNameGenPostfix}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
 		
-	</h:panelGrid>		
+	</h:panelGrid>
 		
 	<!-- Intune Configuration Values -->	
-	<h:panelGrid columns="2" id="intuneValues" rendered="#{scepConfigMBean.currentAlias.useIntune and scepConfigMBean.currentAlias.modeRa}">			
+	<h:panelGrid columns="2" id="intuneValues" rendered="#{scepConfigMBean.currentAlias.useIntune and scepConfigMBean.currentAlias.modeRa}">
 		<h:outputLabel for="intuneHeader" value="#{web.text.SCEP_RA_INTUNE}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
 		<h:panelGroup id="intuneHeader" rendered="#{scepConfigMBean.currentAlias.modeRa}">	    	
 		</h:panelGroup>
