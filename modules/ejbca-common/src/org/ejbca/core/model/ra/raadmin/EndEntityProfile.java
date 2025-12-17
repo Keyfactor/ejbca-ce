@@ -2829,7 +2829,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             }
         }
 
-        if(subjectaltnames==null) {
+        if (subjectaltnames == null) {
             return;
         }
         final List<String> sanFields = DnComponents.getAltNameFields();
@@ -2839,15 +2839,20 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             final int profileId = DnComponents.dnIdToProfileId(dnId);
             final String fieldName = sanFields.get(i);
             final int num = subjectaltnames.getNumberOfFields(dnId);
+            int numberOfCopiedFields = 0;
             for (int j = 0; j < num; j++) {
+                final boolean isCopy = getCopy(profileId, j);
                 final Map<String,Serializable> validators = getValidation(profileId, j);
-                if (validators != null) {
-                    final String fieldValue = subjectaltnames.getField(dnId, j);
+                if (!isCopy && validators != null) {
+                    final String fieldValue = subjectaltnames.getField(dnId, j-numberOfCopiedFields);
                     try {
                         EndEntityValidationHelper.checkValue(fieldName, validators, fieldValue);
                     } catch (EndEntityFieldValidatorException e) {
                         throw new EndEntityProfileValidationException("Did not pass validation of field " + fieldName + " (in SAN). " + e.getMessage());
                     }
+                }
+                if (isCopy) {
+                    numberOfCopiedFields++;
                 }
             }
         }
