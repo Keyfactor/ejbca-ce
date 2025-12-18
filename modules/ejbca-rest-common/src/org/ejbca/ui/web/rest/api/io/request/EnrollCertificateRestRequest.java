@@ -16,6 +16,8 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.keyfactor.util.CertTools;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Schema.RequiredMode;
+
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 
 import java.util.LinkedHashMap;
@@ -46,13 +48,13 @@ public class EnrollCertificateRestRequest {
     private String email;
     @Schema(description = "Response Format (DER format is default)", example = "DER")
     private String responseFormat ="DER";
-    @Schema(description = "Overwrite Subject Distinguished Name", example = "CN=John Doe,SURNAME=Doe,GIVENNAME=John,C=SE", required=false)
+    @Schema(description = "Overwrite Subject Distinguished Name", example = "CN=John Doe,SURNAME=Doe,GIVENNAME=John,C=SE", requiredMode = RequiredMode.NOT_REQUIRED)
     private String subjectDn;
     private List<ExtendedInformationRestRequestComponent> extensionData;
     private List<ExtendedInformationRestRequestComponent> customData;
-    @Schema(description = "Valid start time", example = "ISO 8601 Date string, eg. '2023-06-15 14:07:09'", required=false)
+    @Schema(description = "Valid start time", example = "ISO 8601 Date string, eg. '2023-06-15 14:07:09'", requiredMode = RequiredMode.NOT_REQUIRED)
     private String startTime;
-    @Schema(description = "Valid end time", example = "ISO 8601 Date string, eg. '2023-06-15 14:07:09'", required=false)
+    @Schema(description = "Valid end time", example = "ISO 8601 Date string, eg. '2023-06-15 14:07:09'", requiredMode = RequiredMode.NOT_REQUIRED)
     private String endTime;
 
     public EnrollCertificateRestRequest() {
