@@ -58,7 +58,6 @@ import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.PolicyInformation;
 import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
-import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;

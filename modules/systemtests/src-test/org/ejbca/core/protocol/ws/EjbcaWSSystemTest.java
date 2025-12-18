@@ -72,7 +72,6 @@ import com.keyfactor.util.keys.token.KeyGenParams;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
-import org.apache.commons.text.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
