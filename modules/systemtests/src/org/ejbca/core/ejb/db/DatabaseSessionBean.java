@@ -84,7 +84,6 @@ public class DatabaseSessionBean implements DatabaseSessionRemote {
 
     @Override
     public DatabaseContent clearTables(boolean clearProtectedTables) {
-        @SuppressWarnings("deprecation")
         var databaseContent = new DatabaseContent(
                 clearTable(AccessTreeUpdateData.class, true),
                 clearTable(AcmeAccountData.class, true),
