@@ -1460,6 +1460,14 @@ a.button:active {
 	margin-right: 0.5rem;
 }
 
+.ui-datatable table td a {
+	color: #000000;
+}
+
+.ui-datatable table td a:hover {
+	text-decoration: underline;
+}
+
 /* Remove cell focus borders */
 .ui-datatable-data td[role="gridcell"]:focus {
     outline: none;
