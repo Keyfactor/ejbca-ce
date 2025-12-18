@@ -3749,39 +3749,29 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
         userData.setTokenType(UserDataVOWS.TOKEN_TYPE_P12);
         userData.setEndEntityProfileName("EMPTY");
         userData.setCertificateProfileName("ENDUSER");
-
-        KeyStore ksenv = ejbcaraws.softTokenRequest(userData, null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        java.security.KeyStore keyStore = KeyStoreHelper.getKeyStore(ksenv.getKeystoreData(), "PKCS12", PASSWORD);
-        // Verify that keystore returned from server has definite length encoding
-        ByteArrayInputStream in = new ByteArrayInputStream(Base64.decode(ksenv.getKeystoreData()));
-        try (IndefiniteLengthDetectorStream ildStream = new IndefiniteLengthDetectorStream(in)) {
-            while (ildStream.readValue() != null) {
-                ;
-            }
-            assertFalse("ks.store() with PKCS12StoreParameter(true) is expected to not have indefinitlength encoding", ildStream.isIndefiniteLength());
-        }
-        assertNotNull(keyStore);
-        Enumeration<String> en = keyStore.aliases();
-        String alias = en.nextElement();
-        if(!keyStore.isKeyEntry(alias)) {
-            alias = en.nextElement();
-        }
-        X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);
-        String resultingSubjectDN = X500Name.getInstance(CeSecoreNameStyle.INSTANCE, cert.getSubjectX500Principal().getEncoded()).toString();
-        // on RedHat 6.4 with OpenJDK-8 64-Bit '\r' symbol is automatically replaced with '\n'. So try to check again, if difference between expected and actual
-        // is in that symbol then test succeeds, otherwise test fails
         try {
-            assertEquals(requestedSubjectDN + " was transformed into " + resultingSubjectDN + " (not the expected " + expectedSubjectDN + ")", expectedSubjectDN,
-                    resultingSubjectDN);
-        } catch (AssertionError e){
-            log.info(requestedSubjectDN + " was transformed into '" + resultingSubjectDN + "' (not the expected '" + expectedSubjectDN + "'). Re-checking if it was a \\r replaced by \\n that happens on some platforms.");
-            expectedSubjectDN = StringEscapeUtils.escapeJava(expectedSubjectDN);
-            requestedSubjectDN = StringEscapeUtils.escapeJava(requestedSubjectDN);
-            resultingSubjectDN = StringEscapeUtils.escapeJava(resultingSubjectDN);
-            resultingSubjectDN = resultingSubjectDN.replace("\\r", "\\n");
-            expectedSubjectDN = expectedSubjectDN.replace("\\r", "\\n");
-            assertEquals(requestedSubjectDN + " was transformed into '" + resultingSubjectDN + "' (not the expected '" + expectedSubjectDN + "')" , expectedSubjectDN,
-                    resultingSubjectDN);
+            KeyStore ksenv = ejbcaraws.softTokenRequest(userData, null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
+            java.security.KeyStore keyStore = KeyStoreHelper.getKeyStore(ksenv.getKeystoreData(), "PKCS12", PASSWORD);
+            // Verify that keystore returned from server has definite length encoding
+            ByteArrayInputStream in = new ByteArrayInputStream(Base64.decode(ksenv.getKeystoreData()));
+            try (IndefiniteLengthDetectorStream ildStream = new IndefiniteLengthDetectorStream(in)) {
+                while (ildStream.readValue() != null) {
+                    ;
+                }
+                assertFalse("ks.store() with PKCS12StoreParameter(true) is expected to not have indefinitlength encoding",
+                        ildStream.isIndefiniteLength());
+            }
+            assertNotNull(keyStore);
+            Enumeration<String> en = keyStore.aliases();
+            String alias = en.nextElement();
+            if (!keyStore.isKeyEntry(alias)) {
+                alias = en.nextElement();
+            }
+            X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);
+            String resultingSubjectDN = X500Name.getInstance(CeSecoreNameStyle.INSTANCE, cert.getSubjectX500Principal().getEncoded()).toString();
+
+            assertEquals(requestedSubjectDN + " was transformed into " + resultingSubjectDN + " (not the expected " + expectedSubjectDN + ")",
+                    expectedSubjectDN, resultingSubjectDN);
         } finally {
             deleteUser(userName);
         }

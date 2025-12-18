@@ -557,7 +557,7 @@ public class EstRAModeBasicSystemTest extends EstTestCase {
             reqmsg = Base64.encode(p10.getEncoded());
 
             resp = sendEstRequest(estAlias, "simpleenroll", reqmsg, 200, null, username, pwd);
-
+            getCertFromResponse(resp);
             resp = sendEstRequest(estAlias, "serverkeygen", reqmsg, 200, null, username, pwd);
             // If all was OK we should have gotten a base64 encoded certificates-only CMS message back. RFC7030 section 4.2.3
             assertKeyGenResponse(requestDN, resp, mldsa44);
@@ -656,7 +656,7 @@ public class EstRAModeBasicSystemTest extends EstTestCase {
             reqmsg = Base64.encode(p10.getEncoded());
 
             resp = sendEstRequest(estAlias, "simpleenroll", reqmsg, 200, null, username, pwd);
-
+            getCertFromResponse(resp);
             resp = sendEstRequest(estAlias, "serverkeygen", reqmsg, 200, null, username, pwd);
             // If all was OK we should have gotten a base64 encoded certificates-only CMS message back. RFC7030 section 4.2.3
             assertKeyGenResponse(requestDN, resp, slhdsa);
