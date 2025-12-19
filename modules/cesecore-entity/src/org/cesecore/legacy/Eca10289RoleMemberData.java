@@ -29,7 +29,6 @@ import org.cesecore.roles.member.RoleMemberData;
  * This class, the regression test and all references to these can be safely removed when we are sure that all
  * installations have performed a post-upgrade on EJBCA version 8.x or later.
  */
-@SuppressWarnings("serial")
 @Deprecated
 public class Eca10289RoleMemberData extends RoleMemberData {
     private static final long serialVersionUID = 1L;

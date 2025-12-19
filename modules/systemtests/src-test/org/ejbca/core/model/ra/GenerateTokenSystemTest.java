@@ -12,6 +12,39 @@
  *************************************************************************/
 package org.ejbca.core.model.ra;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PublicKey;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.Random;
+
+import javax.crypto.Cipher;
+import javax.crypto.NoSuchPaddingException;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.IndefiniteLengthDetectorStream;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyStoreCipher;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -75,45 +108,12 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.KeyStoreCipher;
-import com.keyfactor.util.keys.KeyTools;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PublicKey;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Random;
-
-import javax.crypto.Cipher;
-import javax.crypto.NoSuchPaddingException;
-
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 /**
  * Test generating tokens
- * @version $Id$
- *
  */
 public class GenerateTokenSystemTest extends CaTestCase {
 
@@ -148,15 +148,15 @@ public class GenerateTokenSystemTest extends CaTestCase {
 
 
         createTestCA(TESTGENERATETOKENCA);
-        
+
         CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         profile.setUseAlternativeSignature(true);
         profile.setAlternativeAvailableKeyAlgorithms(new String[]{AlgorithmConstants.SIGALG_FALCON1024, AlgorithmConstants.SIGALG_FALCON512});
         profile.setAlternativeSignatureAlgorithm(AlgorithmConstants.SIGALG_FALCON1024);
         certProfileId = certificateProfileSession.addCertificateProfile(internalAdmin, GENERATETOKENTEST_CERTIFICATE_PROFILE, profile);
-        
+
         final int caId1 = caSession.getCAInfo(internalAdmin, TESTGENERATETOKENCA).getCAId();
-        final Collection<Integer> availcas = new ArrayList<Integer>();
+        final Collection<Integer> availcas = new ArrayList<>();
         availcas.add(caId1);
         final EndEntityProfile eeprofile = new EndEntityProfile();
         eeprofile.setAvailableCAs(availcas);
@@ -169,7 +169,7 @@ public class GenerateTokenSystemTest extends CaTestCase {
     @After
     public void tearDown() throws Exception {
         super.tearDown();
-        
+
         certificateProfileSession.removeCertificateProfile(internalAdmin, GENERATETOKENTEST_CERTIFICATE_PROFILE);
         endEntityProfileSession.removeEndEntityProfile(internalAdmin, GENERATETOKENTEST_EEP);
         removeOldCa(TESTGENERATETOKENCA);
@@ -178,7 +178,7 @@ public class GenerateTokenSystemTest extends CaTestCase {
     /**
      * Tests if token algorithm specified in endEntityInformation is enforced. If end entity is approved its algorithm
      * is approved as well. So if there is specified algorithm inside endEntityInformation.extendedInformation that one
-     * should be enforced. 
+     * should be enforced.
      */
     @Test
     public void testEnforcingAlgorithmFromEndEntityInformation() throws Exception {
@@ -209,6 +209,14 @@ public class GenerateTokenSystemTest extends CaTestCase {
                     AlgorithmConstants.KEYALGORITHM_RSA, EndEntityConstants.TOKEN_SOFT_P12, false, true, false, eeProfileId);
             KeyStore ks = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
             ks.load(new ByteArrayInputStream(keyStore), eeinfo.getPassword().toCharArray());
+            // Verify that keystore returned from server has definite length encoding
+            ByteArrayInputStream in = new ByteArrayInputStream(keyStore);
+            try (IndefiniteLengthDetectorStream ildStream = new IndefiniteLengthDetectorStream(in)) {
+                while (ildStream.readValue() != null) {
+                    ;
+                }
+                assertFalse("ks.store() with PKCS12StoreParameter(true) is expected to not have indefinitlength encoding", ildStream.isIndefiniteLength());
+            }
             Certificate cert = null;
             Enumeration<String> enumer = ks.aliases();
             while (enumer.hasMoreElements()) {
@@ -216,13 +224,13 @@ public class GenerateTokenSystemTest extends CaTestCase {
                 //The returned keystore will contain trusted certificate entry as well. We want to check key entry only.
                 if(ks.isKeyEntry(alias)) {
                     cert = ks.getCertificate(alias);
-                    assertNotNull("Unknown alias " + alias, cert); 
+                    assertNotNull("Unknown alias " + alias, cert);
                 }
             }
             PublicKey publicKey = cert.getPublicKey();
             assertEquals(AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmTools.getKeyAlgorithm(publicKey));
             assertEquals("prime256v1", AlgorithmTools.getKeySpecification(publicKey));
-            
+
         } finally {
             if (endEntityManagementSession.existsUser(GENERATETOKENTEST_USERNAME)) {
                 endEntityManagementSession.deleteUser(internalAdmin, GENERATETOKENTEST_USERNAME);
@@ -230,7 +238,7 @@ public class GenerateTokenSystemTest extends CaTestCase {
             log.trace("<testEnforcingAlgorithmFromEndEntityInformation");
         }
     }
-    
+
     /**
      * Verifies that the cipher is correctly read from the end entity profile
      */
@@ -271,25 +279,25 @@ public class GenerateTokenSystemTest extends CaTestCase {
             final byte[] aesKeystore = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, username, "foo123", caId, "1024",
                     AlgorithmConstants.KEYALGORITHM_RSA, EndEntityConstants.TOKEN_SOFT_P12, false, true, false, endEntityProfileId);
             assertEquals("PKCS#12 was not encrypted with AES",  NISTObjectIdentifiers.id_aes128_CBC.getId(), getEncryptionAlgorithmFromKeystore(aesKeystore));
-            
+
         } finally {
             if (endEntityManagementSession.existsUser(username)) {
                 endEntityManagementSession.deleteUser(internalAdmin, username);
-            }           
+            }
             endEntityProfileSession.removeEndEntityProfile(internalAdmin, profileName);
         }
     }
-    
+
     private String getEncryptionAlgorithmFromKeystore(byte[] keystoreBytes) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, NoSuchProviderException {
         BufferedInputStream bufIn = new BufferedInputStream(new ByteArrayInputStream(keystoreBytes));
         ASN1InputStream bIn = new ASN1InputStream(bufIn);
         Pfx bag = Pfx.getInstance(bIn.readObject());
         bIn.close();
         ASN1OctetString content = ASN1OctetString.getInstance(bag.getAuthSafe().getContent());
-        final ASN1ObjectIdentifier encryptedData = new ASN1ObjectIdentifier("1.2.840.113549.1.7.6").intern();       
+        final ASN1ObjectIdentifier encryptedData = new ASN1ObjectIdentifier("1.2.840.113549.1.7.6").intern();
         for (ContentInfo contentInfo : AuthenticatedSafe.getInstance(content.getOctets()).getContentInfo()) {
             //Ignore other content types
-            if (contentInfo.getContentType().equals(encryptedData)) {               
+            if (contentInfo.getContentType().equals(encryptedData)) {
                 ASN1ObjectIdentifier pbeAlgorithm = EncryptedData.getInstance(contentInfo.getContent()).getEncryptionAlgorithm().getAlgorithm();
                 if (pbeAlgorithm.on(PKCSObjectIdentifiers.pkcs_12PbeIds)) {
                     //Using 3DES
@@ -302,20 +310,20 @@ public class GenerateTokenSystemTest extends CaTestCase {
                     return pbes2Parameters.getEncryptionScheme().getAlgorithm().getId();
                 } else {
                     throw new IllegalStateException("Unknown PBE algorithm.");
-                }               
+                }
             }
         }
-        throw new IllegalStateException("No encrypted bag was found.");       
+        throw new IllegalStateException("No encrypted bag was found.");
     }
-    
+
     @Ignore
     public void testAlternateAlgorithmFromEndEntityInformation() throws Exception {
         log.trace(">testAlternateAlgorithmFromEndEntityInformation");
         try {
             final int caId = caSession.getCAInfo(internalAdmin, TESTGENERATETOKENCA).getCAId();
             final int eeProfileId = endEntityProfileSession.getEndEntityProfileId(GENERATETOKENTEST_EEP);
-         
-            
+
+
             EndEntityInformation eeinfo = new EndEntityInformation(GENERATETOKENTEST_USERNAME, "CN=GENERATETOKENTEST" + new Random().nextLong(), caId, "", null,
                     EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(), eeProfileId,
                     certProfileId, new Date(), new Date(), EndEntityConstants.TOKEN_SOFT_P12, null);
@@ -338,6 +346,14 @@ public class GenerateTokenSystemTest extends CaTestCase {
                     AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmConstants.KEYALGORITHM_FALCON1024, AlgorithmConstants.KEYALGORITHM_FALCON1024, EndEntityConstants.TOKEN_SOFT_P12, false, true, false, eeProfileId);
             KeyStore ks = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
             ks.load(new ByteArrayInputStream(keyStore), eeinfo.getPassword().toCharArray());
+            // Verify that keystore returned from server has definite length encoding
+            ByteArrayInputStream in = new ByteArrayInputStream(keyStore);
+            try (IndefiniteLengthDetectorStream ildStream = new IndefiniteLengthDetectorStream(in)) {
+                while (ildStream.readValue() != null) {
+                    ;
+                }
+                assertFalse("ks.store() with PKCS12StoreParameter(true) is expected to not have indefinitlength encoding", ildStream.isIndefiniteLength());
+            }
             assertEquals("Re-loaded keystore was not created with the correct cipher.", KeyStoreCipher.PKCS12_AES256_AES128.getLabel(), ks.getType());
             Certificate cert = null;
             Enumeration<String> enumer = ks.aliases();
@@ -346,7 +362,7 @@ public class GenerateTokenSystemTest extends CaTestCase {
                 //The returned keystore will contain trusted certificate entry as well. We want to check key entry only.
                 if(ks.isKeyEntry(alias)) {
                     cert = ks.getCertificate(alias);
-                    assertNotNull("Unknown alias " + alias, cert); 
+                    assertNotNull("Unknown alias " + alias, cert);
                 }
             }
             PublicKey publicKey = cert.getPublicKey();
@@ -357,7 +373,7 @@ public class GenerateTokenSystemTest extends CaTestCase {
             assertEquals("prime256v1", AlgorithmTools.getKeySpecification(publicKey));
             assertEquals(AlgorithmConstants.SIGALG_FALCON1024, AlgorithmTools.getKeyAlgorithm(altPublicKey));
             assertEquals(AlgorithmConstants.KEYALGORITHM_FALCON1024, AlgorithmTools.getKeySpecification(altPublicKey));
-            
+
         } finally {
             if (endEntityManagementSession.existsUser(GENERATETOKENTEST_USERNAME)) {
                 endEntityManagementSession.deleteUser(internalAdmin, GENERATETOKENTEST_USERNAME);
@@ -365,8 +381,8 @@ public class GenerateTokenSystemTest extends CaTestCase {
             log.trace("<testAlternateAlgorithmFromEndEntityInformation");
         }
     }
- 
-    
+
+
     @Override
     public String getRoleName() {
         return this.getClass().getSimpleName();

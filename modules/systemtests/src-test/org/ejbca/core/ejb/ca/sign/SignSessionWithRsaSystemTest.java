@@ -12,6 +12,13 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.sign;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -31,17 +38,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.RFC4683Tools;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.certificate.SimpleCertGenerator;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.KeyTools;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -141,12 +137,17 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runners.MethodSorters;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CeSecoreNameStyle;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.RFC4683Tools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Test class for tests based on an RSA
@@ -810,7 +811,6 @@ public class SignSessionWithRsaSystemTest extends SignSessionCommon {
 
             X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, qcCertEndEntityName, "foo123", new PublicKeyWrapper(anotheKey.getPublic()));
             assertNotNull("Failed to create certificate", cert);
-            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
             String dn = cert.getSubjectX500Principal().getName();
             assertEquals(DnComponents.stringToBCDNString("cn=qc,c=SE"), DnComponents.stringToBCDNString(dn));
             // Since we do not have pkixQCSyntax_v1 or pkixQCSyntax_v2, no semanticsId will be added
@@ -1145,11 +1145,10 @@ public class SignSessionWithRsaSystemTest extends SignSessionCommon {
             endEntityManagementSession.changeUser(internalAdmin, user, false);
             log.debug("created user: foo, foo123, C=SE,O=PrimeKey,CN=dnorder");
             X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, endEntityName, "foo123", new PublicKeyWrapper(anotherKey.getPublic()));
-            assertNotNull("Failed to create certificate", cert);
-            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
-            String dn = cert.getSubjectDN().getName();
+            assertNotNull("Failed to create certificate", cert);            
+            String dn = cert.getSubjectX500Principal().getName();
             // This is the reverse order than what is displayed by openssl
-            assertEquals("C=SE, O=PrimeKey, CN=dnorder", dn);
+            assertEquals("C=SE,O=PrimeKey,CN=dnorder", dn);
 
             // Change to X509 DN order
             certprof.setUseLdapDnOrder(false);
@@ -1157,10 +1156,9 @@ public class SignSessionWithRsaSystemTest extends SignSessionCommon {
             endEntityManagementSession.changeUser(internalAdmin, user, false);
             cert = (X509Certificate) signSession.createCertificate(internalAdmin, endEntityName, "foo123", new PublicKeyWrapper(anotherKey.getPublic()));
             assertNotNull("Failed to create certificate", cert);
-            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
-            dn = cert.getSubjectDN().getName();
+            dn = cert.getSubjectX500Principal().getName();
             // This is the reverse order than what is displayed by openssl
-            assertEquals("CN=dnorder, O=PrimeKey, C=SE", dn);
+            assertEquals("CN=dnorder,O=PrimeKey,C=SE", dn);
         } finally {
             // Clean up
             endEntityProfileSession.removeEndEntityProfile(internalAdmin, profileName);
@@ -1306,8 +1304,7 @@ public class SignSessionWithRsaSystemTest extends SignSessionCommon {
         ResponseMessage resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
         X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
         assertNotNull("Failed to create certificate", cert);
-        //getSubjectX500Principal does not deliver the exact same order, so leave this for now
-        assertEquals("CN=testsigalg,C=SE", cert.getSubjectDN().getName());
+        assertEquals("CN=testsigalg,C=SE", X500Name.getInstance(CeSecoreNameStyle.INSTANCE, cert.getSubjectX500Principal().getEncoded()).toString());
         assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmTools.getSignatureAlgorithm(cert));
         // Change so that we can override signature algorithm
         CertificateProfile prof = certificateProfileSession.getCertificateProfile(cprofile);
@@ -1317,8 +1314,7 @@ public class SignSessionWithRsaSystemTest extends SignSessionCommon {
         resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
         cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
         assertNotNull("Failed to create certificate", cert);
-        //getSubjectX500Principal does not deliver the exact same order, so leave this for now
-        assertEquals("CN=testsigalg,C=SE", cert.getSubjectDN().getName());
+        assertEquals("CN=testsigalg,C=SE", X500Name.getInstance(CeSecoreNameStyle.INSTANCE, cert.getSubjectX500Principal().getEncoded()).toString());
         assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmTools.getSignatureAlgorithm(cert));
         } finally {
             endEntityProfileSession.removeEndEntityProfile(internalAdmin, testName);
@@ -1395,8 +1391,7 @@ public class SignSessionWithRsaSystemTest extends SignSessionCommon {
             X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
             issuedFingerprints.add(CertTools.getFingerprintAsString(cert));
             assertNotNull("Failed to create certificate", cert);
-            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
-            assertEquals("CN=extoverride,C=SE", cert.getSubjectDN().getName());
+            assertEquals("CN=extoverride,C=SE", X500Name.getInstance(CeSecoreNameStyle.INSTANCE, cert.getSubjectX500Principal().getEncoded()).toString());
             // check altNames, should be none
             Collection<List<?>> c = cert.getSubjectAlternativeNames();
             assertNull(c);
@@ -1412,8 +1407,7 @@ public class SignSessionWithRsaSystemTest extends SignSessionCommon {
             cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
             issuedFingerprints.add(CertTools.getFingerprintAsString(cert));
             assertNotNull("Failed to create certificate", cert);
-            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
-            assertEquals("CN=extoverride,C=SE", cert.getSubjectDN().getName());
+            assertEquals("CN=extoverride,C=SE", X500Name.getInstance(CeSecoreNameStyle.INSTANCE, cert.getSubjectX500Principal().getEncoded()).toString());
             // check altNames, should be one altName
             c = cert.getSubjectAlternativeNames();
             assertNotNull(c);
@@ -1525,8 +1519,7 @@ public class SignSessionWithRsaSystemTest extends SignSessionCommon {
             cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
             issuedFingerprints.add(CertTools.getFingerprintAsString(cert));
             assertNotNull("Failed to create certificate", cert);
-            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
-            assertEquals("CN=extoverride,C=SE", cert.getSubjectDN().getName());
+            assertEquals("CN=extoverride,C=SE", X500Name.getInstance(CeSecoreNameStyle.INSTANCE, cert.getSubjectX500Principal().getEncoded()).toString());
             // check altNames, should be one altName
             c = cert.getSubjectAlternativeNames();
             assertNotNull(c);
@@ -1681,8 +1674,7 @@ public class SignSessionWithRsaSystemTest extends SignSessionCommon {
             ResponseMessage resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
             X509Certificate cert =  CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
             assertNotNull("Failed to create certificate", cert);
-            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
-            assertEquals("CN=dnoverride,C=SE", cert.getSubjectDN().getName());
+            assertEquals("CN=dnoverride,C=SE", X500Name.getInstance(CeSecoreNameStyle.INSTANCE, cert.getSubjectX500Principal().getEncoded()).toString());
             // Change so that we allow override of validity time
             CertificateProfile prof = certificateProfileSession.getCertificateProfile(cprofile);
             prof.setAllowDNOverride(true);
@@ -1691,8 +1683,7 @@ public class SignSessionWithRsaSystemTest extends SignSessionCommon {
             resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
             cert =  CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
             assertNotNull("Failed to create certificate", cert);
-            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
-            assertEquals("CN=foo,C=SE,Name=AnaTom,O=My org", cert.getSubjectDN().getName());
+            assertEquals("CN=foo,C=SE,Name=AnaTom,O=My org", X500Name.getInstance(CeSecoreNameStyle.INSTANCE, cert.getSubjectX500Principal().getEncoded()).toString());
         } finally {
             endEntityManagementSession.deleteUser(internalAdmin, dnOverrideEndEntityName);
         }

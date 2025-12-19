@@ -38,6 +38,7 @@
 		<ant antfile="${mod.ejbca-ws-cli.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.clientToolBox.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.systemtests.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+		<ant antfile="${mod.systemtests-jscep.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.admin-gui.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.cmp-war.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.healthcheck-war.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
