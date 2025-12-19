@@ -32,6 +32,25 @@
             <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/OCSP_Responders.html')}" escape="false"/>
         </h1>
 
+        <h:panelGroup>
+            <div class="action-buttons">
+                <h:form rendered="#{ocspResponderMBean.switchToEditAllowed or ocspResponderMBean.switchToViewAllowed}">
+                    <h:commandButton rendered="#{ocspResponderMBean.switchToEditAllowed}"
+                                     action="#{ocspResponderMBean.switchToEdit}"
+                                     value="#{web.text.EDIT}" title="#{web.text.SWITCHTOEDITMODE}" update="@all"
+                                     immediate="true"
+                                     styleClass="padding-bottom-1-rem" />
+                    <h:commandButton rendered="#{ocspResponderMBean.switchToViewAllowed}"
+                                     action="#{ocspResponderMBean.switchToView}"
+                                     value="#{web.text.VIEW}" title="#{web.text.SWITCHTOVIEWMODE}" update="@all"
+                                     immediate="true"
+                                     styleClass="padding-bottom-1-rem" />
+                </h:form>
+            </div>
+        </h:panelGroup>
+
+        <p:divider/>
+
         <h:form id="internalkeybinding">
             <p:panelGrid columns="2" columnClasses="ui-md-3,ui-md-3">
                 <!-- OCSP Responder ID -->
@@ -204,23 +223,6 @@
                     </p:column>
                 </p:row>
             </p:panelGrid>
-
-            <h:panelGroup>
-                <div class="action-buttons">
-                    <h:form rendered="#{ocspResponderMBean.switchToEditAllowed or ocspResponderMBean.switchToViewAllowed}">
-                        <h:commandButton rendered="#{ocspResponderMBean.switchToEditAllowed}"
-                                         action="#{ocspResponderMBean.switchToEdit}"
-                                         value="#{web.text.EDIT}" title="#{web.text.SWITCHTOEDITMODE}" update="@all"
-                                         immediate="true"
-                                         styleClass="margin-top-1-rem" />
-                        <h:commandButton rendered="#{ocspResponderMBean.switchToViewAllowed}"
-                                         action="#{ocspResponderMBean.switchToView}"
-                                         value="#{web.text.VIEW}" title="#{web.text.SWITCHTOVIEWMODE}" update="@all"
-                                         immediate="true"
-                                         styleClass="margin-top-1-rem" />
-                    </h:form>
-                </div>
-            </h:panelGroup>
 
             <p:divider/>
 
