@@ -166,7 +166,7 @@ public interface EndEntityManagementSessionLocal extends EndEntityManagementSess
 
     /**
      * Causes the password to be cleared in suppressUnwantedUserDataChanges (which is called by finishUser).
-     *
+     * <p>
      * This applies to the current transaction only.
      */
     void dontPersistPassword(final String username);
