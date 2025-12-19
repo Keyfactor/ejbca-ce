@@ -519,7 +519,7 @@ public class UserData extends ProtectedData implements Serializable {
     /**
      * Sets password in hashed form in the database, this way it cannot be read in clear form
      */
-    public void setPassword(String password) throws NoSuchAlgorithmException {
+    public void setPassword(String password) {
         String passwordHash = CryptoTools.makePasswordHash(password);
         setPasswordHash(passwordHash);
         setClearPassword(null);

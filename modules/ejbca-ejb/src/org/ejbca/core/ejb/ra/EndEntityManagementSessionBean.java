@@ -1718,28 +1718,23 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             endEntityAuthenticationSession.assertAuthorizedToEndEntityProfile(authenticationToken, data.getEndEntityProfileId(), AccessRulesConstants.EDIT_END_ENTITY, caId);
         }
         endEntityAuthenticationSession.assertAuthorizedToCA(authenticationToken, caId);
-        try {
-            final Date now = new Date();
-            if ((newPasswd == null) && clearText) {
-                data.setClearPassword("");
-                data.setPasswordHash("");
+        final Date now = new Date();
+        if ((newPasswd == null) && clearText) {
+            data.setClearPassword("");
+            data.setPasswordHash("");
+        } else {
+            if (clearText) {
+                data.setOpenPassword(newPasswd);
             } else {
-                if (clearText) {
-                    data.setOpenPassword(newPasswd);
-                } else {
-                    data.setPassword(newPasswd);
-                }
+                data.setPassword(newPasswd);
             }
-            data.setTimeModified(now.getTime());
-            logAuditEvent(
-                    EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.SUCCESS,
-                    authenticationToken, caId, null, username,
-                    SecurityEventProperties.builder().withMsg(intres.getLocalizedMessage("ra.editpwdentity", username)).build()
-            );
-        } catch (NoSuchAlgorithmException nsae) {
-            log.error("NoSuchAlgorithmException while setting password for user " + username);
-            throw new EJBException(nsae);
         }
+        data.setTimeModified(now.getTime());
+        logAuditEvent(
+                EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.SUCCESS,
+                authenticationToken, caId, null, username,
+                SecurityEventProperties.builder().withMsg(intres.getLocalizedMessage("ra.editpwdentity", username)).build()
+        );
         if (log.isTraceEnabled()) {
             log.trace("<setPassword(" + username + ", hiddenpwd), " + clearText);
         }
