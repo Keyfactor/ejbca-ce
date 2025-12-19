@@ -296,6 +296,11 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
                 altKeys = KeyTools.genKeys(altKeyspec, altKeyalg);
             }
         }
+        // Clear the password when entering GENERATED state if "Allow renewal before expiration" is disabled
+        final EndEntityProfile eep = endEntityProfileSession.getEndEntityProfile(endEntityProfileId);
+        if (eep == null || !eep.isRenewDaysBeforeExpirationUsed()) {
+            endEntityManagementSession.dontPersistPassword(username);
+        }
         X509Certificate cert = null;
         if ((reusecertificate) && (keyData != null)) {
             cert = (X509Certificate) keyData.getCertificate();
@@ -311,8 +316,6 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             cert = (X509Certificate) signSession.createCertificate(administrator, username, password,
                     new PublicKeyWrapper(rsaKeys.getPublic(), altKeys != null ? altKeys.getPublic() : null), -1, notBefore, notAfter);
         }
-        // Clear password from database
-        userdata = endEntityAccessSession.findUser(administrator, username); //Get GENERATED end entity information
         return finishProcessingAndStoreKeys(administrator, username, password, caid, keystoreType, loadkeys, savekeys, isNewToken, rsaKeys, altKeys, userdata,
                 cert);
     }
@@ -409,6 +412,11 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
                 altKeys = KeyTools.genKeys(altKeyspec, altKeyalg);
             }
         }
+        // Clear the password when entering GENERATED state if "Allow renewal before expiration" is disabled
+        final EndEntityProfile eep = endEntityProfileSession.getEndEntityProfile(endEntityProfileId);
+        if (eep == null || !eep.isRenewDaysBeforeExpirationUsed()) {
+            endEntityManagementSession.dontPersistPassword(username);
+        }
         X509Certificate cert = null;
         if ((reusecertificate) && (keyData != null)) {
             cert = (X509Certificate) keyData.getCertificate();
@@ -424,8 +432,6 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             cert = (X509Certificate) signSession.createCertificate(administrator, username, password,
                     new PublicKeyWrapper(rsaKeys.getPublic(), altKeys != null ? altKeys.getPublic() : null), -1, notBefore, notAfter);
         }
-        // Clear password from database
-        userdata = endEntityAccessSession.findUserWithoutViewEndEntityAccessRule(administrator, username); //Get GENERATED end entity information
         return finishProcessingAndStoreKeys(administrator, username, password, caid, keystoreType, loadkeys, savekeys, isNewToken, rsaKeys, altKeys,
                 userdata, cert);
     }
@@ -435,22 +441,6 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             throws EndEntityProfileValidationException, AuthorizationDeniedException, NoSuchEndEntityException, CertificateSignatureException,
             KeyStoreException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
         final EndEntityProfile eep = endEntityProfileSession.getEndEntityProfile(userdata.getEndEntityProfileId());
-        if (userdata.getStatus() == EndEntityConstants.STATUS_GENERATED) {
-            // Don't clear the password if "Allow renewal before expiration" is enabled
-            if (eep == null || !eep.isRenewDaysBeforeExpirationUsed()) {
-                // If we have a successful key recovery via EJBCA WS we implicitly want to allow resetting of the password without edit_end_entity rights (ECA-4947)
-                if (loadkeys) {
-                    endEntityManagementSession.setClearTextPassword(new AlwaysAllowLocalAuthenticationToken(
-                            new UsernamePrincipal("Implicit authorization from key recovery operation to reset password.")), username, null);
-                } else if (isNewToken) {
-                    // If we generate a new token through an enrollment, we don't want to demand access to edit_end_entity
-                    endEntityManagementSession.setClearTextPassword(new AlwaysAllowLocalAuthenticationToken(
-                            new UsernamePrincipal("Implicit authorization from new enrollments")), username, null);
-                } else {
-                    endEntityManagementSession.setClearTextPassword(administrator, username, null);
-                }
-            }
-        }
         // Make a certificate chain from the certificate and the CA-certificate
         X509Certificate[] cachain = caSession.getCertificateChain(caid).toArray(new X509Certificate[0]);
         // Verify CA-certificate
