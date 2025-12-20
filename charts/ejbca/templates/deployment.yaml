@@ -182,8 +182,6 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: {{ include "ejbca.imageRepository" . }}:{{ .Values.image.tag | default .Chart.AppVersion }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
           env: {{- include "ejbca.ejbcaDeploymentParameters" . | nindent 12 }}
             {{- if or (.Values.services.proxyAJP.enabled) (.Values.httpd.enabled) }}
             - name: PROXY_AJP_BIND
