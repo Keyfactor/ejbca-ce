@@ -719,7 +719,6 @@ public class CAInterfaceBean implements Serializable {
                                            .setExpireTime(null)
                                            .setCertificateChain(null)
                                            .setCaToken(caToken)
-                                           .setApprovals(new HashMap<>()) // Approvals not implement yet for citsca
                                            .setExtendedCAServiceInfos(extendedCaServiceInfos)
                                            .setValidators(keyValidators)
                                            .setFinishUser(caInfoDto.isFinishUser())
@@ -1074,7 +1073,6 @@ public class CAInterfaceBean implements Serializable {
                                                                                                    .setExpireTime(null)
                                                                                                    .setCertificateChain(null)
                                                                                                    .setCaToken(catoken)
-                                                                                                   .setApprovals(new HashMap<>()) // Approvals not implement yet for citsca
                                                                                                    .setExtendedCAServiceInfos(extendedCaServiceInfos)
                                                                                                    .setValidators(keyValidators)
                                                                                                    .setFinishUser(caInfoDto.isFinishUser())

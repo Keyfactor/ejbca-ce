@@ -28,11 +28,8 @@ import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -46,8 +43,6 @@ import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemot
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.RoleInformation;
 import org.cesecore.roles.management.RoleSessionRemote;
-import org.cesecore.roles.member.RoleMember;
-import org.cesecore.roles.member.RoleMemberSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -98,8 +93,6 @@ public class PartitionedApprovalProfilesSystemTest extends CaTestCase {
     private static X509Certificate admincert1 = null;
     private static X509Certificate admincert2 = null;
 
-    private static RoleMember roleMember1 = null;
-    private static RoleMember roleMember2 = null;
     private static AuthenticationToken admin1 = null;
     private static AuthenticationToken admin2 = null;
     private static AuthenticationToken reqadmin = null;
@@ -161,14 +154,7 @@ public class PartitionedApprovalProfilesSystemTest extends CaTestCase {
         accessRules.put(StandardRules.CAACCESSBASE.resource(), RoleDataDto.STATE_ALLOW);
         role = new RoleDataDtoBuilder().setName(roleName).setAccessRules(accessRules).build();
         role = roleSession.persistRole(alwaysAllowAuthenticationToken, role);
-        final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
-        roleMember1 = roleMemberSession.persist(alwaysAllowAuthenticationToken, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
-                caid, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
-                AccessMatchType.TYPE_EQUALCASEINS.getNumericValue(), adminusername1, role.id(), null));
-        roleMember2 = roleMemberSession.persist(alwaysAllowAuthenticationToken, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
-                caid, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
-                AccessMatchType.TYPE_EQUALCASEINS.getNumericValue(), adminusername2, role.id(), null));
-
+        
         fileHandles.addAll(BatchCreateTool.createAllNew(alwaysAllowAuthenticationToken, new File(P12_FOLDER_NAME)));
 
         CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
