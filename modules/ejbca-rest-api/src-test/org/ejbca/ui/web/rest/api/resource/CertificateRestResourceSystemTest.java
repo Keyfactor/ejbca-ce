@@ -1507,7 +1507,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
                 true
         );
 
-        assertEquals("Wrong subjectDn", overwriteSdn, certificate.getSubjectDN().getName());
+        assertEquals("Wrong subjectDn", overwriteSdn, certificate.getSubjectX500Principal().getName());
         String actualValidityStart = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss", TIMEZONE_UTC)
                 .format(certificate.getNotBefore());
         assertEquals("Wrong validity start time.", validityStart, actualValidityStart);
@@ -1716,8 +1716,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         final byte[] certBytes = Base64.decode(base64cert.getBytes());
         final X509Certificate cert = CertTools.getCertfromByteArray(certBytes, X509Certificate.class);
         // Assert End Entity DN is used. CSR subject should be ignored.
-        //getSubjectX500Principal does not deliver the exact same order, so leave this for now
-        assertEquals("Returned certificate contained unexpected subject DN", subjectDn, cert.getSubjectDN().getName());
+        assertEquals("Returned certificate contained unexpected subject DN", subjectDn, X500Name.getInstance(CeSecoreNameStyle.INSTANCE, cert.getSubjectX500Principal().getEncoded()).toString());
         return cert;
     }
 

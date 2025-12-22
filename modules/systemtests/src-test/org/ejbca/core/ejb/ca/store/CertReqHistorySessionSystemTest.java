@@ -159,9 +159,7 @@ public class CertReqHistorySessionSystemTest {
     @Test
     public void test02getCertReqHistByIssuerDNAndSerial() throws Exception {
         log.trace(">test10getCertReqHistByIssuerDNAndSerial()");
-
-        //getIssuerX500Principal delivers a different order than getIssuerDN. Fix later.
-        CertReqHistory certreqhist = certReqHistoryProxySession.retrieveCertReqHistory(cert1.getSerialNumber(), cert1.getIssuerDN().toString());
+        CertReqHistory certreqhist = certReqHistoryProxySession.retrieveCertReqHistory(cert1.getSerialNumber(), CertTools.getIssuerDN(cert1));
 
         assertNotNull("Error couldn't find the certificate request data stored previously", certreqhist);
 
