@@ -39,6 +39,7 @@ import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyStoreCipher;
+import com.keyfactor.util.keys.KeyStoreTools;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
@@ -611,7 +612,7 @@ public abstract class BatchCreateTool {
             keyStoreFile = new File(keyStoreFilename);
             FileOutputStream os = new FileOutputStream(keyStoreFile);
             try {
-                ks.store(os, kspassword.toCharArray());
+                KeyStoreTools.storeKeyStore(ks, os, kspassword.toCharArray());
             } catch (IOException e) {
                 throw new IllegalStateException("Unexpected IOException was caught.", e);
             }

@@ -18,6 +18,7 @@
     <property name="mod.common.path" location="${mod.path}/common" />
     <property name="mod.common-lib.path" location="${mod.common.path}/lib" />
     <property name="mod.systemtests.path" location="${mod.path}/systemtests" />
+	<property name="mod.systemtests-jscep.path" location="${mod.path}/systemtests-jscep" />
     <property name="mod.dist.path" location="${mod.path}/dist" />
 	<property name="mod.ejbca-common.path" location="${mod.path}/ejbca-common" />
 	<property name="mod.ejbca-common-web.path" location="${mod.path}/ejbca-common-web" />
@@ -137,6 +138,7 @@
 	<property name="mod.systemtest-interface.lib" location="${mod.dist.path}/systemtests-interfaces.jar" />
 	<property name="mod.systemtest-common.lib" location="${mod.dist.path}/systemtests-common.jar" />
 	<property name="mod.systemtest-ejb.lib" location="${mod.dist.path}/systemtests-ejb.jar" />
+	<property name="mod.systemtest-jscep-src-test.path" location="${mod.path}/systemtests-jscep/src-test" />
 	<property name="mod.ra-gui.path" location="${mod.path}/ra-gui" />
 	<property name="mod.ra-gui.war" location="${mod.dist.path}/ra-gui.war" />
 	<property name="mod.caa.path" location="${mod.path}/caa" />
@@ -263,6 +265,7 @@
 			<include name="undertow-servlet-2.*.jar"/>
 			<include name="xnio-api-3.*.jar"/>
 			<include name="xnio-nio-3.*.jar"/>
+			<include name="jboss-logging-*.jar"/>
 			<include name="wildfly-common-1.*.jar"/>
 			<include name="jboss-threads-2.*.jar"/>
 			<include name="jakarta.servlet-api-*.jar"/>
@@ -275,6 +278,7 @@
 			<include name="jackson-jakarta-rs-base-2.*.jar"/>
 			<include name="jackson-jakarta-rs-json-provider-2.*.jar"/>
 			<include name="jackson-module-jaxb-annotations-2.*.jar"/>
+			<include name="jaxb-api-2.*.jar"/>
 		</fileset>
 	</path>
 	
@@ -345,7 +349,6 @@
 	<path id="lib.kerb.crypto.classpath"><fileset dir="${ejbca.home}/lib" includes="kerb-crypto-*.jar"/></path> 
 	<path id="lib.primefaces.classpath"><fileset dir="${ejbca.home}/lib/primefaces" includes="primefaces-*.jar"/></path>
 
-
 	<path id="lib.x509-common-util.classpath"><fileset dir="${ejbca.home}/lib" includes="x509-common-util*.jar"/></path> 
 	<path id="lib.cryptotokens.classpath"><fileset dir="${ejbca.home}/lib" includes="cryptotokens-*.jar"/></path>
 	<path id="lib.p11ng.classpath"><fileset dir="${ejbca.home}/lib" includes="p11ng-*.jar"/></path> 
@@ -400,7 +403,7 @@
 	<path id="lib.jakarta.xml.soap-api.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="jakarta.xml.soap-api-*.jar"/></path>
 	<path id="lib.jakarta.mail.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="jakarta.mail-*.jar"/></path>
 
-	<path id="lib.jakarta.servlet.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="jakarta.servlet-api-*.jar"/></path>
+	<path id="lib.jakarta.servlet.classpath"><fileset dir="${ejbca.home}/lib/ext/resteasy-jaxrs-lib" includes="jakarta.servlet-api-*.jar"/></path>
 
 	<path id="lib.jaxb.core.classpath"><fileset dir="${ejbca.home}/lib/ext/wsgen" includes="jaxb-core-*.jar"/></path>
 	

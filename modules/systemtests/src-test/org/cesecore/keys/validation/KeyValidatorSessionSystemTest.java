@@ -115,7 +115,7 @@ public class KeyValidatorSessionSystemTest extends RoleUsingTestCase {
 
     /** Test user. */
     private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(
-            new UsernamePrincipal(ROLE_NAME + "-Admin"));
+            new UsernamePrincipal(ROLE_NAME + "-Admin" + generateReallyBigAdminName()));
 
     private static final String TEST_CA_NAME = ROLE_NAME + "-TestCA";
 
@@ -154,6 +154,14 @@ public class KeyValidatorSessionSystemTest extends RoleUsingTestCase {
     private X509CA testCA;
     private CertificateProfile testCertificateProfile;
     private EndEntityInformation testUser;
+    
+    private static String generateReallyBigAdminName() {
+        StringBuilder sb = new StringBuilder();
+        for(int i=0; i <27; i++) {
+            sb.append("0123456789");
+        }
+        return sb.toString();
+    }
 
     @Before
     public void setUp() throws Exception {

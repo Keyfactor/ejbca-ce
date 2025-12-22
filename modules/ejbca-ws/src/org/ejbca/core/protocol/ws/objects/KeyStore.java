@@ -12,52 +12,49 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws.objects;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.keys.KeyStoreTools;
+
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlType;
 
-import com.keyfactor.util.Base64;
-
 /**
  * Wrapper class for holding WS keystore data
- * 
+ *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "keyStore", propOrder = {
         "keystoreData"
     })
 public class KeyStore extends TokenCertificateResponseWS {
-	
+
 	private byte[] keystoreData = null;
-	
+
 	/**
 	 * WS Constructor
 	 */
 	public KeyStore(){
-		
+
 	}
 
 	/**
-	 * Creates a keystore by raw byte data with password. 
-	 * 
+	 * Creates a keystore by raw byte data with password.
+	 *
 	 * @param rawKeystoreData the raw keystore data.
 	 * @param password the password.
 	 */
 	public KeyStore(byte[] rawKeystoreData, String password) {
 	    keystoreData = Base64.encode(rawKeystoreData);
 	}
-	
+
 	public KeyStore(java.security.KeyStore keystore, String password) throws KeyStoreException, NoSuchAlgorithmException, IOException, CertificateException {
-	    try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-	        keystore.store(baos,password.toCharArray());
-	        keystoreData = Base64.encode(baos.toByteArray());
-	    }
+	    keystoreData = Base64.encode(KeyStoreTools.getAsByteArray(keystore, password));
 	}
 
 	/**

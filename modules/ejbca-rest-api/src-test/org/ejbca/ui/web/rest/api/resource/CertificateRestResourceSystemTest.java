@@ -45,6 +45,7 @@ import com.keyfactor.util.Base64;
 import com.keyfactor.util.CeSecoreNameStyle;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.IndefiniteLengthDetectorStream;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
@@ -102,8 +103,8 @@ import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 import org.ejbca.ui.web.rest.api.io.request.AddEndEntityRestRequest;
-import org.ejbca.ui.web.rest.api.io.request.EnrollCertificateWithEntityRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.EnrollCertificateRestRequest;
+import org.ejbca.ui.web.rest.api.io.request.EnrollCertificateWithEntityRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.ExtendedInformationRestRequestComponent;
 import org.ejbca.ui.web.rest.api.io.request.FinalizeRestRequest;
 import org.ejbca.ui.web.rest.api.resource.util.CertificateRestResourceSystemTestUtil;
@@ -128,7 +129,6 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.xml.bind.DatatypeConverter;
 
-import static java.lang.Thread.sleep;
 import static org.cesecore.certificates.crl.RevocationReasons.AACOMPROMISE;
 import static org.cesecore.certificates.crl.RevocationReasons.AFFILIATIONCHANGED;
 import static org.cesecore.certificates.crl.RevocationReasons.CACOMPROMISE;
@@ -151,6 +151,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
+
+import static java.lang.Thread.sleep;
 
 /**
  * A unit test class for CertificateRestResource to test its content.
@@ -553,25 +555,25 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         String databaseReason = RevocationReasons.getFromDatabaseValue(certificateData.getRevocationReason()).getStringValue();
         assertEquals("KEY_COMPROMISE", databaseReason);
     }
-    
+
     @Test
     public void shouldRevocationStatusBeNotRevoked() throws Exception {
         final String serialNumber = generateTestSerialNumber();
         revocationStatusCheck(testIssuerDn, serialNumber, 200, "\"revoked\":false");
     }
-    
+
     @Test
     public void shouldRevocationStatusBeUnspecified() throws Exception {
-        
+
         final String serialNumber = generateTestSerialNumber();
         final String revocationReason = UNSPECIFIED.getStringValue();
         // when
         revokeCertificate(testIssuerDn, serialNumber, revocationReason, null);
         // then
         revocationStatusCheck(testIssuerDn, serialNumber, 200, "UNSPECIFIED");
-        
+
     }
-    
+
     @Test
     public void shouldRevocationStatusBeSuperseded() throws Exception {
         final String serialNumber = generateTestSerialNumber();
@@ -581,7 +583,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         // then
         revocationStatusCheck(testIssuerDn, serialNumber, 200, "SUPERSEDED");
     }
-    
+
     @Test
     public void shouldRevocationStatusBeKeyCompromise() throws Exception {
         final String serialNumber = generateTestSerialNumber();
@@ -591,23 +593,23 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         // then
         revocationStatusCheck(testIssuerDn, "0x" + serialNumber, 200, "KEY_COMPROMISE");
     }
-    
+
     @Test
     public void shouldFailRevocationStatusUnknownCa() throws Exception {
         revocationStatusCheck("CN=whatever", "11223344556677889900112233445566", 404, "CA 'CN=whatever' does not exist.");
     }
-    
+
     @Test
     public void shouldFailRevocationStatusNonExistingCertificate() throws Exception {
         revocationStatusCheck(testIssuerDn, "11223344556677889900112233445566", 404, "Certificate with serial number '11223344556677889900112233445566' and issuer "
                 + "DN '" + testIssuerDn + "' was not found");
     }
-    
+
     @Test
     public void shouldFailRevocationStatusInvalidSerialNumber() throws Exception {
         revocationStatusCheck(testIssuerDn, "JK223344556677889900112233445566", 400, "Invalid serial number format");
     }
-    
+
     private void revocationStatusCheck(final String issuerDn, final String serialNumber, final int statusCode, final String message) throws Exception {
         final Response actualResponse = newRequest("/v1/certificate/" + issuerDn + "/" + serialNumber + "/revocationstatus").request().get();
         final String actualJsonString = actualResponse.readEntity(String.class);
@@ -1378,17 +1380,17 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     public void enrollPkcs10ExpectResponseFormatPKCS7() throws Exception {
         enrollPkcs10("ENDUSER", "EMPTY", "PKCS7", CSR_WITHOUT_HEADERS, 201, null, false);
     }
-    
+
     @Test
     public void enrollPkcs10ExpectResponseFormatDER() throws Exception {
         enrollPkcs10("ENDUSER", "EMPTY", "DER", CSR_WITHOUT_HEADERS, 201, null, false);
     }
-    
+
     @Test
     public void enrollPkcs10ExpectResponseFormatInvalid() throws Exception {
         enrollPkcs10("ENDUSER", "EMPTY", "", CSR_WITHOUT_HEADERS, 400, "Invalid input. Response format can only be DER or PKCS7", false);
     }
-    
+
     @Test
     public void enrollPkcs10ExpectResponseFormatNull() throws Exception {
         enrollPkcs10("ENDUSER", "EMPTY", null, CSR_WITHOUT_HEADERS, 400, "Invalid input. Incorrect response format", false);
@@ -1505,7 +1507,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
                 true
         );
 
-        assertEquals("Wrong subjectDn", overwriteSdn, certificate.getSubjectDN().getName());
+        assertEquals("Wrong subjectDn", overwriteSdn, certificate.getSubjectX500Principal().getName());
         String actualValidityStart = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss", TIMEZONE_UTC)
                 .format(certificate.getNotBefore());
         assertEquals("Wrong validity start time.", validityStart, actualValidityStart);
@@ -1522,17 +1524,17 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertEquals("Extension overwrite value is wrong", obj.toString(), "#040a30080101010104040404");
 
     }
-    
+
     @Test
     public void enrollPkcs10InvalidCa() throws Exception {
         enrollPkcs10("SomeInvalidCA", "ENDUSER", testEeProfileNameWithSan, "PKCS7", CSR_WITH_SAN_WITHOUT_HEADERS, 400, "CA with name \"SomeInvalidCA\" doesn't exist", false);
     }
-    
+
     @Test
     public void enrollPkcs10InvalidEeProfile() throws Exception {
         enrollPkcs10("ENDUSER", "SomeInvalidEep", "PKCS7", CSR_WITH_SAN_WITHOUT_HEADERS, 400, "End Entity Profile of name \"SomeInvalidEep\" was not found", false);
     }
-        
+
     private Certificate enrollPkcs10(
                 final String caName,
                 final String cpName,
@@ -1600,7 +1602,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             assertFalse("The response is not a pkcs7", pkcs7CertificatePem.contains(CertTools.BEGIN_PKCS7));
             assertFalse("The response is not a pkcs7", pkcs7CertificatePem.contains(CertTools.END_PKCS7));
             return null;
-        } 
+        }
         assertTrue("The response is not a pkcs7", pkcs7CertificatePem.contains(CertTools.BEGIN_PKCS7));
         assertTrue("The response is not a pkcs7", pkcs7CertificatePem.contains(CertTools.END_PKCS7));
         // Verify certificate
@@ -1612,7 +1614,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertEquals("The certificate serial number does not match.", CertTools.getSerialNumber(cert), CertTools.getSerialNumberFromString(responseSerialNo));
         return cert;
     }
-    
+
     private Certificate enrollPkcs10(
             final String cpName,
             final String eepName,
@@ -1624,17 +1626,17 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     ) throws Exception {
         return enrollPkcs10(testCaName, cpName, eepName, responseFormat, pemCsrWithoutHeaders, responseStatus, error, overwrite);
     }
-    
+
     @Test
     public void enrollCertificateInvalidCa() throws Exception {
         enrollCertificateInvalid("SomeInvalidCa", "EMPTY", "No CA found by name of SomeInvalidCa");
     }
-    
+
     @Test
     public void enrollCertificateInvalidEeProfile() throws Exception {
         enrollCertificateInvalid(testCaName, "SomeInvalidEep", "No End Entity profile found by name of SomeInvalidEep");
     }
-        
+
     private void enrollCertificateInvalid(String ca, String eeProfile, String errorMessage) throws Exception {
         try {
             EnrollCertificateWithEntityRestRequest request = new EnrollCertificateWithEntityRestRequest();
@@ -1714,8 +1716,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         final byte[] certBytes = Base64.decode(base64cert.getBytes());
         final X509Certificate cert = CertTools.getCertfromByteArray(certBytes, X509Certificate.class);
         // Assert End Entity DN is used. CSR subject should be ignored.
-        //getSubjectX500Principal does not deliver the exact same order, so leave this for now
-        assertEquals("Returned certificate contained unexpected subject DN", subjectDn, cert.getSubjectDN().getName());
+        assertEquals("Returned certificate contained unexpected subject DN", subjectDn, X500Name.getInstance(CeSecoreNameStyle.INSTANCE, cert.getSubjectX500Principal().getEncoded()).toString());
         return cert;
     }
 
@@ -2596,48 +2597,48 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             certificateProfileSession.removeCertificateProfile(INTERNAL_ADMIN_TOKEN, profileName);
         }
     }
-    
+
     @Test
     public void finalizeKeyStoreExpectPkcs12Response() throws Exception {
         finalizeKeyStoreExpectResponse(EndEntityConstants.TOKEN_SOFT_P12, "P12", "PKCS12");
     }
-    
+
     @Test
     public void finalizeKeyStoreApprovalReject() throws Exception {
         finalizeKeyStoreExpectResponse(EndEntityConstants.TOKEN_SOFT_P12, "P12", "PKCS12", true);
     }
-    
+
     @Test
     public void finalizeKeyStoreExpectJksResponse() throws Exception {
         finalizeKeyStoreExpectResponse(EndEntityConstants.TOKEN_SOFT_JKS, "JKS", "JKS");
     }
-    
+
     @Test
     public void finalizeKeyStoreExpectBcfksResponse() throws Exception {
         finalizeKeyStoreExpectResponse(EndEntityConstants.TOKEN_SOFT_BCFKS, "BCFKS", "BCFKS");
     }
-    
+
     @Test
     public void finalizeKeyStoreExpectPemResponse() throws Exception {
         finalizeKeyStoreExpectResponse(EndEntityConstants.TOKEN_SOFT_PEM, "PEM", "PEM");
     }
-    
+
     @Test
     public void finalizeKeyStoreExpectCsrDerResponse() throws Exception {
         finalizeKeyStoreExpectResponse(EndEntityConstants.TOKEN_USERGEN, "DER", "DER");
     }
-    
+
     @Test
     public void finalizeKeyStoreExpectCsrPemResponse() throws Exception {
         finalizeKeyStoreExpectResponse(EndEntityConstants.TOKEN_USERGEN, "PEM", "PEM");
     }
-    
-    private void finalizeKeyStoreExpectResponse(int tokenType, String tokenTypeRequestExpected, 
+
+    private void finalizeKeyStoreExpectResponse(int tokenType, String tokenTypeRequestExpected,
             String tokenTypeResponseExpected) throws Exception {
         finalizeKeyStoreExpectResponse(tokenType, tokenTypeRequestExpected, tokenTypeResponseExpected, false);
     }
 
-    private void finalizeKeyStoreExpectResponse(int tokenType, String tokenTypeRequestExpected, 
+    private void finalizeKeyStoreExpectResponse(int tokenType, String tokenTypeRequestExpected,
             String tokenTypeResponseExpected, boolean rejectApproval) throws Exception {
         // Create an add end entity approval request
         final AuthenticationToken approvalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EjbcaRestApiApprovalTestAdmin"));
@@ -2682,7 +2683,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             assertEquals(actualResponseFailed.getStatus(), 202);
             assertJsonContentType(actualResponseFailed);
             assertTrue(actualJsonStringFailed.contains("Request with Id '" + requestId + "' is still waiting for approval"));
-            
+
             Approval approval = new Approval("REST System Test Approval", AccumulativeApprovalProfile.FIXED_STEP_ID,
                     approvalProfile.getStep(AccumulativeApprovalProfile.FIXED_STEP_ID).getPartitions().
                             values().iterator().next().getPartitionIdentifier());
@@ -2692,7 +2693,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             } else {
                 approvalExecutionSession.reject(approvalAdmin, approvalId, approval);
             }
-            
+
             final Response actualResponse = newRequest("/v1/certificate/" + requestId + "/finalize").request().post(requestEntity);
             final String actualJsonString = actualResponse.readEntity(String.class);
             assertJsonContentType(actualResponse);
@@ -2704,28 +2705,38 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             final String responseFormat = (String) actualJsonObject.get("response_format");
             final String base64Keystore = (String) actualJsonObject.get("certificate");
             assertEquals("Unexpected response format", tokenTypeResponseExpected, responseFormat);
-            
-            if (!(tokenType==EndEntityConstants.TOKEN_SOFT_P12 || tokenType==EndEntityConstants.TOKEN_SOFT_JKS ||
-                    tokenType==EndEntityConstants.TOKEN_SOFT_BCFKS)) {
+
+            if (!(tokenType == EndEntityConstants.TOKEN_SOFT_P12 || tokenType == EndEntityConstants.TOKEN_SOFT_JKS ||
+                    tokenType == EndEntityConstants.TOKEN_SOFT_BCFKS)) {
                 return;
             }
-            
+
             final byte[] keystoreBytes = Base64.decode(base64Keystore.getBytes());
             KeyStore keyStore = null;
-            if (tokenType==EndEntityConstants.TOKEN_SOFT_P12) {
+            if (tokenType == EndEntityConstants.TOKEN_SOFT_P12) {
                 keyStore = KeyStore.getInstance("PKCS12-3DES-3DES");
-            } else if (tokenType==EndEntityConstants.TOKEN_SOFT_JKS) {
+            } else if (tokenType == EndEntityConstants.TOKEN_SOFT_JKS) {
                 keyStore = KeyStore.getInstance("JKS");
-            } else if (tokenType==EndEntityConstants.TOKEN_SOFT_BCFKS) {
+            } else if (tokenType == EndEntityConstants.TOKEN_SOFT_BCFKS) {
                 keyStore = KeyStore.getInstance("BCFKS");
             }
-            
+
             keyStore.load(new ByteArrayInputStream(keystoreBytes), "foo123".toCharArray());
+            // Verify that P12 keystore returned from server has definite length encoding
+            if (tokenType == EndEntityConstants.TOKEN_SOFT_P12) {
+                ByteArrayInputStream in = new ByteArrayInputStream(keystoreBytes);
+                try (IndefiniteLengthDetectorStream ildStream = new IndefiniteLengthDetectorStream(in)) {
+                    while (ildStream.readValue() != null) {
+                        ;
+                    }
+                    assertFalse("ks.store() with PKCS12StoreParameter(true) is expected to not have indefinitlength encoding", ildStream.isIndefiniteLength());
+                }
+            }
             // Verify results
             Enumeration<String> aliases = keyStore.aliases();
-            assertTrue("Alias is missing in keystore response", 
+            assertTrue("Alias is missing in keystore response",
                     Collections.list(aliases).stream().anyMatch(x -> x.equalsIgnoreCase(testUsername)));
-            
+
         } finally {
             // Clean up
             approvalSession.removeApprovalRequest(INTERNAL_ADMIN_TOKEN, approvalId);

@@ -13,6 +13,7 @@
 
     <target name="test:runsys" description="run system test, use -Dtest.includep11=true to include P11 tests" depends="deleteDirectories">
     	<ant antfile="build.xml" dir="modules/systemtests" target="run" inheritall="true" inheritrefs="true"/>
+    	<ant antfile="build.xml" dir="modules/systemtests-jscep" target="test:system" inheritall="true" inheritrefs="true"/>
         <ant antfile="build.xml" dir="modules/ejbca-ws" target="test:system" inheritall="true" inheritrefs="true"/>
         <antcall target="optional-test-configdump-system" inheritall="true" inheritrefs="true"/>
     	<antcall target="optional-test-statedump-system" inheritall="true" inheritrefs="true"/>
@@ -178,6 +179,7 @@
 					<include name="modules/ejbca-entity/src-test/**/${test.runone}.java" />
 					<include name="modules/ejbca-ws/src-test/**/${test.runone}.java" />
 					<include name="modules/systemtests/src-test/**/${test.runone}.java" />
+					<include name="modules/systemtests-jscep/src-test/**/${test.runone}.java" />
 					<include name="modules/statedump/src-test/**/${test.runone}.java" />
 					<include name="modules/clientToolBox/src-test/**/${test.runone}.java" />
 					<include name="modules/configdump/src-test/**/${test.runone}.java" />
@@ -241,6 +243,9 @@
     	</condition>
     	<condition property="module" value="modules/systemtests">
     		<matches string="${test-fullname}" pattern="^modules/systemtests/.*$"/>
+    	</condition>
+    	<condition property="module" value="modules/systemtests-jscep">
+    		   <matches string="${test-fullname}" pattern="^modules/systemtests-jscep/.*$"/>
     	</condition>
     	<condition property="module" value="modules/peerconnector">
     		<matches string="${test-fullname}" pattern="^modules/peerconnector/.*$"/>
