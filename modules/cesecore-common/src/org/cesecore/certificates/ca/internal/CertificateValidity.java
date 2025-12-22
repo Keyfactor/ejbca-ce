@@ -29,7 +29,6 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.internal.InternalResources;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.ValidityDate;
 
@@ -42,9 +41,6 @@ public class CertificateValidity {
 
 	/** Class logger. */
     private static final Logger log = Logger.getLogger(CertificateValidity.class);
-    
-    /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
     
     /** 
      * Validity offset in milliseconds (offset for the 'notBefore' value)
@@ -131,6 +127,16 @@ public class CertificateValidity {
         if (firstDate == null) {
         	firstDate = now;
         }
+        
+        // Limit validity: We do not allow a certificate to be valid before the the CA becomes valid (unless it's RootCA during renewal)
+        if (cacert != null && !isRootCA) {
+            final Date caNotBefore = CertTools.getNotBefore(cacert);
+            if (firstDate.before(caNotBefore)) {
+                log.info("Limiting validity of certificate because requested start of validity (" + firstDate.toString() + ") is before CA start of validity (" + caNotBefore + ").");
+                firstDate = caNotBefore;
+            }
+        }
+        
         Date certProfileLastDate = new Date(getCertificateProfileValidtyEndDate(caInfo, certProfile));
         // Limit validity: ECA-5330 Apply expiration restriction for weekdays 
         if (certProfile.getUseExpirationRestrictionForWeekdays() && isRelativeTime(certProfile.getEncodedValidity())) {
@@ -167,7 +173,7 @@ public class CertificateValidity {
         
         // Limit validity: Do not allow last date to be before first date
         if (lastDate.before(firstDate)) {
-			log.info(intres.getLocalizedMessage("createcert.errorinvalidcausality",firstDate,lastDate));
+			log.info("Start date (" + firstDate +  ") is after end date (" + lastDate + "). Trying to recover by swapping the dates.");
         	Date tmp = lastDate;
         	lastDate = firstDate;
         	firstDate = tmp;
@@ -176,7 +182,7 @@ public class CertificateValidity {
         // Unless allowValidityOverride is set, then we allow everything
         // So this check is probably completely unneeded and can never be true
     	if (firstDate.before(now) && !certProfile.getAllowValidityOverride()) {
-			log.error(intres.getLocalizedMessage("createcert.errorbeforecurrentdate",firstDate,subject.getUsername()));
+			log.error("notBefore from request (" + firstDate + ") for user '" + subject.getUsername() + "' pre-dates current time, not allowed, using current time instead.");
     		firstDate = now;
     		// Update valid length from the profile since the starting point has changed
 			certProfileLastDate = new Date(getCertificateProfileValidtyEndDate(caInfo, certProfile));
@@ -185,13 +191,13 @@ public class CertificateValidity {
 
 		// Limit validity: We do not allow a certificate to be valid after the validity of the certificate profile
     	if (lastDate.after(certProfileLastDate)) {
-    		log.info(intres.getLocalizedMessage("createcert.errorbeyondmaxvalidity",lastDate,subject.getUsername(),certProfileLastDate));
+    		log.info("notAfter from request (" + lastDate + ") for user '" + subject.getUsername() + "' is longer than maximum specified in certificate profile (" + certProfileLastDate  + "), not allowed, using notAfter from certificate profile.");
     		lastDate = certProfileLastDate;
 
             // Combination of Validity Override and firstDate in past beyond Encoded Validity might result in
             // a certificateProfileLastDate and create an already expired certificate.
             if (lastDate.before(now) && subject.getStatus() != EndEntityConstants.STATUS_REVOKED && !isLinkCertificate) {
-                final String msg = intres.getLocalizedMessage("createcert.erroralreadyexpired", firstDate);
+                final String msg = "Provided notBefore date (" + firstDate  + ") is outside the allowed validity period and would result in an already expired certificate";
                 log.info(msg);
                 throw new IllegalValidityException(msg);
             }
@@ -201,23 +207,16 @@ public class CertificateValidity {
     	if (cacert != null && !isRootCA) {
     	    final Date caNotAfter = CertTools.getNotAfter(cacert);
     	    if (lastDate.after(caNotAfter)) {
-    	        log.info(intres.getLocalizedMessage("createcert.limitingvalidity", lastDate.toString(), caNotAfter));
+    	        log.info("Limiting validity of certificate because requested validity (" + lastDate.toString() + ") is beyond CA validity (" + caNotAfter + ").");
     	        lastDate = caNotAfter;
     	    }
     	}
-    	// Limit validity: We do not allow a certificate to be valid before the the CA becomes valid (unless it's RootCA during renewal)
-    	if (cacert != null && !isRootCA) {
-    	    final Date caNotBefore = CertTools.getNotBefore(cacert);
-    	    if (firstDate.before(caNotBefore)) {
-    	        log.info(intres.getLocalizedMessage("createcert.limitingvaliditystart", firstDate.toString(), caNotBefore));
-    	        firstDate = caNotBefore;
-    	    }
-        }
+    	
 
         // Edge case where allowing expired validity might cause inverted validity if firstDate is before
         // CA's issuance date.
         if (expiredValidityEndDateAllowed && firstDate.after(lastDate)) {
-            final String msg = intres.getLocalizedMessage("createcert.errorlimitedvalidity", firstDate);
+            final String msg = "Provided notBefore date (" + firstDate  + ") is before CA issuance date and will result in inverted validity.";
             log.info(msg);
             throw new IllegalValidityException(msg);
         }
@@ -341,8 +340,7 @@ public class CertificateValidity {
                         log.debug("PrivateKeyUsagePeriod.notBefore is " + pkuNotBefore);
                     }
                     if (pkuNotBefore != null && checkDate.before(pkuNotBefore)) {
-                        final String msg = intres.getLocalizedMessage("createcert.privatekeyusagenotvalid", pkuNotBefore.toString(), cert
-                                .getSubjectX500Principal().toString());
+                        final String msg = "PrivateKeyUsagePeriod.notBefore is not valid until " + pkuNotBefore.toString() + " for CA with subjectDN '" + cert.getSubjectX500Principal().toString() + "'.";
                         if (log.isDebugEnabled()) {
                             log.debug(msg);
                         }
@@ -362,7 +360,7 @@ public class CertificateValidity {
                     log.debug("PrivateKeyUsagePeriod.notAfter is " + pkuNotAfter);
                 }
                 if (pkuNotAfter != null && checkDate.after(pkuNotAfter)) {
-                    final String msg = intres.getLocalizedMessage("createcert.privatekeyusageexpired", pkuNotAfter.toString(), cert.getSubjectX500Principal().toString());
+                    final String msg = "PrivateKeyUsagePeriod.notAfter expired at " + pkuNotAfter.toString() + " for CA with subjectDN '" + cert.getSubjectX500Principal().toString()  + "'.";
                     if (log.isDebugEnabled()) {
                         log.debug(msg);
                     }
@@ -419,7 +417,7 @@ public class CertificateValidity {
                     // Try parsing data as "yyyy-MM-dd HH:mm" assuming UTC
                     result = ValidityDate.parseAsUTC(timeString);
                 } catch (ParseException e) {
-                    log.error(intres.getLocalizedMessage("createcert.errorinvalidstarttime",timeString));
+                    log.error("Ignoring invalid start time format (" + timeString + ").", e);
                 }
             }
             if ((log.isDebugEnabled())) {
