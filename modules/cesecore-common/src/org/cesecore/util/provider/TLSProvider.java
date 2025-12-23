@@ -24,7 +24,7 @@ public class TLSProvider extends Provider {
     private static final long serialVersionUID = -5295903987266780293L;
     private static String info = "CESECORE TLS Provider";
     public TLSProvider() {
-        super("TLSProvider", 0.0, info);
+        super("TLSProvider", "0.0", info);
         put("TrustManagerFactory.AcceptAll", TrustManagerFactoryImpl.AcceptAll.class.getName());
     }
 }
