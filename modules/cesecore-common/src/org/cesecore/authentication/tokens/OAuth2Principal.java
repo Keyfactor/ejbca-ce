@@ -191,34 +191,37 @@ public class OAuth2Principal implements Principal, Serializable {
         }
 
         public Builder addRoles(final JWTClaimsSet claims) {
-            extractClaims(claims, "role", roles);
+            roles.addAll(extractClaims(claims, "roles"));
             return this;
         }
 
         public Builder addKfRoles(final JWTClaimsSet claims) {
-            extractClaims(claims, "kf.roles", kfRoles);
+            kfRoles.addAll(extractClaims(claims, "kf.roles"));
             return this;
         }
 
-        private void extractClaims(final JWTClaimsSet claims, final String key, final Collection<String> collection) {
-            // add Roles if they exist in the JWT and are of the expected type.  All this type checking may be overly paranoid,
+        private Collection<String> extractClaims(final JWTClaimsSet claims, final String key) {
+            final Collection<String> result = new HashSet<>();
+
+            // extract claims if they exist in the JWT and are of the expected type.  All this type checking may be overly paranoid,
             // but this is an external value used in authentication, and there's no schema for JSON
             if (!claims.getClaims().containsKey(key)) {
-                return;
+                return result;
             }
             final Object rolesClaimObject = claims.getClaim(key);
             if (rolesClaimObject instanceof Collection) {
                 ((Collection<?>) rolesClaimObject).forEach(r -> {
                     if (r instanceof String) {
-                        collection.add((String) r);
+                        result.add((String) r);
                     }
                 });
-            }
-            else {
+            } else {
                 if (log.isDebugEnabled()) {
                     log.debug(String.format("unexpected type of '%s' claim: %s", key, rolesClaimObject.getClass()));
                 }
             }
+
+            return result;
         }
     }
 

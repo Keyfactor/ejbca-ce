@@ -31,7 +31,7 @@ public enum OAuth2AccessMatchValue implements AccessMatchValue {
     /** Matches the "oid" (object identifier) claim */
     CLAIM_OBJECTID(4),
     /** Matches one of the entries in the "roles" claim */
-    CLAIM_ROLE(5),
+    CLAIM_ROLES(5),
     /** Matches one of the entries in the "kf.roles" claim */
     CLAIM_KF_ROLES(6),
     // NOTE: preferred_username, email, etc. should not be considered to be stable, according to the OpenID connect specification.

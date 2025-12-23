@@ -77,7 +77,6 @@ import java.net.URL;
 import java.security.Key;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;

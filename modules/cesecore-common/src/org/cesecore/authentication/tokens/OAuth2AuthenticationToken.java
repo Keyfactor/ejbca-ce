@@ -83,7 +83,7 @@ public class OAuth2AuthenticationToken extends NestableAuthenticationToken {
             case CLAIM_SUBJECT -> value.equals(principal.getSubject());
             case CLAIM_AUDIENCE -> principal.getAudience() != null && principal.getAudience().contains(value);
             case CLAIM_OBJECTID -> value.equals(principal.getOid());
-            case CLAIM_ROLE -> principal.getRoles().contains(value);
+            case CLAIM_ROLES -> principal.getRoles().contains(value);
             case CLAIM_KF_ROLES -> principal.getKfRoles().contains(value);
         };
 // Possible future extension, to allow arbitrary claims (pseudo-code)
