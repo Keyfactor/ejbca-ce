@@ -14,7 +14,6 @@ package org.ejbca.ui.web.admin;
 
 import com.keyfactor.util.RandomHelper;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.context.FacesContext;
@@ -47,6 +46,7 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.HttpTools;
+import org.ejbca.util.oauth.OAuthTools;
 
 /**
  * Bean used to display a login page.
@@ -56,6 +56,7 @@ import org.ejbca.util.HttpTools;
 public class AdminLoginMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(AdminLoginMBean.class);
+    public static final String STATE_KEY = "state";
 
     private EjbcaWebBean ejbcaWebBean;
 
@@ -153,7 +154,7 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
         final Map<String, Object> requestMap = FacesContext.getCurrentInstance().getExternalContext().getRequestMap();
         final Map<String, String> params = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
         final String authCode = params.get("code");
-        final String state = params.get("state");
+        final String state = params.get(STATE_KEY);
         final String error = params.get("error");
         // Render error caught by CaExceptionHandlerFactory
         if (requestMap.containsKey(CaExceptionHandlerFactory.REQUESTMAP_KEY)) {
@@ -216,7 +217,7 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
     private void requestTokenUsingCode(HttpServletRequest servletRequest, Map<String, String> params) throws IOException {
         log.debug("Received authorization code. Requesting token from authorization server.");
         final String authCode = params.get("code");
-        final String state = params.get("state");
+        final String state = params.get(STATE_KEY);
         if (verifyStateParameter(state)) {
             OAuthKeyInfo oAuthKeyInfo = ejbcaWebBean.getOAuthConfiguration().getOauthKeyByLabel(oauthClicked);
             if (oAuthKeyInfo != null) {
@@ -326,7 +327,7 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
                 .queryParam("client_id", oAuthKeyInfo.getClient())
                 .queryParam("response_type", "code")
                 .queryParam("redirect_uri", getRedirectUri())
-                .queryParam("state", stateInSession)
+                .queryParam(STATE_KEY, stateInSession)
                 .build()
                 .toString();
     }

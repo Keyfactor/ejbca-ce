@@ -46,6 +46,7 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.util.HttpTools;
+import org.ejbca.util.oauth.OAuthTools;
 
 /**
  * JSF Managed Bean for the OAuth login page in the RA Web. 
