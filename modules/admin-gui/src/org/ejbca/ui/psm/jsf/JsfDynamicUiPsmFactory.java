@@ -411,7 +411,6 @@ public class JsfDynamicUiPsmFactory {
         result.setDynamicUiProperty(property);
         setUIInputAttributes(result, keyPrefix, property);
         result.setDisabled(property.getDynamicUiModel().isDisabled() || property.isDisabled());
-        result.setSize(44);
         return result;
     }
 
