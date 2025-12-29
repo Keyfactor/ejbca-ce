@@ -28,11 +28,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import com.keyfactor.util.CertTools;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.jwk.JWKSet;
 import jakarta.servlet.http.Part;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
@@ -47,10 +54,8 @@ import org.cesecore.keybind.impl.AuthenticationKeyBinding;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.util.OAuthProviderUIHelper;
 import org.ejbca.util.oauth.OAuthTools;
-
-import com.keyfactor.util.CertTools;
-import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.jwk.JWKSet;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
 /**
  * This class is used to manage OAuth Keys in EJBCA's system configuration. It adds some additional
@@ -76,7 +81,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager implemen
     private SerializableSupplier<AuthenticationToken> adminTokenSupplier;
 
     public interface SerializableSupplier<T> extends Serializable, Supplier<T> {};
-    
+
     private enum OAuthKeyEditorMode {
         VIEW,
         ADD,
@@ -123,11 +128,28 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager implemen
         PublicKeyUploadInFormOf keyInTheFormOf = PublicKeyUploadInFormOf.FILE;
         String publicKeyValue;
         String publicKeyUrl;
-        
+
         // PingID-specific fields
         private String logoutUrl;
         private String tokenUrl;
         private String userInfoUrl;
+
+        // Auth0-specific fields
+        private String auth0Tenant;
+
+        public void setAuth0Tenant(final String auth0Tenant) {
+          this.auth0Tenant = auth0Tenant;
+        }
+
+        public String getAuth0Tenant() {
+            if (StringUtils.isEmpty(auth0Tenant) && !StringUtils.isEmpty(url)) {
+                final String[] parts = url.substring(8).split("/");
+                if (parts.length > 0) {
+                    setAuth0Tenant(parts[0]);
+                }
+            }
+            return auth0Tenant;
+        }
 
         public String getKeyIdentifier() {
             return keyIdentifier;
@@ -148,7 +170,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager implemen
         public void setUrl(String url) {
             this.url = url;
         }
-        
+
         public Part getPublicKeyFile() {
             return publicKeyFile;
         }
@@ -156,11 +178,11 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager implemen
         public int getSkewLimit() {
             return skewLimit;
         }
-        
+
         public String getDefaultKeyLabel() {
             return defaultKeyLabel;
         }
-        
+
         public void setKeyIdentifier(final String keyIdentifier) {
             this.keyIdentifier = keyIdentifier;
         }
@@ -183,7 +205,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager implemen
         public void setSkewLimit(final int skewLimit) {
             this.skewLimit = skewLimit;
         }
-        
+
         public void setDefaultKeyLabel(final String defaultKeyLabel) {
             this.defaultKeyLabel = defaultKeyLabel;
         }
@@ -202,8 +224,12 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager implemen
 
         public void setClient(String client) {
             this.client = client;
+            if (isTypeAuth0()) {
+                // Auth0 audience is the client ID
+                setAudience(client);
+            }
         }
-        
+
         public String getClientSecret() {
             return clientSecret;
         }
@@ -273,7 +299,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager implemen
         public boolean isTypeGeneric() {
             return OAuthProviderType.TYPE_GENERIC.getIndex() == type.getIndex();
         }
-        
+
         public boolean isTypePingId() {
             return OAuthProviderType.TYPE_PINGID.getIndex() == type.getIndex();
         }
@@ -286,10 +312,13 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager implemen
             return OAuthProviderType.TYPE_AZURE.getIndex() == type.getIndex();
         }
 
+        public boolean isTypeAuth0() {
+          return OAuthProviderType.TYPE_AUTH0.getIndex() == type.getIndex();
+      }
+
         public boolean isShowUrls() {
             return OAuthProviderType.TYPE_PINGID.getIndex() == type.getIndex() || OAuthProviderType.TYPE_GENERIC.getIndex() == type.getIndex();
         }
-
 
         public boolean isFileForm() {
             return this.keyInTheFormOf.equals(PublicKeyUploadInFormOf.FILE);
@@ -330,7 +359,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager implemen
             this.defaultKeyLabel = defaultKeyLabel;
             this.keyInTheFormOf = PublicKeyUploadInFormOf.FILE;
             this.publicKeyUrl = oauthKey.getPublicKeyUrl();
-            
+
             this.logoutUrl = oauthKey.getLogoutUrl();
             this.tokenUrl = oauthKey.getTokenUrl();
             this.userInfoUrl = oauthKey.getUserInfoUrl();
@@ -380,7 +409,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager implemen
         public String getLogoutUrl() {
             return logoutUrl;
         }
-        
+
         public void setLogoutUrl(String logoutUrl) {
             this.logoutUrl = logoutUrl;
         }
@@ -392,14 +421,14 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager implemen
         public void setTokenUrl(String tokenUrl) {
             this.tokenUrl = tokenUrl;
         }
-        
+
         public String getUserInfoUrl() {
             return userInfoUrl;
         }
 
         public void setUserInfoUrl(String userInfoUrl) {
             this.userInfoUrl = userInfoUrl;
-        }        
+        }
 
         public final String getAudience() {
             return audience;
@@ -459,7 +488,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager implemen
          * @param oauthKeys the OAuth Keys to save
          */
         public void saveOauthKeys(List<OAuthKeyInfo> oauthKeys);
-        
+
         /**
          * Saves a an OAuth Key as the default one to persistent storage.
          * @param defaultKey the OAuth Key to save as the default key
@@ -480,7 +509,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager implemen
                     keyBindings.add(Pair.of(b.getName(), b.getId()));
                 });
     }
-    
+
     public AuthenticationToken getAdminToken() {
         return adminTokenSupplier.get();
     }
@@ -498,7 +527,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager implemen
             log.debug("Received uploaded public key file: " + upload.getName());
         }
         try {
-            return IOUtils.toByteArray(upload.getInputStream(), upload.getSize());    
+            return IOUtils.toByteArray(upload.getInputStream(), upload.getSize());
         } catch (final Exception e) {
             log.info("Failed to add OAuth Key.", e);
             systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_GENERICADDERROR", e.getLocalizedMessage());
@@ -552,6 +581,74 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager implemen
         oauthKeyEditor.setKeyIdentifier(null);
         oauthKeyEditor.setPublicKeyValue(null);
         return null;
+    }
+
+    public String loadOidcSettingsForAuth0Tenant() {
+        if (StringUtils.isEmpty(oauthKeyEditor.auth0Tenant)) {
+            systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_AUTH0_NO_TENANT");
+            return StringUtils.EMPTY;
+        }
+        if (!StringUtils.endsWith(oauthKeyEditor.auth0Tenant, "auth0app.com")) {
+            if (log.isDebugEnabled()) {
+                log.debug("Only tenant name '" + oauthKeyEditor.auth0Tenant + "' specified. Appending domain 'auth0app.com'.");
+            }
+            oauthKeyEditor.auth0Tenant += ".auth0app.com";
+        }
+        final String url = String.format("https://%s/.well-known/openid-configuration", oauthKeyEditor.auth0Tenant);
+        try (final CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            try (final CloseableHttpResponse response = httpClient.execute(new HttpGet(url))) {
+                final int statusCode = response.getStatusLine().getStatusCode();
+                final String content = EntityUtils.toString(response.getEntity());
+                if (statusCode != 200) {
+                    log.error(String.format("An error occurred when loading the OIDC configuration for the Auth0 tenant '%s'. " +
+                                    "The server responded with status code %s. The response from the server was: %s",
+                            oauthKeyEditor.auth0Tenant, statusCode, content));
+                    systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_AUTH0_LOADING_FAILED",
+                            String.format("The server responded with HTTP status code %s.", statusCode));
+                    return StringUtils.EMPTY;
+                }
+                if (log.isDebugEnabled()) {
+                    log.debug("Received the following response from the server: " + content);
+                }
+                final JSONObject json = (JSONObject) new JSONParser().parse(content);
+                oauthKeyEditor.setUrl((String) json.get("authorization_endpoint"));
+                oauthKeyEditor.setTokenUrl((String) json.get("token_endpoint"));
+                oauthKeyEditor.setUserInfoUrl((String) json.get("userinfo_endpoint"));
+                oauthKeyEditor.setLogoutUrl((String) json.get("end_session_endpoint"));
+                // The information we need is sent with the access token
+                oauthKeyEditor.setFetchUserInfo(false);
+                // Returns claims that represent basic profile information, including name, family_name, given_name,
+                // middle_name, nickname, picture, and updated_at.
+                oauthKeyEditor.setScope("profile");
+                oauthKeyEditor.setPublicKeyUrl((String) json.get("jwks_uri"));
+                addOauthPublicKeyFromUrl();
+            }
+        } catch (final IOException e) {
+            log.error(String.format("An IO error occurred when loading the OIDC configuration for the Auth0 tenant from " +
+                    "the URL '%s'. Error description: %s", url, e.getMessage()));
+            log.error(e);
+            systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_AUTH0_LOADING_FAILED", e.getMessage());
+            return StringUtils.EMPTY;
+        } catch (final org.json.simple.parser.ParseException e) {
+            log.error(String.format("Unable to parse the response as JSON. The error from the JSON parser is: %s", e.getMessage()));
+            log.error(e);
+            systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_AUTH0_LOADING_FAILED", "The response from the server is not valid JSON.");
+            return StringUtils.EMPTY;
+        }
+        return null;
+    }
+
+    public String getAuth0Link() {
+        if (oauthKeyEditor.auth0Tenant == null) {
+            return "#";
+        }
+        final String[] labels = oauthKeyEditor.auth0Tenant.split("\\.");
+        if (labels.length != 4) {
+            return "#";
+        }
+        return String.format("https://manage.%s/dashboard/pi/%s/applications",
+                labels[labels.length - 3] + "." + labels[labels.length - 2] + "." + labels[labels.length - 1],
+                labels[0]);
     }
 
     private String addOauthPublicKeyFromUrl() {
@@ -830,7 +927,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager implemen
             systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_ALREADYEXISTS");
             return StringUtils.EMPTY;
         }
-        /* Check if the OAuth key being edited is also set as the default key. Also check whether the key id is being changed. 
+        /* Check if the OAuth key being edited is also set as the default key. Also check whether the key id is being changed.
          * If both are true, update the default OAuth key entry.
          */
         if (oauthKeyEditor.getDefaultKeyLabel() != null && oauthKeyEditor.getDefaultKeyLabel().equals(oauthKeyEditor.getOauthKeyBeingEdited().getLabel())
@@ -850,7 +947,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager implemen
         if (oauthKeyEditor.getClientSecret().equals(SystemConfigurationOAuthKeyManager.HIDDEN_PWD)) {
             oauthKeyEditor.setClientSecret(oauthKeyToUpdate.getClientSecretAndDecrypt());
         }
-        
+
         /* Make sure the edited provider does not have any unfilled mandatory fields */
         try {
             OAuthProviderUIHelper.validateProvider(oauthKeyEditor);
@@ -870,7 +967,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager implemen
             }
             oauthKeyToUpdate.setKeys(newOauthKeyMap);
         }
-        
+
         oauthKeyToUpdate.setUrl(oauthKeyToUpdate.fixUrl(oauthKeyEditor.getUrl()));
         oauthKeyToUpdate.setLabel(oauthKeyEditor.getLabel());
         oauthKeyToUpdate.setClient(oauthKeyEditor.getClient());
