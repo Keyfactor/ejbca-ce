@@ -79,7 +79,7 @@
 			rendered="#{scepConfigMBean.currentAlias.modeCa}" disabled="#{!scepConfigMBean.currentAliasEditMode || !scepConfigMBean.existsClientCertificateRenewalExtension}" />
 		
 		<h:outputLabel for="clientCertificateRenewalWithOldKey" value="#{web.text.SCEP_CLIENT_CERTIFICATE_RENEWAL_WITH_SAME_KEY}" rendered="#{scepConfigMBean.currentAlias.modeCa}" />
-		<h:selectBooleanCheckbox id="clientCertificateRenewalWithOldKey" value="#{scepConfigMBean.currentAlias.allowClientCertificateRenewaWithOldKey}"
+		<h:selectBooleanCheckbox id="clientCertificateRenewalWithOldKey" value="#{scepConfigMBean.currentAlias.allowClientCertificateRenewalWithOldKey}"
 			rendered="#{scepConfigMBean.currentAlias.modeCa}" disabled="#{!scepConfigMBean.currentAliasEditMode || !scepConfigMBean.existsClientCertificateRenewalExtension}" />
 		
 		<h:outputLabel for="eep" value="#{web.text.SCEP_RA_ENDENTITY_PROFILE}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
@@ -122,7 +122,8 @@
 		</h:panelGroup>
 		<h:panelGroup id="proxyCaEncryptionCertTemplateWrapper"
 					  rendered="#{scepConfigMBean.currentAlias.modeRa and scepConfigMBean.proxyCaAvailable}">
-			<h:inputText value="#{scepConfigMBean.currentAlias.proxyCaEncryptionCertTemplate}" >
+			<h:inputText value="#{scepConfigMBean.currentAlias.proxyCaEncryptionCertTemplate}"
+						 disabled="#{!scepConfigMBean.currentAliasEditMode}" >
 				<f:converter converterId="trimConverter"/>
 			</h:inputText>
 		</h:panelGroup>
@@ -133,18 +134,20 @@
 		</h:panelGroup>
 		<h:panelGroup id="proxyCaSigningCertTemplateWrapper"
 					  rendered="#{scepConfigMBean.currentAlias.modeRa and scepConfigMBean.proxyCaAvailable}">
-			<h:inputText value="#{scepConfigMBean.currentAlias.proxyCaSigningCertTemplate}" >
+			<h:inputText value="#{scepConfigMBean.currentAlias.proxyCaSigningCertTemplate}"
+						 disabled="#{!scepConfigMBean.currentAliasEditMode}" >
 				<f:converter converterId="trimConverter"/>
 			</h:inputText>
 		</h:panelGroup>
 
-		<h:panelGroup id="proxyCaCaEnrollmentTemplateLabelWrapper"
+		<h:panelGroup id="proxyCaEnrollmentTemplateLabelWrapper"
 					  rendered="#{scepConfigMBean.proxyCaAvailable}">
 			<h:outputText value="#{web.text.SCEP_PROXYCA_ENROLLMENT_TEMPLATE}" />
 		</h:panelGroup>
-		<h:panelGroup id="proxyCaCaEnrollmentTemplateWrapper"
+		<h:panelGroup id="proxyCaEnrollmentTemplateWrapper"
 					  rendered="#{scepConfigMBean.proxyCaAvailable}">
-			<h:inputText value="#{scepConfigMBean.currentAlias.proxyCaCaEnrollmentTemplate}" >
+			<h:inputText value="#{scepConfigMBean.currentAlias.proxyCaCaEnrollmentTemplate}"
+						 disabled="#{!scepConfigMBean.currentAliasEditMode}" >
 				<f:converter converterId="trimConverter"/>
 			</h:inputText>
 		</h:panelGroup>

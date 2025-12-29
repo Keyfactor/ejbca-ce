@@ -123,7 +123,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         private String raNameGenPrefix;
         private String raNameGenPostfix;
         private boolean clientCertificateRenewal;
-        private boolean allowClientCertificateRenewaWithOldKey;
+        private boolean allowClientCertificateRenewalWithOldKey;
         private boolean useIntune;
         private String intuneAuthority;
         private String intuneAadAppId;
@@ -169,7 +169,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             this.raNameGenPrefix = scepConfig.getRANameGenerationPrefix(alias);
             this.raNameGenPostfix = scepConfig.getRANameGenerationPostfix(alias);
             this.clientCertificateRenewal = scepConfig.getClientCertificateRenewal(alias);
-            this.allowClientCertificateRenewaWithOldKey = scepConfig.getAllowClientCertificateRenewalWithOldKey(alias);
+            this.allowClientCertificateRenewalWithOldKey = scepConfig.getAllowClientCertificateRenewalWithOldKey(alias);
             this.setUseIntune(scepConfig.getUseIntune(alias));
             this.intuneAadUseKeyBinding = scepConfig.getIntuneAadUseKeyBinding(alias);
             this.intuneAadAppKeyBinding = scepConfig.getIntuneAadAppKeyBinding(alias);
@@ -239,7 +239,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             this.raNameGenPrefix = ScepConfiguration.DEFAULT_RA_NAME_GENERATION_PREFIX;
             this.raNameGenPostfix = ScepConfiguration.DEFAULT_RA_NAME_GENERATION_POSTFIX;
             this.clientCertificateRenewal = Boolean.valueOf(ScepConfiguration.DEFAULT_CLIENT_CERTIFICATE_RENEWAL);
-            this.allowClientCertificateRenewaWithOldKey = Boolean
+            this.allowClientCertificateRenewalWithOldKey = Boolean
                     .valueOf(ScepConfiguration.DEFAULT_ALLOW_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY);
             this.proxyCaEncryptionCertTemplate = ScepConfiguration.DEFAULT_SCEP_PROXYCA_ENCRYPTION_CERT_TEMPLATE;
             this.proxyCaSigningCertTemplate = ScepConfiguration.DEFAULT_SCEP_PROXYCA_SIGNING_CERT_TEMPLATE;
@@ -389,12 +389,12 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             this.clientCertificateRenewal = clientCertificateRenewal;
         }
 
-        public boolean getAllowClientCertificateRenewaWithOldKey() {
-            return this.allowClientCertificateRenewaWithOldKey;
+        public boolean getAllowClientCertificateRenewalWithOldKey() {
+            return this.allowClientCertificateRenewalWithOldKey;
         }
 
-        public void setAllowClientCertificateRenewaWithOldKey(boolean allowClientCertificateRenewaWithOldKey) {
-            this.allowClientCertificateRenewaWithOldKey = allowClientCertificateRenewaWithOldKey;
+        public void setAllowClientCertificateRenewalWithOldKey(boolean allowClientCertificateRenewalWithOldKey) {
+            this.allowClientCertificateRenewalWithOldKey = allowClientCertificateRenewalWithOldKey;
         }
 
         public String getProxyCaEncryptionCertTemplate() {
@@ -965,7 +965,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                 scepConfig.setAllowClientCertificateRenewalWithOldKey(alias, false);
             } else {
                 scepConfig.setClientCertificateRenewal(alias, currentAlias.getClientCertificateRenewal());
-                scepConfig.setAllowClientCertificateRenewalWithOldKey(alias, currentAlias.getAllowClientCertificateRenewaWithOldKey());
+                scepConfig.setAllowClientCertificateRenewalWithOldKey(alias, currentAlias.getAllowClientCertificateRenewalWithOldKey());
             }
             scepConfig.setUseIntune(alias, currentAlias.isUseIntune());
             scepConfig.setIntuneAuthority(alias, currentAlias.getIntuneAuthority());
