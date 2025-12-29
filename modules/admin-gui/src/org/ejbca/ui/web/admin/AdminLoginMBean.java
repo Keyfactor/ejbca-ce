@@ -22,6 +22,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.core.UriBuilder;
 import java.io.IOException;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -54,6 +55,7 @@ import org.ejbca.util.oauth.OAuthTools;
 @Named
 @SessionScoped
 public class AdminLoginMBean extends BaseManagedBean implements Serializable {
+    @Serial
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(AdminLoginMBean.class);
     public static final String STATE_KEY = "state";
@@ -75,7 +77,8 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
     @EJB
     private InternalKeyBindingMgmtSessionLocal internalKeyBindings;
 
-    public class OAuthKeyInfoGui implements Serializable {
+    public static class OAuthKeyInfoGui implements Serializable {
+        @Serial
         private static final long serialVersionUID = 1L;
         String label;
 

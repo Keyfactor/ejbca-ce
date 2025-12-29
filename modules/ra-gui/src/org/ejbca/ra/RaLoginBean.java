@@ -23,6 +23,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.core.UriBuilder;
 import java.io.IOException;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -55,6 +56,7 @@ import org.ejbca.util.oauth.OAuthTools;
 @SessionScoped
 public class RaLoginBean implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(RaLoginBean.class);
     private GlobalConfiguration globalConfiguration;
@@ -82,7 +84,8 @@ public class RaLoginBean implements Serializable {
     private RaAuthenticationBean raAuthenticationBean;
     public void setRaAuthenticationBean(final RaAuthenticationBean raAuthenticationBean) { this.raAuthenticationBean = raAuthenticationBean; }
 
-    public class OAuthKeyInfoGui implements Serializable {
+    public static class OAuthKeyInfoGui implements Serializable {
+        @Serial
         private static final long serialVersionUID = 1L;
         String label;
 
