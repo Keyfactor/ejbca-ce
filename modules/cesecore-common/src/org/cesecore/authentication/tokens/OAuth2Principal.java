@@ -20,8 +20,10 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import com.nimbusds.jwt.JWTClaimsSet;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
+import org.apache.log4j.Logger;
 
 /**
  * OAuth2 principal that contains the JWT claim attributes.
@@ -41,20 +43,21 @@ public class OAuth2Principal implements Principal, Serializable {
     private final String name;
     private final String email;
     private final boolean emailVerified;
-    private HashSet<String> roles;
+    private final Set<String> roles;
+    private final Set<String> kfRoles;
 
-    private OAuth2Principal(int oauthProviderId, String issuer, String subject, String oid, Collection<String> audience, String preferredUsername, String name,
-            String email, final boolean emailVerified, Collection<String> roles) {
-        this.oauthProviderId = oauthProviderId;
-        this.issuer = issuer;
-        this.subject = subject;
-        this.oid = oid;
-        this.audience = audience != null ? audience : Collections.emptySet();
-        this.preferredUsername = preferredUsername;
-        this.name = name;
-        this.email = email;
-        this.emailVerified = emailVerified;
-        this.roles = new HashSet<>(roles);
+    private OAuth2Principal(final Builder builder) {
+        this.oauthProviderId = builder.oauthProviderId;
+        this.issuer = builder.issuer;
+        this.subject = builder.subject;
+        this.oid = builder.oid;
+        this.audience = builder.audience != null ? builder.audience : Collections.emptySet();
+        this.preferredUsername = builder.preferredUsername;
+        this.name = builder.name;
+        this.email = builder.email;
+        this.emailVerified = builder.emailVerified;
+        this.roles = new HashSet<>(builder.roles);
+        this.kfRoles = new HashSet<>(builder.kfRoles);
     }
 
     /**
@@ -97,7 +100,7 @@ public class OAuth2Principal implements Principal, Serializable {
 
     @Override
     public String toString() {
-        return "[OAuth2 Principal, iss:" + issuer + " sub:" + subject + " oid:" + oid + " aud:" + audience + " roles:" + roles + "]";
+        return "[OAuth2 Principal, iss:" + issuer + " sub:" + subject + " oid:" + oid + " aud:" + audience + " roles:" + roles + " kf.roles:" + kfRoles + "]";
     }
 
     @Override
@@ -105,10 +108,9 @@ public class OAuth2Principal implements Principal, Serializable {
         if (obj == this) {
             return true;
         }
-        if (!(obj instanceof OAuth2Principal)) {
+        if (!(obj instanceof OAuth2Principal other)) {
             return false;
         }
-        final OAuth2Principal other = (OAuth2Principal)obj;
         return oauthProviderId == other.oauthProviderId &&
                 Strings.CS.equals(issuer, other.issuer) &&
                 Strings.CS.equals(subject, other.subject) &&
@@ -118,12 +120,13 @@ public class OAuth2Principal implements Principal, Serializable {
                 Strings.CS.equals(name, other.name) &&
                 Strings.CS.equals(email, other.email) &&
                 emailVerified == other.emailVerified &&
-                roles.equals(other.roles);
+                roles.equals(other.roles) &&
+                kfRoles.equals(other.kfRoles);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(oauthProviderId, issuer, subject, oid, audience, preferredUsername, name, email, emailVerified, roles);
+        return Objects.hash(oauthProviderId, issuer, subject, oid, audience, preferredUsername, name, email, emailVerified, roles, kfRoles);
     }
 
     public static Builder builder() {
@@ -131,6 +134,7 @@ public class OAuth2Principal implements Principal, Serializable {
     }
 
     public static class Builder {
+        private static final Logger log = Logger.getLogger(Builder.class);
         private int oauthProviderId;
         private String issuer;
         private String subject;
@@ -140,9 +144,10 @@ public class OAuth2Principal implements Principal, Serializable {
         private String name;
         private String email;
         private boolean emailVerified;
-        private Collection<String> roles = new HashSet<>();
+        private final Collection<String> roles = new HashSet<>();
+        private final Collection<String> kfRoles = new HashSet<>();
 
-        public Builder setOauthProviderId(int oauthProviderId) {
+        public Builder setOauthProviderId(final int oauthProviderId) {
             this.oauthProviderId = oauthProviderId;
             return this;
         }
@@ -164,11 +169,11 @@ public class OAuth2Principal implements Principal, Serializable {
             this.audience = audience;
             return this;
         }
-        public Builder setPreferredUsername(String preferredUsername) {
+        public Builder setPreferredUsername(final String preferredUsername) {
             this.preferredUsername = preferredUsername;
             return this;
         }
-        public Builder setEmail(String email) {
+        public Builder setEmail(final String email) {
             this.email = email;
             return this;
         }
@@ -182,15 +187,49 @@ public class OAuth2Principal implements Principal, Serializable {
         }
 
         public OAuth2Principal build() {
-            return new OAuth2Principal(oauthProviderId, issuer, subject, oid, audience, preferredUsername, name, email, emailVerified, roles);
+            return new OAuth2Principal(this);
         }
 
-        public void addRole(String role) {
-            roles.add(role);
+        public Builder addRoles(final JWTClaimsSet claims) {
+            roles.addAll(extractClaims(claims, "roles"));
+            return this;
+        }
+
+        public Builder addKfRoles(final JWTClaimsSet claims) {
+            kfRoles.addAll(extractClaims(claims, "kf.roles"));
+            return this;
+        }
+
+        private Collection<String> extractClaims(final JWTClaimsSet claims, final String key) {
+            final Collection<String> result = new HashSet<>();
+
+            // extract claims if they exist in the JWT and are of the expected type.  All this type checking may be overly paranoid,
+            // but this is an external value used in authentication, and there's no schema for JSON
+            if (!claims.getClaims().containsKey(key)) {
+                return result;
+            }
+            final Object rolesClaimObject = claims.getClaim(key);
+            if (rolesClaimObject instanceof Collection) {
+                ((Collection<?>) rolesClaimObject).forEach(r -> {
+                    if (r instanceof String) {
+                        result.add((String) r);
+                    }
+                });
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug(String.format("unexpected type of '%s' claim: %s", key, rolesClaimObject.getClass()));
+                }
+            }
+
+            return result;
         }
     }
 
     public Set<String> getRoles() {
         return roles;
+    }
+
+    public Set<String> getKfRoles() {
+        return kfRoles;
     }
 }
