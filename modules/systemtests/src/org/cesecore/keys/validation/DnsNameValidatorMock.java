@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
+import java.util.stream.Stream;
 
 import org.cesecore.profiles.Profile;
 import org.cesecore.util.ui.DynamicUiModel;
@@ -35,9 +36,12 @@ public class DnsNameValidatorMock extends ValidatorBase implements DnsNameValida
     private static final long serialVersionUID = 1L;
 
     private static final String DOMAIN_NAMES_KEY = "domainNames";
+    private static final String VALIDATE_EMAIL_DOMAINS_KEY = "validateEmailDomains";
+    private static final String FAIL_ON_FORBIDDEN_DOMAINS_KEY = "failOnForbiddenDomains";
 
     private transient Set<String> domainNames;
-
+    private transient boolean validateEmailDomains = true;
+    private transient boolean failOnForbiddenDomains = false;
 
     public DnsNameValidatorMock() {
         super();
@@ -47,6 +51,13 @@ public class DnsNameValidatorMock extends ValidatorBase implements DnsNameValida
     public DnsNameValidatorMock(String name, String... domainNames) {
         super(name);
         setDomainNames(new HashSet<>(Arrays.asList(domainNames)));
+    }
+
+    public DnsNameValidatorMock(String name, boolean failOnForbiddenDomains, String... domainNames) {
+        super(name);
+        setDomainNames(new HashSet<>(Arrays.asList(domainNames)));
+        this.failOnForbiddenDomains = failOnForbiddenDomains;
+        saveTransientObjects();
     }
 
     @Override
@@ -77,14 +88,14 @@ public class DnsNameValidatorMock extends ValidatorBase implements DnsNameValida
     @Override
     public Entry<Boolean, List<String>> validate(final ExecutorService executorService, ValidationRequestParameters validationRequestParameters,
             final String... domainNames) {
-        //Return all domain names that overlap with those preset in this validator.
-        List<String> result = new ArrayList<>();
-        for(String domainName : domainNames) {
-            if(getDomainNames().contains(domainName)) {
-                result.add(domainName);
+        Set<String> domains = new HashSet<>();
+        Stream.of(domainNames).filter(getDomainNames()::contains).forEach(domains::add);
+        if (failOnForbiddenDomains) {
+            if(domains.size() != domainNames.length) {
+                return new AbstractMap.SimpleImmutableEntry<Boolean, List<String>>(Boolean.FALSE, new ArrayList<String>());
             }
         }
-        if(result.size() != getDomainNames().size()) {
+        if(domains.size() != getDomainNames().size()) {
             throw new IllegalStateException("Test failed, wrong set of domain names was sent in.");
         }
         return new AbstractMap.SimpleImmutableEntry<Boolean, List<String>>(Boolean.TRUE, new ArrayList<String>());
@@ -109,7 +120,8 @@ public class DnsNameValidatorMock extends ValidatorBase implements DnsNameValida
     protected void loadTransientObjects() {
         super.loadTransientObjects();
         this.domainNames =  (Set<String>) data.get(DOMAIN_NAMES_KEY);
-
+        this.validateEmailDomains = (boolean) data.getOrDefault(VALIDATE_EMAIL_DOMAINS_KEY, true);
+        this.failOnForbiddenDomains = (boolean) data.getOrDefault(FAIL_ON_FORBIDDEN_DOMAINS_KEY, false);
     }
 
     @Override
@@ -120,8 +132,9 @@ public class DnsNameValidatorMock extends ValidatorBase implements DnsNameValida
         if (getDomainNames() != null) {
             transientObjects.put(DOMAIN_NAMES_KEY, getDomainNames());
         }
-
-         data.putAll(transientObjects);
+        transientObjects.put(VALIDATE_EMAIL_DOMAINS_KEY, validateEmailDomains);
+        transientObjects.put(FAIL_ON_FORBIDDEN_DOMAINS_KEY, failOnForbiddenDomains);
+        data.putAll(transientObjects);
     }
 
     @Override
@@ -132,6 +145,16 @@ public class DnsNameValidatorMock extends ValidatorBase implements DnsNameValida
     @Override
     public boolean isValidatorAlwaysApplicable() {
         return true;
+    }
+    
+    @Override
+    public boolean validateEmailDomains() {
+        return validateEmailDomains;
+    }
+    
+    public void setValidateEmailDomains(boolean validateEmailDomains) {
+        this.validateEmailDomains = validateEmailDomains;
+        saveTransientObjects();
     }
 
 }
