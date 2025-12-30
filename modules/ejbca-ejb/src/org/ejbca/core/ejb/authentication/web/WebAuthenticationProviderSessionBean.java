@@ -438,6 +438,8 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 .setOauthProviderId(keyInfo.getInternalId())
                 .setIssuer(claims.getIssuer())
                 .setSubject(claims.getSubject())
+                .setGivenName(safeGetClaim(claims, "given_name"))
+                .setFamilyName(safeGetClaim(claims, "family_name"))
                 .setOid(safeGetClaim(claims, "oid"))
                 .setAudience(claims.getAudience())
                 .setPreferredUsername(safeGetClaim(claims, "preferred_username"))

@@ -43,8 +43,10 @@ public class OAuth2Principal implements Principal, Serializable {
     private final String name;
     private final String email;
     private final boolean emailVerified;
-    private final Set<String> roles;
-    private final Set<String> kfRoles;
+    private HashSet<String> roles;
+    private HashSet<String> kfRoles;
+    private final String givenName;
+    private final String familyName;
 
     private OAuth2Principal(final Builder builder) {
         this.oauthProviderId = builder.oauthProviderId;
@@ -58,6 +60,8 @@ public class OAuth2Principal implements Principal, Serializable {
         this.emailVerified = builder.emailVerified;
         this.roles = new HashSet<>(builder.roles);
         this.kfRoles = new HashSet<>(builder.kfRoles);
+        this.givenName = builder.givenName;
+        this.familyName = builder.familyName;
     }
 
     /**
@@ -74,6 +78,7 @@ public class OAuth2Principal implements Principal, Serializable {
     }
 
     public String getDisplayName() {
+        if (StringUtils.isNotBlank(givenName) && StringUtils.isNotBlank(familyName)) return givenName + " " + familyName;
         if (StringUtils.isNotBlank(name)) return name; // prefer display name over username
         if (StringUtils.isNotBlank(preferredUsername)) return preferredUsername;
         if (StringUtils.isNotBlank(email)) return email;
@@ -100,7 +105,14 @@ public class OAuth2Principal implements Principal, Serializable {
 
     @Override
     public String toString() {
-        return "[OAuth2 Principal, iss:" + issuer + " sub:" + subject + " oid:" + oid + " aud:" + audience + " roles:" + roles + " kf.roles:" + kfRoles + "]";
+        return "[OAuth2 Principal, iss:" + issuer +
+                " givenName:" + givenName +
+                " familyName:" + familyName +
+                " sub:" + subject +
+                " oid:" + oid +
+                " aud:" + audience +
+                " roles:" + roles +
+                " kf.roles" + kfRoles + "]";
     }
 
     @Override
@@ -121,12 +133,15 @@ public class OAuth2Principal implements Principal, Serializable {
                 Strings.CS.equals(email, other.email) &&
                 emailVerified == other.emailVerified &&
                 roles.equals(other.roles) &&
-                kfRoles.equals(other.kfRoles);
+                kfRoles.equals(other.kfRoles) &&
+                StringUtils.equals(givenName, other.givenName) &&
+                StringUtils.equals(familyName, other.familyName);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(oauthProviderId, issuer, subject, oid, audience, preferredUsername, name, email, emailVerified, roles, kfRoles);
+        return Objects.hash(oauthProviderId, issuer, subject, oid, audience, preferredUsername, name, email,
+                emailVerified, roles, kfRoles, givenName, familyName);
     }
 
     public static Builder builder() {
@@ -146,6 +161,8 @@ public class OAuth2Principal implements Principal, Serializable {
         private boolean emailVerified;
         private final Collection<String> roles = new HashSet<>();
         private final Collection<String> kfRoles = new HashSet<>();
+        private String givenName;
+        private String familyName;
 
         public Builder setOauthProviderId(final int oauthProviderId) {
             this.oauthProviderId = oauthProviderId;
@@ -183,6 +200,16 @@ public class OAuth2Principal implements Principal, Serializable {
         }
         public Builder setName(final String name) {
             this.name = name;
+            return this;
+        }
+
+        public Builder setGivenName(final String givenName) {
+            this.givenName = givenName;
+            return this;
+        }
+
+        public Builder setFamilyName(final String familyName) {
+            this.familyName = familyName;
             return this;
         }
 
