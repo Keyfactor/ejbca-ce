@@ -1858,7 +1858,6 @@ label.align-label > span.ui-outputlabel-label {
 
 .form-vertical-align {
 	table-layout: auto !important;
-	width: 100%;
 }
 
 .form-vertical-align td {
