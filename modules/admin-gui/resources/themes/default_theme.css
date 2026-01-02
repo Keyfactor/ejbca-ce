@@ -1863,7 +1863,7 @@ label.align-label > span.ui-outputlabel-label {
 
 .form-vertical-align td {
 	vertical-align: middle !important;
-	padding: .5rem .5rem !important;
+	padding: .5rem .5rem .5rem 0 !important;
 }
 
 .form-vertical-align td:first-child {
