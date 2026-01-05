@@ -982,6 +982,8 @@
 				<exclude name=".github/" />
 				<exclude name=".gitlab/" />
 				<exclude name=".gitlab-ci.yml" />
+				<exclude name=".aiassistant/" />
+				<exclude name=".junie/" />
 				<exclude name="src/ci/" />
 				<exclude name="src/package/" />
 				<exclude name="lib/coverage/**" />
