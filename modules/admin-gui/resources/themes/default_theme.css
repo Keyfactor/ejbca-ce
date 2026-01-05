@@ -387,7 +387,7 @@ table {
 table th,
 table td {
 	margin: 0px;
-	padding: 1rem 1rem;
+	padding: .5rem .5rem;
 	vertical-align: top;
 }
 table h3 {
