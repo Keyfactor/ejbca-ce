@@ -3,7 +3,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
     xmlns:f="jakarta.faces.core"
     xmlns:h="jakarta.faces.html"
-    xmlns:ui="jakarta.faces.facelets">
+    xmlns:ui="jakarta.faces.facelets"
+	xmlns:p="http://primefaces.org/ui">
 <ui:remove>
 	<!--
     /*************************************************************************
@@ -70,11 +71,11 @@
 	      			<h:outputText value="#{web.text.CMPAUTHENTICATIONMODULE_HELP}" styleClass="help"/>
 	            </h:panelGroup>
 	            <h:panelGroup id="authmodule">
-	            	<h:selectBooleanCheckbox value="#{editCmpConfigMBean.hmacSelected}" disabled="#{editCmpConfigMBean.viewOnly}">
+	            	<p:selectBooleanCheckbox value="#{editCmpConfigMBean.hmacSelected}" disabled="#{editCmpConfigMBean.viewOnly}" itemLabel="HMAC">
 						<f:ajax render="editcmpaliasform:authmodule"/>	            	
-	            	</h:selectBooleanCheckbox> 
-	            	<h:outputText value="HMAC"/>
-	            	<h:selectOneRadio id="selecthmacsecretmode" value="#{editCmpConfigMBean.hmacSecretMode}" 
+	            	</p:selectBooleanCheckbox>
+					<p:divider />
+	            	<h:selectOneRadio id="selecthmacsecretmode" value="#{editCmpConfigMBean.hmacSecretMode}"
 	            			disabled="#{!editCmpConfigMBean.hmacSelected or editCmpConfigMBean.viewOnly}"
 	            			rendered="#{editCmpConfigMBean.cmpDto.raMode}">
 	            		<f:selectItem itemLabel="#{web.text.CMPHMACCASECRET}" itemValue="shared"/>
@@ -93,12 +94,13 @@
            					redisplay="true">
 						<f:passThroughAttribute name="autocomplete" value="new-password"/>
 					</h:inputSecret>
-	            	<br/>
-	            	<h:panelGroup id="endentitycertificategroup" rendered="#{editCmpConfigMBean.responseProtection ne 'pbe'}">
-	            		<h:selectBooleanCheckbox value="#{editCmpConfigMBean.eeCertSelected}" disabled="#{editCmpConfigMBean.viewOnly}">
+					<p:divider rendered="#{editCmpConfigMBean.cmpDto.raMode and not editCmpConfigMBean.viewOnly}"/>
+
+
+					<h:panelGroup id="endentitycertificategroup" rendered="#{editCmpConfigMBean.responseProtection ne 'pbe'}">
+	            		<p:selectBooleanCheckbox value="#{editCmpConfigMBean.eeCertSelected}" disabled="#{editCmpConfigMBean.viewOnly}" itemLabel="EndEntityCertificate">
 	            			<f:ajax render=":editcmpaliasform:endentitycertificategroup"/>
-	            		</h:selectBooleanCheckbox>
-	            		<h:outputText value="EndEntityCertificate"/>
+	            		</p:selectBooleanCheckbox>
 	            		&nbsp;
 	            		<h:outputText value="#{web.text.CMPECCISSUERCA}" rendered="#{editCmpConfigMBean.cmpDto.raMode}"/>
 	            		&nbsp;
@@ -108,19 +110,18 @@
 							<f:selectItems value="#{editCmpConfigMBean.caNameSelectItems}"/>
 						</h:selectOneMenu>	            		
             		</h:panelGroup>
-	            	<br/>
-	            	<h:selectBooleanCheckbox id="regtokenpwdcheckbox" value="#{editCmpConfigMBean.regTokenPwdSelected}" 
+					<p:divider />
+
+					<p:selectBooleanCheckbox id="regtokenpwdcheckbox" value="#{editCmpConfigMBean.regTokenPwdSelected}"
 	            		rendered="#{!editCmpConfigMBean.cmpDto.raMode}"
-	            		disabled="#{editCmpConfigMBean.viewOnly}"/>
-	            	<h:outputText value="RegTokenPwd" rendered="#{!editCmpConfigMBean.cmpDto.raMode}"/>
-	            	<br/>
-	            	<h:panelGroup id="dnpartpwdsubjectdngroup">
-		            	<h:selectBooleanCheckbox id="dnpartpwdcheckbox" value="#{editCmpConfigMBean.dnPartPwdSelected}" 
+	            		disabled="#{editCmpConfigMBean.viewOnly}" itemLabel="RegTokenPwd"/>
+					<p:divider rendered="#{!editCmpConfigMBean.cmpDto.raMode}" />
+					<h:panelGroup id="dnpartpwdsubjectdngroup">
+		            	<p:selectBooleanCheckbox id="dnpartpwdcheckbox" value="#{editCmpConfigMBean.dnPartPwdSelected}"
 		            			rendered="#{!editCmpConfigMBean.cmpDto.raMode}"
-		            			disabled="#{editCmpConfigMBean.viewOnly}">
+		            			disabled="#{editCmpConfigMBean.viewOnly}" itemLabel="DnPartPwd">
 		            		<f:ajax render=":editcmpaliasform:dnpartpwdsubjectdngroup"/>
-		            	</h:selectBooleanCheckbox>
-		            	<h:outputText value="DnPartPwd" rendered="#{!editCmpConfigMBean.cmpDto.raMode}"/>
+		            	</p:selectBooleanCheckbox>
 		            	&nbsp;
 		            	<h:outputText value="#{web.text.CMPAUTHSUBJECTDNPART}" rendered="#{!editCmpConfigMBean.cmpDto.raMode}"/>
 		            	&nbsp;
@@ -180,10 +181,9 @@
     	      			<h:outputText value="#{web.text.CMPVENDORCERT_USE_HELP1}" styleClass="help"/>
     	        	</h:panelGroup>
     	        	<h:panelGroup rendered="#{web.ejbcaWebBean.runningEnterprise}">
-    		        	<h:selectBooleanCheckbox id="vendormodecheckbox" value="#{editCmpConfigMBean.cmpDto.vendorMode}" disabled="#{editCmpConfigMBean.viewOnly}">
+    		        	<p:selectBooleanCheckbox id="vendormodecheckbox" value="#{editCmpConfigMBean.cmpDto.vendorMode}" disabled="#{editCmpConfigMBean.viewOnly}" itemLabel="#{web.text.USE}">
     		            		<f:ajax render=":editcmpaliasform:vendorcas"/>
-    	            	</h:selectBooleanCheckbox>
-            		    <h:outputText value="#{web.text.USE}"/>
+    	            	</p:selectBooleanCheckbox>
                 	</h:panelGroup>
     	        	<h:panelGroup rendered="#{web.ejbcaWebBean.runningEnterprise}">
     	        		<h:outputText value="#{web.text.CMPVENDORCERT_VENDORCAS}" styleClass="titles"/>
@@ -226,8 +226,8 @@
     	      			<h:outputText value="#{web.text.CMPALLOWVERIFYPOPO_HELP}" styleClass="help"/>
     	        	</h:panelGroup>
     	        	<h:panelGroup>
-    		        	<h:selectBooleanCheckbox id="verifypopocheckbox" value="#{editCmpConfigMBean.cmpDto.allowRAVerifyPOPO}" disabled="#{editCmpConfigMBean.viewOnly}"/>
-    		        	<h:outputText value="#{web.text.ALLOW}"/>
+    		        	<p:selectBooleanCheckbox id="verifypopocheckbox" value="#{editCmpConfigMBean.cmpDto.allowRAVerifyPOPO}" disabled="#{editCmpConfigMBean.viewOnly}"
+							itemLabel="#{web.text.ALLOW}"/>
     	        	</h:panelGroup>
     	        	<h:panelGroup>
     	        		<h:outputText value="#{web.text.CMPRANAMEGENERATIONSCHEME}" styleClass="titles"/>
@@ -250,6 +250,7 @@
     	        			<f:ajax render="editcmpaliasform:namegenerationscheme"/>
     	        		</h:selectOneRadio>
     	        		<h:inputText id="ranamegeninputfield" value="#{editCmpConfigMBean.cmpDto.raNameGenParams}" rendered="#{editCmpConfigMBean.cmpDto.raNameGenScheme eq 'FIXED'}" disabled="#{editCmpConfigMBean.viewOnly}"/>
+						<br />
     	        		<h:panelGroup id="ranameschemednpart" rendered="#{editCmpConfigMBean.cmpDto.raNameGenScheme eq 'DN'}">
     	            		<h:selectOneMenu id="ranameschemednpartselectmenu" value="#{editCmpConfigMBean.selectedRaNameSchemeDnPart}" disabled="#{editCmpConfigMBean.viewOnly}">
     	                    	<f:selectItems value="#{editCmpConfigMBean.dnFieldSelectItems}"/>
@@ -264,7 +265,7 @@
     		            		<f:ajax render="editcmpaliasform:namegenerationscheme" disabled="#{editCmpConfigMBean.viewOnly}"/>
     		            	</h:commandButton>
     	            	</h:panelGroup>
-    	            	<br/>
+    	            	<br /><br />
     	            	<h:outputText id="selectedranameschemednparts" value="#{editCmpConfigMBean.cmpDto.raNameGenParams}" rendered="#{editCmpConfigMBean.cmpDto.raNameGenScheme eq 'DN'}"/>
     	        	</h:panelGroup>
     	        	<h:panelGroup>
@@ -293,8 +294,8 @@
     	      			<h:outputText value="#{web.text.CMPRAALLOWCUSTOMSERNO_HELP1}" styleClass="help"/>
     	        	</h:panelGroup>
     	        	<h:panelGroup>
-    		        	<h:selectBooleanCheckbox id="allowcustomcertserialcheckbox" value="#{editCmpConfigMBean.cmpDto.allowRACustomSerno}" disabled="#{editCmpConfigMBean.viewOnly}"/>
-    		        	<h:outputText value="#{web.text.ALLOW}"/>
+    		        	<p:selectBooleanCheckbox id="allowcustomcertserialcheckbox" value="#{editCmpConfigMBean.cmpDto.allowRACustomSerno}" disabled="#{editCmpConfigMBean.viewOnly}"
+							itemLabel="#{web.text.ALLOW}"/>
     	        	</h:panelGroup>
     	        	<h:panelGroup>
     	        		<h:outputText value="#{web.text.CMPRAEEPROFILE}" styleClass="titles"/>
@@ -371,8 +372,8 @@
             		</h:commandButton>
             		<br/>
             		<br/>
-            		<h:selectBooleanCheckbox id="cmpIssuerCaChainAtIndex0checkbox" value="#{editCmpConfigMBean.cmpDto.responseCaPubsIssuingCA}" disabled="#{editCmpConfigMBean.viewOnly}" />
-            		    <h:outputText value="#{web.text.USE}"/>
+            		<p:selectBooleanCheckbox id="cmpIssuerCaChainAtIndex0checkbox" value="#{editCmpConfigMBean.cmpDto.responseCaPubsIssuingCA}" disabled="#{editCmpConfigMBean.viewOnly}"
+						itemLabel="#{web.text.USE}"/>
             		<br/>
             		<h:outputText value="#{editCmpConfigMBean.selectedCmpResponseAdditionalCaCertList}"/>
       			</h:panelGroup>
@@ -436,8 +437,7 @@
 	      			<h:outputText value="#{web.text.CMPALLOWAUTOMATICKEYUPDATE_HELP}" styleClass="help"/>
       			</h:panelGroup>
       			<h:panelGroup>
-	      			<h:selectBooleanCheckbox value="#{editCmpConfigMBean.cmpDto.kurAllowAutomaticUpdate}" disabled="#{editCmpConfigMBean.viewOnly}"/>
-	   				<h:outputText value="#{web.text.ALLOW}"/>
+	      			<p:selectBooleanCheckbox value="#{editCmpConfigMBean.cmpDto.kurAllowAutomaticUpdate}" disabled="#{editCmpConfigMBean.viewOnly}" itemLabel="#{web.text.ALLOW}"/>
    				</h:panelGroup>
    				<h:panelGroup>
 	        		<h:outputText value="#{web.text.CMPALLOWKURWITHSAMEKEY}" styleClass="titles"/>
@@ -446,8 +446,7 @@
 	      			<h:outputText value="#{web.text.CMPALLOWKURWITHSAMEKEY_HELP}" styleClass="help"/>
       			</h:panelGroup>
       			<h:panelGroup>
-	      			<h:selectBooleanCheckbox value="#{editCmpConfigMBean.cmpDto.kurAllowSameKey}" disabled="#{editCmpConfigMBean.viewOnly}"/>
-	     			<h:outputText value="#{web.text.ALLOW}"/>
+	      			<p:selectBooleanCheckbox value="#{editCmpConfigMBean.cmpDto.kurAllowSameKey}" disabled="#{editCmpConfigMBean.viewOnly}" itemLabel="#{web.text.ALLOW}"/>
      			</h:panelGroup>
          	</h:panelGrid>
          	
@@ -465,8 +464,7 @@
 	      			<h:outputText value="#{web.text.CMPALLOWSERVERGENERATEDKEYS_HELP}" styleClass="help"/>
       			</h:panelGroup>
       			<h:panelGroup>
-	      			<h:selectBooleanCheckbox value="#{editCmpConfigMBean.cmpDto.allowServerGeneratedKeys}" disabled="#{editCmpConfigMBean.viewOnly}"/>
-	   				<h:outputText value="#{web.text.ALLOW}"/>
+	      			<p:selectBooleanCheckbox value="#{editCmpConfigMBean.cmpDto.allowServerGeneratedKeys}" disabled="#{editCmpConfigMBean.viewOnly}" itemLabel="#{web.text.ALLOW}"/>
    				</h:panelGroup>
 			</h:panelGrid>
    			
@@ -494,8 +492,7 @@
 	      			<h:outputText value="#{web.text.CMPOMITVERIFICATIONSINECC_HELP2}" styleClass="help"/>
       			</h:panelGroup>
       			<h:panelGroup rendered="#{editCmpConfigMBean.cmpDto.raMode}">
-	      			<h:selectBooleanCheckbox value="#{editCmpConfigMBean.cmpDto.omitVerificationsInEEC}" disabled="#{editCmpConfigMBean.viewOnly}"/>
-	     			<h:outputText value="#{web.text.ALLOW}"/>
+	      			<p:selectBooleanCheckbox value="#{editCmpConfigMBean.cmpDto.omitVerificationsInEEC}" disabled="#{editCmpConfigMBean.viewOnly}" itemLabel="#{web.text.ALLOW}"/>
       			</h:panelGroup>
    			</h:panelGrid>
 
@@ -514,8 +511,7 @@
                     <h:outputText value="#{web.text.CMPEXTENDEDVALIDATION_HELP}" styleClass="help"/>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <h:selectBooleanCheckbox value="#{editCmpConfigMBean.cmpDto.useExtendedValidation}" disabled="#{editCmpConfigMBean.viewOnly}"/>
-                    <h:outputText value="#{web.text.USE}"/>
+                    <p:selectBooleanCheckbox value="#{editCmpConfigMBean.cmpDto.useExtendedValidation}" disabled="#{editCmpConfigMBean.viewOnly}" itemLabel="#{web.text.USE}"/>
                 </h:panelGroup>
             </h:panelGrid>
 
