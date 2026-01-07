@@ -113,7 +113,7 @@ public class CertificateValidity {
             // Second Priority has the information supplied in the method arguments
             firstDate = getExtendedInformationStartTime(now, subject);
             if (firstDate == null) {
-            	firstDate = notBefore;
+            	firstDate = (notBefore != null ? notBefore : now);
             }
             if ((lastDate = getExtendedInformationEndTime(now, subject)) == null) {
             	lastDate = notAfter;
@@ -124,6 +124,9 @@ public class CertificateValidity {
             }
             Date initialCertProfileLastDate = new Date(getCertificateProfileValidtyEndDate(caInfo, certProfile));
             // Limit validity: We do not allow a certificate to be valid after the validity of the certificate profile
+            if(lastDate == null) {
+                lastDate = initialCertProfileLastDate;
+            }
             if (lastDate.after(initialCertProfileLastDate)) {
                 log.info("notAfter from request (" + lastDate + ") for user '" + subject.getUsername() + "' is longer than maximum specified in certificate profile (" + initialCertProfileLastDate  + "), not allowed, using notAfter from certificate profile.");
                 lastDate = initialCertProfileLastDate;
