@@ -109,8 +109,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
                     log.debug("Reading Configuration: " + configID);
                 }
                 final GlobalConfigurationData globalConfigurationData = shouldLockConfigWrites ?
-                        findByConfigurationId(configID, LockModeType.PESSIMISTIC_WRITE,
-                                Map.of("jakarta.persistence.lock.timeout", 0)) :
+                        findByConfigurationId(configID, LockModeType.PESSIMISTIC_WRITE, Map.of()) :
                         findByConfigurationId(configID);
                 if (globalConfigurationData == null) {
                     if (log.isDebugEnabled()) {

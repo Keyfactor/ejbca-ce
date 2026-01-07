@@ -46,12 +46,11 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 import javax.xml.namespace.QName;
-import jakarta.xml.ws.BindingProvider;
-import jakarta.xml.ws.handler.MessageContext;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyStoreTools;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import com.nimbusds.jose.util.Base64URL;
@@ -97,6 +96,9 @@ import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+
+import jakarta.xml.ws.BindingProvider;
+import jakarta.xml.ws.handler.MessageContext;
 
 import static org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols.RA_WEB;
 import static org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols.REST_CERTIFICATE_MANAGEMENT;
@@ -370,7 +372,7 @@ public class OAuthSystemTest {
             ejbcaWSPort.getAvailableCAs();
         });
         assertEquals("Incorrect exception was thrown.", AuthorizationDeniedException_Exception.class, throwable.getClass());
-        assertEquals("Incorrect error message in exception.", "Authentication failed using OAuth Bearer Token.", throwable.getMessage());  
+        assertEquals("Incorrect error message in exception.", "Authentication failed using OAuth Bearer Token.", throwable.getMessage());
     }
 
     @Test
@@ -435,7 +437,7 @@ public class OAuthSystemTest {
         // we need to set properties for web service tests.
         File trustKeyStoreFile = folder.newFile(OAUTH_KEY + ".jks");
         try (FileOutputStream fileOutputStream = new FileOutputStream(trustKeyStoreFile)) {
-            trustKeyStore.store(fileOutputStream, PASSWORD.toCharArray());
+            KeyStoreTools.storeKeyStore(trustKeyStore, fileOutputStream, PASSWORD.toCharArray());
         }
         System.setProperty("javax.net.ssl.trustStore", trustKeyStoreFile.getAbsolutePath());
         System.setProperty("javax.net.ssl.trustStorePassword", PASSWORD);

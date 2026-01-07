@@ -611,12 +611,16 @@ public final class ConfigurationHolder {
          * after a period. If this trigger is already started, this invocation has
          * no effect.
          */
-        public synchronized void start()  {
+
+        public synchronized void start() {
             if (!isRunning()) {
-                triggerTask = getExecutorService().scheduleAtFixedRate(createTriggerTaskCommand(), period, period, timeUnit);
+                triggerTask =
+                        getExecutorService().scheduleAtFixedRate(
+                                createTriggerTaskCommand(), period, period,
+                                timeUnit);
             }
         }
-
+        
         /**
          * Returns a flag whether this trigger is currently active.
          *
@@ -625,7 +629,7 @@ public final class ConfigurationHolder {
         public synchronized boolean isRunning() {
             return triggerTask != null;
         }
-        
+
         /**
          * Returns the {@code ScheduledExecutorService} used by this object.
          *
@@ -675,7 +679,10 @@ public final class ConfigurationHolder {
          * @return the default executor service
          */
         private static ScheduledExecutorService createDefaultExecutorService() {
-            final ThreadFactory factory = BasicThreadFactory.builder().namingPattern("ReloadingTrigger-%s").daemon(true).build();
+            final ThreadFactory factory =
+                    BasicThreadFactory.builder()
+                            .namingPattern("ReloadingTrigger-%s").daemon(true)
+                            .build();
             return Executors.newScheduledThreadPool(2, factory);
         }
     }

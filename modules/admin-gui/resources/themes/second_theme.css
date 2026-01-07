@@ -1460,6 +1460,18 @@ a.button:active {
 	margin-right: 0.5rem;
 }
 
+.ui-datatable table td a, .ui-panelgrid-cell a {
+	color: #000000;
+}
+
+.ui-datatable table td a:hover, .ui-panelgrid-cell a:hover{
+	text-decoration: underline;
+}
+
+.no-header thead {
+	display: none;
+}
+
 /* Remove cell focus borders */
 .ui-datatable-data td[role="gridcell"]:focus {
     outline: none;

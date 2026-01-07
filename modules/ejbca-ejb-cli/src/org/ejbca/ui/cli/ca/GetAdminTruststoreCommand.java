@@ -25,6 +25,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.keys.KeyStoreTools;
+
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -41,15 +44,13 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
-import com.keyfactor.util.CertTools;
-
 public class GetAdminTruststoreCommand extends BaseCaAdminCommand {
     private static final Logger log = Logger.getLogger(GetAdminTruststoreCommand.class);
 
     private static final String FORMAT_KEY = "--format";
     private static final String TRUSTSTORE_KEY = "--truststore";
     private static final String PASSWORD_KEY = "--password";
-    
+
     {
         registerParameter(new Parameter(FORMAT_KEY, "Format", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Truststore format [PEM (default), JKS, PKCS12]."));
@@ -58,7 +59,7 @@ public class GetAdminTruststoreCommand extends BaseCaAdminCommand {
         registerParameter(new Parameter(TRUSTSTORE_KEY, "Truststore", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Path to where the truststore file is written."));
     }
-    
+
     @Override
     public String getMainCommand() {
         return "createtruststore";
@@ -85,9 +86,9 @@ public class GetAdminTruststoreCommand extends BaseCaAdminCommand {
             password = "changeit";
         }
         final String truststore = parameters.get(TRUSTSTORE_KEY);
-        
+
         final Set<X509Certificate> certs = new LinkedHashSet<>();
-        
+
         final List<RoleDataDto> roles = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).getAuthorizedRoles(getAuthenticationToken());
         final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
         for (final RoleDataDto role : roles) {
@@ -109,7 +110,7 @@ public class GetAdminTruststoreCommand extends BaseCaAdminCommand {
                 getLogger().info("Unable to access certificate for role:" + role.name());
             }
         }
-        
+
         if (format.equals("PEM")) {
             try (FileOutputStream truststoreStream = new FileOutputStream(truststore)) {
                 for (final X509Certificate certificate : certs) {
@@ -128,7 +129,7 @@ public class GetAdminTruststoreCommand extends BaseCaAdminCommand {
                     keystore.setCertificateEntry(CertTools.getSHA256FingerprintAsString(certificate.getEncoded()), certificate);
                 }
                 try (FileOutputStream truststoreStream = new FileOutputStream(truststore)) {
-                    keystore.store(truststoreStream, password.toCharArray());
+                    KeyStoreTools.storeKeyStore(keystore, truststoreStream, password.toCharArray());
                 }
                 getLogger().info(truststore + " created.");
             } catch (NoSuchAlgorithmException | CertificateException | IOException | KeyStoreException e) {
