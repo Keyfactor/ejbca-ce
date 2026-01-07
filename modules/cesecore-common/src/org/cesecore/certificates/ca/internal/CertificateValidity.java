@@ -122,6 +122,19 @@ public class CertificateValidity {
                 log.debug("Allow validity override, notBefore: "+firstDate);
                 log.debug("Allow validity override, notAfter: "+lastDate);
             }
+            Date initialCertProfileLastDate = new Date(getCertificateProfileValidtyEndDate(caInfo, certProfile));
+            // Limit validity: We do not allow a certificate to be valid after the validity of the certificate profile
+            if (lastDate.after(initialCertProfileLastDate)) {
+                log.info("notAfter from request (" + lastDate + ") for user '" + subject.getUsername() + "' is longer than maximum specified in certificate profile (" + initialCertProfileLastDate  + "), not allowed, using notAfter from certificate profile.");
+                lastDate = initialCertProfileLastDate;
+
+                // Combination of Validity Override and firstDate in past beyond Encoded Validity might result in a certificateProfileLastDate and create an already expired certificate.
+                if (lastDate.before(now) && subject.getStatus() != EndEntityConstants.STATUS_REVOKED && !isLinkCertificate) {
+                    final String msg = "Provided notBefore date (" + firstDate  + ") is outside the allowed validity period and would result in an already expired certificate";
+                    log.info(msg);
+                    throw new IllegalValidityException(msg);
+                }
+            }
         }
         // Third priority: If nothing could be set by external information have the default  3 is default values
         if (firstDate == null) {
@@ -189,19 +202,7 @@ public class CertificateValidity {
     		// Update lastDate if we use maximum validity
     	}
 
-		// Limit validity: We do not allow a certificate to be valid after the validity of the certificate profile
-    	if (lastDate.after(certProfileLastDate)) {
-    		log.info("notAfter from request (" + lastDate + ") for user '" + subject.getUsername() + "' is longer than maximum specified in certificate profile (" + certProfileLastDate  + "), not allowed, using notAfter from certificate profile.");
-    		lastDate = certProfileLastDate;
-
-            // Combination of Validity Override and firstDate in past beyond Encoded Validity might result in
-            // a certificateProfileLastDate and create an already expired certificate.
-            if (lastDate.before(now) && subject.getStatus() != EndEntityConstants.STATUS_REVOKED && !isLinkCertificate) {
-                final String msg = "Provided notBefore date (" + firstDate  + ") is outside the allowed validity period and would result in an already expired certificate";
-                log.info(msg);
-                throw new IllegalValidityException(msg);
-            }
-    	}
+		
 
 		// Limit validity: We do not allow a certificate to be valid after the validity of the CA (unless it's RootCA during renewal)
     	if (cacert != null && !isRootCA) {
