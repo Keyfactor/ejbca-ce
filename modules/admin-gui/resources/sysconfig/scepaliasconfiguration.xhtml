@@ -124,9 +124,12 @@
 		<h:panelGroup id="proxyCaEncryptionCertTemplateWrapper"
 					  rendered="#{scepConfigMBean.currentAlias.modeRa and scepConfigMBean.proxyCaAvailable}">
 			<h:inputText value="#{scepConfigMBean.currentAlias.proxyCaEncryptionCertTemplate}"
-						 disabled="#{!scepConfigMBean.currentAliasEditMode}" >
+						 rendered="#{scepConfigMBean.currentAliasEditMode}"
+						 disabled="true">
 				<f:converter converterId="trimConverter"/>
 			</h:inputText>
+			<h:outputText value="#{scepConfigMBean.currentAlias.proxyCaEncryptionCertTemplate}"
+						  rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
 
 		<h:panelGroup id="proxyCaSigningCertTemplateLabelWrapper"
@@ -136,21 +139,27 @@
 		<h:panelGroup id="proxyCaSigningCertTemplateWrapper"
 					  rendered="#{scepConfigMBean.currentAlias.modeRa and scepConfigMBean.proxyCaAvailable}">
 			<h:inputText value="#{scepConfigMBean.currentAlias.proxyCaSigningCertTemplate}"
-						 disabled="#{!scepConfigMBean.currentAliasEditMode}" >
+						 rendered="#{scepConfigMBean.currentAliasEditMode}"
+						 disabled="true" >
 				<f:converter converterId="trimConverter"/>
 			</h:inputText>
+			<h:outputText value="#{scepConfigMBean.currentAlias.proxyCaSigningCertTemplate}"
+						  rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
 
 		<h:panelGroup id="proxyCaEnrollmentTemplateLabelWrapper"
-					  rendered="#{scepConfigMBean.proxyCaAvailable}">
+					  rendered="#{scepConfigMBean.currentAlias.modeRa and scepConfigMBean.proxyCaAvailable}">
 			<h:outputText value="#{web.text.SCEP_PROXYCA_ENROLLMENT_TEMPLATE}" />
 		</h:panelGroup>
 		<h:panelGroup id="proxyCaEnrollmentTemplateWrapper"
-					  rendered="#{scepConfigMBean.proxyCaAvailable}">
+					  rendered="#{scepConfigMBean.currentAlias.modeRa and scepConfigMBean.proxyCaAvailable}">
 			<h:inputText value="#{scepConfigMBean.currentAlias.proxyCaCaEnrollmentTemplate}"
-						 disabled="#{!scepConfigMBean.currentAliasEditMode}" styleClass="ui-md-12">
+						 rendered="#{scepConfigMBean.currentAliasEditMode}"
+						 disabled="true" styleClass="ui-md-12">
 				<f:converter converterId="trimConverter"/>
 			</h:inputText>
+			<h:outputText value="#{scepConfigMBean.currentAlias.proxyCaCaEnrollmentTemplate}"
+						  rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
 		<!--		-->
 
