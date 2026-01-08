@@ -86,6 +86,9 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public static final String SCEP_RA_NAME_GENERATION_POSTFIX = "ra.namegenerationpostfix";
     public static final String SCEP_CLIENT_CERTIFICATE_RENEWAL = "clientCertificateRenewal";
     public static final String SCEP_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY = "clientCertificateRenewalWithOldKey";
+    public static final String SCEP_PROXYCA_ENCRYPTION_CERT_TEMPLATE = "proxyCaEncryptionCert";
+    public static final String SCEP_PROXYCA_SIGNING_CERT_TEMPLATE = "proxyCaSigningCert";
+    public static final String SCEP_PROXYCA_ENROLLMENT_TEMPLATE = "proxyCaEnrollmentTemplate";
 
     //Intune configuration values
     public static final String SCEP_USE_INTUNE = "useIntune";
@@ -121,7 +124,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     private final String ALIAS_LIST = "aliaslist";
 
     // Default Values
-    public static final float LATEST_VERSION = 8f;
+    public static final float LATEST_VERSION = 9f;
     public static final String EJBCA_VERSION = InternalConfiguration.getAppVersion();
 
     public static final Set<String> DEFAULT_ALIAS_LIST = new LinkedHashSet<String>();
@@ -142,6 +145,9 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public static final String DEFAULT_RETURN_CA_CHAIN_IN_GETCACERT = Boolean.TRUE.toString();
     public static final String DEFAULT_AAD_USE_KEYBINDING = Boolean.FALSE.toString();
     public static final String DEFAULT_SIGNING_ALGORITHM = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
+    public static final String DEFAULT_SCEP_PROXYCA_ENCRYPTION_CERT_TEMPLATE = "";
+    public static final String DEFAULT_SCEP_PROXYCA_SIGNING_CERT_TEMPLATE = "";
+    public static final String DEFAULT_SCEP_PROXYCA_ENROLLMENT_TEMPLATE = "";
 
     /**
      * Creates a new instance of ScepConfiguration
@@ -176,6 +182,9 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         data.put(alias + SCEP_RA_NAME_GENERATION_POSTFIX, DEFAULT_RA_NAME_GENERATION_POSTFIX);
         data.put(alias + SCEP_CLIENT_CERTIFICATE_RENEWAL, DEFAULT_CLIENT_CERTIFICATE_RENEWAL);
         data.put(alias + SCEP_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY, DEFAULT_ALLOW_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY);
+        data.put(alias + SCEP_PROXYCA_ENCRYPTION_CERT_TEMPLATE, DEFAULT_SCEP_PROXYCA_ENCRYPTION_CERT_TEMPLATE);
+        data.put(alias + SCEP_PROXYCA_SIGNING_CERT_TEMPLATE, DEFAULT_SCEP_PROXYCA_SIGNING_CERT_TEMPLATE);
+        data.put(alias + SCEP_PROXYCA_ENROLLMENT_TEMPLATE, DEFAULT_SCEP_PROXYCA_ENROLLMENT_TEMPLATE);
 
         data.put(alias + SCEP_USE_INTUNE, Boolean.FALSE.toString());
         data.put(alias + AUTH_AUTHORITY, "");
@@ -219,6 +228,9 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         keys.add(alias + SCEP_RA_NAME_GENERATION_POSTFIX);
         keys.add(alias + SCEP_CLIENT_CERTIFICATE_RENEWAL);
         keys.add(alias + SCEP_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY);
+        keys.add(alias + SCEP_PROXYCA_ENCRYPTION_CERT_TEMPLATE);
+        keys.add(alias + SCEP_PROXYCA_SIGNING_CERT_TEMPLATE);
+        keys.add(alias + SCEP_PROXYCA_ENROLLMENT_TEMPLATE);
 
         keys.add(alias + SCEP_USE_INTUNE);
         keys.add(alias + AUTH_AUTHORITY);
@@ -596,6 +608,38 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         return getDecryptedValue(getValue(key, alias));
     }
 
+    /// Templates for Proxy CA fields
+    public String getProxyCaEncryptionCertTemplate(final String alias) {
+        String key = alias + "." + SCEP_PROXYCA_ENCRYPTION_CERT_TEMPLATE;
+        return getValue(key, alias);
+    }
+
+    public void setProxyCaEncryptionCertTemplate(final String alias, final String value) {
+        String key = alias + "." + SCEP_PROXYCA_ENCRYPTION_CERT_TEMPLATE;
+        setValue(key, value, alias);
+    }
+
+    public String getProxyCaSigningCertTemplate(final String alias) {
+        String key = alias + "." + SCEP_PROXYCA_SIGNING_CERT_TEMPLATE;
+        return getValue(key, alias);
+    }
+
+    public void setProxyCaSigningCertTemplate(final String alias, final String value) {
+        String key = alias + "." + SCEP_PROXYCA_SIGNING_CERT_TEMPLATE;
+        setValue(key, value, alias);
+    }
+
+    public String getProxyCaEnrollmentTemplate(final String alias) {
+        String key = alias + "." + SCEP_PROXYCA_ENROLLMENT_TEMPLATE;
+        return getValue(key, alias);
+    }
+
+    public void setProxyCaEnrollmentTemplate(final String alias, final String value) {
+        String key = alias + "." + SCEP_PROXYCA_ENROLLMENT_TEMPLATE;
+        setValue(key, value, alias);
+    }
+    ///
+
     public Properties getIntuneProperties(final String alias) {
         Properties intuneProperties = new Properties();
         intuneProperties.put("PROVIDER_NAME_AND_VERSION", GlobalConfiguration.EJBCA_VERSION);
@@ -953,6 +997,16 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
                 }
                 if (data.get(alias + SIGNING_CERTIFICATE) == null) {
                     data.put(alias + SIGNING_CERTIFICATE, "");
+                }
+                /// Proxy CA
+                if (data.get(alias + SCEP_PROXYCA_ENCRYPTION_CERT_TEMPLATE) == null) {
+                    data.put(alias + SCEP_PROXYCA_ENCRYPTION_CERT_TEMPLATE, "");
+                }
+                if (data.get(alias + SCEP_PROXYCA_SIGNING_CERT_TEMPLATE) == null) {
+                    data.put(alias + SCEP_PROXYCA_SIGNING_CERT_TEMPLATE, "");
+                }
+                if (data.get(alias + SCEP_PROXYCA_ENROLLMENT_TEMPLATE) == null) {
+                    data.put(alias + SCEP_PROXYCA_ENROLLMENT_TEMPLATE, "");
                 }
             }
             data.put(VERSION, Float.valueOf(LATEST_VERSION));
