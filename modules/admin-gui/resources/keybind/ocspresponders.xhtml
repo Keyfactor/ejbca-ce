@@ -259,6 +259,20 @@
                     <h:outputLabel value="#{web.text.INTERNALKEYBINDING_REQUEST_SIGNER_REVOCATION_CHECK_CACHE_TIME_HELP}" styleClass="smallHelp"/>
                   </h:panelGroup>
                   
+                   <!-- Signer Expiration Warning Time -->
+                  <h:panelGroup>
+                     <h:outputText value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_SIGNING_CERTIFICATE_WARNING}"/>
+                  </h:panelGroup>
+                  <h:panelGroup>
+                    <h:inputText disabled="#{not ocspResponderMBean.allowedToEdit}" value="#{ocspResponderMBean.warningBeforeExpiryTime}"
+                        styleClass="ui-md-11" id="warningBeforeExpiryTime">
+                            <f:converter converterId="jakarta.faces.Long"/>
+                    </h:inputText>
+                  </h:panelGroup>
+                  <h:panelGroup>
+                    <h:outputLabel value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_SIGNING_CERTIFICATE_WARNING_HELP}" styleClass="smallHelp"/>
+                  </h:panelGroup>
+                  
 	              <!-- Enable cache for unknown status -->
 	              <h:outputText value="#{web.text.INTERNALKEYBINDING_ENABLE_CACHE_FOR_UNAUTHORIZED_RESPONSES}"/>
 	              <p:selectBooleanCheckbox id="globallyEnableOcspBrowserCacheUnknownStatus"
