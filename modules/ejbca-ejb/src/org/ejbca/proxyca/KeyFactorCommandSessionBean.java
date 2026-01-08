@@ -56,23 +56,10 @@ public class KeyFactorCommandSessionBean implements KeyFactorCommandSessionRemot
 
     private record RestResponse(int httpStatus, String body) {
 
-        public boolean isSuccess() {
-            return httpStatus == HttpStatus.SC_OK;
-        }
-
         public void verifySuccess(final String message) throws IOException {
-            if (!isSuccess()) {
+            if (httpStatus != HttpStatus.SC_OK) {
                 throw new IOException(message + ": (" + httpStatus + ") " + body);
             }
-        }
-
-        public void verifyStatus(final String message, int... acceptedCodes) throws IOException {
-            for (int acceptedCode : acceptedCodes) {
-                if (httpStatus == acceptedCode) {
-                    return;
-                }
-            }
-            throw new IOException(message + ": (" + httpStatus + ") " + body);
         }
 
     }
@@ -177,14 +164,8 @@ public class KeyFactorCommandSessionBean implements KeyFactorCommandSessionRemot
 
     private String sendTokenRequest(final String url, final String formData) throws IOException {
         final var restResponse = doSendRequest("POST", url, "application/x-www-form-urlencoded", formData, null);
-        if (restResponse.isSuccess()) {
-            return restResponse.body();
-        }
-        else {
-            final String message = "Failed to request a new Token. "+restResponse.body();
-            log.info(message);
-            throw new IOException(message);
-        }
+        restResponse.verifySuccess("Failed to request a new Token.");
+        return restResponse.body();
     }
 
     private Token getNewToken(final OAuthKeyInfo oAuthKeyInfo) throws Exception {
@@ -242,7 +223,7 @@ public class KeyFactorCommandSessionBean implements KeyFactorCommandSessionRemot
     @Override
     public Map<Integer, X509Certificate> getCertificates(final String oAuthProvider) throws Exception {
         final var restResponse = sendApiRequest(oAuthProvider, "/Certificates");
-        restResponse.verifySuccess("Failed to get certificates from KeyFactor Command");
+        restResponse.verifySuccess("Failed to get certificates from KeyFactor Command.");
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> maps = new ObjectMapper().readValue(restResponse.body, List.class);
         final var certificates = new HashMap<Integer, X509Certificate>();
@@ -260,7 +241,7 @@ public class KeyFactorCommandSessionBean implements KeyFactorCommandSessionRemot
         if (restResponse.httpStatus() == HttpStatus.SC_NOT_FOUND) {
             return null;
         }
-        restResponse.verifySuccess("Failed to get certificate with id=" + id + " from KeyFactor Command");
+        restResponse.verifySuccess("Failed to get certificate with id=" + id + " from KeyFactor Command.");
         final String contentBytes = (new ObjectMapper().readValue(restResponse.body, Map.class).get("ContentBytes")).toString();
         final String pem = getPem(contentBytes);
         final var certificates = getCertificateListFromPem(pem);
