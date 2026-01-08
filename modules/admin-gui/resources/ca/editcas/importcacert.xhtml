@@ -188,12 +188,14 @@
 					</h:panelGroup>
 
 					<h:panelGroup>
-						<h:commandButton 
-							id="buttonrecievefile" 
-							onclick="return checkFileRecieve('recievefile:filerecievefile', '#{web.text.YOUMUSTSELECT}');"
-							value="#{web.text.IMPORTCA_CERTIFICATE}" action="#{importCaCertMBean.importCaCertificate()}"/>
-						<h:button id="buttoncancel"
-							value="#{web.text.CANCEL}" outcome="managecas.xhtml?faces-redirect=true"/>
+						<div class="action-buttons">
+							<h:commandButton
+								id="buttonrecievefile"
+								onclick="return checkFileRecieve('recievefile:filerecievefile', '#{web.text.YOUMUSTSELECT}');"
+								value="#{web.text.IMPORTCA_CERTIFICATE}" action="#{importCaCertMBean.importCaCertificate()}"/>
+							<h:button id="buttoncancel"
+								value="#{web.text.CANCEL}" outcome="managecas.xhtml?faces-redirect=true"/>
+						</div>
 					</h:panelGroup>
 					
 				</h:panelGrid>
