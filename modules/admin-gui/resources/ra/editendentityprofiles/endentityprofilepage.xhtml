@@ -457,7 +457,8 @@
             </h:panelGrid>
             <h:dataTable id="subjectDnComponents" var="dnComponent"
                 value="#{endEntityProfileMBean.subjectDnComponentList}"
-                cellspacing="1" cellpadding="3" border="0" width="100%"
+                styleClass="edit-top"
+                width="100%"
                 rendered="#{!endEntityProfileMBean.sshProfile}"
                 rowClasses="Row0,Row1"
                 columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3">
@@ -479,11 +480,12 @@
                             value="#{dnComponent.value}" size="45"
                             maxlength="1024"
                             rendered="#{not dnComponent.emailField}"
-                            disabled="#{endEntityProfileMBean.viewOnly}">
+                            disabled="#{endEntityProfileMBean.viewOnly}"
+                            style="margin-bottom:5px">
                             <f:ajax />
                         </h:inputText>
                         <h:panelGrid id="subjectDNCheckBoxesGrid"
-                            columns="7">
+                            columns="4" styleClass="form-vertical-align">
                             <p:selectBooleanCheckbox
                                 id="dnAttributeRequiredCheckBox"
                                 value="#{dnComponent.required}"
@@ -504,7 +506,7 @@
                                 id="dnAttributeValidationCheckBox"
                                 value="#{dnComponent.useValidation}"
                                 rendered="#{not dnComponent.emailField}"
-                                disabled="#{not dnComponent.modifiable or endEntityProfileMBean.viewOnly}" itemLabel="#{web.text.VALIDATION}">
+                                disabled="#{not dnComponent.modifiable or endEntityProfileMBean.viewOnly}" itemLabel="#{web.text.VALIDATION}:">
                                 <f:ajax render="subjectDNCheckBoxesGrid" />
                             </p:selectBooleanCheckbox>
                             <h:inputText
@@ -521,7 +523,7 @@
             </h:dataTable>
             <h:panelGrid id="bottom_subjectdnattributes" columns="3"
                 cellspacing="3" cellpadding="3" border="0" width="100%"
-                rowClasses="Row0,Row1"
+                rowClasses="Row1,Row0" styleClass="edit-top"
                 columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3"
                 rendered="#{(!endEntityProfileMBean.sshProfile) and (not endEntityProfileMBean.viewOnly)}">
                 <h:panelGroup id="removeSubjectDnAttributeGroup">
@@ -590,7 +592,8 @@
             <h:dataTable id="subjectAltNameComponents"
                 var="subjectAltNameComponent"
                 value="#{endEntityProfileMBean.subjectAltNameComponentList}"
-                cellspacing="1" cellpadding="0" border="0" width="100%"
+                styleClass="edit-top"
+                width="100%"
                 rowClasses="Row0,Row1" rendered="#{!endEntityProfileMBean.sshProfile}"
                 columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3">
                 <h:column>
@@ -616,7 +619,8 @@
                             <p:selectBooleanCheckbox
                                 id="altNameUseEndEntityEmail"
                                 value="#{subjectAltNameComponent.used}"
-                                disabled="#{endEntityProfileMBean.viewOnly}" itemLabel="#{web.text.USEENTITYEMAILFIELD}">
+                                disabled="#{endEntityProfileMBean.viewOnly}" itemLabel="#{web.text.USEENTITYEMAILFIELD}"
+                                style="padding-bottom:5px">
                                 <f:ajax
                                     render="subjectAltNameCheckBoxesGrid subjectAltNameTextField" />
                             </p:selectBooleanCheckbox>
@@ -626,7 +630,8 @@
                             <p:selectBooleanCheckbox
                                 id="altNameUseEndEntityCnAsDns"
                                 value="#{subjectAltNameComponent.copy}"
-                                disabled="#{endEntityProfileMBean.viewOnly}" itemLabel="#{web.text.USEENTITYECNFIELD}">
+                                disabled="#{endEntityProfileMBean.viewOnly}" itemLabel="#{web.text.USEENTITYECNFIELD}"
+                                style="padding-bottom:5px">
                                 <f:ajax
                                     render="subjectAltNameCheckBoxesGrid subjectAltNameTextField" />
                             </p:selectBooleanCheckbox>
@@ -634,11 +639,12 @@
                         <h:inputText id="subjectAltNameTextField"
                             value="#{subjectAltNameComponent.value}"
                             size="45" maxlength="1024"
-                            disabled="#{subjectAltNameComponent.useEndEntityEmail or subjectAltNameComponent.useEndEntityDns or endEntityProfileMBean.viewOnly}">
+                            disabled="#{subjectAltNameComponent.useEndEntityEmail or subjectAltNameComponent.useEndEntityDns or endEntityProfileMBean.viewOnly}"
+                            style="margin-bottom:5px">
                             <f:ajax />
                         </h:inputText>
                         <h:panelGrid id="subjectAltNameCheckBoxesGrid"
-                            columns="7">
+                            columns="4" styleClass="form-vertical-align">
                             <p:selectBooleanCheckbox
                                 id="altNameRequiredCheckBox"
                                 value="#{subjectAltNameComponent.required}"
@@ -656,7 +662,7 @@
                                 id="altNameValidationCheckBox"
                                 value="#{subjectAltNameComponent.useValidation}"
                                 disabled="#{not subjectAltNameComponent.modifiable or subjectAltNameComponent.subjectAltComponentPropertyDisabled}"
-                                itemLabel="#{web.text.VALIDATION}"
+                                itemLabel="#{web.text.VALIDATION}:"
                             >
                                 <f:ajax
                                     render="subjectAltNameCheckBoxesGrid" />
@@ -675,7 +681,7 @@
 
             <h:panelGrid id="header_othersubjectattributes2" columns="3"
                 cellspacing="3" cellpadding="3" border="0" width="100%"
-                rowClasses="Row0,Row1" rendered="#{!endEntityProfileMBean.sshProfile}"
+                rowClasses="Row0,Row1" styleClass="edit-top" rendered="#{!endEntityProfileMBean.sshProfile}"
                 columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3">
                 <h:panelGroup id="removeSubjectAltNameGroup">
                     <h:commandButton id="removeSubjectAltNameButton"
@@ -727,7 +733,7 @@
             <h:dataTable id="subjectDirectoryComponents"
                 var="subjectDirectoryAttributesComponent"
                 value="#{endEntityProfileMBean.subjectDirectoryAttributeComponentList}"
-                cellspacing="1" cellpadding="3" border="0" width="100%"
+                cellspacing="1" cellpadding="3" border="0" width="100%" styleClass="edit-top"
                 rowClasses="Row0,Row1" rendered="#{!endEntityProfileMBean.sshProfile}"
                 columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3">
                 <h:column>
@@ -749,12 +755,13 @@
                         <h:inputText id="subjectDirectoryTextField"
                             value="#{subjectDirectoryAttributesComponent.value}"
                             size="45" maxlength="1024"
-                            disabled="#{endEntityProfileMBean.viewOnly}">
+                            disabled="#{endEntityProfileMBean.viewOnly}"
+                            style="margin-bottom:5px">
                             <f:ajax />
                         </h:inputText>
                         <h:panelGrid
                             id="subjectDirectoryAttributesCheckBoxesGrid"
-                            columns="7">
+                            columns="2" styleClass="form-vertical-align">
                             <p:selectBooleanCheckbox
                                 id="directoryAttributesRequiredCheckBox"
                                 value="#{subjectDirectoryAttributesComponent.required}"
@@ -773,7 +780,7 @@
             </h:dataTable>
             <h:panelGrid id="header_othersubjectattributes3" columns="3"
                 cellspacing="3" cellpadding="3" border="0" width="100%"
-                rowClasses="Row0,Row1"
+                rowClasses="Row1,Row0" styleClass="edit-top"
                 columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3"
                 rendered="#{(not endEntityProfileMBean.sshProfile) and (not endEntityProfileMBean.viewOnly)}">
                 <h:panelGroup id="removeSubjectDirectoryAttributeGroup">
