@@ -3,7 +3,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
     xmlns:f="jakarta.faces.core"
     xmlns:h="jakarta.faces.html"
-    xmlns:ui="jakarta.faces.facelets">
+    xmlns:ui="jakarta.faces.facelets"
+	xmlns:p="http://primefaces.org/ui">
 <ui:remove>
     <!--
  /*************************************************************************
@@ -34,7 +35,8 @@
 			<br/>
 		</h:panelGroup>
 		
-		<h:panelGrid columns="2" cellpadding="2" rendered="#{!initNewPkiMBean.installed}">
+		<h:panelGrid columns="2" rendered="#{!initNewPkiMBean.installed}" styleClass="edit-top ui-md-6" cellspacing="3" cellpadding="3" border="0"
+					 rowClasses="Row0,Row1" columnClasses="editColumnSystem1,editColumn2">
 		
 			<h:outputText value="CA Settings" style="font-weight:bold"/>
 			<h:outputText value=""/>
@@ -65,8 +67,9 @@
 			
 			<h:outputLabel for="caValidity" value="Validity (days)"/>
 			<h:outputText id="caValidity" value="#{initNewPkiMBean.validity}"/>
-			
-			<h:panelGroup/><h:panelGroup/>
+		</h:panelGrid>
+		<h:panelGrid columns="2" rendered="#{!initNewPkiMBean.installed}" styleClass="edit-top ui-md-6" cellspacing="3" cellpadding="3" border="0"
+					 rowClasses="Row0,Row1" columnClasses="editColumnSystem1,editColumn2">
 			<h:outputText value="Super Adminstrator Settings" style="font-weight:bold"/>
 			<h:outputText value=""/>
 			<h:outputLabel for="adminDn" value="Super Administrator DN"/>
@@ -74,14 +77,13 @@
 		
 			<h:outputLabel for="adminValidity" value="Super Administrator Validity (days)"/>
 			<h:outputText id="adminValidity" value="#{initNewPkiMBean.adminValidity}"/>
-
-			<h:panelGroup/><h:panelGroup/>
+		</h:panelGrid>
+		<h:panelGrid columns="2" rendered="#{!initNewPkiMBean.installed}" styleClass="edit-top ui-md-6" cellspacing="3" cellpadding="3" border="0"
+					 rowClasses="Row0,Row1" columnClasses="editColumnSystem1,editColumn2">
 			<h:outputText value="Clean up" style="font-weight:bold"/>
 			<h:outputText value=""/>
 			<h:outputLabel for="deletePublicRole" value="Delete default public access role"/>
-			<h:selectBooleanCheckbox id="deletePublicRole" value="#{initNewPkiMBean.deletePublicRole}" />
-
-			<br/>
+			<p:selectBooleanCheckbox id="deletePublicRole" value="#{initNewPkiMBean.deletePublicRole}" />
 		</h:panelGrid>
 	
 		<h:panelGrid columns="2" cellpadding="2" rendered="#{initNewPkiMBean.installed}">
@@ -96,10 +98,12 @@
 		</h:panelGrid>
 		
 		<h:panelGroup id="nagivationGroup" rendered="#{!initNewPkiMBean.installed}">
-			<h:commandButton id="backButton" value="#{web.text.BACK}" action="#{initNewPkiMBean.actionBackToAdminSettings}"/>
-			<h:commandButton id="nextButton" value="Install" action="#{initNewPkiMBean.install}">
-				<f:ajax render="@form"/>
-			</h:commandButton>
+			<div class="action-buttons">
+				<h:commandButton id="backButton" value="#{web.text.BACK}" action="#{initNewPkiMBean.actionBackToAdminSettings}"/>
+				<h:commandButton id="nextButton" value="Install" action="#{initNewPkiMBean.install}">
+					<f:ajax render="@form"/>
+				</h:commandButton>
+			</div>
 		<br/>
 		<h:outputText styleClass="smallHelp" value="'Install' will create the Management CA and prepare SuperAdmin Key Store for download.
 			 The Key Store is used to authenticate the administrator through the CA's interfaces."/> 
