@@ -247,6 +247,12 @@
         </fileset>
     </path>
 
+	<path id="lib.wiremock.classpath">
+		<fileset dir="${ejbca.home}/lib/">
+			<include name="wiremock-*.jar"/>
+		</fileset>
+	</path>
+
 	<path id="lib.test.classpath">
 		<fileset dir="${ejbca.home}/lib/ext/test">
 			<include name="*.jar"/>

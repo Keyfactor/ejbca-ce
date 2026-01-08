@@ -28,6 +28,7 @@ dependencies {
     implementation(libs.jakartaee.api)
     implementation(libs.json.simple)
     implementation(libs.junit)
+    testImplementation(libs.wiremock.standalone)
 }
 
 sourceSets {

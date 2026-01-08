@@ -36,6 +36,7 @@ dependencies {
     compileOnly(libs.jackson.databind)
     compileOnly(libs.jackson.dataformat.yaml)
     testRuntimeOnly(libs.jldap)
+    testImplementation(":wiremock-standalone:3.13.2")
 }
 
 sourceSets {
