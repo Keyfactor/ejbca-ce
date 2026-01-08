@@ -98,6 +98,7 @@ public class OcspConfiguration {
      * 
      * @deprecated only remains for upgrades to 9.4.0 – use value from GlobalOcspConfiguration
      */
+    @Deprecated(since = "9.4.0")
     public static boolean getIncludeCertChain() {
         String value = ConfigurationHolder.getString(INCLUDE_CERT_CHAIN);
         if(value == null) {

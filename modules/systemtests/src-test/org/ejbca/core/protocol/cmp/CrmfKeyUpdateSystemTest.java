@@ -22,6 +22,7 @@ import static org.junit.Assert.fail;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
@@ -859,7 +860,7 @@ public class CrmfKeyUpdateSystemTest extends CmpTestCase {
             CertificateCreateException, CertificateRevokeException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException,
             InvalidAlgorithmException, CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException, InvalidKeyException,
             CertificateEncodingException, NoSuchAlgorithmException, SignatureException, RoleNotFoundException, NoSuchProviderException,
-            SecurityException, IOException, CertificateParsingException, CertPathValidatorException, CouldNotRemoveEndEntityException, CAExistsException, OperatorCreationException, InvalidCmpProtectionException, CMPException {
+            SecurityException, IOException, CertificateParsingException, CertPathValidatorException, CouldNotRemoveEndEntityException, CAExistsException, OperatorCreationException, InvalidCmpProtectionException, CMPException, URISyntaxException {
         final String cmpAdminUsername = "cmpTestAdmin";
         final String cmpAdminDn = "CN=" + cmpAdminUsername +",C=SE";
         final String cmpAdminPassword = "foo123";
