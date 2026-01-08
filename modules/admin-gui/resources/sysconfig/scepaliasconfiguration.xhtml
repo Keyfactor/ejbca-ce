@@ -125,7 +125,7 @@
 					  rendered="#{scepConfigMBean.currentAlias.modeRa and scepConfigMBean.proxyCaAvailable}">
 			<h:inputText value="#{scepConfigMBean.currentAlias.proxyCaEncryptionCertTemplate}"
 						 rendered="#{scepConfigMBean.currentAliasEditMode}"
-						 disabled="true">
+						 disabled="true" styleClass="ui-md-12">
 				<f:converter converterId="trimConverter"/>
 			</h:inputText>
 			<h:outputText value="#{scepConfigMBean.currentAlias.proxyCaEncryptionCertTemplate}"
@@ -140,7 +140,7 @@
 					  rendered="#{scepConfigMBean.currentAlias.modeRa and scepConfigMBean.proxyCaAvailable}">
 			<h:inputText value="#{scepConfigMBean.currentAlias.proxyCaSigningCertTemplate}"
 						 rendered="#{scepConfigMBean.currentAliasEditMode}"
-						 disabled="true" >
+						 disabled="true" styleClass="ui-md-12">
 				<f:converter converterId="trimConverter"/>
 			</h:inputText>
 			<h:outputText value="#{scepConfigMBean.currentAlias.proxyCaSigningCertTemplate}"
