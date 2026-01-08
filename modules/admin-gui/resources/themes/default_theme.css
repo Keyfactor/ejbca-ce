@@ -293,17 +293,18 @@ h4.margin-bottom {
 	margin:0 0 .5em 0;
 }
 a {
+	color:#000000;
 	background-color: transparent;
 	text-decoration: none;
 }
 a:link,
 a:visited {
-	color: #00A;
+	color: #000000;
 }
 a:hover,
 a:focus,
 a:active {
-	color: #A00;
+	color: #284E81;
 }
 input,
 textarea,
@@ -351,7 +352,7 @@ input.selectButton.disabled {
 }
 input.selectButton.selected {
 	border: 2px solid #666;
-	padding: 0px 4px;
+	padding: .5rem .5rem;
 	background: #66c;
 	color: #fff;
 	/* Parsed if supported by the browser */
@@ -386,8 +387,7 @@ table {
 table th,
 table td {
 	margin: 0px;
-	padding: 2px 3px;
-	border: none;
+	padding: .5rem .5rem;
 	vertical-align: top;
 }
 table h3 {
@@ -458,6 +458,7 @@ table p.help {
 	margin: .2em .1em;
 }
 table span.help {
+	font-weight:normal;
 }
 /* Add End-Entity */
 table#addendentity .help {
@@ -544,16 +545,18 @@ table.edit-top tr td,
 table.edit-ctnd tr td,
 table.edit-bottom tr td,
 table.edit tr td {
-	padding: .25em .5em;
-	line-height: 1.60em;
+	border: 1px solid rgba(0, 0, 0, .08);
+	padding: 1rem 1rem;
 }
 /* Columns */
 .editColumn1 {
 	width: 35%;
 	text-align: right;
+	font-weight: 700;
 }
 .editColumnEE1 {
 	width: 45%;
+	font-weight: 700;
 	text-align: right;
 	word-wrap: break-word;
 	word-break: break-all;
@@ -566,6 +569,7 @@ table.edit tr td {
 }
 .viewEeColumn1 {
 	width: 50%;
+	font-weight: 700;
 	text-align: right;
 	word-wrap: break-word;
 	word-break: break-all;
@@ -578,7 +582,8 @@ table.edit tr td {
 }
 .editColumnSystem1 {
 	width: 35%;
-	text-align: left;
+	text-align: right;
+	font-weight: 700;
 }
 .editColumn2 {
 	width: 65%;
@@ -681,9 +686,9 @@ table.edit-top tr:first-child td,
 table.edit tr:first-child td,
 table.edit-bottom tr.section td,
 table.edit tr.section td {
-	background-color: #FEEECD;
-	border-top: 3px solid #FEDD9A;
-	color: #A00;
+	background-color: #f8f9fa;
+	border: 1px solid #e9ecef;
+	color: #284E81;
 }
 table.edit-top tr:first-child td.field,		/* For JSF */
 table.edit tr:first-child td.field {
@@ -691,9 +696,9 @@ table.edit tr:first-child td.field {
 }
 table.edit-bottom tr:last-child td,
 table.edit tr:last-child td {
-	background-color: #FEEECD;
-	border-bottom: 3px solid #FEDD9A;
-	color: #A00;
+	background-color: #f8f9fa;
+	border: 1px solid #e9ecef;
+	color: #495057;
 }
 /* Titles */
 table.edit-top tr.title td,
@@ -1266,8 +1271,8 @@ table#config tr td:first-child {
 /*--------------------------------------------------------------------------*/
 /* TABLES */
 
-.Row0, #Row0 { color: black; font-size: 9pt; background-color: #F7F9FF; }
-.Row1, #Row1 { color: black; font-size: 9pt; background-color: #E5ECFF; }
+.Row0, #Row0 { color: #495057; font-size: 1em; background-color: #fbfcfc; }
+.Row1, #Row1 { color: #495057; font-size: 1em; background-color: #FFFFFF; }
 
 .RowAlt0, #RowAlt0 { color: black; font-size: 9pt; background-color: #F8F0FA; }
 .RowAlt1, #RowAlt1 { color: black; font-size: 9pt; background-color: #E6E6FA; }
@@ -1443,7 +1448,7 @@ body.popup {
 }
 
 .mandatory {
-	border:2px solid #FFC300 !important;
+	border:2px solid #D32F2F !important;
 }
 
 .smallHelp {
@@ -1619,6 +1624,18 @@ a.button:active {
 	border: 0;
 	max-width: 16px;
 	max-height: 16px;
+}
+
+.ui-datatable table td a, .ui-panelgrid-cell a {
+	color: #000000;
+}
+
+.ui-datatable table td a:hover, .ui-panelgrid-cell a:hover{
+	text-decoration: underline;
+}
+
+.no-header thead {
+	display: none;
 }
 
 /* Remove cell focus borders */
@@ -1837,6 +1854,24 @@ label.align-label > span.ui-outputlabel-label {
     display: flex;
     align-items: center;
     height: 100%;
+}
+
+.form-vertical-align {
+	table-layout: auto !important;
+}
+
+.form-vertical-align td {
+	vertical-align: middle !important;
+	padding: .5rem .5rem .5rem 0 !important;
+}
+
+.form-vertical-align td:first-child {
+	vertical-align: middle !important;
+}
+
+.form-label-col {
+	width: 1%;
+	white-space: nowrap;
 }
 
 /*--------------------------------------------------------------------------*/

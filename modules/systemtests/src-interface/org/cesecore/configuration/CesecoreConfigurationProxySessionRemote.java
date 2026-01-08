@@ -33,8 +33,7 @@ public interface CesecoreConfigurationProxySessionRemote {
     
     String getConfigurationValue(String key); 
     
-    void setForbiddenCharacters(char[] forbiddenCharacters);
-    
+    @Deprecated(since = "9.5.0")
     char[] getForbiddenCharacters();
 
 }                           

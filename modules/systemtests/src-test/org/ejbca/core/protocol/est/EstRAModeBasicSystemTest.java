@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import com.keyfactor.util.CeSecoreNameStyle;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.certificate.DnComponents;
@@ -32,6 +33,7 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import com.keyfactor.util.string.StringConfigurationCache;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.ExtensionsGenerator;
@@ -555,8 +557,7 @@ public class EstRAModeBasicSystemTest extends EstTestCase {
             reqmsg = Base64.encode(p10.getEncoded());
 
             resp = sendEstRequest(estAlias, "simpleenroll", reqmsg, 200, null, username, pwd);
-            X509Certificate tlsReenrollCert = getCertFromResponse(resp);
-
+            getCertFromResponse(resp);
             resp = sendEstRequest(estAlias, "serverkeygen", reqmsg, 200, null, username, pwd);
             // If all was OK we should have gotten a base64 encoded certificates-only CMS message back. RFC7030 section 4.2.3
             assertKeyGenResponse(requestDN, resp, mldsa44);
@@ -655,8 +656,7 @@ public class EstRAModeBasicSystemTest extends EstTestCase {
             reqmsg = Base64.encode(p10.getEncoded());
 
             resp = sendEstRequest(estAlias, "simpleenroll", reqmsg, 200, null, username, pwd);
-            X509Certificate tlsReenrollCert = getCertFromResponse(resp);
-
+            getCertFromResponse(resp);
             resp = sendEstRequest(estAlias, "serverkeygen", reqmsg, 200, null, username, pwd);
             // If all was OK we should have gotten a base64 encoded certificates-only CMS message back. RFC7030 section 4.2.3
             assertKeyGenResponse(requestDN, resp, slhdsa);
@@ -796,7 +796,7 @@ public class EstRAModeBasicSystemTest extends EstTestCase {
         } catch (SignatureException e) {
             fail("simpleenroll response certifciate must verify with CA certificate");
         }
-        assertEquals("simpleenroll response subjectDN must be our PKCS#10 request DN", requestDn, cert.getSubjectDN().toString());
+        assertEquals("simpleenroll response subjectDN must be our PKCS#10 request DN", requestDn, X500Name.getInstance(CeSecoreNameStyle.INSTANCE, cert.getSubjectX500Principal().getEncoded()).toString());
         assertEquals("simpleenroll response public key must be the same as the PKCS#10 request",
                 Base64.toBase64String(keyPair.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));
     }
@@ -813,7 +813,7 @@ public class EstRAModeBasicSystemTest extends EstTestCase {
         } catch (SignatureException e) {
             fail("serverkeygen response certifciate must verify with CA certificate");
         }
-        assertEquals("serverkeygen response subjectDN must be our PKCS#10 request DN", requestDn, cert.getSubjectDN().toString());
+        assertEquals("serverkeygen response subjectDN must be our PKCS#10 request DN", requestDn, X500Name.getInstance(CeSecoreNameStyle.INSTANCE, cert.getSubjectX500Principal().getEncoded()).toString());
         assertNotEquals("serverkeygen response public key must be the differant than the PKCS#10 request",
                 Base64.toBase64String(keyPair.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));
     }

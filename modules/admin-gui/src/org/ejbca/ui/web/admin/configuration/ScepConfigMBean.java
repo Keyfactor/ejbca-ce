@@ -44,7 +44,9 @@ import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAConstants;
+import org.cesecore.certificates.ca.CAFactory;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.kfenroll.ProxyCa;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
@@ -121,7 +123,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         private String raNameGenPrefix;
         private String raNameGenPostfix;
         private boolean clientCertificateRenewal;
-        private boolean allowClientCertificateRenewaWithOldKey;
+        private boolean allowClientCertificateRenewalWithOldKey;
         private boolean useIntune;
         private String intuneAuthority;
         private String intuneAadAppId;
@@ -145,6 +147,10 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         private String signingKeyAlias;
         private ScepRaCertificate signingCertificateInfo;
         private ArrayList<String> encryptionCAs;
+        /// Proxy CA
+        private String proxyCaEncryptionCertTemplate;
+        private String proxyCaSigningCertTemplate;
+        private String proxyCaCaEnrollmentTemplate;
 
         public ScepAliasGuiInfo(final String alias) {
             ScepConfiguration scepConfig = (ScepConfiguration) globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
@@ -163,7 +169,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             this.raNameGenPrefix = scepConfig.getRANameGenerationPrefix(alias);
             this.raNameGenPostfix = scepConfig.getRANameGenerationPostfix(alias);
             this.clientCertificateRenewal = scepConfig.getClientCertificateRenewal(alias);
-            this.allowClientCertificateRenewaWithOldKey = scepConfig.getAllowClientCertificateRenewalWithOldKey(alias);
+            this.allowClientCertificateRenewalWithOldKey = scepConfig.getAllowClientCertificateRenewalWithOldKey(alias);
             this.setUseIntune(scepConfig.getUseIntune(alias));
             this.intuneAadUseKeyBinding = scepConfig.getIntuneAadUseKeyBinding(alias);
             this.intuneAadAppKeyBinding = scepConfig.getIntuneAadAppKeyBinding(alias);
@@ -186,6 +192,11 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             this.signingCryptoTokenId = scepConfig.getSigningCryptoTokenId(alias);
             this.encryptionKeyAlias = scepConfig.getEncryptionKeyAlias(alias);
             this.encryptionCryptoTokenId = scepConfig.getEncryptionCryptoTokenId(alias);
+
+            /// Proxy CA
+            this.proxyCaEncryptionCertTemplate = scepConfig.getProxyCaEncryptionCertTemplate(alias);
+            this.proxyCaSigningCertTemplate = scepConfig.getProxyCaSigningCertTemplate(alias);
+            this.proxyCaCaEnrollmentTemplate = scepConfig.getProxyCaEnrollmentTemplate(alias);
 
             // ra mode RA keys settings
             String pemEncryptionCertificate = scepConfig.getEncryptionCertificate(alias);
@@ -228,8 +239,11 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             this.raNameGenPrefix = ScepConfiguration.DEFAULT_RA_NAME_GENERATION_PREFIX;
             this.raNameGenPostfix = ScepConfiguration.DEFAULT_RA_NAME_GENERATION_POSTFIX;
             this.clientCertificateRenewal = Boolean.valueOf(ScepConfiguration.DEFAULT_CLIENT_CERTIFICATE_RENEWAL);
-            this.allowClientCertificateRenewaWithOldKey = Boolean
+            this.allowClientCertificateRenewalWithOldKey = Boolean
                     .valueOf(ScepConfiguration.DEFAULT_ALLOW_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY);
+            this.proxyCaEncryptionCertTemplate = ScepConfiguration.DEFAULT_SCEP_PROXYCA_ENCRYPTION_CERT_TEMPLATE;
+            this.proxyCaSigningCertTemplate = ScepConfiguration.DEFAULT_SCEP_PROXYCA_SIGNING_CERT_TEMPLATE;
+            this.proxyCaCaEnrollmentTemplate = ScepConfiguration.DEFAULT_SCEP_PROXYCA_ENROLLMENT_TEMPLATE;
             this.setUseIntune(false);
             this.intuneAuthority = "";
             this.intuneAadAppId = "";
@@ -375,12 +389,36 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             this.clientCertificateRenewal = clientCertificateRenewal;
         }
 
-        public boolean getAllowClientCertificateRenewaWithOldKey() {
-            return this.allowClientCertificateRenewaWithOldKey;
+        public boolean getAllowClientCertificateRenewalWithOldKey() {
+            return this.allowClientCertificateRenewalWithOldKey;
         }
 
-        public void setAllowClientCertificateRenewaWithOldKey(boolean allowClientCertificateRenewaWithOldKey) {
-            this.allowClientCertificateRenewaWithOldKey = allowClientCertificateRenewaWithOldKey;
+        public void setAllowClientCertificateRenewalWithOldKey(boolean allowClientCertificateRenewalWithOldKey) {
+            this.allowClientCertificateRenewalWithOldKey = allowClientCertificateRenewalWithOldKey;
+        }
+
+        public String getProxyCaEncryptionCertTemplate() {
+            return this.proxyCaEncryptionCertTemplate;
+        }
+
+        public void setProxyCaEncryptionCertTemplate(String proxyCaEncryptionCertTemplate) {
+            this.proxyCaEncryptionCertTemplate = proxyCaEncryptionCertTemplate;
+        }
+
+        public String getProxyCaSigningCertTemplate() {
+            return this.proxyCaSigningCertTemplate;
+        }
+
+        public void setProxyCaSigningCertTemplate(String proxyCaSigningCertTemplate) {
+            this.proxyCaSigningCertTemplate = proxyCaSigningCertTemplate;
+        }
+
+        public String getProxyCaCaEnrollmentTemplate() {
+            return this.proxyCaCaEnrollmentTemplate;
+        }
+
+        public void setProxyCaCaEnrollmentTemplate(String proxyCaCaEnrollmentTemplate) {
+            this.proxyCaCaEnrollmentTemplate = proxyCaCaEnrollmentTemplate;
         }
 
         public boolean isUseIntune() {
@@ -831,6 +869,10 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         this.currentAliasEditMode = currentAliasEditMode && isAllowedToEdit();
     }
 
+    public boolean isProxyCaAvailable() {
+        return CAFactory.INSTANCE.existsCaType(ProxyCa.CA_TYPE);
+    }
+
     /**
      * Build a list sorted by name from the existing SCEP configuration aliases
      */
@@ -923,7 +965,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                 scepConfig.setAllowClientCertificateRenewalWithOldKey(alias, false);
             } else {
                 scepConfig.setClientCertificateRenewal(alias, currentAlias.getClientCertificateRenewal());
-                scepConfig.setAllowClientCertificateRenewalWithOldKey(alias, currentAlias.getAllowClientCertificateRenewaWithOldKey());
+                scepConfig.setAllowClientCertificateRenewalWithOldKey(alias, currentAlias.getAllowClientCertificateRenewalWithOldKey());
             }
             scepConfig.setUseIntune(alias, currentAlias.isUseIntune());
             scepConfig.setIntuneAuthority(alias, currentAlias.getIntuneAuthority());

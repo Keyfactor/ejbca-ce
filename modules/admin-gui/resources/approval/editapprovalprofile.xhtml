@@ -262,21 +262,19 @@
             </h:column> 
         </h:dataTable>
         <h:panelGroup layout="block" style="text-align: right;">
-            <h:commandButton id="addStepButton" value="#{web.text.APPROVAL_PROFILE_ADD_STEP}" action="#{approvalProfileMBean.addStep}"
-                rendered="#{!approvalProfilesMBean.viewOnly and !approvalProfileMBean.stepSizeFixed}"/>
+            <div class="action-buttons">
+                <h:commandButton id="addStepButton" value="#{web.text.APPROVAL_PROFILE_ADD_STEP}" action="#{approvalProfileMBean.addStep}"
+                    rendered="#{!approvalProfilesMBean.viewOnly and !approvalProfileMBean.stepSizeFixed}"/>
+            </div>
         </h:panelGroup>
-        <h:panelGrid columns="2" styleClass="no-border" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
-    
-            <!-- Buttons --> 
+        <h:panelGrid columns="1" styleClass="no-border" width="100%">
             <h:panelGroup>
-                &nbsp;
+                <div class="action-buttons">
+                        <h:commandButton id="saveButton" value="#{web.text.SAVE}" action="#{approvalProfileMBean.save}" rendered="#{!approvalProfilesMBean.viewOnly}"/>
+                        <h:commandButton id="cancelButton" value="#{web.text.CANCEL}" action="#{approvalProfileMBean.cancel}" immediate="true" rendered="#{!approvalProfilesMBean.viewOnly}"/>
+                        <h:commandButton id="backButton" value="#{web.text.BACK}" action="#{approvalProfileMBean.cancel}" immediate="true" rendered="#{approvalProfilesMBean.viewOnly}"/>
+                </div>
             </h:panelGroup>
-            <h:panelGroup styleClass="no-border">
-                <h:commandButton id="saveButton" value="#{web.text.SAVE}" action="#{approvalProfileMBean.save}" rendered="#{!approvalProfilesMBean.viewOnly}"/>
-                <h:commandButton id="cancelButton" value="#{web.text.CANCEL}" action="#{approvalProfileMBean.cancel}" immediate="true" rendered="#{!approvalProfilesMBean.viewOnly}"/>
-                <h:commandButton id="backButton" value="#{web.text.BACK}" action="#{approvalProfileMBean.cancel}" immediate="true" rendered="#{approvalProfilesMBean.viewOnly}"/>
-            </h:panelGroup>
-    
         </h:panelGrid>
     </h:form>
 

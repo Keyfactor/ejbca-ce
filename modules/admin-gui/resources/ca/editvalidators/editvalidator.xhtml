@@ -3,7 +3,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
     xmlns:f="jakarta.faces.core"
     xmlns:h="jakarta.faces.html"
-    xmlns:ui="jakarta.faces.facelets">
+    xmlns:ui="jakarta.faces.facelets"
+	xmlns:p="http://primefaces.org/ui">
 <ui:remove>
 	<!--
     /*************************************************************************
@@ -23,12 +24,11 @@
 <ui:composition template="/WEB-INF/include/template.xhtml">
     <ui:param name="resourceBean" value="#{validatorsBean}" />
 	<ui:define name="content">
-		<div align="center">
-			<h2>
-				<h:outputText value="#{web.text.EDITVALIDATOR_TITLE}" rendered="#{not validatorsBean.viewOnly}" />
-				<h:outputText value="#{web.text.VIEWVALIDATOR_TITLE}" rendered="#{validatorsBean.viewOnly}" />
-			</h2>
-		</div>
+		<h2>
+			<h:outputText value="#{web.text.EDITVALIDATOR_TITLE}" rendered="#{not validatorsBean.viewOnly}" />
+			<h:outputText value="#{web.text.VIEWVALIDATOR_TITLE}" rendered="#{validatorsBean.viewOnly}" />
+		</h2>
+
 		<h:form id="validators" enctype="multipart/form-data">
 			<h:inputHidden name="action" value="hiddenkeyvalidatortype" />
 			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">	
@@ -81,9 +81,9 @@
 					<f:selectItems value="#{validatorBean.applicablePhases}" />
 				</h:selectOneMenu>
 				<h:outputLabel for="allcertificateprofiles" value="#{web.text.VALIDATORALLCERTIFICATEPROFILES}"/>
-				<h:selectBooleanCheckbox id="allcertificateprofiles" value="#{validatorBean.allCertificateProfileIds}" disabled="#{validatorsBean.viewOnly}">
+				<p:selectBooleanCheckbox id="allcertificateprofiles" value="#{validatorBean.allCertificateProfileIds}" disabled="#{validatorsBean.viewOnly}">
 					<f:ajax render="validators" event="change"/>
-				</h:selectBooleanCheckbox>
+				</p:selectBooleanCheckbox>
 				<h:outputLabel for="selectapplicablecertificateprofiles" value="#{web.text.VALIDATORCERTIFICATEPROFILE}"/>
 				<h:selectManyListbox styleClass="select-list" id="selectapplicablecertificateprofiles" value="#{validatorBean.certificateProfileIds}" converter="jakarta.faces.Integer"
 					validator="#{validatorBean.validateCertificateProfileIds}" size="10" disabled="#{validatorsBean.viewOnly or validatorBean.allCertificateProfileIds}">
@@ -103,8 +103,10 @@
 				</h:selectOneMenu>
 				<h:panelGroup>&nbsp;</h:panelGroup>
 				<h:panelGroup>
-					<h:commandButton value="#{web.text.SAVE}" action="#{validatorBean.save}" rendered="#{validatorsBean.authorizedToEdit and not validatorsBean.viewOnly}"/>
-					<h:commandButton value="#{web.text.CANCEL}" action="#{validatorBean.cancel}" immediate="true"/>
+					<div class="action-buttons">
+						<h:commandButton value="#{web.text.SAVE}" action="#{validatorBean.save}" rendered="#{validatorsBean.authorizedToEdit and not validatorsBean.viewOnly}"/>
+						<h:commandButton value="#{web.text.CANCEL}" action="#{validatorBean.cancel}" immediate="true"/>
+					</div>
 				</h:panelGroup>
 			</h:panelGrid>
 		</h:form>

@@ -80,9 +80,8 @@
 				<h:outputText value="#{web.text.ENABLEENDENTITYPROFILELIM_HELP}" styleClass="help"/>
 			</h:panelGroup>
 			<h:panelGroup>
-				<h:selectBooleanCheckbox id="enableeeplimit" value="#{systemConfigMBean.currentConfig.enableEndEntityProfileLimitations}"
-					disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
-				<h:outputLabel for="enableeeplimit" value="#{web.text.ACTIVATE}" />
+				<p:selectBooleanCheckbox id="enableeeplimit" value="#{systemConfigMBean.currentConfig.enableEndEntityProfileLimitations}"
+					disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}" itemLabel="#{web.text.ACTIVATE}"/>
 			</h:panelGroup>
 
 			<h:panelGroup>
@@ -91,18 +90,17 @@
 			</h:panelGroup>
 			<h:panelGroup id="keyrecoverygroup">
 				<h:panelGroup layout="block" styleClass="">
-					<h:selectBooleanCheckbox id="keyrecoverycheckbox" styleClass="checkBoxOverlay" value="#{systemConfigMBean.currentConfig.enableKeyRecovery}"
-							disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}">
+					<p:selectBooleanCheckbox id="keyrecoverycheckbox" styleClass="checkBoxOverlay" value="#{systemConfigMBean.currentConfig.enableKeyRecovery}"
+							disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}" itemLabel="#{web.text.ACTIVATE}">
 						<f:ajax render="systemconfiguration:keyrecoverygroup"/>
-					</h:selectBooleanCheckbox>
-					<h:outputLabel value="#{web.text.ACTIVATE}" styleClass="checkBoxOverlay"/>
+					</p:selectBooleanCheckbox>
 				</h:panelGroup>
 				<h:panelGroup layout="block" styleClass="" rendered="#{web.ejbcaWebBean.runningEnterprise}">
-				    <h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{systemConfigMBean.currentConfig.localKeyRecovery}"
-							disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration || !systemConfigMBean.currentConfig.enableKeyRecovery}">
+				    <p:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{systemConfigMBean.currentConfig.localKeyRecovery}"
+							disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration || !systemConfigMBean.currentConfig.enableKeyRecovery}"
+							itemLabel="#{web.text.FORCELOCALKEYRECOVERY}">
 						<f:ajax render="systemconfiguration:keyrecoverygroup"/>
-					</h:selectBooleanCheckbox>
-					<h:outputLabel value="#{web.text.FORCELOCALKEYRECOVERY}" styleClass="checkBoxOverlay"/>
+					</p:selectBooleanCheckbox>
 					<h:selectOneMenu value="#{systemConfigMBean.currentConfig.localKeyRecoveryCryptoTokenId}"
 							disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration || !systemConfigMBean.currentConfig.enableKeyRecovery || !systemConfigMBean.currentConfig.localKeyRecovery}">
 						<f:selectItems value="#{systemConfigMBean.availableCryptoTokens}"/>
@@ -122,9 +120,8 @@
 				<h:outputText value="#{web.text.CERTIFICATECHAINROOTFIRST_HELP}" styleClass="help"/>
 			</h:panelGroup>
 			<h:panelGroup>
-				<h:selectBooleanCheckbox id="certChainOrder" value="#{systemConfigMBean.currentConfig.publicWebCertChainOrderRootFirst}"
-					disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
-				<h:outputLabel for="certChainOrder" value="#{web.text.CERTIFICATECHAINROOTFIRST}" />
+				<p:selectBooleanCheckbox id="certChainOrder" value="#{systemConfigMBean.currentConfig.publicWebCertChainOrderRootFirst}"
+					disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}" itemLabel="#{web.text.CERTIFICATECHAINROOTFIRST}"/>
 			</h:panelGroup>
 			<h:panelGroup>
 				<h:outputLabel for="sessionTimeout" value="#{web.text.USE_SESSION_TIMEOUT}" styleClass="titles"/>
@@ -133,12 +130,11 @@
 				<h:outputText value="#{web.text.USE_SESSION_TIMEOUT_HELP}" styleClass="help"/>
 			</h:panelGroup>
 			<h:panelGroup id="sessiontimeoutgroup">
-				<h:selectBooleanCheckbox id="sessionTimeout" value="#{systemConfigMBean.currentConfig.enableSessionTimeout}"
-					disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}">
+				<p:selectBooleanCheckbox id="sessionTimeout" value="#{systemConfigMBean.currentConfig.enableSessionTimeout}"
+					disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}" itemLabel="#{web.text.USE}">
 					<f:ajax render="systemconfiguration:sessiontimeoutgroup"/>
-				</h:selectBooleanCheckbox>
-				<h:outputLabel for="sessionTimeout" value="#{web.text.USE}" />
-				<br/>
+				</p:selectBooleanCheckbox>
+				<br/><br/>
 	            <h:inputText id="sessionTimeoutTime" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration or !systemConfigMBean.currentConfig.enableSessionTimeout}"
 	            	value="#{systemConfigMBean.currentConfig.sessionTimeoutTime}" size="10"/>
                  <h:outputLabel for="sessionTimeout" value="#{web.text.SESSION_TIMEOUT_TIME}" />
@@ -203,8 +199,8 @@
 				<h:outputText value="#{web.text.CLEARALLCACHES_HELP2}" styleClass="help"/>
 			</h:panelGroup>
 			<h:panelGroup id="clearAllCaches">
-				<h:selectBooleanCheckbox id="excludetokens" value="#{systemConfigMBean.excludeActiveCryptoTokensFromClearCaches}" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
-				<h:outputLabel for="excludetokens" value="#{web.text.CLEARALLCACHES_EXCLUDE_CRYPTOTOKEN_CACHE}" />
+				<p:selectBooleanCheckbox id="excludetokens" value="#{systemConfigMBean.excludeActiveCryptoTokensFromClearCaches}" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"
+					itemLabel="#{web.text.CLEARALLCACHES_EXCLUDE_CRYPTOTOKEN_CACHE}"/>
 				<br/>
 				<br/>
 				<h:commandButton value="#{web.text.CLEARALLCACHES}" action="#{systemConfigMBean.clearAllCaches}" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
@@ -232,6 +228,16 @@
             </h:panelGroup>
             <h:inputText id="maximumQueryTimeout" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}" value="#{systemConfigMBean.currentConfig.maximumQueryTimeout}"
                  size="20" title="#{web.text.FORMAT_MILLISECONDS}"/>
+            <!-- Forbidden Characters -->     
+            <h:panelGroup>
+                <h:outputLabel for="forbiddenCharacters" value="#{web.text.FORBIDDEN_CHARACTERS}" styleClass="titles"/>
+                <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/character-limitations.html')}" escape="false"/>
+                <br/>
+                <h:outputText value="#{web.text.FORBIDDEN_CHARACTERS_HELP}" styleClass="help"/>
+            </h:panelGroup>
+            <h:inputText id="forbiddenCharacters" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}" value="#{systemConfigMBean.currentConfig.forbiddenCharacters}"
+                 size="40" />
+            
 
 		</h:panelGrid>
 
@@ -247,8 +253,8 @@
 				<h:outputText value="#{web.text.REDACTPIIDEFAULT_HELP}" styleClass="help"/>
 			</h:panelGroup>
 			<h:panelGroup>
-				<h:selectBooleanCheckbox id="redactpiidefault" value="#{systemConfigMBean.currentConfig.redactPiiByDefault}" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
-				<h:outputLabel for="redactpiidefault" value="#{web.text.PC_ACTION_ENABLE}" />
+				<p:selectBooleanCheckbox id="redactpiidefault" value="#{systemConfigMBean.currentConfig.redactPiiByDefault}" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"
+				itemLabel="#{web.text.PC_ACTION_ENABLE}"/>
 			</h:panelGroup>
 
 			<h:panelGroup>
@@ -256,8 +262,8 @@
 				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/End_Entity_Profiles_Overview.html')}" escape="false"/>
 			</h:panelGroup>
 			<h:panelGroup>
-				<h:selectBooleanCheckbox id="redactpiienforced" value="#{systemConfigMBean.currentConfig.redactPiiEnforced}" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
-				<h:outputLabel for="redactpiienforced" value="#{web.text.PC_ACTION_ENABLE}" />
+				<p:selectBooleanCheckbox id="redactpiienforced" value="#{systemConfigMBean.currentConfig.redactPiiEnforced}" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"
+					itemLabel="#{web.text.PC_ACTION_ENABLE}"/>
 			</h:panelGroup>
 		</h:panelGrid>
 
@@ -275,8 +281,8 @@
 				<h:outputText value="#{web.text.ENABLECLIACCESS_HELP}" styleClass="help"/>
 			</h:panelGroup>
 			<h:panelGroup>
-				<h:selectBooleanCheckbox id="enableCommandLine" value="#{systemConfigMBean.currentConfig.enableCommandLine}" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
-				<h:outputLabel for="enableCommandLine" value="#{web.text.ACTIVATE}" />
+				<p:selectBooleanCheckbox id="enableCommandLine" value="#{systemConfigMBean.currentConfig.enableCommandLine}" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"
+				itemLabel="#{web.text.ACTIVATE}"/>
 			</h:panelGroup>
 
 			<h:panelGroup>
@@ -286,9 +292,8 @@
 				<h:outputText value="#{web.text.ENABLECLIDEFAULTUSER_HELP}" styleClass="help"/>
 			</h:panelGroup>
 			<h:panelGroup>
-				<h:selectBooleanCheckbox id="enableCommandLineDefUser" value="#{systemConfigMBean.currentConfig.enableCommandLineDefaultUser}"
-					disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
-				<h:outputLabel for="enableCommandLineDefUser" value="#{web.text.ACTIVATE}" />
+				<p:selectBooleanCheckbox id="enableCommandLineDefUser" value="#{systemConfigMBean.currentConfig.enableCommandLineDefaultUser}"
+					disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}" itemLabel="#{web.text.ACTIVATE}"/>
 			</h:panelGroup>
 		</h:panelGrid>
 
@@ -297,8 +302,10 @@
                 &nbsp;
             </h:panelGroup>
             <h:panelGroup>
-                <h:commandButton value="#{web.text.SAVE}" action="#{systemConfigMBean.saveCurrentConfig}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
-                <h:commandButton value="#{web.text.CANCEL}" action="#{systemConfigMBean.flushCache}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" />
+				<div class="action-buttons">
+                	<h:commandButton value="#{web.text.SAVE}" action="#{systemConfigMBean.saveCurrentConfig}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
+                	<h:commandButton value="#{web.text.CANCEL}" action="#{systemConfigMBean.flushCache}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" />
+				</div>
             </h:panelGroup>
         </h:panelGrid>
 	</h:form>
@@ -363,8 +370,10 @@
 				&nbsp;
 			</h:panelGroup>
 			<h:panelGroup>
-				<h:commandButton value="#{web.text.SAVE}" action="#{systemConfigMBean.saveCurrentAdminPreferences}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
-				<h:commandButton value="#{web.text.CANCEL}" action="#{systemConfigMBean.flushCache}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" />
+				<div class="action-buttons">
+					<h:commandButton value="#{web.text.SAVE}" action="#{systemConfigMBean.saveCurrentAdminPreferences}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
+					<h:commandButton value="#{web.text.CANCEL}" action="#{systemConfigMBean.flushCache}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" />
+				</div>
 			</h:panelGroup>
 		</h:panelGrid>
 	</h:form>
@@ -372,7 +381,7 @@
 
 	<!-- Protocol Configuration -->
 	<p:tab title="Protocol Configuration" rendered="#{systemConfigMBean.renderSystemConfiguration()}">
-		<h:form id="protocolconfigform" >
+		<h:form id="protocolconfigform">
 		<h:panelGroup>
 			<h4>
 				<h:outputText value="#{web.text.PC_EDIT_PC_TITLE}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
@@ -429,9 +438,8 @@
 				<h:outputText value="#{web.text.RESTPROTOCOLPROTECTIONHEADERENABLE_HELP}" styleClass="help"/>
 			</h:panelGroup>
 			<h:panelGroup>
-				<h:selectBooleanCheckbox id="enablecustomheaderrest" value="#{systemConfigMBean.enableCustomHeaderRest}"
-					disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
-				<h:outputLabel for="enablecustomheaderrest" value="#{web.text.ACTIVATE}" />
+				<p:selectBooleanCheckbox id="enablecustomheaderrest" value="#{systemConfigMBean.enableCustomHeaderRest}"
+					disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}" itemLabel="#{web.text.ACTIVATE}"/>
 			</h:panelGroup>
 
 			<h:panelGroup>
@@ -444,8 +452,10 @@
 
 			<h:panelGroup/>
 			<h:panelGroup>
-				<h:commandButton value="#{web.text.SAVE}" action="#{systemConfigMBean.saveProtocolConfigurations}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
-				<h:commandButton value="#{web.text.CANCEL}" action="#{systemConfigMBean.flushCache}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" />
+				<div class="action-buttons">
+					<h:commandButton value="#{web.text.SAVE}" action="#{systemConfigMBean.saveProtocolConfigurations}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
+					<h:commandButton value="#{web.text.CANCEL}" action="#{systemConfigMBean.flushCache}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" />
+				</div>
 			</h:panelGroup>
 
 		</h:panelGrid>
@@ -924,8 +934,7 @@
 
             <h:outputText value="#{web.text.STATEDUMPTAB_LOCKDOWN}"/>
             <h:panelGroup>
-                <h:selectBooleanCheckbox id="statedumpLockdownAfterImport" value="#{systemConfigMBean.statedumpLockdownAfterImport}"/>
-                <h:outputLabel for="statedumpLockdownAfterImport" value="#{web.text.STATEDUMPTAB_LOCKDOWN_CHECKBOX}" />
+                <p:selectBooleanCheckbox id="statedumpLockdownAfterImport" value="#{systemConfigMBean.statedumpLockdownAfterImport}" itemLabel="#{web.text.STATEDUMPTAB_LOCKDOWN_CHECKBOX}"/>
             </h:panelGroup>
 
             <h:panelGroup>
@@ -955,8 +964,7 @@
                 <h:outputText value="#{web.text.ENABLEEXTERNALSCRIPTS_HELP}" styleClass="help"/>
             </h:panelGroup>
             <h:panelGroup>
-                <h:selectBooleanCheckbox id="enableExternalScripts" value="#{systemConfigMBean.validatorSettings.isExternalScriptsEnabled}" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
-                <h:outputLabel for="enableExternalScripts" value="#{web.text.ACTIVATE}" />
+                <p:selectBooleanCheckbox id="enableExternalScripts" value="#{systemConfigMBean.validatorSettings.isExternalScriptsEnabled}" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}" itemLabel="#{web.text.ACTIVATE}"/>
             </h:panelGroup>
 
             <!-- External script directories -->
@@ -968,8 +976,8 @@
                 <h:outputText value="#{web.text.EXTERNAL_SCRIPTS_WHITELIST_HELP}" styleClass="help"/>
             </h:panelGroup>
             <h:panelGroup>
-                <h:selectBooleanCheckbox id="enableWhitelist" value="#{systemConfigMBean.validatorSettings.isExternalScriptsWhitelistEnabled}" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
-                <h:outputLabel for="enableWhitelist" value="#{web.text.USE_EXTERNAL_SCRIPTS_WHITELIST}" />
+                <p:selectBooleanCheckbox id="enableWhitelist" value="#{systemConfigMBean.validatorSettings.isExternalScriptsWhitelistEnabled}" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"
+					itemLabel="#{web.text.USE_EXTERNAL_SCRIPTS_WHITELIST}"/>
                 <br />
                 <h:inputTextarea id="externalScriptDirectories" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"
                     value="#{systemConfigMBean.validatorSettings.externalScriptsWhitelist}" cols="80" rows="8" />
@@ -985,8 +993,10 @@
         <h:panelGrid columns="2" styleClass="edit-bottom" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0" columnClasses="editColumnSystem1,editColumn2">
             <h:panelGroup />
             <h:panelGroup>
-                <h:commandButton value="#{web.text.SAVE}" action="#{systemConfigMBean.validatorSettings.save}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
-                <h:commandButton value="#{web.text.EXTERNAL_SCRIPTS_VALIDATE}" action="#{systemConfigMBean.validatorSettings.validateScripts}" />
+				<div class="action-buttons">
+                	<h:commandButton value="#{web.text.SAVE}" action="#{systemConfigMBean.validatorSettings.save}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
+                	<h:commandButton value="#{web.text.EXTERNAL_SCRIPTS_VALIDATE}" action="#{systemConfigMBean.validatorSettings.validateScripts}" />
+				</div>
             </h:panelGroup>
         </h:panelGrid>
     </h:form>

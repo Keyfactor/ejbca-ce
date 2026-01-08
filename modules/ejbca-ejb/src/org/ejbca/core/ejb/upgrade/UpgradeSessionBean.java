@@ -91,6 +91,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.util.JDBCUtil;
 
 import com.keyfactor.util.StringTools;
+import com.keyfactor.util.string.StringConfigurationCache;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
@@ -294,7 +295,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 setCustomCertificateValidityWithSecondsGranularity(true);
                 // Since we know that this is a brand new installation, no upgrade should be needed
                 setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
-                setLastPostUpgradedToVersion("9.4.0");
+                setLastPostUpgradedToVersion("9.5.0");
             } else {
                 // Ensure that we save currently known oldest installation version before any upgrade is invoked
                 if(getLastUpgradedToVersion() != null) {
@@ -463,6 +464,14 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 return false;
             }
         }
+        if (isLesserThan(oldVersion, "9.5.0")) {
+            try {
+                upgradeSession.migrateDatabase9_5_0();
+            } catch (UpgradeFailedException e) {
+                return false;
+            }
+        }
+           
         setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
     }
@@ -1614,6 +1623,30 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         migrateEEPLimitations940();
     }
 
+    @Override
+    public void migrateDatabase9_5_0() throws UpgradeFailedException {
+        log.info("Starting upgrade to 9.5.0");
+        migrateGlobalCesecoreConfiguration9_5_0();
+        
+    }
+    
+    private void migrateGlobalCesecoreConfiguration9_5_0() throws UpgradeFailedException {
+        log.info("Upgrade: Migrating values from properties files into GlobalCesecoreConfiguration.");
+        //First check if it's defined in config
+        String forbiddenCharacters = ConfigurationHolder.instance().getString("forbidden.characters");
+        GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+        //If not, get it from StringConfigurationCache
+        globalCesecoreConfiguration.setForbiddenCharacters(forbiddenCharacters != null ? forbiddenCharacters.toCharArray() :  StringConfigurationCache.INSTANCE.getForbiddenCharacters());
+        
+        try {
+            globalConfigurationSession.saveConfiguration(authenticationToken, globalCesecoreConfiguration);
+        } catch(AuthorizationDeniedException e) {
+            String msg = "Always allow token was denied authorisation to GlobalConfigurationData table.";
+            log.error(msg, e);
+            throw new UpgradeFailedException(msg, e);
+        }
+    }
+    
     @SuppressWarnings("deprecation")
     private void migrateEEPLimitations940() throws UpgradeFailedException {
         log.info("Upgrade: Migrating EEP Limitations data");

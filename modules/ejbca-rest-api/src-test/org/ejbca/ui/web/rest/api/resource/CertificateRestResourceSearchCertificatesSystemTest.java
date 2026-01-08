@@ -36,6 +36,7 @@ import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+import org.bouncycastle.asn1.x500.X500Name;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -86,6 +87,7 @@ import org.junit.Test;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.keyfactor.util.Base64;
+import com.keyfactor.util.CeSecoreNameStyle;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.certificate.DnComponents;
@@ -210,8 +212,7 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         X509Certificate certificate = createCertificate(username, expectedSubjectDn, keys.getPublic());
         String expectedSerialNumber = CertTools.getSerialNumberAsString(certificate);
         certificates.add(certificate);
-        //getSubjectX500Principal does not deliver the exact same order, so leave this for now
-        assertEquals("Order problem", expectedSubjectDn, certificate.getSubjectDN().getName());
+        assertEquals("Order problem", expectedSubjectDn, X500Name.getInstance(CeSecoreNameStyle.INSTANCE, certificate.getSubjectX500Principal().getEncoded()).toString());
 
         final SearchCertificateCriteriaRestRequest searchCertificateCriteriaRestRequest = SearchCertificateCriteriaRestRequest.builder()
                 .property(SearchCertificateCriteriaRestRequest.CriteriaProperty.SUBJECT_DN.name())

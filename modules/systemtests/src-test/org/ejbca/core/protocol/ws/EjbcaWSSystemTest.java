@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyManagementException;
@@ -71,7 +72,6 @@ import com.keyfactor.util.keys.token.KeyGenParams;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
-import org.apache.commons.text.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
@@ -121,8 +121,8 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.cert.SubjectDirAttrExtension;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.config.GlobalEndEntityProfileConfiguration;
-import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.dto.RoleDataDto;
 import org.cesecore.dto.RoleDataDtoBuilder;
@@ -272,8 +272,6 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
     private final CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
     private final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     private final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
-    private final CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(
-            CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
     private final EjbcaWSHelperSessionRemote ejbcaWSHelperSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EjbcaWSHelperSessionRemote.class);
     private final EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
@@ -305,9 +303,11 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
     public static void beforeClass() throws Exception {
         adminBeforeClass();
         fileHandles = setupAccessRights(WS_ADMIN_ROLENAME);
-        CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(
-                CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-        originalForbiddenChars = cesecoreConfigurationProxySession.getForbiddenCharacters();
+
+        final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+        GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+        
+        originalForbiddenChars = globalCesecoreConfiguration.getForbiddenCharacters();
         CertificateImplementationRegistry.INSTANCE.addCertificateImplementation(new CvCertificateUtility());
         Security.addProvider(new CVCProvider());
     }
@@ -322,9 +322,10 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
     public static void afterClass() throws Exception {
         cleanUpAdmins(WS_ADMIN_ROLENAME);
         cleanUpAdmins(WS_TEST_ROLENAME);
-        CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(
-                CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-        cesecoreConfigurationProxySession.setForbiddenCharacters(originalForbiddenChars);
+        final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+        GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+        globalCesecoreConfiguration.setForbiddenCharacters(originalForbiddenChars);
+        globalConfigurationSession.saveConfiguration(intAdmin, globalCesecoreConfiguration);
         CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
         certificateProfileSession.removeCertificateProfile(intAdmin, WS_TEST_CERTIFICATE_PROFILE_NAME);
         for (File file : fileHandles) {
@@ -351,15 +352,10 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
 
     /** This test is not a WebService test, but for simplicity it re-uses the created administrator certificate in order to connect to the
      * EJBCA Admin Web and verify returned security headers.
-     * @throws IOException
-     * @throws CertificateException
-     * @throws KeyStoreException
-     * @throws NoSuchAlgorithmException
-     * @throws KeyManagementException
-     * @throws UnrecoverableKeyException
+     * 
      */
     @Test
-    public void testAdminWebSecurityHeaders() throws UnrecoverableKeyException, KeyManagementException, NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
+    public void testAdminWebSecurityHeaders() throws UnrecoverableKeyException, KeyManagementException, NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException, URISyntaxException {
         HttpURLConnection con = super.getHttpsURLConnection("https://" + hostname + ":" + httpsPort + "/ejbca/adminweb/index.xhtml");
         String xframe = con.getHeaderField("X-FRAME-OPTIONS");
         String csp = con.getHeaderField("content-security-policy");
@@ -517,8 +513,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
                     CertificateHelper.RESPONSETYPE_CERTIFICATE);
             cert = certificateResponse.getCertificate();
             assertNotNull(cert);
-            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
-            assertEquals(getDN(CA1_WSTESTUSER1), cert.getSubjectDN().toString());
+            assertEquals(getDN(CA1_WSTESTUSER1), X500Name.getInstance(CeSecoreNameStyle.INSTANCE, cert.getSubjectX500Principal().getEncoded()).toString());
             ext = cert.getExtensionValue("1.2.3.4");
             assertNotNull("there should be an extension", ext);
             try (ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(ext))) {
@@ -1127,8 +1122,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
             try {
                 CertificateResponse response = ejbcaraws.certificateRequest(user, super.getP10(), CertificateHelper.CERT_REQ_TYPE_PKCS10, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
                 X509Certificate cert = response.getCertificate();
-                //getSubjectX500Principal does not deliver the exact same order, so leave this for now
-                assertEquals("SubjectDN should be multi-value RDN", "CN=Tomas+UID=12334,O=Test,C=SE", cert.getSubjectDN().toString());
+                assertEquals("SubjectDN should be multi-value RDN", "CN=Tomas+UID=12334,O=Test,C=SE", X500Name.getInstance(CeSecoreNameStyle.INSTANCE, cert.getSubjectX500Principal().getEncoded()).toString());
             } catch (UserDoesntFullfillEndEntityProfile_Exception e) {
                 fail("Should be possible to create certificate with multi-value RDN when EE profile is configured correctly: "+e.getMessage());
             }
@@ -2436,6 +2430,11 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
      */
     @Test
     public void test41CertificateRequestWithSpecialChars01() throws Exception {
+        //Set default forbidden characters to default
+        GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+        globalCesecoreConfiguration.setForbiddenCharacters(null);
+        globalConfigurationSession.saveConfiguration(intAdmin, globalCesecoreConfiguration);
+        
         long rnd = secureRandom.nextLong();
         testCertificateRequestWithSpecialChars(
                 "CN=test" + rnd + ", O=foo\\+bar\\\"\\,, C=SE",
@@ -2494,6 +2493,11 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
      */
     @Test
     public void test45CertificateRequestWithSpecialChars05() throws Exception {
+        //Set default forbidden characters to default
+        GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+        globalCesecoreConfiguration.setForbiddenCharacters(null);
+        globalConfigurationSession.saveConfiguration(intAdmin, globalCesecoreConfiguration);
+        
         long rnd = secureRandom.nextLong();
         testCertificateRequestWithSpecialChars(
                 "CN=test45CertificateRequestWithSpecialChars05" + rnd + ", O=\"foo=bar, C=SE\"",
@@ -2559,7 +2563,9 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
     @Test
     public void test48CertificateRequestWithForbiddenCharsDefault() throws Exception {
         long rnd = secureRandom.nextLong();
-        cesecoreConfigurationProxySession.setForbiddenCharacters(null);
+        GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+        globalCesecoreConfiguration.setForbiddenCharacters(null);
+        globalConfigurationSession.saveConfiguration(intAdmin, globalCesecoreConfiguration);
         testCertificateRequestWithSpecialChars(
                 "CN=test48CertificateRequestWithForbiddenCharsDefault" + rnd + ",O=|\n|\r|;|A|!|`|?|$|~|, C=SE",
                 "CN=test48CertificateRequestWithForbiddenCharsDefault" + rnd +   ",O=|/|/|/|A|/|/|/|/|/|,C=SE");
@@ -2572,7 +2578,9 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
     @Test
     public void test49CertificateRequestWithForbiddenCharsDefinedAsDefault() throws Exception {
         long rnd = secureRandom.nextLong();
-        cesecoreConfigurationProxySession.setForbiddenCharacters("\n\r;!\u0000%`?$~".toCharArray());
+        GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+        globalCesecoreConfiguration.setForbiddenCharacters("\n\r;!\u0000%`?$~".toCharArray());
+        globalConfigurationSession.saveConfiguration(intAdmin, globalCesecoreConfiguration);        
         testCertificateRequestWithSpecialChars(
                 "CN=test49CertificateRequestWithForbiddenCharsDefinedAsDefault" + rnd + ",O=|\n|\r|;|A|!|`|?|$|~|, C=SE",
                 "CN=test49CertificateRequestWithForbiddenCharsDefinedAsDefault" + rnd +   ",O=|/|/|/|A|/|/|/|/|/|,C=SE");
@@ -2583,14 +2591,18 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
      */
     @Test
     public void test50CertificateRequestWithForbiddenCharsDefinedBogus() throws Exception {
-        cesecoreConfigurationProxySession.setForbiddenCharacters("tset".toCharArray());
+        GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+        globalCesecoreConfiguration.setForbiddenCharacters("tset".toCharArray());
+        globalConfigurationSession.saveConfiguration(intAdmin, globalCesecoreConfiguration);    
         try {
             testCertificateRequestWithSpecialChars(
                     "CN=test" +   ",O=|\n|\r|;|A|!|`|?|$|~|, C=SE",
                     "CN=////" + ",O=|\n|\r|\\;|A|!|`|?|$|~|,C=SE");
         } finally {
             // we must remove this bogus settings otherwise next setupAdmin() will fail
-            cesecoreConfigurationProxySession.setForbiddenCharacters(null);
+            globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+            globalCesecoreConfiguration.setForbiddenCharacters(null);
+            globalConfigurationSession.saveConfiguration(intAdmin, globalCesecoreConfiguration); 
         }
     }
 
@@ -2600,7 +2612,9 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
     @Test
     public void test51CertificateRequestWithNoForbiddenChars() throws Exception {
         final String testName = "test50CertificateRequestWithForbiddenCharsDefinedBogus";
-        cesecoreConfigurationProxySession.setForbiddenCharacters("".toCharArray());
+        GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+        globalCesecoreConfiguration.setForbiddenCharacters(new char[0]);
+        globalConfigurationSession.saveConfiguration(intAdmin, globalCesecoreConfiguration);   
         // Using JDK8 \r is transformed into \n for some reason, expected will work if: O=|\n|\r|\\;|A|!|`|?|$|~|,C=SE
         testCertificateRequestWithSpecialChars(
                 "CN=test51CertificateRequestWithNoForbiddenChars" + testName +   ",O=|\n|\r|;|A|!|`|?|$|~|, C=SE",
@@ -2776,7 +2790,10 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
 
     @Test
     public void test57CertificateRequestWithDnOverrideFromEndEntityInformation() throws Exception {
-        cesecoreConfigurationProxySession.setForbiddenCharacters("\n\r;!\u0000%`?$~".toCharArray());
+        GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+        globalCesecoreConfiguration.setForbiddenCharacters("\n\r;!\u0000%`?$~".toCharArray());
+        globalConfigurationSession.saveConfiguration(intAdmin, globalCesecoreConfiguration); 
+        
         final long rnd = Math.abs(secureRandom.nextLong());
         // Behavior changed with introduction of multi-valued RDNs and using IETFUtils.rDNsFromString, in ECA-3934
         // The multi-value RDN SN=12345+JurisdictionCountry=SE is now handled correctly
@@ -2789,7 +2806,9 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
 
     @Test
     public void test58SoftTokenRequestWithDnOverrideFromEndEntityInformation() throws Exception {
-        cesecoreConfigurationProxySession.setForbiddenCharacters("\n\r;!\u0000%`?$~".toCharArray());
+        GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+        globalCesecoreConfiguration.setForbiddenCharacters("\n\r;!\u0000%`?$~".toCharArray());
+        globalConfigurationSession.saveConfiguration(intAdmin, globalCesecoreConfiguration); 
         final long rnd = Math.abs(secureRandom.nextLong());
         // Behavior changed with introduction of multi-valued RDNs and using IETFUtils.rDNsFromString, in ECA-3934
         // The multi-value RDN SN=12345+JurisdictionCountry=SE is now handled correctly
@@ -3755,42 +3774,33 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
         userData.setTokenType(UserDataVOWS.TOKEN_TYPE_P12);
         userData.setEndEntityProfileName("EMPTY");
         userData.setCertificateProfileName("ENDUSER");
-
-        KeyStore ksenv = ejbcaraws.softTokenRequest(userData, null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        java.security.KeyStore keyStore = KeyStoreHelper.getKeyStore(ksenv.getKeystoreData(), "PKCS12", PASSWORD);
-        // Verify that keystore returned from server has definite length encoding
-        ByteArrayInputStream in = new ByteArrayInputStream(Base64.decode(ksenv.getKeystoreData()));
-        try (IndefiniteLengthDetectorStream ildStream = new IndefiniteLengthDetectorStream(in)) {
-            while (ildStream.readValue() != null) {
-                ;
-            }
-            assertFalse("ks.store() with PKCS12StoreParameter(true) is expected to not have indefinitlength encoding", ildStream.isIndefiniteLength());
-        }
-        assertNotNull(keyStore);
-        Enumeration<String> en = keyStore.aliases();
-        String alias = en.nextElement();
-        if(!keyStore.isKeyEntry(alias)) {
-            alias = en.nextElement();
-        }
-        X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);
-        //getSubjectX500Principal does not deliver the exact same order, so leave this for now
-        String resultingSubjectDN = cert.getSubjectDN().toString();
-        // on RedHat 6.4 with OpenJDK-8 64-Bit '\r' symbol is automatically replaced with '\n'. So try to check again, if difference between expected and actual
-        // is in that symbol then test succeeds, otherwise test fails
+        X509Certificate cert = null;
         try {
-            assertEquals(requestedSubjectDN + " was transformed into " + resultingSubjectDN + " (not the expected " + expectedSubjectDN + ")", expectedSubjectDN,
-                    resultingSubjectDN);
-        } catch (AssertionError e){
-            log.info(requestedSubjectDN + " was transformed into '" + resultingSubjectDN + "' (not the expected '" + expectedSubjectDN + "'). Re-checking if it was a \\r replaced by \\n that happens on some platforms.");
-            expectedSubjectDN = StringEscapeUtils.escapeJava(expectedSubjectDN);
-            requestedSubjectDN = StringEscapeUtils.escapeJava(requestedSubjectDN);
-            resultingSubjectDN = StringEscapeUtils.escapeJava(resultingSubjectDN);
-            resultingSubjectDN = resultingSubjectDN.replace("\\r", "\\n");
-            expectedSubjectDN = expectedSubjectDN.replace("\\r", "\\n");
-            assertEquals(requestedSubjectDN + " was transformed into '" + resultingSubjectDN + "' (not the expected '" + expectedSubjectDN + "')" , expectedSubjectDN,
-                    resultingSubjectDN);
+            KeyStore ksenv = ejbcaraws.softTokenRequest(userData, null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
+            java.security.KeyStore keyStore = KeyStoreHelper.getKeyStore(ksenv.getKeystoreData(), "PKCS12", PASSWORD);
+            // Verify that keystore returned from server has definite length encoding
+            ByteArrayInputStream in = new ByteArrayInputStream(Base64.decode(ksenv.getKeystoreData()));
+            try (IndefiniteLengthDetectorStream ildStream = new IndefiniteLengthDetectorStream(in)) {
+                while (ildStream.readValue() != null) {
+                    ;
+                }
+                assertFalse("ks.store() with PKCS12StoreParameter(true) is expected to not have indefinitlength encoding",
+                        ildStream.isIndefiniteLength());
+            }
+            assertNotNull(keyStore);
+            Enumeration<String> en = keyStore.aliases();
+            String alias = en.nextElement();
+            if (!keyStore.isKeyEntry(alias)) {
+                alias = en.nextElement();
+            }
+            cert = (X509Certificate) keyStore.getCertificate(alias);
+            String resultingSubjectDN = X500Name.getInstance(CeSecoreNameStyle.INSTANCE, cert.getSubjectX500Principal().getEncoded()).toString();
+
+            assertEquals(requestedSubjectDN + " was transformed into " + resultingSubjectDN + " (not the expected " + expectedSubjectDN + ")",
+                    expectedSubjectDN, resultingSubjectDN);
         } finally {
             deleteUser(userName);
+            internalCertificateStoreSession.removeCertificate(cert);
         }
     }
 

@@ -158,10 +158,10 @@ public class RemoteAuthenticationMBean extends InternalKeyBindingMBeanBase {
                 internalKeyBinding.setCryptoTokenId(getCurrentCryptoToken().intValue());
                 internalKeyBinding.setKeyPairAlias(getCurrentKeyPairAlias());
                 internalKeyBinding.setSignatureAlgorithm(getCurrentSignatureAlgorithm());
-                if (getCurrentKeyPairAlias() == null || getCurrentKeyPairAlias().length() == 0) {
+                if (getCurrentNextKeyPairAlias() == null || getCurrentNextKeyPairAlias().length() == 0) {
                     internalKeyBinding.setNextKeyPairAlias(null);
                 } else {
-                    internalKeyBinding.setNextKeyPairAlias(getCurrentKeyPairAlias());
+                    internalKeyBinding.setNextKeyPairAlias(getCurrentNextKeyPairAlias());
                 }
             }
             internalKeyBinding.setTrustedCertificateReferences((List<InternalKeyBindingTrustEntry>) getTrustedCertificates().getWrappedData());
