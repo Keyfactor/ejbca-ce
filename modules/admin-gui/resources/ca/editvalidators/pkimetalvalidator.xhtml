@@ -48,11 +48,11 @@
                            for="autodetect"
                            styleClass="block"
                            value="#{web.text.PKIMETAL_VALIDATOR_AUTODETECT_PROFILE}" />
-            <h:selectBooleanCheckbox id="autodetect"
+            <p:selectBooleanCheckbox id="autodetect"
                                      value="#{validatorBean.validator.autoDetect}"
                                      disabled="#{validatorsBean.viewOnly or !validatorBean.validator.isConnected()}">
               <f:ajax render="profileCheckboxes" event="change"/>
-            </h:selectBooleanCheckbox>
+            </p:selectBooleanCheckbox>
             <!-- Available profiles from pkimetal -->
             <h:outputLabel
                            id="profiles-label" for="profiles" styleClass="block" value="#{web.text.PKIMETAL_VALIDATOR_AVAILABLE_PROFILES}"/>
