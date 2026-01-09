@@ -1,3 +1,4 @@
+
 /*************************************************************************
  *                                                                       *
  *  CESeCore: CE Security Core                                           *
@@ -10,33 +11,29 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.configuration;
+package org.cesecore.config;
 
-import org.cesecore.config.ConfigurationHolder;
+import static org.junit.Assert.assertTrue;
 
-import com.keyfactor.util.string.StringConfigurationCache;
+import java.util.Arrays;
 
-import jakarta.ejb.Stateless;
+import org.junit.Test;
 
 /**
- * 
+ * Unit tests for GlobalCesecoreConfiguration
  */
-@Stateless
-public class CesecoreConfigurationProxySessionBean implements CesecoreConfigurationProxySessionRemote {
 
-    @Override
-    public void setConfigurationValue(String key, String value) {
-        ConfigurationHolder.updateConfiguration(key, value);      
+public class GlobalCesecoreConfigurationUnitTest {
+
+    /**
+     * Forbidden characters are base64 encoded in the database, so just making sure that encoding and decoding work as expected
+     */
+    @Test
+    public void testForbiddenCharactersBase64Encoding() {
+        GlobalCesecoreConfiguration globalCesecoreConfiguration = new GlobalCesecoreConfiguration();
+        globalCesecoreConfiguration.setForbiddenCharacters(GlobalCesecoreConfiguration.DEFAULT_FORBIDDEN_CHARACTERS);
+        assertTrue("Forbidden character list was not stored properly.", Arrays.equals(GlobalCesecoreConfiguration.DEFAULT_FORBIDDEN_CHARACTERS,
+                globalCesecoreConfiguration.getForbiddenCharacters()));
     }
 
-    @Override
-    public String getConfigurationValue(String key) {
-        return ConfigurationHolder.getExpandedString(key);
-    }
-
-    @Deprecated(since = "9.5.0")
-    @Override
-    public char[] getForbiddenCharacters() {
-        return StringConfigurationCache.INSTANCE.getForbiddenCharacters();
-    }
 }

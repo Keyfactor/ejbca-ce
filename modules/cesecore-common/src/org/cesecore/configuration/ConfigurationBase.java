@@ -78,5 +78,12 @@ public abstract class ConfigurationBase extends UpgradeableDataHashMap {
     public void filterDiffMapForLogging(Map<Object,Object> diff) {
         // Do nothing
     }
+    
+    /**
+     * Override this method to perform external cache updates
+     */
+    public void updateExternalCaches() {
+        
+    }
 
 }
