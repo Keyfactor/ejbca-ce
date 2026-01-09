@@ -626,37 +626,38 @@
                             id="addPreCertificateMaintenanceServiceButton"/></div>
         </h:panelGroup>
 
-		<h:dataTable value="#{systemConfigMBean.ctLogManager.labels}" var="label">
+		<h:dataTable value="#{systemConfigMBean.ctLogManager.labels}" var="label" styleClass="no-padding">
 		    <h:column>
 				<h3>
 				    <h:outputText value="#{label}"/>
 				</h3>
-				<h:dataTable value="#{systemConfigMBean.ctLogManager.getCtLogsByLabel(label)}"
+				<p:dataTable value="#{systemConfigMBean.ctLogManager.getCtLogsByLabel(label)}"
 				    var="ctlog"
-				    styleClass="grid ctlogTable">
-					<h:column>
+							 styleClass="grid table-layout-auto vertical-padding-1"
+							 stripedRows="true" showGridlines="true">
+					<p:column>
 		   				<f:facet name="header">
 		   				   <h:outputText value="#{web.text.CTLOGCONFIGURATION_URL}"/>
 		   			    </f:facet>
 						<h:outputText value="#{ctlog.url}"
 						    title="#{web.text.CTLOGCONFIGURATION_URL}"/>
-					</h:column>
-					<h:column>
+					</p:column>
+					<p:column>
 		   				<f:facet name="header">
 		   				   <h:outputText value="#{web.text.CTLOGCONFIGURATION_PUBLICKEY}"/>
 		   				</f:facet>
 						<h:outputText value="#{ctlog.logKeyIdString}"
 						    title="#{web.text.CTLOGCONFIGURATION_PUBLICKEY}"
-						    styleClass="monospace"/>
-					</h:column>
-					<h:column>
+						    />
+					</p:column>
+					<p:column>
 		   				<f:facet name="header">
 		   				   <h:outputText value="#{web.text.CTLOGCONFIGURATION_TIMEOUT}"/>
 		   				</f:facet>
 						<h:outputText value="#{ctlog.timeout}"
 					        styleClass="numberCell"/>
-					</h:column>
-					<h:column>
+					</p:column>
+					<p:column>
 					    <f:facet name="header">
 					        <h:outputText value="#{web.text.LABEL}"/>
 					    </f:facet>
@@ -665,29 +666,31 @@
 					         onchange="this.form.submit()">
 					         <f:selectItems value="#{systemConfigMBean.ctLogManager.getAvailableLabels(ctlog)}" />
 					    </h:selectOneMenu>
-					</h:column>
-					<h:column>
+					</p:column>
+					<p:column>
                         <f:facet name="header">
                            <h:outputText value="#{web.text.ACTIONS}"/>
                         </f:facet>
-                        <h:commandButton action="#{systemConfigMBean.ctLogManager.editCtLog(ctlog)}"
-                            value="#{web.text.EDIT}"
-                            rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"
-                            id="editCtLogButton"/>
-                        <h:commandButton action="#{systemConfigMBean.ctLogManager.removeCtLog(ctlog)}"
-                             value="#{web.text.REMOVE}"
-                             rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
-                             <h:commandButton id="moveUpCtLogButton" action="#{systemConfigMBean.ctLogManager.moveUp(ctlog)}"
-                            value="↑" title="#{web.text.MOVEUP}"
-                            rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"
-                            disabled="#{systemConfigMBean.ctLogManager.isOnTop(ctlog)}"/>
-                        <h:commandButton id="moveDownCtLogButton" action="#{systemConfigMBean.ctLogManager.moveDown(ctlog)}"
-                            value="↓"
-                            title="#{web.text.MOVEDOWN}"
-                            rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"
-                            disabled="#{systemConfigMBean.ctLogManager.isOnBottom(ctlog)}"/>
-                    </h:column>
-				</h:dataTable>
+						<div class="action-buttons">
+							<h:commandButton action="#{systemConfigMBean.ctLogManager.editCtLog(ctlog)}"
+								value="#{web.text.EDIT}"
+								rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"
+								id="editCtLogButton"/>
+							<h:commandButton action="#{systemConfigMBean.ctLogManager.removeCtLog(ctlog)}"
+								 value="#{web.text.DELETE}"
+								 rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
+								 <h:commandButton id="moveUpCtLogButton" action="#{systemConfigMBean.ctLogManager.moveUp(ctlog)}"
+								value="↑" title="#{web.text.MOVEUP}"
+								rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"
+								disabled="#{systemConfigMBean.ctLogManager.isOnTop(ctlog)}"/>
+							<h:commandButton id="moveDownCtLogButton" action="#{systemConfigMBean.ctLogManager.moveDown(ctlog)}"
+								value="↓"
+								title="#{web.text.MOVEDOWN}"
+								rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"
+								disabled="#{systemConfigMBean.ctLogManager.isOnBottom(ctlog)}"/>
+						</div>
+                    </p:column>
+				</p:dataTable>
 			</h:column>
 		</h:dataTable>
  		<h:panelGrid columns="5" styleClass="edit-top" rowClasses="Row0,Row1">
@@ -848,7 +851,7 @@
                         <h:commandButton id="view" value="#{web.text.VIEW}" ajax="false" action="#{systemConfigMBean.actionView}" icon="pi pi-search" styleClass="rounded-button" />
                         <h:commandButton id="edit" value="#{web.text.EDIT}" ajax="false" action="#{systemConfigMBean.actionEdit}" icon="pi pi-file-edit" styleClass="rounded-button"
                                          rendered="#{systemConfigMBean.allowedToEditCustomCertificateExtension}" />
-                        <h:commandButton id="remove" value="#{web.text.REMOVE}" ajax="false" action="#{systemConfigMBean.removeCustomCertExtension}" icon="pi pi-trash" styleClass="rounded-button"
+                        <h:commandButton id="remove" value="#{web.text.DELETE}" ajax="false" action="#{systemConfigMBean.removeCustomCertExtension}" icon="pi pi-trash" styleClass="rounded-button"
                                          rendered="#{systemConfigMBean.allowedToEditCustomCertificateExtension}" />
                         <f:facet name="footer">
                             <h:commandButton value="#{web.text.ADD}" action="#{systemConfigMBean.addCustomCertExtension}" rendered="#{systemConfigMBean.allowedToEditCustomCertificateExtension}"/>
