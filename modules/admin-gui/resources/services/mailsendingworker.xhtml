@@ -3,7 +3,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
     xmlns:f="jakarta.faces.core"
     xmlns:h="jakarta.faces.html"
-    xmlns:ui="jakarta.faces.facelets">
+    xmlns:ui="jakarta.faces.facelets"
+	xmlns:p="http://primefaces.org/ui">
 	<ui:remove>
 		<!--
     /*************************************************************************
@@ -28,13 +29,11 @@
 			style="font-weight:bold;" />
 	</h:panelGroup>
 	<h:panelGroup>
-		<h:selectBooleanCheckbox id="certCheckSendUserNotification"
+		<p:selectBooleanCheckbox id="certCheckSendUserNotification"
 			value="#{editService.notifyingType.useEndUserNotifications}"
-			disabled="#{not editService.hasEditRights}" >
+			disabled="#{not editService.hasEditRights}" itemLabel="#{web.text.USE}">
 			<f:ajax render=":editForm:workerPage:certCheckEndUserSubjectTextField :editForm:workerPage:certCheckEndUserMessageTextArea"/>
-		</h:selectBooleanCheckbox>	
-		<h:outputLabel 
-			value="#{web.text.USE}" />
+		</p:selectBooleanCheckbox>
 		<h:outputText>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;</h:outputText>
 		<h:outputText styleClass="help"
 			value="#{web.text.SENDNOTIFICATIONTOENDUSER_HELP}" />
@@ -67,14 +66,11 @@
 			style="font-weight:bold;" />
 	</h:panelGroup>
 	<h:panelGroup>
-		<h:selectBooleanCheckbox id="certCheckSendAdminNotification"
+		<p:selectBooleanCheckbox id="certCheckSendAdminNotification"
 			value="#{editService.notifyingType.useAdminNotifications}"
-			disabled="#{not editService.hasEditRights}" >
+			disabled="#{not editService.hasEditRights}" itemLabel="#{web.text.USE}">
 		<f:ajax render=":editForm:workerPage:certCheckAdminSubjectTextField :editForm:workerPage:certCheckAdminMessageTextArea"/>
-		</h:selectBooleanCheckbox>
-			
-		<h:outputLabel 
-			value="#{web.text.USE}" />
+		</p:selectBooleanCheckbox>
 		<h:outputText>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;</h:outputText>
 		<h:outputText styleClass="help"
 			value="#{web.text.SENDNOTIFICATIONTOADMIN_HELP}" />
