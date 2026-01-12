@@ -104,6 +104,7 @@ import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherException;
+import org.ejbca.core.model.certificate.CertificateRequestParseException;
 import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.RaCrlSearchRequest;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
@@ -1268,7 +1269,8 @@ public class EjbcaWS implements IEjbcaWS {
             final AuthenticationToken admin = getAdmin();
             logAdminName(admin,logger);
             result = raMasterApiProxyBean.processCertificateRequest(admin, username, password, req, reqType, null, responseType);
-        } catch (CertificateExtensionException | NoSuchAlgorithmException | NoSuchProviderException | CertificateException | IOException | ParseException | ConstructionException | NoSuchFieldException | RuntimeException e) {
+        } catch (CertificateExtensionException | NoSuchAlgorithmException | NoSuchProviderException | CertificateException | IOException | ParseException | ConstructionException | NoSuchFieldException | RuntimeException |
+                 CertificateRequestParseException e) {
             throw getEjbcaException(e, logger);
         } catch (NotFoundException e) {
             throw e;
