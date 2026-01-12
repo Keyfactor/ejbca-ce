@@ -43,8 +43,8 @@
 		</h:panelGroup>
 
 		<h:panelGroup>
-			<p:selectOneRadio value="#{initNewPkiMBean.cryptoTokenType}" styleClass="margin-top-1-rem">
-           		<f:selectItem itemLabel="Use Existing Crypto Token" itemValue="useExistingToken" />
+			<p:selectOneRadio value="#{initNewPkiMBean.cryptoTokenType}" styleClass="margin-top-1-rem" id="selectCryptoTokenAction">
+           		<f:selectItem itemLabel="Use Existing Crypto Token" itemValue="useExistingToken"/>
            		<f:selectItem itemLabel="Create New Crypto Token" itemValue="createNewToken" />
 				<f:ajax render="initNewPkiForm" />
 			</p:selectOneRadio>
