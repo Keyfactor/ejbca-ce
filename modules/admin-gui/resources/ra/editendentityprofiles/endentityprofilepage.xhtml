@@ -48,8 +48,7 @@
                         action="#{endEntityProfilesMBean.doNothing}" />
                 </p>
             </noscript>
-            <h:panelGrid columns="3" styleClass="edit-top"
-                cellspacing="3" cellpadding="3" border="0" width="100%"
+            <h:panelGrid columns="3" styleClass="edit-top ui-md-12"
                 rowClasses="Row0,Row1"
                 columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3">
                 <h:panelGroup>
@@ -339,8 +338,7 @@
 
             <!-- DIRECTIVES -->
 
-            <h:panelGrid columns="3" styleClass="edit-top"
-                cellspacing="3" cellpadding="3" border="0" width="100%"
+            <h:panelGrid columns="3" styleClass="edit-top ui-md-12"
                 rowClasses="Row0,Row1"
                 columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3">
                 <h:panelGroup>
@@ -410,8 +408,7 @@
             <!-- SUBJECT DN ATTRIBUTES -->
 
             <h:panelGrid id="header_subjectdnattributes" columns="3"
-                styleClass="edit-top" cellspacing="3" cellpadding="3"
-                border="0" width="100%" rowClasses="Row0,Row1"
+                styleClass="edit-top ui-md-12" rowClasses="Row0,Row1"
                 columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3"
                 rendered="#{!endEntityProfileMBean.sshProfile}">
                 <h:panelGroup>
@@ -522,8 +519,7 @@
                 </h:column>
             </h:dataTable>
             <h:panelGrid id="bottom_subjectdnattributes" columns="3"
-                cellspacing="3" cellpadding="3" border="0" width="100%"
-                rowClasses="Row1,Row0" styleClass="edit-top"
+                rowClasses="Row1,Row0" styleClass="edit-top ui-md-12"
                 columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3"
                 rendered="#{(!endEntityProfileMBean.sshProfile) and (not endEntityProfileMBean.viewOnly)}">
                 <h:panelGroup id="removeSubjectDnAttributeGroup">
@@ -546,8 +542,7 @@
             <!-- OTHER SUBJECT ATTRIBUTES -->
 
             <h:panelGrid id="header_othersubjectattributes" columns="3"
-                styleClass="edit-top" cellspacing="3" cellpadding="3"
-                border="0" width="100%" rowClasses="Row0,Row1"
+                styleClass="edit-top ui-md-12" rowClasses="Row0,Row1"
                 columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3"
                 rendered="#{!endEntityProfileMBean.sshProfile}">
                 <h:panelGroup>
@@ -680,8 +675,7 @@
             </h:dataTable>
 
             <h:panelGrid id="header_othersubjectattributes2" columns="3"
-                cellspacing="3" cellpadding="3" border="0" width="100%"
-                rowClasses="Row0,Row1" styleClass="edit-top" rendered="#{!endEntityProfileMBean.sshProfile}"
+                rowClasses="Row0,Row1" styleClass="edit-top ui-md-12" rendered="#{!endEntityProfileMBean.sshProfile}"
                 columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3">
                 <h:panelGroup id="removeSubjectAltNameGroup">
                     <h:commandButton id="removeSubjectAltNameButton"
@@ -733,7 +727,7 @@
             <h:dataTable id="subjectDirectoryComponents"
                 var="subjectDirectoryAttributesComponent"
                 value="#{endEntityProfileMBean.subjectDirectoryAttributeComponentList}"
-                cellspacing="1" cellpadding="3" border="0" width="100%" styleClass="edit-top"
+                styleClass="edit-top ui-md-12"
                 rowClasses="Row0,Row1" rendered="#{!endEntityProfileMBean.sshProfile}"
                 columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3">
                 <h:column>
@@ -779,8 +773,7 @@
                 </h:column>
             </h:dataTable>
             <h:panelGrid id="header_othersubjectattributes3" columns="3"
-                cellspacing="3" cellpadding="3" border="0" width="100%"
-                rowClasses="Row1,Row0" styleClass="edit-top"
+                rowClasses="Row1,Row0" styleClass="edit-top ui-md-12"
                 columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3"
                 rendered="#{(not endEntityProfileMBean.sshProfile) and (not endEntityProfileMBean.viewOnly)}">
                 <h:panelGroup id="removeSubjectDirectoryAttributeGroup">
@@ -804,8 +797,7 @@
 
 			<!-- SSH Certificate Data -->
 			<h:panelGrid id="header_sshcertificatedata" columns="3"
-                styleClass="edit-top" cellspacing="3" cellpadding="3"
-                border="0" width="100%" rowClasses="Row0,Row1"
+                styleClass="edit-top ui-md-12" rowClasses="Row0,Row1"
                 columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3"
                 rendered="#{endEntityProfileMBean.sshProfile}"
                 >
@@ -848,7 +840,7 @@
 			                
             <h:dataTable id="sshFieldComponents" var="sshFieldComponent"
 	                value="#{endEntityProfileMBean.sshFieldList}"
-	                cellspacing="1" cellpadding="3" border="0" width="100%"
+	                styleClass="ui-md-12"
 	                rowClasses="Row0,Row1"
 	                columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3"
 	                rendered="#{endEntityProfileMBean.sshProfile}">
@@ -906,8 +898,7 @@
                     </h:panelGrid>
                 </h:column>
             </h:dataTable>
-            <h:panelGrid id="bottom_sshFields" columns="3"
-                cellspacing="3" cellpadding="3" border="0" width="100%"
+            <h:panelGrid id="bottom_sshFields" columns="3" styleClass="ui-md-12"
                 rowClasses="Row0,Row1"
                 columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3"
                 rendered="#{not endEntityProfileMBean.viewOnly and endEntityProfileMBean.sshProfile}">
@@ -929,7 +920,7 @@
             </h:panelGrid>
             <!-- SSH Critical Options -->
             <h:panelGrid id="sshCriticalOptions" columns="3"
-                cellspacing="3" cellpadding="3" border="0" width="100%"
+                styleClass="ui-md-12"
                 rowClasses="Row0,Row1" rendered="#{endEntityProfileMBean.sshProfile}"
                 columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3"
                 >
@@ -1027,8 +1018,7 @@
 
 			<!-- MAIN CERTIFICATE DATA -->
             <h:panelGrid id="header_maincertificatedata" columns="3"
-                styleClass="edit-top" cellspacing="3" cellpadding="3"
-                border="0" width="100%" rowClasses="Row0,Row1"
+                styleClass="edit-top ui-md-12" rowClasses="Row0,Row1"
                 columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3">
                 <h:panelGroup>
                     <h:outputText value="&nbsp;" escape="false"></h:outputText>
@@ -1178,8 +1168,7 @@
             <!-- OTHER CERTIFICATE DATA -->
 
             <h:panelGrid id="header_othercertificatedata" columns="3"
-                styleClass="edit-top" cellspacing="3" cellpadding="3"
-                border="0" width="100%" rowClasses="Row0,Row1"
+                styleClass="edit-top ui-md-12" rowClasses="Row0,Row1"
                 columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3">
                 <h:panelGroup>
                     <h:outputText value="&nbsp;" escape="false"></h:outputText>
@@ -1433,8 +1422,7 @@
             <!-- OTHER DATA -->
 
             <h:panelGrid id="header_otherdata" columns="3"
-                styleClass="edit-top" cellspacing="3" cellpadding="3"
-                border="0" width="100%" rowClasses="Row0,Row1"
+                styleClass="edit-top ui-md-12" rowClasses="Row0,Row1"
                 columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3">
                 <h:panelGroup>
                     <h:outputText value="&nbsp;" escape="false"></h:outputText>
@@ -1648,8 +1636,7 @@
             <h:panelGroup id="userNotificationsWrapper">
                 <ui:repeat var="userNotification"
                     value="#{endEntityProfileMBean.userNotifications}">
-                    <h:panelGrid columns="3" cellspacing="3"
-                        cellpadding="3" border="0" width="100%"
+                    <h:panelGrid columns="3" styleClass="ui-md-12"
                         rowClasses="Row0,Row1"
                         columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3">
                         <h:column>
@@ -1726,8 +1713,7 @@
                 </ui:repeat>
             </h:panelGroup>        
             <h:panelGrid id="header_saveorcancel" columns="3"
-                styleClass="edit-top" cellspacing="3" cellpadding="3"
-                border="0" width="100%" rowClasses="Row0,Row1"
+                styleClass="edit-top ui-md-12" rowClasses="Row0,Row1"
                 columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3">
                 <h:panelGroup>&nbsp;</h:panelGroup>
                 <h:panelGroup>&nbsp;</h:panelGroup>

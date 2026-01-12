@@ -38,8 +38,7 @@
         </h3>
 
         <h:form id="editcapage" enctype="multipart/form-data">
-            <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-                         cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
+            <h:panelGrid columns="2" styleClass="edit-top ui-md-12" rowClasses="Row0,Row1"
                          columnClasses="editColumn1,editColumn2">
                 <h:panelGroup>
                     &nbsp;
@@ -490,8 +489,7 @@
             </h:panelGrid>
 
             <!-- ==================================================================== CITS Attributes =================================================================================== -->
-            <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-                         cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
+            <h:panelGrid columns="2" styleClass="edit-top ui-md-12" rowClasses="Row0,Row1"
                          columnClasses="editColumn1,editColumn2"
                          rendered="#{editCAsMBean.caTypeCits}">
                 <h:outputLabel for="header_cits_attributes"
@@ -625,8 +623,7 @@
 
             </h:panelGrid>
 
-            <h:panelGrid id="citsnonExistingCertRevokeSection" columns="2" cellspacing="3"
-                         cellpadding="3" border="0" width="100%" rowClasses="Row1,Row0"
+            <h:panelGrid id="citsnonExistingCertRevokeSection" columns="2" styleClass="ui-md-12" rowClasses="Row1,Row0"
                          rendered="#{editCAsMBean.caTypeCits}"
                          columnClasses="editColumn1,editColumn2">
 
@@ -687,8 +684,7 @@
 
             </h:panelGrid>
 
-            <h:panelGrid id="addgeographicregion" columns="3" cellspacing="3"
-                         cellpadding="3" border="0" width="100%" rowClasses="Row1,Row0"
+            <h:panelGrid id="addgeographicregion" columns="3" styleClass="ui-md-12" rowClasses="Row1,Row0"
                          rendered="#{editCAsMBean.caTypeCits}"
                          columnClasses="editColumn1,editColumn2">
 
@@ -722,7 +718,7 @@
 
             <h:dataTable id="geographicregions" var="geoRegion"
                          value="#{editCAsMBean.geographicRegions}"
-                         cellspacing="1" cellpadding="3" border="0" width="100%"
+                         styleClass="ui-md-12"
                          rowClasses="Row0,Row1"
                          columnClasses="editColumn1,editColumn2">
 
@@ -767,8 +763,7 @@
 
             <!-- ==================================================================== Directives =================================================================================== -->
 
-            <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-                         cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
+            <h:panelGrid columns="2" styleClass="edit-top ui-md-12" rowClasses="Row0,Row1"
                          columnClasses="editColumn1,editColumn2"
                          rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable
 								and not editCAsMBean.caTypeCits and not editCAsMBean.caTypeProxy}">
@@ -910,8 +905,7 @@
 
             </h:panelGrid>
 
-            <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-                         cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
+            <h:panelGrid columns="2" styleClass="edit-top ui-md-12" rowClasses="Row0,Row1"
                          columnClasses="editColumn1,editColumn2"
                          rendered="#{editCAsMBean.caExternal}">
                 <h:outputLabel for="header_directives_ext"
@@ -935,8 +929,7 @@
                 </h:panelGroup>
             </h:panelGrid>
 
-            <h:panelGrid id="doStoreOnDemandSection" columns="2" cellspacing="3"
-                         cellpadding="3" border="0" width="100%" rowClasses="Row1,Row0"
+            <h:panelGrid id="doStoreOnDemandSection" columns="2" styleClass="ui-md-12" rowClasses="Row1,Row0"
                          columnClasses="editColumn1,editColumn2">
 
                 <h:panelGroup
@@ -954,8 +947,7 @@
                     <br/>
                     <h:outputText styleClass="smallHelp" value="#{web.text.PREPRODUCEONDEMAND_HELP}"/>
                 </h:panelGroup>
-            </h:panelGrid><h:panelGrid id="doPreProduceIndividualOcspResponse" columns="2" cellspacing="3"
-				cellpadding="3" border="0" width="100%" rowClasses="Row1,Row0"
+            </h:panelGrid><h:panelGrid id="doPreProduceIndividualOcspResponse" columns="2" styleClass="ui-md-12" rowClasses="Row1,Row0"
 				columnClasses="editColumn1,editColumn2">
 				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.doPreProduceOcspResponses and editCAsMBean.caInfoDto.caTypeX509 and editCAsMBean.renderOcspPreProduction}">
 					<h:outputLabel for="checkboxpreproduceocspresponseoponissueanceandrevocationsext"
@@ -971,8 +963,7 @@
 				</h:panelGroup>
 			</h:panelGrid>
 
-            <h:panelGrid id="nonExistingCertRevokeSection" columns="2" cellspacing="3"
-                         cellpadding="3" border="0" width="100%" rowClasses="Row1,Row0"
+            <h:panelGrid id="nonExistingCertRevokeSection" columns="2" styleClass="ui-md-12" rowClasses="Row1,Row0"
                          columnClasses="editColumn1,editColumn2"
             >
                 <h:panelGroup
@@ -1037,8 +1028,7 @@
 
             <!-- ==================================================================== CA certificate data ========================================================================== -->
 
-            <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-                         cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
+            <h:panelGrid columns="2" styleClass="edit-top ui-md-12" rowClasses="Row0,Row1"
                          columnClasses="editColumn1,editColumn2"
                          rendered="#{not editCAsMBean.renderCvcAvailable and not editCAsMBean.caTypeCits}">
 
@@ -1388,8 +1378,7 @@
 
             <!-- ==================================================================== CRL Specific Data ============================================================================ -->
 
-            <h:panelGrid id="crlSpecificData" columns="2" styleClass="edit-top" cellspacing="3"
-                         cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
+            <h:panelGrid id="crlSpecificData" columns="2" styleClass="edit-top ui-md-12" rowClasses="Row0,Row1"
                          columnClasses="editColumn1,editColumn2"
                          rendered="#{editCAsMBean.caInfoDto.caTypeX509 and not editCAsMBean.renderCvcAvailable
 										and not editCAsMBean.caTypeCits}">
@@ -1803,8 +1792,7 @@
             <!-- ==================================================================== CRL Specific Data ============================================================================ -->
 
             <!-- ==================================================================== Default CA Defined Validation Data =========================================================== -->
-            <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-                         cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
+            <h:panelGrid columns="2" styleClass="edit-top ui-md-12" rowClasses="Row0,Row1"
                          columnClasses="editColumn1,editColumn2"
                          rendered="#{editCAsMBean.caInfoDto.caTypeX509 and not editCAsMBean.caExternal
 								and not editCAsMBean.renderCvcAvailable and not editCAsMBean.caTypeCits}">
@@ -1959,8 +1947,7 @@
             <!-- ==================================================================== Default CA Defined Validation Data =========================================================== -->
 
             <!-- ==================================================================== Approval Settings  =========================================================================== -->
-            <h:panelGrid columns="2" styleClass="edit-top lone-edit-heading"
-                         cellspacing="3" cellpadding="3" border="0" width="100%"
+            <h:panelGrid columns="2" styleClass="edit-top lone-edit-heading ui-md-12"
                          rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
                          rendered="#{not (editCAsMBean.caExternal and not editCAsMBean.caTypeCits) and not editCAsMBean.renderCvcAvailable
 									and not editCAsMBean.caInfoDto.caTypeSsh and not editCAsMBean.caTypeProxy}">
@@ -1970,8 +1957,7 @@
             </h:panelGrid>
 
             <h:dataTable value="#{editCAsMBean.approvalRequestItems}"
-                         var="requestItem" cellspacing="1" cellpadding="3" border="0"
-                         width="100%" rowClasses="Row0,Row1"
+                         var="requestItem" rowClasses="Row0,Row1" styleClass="ui-md-12"
                          columnClasses="editColumn1,editColumn2" style="padding-right: 4px;"
                          rendered="#{not (editCAsMBean.caExternal and not editCAsMBean.caTypeCits)and not editCAsMBean.renderCvcAvailable
 								and not editCAsMBean.caInfoDto.caTypeSsh and not editCAsMBean.caTypeProxy}">
@@ -1992,8 +1978,7 @@
 
             <!-- ==================================================================== Other Data =================================================================================== -->
 
-            <h:panelGrid columns="2" styleClass="edit-top lone-edit-heading"
-                         cellspacing="3" cellpadding="3" border="0" width="100%"
+            <h:panelGrid columns="2" styleClass="edit-top lone-edit-heading ui-md-12"
                          rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
                          rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable
 								and not editCAsMBean.caTypeCits and not  editCAsMBean.caTypeProxy}">
@@ -2089,8 +2074,7 @@
 
             <!-- ==================================================================== CA Life Cycle ================================================================================ -->
 
-            <h:panelGrid columns="2" styleClass="edit-top lone-edit-heading"
-                         cellspacing="3" cellpadding="3" border="0" width="100%"
+            <h:panelGrid columns="2" styleClass="edit-top lone-edit-heading ui-md-12"
                          rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
                          rendered="#{editCAsMBean.renderCaLifeCycle and not editCAsMBean.renderCvcAvailable
 								and not editCAsMBean.caTypeCits and not editCAsMBean.caTypeProxy}">
@@ -2249,8 +2233,7 @@
             <!-- ==================================================================== CA Life Cycle ================================================================================ -->
 
             <!-- ==================================================================== Externally signed CA creation/renewal ======================================================== -->
-            <h:panelGrid columns="2" styleClass="edit-top lone-edit-heading"
-                         cellspacing="3" cellpadding="3" border="0" width="100%"
+            <h:panelGrid columns="2" styleClass="edit-top lone-edit-heading ui-md-12"
                          rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
                          rendered="#{editCAsMBean.renderExternallySignedCaCreationRenewal and not editCAsMBean.renderCvcAvailable}">
                 <h:outputLabel for="externallysignedcacreaterenew"
@@ -2371,8 +2354,7 @@
 
             <!-- ==================================================================== Import CA Renewal ============================================================================ -->
 
-            <h:panelGrid columns="2" styleClass="edit-top lone-edit-heading"
-                         cellspacing="3" cellpadding="3" border="0" width="100%"
+            <h:panelGrid columns="2" styleClass="edit-top lone-edit-heading ui-md-12"
                          rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
                          rendered="#{editCAsMBean.editCA and editCAsMBean.caExternal and editCAsMBean.hasEditRight and not editCAsMBean.renderCvcAvailable and not editCAsMBean.caTypeProxy}">
                 <h:outputLabel for="importcarenewal"
@@ -2405,8 +2387,7 @@
             <!-- ==================================================================== Import CA Renewal ============================================================================ -->
 
             <!-- ==================================================================== Proxy CA specific ============================================================================ -->
-            <h:panelGrid id="proxyCa" columns="2" styleClass="edit-top lone-edit-heading"
-                         cellspacing="3" cellpadding="3" border="0" width="100%"
+            <h:panelGrid id="proxyCa" columns="2" styleClass="edit-top lone-edit-heading ui-md-12"
                          rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
                          rendered="#{editCAsMBean.caTypeProxy}">
                 <h:panelGroup>
@@ -2535,8 +2516,7 @@
             <!-- ==================================================================== Proxy CA specific ============================================================================ -->
 
             <!-- ==================================================================== Form buttons  ================================================================================ -->
-            <h:panelGrid columns="2" styleClass="edit-top lone-edit-heading"
-                         cellspacing="3" cellpadding="3" border="0" width="100%"
+            <h:panelGrid columns="2" styleClass="edit-top lone-edit-heading ui-md-12"
                          rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
                          rendered="#{not editCAsMBean.renderCvcAvailable}">
                 <h:outputLabel/>
@@ -2614,8 +2594,7 @@
 
         <!-- ==================================================================== Export CA Header  ============================================================================ -->
         <h:form prependId="false">
-            <h:panelGrid columns="2" styleClass="edit-top lone-edit-heading"
-                         cellspacing="3" cellpadding="3" border="0" width="100%"
+            <h:panelGrid columns="2" styleClass="edit-top lone-edit-heading ui-md-12"
                          rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
                          rendered="#{editCAsMBean.editCA and not editCAsMBean.caExternal and editCAsMBean.hasEditRight and not editCAsMBean.renderCvcAvailable}">
                 <h:outputLabel for="exportcaheader"

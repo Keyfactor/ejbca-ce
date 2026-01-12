@@ -56,8 +56,7 @@
 		</h:panelGroup>
 
 		<h:panelGrid columns="2" rendered="#{initNewPkiMBean.renderKeyOptions}"
-					 styleClass="edit-top" cellspacing="3" cellpadding="3" border="0"
-					 rowClasses="Row0,Row1" columnClasses="editColumnSystem1,editColumn2">
+					 styleClass="edit-top" rowClasses="Row0,Row1" columnClasses="editColumnSystem1,editColumn2">
 
 			<h:outputLabel for="selectToken" value="#{web.text.CRYPTOTOKEN}"/>			
 			<h:selectOneMenu id="selectToken" value="#{initNewPkiMBean.cryptoTokenIdParam}" styleClass="ui-md-12">
