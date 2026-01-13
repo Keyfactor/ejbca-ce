@@ -2453,6 +2453,50 @@
                     <h:outputText rendered="#{not (editCAsMBean.editCA and editCAsMBean.hasEditRight)}"
                                   value="********"/>
                 </h:panelGroup>
+                <!--
+                    OAuthToken
+                -->
+                <h:panelGroup>
+                    <h:outputLabel for="textFieldTokenUrl" value="#{web.text.TOKEN_URL}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:inputText rendered="#{editCAsMBean.editCA and editCAsMBean.hasEditRight}"
+                                 id="textFieldTokenUrl" name="tokenUrl" size="45" maxlength="225"
+                                 value="#{editCAsMBean.caInfoDto.tokenUrl}" title="#{web.text.TOKEN_URL}">
+                        <f:ajax/>
+                    </h:inputText>
+                    <h:outputText rendered="#{not (editCAsMBean.editCA and editCAsMBean.hasEditRight)}"
+                                  value="#{editCAsMBean.caInfoDto.tokenUrl}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel for="textTokenClientId" value="#{web.text.TOKEN_CLIENT_ID}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:inputText rendered="#{editCAsMBean.editCA and editCAsMBean.hasEditRight}"
+                                 id="textTokenClientId" name="tokenClientId" size="25" maxlength="225"
+                                 value="#{editCAsMBean.caInfoDto.tokenClientId}" title="#{web.text.TOKEN_CLIENT_ID}">
+                        <f:ajax/>
+                    </h:inputText>
+                    <h:outputText rendered="#{not (editCAsMBean.editCA and editCAsMBean.hasEditRight)}"
+                                  value="#{editCAsMBean.caInfoDto.tokenClientId}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel for="textFieldTokenClientSecret" value="#{web.text.TOKEN_CLIENT_SECRET}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:inputSecret rendered="#{editCAsMBean.editCA and editCAsMBean.hasEditRight}"
+                                   id="textFieldTokenClientSecret" name="tokenClientSecret" size="25" maxlength="225" redisplay="true"
+                                   value="#{editCAsMBean.caInfoDto.tokenClientSecret}" title="#{web.text.TOKEN_CLIENT_SECRET}">
+                        <f:ajax/>
+                        <f:passThroughAttribute name="autocomplete" value="new-password"/>
+                    </h:inputSecret>
+                    <h:outputText rendered="#{not (editCAsMBean.editCA and editCAsMBean.hasEditRight)}"
+                                  value="********"/>
+                </h:panelGroup>
+                <!--
+                    End of OAuthToken
+                -->
+
                 <h:panelGroup>
                     <h:outputLabel for="headersTitle" value="#{web.text.UPSTREAM_HEADERS}" style="font-weight: bold;"/>
                 </h:panelGroup>

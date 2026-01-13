@@ -35,6 +35,9 @@ public class ProxyCaInfo extends CAInfo {
     public static final String HEADERS = "headers";
     public static final String USERNAME = "username";
     public static final String PASSWORD = "password";
+    public static final String TOKEN_URL = "tokenUrl";
+    public static final String TOKEN_CLIENT_ID = "tokenClientId";
+    public static final String TOKEN_CLIENT_SECRET = "tokenClientSecret";
     public static final String UPSTREAM_CA = "upstreamCertificateAuthority";
     public static final String SANS = "sans";
     public static final String AUTHENTICATION_CODE_PLACEHOLDER_VALUE = "placeholder";
@@ -42,6 +45,9 @@ public class ProxyCaInfo extends CAInfo {
     private List<MutablePair<String, String>> headers;
     private String username;
     private String password;
+    private String tokenUrl;
+    private String tokenClientId;
+    private String tokenClientSecret;
     private String upstreamCertificateAuthority; // upstream certificate authority
     private String sans; // SANs in JSON format
 
@@ -53,6 +59,7 @@ public class ProxyCaInfo extends CAInfo {
 
     public ProxyCaInfo(final String name, final String description, final String subjectDn, final int status, Collection<Integer> validators,
                        final String enrollByCsrUrl, final List<MutablePair<String, String>> headers, final String username, final String password,
+                       final String tokenUrl, final String tokenClientId, final String tokenClientSecret,
                        final String ca, final String sans) {
         this.name = name;
         this.description = description;
@@ -63,6 +70,9 @@ public class ProxyCaInfo extends CAInfo {
         this.headers = headers;
         this.username = username;
         this.password = password;
+        this.tokenUrl = tokenUrl;
+        this.tokenClientId = tokenClientId;
+        this.tokenClientSecret = tokenClientSecret;
         this.upstreamCertificateAuthority = ca; // upstream certificate authority
         this.sans = sans; // SANs in JSON format
         this.signedby = SIGNEDBYEXTERNALCA;
@@ -154,6 +164,30 @@ public class ProxyCaInfo extends CAInfo {
         this.password = password;
     }
 
+    public String getTokenUrl() {
+        return tokenUrl;
+    }
+
+    public void setTokenUrl(String tokenUrl) {
+        this.tokenUrl = tokenUrl;
+    }
+
+    public String getTokenClientId() {
+        return tokenClientId;
+    }
+
+    public void setTokenClientId(String tokenClientId) {
+        this.tokenClientId = tokenClientId;
+    }
+
+    public String getTokenClientSecret() {
+        return tokenClientSecret;
+    }
+
+    public void setTokenClientSecret(String tokenClientSecret) {
+        this.tokenClientSecret = tokenClientSecret;
+    }
+
     public String getUpstreamCertificateAuthority() {
         return upstreamCertificateAuthority;
     }
@@ -195,6 +229,9 @@ public class ProxyCaInfo extends CAInfo {
         private List<MutablePair<String, String>> headers;
         private String username;
         private String password;
+        private String tokenUrl;
+        private String tokenClientId;
+        private String tokenClientSecret;
         private String ca; // upstream certificate authority
         private String sans; // SANs in JSON format
 
@@ -284,6 +321,21 @@ public class ProxyCaInfo extends CAInfo {
             return this;
         }
 
+        public ProxyCaInfo.ProxyCaInfoBuilder setTokenUrl(String tokenUrl) {
+            this.tokenUrl = tokenUrl;
+            return this;
+        }
+
+        public ProxyCaInfo.ProxyCaInfoBuilder setTokenClientId(String tokenClientId) {
+            this.tokenClientId = tokenClientId;
+            return this;
+        }
+
+        public ProxyCaInfo.ProxyCaInfoBuilder setTokenClientSecret(String tokenClientSecret) {
+            this.tokenClientSecret = tokenClientSecret;
+            return this;
+        }
+
         public String getCa() {
             return ca;
         }
@@ -303,7 +355,7 @@ public class ProxyCaInfo extends CAInfo {
         }
 
         public ProxyCaInfo build() {
-            ProxyCaInfo caInfo = new ProxyCaInfo(name, description, subjectDn, status, validators, enrollWithCsrUrl, headers, username, password, ca, sans);
+            ProxyCaInfo caInfo = new ProxyCaInfo(name, description, subjectDn, status, validators, enrollWithCsrUrl, headers, username, password, tokenUrl, tokenClientId, tokenClientSecret, ca, sans);
 
             caInfo.setCAId(caId);
             caInfo.setUpdateTime(updateTime);
@@ -318,7 +370,7 @@ public class ProxyCaInfo extends CAInfo {
         }
 
         public ProxyCaInfo buildForUpdate() {
-            ProxyCaInfo caInfo = new ProxyCaInfo(name, description, subjectDn, status, validators, enrollWithCsrUrl, headers, username, password, ca, sans);
+            ProxyCaInfo caInfo = new ProxyCaInfo(name, description, subjectDn, status, validators, enrollWithCsrUrl, headers, username, password, tokenUrl, tokenClientId, tokenClientSecret, ca, sans);
 
             caInfo.setCAId(caId);
             caInfo.setUpdateTime(new Date());

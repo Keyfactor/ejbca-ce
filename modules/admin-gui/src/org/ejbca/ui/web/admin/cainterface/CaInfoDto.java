@@ -120,6 +120,9 @@ public class CaInfoDto implements Serializable {
     private String upstreamUrl;
     private String username;
     private String password;
+    private String tokenUrl;
+    private String tokenClientId;
+    private String tokenClientSecret;
     private List<MutableTriple<Boolean, String, String>> headers;
     private String upstreamCa;
     private String upstreamTemplate;
@@ -804,6 +807,30 @@ public class CaInfoDto implements Serializable {
         this.password = password;
     }
 
+    public String getTokenUrl() {
+        return tokenUrl;
+    }
+
+    public void setTokenUrl(String tokenUrl) {
+        this.tokenUrl = tokenUrl;
+    }
+
+    public String getTokenClientId() {
+        return tokenClientId;
+    }
+
+    public void setTokenClientId(String tokenClientId) {
+        this.tokenClientId = tokenClientId;
+    }
+
+    public String getTokenClientSecret() {
+        return tokenClientSecret;
+    }
+
+    public void setTokenClientSecret(String tokenClientSecret) {
+        this.tokenClientSecret = tokenClientSecret;
+    }
+
     public List<MutableTriple<Boolean, String, String>> getHeaders() {
         if (headers == null) {
             headers = new ArrayList<>();
@@ -849,6 +876,9 @@ public class CaInfoDto implements Serializable {
             .setHeaders(pairs)
             .setUsername(getUsername())
             .setPassword(getPassword())
+            .setTokenUrl(getTokenUrl())
+            .setTokenClientId(getTokenClientId())
+            .setTokenClientSecret(getTokenClientSecret())
             .setCa(getUpstreamCa())
             .setSans(getSansJson())
             .build();
