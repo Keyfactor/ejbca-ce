@@ -134,6 +134,7 @@ hsm:
     enabled: false
     server_name: 
     #server_name: "192.168.0.200"
+    # server_name or custom_chrystoki_conf_secret need to be mentioned
     custom_chrystoki_conf_secret: 
     CKLOG2_ENABLED: "0"
     PROTECTED_AUTHENTICATION_PATH_FLAG_STATUS: "0"
