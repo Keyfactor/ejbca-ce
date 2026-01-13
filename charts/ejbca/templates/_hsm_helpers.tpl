@@ -114,13 +114,13 @@ Almost same as Luna but allows mounting of /opt/keyfactor/Chrystoki.conf as an a
       value: {{ quote .Values.hsm.lunatct.PROTECTED_AUTHENTICATION_PATH_FLAG_STATUS }}
   volumeMounts:
     - name: hsm-luna-configmap-servercert
-      mountPath: /opt/luna/certs-server/server.pem
+      mountPath: /opt/safenetat/certs-server/server.pem
       subPath: server.pem
     - name: hsm-luna-configmap-client-cert
-      mountPath: /opt/luna/certs-client/dockerlunaclient.pem
+      mountPath: /opt/safenetat/certs-client/dockerlunaclient.pem
       subPath: dockerlunaclient.pem
     - name: hsm-luna-secret-client-key
-      mountPath: /opt/luna/certs-client/dockerlunaclientKey.pem
+      mountPath: /opt/safenetat/certs-client/dockerlunaclientKey.pem
       subPath: dockerlunaclientKey.pem
     {{- if .Values.hsm.lunatct.custom_chrystoki_conf_secret }}
     - name: hsm-custom-chrystoki-conf
