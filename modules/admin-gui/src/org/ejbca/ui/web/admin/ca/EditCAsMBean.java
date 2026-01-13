@@ -2401,9 +2401,9 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             usedValidators = cainfo.getValidators();
             ProxyCaInfo proxyCaInfo = (ProxyCaInfo)cainfo;
             caInfoDto.setUpstreamUrl(proxyCaInfo.getEnrollWithCsrUrl());
-            caInfoDto.setTokenUrl(proxyCaInfo.getTokenUrl());
-            caInfoDto.setTokenClientId(proxyCaInfo.getTokenClientId());
-            caInfoDto.setTokenClientSecret(proxyCaInfo.getTokenClientSecret());
+            caInfoDto.setOauthTokenUrl(proxyCaInfo.getOauthTokenUrl());
+            caInfoDto.setOauthClientName(proxyCaInfo.getOauthClientName());
+            caInfoDto.setOauthClientSecret(proxyCaInfo.getOauthClientSecret());
             List<MutableTriple<Boolean, String, String>> headerTriples = proxyCaInfo.getHeaders().stream().map(pair -> new MutableTriple<Boolean, String, String>(false, pair.getLeft(), pair.getRight())).collect(Collectors.toList());
             caInfoDto.setHeaders(headerTriples);
             caInfoDto.setUsername(proxyCaInfo.getUsername());

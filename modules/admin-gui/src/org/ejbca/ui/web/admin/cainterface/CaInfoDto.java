@@ -120,9 +120,9 @@ public class CaInfoDto implements Serializable {
     private String upstreamUrl;
     private String username;
     private String password;
-    private String tokenUrl;
-    private String tokenClientId;
-    private String tokenClientSecret;
+    private String oauthTokenUrl;
+    private String oauthClientName;
+    private String oauthClientSecret;
     private List<MutableTriple<Boolean, String, String>> headers;
     private String upstreamCa;
     private String upstreamTemplate;
@@ -807,28 +807,28 @@ public class CaInfoDto implements Serializable {
         this.password = password;
     }
 
-    public String getTokenUrl() {
-        return tokenUrl;
+    public String getOauthTokenUrl() {
+        return oauthTokenUrl;
     }
 
-    public void setTokenUrl(String tokenUrl) {
-        this.tokenUrl = tokenUrl;
+    public void setOauthTokenUrl(String oauthTokenUrl) {
+        this.oauthTokenUrl = oauthTokenUrl;
     }
 
-    public String getTokenClientId() {
-        return tokenClientId;
+    public String getOauthClientName() {
+        return oauthClientName;
     }
 
-    public void setTokenClientId(String tokenClientId) {
-        this.tokenClientId = tokenClientId;
+    public void setOauthClientName(String oauthClientName) {
+        this.oauthClientName = oauthClientName;
     }
 
-    public String getTokenClientSecret() {
-        return tokenClientSecret;
+    public String getOauthClientSecret() {
+        return oauthClientSecret;
     }
 
-    public void setTokenClientSecret(String tokenClientSecret) {
-        this.tokenClientSecret = tokenClientSecret;
+    public void setOauthClientSecret(String oauthClientSecret) {
+        this.oauthClientSecret = oauthClientSecret;
     }
 
     public List<MutableTriple<Boolean, String, String>> getHeaders() {
@@ -876,9 +876,9 @@ public class CaInfoDto implements Serializable {
             .setHeaders(pairs)
             .setUsername(getUsername())
             .setPassword(getPassword())
-            .setTokenUrl(getTokenUrl())
-            .setTokenClientId(getTokenClientId())
-            .setTokenClientSecret(getTokenClientSecret())
+            .setOauthTokenUrl(getOauthTokenUrl())
+            .setOauthClientName(getOauthClientName())
+            .setOauthClientSecret(getOauthClientSecret())
             .setCa(getUpstreamCa())
             .setSans(getSansJson())
             .build();

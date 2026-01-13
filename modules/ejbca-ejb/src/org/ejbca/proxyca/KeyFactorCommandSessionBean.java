@@ -19,6 +19,7 @@ import jakarta.ejb.TransactionAttributeType;
 import org.apache.http.HttpStatus;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.util.provider.X509TrustManagerAcceptAll;
@@ -72,6 +73,9 @@ public class KeyFactorCommandSessionBean implements KeyFactorCommandSessionRemot
 
     @EJB
     GlobalConfigurationSessionLocal globalConfigurationSession;
+
+    @EJB
+    private CaSessionLocal caSession;
 
     @PostConstruct
     public void postConstruct() throws NoSuchAlgorithmException, KeyManagementException {

@@ -98,37 +98,37 @@
 								<f:ajax />
 							</h:inputText>
 						</h:panelGroup>
+
 						<h:panelGroup rendered="#{importCaCertMBean.keyFactorCa}">
-							<h:outputLabel for="textFieldTokenUrl" value="#{web.text.TOKEN_URL}" />
+							<h:outputLabel for="textFieldOauthTokenUrl" value="#{web.text.OAUTH_TOKEN_URL}" />
 						</h:panelGroup>
 						<h:panelGroup rendered="#{importCaCertMBean.keyFactorCa}">
-							<h:inputText id="textFieldTokenUrl" name="tokenUrl" size="45" maxlength="225"
-										 value="#{importCaCertMBean.caInfoDto.tokenUrl}" title="#{web.text.TOKEN_URL}">
+							<h:inputText id="textFieldOauthTokenUrl" name="oauthTokenUrl" size="45" maxlength="225"
+										 value="#{importCaCertMBean.caInfoDto.oauthTokenUrl}" title="#{web.text.OAUTH_TOKEN_URL}">
 								<f:ajax />
 							</h:inputText>
 						</h:panelGroup>
 						<h:panelGroup rendered="#{importCaCertMBean.keyFactorCa}">
-							<h:outputLabel for="textTokenClientId" value="#{web.text.TOKEN_CLIENT_ID}" />
+							<h:outputLabel for="textOauthClientName" value="#{web.text.OAUTH_CLIENT_NAME}" />
 						</h:panelGroup>
 						<h:panelGroup rendered="#{importCaCertMBean.keyFactorCa}">
-							<h:inputText id="textTokenClientId" name="tokenClientId" size="45" maxlength="225"
-										 value="#{importCaCertMBean.caInfoDto.tokenClientId}" title="#{web.text.TOKEN_CLIENT_ID}">
+							<h:inputText id="textOauthClientName" name="oauthClientName" size="45" maxlength="225"
+										 value="#{importCaCertMBean.caInfoDto.oauthClientName}" title="#{web.text.OAUTH_CLIENT_NAME}">
 								<f:ajax />
 							</h:inputText>
 						</h:panelGroup>
 						<h:panelGroup rendered="#{importCaCertMBean.keyFactorCa}">
-							<h:outputLabel for="textTokenClientSecret" value="#{web.text.TOKEN_CLIENT_SECRET}" />
+							<h:outputLabel for="textOauthClientSecret" value="#{web.text.OAUTH_CLIENT_SECRET}" />
 						</h:panelGroup>
 						<h:panelGroup rendered="#{importCaCertMBean.keyFactorCa}">
-							<h:inputSecret id="textTokenClientSecret" name="tokenClientSecret" size="45" maxlength="225"
-										 value="#{importCaCertMBean.caInfoDto.tokenClientSecret}" title="#{web.text.TOKEN_CLIENT_SECRET}">
+							<h:inputSecret id="textOauthClientSecret" name="oauthClientSecret" size="45" maxlength="225"
+										 value="#{importCaCertMBean.caInfoDto.oauthClientSecret}" title="#{web.text.OAUTH_CLIENT_SECRET}">
 								<f:ajax />
 							</h:inputSecret>
 						</h:panelGroup>
 						<h:panelGroup rendered="#{importCaCertMBean.keyFactorCa}">
 							<h:outputLabel for="headersTitle" value="#{web.text.UPSTREAM_HEADERS}" style="font-weight: bold;" />
 						</h:panelGroup>
-		
 						<h:panelGroup id="headersTitle" rendered="#{importCaCertMBean.keyFactorCa}"/>
 						<c:forEach items="#{importCaCertMBean.caInfoDto.headers}" var="header" varStatus="loopStatus">
 							<h:panelGroup id="wrapperHeaderKey-#{loopStatus.index}" rendered="#{importCaCertMBean.keyFactorCa}">

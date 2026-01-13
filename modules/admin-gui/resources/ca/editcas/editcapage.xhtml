@@ -2457,36 +2457,36 @@
                     OAuthToken
                 -->
                 <h:panelGroup>
-                    <h:outputLabel for="textFieldTokenUrl" value="#{web.text.TOKEN_URL}"/>
+                    <h:outputLabel for="textFieldOauthTokenUrl" value="#{web.text.OAUTH_TOKEN_URL}"/>
                 </h:panelGroup>
                 <h:panelGroup>
                     <h:inputText rendered="#{editCAsMBean.editCA and editCAsMBean.hasEditRight}"
-                                 id="textFieldTokenUrl" name="tokenUrl" size="45" maxlength="225"
-                                 value="#{editCAsMBean.caInfoDto.tokenUrl}" title="#{web.text.TOKEN_URL}">
+                                 id="textFieldOauthTokenUrl" name="oauthTokenUrl" size="45" maxlength="225"
+                                 value="#{editCAsMBean.caInfoDto.oauthTokenUrl}" title="#{web.text.OAUTH_TOKEN_URL}">
                         <f:ajax/>
                     </h:inputText>
                     <h:outputText rendered="#{not (editCAsMBean.editCA and editCAsMBean.hasEditRight)}"
-                                  value="#{editCAsMBean.caInfoDto.tokenUrl}"/>
+                                  value="#{editCAsMBean.caInfoDto.oauthTokenUrl}"/>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <h:outputLabel for="textTokenClientId" value="#{web.text.TOKEN_CLIENT_ID}"/>
+                    <h:outputLabel for="textOauthClientName" value="#{web.text.OAUTH_CLIENT_NAME}"/>
                 </h:panelGroup>
                 <h:panelGroup>
                     <h:inputText rendered="#{editCAsMBean.editCA and editCAsMBean.hasEditRight}"
-                                 id="textTokenClientId" name="tokenClientId" size="25" maxlength="225"
-                                 value="#{editCAsMBean.caInfoDto.tokenClientId}" title="#{web.text.TOKEN_CLIENT_ID}">
+                                 id="textOauthClientName" name="oauthClientName" size="25" maxlength="225"
+                                 value="#{editCAsMBean.caInfoDto.oauthClientName}" title="#{web.text.OAUTH_CLIENT_NAME}">
                         <f:ajax/>
                     </h:inputText>
                     <h:outputText rendered="#{not (editCAsMBean.editCA and editCAsMBean.hasEditRight)}"
-                                  value="#{editCAsMBean.caInfoDto.tokenClientId}"/>
+                                  value="#{editCAsMBean.caInfoDto.oauthClientName}"/>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <h:outputLabel for="textFieldTokenClientSecret" value="#{web.text.TOKEN_CLIENT_SECRET}"/>
+                    <h:outputLabel for="textFieldOauthClientSecret" value="#{web.text.OAUTH_CLIENT_SECRET}"/>
                 </h:panelGroup>
                 <h:panelGroup>
                     <h:inputSecret rendered="#{editCAsMBean.editCA and editCAsMBean.hasEditRight}"
-                                   id="textFieldTokenClientSecret" name="tokenClientSecret" size="25" maxlength="225" redisplay="true"
-                                   value="#{editCAsMBean.caInfoDto.tokenClientSecret}" title="#{web.text.TOKEN_CLIENT_SECRET}">
+                                   id="textFieldOauthClientSecret" name="oauthClientSecret" size="25" maxlength="225" redisplay="true"
+                                   value="#{editCAsMBean.caInfoDto.oauthClientSecret}" title="#{web.text.OAUTH_CLIENT_SECRET}">
                         <f:ajax/>
                         <f:passThroughAttribute name="autocomplete" value="new-password"/>
                     </h:inputSecret>
