@@ -31,19 +31,14 @@
    		<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Transparency.html')}" escape="false"/>
     </h1>
     <h:form id="editCtLogForm" enctype="multipart/form-data">
-        <h:panelGrid columns="2">
-            <h:outputLink value="systemconfiguration.xhtml">
-                <h:outputText value="#{web.text.BACK}"/>
-            </h:outputLink>
-            <h:panelGroup id="placeholder1"/>
-
+        <h:panelGrid columns="2" styleClass="edit-top" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
             <h:outputText value="#{web.text.CTLOGCONFIGURATION_URL}"/>
             <h:inputText value="#{systemConfigMBean.ctLogManager.ctLogEditor.ctLogUrl}" size="46" id="logUrl">
                 <f:converter converterId="trimConverter"/>
             </h:inputText>
             
             <h:outputText value="#{web.text.CTLOGCONFIGURATION_CURRENT_PUBLICKEY}"/>
-            <h:outputText value="#{systemConfigMBean.ctLogManager.ctLogEditor.ctLogBeingEdited.logKeyIdString}" styleClass="monospace"/>
+            <h:outputText value="#{systemConfigMBean.ctLogManager.ctLogEditor.ctLogBeingEdited.logKeyIdString}"/>
             
             <h:outputText value="#{web.text.CTLOGCONFIGURATION_REPLACE_PUBLICKEY} "/>
             <h:inputFile id="editedCTLogKeyFile" 
@@ -65,40 +60,41 @@
             </h:inputText>
         </h:panelGrid>
         
-        <h3><h:outputLabel value="#{web.text.CTLOGTAB_SHARDED_LOG}"/></h3>
-        <h:panelGroup>
-	         <h:selectBooleanCheckbox id="enableExpirationYearAcceptanceRule"
-	             styleClass="checkbox"
-	             value="#{systemConfigMBean.ctLogManager.ctLogEditor.isAcceptingByExpirationYear}" >
-                 <f:ajax render="@form"/>
-             </h:selectBooleanCheckbox>
-	         <h:outputLabel for="enableExpirationYearAcceptanceRule" 
-	             value="#{web.text.CTLOGTAB_USE_SHARDING}" />
-	    </h:panelGroup>
-	    <br/>
+        <h3 class="padding-bottom-1-rem"><h:outputLabel value="#{web.text.CTLOGTAB_SHARDED_LOG}"/></h3>
 
+        <h:panelGroup>
+	         <p:selectBooleanCheckbox id="enableExpirationYearAcceptanceRule"
+	             styleClass="checkbox"
+	             value="#{systemConfigMBean.ctLogManager.ctLogEditor.isAcceptingByExpirationYear}"
+                                      itemLabel="#{web.text.CTLOGTAB_USE_SHARDING}">
+                 <f:ajax render="@form"/>
+             </p:selectBooleanCheckbox>
+
+	    </h:panelGroup>
+	    <br/><br/>
 
         <h:panelGroup id="shardingProperties" rendered="#{systemConfigMBean.ctLogManager.ctLogEditor.isAcceptingByExpirationYear}">
             <h:panelGroup>
                 <h:inputText id="expirationYearRequired" maxLength="4" size="4"
                              disabled="#{not systemConfigMBean.ctLogManager.ctLogEditor.isAcceptingByExpirationYear or
                              systemConfigMBean.ctLogManager.ctLogEditor.useIntervalAcception}"
-                             value="#{systemConfigMBean.ctLogManager.ctLogEditor.expirationYearRequired}" />
+                             value="#{systemConfigMBean.ctLogManager.ctLogEditor.expirationYearRequired}"
+                style="margin-right:15px;"/>
                 <h:outputText value="#{web.text.CTLOGTAB_SHARDING_YEAR}"/>
             </h:panelGroup>
             <br/><br/>
             <h:panelGroup>
-                <h:selectBooleanCheckbox id="enableExpirationIntervalRule"
+                <p:selectBooleanCheckbox id="enableExpirationIntervalRule"
                                          styleClass="checkbox"
-                                         value="#{systemConfigMBean.ctLogManager.ctLogEditor.useIntervalAcception}">
+                                         value="#{systemConfigMBean.ctLogManager.ctLogEditor.useIntervalAcception}"
+                                         itemLabel="#{web.text.CTLOGCONFIGURATION_PERIOD}"
+                >
                     <f:ajax render="@form"/>
-                </h:selectBooleanCheckbox>
-                <h:outputLabel for="enableExpirationYearAcceptanceRule"
-                               value="#{web.text.CTLOGCONFIGURATION_PERIOD}"/>
+                </p:selectBooleanCheckbox>
+                <br/><br/>
             </h:panelGroup>
-            <br/>
 
-            <h:panelGrid columns="2" rendered="#{systemConfigMBean.ctLogManager.ctLogEditor.useIntervalAcception}">
+            <h:panelGrid columns="2" rendered="#{systemConfigMBean.ctLogManager.ctLogEditor.useIntervalAcception}" columnClasses="form-label-col" styleClass="form-vertical-align">
                 <h:outputText value="#{web.text.CTLOGCONFIGURATION_NOT_BEFORE}"/>
                 <p:datePicker value="#{systemConfigMBean.ctLogManager.ctLogEditor.intervalStart}" monthNavigator="true" yearNavigator="true" />                
                 <h:outputText value="#{web.text.CTLOGCONFIGURATION_NOT_AFTER}"/>
@@ -106,10 +102,11 @@
 
             </h:panelGrid>
         </h:panelGroup>
-        <br/>
-        <br/>
 
-        <h:commandButton id="saveCtLogEdit" action="#{systemConfigMBean.ctLogManager.saveCtLogBeingEdited}" value="#{web.text.SAVE}" />
+        <div class="action-buttons">
+            <h:commandButton id="saveCtLogEdit" action="#{systemConfigMBean.ctLogManager.saveCtLogBeingEdited}" value="#{web.text.SAVE}" />
+            <h:button name="buttoncancel" value="#{web.text.CANCEL}" outcome="systemconfiguration.xhtml?faces-redirect=true"/>
+        </div>
     </h:form>
 	</ui:define>
 	</ui:composition>

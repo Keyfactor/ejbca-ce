@@ -32,25 +32,27 @@
 			<br/>
 		</h:panelGroup>
 		
-		<h:panelGrid columns="2" rendered="#{initNewPkiMBean.renderKeyOptions}">
+		<h:panelGrid columns="2" rendered="#{initNewPkiMBean.renderKeyOptions}" styleClass="edit-top"
+					 rowClasses="Row0,Row1" columnClasses="editColumnSystem1,editColumn2">
 			<h:outputLabel for="adminDn" value="Super Administrator DN"/>
-			<h:inputText id="adminDn" value="#{initNewPkiMBean.adminDn}"/>
+			<h:inputText id="adminDn" value="#{initNewPkiMBean.adminDn}" styleClass="ui-md-12" />
 		
 			<h:outputLabel for="adminValidity" value="Super Administrator Validity"/>
 			<!-- Currently always disabled since ENDUSER profile is used which doesn't allow override -->
-			<h:inputText id="adminValidity" value="#{initNewPkiMBean.adminValidity}" disabled="true"/>
+			<h:inputText id="adminValidity" value="#{initNewPkiMBean.adminValidity}" disabled="true" styleClass="ui-md-12" />
 			
 			<h:outputLabel for="adminKeystorePassword" value="Super Administrator Password"/>
-			<h:inputSecret id="adminKeystorePassword" value="#{initNewPkiMBean.adminKeyStorePassword}"/>
+			<h:inputSecret id="adminKeystorePassword" value="#{initNewPkiMBean.adminKeyStorePassword}" styleClass="ui-md-12"/>
 			
 			<h:outputLabel for="adminKeystorePasswordRepeat" value="Repeat Super Administrator Password"/>
-			<h:inputSecret id="adminKeystorePasswordRepeat" value="#{initNewPkiMBean.adminKeyStorePasswordRepeated}"/>
+			<h:inputSecret id="adminKeystorePasswordRepeat" value="#{initNewPkiMBean.adminKeyStorePasswordRepeated}" styleClass="ui-md-12"/>
 		</h:panelGrid>
-	
-	
+		<br/>
 		<h:panelGroup id="nagivationGroup">
-			<h:commandButton id="backButton" value="#{web.text.BACK}" action="#{initNewPkiMBean.actionBackToCaSettings}"/>
-			<h:commandButton id="nextButton" value="#{web.text.NEXT}" action="#{initNewPkiMBean.actionNextGoToSummary}"/>
+			<div class="action-buttons">
+				<h:commandButton id="backButton" value="#{web.text.BACK}" action="#{initNewPkiMBean.actionBackToCaSettings}"/>
+				<h:commandButton id="nextButton" value="#{web.text.NEXT}" action="#{initNewPkiMBean.actionNextGoToSummary}"/>
+			</div>
 		</h:panelGroup>
 	
 	</h:form>

@@ -532,7 +532,7 @@ table.edit-bottom,
 table.edit-ctnd,
 table.edit {
 	margin: .75em -2px 0em -2px;
-	border-spacing: 3px 1px;
+	border-spacing: 3px 3px;
 }
 table.subsection,
 table.edit-bottom {
@@ -739,7 +739,7 @@ table.view-top {
 
 table.view tr td,
 table.view-top tr td {
-	padding: .15em .5em !important;
+	padding: .5em .5em !important;
 	line-height: 1.4em;
 }
 

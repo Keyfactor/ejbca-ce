@@ -37,7 +37,8 @@
          	<h:outputText styleClass="smallHelp" value="#{web.text.CA_MGMT_HELP}"/> 
 		</h:panelGroup>
 		
-		<h:panelGrid columns="2">
+		<h:panelGrid columns="2" columnClasses="form-label-col" styleClass="form-vertical-align no-padding">
+
 			<h:outputLabel for="textfieldimportcaname" value="#{web.text.IMPORTCA_CANAME}"/>
 			<h:inputText id="textfieldimportcaname" value="#{initExistingPkiMBean.importedCaName}"
 				title="#{web.text.FORMAT_ID_STR}" size="30" maxlength="255">
@@ -50,8 +51,10 @@
 		</h:panelGrid>
 			
 		<h:panelGroup id="nagivationGroup">
-			<h:commandButton id="backButton" value="#{web.text.BACK}" action="#{initExistingPkiMBean.actionBack}"/>
-			<h:commandButton id="nextButton" value="#{web.text.NEXT}" action="#{initExistingPkiMBean.actionNext}" disabled="#{!initExistingPkiMBean.caImported}"/>
+			<div class="action-buttons">
+				<h:commandButton id="backButton" value="#{web.text.BACK}" action="#{initExistingPkiMBean.actionBack}"/>
+				<h:commandButton id="nextButton" value="#{web.text.NEXT}" action="#{initExistingPkiMBean.actionNext}" disabled="#{!initExistingPkiMBean.caImported}"/>
+			</div>
 		</h:panelGroup>
 				
     </h:form>
