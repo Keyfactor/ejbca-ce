@@ -753,7 +753,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         private final String rawKeySpec; // to be used for key generation
         private final String subjectKeyID;
         private final boolean placeholder;
-        private boolean composite = true;
+        private boolean composite = false;
         private boolean selected = false;
         private int selectedKakCryptoTokenId;
         private String keyUsage = null;
