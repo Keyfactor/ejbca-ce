@@ -711,6 +711,7 @@
                          rendered="#{!cryptoTokenMBean.keyPairGuiListEmpty}"
                          styleClass="grid table-layout-auto vertical-padding-1"
                          stripedRows="true"
+                         rowStyleClass="cryptoTokenKeyPairAliasName"
                          showGridlines="true">
 
                 <p:column rendered="#{cryptoTokenMBean.allowedToKeyRemoval and cryptoTokenMBean.currentCryptoTokenEditMode}">
@@ -722,6 +723,15 @@
                         <h:outputText value="#{web.text.CRYPTOTOKEN_KPM_ALIAS}"/>
                     </f:facet>
                     <h:outputText id="kpAlias" value="#{keyPairGuiInfo.alias}"/>
+                    <ui:fragment rendered="#{keyPairGuiInfo.composite}">
+                     <div class="composite-hover">
+                      <strong><h:outputText value="#{keyPairGuiInfo.alias}-COMPOSITE"/></strong>
+                       <ul>
+                         <li><h:outputText value="#{keyPairGuiInfo.alias}-COMPQ"/></li>
+                         <li><h:outputText value="#{keyPairGuiInfo.alias}-COMPC"/></li>
+                       </ul>
+                     </div>
+                    </ui:fragment>
                 </p:column>
                 <p:column styleClass="text-align-center">
                     <f:facet name="header">
