@@ -43,9 +43,6 @@ a img {
 	color: rgba(0,0,0,.6);
 	vertical-align: middle;
 }
-.helpNotWide {
-	max-width: 40em;
-}
 
 /* Used in template.xhtml */
 #messagesAndContent {
@@ -1161,7 +1158,6 @@ table#config tr td:first-child {
 .label { vertical-align: top; text-align: right; }
 .field { vertical-align: top; text-align: left; }
 
-.listCaption { font-weight: bold; font-size: 1.2em; text-align: left; background-color: #5B8CCD; color: #FFF; padding-left: .25em; }
 .listHeader { color: #777; font-size: 1.1em; font-weight: bold; text-align: left; }
 
 .subheader { color: #777; font-size: 0.7em; font-weight: bold; text-align: left; }
