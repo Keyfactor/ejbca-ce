@@ -48,6 +48,7 @@ public class ScepConfigurationUnitTest {
         config.setRAAuthpassword("alias2", "foo123");
         config.setRAEndEntityProfile("alias2", "name1");
         config.setIntuneProxyHost("alias2", "host");
+        config.setProxyCaEncryptionCertTemplate("alias2", "encryption_template");
         assertEquals(true, config.getClientCertificateRenewal("alias1"));
         assertEquals(false, config.getClientCertificateRenewal("alias2")); // default value
         assertEquals(false, config.getClientCertificateRenewal("alias3")); // default value when alias does not exist
@@ -55,6 +56,8 @@ public class ScepConfigurationUnitTest {
         assertEquals("", config.getRAAuthPassword("alias1"));
         assertEquals("", config.getIntuneProxyPass("alias2"));
         assertEquals("", config.getIntuneAadAppKey("alias2"));
+        assertEquals("", config.getProxyCaEncryptionCertTemplate("alias1"));
+        assertEquals("encryption_template", config.getProxyCaEncryptionCertTemplate("alias2"));
 
         @SuppressWarnings("unchecked")
         ScepConfiguration config2 = new ScepConfiguration((LinkedHashMap<Object, Object>) config.saveData());

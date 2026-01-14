@@ -14,7 +14,6 @@ package org.ejbca.core.ejb.ra;
 
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
-import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
@@ -1383,22 +1382,46 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     }
 
     private void suppressUnwantedUserDataChanges(final OriginalEndEntity originalEndEntity, final UserData newUserData) {
+        final String username = newUserData.getUsername();
+        if (newUserData.getStatus() == EndEntityConstants.STATUS_GENERATED &&
+                perTransactionData.isDontPersistPassword(username)) {
+            if (log.isDebugEnabled()) {
+                log.debug("Password for end-entity '" + username + "' will not be persisted in database");
+            }
+            newUserData.setPassword(null);
+        }
         switch (classifyUserDataChanges(originalEndEntity, newUserData)) {
         case IGNORE:
+            if (log.isDebugEnabled()) {
+                log.debug("Discarding end-entity changes for '" + username + "'");
+            }
             entityManager.detach(newUserData);
             break;
         case IF_NO_CONFLICT:
+            if (log.isDebugEnabled()) {
+                log.debug("Performing application-managed add of end-entity '" + username + "', skipping if there are conflicts");
+            }
             entityManager.detach(newUserData);
             applicationManagedTransactionsBean.changeUserIfNoConflict(newUserData, !originalEndEntity.isExisting());
             break;
         case MANDATORY_CHANGE:
             // Keep the UserData changes in the current transaction
-            if (perTransactionData.getPendingUserData(newUserData.getUsername()) != null) {
+            if (perTransactionData.getPendingUserData(username) != null) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Persisting changed end-entity '" + username + "'");
+                }
                 entityManager.persist(newUserData);
+            } else if (log.isDebugEnabled()) {
+                log.debug("End-entity '" + username + "' is being created by the current transaction.");
             }
             break;
         }
-        perTransactionData.clearEndEntityTransactionInfo(newUserData.getUsername());
+        perTransactionData.clearEndEntityTransactionInfo(username);
+    }
+
+    @Override
+    public void dontPersistPassword(final String username) {
+        perTransactionData.setDontPersistPassword(username, true);
     }
 
     /**
@@ -1718,28 +1741,23 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             endEntityAuthenticationSession.assertAuthorizedToEndEntityProfile(authenticationToken, data.getEndEntityProfileId(), AccessRulesConstants.EDIT_END_ENTITY, caId);
         }
         endEntityAuthenticationSession.assertAuthorizedToCA(authenticationToken, caId);
-        try {
-            final Date now = new Date();
-            if ((newPasswd == null) && clearText) {
-                data.setClearPassword("");
-                data.setPasswordHash("");
+        final Date now = new Date();
+        if ((newPasswd == null) && clearText) {
+            data.setClearPassword("");
+            data.setPasswordHash("");
+        } else {
+            if (clearText) {
+                data.setOpenPassword(newPasswd);
             } else {
-                if (clearText) {
-                    data.setOpenPassword(newPasswd);
-                } else {
-                    data.setPassword(newPasswd);
-                }
+                data.setPassword(newPasswd);
             }
-            data.setTimeModified(now.getTime());
-            logAuditEvent(
-                    EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.SUCCESS,
-                    authenticationToken, caId, null, username,
-                    SecurityEventProperties.builder().withMsg(intres.getLocalizedMessage("ra.editpwdentity", username)).build()
-            );
-        } catch (NoSuchAlgorithmException nsae) {
-            log.error("NoSuchAlgorithmException while setting password for user " + username);
-            throw new EJBException(nsae);
         }
+        data.setTimeModified(now.getTime());
+        logAuditEvent(
+                EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.SUCCESS,
+                authenticationToken, caId, null, username,
+                SecurityEventProperties.builder().withMsg(intres.getLocalizedMessage("ra.editpwdentity", username)).build()
+        );
         if (log.isTraceEnabled()) {
             log.trace("<setPassword(" + username + ", hiddenpwd), " + clearText);
         }

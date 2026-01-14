@@ -3,7 +3,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:f="jakarta.faces.core"
       xmlns:h="jakarta.faces.html"
-      xmlns:ui="jakarta.faces.facelets">
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui"
+>
 <ui:remove>
     <!--
     /*************************************************************************
@@ -31,49 +33,61 @@
         <h:outputText styleClass="alert" rendered="#{!rolesBean.authorizedToViewRoles}" value="#{web.text.ROLES_ERROR_UNAUTH}"/>
 
         <h:form id="roles" rendered="#{rolesBean.authorizedToViewRoles}">
-            <h:dataTable id="list" value="#{rolesBean.rolesAvailable}" var="role" headerClass="listHeader" rowClasses="Row0,Row1"
-                         columnClasses="alignmiddle,alignmiddle,alignmiddle,alignmiddle">
-                <h:column rendered="#{!rolesBean.onlyEmptyNameSpaceInUse}">
+            <p:dataTable id="list" value="#{rolesBean.rolesAvailable}" var="role" styleClass="grid table-layout-auto vertical-padding-1"
+                         stripedRows="true" showGridlines="true">
+                <p:column styleClass="table-title-column" rendered="#{!rolesBean.onlyEmptyNameSpaceInUse}">
                     <f:facet name="header"><h:outputText value="#{web.text.ROLES_LABEL_NAMESPACE}"/></f:facet>
                     <h:outputText value="#{role.nameSpace()}"/>
-                </h:column>
-                <h:column>
+                </p:column>
+                <p:column styleClass="table-title-column">
                     <f:facet name="header"><h:outputText value="#{web.text.ROLES_LABEL_ROLENAME}"/></f:facet>
                     <h:outputText value="#{role.name()}"/>
-                </h:column>
-                <h:column>
-                    <h:outputLink value="#{web.ejbcaWebBean.adminWebBaseUrl}administratorprivileges/rolemembers.xhtml" styleClass="commandLink" title="#{web.text.EDITROLEMEMBERS}">
+                </p:column>
+                <p:column styleClass="text-align-center">
+                    <f:facet name="header"><h:outputText value="#{web.text.DETAILS}"/></f:facet>
+                    <h:outputLink value="#{web.ejbcaWebBean.adminWebBaseUrl}administratorprivileges/rolemembers.xhtml" title="#{web.text.EDITROLEMEMBERS}">
                         <f:param name="roleId" value="#{role.id()}"/>
                         <h:outputText value="#{web.text.ROLEMEMBERS}"/>
                     </h:outputLink>
-                    <h:outputLink value="#{web.ejbcaWebBean.adminWebBaseUrl}administratorprivileges/accessrules.xhtml" styleClass="commandLink" title="#{web.text.EDITACCESSRULES}">
+                    <br />
+                    <h:outputLink value="#{web.ejbcaWebBean.adminWebBaseUrl}administratorprivileges/accessrules.xhtml" title="#{web.text.EDITACCESSRULES}">
                         <f:param name="roleId" value="#{role.id()}"/>
                         <h:outputText value="#{web.text.ACCESSRULES}"/>
                     </h:outputLink>
-                </h:column>
-                <h:column rendered="#{rolesBean.authorizedToEditRoles}">
-                    <f:facet name="header"><h:outputText value="#{web.text.ROLES_LABEL_RASTYLES}"/></f:facet>
-                    <h:panelGroup id="actionGroup" styleClass="button-group">
+                </p:column>
+
+                <p:column styleClass="text-align-center" rendered="#{rolesBean.authorizedToEditRoles}">
+                    <f:facet name="header">
+                        <h:outputText value="#{web.text.ROLES_LABEL_RASTYLES}"/>
+                    </f:facet>
+                    <div class="action-buttons">
                         <h:selectOneMenu id="selectCustomStyle" value="#{rolesBean.selectedStyle}" disabled="#{!rolesBean.styleSelectable}">
                             <f:selectItems value="#{rolesBean.availableStylesList}"/>
                             <f:ajax execute="@this" />
                         </h:selectOneMenu>
+                    </div>
+                </p:column>
+                <p:column styleClass="text-align-center" rendered="#{rolesBean.authorizedToEditRoles}">
+                    <f:facet name="header">
+                        <h:outputText value="#{web.text.ACTIONS}"/>
+                    </f:facet>
+                    <div class="action-buttons">
                         <h:commandButton action="#{rolesBean.actionRenameRoleStart}" value="#{web.text.RENAME}">
                             <f:ajax execute="@this" render=":modalBlockContainer"/>
                         </h:commandButton>
                         <h:commandButton action="#{rolesBean.actionDeleteRoleStart}" value="#{web.text.DELETE}">
                             <f:ajax execute="@this" render=":modalBlockContainer"/>
                         </h:commandButton>
-                    </h:panelGroup>
+                    </div>
                     <f:facet name="footer">
-                        <h:panelGroup styleClass="alignright fullwidth" layout="block">
+                        <h:panelGroup layout="block">
                             <h:commandButton id="addRoleButton" value="#{web.text.ADD}" action="#{rolesBean.actionAddRoleStart}">
                                 <f:ajax execute="@this" render=":modalBlockContainer"/>
                             </h:commandButton>
                         </h:panelGroup>
                     </f:facet>
-                </h:column>
-            </h:dataTable>
+                </p:column>
+            </p:dataTable>
         </h:form>
     </ui:define>
 
@@ -86,18 +100,18 @@
 
             <h:panelGroup id="add" rendered="#{rolesBean.renderAddRole}">
                 <h2><h:outputText value="#{web.text.ADDROLE}"/></h2>
-                <h:panelGrid columns="3">
+                <h:panelGrid columns="3" styleClass="form-vertical-align">
                     <h:outputLabel value="#{web.text.ROLES_LABEL_NAMESPACE}"/>
                     <h:panelGroup>
                         <h:outputText value="#{rolesBean.editNameSpaceSelected}"
                                       rendered="#{!rolesBean.renderEditNameSpace and rolesBean.getNameSpaceAvailable().size()==1}"/>
-                        <h:selectOneMenu value="#{rolesBean.editNameSpaceSelected}" styleClass="fullwidth"
-                                         rendered="#{!rolesBean.renderEditNameSpace and rolesBean.getNameSpaceAvailable().size()!=1}">
+                        <h:selectOneMenu value="#{rolesBean.editNameSpaceSelected}"
+                                         rendered="#{!rolesBean.renderEditNameSpace and rolesBean.getNameSpaceAvailable().size()!=1}" styleClass="ui-md-9">
                             <f:selectItems value="#{rolesBean.getNameSpaceAvailable()}"/>
                             <f:ajax execute="@form" render="@form"/>
                         </h:selectOneMenu>
                         <h:inputText value="#{rolesBean.editNameSpace}" title="#{web.text.ROLES_NAMESPACE_PLACEHOLDER}"
-                                     rendered="#{rolesBean.renderEditNameSpace}">
+                                     rendered="#{rolesBean.renderEditNameSpace}" styleClass="ui-md-9">
                             <f:validator validatorId="legalCharsValidator"/>
                         </h:inputText>
                     </h:panelGroup>
@@ -108,18 +122,20 @@
                         </h:commandButton>
                     </h:panelGroup>
                     <h:outputLabel value="#{web.text.ROLES_LABEL_ROLENAME}"/>
-                    <h:inputText id="roleNameInputField" value="#{rolesBean.editRoleName}" title="#{web.text.ROLES_ROLENAME_PLACEHOLDER}">
+                    <h:inputText id="roleNameInputField" value="#{rolesBean.editRoleName}" title="#{web.text.ROLES_ROLENAME_PLACEHOLDER}" styleClass="ui-md-9">
                         <f:validator validatorId="legalCharsValidator"/>
                     </h:inputText>
                     <h:panelGroup/>
                 </h:panelGrid>
                 <h:panelGroup styleClass="alignright fullwidth" layout="block">
-                    <h:commandButton value="#{web.text.CANCEL}" action="#{rolesBean.actionAddRoleReset}" immediate="true">
-                        <f:ajax execute="@this" render=":modalBlockContainer"/>
-                    </h:commandButton>
-                    <h:commandButton id="confirmAddRoleButton" value="#{web.text.ADD}" action="#{rolesBean.actionAddRoleConfirm}">
-                        <f:ajax execute="@form" render="@all"/>
-                    </h:commandButton>
+                    <div class="action-buttons">
+                        <h:commandButton value="#{web.text.CANCEL}" action="#{rolesBean.actionAddRoleReset}" immediate="true">
+                            <f:ajax execute="@this" render=":modalBlockContainer"/>
+                        </h:commandButton>
+                        <h:commandButton id="confirmAddRoleButton" value="#{web.text.ADD}" action="#{rolesBean.actionAddRoleConfirm}">
+                            <f:ajax execute="@form" render="@all"/>
+                        </h:commandButton>
+                    </div>
                 </h:panelGroup>
             </h:panelGroup>
 
@@ -153,30 +169,34 @@
                     <h:panelGroup/>
                 </h:panelGrid>
                 <h:panelGroup styleClass="alignright fullwidth" layout="block">
-                    <h:commandButton value="#{web.text.CANCEL}" action="#{rolesBean.actionRenameRoleReset}" immediate="true">
-                        <f:ajax execute="@this" render=":modalBlockContainer"/>
-                    </h:commandButton>
-                    <h:commandButton value="#{web.text.RENAME}" action="#{rolesBean.actionRenameRoleConfirm}">
-                        <f:ajax execute="@form" render="@all"/>
-                    </h:commandButton>
+                    <div class="action-buttons">
+                        <h:commandButton value="#{web.text.CANCEL}" action="#{rolesBean.actionRenameRoleReset}" immediate="true">
+                            <f:ajax execute="@this" render=":modalBlockContainer"/>
+                        </h:commandButton>
+                        <h:commandButton value="#{web.text.RENAME}" action="#{rolesBean.actionRenameRoleConfirm}">
+                            <f:ajax execute="@form" render="@all"/>
+                        </h:commandButton>
+                    </div>
                 </h:panelGroup>
             </h:panelGroup>
 
             <h:panelGroup id="delete" rendered="#{rolesBean.renderDeleteRole}">
                 <h2><h:outputText value="#{web.text.DELETEROLE}"/></h2>
-                <h:panelGrid columns="2">
+                <h:panelGrid columns="2" styleClass="form-vertical-align">
                     <h:outputLabel value="#{web.text.ROLES_LABEL_NAMESPACE}" rendered="#{!rolesBean.onlyEmptyNameSpaceInUse}"/>
                     <h:outputText value="#{rolesBean.roleToDelete.nameSpace()}" rendered="#{!rolesBean.onlyEmptyNameSpaceInUse}"/>
                     <h:outputLabel value="#{web.text.ROLES_LABEL_ROLENAME}"/>
                     <h:outputText value="#{rolesBean.roleToDelete.name()}"/>
                 </h:panelGrid>
                 <h:panelGroup styleClass="alignright fullwidth" layout="block">
-                    <h:commandButton value="#{web.text.CANCEL}" action="#{rolesBean.actionDeleteRoleReset}" immediate="true">
-                        <f:ajax execute="@this" render=":modalBlockContainer"/>
-                    </h:commandButton>
-                    <h:commandButton value="#{web.text.DELETE}" action="#{rolesBean.actionDeleteRoleConfirm}">
-                        <f:ajax execute="@form" render="@all"/>
-                    </h:commandButton>
+                    <div class="action-buttons">
+                        <h:commandButton value="#{web.text.CANCEL}" action="#{rolesBean.actionDeleteRoleReset}" immediate="true">
+                            <f:ajax execute="@this" render=":modalBlockContainer"/>
+                        </h:commandButton>
+                        <h:commandButton value="#{web.text.DELETE}" action="#{rolesBean.actionDeleteRoleConfirm}">
+                            <f:ajax execute="@form" render="@all"/>
+                        </h:commandButton>
+                    </div>
                 </h:panelGroup>
             </h:panelGroup>
 

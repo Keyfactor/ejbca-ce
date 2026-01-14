@@ -19,7 +19,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertFalse;
 
-import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -45,9 +44,7 @@ import java.util.Collection;
  */
 public class PublisherSessionSystemTest {
 
-    private static final Logger log = Logger.getLogger(PublisherSessionSystemTest.class);
     private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("PublisherSessionSystemTest"));
-    private static final long SLEEP_TIME_MS = 1000L;
     private static final String PUBLISHER_NAME_PREFIX = "PublisherSessionSystemTest";
 
     private String originalCacheTime;

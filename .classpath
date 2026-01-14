@@ -165,7 +165,7 @@
 	<classpathentry kind="lib" path="lib/ext/test/easymock-5.2.0.jar"/>
 	<classpathentry kind="lib" path="lib/ext/test/mockito-core-5.19.0.jar"/>
 	<classpathentry kind="lib" path="lib/ext/test/objenesis-3.3.jar"/>
-	<classpathentry kind="lib" path="lib/cert-cvc-1.6.2.jar"/>
+	<classpathentry kind="lib" path="lib/cert-cvc-1.6.3.jar"/>
 	<classpathentry kind="lib" path="lib/commons-configuration2-2.11.0.jar"/>
 	<classpathentry kind="lib" path="lib/xstream/xstream-1.4.21.jar"/>
 	<classpathentry kind="lib" path="lib/kerb4j-server-common-0.2.0.jar"/>
@@ -189,7 +189,7 @@
 	<classpathentry kind="lib" path="lib/jee/soapclient/saaj-impl-3.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/gmbal-api-only-4.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/ejbca-ws-client-gen.jar"/>
-	<classpathentry kind="lib" path="lib/x509-common-util-5.4.9.jar" sourcepath="/x509-common-util"/>
+	<classpathentry kind="lib" path="lib/x509-common-util-5.6.2.jar" sourcepath="/x509-common-util"/>
 	<classpathentry kind="lib" path="lib/cryptotokens-api-3.4.2.jar"/>
 	<classpathentry kind="lib" path="lib/cryptotokens-impl-3.4.2.jar"/>
 	<classpathentry kind="lib" path="lib/cryptotokens-impl-ee-3.4.2.jar"/>

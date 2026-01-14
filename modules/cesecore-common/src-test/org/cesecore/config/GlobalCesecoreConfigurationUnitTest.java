@@ -1,3 +1,4 @@
+
 /*************************************************************************
  *                                                                       *
  *  CESeCore: CE Security Core                                           *
@@ -10,21 +11,29 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.util.provider;
+package org.cesecore.config;
 
-import java.security.Provider;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Arrays;
+
+import org.junit.Test;
 
 /**
- * Provider with to be used for TLS session.
- *
- * @version  $Id$
+ * Unit tests for GlobalCesecoreConfiguration
  */
-public class TLSProvider extends Provider {
 
-    private static final long serialVersionUID = -5295903987266780293L;
-    private static String info = "CESECORE TLS Provider";
-    public TLSProvider() {
-        super("TLSProvider", "0.0", info);
-        put("TrustManagerFactory.AcceptAll", TrustManagerFactoryImpl.AcceptAll.class.getName());
+public class GlobalCesecoreConfigurationUnitTest {
+
+    /**
+     * Forbidden characters are base64 encoded in the database, so just making sure that encoding and decoding work as expected
+     */
+    @Test
+    public void testForbiddenCharactersBase64Encoding() {
+        GlobalCesecoreConfiguration globalCesecoreConfiguration = new GlobalCesecoreConfiguration();
+        globalCesecoreConfiguration.setForbiddenCharacters(GlobalCesecoreConfiguration.DEFAULT_FORBIDDEN_CHARACTERS);
+        assertTrue("Forbidden character list was not stored properly.", Arrays.equals(GlobalCesecoreConfiguration.DEFAULT_FORBIDDEN_CHARACTERS,
+                globalCesecoreConfiguration.getForbiddenCharacters()));
     }
+
 }

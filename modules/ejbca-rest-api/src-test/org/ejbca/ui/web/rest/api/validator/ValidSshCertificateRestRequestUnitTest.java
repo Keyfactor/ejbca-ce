@@ -104,7 +104,6 @@ public class ValidSshCertificateRestRequestUnitTest {
     @Test
     public void okRequest() {
         // given
-        final String expectedMessage = "Invalid ValidSshCertificateRestRequest password can not be null or empty.";
         final SshCertificateRequestRestRequest testClass = new SshCertificateRequestRestRequest();
         testClass.setPublicKey("My public key");
         testClass.setKeyId("My key Id");

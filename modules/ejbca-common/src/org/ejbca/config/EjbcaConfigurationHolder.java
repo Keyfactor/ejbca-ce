@@ -414,8 +414,7 @@ public final class EjbcaConfigurationHolder {
          * @throws IllegalArgumentException if a required argument is missing
          */
         public InternalPeriodicReloadingTrigger(final ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration> builder, final Object ctrlParam,
-                final long triggerPeriod, final TimeUnit unit, final ManagedScheduledExecutorService exec)
-        {
+                final long triggerPeriod, final TimeUnit unit, final ManagedScheduledExecutorService exec) {
             if (builder.getReloadingController() == null)
             {
                 throw new IllegalArgumentException(
@@ -442,8 +441,7 @@ public final class EjbcaConfigurationHolder {
          * @throws IllegalArgumentException if a required argument is missing
          */
         public InternalPeriodicReloadingTrigger(ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration> builder, final Object ctrlParam,
-                final long triggerPeriod, final TimeUnit unit)
-        {
+                final long triggerPeriod, final TimeUnit unit) {
             this(builder, ctrlParam, triggerPeriod, unit, null);
         }
 
@@ -453,10 +451,8 @@ public final class EjbcaConfigurationHolder {
          * after a period. If this trigger is already started, this invocation has
          * no effect.
          */
-        public synchronized void start()
-        {
-            if (!isRunning())
-            {
+        public synchronized void start() {
+            if (!isRunning()) {
                 triggerTask =
                         getExecutorService().scheduleAtFixedRate(
                                 createTriggerTaskCommand(), period, period,
@@ -465,61 +461,12 @@ public final class EjbcaConfigurationHolder {
         }
 
         /**
-         * Stops this trigger. The associated {@code ReloadingController} is no more
-         * triggered. If this trigger is already stopped, this invocation has no
-         * effect.
-         */
-        public synchronized void stop()
-        {
-            if (isRunning())
-            {
-                triggerTask.cancel(false);
-                triggerTask = null;
-            }
-        }
-
-        /**
          * Returns a flag whether this trigger is currently active.
          *
          * @return a flag whether this trigger is running
          */
-        public synchronized boolean isRunning()
-        {
+        public synchronized boolean isRunning() {
             return triggerTask != null;
-        }
-
-        /**
-         * Shuts down this trigger and optionally shuts down the
-         * {@code ScheduledExecutorService} used by this object. This method should
-         * be called if this trigger is no more needed. It ensures that the trigger
-         * is stopped. If the parameter is <b>true</b>, the executor service is also
-         * shut down. This should be done if this trigger is the only user of this
-         * executor service.
-         *
-         * @param shutdownExecutor a flag whether the associated
-         *        {@code ScheduledExecutorService} is to be shut down
-         */
-        public void shutdown(final boolean shutdownExecutor)
-        {
-            stop();
-            if (shutdownExecutor)
-            {
-                if(log.isTraceEnabled()) {
-                    final String path = builder.getFileHandler().getFile().getAbsolutePath();
-                    log.trace("Shutdown executor service for external configuration '" + path + "'.");
-                }
-                getExecutorService().shutdown();
-            }
-        }
-
-        /**
-         * Shuts down this trigger and its {@code ScheduledExecutorService}. This is
-         * a shortcut for {@code shutdown(true)}.
-         *
-         * @see #shutdown(boolean)
-         */
-        public void shutdown() {
-            shutdown(true);
         }
 
         /**
@@ -536,8 +483,7 @@ public final class EjbcaConfigurationHolder {
          *
          * @return the newly created trigger task
          */
-        private Runnable createTriggerTaskCommand()
-        {
+        private Runnable createTriggerTaskCommand() {
             return () -> {
                 final String path = builder.getFileHandler().getFile().getAbsolutePath();
                 final boolean reloadingRequired = controller.getDetector().isReloadingRequired();
@@ -579,10 +525,9 @@ public final class EjbcaConfigurationHolder {
          *
          * @return the default executor service
          */
-        private static ScheduledExecutorService createDefaultExecutorService()
-        {
+        private static ScheduledExecutorService createDefaultExecutorService() {
             final ThreadFactory factory =
-                    new BasicThreadFactory.Builder()
+                    BasicThreadFactory.builder()
                             .namingPattern("ReloadingTrigger-%s").daemon(true)
                             .build();
             return Executors.newScheduledThreadPool(2, factory);
