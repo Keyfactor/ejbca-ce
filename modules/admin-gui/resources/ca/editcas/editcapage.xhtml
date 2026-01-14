@@ -1961,8 +1961,8 @@
             </h:panelGrid>
 
             <h:dataTable value="#{editCAsMBean.approvalRequestItems}"
-                         var="requestItem" rowClasses="Row0,Row1" styleClass="ui-md-12"
-                         columnClasses="editColumn1,editColumn2" style="padding-right: 4px;"
+                         var="requestItem" rowClasses="Row0,Row1" styleClass="ui-md-12 edit-top"
+                         columnClasses="editColumn1,editColumn2"
                          rendered="#{not (editCAsMBean.caExternal and not editCAsMBean.caTypeCits)and not editCAsMBean.renderCvcAvailable
 								and not editCAsMBean.caInfoDto.caTypeSsh and not editCAsMBean.caTypeProxy}">
                 <h:column>
