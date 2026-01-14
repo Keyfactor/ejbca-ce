@@ -121,6 +121,7 @@ public class CaInfoDto implements Serializable {
     private String username;
     private String password;
     private String oauthTokenUrl;
+    private String oauthUrl;
     private String oauthClientName;
     private String oauthClientSecret;
     private List<MutableTriple<Boolean, String, String>> headers;
@@ -815,6 +816,14 @@ public class CaInfoDto implements Serializable {
         this.oauthTokenUrl = oauthTokenUrl;
     }
 
+    public String getOauthUrl() {
+        return oauthUrl;
+    }
+
+    public void setOauthUrl(String oauthUrl) {
+        this.oauthUrl = oauthTokenUrl;
+    }
+
     public String getOauthClientName() {
         return oauthClientName;
     }
@@ -877,6 +886,7 @@ public class CaInfoDto implements Serializable {
             .setUsername(getUsername())
             .setPassword(getPassword())
             .setOauthTokenUrl(getOauthTokenUrl())
+            .setOauthUrl(getOauthUrl())
             .setOauthClientName(getOauthClientName())
             .setOauthClientSecret(getOauthClientSecret())
             .setCa(getUpstreamCa())

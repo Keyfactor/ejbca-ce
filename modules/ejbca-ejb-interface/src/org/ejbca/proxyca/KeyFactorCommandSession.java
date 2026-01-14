@@ -14,8 +14,8 @@ import java.util.Map;
 
 public interface KeyFactorCommandSession {
 
-    void invalidateToken(final String oAuthProvider);
-    Map<Integer, X509Certificate> getCertificates(final String oAuthProvider) throws Exception;
-    X509Certificate getCertificate(final String oAuthProvider, final int id) throws Exception;
+    void invalidateToken(final Integer caId);
+    Map<Integer, X509Certificate> getCertificates(final Integer caId) throws Exception;
+    X509Certificate getCertificate(final Integer caId, final Integer certificateId) throws Exception;
 
 }

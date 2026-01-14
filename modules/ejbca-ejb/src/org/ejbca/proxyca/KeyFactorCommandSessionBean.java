@@ -18,9 +18,9 @@ import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import org.apache.http.HttpStatus;
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.oauth.OAuthKeyInfo;
+import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CaSessionLocal;
-import org.cesecore.config.OAuthConfiguration;
+import org.cesecore.certificates.ca.kfenroll.ProxyCa;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.util.provider.X509TrustManagerAcceptAll;
 
@@ -45,12 +45,16 @@ import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 @Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class KeyFactorCommandSessionBean implements KeyFactorCommandSessionRemote {
+
+    private record OAuthInfo(String tokenUrl, String url, String clientName, String clientSecret) {
+    }
 
     private record Token(String token, long expirationTimeMs) {
     }
@@ -69,7 +73,7 @@ public class KeyFactorCommandSessionBean implements KeyFactorCommandSessionRemot
     private static final long TOKEN_EXPIRATION_TIME_MARGIN_MS = 10*60*1000; // 10 minutes
     private static Lock lock;
     private static SSLContext sslContext;
-    private static Map<String, Token> tokens;
+    private static Map<Integer, Token> tokens; // One token per CA.
 
     @EJB
     GlobalConfigurationSessionLocal globalConfigurationSession;
@@ -89,28 +93,36 @@ public class KeyFactorCommandSessionBean implements KeyFactorCommandSessionRemot
         tokens = new HashMap<>();
     }
 
-    private OAuthKeyInfo getOAuthKeyInfo(final String oAuthProvider) {
-        String errorMessage = "There is no Default Trusted OAuth Provider selected.";
-        final var configurationBase = globalConfigurationSession.getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
-        if (configurationBase == null) {
-            throw new RuntimeException(errorMessage);
+    private ProxyCa getProxyCa(final Integer caId) {
+        CAData caData = caSession.findById(caId);
+        if (caData == null || caData.getCA() == null) {
+            throw new RuntimeException("There is no CA with id "+caId);
         }
-        final Map<String, OAuthKeyInfo> map = ((OAuthConfiguration)configurationBase).getOauthKeys();
-        OAuthKeyInfo oAuthKeyInfo =
-                map == null ?
-                    null :
-                    map.get(oAuthProvider);
-        if (oAuthKeyInfo == null) {
-            throw new RuntimeException("There is no OAuthProvider with the name \""+oAuthProvider+"\".");
+        try {
+            return (ProxyCa)caData.getCA();
         }
-        return oAuthKeyInfo;
+        catch (ClassCastException e) {
+            throw new RuntimeException("The CA with id " + caId + " is not a ProxyCa.", e);
+        }
+    }
+
+    private OAuthInfo getOAuthInfo(ProxyCa proxyCa) {
+        final String tokenUrl = Objects.requireNonNull(proxyCa.getOauthTokenUrl(), "OAuth Token URL is empty for the CA with id = " + proxyCa.getCAId());
+        final String url = Objects.requireNonNull(proxyCa.getOauthUrl(), "OAuth URL is empty for the CA with id = " + proxyCa.getCAId());
+        final String clientName = Objects.requireNonNull(proxyCa.getOauthClientName(), "OAuth Client Name is empty for the CA with id = " + proxyCa.getCAId());
+        final String clientSecret = Objects.requireNonNull(proxyCa.getOauthClientSecret(), "OAuth Client Secret is empty for the CA with id = " + proxyCa.getCAId());
+        return new OAuthInfo(
+                tokenUrl,
+                url,
+                clientName,
+                clientSecret);
     }
 
     @Override
-    public void invalidateToken(final String oAuthProvider) {
+    public void invalidateToken(final Integer caId) {
         try {
             lock.lock();
-            tokens.remove(oAuthProvider);
+            tokens.remove(caId);
         }
         finally {
             lock.unlock();
@@ -172,12 +184,12 @@ public class KeyFactorCommandSessionBean implements KeyFactorCommandSessionRemot
         return restResponse.body();
     }
 
-    private Token getNewToken(final OAuthKeyInfo oAuthKeyInfo) throws Exception {
+    private Token getNewToken(final OAuthInfo oAuthInfo) throws Exception {
         long now = System.currentTimeMillis();
-        String formData = "client_id=" + URLEncoder.encode(oAuthKeyInfo.getClient(), StandardCharsets.UTF_8) +
-                        "&client_secret=" + URLEncoder.encode(oAuthKeyInfo.getClientSecret(), StandardCharsets.UTF_8) +
+        String formData = "client_id=" + URLEncoder.encode(oAuthInfo.clientName, StandardCharsets.UTF_8) +
+                        "&client_secret=" + URLEncoder.encode(oAuthInfo.clientSecret, StandardCharsets.UTF_8) +
                         "&grant_type=" + URLEncoder.encode("client_credentials", StandardCharsets.UTF_8);
-        final String responseBody = sendTokenRequest(oAuthKeyInfo.getTokenUrl(), formData);
+        final String responseBody = sendTokenRequest(oAuthInfo.tokenUrl, formData);
         Map<?, ?> map = new ObjectMapper().readValue(responseBody, Map.class);
         final var token = String.valueOf(map.get("access_token"));
         int expiresInSeconds = (Integer)map.get("expires_in");
@@ -185,13 +197,13 @@ public class KeyFactorCommandSessionBean implements KeyFactorCommandSessionRemot
         return new Token(token, expirationTimeMs);
     }
 
-    private Token getExisistingOrNewToken(final String oAuthProvider, final OAuthKeyInfo oAuthKeyInfo) throws Exception {
+    private Token getExisistingOrNewToken(final Integer caId, final OAuthInfo oAuthInfo) throws Exception {
         try {
             lock.lock();
-            Token token = tokens.get(oAuthProvider);
+            Token token = tokens.get(caId);
             if (isTokenExpired(token)) {
-                token = getNewToken(oAuthKeyInfo);
-                tokens.put(oAuthProvider, token);
+                token = getNewToken(oAuthInfo);
+                tokens.put(caId, token);
             }
             return token;
         }
@@ -200,10 +212,11 @@ public class KeyFactorCommandSessionBean implements KeyFactorCommandSessionRemot
         }
     }
 
-    private RestResponse sendApiRequest(final String oAuthProvider, final String path) throws Exception {
-        final var oAuthKeyInfo = getOAuthKeyInfo(oAuthProvider);
-        final Token token = getExisistingOrNewToken(oAuthProvider, oAuthKeyInfo);
-        return doSendRequest("GET", oAuthKeyInfo.getUrl()+path, null, null, "Bearer "+ token.token());
+    private RestResponse sendApiRequest(final Integer caId, final String path) throws Exception {
+        var proxyCa = getProxyCa(caId);
+        var oAuthInfo = getOAuthInfo(proxyCa);
+        final Token token = getExisistingOrNewToken(caId, oAuthInfo);
+        return doSendRequest("GET", oAuthInfo.url()+path, null, null, "Bearer "+ token.token());
     }
 
     private List<X509Certificate> getCertificateListFromPem(String pem) throws CertificateParsingException {
@@ -225,8 +238,8 @@ public class KeyFactorCommandSessionBean implements KeyFactorCommandSessionRemot
     }
 
     @Override
-    public Map<Integer, X509Certificate> getCertificates(final String oAuthProvider) throws Exception {
-        final var restResponse = sendApiRequest(oAuthProvider, "/Certificates");
+    public Map<Integer, X509Certificate> getCertificates(final Integer caId) throws Exception {
+        final var restResponse = sendApiRequest(caId, "/Certificates");
         restResponse.verifySuccess("Failed to get certificates from KeyFactor Command.");
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> maps = new ObjectMapper().readValue(restResponse.body, List.class);
@@ -240,12 +253,12 @@ public class KeyFactorCommandSessionBean implements KeyFactorCommandSessionRemot
     }
 
     @Override
-    public X509Certificate getCertificate(final String oAuthProvider, final int id) throws Exception {
-        final var restResponse = sendApiRequest(oAuthProvider, "/Certificates/"+id);
+    public X509Certificate getCertificate(final Integer caId, final Integer certificateId) throws Exception {
+        final var restResponse = sendApiRequest(caId, "/Certificates/"+certificateId);
         if (restResponse.httpStatus() == HttpStatus.SC_NOT_FOUND) {
             return null;
         }
-        restResponse.verifySuccess("Failed to get certificate with id=" + id + " from KeyFactor Command.");
+        restResponse.verifySuccess("Failed to get certificate with id=" + certificateId + " from KeyFactor Command.");
         final String contentBytes = (new ObjectMapper().readValue(restResponse.body, Map.class).get("ContentBytes")).toString();
         final String pem = getPem(contentBytes);
         final var certificates = getCertificateListFromPem(pem);

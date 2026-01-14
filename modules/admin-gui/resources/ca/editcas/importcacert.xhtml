@@ -98,13 +98,21 @@
 								<f:ajax />
 							</h:inputText>
 						</h:panelGroup>
-
 						<h:panelGroup rendered="#{importCaCertMBean.keyFactorCa}">
 							<h:outputLabel for="textFieldOauthTokenUrl" value="#{web.text.OAUTH_TOKEN_URL}" />
 						</h:panelGroup>
 						<h:panelGroup rendered="#{importCaCertMBean.keyFactorCa}">
 							<h:inputText id="textFieldOauthTokenUrl" name="oauthTokenUrl" size="45" maxlength="225"
 										 value="#{importCaCertMBean.caInfoDto.oauthTokenUrl}" title="#{web.text.OAUTH_TOKEN_URL}">
+								<f:ajax />
+							</h:inputText>
+						</h:panelGroup>
+						<h:panelGroup rendered="#{importCaCertMBean.keyFactorCa}">
+							<h:outputLabel for="textFieldOauthUrl" value="#{web.text.OAUTH_URL}" />
+						</h:panelGroup>
+						<h:panelGroup rendered="#{importCaCertMBean.keyFactorCa}">
+							<h:inputText id="textFieldOauthUrl" name="oauthUrl" size="45" maxlength="225"
+										 value="#{importCaCertMBean.caInfoDto.oauthUrl}" title="#{web.text.OAUTH_URL}">
 								<f:ajax />
 							</h:inputText>
 						</h:panelGroup>
