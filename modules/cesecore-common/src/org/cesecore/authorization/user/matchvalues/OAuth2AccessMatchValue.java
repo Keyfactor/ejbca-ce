@@ -34,10 +34,10 @@ public enum OAuth2AccessMatchValue implements AccessMatchValue {
     CLAIM_ROLES(5),
     /** Matches one of the entries in the "kf.roles" claim */
     CLAIM_KF_ROLES(6),
+    /** Matches the "email" claim */
+    CLAIM_EMAIL(7),
     // NOTE: preferred_username, email, etc. should not be considered to be stable, according to the OpenID connect specification.
-    // And according to Azure documentation, they MUST NOT be used for authorization decisions. See:
     // https://openid.net/specs/openid-connect-core-1_0.html
-    // https://github.com/MicrosoftDocs/azure-docs/blob/master/articles/active-directory/develop/id-tokens.md
 
 //  Possible future extension, to allow for arbitrary claims, and to require multiple different claims
 //    /** An JSON string with claims */
