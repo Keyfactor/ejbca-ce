@@ -640,13 +640,19 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         return intuneProperties;
     }
 
+    @SuppressWarnings("unchecked")
     public String getValue(String key, String alias) {
         if (aliasExists(alias)) {
             if (data.containsKey(key)) {
                 if (data.get(key) instanceof Boolean) {
                     return Boolean.toString((Boolean) data.get(key));
                 } else if (data.get(key) instanceof Map<?,?> || data.get(key) instanceof ArrayList<?>) {
-                    return null; //TODO: this must return proper value when fixing Configdump for scep. See ECA-13877
+                    log.info("GetValue: " + key + " - value - " + data.get(key));
+                    // List of encryptionCAs (GUI: 'Available CAs') from CA-mode for configdump.
+                    if ((alias + "." + ScepConfiguration.ENCRYPTION_CAS).equals(key)) {
+                        return String.join(",", (ArrayList<String>) data.get(key));
+                    }
+                    return null;
                 }
                 if (data.get(key) != null) {
                     return String.valueOf(data.get(key)).replaceAll("[\\[\\]',]", "");
