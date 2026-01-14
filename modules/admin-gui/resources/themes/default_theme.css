@@ -18,14 +18,14 @@
 html, body {
     /* push down footer to bottom of page when there is too little content. */
     height: 100%;
-    font-size: 11pt;
+    font-size: 14px;
 }
 body {
 	margin: 0;
 	padding: 0;
 	background-color: #FFF;
 	color: #000;
-	font-size: 11pt;
+	font-size: 14px;
 }
 code, code *, pre, pre *, .monospace {
 	font-family: "DejaVu Sans Mono", "Liberation Mono", Consolas, "Courier New", Courier, monospace;
@@ -35,14 +35,13 @@ a img {
 }
 
 /* Help Text */
-p.help {
-	font-size: 0.70em;
-	line-height: 0.70em;
-}
-p.help, .helpNormal {
+.help {
+	font-size: 0.80rem;
+	line-height: 0.80rem;
 	white-space: normal;
 	color: #606060;		/* Keep it, for old web browsers */
 	color: rgba(0,0,0,.6);
+	vertical-align: middle;
 }
 .helpNotWide {
 	max-width: 40em;
@@ -128,24 +127,6 @@ body#header {
 	font-size: .8em;
 }
 
-/* --- Footer */
-div#footer {
-	margin-top: 1.5em;
-	text-align: center;
-}
-#footer a:link,
-#footer a:visited {
-	color: #00A;
-	text-decoration: none;
-}
-#footer a:hover,
-#footer a:focus,
-#footer a:active {
-	color: #A00;
-	text-decoration: underline;
-}
-
-
 /*--------------------------------------------------------------------------*/
 /* CONTENT */
 #page-content-wrapper {
@@ -162,7 +143,7 @@ h1 {
 	margin-top: 0;
 	margin-bottom: 1em;
 	text-align: left;
-	font-size: 2em;
+	font-size: 2rem;
 	color: #284E81;
 	text-shadow: .05em .05em 0em rgba(0,0,0,.1);
 	-o-text-shadow: .05em .05em 0em #DDD;
@@ -174,21 +155,21 @@ h2 {
 	margin-top: .5em;
 	margin-bottom: .5em;
 	text-align: left;
-	font-size: 1.5em;
+	font-size: 1.6rem;
 	color: #284E81;
 }
 h3 {
 	margin-top: .5em;
 	margin-bottom: 0em;
 	text-align: left;
-	font-size: 1.2em;
+	font-size: 1.2rem;
 	color: #000;
 }
 h4 {
 	margin-top: .5em;
 	margin-bottom: 0em;
 	text-align: left;
-	font-size: 1em;
+	font-size: 1rem;
 	color: #000;
 }
 h4.margin-bottom {
@@ -284,7 +265,7 @@ div.message {
 
 /* --- Tables */
 table {
-	font-size: 1em;
+	font-size: 1rem;
 }
 table th,
 table td {
@@ -343,25 +324,27 @@ form table fieldset {
 
 /* --- Forms: System Configurations titles */
 table .titles {
-	font-size: 1.05em;
+	font-size: 1rem;
 	font-weight: bold;
 }
 
 /* --- Forms: Help */
 table .help {
-/*	display: none;		/* Hide all in-line help */
 	line-height: 1.40em;
 	white-space: normal;
-/*	font-size: .9em;	/* Smaller font size */
-	color: #606060;		/* Keep it, for old web browsers */
+	font-size: .8rem;
+	font-weight:normal;
+	margin: .2em .1em;
+
+	color: #606060;
 	color: rgba(0,0,0,.6);
 }
-table p.help {
-	margin: .2em .1em;
+
+table label {
+	font-size: .9rem;
+	vertical-align: middle;
 }
-table span.help {
-	font-weight:normal;
-}
+
 /* Add End-Entity */
 table#addendentity .help {
 	font-size: .8em;
@@ -389,22 +372,8 @@ table.grid tfoot tr:active {
 }
 
 /* Columns */
-.gridColumn1 {
-	white-space: nowrap;
-}
-.gridColumn2 {
-	white-space: nowrap;
-}
 .gridCenter {
 	text-align: center;
-}
-.gridColumnRight {
-	text-align: right;
-	width: 50%;
-}
-.gridColumnLeft {
-	text-align: left;
-	vertical-align: middle;
 }
 
 /* --- Forms: List/Actions */
@@ -448,7 +417,7 @@ table.edit-ctnd tr td,
 table.edit-bottom tr td,
 table.edit tr td {
 	border: 1px solid rgba(0, 0, 0, .08);
-	padding: 1rem 1rem;
+	padding: .6rem .6rem;
 }
 /* Columns */
 .editColumn1 {
@@ -510,51 +479,24 @@ table.edit tr td {
 	text-align: left;
 }
 .editColumn-eeProfile1 {
-	width: 10%;
+	width: 5%;
 	text-align: center;
 	vertical-align: middle;
 }
 .editColumn-eeProfile2 {
-	width: 40%;
+	width: 35%;
 	text-align: right;
 }
 .editColumn-eeProfile3 {
-	width: 50%;
+	width: 60%;
 	text-align: left;
 }
-.column1-cafunctions {
-	width: 15%;
-	text-align: center;
-	vertical-align: middle;
-}
-.column2-cafunctions {
-	width: 30%;
-	text-align: center;
-	vertical-align: middle;
-}
-.column3-cafunctions {
-	width: 55%;
-	text-align: left;
-}
-.fixEditColumn1 {
-	width: 360px;
-	min-width: 360px;
-	text-align: left
-}
-.fixEditColumn2 {
-	width: auto;
-	text-align: left
-}
-
 .column-checkbox1 {
 	width: 3%;
 	text-align: left;
 }
 .column-checkbox2 {
 	width: 15%;
-	text-align: left;
-}
-.column-checkbox3 {
 	text-align: left;
 }
 .column-align-right {
@@ -564,7 +506,6 @@ table.edit tr td {
 	width: 16.5%;
 	text-align: left;
 }
-
 
 /* Titles (and Sections) */
 table tr.section td,
@@ -693,6 +634,35 @@ table.edit table tr td {
 	color: #000 !important;
 }
 
+table tr td table tbody tr:nth-child(n+2) td input,
+table tr td table tbody tr:nth-child(n+2) input,
+table tr td table tbody tr:nth-child(n+2) td select,
+table tr td table tbody tr:nth-child(n+2) select {
+	margin-top:5px !important;
+}
+
+table tr td table tbody tr td {
+	vertical-align: middle;
+}
+
+table tr td table tbody tr td input:nth-child(n+2) {
+	margin-left:5px !important;
+}
+
+table.action tr td select,
+table.action tr td input,
+table.action tr td textarea,
+table.edit-top tr td select,
+table.edit-top tr td input,
+table.edit-top tr td textarea,
+table.edit-bottom tr td select,
+table.edit-bottom tr td input,
+table.edit-bottom tr td textarea,
+table.edit tr td select,
+table.edit tr td input,
+table.edit tr td textarea {
+	font-size: .9rem !important;
+}
 
 /* --- Forms: Search/Results */
 table.search tr td {
@@ -1173,11 +1143,20 @@ table#config tr td:first-child {
 /*--------------------------------------------------------------------------*/
 /* TABLES */
 
-.Row0, #Row0 { color: #495057; font-size: 1em; background-color: #fbfcfc; }
-.Row1, #Row1 { color: #495057; font-size: 1em; background-color: #FFFFFF; }
+.Row0, #Row0 {
+	color: #495057;
+	font-size: .9rem;
+	background-color: #fbfcfc;
+}
 
-.RowAlt0, #RowAlt0 { color: black; font-size: 9pt; background-color: #F8F0FA; }
-.RowAlt1, #RowAlt1 { color: black; font-size: 9pt; background-color: #E6E6FA; }
+.Row1, #Row1 {
+	color: #495057;
+	font-size: .9rem;
+	background-color: #FFFFFF;
+}
+
+.RowAlt0, #RowAlt0 { color: black; font-size: .9rem; background-color: #F8F0FA; }
+.RowAlt1, #RowAlt1 { color: black; font-size: .9rem; background-color: #E6E6FA; }
 
 .label { vertical-align: top; text-align: right; }
 .field { vertical-align: top; text-align: left; }
@@ -1355,7 +1334,7 @@ body.popup {
 
 .smallHelp {
 	line-height: 1.4em;
-	font-size: 0.70em;
+	font-size: 0.7rem;
 	white-space: normal;
 	color: #606060;		/* Keep it, for old web browsers */
 	color: rgba(0,0,0,.6);
@@ -1623,6 +1602,14 @@ body .ui-datatable .ui-datatable-footer {
 
 .display-block {
 	display:block;
+}
+
+.ui-chkbox .ui-chkbox-label {
+	font-size: .9rem;
+}
+
+table.ui-md-1, table.ui-md-2, table.ui-md-3, table.ui-md-4, table.ui-md-5, table.ui-md-6, table.ui-md-7, table.ui-md-8, table.ui-md-9, table.ui-md-10, table.ui-md-11, table.ui-md-12 {
+	padding: 0 !important;
 }
 
 /* PrimeFaces class adjustments: END */
