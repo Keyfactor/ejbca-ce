@@ -54,7 +54,7 @@ dependencyResolutionManagement {
             library("log4j-api", ":log4j-api:2.20.0")
             library("log4j-core", ":log4j-core:2.20.0")
             library("commons-lang3", ":commons-lang3:3.18.0")
-            library("commons-configuration2", ":commons-configuration2:2.11.0")
+            library("commons-configuration2", ":commons-configuration2:2.13.0")
             library("commons-collections4", ":commons-collections4:4.5.0")
             library("nimbus-jose-jwt", ":nimbus-jose-jwt:10.5")
             library("x509-common-util", ":x509-common-util:5.6.2")
