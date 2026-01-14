@@ -549,4 +549,9 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
     public boolean isValidatorAlwaysApplicable() {
         return true;
     }
+    
+    @Override
+    public boolean validateEmailDomains() {
+        return true;
+    }
 }

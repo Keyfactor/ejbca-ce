@@ -123,7 +123,6 @@ public class CertificateValidityUnitTest {
 
 	@Test
     public void testTestAbsoluteValidityWithSecondsPrecision() throws Exception {
-	    LOG.trace(">test04TestAbsoluteValidityWithSecondsPrecision");
 	    final EndEntityInformation subject = new EndEntityInformation();
         final CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         CertificateValidity validity;
@@ -570,6 +569,20 @@ public class CertificateValidityUnitTest {
         LOG.trace("<testNotBeforeDateInPastOutsideEncodedValidity");
     }
 	
+    /**
+     * Test setting the validity before the CA's issuance date
+     */
+    @Test
+    public void testInvalidOffset() throws Exception {
+        final EndEntityInformation subject = new EndEntityInformation();
+        final CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        profile.setCertificateValidityOffset("-10y");
+        final Date notAfter = DateUtils.addYears(now, 1);
+        CertificateValidity certificateValidity = new CertificateValidity(now, subject, caInfo, profile, null, notAfter, shortLivingCaCertificate, false, false);
+        assertTrue("An offset being set to before the CA's issuance time should result in the validities being reset: ", certificateValidity.getNotAfter().before(notAfter));
+        
+    }
+    
     private void testBaseTestCertificateValidity(String encodedValidity) throws Exception {
         final Date caFrom = new Date();
         caFrom.setTime(caFrom.getTime() - 20L*(24L*60L*60L*1000L));

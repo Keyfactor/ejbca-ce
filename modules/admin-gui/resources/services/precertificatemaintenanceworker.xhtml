@@ -4,7 +4,8 @@
 	xmlns:f="jakarta.faces.core"
 	xmlns:h="jakarta.faces.html"
 	xmlns:ui="jakarta.faces.facelets"
-	xmlns:pt="jakarta.faces.passthrough">
+	xmlns:pt="jakarta.faces.passthrough"
+	xmlns:p="http://primefaces.org/ui">
 <ui:remove>
 	<!--
     /*************************************************************************
@@ -51,11 +52,10 @@
 			<h:outputText value="#{web.text.REVOKEPRECERTIFICATES}"/>
 		</h:panelGroup>
 		<h:panelGroup>
-			<h:selectBooleanCheckbox id="certRevokePreCertificates"
+			<p:selectBooleanCheckbox id="certRevokePreCertificates"
 				value="#{editService.preCertificateMaintenanceWorkerType.revokePreCerts}"
-				disabled="#{not editService.hasEditRights}">
-			</h:selectBooleanCheckbox>
-			<h:outputLabel value="#{web.text.USE}" />
+				disabled="#{not editService.hasEditRights}" itemLabel="#{web.text.USE}">
+			</p:selectBooleanCheckbox>
 			<h:outputText>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;</h:outputText>
 		</h:panelGroup>
 

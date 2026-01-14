@@ -532,7 +532,7 @@ table.edit-bottom,
 table.edit-ctnd,
 table.edit {
 	margin: .75em -2px 0em -2px;
-	border-spacing: 3px 1px;
+	border-spacing: 3px 3px;
 }
 table.subsection,
 table.edit-bottom {
@@ -739,7 +739,7 @@ table.view-top {
 
 table.view tr td,
 table.view-top tr td {
-	padding: .15em .5em !important;
+	padding: .5em .5em !important;
 	line-height: 1.4em;
 }
 
@@ -1872,6 +1872,26 @@ label.align-label > span.ui-outputlabel-label {
 .form-label-col {
 	width: 1%;
 	white-space: nowrap;
+}
+
+.composite-hover {
+  display: none;
+  position: relative;
+  top: 1em;
+  left: 0;
+  border-top: 1px solid #808080;
+  padding: 4px;
+  width: 160px;
+  z-index: 999;
+}
+
+.cryptoTokenKeyPairAliasName:hover .composite-hover {
+  display: block;
+}
+
+.composite-hover ul {
+  margin: 5px 0 0 0;
+  padding-left: 15px;
 }
 
 /*--------------------------------------------------------------------------*/
