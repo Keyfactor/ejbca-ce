@@ -81,7 +81,7 @@ public class CodeQualityUnitTest {
                 .toList();
     }
 
-    private void appendFiles(final File dir) throws IOException {
+    private void appendFiles(final File dir) {
         for (final File file : getFiles(dir)) {
             if (file.getName().startsWith(".")) {
                 continue;
