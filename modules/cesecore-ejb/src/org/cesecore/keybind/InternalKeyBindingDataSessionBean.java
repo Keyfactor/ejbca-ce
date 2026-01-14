@@ -165,7 +165,7 @@ public class InternalKeyBindingDataSessionBean implements InternalKeyBindingData
             // The InternalKeyBinding does not exist in the database, before we add it we want to check that the name is not in use
             if (isNameUsed(name, type)) {
                 if (log.isDebugEnabled()) {
-                    log.debug("isNameUsed("+name+")");
+                    log.debug("isNameUsed(" + name + ", " + type + ")");
                 }
                 throw new InternalKeyBindingNameInUseException("The name '" + name + "' is already in use by another " + type + ".");                        
             }
@@ -173,7 +173,7 @@ public class InternalKeyBindingDataSessionBean implements InternalKeyBindingData
         } else {
             if (!isNameUsedByIdOnly(internalKeyBindingData.getName(), internalKeyBindingId, type)) {
                 if (log.isDebugEnabled()) {
-                    log.debug("!isNameUsedByIdOnly("+name+", "+internalKeyBindingId+")");
+                    log.debug("!isNameUsedByIdOnly(" + name + ", " + type + ", " + internalKeyBindingId + ")");
                 }
                 throw new InternalKeyBindingNameInUseException("The name '" + name + "' is already in use by another " + type + ".");
             }
