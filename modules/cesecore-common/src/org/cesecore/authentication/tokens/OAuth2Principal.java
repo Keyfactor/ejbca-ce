@@ -112,7 +112,8 @@ public class OAuth2Principal implements Principal, Serializable {
                 " oid:" + oid +
                 " aud:" + audience +
                 " roles:" + roles +
-                " kf.roles" + kfRoles + "]";
+                " kf.roles" + kfRoles +
+                " email: " + email + "]";
     }
 
     @Override
