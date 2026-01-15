@@ -21,7 +21,6 @@ import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.kfenroll.ProxyCa;
-import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.util.provider.X509TrustManagerAcceptAll;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -74,9 +73,6 @@ public class KeyFactorCommandSessionBean implements KeyFactorCommandSessionRemot
     private static Lock lock;
     private static SSLContext sslContext;
     private static Map<Integer, Token> tokens; // One token per CA.
-
-    @EJB
-    GlobalConfigurationSessionLocal globalConfigurationSession;
 
     @EJB
     private CaSessionLocal caSession;
@@ -245,9 +241,9 @@ public class KeyFactorCommandSessionBean implements KeyFactorCommandSessionRemot
         List<Map<String, Object>> maps = new ObjectMapper().readValue(restResponse.body, List.class);
         final var certificates = new HashMap<Integer, X509Certificate>();
         for (var map : maps) {
-            final int id = Integer.parseInt(map.get("Id").toString());
+            final int certificateId = Integer.parseInt(map.get("Id").toString());
             final String contentBytes = (String) map.get("ContentBytes");
-            certificates.put(id, getCertificateFromPem(getPem(contentBytes)));
+            certificates.put(certificateId, getCertificateFromPem(getPem(contentBytes)));
         }
         return certificates;
     }
