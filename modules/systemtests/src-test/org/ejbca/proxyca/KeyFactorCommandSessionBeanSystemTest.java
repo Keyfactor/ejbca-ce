@@ -28,15 +28,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import wiremock.com.fasterxml.jackson.core.JsonProcessingException;
-import wiremock.com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.security.cert.X509Certificate;
-import java.util.List;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
@@ -46,9 +42,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 public class KeyFactorCommandSessionBeanSystemTest {
 
@@ -70,7 +64,6 @@ public class KeyFactorCommandSessionBeanSystemTest {
     private static final KeyFactorCommandSession KEYFACTOR_COMMAND_SESSION = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyFactorCommandSessionRemote.class, EjbRemoteHelper.MODULE_EJBCA);
     private static final CaSession CA_SESSION = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
 
-    private String certificatesJson;
     private int proxyCaId;
 
     @Rule
@@ -86,7 +79,7 @@ public class KeyFactorCommandSessionBeanSystemTest {
         return new File(dir, "resources");
     }
 
-    private void setUpWireMock() throws JsonProcessingException {
+    private void setUpWireMock() {
         configureFor("http", WIREMOCK_HOST, wireMockRule.port());
         configureFor("https", WIREMOCK_HOST, wireMockRule.httpsPort());
         // create a stub
@@ -95,10 +88,6 @@ public class KeyFactorCommandSessionBeanSystemTest {
                         .withStatus(HttpStatus.SC_OK)
                         .withHeader("Content-Type", "application/x-www-form-urlencoded")
                         .withBody(VALID_TOKEN_BODY)));
-        stubFor(get(urlEqualTo(UPSTREAM_PATH + "/Certificates"))
-                .willReturn(aResponse()
-                        .withStatus(HttpStatus.SC_OK)
-                        .withBody(certificatesJson)));
     }
 
     private void removeTestProxyCa() throws AuthorizationDeniedException {
@@ -117,9 +106,9 @@ public class KeyFactorCommandSessionBeanSystemTest {
                 "A description",
                 "CN=proxy",
                 CAConstants.CA_EXTERNAL,
-                List.of(),
+                new ArrayList<>(),
                 upstreamUrl,
-                List.of(),
+                new ArrayList<>(),
                 null,
                 null,
                 oauthTokenUrl,
@@ -167,9 +156,6 @@ public class KeyFactorCommandSessionBeanSystemTest {
 
     @Before
     public void setUp() throws Exception {
-        final File dir = new File(getResourcesDir(), KeyFactorCommandSessionBeanSystemTest.class.getName());
-        final File certificatesJsonFile = new File(dir, "certificates.json");
-        certificatesJson = Files.readString(certificatesJsonFile.toPath());
         setUpWireMock();
         removeTestProxyCa();
         addTestProxyCa();
@@ -181,59 +167,19 @@ public class KeyFactorCommandSessionBeanSystemTest {
     }
 
     @Test
-    public void testGetCertificates() throws Exception {
+    public void testSend() throws Exception {
         // Given
-
-        // When
-        Map<Integer, X509Certificate> actual = KEYFACTOR_COMMAND_SESSION.getCertificates(proxyCaId);
-
-        // Then
-        assertNotNull(actual);
-        assertFalse("There are no certificates", actual.isEmpty());
-        for (var entry : actual.entrySet()) {
-            assertNotNull("Certificate with key="+entry.getKey()+" is null", entry.getValue());
-        }
-    }
-
-    @Test
-    public void testGetExistingCertificate() throws Exception {
-        // Given
-        var certificates = KEYFACTOR_COMMAND_SESSION.getCertificates(proxyCaId);
-        var objectMapper = new ObjectMapper();
-        List<Map<String, Object>> list = objectMapper.readValue(certificatesJson, List.class);
-        var map = list.get(0);
-        int certificateId = (Integer)map.get("Id");
-        var expected = certificates.get(certificateId);
-        var json = objectMapper.writeValueAsString(map);
-        stubFor(get(urlEqualTo(UPSTREAM_PATH + "/Certificates/"+certificateId)).willReturn(aResponse().withBody(json)));
-
-        // When
-        var actual = KEYFACTOR_COMMAND_SESSION.getCertificate(proxyCaId, certificateId);
-
-        // Then
-        assertNotNull(actual);
-        assertEquals(expected, actual);
-    }
-
-    @Test
-    public void testGetNonExistingCertificate() throws Exception {
-        // Given
-        var map = KEYFACTOR_COMMAND_SESSION.getCertificates(proxyCaId);
-        int maxId = map.keySet()
-                .stream()
-                .max(Integer::compareTo)
-                .orElse(0);
-        int nonExistingCertificateId = maxId + 1;
-        stubFor(get(urlEqualTo(UPSTREAM_PATH + "/Certificates/"+ nonExistingCertificateId))
+        stubFor(get(urlEqualTo(UPSTREAM_PATH + "/Certificates"))
                 .willReturn(aResponse()
-                        .withStatus(HttpStatus.SC_NOT_FOUND)));
-
+                        .withStatus(HttpStatus.SC_OK)
+                        .withBody("{}")));
 
         // When
-        var actual = KEYFACTOR_COMMAND_SESSION.getCertificate(proxyCaId, nonExistingCertificateId);
+        var actual = KEYFACTOR_COMMAND_SESSION.send(proxyCaId, "GET", "/Certificates", new HashMap<>(), null);
 
         // Then
-        assertNull(actual);
+        assertEquals("Failed to query for certificates", HttpStatus.SC_OK, actual.httpStatus());
+        assertNotNull("A response body with certificates is missing", actual.body());
     }
 
 }

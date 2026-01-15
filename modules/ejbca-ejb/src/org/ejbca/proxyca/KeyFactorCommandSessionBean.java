@@ -10,7 +10,6 @@
 package org.ejbca.proxyca;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.keyfactor.util.CertTools;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
@@ -26,25 +25,21 @@ import org.cesecore.util.provider.X509TrustManagerAcceptAll;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
-import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.security.cert.CertificateParsingException;
-import java.security.cert.X509Certificate;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.TreeSet;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -138,30 +133,88 @@ public class KeyFactorCommandSessionBean implements KeyFactorCommandSessionRemot
         }
     }
 
+    private String getResponseBody(final HttpURLConnection connection, final int statusCode) throws IOException {
+        if (statusCode == HttpStatus.SC_UNAUTHORIZED) {
+            return null;
+        }
+        else {
+            final InputStream inputStream = statusCode >= HttpStatus.SC_OK && statusCode < HttpStatus.SC_BAD_REQUEST ?
+                    connection.getInputStream() :
+                    connection.getErrorStream();
+            return read(inputStream);
+        }
+    }
+
+    private Response getResponse(final HttpURLConnection connection) throws IOException {
+        final int statusCode = connection.getResponseCode();
+        return new Response(statusCode, getResponseBody(connection, statusCode));
+    }
+
     private void write(final URLConnection urlConnection, final String message) throws IOException {
         try (final OutputStream outputStream = urlConnection.getOutputStream()) {
             outputStream.write(message.getBytes(StandardCharsets.UTF_8));
         }
     }
 
-    private RestResponse doSendRequest(final String method, final String urlString, final String contentType, final String requestBody, final String authorization) throws IOException {
-        final URL url = URI.create(urlString).toURL();
+    private void debugSendParameters(final String method, final String url, final Map<String, String> headers, final String requestBody) {
+        log.debug("Sending REST request:");
+        log.debug("   method      = "+method);
+        log.debug("   url         = "+url);
+        if (headers != null && !headers.isEmpty()) {
+            log.debug("   headers:");
+            var keys = new TreeSet<>(headers.keySet());
+            for (var key : keys) {
+                log.debug("      "+key+" = "+headers.get(key));
+            }
+        }
+        log.debug("   requestBody = "+requestBody);
+    }
+
+    private void debugResponse(final Response response) {
+        log.debug("Received REST response:");
+        log.debug("   httpStatus = " + response.httpStatus());
+        log.debug("   body       = " + response.body());
+    }
+
+    private void setRequestProperties(final HttpURLConnection connection, final Map<String, String> headers) {
+        if (headers != null) {
+            for (var entry : headers.entrySet()) {
+                if (entry.getKey() != null && entry.getValue() != null) {
+                    connection.setRequestProperty(entry.getKey(), entry.getValue());
+                }
+            }
+        }
+    }
+
+    private void setToken(final HttpURLConnection connection, final Token token) {
+        if (token != null) {
+            connection.setRequestProperty("Authorization", "Bearer " + token.token());
+        }
+    }
+
+    private void setRequestBody(final HttpURLConnection connection, final String requestBody) throws IOException {
+        if (requestBody != null) {
+            connection.setDoOutput(true);
+            write(connection, requestBody);
+        }
+    }
+
+    private Response doSendRequest(final String method, final String url, Map<String, String> headers, final String requestBody, final Token token) throws IOException {
+        if (log.isDebugEnabled()) {
+            debugSendParameters(method, url, headers, requestBody);
+        }
         HttpURLConnection connection = null;
         try {
-            connection = (HttpURLConnection) url.openConnection();
+            connection = (HttpURLConnection) URI.create(url).toURL().openConnection();
             connection.setRequestMethod(method);
-            connection.setRequestProperty("Content-Type", contentType);
-            connection.setRequestProperty("Authorization", authorization);
-            if (requestBody != null) {
-                connection.setDoOutput(true);
-                write(connection, requestBody);
+            setRequestProperties(connection, headers);
+            setToken(connection, token);
+            setRequestBody(connection, requestBody);
+            final var response = getResponse(connection);
+            if (log.isDebugEnabled()) {
+                debugResponse(response);
             }
-            final int statusCode = connection.getResponseCode();
-            final InputStream inputStream = statusCode >= HttpStatus.SC_OK && statusCode < HttpStatus.SC_BAD_REQUEST ?
-                    connection.getInputStream() :
-                    connection.getErrorStream();
-            String body = read(inputStream);
-            return new RestResponse(statusCode, body);
+            return response;
         }
         finally {
             try {
@@ -175,22 +228,31 @@ public class KeyFactorCommandSessionBean implements KeyFactorCommandSessionRemot
     }
 
     private String sendTokenRequest(final String url, final String formData) throws IOException {
-        final var restResponse = doSendRequest("POST", url, "application/x-www-form-urlencoded", formData, null);
-        restResponse.verifySuccess("Failed to request a new Token.");
-        return restResponse.body();
+        final var response = doSendRequest("POST", url, Map.of("Content-Type", "application/x-www-form-urlencoded"), formData, null);
+        if (response.httpStatus() != HttpStatus.SC_OK) {
+            throw new IOException("("+response.httpStatus()+"): Failed to request a new Token.");
+        }
+        return response.body();
     }
 
     private Token getNewToken(final OAuthInfo oAuthInfo) throws Exception {
+        if (log.isDebugEnabled()) {
+            log.debug("Generating a new token.");
+        }
         long now = System.currentTimeMillis();
         String formData = "client_id=" + URLEncoder.encode(oAuthInfo.clientName, StandardCharsets.UTF_8) +
                         "&client_secret=" + URLEncoder.encode(oAuthInfo.clientSecret, StandardCharsets.UTF_8) +
                         "&grant_type=" + URLEncoder.encode("client_credentials", StandardCharsets.UTF_8);
         final String responseBody = sendTokenRequest(oAuthInfo.tokenUrl, formData);
         Map<?, ?> map = new ObjectMapper().readValue(responseBody, Map.class);
-        final var token = String.valueOf(map.get("access_token"));
+        final var oauthToken = String.valueOf(map.get("access_token"));
         int expiresInSeconds = (Integer)map.get("expires_in");
         final var expirationTimeMs = now + expiresInSeconds*1000 - TOKEN_EXPIRATION_TIME_MARGIN_MS;
-        return new Token(token, expirationTimeMs);
+        final var token = new Token(oauthToken, expirationTimeMs);
+        if (log.isDebugEnabled()) {
+            log.debug("token.expirationTimeMs = "+token.expirationTimeMs());
+        }
+        return token;
     }
 
     private Token getExisistingOrNewToken(final Integer caId, final OAuthInfo oAuthInfo) throws Exception {
@@ -208,60 +270,22 @@ public class KeyFactorCommandSessionBean implements KeyFactorCommandSessionRemot
         }
     }
 
-    private RestResponse sendApiRequest(final Integer caId, final String path) throws Exception {
+    @Override
+    public Response send(final Integer caId, final String method, final String path, final Map<String, String> headers, final String requestBody) throws Exception {
         var proxyCa = getProxyCa(caId);
         var oAuthInfo = getOAuthInfo(proxyCa);
-        final Token token = getExisistingOrNewToken(caId, oAuthInfo);
-        return doSendRequest("GET", oAuthInfo.upstreamUrl()+path, null, null, "Bearer "+ token.token());
-    }
-
-    private List<X509Certificate> getCertificateListFromPem(String pem) throws CertificateParsingException {
-        return CertTools.getCertsFromPEM(new ByteArrayInputStream(pem.getBytes()), X509Certificate.class);
-    }
-
-    private X509Certificate getCertificateFromPem(String pem) throws CertificateParsingException {
-        var list = getCertificateListFromPem(pem);
-        if (list.size() != 1) {
-            throw new IllegalStateException("Expected exactly one certificate, got "+list.size());
+        var token = getExisistingOrNewToken(caId, oAuthInfo);
+        var response = doSendRequest(method, oAuthInfo.upstreamUrl()+path, headers, requestBody, token);
+        if (response.httpStatus() == HttpStatus.SC_UNAUTHORIZED) {
+            // Require a new token
+            if (log.isDebugEnabled()) {
+                log.debug("Token has expired. Requesting a new one.");
+            }
+            invalidateToken(caId);
+            token = getExisistingOrNewToken(caId, oAuthInfo);
+            response = doSendRequest(method, oAuthInfo.upstreamUrl()+path, headers, requestBody, token);
         }
-        return list.get(0);
-    }
-
-    private String getPem(final String contentBytes) {
-        return CertTools.BEGIN_CERTIFICATE + "\n" +
-                contentBytes.replace("\r", "") + "\n" +
-                CertTools.END_CERTIFICATE;
-    }
-
-    @Override
-    public Map<Integer, X509Certificate> getCertificates(final Integer caId) throws Exception {
-        final var restResponse = sendApiRequest(caId, "/Certificates");
-        restResponse.verifySuccess("Failed to get certificates from KeyFactor Command.");
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> maps = new ObjectMapper().readValue(restResponse.body, List.class);
-        final var certificates = new HashMap<Integer, X509Certificate>();
-        for (var map : maps) {
-            final int certificateId = Integer.parseInt(map.get("Id").toString());
-            final String contentBytes = (String) map.get("ContentBytes");
-            certificates.put(certificateId, getCertificateFromPem(getPem(contentBytes)));
-        }
-        return certificates;
-    }
-
-    @Override
-    public X509Certificate getCertificate(final Integer caId, final Integer certificateId) throws Exception {
-        final var restResponse = sendApiRequest(caId, "/Certificates/"+certificateId);
-        if (restResponse.httpStatus() == HttpStatus.SC_NOT_FOUND) {
-            return null;
-        }
-        restResponse.verifySuccess("Failed to get certificate with id=" + certificateId + " from KeyFactor Command.");
-        final String contentBytes = (new ObjectMapper().readValue(restResponse.body, Map.class).get("ContentBytes")).toString();
-        final String pem = getPem(contentBytes);
-        final var certificates = getCertificateListFromPem(pem);
-        if (certificates.size() != 1) {
-            throw new IllegalStateException("Expected exactly one certificate, got "+certificates.size());
-        }
-        return certificates.get(0);
+        return response;
     }
 
 }

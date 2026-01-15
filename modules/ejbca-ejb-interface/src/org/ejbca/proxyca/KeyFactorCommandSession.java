@@ -9,13 +9,16 @@
  *************************************************************************/
 package org.ejbca.proxyca;
 
-import java.security.cert.X509Certificate;
+import java.io.Serializable;
 import java.util.Map;
 
 public interface KeyFactorCommandSession {
 
+    record Response(int httpStatus, String body) implements Serializable {
+        static final long serialVersionUID = 1L;
+    }
+
     void invalidateToken(final Integer caId);
-    Map<Integer, X509Certificate> getCertificates(final Integer caId) throws Exception;
-    X509Certificate getCertificate(final Integer caId, final Integer certificateId) throws Exception;
+    Response send(final Integer caId, final String method, final String path, final Map<String, String> headers, final String requestBody) throws Exception;
 
 }
