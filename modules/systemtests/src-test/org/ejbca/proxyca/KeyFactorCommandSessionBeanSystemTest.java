@@ -10,7 +10,6 @@
 package org.ejbca.proxyca;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import com.google.common.base.Strings;
 import org.apache.http.HttpStatus;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
