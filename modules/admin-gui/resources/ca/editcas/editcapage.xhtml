@@ -2469,18 +2469,6 @@
                                   value="#{editCAsMBean.caInfoDto.oauthTokenUrl}"/>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <h:outputLabel for="textFieldOauthUrl" value="#{web.text.OAUTH_URL}"/>
-                </h:panelGroup>
-                <h:panelGroup>
-                    <h:inputText rendered="#{editCAsMBean.editCA and editCAsMBean.hasEditRight}"
-                                 id="textFieldOauthUrl" name="oauthUrl" size="45" maxlength="225"
-                                 value="#{editCAsMBean.caInfoDto.oauthUrl}" title="#{web.text.OAUTH_URL}">
-                        <f:ajax/>
-                    </h:inputText>
-                    <h:outputText rendered="#{not (editCAsMBean.editCA and editCAsMBean.hasEditRight)}"
-                                  value="#{editCAsMBean.caInfoDto.oauthUrl}"/>
-                </h:panelGroup>
-                <h:panelGroup>
                     <h:outputLabel for="textOauthClientName" value="#{web.text.OAUTH_CLIENT_NAME}"/>
                 </h:panelGroup>
                 <h:panelGroup>

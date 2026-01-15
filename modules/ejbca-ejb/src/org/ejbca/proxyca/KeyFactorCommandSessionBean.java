@@ -52,7 +52,7 @@ import java.util.concurrent.locks.ReentrantLock;
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class KeyFactorCommandSessionBean implements KeyFactorCommandSessionRemote {
 
-    private record OAuthInfo(String tokenUrl, String url, String clientName, String clientSecret) {
+    private record OAuthInfo(String upstreamUrl, String tokenUrl, String clientName, String clientSecret) {
     }
 
     private record Token(String token, long expirationTimeMs) {
@@ -103,13 +103,13 @@ public class KeyFactorCommandSessionBean implements KeyFactorCommandSessionRemot
     }
 
     private OAuthInfo getOAuthInfo(ProxyCa proxyCa) {
-        final String tokenUrl = Objects.requireNonNull(proxyCa.getOauthTokenUrl(), "OAuth Token URL is empty for the CA with id = " + proxyCa.getCAId());
-        final String url = Objects.requireNonNull(proxyCa.getOauthUrl(), "OAuth URL is empty for the CA with id = " + proxyCa.getCAId());
-        final String clientName = Objects.requireNonNull(proxyCa.getOauthClientName(), "OAuth Client Name is empty for the CA with id = " + proxyCa.getCAId());
+        final String upstreamUrl  = Objects.requireNonNull(proxyCa.getEnrollWithCsrUrl(),  "Upstream URL is empty for the CA with id = "        + proxyCa.getCAId());
+        final String tokenUrl     = Objects.requireNonNull(proxyCa.getOauthTokenUrl(),     "OAuth Token URL is empty for the CA with id = "     + proxyCa.getCAId());
+        final String clientName   = Objects.requireNonNull(proxyCa.getOauthClientName(),   "OAuth Client Name is empty for the CA with id = "   + proxyCa.getCAId());
         final String clientSecret = Objects.requireNonNull(proxyCa.getOauthClientSecret(), "OAuth Client Secret is empty for the CA with id = " + proxyCa.getCAId());
         return new OAuthInfo(
+                upstreamUrl,
                 tokenUrl,
-                url,
                 clientName,
                 clientSecret);
     }
@@ -212,7 +212,7 @@ public class KeyFactorCommandSessionBean implements KeyFactorCommandSessionRemot
         var proxyCa = getProxyCa(caId);
         var oAuthInfo = getOAuthInfo(proxyCa);
         final Token token = getExisistingOrNewToken(caId, oAuthInfo);
-        return doSendRequest("GET", oAuthInfo.url()+path, null, null, "Bearer "+ token.token());
+        return doSendRequest("GET", oAuthInfo.upstreamUrl()+path, null, null, "Bearer "+ token.token());
     }
 
     private List<X509Certificate> getCertificateListFromPem(String pem) throws CertificateParsingException {

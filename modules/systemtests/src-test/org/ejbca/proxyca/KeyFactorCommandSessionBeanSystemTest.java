@@ -10,6 +10,7 @@
 package org.ejbca.proxyca;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import com.google.common.base.Strings;
 import org.apache.http.HttpStatus;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -52,10 +53,10 @@ import static org.junit.Assert.assertNull;
 
 public class KeyFactorCommandSessionBeanSystemTest {
 
-    private static final String TEST_NAME = KeyFactorCommandSessionBeanSystemTest.class.getName();
-    private static final String WIREMOCK_HOST = "localhost";
+    private static final String TEST_NAME        = KeyFactorCommandSessionBeanSystemTest.class.getName();
+    private static final String WIREMOCK_HOST    = "localhost";
     private static final String OAUTH_TOKEN_PATH = "/realms/Keyfactor/protocol/openid-connect/token";
-    private static final String OAUTH_PATH = "/KeyfactorAPI";
+    private static final String UPSTREAM_PATH    = "/KeyfactorAPI";
     private static final String VALID_TOKEN_BODY = """
 {
     "access_token": "valid-token",
@@ -71,11 +72,6 @@ public class KeyFactorCommandSessionBeanSystemTest {
     private static final CaSession CA_SESSION = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
 
     private String certificatesJson;
-    private int nonExistingCertificateId;
-    private String oauthTokenUrl;
-    private String oauthUrl;
-    private String oauthClientName;
-    private String oauthClientSecret;
     private int proxyCaId;
 
     @Rule
@@ -100,23 +96,10 @@ public class KeyFactorCommandSessionBeanSystemTest {
                         .withStatus(HttpStatus.SC_OK)
                         .withHeader("Content-Type", "application/x-www-form-urlencoded")
                         .withBody(VALID_TOKEN_BODY)));
-        stubFor(get(urlEqualTo("/KeyfactorAPI/Certificates"))
+        stubFor(get(urlEqualTo(UPSTREAM_PATH + "/Certificates"))
                 .willReturn(aResponse()
                         .withStatus(HttpStatus.SC_OK)
                         .withBody(certificatesJson)));
-        var objectMapper = new ObjectMapper();
-        List<Map<String, Object>> maps = objectMapper.readValue(certificatesJson, List.class);
-        int maxId = 0;
-        for (var map : maps) {
-            int certificateId = (Integer)map.get("Id");
-            maxId = Math.max(maxId, certificateId);
-            var json = objectMapper.writeValueAsString(map);
-            stubFor(get(urlEqualTo("/KeyfactorAPI/Certificates/"+certificateId)).willReturn(aResponse().withBody(json)));
-        }
-        nonExistingCertificateId = maxId+1;
-        stubFor(get(urlEqualTo("/KeyfactorAPI/Certificates/"+ nonExistingCertificateId))
-                .willReturn(aResponse()
-                        .withStatus(HttpStatus.SC_NOT_FOUND)));
     }
 
     private void removeTestProxyCa() throws AuthorizationDeniedException {
@@ -129,19 +112,18 @@ public class KeyFactorCommandSessionBeanSystemTest {
         }
     }
 
-    private ProxyCaInfo getProxyCaInfo() {
+    private ProxyCaInfo getProxyCaInfo(final String upstreamUrl, final String oauthTokenUrl, final String oauthClientName, final String oauthClientSecret) {
         return new ProxyCaInfo(
                 TEST_NAME + "-ProxyCa-" + System.currentTimeMillis(),
                 "A description",
                 "CN=proxy",
                 CAConstants.CA_EXTERNAL,
                 List.of(),
-                null,
+                upstreamUrl,
                 List.of(),
                 null,
                 null,
                 oauthTokenUrl,
-                oauthUrl,
                 oauthClientName,
                 oauthClientSecret,
                 null,
@@ -160,11 +142,24 @@ public class KeyFactorCommandSessionBeanSystemTest {
         throw new RuntimeException("Failed to find a CAToken. Isn't there any existing CA?");
     }
 
+    private String getEnv(final String name, final String defaultValue) {
+        final String value = System.getenv(name);
+        return value == null || value.trim().isEmpty() ? defaultValue : value;
+    }
+
+    private ProxyCaInfo getProxyCaInfo() {
+        final var upstreamUrl       = getEnv("UPSTREAM_URL",        "http://" + WIREMOCK_HOST + ":" + wireMockRule.port() + UPSTREAM_PATH);
+        final var oauthTokenUrl     = getEnv("OAUTH_TOKEN_URL",     "http://" + WIREMOCK_HOST + ":" + wireMockRule.port() + OAUTH_TOKEN_PATH);
+        final var oauthClientName   = getEnv("OAUTH_CLIENT_NAME",   "some-oath-client-name");
+        final var oauthClientSecret = getEnv("OAUTH_CLIENT_SECRET", "some-oath-client-secret");
+        return getProxyCaInfo(
+                upstreamUrl,
+                oauthTokenUrl,
+                oauthClientName,
+                oauthClientSecret);
+    }
+
     private void addTestProxyCa() throws AuthorizationDeniedException, CAExistsException, InvalidAlgorithmException {
-        oauthTokenUrl     = "http://" + WIREMOCK_HOST + ":" + wireMockRule.port() + OAUTH_TOKEN_PATH;
-        oauthUrl          = "http://" + WIREMOCK_HOST + ":" + wireMockRule.port() + OAUTH_PATH;
-        oauthClientName   = "some-oath-client-name";
-        oauthClientSecret = "some-oath-client-secret";
         var proxyCa = new ProxyCaImpl(getProxyCaInfo());
         proxyCa.setCAToken(getCAToken());
         CA_SESSION.addCA(AUTHENTICATION_TOKEN, proxyCa);
@@ -205,9 +200,13 @@ public class KeyFactorCommandSessionBeanSystemTest {
     public void testGetExistingCertificate() throws Exception {
         // Given
         var certificates = KEYFACTOR_COMMAND_SESSION.getCertificates(proxyCaId);
-        var entry = certificates.entrySet().iterator().next();
-        int certificateId = entry.getKey();
-        X509Certificate expected = entry.getValue();
+        var objectMapper = new ObjectMapper();
+        List<Map<String, Object>> list = objectMapper.readValue(certificatesJson, List.class);
+        var map = list.get(0);
+        int certificateId = (Integer)map.get("Id");
+        var expected = certificates.get(certificateId);
+        var json = objectMapper.writeValueAsString(map);
+        stubFor(get(urlEqualTo(UPSTREAM_PATH + "/Certificates/"+certificateId)).willReturn(aResponse().withBody(json)));
 
         // When
         var actual = KEYFACTOR_COMMAND_SESSION.getCertificate(proxyCaId, certificateId);
@@ -219,6 +218,18 @@ public class KeyFactorCommandSessionBeanSystemTest {
 
     @Test
     public void testGetNonExistingCertificate() throws Exception {
+        // Given
+        var map = KEYFACTOR_COMMAND_SESSION.getCertificates(proxyCaId);
+        int maxId = map.keySet()
+                .stream()
+                .max(Integer::compareTo)
+                .orElse(0);
+        int nonExistingCertificateId = maxId + 1;
+        stubFor(get(urlEqualTo(UPSTREAM_PATH + "/Certificates/"+ nonExistingCertificateId))
+                .willReturn(aResponse()
+                        .withStatus(HttpStatus.SC_NOT_FOUND)));
+
+
         // When
         var actual = KEYFACTOR_COMMAND_SESSION.getCertificate(proxyCaId, nonExistingCertificateId);
 

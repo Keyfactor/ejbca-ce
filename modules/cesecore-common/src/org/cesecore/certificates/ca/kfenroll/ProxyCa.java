@@ -22,13 +22,13 @@ public interface ProxyCa extends CA {
 
     String CA_TYPE = "KeyfactorEnrollmentProxyCA";
 
+    String getEnrollWithCsrUrl();
+
+    void setEnrollWithCsrUrl(final String enrollWithCsrUrl);
+
     String getOauthTokenUrl();
 
     void setOauthTokenUrl(final String oauthTokenUrl);
-
-    String getOauthUrl();
-
-    void setOauthUrl(final String oauthTokenUrl);
 
     String getOauthClientName();
 
