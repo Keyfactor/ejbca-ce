@@ -1962,25 +1962,25 @@
                 <h:outputLabel for="approvals" value="#{web.text.APPROVALSETTINGS}"
                                style="font-weight: bold;"/>
                 <h:panelGroup id="approvals"/>
-            </h:panelGrid>
 
-            <h:dataTable value="#{editCAsMBean.approvalRequestItems}"
-                         var="requestItem" rowClasses="Row0,Row1" styleClass="ui-md-12 edit-top"
-                         columnClasses="editColumn1,editColumn2"
-                         rendered="#{not (editCAsMBean.caExternal and not editCAsMBean.caTypeCits)and not editCAsMBean.renderCvcAvailable
-								and not editCAsMBean.caInfoDto.caTypeSsh and not editCAsMBean.caTypeProxy}">
-                <h:column>
-                    <h:outputText value="#{requestItem.displayText}"/>
-                </h:column>
-                <h:column>
-                    <h:selectOneMenu id="approvalProfile"
-                                     value="#{requestItem.approvalProfileId}"
-                                     converter="jakarta.faces.Integer"
-                                     disabled="#{not editCAsMBean.hasEditRight}">
-                        <f:selectItems value="#{editCAsMBean.availableApprovalProfiles}"/>
-                    </h:selectOneMenu>
-                </h:column>
-            </h:dataTable>
+                <h:panelGroup/>
+                <h:dataTable value="#{editCAsMBean.approvalRequestItems}"
+                             var="requestItem" rowClasses="Row0,Row1" styleClass="edit-top"
+                             rendered="#{not (editCAsMBean.caExternal and not editCAsMBean.caTypeCits) and not editCAsMBean.renderCvcAvailable
+                                    and not editCAsMBean.caInfoDto.caTypeSsh and not editCAsMBean.caTypeProxy}">
+                    <h:column>
+                        <h:outputText value="#{requestItem.displayText}"/>
+                    </h:column>
+                    <h:column>
+                        <h:selectOneMenu id="approvalProfile"
+                                         value="#{requestItem.approvalProfileId}"
+                                         converter="jakarta.faces.Integer"
+                                         disabled="#{not editCAsMBean.hasEditRight}">
+                            <f:selectItems value="#{editCAsMBean.availableApprovalProfiles}"/>
+                        </h:selectOneMenu>
+                    </h:column>
+                </h:dataTable>
+            </h:panelGrid>
 
             <!-- ==================================================================== Approval Settings  =========================================================================== -->
 
