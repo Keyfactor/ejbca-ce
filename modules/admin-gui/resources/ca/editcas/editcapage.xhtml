@@ -1595,7 +1595,7 @@
                                              value="#{editCAsMBean.caInfoDto.usePartitionedCrl}"
                                              disabled="#{not editCAsMBean.hasEditRight}" itemLabel="#{web.text.USE}">
                         <f:ajax render=":editcapage:mscompatiblegroup :editcapage:crlNumberOfPartitionsLabelGroup :editcapage:crlNumberOfPartitionsInputGroup :editcapage:suspendedPartitionLabelGroup :editcapage:suspendedPartitionInputGroup"
-                                onevent="function (ev) { if (ev.status == 'success') { ejbca.adminweb.hideShowCellsByClass('crlPartitionCellContents', ev.source.checked); } } "/>
+                                onevent="function (ev) { if (ev.status == 'success') { var checkbox = document.getElementById(ev.source.id).querySelector('input[type=checkbox]'); if (checkbox) { ejbca.adminweb.hideShowCellsByClass('crlPartitionCellContents', checkbox.checked) } } }" />
                     </p:selectBooleanCheckbox>
                     <h:outputScript rendered="${not editCAsMBean.usePartitionedCrlChecked}">
                         if (document.readyState != 'complete') {
