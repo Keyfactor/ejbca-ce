@@ -74,7 +74,7 @@ public class CAAdminTestSessionBean implements CAAdminTestSessionRemote {
     	CAToken thisCAToken = thisCa.getCAToken();
     	final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(thisCAToken.getCryptoTokenId());
     	// Make sure we are not trying to export a hard or invalid token
-    	if (!(cryptoToken instanceof SoftCryptoToken)) {
+        if (!cryptoToken.isInstanceOf(SoftCryptoToken.class)) {
     		throw new IllegalCryptoTokenException("Cannot extract fingerprint from a non-soft token (" + thisCa.getCAType() + ").");
     	}
     	PrivateKey p12PrivateEncryptionKey = cryptoToken.getPrivateKey(thisCAToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT));

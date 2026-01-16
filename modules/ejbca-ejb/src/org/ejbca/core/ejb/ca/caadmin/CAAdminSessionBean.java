@@ -2659,7 +2659,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             final CAToken currentCaToken = ca.getCAToken();
             final int cryptoTokenId = currentCaToken.getCryptoTokenId();
             CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
-            if (!(cryptoToken instanceof SoftCryptoToken)) {
+            if (!cryptoToken.isInstanceOf(SoftCryptoToken.class)) {
                 throw new Exception("Cannot export anything but a soft token.");
             }
             cryptoTokenManagementSession.deactivate(admin, cryptoTokenId);
@@ -3174,7 +3174,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             // Make sure we are not trying to export a hard or invalid token
             CAToken thisCAToken = thisCa.getCAToken();
             final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(thisCAToken.getCryptoTokenId());
-            if (!(cryptoToken instanceof SoftCryptoToken)) {
+            if (!cryptoToken.isInstanceOf(SoftCryptoToken.class)) {
                 throw new IllegalCryptoTokenException("Cannot export anything but a soft token.");
             }
             // Do not allow export without password protection
@@ -3193,7 +3193,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             }
             // Fetch keys
             final char[] password = keystorepass.toCharArray();
-            ((SoftCryptoToken) cryptoToken).checkPasswordBeforeExport(password);
+            cryptoToken.getConcreteToken(SoftCryptoToken.class).checkPasswordBeforeExport(password);
             cryptoToken.activate(password);
 
             PrivateKey p12PrivateEncryptionKey = cryptoToken.getPrivateKey(thisCAToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT));
