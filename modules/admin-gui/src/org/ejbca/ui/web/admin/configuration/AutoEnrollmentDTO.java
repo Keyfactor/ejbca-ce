@@ -45,6 +45,7 @@ public class AutoEnrollmentDTO implements Serializable {
     private String caName;
     private String kECCertificateProfileName;
     private List<MSAutoEnrollmentSettingsTemplate> mappedMsTemplates = new ArrayList<>();
+    private int certificateTemplateCacheLifetime = MSAutoEnrollmentConfiguration.DEFAULT_CERTIFICATE_TEMPLATE_CACHE_LIFETIME;
 
     public AutoEnrollmentDTO() {
     }
@@ -73,6 +74,7 @@ public class AutoEnrollmentDTO implements Serializable {
             caName = autoEnrollmentConfiguration.getCaName(alias);
             kECCertificateProfileName = autoEnrollmentConfiguration.getKeyExchangeCertProfileName(alias);
             mappedMsTemplates = autoEnrollmentConfiguration.getMsTemplateSettings(alias);
+            certificateTemplateCacheLifetime = autoEnrollmentConfiguration.getCertificateTemplateCacheLifetime(alias);
         }
     }
 
@@ -250,5 +252,13 @@ public class AutoEnrollmentDTO implements Serializable {
 
     public void setMappedMsTemplates(List<MSAutoEnrollmentSettingsTemplate> mappedMsTemplates) {
         this.mappedMsTemplates = mappedMsTemplates;
+    }
+
+    public int getCertificateTemplateCacheLifetime() {
+        return certificateTemplateCacheLifetime;
+    }
+
+    public void setCertificateTemplateCacheLifetime(int certificateTemplateCacheLifetime) {
+        this.certificateTemplateCacheLifetime = certificateTemplateCacheLifetime;
     }
 }
