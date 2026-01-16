@@ -1543,14 +1543,14 @@
                             value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Keep_Expired_Certificates_on_CRL')}"
                             escape="false" styleClass="helpReference"/>
                 </h:panelGroup>
-                <h:panelGroup rendered="#{not editCAsMBean.caExternal}">                   
+                <h:panelGroup rendered="#{not editCAsMBean.caExternal}">
                     <p:selectBooleanCheckbox id="checkboxkeepexpiredoncrl"
                                              value="#{editCAsMBean.caInfoDto.keepExpiredCertsOnCrl}"
                                              disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}"
-                                            itemLabel="#{web.text.USE}"
+                                             itemLabel="#{web.text.USE}"
                     >
                         <f:ajax render=":editcapage:keepExpiredCrlFormatPanel :editcapage:keepExpiredCrlFormatInput :editcapage:keepExpiredCrlFormatLabel :editcapage:expiredCrlFormat"
-                                onevent="function (ev) { if (ev.status == 'success') { ejbca.adminweb.hideShowCellsByClass('keepExpiredCellContents', ev.source.checked) } }" />
+                                onevent="function (ev) { if (ev.status == 'success') { var checkbox = document.getElementById(ev.source.id).querySelector('input[type=checkbox]'); if (checkbox) { ejbca.adminweb.hideShowCellsByClass('keepExpiredCellContents', checkbox.checked) } } }" />
                     </p:selectBooleanCheckbox>
                     <h:outputScript rendered="${not editCAsMBean.keepExpiredCertsOnCrlChecked}">
                         if (document.readyState != 'complete') {
