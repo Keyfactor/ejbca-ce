@@ -661,6 +661,10 @@ table.edit tr td textarea {
 	font-size: .9rem !important;
 }
 
+table.hideEmpty tr td:empty {
+	display: none;
+}
+
 /* --- Forms: Search/Results */
 table.search tr td {
 	padding: .25em .5em .1em 0em;
