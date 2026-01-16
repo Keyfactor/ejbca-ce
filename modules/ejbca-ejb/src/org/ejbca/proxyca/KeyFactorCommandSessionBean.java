@@ -172,7 +172,7 @@ public class KeyFactorCommandSessionBean implements KeyFactorCommandSessionRemot
 
     private void debugResponse(final Response response) {
         log.debug("Received REST response:");
-        log.debug("   httpStatus = " + response.httpStatus());
+        log.debug("   statusCode = " + response.statusCode());
         log.debug("   body       = " + response.body());
     }
 
@@ -229,8 +229,8 @@ public class KeyFactorCommandSessionBean implements KeyFactorCommandSessionRemot
 
     private String sendTokenRequest(final String url, final String formData) throws IOException {
         final var response = doSendRequest("POST", url, Map.of("Content-Type", "application/x-www-form-urlencoded"), formData, null);
-        if (response.httpStatus() != HttpStatus.SC_OK) {
-            throw new IOException("("+response.httpStatus()+"): Failed to request a new Token.");
+        if (response.statusCode() != HttpStatus.SC_OK) {
+            throw new IOException("("+response.statusCode()+"): Failed to request a new Token.");
         }
         return response.body();
     }
@@ -270,20 +270,32 @@ public class KeyFactorCommandSessionBean implements KeyFactorCommandSessionRemot
         }
     }
 
+
+    String getUrl(final String baseUrl, final String path) {
+        final String baseUrlWithoutSlash = baseUrl.endsWith("/") ?
+                baseUrl.substring(0, baseUrl.length()-1) :
+                baseUrl;
+        final String pathWithoutSlash = path.startsWith("/") ?
+                path.substring(1) :
+                path;
+        return baseUrlWithoutSlash + "/" + pathWithoutSlash;
+    }
+
     @Override
     public Response send(final Integer caId, final String method, final String path, final Map<String, String> headers, final String requestBody) throws Exception {
         var proxyCa = getProxyCa(caId);
         var oAuthInfo = getOAuthInfo(proxyCa);
         var token = getExisistingOrNewToken(caId, oAuthInfo);
-        var response = doSendRequest(method, oAuthInfo.upstreamUrl()+path, headers, requestBody, token);
-        if (response.httpStatus() == HttpStatus.SC_UNAUTHORIZED) {
+        var url = getUrl(oAuthInfo.upstreamUrl(), path);
+        var response = doSendRequest(method, url, headers, requestBody, token);
+        if (response.statusCode() == HttpStatus.SC_UNAUTHORIZED) {
             // Require a new token
             if (log.isDebugEnabled()) {
                 log.debug("Token has expired. Requesting a new one.");
             }
             invalidateToken(caId);
             token = getExisistingOrNewToken(caId, oAuthInfo);
-            response = doSendRequest(method, oAuthInfo.upstreamUrl()+path, headers, requestBody, token);
+            response = doSendRequest(method, url, headers, requestBody, token);
         }
         return response;
     }

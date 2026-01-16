@@ -9,16 +9,26 @@
  *************************************************************************/
 package org.ejbca.proxyca;
 
-import java.io.Serializable;
-import java.util.Map;
+import org.junit.Before;
+import org.junit.Test;
 
-public interface KeyFactorCommandSession {
+import static org.junit.Assert.assertEquals;
 
-    record Response(int statusCode, String body) implements Serializable {
-        static final long serialVersionUID = 1L;
+public class KeyFactorCommandSessionBeanUnitTest {
+
+    private KeyFactorCommandSessionBean keyFactorCommandSessionBean;
+
+    @Before
+    public void setUp() {
+        keyFactorCommandSessionBean = new KeyFactorCommandSessionBean();
     }
 
-    void invalidateToken(final Integer caId);
-    Response send(final Integer caId, final String method, final String path, final Map<String, String> headers, final String requestBody) throws Exception;
+    @Test
+    public void testGetUrl() {
+        assertEquals("a/b/c/d", keyFactorCommandSessionBean.getUrl("a/b", "c/d"));
+        assertEquals("a/b/c/d", keyFactorCommandSessionBean.getUrl("a/b/", "c/d"));
+        assertEquals("a/b/c/d", keyFactorCommandSessionBean.getUrl("a/b", "/c/d"));
+        assertEquals("a/b/c/d", keyFactorCommandSessionBean.getUrl("a/b/", "/c/d"));
+    }
 
 }

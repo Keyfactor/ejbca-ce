@@ -178,7 +178,7 @@ public class KeyFactorCommandSessionBeanSystemTest {
         var actual = KEYFACTOR_COMMAND_SESSION.send(proxyCaId, "GET", "/Certificates", new HashMap<>(), null);
 
         // Then
-        assertEquals("Failed to query for certificates", HttpStatus.SC_OK, actual.httpStatus());
+        assertEquals("Failed to query for certificates", HttpStatus.SC_OK, actual.statusCode());
         assertNotNull("A response body with certificates is missing", actual.body());
     }
 
