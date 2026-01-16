@@ -476,16 +476,16 @@ table.edit tr td {
 	text-align: left;
 }
 .editColumn-eeProfile1 {
-	width: 5%;
+	width: 10%;
 	text-align: center;
 	vertical-align: middle;
 }
 .editColumn-eeProfile2 {
-	width: 35%;
+	width: 40%;
 	text-align: right;
 }
 .editColumn-eeProfile3 {
-	width: 60%;
+	width: 50%;
 	text-align: left;
 }
 .column-checkbox1 {
