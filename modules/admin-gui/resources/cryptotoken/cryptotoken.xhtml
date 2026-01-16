@@ -725,10 +725,9 @@
                     <h:outputText id="kpAlias" value="#{keyPairGuiInfo.alias}"/>
                     <ui:fragment rendered="#{keyPairGuiInfo.composite}">
                      <div class="composite-hover">
-                      <strong><h:outputText value="#{keyPairGuiInfo.alias}-COMPOSITE"/></strong>
                        <ul>
-                         <li><h:outputText value="#{keyPairGuiInfo.alias}-COMPQ"/></li>
-                         <li><h:outputText value="#{keyPairGuiInfo.alias}-COMPC"/></li>
+                         <li><h:outputText value="#{keyPairGuiInfo.compositeComponentPqc}"/></li>
+                         <li><h:outputText value="#{keyPairGuiInfo.compositeComponentClassical}"/></li>
                        </ul>
                      </div>
                     </ui:fragment>

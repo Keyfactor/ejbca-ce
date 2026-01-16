@@ -753,7 +753,6 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         private final String rawKeySpec; // to be used for key generation
         private final String subjectKeyID;
         private final boolean placeholder;
-        private boolean composite = false;
         private boolean selected = false;
         private int selectedKakCryptoTokenId;
         private String keyUsage = null;
@@ -858,15 +857,19 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         }
 
         public boolean isComposite() {
-            return composite;
+            return alias.endsWith("-COMPOSITE");
+        }
+
+        public String getCompositeComponentPqc() {
+            return Strings.CS.removeEnd(alias, "-COMPOSITE") + "-COMPQ";
+        }
+
+        public String getCompositeComponentClassical() {
+            return Strings.CS.removeEnd(alias, "-COMPOSITE") + "-COMPC";
         }
 
         public boolean isSelected() {
             return selected;
-        }
-
-        public void setComposite(boolean composite) {
-            this.selected = composite;
         }
 
         public void setSelected(boolean selected) {
