@@ -60,11 +60,11 @@
                     </h:inputText>
                 </h:panelGroup>
 
-                <h:panelGroup>
+                <h:panelGroup rendered="#{editCAsMBean.editCA}">
                     <h:outputLabel for="getcaid" value="#{web.text.CAID}"
                                    rendered="#{editCAsMBean.editCA}"/>
                 </h:panelGroup>
-                <h:panelGroup>
+                <h:panelGroup rendered="#{editCAsMBean.editCA}">
                     <h:outputText id="getcaid" value="#{editCAsMBean.caid}"
                                   rendered="#{editCAsMBean.editCA}"/>
                 </h:panelGroup>
