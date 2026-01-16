@@ -1632,7 +1632,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     
     @SuppressWarnings("deprecation")
     private void migrateGlobalOcspConfiguration9_5_0() throws UpgradeFailedException{
-        log.info("Upgrade: Migrating values from ocsp.properties files into GlobalCesecoreConfiguration.");
+        log.info("Upgrade: Migrating values from ocsp.properties files into GlobalOcspConfiguration.");
         GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);        
         //Move ocsp.warningBeforeExpirationTime 
         try {
