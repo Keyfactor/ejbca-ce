@@ -42,6 +42,7 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
+import org.ejbca.core.protocol.msae.CertificateTemplateCacheLocal;
 import org.ejbca.core.protocol.msae.KecCache;
 
 import com.keyfactor.util.keys.token.CryptoToken;
@@ -55,7 +56,7 @@ import com.keyfactor.util.keys.token.CryptoToken;
 public class ClearCacheSessionBean implements ClearCacheSessionLocal {
 
     private static final Logger log = Logger.getLogger(ClearCacheSessionBean.class);
-    
+
     @EJB
     private ApprovalProfileSessionLocal approvalprofilesession;
     @EJB
@@ -88,6 +89,8 @@ public class ClearCacheSessionBean implements ClearCacheSessionLocal {
     private RoleMemberDataSessionLocal roleMemberDataSession;
     @EJB
     private KecCache kecCache;
+    @EJB
+    private CertificateTemplateCacheLocal certificateTemplateCache;
 
     @Override
     public void clearCaches(final boolean excludeActiveCryptoTokens) {
@@ -178,9 +181,13 @@ public class ClearCacheSessionBean implements ClearCacheSessionLocal {
         if(log.isDebugEnabled()) {
             log.debug("Key exchange certificate cache cleared.");
         }
-        
+        certificateTemplateCache.clearAllCaches();
+        if(log.isDebugEnabled()) {
+            log.debug("Certificate template cache cleared.");
+        }
+
     }
-    
+
     private void flushCryptoTokenCache(boolean withExclusion) {
         if (withExclusion) {
             final List<Integer> excludeIDs = new ArrayList<>();
