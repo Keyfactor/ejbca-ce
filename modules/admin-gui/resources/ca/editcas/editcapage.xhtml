@@ -951,8 +951,11 @@
                     <br/>
                     <h:outputText styleClass="smallHelp" value="#{web.text.PREPRODUCEONDEMAND_HELP}"/>
                 </h:panelGroup>
-            </h:panelGrid><h:panelGrid id="doPreProduceIndividualOcspResponse" columns="2" styleClass="ui-md-12" rowClasses="Row1,Row0"
+            </h:panelGrid>
+            <h:panelGrid id="doPreProduceIndividualOcspResponse" columns="2" styleClass="edit-top ui-md-12 hideEmpty" rowClasses="Row1,Row0"
 				columnClasses="editColumn1,editColumn2">
+                <h:panelGroup/>
+                <h:panelGroup/>
 				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.doPreProduceOcspResponses and editCAsMBean.caInfoDto.caTypeX509 and editCAsMBean.renderOcspPreProduction}">
 					<h:outputLabel for="checkboxpreproduceocspresponseoponissueanceandrevocationsext"
 								   value="#{web.text.PREPRODUCEOCSPRESPONSESUPONISSUANCEREVOCATION}" />
