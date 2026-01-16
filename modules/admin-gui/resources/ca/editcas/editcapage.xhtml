@@ -687,81 +687,80 @@
                 </h:panelGroup>
 
             </h:panelGrid>
+            <h:panelGroup rendered="#{editCAsMBean.caTypeCits}">
+                <h:panelGrid id="addgeographicregion" columns="3" styleClass="ui-md-12" rowClasses="Row1,Row0"
+                             rendered="#{editCAsMBean.caTypeCits}"
+                             columnClasses="editColumn1,editColumn2">
 
-            <h:panelGrid id="addgeographicregion" columns="3" styleClass="ui-md-12" rowClasses="Row1,Row0"
-                         rendered="#{editCAsMBean.caTypeCits}"
-                         columnClasses="editColumn1,editColumn2">
+                    <h:outputText style="font-weight: bold;"
+                                  value="#{web.text.SELECT_CITS_GEOGRAPHIC_REGION}"/>
 
-                <h:outputText style="font-weight: bold;"
-                              value="#{web.text.SELECT_CITS_GEOGRAPHIC_REGION}"/>
-
-                <h:panelGrid id="geographicregiongrid" columns="4">
-                    <h:selectOneMenu id="geographicRegionType"
-                                     value="#{editCAsMBean.currentGeographicRegionType}"
-                                     disabled="#{not empty editCAsMBean.geographicRegions}">
-                        <f:ajax/>
-                        <!-- Needed to submit the selected item via AJAX -->
-                        <f:selectItems id="geoRegionTypesList"
-                                       value="#{editCAsMBean.geographicRegionTypes}"/>
-                    </h:selectOneMenu>
-                    <h:commandButton id="addGeographicRegion"
-                                     value="#{web.text.ADD}"
-                                     action="#{editCAsMBean.addGeographicRegion()}"
-                                     rendered="#{not editCAsMBean.caExternal}">
-                        <f:ajax onerror="function(data){ejbca.adminweb.showAlertOnError(data);}"
-                                render="geographicRegionType geographicregions "/>
-                    </h:commandButton>
-                    <h:commandButton id="updateGeographicRegions"
-                                     value="#{web.text.PREVIEW_REMOVE_SELECTED}"
-                                     action="#{editCAsMBean.updateGeographicRegions()}"
-                                     rendered="#{not editCAsMBean.caExternal}">
-                        <f:ajax render="geographicRegionType geographicregions"/>
-                    </h:commandButton>
-                </h:panelGrid>
-            </h:panelGrid>
-
-            <h:dataTable id="geographicregions" var="geoRegion"
-                         value="#{editCAsMBean.geographicRegions}"
-                         styleClass="ui-md-12"
-                         rowClasses="Row0,Row1"
-                         columnClasses="editColumn1,editColumn2">
-
-                <h:column>
-                    <h:outputLabel for="georegiondescription"
-                                   value="#{geoRegion.name}"
-                                   rendered="#{empty geoRegion.previewText}"/>
-                    <br/>
-                    <h:outputText id="georegionpreview"
-                                  value="#{geoRegion.previewText}" escape="false">
-                    </h:outputText>
-                    <br/>
-                    <p:selectBooleanCheckbox
-                            value="#{geoRegion.toRemove}"
-                            disabled="#{not editCAsMBean.hasEditRight}">
-                        <f:ajax/>
-                    </p:selectBooleanCheckbox>
-                    <h:outputLabel value="#{web.text.REMOVE}"/>
-                </h:column>
-                <h:column>
-                    <h:panelGrid id="georegiondescriptionGrid" columns="3">
-                        <h:selectOneMenu id="geographicregioncountry"
-                                         value="#{geoRegion.country}"
-                                         rendered="#{not empty geoRegion.validOptions}">
+                    <h:panelGrid id="geographicregiongrid" columns="4">
+                        <h:selectOneMenu id="geographicRegionType"
+                                         value="#{editCAsMBean.currentGeographicRegionType}"
+                                         disabled="#{not empty editCAsMBean.geographicRegions}">
                             <f:ajax/>
                             <!-- Needed to submit the selected item via AJAX -->
-                            <f:selectItems id="georegionidentites"
-                                           value="#{geoRegion.validOptions}"/>
+                            <f:selectItems id="geoRegionTypesList"
+                                           value="#{editCAsMBean.geographicRegionTypes}"/>
                         </h:selectOneMenu>
-                        <h:inputText id="georegiondescription"
-                                     value="#{geoRegion.description}" size="45"
-                                     maxlength="512">
-                            <f:ajax/>
-                        </h:inputText>
+                        <h:commandButton id="addGeographicRegion"
+                                         value="#{web.text.ADD}"
+                                         action="#{editCAsMBean.addGeographicRegion()}"
+                                         rendered="#{not editCAsMBean.caExternal}">
+                            <f:ajax onerror="function(data){ejbca.adminweb.showAlertOnError(data);}"
+                                    render="geographicRegionType geographicregions "/>
+                        </h:commandButton>
+                        <h:commandButton id="updateGeographicRegions"
+                                         value="#{web.text.PREVIEW_REMOVE_SELECTED}"
+                                         action="#{editCAsMBean.updateGeographicRegions()}"
+                                         rendered="#{not editCAsMBean.caExternal}">
+                            <f:ajax render="geographicRegionType geographicregions"/>
+                        </h:commandButton>
                     </h:panelGrid>
-                    <h:outputText styleClass="help" value="#{geoRegion.helpText}"/>
-                </h:column>
-            </h:dataTable>
+                </h:panelGrid>
+                <h:dataTable id="geographicregions" var="geoRegion"
+                             value="#{editCAsMBean.geographicRegions}"
+                             styleClass="ui-md-12"
+                             rowClasses="Row0,Row1"
+                             columnClasses="editColumn1,editColumn2">
 
+                    <h:column>
+                        <h:outputLabel for="georegiondescription"
+                                       value="#{geoRegion.name}"
+                                       rendered="#{empty geoRegion.previewText}"/>
+                        <br/>
+                        <h:outputText id="georegionpreview"
+                                      value="#{geoRegion.previewText}" escape="false">
+                        </h:outputText>
+                        <br/>
+                        <p:selectBooleanCheckbox
+                                value="#{geoRegion.toRemove}"
+                                disabled="#{not editCAsMBean.hasEditRight}">
+                            <f:ajax/>
+                        </p:selectBooleanCheckbox>
+                        <h:outputLabel value="#{web.text.REMOVE}"/>
+                    </h:column>
+                    <h:column>
+                        <h:panelGrid id="georegiondescriptionGrid" columns="3">
+                            <h:selectOneMenu id="geographicregioncountry"
+                                             value="#{geoRegion.country}"
+                                             rendered="#{not empty geoRegion.validOptions}">
+                                <f:ajax/>
+                                <!-- Needed to submit the selected item via AJAX -->
+                                <f:selectItems id="georegionidentites"
+                                               value="#{geoRegion.validOptions}"/>
+                            </h:selectOneMenu>
+                            <h:inputText id="georegiondescription"
+                                         value="#{geoRegion.description}" size="45"
+                                         maxlength="512">
+                                <f:ajax/>
+                            </h:inputText>
+                        </h:panelGrid>
+                        <h:outputText styleClass="help" value="#{geoRegion.helpText}"/>
+                    </h:column>
+                </h:dataTable>
+            </h:panelGroup>
 
             <!-- ==================================================================== CITS Attributes =================================================================================== -->
 
