@@ -24,6 +24,7 @@ dependencies {
     implementation(project(path = ":modules:ejbca-rest-system", configuration = "archives"))
     if (project.extra["edition"] == "ee") {
         implementation(project(path = ":modules:ejbca-rest-configdump", configuration = "archives"))
+        implementation(project(path = ":modules:ejbca-rest-approval", configuration = "archives"))
         implementation(project(path = ":modules:ejbca-rest-endentity", configuration = "archives"))
         implementation(project(path = ":modules:ejbca-rest-ssh", configuration = "archives"))
         implementation(project(path = ":modules:ejbca-rest-coap", configuration = "archives"))
