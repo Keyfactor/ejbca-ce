@@ -2659,8 +2659,10 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             final CAToken currentCaToken = ca.getCAToken();
             final int cryptoTokenId = currentCaToken.getCryptoTokenId();
             CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
-            if (!cryptoToken.isInstanceOf(SoftCryptoToken.class)) {
-                throw new Exception("Cannot export anything but a soft token.");
+            if (cryptoToken == null) {
+                throw new NullPointerException("CA '" + ca.getName() + "' references crypto token with ID " + cryptoTokenId + " which doesn't exist");
+            } else if (!cryptoToken.isInstanceOf(SoftCryptoToken.class)) {
+                throw new IllegalStateException("Cannot export anything but a soft token.");
             }
             cryptoTokenManagementSession.deactivate(admin, cryptoTokenId);
             // Create a new CAToken with the same properties but without the reference to the removed CryptoToken
@@ -3174,7 +3176,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             // Make sure we are not trying to export a hard or invalid token
             CAToken thisCAToken = thisCa.getCAToken();
             final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(thisCAToken.getCryptoTokenId());
-            if (!cryptoToken.isInstanceOf(SoftCryptoToken.class)) {
+            if (cryptoToken == null) {
+                throw new NullPointerException("CA '" + thisCa.getName() + "' references crypto token with ID " + thisCAToken.getCryptoTokenId() + " which doesn't exist");
+            } else if (!cryptoToken.isInstanceOf(SoftCryptoToken.class)) {
                 throw new IllegalCryptoTokenException("Cannot export anything but a soft token.");
             }
             // Do not allow export without password protection
