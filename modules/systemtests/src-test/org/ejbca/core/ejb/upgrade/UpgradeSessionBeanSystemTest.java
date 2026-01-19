@@ -1199,6 +1199,34 @@ public class UpgradeSessionBeanSystemTest {
         }
     }
 
+    @Test
+    public void testMigrateForbiddenCharacters_9_5_0() throws AuthorizationDeniedException {
+        //Stash the orginal value 
+        char[] originalForbiddenCharacters = cesecoreConfigSession.getForbiddenCharacters();
+        String testValue = "fobar\n\r";
+        //Set the forbidden characters to a verifiable value
+        cesecoreConfigSession.setConfigurationValue("forbidden.characters", testValue);
+          
+        try {
+          //Set the upgrade-from version 
+            final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            guc.setUpgradedToVersion("9.4.0");
+            guc.setPostUpgradedToVersion("9.4.0");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+            //Perform upgrade
+            upgradeSession.upgrade(/* database */ null, /* upgrade from */ "9.4.0", /* post upgrade? */ false);
+            //Retrieve GlobalCesecoreConfig and verify that the value was migrated
+            GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+            assertEquals("forbidden.characters was not migrated into GlobalCesecoreConfiguration", testValue, new String(globalCesecoreConfiguration.getForbiddenCharacters()));
+        } finally {
+            cesecoreConfigSession.setConfigurationValue("forbidden.characters", String.valueOf(originalForbiddenCharacters));
+            GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+            globalCesecoreConfiguration.setForbiddenCharacters(originalForbiddenCharacters);
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, globalCesecoreConfiguration);
+        }
+    }
+    
     private EndEntityInformation makeEndEntityInfo(final String username, final String startTime, final String endTime) {
         final ExtendedInformation extInfo = new ExtendedInformation();
         if (startTime != null) {

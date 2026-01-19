@@ -13,7 +13,6 @@
 
 package org.ejbca.ui.cli;
 
-import org.apache.log4j.Logger;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.library.CommandLibrary;
 
@@ -22,11 +21,8 @@ import com.keyfactor.util.CryptoProviderTools;
 /**
  * Main entry point for the EJBCA EJB CLI
  * 
- * @version $Id$
  */
 public class EjbcaEjbCli {
-
-    private static final Logger log = Logger.getLogger(EjbcaEjbCli.class);
 
     public static void main(String[] args) {
 

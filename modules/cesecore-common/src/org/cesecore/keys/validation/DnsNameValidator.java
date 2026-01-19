@@ -50,4 +50,10 @@ public interface DnsNameValidator extends Validator, DynamicUiModelAware {
      * @return Log message.
      */
     String getLogMessage(final boolean successful, final List<String> messages);
+    
+    /**
+     * Returns true if email domains are also to be validated
+     * @return boolean, default true, configurable only for Domain Allow List Validator
+     */
+    boolean validateEmailDomains();
 }

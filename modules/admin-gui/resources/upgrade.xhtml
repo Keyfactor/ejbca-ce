@@ -27,7 +27,7 @@
             <h:outputText styleClass="alert" rendered="#{!upgradeBean.authorizedToUpgrade}" value="#{web.text.UPGRADE_ERR_UNAUTH}"/>
             
             <h:form id="upgrade" rendered="#{upgradeBean.authorizedToUpgrade}" styleClass="fullwidth readablewidth">
-                <h:panelGrid id="status" columns="2" styleClass="edit-top fullwidth" rowClasses="Row0" columnClasses="editColumnSystem1,editColumn2" cellpadding="3">
+                <h:panelGrid id="status" columns="2" styleClass="edit-top ui-md-12" rowClasses="Row0" columnClasses="editColumnSystem1,editColumn2">
                     <h:outputLabel value=""/>
                     <h:outputText value=""/>
                     <h:outputLabel styleClass="titles" value="#{web.text.UPGRADE_VERSION_NEWEST}"/>

@@ -30,7 +30,6 @@ import jakarta.persistence.Query;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.internal.InternalResources;
 import org.cesecore.util.QueryResultWrapper;
 
 import com.keyfactor.util.RandomHelper;
@@ -44,7 +43,6 @@ import com.keyfactor.util.RandomHelper;
 public class InternalKeyBindingDataSessionBean implements InternalKeyBindingDataSessionLocal {
 
     private static final Logger log = Logger.getLogger(InternalKeyBindingDataSessionBean.class);
-    private static final InternalResources intres = InternalResources.getInstance();
     private static final Random rnd = RandomHelper.getInstance(CesecoreConfiguration.getCaSerialNumberAlgorithm());
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
@@ -165,19 +163,19 @@ public class InternalKeyBindingDataSessionBean implements InternalKeyBindingData
         }
         if (internalKeyBindingData == null) {
             // The InternalKeyBinding does not exist in the database, before we add it we want to check that the name is not in use
-            if (isNameUsed(name)) {
+            if (isNameUsed(name, type)) {
                 if (log.isDebugEnabled()) {
-                    log.debug("isNameUsed("+name+")");
+                    log.debug("isNameUsed(" + name + ", " + type + ")");
                 }
-                throw new InternalKeyBindingNameInUseException(intres.getLocalizedMessage("internalkeybinding.nameisinuse", name));
+                throw new InternalKeyBindingNameInUseException("The name '" + name + "' is already in use by another " + type + ".");                        
             }
             internalKeyBindingData = new InternalKeyBindingData(internalKeyBindingId, name, status, type, certificateId, cryptoTokenId, keyPairAlias, dataMap);
         } else {
-            if (!isNameUsedByIdOnly(internalKeyBindingData.getName(), internalKeyBindingId)) {
+            if (!isNameUsedByIdOnly(internalKeyBindingData.getName(), internalKeyBindingId, type)) {
                 if (log.isDebugEnabled()) {
-                    log.debug("!isNameUsedByIdOnly("+name+", "+internalKeyBindingId+")");
+                    log.debug("!isNameUsedByIdOnly(" + name + ", " + type + ", " + internalKeyBindingId + ")");
                 }
-                throw new InternalKeyBindingNameInUseException(intres.getLocalizedMessage("internalkeybinding.nameisinuse", name));
+                throw new InternalKeyBindingNameInUseException("The name '" + name + "' is already in use by another " + type + ".");
             }
             // It might be the case that the calling transaction has already loaded a reference to this token
             // and hence we need to get the same one and perform updates on this object instead of trying to
@@ -215,17 +213,19 @@ public class InternalKeyBindingDataSessionBean implements InternalKeyBindingData
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public boolean isNameUsed(final String name) {
-        final Query query = entityManager.createQuery("SELECT a FROM InternalKeyBindingData a WHERE TRIM(LOWER(a.name)) = LOWER(:name)");
+    public boolean isNameUsed(final String name, final String type ) {
+        final Query query = entityManager.createQuery("SELECT a FROM InternalKeyBindingData a WHERE TRIM(LOWER(a.name)) = LOWER(:name) AND a.keyBindingType = :type");
         query.setParameter("name", StringUtils.trim(name));
+        query.setParameter("type", type);
         return !query.getResultList().isEmpty();
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public boolean isNameUsedByIdOnly(final String name, final int id) {
-        final Query query = entityManager.createQuery("SELECT a FROM InternalKeyBindingData a WHERE TRIM(LOWER(a.name)) = LOWER(:name)");
+    public boolean isNameUsedByIdOnly(final String name, final int id, final String type) {
+        final Query query = entityManager.createQuery("SELECT a FROM InternalKeyBindingData a WHERE TRIM(LOWER(a.name)) = LOWER(:name) AND a.keyBindingType = :type");
         query.setParameter("name", StringUtils.trim(name));
+        query.setParameter("type", type);
         @SuppressWarnings("unchecked")
         final List<InternalKeyBindingData> internalKeyBindingDatas = query.getResultList();
         for (final InternalKeyBindingData internalKeyBindingData: internalKeyBindingDatas) {

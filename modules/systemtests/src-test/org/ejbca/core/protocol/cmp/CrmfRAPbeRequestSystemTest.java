@@ -13,6 +13,11 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.math.BigInteger;
@@ -26,15 +31,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
-
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.EJBTools;
-import com.keyfactor.util.FileTools;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.keys.KeyTools;
-import com.keyfactor.util.string.StringConfigurationCache;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encoding;
@@ -52,6 +48,7 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CaSessionRemote;
@@ -67,6 +64,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.util.EjbRemoteHelper;
@@ -95,10 +93,15 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import com.keyfactor.util.CeSecoreNameStyle;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.FileTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.string.StringConfigurationCache;
 
 /**
  * These tests test RA functionality with the CMP protocol, i.e. a "trusted" RA sends CMP messages authenticated using PBE (password based encryption)
@@ -149,6 +152,18 @@ public class CrmfRAPbeRequestSystemTest extends CmpTestCase {
         }
 
         StringConfigurationCache.INSTANCE.setEncryptionKey("qhrnf.f8743;12%#75".toCharArray());
+        
+        //Make sure that the default set of forbidden characters is set
+        GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+        GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+        globalCesecoreConfiguration.setForbiddenCharacters(null);
+        try {
+            globalConfigurationSession.saveConfiguration(ADMIN, globalCesecoreConfiguration);
+        } catch (AuthorizationDeniedException e) {
+            throw new IllegalStateException(e);
+        }
+        
+        
     }
 
     public CrmfRAPbeRequestSystemTest() throws Exception {
@@ -373,8 +388,7 @@ public class CrmfRAPbeRequestSystemTest extends CmpTestCase {
                 PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
         X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, ALIAS, user, this.cacert, resp, reqId);
         // Get the returned certificate and verify that it is multi-value
-        //getSubjectX500Principal does not deliver the exact same order, so leave this for now
-        assertEquals("DN should be with multi-value RDN", mvdn, cert.getSubjectDN().toString());
+        assertEquals("DN should be with multi-value RDN", mvdn, X500Name.getInstance(CeSecoreNameStyle.INSTANCE, cert.getSubjectX500Principal().getEncoded()).toString());
     }
 
     /** Tests a revocation without revocation reasons and without KeyId */

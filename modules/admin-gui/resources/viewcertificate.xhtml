@@ -34,8 +34,7 @@
         </h2>
 
         <h:form id="viewcertificate" rendered="#{viewCertificateMBean.certificateData != null}">
-            <h:panelGrid columns="2" styleClass="view-top" cellspacing="2" cellpadding="0" border="0" width="100%"
-                         rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+            <h:panelGrid columns="2" styleClass="view-top ui-md-12" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
                 <h:panelGroup rendered="#{!empty viewCertificateMBean.userName}">
                     <strong>
                         <h:outputLabel value="#{web.text.USERNAME}"/>
@@ -167,8 +166,7 @@
                 </h:panelGroup>
             </h:panelGrid>
 
-            <h:panelGrid columns="2" styleClass="view-top" cellspacing="2" cellpadding="0" border="0" width="100%"
-                         rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+            <h:panelGrid columns="2" styleClass="view-top ui-md-12" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
                 <h:panelGroup>
                     <strong>
                         <h:outputLabel value="#{web.text.CERT_SUBJECTDN}"/>
@@ -213,8 +211,7 @@
                 </h:panelGroup>
             </h:panelGrid>
 
-            <h:panelGrid columns="2" styleClass="view-top" cellspacing="2" cellpadding="0" border="0" width="100%"
-                         rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+            <h:panelGrid columns="2" styleClass="view-top ui-md-12" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
                 <h:panelGroup>
                     <strong>
                         <h:outputLabel value="#{web.text.EXT_ABBR_BASICCONSTRAINTS}" styleClass="title"/>
@@ -367,8 +364,7 @@
 
             <h:panelGrid
                     rendered="#{!viewCertificateMBean.cacerts and viewCertificateMBean.certificateData.certificate != null}"
-                    columns="2" styleClass="view-top" cellspacing="2" cellpadding="0" border="0" width="100%"
-                    rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+                    columns="2" styleClass="view-top ui-md-12" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
                 <h:panelGroup style="align:right;vertical-align:bottom;">
 
                     <h:outputLink id="downloadToIE" value="#{viewCertificateMBean.downloadCertificateLink}?cmd=iecert&amp;certificatesn=#{viewCertificateMBean.certificateData.serialNumber}&amp;issuer=#{viewCertificateMBean.urlEncodedIssuerDn}">
@@ -387,8 +383,7 @@
                 </h:panelGroup>
             </h:panelGrid>
 
-            <h:panelGrid columns="2" styleClass="view-top" cellspacing="2" cellpadding="0" border="0" width="100%"
-                         rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+            <h:panelGrid columns="2" styleClass="view-top ui-md-12" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
                 <h:panelGroup>
                 </h:panelGroup>
                 <h:panelGroup>

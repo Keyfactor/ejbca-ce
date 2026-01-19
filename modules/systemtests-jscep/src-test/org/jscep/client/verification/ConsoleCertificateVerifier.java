@@ -32,6 +32,7 @@ public final class ConsoleCertificateVerifier implements CertificateVerifier {
      * @return {@code true} if the certificate is verified, {@code false}
      *         otherwise.
      */
+    @SuppressWarnings("resource")
     @Override
     public boolean verify(final X509Certificate cert) {
         final List<String> algs = new ArrayList<String>(

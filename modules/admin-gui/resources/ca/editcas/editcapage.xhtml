@@ -38,8 +38,7 @@
         </h3>
 
         <h:form id="editcapage" enctype="multipart/form-data">
-            <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-                         cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
+            <h:panelGrid columns="2" styleClass="edit-top ui-md-12" rowClasses="Row0,Row1"
                          columnClasses="editColumn1,editColumn2">
                 <h:panelGroup>
                     &nbsp;
@@ -232,7 +231,9 @@
 						rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable}">
 						<h:outputText id="getAlternativeSigningAlgorithm"
 							value="#{editCAsMBean.currentCaAlternativeSigningAlgorithm}"
-							rendered="#{editCAsMBean.editCA and not editCAsMBean.caUninitialized and not editCAsMBean.caExternal}" />
+							rendered="#{editCAsMBean.editCA and not editCAsMBean.caUninitialized and not editCAsMBean.caExternal}"
+                            disabled="#{editCAsMBean.signatureAlgorithmComposite}"
+                        />
 					</h:panelGroup>
 
 					<h:panelGroup
@@ -243,7 +244,8 @@
 					<h:panelGroup
 						rendered="#{not editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable}">
 						<h:selectOneMenu id="alternativeSignatureAlgorithmParam"
-							value="#{editCAsMBean.alternativeSignatureAlgorithmParam}">
+							value="#{editCAsMBean.alternativeSignatureAlgorithmParam}"
+                            disabled="#{editCAsMBean.signatureAlgorithmComposite}">
 							<f:selectItems
 								value="#{editCAsMBean.availableSigningAlgListNoneOption}" />
 							<f:ajax event="change" render="editcapage" />
@@ -291,7 +293,8 @@
 						rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.currentCaCryptoTokenPresent}">
 						<h:outputText id="alternativeCertSignKey"
 							value="#{editCAsMBean.currentCaCryptoTokenAlternativeCertSignKey}"
-							rendered="#{editCAsMBean.currentCaCryptoTokenPresent}" />
+							rendered="#{editCAsMBean.currentCaCryptoTokenPresent}"
+                            disabled="#{editCAsMBean.signatureAlgorithmComposite}" />
 					</h:panelGroup>
 
 					<!-- CRL Sign Key -->
@@ -372,7 +375,7 @@
 						rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCvcAvailable}">
 						<h:selectOneMenu
 							value="#{editCAsMBean.selectedCryptoTokenAlternativeCertSignKey}"
-							disabled="#{not editCAsMBean.alternativeSignatureAlgorithmSelected}">
+							disabled="#{not editCAsMBean.alternativeSignatureAlgorithmSelected or editCAsMBean.signatureAlgorithmComposite}">
 							<f:selectItems
 								value="#{editCAsMBean.getKeyAliasesList('alternativeCertSignKey')}" />
 						</h:selectOneMenu>
@@ -490,8 +493,7 @@
             </h:panelGrid>
 
             <!-- ==================================================================== CITS Attributes =================================================================================== -->
-            <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-                         cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
+            <h:panelGrid columns="2" styleClass="edit-top ui-md-12" rowClasses="Row0,Row1"
                          columnClasses="editColumn1,editColumn2"
                          rendered="#{editCAsMBean.caTypeCits}">
                 <h:outputLabel for="header_cits_attributes"
@@ -601,11 +603,10 @@
                 </h:panelGroup>
 
                 <h:panelGroup rendered="#{not editCAsMBean.caExternal}">
-                    <h:selectBooleanCheckbox id="citscheckboxuseuserstorage"
+                    <p:selectBooleanCheckbox id="citscheckboxuseuserstorage"
                                              value="#{editCAsMBean.caInfoDto.useUserStorage}"
-                                             disabled="#{not editCAsMBean.hasEditRight}">
-                    </h:selectBooleanCheckbox>
-                    <h:outputLabel for="checkboxuseuserstorage" value="#{web.text.USE}"/>
+                                             disabled="#{not editCAsMBean.hasEditRight}" itemLabel="#{web.text.USE}">
+                    </p:selectBooleanCheckbox>
                 </h:panelGroup>
 
                 <h:panelGroup rendered="#{not editCAsMBean.caExternal}">
@@ -617,19 +618,16 @@
                 </h:panelGroup>
 
                 <h:panelGroup rendered="#{not editCAsMBean.caExternal}">
-                    <h:selectBooleanCheckbox id="citscheckboxusecertificatestorage"
+                    <p:selectBooleanCheckbox id="citscheckboxusecertificatestorage"
                                              value="#{editCAsMBean.caInfoDto.useCertificateStorage}"
-                                             disabled="#{not editCAsMBean.hasEditRight}">
+                                             disabled="#{not editCAsMBean.hasEditRight}" itemLabel="#{editCAsMBean.checkboxUseCollapsedText}">
                         <f:ajax render="citsnonExistingCertRevokeSection" immediate="true" event="change"/>
-                    </h:selectBooleanCheckbox>
-                    <h:outputLabel for="citscheckboxusecertificatestorage"
-                                   value="#{editCAsMBean.checkboxUseCollapsedText}"/>
+                    </p:selectBooleanCheckbox>
                 </h:panelGroup>
 
             </h:panelGrid>
 
-            <h:panelGrid id="citsnonExistingCertRevokeSection" columns="2" cellspacing="3"
-                         cellpadding="3" border="0" width="100%" rowClasses="Row1,Row0"
+            <h:panelGrid id="citsnonExistingCertRevokeSection" columns="2" styleClass="ui-md-12" rowClasses="Row1,Row0"
                          rendered="#{editCAsMBean.caTypeCits}"
                          columnClasses="editColumn1,editColumn2">
 
@@ -644,15 +642,13 @@
 
                 <h:panelGroup
                         rendered="#{editCAsMBean.caTypeCits and not editCAsMBean.caInfoDto.useCertificateStorage}">
-                    <h:selectBooleanCheckbox
+                    <p:selectBooleanCheckbox
                             id="citscheckboxacceptrevocationsnonexistingentry"
                             value="#{editCAsMBean.caInfoDto.acceptRevocationsNonExistingEntry}"
-                            disabled="#{editCAsMBean.checkboxAcceptRevocationsNonExistingEntryDisabled}">
+                            disabled="#{editCAsMBean.checkboxAcceptRevocationsNonExistingEntryDisabled}" itemLabel="#{web.text.ACCEPT}">
                         <f:ajax
                                 render="citsselectdefaultcertificateprofile citscheckboxuseappendonlytable"/>
-                    </h:selectBooleanCheckbox>
-                    <h:outputLabel for="checkboxacceptrevocationsnonexistingentry"
-                                   value="#{web.text.ACCEPT}"/>
+                    </p:selectBooleanCheckbox>
                 </h:panelGroup>
 
                 <h:panelGroup
@@ -682,18 +678,17 @@
 
                 <h:panelGroup
                         rendered="#{editCAsMBean.caTypeCits and not editCAsMBean.caInfoDto.useCertificateStorage}">
-                    <h:selectBooleanCheckbox id="citscheckboxuseappendonlytable"
+                    <p:selectBooleanCheckbox id="citscheckboxuseappendonlytable"
                                              value="#{editCAsMBean.caInfoDto.useNoConflictCertificateData}"
-                                             disabled="#{editCAsMBean.certificateProfileForNonExistingDisabled}">
-                    </h:selectBooleanCheckbox>
-                    <h:outputLabel for="checkboxuseappendonlytable"
-                                   value="#{web.text.USE}"/>
+                                             disabled="#{editCAsMBean.certificateProfileForNonExistingDisabled}"
+                                             itemLabel="#{web.text.USE}"
+                    >
+                    </p:selectBooleanCheckbox>
                 </h:panelGroup>
 
             </h:panelGrid>
 
-            <h:panelGrid id="addgeographicregion" columns="3" cellspacing="3"
-                         cellpadding="3" border="0" width="100%" rowClasses="Row1,Row0"
+            <h:panelGrid id="addgeographicregion" columns="3" styleClass="ui-md-12" rowClasses="Row1,Row0"
                          rendered="#{editCAsMBean.caTypeCits}"
                          columnClasses="editColumn1,editColumn2">
 
@@ -727,7 +722,7 @@
 
             <h:dataTable id="geographicregions" var="geoRegion"
                          value="#{editCAsMBean.geographicRegions}"
-                         cellspacing="1" cellpadding="3" border="0" width="100%"
+                         styleClass="ui-md-12"
                          rowClasses="Row0,Row1"
                          columnClasses="editColumn1,editColumn2">
 
@@ -740,11 +735,11 @@
                                   value="#{geoRegion.previewText}" escape="false">
                     </h:outputText>
                     <br/>
-                    <h:selectBooleanCheckbox
+                    <p:selectBooleanCheckbox
                             value="#{geoRegion.toRemove}"
                             disabled="#{not editCAsMBean.hasEditRight}">
                         <f:ajax/>
-                    </h:selectBooleanCheckbox>
+                    </p:selectBooleanCheckbox>
                     <h:outputLabel value="#{web.text.REMOVE}"/>
                 </h:column>
                 <h:column>
@@ -772,8 +767,7 @@
 
             <!-- ==================================================================== Directives =================================================================================== -->
 
-            <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-                         cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
+            <h:panelGrid columns="2" styleClass="edit-top ui-md-12" rowClasses="Row0,Row1"
                          columnClasses="editColumn1,editColumn2"
                          rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable
 								and not editCAsMBean.caTypeCits and not editCAsMBean.caTypeProxy}">
@@ -789,11 +783,9 @@
                             escape="false" styleClass="helpReference"/>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <h:selectBooleanCheckbox id="isdoenforceuniquepublickeys"
+                    <p:selectBooleanCheckbox id="isdoenforceuniquepublickeys"
                                              value="#{editCAsMBean.caInfoDto.doEnforceUniquePublickeys}"
-                                             disabled="#{not editCAsMBean.hasEditRight}"/>
-                    <h:outputLabel for="isdoenforceuniquepublickeys"
-                                   value="#{web.text.ENFORCE}"/>
+                                             disabled="#{not editCAsMBean.hasEditRight}" itemLabel="#{web.text.ENFORCE}"/>
                 </h:panelGroup>
 
                 <h:panelGroup>
@@ -804,11 +796,9 @@
                             escape="false" styleClass="helpReference"/>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <h:selectBooleanCheckbox id="isdoenforcekeyrenewal"
+                    <p:selectBooleanCheckbox id="isdoenforcekeyrenewal"
                                              value="#{editCAsMBean.caInfoDto.doEnforceKeyRenewal}"
-                                             disabled="#{not editCAsMBean.hasEditRight}"/>
-                    <h:outputLabel for="isdoenforcekeyrenewal"
-                                   value="#{web.text.ENFORCE}"/>
+                                             disabled="#{not editCAsMBean.hasEditRight}" itemLabel="#{web.text.ENFORCE}"/>
                 </h:panelGroup>
 
                 <h:panelGroup>
@@ -820,11 +810,9 @@
                 </h:panelGroup>
 
                 <h:panelGroup>
-                    <h:selectBooleanCheckbox id="isdoenforceuniquedn"
+                    <p:selectBooleanCheckbox id="isdoenforceuniquedn"
                                              value="#{editCAsMBean.caInfoDto.doEnforceUniqueDN}"
-                                             disabled="#{not editCAsMBean.hasEditRight}"/>
-                    <h:outputLabel for="isdoenforceuniquedn"
-                                   value="#{web.text.ENFORCE}"/>
+                                             disabled="#{not editCAsMBean.hasEditRight}" itemLabel="#{web.text.ENFORCE}"/>
                 </h:panelGroup>
 
                 <h:panelGroup>
@@ -836,11 +824,9 @@
                 </h:panelGroup>
 
                 <h:panelGroup>
-                    <h:selectBooleanCheckbox id="doenforceuniquesubjectdnerialnumber"
+                    <p:selectBooleanCheckbox id="doenforceuniquesubjectdnerialnumber"
                                              value="#{editCAsMBean.caInfoDto.doEnforceUniqueSubjectDNSerialnumber}"
-                                             disabled="#{not editCAsMBean.hasEditRight}"/>
-                    <h:outputLabel for="doenforceuniquesubjectdnerialnumber"
-                                   value="#{web.text.ENFORCE}"/>
+                                             disabled="#{not editCAsMBean.hasEditRight}" itemLabel="#{web.text.ENFORCE}"/>
                 </h:panelGroup>
 
                 <h:panelGroup>
@@ -852,11 +838,9 @@
                 </h:panelGroup>
 
                 <h:panelGroup>
-                    <h:selectBooleanCheckbox id="checkboxusecertreqhistory"
+                    <p:selectBooleanCheckbox id="checkboxusecertreqhistory"
                                              value="#{editCAsMBean.caInfoDto.useCertReqHistory}"
-                                             disabled="#{not editCAsMBean.hasEditRight}"/>
-                    <h:outputLabel for="checkboxusecertreqhistory"
-                                   value="#{web.text.USE}"/>
+                                             disabled="#{not editCAsMBean.hasEditRight}" itemLabel="#{web.text.USE}"/>
                 </h:panelGroup>
 
                 <h:panelGroup>
@@ -868,10 +852,9 @@
                 </h:panelGroup>
 
                 <h:panelGroup>
-                    <h:selectBooleanCheckbox id="checkboxuseuserstorage"
+                    <p:selectBooleanCheckbox id="checkboxuseuserstorage"
                                              value="#{editCAsMBean.caInfoDto.useUserStorage}"
-                                             disabled="#{not editCAsMBean.hasEditRight}"/>
-                    <h:outputLabel for="checkboxuseuserstorage" value="#{web.text.USE}"/>
+                                             disabled="#{not editCAsMBean.hasEditRight}" itemLabel="#{web.text.USE}"/>
                 </h:panelGroup>
 
                 <h:panelGroup>
@@ -883,13 +866,11 @@
                 </h:panelGroup>
 
                 <h:panelGroup>
-                    <h:selectBooleanCheckbox id="checkboxusecertificatestorage"
+                    <p:selectBooleanCheckbox id="checkboxusecertificatestorage"
                                              value="#{editCAsMBean.caInfoDto.useCertificateStorage}"
-                                             disabled="#{not editCAsMBean.hasEditRight}">
+                                             disabled="#{not editCAsMBean.hasEditRight}" itemLabel="#{editCAsMBean.checkboxUseCollapsedText}">
                         <f:ajax render="nonExistingCertRevokeSection" immediate="true" event="change"/>
-                    </h:selectBooleanCheckbox>
-                    <h:outputLabel for="checkboxusecertificatestorage"
-                                   value="#{editCAsMBean.checkboxUseCollapsedText}"/>
+                    </p:selectBooleanCheckbox>
                 </h:panelGroup>
 
                 <h:panelGroup rendered="#{editCAsMBean.caInfoDto.caTypeX509 and editCAsMBean.renderOcspPreProduction}">
@@ -901,14 +882,14 @@
                 </h:panelGroup>
 
                 <h:panelGroup rendered="#{editCAsMBean.caInfoDto.caTypeX509 and editCAsMBean.renderOcspPreProduction}">
-                    <h:selectBooleanCheckbox id="checkboxpreproduceocspresponses"
+                    <p:selectBooleanCheckbox id="checkboxpreproduceocspresponses"
                                              value="#{editCAsMBean.caInfoDto.doPreProduceOcspResponses}"
-                                             disabled="#{not editCAsMBean.hasEditRight}">
+                                             disabled="#{not editCAsMBean.hasEditRight}"
+                                             itemLabel="#{editCAsMBean.checkboxUseCollapsedText}"
+                    >
                         <f:ajax render="doStoreOnDemandSection" immediate="true"/>
-                    <f:ajax render="doPreProduceIndividualOcspResponse" immediate="true"/>
-					</h:selectBooleanCheckbox>
-                    <h:outputLabel for="checkboxpreproduceocspresponses"
-                                   value="#{editCAsMBean.checkboxUseCollapsedText}"/>
+                        <f:ajax render="doPreProduceIndividualOcspResponse" immediate="true"/>
+					</p:selectBooleanCheckbox>
                 </h:panelGroup>
 				
 				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.caTypeX509 or editCAsMBean.caInfoDto.caTypeCVC}">
@@ -920,18 +901,15 @@
 				</h:panelGroup>
 
 				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.caTypeX509 or editCAsMBean.caInfoDto.caTypeCVC}">
-				    <h:selectBooleanCheckbox id="checkboxaddCompromisedKeysToBlockList"
+				    <p:selectBooleanCheckbox id="checkboxaddCompromisedKeysToBlockList"
 				                             value="#{editCAsMBean.caInfoDto.addCompromisedKeysToBlockList}"
-				                             disabled="#{not editCAsMBean.hasEditRight}">
-					</h:selectBooleanCheckbox>				 
-				    <h:outputLabel for="checkboxaddCompromisedKeysToBlockList"
-				                   value="#{web.text.USE}"/>
+				                             disabled="#{not editCAsMBean.hasEditRight}" itemLabel="#{web.text.USE}">
+					</p:selectBooleanCheckbox>
 				</h:panelGroup>
 
             </h:panelGrid>
 
-            <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-                         cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
+            <h:panelGrid columns="2" styleClass="edit-top ui-md-12" rowClasses="Row0,Row1"
                          columnClasses="editColumn1,editColumn2"
                          rendered="#{editCAsMBean.caExternal}">
                 <h:outputLabel for="header_directives_ext"
@@ -944,19 +922,18 @@
                 </h:panelGroup>
 
                 <h:panelGroup rendered="#{editCAsMBean.caInfoDto.caTypeX509 and editCAsMBean.renderOcspPreProduction}">
-                    <h:selectBooleanCheckbox id="checkboxpreproduceocspresponsesext"
+                    <p:selectBooleanCheckbox id="checkboxpreproduceocspresponsesext"
                                              value="#{editCAsMBean.caInfoDto.doPreProduceOcspResponses}"
-                                             disabled="#{not editCAsMBean.hasEditRight}">
+                                             disabled="#{not editCAsMBean.hasEditRight}"
+                                             itemLabel="#{editCAsMBean.checkboxUseCollapsedText}"
+                    >
                         <f:ajax render="doStoreOnDemandSection" immediate="true"/>
-                    <f:ajax render="doPreProduceIndividualOcspResponse" immediate="true"/>
-					</h:selectBooleanCheckbox>
-                    <h:outputLabel for="checkboxpreproduceocspresponsesext"
-                                   value="#{editCAsMBean.checkboxUseCollapsedText}"/>
+                        <f:ajax render="doPreProduceIndividualOcspResponse" immediate="true"/>
+					</p:selectBooleanCheckbox>
                 </h:panelGroup>
             </h:panelGrid>
 
-            <h:panelGrid id="doStoreOnDemandSection" columns="2" cellspacing="3"
-                         cellpadding="3" border="0" width="100%" rowClasses="Row1,Row0"
+            <h:panelGrid id="doStoreOnDemandSection" columns="2" styleClass="ui-md-12" rowClasses="Row1,Row0"
                          columnClasses="editColumn1,editColumn2">
 
                 <h:panelGroup
@@ -968,15 +945,13 @@
                 </h:panelGroup>
                 <h:panelGroup
                         rendered="#{editCAsMBean.caInfoDto.doPreProduceOcspResponses and editCAsMBean.caInfoDto.caTypeX509 and editCAsMBean.renderOcspPreProduction}">
-                    <h:selectBooleanCheckbox id="checkboxocspstoreondemand"
+                    <p:selectBooleanCheckbox id="checkboxocspstoreondemand"
                                              value="#{editCAsMBean.caInfoDto.doStoreOcspResponsesOnDemand}"
-                                             disabled="#{not editCAsMBean.hasEditRight}"/>
-                    <h:outputLabel for="checkboxocspstoreondemand" value="#{web.text.USE}"/>
+                                             disabled="#{not editCAsMBean.hasEditRight}" itemLabel="#{web.text.USE}"/>
                     <br/>
                     <h:outputText styleClass="smallHelp" value="#{web.text.PREPRODUCEONDEMAND_HELP}"/>
                 </h:panelGroup>
-            </h:panelGrid><h:panelGrid id="doPreProduceIndividualOcspResponse" columns="2" cellspacing="3"
-				cellpadding="3" border="0" width="100%" rowClasses="Row1,Row0"
+            </h:panelGrid><h:panelGrid id="doPreProduceIndividualOcspResponse" columns="2" styleClass="ui-md-12" rowClasses="Row1,Row0"
 				columnClasses="editColumn1,editColumn2">
 				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.doPreProduceOcspResponses and editCAsMBean.caInfoDto.caTypeX509 and editCAsMBean.renderOcspPreProduction}">
 					<h:outputLabel for="checkboxpreproduceocspresponseoponissueanceandrevocationsext"
@@ -986,16 +961,15 @@
 							escape="false" styleClass="helpReference"/>
 				</h:panelGroup>
 				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.doPreProduceOcspResponses and editCAsMBean.caInfoDto.caTypeX509 and editCAsMBean.renderOcspPreProduction}">
-					<h:selectBooleanCheckbox id="checkboxpreproduceocspresponseoponissueanceandrevocationsext"
+					<p:selectBooleanCheckbox id="checkboxpreproduceocspresponseoponissueanceandrevocationsext"
 											 value="#{editCAsMBean.caInfoDto.doPreProduceOcspResponseUponIssuanceAndRevocation}"
-											 disabled="#{not editCAsMBean.hasEditRight}"/>
-					<h:outputLabel for="checkboxpreproduceocspresponseoponissueanceandrevocationsext" value="#{editCAsMBean.checkboxUseCollapsedText}" />
+											 disabled="#{not editCAsMBean.hasEditRight}" itemLabel="#{editCAsMBean.checkboxUseCollapsedText}"/>
 				</h:panelGroup>
 			</h:panelGrid>
 
-            <h:panelGrid id="nonExistingCertRevokeSection" columns="2" cellspacing="3"
-                         cellpadding="3" border="0" width="100%" rowClasses="Row1,Row0"
-                         columnClasses="editColumn1,editColumn2">
+            <h:panelGrid id="nonExistingCertRevokeSection" columns="2" styleClass="ui-md-12" rowClasses="Row1,Row0"
+                         columnClasses="editColumn1,editColumn2"
+            >
                 <h:panelGroup
                         rendered="#{editCAsMBean.caInfoDto.caTypeX509 and not editCAsMBean.caInfoDto.useCertificateStorage}">
                     <h:outputLabel
@@ -1007,15 +981,15 @@
 
                 <h:panelGroup
                         rendered="#{editCAsMBean.caInfoDto.caTypeX509 and not editCAsMBean.caInfoDto.useCertificateStorage}">
-                    <h:selectBooleanCheckbox
+                    <p:selectBooleanCheckbox
                             id="checkboxacceptrevocationsnonexistingentry"
                             value="#{editCAsMBean.caInfoDto.acceptRevocationsNonExistingEntry}"
-                            disabled="#{editCAsMBean.checkboxAcceptRevocationsNonExistingEntryDisabled}">
+                            disabled="#{editCAsMBean.checkboxAcceptRevocationsNonExistingEntryDisabled}"
+                            itemLabel="#{web.text.ACCEPT}"
+                    >
                         <f:ajax
                                 render="selectdefaultcertificateprofile checkboxuseappendonlytable"/>
-                    </h:selectBooleanCheckbox>
-                    <h:outputLabel for="checkboxacceptrevocationsnonexistingentry"
-                                   value="#{web.text.ACCEPT}"/>
+                    </p:selectBooleanCheckbox>
                 </h:panelGroup>
 
                 <h:panelGroup
@@ -1045,12 +1019,12 @@
 
                 <h:panelGroup
                         rendered="#{editCAsMBean.caInfoDto.caTypeX509 and not editCAsMBean.caInfoDto.useCertificateStorage}">
-                    <h:selectBooleanCheckbox id="checkboxuseappendonlytable"
+                    <p:selectBooleanCheckbox id="checkboxuseappendonlytable"
                                              value="#{editCAsMBean.caInfoDto.useNoConflictCertificateData}"
-                                             disabled="#{editCAsMBean.certificateProfileForNonExistingDisabled}">
-                    </h:selectBooleanCheckbox>
-                    <h:outputLabel for="checkboxuseappendonlytable"
-                                   value="#{web.text.USE}"/>
+                                             disabled="#{editCAsMBean.certificateProfileForNonExistingDisabled}"
+                                             itemLabel="#{web.text.USE}"
+                    >
+                    </p:selectBooleanCheckbox>
                 </h:panelGroup>
             </h:panelGrid>
 
@@ -1058,8 +1032,7 @@
 
             <!-- ==================================================================== CA certificate data ========================================================================== -->
 
-            <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-                         cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
+            <h:panelGrid columns="2" styleClass="edit-top ui-md-12" rowClasses="Row0,Row1"
                          columnClasses="editColumn1,editColumn2"
                          rendered="#{not editCAsMBean.renderCvcAvailable and not editCAsMBean.caTypeCits}">
 
@@ -1236,11 +1209,9 @@
 
                     <h:panelGroup
                             rendered="#{not editCAsMBean.caExternal and editCAsMBean.caInfoDto.caTypeX509}">
-                        <h:selectBooleanCheckbox id="checkboxuseutf8policytext"
+                        <p:selectBooleanCheckbox id="checkboxuseutf8policytext"
                                                  value="#{editCAsMBean.caInfoDto.useUtf8Policy}"
-                                                 disabled="#{not editCAsMBean.hasEditRight}"/>
-                        <h:outputLabel for="checkboxuseutf8policytext"
-                                       value="#{web.text.USE}"/>
+                                                 disabled="#{not editCAsMBean.hasEditRight}" itemLabel="#{web.text.USE}"/>
                     </h:panelGroup>
 
 
@@ -1252,11 +1223,9 @@
 
                     <h:panelGroup
                             rendered="#{not editCAsMBean.caExternal and editCAsMBean.caInfoDto.caTypeX509}">
-                        <h:selectBooleanCheckbox id="checkboxuseprintablestringsubjectdn"
+                        <p:selectBooleanCheckbox id="checkboxuseprintablestringsubjectdn"
                                                  value="#{editCAsMBean.caInfoDto.usePrintableStringSubjectDN}"
-                                                 disabled="#{not editCAsMBean.hasEditRight}"/>
-                        <h:outputLabel for="checkboxuseprintablestringsubjectdn"
-                                       value="#{web.text.USE}"/>
+                                                 disabled="#{not editCAsMBean.hasEditRight}" itemLabel="#{web.text.USE}"/>
                     </h:panelGroup>
 
                     <h:panelGroup
@@ -1271,10 +1240,9 @@
 
                     <h:panelGroup
                             rendered="#{not editCAsMBean.caExternal and not editCAsMBean.caInfoDto.caTypeCVC}">
-                        <h:selectBooleanCheckbox id="checkboxuseldapdnorder"
+                        <p:selectBooleanCheckbox id="checkboxuseldapdnorder"
                                                  value="#{editCAsMBean.caInfoDto.useLdapDNOrder}"
-                                                 disabled="#{not editCAsMBean.hasEditRight}"/>
-                        <h:outputLabel for="checkboxuseldapdnorder" value="#{web.text.USE}"/>
+                                                 disabled="#{not editCAsMBean.hasEditRight}" itemLabel="#{web.text.USE}"/>
                     </h:panelGroup>
 
                     <h:panelGroup
@@ -1383,10 +1351,10 @@
 									and (not editCAsMBean.caUninitialized)}">
                         <h:panelGroup id="alternatecertchainssection">
                             <ui:repeat value="#{editCAsMBean.alternateCertChains}" var="altchain">
-                                <h:selectBooleanCheckbox rendered="#{editCAsMBean.editCA and editCAsMBean.hasEditRight}"
+                                <p:selectBooleanCheckbox rendered="#{editCAsMBean.editCA and editCAsMBean.hasEditRight}"
                                                          value="#{editCAsMBean.removeAlternateCertChain[altchain]}">
                                     <f:ajax/>
-                                </h:selectBooleanCheckbox>
+                                </p:selectBooleanCheckbox>
                                 <h:outputLink
                                         value="#{editCAsMBean.getDownloadCertLink()}?cmd=cacertaltchain&amp;level=0&amp;issuer=#{editCAsMBean.escapeDnString(editCAsMBean.caInfoDto.caSubjectDN)}&amp;root=#{editCAsMBean.escapeDnString(altchain)}">
                                     <h:outputText value="&nbsp;&nbsp;#{altchain}&nbsp;" style="font-size: 11pt"/>
@@ -1414,8 +1382,7 @@
 
             <!-- ==================================================================== CRL Specific Data ============================================================================ -->
 
-            <h:panelGrid id="crlSpecificData" columns="2" styleClass="edit-top" cellspacing="3"
-                         cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
+            <h:panelGrid id="crlSpecificData" columns="2" styleClass="edit-top ui-md-12" rowClasses="Row0,Row1"
                          columnClasses="editColumn1,editColumn2"
                          rendered="#{editCAsMBean.caInfoDto.caTypeX509 and not editCAsMBean.renderCvcAvailable
 										and not editCAsMBean.caTypeCits}">
@@ -1448,14 +1415,14 @@
                 <h:panelGroup rendered="#{not editCAsMBean.caExternal}">
                     <h:panelGroup id="mscompatiblegroup">
                         <h:panelGroup rendered="#{not editCAsMBean.caInfoDto.msCaCompatible}">
-                            <h:selectBooleanCheckbox id="mscompatible"
+                            <p:selectBooleanCheckbox id="mscompatible"
                                                      value="#{editCAsMBean.caInfoDto.msCaCompatible}"
                                                      onclick="return checkboxConfirmation('#{web.text.MS_COMPATIBILIY_MODE_CONFIRMATION}', 'editcapage:mscompatible')"
-                                                     disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal or editCAsMBean.checkboxMsCaCompatibilityDisabled}">
+                                                     disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal or editCAsMBean.checkboxMsCaCompatibilityDisabled}"
+                                                     itemLabel="#{web.text.USE}"
+                            >
                                 <f:ajax immediate="true" render="mscompatiblegroup editcapage:crlSpecificData"/>
-                            </h:selectBooleanCheckbox>
-                            <h:outputLabel for="mscompatible"
-                                           value="#{web.text.USE}"/>
+                            </p:selectBooleanCheckbox>
                             <br/>
                             <h:outputText
                                     rendered="#{not editCAsMBean.caInfoDto.msCaCompatible and not editCAsMBean.checkboxMsCaCompatibilityDisabled}"
@@ -1477,24 +1444,23 @@
                     <h:outputText value="#{web.text.CRL_EXT_AUTHORITYKEYID}"/>
                 </h:panelGroup>
                 <h:panelGroup rendered="#{not editCAsMBean.caExternal}">
-                    <h:selectBooleanCheckbox id="checkboxauthoritykeyidentifier"
+                    <p:selectBooleanCheckbox id="checkboxauthoritykeyidentifier"
                                              value="#{editCAsMBean.caInfoDto.useAuthorityKeyIdentifier}"
-                                             disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}">
+                                             disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}"
+                                             itemLabel="#{web.text.USE}"
+                    >
                         <f:validator validatorId="org.ejbca.util.validator.RequiredCheckboxValidator"
                                      disabled="#{editCAsMBean.caExternal or not editCAsMBean.authorityKeyIdentifierValidated}"/>
                         <f:attribute name="errorMessage"
                                      value="#{web.text.MS_COMPABILITY_MODE_WITHOUT_AUTHORITYKEYID}"/>
                         <f:ajax render="checkboxauthoritykeyidentifiercritical"/>
-                    </h:selectBooleanCheckbox>
-                    <h:outputLabel for="checkboxauthoritykeyidentifier"
-                                   value="#{web.text.USE}"/>
-                    &nbsp;
-                    <h:selectBooleanCheckbox
+                    </p:selectBooleanCheckbox>                    &nbsp;
+                    <p:selectBooleanCheckbox
                             id="checkboxauthoritykeyidentifiercritical"
                             value="#{editCAsMBean.caInfoDto.authorityKeyIdentifierCritical}"
-                            disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.checkboxAuthorityKeyIdentifierCriticalDisabled}"/>
-                    <h:outputLabel for="checkboxauthoritykeyidentifiercritical"
-                                   value="#{web.text.EXT_CRITICAL}"/>
+                            disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.checkboxAuthorityKeyIdentifierCriticalDisabled}"
+                            itemLabel="#{web.text.EXT_CRITICAL}"
+                    />
                 </h:panelGroup>
 
                 <!-- CRL Number -->
@@ -1502,18 +1468,18 @@
                     <h:outputText value="#{web.text.CRL_EXT_CRLNUMBER}"/>
                 </h:panelGroup>
                 <h:panelGroup rendered="#{not editCAsMBean.caExternal}">
-                    <h:selectBooleanCheckbox id="checkboxusecrlnumber"
+                    <p:selectBooleanCheckbox id="checkboxusecrlnumber"
                                              value="#{editCAsMBean.caInfoDto.useCrlNumber}"
-                                             disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}">
+                                             disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}"
+                                            itemLabel="#{web.text.USE}"
+                    >
                         <f:ajax render="checkboxcrlnumbercritical"/>
-                    </h:selectBooleanCheckbox>
-                    <h:outputLabel for="checkboxusecrlnumber" value="#{web.text.USE}"/>
-                    &nbsp;
-                    <h:selectBooleanCheckbox id="checkboxcrlnumbercritical"
+                    </p:selectBooleanCheckbox>
+                    <p:selectBooleanCheckbox id="checkboxcrlnumbercritical"
                                              value="#{editCAsMBean.caInfoDto.crlNumberCritical}"
-                                             disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.checkboxCrlNumberCriticalDisabled}"/>
-                    <h:outputLabel for="checkboxcrlnumbercritical"
-                                   value="#{web.text.EXT_CRITICAL}"/>
+                                             disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.checkboxCrlNumberCriticalDisabled}"
+                                             itemLabel="#{web.text.EXT_CRITICAL}"
+                    />
                 </h:panelGroup>
 
                 <!-- CRL Issuing Distribution -->
@@ -1524,24 +1490,23 @@
                             escape="false" styleClass="helpReference"/>
                 </h:panelGroup>
                 <h:panelGroup rendered="#{not editCAsMBean.caExternal}">
-                    <h:selectBooleanCheckbox id="checkboxusecrldistributionpointoncrl"
+                    <p:selectBooleanCheckbox id="checkboxusecrldistributionpointoncrl"
                                              value="#{editCAsMBean.caInfoDto.useCrlDistributiOnPointOnCrl}"
-                                             disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}">
+                                             disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}"
+                                             itemLabel="#{web.text.USE}"
+                    >
                         <f:validator validatorId="org.ejbca.util.validator.RequiredCheckboxValidator"
                                      disabled="#{editCAsMBean.caExternal or not editCAsMBean.issuingDistributionPointValidated}"/>
                         <f:attribute name="errorMessage" value="#{web.text.PARTITIONEDCRLS_WITHOUT_IDPONCRL}"/>
                         <f:ajax render="checkboxcrldistributionpointoncrlcritical"/>
-                    </h:selectBooleanCheckbox>
-
-                    <h:outputLabel for="checkboxusecrldistributionpointoncrl"
-                                   value="#{web.text.USE}"/>
+                    </p:selectBooleanCheckbox>
                     &nbsp;
-                    <h:selectBooleanCheckbox
+                    <p:selectBooleanCheckbox
                             id="checkboxcrldistributionpointoncrlcritical"
                             value="#{editCAsMBean.caInfoDto.crlDistributionPointOnCrlCritical}"
-                            disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.checkboxCrlDistributionPointOnCrlCriticalDisabled}"/>
-                    <h:outputLabel for="checkboxcrldistributionpointoncrlcritical"
-                                   value="#{web.text.EXT_CRITICAL}"/>
+                            disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.checkboxCrlDistributionPointOnCrlCriticalDisabled}"
+                            itemLabel="#{web.text.EXT_CRITICAL}"
+                    />
                 </h:panelGroup>
 
                 <!-- CA Issuers URI -->
@@ -1575,14 +1540,14 @@
                             escape="false" styleClass="helpReference"/>
                 </h:panelGroup>
                 <h:panelGroup rendered="#{not editCAsMBean.caExternal}">                   
-                    <h:selectBooleanCheckbox id="checkboxkeepexpiredoncrl"
+                    <p:selectBooleanCheckbox id="checkboxkeepexpiredoncrl"
                                              value="#{editCAsMBean.caInfoDto.keepExpiredCertsOnCrl}"
-                                             disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}" >
+                                             disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}"
+                                            itemLabel="#{web.text.USE}"
+                    >
                         <f:ajax render=":editcapage:keepExpiredCrlFormatPanel :editcapage:keepExpiredCrlFormatInput :editcapage:keepExpiredCrlFormatLabel :editcapage:expiredCrlFormat"
                                 onevent="function (ev) { if (ev.status == 'success') { ejbca.adminweb.hideShowCellsByClass('keepExpiredCellContents', ev.source.checked) } }" />
-                    </h:selectBooleanCheckbox>
-                    <h:outputLabel for="checkboxkeepexpiredoncrl"
-                                   value="#{web.text.USE}"/>
+                    </p:selectBooleanCheckbox>
                     <h:outputScript rendered="${not editCAsMBean.keepExpiredCertsOnCrlChecked}">
                         if (document.readyState != 'complete') {
                             document.addEventListener('DOMContentLoaded', function () {
@@ -1622,14 +1587,12 @@
                 </h:panelGroup>
                 <h:panelGroup id="useCrlPartitionsGroup"
                               rendered="#{not editCAsMBean.caExternal and not editCAsMBean.caInfoDto.msCaCompatible}">
-                    <h:selectBooleanCheckbox id="checkboxusecrlpartitions"
+                    <p:selectBooleanCheckbox id="checkboxusecrlpartitions"
                                              value="#{editCAsMBean.caInfoDto.usePartitionedCrl}"
-                                             disabled="#{not editCAsMBean.hasEditRight}">
+                                             disabled="#{not editCAsMBean.hasEditRight}" itemLabel="#{web.text.USE}">
                         <f:ajax render=":editcapage:mscompatiblegroup :editcapage:crlNumberOfPartitionsLabelGroup :editcapage:crlNumberOfPartitionsInputGroup :editcapage:suspendedPartitionLabelGroup :editcapage:suspendedPartitionInputGroup"
                                 onevent="function (ev) { if (ev.status == 'success') { ejbca.adminweb.hideShowCellsByClass('crlPartitionCellContents', ev.source.checked); } } "/>
-                    </h:selectBooleanCheckbox>
-                    <h:outputLabel for="checkboxusecrlpartitions"
-                                   value="#{web.text.USE}"/>
+                    </p:selectBooleanCheckbox>
                     <h:outputScript rendered="${not editCAsMBean.usePartitionedCrlChecked}">
                         if (document.readyState != 'complete') {
                         document.addEventListener('DOMContentLoaded', function () {
@@ -1780,12 +1743,10 @@
                 </h:panelGroup>
 
                 <h:panelGroup rendered="#{not editCAsMBean.caExternal}">
-                    <h:selectBooleanCheckbox id="checkboxgeneratecrluponrevocation"
+                    <p:selectBooleanCheckbox id="checkboxgeneratecrluponrevocation"
                                              value="#{editCAsMBean.caInfoDto.generateCrlUponRevocation}"
-                                             disabled="#{not editCAsMBean.hasEditRight}">
-                    </h:selectBooleanCheckbox>
-                    <h:outputLabel for="checkboxgeneratecrluponrevocation"
-                                   value="#{web.text.USE}"/>
+                                             disabled="#{not editCAsMBean.hasEditRight}" itemLabel="#{web.text.USE}">
+                    </p:selectBooleanCheckbox>
                     <br/>
                     <h:outputLabel value="#{web.text.CRL_CA_GENERATEUPONREVOCATION_HELP}" styleClass="smallHelp"/>
                 </h:panelGroup>
@@ -1797,11 +1758,10 @@
                 </h:panelGroup>
 
                 <h:panelGroup rendered="#{not editCAsMBean.caExternal}">
-                    <h:selectBooleanCheckbox id="checkboxallowchangingrevocationreason"
+                    <p:selectBooleanCheckbox id="checkboxallowchangingrevocationreason"
                                              value="#{editCAsMBean.caInfoDto.allowChangingRevocationReason}"
-                                             disabled="#{not editCAsMBean.hasEditRight}">
-                    </h:selectBooleanCheckbox>
-                    <h:outputLabel for="checkboxallowchangingrevocationreason" value="#{web.text.USE}"/>
+                                             disabled="#{not editCAsMBean.hasEditRight}" itemLabel="#{web.text.USE}">
+                    </p:selectBooleanCheckbox>
                 </h:panelGroup>
 
                 <!-- Allow invalidity date -->
@@ -1810,11 +1770,10 @@
                 </h:panelGroup>
 
                 <h:panelGroup>
-                    <h:selectBooleanCheckbox id="checkboxallowinvaliditydate"
+                    <p:selectBooleanCheckbox id="checkboxallowinvaliditydate"
                                              value="#{editCAsMBean.caInfoDto.allowInvalidityDate}"
-                                             disabled="#{not editCAsMBean.hasEditRight}">
-                    </h:selectBooleanCheckbox>
-                    <h:outputLabel for="checkboxallowinvaliditydate" value="#{web.text.USE}"/>
+                                             disabled="#{not editCAsMBean.hasEditRight}" itemLabel="#{web.text.USE}">
+                    </p:selectBooleanCheckbox>
                 </h:panelGroup>
 
                 <!-- Publishers -->
@@ -1837,8 +1796,7 @@
             <!-- ==================================================================== CRL Specific Data ============================================================================ -->
 
             <!-- ==================================================================== Default CA Defined Validation Data =========================================================== -->
-            <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-                         cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
+            <h:panelGrid columns="2" styleClass="edit-top ui-md-12" rowClasses="Row0,Row1"
                          columnClasses="editColumn1,editColumn2"
                          rendered="#{editCAsMBean.caInfoDto.caTypeX509 and not editCAsMBean.caExternal
 								and not editCAsMBean.renderCvcAvailable and not editCAsMBean.caTypeCits}">
@@ -1993,8 +1951,7 @@
             <!-- ==================================================================== Default CA Defined Validation Data =========================================================== -->
 
             <!-- ==================================================================== Approval Settings  =========================================================================== -->
-            <h:panelGrid columns="2" styleClass="edit-top lone-edit-heading"
-                         cellspacing="3" cellpadding="3" border="0" width="100%"
+            <h:panelGrid columns="2" styleClass="edit-top lone-edit-heading ui-md-12"
                          rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
                          rendered="#{not (editCAsMBean.caExternal and not editCAsMBean.caTypeCits) and not editCAsMBean.renderCvcAvailable
 									and not editCAsMBean.caInfoDto.caTypeSsh and not editCAsMBean.caTypeProxy}">
@@ -2004,8 +1961,7 @@
             </h:panelGrid>
 
             <h:dataTable value="#{editCAsMBean.approvalRequestItems}"
-                         var="requestItem" cellspacing="1" cellpadding="3" border="0"
-                         width="100%" rowClasses="Row0,Row1"
+                         var="requestItem" rowClasses="Row0,Row1" styleClass="ui-md-12"
                          columnClasses="editColumn1,editColumn2" style="padding-right: 4px;"
                          rendered="#{not (editCAsMBean.caExternal and not editCAsMBean.caTypeCits)and not editCAsMBean.renderCvcAvailable
 								and not editCAsMBean.caInfoDto.caTypeSsh and not editCAsMBean.caTypeProxy}">
@@ -2026,8 +1982,7 @@
 
             <!-- ==================================================================== Other Data =================================================================================== -->
 
-            <h:panelGrid columns="2" styleClass="edit-top lone-edit-heading"
-                         cellspacing="3" cellpadding="3" border="0" width="100%"
+            <h:panelGrid columns="2" styleClass="edit-top lone-edit-heading ui-md-12"
                          rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
                          rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable
 								and not editCAsMBean.caTypeCits and not  editCAsMBean.caTypeProxy}">
@@ -2060,10 +2015,9 @@
                 </h:panelGroup>
 
                 <h:panelGroup rendered="#{not editCAsMBean.caInfoDto.caTypeSsh}">
-                    <h:selectBooleanCheckbox name="checkboxfinishuser"
+                    <p:selectBooleanCheckbox name="checkboxfinishuser"
                                              id="checkboxfinishuser" value="#{editCAsMBean.caInfoDto.finishUser}"
-                                             disabled="#{not editCAsMBean.hasEditRight}"/>
-                    <h:outputLabel for="checkboxfinishuser" value="#{web.text.USE}"/>
+                                             disabled="#{not editCAsMBean.hasEditRight}" itemLabel="#{web.text.USE}"/>
                 </h:panelGroup>
 
 
@@ -2095,12 +2049,10 @@
                 </h:panelGroup>
 
                 <h:panelGroup>
-                    <h:selectBooleanCheckbox name="checkboxincludeinhealthcheck"
+                    <p:selectBooleanCheckbox name="checkboxincludeinhealthcheck"
                                              id="checkboxincludeinhealthcheck"
                                              value="#{editCAsMBean.caInfoDto.includeInHealthCheck}"
-                                             disabled="#{not editCAsMBean.hasEditRight}"/>
-                    <h:outputLabel for="checkboxincludeinhealthcheck"
-                                   value="#{web.text.ACTIVATE}"/>
+                                             disabled="#{not editCAsMBean.hasEditRight}" itemLabel="#{web.text.ACTIVATE}"/>
                 </h:panelGroup>
 
                 <h:panelGroup rendered="#{not editCAsMBean.caInfoDto.caTypeSsh}">
@@ -2126,8 +2078,7 @@
 
             <!-- ==================================================================== CA Life Cycle ================================================================================ -->
 
-            <h:panelGrid columns="2" styleClass="edit-top lone-edit-heading"
-                         cellspacing="3" cellpadding="3" border="0" width="100%"
+            <h:panelGrid columns="2" styleClass="edit-top lone-edit-heading ui-md-12"
                          rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
                          rendered="#{editCAsMBean.renderCaLifeCycle and not editCAsMBean.renderCvcAvailable
 								and not editCAsMBean.caTypeCits and not editCAsMBean.caTypeProxy}">
@@ -2182,12 +2133,12 @@
                                     escape="false" styleClass="helpReference"/>
                         </h:panelGroup>
                         <h:panelGroup rendered="#{editCAsMBean.renderUseCaNameChange}">
-                            <h:selectBooleanCheckbox name="checkboxcanamechange"
+                            <p:selectBooleanCheckbox name="checkboxcanamechange"
                                                      id="idcheckboxcanamechange"
                                                      value="#{editCAsMBean.cANameChange}"
                                                      disabled="#{!editCAsMBean.hasEditRight}">
                                 <f:ajax event="change" render=":editcapage:idnewsubjectdn"/>
-                            </h:selectBooleanCheckbox>
+                            </p:selectBooleanCheckbox>
                         </h:panelGroup>
                         <h:panelGroup rendered="#{editCAsMBean.renderUseCaNameChange}">
                             <h:outputText value="#{web.text.RENEWCA_NEW_SUBJECT_DN_ICAO}"/>
@@ -2216,11 +2167,11 @@
                             <h:outputText value="#{web.text.RENEWCA_LINKCERTIFICATE}"/>
                         </h:panelGroup>
                         <h:panelGroup>
-                            <h:selectBooleanCheckbox name="checkboxcreatelinkcertificate"
+                            <p:selectBooleanCheckbox name="checkboxcreatelinkcertificate"
                                                      disabled="#{editCAsMBean.caTypeCVC or !editCAsMBean.hasEditRight}"
                                                      rendered="#{editCAsMBean.caTypeCVC}"
                                                      value="#{editCAsMBean.createLinkCertificate}"/>
-                            <h:selectBooleanCheckbox name="checkboxcreatelinkcertificate"
+                            <p:selectBooleanCheckbox name="checkboxcreatelinkcertificate"
                                                      value="#{editCAsMBean.createLinkCertificate}"
                                                      disabled="#{not editCAsMBean.hasEditRight}"
                                                      rendered="#{!editCAsMBean.caTypeCVC}"/>
@@ -2286,8 +2237,7 @@
             <!-- ==================================================================== CA Life Cycle ================================================================================ -->
 
             <!-- ==================================================================== Externally signed CA creation/renewal ======================================================== -->
-            <h:panelGrid columns="2" styleClass="edit-top lone-edit-heading"
-                         cellspacing="3" cellpadding="3" border="0" width="100%"
+            <h:panelGrid columns="2" styleClass="edit-top lone-edit-heading ui-md-12"
                          rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
                          rendered="#{editCAsMBean.renderExternallySignedCaCreationRenewal and not editCAsMBean.renderCvcAvailable}">
                 <h:outputLabel for="externallysignedcacreaterenew"
@@ -2371,12 +2321,12 @@
                         </h:panelGroup>
                         <h:panelGroup
                                 rendered="#{editCAsMBean.editCA and editCAsMBean.renderFutureRollOver}">
-                            <h:selectBooleanCheckbox name="checkboxfuturerollover"
+                            <p:selectBooleanCheckbox name="checkboxfuturerollover"
                                                      id="checkboxfuturerollover"
                                                      value="#{editCAsMBean.checkBoxFutureRollOver}"
-                                                     disabled="#{not editCAsMBean.hasEditRight}"/>
-                            <h:outputText for="checkboxfuturerollover"
-                                          value="#{web.text.EXTERNALLYSIGNED_FUTUREROLLOVER}"/>
+                                                     disabled="#{not editCAsMBean.hasEditRight}"
+                                                     itemLabel="#{web.text.EXTERNALLYSIGNED_FUTUREROLLOVER}"
+                            />
                         </h:panelGroup>
                         <h:panelGroup
                                 rendered="#{editCAsMBean.editCA and editCAsMBean.caInfoDto.caTypeX509}">
@@ -2386,12 +2336,12 @@
                         </h:panelGroup>
                         <h:panelGroup
                                 rendered="#{editCAsMBean.editCA and editCAsMBean.caInfoDto.caTypeX509}">
-                            <h:selectBooleanCheckbox name="checkboxuploadAsAlternateChain"
+                            <p:selectBooleanCheckbox name="checkboxuploadAsAlternateChain"
                                                      id="checkboxuploadAsAlternateChain"
                                                      value="#{editCAsMBean.uploadAsAlternateChain}"
-                                                     disabled="#{not editCAsMBean.hasEditRight}"/>
-                            <h:outputText for="checkboxuploadAsAlternateChain"
-                                          value="#{web.text.EXTERNALLYSIGNED_CROSS_CERT}"/>
+                                                     disabled="#{not editCAsMBean.hasEditRight}"
+                                                     itemLabel="#{web.text.EXTERNALLYSIGNED_CROSS_CERT}"
+                            />
                         </h:panelGroup>
                         <h:panelGroup/>
                         <h:panelGroup rendered="#{editCAsMBean.editCA}">
@@ -2408,8 +2358,7 @@
 
             <!-- ==================================================================== Import CA Renewal ============================================================================ -->
 
-            <h:panelGrid columns="2" styleClass="edit-top lone-edit-heading"
-                         cellspacing="3" cellpadding="3" border="0" width="100%"
+            <h:panelGrid columns="2" styleClass="edit-top lone-edit-heading ui-md-12"
                          rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
                          rendered="#{editCAsMBean.editCA and editCAsMBean.caExternal and editCAsMBean.hasEditRight and not editCAsMBean.renderCvcAvailable and not editCAsMBean.caTypeProxy}">
                 <h:outputLabel for="importcarenewal"
@@ -2442,8 +2391,7 @@
             <!-- ==================================================================== Import CA Renewal ============================================================================ -->
 
             <!-- ==================================================================== Proxy CA specific ============================================================================ -->
-            <h:panelGrid id="proxyCa" columns="2" styleClass="edit-top lone-edit-heading"
-                         cellspacing="3" cellpadding="3" border="0" width="100%"
+            <h:panelGrid id="proxyCa" columns="2" styleClass="edit-top lone-edit-heading ui-md-12"
                          rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
                          rendered="#{editCAsMBean.caTypeProxy}">
                 <h:panelGroup>
@@ -2497,12 +2445,12 @@
                 <h:panelGroup id="headersTitle"/>
                 <c:forEach items="#{editCAsMBean.caInfoDto.headers}" var="header" varStatus="loopStatus">
                     <h:panelGroup id="wrapperHeaderKey-#{loopStatus.index}">
-                        <h:selectBooleanCheckbox
+                        <p:selectBooleanCheckbox
                                 id="removeHeaderCheckBox-#{loopStatus.index}"
                                 value="#{header.left}"
                                 rendered="#{editCAsMBean.editCA and editCAsMBean.hasEditRight}">
                             <f:ajax/>
-                        </h:selectBooleanCheckbox>
+                        </p:selectBooleanCheckbox>
                     </h:panelGroup>
                     <h:panelGroup id="wrapperHeaderValue-#{loopStatus.index}">
                         <h:inputText id="textFieldHeaderKey-#{loopStatus.index}"
@@ -2572,8 +2520,7 @@
             <!-- ==================================================================== Proxy CA specific ============================================================================ -->
 
             <!-- ==================================================================== Form buttons  ================================================================================ -->
-            <h:panelGrid columns="2" styleClass="edit-top lone-edit-heading"
-                         cellspacing="3" cellpadding="3" border="0" width="100%"
+            <h:panelGrid columns="2" styleClass="edit-top lone-edit-heading ui-md-12"
                          rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
                          rendered="#{not editCAsMBean.renderCvcAvailable}">
                 <h:outputLabel/>
@@ -2616,7 +2563,7 @@
                                 rendered="#{editCAsMBean.editCaUninitializedHasEditRights and not editCAsMBean.cryptoTokenIdParamNotNull and not editCAsMBean.caUninitialized}"/>
 
                         <h:commandButton id="buttoncreate"
-                                         value="#{web.text.CREATE}"
+                                         value="#{web.text.SAVE}"
                                          action="#{editCAsMBean.createCa}"
                                          rendered="#{not editCAsMBean.editCA and editCAsMBean.hasEditRight and editCAsMBean.hasCreateRight}"
                                          disabled="#{editCAsMBean.signedByExternal}"/>
@@ -2651,8 +2598,7 @@
 
         <!-- ==================================================================== Export CA Header  ============================================================================ -->
         <h:form prependId="false">
-            <h:panelGrid columns="2" styleClass="edit-top lone-edit-heading"
-                         cellspacing="3" cellpadding="3" border="0" width="100%"
+            <h:panelGrid columns="2" styleClass="edit-top lone-edit-heading ui-md-12"
                          rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
                          rendered="#{editCAsMBean.editCA and not editCAsMBean.caExternal and editCAsMBean.hasEditRight and not editCAsMBean.renderCvcAvailable}">
                 <h:outputLabel for="exportcaheader"

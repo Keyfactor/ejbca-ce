@@ -3,7 +3,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
 	  xmlns:f="jakarta.faces.core"
 	  xmlns:h="jakarta.faces.html"
-	  xmlns:ui="jakarta.faces.facelets">
+	  xmlns:ui="jakarta.faces.facelets"
+	  xmlns:p="http://primefaces.org/ui">
 <ui:remove>
 	<!--
   /*************************************************************************
@@ -29,172 +30,265 @@
 			<h:outputText value="#{web.text.INTERNALKEYBINDING_TYPE_REMOTE_AUTHENTICATOR}"/>
 			<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Remote_Authenticators_Overview.html')}" escape="false"/>
 		</h1>
+
 		<h:panelGroup>
-			<h:panelGrid columns="2" styleClass="margin-bottom">
-				<h:outputLink value="keybindings.xhtml">
-					<h:outputText value="#{remoteAuthenticationMBean.backLinkTranslatedText}"/>
-				</h:outputLink>
+			<div class="action-buttons">
 				<h:form rendered="#{remoteAuthenticationMBean.switchToEditAllowed or remoteAuthenticationMBean.switchToViewAllowed}">
-					<h:commandButton rendered="#{remoteAuthenticationMBean.switchToEditAllowed}" action="#{remoteAuthenticationMBean.switchToEdit}"
-									 value="#{web.text.EDIT}" title="#{web.text.SWITCHTOEDITMODE}"/>
-					<h:commandButton rendered="#{remoteAuthenticationMBean.switchToViewAllowed}" action="#{remoteAuthenticationMBean.switchToView}"
-									 value="#{web.text.VIEW}" title="#{web.text.SWITCHTOVIEWMODE}"/>
+					<h:commandButton rendered="#{remoteAuthenticationMBean.switchToEditAllowed}"
+									 action="#{remoteAuthenticationMBean.switchToEdit}"
+									 value="#{web.text.EDIT}" title="#{web.text.SWITCHTOEDITMODE}"
+									  />
+					<h:commandButton rendered="#{remoteAuthenticationMBean.switchToViewAllowed}"
+									 action="#{remoteAuthenticationMBean.switchToView}"
+									 value="#{web.text.VIEW}" title="#{web.text.SWITCHTOVIEWMODE}"
+									 />
 				</h:form>
-			</h:panelGrid>
+			</div>
 		</h:panelGroup>
+
+		<p:divider/>
+
 		<h:form id="internalkeybinding">
-			<h:panelGrid columns="3">				
-				<h:outputLabel for="internalKeyBindingId" value="#{web.text.INTERNALKEYBINDING_FIELD_ID}"/>
-				<h:panelGroup id="internalKeyBindingId">
-					<h:outputText rendered="#{remoteAuthenticationMBean.currentInternalKeyBindingId ne '0'}" value="#{remoteAuthenticationMBean.currentInternalKeyBindingId}"/>
-					<h:outputText rendered="#{remoteAuthenticationMBean.currentInternalKeyBindingId eq '0'}" value="#{web.text.INTERNALKEYBINDING_NOTYETGENERATED}"/>
-				</h:panelGroup>
-				<h:message for="internalKeyBindingId"/>
-				<h:outputLabel for="name" value="#{web.text.INTERNALKEYBINDING_FIELD_NAME}"/>
-				<h:panelGroup id="name">
-					<h:inputText rendered="#{remoteAuthenticationMBean.inEditMode}" value="#{remoteAuthenticationMBean.currentName}" size="40" maxlength="255" title="#{web.text.FORMAT_ID_STR}" />
-					<h:outputText rendered="#{!remoteAuthenticationMBean.inEditMode}" value="#{remoteAuthenticationMBean.currentName}"/>
-				</h:panelGroup>
-				<h:message for="name"/>
-				<h:outputLabel for="cryptoToken" value="#{web.text.INTERNALKEYBINDING_FIELD_CRYPTOTOKEN}"/>
-				<h:panelGroup id="cryptoToken">
-					<h:panelGroup rendered="#{remoteAuthenticationMBean.inEditMode and remoteAuthenticationMBean.cryptoTokenActive}">
-						<h:selectOneMenu value="#{remoteAuthenticationMBean.currentCryptoToken}"
-										 onchange="document.getElementById('internalkeybinding:reloadCryptoToken').click();">
-							<f:selectItems value="#{remoteAuthenticationMBean.availableCryptoTokens}"/>
-						</h:selectOneMenu>
-						<h:commandButton id="reloadCryptoToken" value="#{web.text.INTERNALKEYBINDING_CRYPTOTOKEN_UPDATENEXT}" action="#{remoteAuthenticationMBean.reloadCryptoToken}">
-							<f:ajax execute="internalkeybinding:cryptoToken" render="internalkeybinding:keyPairAlias"/>
-                        </h:commandButton>
-						<script>document.getElementById('internalkeybinding:reloadCryptoToken').style.display = 'none';</script>
-					</h:panelGroup>
-					<h:outputText rendered="#{remoteAuthenticationMBean.inEditMode and !remoteAuthenticationMBean.cryptoTokenActive and remoteAuthenticationMBean.currentCryptoTokenName != null}"
-								  value=" #{web.text.INTERNALKEYBINDING_CRYPTOTOKEN_NOTACTIVE}"/>
-					<h:outputText rendered="#{!remoteAuthenticationMBean.inEditMode or !remoteAuthenticationMBean.cryptoTokenActive}"
-								  value="#{remoteAuthenticationMBean.currentCryptoTokenName != null ? remoteAuthenticationMBean.currentCryptoTokenName : web.text.INTERNALKEYBINDING_CRYPTOTOKEN_MISSING}" title="#{remoteAuthenticationMBean.currentCryptoToken}"/>
-				</h:panelGroup>
-				<h:message for="cryptoToken"/>
-				<h:outputLabel for="keyPairAlias" value="#{web.text.INTERNALKEYBINDING_FIELD_KEYPAIRALIAS}"/>
-				<h:panelGroup id="keyPairAlias">
-					<h:panelGroup rendered="#{remoteAuthenticationMBean.inEditMode and remoteAuthenticationMBean.cryptoTokenActive and !remoteAuthenticationMBean.boundToCertificate}">
-						<h:selectOneMenu value="#{remoteAuthenticationMBean.currentKeyPairAlias}"
-										 onchange="document.getElementById('internalkeybinding:reloadKeyPairAlias').click();">
-							<f:selectItems value="#{remoteAuthenticationMBean.availableKeyPairAliases}"/>
-						</h:selectOneMenu>
-						<h:commandButton id="reloadKeyPairAlias" value="#{web.text.INTERNALKEYBINDING_KEYPAIRALIAS_UPDATE}" action="#{remoteAuthenticationMBean.reloadKeyPairAlias}"/>
-						<script>document.getElementById('internalkeybinding:reloadKeyPairAlias').style.display = 'none';</script>
-					</h:panelGroup>
-					<h:outputText rendered="#{!remoteAuthenticationMBean.inEditMode or !remoteAuthenticationMBean.cryptoTokenActive || remoteAuthenticationMBean.boundToCertificate}"
-								  value="#{remoteAuthenticationMBean.currentKeyPairAlias}"/>
-				</h:panelGroup>
-				<h:message for="keyPairAlias"/>
-				<h:outputLabel for="signatureAlgorithm" value="#{web.text.INTERNALKEYBINDING_FIELD_SIGALG}"/>
-				<h:panelGroup id="signatureAlgorithm">
-					<h:selectOneMenu rendered="#{remoteAuthenticationMBean.inEditMode and remoteAuthenticationMBean.cryptoTokenActive}"
-									 value="#{remoteAuthenticationMBean.currentSignatureAlgorithm}">
-						<f:selectItems value="#{remoteAuthenticationMBean.availableSignatureAlgorithms}"/>
-					</h:selectOneMenu>
-					<h:panelGroup rendered="#{!remoteAuthenticationMBean.inEditMode or !remoteAuthenticationMBean.cryptoTokenActive}">
-						<h:outputText rendered="#{remoteAuthenticationMBean.currentSignatureAlgorithm != null}"
-									  value="#{remoteAuthenticationMBean.currentSignatureAlgorithm}"/>
-						<h:outputText rendered="#{remoteAuthenticationMBean.currentSignatureAlgorithm == null}"
-									  value="#{web.text.INTERNALKEYBINDING_FIELD_NOTSPECIFIED} (error)"/>
-					</h:panelGroup>
-				</h:panelGroup>
-				<h:message for="signatureAlgorithm"/>
-				<h:outputLabel for="nextKeyPairAlias" value="#{web.text.INTERNALKEYBINDING_FIELD_NEXTKEYPAIRALIAS}"
-							   rendered="#{remoteAuthenticationMBean.currentInternalKeyBindingId ne '0'}"/>
-				<h:panelGroup id="nextKeyPairAlias" rendered="#{remoteAuthenticationMBean.currentInternalKeyBindingId ne '0'}">
-					<h:panelGroup rendered="#{remoteAuthenticationMBean.inEditMode and remoteAuthenticationMBean.cryptoTokenActive}">
-						<h:selectOneMenu value="#{remoteAuthenticationMBean.currentNextKeyPairAlias}">
-							<f:selectItem itemValue="" itemLabel="#{web.text.INTERNALKEYBINDING_FIELD_NONE}"/>
-							<f:selectItems value="#{remoteAuthenticationMBean.availableKeyPairAliases}"/>
-						</h:selectOneMenu>
-					</h:panelGroup>
-					<h:panelGroup rendered="#{!remoteAuthenticationMBean.inEditMode or !remoteAuthenticationMBean.cryptoTokenActive}">
-						<h:outputText rendered="#{remoteAuthenticationMBean.currentNextKeyPairAlias != null}"
-									  value="#{remoteAuthenticationMBean.currentNextKeyPairAlias}"/>
-						<h:outputText rendered="#{remoteAuthenticationMBean.currentNextKeyPairAlias == null}"
-									  value="#{web.text.INTERNALKEYBINDING_FIELD_NOTSPECIFIED}"/>
-					</h:panelGroup>
-				</h:panelGroup>
-				<h:message for="nextKeyPairAlias" rendered="#{remoteAuthenticationMBean.currentInternalKeyBindingId ne '0'}"/>
-				<h:outputLabel for="certificateId" value="#{web.text.INTERNALKEYBINDING_FIELD_BOUNDCERT}"
-							   rendered="#{remoteAuthenticationMBean.boundToCertificate}"/>
-				<h:panelGroup id="certificateId" rendered="#{remoteAuthenticationMBean.boundToCertificate}">
-					<h:outputLink target="_blank" rel="noopener" value="/ejbca/adminweb/viewcertificate.xhtml?certsernoparameter=#{remoteAuthenticationMBean.boundCaCertificateSerialNumber},#{remoteAuthenticationMBean.boundCaCertificateIssuerDn}&amp;ref=keybindings">
-						<f:param name="returnTo" value="4"/>
-						<f:param name="keyBindingId" value="#{remoteAuthenticationMBean.currentInternalKeyBindingId}"/>
-						<h:outputText value="#{remoteAuthenticationMBean.boundCertificateInternalCaName}" rendered="#{remoteAuthenticationMBean.boundCertificateInternalCaName != null}"/>
-						<h:outputText value="#{remoteAuthenticationMBean.boundCertificateIssuerDn}" rendered="#{remoteAuthenticationMBean.boundCertificateInternalCaName == null}"/>
-					</h:outputLink>
-					<h:outputText value="  "/>
-					<h:outputLink target="_blank" rel="noopener" value="/ejbca/adminweb/viewcertificate.xhtml?certsernoparameter=#{remoteAuthenticationMBean.boundCertificateSerialNumber},#{remoteAuthenticationMBean.boundCertificateIssuerDn}&amp;ref=keybindings">
-						<f:param name="returnTo" value="4"/>
-						<f:param name="keyBindingId" value="#{remoteAuthenticationMBean.currentInternalKeyBindingId}"/>
-						<h:outputText style="font-family: monospace; text-align: right;" value="#{remoteAuthenticationMBean.boundCertificateSerialNumber}"/>
-					</h:outputLink>
-				</h:panelGroup>
-				<h:message for="certificateId" rendered="#{remoteAuthenticationMBean.boundToCertificate}"/>
-			</h:panelGrid>
-			<h3><h:outputText value="#{web.text.INTERNALKEYBINDING_REMOTE_TRUSTEDCERTIFICATES}"/></h3>
+			<p:panelGrid columns="2" columnClasses="ui-md-3,ui-md-3">
+				<!-- Remote Authenticator ID -->
+				<p:row>
+					<p:column>
+						<h:outputLabel for="internalKeyBindingId" value="#{web.text.INTERNALKEYBINDING_FIELD_ID}"/>
+					</p:column>
+					<p:column>
+						<h:panelGroup id="internalKeyBindingId">
+							<h:outputText rendered="#{remoteAuthenticationMBean.currentInternalKeyBindingId ne '0'}" value="#{remoteAuthenticationMBean.currentInternalKeyBindingId}"/>
+							<h:outputText rendered="#{remoteAuthenticationMBean.currentInternalKeyBindingId eq '0'}" value="#{web.text.INTERNALKEYBINDING_NOTYETGENERATED}"/>
+						</h:panelGroup>
+						<h:message for="internalKeyBindingId"/>
+					</p:column>
+				</p:row>
+
+				<!-- Name -->
+				<p:row>
+					<p:column>
+						<h:outputLabel for="name" value="#{web.text.INTERNALKEYBINDING_FIELD_NAME}"/>
+					</p:column>
+					<p:column>
+						<h:panelGroup id="name">
+							<h:inputText rendered="#{remoteAuthenticationMBean.inEditMode}" value="#{remoteAuthenticationMBean.currentName}" maxlength="255" class="ui-md-12" title="#{web.text.FORMAT_ID_STR}" />
+							<h:outputText rendered="#{!remoteAuthenticationMBean.inEditMode}" value="#{remoteAuthenticationMBean.currentName}"/>
+						</h:panelGroup>
+						<h:message for="name"/>
+					</p:column>
+				</p:row>
+
+				<!-- Crypto Token -->
+				<p:row>
+					<p:column>
+						<h:outputLabel for="cryptoToken" value="#{web.text.INTERNALKEYBINDING_FIELD_CRYPTOTOKEN}"/>
+					</p:column>
+					<p:column>
+						<h:panelGroup id="cryptoToken">
+							<h:panelGroup rendered="#{remoteAuthenticationMBean.inEditMode and remoteAuthenticationMBean.cryptoTokenActive}">
+								<h:selectOneMenu value="#{remoteAuthenticationMBean.currentCryptoToken}"
+												 onchange="document.getElementById('internalkeybinding:reloadCryptoToken').click();"
+												 class="ui-md-12">
+									<f:selectItems value="#{remoteAuthenticationMBean.availableCryptoTokens}"/>
+								</h:selectOneMenu>
+								<h:commandButton id="reloadCryptoToken" value="#{web.text.INTERNALKEYBINDING_CRYPTOTOKEN_UPDATENEXT}" action="#{remoteAuthenticationMBean.reloadCryptoToken}"/>
+								<script>document.getElementById('internalkeybinding:reloadCryptoToken').style.display = 'none';</script>
+							</h:panelGroup>
+							<h:outputText rendered="#{remoteAuthenticationMBean.inEditMode and !remoteAuthenticationMBean.cryptoTokenActive and remoteAuthenticationMBean.currentCryptoTokenName != null}"
+										  value=" #{web.text.INTERNALKEYBINDING_CRYPTOTOKEN_NOTACTIVE}"/>
+							<h:outputText rendered="#{!remoteAuthenticationMBean.inEditMode or !remoteAuthenticationMBean.cryptoTokenActive}"
+										  value="#{remoteAuthenticationMBean.currentCryptoTokenName != null ? remoteAuthenticationMBean.currentCryptoTokenName : web.text.INTERNALKEYBINDING_CRYPTOTOKEN_MISSING}" title="#{remoteAuthenticationMBean.currentCryptoToken}"/>
+							<h:message for="cryptoToken"/>
+						</h:panelGroup>
+					</p:column>
+				</p:row>
+
+				<!-- Key Pair Alias -->
+				<p:row>
+					<p:column>
+						<h:outputLabel for="keyPairAlias" value="#{web.text.INTERNALKEYBINDING_FIELD_KEYPAIRALIAS}"/>
+					</p:column>
+					<p:column>
+						<h:panelGroup id="keyPairAlias">
+							<h:panelGroup rendered="#{remoteAuthenticationMBean.inEditMode and remoteAuthenticationMBean.cryptoTokenActive and !remoteAuthenticationMBean.boundToCertificate}">
+								<h:selectOneMenu value="#{remoteAuthenticationMBean.currentKeyPairAlias}"
+												 onchange="document.getElementById('internalkeybinding:reloadKeyPairAlias').click();"
+												 class="ui-md-12">
+									<f:selectItems value="#{remoteAuthenticationMBean.availableKeyPairAliases}"/>
+								</h:selectOneMenu>
+								<h:commandButton id="reloadKeyPairAlias" value="#{web.text.INTERNALKEYBINDING_KEYPAIRALIAS_UPDATE}" action="#{remoteAuthenticationMBean.reloadKeyPairAlias}"/>
+								<script>document.getElementById('internalkeybinding:reloadKeyPairAlias').style.display = 'none';</script>
+							</h:panelGroup>
+							<h:outputText rendered="#{!remoteAuthenticationMBean.inEditMode or !remoteAuthenticationMBean.cryptoTokenActive || remoteAuthenticationMBean.boundToCertificate}"
+										  value="#{remoteAuthenticationMBean.currentKeyPairAlias}"/>
+						</h:panelGroup>
+						<h:message for="keyPairAlias"/>
+					</p:column>
+				</p:row>
+
+				<!-- Signature algorithm -->
+				<p:row>
+					<p:column>
+						<h:outputLabel for="signatureAlgorithm" value="#{web.text.INTERNALKEYBINDING_FIELD_SIGALG}"/>
+					</p:column>
+					<p:column>
+						<h:panelGroup id="signatureAlgorithm">
+							<h:selectOneMenu rendered="#{remoteAuthenticationMBean.inEditMode and remoteAuthenticationMBean.cryptoTokenActive}"
+											 value="#{remoteAuthenticationMBean.currentSignatureAlgorithm}"
+											 class="ui-md-12">
+								<f:selectItems value="#{remoteAuthenticationMBean.availableSignatureAlgorithms}"/>
+							</h:selectOneMenu>
+							<h:panelGroup rendered="#{!remoteAuthenticationMBean.inEditMode or !remoteAuthenticationMBean.cryptoTokenActive}">
+								<h:outputText rendered="#{remoteAuthenticationMBean.currentSignatureAlgorithm != null}"
+											  value="#{remoteAuthenticationMBean.currentSignatureAlgorithm}"/>
+								<h:outputText rendered="#{remoteAuthenticationMBean.currentSignatureAlgorithm == null}"
+											  value="#{web.text.INTERNALKEYBINDING_FIELD_NOTSPECIFIED} (error)"/>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:message for="signatureAlgorithm"/>
+					</p:column>
+				</p:row>
+
+				<!-- Next key pair alias -->
+				<p:row rendered="#{remoteAuthenticationMBean.currentInternalKeyBindingId ne '0'}">
+					<p:column>
+						<h:outputLabel for="nextKeyPairAlias" value="#{web.text.INTERNALKEYBINDING_FIELD_NEXTKEYPAIRALIAS}"/>
+					</p:column>
+					<p:column>
+						<h:panelGroup id="nextKeyPairAlias">
+							<h:panelGroup rendered="#{remoteAuthenticationMBean.inEditMode and remoteAuthenticationMBean.cryptoTokenActive}">
+								<h:selectOneMenu value="#{remoteAuthenticationMBean.currentNextKeyPairAlias}" class="ui-md-12">
+									<f:selectItem itemValue="" itemLabel="#{web.text.INTERNALKEYBINDING_FIELD_NONE}"/>
+									<f:selectItems value="#{remoteAuthenticationMBean.availableKeyPairAliases}"/>
+								</h:selectOneMenu>
+							</h:panelGroup>
+							<h:panelGroup rendered="#{!remoteAuthenticationMBean.inEditMode or !remoteAuthenticationMBean.cryptoTokenActive}">
+								<h:outputText rendered="#{remoteAuthenticationMBean.currentNextKeyPairAlias != null}"
+											  value="#{remoteAuthenticationMBean.currentNextKeyPairAlias}"/>
+								<h:outputText rendered="#{remoteAuthenticationMBean.currentNextKeyPairAlias == null}"
+											  value="#{web.text.INTERNALKEYBINDING_FIELD_NOTSPECIFIED}"/>
+							</h:panelGroup>
+						</h:panelGroup>
+						<h:message for="nextKeyPairAlias"/>
+					</p:column>
+				</p:row>
+
+				<!-- Certificate ID -->
+				<p:row rendered="#{remoteAuthenticationMBean.boundToCertificate}">
+					<p:column>
+						<h:outputLabel for="certificateId" value="#{web.text.INTERNALKEYBINDING_FIELD_BOUNDCERT}"/>
+					</p:column>
+					<p:column>
+						<h:panelGroup id="certificateId">
+							<h:outputLink target="_blank" rel="noopener" value="/ejbca/adminweb/viewcertificate.xhtml?certsernoparameter=#{remoteAuthenticationMBean.boundCaCertificateSerialNumber},#{remoteAuthenticationMBean.boundCaCertificateIssuerDn}&amp;ref=keybindings">
+								<f:param name="returnTo" value="4"/>
+								<f:param name="keyBindingId" value="#{remoteAuthenticationMBean.currentInternalKeyBindingId}"/>
+								<h:outputText value="#{remoteAuthenticationMBean.boundCertificateInternalCaName}" rendered="#{remoteAuthenticationMBean.boundCertificateInternalCaName != null}"/>
+								<h:outputText value="#{remoteAuthenticationMBean.boundCertificateIssuerDn}" rendered="#{remoteAuthenticationMBean.boundCertificateInternalCaName == null}"/>
+							</h:outputLink>
+							<h:outputText value="  "/>
+							<h:outputLink target="_blank" rel="noopener" value="/ejbca/adminweb/viewcertificate.xhtml?certsernoparameter=#{remoteAuthenticationMBean.boundCertificateSerialNumber},#{remoteAuthenticationMBean.boundCertificateIssuerDn}&amp;ref=keybindings">
+								<f:param name="returnTo" value="4"/>
+								<f:param name="keyBindingId" value="#{remoteAuthenticationMBean.currentInternalKeyBindingId}"/>
+								<h:outputText value="#{remoteAuthenticationMBean.boundCertificateSerialNumber}"/>
+							</h:outputLink>
+						</h:panelGroup>
+						<h:message for="certificateId"/>
+					</p:column>
+				</p:row>
+
+			</p:panelGrid>
+
+			<p:divider/>
+
+			<h3 class="padding-bottom-1-rem">
+				<h:outputText value="#{web.text.INTERNALKEYBINDING_REMOTE_TRUSTEDCERTIFICATES}"/>
+			</h3>
 			<h:outputText rendered="#{remoteAuthenticationMBean.trustedCertificates.rowCount == 0}" value="#{web.text.INTERNALKEYBINDING_REMOTE_TRUSTINGANY}"/>
-			<h:dataTable id="trustedCertificates" value="#{remoteAuthenticationMBean.trustedCertificates}" var="trustEntry"
-						 rendered="#{remoteAuthenticationMBean.trustedCertificates.rowCount != 0 or remoteAuthenticationMBean.inEditMode}">
-				<h:column>
-					<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_CA}"/></f:facet>
-					<h:outputText value="#{remoteAuthenticationMBean.trustedCertificatesCaName}" title="#{trustEntry.caId}"/>
-					<f:facet name="footer">
-						<h:selectOneMenu rendered="#{remoteAuthenticationMBean.inEditMode}"
-										 value="#{remoteAuthenticationMBean.currentCertificateAuthority}">
-							<f:selectItems value="#{remoteAuthenticationMBean.availableCertificateAuthorities}"/>
-						</h:selectOneMenu>
-					</f:facet>
-				</h:column>
-				<h:column>
-					<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_SERIALNUMER}"/></f:facet>
-					<h:outputText rendered="#{!empty trustEntry.certificateSerialNumberDecimal}" value="#{remoteAuthenticationMBean.trustedCertificatesSerialNumberHex}"/>
-					<h:outputText rendered="#{empty trustEntry.certificateSerialNumberDecimal}" value="ANY"/>
-					<f:facet name="footer">
-						<h:inputText id="certificateSerialNumber" rendered="#{remoteAuthenticationMBean.inEditMode}" required="false"
-									 value="#{remoteAuthenticationMBean.currentCertificateSerialNumber}"
-									 size="26" maxlength="255"
-									 title="#{web.text.INTERNALKEYBINDING_EMPTYFORANY}">
-							<f:validator validatorId="optionalHexSerialNumberValidator"/>
-						</h:inputText>
-						<h:message for="certificateSerialNumber" rendered="#{remoteAuthenticationMBean.inEditMode}"/>
-					</f:facet>
-				</h:column>
-				<h:column>
-					<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_TRUSTENTRY_DESCRIPTION}"/></f:facet>
-					<h:outputText value="#{trustEntry.trustEntryDescription}"/>
-					<f:facet name="footer">
-						<h:inputText id="trustEntryDescription" rendered="#{remoteAuthenticationMBean.inEditMode}" required="false"
-									 value="#{remoteAuthenticationMBean.currentTrustEntryDescription}"
-									 size="18" maxlength="255"
-									 title="#{web.text.INTERNALKEYBINDING_TRUSTENTRY_TITLE}">
-						</h:inputText>
-						<h:message for="trustEntryDescription" rendered="#{remoteAuthenticationMBean.inEditMode}"/>
-					</f:facet>
-				</h:column>
-				<h:column>
-					<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_ACTIONS}"/></f:facet>
-					<h:commandButton value="#{web.text.REMOVE}" action="#{remoteAuthenticationMBean.removeTrust}" rendered="#{remoteAuthenticationMBean.inEditMode}"/>
-					<f:facet name="footer">
-						<h:commandButton  rendered="#{remoteAuthenticationMBean.inEditMode}" action="#{remoteAuthenticationMBean.addTrust}"
-										  value="#{web.text.ADD}"/>
-					</f:facet>
-				</h:column>
-			</h:dataTable>
-			
+			<p:panelGrid columns="1" columnClasses="ui-md-6">
+				<p:dataTable id="trustedCertificates"
+							 value="#{remoteAuthenticationMBean.trustedCertificates}"
+							 var="trustEntry"
+							 rendered="#{remoteAuthenticationMBean.trustedCertificates.rowCount != 0 or remoteAuthenticationMBean.inEditMode}"
+							 styleClass="grid table-layout-auto vertical-padding-1"
+							 stripedRows="true"
+							 showGridlines="true"
+							 emptyMessage=""
+				>
+					<p:column styleClass="table-title-column">
+						<f:facet name="header">
+							<h:outputText value="#{web.text.INTERNALKEYBINDING_CA}"/>
+						</f:facet>
+						<h:outputText value="#{remoteAuthenticationMBean.trustedCertificatesCaName}" title="#{trustEntry.caId}"/>
+						<f:facet name="footer">
+							<h:selectOneMenu rendered="#{remoteAuthenticationMBean.inEditMode}"
+											 value="#{remoteAuthenticationMBean.currentCertificateAuthority}"
+											 class="ui-md-12">
+								<f:selectItems value="#{remoteAuthenticationMBean.availableCertificateAuthorities}"/>
+							</h:selectOneMenu>
+						</f:facet>
+					</p:column>
+					<p:column styleClass="text-align-left">
+						<f:facet name="header">
+							<h:outputText value="#{web.text.INTERNALKEYBINDING_SERIALNUMER}"/>
+						</f:facet>
+						<h:outputText rendered="#{!empty trustEntry.certificateSerialNumberDecimal}" value="#{remoteAuthenticationMBean.trustedCertificatesSerialNumberHex}"/>
+						<h:outputText rendered="#{empty trustEntry.certificateSerialNumberDecimal}" value="ANY"/>
+						<f:facet name="footer">
+							<h:inputText id="certificateSerialNumber" rendered="#{remoteAuthenticationMBean.inEditMode}" required="false"
+										 value="#{remoteAuthenticationMBean.currentCertificateSerialNumber}"
+										 class="ui-md-12" maxlength="255"
+										 title="#{web.text.INTERNALKEYBINDING_EMPTYFORANY}">
+								<f:validator validatorId="optionalHexSerialNumberValidator"/>
+							</h:inputText>
+							<h:message for="certificateSerialNumber" rendered="#{remoteAuthenticationMBean.inEditMode}"/>
+						</f:facet>
+					</p:column>
+					<p:column styleClass="text-align-left">
+						<f:facet name="header">
+							<h:outputText value="#{web.text.INTERNALKEYBINDING_TRUSTENTRY_DESCRIPTION}"/>
+						</f:facet>
+						<h:outputText value="#{trustEntry.trustEntryDescription}"/>
+						<f:facet name="footer">
+							<h:inputText id="trustEntryDescription"
+										 rendered="#{remoteAuthenticationMBean.inEditMode}"
+										 required="false"
+										 value="#{remoteAuthenticationMBean.currentTrustEntryDescription}"
+										 class="ui-md-12"
+										 maxlength="255"
+										 title="#{web.text.INTERNALKEYBINDING_TRUSTENTRY_TITLE}">
+							</h:inputText>
+							<h:message for="trustEntryDescription" rendered="#{remoteAuthenticationMBean.inEditMode}"/>
+						</f:facet>
+					</p:column>
+					<p:column rendered="#{remoteAuthenticationMBean.inEditMode}">
+						<f:facet name="header">
+							<h:outputText value="#{web.text.INTERNALKEYBINDING_ACTIONS}"/>
+						</f:facet>
+						<h:commandButton value="#{web.text.DELETE}"
+										 action="#{remoteAuthenticationMBean.removeTrust}"
+										 rendered="#{remoteAuthenticationMBean.inEditMode}"
+						/>
+						<f:facet name="footer">
+							<h:commandButton  rendered="#{remoteAuthenticationMBean.inEditMode}"
+											  action="#{remoteAuthenticationMBean.addTrust}"
+											  value="#{web.text.ADD}"
+							/>
+						</f:facet>
+					</p:column>
+				</p:dataTable>
+			</p:panelGrid>
 
+			<p:divider/>
 
-			<h3><h:outputText value="#{web.text.INTERNALKEYBINDING_PROPERTIES}"/></h3>
-			<h:dataTable value="#{remoteAuthenticationMBean.internalKeyBindingPropertyList}" var="property" styleClass="propertyTable">
-				<h:column>
+			<h3 class="padding-bottom-1-rem">
+				<h:outputText value="#{web.text.INTERNALKEYBINDING_PROPERTIES}"/>
+			</h3>
+			<p:dataTable value="#{remoteAuthenticationMBean.internalKeyBindingPropertyList}" var="property" styleClass="grid table-layout-auto vertical-padding-1 no-header no-border">
+				<p:column>
 					<h:outputText value="#{remoteAuthenticationMBean.propertyNameTranslated}"/>
-				</h:column>
-				<h:column>
+				</p:column>
+				<p:column>
 					<h:panelGroup rendered="#{!property.multiValued}">
 						<h:inputText disabled="#{!remoteAuthenticationMBean.inEditMode}" rendered="#{property.type.simpleName eq 'String'}" value="#{property.value}"/>
 						<h:inputText disabled="#{!remoteAuthenticationMBean.inEditMode}" rendered="#{property.type.simpleName eq 'Long'}" value="#{property.value}">
@@ -202,20 +296,29 @@
 						</h:inputText>
 						<h:selectBooleanCheckbox disabled="#{!remoteAuthenticationMBean.inEditMode}" rendered="#{property.type.simpleName eq 'Boolean'}" value="#{property.value}"/>
 					</h:panelGroup>
-					<h:selectOneMenu disabled="#{!remoteAuthenticationMBean.inEditMode}" rendered="#{property.multiValued}" value="#{property.encodedValue}">
+					<h:selectOneMenu disabled="#{!remoteAuthenticationMBean.inEditMode}" rendered="#{property.multiValued}" value="#{property.encodedValue}" class="ui-md-12">
 						<f:selectItems value="#{remoteAuthenticationMBean.propertyPossibleValues}"/>
 					</h:selectOneMenu>
-				</h:column>
-			</h:dataTable>
+				</p:column>
+			</p:dataTable>
 			<h:panelGroup rendered="#{remoteAuthenticationMBean.internalKeyBindingPropertyList.rowCount == 0}">
 				<div><h:outputText value="#{web.text.INTERNALKEYBINDING_NOPROPERTIES}"/></div>
 			</h:panelGroup>
 
-			<div>
-				<h:commandButton value="#{web.text.CREATE}" action="#{remoteAuthenticationMBean.createNew}" rendered="#{remoteAuthenticationMBean.inEditMode and remoteAuthenticationMBean.creatingNew}"/>
+			<p:divider/>
+
+			<div class="action-buttons">
+				<h:commandButton value="#{web.text.SAVE}" action="#{remoteAuthenticationMBean.createNew}" rendered="#{remoteAuthenticationMBean.inEditMode and remoteAuthenticationMBean.creatingNew}"/>
 				<h:commandButton value="#{web.text.SAVE}" action="#{remoteAuthenticationMBean.saveCurrent}" rendered="#{remoteAuthenticationMBean.inEditMode and !remoteAuthenticationMBean.creatingNew}"/>
+				<h:button value="${web.text.CANCEL}" outcome="keybindings.xhtml" rendered="#{remoteAuthenticationMBean.inEditMode}"/>
 			</div>
 		</h:form>
+		<h:panelGroup>
+			<div class="action-buttons">
+				<h:button value="${web.text.CANCEL}" outcome="keybindings.xhtml"
+						  rendered="#{!remoteAuthenticationMBean.inEditMode}"/>
+			</div>
+		</h:panelGroup>
 
 	</ui:define>
 </ui:composition>
