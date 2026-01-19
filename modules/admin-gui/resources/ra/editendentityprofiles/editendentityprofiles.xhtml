@@ -63,7 +63,8 @@
                                          rendered="#{endEntityProfilesMBean.authorizedToEdit}"/>
                         <h:commandButton value="#{web.text.EXPORT}"
                                          action="#{endEntityProfilesMBean.actionExportProfile(endEntityProfile)}"
-                                         rendered="#{endEntityProfilesMBean.authorizedToEdit}"/>
+                                         rendered="#{endEntityProfilesMBean.authorizedToEdit}"
+                                         disabled="#{endEntityProfile.equals('EMPTY')}"/>
                         <h:commandButton value="#{web.text.DELETE}"
                                          action="#{endEntityProfilesMBean.actionDelete(endEntityProfile)}"
                                          rendered="#{endEntityProfilesMBean.authorizedToEdit}"
