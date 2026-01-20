@@ -123,6 +123,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
     private boolean useMaxValidityForExpiration;
     private long requestSignerCertificateRevocationCacheTime;
     private long signingCertificateCacheTime;
+    private long warningBeforeExpiryTime;
 
     private String currentOcspExtension = null;
     
@@ -187,6 +188,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
         ocspCleanupSchedule = globalConfiguration.getOcspCleanupSchedule();
         ocspCleanupScheduleUnit = globalConfiguration.getOcspCleanupScheduleUnit();
         signingCertificateCacheTime = globalConfiguration.getSigningCertificateValidityTimeMilliseconds();
+        warningBeforeExpiryTime = globalConfiguration.getWarningBeforeExpiryTimeSeconds();
     }
 
     @Override
@@ -356,6 +358,15 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
         if(signingCertificateCacheTime != globalConfiguration.getSigningCertificateValidityTimeMilliseconds()) {
             try {
                 globalConfiguration.setSigningCertificateValidityTimeMilliseconds(signingCertificateCacheTime);
+            } catch (InvalidConfigurationException e) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+            }
+            modified = true;
+        }
+        
+        if(warningBeforeExpiryTime != globalConfiguration.getWarningBeforeExpiryTimeSeconds()) {
+            try { 
+                globalConfiguration.setWarningBeforeExpiryTimeSeconds(warningBeforeExpiryTime);
             } catch (InvalidConfigurationException e) {
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
             }
@@ -1274,5 +1285,13 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
     public void setSigningCertificateCacheTime(long signingCertificateCacheTime) {
         //Convert from s to ms
         this.signingCertificateCacheTime = signingCertificateCacheTime*1000;
+    }
+    
+    public long getWarningBeforeExpiryTime() {
+        return this.warningBeforeExpiryTime;
+    }
+    
+    public void setWarningBeforeExpiryTime(long warningBeforeExpiryTime) {
+        this.warningBeforeExpiryTime = warningBeforeExpiryTime;
     }
 }

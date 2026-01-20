@@ -30,6 +30,7 @@ public class OcspConfiguration {
     @Deprecated(since = "9.4.0")
     public static final String REQUEST_SIGNING_CERT_REVOCATION_CACHE_TIME = "ocsp.reqsigncertrevcachetime";
     public static final String SIGNATUREREQUIRED = "ocsp.signaturerequired";
+    @Deprecated(since = "9.5.0")
     public static final String WARNING_BEFORE_EXPERATION_TIME = "ocsp.warningBeforeExpirationTime";
     @Deprecated(since = "9.4.0")
     public static final String NON_EXISTING_IS_GOOD = "ocsp.nonexistingisgood";
@@ -280,7 +281,10 @@ public class OcspConfiguration {
 
     /**
      * @return The interval on which new OCSP signing certificates are loaded in seconds
+     * 
+     * @deprecated moved into GlobalOcspConfiguration
      */
+    @Deprecated(since = "9.5.0")
     public static long getWarningBeforeExpirationTime() {
         int timeInSeconds = 0;
         final int defaultTimeInSeconds = 604800; // 1 week 60*60*24*7
@@ -296,7 +300,7 @@ public class OcspConfiguration {
             timeInSeconds = defaultTimeInSeconds;
             log.warn(WARNING_BEFORE_EXPERATION_TIME + " is not a decimal integer. Using default 1 week.");
         }
-        return 1000 * (long) timeInSeconds;
+        return (long) timeInSeconds; //This has been modified in 9.5 to return in seconds instead of ms - conversion happens upon retrieval
     }
 
 }
