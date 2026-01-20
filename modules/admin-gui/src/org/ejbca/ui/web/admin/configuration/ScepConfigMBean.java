@@ -191,8 +191,9 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             this.signingCryptoTokenId = scepConfig.getSigningCryptoTokenId(alias);
             this.encryptionKeyAlias = scepConfig.getEncryptionKeyAlias(alias);
             this.encryptionCryptoTokenId = scepConfig.getEncryptionCryptoTokenId(alias);
+
             /// Proxy CA
-            if (isProxyCaAvailable() && isExternalCA(this.raDefaultCA)) {
+            if (scepConfig.getRAMode(alias) && isProxyCaAvailable() && isExternalCA(this.raDefaultCA)) {
                 this.proxyCaEncryptionCertTemplate = scepConfig.getProxyCaEncryptionCertTemplate(alias);
                 this.proxyCaSigningCertTemplate = scepConfig.getProxyCaSigningCertTemplate(alias);
                 this.proxyCaCaEnrollmentTemplate = scepConfig.getProxyCaEnrollmentTemplate(alias);
@@ -1431,7 +1432,10 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     private boolean isExternalCA(final String caName) {
+        if (StringUtils.isBlank(caName)) {
+            return false;
+        }
         final CAInfo defaultCA = caSession.getCAInfoInternal(-1, caName, true);
-        return defaultCA.getStatus() == CAConstants.CA_EXTERNAL;
+        return defaultCA != null && defaultCA.getStatus() == CAConstants.CA_EXTERNAL;
     }
 }
