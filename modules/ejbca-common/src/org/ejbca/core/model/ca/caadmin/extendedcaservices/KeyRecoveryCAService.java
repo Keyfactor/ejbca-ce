@@ -120,6 +120,10 @@ public class KeyRecoveryCAService extends ExtendedCAService implements Serializa
                 if (log.isDebugEnabled()) {
                     log.debug("Encrypting using alias '"+keyAlias+"' from crypto token "+cryptoToken.getId());
                 }
+                if (keyAlias==null) {
+                    throw new IllegalExtendedCAServiceRequestException("No keyEncryptionKey is selected for CA."
+                            + "Either use a new key or use CA's default key.");
+                }
 	            // Creating the KeyId may just throw an exception, we will log this but store the cert and ignore the error
 	            String keyId = null;
 	            try {
