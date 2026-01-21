@@ -244,8 +244,12 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
             cryptoTokenPropertes.setProperty(AzureCryptoToken.KEY_VAULT_NAME, parameters.get(AZUREVAULT_NAME));
             cryptoTokenPropertes.setProperty(AzureCryptoToken.KEY_VAULT_TYPE, parameters.get(AZUREVAULT_TYPE));
             cryptoTokenPropertes.setProperty(AzureCryptoToken.KEY_VAULT_CLIENTID, parameters.get(AZUREVAULT_CLIENTID));
-            cryptoTokenPropertes.setProperty(AzureCryptoToken.KEY_VAULT_USE_KEY_BINDING, parameters.get(AZUREVAULT_USE_KEY_BINDING));
-            cryptoTokenPropertes.setProperty(AzureCryptoToken.KEY_VAULT_KEY_BINDING, parameters.get(AZUREVAULT_KEY_BINDING));
+            
+            // use defaults if not set
+            String useKeyBinding = parameters.get(AZUREVAULT_USE_KEY_BINDING);
+            String keyBinding = parameters.get(AZUREVAULT_KEY_BINDING);
+            cryptoTokenPropertes.setProperty(AzureCryptoToken.KEY_VAULT_USE_KEY_BINDING, useKeyBinding == null ? "false" : useKeyBinding);
+            cryptoTokenPropertes.setProperty(AzureCryptoToken.KEY_VAULT_KEY_BINDING, keyBinding == null ? "0" : keyBinding);
         } else if (PKCS11CryptoToken.class.getSimpleName().equals(type) || CryptoTokenFactory.JACKNJI_SIMPLE_NAME.equals(type)) {
             if (PKCS11CryptoToken.class.getSimpleName().equals(type)) {
                 className = PKCS11CryptoToken.class.getName();
