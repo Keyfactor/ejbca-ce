@@ -408,7 +408,9 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
 
     public void addStep() {
         saveTemporary();
-        getApprovalProfile().addStepLast();
+        ApprovalProfile approvalProfile = getApprovalProfile();
+        approvalProfile.addStepLast();
+        stepList = createStepListFromProfile(approvalProfile);
         steps = null;
     }
 
@@ -431,21 +433,27 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     public void deleteStep() {
         final Integer currentStep = getSteps().getRowData().getIdentifier();
         saveTemporary();
-        getApprovalProfile().deleteStep(currentStep);
+        ApprovalProfile approvalProfile = getApprovalProfile();
+        approvalProfile.deleteStep(currentStep);
+        stepList = createStepListFromProfile(approvalProfile);
         steps = null;
     }
 
     public void addPartition() {
         final Integer currentStep = getSteps().getRowData().getIdentifier();
         saveTemporary();
-        getApprovalProfile().addPartition(currentStep);
+        ApprovalProfile approvalProfile = getApprovalProfile();
+        approvalProfile.addPartition(currentStep);
+        stepList = createStepListFromProfile(approvalProfile);
         steps = null;
     }
 
     public void deletePartition(int partitionId) {
         final Integer currentStep = getSteps().getRowData().getIdentifier();
         saveTemporary();
-        getApprovalProfile().deletePartition(currentStep, partitionId);
+        ApprovalProfile approvalProfile = getApprovalProfile();
+        approvalProfile.deletePartition(currentStep, partitionId);
+        stepList = createStepListFromProfile(approvalProfile);
         steps = null;
     }
 
@@ -626,6 +634,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
                 "\n" +
                 "Direct link to the request: " + baseUrl + "ra/managerequest.xhtml?id=${approvalRequest.ID}";
         approvalProfile.addNotificationProperties(approvalPartition, "approval-admin-group@example.org supervisor@example.org", "no-reply@"+hostnameFromRequest, defaultSubject, defaultBody);
+        stepList = createStepListFromProfile(approvalProfile);
         steps = null;
     }
 
@@ -636,6 +645,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         final ApprovalStep approvalStep = approvalProfile.getStep(currentStep);
         final ApprovalPartition approvalPartition = approvalStep.getPartition(partitionIdentifier);
         approvalProfile.removeNotificationProperties(approvalPartition);
+        stepList = createStepListFromProfile(approvalProfile);
         steps = null;
     }
 
@@ -666,6 +676,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
                 "\n" +
                 "Direct link to view request status: " + baseUrl + "ra/enrollwithrequestid.xhtml?requestId=${approvalRequest.ID}";
         approvalProfile.addUserNotificationProperties(approvalPartition, "no-reply@"+hostnameFromRequest, defaultSubject, defaultBody);
+        stepList = createStepListFromProfile(approvalProfile);
         steps = null;
     }
 
@@ -676,6 +687,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         final ApprovalStep approvalStep = approvalProfile.getStep(currentStep);
         final ApprovalPartition approvalPartition = approvalStep.getPartition(partitionIdentifier);
         approvalProfile.removeUserNotificationProperties(approvalPartition);
+        stepList = createStepListFromProfile(approvalProfile);
         steps = null;
     }
 
