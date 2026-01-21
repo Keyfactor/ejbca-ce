@@ -49,6 +49,7 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
         OCSP("OCSP", "/ejbca/publicweb/status/ocsp"),
         SCEP("SCEP", "/ejbca/publicweb/apply/scep"),
         RA_WEB("RA Web", "/ejbca/ra"),
+        REST_APPROVAL_MANAGEMENT("REST Approval Management", "/ejbca/ejbca-rest-api/v1/approval"),
         REST_CA_MANAGEMENT("REST CA Management", "/ejbca/ejbca-rest-api/v1/ca_management"),
         REST_CERTIFICATE_MANAGEMENT("REST Certificate Management", "/ejbca/ejbca-rest-api/v1/certificate"),
         REST_COAP_MANAGEMENT("REST Coap Management", "/ejbca/ejbca-rest-api/v1/coap"),
@@ -118,6 +119,7 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
                 protocol.equals(AvailableProtocols.ACME.getName())  ||
                 protocol.equals(AvailableProtocols.EST.getName())   || 
                 protocol.equals(AvailableProtocols.MSAE.getName())   ||
+                protocol.equals(AvailableProtocols.REST_APPROVAL_MANAGEMENT.getName()) ||
                 protocol.equals(AvailableProtocols.REST_CA_MANAGEMENT.getName()) ||
                 protocol.equals(AvailableProtocols.REST_CONFIGDUMP.getName()) ||
                 protocol.equals(AvailableProtocols.REST_CERTIFICATE_MANAGEMENT.getName()) ||
