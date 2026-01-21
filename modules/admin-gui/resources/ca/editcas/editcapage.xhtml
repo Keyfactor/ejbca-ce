@@ -313,20 +313,21 @@
 
 					<!--  Encryption Key -->
                     <h:panelGroup
-                            rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable and not editCAsMBean.caTypeCits}">
+                            rendered="#{editCAsMBean.hasEditRight and editCAsMBean.editCANotUninitializedNotExternal 
+                                and not editCAsMBean.renderCvcAvailable and not editCAsMBean.caTypeCits}">
                         <h:outputLabel for="keyEncryptKey" value="keyEncryptKey"/>
                     </h:panelGroup>
                     <h:panelGroup id="keyEncryptKey"
-                            rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable and not editCAsMBean.caTypeCits}">
-						<h:outputText value="#{editCAsMBean.currentCaCryptoTokenKeyEncryptKey}" rendered="#{not editCAsMBean.hasEditRight}"/>
-                        <h:selectOneMenu value="#{editCAsMBean.selectedKeyEncryptKey}" rendered="#{editCAsMBean.hasEditRight}">
+                            rendered="#{editCAsMBean.hasEditRight and editCAsMBean.editCANotUninitializedNotExternal 
+                                and not editCAsMBean.renderCvcAvailable and not editCAsMBean.caTypeCits}">
+                        <h:selectOneMenu value="#{editCAsMBean.selectedKeyEncryptKey}">
                             <f:selectItems
                                     value="#{editCAsMBean.getKeyAliasesListWithNone('keyEncryptKey')}"/>
                         </h:selectOneMenu>
                         <br/>
                         <h:panelGroup
                                 style="overflow-y: auto; width: 500px; height: auto; max-height:75px; margin-bottom: 5px; margin-top: 5px"
-                                layout="block" rendered="#{editCAsMBean.hasEditRight}">
+                                layout="block">
                             <h:outputLabel styleClass="help" value="#{web.text.KEY_ENCRYPT_KEY_RESTRICTIONS}"/>
                         </h:panelGroup>
                     </h:panelGroup>
