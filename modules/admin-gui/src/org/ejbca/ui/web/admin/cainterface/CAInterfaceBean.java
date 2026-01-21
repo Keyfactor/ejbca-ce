@@ -361,7 +361,8 @@ public class CAInterfaceBean implements Serializable {
         }
         final String[] suppliedAliases = {caInfoDto.getCryptoTokenCertSignKey(), caInfoDto.getCryptoTokenAlternativeCertSignKey(), caInfoDto.getCryptoTokenCertSignKey(), caInfoDto.getSelectedKeyEncryptKey(), caInfoDto.getTestKey()};
         for (final String currentSuppliedAlias : suppliedAliases) {
-            if (currentSuppliedAlias.length()>0 && !keyPairAliases.contains(currentSuppliedAlias)) {
+            if (currentSuppliedAlias.length()>0 && !keyPairAliases.contains(currentSuppliedAlias) 
+                    && !currentSuppliedAlias.equals(CATokenConstants.CAKEY_ANY_PURPOSE_NONE_INDICATOR)) {
                 log.info(getAuthenticationToken().toString() + " attempted to create a CA with a non-existing key alias: "+currentSuppliedAlias);
                 throw new IllegalStateException("Invalid key alias!");
             }
@@ -401,9 +402,13 @@ public class CAInterfaceBean implements Serializable {
             throw new InvalidAlgorithmException("No signature algorithm supplied!");
         }
         caToken.setSignatureAlgorithm(caInfoDto.getSignatureAlgorithmParam());
-        PublicKey encryptionKey = getCryptoTokenManagementSession().getCryptoToken(cryptoTokenId).getPublicKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT));
-        caToken.setEncryptionAlgorithm(AlgorithmTools.getEncSigAlgFromSigAlg(caInfoDto.getSignatureAlgorithmParam(), encryptionKey));
-
+        if (caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT)!=null) {
+            PublicKey encryptionKey = getCryptoTokenManagementSession().getCryptoToken(cryptoTokenId).getPublicKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT));
+            caToken.setEncryptionAlgorithm(AlgorithmTools.getEncSigAlgFromSigAlg(caInfoDto.getSignatureAlgorithmParam(), encryptionKey));
+        } else {
+            // for safety, there is no keyEncryptKey
+            caToken.setEncryptionAlgorithm(caInfoDto.getSignatureAlgorithmParam());
+        }
         if (caInfoDto.getKeySequenceFormatAsString() == null) {
             caToken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
         } else {
