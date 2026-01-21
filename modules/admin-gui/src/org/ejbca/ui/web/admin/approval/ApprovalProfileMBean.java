@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.approval;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -64,6 +65,7 @@ import org.ejbca.util.mail.MailSender;
 @Named("approvalProfileMBean")
 public class ApprovalProfileMBean extends BaseManagedBean implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = -3751383340600251434L;
     private static final InternalResources intres = InternalResources.getInstance();
     private static final Logger log = Logger.getLogger(ApprovalProfileMBean.class);
@@ -80,8 +82,8 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         TEXT(intres.getLocalizedMessage("approval.profile.metadata.field.freetext")),
         EXTURL(intres.getLocalizedMessage("approval.profile.metadata.field.exturl"));
 
-       private static List<SelectItem> selectItems;
-       private static Map<String, FieldType> nameLookupMap;
+       private static final List<SelectItem> selectItems;
+       private static final Map<String, FieldType> nameLookupMap;
        private final String label;
 
        static {
@@ -93,7 +95,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
            }
        }
 
-       private FieldType(final String label) {
+       FieldType(final String label) {
            this.label = label;
 
        }
@@ -118,8 +120,6 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
     private RoleSessionLocal roleSession;
-    @EJB
-    private RoleMemberSessionLocal roleMemberSession;
 
     @Inject
     private ApprovalProfilesMBean approvalProfilesMBean;
@@ -154,7 +154,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         if (currentApprovalProfileId==-1) {
             final Integer id = approvalProfilesMBean.getSelectedApprovalProfileId();
             if (id!=null) {
-                currentApprovalProfileId = id.intValue();
+                currentApprovalProfileId = id;
             }
         }
         return currentApprovalProfileId;
@@ -293,10 +293,10 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
             property = new DynamicUiProperty<>(fieldLabel, Boolean.FALSE);
             break;
         case INTEGER:
-            property = new DynamicUiProperty<>(fieldLabel, Integer.valueOf(0));
+            property = new DynamicUiProperty<>(fieldLabel, 0);
             break;
         case LONG:
-            property = new DynamicUiProperty<>(fieldLabel, Long.valueOf(0L));
+            property = new DynamicUiProperty<>(fieldLabel, 0L);
             break;
         case EXTURL:
             property = new DynamicUiProperty<>(fieldLabel, new UrlString(""));
@@ -342,7 +342,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
                     addErrorMessage("APPROVAL_PROFILE_FIELD_RADIO_EXISTS");
                     return "";
                 }
-                if (possibleValues.size() == 0) {
+                if (possibleValues.isEmpty()) {
                     radioButtonProperty.setDefaultValue(newRadio);
                 }
                 possibleValues.add(newRadio);
