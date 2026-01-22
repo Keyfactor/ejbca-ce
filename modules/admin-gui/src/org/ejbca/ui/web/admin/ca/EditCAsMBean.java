@@ -2084,7 +2084,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             try {
                 final String kekKeyAlias = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
                 if (kekKeyAlias==null) {
-                    log.info("Key encryption key must be set for CA export.");
+                    log.info("Key encryption key must be set for CA export for CA: " + caInfoDto.getCaName());
                     addNonTranslatedErrorMessage(INVALID_KEK_ERROR_MESSAGE);
                     return;
                 }
