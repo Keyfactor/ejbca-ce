@@ -45,6 +45,7 @@ import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateDataSessionLocal;
 import org.cesecore.certificates.certificate.CertificateInfo;
@@ -197,6 +198,11 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
                     }
                 }
             } catch (Exception e) {
+                if (e instanceof IllegalExtendedCAServiceRequestException &&
+                        ((IllegalExtendedCAServiceRequestException)e).getSkipAuditLog()) {
+                    log.error(LogRedactionUtils.getRedactedException(e));
+                    return returnval;
+                }
                 final String msg = intres.getLocalizedMessage("keyrecovery.erroradddata", CertTools.getSerialNumber(certificate).toString(16),
                         CertTools.getIssuerDN(certificate));
                 final Map<String, Object> details = new LinkedHashMap<>();

@@ -2084,13 +2084,13 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             try {
                 final String kekKeyAlias = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
                 if (kekKeyAlias==null) {
-                    log.error("Key encryption key must be set for CA export.");
+                    log.info("Key encryption key must be set for CA export.");
                     addNonTranslatedErrorMessage(INVALID_KEK_ERROR_MESSAGE);
                     return;
                 }
                 PrivateKey privKey = cryptoToken.getPrivateKey(kekKeyAlias);
                 if(!ALLOWED_KEK_TYPES.contains(privKey.getAlgorithm())) {
-                    log.error("Key encryption key of type: " + privKey.getAlgorithm() + " is not supported.");
+                    log.info("Key encryption key of type: " + privKey.getAlgorithm() + " is not supported.");
                     addNonTranslatedErrorMessage(INVALID_KEK_ERROR_MESSAGE);
                     return;
                 }

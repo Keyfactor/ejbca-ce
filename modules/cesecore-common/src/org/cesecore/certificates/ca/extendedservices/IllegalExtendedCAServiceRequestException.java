@@ -19,6 +19,9 @@ package org.cesecore.certificates.ca.extendedservices;
 public class IllegalExtendedCAServiceRequestException extends Exception {
     
     private static final long serialVersionUID = 2715976842113419606L;
+    
+    // Audit log the error by default
+    private boolean skipAuditLog = false;
 
     /**
      * Creates a new instance of <code>IllegalExtendedCAServiceRequestException</code> without detail message.
@@ -26,13 +29,22 @@ public class IllegalExtendedCAServiceRequestException extends Exception {
     public IllegalExtendedCAServiceRequestException() {
         super();
     }
-        
+    
     /**
      * Constructs an instance of <code>IllegalExtendedCAServiceRequestException</code> with the specified detail message.
      * @param msg the detail message.
      */
     public IllegalExtendedCAServiceRequestException(String msg) {
         super(msg);
+    }
+        
+    /**
+     * Constructs an instance of <code>IllegalExtendedCAServiceRequestException</code> with the specified detail message.
+     * @param msg the detail message.
+     */
+    public IllegalExtendedCAServiceRequestException(String msg, boolean skipAuditLog) {
+        super(msg);
+        this.skipAuditLog = skipAuditLog;
     }
 
     /**
@@ -41,5 +53,9 @@ public class IllegalExtendedCAServiceRequestException extends Exception {
      */
     public IllegalExtendedCAServiceRequestException(Exception e) {
         super(e);
+    }
+    
+    public boolean getSkipAuditLog() {
+        return skipAuditLog;
     }
 }
