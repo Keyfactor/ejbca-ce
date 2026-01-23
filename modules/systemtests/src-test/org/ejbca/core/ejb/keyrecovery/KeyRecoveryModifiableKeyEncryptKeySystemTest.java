@@ -35,6 +35,7 @@ import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
+import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
@@ -167,8 +168,14 @@ public class KeyRecoveryModifiableKeyEncryptKeySystemTest extends CaTestCase {
             }
             // Save the keys as key recovery data in the database
             if (!setKek) {
-                assertFalse("Key recovery should fail.", keyRecoverySession.addKeyRecoveryData(internalAdmin, EJBTools.wrap(cert1), user, EJBTools.wrap(keypair1)));
-                return;
+               try {
+                    keyRecoverySession.addKeyRecoveryData(internalAdmin, EJBTools.wrap(cert1), user, EJBTools.wrap(keypair1));
+                    fail("Key recovery data persistences should have failed.");
+               } catch (CertificateCreateException e) {
+                   return;
+               } catch (Exception e) {
+                   fail("Key recovery data persistences should have failed with proper exception.");
+               }
             }
             assertTrue("Key recovery data should persist.", keyRecoverySession.addKeyRecoveryData(internalAdmin, EJBTools.wrap(cert1), user, EJBTools.wrap(keypair1)));
             assertFalse("User should not be marked for recovery in database", keyRecoverySession.isUserMarked(user));

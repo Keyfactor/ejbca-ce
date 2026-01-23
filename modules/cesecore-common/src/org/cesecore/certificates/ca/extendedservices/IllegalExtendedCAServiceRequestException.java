@@ -21,7 +21,7 @@ public class IllegalExtendedCAServiceRequestException extends Exception {
     private static final long serialVersionUID = 2715976842113419606L;
     
     // Audit log the error by default
-    private boolean skipAuditLog = false;
+    private boolean failIssuance = false;
 
     /**
      * Creates a new instance of <code>IllegalExtendedCAServiceRequestException</code> without detail message.
@@ -42,9 +42,9 @@ public class IllegalExtendedCAServiceRequestException extends Exception {
      * Constructs an instance of <code>IllegalExtendedCAServiceRequestException</code> with the specified detail message.
      * @param msg the detail message.
      */
-    public IllegalExtendedCAServiceRequestException(String msg, boolean skipAuditLog) {
+    public IllegalExtendedCAServiceRequestException(String msg, boolean failIssuance) {
         super(msg);
-        this.skipAuditLog = skipAuditLog;
+        this.failIssuance = failIssuance;
     }
 
     /**
@@ -55,7 +55,7 @@ public class IllegalExtendedCAServiceRequestException extends Exception {
         super(e);
     }
     
-    public boolean getSkipAuditLog() {
-        return skipAuditLog;
+    public boolean getFailIssuance() {
+        return failIssuance;
     }
 }

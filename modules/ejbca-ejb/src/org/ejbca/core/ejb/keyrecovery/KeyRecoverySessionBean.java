@@ -46,6 +46,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
+import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateDataSessionLocal;
 import org.cesecore.certificates.certificate.CertificateInfo;
@@ -168,7 +169,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
     
     @Override
     public boolean addKeyRecoveryData(AuthenticationToken admin, CertificateWrapper certificateWrapper, String username, KeyPairWrapper keyPairWrapper)
-            throws AuthorizationDeniedException {
+            throws AuthorizationDeniedException, CertificateCreateException {
         if (log.isTraceEnabled()) {
             log.trace(">addKeyRecoveryData(user: " + username + ")");
     	}
@@ -198,10 +199,10 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
                     }
                 }
             } catch (Exception e) {
-                if (e instanceof IllegalExtendedCAServiceRequestException &&
-                        ((IllegalExtendedCAServiceRequestException)e).getSkipAuditLog()) {
+                if ((e instanceof IllegalExtendedCAServiceRequestException) &&
+                        ((IllegalExtendedCAServiceRequestException)e).getFailIssuance()) {
                     log.error(LogRedactionUtils.getRedactedException(e));
-                    return returnval;
+                    throw new CertificateCreateException("Certificate enrollment rolled back as key encrypt key is not set.", e);
                 }
                 final String msg = intres.getLocalizedMessage("keyrecovery.erroradddata", CertTools.getSerialNumber(certificate).toString(16),
                         CertTools.getIssuerDN(certificate));
