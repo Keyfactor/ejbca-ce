@@ -1431,11 +1431,11 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         return sortedCas;
     }
 
-    private boolean isExternalCA(final String caName) {
+    public boolean isExternalCA(final String caName) {
         if (StringUtils.isBlank(caName)) {
             return false;
         }
         final CAInfo defaultCA = caSession.getCAInfoInternal(-1, caName, true);
-        return defaultCA != null && defaultCA.getStatus() == CAConstants.CA_EXTERNAL;
+        return defaultCA != null && defaultCA.getCAType() == CAInfo.CATYPE_PROXY;
     }
 }
