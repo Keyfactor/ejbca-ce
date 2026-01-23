@@ -39,7 +39,6 @@ import org.cesecore.internal.InternalResources;
 import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.RoleInformation;
 import org.cesecore.roles.management.RoleSessionLocal;
-import org.cesecore.roles.member.RoleMemberSessionLocal;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.cesecore.util.ui.MultiLineString;
