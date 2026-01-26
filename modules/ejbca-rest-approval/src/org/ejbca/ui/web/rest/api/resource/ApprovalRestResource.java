@@ -64,15 +64,6 @@ public class ApprovalRestResource extends BaseRestResource {
     @EJB
     private ApprovalProfileSessionLocal approvalProfileSession;
 
-    @Override
-    public Response status() {
-        return Response.ok(RestResourceStatusRestResponse.builder()
-                .status(RESOURCE_STATUS)
-                .version(RESOURCE_VERSION)
-                .revision(GlobalConfiguration.EJBCA_VERSION)
-                .build()
-        ).build();
-    }
 
     /**
      * Processes an approval request by approving or rejecting it.
@@ -205,64 +196,62 @@ public class ApprovalRestResource extends BaseRestResource {
                 .build();
     }
 
-    private List<ApprovalStepRestResponse> buildApprovalSteps(
-            final RaApprovalRequestInfo requestInfo,
-            final SimpleDateFormat dateFormat) {
+    private List<ApprovalStepRestResponse> buildApprovalSteps(final RaApprovalRequestInfo requestInfo, final SimpleDateFormat dateFormat) {
 
         final List<ApprovalStepRestResponse> steps = new ArrayList<>();
         final List<RaApprovalStepInfo> previousSteps = requestInfo.getPreviousApprovalSteps();
-    
-    if (previousSteps != null) {
-        // Get all approvals from the approval data
-        final ApprovalDataVO approvalData = requestInfo.getApprovalData();
-        final Collection<Approval> approvals = approvalData.getApprovals();
-        
-        int stepNumber = 1;
-        for (RaApprovalStepInfo stepInfo : previousSteps) {
-            for (ApprovalPartition partition : stepInfo.getPartitions()) {
-                final ApprovalStepRestResponse.Builder stepBuilder = ApprovalStepRestResponse.builder()
-                    .step(stepNumber);
 
-                // Find the approval record for this step and partition
-                Approval matchingApproval = null;
-                if (approvals != null) {
-                    for (Approval approval : approvals) {
-                        if (approval.getStepId() == stepInfo.getStepId() && 
-                            approval.getPartitionId() == partition.getPartitionIdentifier()) {
-                            matchingApproval = approval;
-                            break;
+        if (previousSteps != null) {
+            // Get all approvals from the approval data
+            final ApprovalDataVO approvalData = requestInfo.getApprovalData();
+            final Collection<Approval> approvals = approvalData.getApprovals();
+
+            int stepNumber = 1;
+            for (RaApprovalStepInfo stepInfo : previousSteps) {
+                for (ApprovalPartition partition : stepInfo.getPartitions()) {
+                    final ApprovalStepRestResponse.Builder stepBuilder = ApprovalStepRestResponse.builder()
+                        .step(stepNumber);
+
+                    // Find the approval record for this step and partition
+                    Approval matchingApproval = null;
+                    if (approvals != null) {
+                        for (Approval approval : approvals) {
+                            if (approval.getStepId() == stepInfo.getStepId() &&
+                                approval.getPartitionId() == partition.getPartitionIdentifier()) {
+                                matchingApproval = approval;
+                                break;
+                            }
                         }
                     }
-                }
 
-                // Populate approval details if found
-                if (matchingApproval != null) {
-                    stepBuilder.approvalAction(matchingApproval.isApproved() ? "APPROVED" : "REJECTED");
-                    
-                    if (matchingApproval.getApprovalDate() != null) {
-                        stepBuilder.approvalDate(dateFormat.format(matchingApproval.getApprovalDate()));
-                    }
-                    
-                    if (matchingApproval.getAdmin() != null) {
-                        stepBuilder.approvalAdmin(matchingApproval.getAdmin().toString());
-                    }
-                    
-                    if (matchingApproval.getComment() != null && !matchingApproval.getComment().isEmpty()) {
-                        stepBuilder.approvalComment(matchingApproval.getComment());
-                    }
-                } else {
-                    // Fallback if no matching approval found
-                    stepBuilder.approvalAction("COMPLETED");
-                }
+                    // Populate approval details if found
+                    if (matchingApproval != null) {
+                        stepBuilder.approvalAction(matchingApproval.isApproved() ? "APPROVED" : "REJECTED");
 
-                steps.add(stepBuilder.build());
-                stepNumber++;
+                        if (matchingApproval.getApprovalDate() != null) {
+                            stepBuilder.approvalDate(dateFormat.format(matchingApproval.getApprovalDate()));
+                        }
+
+                        if (matchingApproval.getAdmin() != null) {
+                            stepBuilder.approvalAdmin(matchingApproval.getAdmin().toString());
+                        }
+
+                        if (matchingApproval.getComment() != null && !matchingApproval.getComment().isEmpty()) {
+                            stepBuilder.approvalComment(matchingApproval.getComment());
+                        }
+                    } else {
+                        // Fallback if no matching approval found
+                        stepBuilder.approvalAction("COMPLETED");
+                    }
+
+                    steps.add(stepBuilder.build());
+                    stepNumber++;
+                }
             }
         }
-    }
 
-    return steps;
-}
+        return steps;
+    }
 
     private String getStatusName(final int status) {
         switch (status) {
@@ -288,29 +277,29 @@ public class ApprovalRestResource extends BaseRestResource {
     }
 
     private String getApprovalTypeName(final int approvalType) {
-    switch (approvalType) {
-        case ApprovalDataVO.APPROVALTYPE_ADDENDENTITY:
-            return "Add End Entity";
-        case ApprovalDataVO.APPROVALTYPE_EDITENDENTITY:
-            return "Edit End Entity";
-        case ApprovalDataVO.APPROVALTYPE_REVOKEENDENTITY:
-            return "Revoke End Entity";
-        case ApprovalDataVO.APPROVALTYPE_CHANGESTATUSENDENTITY:
-            return "Change Status of End Entity";
-        case ApprovalDataVO.APPROVALTYPE_KEYRECOVERY:
-            return "Key Recovery";
-        case ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE:
-            return "Revoke Certificate";
-        case ApprovalDataVO.APPROVALTYPE_REVOKEANDDELETEENDENTITY:
-            return "Revoke and Delete End Entity";
-        case ApprovalDataVO.APPROVALTYPE_ACME_ACCOUNT_KEYCHANGE:
-            return "ACME Account Key Change";
-        case ApprovalDataVO.APPROVALTYPE_ACME_ACCOUNT_REGISTRATION:
-            return "ACME Account Registration";
-        case ApprovalDataVO.APPROVALTYPE_ACTIVATECATOKEN:
-            return "Activate CA Token";
-        default:
-            return "Unknown Type (" + approvalType + ")";
+        switch (approvalType) {
+            case ApprovalDataVO.APPROVALTYPE_ADDENDENTITY:
+                return "Add End Entity";
+            case ApprovalDataVO.APPROVALTYPE_EDITENDENTITY:
+                return "Edit End Entity";
+            case ApprovalDataVO.APPROVALTYPE_REVOKEENDENTITY:
+                return "Revoke End Entity";
+            case ApprovalDataVO.APPROVALTYPE_CHANGESTATUSENDENTITY:
+                return "Change Status of End Entity";
+            case ApprovalDataVO.APPROVALTYPE_KEYRECOVERY:
+                return "Key Recovery";
+            case ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE:
+                return "Revoke Certificate";
+            case ApprovalDataVO.APPROVALTYPE_REVOKEANDDELETEENDENTITY:
+                return "Revoke and Delete End Entity";
+            case ApprovalDataVO.APPROVALTYPE_ACME_ACCOUNT_KEYCHANGE:
+                return "ACME Account Key Change";
+            case ApprovalDataVO.APPROVALTYPE_ACME_ACCOUNT_REGISTRATION:
+                return "ACME Account Registration";
+            case ApprovalDataVO.APPROVALTYPE_ACTIVATECATOKEN:
+                return "Activate CA Token";
+            default:
+                return "Unknown Type (" + approvalType + ")";
+        }
     }
-}
 }
