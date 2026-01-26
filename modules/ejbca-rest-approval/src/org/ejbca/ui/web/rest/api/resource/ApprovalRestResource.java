@@ -12,7 +12,6 @@ package org.ejbca.ui.web.rest.api.resource;
 
 import jakarta.ejb.Stateless;
 import jakarta.ejb.EJB;
-import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,7 +22,6 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.model.approval.*;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
@@ -37,7 +35,6 @@ import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.request.ProcessApprovalRestRequest;
 import org.ejbca.ui.web.rest.api.io.response.ApprovalStepRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.ProcessApprovalRestResponse;
-import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -180,7 +177,6 @@ public class ApprovalRestResource extends BaseRestResource {
         // Build approval steps
         final List<ApprovalStepRestResponse> steps = buildApprovalSteps(requestInfo, dateFormat);
 
-        // Calculate expiration date
         final Date requestDate = new Date(approvalData.getRequestDate().getTime());
         final long expirationPeriod = requestInfo.getApprovalRequest().getRequestValidity();
         final Date expirationDate = new Date(requestDate.getTime() + expirationPeriod);
