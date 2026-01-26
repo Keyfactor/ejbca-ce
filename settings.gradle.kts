@@ -42,8 +42,6 @@ dependencyResolutionManagement {
         create("libs") {
             library("wiremock-standalone", ":wiremock-standalone:3.13.2")
             library("json-path", ":json-path:2.10.0")
-            library("xmlunit", ":xmlunit:1.6")
-            library("handlebars", ":handlebars:4.5.0")
             library("bcprov", ":bcprov:jdk18on-1.83")
             library("bcpkix", ":bcpkix:jdk18on-1.83")
             library("bctls", ":bctls:jdk18on-1.83")
