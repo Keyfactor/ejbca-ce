@@ -108,21 +108,21 @@
 		<h:outputLabel for="raca" value="#{web.text.SCEP_RA_CA}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
 		<h:panelGroup id="raca" rendered="#{scepConfigMBean.currentAlias.modeRa}">
 			<h:panelGroup rendered="#{scepConfigMBean.currentAliasEditMode}">
-				<h:selectOneMenu id="selectOneMenuRACA" value="#{scepConfigMBean.currentAlias.raDefaultCA}"
-						onchange="document.getElementById('currentAliasForm:selectRACA').click();">
+				<h:selectOneMenu id="selectOneMenuRACA" value="#{scepConfigMBean.currentAlias.raDefaultCA}">
 					<f:selectItems value="#{scepConfigMBean.availableCAsOfEEProfile}"/>
+					<f:ajax execute="@this" render=":currentAliasForm"/>
 				</h:selectOneMenu>
 			</h:panelGroup>
 			<h:outputText value="#{scepConfigMBean.currentAlias.raDefaultCA}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
 
-		<!--	ProxyCA fields. Only visible when ProxyCA is available	-->
+		<!--	ProxyCA fields. Only visible when default CA is ProxyCA 	-->
 		<h:panelGroup id="proxyCaEncryptionCertTemplateLableWrapper"
-					  rendered="#{scepConfigMBean.currentAlias.modeRa and scepConfigMBean.proxyCaAvailable}">
+					  rendered="#{scepConfigMBean.currentAlias.modeRa and scepConfigMBean.proxyCaAvailable and scepConfigMBean.isCurrentAliasProxyCA}">
 			<h:outputLabel value="#{web.text.SCEP_PROXYCA_ENCRYPTION_CERT_TEMPLATE}" />
 		</h:panelGroup>
 		<h:panelGroup id="proxyCaEncryptionCertTemplateWrapper"
-					  rendered="#{scepConfigMBean.currentAlias.modeRa and scepConfigMBean.proxyCaAvailable}">
+					  rendered="#{scepConfigMBean.currentAlias.modeRa and scepConfigMBean.proxyCaAvailable and scepConfigMBean.isCurrentAliasProxyCA}">
 			<h:inputText value="#{scepConfigMBean.currentAlias.proxyCaEncryptionCertTemplate}"
 						 rendered="#{scepConfigMBean.currentAliasEditMode}"
 						 disabled="true" styleClass="ui-md-12">
@@ -133,11 +133,11 @@
 		</h:panelGroup>
 
 		<h:panelGroup id="proxyCaSigningCertTemplateLabelWrapper"
-					  rendered="#{scepConfigMBean.currentAlias.modeRa and scepConfigMBean.proxyCaAvailable}">
+					  rendered="#{scepConfigMBean.currentAlias.modeRa and scepConfigMBean.proxyCaAvailable and scepConfigMBean.isCurrentAliasProxyCA}">
 			<h:outputLabel value="#{web.text.SCEP_PROXYCA_SIGNING_CERT_TEMPLATE}" />
 		</h:panelGroup>
 		<h:panelGroup id="proxyCaSigningCertTemplateWrapper"
-					  rendered="#{scepConfigMBean.currentAlias.modeRa and scepConfigMBean.proxyCaAvailable}">
+					  rendered="#{scepConfigMBean.currentAlias.modeRa and scepConfigMBean.proxyCaAvailable and scepConfigMBean.isCurrentAliasProxyCA}">
 			<h:inputText value="#{scepConfigMBean.currentAlias.proxyCaSigningCertTemplate}"
 						 rendered="#{scepConfigMBean.currentAliasEditMode}"
 						 disabled="true" styleClass="ui-md-12">
@@ -148,11 +148,11 @@
 		</h:panelGroup>
 
 		<h:panelGroup id="proxyCaEnrollmentTemplateLabelWrapper"
-					  rendered="#{scepConfigMBean.currentAlias.modeRa and scepConfigMBean.proxyCaAvailable}">
+					  rendered="#{scepConfigMBean.currentAlias.modeRa and scepConfigMBean.proxyCaAvailable and scepConfigMBean.isCurrentAliasProxyCA}" >
 			<h:outputLabel value="#{web.text.SCEP_PROXYCA_ENROLLMENT_TEMPLATE}" />
 		</h:panelGroup>
 		<h:panelGroup id="proxyCaEnrollmentTemplateWrapper"
-					  rendered="#{scepConfigMBean.currentAlias.modeRa and scepConfigMBean.proxyCaAvailable}">
+					  rendered="#{scepConfigMBean.currentAlias.modeRa and scepConfigMBean.proxyCaAvailable and scepConfigMBean.isCurrentAliasProxyCA}" >
 			<h:inputText value="#{scepConfigMBean.currentAlias.proxyCaCaEnrollmentTemplate}"
 						 rendered="#{scepConfigMBean.currentAliasEditMode}"
 						 disabled="true" styleClass="ui-md-12">

@@ -193,7 +193,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             this.encryptionCryptoTokenId = scepConfig.getEncryptionCryptoTokenId(alias);
 
             /// Proxy CA
-            if (scepConfig.getRAMode(alias) && isProxyCaAvailable() && isExternalCA(this.raDefaultCA)) {
+            if (scepConfig.getRAMode(alias) && isProxyCaAvailable() && isProxyCA(this.raDefaultCA)) {
                 this.proxyCaEncryptionCertTemplate = scepConfig.getProxyCaEncryptionCertTemplate(alias);
                 this.proxyCaSigningCertTemplate = scepConfig.getProxyCaSigningCertTemplate(alias);
                 this.proxyCaCaEnrollmentTemplate = scepConfig.getProxyCaEnrollmentTemplate(alias);
@@ -1264,6 +1264,13 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         return List.of();
     }
 
+    public boolean getIsCurrentAliasProxyCA() {
+        if (this.currentAlias == null) {
+            return false;
+        }
+        return isProxyCA(this.currentAlias.getRaDefaultCA());
+    }
+
     public List<SelectItem> getAvailableSchemes() {
         final List<SelectItem> ret = new ArrayList<>();
         ret.add(new SelectItem("DN", "DN Part"));
@@ -1431,7 +1438,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         return sortedCas;
     }
 
-    public boolean isExternalCA(final String caName) {
+    private boolean isProxyCA(final String caName) {
         if (StringUtils.isBlank(caName)) {
             return false;
         }
