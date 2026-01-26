@@ -2428,31 +2428,6 @@
                     <h:outputText rendered="#{not (editCAsMBean.editCA and editCAsMBean.hasEditRight)}"
                                   value="#{editCAsMBean.caInfoDto.upstreamUrl}"/>
                 </h:panelGroup>
-                <h:panelGroup>
-                    <h:outputLabel for="textFieldUsername" value="#{web.text.UPSTREAM_USERNAME}"/>
-                </h:panelGroup>
-                <h:panelGroup>
-                    <h:inputText id="textFieldUsername" name="username" size="25" maxlength="225"
-                                 value="#{editCAsMBean.caInfoDto.username}" title="#{web.text.UPSTREAM_USERNAME}"
-                                 rendered="#{editCAsMBean.editCA and editCAsMBean.hasEditRight}">
-                        <f:ajax/>
-                    </h:inputText>
-                    <h:outputText rendered="#{not (editCAsMBean.editCA and editCAsMBean.hasEditRight)}"
-                                  value="#{editCAsMBean.caInfoDto.username}"/>
-                </h:panelGroup>
-                <h:panelGroup>
-                    <h:outputLabel for="textFieldPassword" value="#{web.text.UPSTREAM_PASSWORD}"/>
-                </h:panelGroup>
-                <h:panelGroup>
-                    <h:inputSecret id="textFieldPassword" name="password" size="25" maxlength="225" redisplay="true"
-                                   rendered="#{editCAsMBean.editCA and editCAsMBean.hasEditRight}"
-                                   value="#{editCAsMBean.upstreamPassword}" title="#{web.text.UPSTREAM_PASSWORD}">
-                        <f:ajax/>
-                        <f:passThroughAttribute name="autocomplete" value="new-password"/>
-                    </h:inputSecret>
-                    <h:outputText rendered="#{not (editCAsMBean.editCA and editCAsMBean.hasEditRight)}"
-                                  value="********"/>
-                </h:panelGroup>
                 <!--
                     OAuthToken
                 -->

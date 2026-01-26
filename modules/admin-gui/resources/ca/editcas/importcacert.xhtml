@@ -81,24 +81,6 @@
 							</h:inputText>
 						</h:panelGroup>
 						<h:panelGroup rendered="#{importCaCertMBean.keyFactorCa}">
-							<h:outputLabel for="textFieldUsername" value="#{web.text.UPSTREAM_USERNAME}" />
-						</h:panelGroup>
-						<h:panelGroup rendered="#{importCaCertMBean.keyFactorCa}">
-							<h:inputText id="textFieldUsername" name="username" size="25" maxlength="225"
-										 value="#{importCaCertMBean.caInfoDto.username}" title="#{web.text.UPSTREAM_USERNAME}">
-								<f:ajax />
-							</h:inputText>
-						</h:panelGroup>
-						<h:panelGroup rendered="#{importCaCertMBean.keyFactorCa}">
-							<h:outputLabel for="textFieldPassword" value="#{web.text.UPSTREAM_PASSWORD}" />
-						</h:panelGroup>
-						<h:panelGroup rendered="#{importCaCertMBean.keyFactorCa}">
-							<h:inputText id="textFieldPassword" name="password" size="25" maxlength="225"
-										 value="#{importCaCertMBean.caInfoDto.password}" title="#{web.text.UPSTREAM_PASSWORD}">
-								<f:ajax />
-							</h:inputText>
-						</h:panelGroup>
-						<h:panelGroup rendered="#{importCaCertMBean.keyFactorCa}">
 							<h:outputLabel for="textFieldOauthTokenUrl" value="#{web.text.OAUTH_TOKEN_URL}" />
 						</h:panelGroup>
 						<h:panelGroup rendered="#{importCaCertMBean.keyFactorCa}">
