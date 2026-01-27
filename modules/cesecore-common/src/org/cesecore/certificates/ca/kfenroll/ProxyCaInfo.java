@@ -33,8 +33,6 @@ public class ProxyCaInfo extends CAInfo {
 
     public static final String ENROLL_WITH_CSR_URL = "enrollWithCsrUrl";
     public static final String HEADERS = "headers";
-    public static final String USERNAME = "username";
-    public static final String PASSWORD = "password";
     public static final String OAUTH_TOKEN_URL = "oauthTokenUrl";
     public static final String OAUTH_CLIENT_NAME = "oauthClientName";
     public static final String OAUTH_CLIENT_SECRET = "oauthClientSecret";
@@ -43,8 +41,6 @@ public class ProxyCaInfo extends CAInfo {
     public static final String AUTHENTICATION_CODE_PLACEHOLDER_VALUE = "placeholder";
     private String enrollWithCsrUrl;
     private List<MutablePair<String, String>> headers;
-    private String username;
-    private String password;
     private String oauthTokenUrl;
     private String oauthClientName;
     private String oauthClientSecret;
@@ -58,7 +54,7 @@ public class ProxyCaInfo extends CAInfo {
     }
 
     public ProxyCaInfo(final String name, final String description, final String subjectDn, final int status, Collection<Integer> validators,
-                       final String enrollByCsrUrl, final List<MutablePair<String, String>> headers, final String username, final String password,
+                       final String enrollByCsrUrl, final List<MutablePair<String, String>> headers,
                        final String oauthTokenUrl, final String oauthClientName, final String oauthClientSecret,
                        final String ca, final String sans) {
         this.name = name;
@@ -68,8 +64,6 @@ public class ProxyCaInfo extends CAInfo {
         this.validators = validators;
         this.enrollWithCsrUrl = enrollByCsrUrl;
         this.headers = headers;
-        this.username = username;
-        this.password = password;
         this.oauthTokenUrl = oauthTokenUrl;
         this.oauthClientName = oauthClientName;
         this.oauthClientSecret = oauthClientSecret;
@@ -140,30 +134,6 @@ public class ProxyCaInfo extends CAInfo {
         return headerList;
     }
 
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-    
-    public String getHiddenPassword(){
-        return AUTHENTICATION_CODE_PLACEHOLDER_VALUE;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-    
-    public void setHiddenPassword(String password) {
-        this.password = password;
-    }
-
     public String getOauthTokenUrl() {
         return oauthTokenUrl;
     }
@@ -227,8 +197,6 @@ public class ProxyCaInfo extends CAInfo {
         // Proxy Ca specific fields
         private String enrollWithCsrUrl;
         private List<MutablePair<String, String>> headers;
-        private String username;
-        private String password;
         private String oauthTokenUrl;
         private String oauthClientName;
         private String oauthClientSecret;
@@ -311,16 +279,6 @@ public class ProxyCaInfo extends CAInfo {
             return this;
         }
 
-        public ProxyCaInfo.ProxyCaInfoBuilder setUsername(String username) {
-            this.username = username;
-            return this;
-        }
-
-        public ProxyCaInfo.ProxyCaInfoBuilder setPassword(String password) {
-            this.password = password;
-            return this;
-        }
-
         public ProxyCaInfo.ProxyCaInfoBuilder setOauthTokenUrl(String oauthTokenUrl) {
             this.oauthTokenUrl = oauthTokenUrl;
             return this;
@@ -355,7 +313,7 @@ public class ProxyCaInfo extends CAInfo {
         }
 
         public ProxyCaInfo build() {
-            ProxyCaInfo caInfo = new ProxyCaInfo(name, description, subjectDn, status, validators, enrollWithCsrUrl, headers, username, password, oauthTokenUrl, oauthClientName, oauthClientSecret, ca, sans);
+            ProxyCaInfo caInfo = new ProxyCaInfo(name, description, subjectDn, status, validators, enrollWithCsrUrl, headers, oauthTokenUrl, oauthClientName, oauthClientSecret, ca, sans);
 
             caInfo.setCAId(caId);
             caInfo.setUpdateTime(updateTime);
@@ -370,7 +328,7 @@ public class ProxyCaInfo extends CAInfo {
         }
 
         public ProxyCaInfo buildForUpdate() {
-            ProxyCaInfo caInfo = new ProxyCaInfo(name, description, subjectDn, status, validators, enrollWithCsrUrl, headers, username, password, oauthTokenUrl, oauthClientName, oauthClientSecret, ca, sans);
+            ProxyCaInfo caInfo = new ProxyCaInfo(name, description, subjectDn, status, validators, enrollWithCsrUrl, headers, oauthTokenUrl, oauthClientName, oauthClientSecret, ca, sans);
 
             caInfo.setCAId(caId);
             caInfo.setUpdateTime(new Date());

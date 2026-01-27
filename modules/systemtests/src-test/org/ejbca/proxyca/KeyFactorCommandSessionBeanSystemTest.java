@@ -109,8 +109,6 @@ public class KeyFactorCommandSessionBeanSystemTest {
                 new ArrayList<>(),
                 upstreamUrl,
                 new ArrayList<>(),
-                null,
-                null,
                 oauthTokenUrl,
                 oauthClientName,
                 oauthClientSecret,

@@ -118,8 +118,6 @@ public class CaInfoDto implements Serializable {
 
     //proxy-ca
     private String upstreamUrl;
-    private String username;
-    private String password;
     private String oauthTokenUrl;
     private String oauthClientName;
     private String oauthClientSecret;
@@ -791,22 +789,6 @@ public class CaInfoDto implements Serializable {
         this.upstreamUrl = upstreamUrl;
     }
 
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
     public String getOauthTokenUrl() {
         return oauthTokenUrl;
     }
@@ -874,8 +856,6 @@ public class CaInfoDto implements Serializable {
             .setSubjectDn(getCaSubjectDN())
             .setEnrollWithCsrUrl(getUpstreamUrl())
             .setHeaders(pairs)
-            .setUsername(getUsername())
-            .setPassword(getPassword())
             .setOauthTokenUrl(getOauthTokenUrl())
             .setOauthClientName(getOauthClientName())
             .setOauthClientSecret(getOauthClientSecret())

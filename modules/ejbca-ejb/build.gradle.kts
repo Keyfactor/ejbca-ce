@@ -32,9 +32,7 @@ dependencies {
     compileOnly(libs.nimbus.jose.jwt)
     compileOnly(libs.x509.common.util)
     compileOnly(libs.bundles.cryptotokens)
-    compileOnly(libs.jackson.core)
-    compileOnly(libs.jackson.databind)
-    compileOnly(libs.jackson.dataformat.yaml)
+    compileOnly(libs.bundles.jackson)
     testRuntimeOnly(libs.jldap)
     testImplementation(":wiremock-standalone:3.13.2")
 }
