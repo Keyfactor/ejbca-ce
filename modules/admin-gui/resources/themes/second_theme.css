@@ -1713,5 +1713,13 @@ label.align-label > span.ui-outputlabel-label {
     height: 100%;
 }
 
+p.compositeText {
+	line-height:1.8rem;
+}
+
+.compositeKeyColor {
+	color:#9c0e17;
+}
+
 /*--------------------------------------------------------------------------*/
 /* EOF */
