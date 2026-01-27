@@ -118,7 +118,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.CitsCaInfo;
 import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
 import org.cesecore.certificates.ca.CvcCABase;
-import org.cesecore.certificates.ca.HybridCa;
+import org.cesecore.certificates.ca.ChimeraCa;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
@@ -754,7 +754,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         return castatus;
     }
 
-    private boolean isProhibitedMixedHybridChain(CA signerCa, String aliasAlternativeCertSign) {
+    private boolean isProhibitedMixedChimeraChain(CA signerCa, String aliasAlternativeCertSign) {
         String signerCaAltAlg = signerCa.getCAToken().getAlternativeSignatureAlgorithm();
         if (((aliasAlternativeCertSign == null) && (signerCaAltAlg != null) )) {
             return true;
@@ -784,9 +784,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 }
                 EndEntityInformation cadata = makeEndEntityInformation(cainfo);
                 final String aliasAlternativeCertSign = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPUPROSE_ALTERNATIVE_CERTSIGN);
-                if (ca instanceof HybridCa && aliasAlternativeCertSign != null) {
-                    HybridCa hybridCa = (HybridCa) ca;
-                    cacertificate = hybridCa.generateCertificate(cryptoToken, cadata, cryptoToken.getPublicKey(aliasCertSign),
+                if (ca instanceof ChimeraCa && aliasAlternativeCertSign != null) {
+                    ChimeraCa chimeraCa = (ChimeraCa) ca;
+                    cacertificate = chimeraCa.generateCertificate(cryptoToken, cadata, cryptoToken.getPublicKey(aliasCertSign),
                             cryptoToken.getPublicKey(aliasAlternativeCertSign), -1, null, cainfo.getEncodedValidity(), certprofile, sequence,
                             cceConfig);
                 } else {
@@ -833,18 +833,18 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 CryptoToken signCryptoToken = cryptoTokenSession.getCryptoToken(signca.getCAToken().getCryptoTokenId());
                 final Certificate cacertificate;
                 final String aliasAlternativeCertSign = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPUPROSE_ALTERNATIVE_CERTSIGN);
-                // We make sure that the sub CA is hybrid iff root CA is hybrid
-                if (isProhibitedMixedHybridChain(signca, aliasAlternativeCertSign)) {
+                // We make sure that the sub CA is Chimera/Catalyst if root CA is Chimera/Catalyst
+                if (isProhibitedMixedChimeraChain(signca, aliasAlternativeCertSign)) {
+                    final String msg =  "Sub CA '" + cainfo.getName() + "' should be Chimera/Catalyst CA if and only if Root CA is Chimera/Catalyst CA  CA.";
                     logAuditEvent(
                             EventTypes.CA_CREATION, EventStatus.FAILURE,
-                            authenticationToken, caid,
-                            intres.getLocalizedMessage("caadmin.cachainismixedhybrid", cainfo.getName())
+                            authenticationToken, caid, msg                 
                             );
-                    throw new InvalidConfigurationException(intres.getLocalizedMessage("caadmin.cachainismixedhybrid", cainfo.getName()));
+                    throw new InvalidConfigurationException(msg);
                 }
-                if (ca instanceof HybridCa && aliasAlternativeCertSign != null) {
-                    HybridCa hybridCa = (HybridCa) signca;
-                    cacertificate = hybridCa.generateCertificate(signCryptoToken, cadata, cryptoToken.getPublicKey(aliasCertSign),
+                if (ca instanceof ChimeraCa && aliasAlternativeCertSign != null) {
+                    ChimeraCa chimeraCa = (ChimeraCa) signca;
+                    cacertificate = chimeraCa.generateCertificate(signCryptoToken, cadata, cryptoToken.getPublicKey(aliasCertSign),
                             cryptoToken.getPublicKey(aliasAlternativeCertSign), -1, null, cainfo.getEncodedValidity(), certprofile, sequence,
                             cceConfig);
                 } else {

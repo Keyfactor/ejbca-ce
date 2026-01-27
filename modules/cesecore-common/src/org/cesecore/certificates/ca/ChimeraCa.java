@@ -34,7 +34,7 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 /**
  * Provides methods for CA's that take alternative keys. 
  */
-public interface HybridCa {
+public interface ChimeraCa {
 
     /**
     *

@@ -1595,8 +1595,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     /**
-     * We want to make sure that a subca created under a rootca is a hybrid ca if the rootca is a hybrid ca
-     * We want to make sure that a subca created under a rootca is a non hybrid ca if the rootca is a non hybrid ca
+     * We want to make sure that a subca created under a rootca is a Chimera/Catalyst ca if the rootca is a Chimera/Catalyst ca
+     * We want to make sure that a subca created under a rootca is a non Chimera/Catalyst ca if the rootca is a non Chimera/Catalyst ca
      * @return true if the chain is mixed and the ca cannot be created
      */
     public boolean isMixedHybridChain() {

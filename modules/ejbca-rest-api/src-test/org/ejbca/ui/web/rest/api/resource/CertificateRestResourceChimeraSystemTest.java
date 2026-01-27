@@ -112,11 +112,11 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 /**
- * Test class with system tests verifying that hybrid certificates can be enrolled via REST.
+ * Test class with system tests verifying that Chimera/Catalyst certificates can be enrolled via REST.
  */
-public class CertificateRestResourceHybridSystemTest extends RestResourceSystemTestBase {
+public class CertificateRestResourceChimeraSystemTest extends RestResourceSystemTestBase {
 
-    private static final Logger log = Logger.getLogger(CertificateRestResourceHybridSystemTest.class);
+    private static final Logger log = Logger.getLogger(CertificateRestResourceChimeraSystemTest.class);
 
     private static final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(
             new UsernamePrincipal("CertificateRestResourceHybridSystemTest"));

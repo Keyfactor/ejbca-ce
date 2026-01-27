@@ -78,9 +78,9 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
- * Tests CAAdminSessionBean with a focus on hybrid certificates.
+ * Tests CAAdminSessionBean with a focus on Chimera/Catalyst certificates.
  */
-public class CaAdminSessionHybridSystemTest {
+public class CaAdminSessionChimeraSystemTest {
 
     @Rule
     public final TestWatcher traceLogMethodsRule = new TestWatcher() {
@@ -102,7 +102,7 @@ public class CaAdminSessionHybridSystemTest {
 
     private static final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(
             new UsernamePrincipal("CaAdminSessionHybridSystemTest"));
-    private static final Logger log = Logger.getLogger(CaAdminSessionHybridSystemTest.class);
+    private static final Logger log = Logger.getLogger(CaAdminSessionChimeraSystemTest.class);
 
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);

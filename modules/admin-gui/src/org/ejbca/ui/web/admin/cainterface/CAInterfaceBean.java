@@ -381,7 +381,7 @@ public class CAInterfaceBean implements Serializable {
         if (caInfoDto.getTestKey().length() > 0) {
             caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING, caInfoDto.getTestKey());
         }
-        //Hybrid certs only implemented for X509
+        //Chimera/Catalyst certs only implemented for X509
         if (caInfoDto.isCaTypeX509()) {
             if (!StringUtils.isEmpty(caInfoDto.getCryptoTokenAlternativeCertSignKey())) {
                 caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_ALTERNATIVE_CERTSIGN_STRING,
@@ -390,7 +390,7 @@ public class CAInterfaceBean implements Serializable {
 
         }
         final CAToken caToken = new CAToken(cryptoTokenId, caTokenProperties);
-        //Hybrid certs only implemented for X509
+        //Chimera/Catalyst certs only implemented for X509
         if (caInfoDto.isCaTypeX509()) {
             if (!StringUtils.isEmpty(caInfoDto.getAlternativeSignatureAlgorithmParam())) {
                 caToken.setAlternativeSignatureAlgorithm(caInfoDto.getAlternativeSignatureAlgorithmParam());
