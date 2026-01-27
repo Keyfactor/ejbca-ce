@@ -13,6 +13,10 @@
 
 package org.ejbca.ui.web.admin.configuration;
 
+import com.keyfactor.util.CertTools;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.jwk.JWKSet;
+import jakarta.servlet.http.Part;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.MalformedURLException;
@@ -27,11 +31,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
-
-import com.keyfactor.util.CertTools;
-import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.jwk.JWKSet;
-import jakarta.servlet.http.Part;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -587,12 +586,6 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager implemen
         if (StringUtils.isEmpty(oauthKeyEditor.auth0Tenant)) {
             systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_AUTH0_NO_TENANT");
             return StringUtils.EMPTY;
-        }
-        if (!StringUtils.endsWith(oauthKeyEditor.auth0Tenant, "auth0app.com")) {
-            if (log.isDebugEnabled()) {
-                log.debug("Only tenant name '" + oauthKeyEditor.auth0Tenant + "' specified. Appending domain 'auth0app.com'.");
-            }
-            oauthKeyEditor.auth0Tenant += ".auth0app.com";
         }
         final String url = String.format("https://%s/.well-known/openid-configuration", oauthKeyEditor.auth0Tenant);
         try (final CloseableHttpClient httpClient = HttpClients.createDefault()) {
