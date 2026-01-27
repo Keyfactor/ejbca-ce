@@ -59,8 +59,8 @@ import com.keyfactor.util.CertTools;
 public class CRLDownloadWorker extends BaseWorker {
     private static final Logger log = Logger.getLogger(CRLDownloadWorker.class);
 
-    public static final String PROP_IGNORE_NEXT_UPDATE = "ignoreNextUpdate";
-    public static final String PROP_MAX_DOWNLOAD_SIZE = "maxDownloadSize";
+    public static final String PROP_IGNORE_NEXT_UPDATE = "worker.ignoreNextUpdate";
+    public static final String PROP_MAX_DOWNLOAD_SIZE = "worker.maxDownloadSize";
     public static final int DEFAULT_MAX_DOWNLOAD_SIZE = 1 * 1024 * 1024;
 
     @Override
