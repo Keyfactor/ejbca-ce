@@ -26,6 +26,9 @@ import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.model.approval.*;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest;
+import org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityApprovalRequest;
+import org.ejbca.core.model.approval.approvalrequests.KeyRecoveryApprovalRequest;
+import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
 import org.ejbca.core.model.approval.profile.ApprovalPartition;
 import org.ejbca.core.model.era.RaApprovalRequestInfo;
 import org.ejbca.core.model.era.RaApprovalResponseRequest;
@@ -80,16 +83,11 @@ public class ApprovalRestResource extends BaseRestResource {
 
         final AuthenticationToken admin = getAdmin(requestContext, false);
 
-        if (request == null || request.getApprove() == null) {
-            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(),
-                    "Request body must contain 'approve' field");
-        }
-
         // Retrieve the approval request
         final RaApprovalRequestInfo approvalRequestInfo = raMasterApiProxy.getApprovalRequest(admin, requestId);
         if (approvalRequestInfo == null) {
             throw new RestException(Response.Status.NOT_FOUND.getStatusCode(),
-                    "Approval request with ID " + requestId + " not found or access denied");
+                    "Approval request with ID " + requestId + " not found or unauthorized");
         }
 
         // Check if the request can be processed
@@ -111,7 +109,7 @@ public class ApprovalRestResource extends BaseRestResource {
             final RaApprovalResponseRequest.Action action = request.getApprove() 
                     ? RaApprovalResponseRequest.Action.APPROVE 
                     : RaApprovalResponseRequest.Action.REJECT;
-            
+
             final RaApprovalResponseRequest responseRequest = new RaApprovalResponseRequest(
                     requestId,
                     approvalRequestInfo.getNextApprovalStep().getStepIdentifier(),
@@ -120,14 +118,9 @@ public class ApprovalRestResource extends BaseRestResource {
                     request.getComment() != null ? request.getComment() : "",
                     action
             );
-            
+
+            // Process the approval request
             raMasterApiProxy.addRequestResponse(admin, responseRequest);
-            
-            if (request.getApprove()) {
-                log.info("Administrator " + admin + " approved approval request with ID " + requestId);
-            } else {
-                log.info("Administrator " + admin + " rejected approval request with ID " + requestId);
-            }
         } catch (ApprovalRequestExpiredException e) {
             log.info("Approval request " + requestId + " has expired");
             throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(),
@@ -168,14 +161,29 @@ public class ApprovalRestResource extends BaseRestResource {
         }
     }
 
+    private String getUsername(final ApprovalRequest approvalRequest) {
+        if (approvalRequest instanceof AddEndEntityApprovalRequest) {
+            return ((AddEndEntityApprovalRequest)approvalRequest).getEndEntityInformation().getUsername();
+        } else if (approvalRequest instanceof EditEndEntityApprovalRequest) {
+            return ((EditEndEntityApprovalRequest)approvalRequest).getNewEndEntityInformation().getUsername();
+        } else if (approvalRequest instanceof RevocationApprovalRequest) {
+            return ((RevocationApprovalRequest)approvalRequest).getUsername();
+        } else if (approvalRequest instanceof KeyRecoveryApprovalRequest) {
+            return ((KeyRecoveryApprovalRequest)approvalRequest).getUsername();
+        } else if (approvalRequest instanceof ChangeStatusEndEntityApprovalRequest) {
+            return ((ChangeStatusEndEntityApprovalRequest)approvalRequest).getUsername();
+        } else {
+            return null;
+        }
+    }
+
     private ProcessApprovalRestResponse buildApprovalResponse(final RaApprovalRequestInfo requestInfo) {
         final SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
         final ApprovalDataVO approvalData = requestInfo.getApprovalData();
-
-        String endEntityName = getEndEntityInformation(requestInfo.getApprovalRequest()).getUsername();
+        final String endEntityName = getUsername(requestInfo.getApprovalRequest());
 
         // Build approval steps
-        final List<ApprovalStepRestResponse> steps = buildApprovalSteps(requestInfo, dateFormat);
+        final List<ApprovalStepRestResponse> steps = buildApprovalSteps(requestInfo);
 
         final Date requestDate = new Date(approvalData.getRequestDate().getTime());
         final long expirationPeriod = requestInfo.getApprovalRequest().getRequestValidity();
@@ -192,7 +200,7 @@ public class ApprovalRestResource extends BaseRestResource {
                 .build();
     }
 
-    private List<ApprovalStepRestResponse> buildApprovalSteps(final RaApprovalRequestInfo requestInfo, final SimpleDateFormat dateFormat) {
+    private List<ApprovalStepRestResponse> buildApprovalSteps(final RaApprovalRequestInfo requestInfo) {
 
         final List<ApprovalStepRestResponse> steps = new ArrayList<>();
         final List<RaApprovalStepInfo> previousSteps = requestInfo.getPreviousApprovalSteps();
@@ -215,7 +223,10 @@ public class ApprovalRestResource extends BaseRestResource {
                             if (approval.getStepId() == stepInfo.getStepId() &&
                                 approval.getPartitionId() == partition.getPartitionIdentifier()) {
                                 matchingApproval = approval;
-                                break;
+                                //break;
+                                // TODO Now we only display in the latest approving admin (i.e. the one which sent this request)
+                                // In the GUI we display all administrators that performed this step (accumulative profile)
+                                // If we want to do the same for the REST API, we'd need to restructure the response objects JSON
                             }
                         }
                     }
@@ -225,7 +236,7 @@ public class ApprovalRestResource extends BaseRestResource {
                         stepBuilder.approvalAction(matchingApproval.isApproved() ? "APPROVED" : "REJECTED");
 
                         if (matchingApproval.getApprovalDate() != null) {
-                            stepBuilder.approvalDate(dateFormat.format(matchingApproval.getApprovalDate()));
+                            stepBuilder.approvalDate(new SimpleDateFormat(DATE_FORMAT).format(matchingApproval.getApprovalDate()));
                         }
 
                         if (matchingApproval.getAdmin() != null) {
@@ -239,13 +250,11 @@ public class ApprovalRestResource extends BaseRestResource {
                         // Fallback if no matching approval found
                         stepBuilder.approvalAction("COMPLETED");
                     }
-
                     steps.add(stepBuilder.build());
                     stepNumber++;
                 }
             }
         }
-
         return steps;
     }
 

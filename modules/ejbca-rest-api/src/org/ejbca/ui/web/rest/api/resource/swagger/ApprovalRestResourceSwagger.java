@@ -66,8 +66,7 @@ public class ApprovalRestResourceSwagger extends ApprovalRestResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Process (approve or reject) an approval request",
-            description = "Allows an administrator to approve or reject an approval request given a request ID. " +
-                    "The response contains relevant information such as current status, approval steps, etc.",
+            description = "Allows an administrator to approve or reject an approval request given a request ID.",
             responses = {
                     @ApiResponse(
                             responseCode = "200",
