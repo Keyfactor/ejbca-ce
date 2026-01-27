@@ -722,15 +722,15 @@
                     <f:facet name="header">
                         <h:outputText value="#{web.text.CRYPTOTOKEN_KPM_ALIAS}"/>
                     </f:facet>
-                    <h:outputText id="kpAlias" value="#{keyPairGuiInfo.alias}"/>
-                    <ui:fragment rendered="#{keyPairGuiInfo.composite}">
-                     <div class="composite-hover">
-                       <ul>
-                         <li><h:outputText value="#{keyPairGuiInfo.compositeComponentPqc}"/></li>
-                         <li><h:outputText value="#{keyPairGuiInfo.compositeComponentClassical}"/></li>
-                       </ul>
-                     </div>
-                    </ui:fragment>
+                    <h:outputText value="#{keyPairGuiInfo.alias}" rendered="#{!keyPairGuiInfo.composite}"/>
+                    <h:outputText id="kpAlias" value="#{keyPairGuiInfo.alias}" rendered="#{keyPairGuiInfo.composite}" styleClass="compositeKeyColor" />
+                    <p:tooltip for="kpAlias" rendered="#{keyPairGuiInfo.composite}" autoHide="false" my="center bottom" showEffect="clip" hideEffect="fold">
+                        <p class="compositeText">
+                        <b><h:outputText value="#{web.text.CRYPTOTOKEN_KEY_COMPOSITE_INFO}"/></b>
+                        <br /><h:outputText value="#{web.text.CRYPTOTOKEN_KEY_COMPOSITE_PQ_KEY}: "/> <h:outputText value="#{keyPairGuiInfo.compositeComponentPqc}"/>
+                        <br /><h:outputText value="#{web.text.CRYPTOTOKEN_KEY_COMPOSITE_CLASSIC_KEY}: "/> <h:outputText value="#{keyPairGuiInfo.compositeComponentClassical}"/>
+                        </p>
+                    </p:tooltip>
                 </p:column>
                 <p:column styleClass="text-align-center">
                     <f:facet name="header">
