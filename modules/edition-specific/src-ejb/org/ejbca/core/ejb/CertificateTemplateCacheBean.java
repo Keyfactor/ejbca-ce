@@ -10,12 +10,14 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.protocol.msae;
+package org.ejbca.core.ejb;
 
 import jakarta.ejb.ConcurrencyManagement;
 import jakarta.ejb.ConcurrencyManagementType;
 import jakarta.ejb.DependsOn;
 import jakarta.ejb.Singleton;
+
+import org.ejbca.core.protocol.msae.CertificateTemplateCacheLocal;
 
 /**
  * Stub implementation of Certificate Template Cache for Community Edition.
