@@ -77,6 +77,7 @@ EJBCA Community is licensed under the LGPL license, please see **[LICENSE](LICEN
 * [Keyfactor/ejbca-tools](https://github.com/Keyfactor/ejbca-tools) 
 * [Keyfactor/keyfactorcommunity](https://github.com/Keyfactor/keyfactorcommunity) 
 * [Keyfactor/ejbca-cert-cvc](https://github.com/Keyfactor/ejbca-cert-cvc) 
+* [Keyfactor/ejbca-cert-manager-issuer](https://github.com/Keyfactor/ejbca-cert-manager-issuer)
 * [Keyfactor/signserver-ce](https://github.com/Keyfactor/signserver-ce)
 
 ### Integrations
