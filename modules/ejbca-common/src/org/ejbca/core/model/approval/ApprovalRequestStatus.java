@@ -13,6 +13,12 @@
 
 package org.ejbca.core.model.approval;
 
+
+/**
+ * Represents the status of an approval request in the system.
+ * The statuses include various states such as pending, approved, rejected etc and
+ * mapped from ApprovalDataVO.STATUS_* constants.
+ */
 public enum ApprovalRequestStatus {
     PENDING,
     APPROVED,
@@ -28,26 +34,24 @@ public enum ApprovalRequestStatus {
         return this.name();
     }
 
+    /**
+     * Translates status from ApprovalDataVO.STATUS_* constants into
+     * the {@code ApprovalRequestStatus} enum value.
+     *
+     * @param status    the integer representation of the status
+     * @return          the corresponding {@code ApprovalRequestStatus} enum value
+     */
     public static ApprovalRequestStatus fromInt(final int status) {
-        switch (status) {
-            case ApprovalDataVO.STATUS_WAITINGFORAPPROVAL:
-                return PENDING;
-            case ApprovalDataVO.STATUS_APPROVED:
-                return APPROVED;
-            case ApprovalDataVO.STATUS_REJECTED:
-                return REJECTED;
-            case ApprovalDataVO.STATUS_EXPIRED:
-            case ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED:
-                return EXPIRED;
-            case ApprovalDataVO.STATUS_EXECUTED:
-                return EXECUTED;
-            case ApprovalDataVO.STATUS_EXECUTIONFAILED:
-                return EXECUTION_FAILED;
-            case ApprovalDataVO.STATUS_EXECUTIONDENIED:
-                return EXECUTION_DENIED;
-            default:
-                return UNKNOWN;
-        }
+        return switch (status) {
+            case ApprovalDataVO.STATUS_WAITINGFORAPPROVAL -> PENDING;
+            case ApprovalDataVO.STATUS_APPROVED -> APPROVED;
+            case ApprovalDataVO.STATUS_REJECTED -> REJECTED;
+            case ApprovalDataVO.STATUS_EXPIRED, ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED -> EXPIRED;
+            case ApprovalDataVO.STATUS_EXECUTED -> EXECUTED;
+            case ApprovalDataVO.STATUS_EXECUTIONFAILED -> EXECUTION_FAILED;
+            case ApprovalDataVO.STATUS_EXECUTIONDENIED -> EXECUTION_DENIED;
+            default -> UNKNOWN;
+        };
     }
 
 
@@ -58,21 +62,13 @@ public enum ApprovalRequestStatus {
      * @return              the corresponding {@code ApprovalRequestStatus} enum value
      */
     public static ApprovalRequestStatus fromIntWithCombinedStates(final int status) {
-        switch (status) {
-            case ApprovalDataVO.STATUS_WAITINGFORAPPROVAL:
-                return PENDING;
-            case ApprovalDataVO.STATUS_APPROVED:
-            case ApprovalDataVO.STATUS_EXECUTED:
-                return APPROVED;
-            case ApprovalDataVO.STATUS_REJECTED:
-            case ApprovalDataVO.STATUS_EXECUTIONFAILED:
-            case ApprovalDataVO.STATUS_EXECUTIONDENIED:
-                return REJECTED;
-            case ApprovalDataVO.STATUS_EXPIRED:
-            case ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED:
-                return EXPIRED;
-            default:
-                return UNKNOWN;
-        }
+        return switch (status) {
+            case ApprovalDataVO.STATUS_WAITINGFORAPPROVAL -> PENDING;
+            case ApprovalDataVO.STATUS_APPROVED, ApprovalDataVO.STATUS_EXECUTED -> APPROVED;
+            case ApprovalDataVO.STATUS_REJECTED, ApprovalDataVO.STATUS_EXECUTIONFAILED,
+                 ApprovalDataVO.STATUS_EXECUTIONDENIED -> REJECTED;
+            case ApprovalDataVO.STATUS_EXPIRED, ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED -> EXPIRED;
+            default -> UNKNOWN;
+        };
     }
 }

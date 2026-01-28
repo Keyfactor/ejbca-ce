@@ -63,9 +63,6 @@ public class ApprovalRequestStatusRestResponse {
         private int requestId;
         private ApprovalRequestStatus status;
 
-        private Builder() {
-        }
-
         public Builder requestId(final int requestId) {
             this.requestId = requestId;
             return this;

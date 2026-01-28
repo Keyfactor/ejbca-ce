@@ -71,6 +71,7 @@ public class ApprovalRestResource extends BaseRestResource {
 
             return Response.ok(response).build();
         } catch (AuthorizationDeniedException e) {
+            log.error(e.getMessage(), e);
             throw new RestException(Response.Status.FORBIDDEN.getStatusCode(), "Missing or invalid authentication.");
         }
 

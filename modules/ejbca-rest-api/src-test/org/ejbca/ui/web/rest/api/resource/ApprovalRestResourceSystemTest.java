@@ -45,7 +45,7 @@ import static org.junit.Assert.assertEquals;
 @RunWith(EasyMockRunner.class)
 public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
 
-    private static final Logger log = Logger.getLogger(CaManagementRestResourceSystemTest.class);
+    private static final Logger log = Logger.getLogger(ApprovalRestResourceSystemTest.class);
     private static final JSONParser jsonParser = new JSONParser();
 
     @Mock
@@ -137,7 +137,7 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
     }
 
     @Test
-    public void testStatusShouldReturnExceptionForInvalidRequest() throws Exception {
+    public void testStatusShouldReturnErrorForInvalidRequest() throws Exception {
         // When: invalid request id is used
         final Response actualResponse = newRequest("/v1/approval/-12345/status").request().get();
         final String actualJsonString = actualResponse.readEntity(String.class);
