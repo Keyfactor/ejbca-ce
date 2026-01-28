@@ -24,7 +24,6 @@ dependencies {
     compileOnly(libs.bcutil)
     compileOnly(libs.cert.cvc)
     compileOnly(libs.guava)
-    compileOnly(libs.httpcore)
     compileOnly(libs.log4j.v12.api)
     compileOnly(libs.commons.lang3)
     compileOnly(libs.commons.configuration2)
@@ -32,7 +31,6 @@ dependencies {
     compileOnly(libs.nimbus.jose.jwt)
     compileOnly(libs.x509.common.util)
     compileOnly(libs.bundles.cryptotokens)
-    compileOnly(libs.bundles.jackson)
     testRuntimeOnly(libs.jldap)
 }
 
