@@ -27,7 +27,6 @@ dependencies {
     testImplementation(project(":modules:systemtests:interface"))
     testImplementation(project(":modules:va:extensions"))
     testImplementation(project(":modules:ejbca-repository"))
-    testImplementation(project(":modules:proxy-ca"))
 
     if (project.extra["edition"] == "ee") {
         testImplementation(project(":modules:acme:common"))
