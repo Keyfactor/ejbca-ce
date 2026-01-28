@@ -34,7 +34,6 @@ dependencies {
     compileOnly(libs.bundles.cryptotokens)
     compileOnly(libs.bundles.jackson)
     testRuntimeOnly(libs.jldap)
-    testImplementation(":wiremock-standalone:3.13.2")
 }
 
 sourceSets {

@@ -70,7 +70,6 @@ dependencies {
     testRuntimeOnly(libs.jaxws.rt)
     testRuntimeOnly(libs.stax.ex)
     testRuntimeOnly(libs.streambuffer)
-    testImplementation(libs.wiremock.standalone)
 }
 
 sourceSets {

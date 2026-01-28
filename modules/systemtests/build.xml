@@ -85,7 +85,6 @@
 		<path refid="lib.resteasy-jaxrs.classpath"/>
 		<path refid="lib.cryptotokens.classpath"/>
 		<path location="${systemtests.dir}/../ejbca-repository/build"/>
-		<path refid="lib.wiremock.classpath"/>
 	</path>
 
 	<path id="common.classpath">
