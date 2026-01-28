@@ -40,7 +40,6 @@ gradle.allprojects {
 dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
-            //library("json-path", ":json-path:2.10.0")
             library("bcprov", ":bcprov:jdk18on-1.83")
             library("bcpkix", ":bcpkix:jdk18on-1.83")
             library("bctls", ":bctls:jdk18on-1.83")
@@ -429,7 +428,7 @@ fun loadPropertiesFromFiles(vararg filePaths: String): Properties {
 }
 
 fun Properties.expandPlaceholders(templateKey: String): String {
-    val template = ejbcaProperties.getProperty(templateKey);
+    val template = ejbcaProperties.getProperty(templateKey)
     val placeholderPattern = Regex("\\$\\{([^}]+)\\}")
     return placeholderPattern.replace(template) { matchResult ->
         val propertyKey = matchResult.groupValues[1]
