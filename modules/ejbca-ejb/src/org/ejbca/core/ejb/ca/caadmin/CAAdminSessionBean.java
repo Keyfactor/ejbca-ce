@@ -835,7 +835,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 final String aliasAlternativeCertSign = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPUPROSE_ALTERNATIVE_CERTSIGN);
                 // We make sure that the sub CA is Chimera/Catalyst if root CA is Chimera/Catalyst
                 if (isProhibitedMixedChimeraChain(signca, aliasAlternativeCertSign)) {
-                    final String msg =  "Sub CA '" + cainfo.getName() + "' should be Chimera/Catalyst CA if and only if Root CA is Chimera/Catalyst CA  CA.";
+                    final String msg =  "Sub CA '" + cainfo.getName() + "' should be Chimera/Catalyst CA if and only if Root CA is Chimera/Catalyst CA.";
                     logAuditEvent(
                             EventTypes.CA_CREATION, EventStatus.FAILURE,
                             authenticationToken, caid, msg                 
