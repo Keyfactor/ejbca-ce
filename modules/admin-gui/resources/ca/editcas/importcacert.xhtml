@@ -31,8 +31,7 @@
 
 			<h:form id="recievefile"
 				method="post" enctype='multipart/form-data'>
-				<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-					cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
+				<h:panelGrid columns="2" styleClass="edit-top ui-md-12" rowClasses="Row0,Row1"
 					columnClasses="editColumn1,editColumn2">
 					<h:panelGroup>
 						&nbsp;
@@ -196,12 +195,14 @@
 					</h:panelGroup>
 
 					<h:panelGroup>
-						<h:commandButton 
-							id="buttonrecievefile" 
-							onclick="return checkFileRecieve('recievefile:filerecievefile', '#{web.text.YOUMUSTSELECT}');"
-							value="#{web.text.IMPORTCA_CERTIFICATE}" action="#{importCaCertMBean.importCaCertificate()}"/>
-						<h:button id="buttoncancel"
-							value="#{web.text.CANCEL}" outcome="managecas.xhtml?faces-redirect=true"/>
+						<div class="action-buttons">
+							<h:commandButton
+								id="buttonrecievefile"
+								onclick="return checkFileRecieve('recievefile:filerecievefile', '#{web.text.YOUMUSTSELECT}');"
+								value="#{web.text.IMPORTCA_CERTIFICATE}" action="#{importCaCertMBean.importCaCertificate()}"/>
+							<h:button id="buttoncancel"
+								value="#{web.text.CANCEL}" outcome="managecas.xhtml?faces-redirect=true"/>
+						</div>
 					</h:panelGroup>
 					
 				</h:panelGrid>

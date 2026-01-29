@@ -1129,7 +1129,9 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     public List<SelectItem> getAvailableSigningAlgListNoneOption() {
-        final List<SelectItem> resultList = getAvailableSigningAlgList();
+        final List<SelectItem> resultList = getAvailableSigningAlgList().stream()
+                .filter(selectItem -> !AlgorithmTools.isComposite(selectItem.getLabel()))
+                .collect(Collectors.toList());
         resultList.add(0, new SelectItem(null, getEjbcaWebBean().getText("SIGNINGALGORITHM_ALTERNATIVE_SELECT")));
         return resultList;
     }
@@ -1247,7 +1249,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             updateKeyAliases();
         }
     }
-    
+
+    public boolean isSignatureAlgorithmComposite() {
+        return AlgorithmTools.isComposite(caInfoDto.getSignatureAlgorithmParam());
+    }
+
     public boolean isAlternativeSignatureAlgorithmSelected() {
         return StringUtils.isNotBlank(caInfoDto.getAlternativeSignatureAlgorithmParam());
     }
@@ -2077,7 +2083,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 return;
             }
             try {
-                 ((SoftCryptoToken) cryptoToken).checkPasswordBeforeExport(request.getParameter(getTextFieldExportCaPassword()).toCharArray());
+                 cryptoToken.getConcreteToken(SoftCryptoToken.class).checkPasswordBeforeExport(request.getParameter(getTextFieldExportCaPassword()).toCharArray());
             } catch (CryptoTokenAuthenticationFailedException | CryptoTokenOfflineException | PrivateKeyNotExtractableException e) {
                 addNonTranslatedErrorMessage(e.getLocalizedMessage());
                 return;

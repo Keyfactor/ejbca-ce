@@ -25,7 +25,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 
-import org.apache.log4j.Logger;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.dto.RoleDataDto;
@@ -43,8 +42,6 @@ import org.ejbca.dto.RoleData;
 @Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class RoleDataSessionBean implements RoleDataSessionLocal, RoleDataSessionRemote {
-
-    private static final Logger log = Logger.getLogger(RoleDataSessionBean.class);
 
     @EJB
     private AccessTreeUpdateSessionLocal accessTreeUpdateSession;

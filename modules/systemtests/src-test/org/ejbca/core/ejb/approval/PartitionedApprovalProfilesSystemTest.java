@@ -12,6 +12,9 @@
  *************************************************************************/
 package org.ejbca.core.ejb.approval;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.io.Serializable;
 import java.security.Principal;
@@ -76,9 +79,6 @@ import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.FileTools;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
 /**
  * System tests for partitioned approval profiles 
  * 
@@ -98,8 +98,6 @@ public class PartitionedApprovalProfilesSystemTest extends CaTestCase {
     private static X509Certificate admincert1 = null;
     private static X509Certificate admincert2 = null;
 
-    private static RoleMember roleMember1 = null;
-    private static RoleMember roleMember2 = null;
     private static AuthenticationToken admin1 = null;
     private static AuthenticationToken admin2 = null;
     private static AuthenticationToken reqadmin = null;
@@ -161,14 +159,15 @@ public class PartitionedApprovalProfilesSystemTest extends CaTestCase {
         accessRules.put(StandardRules.CAACCESSBASE.resource(), RoleDataDto.STATE_ALLOW);
         role = new RoleDataDtoBuilder().setName(roleName).setAccessRules(accessRules).build();
         role = roleSession.persistRole(alwaysAllowAuthenticationToken, role);
+        
         final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
-        roleMember1 = roleMemberSession.persist(alwaysAllowAuthenticationToken, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
+        roleMemberSession.persist(alwaysAllowAuthenticationToken, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                 caid, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
                 AccessMatchType.TYPE_EQUALCASEINS.getNumericValue(), adminusername1, role.id(), null));
-        roleMember2 = roleMemberSession.persist(alwaysAllowAuthenticationToken, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
+        roleMemberSession.persist(alwaysAllowAuthenticationToken, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                 caid, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
                 AccessMatchType.TYPE_EQUALCASEINS.getNumericValue(), adminusername2, role.id(), null));
-
+        
         fileHandles.addAll(BatchCreateTool.createAllNew(alwaysAllowAuthenticationToken, new File(P12_FOLDER_NAME)));
 
         CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);

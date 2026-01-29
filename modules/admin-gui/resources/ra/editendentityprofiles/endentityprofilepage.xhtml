@@ -48,8 +48,7 @@
                         action="#{endEntityProfilesMBean.doNothing}" />
                 </p>
             </noscript>
-            <h:panelGrid columns="3" styleClass="edit-top"
-                cellspacing="3" cellpadding="3" border="0" width="100%"
+            <h:panelGrid columns="3" styleClass="edit-top ui-md-12"
                 rowClasses="Row0,Row1"
                 columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3">
                 <h:panelGroup>
@@ -339,8 +338,7 @@
 
             <!-- DIRECTIVES -->
 
-            <h:panelGrid columns="3" styleClass="edit-top"
-                cellspacing="3" cellpadding="3" border="0" width="100%"
+            <h:panelGrid columns="3" styleClass="edit-top ui-md-12"
                 rowClasses="Row0,Row1"
                 columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3">
                 <h:panelGroup>
@@ -410,8 +408,7 @@
             <!-- SUBJECT DN ATTRIBUTES -->
 
             <h:panelGrid id="header_subjectdnattributes" columns="3"
-                styleClass="edit-top" cellspacing="3" cellpadding="3"
-                border="0" width="100%" rowClasses="Row0,Row1"
+                styleClass="edit-top ui-md-12" rowClasses="Row0,Row1"
                 columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3"
                 rendered="#{!endEntityProfileMBean.sshProfile}">
                 <h:panelGroup>
@@ -457,7 +454,8 @@
             </h:panelGrid>
             <h:dataTable id="subjectDnComponents" var="dnComponent"
                 value="#{endEntityProfileMBean.subjectDnComponentList}"
-                cellspacing="1" cellpadding="3" border="0" width="100%"
+                styleClass="edit-top"
+                width="100%"
                 rendered="#{!endEntityProfileMBean.sshProfile}"
                 rowClasses="Row0,Row1"
                 columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3">
@@ -483,7 +481,7 @@
                             <f:ajax />
                         </h:inputText>
                         <h:panelGrid id="subjectDNCheckBoxesGrid"
-                            columns="7">
+                            columns="4" styleClass="form-vertical-align">
                             <p:selectBooleanCheckbox
                                 id="dnAttributeRequiredCheckBox"
                                 value="#{dnComponent.required}"
@@ -504,7 +502,7 @@
                                 id="dnAttributeValidationCheckBox"
                                 value="#{dnComponent.useValidation}"
                                 rendered="#{not dnComponent.emailField}"
-                                disabled="#{not dnComponent.modifiable or endEntityProfileMBean.viewOnly}" itemLabel="#{web.text.VALIDATION}">
+                                disabled="#{not dnComponent.modifiable or endEntityProfileMBean.viewOnly}" itemLabel="#{web.text.VALIDATION}:">
                                 <f:ajax render="subjectDNCheckBoxesGrid" />
                             </p:selectBooleanCheckbox>
                             <h:inputText
@@ -520,8 +518,7 @@
                 </h:column>
             </h:dataTable>
             <h:panelGrid id="bottom_subjectdnattributes" columns="3"
-                cellspacing="3" cellpadding="3" border="0" width="100%"
-                rowClasses="Row0,Row1"
+                rowClasses="Row1,Row0" styleClass="edit-top ui-md-12"
                 columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3"
                 rendered="#{(!endEntityProfileMBean.sshProfile) and (not endEntityProfileMBean.viewOnly)}">
                 <h:panelGroup id="removeSubjectDnAttributeGroup">
@@ -541,21 +538,22 @@
 				</h:panelGroup>
             </h:panelGrid>
 
+            <p:divider />
+
             <!-- OTHER SUBJECT ATTRIBUTES -->
 
             <h:panelGrid id="header_othersubjectattributes" columns="3"
-                styleClass="edit-top" cellspacing="3" cellpadding="3"
-                border="0" width="100%" rowClasses="Row0,Row1"
+                styleClass="edit-top ui-md-12" rowClasses="Row0,Row1"
                 columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3"
                 rendered="#{!endEntityProfileMBean.sshProfile}">
                 <h:panelGroup>
                     <h:outputText value="&nbsp;" escape="false"></h:outputText>
                 </h:panelGroup>
-                <h:outputText value="#{web.text.OTHERSUBJECTATTR}"
-                    style="font-weight: bold;" />
+                <h:outputText value="#{web.text.OTHERSUBJECTATTR}" style="font-weight: bold;" />
                 <h:panelGroup>
 						&nbsp;
 				</h:panelGroup>
+
                 <h:panelGroup id="subjectAltNameRemovalHeader">
                     <h:outputText value="#{web.text.SELECTFORREMOVAL}"
                         rendered="#{not empty endEntityProfileMBean.subjectAltNameComponentList and not endEntityProfileMBean.viewOnly}" />
@@ -590,7 +588,8 @@
             <h:dataTable id="subjectAltNameComponents"
                 var="subjectAltNameComponent"
                 value="#{endEntityProfileMBean.subjectAltNameComponentList}"
-                cellspacing="1" cellpadding="0" border="0" width="100%"
+                styleClass="edit-top"
+                width="100%"
                 rowClasses="Row0,Row1" rendered="#{!endEntityProfileMBean.sshProfile}"
                 columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3">
                 <h:column>
@@ -616,7 +615,8 @@
                             <p:selectBooleanCheckbox
                                 id="altNameUseEndEntityEmail"
                                 value="#{subjectAltNameComponent.used}"
-                                disabled="#{endEntityProfileMBean.viewOnly}" itemLabel="#{web.text.USEENTITYEMAILFIELD}">
+                                disabled="#{endEntityProfileMBean.viewOnly}" itemLabel="#{web.text.USEENTITYEMAILFIELD}"
+                                style="padding-bottom:5px">
                                 <f:ajax
                                     render="subjectAltNameCheckBoxesGrid subjectAltNameTextField" />
                             </p:selectBooleanCheckbox>
@@ -626,7 +626,8 @@
                             <p:selectBooleanCheckbox
                                 id="altNameUseEndEntityCnAsDns"
                                 value="#{subjectAltNameComponent.copy}"
-                                disabled="#{endEntityProfileMBean.viewOnly}" itemLabel="#{web.text.USEENTITYECNFIELD}">
+                                disabled="#{endEntityProfileMBean.viewOnly}" itemLabel="#{web.text.USEENTITYECNFIELD}"
+                                style="padding-bottom:5px">
                                 <f:ajax
                                     render="subjectAltNameCheckBoxesGrid subjectAltNameTextField" />
                             </p:selectBooleanCheckbox>
@@ -634,11 +635,12 @@
                         <h:inputText id="subjectAltNameTextField"
                             value="#{subjectAltNameComponent.value}"
                             size="45" maxlength="1024"
-                            disabled="#{subjectAltNameComponent.useEndEntityEmail or subjectAltNameComponent.useEndEntityDns or endEntityProfileMBean.viewOnly}">
+                            disabled="#{subjectAltNameComponent.useEndEntityEmail or subjectAltNameComponent.useEndEntityDns or endEntityProfileMBean.viewOnly}"
+                            >
                             <f:ajax />
                         </h:inputText>
                         <h:panelGrid id="subjectAltNameCheckBoxesGrid"
-                            columns="7">
+                            columns="4" styleClass="form-vertical-align">
                             <p:selectBooleanCheckbox
                                 id="altNameRequiredCheckBox"
                                 value="#{subjectAltNameComponent.required}"
@@ -656,7 +658,7 @@
                                 id="altNameValidationCheckBox"
                                 value="#{subjectAltNameComponent.useValidation}"
                                 disabled="#{not subjectAltNameComponent.modifiable or subjectAltNameComponent.subjectAltComponentPropertyDisabled}"
-                                itemLabel="#{web.text.VALIDATION}"
+                                itemLabel="#{web.text.VALIDATION}:"
                             >
                                 <f:ajax
                                     render="subjectAltNameCheckBoxesGrid" />
@@ -673,32 +675,46 @@
                 </h:column>
             </h:dataTable>
 
-            <h:panelGrid id="header_othersubjectattributes2" columns="3"
-                cellspacing="3" cellpadding="3" border="0" width="100%"
-                rowClasses="Row0,Row1" rendered="#{!endEntityProfileMBean.sshProfile}"
-                columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3">
+
+            <h:panelGrid columns="3"
+                         rowClasses="Row0,Row1" styleClass="edit-top ui-md-12" rendered="#{!endEntityProfileMBean.sshProfile}"
+                         columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3">
                 <h:panelGroup id="removeSubjectAltNameGroup">
                     <h:commandButton id="removeSubjectAltNameButton"
-                        value="#{web.text.REMOVE}"
-                        action="#{endEntityProfileMBean.removeSubjectAltNameComponent}"
-                        rendered="#{not empty endEntityProfileMBean.subjectAltNameComponentList and not endEntityProfileMBean.viewOnly}">
+                                     value="#{web.text.REMOVE}"
+                                     action="#{endEntityProfileMBean.removeSubjectAltNameComponent}"
+                                     rendered="#{not empty endEntityProfileMBean.subjectAltNameComponentList and not endEntityProfileMBean.viewOnly}">
                         <f:ajax
-                            render="subjectAltNameComponents subjectAltNameRemovalHeader removeSubjectAltNameGroup" />
+                                render="subjectAltNameComponents subjectAltNameRemovalHeader removeSubjectAltNameGroup" />
                     </h:commandButton>
                 </h:panelGroup>
                 <h:panelGroup>
-						&nbsp;
-					</h:panelGroup>
+                    &nbsp;
+                </h:panelGroup>
                 <h:panelGroup>
-						&nbsp;
-					</h:panelGroup>
-                <h:panelGroup
-                    id="subjectDirectoryAttributesRemovalHeader">
+                    &nbsp;
+                </h:panelGroup>
+            </h:panelGrid>
+
+            <p:divider/>
+
+            <h:panelGrid id="header_othersubjectattributes2" columns="3"
+                styleClass="edit-top ui-md-12 hideEmpty" rowClasses="Row0,Row1"
+                columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3"
+                rendered="#{!endEntityProfileMBean.sshProfile}">
+                <h:panelGroup>
+                    <h:outputText value="&nbsp;" escape="false"></h:outputText>
+                </h:panelGroup>
+                <h:outputText value="#{web.text.SUBJECTDIRATTRIBUTES}" style="font-weight: bold;"/>
+                <h:panelGroup>
+                    &nbsp;
+                </h:panelGroup>
+
+                <h:panelGroup id="subjectDirectoryAttributesRemovalHeader">
                     <h:outputText value="#{web.text.SELECTFORREMOVAL}"
                         rendered="#{not empty endEntityProfileMBean.subjectDirectoryAttributeComponentList and not endEntityProfileMBean.viewOnly}" />
                 </h:panelGroup>
-                <h:panelGroup id="subjectDirectoryAttributesGrid"
-                    columns="3">
+                <h:panelGroup id="subjectDirectoryAttributesGrid" columns="3">
                     <h:outputText style="font-weight: bold;"
                         value="#{web.text.EXT_PKIX_SUBJECTDIRATTRS}" />
                 </h:panelGroup>
@@ -727,7 +743,7 @@
             <h:dataTable id="subjectDirectoryComponents"
                 var="subjectDirectoryAttributesComponent"
                 value="#{endEntityProfileMBean.subjectDirectoryAttributeComponentList}"
-                cellspacing="1" cellpadding="3" border="0" width="100%"
+                styleClass="edit-top ui-md-12"
                 rowClasses="Row0,Row1" rendered="#{!endEntityProfileMBean.sshProfile}"
                 columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3">
                 <h:column>
@@ -749,12 +765,13 @@
                         <h:inputText id="subjectDirectoryTextField"
                             value="#{subjectDirectoryAttributesComponent.value}"
                             size="45" maxlength="1024"
-                            disabled="#{endEntityProfileMBean.viewOnly}">
+                            disabled="#{endEntityProfileMBean.viewOnly}"
+                            style="margin-bottom:10px">
                             <f:ajax />
                         </h:inputText>
                         <h:panelGrid
                             id="subjectDirectoryAttributesCheckBoxesGrid"
-                            columns="7">
+                            columns="2" styleClass="form-vertical-align">
                             <p:selectBooleanCheckbox
                                 id="directoryAttributesRequiredCheckBox"
                                 value="#{subjectDirectoryAttributesComponent.required}"
@@ -772,8 +789,7 @@
                 </h:column>
             </h:dataTable>
             <h:panelGrid id="header_othersubjectattributes3" columns="3"
-                cellspacing="3" cellpadding="3" border="0" width="100%"
-                rowClasses="Row0,Row1"
+                rowClasses="Row0" styleClass="edit-top ui-md-12"
                 columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3"
                 rendered="#{(not endEntityProfileMBean.sshProfile) and (not endEntityProfileMBean.viewOnly)}">
                 <h:panelGroup id="removeSubjectDirectoryAttributeGroup">
@@ -797,8 +813,7 @@
 
 			<!-- SSH Certificate Data -->
 			<h:panelGrid id="header_sshcertificatedata" columns="3"
-                styleClass="edit-top" cellspacing="3" cellpadding="3"
-                border="0" width="100%" rowClasses="Row0,Row1"
+                styleClass="edit-top ui-md-12" rowClasses="Row0,Row1"
                 columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3"
                 rendered="#{endEntityProfileMBean.sshProfile}"
                 >
@@ -841,7 +856,7 @@
 			                
             <h:dataTable id="sshFieldComponents" var="sshFieldComponent"
 	                value="#{endEntityProfileMBean.sshFieldList}"
-	                cellspacing="1" cellpadding="3" border="0" width="100%"
+	                styleClass="ui-md-12"
 	                rowClasses="Row0,Row1"
 	                columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3"
 	                rendered="#{endEntityProfileMBean.sshProfile}">
@@ -899,8 +914,7 @@
                     </h:panelGrid>
                 </h:column>
             </h:dataTable>
-            <h:panelGrid id="bottom_sshFields" columns="3"
-                cellspacing="3" cellpadding="3" border="0" width="100%"
+            <h:panelGrid id="bottom_sshFields" columns="3" styleClass="ui-md-12"
                 rowClasses="Row0,Row1"
                 columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3"
                 rendered="#{not endEntityProfileMBean.viewOnly and endEntityProfileMBean.sshProfile}">
@@ -922,7 +936,7 @@
             </h:panelGrid>
             <!-- SSH Critical Options -->
             <h:panelGrid id="sshCriticalOptions" columns="3"
-                cellspacing="3" cellpadding="3" border="0" width="100%"
+                styleClass="ui-md-12"
                 rowClasses="Row0,Row1" rendered="#{endEntityProfileMBean.sshProfile}"
                 columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3"
                 >
@@ -1020,8 +1034,7 @@
 
 			<!-- MAIN CERTIFICATE DATA -->
             <h:panelGrid id="header_maincertificatedata" columns="3"
-                styleClass="edit-top" cellspacing="3" cellpadding="3"
-                border="0" width="100%" rowClasses="Row0,Row1"
+                styleClass="edit-top ui-md-12" rowClasses="Row0,Row1"
                 columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3">
                 <h:panelGroup>
                     <h:outputText value="&nbsp;" escape="false"></h:outputText>
@@ -1171,8 +1184,7 @@
             <!-- OTHER CERTIFICATE DATA -->
 
             <h:panelGrid id="header_othercertificatedata" columns="3"
-                styleClass="edit-top" cellspacing="3" cellpadding="3"
-                border="0" width="100%" rowClasses="Row0,Row1"
+                styleClass="edit-top ui-md-12" rowClasses="Row0,Row1"
                 columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3">
                 <h:panelGroup>
                     <h:outputText value="&nbsp;" escape="false"></h:outputText>
@@ -1426,8 +1438,7 @@
             <!-- OTHER DATA -->
 
             <h:panelGrid id="header_otherdata" columns="3"
-                styleClass="edit-top" cellspacing="3" cellpadding="3"
-                border="0" width="100%" rowClasses="Row0,Row1"
+                styleClass="edit-top ui-md-12" rowClasses="Row0,Row1"
                 columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3">
                 <h:panelGroup>
                     <h:outputText value="&nbsp;" escape="false"></h:outputText>
@@ -1641,8 +1652,7 @@
             <h:panelGroup id="userNotificationsWrapper">
                 <ui:repeat var="userNotification"
                     value="#{endEntityProfileMBean.userNotifications}">
-                    <h:panelGrid columns="3" cellspacing="3"
-                        cellpadding="3" border="0" width="100%"
+                    <h:panelGrid columns="3" styleClass="ui-md-12"
                         rowClasses="Row0,Row1"
                         columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3">
                         <h:column>
@@ -1719,8 +1729,7 @@
                 </ui:repeat>
             </h:panelGroup>        
             <h:panelGrid id="header_saveorcancel" columns="3"
-                styleClass="edit-top" cellspacing="3" cellpadding="3"
-                border="0" width="100%" rowClasses="Row0,Row1"
+                styleClass="edit-top ui-md-12" rowClasses="Row0,Row1"
                 columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3">
                 <h:panelGroup>&nbsp;</h:panelGroup>
                 <h:panelGroup>&nbsp;</h:panelGroup>

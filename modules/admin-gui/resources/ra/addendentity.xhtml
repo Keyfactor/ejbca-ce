@@ -38,9 +38,11 @@
 
    <h:panelGrid columns="2" styleClass="edit-top" width="100%" rowClasses="Row0,Row1"
     columnClasses="editColumnSystem1,editColumn2">
+    <h:panelGroup/>
+    <h:panelGroup/>
+
     <h:outputLabel for="header_endentityprofile"
      value="#{web.text.ENDENTITYPROFILE}"/>
-
     <h:panelGroup id="endEntityProfile">
      <h:selectOneMenu value="#{resourceBean.selectedEeProfileId}"
       disabled="#{!resourceBean.allowedToAddEndEntity}">
@@ -52,7 +54,7 @@
 
     <h:panelGroup>
      <h:outputLabel id="userNameLabel" for="username"
-      value="#{web.text.USERNAME}" styleClass="titles" />
+      value="#{web.text.USERNAME}"  />
     </h:panelGroup>
 
     <h:panelGroup>

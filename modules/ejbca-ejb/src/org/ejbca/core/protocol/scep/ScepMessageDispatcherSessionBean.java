@@ -356,7 +356,10 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             }
             // We have two different options here, compliant with SCEP draft23 or RFC8894, we try to be compliant with both
             if (cainfo != null) {
-                final boolean hasRolloverCert = (caSession.getFutureRolloverCertificate(cainfo.getCAId()) != null);
+                if (cainfo.getCAType() == CAInfo.CATYPE_PROXY) {
+                    return ScepResponseInfo.onlyResponseBytes("POSTPKIOperation\nSHA-512\nSHA-256\nSHA-1\nDES3\nAES\nSCEPStandard".getBytes());
+                }
+		final boolean hasRolloverCert = (caSession.getFutureRolloverCertificate(cainfo.getCAId()) != null);
                 // SCEP draft 23, "4.6.1.  Get Next CA Response Message Format".
                 // It SHOULD also remove the GetNextCACert setting from the capabilities until it does have rollover certificates.
                 return hasRolloverCert

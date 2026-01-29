@@ -31,7 +31,7 @@
 
 		<h:form id="validators" enctype="multipart/form-data">
 			<h:inputHidden name="action" value="hiddenkeyvalidatortype" />
-			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">	
+			<h:panelGrid columns="2" styleClass="edit-top ui-md-12" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
 				<h:panelGroup>&nbsp;</h:panelGroup>
 				<h:commandLink action="#{validatorBean.cancel}" immediate="true">
 					<h:outputText value="#{web.text.BACKTOVALIDATORS}" />
@@ -58,13 +58,12 @@
 					<f:selectItems value="#{validatorBean.availableValidators}" />
 				</h:selectOneMenu>
 			</h:panelGrid>
-			<h:panelGrid binding="#{validatorBean.dataGrid}" styleClass="edit-top fullwidth-dynui-table" cellspacing="3" cellpadding="3" 
-				border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2" rendered="#{validatorBean.isDynamic()}">
+			<h:panelGrid binding="#{validatorBean.dataGrid}" styleClass="edit-top fullwidth-dynui-table ui-md-12" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2" rendered="#{validatorBean.isDynamic()}">
 			</h:panelGrid>
 			<f:subview id="staticPage" rendered="#{validatorBean.isStatic()}">
 					<ui:include src="#{validatorBean.staticPage}" />
 			</f:subview>			
-			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">	
+			<h:panelGrid columns="2" styleClass="edit-top ui-md-12" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
 				<h:panelGroup>
 				  <h:outputLabel for="general_settings" value="#{web.text.GENERALSETTINGS}" style="font-weight: bold;"/>&nbsp;
 				  <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Validators_Overview.html#Common_Validator_Settings')}" escape="false"/>
