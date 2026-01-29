@@ -196,7 +196,7 @@ public class CAKeystoreExportRemoveRestoreSystemTest {
                     caAdminSession.removeCAKeyStore(internalAdmin, CANAME1);
                 } catch (Exception e) {
                     log.error("removeKeyStores", e);
-                    fail("removeKeyStores: " + e.getMessage());
+                    throw new AssertionError("removeKeyStores: " + e.getMessage(), e);
                 }
                 // Try to restore with wrong keystore
                 try {
@@ -321,7 +321,7 @@ public class CAKeystoreExportRemoveRestoreSystemTest {
                     // OK
                 } else {
                     log.error("getKeyFingerPrint", e);
-                    fail("getKeyFingerPrint: " + e.getMessage());
+                    throw new AssertionError("getKeyFingerPrint: " + e.getMessage(), e); // include stack trace, unlike fail()
                 }
             }
             // Restore keystore
@@ -333,7 +333,7 @@ public class CAKeystoreExportRemoveRestoreSystemTest {
                 assertEquals("restored fingerprint", keyFingerPrint, restoredFingerprint);
             } catch (Exception e) {
                 log.error("getKeyFingerPrint2", e);
-                fail("getKeyFingerPrint2: " + e.getMessage());
+                throw new AssertionError("getKeyFingerPrint2: " + e.getMessage(), e);
             }
         } finally {
             // Clean up
