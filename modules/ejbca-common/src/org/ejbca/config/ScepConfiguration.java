@@ -647,7 +647,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
                 if (data.get(key) instanceof Boolean) {
                     return Boolean.toString((Boolean) data.get(key));
                 } else if (data.get(key) instanceof Map<?,?> || data.get(key) instanceof ArrayList<?>) {
-                    log.info("GetValue: " + key + " - value - " + data.get(key));
+                    log.trace("GetValue: " + key + " - value - " + data.get(key));
                     // List of encryptionCAs (GUI: 'Available CAs') from CA-mode for configdump.
                     if ((alias + "." + ScepConfiguration.ENCRYPTION_CAS).equals(key)) {
                         return String.join(",", (ArrayList<String>) data.get(key));
@@ -655,9 +655,8 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
                     return null;
                 }
                 if (data.get(key) != null) {
-                    return String.valueOf(data.get(key)).replaceAll("[\\[\\]',]", "");
-                    // replaceAll("[\\[\\]',]", "");
-                    // return (data.get(key).toString());
+                    return String.valueOf(data.get(key));
+                    // return String.valueOf(data.get(key)).replaceAll("[\\[\\]',]", "");
                 } else {
                     return (String) data.get(key);
                 }
