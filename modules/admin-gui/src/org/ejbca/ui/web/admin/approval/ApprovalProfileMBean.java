@@ -278,33 +278,33 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
 
         ApprovalProfile updatedApprovalProfile = getApprovalProfile();
         DynamicUiProperty<? extends Serializable> property;
-        String fieldLabel = this.fieldLabel.get(partitionId);
+        String label = this.fieldLabel.get(partitionId);
         FieldType fieldType = FieldType.getFromName(fieldToAdd.get(partitionId));
         switch (fieldType) {
         case TEXT:
-            property = new DynamicUiProperty<>(fieldLabel, new MultiLineString(""));
+            property = new DynamicUiProperty<>(label, new MultiLineString(""));
             break;
         case RADIOBUTTON:
-            property = new DynamicUiProperty<>(fieldLabel, null, new ArrayList<RadioButton>());
+            property = new DynamicUiProperty<>(label, null, new ArrayList<RadioButton>());
             property.setType(RadioButton.class);
             break;
         case CHECKBOX:
-            property = new DynamicUiProperty<>(fieldLabel, Boolean.FALSE);
+            property = new DynamicUiProperty<>(label, Boolean.FALSE);
             break;
         case INTEGER:
-            property = new DynamicUiProperty<>(fieldLabel, 0);
+            property = new DynamicUiProperty<>(label, 0);
             break;
         case LONG:
-            property = new DynamicUiProperty<>(fieldLabel, 0L);
+            property = new DynamicUiProperty<>(label, 0L);
             break;
         case EXTURL:
-            property = new DynamicUiProperty<>(fieldLabel, new UrlString(""));
+            property = new DynamicUiProperty<>(label, new UrlString(""));
             break;
         default:
             return "";
         }
 
-        if (updatedApprovalProfile.getStep(currentStep).getPartition(partitionId).getProperty(fieldLabel) != null) {
+        if (updatedApprovalProfile.getStep(currentStep).getPartition(partitionId).getProperty(label) != null) {
             addErrorMessage("APPROVAL_PROFILE_FIELD_EXISTS");
         } else {
             updatedApprovalProfile.addPropertyToPartition(currentStep, partitionId, property);
@@ -409,7 +409,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         saveTemporary();
         ApprovalProfile approvalProfile = getApprovalProfile();
         approvalProfile.addStepLast();
-        stepList = createStepListFromProfile(approvalProfile);
+        stepList = null;
         steps = null;
     }
 
@@ -418,6 +418,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         final Integer nextStep = getSteps().getRowData().getNextStep();
         saveTemporary();
         getApprovalProfile().switchStepOrder(currentStep, nextStep);
+        stepList = null;
         steps = null;
     }
 
@@ -426,6 +427,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         final Integer previousStep = getSteps().getRowData().getPreviousStep();
         saveTemporary();
         getApprovalProfile().switchStepOrder(previousStep, currentStep);
+        stepList = null;
         steps = null;
     }
 
@@ -434,7 +436,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         saveTemporary();
         ApprovalProfile approvalProfile = getApprovalProfile();
         approvalProfile.deleteStep(currentStep);
-        stepList = createStepListFromProfile(approvalProfile);
+        stepList = null;
         steps = null;
     }
 
@@ -443,7 +445,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         saveTemporary();
         ApprovalProfile approvalProfile = getApprovalProfile();
         approvalProfile.addPartition(currentStep);
-        stepList = createStepListFromProfile(approvalProfile);
+        stepList = null;
         steps = null;
     }
 
@@ -452,7 +454,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         saveTemporary();
         ApprovalProfile approvalProfile = getApprovalProfile();
         approvalProfile.deletePartition(currentStep, partitionId);
-        stepList = createStepListFromProfile(approvalProfile);
+        stepList = null;
         steps = null;
     }
 
@@ -476,6 +478,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
             newApprovalProfile.setProfileId(getSelectedApprovalProfileId());
             newApprovalProfile.setProfileName(getSelectedApprovalProfileName());
             currentApprovalProfile = newApprovalProfile;
+            stepList = null;
             steps = null;
         }
     }
@@ -503,18 +506,18 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     }
 
     private List<ApprovalStepGuiObject> createStepListFromProfile(final ApprovalProfile approvalProfile) {
-        List<ApprovalStepGuiObject> steps = new ArrayList<>();
+        List<ApprovalStepGuiObject> stepsList = new ArrayList<>();
         int ordinal = 1;
         //Use the internal ordering for sequences, if one is predefined
         ApprovalStep step = approvalProfile.getFirstStep();
         Map<Integer, List<DynamicUiProperty<? extends Serializable>>> partitionProperties = getPartitionProperties(step);
-        steps.add(new ApprovalStepGuiObject(step, approvalProfile.getApprovalProfileTypeIdentifier(), ordinal, partitionProperties));
+        stepsList.add(new ApprovalStepGuiObject(step, approvalProfile.getApprovalProfileTypeIdentifier(), ordinal, partitionProperties));
         while (step.getNextStep() != null) {
             step = approvalProfile.getStep(step.getNextStep());
             partitionProperties = getPartitionProperties(step);
-            steps.add(new ApprovalStepGuiObject(step, approvalProfile.getApprovalProfileTypeIdentifier(), ++ordinal, partitionProperties));
+            stepsList.add(new ApprovalStepGuiObject(step, approvalProfile.getApprovalProfileTypeIdentifier(), ++ordinal, partitionProperties));
         }
-        return steps;
+        return stepsList;
     }
 
     /**
@@ -633,7 +636,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
                 "\n" +
                 "Direct link to the request: " + baseUrl + "ra/managerequest.xhtml?id=${approvalRequest.ID}";
         approvalProfile.addNotificationProperties(approvalPartition, "approval-admin-group@example.org supervisor@example.org", "no-reply@"+hostnameFromRequest, defaultSubject, defaultBody);
-        stepList = createStepListFromProfile(approvalProfile);
+        stepList = null;
         steps = null;
     }
 
@@ -644,7 +647,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         final ApprovalStep approvalStep = approvalProfile.getStep(currentStep);
         final ApprovalPartition approvalPartition = approvalStep.getPartition(partitionIdentifier);
         approvalProfile.removeNotificationProperties(approvalPartition);
-        stepList = createStepListFromProfile(approvalProfile);
+        stepList = null;
         steps = null;
     }
 
@@ -675,7 +678,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
                 "\n" +
                 "Direct link to view request status: " + baseUrl + "ra/enrollwithrequestid.xhtml?requestId=${approvalRequest.ID}";
         approvalProfile.addUserNotificationProperties(approvalPartition, "no-reply@"+hostnameFromRequest, defaultSubject, defaultBody);
-        stepList = createStepListFromProfile(approvalProfile);
+        stepList = null;
         steps = null;
     }
 
@@ -686,7 +689,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         final ApprovalStep approvalStep = approvalProfile.getStep(currentStep);
         final ApprovalPartition approvalPartition = approvalStep.getPartition(partitionIdentifier);
         approvalProfile.removeUserNotificationProperties(approvalPartition);
-        stepList = createStepListFromProfile(approvalProfile);
+        stepList = null;
         steps = null;
     }
 
