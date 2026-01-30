@@ -29,8 +29,8 @@ public class InternalKeyBindingDataTestSessionBean implements InternalKeyBinding
     private InternalKeyBindingDataSessionLocal internalKeyBindingDataSession;
     
     @Override
-    public boolean isNameUsed(String name, String type) {
-        return internalKeyBindingDataSession.isNameUsed(name, type);
+    public boolean isNameUsed(String name) {
+        return internalKeyBindingDataSession.isNameUsed(name);
     }
 
     @Override

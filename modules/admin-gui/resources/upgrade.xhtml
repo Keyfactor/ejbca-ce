@@ -30,17 +30,17 @@
                 <h:panelGrid id="status" columns="2" styleClass="edit-top ui-md-12" rowClasses="Row0" columnClasses="editColumnSystem1,editColumn2">
                     <h:outputLabel value=""/>
                     <h:outputText value=""/>
-                    <h:outputLabel styleClass="titles" value="#{web.text.UPGRADE_VERSION_NEWEST}"/>
+                    <h:outputLabel  value="#{web.text.UPGRADE_VERSION_NEWEST}"/>
                     <h:outputText value="#{upgradeBean.lastUpgradedToVersion}"/>
-                    <h:outputLabel styleClass="titles" value="#{web.text.UPGRADE_VERSION_EFFECTIVE}"/>
+                    <h:outputLabel  value="#{web.text.UPGRADE_VERSION_EFFECTIVE}"/>
                     <h:outputText value="#{upgradeBean.lastPostUpgradedToVersion}"/>
-                    <h:outputLabel styleClass="titles" value="#{web.text.UPGRADE_STATUS}"/>
+                    <h:outputLabel  value="#{web.text.UPGRADE_STATUS}"/>
                     <h:panelGroup>
                         <h:outputText rendered="#{!upgradeBean.postUpgradeFailed}" value="#{upgradeBean.postUpgradeInProgress ? web.text.UPGRADE_STATUS_RUNNING : web.text.UPGRADE_STATUS_NOTRUNNING}"/>
                         <h:outputText rendered="#{upgradeBean.postUpgradeFailed}" style="color: #ff0000;" value="#{web.text.UPGRADE_STATUS_FAILED}"/>
                     </h:panelGroup>
                     <h:panelGroup>
-                        <h:outputLabel styleClass="titles" value="#{web.text.UPGRADE_STATUS_CLUSTER}"/><br/>
+                        <h:outputLabel  value="#{web.text.UPGRADE_STATUS_CLUSTER}"/><br/>
                         <h:outputText styleClass="help" value="#{web.text.UPGRADE_STATUS_CLUSTER_HELP}"/><br/>
                     </h:panelGroup>
                     <h:outputText value="#{upgradeBean.postUpgradeInProgressInCluster ? upgradeBean.postUpgradeStartedInCluster : web.text.UPGRADE_STATUS_NOTRUNNING}"/>

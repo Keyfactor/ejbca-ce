@@ -2084,7 +2084,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 return;
             }
             try {
-                 ((SoftCryptoToken) cryptoToken).checkPasswordBeforeExport(request.getParameter(getTextFieldExportCaPassword()).toCharArray());
+                 cryptoToken.getConcreteToken(SoftCryptoToken.class).checkPasswordBeforeExport(request.getParameter(getTextFieldExportCaPassword()).toCharArray());
             } catch (CryptoTokenAuthenticationFailedException | CryptoTokenOfflineException | PrivateKeyNotExtractableException e) {
                 addNonTranslatedErrorMessage(e.getLocalizedMessage());
                 return;
