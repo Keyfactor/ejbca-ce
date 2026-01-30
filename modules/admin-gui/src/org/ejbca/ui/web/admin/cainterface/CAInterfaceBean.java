@@ -1347,6 +1347,9 @@ public class CAInterfaceBean implements Serializable {
             .setDescription(ca.getDescription())
             .setSubjectDn(ca.getCaSubjectDN())
             .setEnrollWithCsrUrl(ca.getUpstreamUrl())
+            .setOauthTokenUrl(ca.getOauthTokenUrl())
+            .setOauthClientName(ca.getOauthClientName())
+            .setOauthClientSecret(ca.getOauthClientSecret())
             .setHeaders(headerPairs)
             .setCa(ca.getUpstreamCa())
             .setSans(ca.getSansJson());
