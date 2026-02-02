@@ -18,7 +18,6 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.*;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
-import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
@@ -35,15 +34,12 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
-import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalRequestStatus;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
-import org.ejbca.core.model.era.RaApprovalRequestInfo;
-import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.core.model.era.*;
 import org.ejbca.ui.web.rest.api.InMemoryRestServer;
 import org.ejbca.ui.web.rest.api.resource.swagger.ApprovalRestResourceSwagger;
 import org.json.simple.JSONObject;
@@ -62,7 +58,6 @@ import java.util.Map;
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertJsonContentType;
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertProperJsonStatusResponse;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 @RunWith(EasyMockRunner.class)
 public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
@@ -73,12 +68,11 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
     private static final ApprovalProfileSessionRemote approvalProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalProfileSessionRemote.class);
     private final ApprovalExecutionSessionRemote approvalExecutionSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalExecutionSessionRemote.class);
     private final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-    private final EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
-    private final EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
-    private final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
 
- private static final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ApprovalRestResourceSystemTest"));
-    
+    private static final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ApprovalRestResourceSystemTest"));
+    private static final AuthenticationToken altAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ApprovalRestResourceSystemTest_Alt"));
+
+
     private String eeName;
     private Integer addEndEntityApprovalRequestId;
     private static Integer caId;
@@ -88,7 +82,10 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
     private static final String APPROVAL_PROFILE_NAME = "ApprovalRestResourceSystemTest_APPROVAL_PROFILE";
 
     @Mock
-    private RaMasterApiProxyBeanLocal raMasterApiSession;
+    private RaMasterApiProxyBeanLocal raMasterApiSessionMock;
+
+    private static final TestRaMasterApiProxySessionRemote raMasterApiSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(TestRaMasterApiProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     private static class ApprovalRestResourceWithoutSecurity extends ApprovalRestResourceSwagger {
         @Override
@@ -131,7 +128,7 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void before() throws Exception {
         mockRestServer = InMemoryRestServer.create(mockRestResource);
         mockRestServer.start();
         // Trigger an add end entity approval
@@ -151,21 +148,13 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void after() throws Exception {
         // Remove approval requests
         approvalSession.removeApprovalRequest(alwaysAllowToken, addEndEntityApprovalRequestId);
 	    // Kill REST Server
         if (mockRestServer != null) {
             mockRestServer.close();
         }
-    }
-
-
-
-    @Test
-    public void testNothing() {
-        assertNotNull("Approval was not added", addEndEntityApprovalRequestId);
-        System.out.println("Approval was added with requestId: " + addEndEntityApprovalRequestId);
     }
 
     @Test
@@ -196,9 +185,9 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
         EasyMock.expect(mockApprovalRequestInfo.getId()).andReturn(approvalRequestId).anyTimes();
         EasyMock.replay(mockApprovalRequestInfo);
 
-        EasyMock.expect(raMasterApiSession.getApprovalRequest(EasyMock.anyObject(AuthenticationToken.class), EasyMock.eq(approvalRequestId)))
+        EasyMock.expect(raMasterApiSessionMock.getApprovalRequest(EasyMock.anyObject(AuthenticationToken.class), EasyMock.eq(approvalRequestId)))
                 .andReturn(mockApprovalRequestInfo);
-        EasyMock.replay(raMasterApiSession);
+        EasyMock.replay(raMasterApiSessionMock);
 
         // When
         final Response actualResponse = mockRestServer.newRequest("/v1/approval/" + approvalRequestId + "/status").request().get();
@@ -211,7 +200,7 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
         assertEquals("Wrong approval request id returned", (long) approvalRequestId, actualJsonObject.get("request_id"));
         assertEquals(expectedApprovalStatus.getValue(), actualJsonObject.get("status"));
 
-        EasyMock.verify(raMasterApiSession);
+        EasyMock.verify(raMasterApiSessionMock);
         EasyMock.verify(mockApprovalRequestInfo);
     }
 
@@ -264,11 +253,11 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
         assertEquals(String.valueOf(addEndEntityApprovalRequestId), actualJsonObject.get("request_id"));
         assertEquals("Add End Entity", actualJsonObject.get("request_type"));
         assertEquals(eeName, actualJsonObject.get("end_entity_name"));
-        assertEquals("REJECTED", actualJsonObject.get("status"));
+        assertEquals(ApprovalRequestStatus.REJECTED.getValue(), actualJsonObject.get("status"));
 
-        // Verify approval was rejected
+        // Verify approval was rejected (internal status STATUS_EXECUTIONDENIED)
         final ApprovalDataVO approvalData = approvalSession.findApprovalDataByRequestId(addEndEntityApprovalRequestId);
-        assertEquals(ApprovalDataVO.STATUS_REJECTED, approvalData.getStatus());
+        assertEquals(ApprovalDataVO.STATUS_EXECUTIONDENIED, approvalData.getStatus());
     }
 
     @Test
@@ -281,57 +270,55 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
         // Then
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), actualResponse.getStatus());
         assertJsonContentType(actualResponse);
-        assertEquals("Wrong error message", "Invalid request ID: -12345. Request ID must be a positive integer.", actualJsonObject.get("error_message"));
+        assertEquals("Wrong error message", "Invalid request ID '-12345'. Request ID must be a positive integer.", actualJsonObject.get("error_message"));
     }
 
     @Test
     public void testProcessApprovalRequestNotFound() throws Exception {
-        // given
+        // Given
         final int nonExistentRequestId = 999999;
         final String requestBody = "{" +
                 "\"approve\": true," +
                 "\"comment\": \"Test comment\"" +
                 "}";
 
-        // when
+        // When
         final Response actualResponse = newRequest("/v1/approval/" + nonExistentRequestId + "/process")
                 .request()
                 .post(Entity.entity(requestBody, "application/json"));
 
-        // then
+        // Then
         final String actualJsonString = actualResponse.readEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), actualResponse.getStatus());
         assertEquals("Approval request with ID " + nonExistentRequestId + " not found or unauthorized", actualJsonObject.get("error_message"));
     }
-//
-//    @Test
-//    public void testProcessApprovalRequestAlreadyProcessed() throws Exception {
-//        // given
-//        setupTestData();
-//
-//        // First approve the request
-//        final String firstRequestBody = "{" +
-//                "\"approve\": true," +
-//                "\"comment\": \"First approval\"" +
-//                "}";
-//        newRequest("/v1/approval/request/" + testApprovalRequestId)
-//                .request()
-//                .post(Entity.entity(firstRequestBody, "application/json"));
-//
-//        // Try to process again
-//        final String secondRequestBody = "{" +
-//                "\"approve\": true," +
-//                "\"comment\": \"Second approval attempt\"" +
-//                "}";
-//
-//        // when
-//        final Response actualResponse = newRequest("/v1/approval/request/" + testApprovalRequestId)
-//                .request()
-//                .post(Entity.entity(secondRequestBody, "application/json"));
-//
-//        // then
-//        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), actualResponse.getStatus());
-//    }
 
+    @Test
+    public void testProcessApprovalRequestAlreadyProcessed() throws Exception {
+        // Given
+        final RaApprovalRequestInfo raApprovalRequestInfo = raMasterApiSession.getApprovalRequest(alwaysAllowToken, addEndEntityApprovalRequestId);
+
+        final RaApprovalResponseRequest responseRequest = new RaApprovalResponseRequest(
+                addEndEntityApprovalRequestId,
+                raApprovalRequestInfo.getNextApprovalStep().getStepIdentifier(),
+                raApprovalRequestInfo.getNextApprovalStepPartition().getPartitionIdentifier(),
+                raApprovalRequestInfo.getApprovalRequest(),
+                "testProcessApprovalRequestApprove",
+                RaApprovalResponseRequest.Action.APPROVE
+        );
+        raMasterApiSession.addRequestResponse(alwaysAllowToken, responseRequest);
+
+        final String requestBody = "{" +
+                "\"approve\": true," +
+                "\"comment\": \"Second approval attempt\"" +
+                "}";
+        // When
+        final Response actualResponse = newRequest("/v1/approval/" + addEndEntityApprovalRequestId + "/process")
+                .request()
+                .post(Entity.entity(requestBody, "application/json"));
+
+        // Then
+        assertEquals(Response.Status.CONFLICT.getStatusCode(), actualResponse.getStatus());
+    }
 }

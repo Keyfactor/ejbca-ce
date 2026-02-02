@@ -118,6 +118,10 @@ public class ApprovalRestResourceSwagger extends ApprovalRestResource {
                     @ApiResponse(
                             responseCode = "404",
                             description = "Approval request not found"
+                    ),
+                    @ApiResponse(
+                            responseCode = "409",
+                            description = "Approval request cannot be processed due to current status"
                     )
             })
     public Response processApprovalRequest(

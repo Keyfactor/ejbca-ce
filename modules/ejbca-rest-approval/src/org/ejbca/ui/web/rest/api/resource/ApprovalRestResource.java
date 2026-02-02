@@ -66,7 +66,7 @@ public class ApprovalRestResource extends BaseRestResource {
     private ApprovalProfileSessionLocal approvalProfileSession;
 
 
-/**
+    /**
      * Gets the status of an approval request.
      *
      * @param requestContext        the HTTP request context
@@ -133,8 +133,8 @@ public class ApprovalRestResource extends BaseRestResource {
         // Check if the request can be processed
         final int status = approvalRequestInfo.getStatus();
         if (status != ApprovalDataVO.STATUS_WAITINGFORAPPROVAL) {
-            final String statusName = getStatusName(status);
-            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(),
+            final String statusName = ApprovalRequestStatus.fromIntWithCombinedStates(status).toString();
+            throw new RestException(Response.Status.CONFLICT.getStatusCode(),
                     "Approval request cannot be processed. Current status: " + statusName);
         }
 
@@ -217,28 +217,28 @@ public class ApprovalRestResource extends BaseRestResource {
         }
     }
 
-    private ProcessApprovalRestResponse buildApprovalResponse(final RaApprovalRequestInfo requestInfo) {
-        final SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
-        final ApprovalDataVO approvalData = requestInfo.getApprovalData();
-        final String endEntityName = getUsername(requestInfo.getApprovalRequest());
+        private ProcessApprovalRestResponse buildApprovalResponse(final RaApprovalRequestInfo requestInfo) {
+            final SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
+            final ApprovalDataVO approvalData = requestInfo.getApprovalData();
+            final String endEntityName = getUsername(requestInfo.getApprovalRequest());
 
-        // Build approval steps
-        final List<ApprovalStepRestResponse> steps = buildApprovalSteps(requestInfo);
+            // Build approval steps
+            final List<ApprovalStepRestResponse> steps = buildApprovalSteps(requestInfo);
 
-        final Date requestDate = new Date(approvalData.getRequestDate().getTime());
-        final long expirationPeriod = requestInfo.getApprovalRequest().getRequestValidity();
-        final Date expirationDate = new Date(requestDate.getTime() + expirationPeriod);
+            final Date requestDate = new Date(approvalData.getRequestDate().getTime());
+            final long expirationPeriod = requestInfo.getApprovalRequest().getRequestValidity();
+            final Date expirationDate = new Date(requestDate.getTime() + expirationPeriod);
 
-        return ProcessApprovalRestResponse.builder()
-                .requestId(String.valueOf(requestInfo.getId()))
-                .requestType(getApprovalTypeName(approvalData.getApprovalType()))
-                .requestDate(dateFormat.format(requestDate))
-                .expirationDate(dateFormat.format(expirationDate))
-                .endEntityName(endEntityName)
-                .status(getStatusName(requestInfo.getStatus()))
-                .steps(steps)
-                .build();
-    }
+            return ProcessApprovalRestResponse.builder()
+                    .requestId(String.valueOf(requestInfo.getId()))
+                    .requestType(getApprovalTypeName(approvalData.getApprovalType()))
+                    .requestDate(dateFormat.format(requestDate))
+                    .expirationDate(dateFormat.format(expirationDate))
+                    .endEntityName(endEntityName)
+                    .status(ApprovalRequestStatus.fromIntWithCombinedStates(requestInfo.getStatus()))
+                    .steps(steps)
+                    .build();
+        }
 
     private List<ApprovalStepRestResponse> buildApprovalSteps(final RaApprovalRequestInfo requestInfo) {
 
@@ -296,29 +296,6 @@ public class ApprovalRestResource extends BaseRestResource {
             }
         }
         return steps;
-    }
-
-    private String getStatusName(final int status) {
-        switch (status) {
-            case ApprovalDataVO.STATUS_WAITINGFORAPPROVAL:
-                return "PENDING";
-            case ApprovalDataVO.STATUS_APPROVED:
-                return "APPROVED";
-            case ApprovalDataVO.STATUS_REJECTED:
-                return "REJECTED";
-            case ApprovalDataVO.STATUS_EXPIRED:
-                return "EXPIRED";
-            case ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED:
-                return "EXPIRED_AND_NOTIFIED";
-            case ApprovalDataVO.STATUS_EXECUTED:
-                return "EXECUTED";
-            case ApprovalDataVO.STATUS_EXECUTIONFAILED:
-                return "EXECUTION_FAILED";
-            case ApprovalDataVO.STATUS_EXECUTIONDENIED:
-                return "EXECUTION_DENIED";
-            default:
-                return "UNKNOWN";
-        }
     }
 
     private String getApprovalTypeName(final int approvalType) {

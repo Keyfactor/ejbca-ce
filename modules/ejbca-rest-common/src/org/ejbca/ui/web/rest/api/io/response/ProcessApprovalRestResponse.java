@@ -13,6 +13,7 @@
 package org.ejbca.ui.web.rest.api.io.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import org.ejbca.core.model.approval.ApprovalRequestStatus;
 
 import java.util.List;
 
@@ -37,8 +38,10 @@ public class ProcessApprovalRestResponse {
     @Schema(description = "The end entity name associated with the request", example = "username")
     private String endEntityName;
 
-    @Schema(description = "The current status of the approval request", example = "APPROVED")
-    private String status;
+    @Schema(description = "The status of the approval request",
+            example = "PENDING",
+            allowableValues = {"PENDING", "APPROVED", "REJECTED", "EXPIRED", "EXPIRED_AND_NOTIFIED", "EXECUTED", "EXECUTION_FAILED", "EXECUTION_DENIED"})
+    private ApprovalRequestStatus status;
 
     @Schema(description = "The list of approval steps with their status")
     private List<ApprovalStepRestResponse> steps;
@@ -73,7 +76,7 @@ public class ProcessApprovalRestResponse {
         return endEntityName;
     }
 
-    public String getStatus() {
+    public ApprovalRequestStatus getStatus() {
         return status;
     }
 
@@ -91,7 +94,7 @@ public class ProcessApprovalRestResponse {
         private String requestDate;
         private String expirationDate;
         private String endEntityName;
-        private String status;
+        private ApprovalRequestStatus status;
         private List<ApprovalStepRestResponse> steps;
 
         public Builder requestId(final String requestId) {
@@ -119,7 +122,7 @@ public class ProcessApprovalRestResponse {
             return this;
         }
 
-        public Builder status(final String status) {
+        public Builder status(final ApprovalRequestStatus status) {
             this.status = status;
             return this;
         }
