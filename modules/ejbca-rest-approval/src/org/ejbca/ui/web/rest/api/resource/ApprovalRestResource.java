@@ -36,6 +36,7 @@ import org.ejbca.core.model.era.RaApprovalStepInfo;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.request.ProcessApprovalRestRequest;
+import org.ejbca.ui.web.rest.api.io.response.ApprovalRequestStatusRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.ApprovalStepRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.ProcessApprovalRestResponse;
 
@@ -59,7 +60,7 @@ public class ApprovalRestResource extends BaseRestResource {
     private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ssXXX";
 
     @EJB
-    private RaMasterApiProxyBeanLocal raMasterApiProxy;
+    private RaMasterApiProxyBeanLocal raMasterApi;
 
     @EJB
     private ApprovalProfileSessionLocal approvalProfileSession;
@@ -123,7 +124,7 @@ public class ApprovalRestResource extends BaseRestResource {
         final AuthenticationToken admin = getAdmin(requestContext, false);
 
         // Retrieve the approval request
-        final RaApprovalRequestInfo approvalRequestInfo = raMasterApiProxy.getApprovalRequest(admin, requestId);
+        final RaApprovalRequestInfo approvalRequestInfo = raMasterApi.getApprovalRequest(admin, requestId);
         if (approvalRequestInfo == null) {
             throw new RestException(Response.Status.NOT_FOUND.getStatusCode(),
                     "Approval request with ID " + requestId + " not found or unauthorized");
@@ -159,7 +160,7 @@ public class ApprovalRestResource extends BaseRestResource {
             );
 
             // Process the approval request
-            raMasterApiProxy.addRequestResponse(admin, responseRequest);
+            raMasterApi.addRequestResponse(admin, responseRequest);
         } catch (ApprovalRequestExpiredException e) {
             log.info("Approval request " + requestId + " has expired");
             throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(),
@@ -179,7 +180,7 @@ public class ApprovalRestResource extends BaseRestResource {
         }
 
         // Retrieve the updated approval request info to populate response object
-        final RaApprovalRequestInfo updatedRequestInfo = raMasterApiProxy.getApprovalRequest(admin, requestId);
+        final RaApprovalRequestInfo updatedRequestInfo = raMasterApi.getApprovalRequest(admin, requestId);
         if (updatedRequestInfo == null) {
             throw new RestException(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),
                     "Failed to retrieve updated approval request information");

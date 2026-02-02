@@ -10,12 +10,12 @@
 package org.ejbca.ui.web.rest.api.resource;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.Response;
 import org.apache.log4j.Logger;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.*;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
@@ -24,7 +24,9 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.junit.util.TraceLogMethodsTestWatcher;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.UsernameBasedAuthenticationToken;
+import org.cesecore.util.EjbRemoteHelper;
 import org.easymock.EasyMock;
 import org.easymock.EasyMockRunner;
 import org.easymock.Mock;
@@ -38,6 +40,8 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalRequestStatus;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.era.RaApprovalRequestInfo;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.InMemoryRestServer;
@@ -52,6 +56,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.RunWith;
+
+import java.util.Map;
 
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertJsonContentType;
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertProperJsonStatusResponse;
@@ -125,7 +131,7 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
     }
 
     @Before
-    public void setUp() throws AuthorizationDeniedException {
+    public void setUp() throws Exception {
         mockRestServer = InMemoryRestServer.create(mockRestResource);
         mockRestServer.start();
         // Trigger an add end entity approval
@@ -148,7 +154,7 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
     public void tearDown() throws Exception {
         // Remove approval requests
         approvalSession.removeApprovalRequest(alwaysAllowToken, addEndEntityApprovalRequestId);
-	// Kill REST Server
+	    // Kill REST Server
         if (mockRestServer != null) {
             mockRestServer.close();
         }
