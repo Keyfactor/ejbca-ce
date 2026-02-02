@@ -33,16 +33,19 @@ public class ExceptionInfoRestResponse {
     private String infoMessage;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String link;
+    @Schema(description = "Request ID for approval tracking", example = "123456")
+    private Integer requestId;
 
     /**
      * Simple constructor.
      */
     public ExceptionInfoRestResponse() {}
 
-    private ExceptionInfoRestResponse(final int statusCode, final String infoMessage, final String link) {
+    private ExceptionInfoRestResponse(final int statusCode, final String infoMessage, final String link, final Integer requestId) {
         this.statusCode = statusCode;
         this.infoMessage = infoMessage;
         this.link = link;
+        this.requestId = requestId;
     }
     
     /**
@@ -94,6 +97,22 @@ public class ExceptionInfoRestResponse {
     }
 
     /**
+     * Returns the request ID for approval tracking
+     * @return request ID
+     */
+    public Integer getRequestId() {
+        return requestId;
+    }
+
+    /**
+     * Set the request ID for approval tracking
+     * @param requestId the approval request ID
+     */
+    public void setRequestId(Integer requestId) {
+        this.requestId = requestId;
+    }
+
+    /**
      * @return builder instance for this class.
      */
     public static ExceptionInfoRestResponseBuilder builder() {
@@ -108,6 +127,7 @@ public class ExceptionInfoRestResponse {
         private int statusCode;
         private String infoMessage;
         private String link;
+        private Integer requestId;
 
         ExceptionInfoRestResponseBuilder() {
         }
@@ -145,14 +165,24 @@ public class ExceptionInfoRestResponse {
             this.link = link;
             return this;
         }
-        
+
+        /**
+         * Set the request ID for approval tracking
+         * @param requestId the approval request ID
+         * @return instance of this builder.
+         */
+        public ExceptionInfoRestResponseBuilder requestId(final Integer requestId) {
+            this.requestId = requestId;
+            return this;
+        }
+
         /**
          * Builds an instance of ExceptionInfoRestResponse using this builder.
          *
          * @return instance of ExceptionInfoRestResponse using this builder.
          */
         public ExceptionInfoRestResponse build() {
-            return new ExceptionInfoRestResponse(statusCode, infoMessage, link);
+            return new ExceptionInfoRestResponse(statusCode, infoMessage, link, requestId);
         }
     }
 }

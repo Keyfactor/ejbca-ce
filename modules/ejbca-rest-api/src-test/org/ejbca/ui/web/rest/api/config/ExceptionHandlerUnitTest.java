@@ -17,6 +17,7 @@ import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertJsonContentType;
+import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertNotNullJsonObject;
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertProperJsonExceptionErrorResponse;
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertProperJsonExceptionInfoResponse;
 import static org.junit.Assert.assertEquals;
@@ -72,6 +73,7 @@ import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.ui.web.rest.api.InMemoryRestServer;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.resource.BaseRestResource;
+import org.json.simple.JSONObject;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -687,7 +689,8 @@ public class ExceptionHandlerUnitTest {
         // given
         final long expectedCode = Status.ACCEPTED.getStatusCode();
         final String expectedMessage = "WaitingForApprovalException error message";
-        expect(dummyMock.throwException(anyInt())).andThrow(new WaitingForApprovalException(expectedMessage, 0));
+        final int expectedRequestId = 123456;
+        expect(dummyMock.throwException(anyInt())).andThrow(new WaitingForApprovalException(expectedMessage, expectedRequestId));
         replay(dummyMock);
         // when
         final Invocation.Builder request = server
@@ -700,6 +703,10 @@ public class ExceptionHandlerUnitTest {
         assertJsonContentType(actualResponse);
         assertEquals(expectedCode, actualStatus);
         assertProperJsonExceptionInfoResponse(expectedCode, expectedMessage, actualJson);
+        // Verify requestId is present in the response
+        final JSONObject jsonObject = assertNotNullJsonObject(actualJson);
+        final Object requestIdObject = jsonObject.get("request_id");
+        assertEquals("Request ID should be present in response", Long.valueOf(expectedRequestId), requestIdObject);
         verify(dummyMock);
     }
 
