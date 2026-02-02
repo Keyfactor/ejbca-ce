@@ -38,6 +38,7 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
@@ -316,6 +317,8 @@ public class KeyRecoveryImportCommand extends BaseRaCommand {
             getLogger().error("The configured CA does not exist: " + eepve.getMessage());
         } catch (NoSuchProviderException nspe) {
             getLogger().error("ERROR, BouncyCastle provider does not exist: " + nspe.getMessage());
+        } catch (CertificateCreateException e) {
+            getLogger().error("ERROR, Key Encrypt key of the CA is not set: " + e.getMessage());
         } 
         return CommandResult.FUNCTIONAL_FAILURE;
     }
