@@ -1228,6 +1228,40 @@ public class UpgradeSessionBeanSystemTest {
     }
     
     @Test
+    public void testMigrateCrlDatabaseFetchValues_9_5_0() throws AuthorizationDeniedException {
+        //Stash the orginal values
+        GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigSession
+                .getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+        int originalFetchSize = globalCesecoreConfiguration.getCrlGenerationFetchSize();
+        boolean originalOrdered = globalCesecoreConfiguration.getCrlGenerationFetchOrdered();
+
+        try {
+            //Set the upgrade-from version 
+            final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            guc.setUpgradedToVersion("9.4.0");
+            guc.setPostUpgradedToVersion("9.4.0");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+            //Set some non-default values
+            cesecoreConfigSession.setConfigurationValue("database.crlgenfetchsize", "4711");
+            cesecoreConfigSession.setConfigurationValue("database.crlgenfetchordered", "true");          
+            //Perform upgrade
+            upgradeSession.upgrade(/* database */ null, /* upgrade from */ "9.4.0", /* post upgrade? */ false);
+            //Retrieve GlobalCesecoreConfig and verify that the valus w migrated
+            globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+            assertEquals("database.crlgenfetchsize was not migrated.", 4711, globalCesecoreConfiguration.getCrlGenerationFetchSize());
+            assertEquals("database.crlgenfetchordered was not migrated", true, globalCesecoreConfiguration.getCrlGenerationFetchOrdered());
+        } finally {
+            globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+            globalCesecoreConfiguration.setCrlGenerationFetchOrdered(originalOrdered);
+            globalCesecoreConfiguration.setCrlGenerationFetchSize(originalFetchSize);
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, globalCesecoreConfiguration);
+        }
+    }
+    
+    @Test
     public void testMigrateOcspProperties_9_5_0() throws InvalidConfigurationException, AuthorizationDeniedException {
         //Stash the original value(s)
         GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigSession

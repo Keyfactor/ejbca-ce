@@ -1651,6 +1651,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     }
     
+    @SuppressWarnings("deprecation")
     private void migrateGlobalCesecoreConfiguration9_5_0() throws UpgradeFailedException {
         log.info("Upgrade: Migrating values from cesecore.properties files into GlobalCesecoreConfiguration.");
         //First check if it's defined in config
@@ -1658,6 +1659,12 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
         //If not, get it from StringConfigurationCache
         globalCesecoreConfiguration.setForbiddenCharacters(forbiddenCharacters != null ? forbiddenCharacters.toCharArray() :  StringConfigurationCache.INSTANCE.getForbiddenCharacters());
+        
+        int crlGenFetchSize = CesecoreConfiguration.getDatabaseRevokedCertInfoFetchSize();
+        globalCesecoreConfiguration.setCrlGenerationFetchSize(crlGenFetchSize);
+        
+        boolean crlGenFetchOrdered = CesecoreConfiguration.getDatabaseRevokedCertInfoFetchOrdered();
+        globalCesecoreConfiguration.setCrlGenerationFetchOrdered(crlGenFetchOrdered);
         
         try {
             globalConfigurationSession.saveConfiguration(authenticationToken, globalCesecoreConfiguration);

@@ -22,6 +22,8 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.config.GlobalCesecoreConfiguration;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.QueryResultWrapper;
 import org.cesecore.util.ValidityDate;
@@ -66,6 +68,8 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
     
     @EJB
     private AuthorizationSessionLocal authorizationSession;
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
 
     @Override
     protected EntityManager getEntityManager() {
@@ -318,6 +322,9 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
                     ", Last Base CRL Date: " + FastDateFormat.getInstance(ValidityDate.ISO8601_DATE_FORMAT, TimeZone.getTimeZone("GMT")).format(lastBaseCrlDate) +
                     ", Allow Invalidity Date: " + allowInvalidityDate);
         }
+        GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+        
         final String crlPartitionExpression;
         final String ordering;
         final Query query;
@@ -326,7 +333,7 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
         } else {
             crlPartitionExpression = " AND (crlPartitionIndex = :crlPartitionIndex OR crlPartitionIndex IS NULL)";
         }
-        if (CesecoreConfiguration.getDatabaseRevokedCertInfoFetchOrdered()) {
+        if (globalCesecoreConfiguration.getCrlGenerationFetchOrdered()) {
             ordering = " ORDER BY revocationDate, fingerprint ASC";
         } else {
             ordering = "";
@@ -367,7 +374,7 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
         }
         query.setParameter("issuerDN", issuerDN);
         query.setParameter("crlPartitionIndex", crlPartitionIndex);
-        return getRevokedCertInfosInternal(query, allowInvalidityDate);
+        return getRevokedCertInfosInternal(query, allowInvalidityDate, globalCesecoreConfiguration.getCrlGenerationFetchSize());
     }
 
     @Override
