@@ -1643,6 +1643,10 @@ table.ui-md-1, table.ui-md-2, table.ui-md-3, table.ui-md-4, table.ui-md-5, table
 	text-align: left !important;
 }
 
+.text-align-right {
+	text-align: right !important;
+}
+
 .action-buttons {
     display: inline-flex;
     flex-wrap: wrap;
@@ -1696,6 +1700,18 @@ table.row-padding-bottom-1-rem tr td {
 
 .margin-top-1-rem {
     margin-top: 1rem;
+}
+
+.margin-top-half-rem {
+	margin-top: .5rem;
+}
+
+.margin-left-half-rem {
+	margin-left: .5rem;
+}
+
+.margin-right-half-rem {
+	margin-right: .5rem;
 }
 
 .cell-padding-right-1-rem,
