@@ -1741,24 +1741,12 @@ label.align-label > span.ui-outputlabel-label {
 	white-space: nowrap;
 }
 
-.composite-hover {
-  display: none;
-  position: relative;
-  top: 1em;
-  left: 0;
-  border-top: 1px solid #808080;
-  padding: 4px;
-  width: 160px;
-  z-index: 999;
+p.compositeText {
+	line-height:1.8rem;
 }
 
-.cryptoTokenKeyPairAliasName:hover .composite-hover {
-  display: block;
-}
-
-.composite-hover ul {
-  margin: 5px 0 0 0;
-  padding-left: 15px;
+.compositeKeyColor {
+	color:#284E81;
 }
 
 /*--------------------------------------------------------------------------*/

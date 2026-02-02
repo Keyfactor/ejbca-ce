@@ -187,14 +187,14 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
     @Override
     public int mergeCryptoToken(final CryptoToken cryptoToken) throws CryptoTokenNameInUseException {
         if (log.isTraceEnabled()) {
-            log.trace(">mergeCryptoToken " + cryptoToken.getTokenName() + " " + cryptoToken.getClass().getName());
+            log.trace(">mergeCryptoToken " + cryptoToken.getTokenName() + " " + cryptoToken.getConcreteClass().getName());
         }
         final int cryptoTokenId = cryptoToken.getId();
         final String tokenName = cryptoToken.getTokenName();
         String tokenType = "null";
         for (final AvailableCryptoToken act : CryptoTokenFactory.instance().getAvailableCryptoTokens()) {
-            if (cryptoToken.getClass().getName().equals(act.getClassPath())) {
-                tokenType = cryptoToken.getClass().getSimpleName();
+            if (cryptoToken.getConcreteClass().getName().equals(act.getClassPath())) {
+                tokenType = cryptoToken.getConcreteClass().getSimpleName();
                 break;
             }
         }

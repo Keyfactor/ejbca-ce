@@ -397,7 +397,11 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             if (log.isDebugEnabled()) {
                 log.debug("Saving generated keys for recovery for user: "+ username);
             }
-            keyRecoverySession.addKeyRecoveryData(administrator, EJBTools.wrap(cert), username, EJBTools.wrap(rsaKeys));
+            try {
+                keyRecoverySession.addKeyRecoveryData(administrator, EJBTools.wrap(cert), username, EJBTools.wrap(rsaKeys));
+            } catch (CertificateCreateException e) {
+                throw new CertificateSignatureException(e);
+            } 
         }
         //  Use CN if as alias in the keystore, if CN is not present use username
         String alias = DnComponents.getPartFromDN(CertTools.getSubjectDN(cert), "CN");

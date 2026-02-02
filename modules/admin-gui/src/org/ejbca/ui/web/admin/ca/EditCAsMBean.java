@@ -1331,6 +1331,15 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         resultList.addAll(getKeyAliasesList(keyType));
         return resultList;
     }
+    
+    public List<SelectItem> getKeyAliasesListWithNone(final String keyType) {
+        final List<SelectItem> resultList = new ArrayList<>();
+        resultList.add(new SelectItem(CATokenConstants.CAKEY_ANY_PURPOSE_NONE_INDICATOR, 
+                                            getEjbcaWebBean().getText("CRYPTOTOKEN_NONE_KEY")));
+        resultList.add(new SelectItem(StringUtils.EMPTY, getEjbcaWebBean().getText("CRYPTOTOKEN_DEFAULTKEY")));
+        resultList.addAll(getKeyAliasesList(keyType));
+        return resultList;
+    }
 
     public String getSelectedCryptoTokenDefaultKey() {
         return caInfoDto.getCryptoTokenDefaultKey();
@@ -2073,9 +2082,15 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             CAToken caToken = caSession.getCAInfoInternal(getCaid()).getCAToken();
             final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(caToken.getCryptoTokenId());
             try {
-                PrivateKey privKey = cryptoToken.getPrivateKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT));
+                final String kekKeyAlias = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
+                if (kekKeyAlias==null) {
+                    log.info("Key encryption key must be set for CA export for CA: " + caInfoDto.getCaName());
+                    addNonTranslatedErrorMessage(INVALID_KEK_ERROR_MESSAGE);
+                    return;
+                }
+                PrivateKey privKey = cryptoToken.getPrivateKey(kekKeyAlias);
                 if(!ALLOWED_KEK_TYPES.contains(privKey.getAlgorithm())) {
-                    log.error("Key encryption key of type: " + privKey.getAlgorithm() + " is not supported.");
+                    log.info("Key encryption key of type: " + privKey.getAlgorithm() + " is not supported.");
                     addNonTranslatedErrorMessage(INVALID_KEK_ERROR_MESSAGE);
                     return;
                 }
@@ -2084,7 +2099,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 return;
             }
             try {
-                 ((SoftCryptoToken) cryptoToken).checkPasswordBeforeExport(request.getParameter(getTextFieldExportCaPassword()).toCharArray());
+                 cryptoToken.getConcreteToken(SoftCryptoToken.class).checkPasswordBeforeExport(request.getParameter(getTextFieldExportCaPassword()).toCharArray());
             } catch (CryptoTokenAuthenticationFailedException | CryptoTokenOfflineException | PrivateKeyNotExtractableException e) {
                 addNonTranslatedErrorMessage(e.getLocalizedMessage());
                 return;
@@ -2226,7 +2241,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
         try {
             cainfo = getCaBean().createCaInfo(caInfoDto, caid, getSubjectDn(), getApprovals(),
-                    getAvailablePublisherValues(), getAvailableKeyValidatorValues());
+                    getAvailablePublisherValues(), getAvailableKeyValidatorValues(), getSelectedKeyEncryptKey());
         } catch (final Exception e) {
             addNonTranslatedErrorMessage(e);
             return null;
@@ -2250,7 +2265,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 if(StringUtils.isNotEmpty(caInfoDto.getCryptoTokenAlternativeCertSignKey())) {
                     caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_ALTERNATIVE_CERTSIGN_STRING, caInfoDto.getCryptoTokenAlternativeCertSignKey());
                 }
-                
                 if (caInfoDto.getSelectedKeyEncryptKey().length() > 0) {
                     caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING, caInfoDto.getSelectedKeyEncryptKey());
                 }

@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.cesecore.keybind;
 
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import org.cesecore.keybind.impl.AuthenticationKeyBinding;
@@ -42,16 +42,16 @@ public class InternalKeyBindingDataSessionSystemTest {
         int id = internalKeyBindingDataTestSessionRemote.mergeInternalKeyBinding(ocspKeyBinding);
         try {
             assertTrue("Name was returned as not in use.",
-                    internalKeyBindingDataTestSessionRemote.isNameUsed(bindingName, OcspKeyBinding.IMPLEMENTATION_ALIAS));
+                    internalKeyBindingDataTestSessionRemote.isNameUsed(bindingName));
         } finally {
             internalKeyBindingDataTestSessionRemote.removeInternalKeyBinding(id);
         }
     }
 
     /**
-     * Create a keybinding of a certain type and make sure we can add another with the same name of a different type
+     * Create a keybinding of a certain type and make sure we can't add another with the same name of a different type
      */
-    @Test
+    @Test 
     public void testIsNameUsedDifferentType() throws InternalKeyBindingNameInUseException {
         final String bindingName = "testIsNameUsedDifferentType";
         OcspKeyBinding ocspKeyBinding = new OcspKeyBinding();
@@ -59,15 +59,17 @@ public class InternalKeyBindingDataSessionSystemTest {
         ocspKeyBinding.setName(bindingName);
         int ocspKeyBindingId = internalKeyBindingDataTestSessionRemote.mergeInternalKeyBinding(ocspKeyBinding);
         try {
-            assertFalse("Name was returned as in use.",
-                    internalKeyBindingDataTestSessionRemote.isNameUsed(bindingName, AuthenticationKeyBinding.IMPLEMENTATION_ALIAS));
-            //Check if we can add it as well
+            assertTrue("Name was returned as not in use.",
+                    internalKeyBindingDataTestSessionRemote.isNameUsed(bindingName));
+            //Check that we can't add it as well
             AuthenticationKeyBinding authenticationKeyBinding = new AuthenticationKeyBinding();
             authenticationKeyBinding.setName(bindingName);
             authenticationKeyBinding.setKeyPairAlias("foo");
-            int authKeyBindId = internalKeyBindingDataTestSessionRemote.mergeInternalKeyBinding(authenticationKeyBinding);
-            //We're good if no exceptions were thrown
-            internalKeyBindingDataTestSessionRemote.removeInternalKeyBinding(authKeyBindId);
+            assertThrows(InternalKeyBindingNameInUseException.class, () -> {
+                int authKeyBindId = internalKeyBindingDataTestSessionRemote.mergeInternalKeyBinding(authenticationKeyBinding);
+                internalKeyBindingDataTestSessionRemote.removeInternalKeyBinding(authKeyBindId);
+            });
+           
         } finally {
             internalKeyBindingDataTestSessionRemote.removeInternalKeyBinding(ocspKeyBindingId);
         }
