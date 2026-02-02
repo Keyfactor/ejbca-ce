@@ -90,7 +90,8 @@ public class UrlQueryParamsValidator {
         String reEncoded = URLEncoder.encode(decoded, StandardCharsets.UTF_8);
         // special handling for asterisk
         raw = raw.replace("%2A", "*");
-        if (!reEncoded.equals(raw)) {
+        String reEncodedPercentEscaped = reEncoded.replace("%3A", ":");
+        if (!reEncoded.equals(raw) && !reEncodedPercentEscaped.equals(raw)) {
             return false;
         }
 

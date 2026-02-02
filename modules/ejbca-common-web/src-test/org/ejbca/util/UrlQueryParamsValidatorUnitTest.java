@@ -100,6 +100,11 @@ public class UrlQueryParamsValidatorUnitTest {
     }
     
     @Test
+    public void shouldAcceptNotEncodedDates() {
+        assertValid("reason=KEY_COMPROMISE&date=2026-02-02T06:02:49Z");
+    }
+    
+    @Test
     public void shouldAcceptAsterisk() {
         assertValid("q=rock%26roll&include=CA%3Aabcd%2A");
         assertValid("q=rock%26roll&include=CA%3Aabcd*");
