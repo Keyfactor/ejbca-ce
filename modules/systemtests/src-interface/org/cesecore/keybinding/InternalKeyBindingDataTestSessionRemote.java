@@ -20,8 +20,8 @@ import jakarta.ejb.Remote;
 @Remote
 public interface InternalKeyBindingDataTestSessionRemote {
 
-    /** @return true if the specified name is already in use by another InternalKeyBinding of the same type (checks the database, not the cache) */
-    boolean isNameUsed(final String name, final String type);
+    /** @return true if the specified name is already in use by another InternalKeyBinding (checks the database, not the cache) */
+    boolean isNameUsed(final String name);
     
     /** Add the specified InternalKeyBinding to the database and return the id used to store it */
     int mergeInternalKeyBinding(InternalKeyBinding internalKeyBinding) throws InternalKeyBindingNameInUseException;

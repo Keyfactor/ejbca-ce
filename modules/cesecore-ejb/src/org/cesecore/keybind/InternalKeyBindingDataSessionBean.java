@@ -163,19 +163,19 @@ public class InternalKeyBindingDataSessionBean implements InternalKeyBindingData
         }
         if (internalKeyBindingData == null) {
             // The InternalKeyBinding does not exist in the database, before we add it we want to check that the name is not in use
-            if (isNameUsed(name, type)) {
+            if (isNameUsed(name)) {
                 if (log.isDebugEnabled()) {
-                    log.debug("isNameUsed(" + name + ", " + type + ")");
+                    log.debug("isNameUsed(" + name + ")");
                 }
-                throw new InternalKeyBindingNameInUseException("The name '" + name + "' is already in use by another " + type + ".");                        
+                throw new InternalKeyBindingNameInUseException("The name '" + name + "' is already in use by another Internal Key Binding.");                        
             }
             internalKeyBindingData = new InternalKeyBindingData(internalKeyBindingId, name, status, type, certificateId, cryptoTokenId, keyPairAlias, dataMap);
         } else {
-            if (!isNameUsedByIdOnly(internalKeyBindingData.getName(), internalKeyBindingId, type)) {
+            if (!isNameUsedByIdOnly(internalKeyBindingData.getName(), internalKeyBindingId)) {
                 if (log.isDebugEnabled()) {
-                    log.debug("!isNameUsedByIdOnly(" + name + ", " + type + ", " + internalKeyBindingId + ")");
+                    log.debug("!isNameUsedByIdOnly(" + name + ", " + internalKeyBindingId + ")");
                 }
-                throw new InternalKeyBindingNameInUseException("The name '" + name + "' is already in use by another " + type + ".");
+                throw new InternalKeyBindingNameInUseException("The name '" + name + "' is already in use by another Internal Key Binding.");
             }
             // It might be the case that the calling transaction has already loaded a reference to this token
             // and hence we need to get the same one and perform updates on this object instead of trying to
@@ -213,19 +213,17 @@ public class InternalKeyBindingDataSessionBean implements InternalKeyBindingData
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public boolean isNameUsed(final String name, final String type ) {
-        final Query query = entityManager.createQuery("SELECT a FROM InternalKeyBindingData a WHERE TRIM(LOWER(a.name)) = LOWER(:name) AND a.keyBindingType = :type");
+    public boolean isNameUsed(final String name) {
+        final Query query = entityManager.createQuery("SELECT a FROM InternalKeyBindingData a WHERE TRIM(LOWER(a.name)) = LOWER(:name)");
         query.setParameter("name", StringUtils.trim(name));
-        query.setParameter("type", type);
         return !query.getResultList().isEmpty();
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public boolean isNameUsedByIdOnly(final String name, final int id, final String type) {
-        final Query query = entityManager.createQuery("SELECT a FROM InternalKeyBindingData a WHERE TRIM(LOWER(a.name)) = LOWER(:name) AND a.keyBindingType = :type");
+    public boolean isNameUsedByIdOnly(final String name, final int id) {
+        final Query query = entityManager.createQuery("SELECT a FROM InternalKeyBindingData a WHERE TRIM(LOWER(a.name)) = LOWER(:name)");
         query.setParameter("name", StringUtils.trim(name));
-        query.setParameter("type", type);
         @SuppressWarnings("unchecked")
         final List<InternalKeyBindingData> internalKeyBindingDatas = query.getResultList();
         for (final InternalKeyBindingData internalKeyBindingData: internalKeyBindingDatas) {

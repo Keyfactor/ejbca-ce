@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.servers.Server;
@@ -32,6 +33,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.request.ProcessApprovalRestRequest;
 import org.ejbca.ui.web.rest.api.io.response.ProcessApprovalRestResponse;
+import org.ejbca.ui.web.rest.api.io.response.ApprovalRequestStatusRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
 import org.ejbca.ui.web.rest.api.resource.ApprovalRestResource;
 
@@ -52,13 +54,41 @@ public class ApprovalRestResourceSwagger extends ApprovalRestResource {
             responses = {
                     @ApiResponse(
                             responseCode = "200",
-                            description = "Successful operation",
+                            description = "Successful response",
                             content = @Content(schema = @Schema(implementation = RestResourceStatusRestResponse.class))
                     )
             })
     @Override
     public Response status() {
         return super.status();
+    }
+
+    @GET
+    @Path("/{request_id}/status")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Get the status of an approval request",
+            description = "Returns the status of the specified approval request. \n Possible status values: PENDING, APPROVED, REJECTED, EXPIRED. ",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Approval request status retrieved successfully",
+                            content = @Content(schema = @Schema(implementation = ApprovalRequestStatusRestResponse.class),
+                                    examples = {
+                                            @ExampleObject(name = "Pending", value = "{\"request_id\": 12345, \"status\": \"PENDING\"}"),
+                                            @ExampleObject(name = "Approved", value = "{\"request_id\": 12345, \"status\": \"APPROVED\"}"),
+                                            @ExampleObject(name = "Rejected", value = "{\"request_id\": 12345, \"status\": \"REJECTED\"}")
+                                    })
+                    ),
+                    @ApiResponse(responseCode = "400", description = "Invalid request ID provided", content = @Content),
+                    @ApiResponse(responseCode = "403", description = "Authorization denied", content = @Content),
+                    @ApiResponse(responseCode = "404", description = "Approval request not found", content = @Content)
+            })
+    public Response getApprovalRequestStatus(
+            @Context final HttpServletRequest requestContext,
+            @Parameter(description = "The ID of the approval request", required = true, example = "12345")
+            @PathParam("request_id") final int requestId) throws RestException {
+
+        return super.getApprovalRequestStatus(requestContext, requestId);
     }
 
     @POST
