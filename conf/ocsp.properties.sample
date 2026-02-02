@@ -8,18 +8,6 @@
 # Default is '/${app.name}/publicweb/status'
 #ocsp.contextroot=/status
 
-# The interval on which the the OCSP signing certificates are updated in seconds.
-# If set to 0 or negative these certificate are never updated.
-# Default: 300
-#ocsp.signingCertsValidTime=0
-
-# When a signing certificate is about to expire a WARN message could be written to log4j each time the key of the certificate is used.
-# This property defines when this message is started to be written.
-# The property is set to the number of seconds before the expiration that the WARN message starts to be written.
-# If set to 0 the warning is disabled.
-# Default: 604800 (1 week)
-#ocsp.warningBeforeExpirationTime=10000
-
 # The value of 'CA Response for Unknown Certificates' set to other than GOOD in the OCSP Configuration(s) may be overridden if the URL that the client used to send the request is matching some regular expression.
 # The regular expressions that if any of them is fulfilled will override 'ocsp.nonexistingisgood=false' is numbered from 1 and up. It may be any numbers.
 # Here follows an example of 2:

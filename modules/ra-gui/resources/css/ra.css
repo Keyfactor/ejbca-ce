@@ -67,6 +67,28 @@
 	padding: 0.5em 0.5em;
 }
 
+.globalMessages {
+	display: block;
+	margin: 1em 0;
+	padding: 0;
+	max-width: 100%;
+}
+
+.globalMessages ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.globalMessages li {
+	margin-bottom: 0.5rem;
+	padding: 1em;
+	display: block;
+	background: #000;
+	color: #fff;
+	opacity: 0.8;
+}
+
 #enrollMakeNewRequestContentBody {
 	text-align: left;
 }

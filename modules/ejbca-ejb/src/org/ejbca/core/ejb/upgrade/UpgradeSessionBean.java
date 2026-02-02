@@ -1627,11 +1627,32 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     public void migrateDatabase9_5_0() throws UpgradeFailedException {
         log.info("Starting upgrade to 9.5.0");
         migrateGlobalCesecoreConfiguration9_5_0();
+        migrateGlobalOcspConfiguration9_5_0();       
+    }
+    
+    @SuppressWarnings("deprecation")
+    private void migrateGlobalOcspConfiguration9_5_0() throws UpgradeFailedException{
+        log.info("Upgrade: Migrating values from ocsp.properties files into GlobalOcspConfiguration.");
+        GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);        
+        //Move ocsp.warningBeforeExpirationTime 
+        try {
+            globalOcspConfiguration.setWarningBeforeExpiryTimeSeconds(OcspConfiguration.getWarningBeforeExpirationTime());
+        } catch (InvalidConfigurationException e) {
+            throw new UpgradeFailedException("ocsp.warningBeforeExpirationTime was set to less than 0, was: " + OcspConfiguration.getWarningBeforeExpirationTime(), e);
+        }
         
+        try {
+            globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);
+        } catch(AuthorizationDeniedException e) {
+            String msg = "Always allow token was denied authorisation to GlobalConfigurationData table.";
+            log.error(msg, e);
+            throw new UpgradeFailedException(msg, e);
+        }
+
     }
     
     private void migrateGlobalCesecoreConfiguration9_5_0() throws UpgradeFailedException {
-        log.info("Upgrade: Migrating values from properties files into GlobalCesecoreConfiguration.");
+        log.info("Upgrade: Migrating values from cesecore.properties files into GlobalCesecoreConfiguration.");
         //First check if it's defined in config
         String forbiddenCharacters = ConfigurationHolder.instance().getString("forbidden.characters");
         GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);

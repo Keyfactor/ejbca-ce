@@ -1227,6 +1227,32 @@ public class UpgradeSessionBeanSystemTest {
         }
     }
     
+    @Test
+    public void testMigrateOcspProperties_9_5_0() throws InvalidConfigurationException, AuthorizationDeniedException {
+        //Stash the original value(s)
+        GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigSession
+                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        final long originalWarningBeforeExpiration = globalOcspConfiguration.getWarningBeforeExpiryTimeSeconds();
+        cesecoreConfigSession.setConfigurationValue("ocsp.warningBeforeExpirationTime", "5");
+        try {
+            //Set the upgrade-from version 
+            final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            guc.setUpgradedToVersion("9.4.0");
+            guc.setPostUpgradedToVersion("9.4.0");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+            //Perform upgrade
+            upgradeSession.upgrade(/* database */ null, /* upgrade from */ "9.4.0", /* post upgrade? */ false);
+            globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            assertEquals("ocsp.warningBeforeExpirationTime was not upgraded", 5, globalOcspConfiguration.getWarningBeforeExpiryTimeSeconds());
+
+        } finally {
+            globalOcspConfiguration.setWarningBeforeExpiryTimeSeconds(originalWarningBeforeExpiration);
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, globalOcspConfiguration);
+        }
+    }
+    
     private EndEntityInformation makeEndEntityInfo(final String username, final String startTime, final String endTime) {
         final ExtendedInformation extInfo = new ExtendedInformation();
         if (startTime != null) {
