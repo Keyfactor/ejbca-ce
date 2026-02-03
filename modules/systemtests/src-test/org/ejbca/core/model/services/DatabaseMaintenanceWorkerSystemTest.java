@@ -395,7 +395,7 @@ public class DatabaseMaintenanceWorkerSystemTest extends RoleUsingTestCase {
             
         } finally {
             // Cleanup
-            if (keyBindingId > 0) {
+            if (keyBindingId != 0) {
                 internalKeyBindingMgmtSession.deleteInternalKeyBinding(admin, keyBindingId);
             }
             deleteCryptoToken(cryptoTokenId);
@@ -460,7 +460,7 @@ public class DatabaseMaintenanceWorkerSystemTest extends RoleUsingTestCase {
     }
 
     private void deleteCryptoToken(final int cryptoTokenId) throws Exception {
-        if (cryptoTokenId > 0) {
+        if (cryptoTokenId != 0) {
             final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = 
                 EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
             cryptoTokenManagementSession.deleteCryptoToken(admin, cryptoTokenId);
