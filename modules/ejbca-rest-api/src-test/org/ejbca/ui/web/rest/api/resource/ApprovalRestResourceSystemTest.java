@@ -42,6 +42,7 @@ import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.era.*;
 import org.ejbca.ui.web.rest.api.InMemoryRestServer;
 import org.ejbca.ui.web.rest.api.resource.swagger.ApprovalRestResourceSwagger;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.junit.AfterClass;
@@ -58,6 +59,7 @@ import java.util.Map;
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertJsonContentType;
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertProperJsonStatusResponse;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 @RunWith(EasyMockRunner.class)
 public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
@@ -66,12 +68,8 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
     private static final JSONParser jsonParser = new JSONParser();
     private static final ApprovalSessionRemote approvalSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionRemote.class);
     private static final ApprovalProfileSessionRemote approvalProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalProfileSessionRemote.class);
-    private final ApprovalExecutionSessionRemote approvalExecutionSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalExecutionSessionRemote.class);
     private final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-
     private static final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ApprovalRestResourceSystemTest"));
-    private static final AuthenticationToken altAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ApprovalRestResourceSystemTest_Alt"));
-
 
     private String eeName;
     private Integer addEndEntityApprovalRequestId;
@@ -174,6 +172,19 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
 
 
     @Test
+    public void testStatusShouldReturnErrorForInvalidRequest() throws Exception {
+        // When: invalid request id is used
+        final Response actualResponse = newRequest("/v1/approval/-12345/status").request().get();
+        final String actualJsonString = actualResponse.readEntity(String.class);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+
+        // Then
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), actualResponse.getStatus());
+        assertJsonContentType(actualResponse);
+        assertEquals("Wrong error message", "Invalid request ID '-12345'. Request ID must be a positive integer.", actualJsonObject.get("error_message"));
+    }
+
+    @Test
     public void testStatusShouldReturnCorrectApprovalRequestStatus() throws Exception {
         // Given
         final int approvalRequestId = 12345;
@@ -220,12 +231,22 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
 
         // Then
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+        final JSONArray steps = (JSONArray) actualJsonObject.get("steps");
+        final JSONObject step = (JSONObject) steps.get(0);
         assertEquals(Response.Status.OK.getStatusCode(), actualResponse.getStatus());
         assertJsonContentType(actualResponse);
         assertEquals(String.valueOf(addEndEntityApprovalRequestId), actualJsonObject.get("request_id"));
         assertEquals("Add End Entity", actualJsonObject.get("request_type"));
         assertEquals(eeName, actualJsonObject.get("end_entity_name"));
         assertEquals("APPROVED", actualJsonObject.get("status"));
+        // Verify approval step
+        assertNotNull("Steps should not be null", steps);
+        assertEquals("Should have one approval step", 1, steps.size());
+        assertEquals("Step number should be 1", 1L, step.get("step"));
+        assertEquals("Approval action should be APPROVED", "APPROVED", step.get("approval_action"));
+        assertNotNull("Approval date should be present", step.get("approval_date"));
+        assertEquals("Approval admin should be present", CERTIFICATE_SUBJECT_DN, step.get("approval_admin"));
+        assertEquals("Approval comment should match", "testProcessApprovalRequestApprove", step.get("approval_comment"));
 
         // Verify approval was actually processed internally
         final ApprovalDataVO approvalData = approvalSession.findApprovalDataByRequestId(addEndEntityApprovalRequestId);
@@ -258,19 +279,6 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
         // Verify approval was rejected (internal status STATUS_EXECUTIONDENIED)
         final ApprovalDataVO approvalData = approvalSession.findApprovalDataByRequestId(addEndEntityApprovalRequestId);
         assertEquals(ApprovalDataVO.STATUS_EXECUTIONDENIED, approvalData.getStatus());
-    }
-
-    @Test
-    public void testStatusShouldReturnErrorForInvalidRequest() throws Exception {
-        // When: invalid request id is used
-        final Response actualResponse = newRequest("/v1/approval/-12345/status").request().get();
-        final String actualJsonString = actualResponse.readEntity(String.class);
-        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
-
-        // Then
-        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), actualResponse.getStatus());
-        assertJsonContentType(actualResponse);
-        assertEquals("Wrong error message", "Invalid request ID '-12345'. Request ID must be a positive integer.", actualJsonObject.get("error_message"));
     }
 
     @Test
