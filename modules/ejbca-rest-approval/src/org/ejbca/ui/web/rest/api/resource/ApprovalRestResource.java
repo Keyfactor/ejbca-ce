@@ -21,7 +21,6 @@ import jakarta.ws.rs.core.Response;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.model.approval.*;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
@@ -191,16 +190,6 @@ public class ApprovalRestResource extends BaseRestResource {
         return Response.ok(response).build();
     }
 
-    private EndEntityInformation getEndEntityInformation(ApprovalRequest approvalRequest) {
-        if (approvalRequest instanceof AddEndEntityApprovalRequest) {
-            return ((AddEndEntityApprovalRequest)approvalRequest).getEndEntityInformation();
-        } else if (approvalRequest instanceof EditEndEntityApprovalRequest) {
-            return ((EditEndEntityApprovalRequest)approvalRequest).getNewEndEntityInformation();
-        } else {
-            return null;
-        }
-    }
-
     private String getUsername(final ApprovalRequest approvalRequest) {
         if (approvalRequest instanceof AddEndEntityApprovalRequest) {
             return ((AddEndEntityApprovalRequest)approvalRequest).getEndEntityInformation().getUsername();
@@ -241,7 +230,6 @@ public class ApprovalRestResource extends BaseRestResource {
         }
 
     private List<ApprovalStepRestResponse> buildApprovalSteps(final RaApprovalRequestInfo requestInfo) {
-
         final List<ApprovalStepRestResponse> steps = new ArrayList<>();
         final List<RaApprovalStepInfo> previousSteps = requestInfo.getPreviousApprovalSteps();
 
@@ -264,7 +252,7 @@ public class ApprovalRestResource extends BaseRestResource {
                                 approval.getPartitionId() == partition.getPartitionIdentifier()) {
                                 matchingApproval = approval;
                                 //break;
-                                // TODO Now we only display in the latest approving admin (i.e. the one which sent this request)
+                                // TODO Now we only display in the latest approving admin for this step (i.e. the one which sent this request)
                                 // In the GUI we display all administrators that performed this step (accumulative profile)
                                 // If we want to do the same for the REST API, we'd need to restructure the response objects JSON
                             }

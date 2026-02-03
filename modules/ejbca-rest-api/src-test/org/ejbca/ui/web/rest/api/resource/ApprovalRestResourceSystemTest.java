@@ -31,7 +31,6 @@ import org.easymock.EasyMockRunner;
 import org.easymock.Mock;
 import org.easymock.TestSubject;
 import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
@@ -169,7 +168,6 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
         assertJsonContentType(actualResponse);
         assertProperJsonStatusResponse(expectedStatus, expectedVersion, expectedRevision, actualJsonString);
     }
-
 
     @Test
     public void testStatusShouldReturnErrorForInvalidRequest() throws Exception {
