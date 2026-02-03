@@ -190,8 +190,9 @@ public interface CertificateDataSessionLocal extends CertificateDataSession {
      * @param issuerDns The issuer DNs, or null for all.
      * @param expiredBefore Expiration date must be before this date.
      * @param maxNumberOfResults Batch size.
+     * @param excludedCertificateIds Set of certificate fingerprints to exclude from deletion (e.g., key binding certificates).
      * @return Collection of certificate metadata.
      */
-    List<CertificateInfo> findOldCertificates(Collection<String> issuerDns, Date expiredBefore, int maxNumberOfResults);
+    List<CertificateInfo> findOldCertificates(Collection<String> issuerDns, Date expiredBefore, int maxNumberOfResults, Set<String> excludedCertificateIds);
 
 }

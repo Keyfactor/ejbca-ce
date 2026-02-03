@@ -647,7 +647,8 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
     }
 
     @Override
-    public List<CertificateInfo> findOldCertificates(final Collection<String> issuerDns, final Date expiredBefore, final int maxNumberOfResults) {
+    public List<CertificateInfo> findOldCertificates(final Collection<String> issuerDns, final Date expiredBefore, final int maxNumberOfResults,
+            final Set<String> excludedCertificateIds) {
         final StringBuilder sb = new StringBuilder(SELECT_QUERY_FOR_CERTIFICATEINFO_SUBSET);
         sb.append("WHERE a.expireDate <= :expiredBefore ");
         if (issuerDns != null) {
@@ -655,6 +656,12 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
         }
         // Use ABS to prevent the optimizer from using an index
         sb.append(" AND ABS(a.type+1)-1 IN (:types)");
+        
+        // Exclude certificates that are in use by key bindings
+        // Use UPPER() for case-insensitive comparison since InternalKeyBindingData stores fingerprints in lowercase
+        if (excludedCertificateIds != null && !excludedCertificateIds.isEmpty()) {
+            sb.append(" AND UPPER(a.fingerprint) NOT IN (:excludedCertificateIds)");
+        }
 
         final String queryString = sb.toString();
         if (log.isTraceEnabled()) {
@@ -665,6 +672,14 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
         query.setParameter("types", Arrays.asList(CertificateConstants.CERTTYPE_ENDENTITY, CertificateConstants.CERTTYPE_SSH));
         if (issuerDns != null) {
             query.setParameter("issuerDns", issuerDns);
+        }
+        if (excludedCertificateIds != null && !excludedCertificateIds.isEmpty()) {
+            // Convert to uppercase for comparison
+            final Set<String> uppercaseIds = new HashSet<>();
+            for (final String id : excludedCertificateIds) {
+                uppercaseIds.add(id.toUpperCase());
+            }
+            query.setParameter("excludedCertificateIds", uppercaseIds);
         }
         query.setMaxResults(maxNumberOfResults);
         final List<?> dbResults = query.getResultList();
