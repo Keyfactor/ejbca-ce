@@ -32,6 +32,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.tokens.OAuth2AuthenticationToken;
@@ -219,6 +220,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         //Database preferences
         private int maximumQueryCount;
         private long maximumQueryTimeout;
+        private char[] forbiddenCharacters;
         
         //redact pii
         private boolean redactPiiByDefault;
@@ -263,6 +265,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
                 this.maximumQueryCount = globalCesecoreConfiguration.getMaximumQueryCount();
                 this.maximumQueryTimeout= globalCesecoreConfiguration.getMaximumQueryTimeout();
+                this.forbiddenCharacters = globalCesecoreConfiguration.getForbiddenCharacters();
                 
                 this.redactPiiByDefault = globalCesecoreConfiguration.getRedactPiiByDefault();
                 this.redactPiiEnforced = globalCesecoreConfiguration.getRedactPiiEnforced();
@@ -327,6 +330,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public void setMaximumQueryCount(int maximumQueryCount) { this.maximumQueryCount = maximumQueryCount; }
         public long getMaximumQueryTimeout() { return maximumQueryTimeout; }
         public void setMaximumQueryTimeout(final long maximumQueryTimeout) { this.maximumQueryTimeout = maximumQueryTimeout; }
+        public String getForbiddenCharacters() { return StringEscapeUtils.escapeJava(new String(forbiddenCharacters)); }
+        public char[] getForbiddenCharactersAsCharArray() { return forbiddenCharacters; }
+        public void setForbiddenCharacters(final String forbiddenCharacters) { this.forbiddenCharacters = StringEscapeUtils.unescapeJava(forbiddenCharacters).toCharArray(); }
 
         public boolean isRedactPiiByDefault() { return redactPiiByDefault; }
         public void setRedactPiiByDefault(boolean redactPiiByDefault) { this.redactPiiByDefault = redactPiiByDefault; }
@@ -1142,6 +1148,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalCesecoreConfiguration.setMaximumQueryTimeout(currentConfig.getMaximumQueryTimeout());
                 globalCesecoreConfiguration.setRedactPiiByDefault(currentConfig.isRedactPiiByDefault());
                 globalCesecoreConfiguration.setRedactPiiEnforced(currentConfig.isRedactPiiEnforced());
+                globalCesecoreConfiguration.setForbiddenCharacters(currentConfig.getForbiddenCharactersAsCharArray());
                 globalConfigurationSession.saveConfiguration(getAdmin(), globalCesecoreConfiguration);
 
                 globalCtConfiguration.setCtCacheEnabled(currentConfig.isCtCacheEnabled());

@@ -39,6 +39,13 @@ public final class PerTransactionData {
          * conflicts and unnecessary updates.
          */
         PENDING_USERDATA,
+        /**
+         * The end-entity password is often required to be present during the transaction, e.g. for authentication
+         * checks or similar. But when the EE and certificate are created in the same transaction, it is not
+         * necessary to store it in the database, In fact, it is a bad idea for keystores, since the password is
+         * also used to encrypt the keystore, so it is sensitve information that shouldn't be stored.
+         */
+        DONT_PERSIST_PASSWORDS,
     }
 
     private final static class TransactionKey {
@@ -87,6 +94,7 @@ public final class PerTransactionData {
     public void clearEndEntityTransactionInfo(final String username) {
         registry.putResource(new TransactionKey(ItemKind.ORIGINAL_END_EMTITY, username), null);
         registry.putResource(new TransactionKey(ItemKind.PENDING_USERDATA, username), null);
+        registry.putResource(new TransactionKey(ItemKind.DONT_PERSIST_PASSWORDS, username), null);
     }
 
     public boolean couldSuppressUserDataModification(final String username) {
@@ -99,5 +107,14 @@ public final class PerTransactionData {
 
     public void setOriginalEndEntity(final String username, final OriginalEndEntity originalInfo) {
         registry.putResource(new TransactionKey(ItemKind.ORIGINAL_END_EMTITY, username), originalInfo);
+    }
+
+    public boolean isDontPersistPassword(final String username) {
+        Boolean value = (Boolean) registry.getResource(new TransactionKey(ItemKind.DONT_PERSIST_PASSWORDS, username));
+        return value != null && value;
+    }
+
+    public void setDontPersistPassword(final String username, final boolean dontPersistPassword) {
+        registry.putResource(new TransactionKey(ItemKind.DONT_PERSIST_PASSWORDS, username), dontPersistPassword);
     }
 }

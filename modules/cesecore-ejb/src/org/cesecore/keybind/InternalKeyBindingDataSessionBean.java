@@ -30,7 +30,6 @@ import jakarta.persistence.Query;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.internal.InternalResources;
 import org.cesecore.util.QueryResultWrapper;
 
 import com.keyfactor.util.RandomHelper;
@@ -44,7 +43,6 @@ import com.keyfactor.util.RandomHelper;
 public class InternalKeyBindingDataSessionBean implements InternalKeyBindingDataSessionLocal {
 
     private static final Logger log = Logger.getLogger(InternalKeyBindingDataSessionBean.class);
-    private static final InternalResources intres = InternalResources.getInstance();
     private static final Random rnd = RandomHelper.getInstance(CesecoreConfiguration.getCaSerialNumberAlgorithm());
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
@@ -167,17 +165,17 @@ public class InternalKeyBindingDataSessionBean implements InternalKeyBindingData
             // The InternalKeyBinding does not exist in the database, before we add it we want to check that the name is not in use
             if (isNameUsed(name)) {
                 if (log.isDebugEnabled()) {
-                    log.debug("isNameUsed("+name+")");
+                    log.debug("isNameUsed(" + name + ")");
                 }
-                throw new InternalKeyBindingNameInUseException(intres.getLocalizedMessage("internalkeybinding.nameisinuse", name));
+                throw new InternalKeyBindingNameInUseException("The name '" + name + "' is already in use by another Internal Key Binding.");                        
             }
             internalKeyBindingData = new InternalKeyBindingData(internalKeyBindingId, name, status, type, certificateId, cryptoTokenId, keyPairAlias, dataMap);
         } else {
             if (!isNameUsedByIdOnly(internalKeyBindingData.getName(), internalKeyBindingId)) {
                 if (log.isDebugEnabled()) {
-                    log.debug("!isNameUsedByIdOnly("+name+", "+internalKeyBindingId+")");
+                    log.debug("!isNameUsedByIdOnly(" + name + ", " + internalKeyBindingId + ")");
                 }
-                throw new InternalKeyBindingNameInUseException(intres.getLocalizedMessage("internalkeybinding.nameisinuse", name));
+                throw new InternalKeyBindingNameInUseException("The name '" + name + "' is already in use by another Internal Key Binding.");
             }
             // It might be the case that the calling transaction has already loaded a reference to this token
             // and hence we need to get the same one and perform updates on this object instead of trying to

@@ -70,7 +70,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Public Constants
-    public static final float LATEST_VERSION = (float) 53.0;
+    public static final float LATEST_VERSION = (float) 54.0;
 
     public static final String ROOTCAPROFILENAME = "ROOTCA";
     public static final String SUBCAPROFILENAME = "SUBCA";
@@ -1094,7 +1094,13 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
     /** @return true if the CertificateData.subjectAltName column should be populated. */
     public boolean getStoreSubjectAlternativeName() {
-        return (Boolean) data.get(STORESUBJECTALTNAME);
+        final Boolean value = (Boolean) data.get(STORESUBJECTALTNAME);
+        if (value == null) {
+            setStoreSubjectAlternativeName(false);
+            return false;
+        } else {
+            return value;
+        }
     }
 
     public void setStoreSubjectAlternativeName(final boolean storeSubjectAlternativeName) {
@@ -3159,7 +3165,13 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 alternativeAvailableKeyAlgorithms.remove("DSTU4145");
                 setAlternativeAvailableKeyAlgorithmsAsList(alternativeAvailableKeyAlgorithms);
             }
-
+            
+            // v54: Make sure that storeSubjectAlternativeName has a value - should have been done back in 6.7.0
+            final Boolean storeSubjectAlternativeName = (Boolean) data.get(STORESUBJECTALTNAME);
+            if (storeSubjectAlternativeName == null) {
+                setStoreSubjectAlternativeName(false);
+            }
+            
             data.put(VERSION, LATEST_VERSION);
         }
         log.trace("<upgrade");

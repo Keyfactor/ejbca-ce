@@ -856,6 +856,18 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             return placeholder;
         }
 
+        public boolean isComposite() {
+            return alias.endsWith("-COMPOSITE");
+        }
+
+        public String getCompositeComponentPqc() {
+            return Strings.CS.removeEnd(alias, "-COMPOSITE") + "-COMPQ";
+        }
+
+        public String getCompositeComponentClassical() {
+            return Strings.CS.removeEnd(alias, "-COMPOSITE") + "-COMPC";
+        }
+
         public boolean isSelected() {
             return selected;
         }
@@ -1132,13 +1144,13 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                     final String msg = "Activation of CryptoToken '" + current.getTokenName() + "' (" + current.getCryptoTokenId() +
                             ") by administrator " + getAuthenticationToken().toString() + " failed. Device was unavailable.";
                     super.addNonTranslatedErrorMessage(msg);
-                    log.info(msg + " Base message: " + e.getMessage());
+                    log.info(msg + " Base message: " + e.getMessage(), e);
                 } catch (CryptoTokenAuthenticationFailedException e) {
                     final String msg = "Activation of CryptoToken '" + current.getTokenName() + "' (" + current.getCryptoTokenId() +
                             ") by administrator " + getAuthenticationToken().toString() + " failed. Either the authentication " +
                             "code was wrong or you forgot to provide a smart card or PED key.";
                     super.addNonTranslatedErrorMessage(msg);
-                    log.info(msg + " Base message: " + e.getMessage());
+                    log.info(msg + " Base message: " + e.getMessage(), e);
                 }
                 flushCaches();
             }

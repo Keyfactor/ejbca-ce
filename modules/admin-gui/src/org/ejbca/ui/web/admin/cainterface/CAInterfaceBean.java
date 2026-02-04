@@ -354,7 +354,6 @@ public class CAInterfaceBean implements Serializable {
         }
 
         boolean illegaldnoraltname = false;
-
         final List<String> keyPairAliases = getCryptoTokenManagementSession().getKeyPairAliases(getAuthenticationToken(), cryptoTokenId);
         if (!keyPairAliases.contains(caInfoDto.getCryptoTokenDefaultKey())) {
             log.info(getAuthenticationToken().toString() + " attempted to createa a CA with a non-existing defaultKey alias: " + caInfoDto.getCryptoTokenDefaultKey());
@@ -362,7 +361,8 @@ public class CAInterfaceBean implements Serializable {
         }
         final String[] suppliedAliases = {caInfoDto.getCryptoTokenCertSignKey(), caInfoDto.getCryptoTokenAlternativeCertSignKey(), caInfoDto.getCryptoTokenCertSignKey(), caInfoDto.getSelectedKeyEncryptKey(), caInfoDto.getTestKey()};
         for (final String currentSuppliedAlias : suppliedAliases) {
-            if (currentSuppliedAlias.length()>0 && !keyPairAliases.contains(currentSuppliedAlias)) {
+            if (currentSuppliedAlias.length()>0 && !keyPairAliases.contains(currentSuppliedAlias) 
+                    && !currentSuppliedAlias.equals(CATokenConstants.CAKEY_ANY_PURPOSE_NONE_INDICATOR)) {
                 log.info(getAuthenticationToken().toString() + " attempted to create a CA with a non-existing key alias: "+currentSuppliedAlias);
                 throw new IllegalStateException("Invalid key alias!");
             }
@@ -402,9 +402,13 @@ public class CAInterfaceBean implements Serializable {
             throw new InvalidAlgorithmException("No signature algorithm supplied!");
         }
         caToken.setSignatureAlgorithm(caInfoDto.getSignatureAlgorithmParam());
-        PublicKey encryptionKey = getCryptoTokenManagementSession().getCryptoToken(cryptoTokenId).getPublicKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT));
-        caToken.setEncryptionAlgorithm(AlgorithmTools.getEncSigAlgFromSigAlg(caInfoDto.getSignatureAlgorithmParam(), encryptionKey));
-
+        if (caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT)!=null) {
+            PublicKey encryptionKey = getCryptoTokenManagementSession().getCryptoToken(cryptoTokenId).getPublicKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT));
+            caToken.setEncryptionAlgorithm(AlgorithmTools.getEncSigAlgFromSigAlg(caInfoDto.getSignatureAlgorithmParam(), encryptionKey));
+        } else {
+            // for safety, there is no keyEncryptKey
+            caToken.setEncryptionAlgorithm(caInfoDto.getSignatureAlgorithmParam());
+        }
         if (caInfoDto.getKeySequenceFormatAsString() == null) {
             caToken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
         } else {
@@ -719,7 +723,6 @@ public class CAInterfaceBean implements Serializable {
                                            .setExpireTime(null)
                                            .setCertificateChain(null)
                                            .setCaToken(caToken)
-                                           .setApprovals(new HashMap<>()) // Approvals not implement yet for citsca
                                            .setExtendedCAServiceInfos(extendedCaServiceInfos)
                                            .setValidators(keyValidators)
                                            .setFinishUser(caInfoDto.isFinishUser())
@@ -856,12 +859,30 @@ public class CAInterfaceBean implements Serializable {
     }
 
     public CAInfo createCaInfo(CaInfoDto caInfoDto, int caid, String subjectDn, Map<ApprovalRequestType, Integer> approvals,
-            String availablePublisherValues, String availableKeyValidatorValues) throws Exception {
+            String availablePublisherValues, String availableKeyValidatorValues, 
+            String caCryptoTokenKeyEncryptKey) throws Exception {
         // We need to pick up the old CAToken, so we don't overwrite with default values when we save the CA further down
         CAInfo caInfo = getCasession().getCAInfo(getAuthenticationToken(), caid);
         CAToken catoken = caInfo.getCAToken();
         if (catoken == null) {
             catoken = new CAToken(caid, new Properties());
+        }
+        final List<String> keyPairAliases = getCryptoTokenManagementSession().getKeyPairAliases(getAuthenticationToken(), catoken.getCryptoTokenId());
+        if (!keyPairAliases.contains(caInfoDto.getCryptoTokenDefaultKey())) {
+            log.info(getAuthenticationToken().toString() + " attempted to createa a CA with a non-existing defaultKey alias: " + caInfoDto.getCryptoTokenDefaultKey());
+            throw new CryptoTokenOfflineException("Invalid default key alias!");
+        }
+        final String[] suppliedAliases = {caInfoDto.getCryptoTokenCertSignKey(), caInfoDto.getCryptoTokenAlternativeCertSignKey(), caInfoDto.getCryptoTokenCertSignKey(), caInfoDto.getSelectedKeyEncryptKey(), caInfoDto.getTestKey()};
+        for (final String currentSuppliedAlias : suppliedAliases) {
+            if (currentSuppliedAlias.length()>0 && !keyPairAliases.contains(currentSuppliedAlias)
+                    && !currentSuppliedAlias.equals(CATokenConstants.CAKEY_ANY_PURPOSE_NONE_INDICATOR)) {
+                log.info(getAuthenticationToken().toString() + " attempted to create a CA with a non-existing key alias: "+currentSuppliedAlias);
+                throw new IllegalStateException("Invalid key alias!");
+            }
+        }
+        // empty for CA defaultKey
+        if (caInfoDto.getCaType() != CAInfo.CATYPE_CITS) {
+            catoken.setProperty(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING, caCryptoTokenKeyEncryptKey);
         }
         if (caInfoDto.getKeySequenceFormatAsString() == null) {
             catoken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
@@ -1074,7 +1095,6 @@ public class CAInterfaceBean implements Serializable {
                                                                                                    .setExpireTime(null)
                                                                                                    .setCertificateChain(null)
                                                                                                    .setCaToken(catoken)
-                                                                                                   .setApprovals(new HashMap<>()) // Approvals not implement yet for citsca
                                                                                                    .setExtendedCAServiceInfos(extendedCaServiceInfos)
                                                                                                    .setValidators(keyValidators)
                                                                                                    .setFinishUser(caInfoDto.isFinishUser())

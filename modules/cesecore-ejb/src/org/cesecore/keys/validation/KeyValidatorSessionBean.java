@@ -422,14 +422,18 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                     // This is ALWAYS both dnsNames and domain names in e-mails, regardless of EKU settings.
                     // That way, we can be sure that validation is not skipped in case of a misconfiguration.
                     final Set<String> dnsNames = new TreeSet<>();
-                    dnsNames.addAll(findAllEmailDomainsInSubject(endEntityInformation.getSubjectAltName()));
+                    if (validator.validateEmailDomains()) {
+                        dnsNames.addAll(findAllEmailDomainsInSubject(endEntityInformation.getSubjectAltName()));
+                    }
                     dnsNames.addAll(findAllDNSInSubject(endEntityInformation.getSubjectAltName()));
 
                     if (certificateProfile.getAllowExtensionOverride() && requestMessage != null && requestMessage.getRequestExtensions() != null) {
                         var extension = requestMessage.getRequestExtensions().getExtension(Extension.subjectAlternativeName);
                         if (extension != null) {
                             var san = DnComponents.getAltNameStringFromExtension(extension);
-                            dnsNames.addAll(findAllEmailDomainsInSubject(san));
+                            if (validator.validateEmailDomains()) {
+                                dnsNames.addAll(findAllEmailDomainsInSubject(san));
+                            }
                             dnsNames.addAll(findAllDNSInSubject(san));
                         }
                     }
@@ -446,19 +450,20 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
 
                     final String validatorType = validator.getValidatorTypeIdentifier();
                     final List<String> messages = result.getValue();
+                    final String message = validator.getLogMessage(successful, messages);
+                    final HashMap<String, Object> additionalDetails = new HashMap<>();
+                    additionalDetails.put("msg", message);
                     if (!successful) {
                         // Validation has failed. Not security event as such, since it will break issuance and not cause anything important to happen.
                         // We want thorough logging in order to trouble shoot though
-                        final String message = validator.getLogMessage(false, messages);
                         auditSession.log(EventTypes.VALIDATOR_VALIDATION_FAILED, EventStatus.FAILURE, ModuleTypes.VALIDATOR, ServiceTypes.CORE,
-                                authenticationToken.toString(), String.valueOf(ca.getCAId()), null, endEntityInformation.getUsername(), Map.of("msg", message));
+                                authenticationToken.toString(), String.valueOf(ca.getCAId()), null, endEntityInformation.getUsername(), additionalDetails);
                         final int index = validator.getFailedAction();
                         performValidationFailedActions(index, message, validatorType);
                     } else {
                         // Validation succeeded, this can be considered a security audit event because CAs may be asked to present this as evidence to an auditor.
-                        final String message = validator.getLogMessage(true, messages);
                         auditSession.log(EventTypes.VALIDATOR_VALIDATION_SUCCESS, EventStatus.SUCCESS, ModuleTypes.VALIDATOR, ServiceTypes.CORE,
-                                authenticationToken.toString(), String.valueOf(ca.getCAId()), null, endEntityInformation.getUsername(), Map.of("msg", message));
+                                authenticationToken.toString(), String.valueOf(ca.getCAId()), null, endEntityInformation.getUsername(), additionalDetails);
                     }
                 }
             }
@@ -906,7 +911,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         } else if (KeyValidationFailedActions.LOG_ERROR.getIndex() == failedAction) {
             log.error(message);
         } else if (KeyValidationFailedActions.ABORT_CERTIFICATE_ISSUANCE.getIndex() == failedAction) {
-            if (validatorType.equals("CAA_VALIDATOR")) {
+            if ("CAA_VALIDATOR".equals(validatorType)) {
                 throw new ValidationException(ErrorCode.CAA_VALIDATION_FAILED, shortMessage);
             } else {
                 throw new ValidationException(ErrorCode.VALIDATION_FAILED, shortMessage);

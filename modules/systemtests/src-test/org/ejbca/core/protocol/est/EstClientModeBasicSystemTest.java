@@ -20,6 +20,7 @@ import java.security.cert.X509Certificate;
 import java.util.Collection;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
@@ -48,6 +49,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.keyfactor.util.CeSecoreNameStyle;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
@@ -521,8 +523,7 @@ public class EstClientModeBasicSystemTest extends EstTestCase {
             } catch (SignatureException e) {
                 fail("simpleenroll response certifciate must verify with CA certificate");                
             }
-            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
-            assertEquals("simpleenroll response subjectDN must be our PKCS#10 request DN", requestDN, cert.getSubjectDN().toString());
+            assertEquals("simpleenroll response subjectDN must be our PKCS#10 request DN", requestDN, X500Name.getInstance(CeSecoreNameStyle.INSTANCE, cert.getSubjectX500Principal().getEncoded()).toString());
             assertEquals("simpleenroll response public key must be the same as the PKCS#10 request", Base64.toBase64String(ec256New.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));
             
             // Make EST cacerts request with client keystore

@@ -17,6 +17,8 @@ import java.util.Date;
 import java.util.List;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Schema.RequiredMode;
+
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
@@ -55,23 +57,23 @@ public class AddEndEntityRestRequest {
     private String endEntityProfileName;
     @Schema(description = "Token type property", allowableValues = "USERGENERATED, P12, JKS, PEM", example = "P12")
     private String token;
-    @Schema(description = "Account Binding ID", example = "1234567890", required=false)
+    @Schema(description = "Account Binding ID", example = "1234567890", requiredMode = RequiredMode.NOT_REQUIRED)
     private String accountBindingId;
-    @Schema(description = "Key recoverable or not", example = "false", required=false)
+    @Schema(description = "Key recoverable or not", example = "false", requiredMode = RequiredMode.NOT_REQUIRED)
     private Boolean keyRecoverable;
-    @Schema(description = "End entity status property", required=false, example = "NEW",
+    @Schema(description = "End entity status property", requiredMode = RequiredMode.NOT_REQUIRED, example = "NEW",
             allowableValues = "NEW, FAILED, INITIALIZED, INPROCESS, GENERATED, REVOKED, HISTORICAL, KEYRECOVERY, WAITINGFORADDAPPROVAL"
     )
     private String status;
-    @Schema(description = "Send notification or not", example = "false", required=false)
+    @Schema(description = "Send notification or not", example = "false", requiredMode = RequiredMode.NOT_REQUIRED)
     private Boolean sendNotification;
-    @Schema(description = "Valid start time", example = "ISO 8601 Date string, eg. '2023-06-15 14:07:09'", required=false)
+    @Schema(description = "Valid start time", example = "ISO 8601 Date string, eg. '2023-06-15 14:07:09'", requiredMode = RequiredMode.NOT_REQUIRED)
     private String startTime;
-    @Schema(description = "Valid end time", example = "ISO 8601 Date string, eg. '2023-06-15 14:07:09'", required=false)
+    @Schema(description = "Valid end time", example = "ISO 8601 Date string, eg. '2023-06-15 14:07:09'", requiredMode = RequiredMode.NOT_REQUIRED)
     private String endTime;
-    @Schema(description = "Certificate Serial Number. If the serial number is provided both in this field and within the custom data, this field value will take precedence and the custom data value will be ignored.", example = "1234567890", required=false)
+    @Schema(description = "Certificate Serial Number. If the serial number is provided both in this field and within the custom data, this field value will take precedence and the custom data value will be ignored.", example = "1234567890", requiredMode = RequiredMode.NOT_REQUIRED)
     private BigInteger certificateSerialNumber;
-    @Schema(description = "Card Number", example = "1234567890", required=false)
+    @Schema(description = "Card Number", example = "1234567890", requiredMode = RequiredMode.NOT_REQUIRED)
     private String cardNumber;
     
     /** default constructor needed for serialization */

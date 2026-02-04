@@ -27,7 +27,7 @@
 	
 	<body>
 		<ui:composition>
-		  <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">  
+		  <h:panelGrid columns="2" styleClass="edit-top ui-md-12" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
             <h:panelGroup>
                   <h:outputLabel for="settings" value="#{web.text.PKIMETAL_VALIDATOR_SETTINGS}" style="font-weight: bold;"/>&nbsp;
             </h:panelGroup>     
@@ -48,11 +48,11 @@
                            for="autodetect"
                            styleClass="block"
                            value="#{web.text.PKIMETAL_VALIDATOR_AUTODETECT_PROFILE}" />
-            <h:selectBooleanCheckbox id="autodetect"
+            <p:selectBooleanCheckbox id="autodetect"
                                      value="#{validatorBean.validator.autoDetect}"
                                      disabled="#{validatorsBean.viewOnly or !validatorBean.validator.isConnected()}">
               <f:ajax render="profileCheckboxes" event="change"/>
-            </h:selectBooleanCheckbox>
+            </p:selectBooleanCheckbox>
             <!-- Available profiles from pkimetal -->
             <h:outputLabel
                            id="profiles-label" for="profiles" styleClass="block" value="#{web.text.PKIMETAL_VALIDATOR_AVAILABLE_PROFILES}"/>
@@ -85,7 +85,7 @@
             
 		  </h:panelGrid>
 		  
-		  <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">  
+		  <h:panelGrid columns="2" styleClass="edit-top ui-md-12" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
             <h:panelGroup>
                   <h:outputLabel for="testMode" value="#{web.text.PKIMETAL_VALIDATOR_TEST_MODE}" style="font-weight: bold;"/>&nbsp;
             </h:panelGroup>     

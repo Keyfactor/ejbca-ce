@@ -16,6 +16,8 @@ Define HSM container image with versions
 {{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-nshield/images/hsm-driver-nshield:0.5.0" }}
 {{- else if .Values.hsm.awsCloudHsm.enabled }}
 {{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-cloudhsm5/images/hsm-driver-cloudhsm5:0.2.0" }}
+{{- else if .Values.hsm.lunatct.enabled }}
+{{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-safenetat/images/hsm-driver-safenetat:1.1.0" }}
 {{- end }}
 {{- end -}}
 
@@ -89,7 +91,66 @@ Enable individual sidecars and volumes: Luna
         path: "dockerlunaclient.pem"
 - name: hsm-luna-secret-client-key
   secret:
-    secretName: hsm-luna-secret-client-key
+    secretName: {{ .Values.hsm.luna.credentials.privateKey.secret }}
+{{- end -}}
+
+{{/*
+Enable individual sidecars and volumes: lunatct
+Almost same as Luna but allows mounting of /opt/keyfactor/Chrystoki.conf as an alternative (HA setup, important for production)
+*/}}
+{{- define "ejbca.hsm.sidecar.lunatct" -}}
+{{- if .Values.hsm.lunatct.enabled }}
+- name: hsm
+  image: {{ include "ejbca.hsmImage" . }}
+  imagePullPolicy: {{ .Values.hsm.imagePullPolicy }}
+  env:
+    {{- if .Values.hsm.lunatct.server_name }}
+    - name: SERVER_NAME
+      value: {{ .Values.hsm.lunatct.server_name }}
+    {{- end}}
+    - name: CKLOG2_ENABLED
+      value: {{ quote .Values.hsm.lunatct.CKLOG2_ENABLED }}
+    - name: PROTECTED_AUTHENTICATION_PATH_FLAG_STATUS
+      value: {{ quote .Values.hsm.lunatct.PROTECTED_AUTHENTICATION_PATH_FLAG_STATUS }}
+  volumeMounts:
+    - name: hsm-luna-configmap-servercert
+      mountPath: /opt/safenetat/certs-server/server.pem
+      subPath: server.pem
+    - name: hsm-luna-configmap-client-cert
+      mountPath: /opt/safenetat/certs-client/dockerlunaclient.pem
+      subPath: dockerlunaclient.pem
+    - name: hsm-luna-secret-client-key
+      mountPath: /opt/safenetat/certs-client/dockerlunaclientKey.pem
+      subPath: dockerlunaclientKey.pem
+    {{- if .Values.hsm.lunatct.custom_chrystoki_conf_secret }}
+    - name: hsm-custom-chrystoki-conf
+      mountPath: /opt/keyfactor/Chrystoki.conf
+      subPath: Chrystoki.conf
+    {{- end}}
+{{- end }}
+{{- end -}}
+
+{{- define "ejbca.hsm.volume.lunatct" -}}
+- name: hsm-luna-configmap-servercert
+  configMap:
+    name: {{ .Values.hsm.lunatct.credentials.certificates.configMap }}
+    items:
+      - key: "server.pem"
+        path: "server.pem"
+- name: hsm-luna-configmap-client-cert
+  configMap:
+    name: {{ .Values.hsm.lunatct.credentials.certificates.configMap }}
+    items:
+      - key: "dockerlunaclient.pem"
+        path: "dockerlunaclient.pem"
+- name: hsm-luna-secret-client-key
+  secret:
+    secretName: {{ .Values.hsm.lunatct.credentials.privateKey.secret }}
+{{- if .Values.hsm.lunatct.custom_chrystoki_conf_secret }}
+- name: hsm-custom-chrystoki-conf
+  secret:
+    secretName: {{ .Values.hsm.lunatct.custom_chrystoki_conf_secret }}
+{{- end}}
 {{- end -}}
 
 {{/*

@@ -64,6 +64,8 @@ public interface UpgradeSessionLocal  extends UpgradeSession{
     /** For internal user from UpgradeSessionBean only */
     void migrateDatabase940() throws UpgradeFailedException;
     /** For internal user from UpgradeSessionBean only */
+    void migrateDatabase9_5_0()  throws UpgradeFailedException;
+    /** For internal user from UpgradeSessionBean only */
     void fixPartitionedCrls() throws UpgradeFailedException;
     /** For internal user from UpgradeSessionBean only */
     IndexUpgradeResult upgradeIndex(final String oldIndexName, final String tableName, final String createIndexQuery);
@@ -80,6 +82,8 @@ public interface UpgradeSessionLocal  extends UpgradeSession{
      * @return true of the first version is lower (1.0 < 2.0) than the second, false otherwise. 
      */
     boolean isLesserThan(String first, String second);
+
+
 
 
 

@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
@@ -428,7 +429,7 @@ public class NestedMessageContentSystemTest extends CmpTestCase {
             CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException,
             InvalidAlgorithmException, CustomCertificateSerialNumberException, EndEntityProfileValidationException, CouldNotRemoveEndEntityException,
             WaitingForApprovalException, NoSuchEndEntityException, ObjectNotFoundException, jakarta.ejb.ObjectNotFoundException,
-            InvalidCmpProtectionException, CMPException, SignRequestSignatureException, CertificateExtensionException {
+            InvalidCmpProtectionException, CMPException, SignRequestSignatureException, CertificateExtensionException, URISyntaxException {
         // Create a certificate that we can revoke later
         EndEntityInformation user = new EndEntityInformation("NestedMessageContentSystemTest.test03RevReq", SUBJECT_DN.toString(), testx509ca.getCAId(), null,
                 "foo@example.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, certificateProfileSession.getCertificateProfileId(CMPTESTPROFILE),

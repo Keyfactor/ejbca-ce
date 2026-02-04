@@ -13,7 +13,6 @@
 
 package org.cesecore.repository;
 
-import org.apache.log4j.Logger;
 import org.cesecore.dto.Dto;
 import org.cesecore.dto.TimedDto;
 import org.cesecore.repository.util.SynchronizationUtil;
@@ -29,7 +28,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public final class Cache<T extends Dto<Id>, Id> implements Repository<T, Id> {
 
-    private static final Logger log = Logger.getLogger(Cache.class);
     static final long NEVER_EXPIRE = Long.MAX_VALUE;
 
     private final Map<Id, TimedDto<T>> idToTimedDtoMap;
