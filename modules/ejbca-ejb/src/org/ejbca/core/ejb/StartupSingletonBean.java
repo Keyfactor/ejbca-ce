@@ -202,7 +202,6 @@ public class StartupSingletonBean {
 
     @PostConstruct
     private void startup() {
-        
         //
         // Run all "safe" initializations first,
         // i.e. those that does not depend on other running beans, components etc
