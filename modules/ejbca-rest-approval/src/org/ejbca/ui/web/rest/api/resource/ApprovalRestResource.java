@@ -53,9 +53,6 @@ import java.util.List;
 public class ApprovalRestResource extends BaseRestResource {
 
     private static final Logger log = Logger.getLogger(ApprovalRestResource.class);
-
-    private static final String RESOURCE_STATUS = "OK";
-    protected static final String RESOURCE_VERSION = "1.0";
     private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ssXXX";
 
     @EJB
@@ -168,7 +165,7 @@ public class ApprovalRestResource extends BaseRestResource {
             log.info("Error executing approval request " + requestId + ": " + e.getMessage());
             throw new RestException(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),
                     "Error executing approval request: " + e.getMessage());
-        } catch (ApprovalException e) {
+        } catch (ApprovalException | AdminAlreadyApprovedRequestException | SelfApprovalException e) {
             log.info("Error processing approval request " + requestId + ": " + e.getMessage());
             throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(),
                     "Error processing approval request: " + e.getMessage());
@@ -206,28 +203,28 @@ public class ApprovalRestResource extends BaseRestResource {
         }
     }
 
-        private ProcessApprovalRestResponse buildApprovalResponse(final RaApprovalRequestInfo requestInfo) {
-            final SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
-            final ApprovalDataVO approvalData = requestInfo.getApprovalData();
-            final String endEntityName = getUsername(requestInfo.getApprovalRequest());
+    private ProcessApprovalRestResponse buildApprovalResponse(final RaApprovalRequestInfo requestInfo) {
+        final SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
+        final ApprovalDataVO approvalData = requestInfo.getApprovalData();
+        final String endEntityName = getUsername(requestInfo.getApprovalRequest());
 
-            // Build approval steps
-            final List<ApprovalStepRestResponse> steps = buildApprovalSteps(requestInfo);
+        // Build approval steps
+        final List<ApprovalStepRestResponse> steps = buildApprovalSteps(requestInfo);
 
-            final Date requestDate = new Date(approvalData.getRequestDate().getTime());
-            final long expirationPeriod = requestInfo.getApprovalRequest().getRequestValidity();
-            final Date expirationDate = new Date(requestDate.getTime() + expirationPeriod);
+        final Date requestDate = new Date(approvalData.getRequestDate().getTime());
+        final long expirationPeriod = requestInfo.getApprovalRequest().getRequestValidity();
+        final Date expirationDate = new Date(requestDate.getTime() + expirationPeriod);
 
-            return ProcessApprovalRestResponse.builder()
-                    .requestId(String.valueOf(requestInfo.getId()))
-                    .requestType(getApprovalTypeName(approvalData.getApprovalType()))
-                    .requestDate(dateFormat.format(requestDate))
-                    .expirationDate(dateFormat.format(expirationDate))
-                    .endEntityName(endEntityName)
-                    .status(ApprovalRequestStatus.fromIntWithCombinedStates(requestInfo.getStatus()))
-                    .steps(steps)
-                    .build();
-        }
+        return ProcessApprovalRestResponse.builder()
+                .requestId(String.valueOf(requestInfo.getId()))
+                .requestType(getApprovalTypeName(approvalData.getApprovalType()))
+                .requestDate(dateFormat.format(requestDate))
+                .expirationDate(dateFormat.format(expirationDate))
+                .endEntityName(endEntityName)
+                .status(ApprovalRequestStatus.fromIntWithCombinedStates(requestInfo.getStatus()))
+                .steps(steps)
+                .build();
+    }
 
     private List<ApprovalStepRestResponse> buildApprovalSteps(final RaApprovalRequestInfo requestInfo) {
         final List<ApprovalStepRestResponse> steps = new ArrayList<>();
