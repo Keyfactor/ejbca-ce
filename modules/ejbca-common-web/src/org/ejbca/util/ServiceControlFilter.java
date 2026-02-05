@@ -127,7 +127,6 @@ public class ServiceControlFilter implements Filter {
                         log.debug("Access to disabled service " + serviceName + " is allowed due to superadmin access. "
                                                 + "HTTP request " + httpRequest.getRequestURL() + " is let through.");
                     }
-                    validateRestQueryParams(httpRequest, httpResponse);
                     chain.doFilter(request, response);
                     return;
                 }
@@ -155,7 +154,8 @@ public class ServiceControlFilter implements Filter {
         // only process for REST API
         // protocols may have strange cases
         // always leave the JSF alone
-        if (isRestService) {
+        if (isRestService && !serviceName.equalsIgnoreCase(
+                    AvailableProtocolsConfiguration.AvailableProtocols.REST_CONFIGDUMP.getName())) {
             boolean result = UrlQueryParamsValidator.validateRestApiUrlQueryParams(httpRequest.getQueryString());
             if (!result) {
                 log.info("Malformed query string in URL: " + httpRequest.getQueryString());
