@@ -14,8 +14,6 @@ package org.ejbca.ui.web.admin.approval;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -133,12 +131,7 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
                     approvalProfiles.add(new ApprovalProfileGuiInfo(profileId, name));
                 }
                 // Sort list by name
-                Collections.sort(approvalProfiles, new Comparator<ApprovalProfileGuiInfo>() {
-                    @Override
-                    public int compare(final ApprovalProfileGuiInfo a, final ApprovalProfileGuiInfo b) {
-                        return a.getName().compareToIgnoreCase(b.getName());
-                    }
-                });
+                approvalProfiles.sort((a, b) -> a.getName().compareToIgnoreCase(b.getName()));
             }
             approvalProfilesList = new ListDataModel<>(approvalProfiles);
         }
@@ -271,7 +264,7 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
     private String getAsCommaSeparatedString(final List<String> list) {
         final StringBuilder sb = new StringBuilder();
         for (final String entry : list) {
-            if (sb.length() > 0) {
+            if (!sb.isEmpty()) {
                 sb.append(", ");
             }
             sb.append(entry);
@@ -287,14 +280,14 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
     }
 
     public void actionRenameConfirm() {
-        final String approvalProfileName = getApprovalProfileName();
-        if (StringUtils.isNotEmpty(approvalProfileName)) {
-            if (!StringTools.checkFieldForLegalChars(approvalProfileName)) {
+        final String profileName = getApprovalProfileName();
+        if (StringUtils.isNotEmpty(profileName)) {
+            if (!StringTools.checkFieldForLegalChars(profileName)) {
                 addErrorMessage("ONLYCHARACTERS");
             } else {
                 try {
                     approvalProfileSession.renameApprovalProfile(getAdmin(), approvalProfileSession.getApprovalProfile(getSelectedApprovalProfileId()),
-                            approvalProfileName);
+                            profileName);
                     setApprovalProfileName("");
                 } catch (ApprovalProfileExistsException e) {
                     addErrorMessage("APPROVAL_PROFILE_ALREADY_EXISTS");
@@ -341,17 +334,17 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
 
     public void actionAdd() {
 
-        final String approvalProfileName = getApprovalProfileName();
-        if (StringUtils.isNotEmpty(approvalProfileName)) {
-            if (!StringTools.checkFieldForLegalChars(approvalProfileName)) {
+        final String profileName = getApprovalProfileName();
+        if (StringUtils.isNotEmpty(profileName)) {
+            if (!StringTools.checkFieldForLegalChars(profileName)) {
                 addErrorMessage("ONLYCHARACTERS");
             } else {
                 try {
-                    if (!approvalProfileSession.findByApprovalProfileName(approvalProfileName).isEmpty()) {
+                    if (!approvalProfileSession.findByApprovalProfileName(profileName).isEmpty()) {
                         //Handle this below
-                        throw new ApprovalProfileExistsException("Approval profile of name " + approvalProfileName + " already exists");
+                        throw new ApprovalProfileExistsException("Approval profile of name " + profileName + " already exists");
                     }
-                    final ApprovalProfile approvalProfile = new AccumulativeApprovalProfile(approvalProfileName);
+                    final ApprovalProfile approvalProfile = new AccumulativeApprovalProfile(profileName);
                     approvalProfileSession.addApprovalProfile(getAdmin(), approvalProfile);
                     setApprovalProfileName("");
                 } catch (ApprovalProfileExistsException e) {
@@ -361,6 +354,7 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
                 }
             }
             approvalProfiles = null;
+            approvalProfilesList = null;
         }
     }
 }

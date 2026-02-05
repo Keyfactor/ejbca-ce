@@ -692,10 +692,11 @@ public class KeyRecoverySystemTest extends CaTestCase {
      *
      * where <x> is the EEP for the end entity, and <y> is the CA ID for the issuing CA.
      * @throws CADoesntExistsException
+     * @throws CertificateCreateException 
      */
     @Test
     public void testAuthorizationForKeyRecovery()
-            throws ApprovalException, WaitingForApprovalException, AuthorizationDeniedException, NoSuchEndEntityException, CouldNotRemoveEndEntityException, CADoesntExistsException {
+            throws ApprovalException, WaitingForApprovalException, AuthorizationDeniedException, NoSuchEndEntityException, CouldNotRemoveEndEntityException, CADoesntExistsException, CertificateCreateException {
         X509Certificate cert1 = null;
         String fp1 = null;
         KeyPair keypair1 = null;
