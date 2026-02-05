@@ -184,8 +184,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	DATA_CONSTANTS.put(AUTOGENPASSWORDTYPE, 95);
     	DATA_CONSTANTS.put(AUTOGENPASSWORDLENGTH, 96);
     	DATA_CONSTANTS.put(PROFILEDESCRIPTION, 110);
-        DATA_CONSTANTS.put(USERNAME_PREFIX, 112);
-        DATA_CONSTANTS.put(USERNAME_SUFFIX, 113);
+        DATA_CONSTANTS.put(USERNAME_PREFIX, 124);
+        DATA_CONSTANTS.put(USERNAME_SUFFIX, 125);
         // DN components
 
     	DATA_CONSTANTS.put(EMAIL, 26);
