@@ -844,13 +844,11 @@
                 </h:panelGroup>
 
                 <h:panelGroup id="doenforcenameconstraintsgroup"> 
-                    <h:selectBooleanCheckbox id="isdoenforcenameconstraints"
+                    <p:selectBooleanCheckbox id="isdoenforcenameconstraints"
                                              value="#{editCAsMBean.caInfoDto.doEnforceNameConstraints}"
-                                             disabled="#{not editCAsMBean.hasEditRight}">
+                                             disabled="#{not editCAsMBean.hasEditRight}" itemLabel="#{web.text.ENFORCE}">
                                 <f:ajax immediate="true" render="doenforcenameconstraintsgroup"/>
-                    </h:selectBooleanCheckbox>
-                    <h:outputLabel for="isdoenforcenameconstraints"
-                                   value="#{web.text.ENFORCE}"/>
+                    </p:selectBooleanCheckbox>
                     <h:panelGroup layout="block" id="warningNameConstraintsCheckDisabled" rendered="#{!editCAsMBean.caInfoDto.doEnforceNameConstraints}">
                         <h:outputText styleClass="warning"
                                       value="#{web.text.DOENFORCENAMECONSTRAINTS_WARNING}"/>
