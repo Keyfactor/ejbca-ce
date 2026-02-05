@@ -7,17 +7,17 @@ Define HSM container image with versions
 {{- else if .Values.hsm.softhsm.enabled }}
 {{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-softhsm/images/hsm-driver-softhsm:1.1.0" }}
 {{- else if .Values.hsm.luna.enabled }}
-{{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-luna7/images/hsm-driver-luna7:0.5.0" }}
+{{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-luna7/images/hsm-driver-luna7:0.6.0" }}
 {{- else if .Values.hsm.dpod.enabled }}
-{{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-dpod/images/hsm-driver-dpod:0.1.0" }}
+{{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-dpod/images/hsm-driver-dpod:0.2.0" }}
 {{- else if .Values.hsm.utimaco.enabled }}
 {{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-utimaco/images/hsm-driver-utimaco:0.4.0" }}
 {{- else if .Values.hsm.nshield.enabled }}
 {{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-nshield/images/hsm-driver-nshield:0.5.0" }}
 {{- else if .Values.hsm.awsCloudHsm.enabled }}
-{{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-cloudhsm5/images/hsm-driver-cloudhsm5:0.2.0" }}
+{{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-cloudhsm5/images/hsm-driver-cloudhsm5:0.2.1" }}
 {{- else if .Values.hsm.lunatct.enabled }}
-{{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-safenetat/images/hsm-driver-safenetat:1.1.0" }}
+{{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-safenetat/images/hsm-driver-safenetat:1.2.0" }}
 {{- else if .Values.hsm.bullproteccio.enabled }}
 {{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-bull/images/hsm-driver-bull:2.1.0" }}
 {{- end }}
