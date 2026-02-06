@@ -27,7 +27,6 @@ import jakarta.ws.rs.QueryParam;
 
 public class UrlQueryIntegerParamConfigUnitTest {
     
-    boolean properlyConfigured = true;
     StringBuilder stringBuilder = new StringBuilder();
     
     @Test
