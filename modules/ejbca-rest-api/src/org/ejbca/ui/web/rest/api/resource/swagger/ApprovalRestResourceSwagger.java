@@ -21,6 +21,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.ejb.Stateless;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
@@ -29,6 +30,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import org.ejbca.ui.web.rest.api.exception.RestException;
+import org.ejbca.ui.web.rest.api.io.request.SearchApprovalRestRequest;
 import org.ejbca.ui.web.rest.api.io.response.ApprovalRequestStatusRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
 import org.ejbca.ui.web.rest.api.resource.ApprovalRestResource;
@@ -86,4 +88,20 @@ public class ApprovalRestResourceSwagger extends ApprovalRestResource {
 
         return super.getApprovalRequestStatus(requestContext, requestId);
     }
+
+    @POST
+    @Path("/search")
+    @Operation(summary = "Get the status of this REST Resource",
+            description = "Returns status, API version and EJBCA version.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Successful response",
+                            content = @Content(schema = @Schema(implementation = RestResourceStatusRestResponse.class))
+                    )
+            })
+    public Response getSearchResutlts(@Context HttpServletRequest requestContext, final SearchApprovalRestRequest searchApprovalRestRequest) throws RestException {
+        return super.getApprovalSearchResutlts(requestContext, searchApprovalRestRequest);
+    }
+
 }

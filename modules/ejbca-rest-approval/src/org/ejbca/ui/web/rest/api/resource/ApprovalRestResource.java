@@ -15,6 +15,7 @@ import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
@@ -23,8 +24,13 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.approval.ApprovalRequestStatus;
 import org.ejbca.core.model.era.RaApprovalRequestInfo;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.core.model.era.RaRequestsSearchRequest;
+import org.ejbca.core.model.era.RaRequestsSearchResponse;
 import org.ejbca.ui.web.rest.api.exception.RestException;
+import org.ejbca.ui.web.rest.api.io.request.SearchApprovalRestRequest;
 import org.ejbca.ui.web.rest.api.io.response.ApprovalRequestStatusRestResponse;
+
+import java.util.List;
 
 /**
  * JAX-RS resource handling approval-related requests.
@@ -76,4 +82,47 @@ public class ApprovalRestResource extends BaseRestResource {
         }
 
     }
+
+    public Response getApprovalSearchResutlts(@Context final HttpServletRequest requestContext,
+                                              final SearchApprovalRestRequest searchApprovalRestRequest) throws RestException {
+
+        RaRequestsSearchRequest raRequestsSearchRequest = convertSearchPendingApprovalRestRequestToRaRequestsSearchRequest(searchApprovalRestRequest);
+
+        try {
+            RaRequestsSearchResponse raRequestsSearchResponse = raMasterApi.searchForApprovalRequests(getAdmin(requestContext, false), raRequestsSearchRequest);
+
+            List<RaApprovalRequestInfo> approvalRequestInfoList = raRequestsSearchResponse.getApprovalRequests();
+
+            for (RaApprovalRequestInfo approvalRequestInfo : approvalRequestInfoList) {
+                approvalRequestInfo.
+
+            }
+
+
+
+        } catch (AuthorizationDeniedException e) {
+            log.error(e.getMessage(), e);
+            throw new RestException(Response.Status.FORBIDDEN.getStatusCode(), "Missing or invalid authentication.");
+        }
+
+        return Response.ok().build();
+    }
+
+
+    private RaRequestsSearchRequest convertSearchPendingApprovalRestRequestToRaRequestsSearchRequest(SearchApprovalRestRequest searchApprovalRestRequest) {
+        RaRequestsSearchRequest raRequestsSearchRequest = new RaRequestsSearchRequest();
+        raRequestsSearchRequest.setSearchingPending(searchApprovalRestRequest.isSearchingPending());
+        raRequestsSearchRequest.setCustomSearchSubjectDn(searchApprovalRestRequest.getSubjectDn());
+        raRequestsSearchRequest.setCustomSearchEmail(searchApprovalRestRequest.getEmail());
+        raRequestsSearchRequest.setStartDate(searchApprovalRestRequest.getStartDate());
+        raRequestsSearchRequest.setEndDate(searchApprovalRestRequest.getEndDate());
+        raRequestsSearchRequest.setExpiresBefore(searchApprovalRestRequest.getExpiresBefore());
+        raRequestsSearchRequest.setIncludeOtherAdmins(searchApprovalRestRequest.isIncludeOtherAdmins());
+        raRequestsSearchRequest.setSearchingHistorical(searchApprovalRestRequest.isSearchingHistorical());
+        raRequestsSearchRequest.setSearchingExpired(searchApprovalRestRequest.isSearchingExpired());
+        raRequestsSearchRequest.setSearchingWaitingForMe(searchApprovalRestRequest.isSearchingWaitingForMe());
+        return raRequestsSearchRequest;
+    }
+
+
 }
