@@ -93,12 +93,7 @@ public class ApprovalRestResource extends BaseRestResource {
 
             List<RaApprovalRequestInfo> approvalRequestInfoList = raRequestsSearchResponse.getApprovalRequests();
 
-            for (RaApprovalRequestInfo approvalRequestInfo : approvalRequestInfoList) {
-                approvalRequestInfo.
-
-            }
-
-
+            //TODO: implement the conversion from RaApprovalRequestInfo to ApprovalRequestStatusRestResponse
 
         } catch (AuthorizationDeniedException e) {
             log.error(e.getMessage(), e);
