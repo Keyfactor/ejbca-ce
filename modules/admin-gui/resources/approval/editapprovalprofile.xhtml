@@ -124,7 +124,7 @@
                 <h:dataTable id="approvalStepsTable" styleClass="ui-md-12 superTable"
                              value="#{approvalProfileMBean.steps}" var="step" footerClass="tableFooter">
                     <h:column>
-                        <p:fieldset>
+                        <p:fieldset id="step">
                             <f:facet name="legend">
                                 <h:outputText value="#{web.text.APPROVAL_PROFILE_STEP} #{step.stepNumber}"/>
                                 <h:panelGroup
