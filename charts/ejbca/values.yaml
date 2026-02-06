@@ -170,6 +170,16 @@ hsm:
     hsmIpAddress:
     logLevel: "INFO"
     customerCACrtConfigMap:
+  bullproteccio:
+    enabled: false
+    hsms_json_secret:
+    credentials:
+      certificates:
+        configMap: "hsm-bullproteccio-configmap"
+        # mandatory keys for file mount: "proteccio_client.crt", "proteccio_client_sec_pub.key"
+      privateKey:
+        secret: "hsm-bullproteccio-secret-client-key"
+        # mandatory key for file mount: "proteccio_client.key", "proteccio_client_sec_priv.key"
 replicaCount: 1
 # https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy
 updateStrategy: {}
