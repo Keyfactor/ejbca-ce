@@ -15,6 +15,7 @@ package org.ejbca.util;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
@@ -31,6 +32,11 @@ public class UrlQueryParamsValidator {
     // Strict percent-encoding validation
     private static final Pattern VALID_PERCENT_ENCODING =
             Pattern.compile("(%[0-9A-Fa-f]{2}|[^%])*");
+    
+    public static final Set<String> INTEGER_QUERY_PARAMS = Set.of("maxNumberOfResults", "offset", "crlPartitionIndex");
+    
+    public static final Set<String> BOOLEAN_QUERY_PARAMS = Set.of("includeExternal", "deltaCrl", "deltacrl"); //yup
+
 
     /**
      * Validates a query string from a EJBCA REST API URL. 
@@ -63,6 +69,22 @@ public class UrlQueryParamsValidator {
             } else {
                 key = pair.substring(0, idx);
                 value = pair.substring(idx + 1);
+            }
+            
+            if (INTEGER_QUERY_PARAMS.contains(key)) {
+                try {
+                    Integer.parseInt(value);
+                    continue;
+                } catch(NumberFormatException e) {
+                    return false;
+                }
+            }
+            
+            if (BOOLEAN_QUERY_PARAMS.contains(key)) {
+                if (!value.equals("true") && !value.equals("false") ) {
+                    return false;
+                }
+                continue;
             }
 
             if (!validateComponent(key, false) || !validateComponent(value, true)) {

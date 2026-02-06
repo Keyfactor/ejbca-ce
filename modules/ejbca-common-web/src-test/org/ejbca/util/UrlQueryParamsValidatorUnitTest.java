@@ -35,7 +35,6 @@ public class UrlQueryParamsValidatorUnitTest {
             "%7C"  // |
     };
 
-
     /* -------------------------
      * Helper
      * ------------------------- */
