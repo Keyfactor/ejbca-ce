@@ -20,6 +20,7 @@ import io.swagger.v3.oas.annotations.servers.Server;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.ejb.Stateless;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -91,17 +92,19 @@ public class ApprovalRestResourceSwagger extends ApprovalRestResource {
 
     @POST
     @Path("/search")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Get the status of this REST Resource",
             description = "Returns status, API version and EJBCA version.",
             responses = {
                     @ApiResponse(
                             responseCode = "200",
                             description = "Successful response",
-                            content = @Content(schema = @Schema(implementation = RestResourceStatusRestResponse.class))
+                            content = @Content(schema = @Schema(implementation = ApprovalRequestStatusRestResponse.class))
                     )
             })
     public Response getSearchResutlts(@Context HttpServletRequest requestContext, final SearchApprovalRestRequest searchApprovalRestRequest) throws RestException {
-        return super.getApprovalSearchResutlts(requestContext, searchApprovalRestRequest);
+        return super.getApprovalSearchResults(requestContext, searchApprovalRestRequest);
     }
 
 }

@@ -21,16 +21,21 @@ import jakarta.ws.rs.core.Response;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalRequestStatus;
 import org.ejbca.core.model.era.RaApprovalRequestInfo;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.era.RaRequestsSearchRequest;
 import org.ejbca.core.model.era.RaRequestsSearchResponse;
+import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.request.SearchApprovalRestRequest;
 import org.ejbca.ui.web.rest.api.io.response.ApprovalRequestStatusRestResponse;
+import org.ejbca.ui.web.rest.api.io.response.SearchApprovalRestResponse;
 
 import java.util.List;
+
+import static org.ejbca.core.model.approval.ApprovalDataVO.APPROVALTYPENAMES;
 
 /**
  * JAX-RS resource handling approval-related requests.
@@ -83,24 +88,37 @@ public class ApprovalRestResource extends BaseRestResource {
 
     }
 
-    public Response getApprovalSearchResutlts(@Context final HttpServletRequest requestContext,
+    public Response getApprovalSearchResults(@Context final HttpServletRequest requestContext,
                                               final SearchApprovalRestRequest searchApprovalRestRequest) throws RestException {
 
         RaRequestsSearchRequest raRequestsSearchRequest = convertSearchPendingApprovalRestRequestToRaRequestsSearchRequest(searchApprovalRestRequest);
 
         try {
-            RaRequestsSearchResponse raRequestsSearchResponse = raMasterApi.searchForApprovalRequests(getAdmin(requestContext, false), raRequestsSearchRequest);
+            final AuthenticationToken authenticationToken = getAdmin(requestContext, false);
+
+            RaRequestsSearchResponse raRequestsSearchResponse = raMasterApi.searchForApprovalRequests(authenticationToken, raRequestsSearchRequest);
 
             List<RaApprovalRequestInfo> approvalRequestInfoList = raRequestsSearchResponse.getApprovalRequests();
 
-            //TODO: implement the conversion from RaApprovalRequestInfo to ApprovalRequestStatusRestResponse
+            List<SearchApprovalRestResponse> searchApprovalRestResponses = new java.util.ArrayList<>();
+
+            for (RaApprovalRequestInfo approvalRequestInfo : approvalRequestInfoList) {
+                final SearchApprovalRestResponse searchApprovalRestResponse =
+                        SearchApprovalRestResponse.builder()
+                                .requestId(approvalRequestInfo.getId())
+                                .requestDate(approvalRequestInfo.getApprovalData().getRequestDate())
+                                .expirationDate(approvalRequestInfo.getApprovalData().getExpireDate())
+                                .requestType(toHumanReadableApprovalTypeName(approvalRequestInfo.getApprovalData().getApprovalType()))
+                                .requestedBy(approvalRequestInfo.getApprovalData().getApprovalRequest().getRequestAdmin().toString())
+                                .build();
+                searchApprovalRestResponses.add(searchApprovalRestResponse);
+            }
+            return Response.ok(searchApprovalRestResponses).build();
 
         } catch (AuthorizationDeniedException e) {
             log.error(e.getMessage(), e);
             throw new RestException(Response.Status.FORBIDDEN.getStatusCode(), "Missing or invalid authentication.");
         }
-
-        return Response.ok().build();
     }
 
 
@@ -119,5 +137,21 @@ public class ApprovalRestResource extends BaseRestResource {
         return raRequestsSearchRequest;
     }
 
+
+    private static String toHumanReadableApprovalTypeName(final int approvalType) {
+        return switch (APPROVALTYPENAMES.get(approvalType)) {
+            case "APDUMMY" -> "Dummy";
+            case "APADDENDENTITY" -> "Add End Entity";
+            case "APEDITENDENTITY" -> "Edit End Entity";
+            case "APCHANGESTATUSENDENTITY" -> "Change Status of End Entity";
+            case "APKEYRECOVERY" -> "Key Recover";
+            case "APGENERATETOKEN" -> "Generate Token";
+            case "APREVOKEENDENTITY" -> "Revoke End Entity";
+            case "APREVOKEDELETEENDENTITY" -> "Revoke and Delete End Entity";
+            case "APREVOKECERTIFICATE" -> "Revoke or Reactivate Certificate";
+            case "APPROVEACTIVATECA" -> "CA Service Activation";
+            default -> "Unknown (" + approvalType + "): " + APPROVALTYPENAMES.get(approvalType);
+        };
+    }
 
 }
