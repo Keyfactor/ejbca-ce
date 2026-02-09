@@ -23,7 +23,12 @@ import org.apache.commons.lang3.StringUtils;
 public class UrlQueryParamsValidator {
 
     private UrlQueryParamsValidator() {}
-
+    
+    // Currently no scope for umlaut in query params
+    // but now whitelisting if they are used in future
+    // Configudmp is not validated
+    
+    // blacklisting
     // RFC 3986 + security hardening
     // Control chars + dangerous symbols
     private static final Pattern FORBIDDEN_CHARS =
@@ -32,8 +37,8 @@ public class UrlQueryParamsValidator {
     // Strict percent-encoding validation
     private static final Pattern VALID_PERCENT_ENCODING =
             Pattern.compile("(%[0-9A-Fa-f]{2}|[^%])*");
-    
-    public static final Set<String> INTEGER_QUERY_PARAMS = Set.of("maxNumberOfResults", "offset", "crlPartitionIndex");
+        
+    public static final Set<String> INTEGER_QUERY_PARAMS = Set.of("days", "maxNumberOfResults", "offset", "crlPartitionIndex");
     
     public static final Set<String> BOOLEAN_QUERY_PARAMS = Set.of("includeExternal", "deltaCrl", "deltacrl"); //yup
 
@@ -73,7 +78,9 @@ public class UrlQueryParamsValidator {
             
             if (INTEGER_QUERY_PARAMS.contains(key)) {
                 try {
-                    Integer.parseInt(value);
+                    if(!("" + Math.abs(Long.parseLong(value))).equals(value)) {
+                        return false;
+                    }
                     continue;
                 } catch(NumberFormatException e) {
                     return false;

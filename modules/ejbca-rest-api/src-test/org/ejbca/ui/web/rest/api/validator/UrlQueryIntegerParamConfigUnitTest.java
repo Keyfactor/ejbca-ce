@@ -57,7 +57,7 @@ public class UrlQueryIntegerParamConfigUnitTest {
                     continue;
                 }
 
-                if (parameter.getType().toString().equals("int") && 
+                if ((parameter.getType().toString().equals("int") || parameter.getType().toString().equals("long")) && 
                         !UrlQueryParamsValidator.INTEGER_QUERY_PARAMS.contains(qp.value())) {
                     stringBuilder.append(
                             "Class: " + clazz.getSimpleName()

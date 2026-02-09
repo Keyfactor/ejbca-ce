@@ -94,6 +94,13 @@ public class UrlQueryParamsValidatorUnitTest {
     }
     
     @Test
+    public void shouldRejectStrangeIntegers() {
+        assertInvalid("q=rock%26roll1234&offset=+12345");
+        assertInvalid("q=rock%26roll1234&offset=-12345");
+    }
+    
+    
+    @Test
     public void shouldAcceptEncodedDates() {
         assertValid("q=rock%26roll&date=2018-06-15T14%3A07%3A09Z");
     }
