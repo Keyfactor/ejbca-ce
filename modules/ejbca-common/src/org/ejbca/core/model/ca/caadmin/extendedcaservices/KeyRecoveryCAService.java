@@ -120,6 +120,9 @@ public class KeyRecoveryCAService extends ExtendedCAService implements Serializa
                 if (log.isDebugEnabled()) {
                     log.debug("Encrypting using alias '"+keyAlias+"' from crypto token "+cryptoToken.getId());
                 }
+                if (keyAlias==null) {
+                    throw new IllegalExtendedCAServiceRequestException("No keyEncryptionKey is selected for CA " + getCa().getName(), true);
+                }
 	            // Creating the KeyId may just throw an exception, we will log this but store the cert and ignore the error
 	            String keyId = null;
 	            try {
@@ -133,7 +136,9 @@ public class KeyRecoveryCAService extends ExtendedCAService implements Serializa
 				returnval = new KeyRecoveryCAServiceResponse(KeyRecoveryCAServiceResponse.TYPE_ENCRYPTKEYSRESPONSE, 
                         CryptoTools.encryptKeys((X509Certificate) getCa().getCACertificate(), cryptoToken, keyAlias, serviceReq.getKeyPair(), keyEncryptionPaddingAlgorithm),
                         cryptoToken.getId(), keyAlias, keyId);
-			} catch(Exception e) {
+			} catch (IllegalExtendedCAServiceRequestException e) {
+			    throw e;
+		    } catch(Exception e) {
 				throw new IllegalExtendedCAServiceRequestException(e);
 			}
 		} else if (serviceReq.getCommand() == KeyRecoveryCAServiceRequest.COMMAND_DECRYPTKEYS) {

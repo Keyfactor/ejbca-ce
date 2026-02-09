@@ -181,7 +181,11 @@ public class GlobalOcspConfiguration extends ConfigurationBase implements Serial
     
     public OcspKeyBinding.ResponderIdType getOcspResponderIdType() {
         OcspKeyBinding.ResponderIdType ocspResponderIdType = (ResponderIdType) data.get(OCSP_RESPONDER_ID_TYPE_REFERENCE);
-        return ocspResponderIdType;
+        if(ocspResponderIdType == null) {
+            return OcspKeyBinding.ResponderIdType.NAME;
+        } else {
+            return ocspResponderIdType;
+        }
     }
     
     public void setOcspResponderIdType(OcspKeyBinding.ResponderIdType ocspResponderIdType) {
