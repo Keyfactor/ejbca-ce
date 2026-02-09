@@ -362,33 +362,33 @@ public class CaImportMsCaCertificates extends BaseCaAdminCommand {
         return RequestDisposition.parse(line);
     }
 
-    private String parseCertificateTemplate(final BufferedReader reader) throws IOException {
-    final String line = parseProperty(reader, "Certificate Template");
-    final String lineWithoutProperty = Strings.CS.removeStart(line, "Certificate Template:");
-    final String trimmedLine = StringUtils.trim(lineWithoutProperty);
-    
-    // Check if line starts with a quoted OID
-    if (trimmedLine.startsWith("\"")) {
-        // Find the closing quote of the OID
-        final int closingQuoteIndex = trimmedLine.indexOf("\"", 1);
-        if (closingQuoteIndex == -1) {
-            throw new IOException("Certificate template could not be parsed. Missing closing quote for OID.");
-        }
-        
-        // Check if there's a template name after the OID
-        final String afterOid = trimmedLine.substring(closingQuoteIndex + 1).trim();
-        if (afterOid.isEmpty()) {
-            // Format is 'Certificate Template: "<OID>"'
-            return trimmedLine.substring(1, closingQuoteIndex);
+    protected String parseCertificateTemplate(final BufferedReader reader) throws IOException {
+        final String line = parseProperty(reader, "Certificate Template");
+        final String lineWithoutProperty = Strings.CS.removeStart(line, "Certificate Template:");
+        final String trimmedLine = StringUtils.trim(lineWithoutProperty);
+
+        // Check if line starts with a quoted OID
+        if (trimmedLine.startsWith("\"")) {
+            // Find the closing quote of the OID
+            final int closingQuoteIndex = trimmedLine.indexOf("\"", 1);
+            if (closingQuoteIndex == -1) {
+                throw new IOException("Certificate template could not be parsed. Missing closing quote for OID.");
+            }
+
+            // Check if there's a template name after the OID
+            final String afterOid = trimmedLine.substring(closingQuoteIndex + 1).trim();
+            if (afterOid.isEmpty()) {
+                // Format is 'Certificate Template: "<OID>"'
+                return trimmedLine.substring(1, closingQuoteIndex);
+            } else {
+                // Format is 'Certificate Template: "<OID>" <TemplateName>'
+                // Return the template name (everything after the OID), removing surrounding quotes if present
+                return StringUtils.strip(afterOid, "\"");
+            }
         } else {
-            // Format is 'Certificate Template: "<OID>" <TemplateName>'
-            // Return the template name (everything after the OID), removing surrounding quotes if present
-            return StringUtils.strip(afterOid, "\"");
+            // Format is 'Certificate Template: <TemplateName>' (no quotes, no OID)
+            return StringUtils.strip(trimmedLine, "\"");
         }
-    } else {
-        // Format is 'Certificate Template: <TemplateName>' (no quotes, no OID)
-        return StringUtils.strip(trimmedLine, "\"");
-    }
 }
 
     private String parseUpn(final BufferedReader reader) throws IOException {
