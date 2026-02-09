@@ -13,15 +13,31 @@
 package org.ejbca.ui.web.rest.api.io.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import org.ejbca.core.model.approval.Approval;
+import org.ejbca.core.model.approval.ApprovalDataVO;
+import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestStatus;
 
 import java.util.List;
+import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
+import org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityApprovalRequest;
+import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest;
+import org.ejbca.core.model.approval.approvalrequests.KeyRecoveryApprovalRequest;
+import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
+import org.ejbca.core.model.approval.profile.ApprovalPartition;
+import org.ejbca.core.model.era.RaApprovalRequestInfo;
+import org.ejbca.core.model.era.RaApprovalStepInfo;
 
 /**
  * Response containing the result of processing an approval request.
  */
 @Schema(name = "ProcessApprovalRestResponse", description = "Response after processing an approval request")
 public class ProcessApprovalRestResponse {
+    static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ssXXX";
 
     @Schema(description = "The unique identifier of the approval request", example = "1234")
     private String requestId;
@@ -46,7 +62,7 @@ public class ProcessApprovalRestResponse {
     @Schema(description = "The list of approval steps with their status")
     private List<ApprovalStepRestResponse> steps;
 
-    private ProcessApprovalRestResponse(final Builder builder) {
+    ProcessApprovalRestResponse(final Builder builder) {
         this.requestId = builder.requestId;
         this.requestType = builder.requestType;
         this.requestDate = builder.requestDate;
@@ -134,6 +150,102 @@ public class ProcessApprovalRestResponse {
 
         public ProcessApprovalRestResponse build() {
             return new ProcessApprovalRestResponse(this);
+        }
+    }
+
+    public static ProcessApprovalRestResponse buildApprovalResponse(final RaApprovalRequestInfo requestInfo) {
+        final SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
+        final ApprovalDataVO approvalData = requestInfo.getApprovalData();
+        final String endEntityName = getUsername(requestInfo.getApprovalRequest());
+
+        // Build approval steps
+        final List<ApprovalStepRestResponse> steps = buildApprovalSteps(requestInfo);
+
+        final Date requestDate = new Date(approvalData.getRequestDate().getTime());
+        final long expirationPeriod = requestInfo.getApprovalRequest().getRequestValidity();
+        final Date expirationDate = new Date(requestDate.getTime() + expirationPeriod);
+
+        return ProcessApprovalRestResponse.builder()
+                .requestId(String.valueOf(requestInfo.getId()))
+                .requestType(ApprovalType.getNameByCode(approvalData.getApprovalType()))
+                .requestDate(dateFormat.format(requestDate))
+                .expirationDate(dateFormat.format(expirationDate))
+                .endEntityName(endEntityName)
+                .status(ApprovalRequestStatus.fromIntWithCombinedStates(requestInfo.getStatus()))
+                .steps(steps)
+                .build();
+    }
+
+    static List<ApprovalStepRestResponse> buildApprovalSteps(final RaApprovalRequestInfo requestInfo) {
+        final List<ApprovalStepRestResponse> steps = new ArrayList<>();
+        final List<RaApprovalStepInfo> previousSteps = requestInfo.getPreviousApprovalSteps();
+
+        if (previousSteps != null) {
+            // Get all approvals from the approval data
+            final ApprovalDataVO approvalData = requestInfo.getApprovalData();
+            final Collection<Approval> approvals = approvalData.getApprovals();
+
+            int stepNumber = 1;
+            for (RaApprovalStepInfo stepInfo : previousSteps) {
+                for (ApprovalPartition partition : stepInfo.getPartitions()) {
+                    final ApprovalStepRestResponse.Builder stepBuilder = ApprovalStepRestResponse.builder()
+                            .step(stepNumber);
+
+                    // Find the approval record for this step and partition
+                    Approval matchingApproval = null;
+                    if (approvals != null) {
+                        for (Approval approval : approvals) {
+                            if (approval.getStepId() == stepInfo.getStepId() &&
+                                    approval.getPartitionId() == partition.getPartitionIdentifier()) {
+                                matchingApproval = approval;
+                                //break;
+                                // TODO Now we only display in the latest approving admin for this step (i.e. the one which sent this request)
+                                // In the GUI we display all administrators that performed this step (accumulative profile)
+                                // If we want to do the same for the REST API, we'd need to restructure the response objects JSON
+                            }
+                        }
+                    }
+
+                    // Populate approval details if found
+                    if (matchingApproval != null) {
+                        stepBuilder.approvalAction(matchingApproval.isApproved() ? "APPROVED" : "REJECTED");
+
+                        if (matchingApproval.getApprovalDate() != null) {
+                            stepBuilder.approvalDate(new SimpleDateFormat(DATE_FORMAT).format(matchingApproval.getApprovalDate()));
+                        }
+
+                        if (matchingApproval.getAdmin() != null) {
+                            stepBuilder.approvalAdmin(matchingApproval.getAdmin().toString());
+                        }
+
+                        if (matchingApproval.getComment() != null && !matchingApproval.getComment().isEmpty()) {
+                            stepBuilder.approvalComment(matchingApproval.getComment());
+                        }
+                    } else {
+                        // Fallback if no matching approval found
+                        stepBuilder.approvalAction("COMPLETED");
+                    }
+                    steps.add(stepBuilder.build());
+                    stepNumber++;
+                }
+            }
+        }
+        return steps;
+    }
+
+    static String getUsername(final ApprovalRequest approvalRequest) {
+        if (approvalRequest instanceof AddEndEntityApprovalRequest request) {
+            return request.getEndEntityInformation().getUsername();
+        } else if (approvalRequest instanceof EditEndEntityApprovalRequest request) {
+            return request.getNewEndEntityInformation().getUsername();
+        } else if (approvalRequest instanceof RevocationApprovalRequest request) {
+            return request.getUsername();
+        } else if (approvalRequest instanceof KeyRecoveryApprovalRequest request) {
+            return request.getUsername();
+        } else if (approvalRequest instanceof ChangeStatusEndEntityApprovalRequest request) {
+            return request.getUsername();
+        } else {
+            return null;
         }
     }
 }
