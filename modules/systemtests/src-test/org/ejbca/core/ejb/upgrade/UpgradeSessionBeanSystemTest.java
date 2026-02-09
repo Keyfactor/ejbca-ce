@@ -1251,7 +1251,7 @@ public class UpgradeSessionBeanSystemTest {
             globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigSession
                     .getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
             assertEquals("database.crlgenfetchsize was not migrated.", 4711, globalCesecoreConfiguration.getCrlGenerationFetchSize());
-            assertEquals("database.crlgenfetchordered was not migrated", true, globalCesecoreConfiguration.getCrlGenerationFetchOrdered());
+            assertTrue("database.crlgenfetchordered was not migrated", globalCesecoreConfiguration.getCrlGenerationFetchOrdered());
         } finally {
             globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigSession
                     .getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
