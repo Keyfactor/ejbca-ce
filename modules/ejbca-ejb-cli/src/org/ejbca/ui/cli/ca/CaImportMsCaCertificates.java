@@ -389,7 +389,7 @@ public class CaImportMsCaCertificates extends BaseCaAdminCommand {
             // Format is 'Certificate Template: <TemplateName>' (no quotes, no OID)
             return StringUtils.strip(trimmedLine, "\"");
         }
-}
+    }
 
     private String parseUpn(final BufferedReader reader) throws IOException {
         final String line = parseProperty(reader, "User Principal Name");
