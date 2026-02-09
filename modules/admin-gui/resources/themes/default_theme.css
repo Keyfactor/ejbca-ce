@@ -1757,6 +1757,10 @@ label.align-label > span.ui-outputlabel-label {
 	white-space: nowrap;
 }
 
+.form-label-col label {
+	font-size: 1rem;
+}
+
 p.compositeText {
 	line-height:1.8rem;
 }
