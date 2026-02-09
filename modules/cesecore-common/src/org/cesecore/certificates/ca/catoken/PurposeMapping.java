@@ -125,6 +125,10 @@ public final class PurposeMapping {
             alias = null;
         }
         if (alias!=null && !alias.isEmpty()) {
+            if (purpose==CATokenConstants.CAKEYPURPOSE_KEYENCRYPT
+                    && alias.equalsIgnoreCase(CATokenConstants.CAKEY_ANY_PURPOSE_NONE_INDICATOR)) {
+                return null;
+            }
             return alias;
         }
         // Special handling of these key purposes, because if they do not exist, very strange things can happen 
