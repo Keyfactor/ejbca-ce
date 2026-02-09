@@ -15,19 +15,19 @@ import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalRequestStatus;
 import org.ejbca.core.model.era.RaApprovalRequestInfo;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.era.RaRequestsSearchRequest;
 import org.ejbca.core.model.era.RaRequestsSearchResponse;
-import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.request.SearchApprovalRestRequest;
 import org.ejbca.ui.web.rest.api.io.response.ApprovalRequestStatusRestResponse;
@@ -52,9 +52,9 @@ public class ApprovalRestResource extends BaseRestResource {
     /**
      * Gets the status of an approval request.
      *
-     * @param requestContext        the HTTP request context
-     * @param requestId             the ID of the approval request
-     * @return                      Approval request status
+     * @param requestContext the HTTP request context
+     * @param requestId      the ID of the approval request
+     * @return Approval request status
      * @throws RestException if the request ID is invalid or not found
      */
     public Response getApprovalRequestStatus(final HttpServletRequest requestContext, final int requestId) throws RestException {
@@ -88,8 +88,16 @@ public class ApprovalRestResource extends BaseRestResource {
 
     }
 
+    /**
+     * Search for approval requests.
+     *
+     * @param requestContext
+     * @param searchApprovalRestRequest
+     * @return
+     * @throws RestException
+     */
     public Response getApprovalSearchResults(@Context final HttpServletRequest requestContext,
-                                              final SearchApprovalRestRequest searchApprovalRestRequest) throws RestException {
+                                             @Valid @NotNull final SearchApprovalRestRequest searchApprovalRestRequest) throws RestException {
 
         RaRequestsSearchRequest raRequestsSearchRequest = convertSearchPendingApprovalRestRequestToRaRequestsSearchRequest(searchApprovalRestRequest);
 

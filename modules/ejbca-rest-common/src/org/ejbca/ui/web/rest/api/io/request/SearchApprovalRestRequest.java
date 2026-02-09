@@ -15,10 +15,12 @@ package org.ejbca.ui.web.rest.api.io.request;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
+import org.ejbca.ui.web.rest.api.validator.ValidSearchPendingApprovalRestRequest;
 
 import java.util.Date;
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@ValidSearchPendingApprovalRestRequest
 public class SearchApprovalRestRequest {
 
     @Schema(description = "Search for waiting for this admin approvals", example = "true", requiredMode = Schema.RequiredMode.NOT_REQUIRED)

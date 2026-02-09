@@ -91,17 +91,18 @@ public class ApprovalRestResourceSwagger extends ApprovalRestResource {
     }
 
     @POST
-    @Path("/search")
+    @Path("/searchApprovals")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Get the status of this REST Resource",
-            description = "Returns status, API version and EJBCA version.",
+    @Operation(summary = "Get the approval data for this admin",
+            description = "Returns approval data related to the current admin.",
             responses = {
                     @ApiResponse(
                             responseCode = "200",
                             description = "Successful response",
-                            content = @Content(schema = @Schema(implementation = ApprovalRequestStatusRestResponse.class))
-                    )
+                            content = @Content(schema = @Schema(implementation = SearchApprovalRestRequest.class))
+                    ),
+                    @ApiResponse(responseCode = "400", description = "Invalid search data provided", content = @Content),
             })
     public Response getSearchResutlts(@Context HttpServletRequest requestContext, final SearchApprovalRestRequest searchApprovalRestRequest) throws RestException {
         return super.getApprovalSearchResults(requestContext, searchApprovalRestRequest);
