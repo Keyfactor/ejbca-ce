@@ -1729,6 +1729,28 @@ label.align-label > span.ui-outputlabel-label {
     height: 100%;
 }
 
+.form-vertical-align {
+	table-layout: auto !important;
+}
+
+.form-vertical-align td {
+	vertical-align: middle !important;
+	padding: .5rem .5rem .5rem 0 !important;
+}
+
+.form-vertical-align td:first-child {
+	vertical-align: middle !important;
+}
+
+.form-label-col {
+	width: 1%;
+	white-space: nowrap;
+}
+
+.form-label-col label {
+	font-size: 1rem;
+}
+
 p.compositeText {
 	line-height:1.8rem;
 }
