@@ -73,6 +73,7 @@ import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.query.Criteria;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.EstConfiguration;
 import org.ejbca.config.GlobalConfiguration;
@@ -1232,8 +1233,8 @@ public class UpgradeSessionBeanSystemTest {
         //Stash the orginal values
         GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigSession
                 .getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
-        int originalFetchSize = globalCesecoreConfiguration.getCrlGenerationFetchSize();
-        boolean originalOrdered = globalCesecoreConfiguration.getCrlGenerationFetchOrdered();
+        final int originalFetchSize = globalCesecoreConfiguration.getCrlGenerationFetchSize();
+        final boolean originalOrdered = globalCesecoreConfiguration.getCrlGenerationFetchOrdered();
 
         try {
             //Set the upgrade-from version 
@@ -1255,9 +1256,11 @@ public class UpgradeSessionBeanSystemTest {
         } finally {
             globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigSession
                     .getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
-            globalCesecoreConfiguration.setCrlGenerationFetchOrdered(originalOrdered);
+            globalCesecoreConfiguration.setCrlGenerationFetchOrdered(false);
             globalCesecoreConfiguration.setCrlGenerationFetchSize(originalFetchSize);
             globalConfigSession.saveConfiguration(alwaysAllowtoken, globalCesecoreConfiguration);
+            cesecoreConfigSession.setConfigurationValue("database.crlgenfetchsize", String.valueOf(originalFetchSize));
+            cesecoreConfigSession.setConfigurationValue("database.crlgenfetchordered", String.valueOf(originalOrdered));
         }
     }
     
