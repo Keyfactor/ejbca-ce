@@ -31,6 +31,7 @@ dependencies {
         implementation(project(path = ":modules:ejbca-rest-camanagement", configuration = "archives"))
     }
     compileOnly(libs.commons.lang3)
+    implementation(libs.javassist)
     implementation(libs.reflections)
     implementation(libs.swagger.annotations)
     implementation(libs.swagger.core)
