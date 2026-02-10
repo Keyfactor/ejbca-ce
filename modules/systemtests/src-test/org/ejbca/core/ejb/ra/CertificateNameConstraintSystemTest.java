@@ -21,6 +21,11 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
 
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -66,15 +71,10 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-
 /**
- * Tests name constraint attribute for different combinations of settings in certificate authority, 
- * certificate profile, end entity profile and end entity. 
- * 
+ * Tests name constraint attribute for different combinations of settings in certificate authority,
+ * certificate profile, end entity profile and end entity.
+ *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class CertificateNameConstraintSystemTest extends CaTestCase {
@@ -171,23 +171,23 @@ public class CertificateNameConstraintSystemTest extends CaTestCase {
             + "hvf94hZ+s5T0py4IcO2jGIoX4suSv7PP9LzZPZMQ1QPNTqh/9p7jrmn3Ozh6psDf\n"
             + "q8LBUrD86sdCJt32lNRngXMVrjpnIMt9BKW/2dAr9zxftthSRDgY2W7m+jIEOu8C\n"
             + "duqrkQdiE09DcUE9r6xEK3l0kzZdwJM5uLEISH1AJOGB+iIFJqBFmwN/GxrRwCa4\n" + "EyOsab4=\n" + "-----END CERTIFICATE REQUEST-----";
-    
-    private static final String CSR_NO_DNS_ALLOWED_NC = "-----BEGIN CERTIFICATE REQUEST-----\n" + 
-            "MIICfzCCAWcCAQAwGzELMAkGA1UEBhMCR0IxDDAKBgNVBAMMA2ZvbzCCASIwDQYJ\n" + 
-            "KoZIhvcNAQEBBQADggEPADCCAQoCggEBAL8kVA80c9HkEaTa9HJp6lq3Euetigtm\n" + 
-            "u/NwyCjiVsUahGtxnf7J44Rxcf5mnKqsOeJwORaEuZQN606qK1Im1bU1NirziHEk\n" + 
-            "TTT9Z947kwZBGg7iYs53bqP/+jpg3RJfcDRDWpJe+dA7w4IHGVWtu7z6ib3RZ6Os\n" + 
-            "X/OqtNgMPFeZooVJdZQmH8rpPCaQpDdPSpwUi4Cg+6MwGzWeGn5yqVX03tKF6OdU\n" + 
-            "vjB7eVQ2IzibQMvSti72fS0g8lKbe9N9Nyrwf06gUnVh0CZdTwZigMi1dVwXVh9Z\n" + 
-            "v2pz7oEWQMaV1kA8EnnbAicsgrQZbkINbfReCzZjAuI4MxxN7s4A3KkCAwEAAaAf\n" + 
-            "MB0GCSqGSIb3DQEJDjEQMA4wDAYDVR0RBAUwA4IBLjANBgkqhkiG9w0BAQsFAAOC\n" + 
-            "AQEAdbPp4DohZaDLgGYILAIa5Hk+Lfz4AJkHogrkTZgl6HVoUpJyk1Cc1M/kPm07\n" + 
-            "ARCUtySqIN6652IEQVKEHwxe0ZGz9Gr52amiG1ycvlI+kX0gpG4aWkJCoEcD3RKa\n" + 
-            "i80OtzYNFsD3Pr/gxJZT055EJVzXKBveBATpXg76f22WhmpnoWhGB8BmHkaPai8e\n" + 
-            "ZverUXkXezpcuyylNaVKdR5RxmBsHSZgvPyi1iQ1YMAi5LwHO/JT2TXXBOngl2Ad\n" + 
-            "oYd8YsUk1qHEaiQcB3HyioSHMqMBiqEN+XzRXlsdxcapjqLez6nnvmc6n6smQm56\n" + 
-            "KrV0JLmPk1nHg2vJ9u6AflaviA==\n" + 
-            "-----END CERTIFICATE REQUEST-----"; 
+
+    private static final String CSR_NO_DNS_ALLOWED_NC = "-----BEGIN CERTIFICATE REQUEST-----\n" +
+            "MIICfzCCAWcCAQAwGzELMAkGA1UEBhMCR0IxDDAKBgNVBAMMA2ZvbzCCASIwDQYJ\n" +
+            "KoZIhvcNAQEBBQADggEPADCCAQoCggEBAL8kVA80c9HkEaTa9HJp6lq3Euetigtm\n" +
+            "u/NwyCjiVsUahGtxnf7J44Rxcf5mnKqsOeJwORaEuZQN606qK1Im1bU1NirziHEk\n" +
+            "TTT9Z947kwZBGg7iYs53bqP/+jpg3RJfcDRDWpJe+dA7w4IHGVWtu7z6ib3RZ6Os\n" +
+            "X/OqtNgMPFeZooVJdZQmH8rpPCaQpDdPSpwUi4Cg+6MwGzWeGn5yqVX03tKF6OdU\n" +
+            "vjB7eVQ2IzibQMvSti72fS0g8lKbe9N9Nyrwf06gUnVh0CZdTwZigMi1dVwXVh9Z\n" +
+            "v2pz7oEWQMaV1kA8EnnbAicsgrQZbkINbfReCzZjAuI4MxxN7s4A3KkCAwEAAaAf\n" +
+            "MB0GCSqGSIb3DQEJDjEQMA4wDAYDVR0RBAUwA4IBLjANBgkqhkiG9w0BAQsFAAOC\n" +
+            "AQEAdbPp4DohZaDLgGYILAIa5Hk+Lfz4AJkHogrkTZgl6HVoUpJyk1Cc1M/kPm07\n" +
+            "ARCUtySqIN6652IEQVKEHwxe0ZGz9Gr52amiG1ycvlI+kX0gpG4aWkJCoEcD3RKa\n" +
+            "i80OtzYNFsD3Pr/gxJZT055EJVzXKBveBATpXg76f22WhmpnoWhGB8BmHkaPai8e\n" +
+            "ZverUXkXezpcuyylNaVKdR5RxmBsHSZgvPyi1iQ1YMAi5LwHO/JT2TXXBOngl2Ad\n" +
+            "oYd8YsUk1qHEaiQcB3HyioSHMqMBiqEN+XzRXlsdxcapjqLez6nnvmc6n6smQm56\n" +
+            "KrV0JLmPk1nHg2vJ9u6AflaviA==\n" +
+            "-----END CERTIFICATE REQUEST-----";
 
     @Override
     public String getRoleName() {
@@ -216,7 +216,7 @@ public class CertificateNameConstraintSystemTest extends CaTestCase {
         nameConstExcluded.add("2005:ac7::/64");
         nameConstExcluded.add("C=SE,O=PrimeKey,CN=example.com");
         nameConstExcluded.add("C=SE,  CN=spacing");
-        
+
         List<String> nameConstExcludeAllDNS = new ArrayList<>();
         nameConstExcludeAllDNS.add(".");
 
@@ -224,7 +224,7 @@ public class CertificateNameConstraintSystemTest extends CaTestCase {
         formatedNCExcluded = formatAllNameConstraints(nameConstExcluded);
         formatedNCDNSExcluded = formatAllNameConstraints(nameConstExcludeAllDNS);
 
-        // verify nothing is left from last run 
+        // verify nothing is left from last run
         tearDownNameConstraintsTest();
 
         // create
@@ -237,7 +237,7 @@ public class CertificateNameConstraintSystemTest extends CaTestCase {
 
         // root CA
         log.info("adding root CA: " + TEST_NC_ROOT_CA_NAME);
-        rootCaId = CaTestCase.createTestCA(TEST_NC_ROOT_CA_NAME, 4096, TEST_NC_ROOT_CA_DN, CAInfo.SELFSIGNED, null, rootCertificateProfileId,
+        rootCaId = CaTestCase.createTestCA(TEST_NC_ROOT_CA_NAME, 2048, TEST_NC_ROOT_CA_DN, CAInfo.SELFSIGNED, null, rootCertificateProfileId,
                 formatedNCPermitted, formatedNCExcluded, true, true);
         log.info("Root CA id: " + rootCaId);
         CAInfo cainfo = caSession.getCAInfo(admin, TEST_NC_ROOT_CA_NAME);
@@ -492,7 +492,7 @@ public class CertificateNameConstraintSystemTest extends CaTestCase {
             Assert.fail("Name constraint not found in certificate during " + testCase);
         }
     }
-    
+
     private EndEntityInformation createEndEntityWithNameConstraintAndUserGeneratedToken() throws Exception {
 
         String endEntityName = getRandomizedName(TEST_NC_END_ENTITY_NAME);
@@ -511,7 +511,7 @@ public class CertificateNameConstraintSystemTest extends CaTestCase {
         user = endEntityManagementSession.addUser(admin, user, false);
         return user;
     }
-    
+
     private EndEntityInformation createEndEntityWithNameConstraintNoDNSAndUserGeneratedToken() throws Exception {
 
         String endEntityName = getRandomizedName(TEST_NC_END_ENTITY_NAME);
@@ -571,7 +571,7 @@ public class CertificateNameConstraintSystemTest extends CaTestCase {
         String dummyCAName = getRandomizedName(TEST_NC_EE_DUMMY_PROFILE_NAME);
         int dummyCAId = 0;
         try {
-            dummyCAId = CaTestCase.createTestCA(dummyCAName, 4096, getRandomizedName(TEST_NC_DUMMY_CA_DN), CAInfo.SELFSIGNED, null, dummyProfileId,
+            dummyCAId = CaTestCase.createTestCA(dummyCAName, 2048, getRandomizedName(TEST_NC_DUMMY_CA_DN), CAInfo.SELFSIGNED, null, dummyProfileId,
                     formatedNCPermitted, formatedNCExcluded, true, true);
             log.error("Root CA created without name constraint enabled in certificate profile id: " + dummyCAId);
         } catch (Exception e) {
@@ -586,7 +586,7 @@ public class CertificateNameConstraintSystemTest extends CaTestCase {
         dummyCAName = getRandomizedName(TEST_NC_DUMMY_CA_NAME);
         dummyCAId = 0;
         try {
-            dummyCAId = CaTestCase.createTestCA(dummyCAName, 4096, getRandomizedName(TEST_NC_DUMMY_CA_DN), CAInfo.SELFSIGNED, null, dummyProfileId,
+            dummyCAId = CaTestCase.createTestCA(dummyCAName, 2048, getRandomizedName(TEST_NC_DUMMY_CA_DN), CAInfo.SELFSIGNED, null, dummyProfileId,
                     null, null, true, true);
             log.info("Root CA created without name constraint enabled in certificate profile id: " + dummyCAId);
         } catch (Exception e) {
@@ -727,7 +727,7 @@ public class CertificateNameConstraintSystemTest extends CaTestCase {
         formatedNCExcludedUpdated.add(NameConstraint.parseNameConstraintEntry("addexclusion.check.com"));
 
         log.info("adding sub CA: " + subCAName);
-        int subCaId = CaTestCase.createTestCA(subCAName, 4096, subCADomain, rootCaId, null, subCaCertificateProfileId, formatedNCPermittedUpdated,
+        int subCaId = CaTestCase.createTestCA(subCAName, 2048, subCADomain, rootCaId, null, subCaCertificateProfileId, formatedNCPermittedUpdated,
                 formatedNCExcludedUpdated, true, true);
         log.info("sub CA id: " + subCaId);
 
@@ -767,7 +767,7 @@ public class CertificateNameConstraintSystemTest extends CaTestCase {
         createdSubCas.add(subCAName);
 
         log.info("adding sub CA: " + subCAName);
-        int subCaId = CaTestCase.createTestCA(subCAName, 4096, subCADomain, rootCaId, null, subCaCertificateProfileId, null, null, true, true);
+        int subCaId = CaTestCase.createTestCA(subCAName, 2048, subCADomain, rootCaId, null, subCaCertificateProfileId, null, null, true, true);
         log.info("sub CA id: " + subCaId);
 
         // verify same NC
@@ -793,7 +793,7 @@ public class CertificateNameConstraintSystemTest extends CaTestCase {
         log.info("trying to sub CA with NC with disabled NC at certificate profile: " + subCAName);
         boolean createdIncompatibleSubCA = false;
         try {
-            CaTestCase.createTestCA(subCAName, 4096, subCADomain, rootCaId, null, subCaCertificateProfileId, formatedNCPermitted, formatedNCExcluded,
+            CaTestCase.createTestCA(subCAName, 2048, subCADomain, rootCaId, null, subCaCertificateProfileId, formatedNCPermitted, formatedNCExcluded,
                     true, true);
             createdIncompatibleSubCA = true;
             createdSubCas.add(subCAName);
@@ -840,44 +840,55 @@ public class CertificateNameConstraintSystemTest extends CaTestCase {
         int dummyCAId = 0;
         List<String> permittedNCs = new ArrayList<>(formatedNCPermitted);
         permittedNCs.add(NameConstraint.parseNameConstraintEntry("CN=primeKey.com"));
+        String endEntityName = getRandomizedName(TEST_NC_END_ENTITY_NAME);
+        String endEntityDomain = "CN=primeKey.com";
 
         try {
-            dummyCAId = CaTestCase.createTestCA(dummyCAName, 4096, getRandomizedName(TEST_NC_DUMMY_CA_DN), CAInfo.SELFSIGNED, null,
+            dummyCAId = CaTestCase.createTestCA(dummyCAName, 2048, getRandomizedName(TEST_NC_DUMMY_CA_DN), CAInfo.SELFSIGNED, null,
                     rootCertificateProfileId, permittedNCs, null, true, true);
             log.error("Root CA created without name constraint enabled in certificate profile id: " + dummyCAId);
         } catch (Exception e) {
             log.info("Root CA creation failed as expected without name constraint enabled in certificate profile.");
         }
-
-        // EE with same CN only
-        String endEntityName = getRandomizedName(TEST_NC_END_ENTITY_NAME);
-        String endEntityDomain = "CN=primeKey.com";
-
-        EndEntityInformation user = new EndEntityInformation(endEntityName, endEntityDomain, dummyCAId, null, null,
-                new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, endEntityCertificateProfileId, EndEntityConstants.TOKEN_SOFT_JKS,
-                null);
-        user.setStatus(EndEntityConstants.STATUS_NEW);
-        user.setPassword(TEST_NC_EE_PASSWORD);
-        user = endEntityManagementSession.addUser(admin, user, false);
-        endEntityManagementSession.deleteUser(admin, user.getUsername());
-
-        // EE with different CN
-        endEntityName = getRandomizedName(TEST_NC_END_ENTITY_NAME);
-        endEntityDomain = "CN=notprimeKey.com";
-
-        user = new EndEntityInformation(endEntityName, endEntityDomain, dummyCAId, null, null, new EndEntityType(EndEntityTypes.ENDUSER),
-                endEntityProfileId, endEntityCertificateProfileId, EndEntityConstants.TOKEN_SOFT_JKS, null);
-        user.setStatus(EndEntityConstants.STATUS_NEW);
-        user.setPassword(TEST_NC_EE_PASSWORD);
         try {
+
+            // EE with same CN as NC only
+            EndEntityInformation user = new EndEntityInformation(endEntityName, endEntityDomain, dummyCAId, null, null,
+                    new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, endEntityCertificateProfileId, EndEntityConstants.TOKEN_SOFT_JKS,
+                    null);
+            user.setStatus(EndEntityConstants.STATUS_NEW);
+            user.setPassword(TEST_NC_EE_PASSWORD);
+            user = endEntityManagementSession.addUser(admin, user, false);
+            endEntityManagementSession.deleteUser(admin, endEntityName);
+
+            // EE with different CN
+            endEntityName = getRandomizedName(TEST_NC_END_ENTITY_NAME);
+            endEntityDomain = "CN=notprimeKey.com";
+
+            user = new EndEntityInformation(endEntityName, endEntityDomain, dummyCAId, null, null, new EndEntityType(EndEntityTypes.ENDUSER),
+                    endEntityProfileId, endEntityCertificateProfileId, EndEntityConstants.TOKEN_SOFT_JKS, null);
+            user.setStatus(EndEntityConstants.STATUS_NEW);
+            user.setPassword(TEST_NC_EE_PASSWORD);
+            try {
+                endEntityManagementSession.addUser(admin, user, false);
+                Assert.fail("Successfully created end entity for different domain than permitted in root CA.");
+            } catch (Exception e) {
+                // Do nothing here
+            }
+
+            // Disable name constraint checking on the CA, it should then pass when it ignores
+            // to check the NC present in the CA certificate
+            CAInfo cainfo = caSession.getCAInfo(admin, dummyCAId);
+            cainfo.setDoEnforceNameConstraints(false);
+            caSession.editCA(admin, cainfo);
             endEntityManagementSession.addUser(admin, user, false);
-            Assert.fail("Successfully created end entity for different domain than permitted in root CA.");
-        } catch (Exception e) {
-            // Do nothing here
+        } finally {
+            try {
+                endEntityManagementSession.deleteUser(admin, endEntityName);
+            } catch (Exception e) {} // ignore NosuchEndEntity
+            CaTestCase.removeTestCA(dummyCAName);
+
         }
-
-        CaTestCase.removeTestCA(dummyCAName);
-
     }
 
     @Test
@@ -889,7 +900,7 @@ public class CertificateNameConstraintSystemTest extends CaTestCase {
         permittedNCs.add(NameConstraint.parseNameConstraintEntry("C=SE,CN=primeKey.com"));
 
         try {
-            dummyCAId = CaTestCase.createTestCA(dummyCAName, 4096, getRandomizedName(TEST_NC_DUMMY_CA_DN), CAInfo.SELFSIGNED, null,
+            dummyCAId = CaTestCase.createTestCA(dummyCAName, 2048, getRandomizedName(TEST_NC_DUMMY_CA_DN), CAInfo.SELFSIGNED, null,
                     rootCertificateProfileId, permittedNCs, null, true, true);
             log.error("Root CA created without name constraint enabled in certificate profile id: " + dummyCAId);
         } catch (Exception e) {
@@ -939,7 +950,7 @@ public class CertificateNameConstraintSystemTest extends CaTestCase {
         excludedNCs.add(NameConstraint.parseNameConstraintEntry("CN=primeKey.com"));
 
         try {
-            dummyCAId = CaTestCase.createTestCA(dummyCAName, 4096, getRandomizedName(TEST_NC_DUMMY_CA_DN), CAInfo.SELFSIGNED, null,
+            dummyCAId = CaTestCase.createTestCA(dummyCAName, 2048, getRandomizedName(TEST_NC_DUMMY_CA_DN), CAInfo.SELFSIGNED, null,
                     rootCertificateProfileId, null, excludedNCs, true, true);
             log.error("Root CA created without name constraint enabled in certificate profile id: " + dummyCAId);
         } catch (Exception e) {
@@ -986,7 +997,7 @@ public class CertificateNameConstraintSystemTest extends CaTestCase {
         excludedNCs.add(NameConstraint.parseNameConstraintEntry("C=SE,CN=primeKey.com"));
 
         try {
-            dummyCAId = CaTestCase.createTestCA(dummyCAName, 4096, getRandomizedName(TEST_NC_DUMMY_CA_DN), CAInfo.SELFSIGNED, null,
+            dummyCAId = CaTestCase.createTestCA(dummyCAName, 2048, getRandomizedName(TEST_NC_DUMMY_CA_DN), CAInfo.SELFSIGNED, null,
                     rootCertificateProfileId, null, excludedNCs, true, true);
             log.error("Root CA created without name constraint enabled in certificate profile id: " + dummyCAId);
         } catch (Exception e) {
@@ -1023,7 +1034,7 @@ public class CertificateNameConstraintSystemTest extends CaTestCase {
         CaTestCase.removeTestCA(dummyCAName);
 
     }
-    
+
     @Test
     public void testEndEntityCertAllDomainNamesExcludedInRootCA() throws Exception {
 
@@ -1032,7 +1043,7 @@ public class CertificateNameConstraintSystemTest extends CaTestCase {
         List<String> excludedNCs = new ArrayList<>(formatedNCDNSExcluded);
 
         try {
-            dummyCAId = CaTestCase.createTestCA(dummyCAName, 4096, getRandomizedName(TEST_NC_DUMMY_CA_DN), CAInfo.SELFSIGNED, null,
+            dummyCAId = CaTestCase.createTestCA(dummyCAName, 2048, getRandomizedName(TEST_NC_DUMMY_CA_DN), CAInfo.SELFSIGNED, null,
                     rootCertificateProfileId, null, excludedNCs, true, true);
             log.error("Root CA created without name constraint enabled in certificate profile id: " + dummyCAId);
         } catch (Exception e) {
@@ -1057,7 +1068,7 @@ public class CertificateNameConstraintSystemTest extends CaTestCase {
         }
         CaTestCase.removeTestCA(dummyCAName);
     }
-    
+
     @Test
     public void testUploadedCRLAgainstEndEntityNameConstraintDifferentNCinCSR() throws Exception {
 
@@ -1088,14 +1099,14 @@ public class CertificateNameConstraintSystemTest extends CaTestCase {
         endEntityManagementSession.deleteUser(admin, user.getUsername());
 
     }
-    
+
     @Test
     public void testUploadedCRLAgainstEndEntityNameConstraintNoDNSAllowedNCinCSR() throws Exception {
         List<String> nameConstExcluded = new ArrayList<>();
         nameConstExcluded.add(".");
 
         EndEntityInformation user = createEndEntityWithNameConstraintNoDNSAndUserGeneratedToken();
-        
+
         RequestMessage req = prepareRequestMessage(CSR_NO_DNS_ALLOWED_NC, user);
 
         ResponseMessage resp = signSession.createCertificate(admin, req, X509ResponseMessage.class, null);
@@ -1104,10 +1115,10 @@ public class CertificateNameConstraintSystemTest extends CaTestCase {
 
         endEntityManagementSession.deleteUser(admin, user.getUsername());
     }
-    
+
     @Test
     public void testZ_URISupportInNameConstraint() throws Exception {
-                
+
         // create sub CA with name constraints, same sub CA profile
         String subCAName = getRandomizedName(TEST_NC_SUB_CA_NAME);
         String subCADomain = getRandomizedName(TEST_NC_SUB_CA_DN);
@@ -1115,31 +1126,31 @@ public class CertificateNameConstraintSystemTest extends CaTestCase {
 
         List<String> formatedNCPermittedUpdated = new ArrayList<>();
         List<String> formatedNCExcludedUpdated = new ArrayList<>();
-        
+
         List<String> nameConstPermitted = new ArrayList<>();
         nameConstPermitted.add("uri:.permit.this.com");
         nameConstPermitted.add("uri:.allowthis.this.com");
 
         List<String> nameConstExcluded = new ArrayList<>();
         nameConstExcluded.add("uri:.forbid.this.com");
-        
+
         formatedNCPermittedUpdated.addAll(formatAllNameConstraints(nameConstPermitted));
         formatedNCExcludedUpdated.addAll(formatAllNameConstraints(nameConstExcluded));
-        
+
         log.info("adding sub CA: " + subCAName);
-        int subCaId = CaTestCase.createTestCA(subCAName, 4096, subCADomain, rootCaId, null, subCaCertificateProfileId, formatedNCPermittedUpdated,
+        int subCaId = CaTestCase.createTestCA(subCAName, 2048, subCADomain, rootCaId, null, subCaCertificateProfileId, formatedNCPermittedUpdated,
                 formatedNCExcludedUpdated, true, true);
         log.info("sub CA id: " + subCaId);
-                
+
         // modify EE profile, add URI + mark required, mark CN as optional
-        endEntityProfile.setRequired(DnComponents.COMMONNAME,0,false); 
+        endEntityProfile.setRequired(DnComponents.COMMONNAME,0,false);
 
         endEntityProfile.addField(DnComponents.UNIFORMRESOURCEID);
         endEntityProfile.setRequired(DnComponents.UNIFORMRESOURCEID, 0, true);
-        
+
         endEntityProfileSession.changeEndEntityProfile(admin, TEST_NC_EE_PROFILE_NAME, endEntityProfile);
         log.info("updated end entity profile id: " + endEntityProfileId);
-        
+
         // create EE with URI in permitted NC list - no need to generate certificate
         String endEntityName = getRandomizedName(TEST_NC_END_ENTITY_NAME);
         String endEntityDomain = getRandomizedName(TEST_NC_END_ENTITY_DN);
@@ -1151,7 +1162,7 @@ public class CertificateNameConstraintSystemTest extends CaTestCase {
         user.setStatus(EndEntityConstants.STATUS_NEW);
         user.setPassword(TEST_NC_EE_PASSWORD);
         user.setSubjectAltName(URI_MARKER + "=http://www.permit.this.com/abc");
-        
+
         ExtendedInformation extendedInfo = new ExtendedInformation();
         extendedInfo.setNameConstraintsPermitted(formatedNCPermittedUpdated);
         extendedInfo.setNameConstraintsExcluded(formatedNCExcludedUpdated);
@@ -1165,7 +1176,7 @@ public class CertificateNameConstraintSystemTest extends CaTestCase {
             log.error("End entity with valid URI as SAN creation failed.", e);
             Assert.fail("End entity with valid URI as SAN creation failed.");
         }
-        
+
         byte[] encodedKeyStore = null;
         try {
             encodedKeyStore = keyStoreCreateSessionBean.generateOrKeyRecoverTokenAsByteArray(admin, createdUser.getUsername(),
@@ -1177,7 +1188,7 @@ public class CertificateNameConstraintSystemTest extends CaTestCase {
         endEntityManagementSession.deleteUser(admin, endEntityName);
         Assert.assertNotNull("Key store creation failed with user with valid URI", encodedKeyStore);
 
-        
+
         // create EE with URI in permitted NC list with different subpath
         endEntityName = getRandomizedName(TEST_NC_END_ENTITY_NAME);
         endEntityDomain = getRandomizedName(TEST_NC_END_ENTITY_DN);
@@ -1189,7 +1200,7 @@ public class CertificateNameConstraintSystemTest extends CaTestCase {
         user.setPassword(TEST_NC_EE_PASSWORD);
         user.setSubjectAltName(URI_MARKER + "=http://www.permit.this.com/xyz");
         user.setExtendedInformation(extendedInfo);
-        
+
         try {
             createdUser = endEntityManagementSession.addUser(admin, user, false);
             Assert.assertTrue(endEntityManagementSession.existsUser(endEntityName));
@@ -1198,11 +1209,11 @@ public class CertificateNameConstraintSystemTest extends CaTestCase {
             log.error("End entity with valid URI as SAN creation failed.", e);
             Assert.fail("End entity with valid URI as SAN creation failed.");
         }
-        
+
         // create EE with URI in excluded NC list - Negative
         endEntityName = getRandomizedName(TEST_NC_END_ENTITY_NAME);
         endEntityDomain = getRandomizedName(TEST_NC_END_ENTITY_DN);
-        
+
         user = new EndEntityInformation(endEntityName, endEntityDomain, subCaId, null, null,
                 new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, endEntityCertificateProfileId, EndEntityConstants.TOKEN_SOFT_JKS,
                 null);
@@ -1210,7 +1221,7 @@ public class CertificateNameConstraintSystemTest extends CaTestCase {
         user.setPassword(TEST_NC_EE_PASSWORD);
         user.setSubjectAltName(URI_MARKER + "=http://www.forbid.this.com/xyz");
         user.setExtendedInformation(extendedInfo);
-        
+
         try {
             createdUser = endEntityManagementSession.addUser(admin, user, false);
             Assert.assertTrue(endEntityManagementSession.existsUser(endEntityName));
@@ -1218,10 +1229,10 @@ public class CertificateNameConstraintSystemTest extends CaTestCase {
         } catch (Exception e) {
 
         }
-        
+
         // create EE with URI not in any NC list - Negative
         user.setSubjectAltName(URI_MARKER + "=http://www.random.com/xyz");
-        
+
         try {
             createdUser = endEntityManagementSession.addUser(admin, user, false);
             Assert.assertTrue(endEntityManagementSession.existsUser(endEntityName));
@@ -1229,14 +1240,14 @@ public class CertificateNameConstraintSystemTest extends CaTestCase {
         } catch (Exception e) {
 
         }
-        
+
         // modify EE profile, add URI + not required
         endEntityProfile.addField(DnComponents.UNIFORMRESOURCEID);
         endEntityProfile.setRequired(DnComponents.UNIFORMRESOURCEID, 1, false);
-        
+
         endEntityProfileSession.changeEndEntityProfile(admin, TEST_NC_EE_PROFILE_NAME, endEntityProfile);
         log.info("updated end entity profile id: " + endEntityProfileId);
-        
+
         // create EE with URI in permitted NC list with different subpath for multiple URIs in permitted
         endEntityName = getRandomizedName(TEST_NC_END_ENTITY_NAME);
         endEntityDomain = getRandomizedName(TEST_NC_END_ENTITY_DN);
@@ -1246,10 +1257,10 @@ public class CertificateNameConstraintSystemTest extends CaTestCase {
                 null);
         user.setStatus(EndEntityConstants.STATUS_NEW);
         user.setPassword(TEST_NC_EE_PASSWORD);
-        user.setSubjectAltName(URI_MARKER + "=http://www.permit.this.com/xyz," + 
+        user.setSubjectAltName(URI_MARKER + "=http://www.permit.this.com/xyz," +
                                         URI_MARKER + "=http://www.allowthis.this.com/xyz");
         user.setExtendedInformation(extendedInfo);
-        
+
         try {
             createdUser = endEntityManagementSession.addUser(admin, user, false);
             Assert.assertTrue(endEntityManagementSession.existsUser(endEntityName));
@@ -1258,7 +1269,7 @@ public class CertificateNameConstraintSystemTest extends CaTestCase {
             log.error("End entity with valid URI as SAN creation failed.", e);
             Assert.fail("End entity with valid URI as SAN creation failed.");
         }
-        
+
         // create EE with URI in permitted NC list with different subpath for multiple URIs with one random URI
         endEntityName = getRandomizedName(TEST_NC_END_ENTITY_NAME);
         endEntityDomain = getRandomizedName(TEST_NC_END_ENTITY_DN);
@@ -1268,43 +1279,43 @@ public class CertificateNameConstraintSystemTest extends CaTestCase {
                 null);
         user.setStatus(EndEntityConstants.STATUS_NEW);
         user.setPassword(TEST_NC_EE_PASSWORD);
-        user.setSubjectAltName(URI_MARKER + "=http://www.permit.this.com/xyz," + 
+        user.setSubjectAltName(URI_MARKER + "=http://www.permit.this.com/xyz," +
                                         URI_MARKER + "=http://www.random.com/xyz");
         user.setExtendedInformation(extendedInfo);
-        
+
         try {
             createdUser = endEntityManagementSession.addUser(admin, user, false);
             Assert.fail("End entity with non-permitted URI as SAN creation failed.");
         } catch (Exception e) {
-            
+
         }
-        
+
         // create Sub CA signed by another Sub CA with forbidden URI in SAN - negative
         subCAName = getRandomizedName(TEST_NC_SUB_CA_NAME);
         subCADomain = getRandomizedName(TEST_NC_SUB_CA_DN);
-        
+
         try {
-            String subjectAltName = URI_MARKER + "=http://www.forbid.this.com/xyz"; 
-            CaTestCase.createTestCA(subCAName, 4096, subCADomain, subCaId, null, subCaCertificateProfileId, formatedNCPermittedUpdated,
+            String subjectAltName = URI_MARKER + "=http://www.forbid.this.com/xyz";
+            CaTestCase.createTestCA(subCAName, 2048, subCADomain, subCaId, null, subCaCertificateProfileId, formatedNCPermittedUpdated,
                     formatedNCExcludedUpdated, true, true, null, subjectAltName);
             createdSubCas.add(subCAName);
             Assert.fail("Sub CA created with SAN in forbidden URI name constraints.");
         } catch (Exception e) {
-            
+
         }
-        
+
         // create Sub CA signed by another Sub CA with not in permitted URI in SAN - negative
         subCAName = getRandomizedName(TEST_NC_SUB_CA_NAME);
         subCADomain = getRandomizedName(TEST_NC_SUB_CA_DN);
-        
+
         try {
-            String subjectAltName = URI_MARKER + "=http://www.random.com/xyz"; 
-            CaTestCase.createTestCA(subCAName, 4096, subCADomain, subCaId, null, subCaCertificateProfileId, formatedNCPermittedUpdated,
+            String subjectAltName = URI_MARKER + "=http://www.random.com/xyz";
+            CaTestCase.createTestCA(subCAName, 2048, subCADomain, subCaId, null, subCaCertificateProfileId, formatedNCPermittedUpdated,
                     formatedNCExcludedUpdated, true, true, null, subjectAltName);
             createdSubCas.add(subCAName);
             Assert.fail("Sub CA created with SAN not in permitted URI name constraints.");
         } catch (Exception e) {
-            
+
         }
     }
 }
