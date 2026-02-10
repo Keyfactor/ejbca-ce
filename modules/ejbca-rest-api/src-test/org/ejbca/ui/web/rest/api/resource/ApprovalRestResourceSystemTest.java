@@ -9,14 +9,18 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.resource;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.log4j.Logger;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.certificates.ca.*;
+import org.cesecore.certificates.ca.ApprovalRequestType;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -38,8 +42,12 @@ import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalRequestStatus;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
-import org.ejbca.core.model.era.*;
+import org.ejbca.core.model.era.RaApprovalRequestInfo;
+import org.ejbca.core.model.era.RaApprovalResponseRequest;
+import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.core.model.era.TestRaMasterApiProxySessionRemote;
 import org.ejbca.ui.web.rest.api.InMemoryRestServer;
+import org.ejbca.ui.web.rest.api.io.request.SearchApprovalRestRequest;
 import org.ejbca.ui.web.rest.api.resource.swagger.ApprovalRestResourceSwagger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -167,6 +175,92 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
         assertEquals(Response.Status.OK.getStatusCode(), actualResponse.getStatus());
         assertJsonContentType(actualResponse);
         assertProperJsonStatusResponse(expectedStatus, expectedVersion, expectedRevision, actualJsonString);
+    }
+
+    @Test
+    public void shouldReturnResultsForSearchApprovals() throws Exception {
+
+        SearchApprovalRestRequest searchApprovalRestRequest = SearchApprovalRestRequest.builder()
+                .searchingExpired(true)
+                .searchingPending(true)
+                .searchingWaitingForMe(true)
+                .searchingHistorical(true)
+                .build();
+
+        // Construct POST  request
+        final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
+        final String requestBody = objectMapper.writeValueAsString(searchApprovalRestRequest);
+        final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
+
+        // Send request
+        final Response actualResponse = newRequest("/v1/approval/search").request().post(requestEntity);
+        final String actualJsonString = actualResponse.readEntity(String.class);
+        // Verify response
+        assertJsonContentType(actualResponse);
+        final JSONArray actualJsonArray = (JSONArray) jsonParser.parse(actualJsonString);
+        assertEquals(1, actualJsonArray.size());
+        final JSONObject actualJsonObject = (JSONObject) actualJsonArray.get(0);
+        final Long approvalRequestId = (Long) actualJsonObject.get("request_id");
+        assertNotNull(approvalRequestId);
+        assertEquals(addEndEntityApprovalRequestId.intValue(), approvalRequestId.intValue());
+        final String approvalRequestType = (String) actualJsonObject.get("request_type");
+        assertNotNull(approvalRequestType);
+        assertEquals("Add End Entity", approvalRequestType);
+        final String approvalRequestDate = (String) actualJsonObject.get("request_date");
+        assertNotNull(approvalRequestDate);
+        final String approvalRequestExpirationDate = (String) actualJsonObject.get("expiration_date");
+        assertNotNull(approvalRequestExpirationDate);
+        final String approvalRequestedBy = (String) actualJsonObject.get("requested_by");
+        assertNotNull(approvalRequestedBy);
+        assertEquals("ApprovalRestResourceSystemTest", approvalRequestedBy);
+        final Boolean approvalRequestCanBeApprovedByMe = (Boolean) actualJsonObject.get("can_be_approved_by_me");
+        assertNotNull(approvalRequestCanBeApprovedByMe);
+
+
+        // Now trigger a new end entity approval request
+        final String endEntityName = this.getClass().getName() + "_ee_" + System.currentTimeMillis();
+        EndEntityInformation userdata = new EndEntityInformation(endEntityName, "CN=" +endEntityName, caId, null, null, new EndEntityType(
+                EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                EndEntityConstants.TOKEN_SOFT_P12, null);
+        userdata.setPassword("foo123");
+        int newApprovalRequestId = 0;
+        try {
+            endEntityManagementSession.addUser(alwaysAllowToken, userdata, true);
+        } catch (WaitingForApprovalException e) {
+            // Capture the requestId
+            newApprovalRequestId = e.getRequestId();
+
+            final Response actualResponseUpdated = newRequest("/v1/approval/search").request().post(requestEntity);
+
+            final String actualJsonStringUpdated = actualResponseUpdated.readEntity(String.class);
+            // Verify response
+            assertJsonContentType(actualResponseUpdated);
+            final JSONArray actualJsonArrayUpdated = (JSONArray) jsonParser.parse(actualJsonStringUpdated);
+            assertEquals(2, actualJsonArrayUpdated.size());
+
+            final JSONObject actualJsonObjectUpdated = (JSONObject) actualJsonArrayUpdated.get(1);
+            assertNotNull(actualJsonObjectUpdated.get("request_id"));
+
+            final String approvalRequestTypeUpdated = (String) actualJsonObjectUpdated.get("request_type");
+            assertNotNull(approvalRequestTypeUpdated);
+            assertEquals("Add End Entity", approvalRequestTypeUpdated);
+
+            final String approvalRequestDateUpdated = (String) actualJsonObjectUpdated.get("request_date");
+            assertNotNull(approvalRequestDateUpdated);
+            final String approvalRequestExpirationDateUpdated = (String) actualJsonObjectUpdated.get("expiration_date");
+            assertNotNull(approvalRequestExpirationDateUpdated);
+            final String approvalRequestedByUpdated = (String) actualJsonObjectUpdated.get("requested_by");
+            assertNotNull(approvalRequestedByUpdated);
+            assertEquals("ApprovalRestResourceSystemTest", approvalRequestedByUpdated);
+            final Boolean approvalRequestCanBeApprovedByMeUpdated = (Boolean) actualJsonObjectUpdated.get("can_be_approved_by_me");
+            assertNotNull(approvalRequestCanBeApprovedByMeUpdated);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Test setup failed. Could not add end entity", e);
+        } finally {
+            //  Clean up the extra approval request
+            approvalSession.removeApprovalRequest(alwaysAllowToken, newApprovalRequestId);
+        }
     }
 
     @Test

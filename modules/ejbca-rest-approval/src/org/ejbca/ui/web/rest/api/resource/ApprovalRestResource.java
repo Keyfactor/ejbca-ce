@@ -24,7 +24,15 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
-import org.ejbca.core.model.approval.*;
+import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
+import org.ejbca.core.model.approval.Approval;
+import org.ejbca.core.model.approval.ApprovalDataVO;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.ApprovalRequest;
+import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
+import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
+import org.ejbca.core.model.approval.ApprovalRequestStatus;
+import org.ejbca.core.model.approval.SelfApprovalException;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityApprovalRequest;
@@ -104,7 +112,6 @@ public class ApprovalRestResource extends BaseRestResource {
             log.error(e.getMessage(), e);
             throw new RestException(Response.Status.FORBIDDEN.getStatusCode(), "Missing or invalid authentication.");
         }
-
     }
 
     /**
@@ -136,7 +143,7 @@ public class ApprovalRestResource extends BaseRestResource {
                                 .requestDate(approvalRequestInfo.getApprovalData().getRequestDate())
                                 .expirationDate(approvalRequestInfo.getApprovalData().getExpireDate())
                                 .requestType(getApprovalTypeName(approvalRequestInfo.getApprovalData().getApprovalType()))
-                                .requestedBy(approvalRequestInfo.getApprovalData().getApprovalRequest().getRequestAdmin().toString())
+                                .requestedBy(getRequesterAdmin(approvalRequestInfo.getApprovalData().getApprovalRequest().getRequestAdmin().toString()))
                                 .build();
                 searchApprovalRestResponses.add(searchApprovalRestResponse);
             }
@@ -148,7 +155,7 @@ public class ApprovalRestResource extends BaseRestResource {
         }
     }
 
-     /** Processes an approval request by approving or rejecting it.
+    /** Processes an approval request by approving or rejecting it.
      *
      * @param requestContext the HTTP servlet request context
      * @param requestId the ID of the approval request to process
@@ -370,5 +377,12 @@ public class ApprovalRestResource extends BaseRestResource {
         raRequestsSearchRequest.setSearchingWaitingForMe(searchApprovalRestRequest.isSearchingWaitingForMe());
         return raRequestsSearchRequest;
     }
+
+    private String getRequesterAdmin(final String adminDn) {
+        return adminDn.startsWith("CN=")
+                ? adminDn.substring("CN=".length())
+                : adminDn;
+    }
+
 
 }

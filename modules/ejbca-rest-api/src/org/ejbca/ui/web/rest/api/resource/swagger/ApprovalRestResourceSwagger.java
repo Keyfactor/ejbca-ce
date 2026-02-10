@@ -93,20 +93,21 @@ public class ApprovalRestResourceSwagger extends ApprovalRestResource {
     }
 
     @POST
-    @Path("/searchApprovals")
+    @Path("/search")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Get the approval data for this admin",
-            description = "Returns approval data related to the current admin.",
+            description = "Returns approval data for to the current admin.",
             responses = {
                     @ApiResponse(
                             responseCode = "200",
-                            description = "Successful response",
+                            description = "Successful search of approval data",
                             content = @Content(schema = @Schema(implementation = SearchApprovalRestRequest.class))
                     ),
                     @ApiResponse(responseCode = "400", description = "Invalid search data provided", content = @Content),
+                    @ApiResponse(responseCode = "403", description = "Authorization denied for the current admin", content = @Content)
             })
-    public Response getSearchResutlts(@Context HttpServletRequest requestContext, final SearchApprovalRestRequest searchApprovalRestRequest) throws RestException {
+    public Response getSearchResults(@Context HttpServletRequest requestContext, final SearchApprovalRestRequest searchApprovalRestRequest) throws RestException {
         return super.getApprovalSearchResults(requestContext, searchApprovalRestRequest);
     }
 
