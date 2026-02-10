@@ -31,7 +31,6 @@ dependencies {
         implementation(project(path = ":modules:ejbca-rest-camanagement", configuration = "archives"))
     }
     compileOnly(libs.commons.lang3)
-    implementation(libs.javassist)
     implementation(libs.reflections)
     implementation(libs.swagger.annotations)
     implementation(libs.swagger.core)
@@ -40,6 +39,7 @@ dependencies {
     runtimeOnly(libs.swagger.integration)
     runtimeOnly(libs.classgraph)
     runtimeOnly(libs.javassist)
+    testRuntimeOnly(libs.guava)
     testImplementation(project(":modules:cesecore-entity"))
     testImplementation(project(":modules:ejbca-common-web"))
     testImplementation(project(":modules:systemtests").dependencyProject.sourceSets["test"].output)
