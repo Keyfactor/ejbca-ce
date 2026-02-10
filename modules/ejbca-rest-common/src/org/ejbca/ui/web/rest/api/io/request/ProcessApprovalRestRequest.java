@@ -13,10 +13,12 @@
 package org.ejbca.ui.web.rest.api.io.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import org.ejbca.ui.web.rest.api.validator.ValidProcessApprovalRestRequest;
 
 /**
  * JSON input for processing (approving/rejecting) an approval request.
  */
+@ValidProcessApprovalRestRequest
 @Schema(name = "ProcessApprovalRestRequest", description = "Request to process (approve or reject) an approval request")
 public class ProcessApprovalRestRequest {
 
