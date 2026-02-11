@@ -68,6 +68,13 @@ ejbca:
     SMTP_USERNAME: ejbca-mail
     # SMTP password should be given as secrets, see SMTP_PASSWORD secret in envRaw
     #SMTP_PASSWORD: ejbca
+
+    # Performance tuning parameter
+    #DATABASE_MAX_POOL_SIZE: 150
+    #EJB_THREAD_POOL_COUNT: 100
+    #MAX_CONNECTIONS: 2000
+    #NO_REQUEST_TIMEOUT: 5000
+
   #envRaw:
   #  - name: DATABASE_USER
   #    valueFrom:
