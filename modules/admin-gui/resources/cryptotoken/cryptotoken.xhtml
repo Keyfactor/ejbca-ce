@@ -889,14 +889,21 @@
                 if (alias === '') {
                     return;
                 }
-                var hasSuffix = /-COMPOSITE[0-9]+$/.test(alias);
+                var hasSuffix = /-COMPOSITE[0-9A-Z]*$/.test(alias);
                 var keyspec = document.getElementById('currentCryptoTokenAliasesForm:genNewKeyPairSpec').value;
                 var shouldHaveSuffix = /MLDSA[0-9]+-/.test(keyspec);
                 if (hasSuffix != shouldHaveSuffix) {
                     if (shouldHaveSuffix) {
-                        aliasBox.value = alias + '-COMPOSITE';
+                        // If a key sequence might possibly be present (there's no way to know for sure whether the
+                        // key alias ends with a key sequence), let the user manually put the "-COMPOSITE" suffix
+                        // in the correct place.
+                        // (Note that it is uncommon to manually create a key with a key sequence, it is mainly
+                        // added automatically on rekey)
+                        if (!/.[0-9A-Z]{5,5}$/.test(alias)) {
+                            aliasBox.value = alias + '-COMPOSITE';
+                        }
                     } else {
-                        aliasBox.value = alias.replace(/-COMPOSITE([0-9]+)$/, '\1');
+                        aliasBox.value = alias.replace(/-COMPOSITE([0-9A-Z]*)$/, '$1');
                     }
                 }
             }
