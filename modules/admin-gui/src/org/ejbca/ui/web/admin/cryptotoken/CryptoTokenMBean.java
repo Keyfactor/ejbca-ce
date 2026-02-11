@@ -55,6 +55,7 @@ import org.cesecore.keys.token.AvailableCryptoToken;
 import org.cesecore.keys.token.AwsKmsAuthenticationType;
 import org.cesecore.keys.token.AzureAuthenticationType;
 import org.cesecore.keys.token.AzureCryptoToken;
+import org.cesecore.keys.token.CryptoTokenCompositeWrapper;
 import org.cesecore.keys.token.CryptoTokenConstants;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.CryptoTokenInfo;
@@ -89,6 +90,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -856,17 +858,11 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             return placeholder;
         }
 
-        public boolean isComposite() {
-            return alias.endsWith("-COMPOSITE");
-        }
+        public boolean isComposite() { return CryptoTokenCompositeWrapper.isCompositeAlias(alias); }
 
-        public String getCompositeComponentPqc() {
-            return Strings.CS.removeEnd(alias, "-COMPOSITE") + "-COMPQ";
-        }
+        public String getCompositeComponentPqc() { return CryptoTokenCompositeWrapper.getPqcComponentAlias(alias); }
 
-        public String getCompositeComponentClassical() {
-            return Strings.CS.removeEnd(alias, "-COMPOSITE") + "-COMPC";
-        }
+        public String getCompositeComponentClassical() { return CryptoTokenCompositeWrapper.getClassicalComponentAlias(alias); }
 
         public boolean isSelected() {
             return selected;
