@@ -207,6 +207,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         data.put(alias + SIGNING_TOKEN_ID, "");
         data.put(alias + SIGNING_KEY_ALIAS, "");
         data.put(alias + SIGNING_CERTIFICATE, "");
+        data.put(alias + ENCRYPTION_CAS, "");
     }
 
     // return all the key with an alias
@@ -683,15 +684,26 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         return intuneProperties;
     }
 
+    @SuppressWarnings("unchecked")
     public String getValue(String key, String alias) {
         if (aliasExists(alias)) {
             if (data.containsKey(key)) {
                 if (data.get(key) instanceof Boolean) {
                     return Boolean.toString((Boolean) data.get(key));
                 } else if (data.get(key) instanceof Map<?,?> || data.get(key) instanceof ArrayList<?>) {
-                    return null; //TODO: this must return proper value when fixing Configdump for scep. See ECA-13877
+                    log.trace("GetValue: " + key + " - value - " + data.get(key));
+                    // List of encryptionCAs (GUI: 'Available CAs') from CA-mode for configdump.
+                    if ((alias + "." + ScepConfiguration.ENCRYPTION_CAS).equals(key)) {
+                        return String.join(",", (ArrayList<String>) data.get(key));
+                    }
+                    return null;
                 }
-                return (String) data.get(key);
+                if (data.get(key) != null) {
+                    return String.valueOf(data.get(key));
+                    // return String.valueOf(data.get(key)).replaceAll("[\\[\\]',]", "");
+                } else {
+                    return (String) data.get(key);
+                }
             } else {
                 log.info("Could not find key '" + key + "' in the SCEP configuration data");
             }
@@ -998,6 +1010,9 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
                 if (data.get(alias + SIGNING_CERTIFICATE) == null) {
                     data.put(alias + SIGNING_CERTIFICATE, "");
                 }
+                if (data.get(alias + ENCRYPTION_CAS) == null) {
+                    data.put(alias + ENCRYPTION_CAS, "");
+                }
                 /// Proxy CA
                 if (data.get(alias + SCEP_PROXYCA_ENCRYPTION_CERT_TEMPLATE) == null) {
                     data.put(alias + SCEP_PROXYCA_ENCRYPTION_CERT_TEMPLATE, "");
@@ -1040,7 +1055,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public void setEncryptionCertificate(String alias, String pemEncodedCertificate) {
         setValue(alias + "." + ENCRYPTION_CERTIFICATE, pemEncodedCertificate == null ? "" : pemEncodedCertificate, alias);
     }
-
+    
     public String getEncryptionKeyAlias(String alias) {
         String value = getValue(alias + "." + ENCRYPTION_KEY_ALIAS, alias);
         if (value == null) {
@@ -1118,16 +1133,27 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
      * 
      * @return map of string to string
      */
+    
     @SuppressWarnings("unchecked")
     private ArrayList<String> getListValue(String key, String alias) {
         if (aliasExists(alias)) {
-            return (ArrayList<String>) data.get(key);
+            try {
+                return (ArrayList<String>) data.get(key);
+            } catch (ClassCastException e) {
+                final ArrayList<String> result = new ArrayList<String>();
+                final String Cas = data.get(key).toString();
+                if (Cas != null && Cas.length() > 0) {
+                    Cas.replaceAll("[\\[\\]',]", "");
+                    result.addAll(Arrays.asList(Cas.split(" ")));
+                }
+                return result;
+            }
         } else {
             log.info("SCEP alias '" + alias + "' does not exist trying to get value for '" + key + "'");
         }
         return null;
     }
-
+    
     public void setSigningAlgorithm(final String alias, final String sigAlg) {
         setValue(alias + "." + SIGNING_ALGORITHM, sigAlg, alias);
     }

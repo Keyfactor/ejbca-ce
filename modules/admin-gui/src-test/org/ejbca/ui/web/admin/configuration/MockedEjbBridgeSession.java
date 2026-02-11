@@ -69,6 +69,7 @@ import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.era.RaMasterApiSessionLocal;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 import org.ejbca.core.protocol.scep.ScepKeyRenewalSessionLocal;
+import org.ejbca.core.protocol.scep.ScepRaCertificateIssuerSessionLocal;
 
 /**
  * Mocked clalss
@@ -177,6 +178,7 @@ echo "    }"
     private OcspDataSessionLocal ocspDataSession;
     private OcspResponseCleanupSessionLocal ocspResponseCleanupSession;
     private ScepKeyRenewalSessionLocal scepKeyRenewalSessionLocal;
+    private ScepRaCertificateIssuerSessionLocal scepRaCertificateIssuerSessionLocal;
 
     @Override public synchronized AdminPreferenceSessionLocal getAdminPreferenceSession() {
         if (adminPreferenceSession == null) { adminPreferenceSession = EasyMock.createStrictMock(AdminPreferenceSessionLocal.class); }
@@ -383,6 +385,12 @@ echo "    }"
     public ScepKeyRenewalSessionLocal getScepKeyRenewalSession() {
         if (scepKeyRenewalSessionLocal == null) { scepKeyRenewalSessionLocal = EasyMock.createStrictMock(ScepKeyRenewalSessionLocal.class); }
         return scepKeyRenewalSessionLocal;
+    }
+    
+    @Override
+    public ScepRaCertificateIssuerSessionLocal getScepRaCertificateIssuerSession() {
+        if (scepRaCertificateIssuerSessionLocal == null) { scepRaCertificateIssuerSessionLocal = EasyMock.createStrictMock(ScepRaCertificateIssuerSessionLocal.class); }
+        return scepRaCertificateIssuerSessionLocal;
     }
 
     public List<Object> getAllMockObjects() {
