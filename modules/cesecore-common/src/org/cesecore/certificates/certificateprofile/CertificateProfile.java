@@ -208,6 +208,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String EABNAMESPACES = "eabnamespaces";
 
     protected static final String APPROVALS = "approvals";
+    protected static final String USE_SIGNATURE_VERIFICATION = "usesignatureverification";
 
     protected static final String SIGNATUREALGORITHM = "signaturealgorithm";
     private static final String ALTERNATIVE_SIGNATUREALGORITHM = "alternativeSignatureAlgorithm";
@@ -471,6 +472,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setAvailableEcCurvesAsList(Collections.singletonList(ANY_EC_CURVE));
         setAvailableBitLengthsAsList(AlgorithmTools.getAllBitLengths());
         setSignatureAlgorithm(null);
+        setUseSignatureVerification(true);
         setUseAlternativeSignature(false);
         setAlternativeAvailableKeyAlgorithmsAsList(
                 AlgorithmTools.getAvailableKeyAlgorithms().stream().filter(alg -> AlgorithmTools.isPQC(alg)).collect(Collectors.toList()));
@@ -1521,6 +1523,21 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     public void setSignatureAlgorithm(String signAlg) {
         data.put(SIGNATUREALGORITHM, signAlg);
+    }
+
+    /**
+     * @return true if signature verification on the issued certificate should be performed, false otherwise.
+     */
+    public boolean getUseSignatureVerification() {
+        data.putIfAbsent(USE_SIGNATURE_VERIFICATION, true);
+        return (Boolean) data.get(USE_SIGNATURE_VERIFICATION);
+    }
+
+    /**
+     * @param useSignatureVerification true if signature verification on the issued certificate should be performed, false otherwise.
+     */
+    public void setUseSignatureVerification(final boolean useSignatureVerification) {
+        data.put(USE_SIGNATURE_VERIFICATION, useSignatureVerification);
     }
 
     /**
