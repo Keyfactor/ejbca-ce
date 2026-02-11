@@ -111,11 +111,11 @@ public class KeyRecoveryApprovalRequest extends ApprovalRequest {
 	@Override
 	public List<ApprovalDataText> getNewRequestDataAsText(AuthenticationToken admin) {
 		ArrayList<ApprovalDataText> retval = new ArrayList<ApprovalDataText>();
-		retval.add(new ApprovalDataText("USERNAME",username,true,false));
-		retval.add(new ApprovalDataText("CERTSERIALNUMBER",CertTools.getSerialNumberAsString(cert),true,false));
-		retval.add(new ApprovalDataText(ApprovalDataText.REDACT_PII, Boolean.toString(LogRedactionUtils.isRedactPii(getEndEntityProfileId())), true, false));
-		retval.add(new ApprovalDataText(ApprovalDataText.SUBJECT_DN, CertTools.getSubjectDN(cert).toString(),true,false));
-		retval.add(new ApprovalDataText("ISSUERDN",CertTools.getIssuerDN(cert).toString(),true,false));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.USERNAME.name(),username,true,false));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.CERTSERIALNUMBER.name(),CertTools.getSerialNumberAsString(cert),true,false));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.REDACTPII.name(), Boolean.toString(LogRedactionUtils.isRedactPii(getEndEntityProfileId())), true, false));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.SUBJECTDN.name(), CertTools.getSubjectDN(cert).toString(),true,false));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.ISSUERDN.name(),CertTools.getIssuerDN(cert).toString(),true,false));
 		return retval;
 	}
 

@@ -149,28 +149,28 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest implements EndE
 	@Override
 	public List<ApprovalDataText> getNewRequestDataAsText(AuthenticationToken admin) {
 	    ArrayList<ApprovalDataText> retval = new ArrayList<>();
-        retval.add(new ApprovalDataText("USERNAME",userdata.getUsername(),true,false));
-		retval.add(new ApprovalDataText(ApprovalDataText.REDACT_PII, Boolean.toString(LogRedactionUtils.isRedactPii(userdata.getEndEntityProfileId())), true, false));
-		retval.add(new ApprovalDataText(ApprovalDataText.SUBJECT_DN,DnComponents.stringToBCDNString(userdata.getDN()),true,false));
-        retval.add(getTextWithNoValueString(ApprovalDataText.SUBJECT_ALT_NAME,userdata.getSubjectAltName()));
+        retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.USERNAME.name(),userdata.getUsername(),true,false));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.REDACTPII.name(), Boolean.toString(LogRedactionUtils.isRedactPii(userdata.getEndEntityProfileId())), true, false));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.SUBJECTDN.name(),DnComponents.stringToBCDNString(userdata.getDN()),true,false));
+        retval.add(getTextWithNoValueString(ApprovalDataText.ApprovalDataHeader.SUBJECTALTNAME.name(),userdata.getSubjectAltName()));
         String dirattrs = userdata.getExtendedInformation() != null ? userdata.getExtendedInformation().getSubjectDirectoryAttributes() : null;
-        retval.add(getTextWithNoValueString("SUBJECTDIRATTRIBUTES",dirattrs));
-        retval.add(getTextWithNoValueString("EMAIL",userdata.getEmail()));
-        retval.add(new ApprovalDataText("KEYRECOVERABLE",userdata.getKeyRecoverable() ? "YES" : "NO",true,true));
-        retval.add(new ApprovalDataText("SENDNOTIFICATION",userdata.getSendNotification() ? "YES" : "NO",true,true));
+        retval.add(getTextWithNoValueString(ApprovalDataText.ApprovalDataHeader.SUBJECTDIRATTRIBUTES.name(),dirattrs));
+        retval.add(getTextWithNoValueString(ApprovalDataText.ApprovalDataHeader.EMAIL.name(),userdata.getEmail()));
+        retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.KEYRECOVERABLE.name(),userdata.getKeyRecoverable() ? "YES" : "NO",true,true));
+        retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.SENDNOTIFICATION.name(),userdata.getSendNotification() ? "YES" : "NO",true,true));
         return retval;
 	}
 
 	public List<ApprovalDataText> getNewRequestDataAsText(CaSessionLocal caSession, EndEntityProfileSession endEntityProfileSession,
 			CertificateProfileSession certificateProfileSession) {
 		ArrayList<ApprovalDataText> retval = new ArrayList<>();
-		retval.add(new ApprovalDataText("USERNAME",userdata.getUsername(),true,false));
-		retval.add(new ApprovalDataText(ApprovalDataText.REDACT_PII, Boolean.toString(LogRedactionUtils.isRedactPii(userdata.getEndEntityProfileId())), true, false));
-		retval.add(new ApprovalDataText(ApprovalDataText.SUBJECT_DN, DnComponents.stringToBCDNString(userdata.getDN()),true,false));
-		retval.add(getTextWithNoValueString(ApprovalDataText.SUBJECT_ALT_NAME, userdata.getSubjectAltName()));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.USERNAME.name(),userdata.getUsername(),true,false));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.REDACTPII.name(), Boolean.toString(LogRedactionUtils.isRedactPii(userdata.getEndEntityProfileId())), true, false));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.SUBJECTDN.name(), DnComponents.stringToBCDNString(userdata.getDN()),true,false));
+		retval.add(getTextWithNoValueString(ApprovalDataText.ApprovalDataHeader.SUBJECTALTNAME.name(), userdata.getSubjectAltName()));
 		String dirattrs = userdata.getExtendedInformation() != null ? userdata.getExtendedInformation().getSubjectDirectoryAttributes() : null;
-		retval.add(getTextWithNoValueString("SUBJECTDIRATTRIBUTES",dirattrs));
-		retval.add(getTextWithNoValueString("EMAIL",userdata.getEmail()));
+		retval.add(getTextWithNoValueString(ApprovalDataText.ApprovalDataHeader.SUBJECTDIRATTRIBUTES.name(),dirattrs));
+		retval.add(getTextWithNoValueString(ApprovalDataText.ApprovalDataHeader.EMAIL.name(),userdata.getEmail()));
 		CAInfo caInfo = caSession.getCAInfoInternal(userdata.getCAId());
 		final String caname;
 		if(caInfo != null)  {
@@ -178,19 +178,19 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest implements EndE
 		} else {
 			caname = "NotExist";
 		}
-		retval.add(new ApprovalDataText("CA", caname, true, false));
-		retval.add(new ApprovalDataText("ENDENTITYPROFILE", endEntityProfileSession.getEndEntityProfileName(userdata.getEndEntityProfileId()),true,false));
-		retval.add(new ApprovalDataText("CERTIFICATEPROFILE", certificateProfileSession.getCertificateProfileName(userdata.getCertificateProfileId()),true,false));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.CA.name(), caname, true, false));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.ENDENTITYPROFILE.name(), endEntityProfileSession.getEndEntityProfileName(userdata.getEndEntityProfileId()),true,false));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.CERTIFICATEPROFILE.name(), certificateProfileSession.getCertificateProfileName(userdata.getCertificateProfileId()),true,false));
 		final ExtendedInformation eei = userdata.getExtendedInformation();
         if (eei != null && eei.getKeyStoreAlgorithmType() != null) {
             String keyTypeString = eei.getKeyStoreAlgorithmType();
             if (eei.getKeyStoreAlgorithmSubType() != null) {
                 keyTypeString += " " + eei.getKeyStoreAlgorithmSubType();
             }
-            retval.add(new ApprovalDataText("KEYALGORITHM", keyTypeString, true, false));
+            retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.KEYALGORITHM.name(), keyTypeString, true, false));
         }
-		retval.add(new ApprovalDataText("KEYRECOVERABLE",userdata.getKeyRecoverable() ? "YES" : "NO",true,true));
-		retval.add(new ApprovalDataText("SENDNOTIFICATION",userdata.getSendNotification() ? "YES" : "NO",true,true));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.KEYRECOVERABLE.name(),userdata.getKeyRecoverable() ? "YES" : "NO",true,true));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.SENDNOTIFICATION.name(),userdata.getSendNotification() ? "YES" : "NO",true,true));
 		return retval;
 	}
 

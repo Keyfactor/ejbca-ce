@@ -125,7 +125,7 @@ public class ActivateCATokenApprovalRequest extends ApprovalRequest {
 	public List<ApprovalDataText> getNewRequestDataAsText(AuthenticationToken admin) {
 		ArrayList<ApprovalDataText> retval = new ArrayList<ApprovalDataText>();
 		if ( cAName != null ) {
-			retval.add(new ApprovalDataText("CANAME",cAName,true,false));
+			retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.CANAME.name(),cAName,true,false));
 		}
 		return retval;
 	}

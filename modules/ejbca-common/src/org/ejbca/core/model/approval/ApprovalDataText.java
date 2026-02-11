@@ -28,12 +28,33 @@ public class ApprovalDataText implements Serializable {
     private boolean headerTranslateable;
     private boolean dataTranslatable;
 
-	// TODO ECA-10985: Add other static strings used with ApprovalDataText... just for general improvement
-	public static final String SUBJECT_DN = "SUBJECTDN";
-	public static final String SUBJECT_ALT_NAME = "SUBJECTALTNAME";
-	public static final String END_ENTITY_PROFILE_ID = "EEPID";
-	public static final String END_ENTITY_PROFILE_NAME = "ENDENTITYPROFILE";
-	public static final String REDACT_PII = "REDACTPII";
+	public enum ApprovalDataHeader {
+		ACMEACCOUNTID,
+		CA,
+		CAID,
+		CANAME,
+		CERTIFICATEPROFILE,
+		CERTSERIALNUMBER,
+		EMAIL,
+		ENDENTITYPROFILE,
+		EEPID,
+		INVALIDITYDATE,
+		ISSUERDN,
+		KEYALGORITHM,
+		KEYRECOVERABLE,
+		PASSWORD,
+		REASON,
+		REDACTPII,
+		REQUESTDATE,
+		REQUESTEXPIRATIONDATE,
+		REVOCATIONDATE,
+		SENDNOTIFICATION,
+		STATUS,
+		SUBJECTDIRATTRIBUTES,
+		SUBJECTALTNAME,
+		SUBJECTDN,
+		USERNAME
+	}
 
 	public ApprovalDataText(String header, String data, boolean headerTranslateable, boolean dataTranslatable) {
 		super();
