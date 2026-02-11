@@ -50,9 +50,9 @@ dependencyResolutionManagement {
             library("jakarta.xml.ws-api", ":jakarta.xml.ws-api:4.0.1")
             library("cert.cvc", ":cert-cvc:1.6.3")
             library("guava", ":guava:33.0.0-jre")
-            library("log4j-v12-api", ":log4j-1.2-api:2.20.0")
-            library("log4j-api", ":log4j-api:2.20.0")
-            library("log4j-core", ":log4j-core:2.20.0")
+            library("log4j-v12-api", ":log4j-1.2-api:2.25.3")
+            library("log4j-api", ":log4j-api:2.25.3")
+            library("log4j-core", ":log4j-core:2.25.3")
             library("commons-lang3", ":commons-lang3:3.20.0")
             library("commons-configuration2", ":commons-configuration2:2.13.0")
             library("commons-collections4", ":commons-collections4:4.5.0")
@@ -428,7 +428,7 @@ fun loadPropertiesFromFiles(vararg filePaths: String): Properties {
 }
 
 fun Properties.expandPlaceholders(templateKey: String): String {
-    val template = ejbcaProperties.getProperty(templateKey);
+    val template = ejbcaProperties.getProperty(templateKey)
     val placeholderPattern = Regex("\\$\\{([^}]+)\\}")
     return placeholderPattern.replace(template) { matchResult ->
         val propertyKey = matchResult.groupValues[1]

@@ -22,6 +22,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.cert.X509CRLHolder;
@@ -44,15 +48,11 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-
 /**
  * Common methods for unrestricted X509 and CVC CA implementations.
  */
 public interface CA extends CACommon {
-    
+
     long getCRLPeriod();
 
     void setCRLPeriod(long crlperiod);
@@ -60,7 +60,7 @@ public interface CA extends CACommon {
     long getDeltaCRLPeriod();
 
     void setDeltaCRLPeriod(long deltacrlperiod);
-    
+
     boolean getGenerateCrlUponRevocation();
 
     void setGenerateCrlUponRevocation(boolean generate);
@@ -94,6 +94,8 @@ public interface CA extends CACommon {
 
     boolean isDoEnforceUniqueSubjectDNSerialnumber();
 
+    boolean isDoEnforceNameConstraints();
+
     /**
      * Whether certificate request history should be used or not. The default value here is
      * used when the value is missing in the database, and is true for compatibility with
@@ -110,16 +112,16 @@ public interface CA extends CACommon {
 
     /** whether compromised keys should be added or not, by default false */
     boolean isAddCompromisedKeysToBlockList();
-    
+
     /** whether revocations for non existing entry accepted */
     boolean isAcceptRevocationNonExistingEntry();
-    
-    /** 
+
+    /**
      * @return padding algorithm chosen for PKCS#12 encryption
-     * @since 9.3 
+     * @since 9.3
      */
     KeyEncryptionPaddingAlgorithm getKeyEncryptionPaddingAlgorithm();
-    
+
     // Methods used with extended services
 
     /** Method used to retrieve information about the service. */
@@ -142,7 +144,7 @@ public interface CA extends CACommon {
 
     /** Returns a Collection of ExternalCAServices (int) added to this CA. */
     Collection<Integer> getExternalCAServiceTypes();
-    
+
     /**
      * Initializes the ExtendedCAService
      *
@@ -152,7 +154,7 @@ public interface CA extends CACommon {
      * @param cceConfig containing a list of available custom certificate extensions
      */
     void initExtendedService(CryptoToken cryptoToken, int type, CA ca, AvailableCustomCertificateExtensionsConfiguration cceConfig) throws Exception;
-    
+
    /**
     *
     * @param publicKey provided public key. Will not have any precedence over subject.extendedInformation.certificateRequest
@@ -165,7 +167,7 @@ public interface CA extends CACommon {
     *            CVC CAs for sequence field. Can be set to null.
     * @param cceConfig containing a list of available custom certificate extensions
     * @return The newly created certificate, never null
-    * 
+    *
     * @throws CryptoTokenOfflineException if the crypto token was unavailable
     * @throws CertificateExtensionException  if any of the certificate extensions were invalid
     * @throws CertificateCreateException if an error occurred when trying to create a certificate.
@@ -226,8 +228,8 @@ public interface CA extends CACommon {
     * publicKey == null && subject.extendedInformation.certificateRequest == null
     * @param publicKey provided public key which will have precedence over public key from the provided RequestMessage but not over subject.extendedInformation.certificateRequest
     * @param subject end entity information. If it contains certificateRequest under extendedInformation, it will be used instead of the provided RequestMessage and publicKey
-    * 
-    * @return the generated certificate, never null. 
+    *
+    * @return the generated certificate, never null.
     */
    Certificate generateCertificate(CryptoToken cryptoToken, EndEntityInformation subject, RequestMessage request, PublicKey publicKey, int keyusage,
            Date notBefore, Date notAfter, CertificateProfile certProfile, Extensions extensions, String sequence,
@@ -236,11 +238,11 @@ public interface CA extends CACommon {
            OperatorCreationException, CertificateCreateException, CertificateExtensionException, SignatureException, IllegalKeyException;
 
    X509CRLHolder generateCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber, Certificate partitionCaCert) throws Exception;
-   
+
    X509CRLHolder generateCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber, Certificate partitionCaCert, final Date validFrom) throws Exception;
 
    default X509CRLHolder generateDeltaCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber, int basecrlnumber, Certificate latestCaCertForParition) throws Exception {
-      throw new UnsupportedOperationException("This operation is not supported in this CA type!"); 
+      throw new UnsupportedOperationException("This operation is not supported in this CA type!");
    }
 
    /**
@@ -283,6 +285,6 @@ public interface CA extends CACommon {
            throws CryptoTokenOfflineException, CertificateExtensionException;
 
    byte[] createAuthCertSignRequest(CryptoToken cryptoToken, byte[] request) throws CryptoTokenOfflineException;
-   
+
 
 }

@@ -836,6 +836,26 @@
                 </h:panelGroup>
 
                 <h:panelGroup>
+                    <h:outputLabel for="doenforcenameconstraints"
+                                   value="#{web.text.DOENFORCENAMECONSTRAINTS}"/>
+                    <h:outputText
+                            value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Enforce_Name_Constraints')}"
+                            escape="false" styleClass="helpReference"/>
+                </h:panelGroup>
+
+                <h:panelGroup id="doenforcenameconstraintsgroup"> 
+                    <p:selectBooleanCheckbox id="isdoenforcenameconstraints"
+                                             value="#{editCAsMBean.caInfoDto.doEnforceNameConstraints}"
+                                             disabled="#{not editCAsMBean.hasEditRight}" itemLabel="#{web.text.ENFORCE}">
+                                <f:ajax immediate="true" render="doenforcenameconstraintsgroup"/>
+                    </p:selectBooleanCheckbox>
+                    <h:panelGroup layout="block" id="warningNameConstraintsCheckDisabled" rendered="#{!editCAsMBean.caInfoDto.doEnforceNameConstraints}">
+                        <h:outputText styleClass="warning"
+                                      value="#{web.text.DOENFORCENAMECONSTRAINTS_WARNING}"/>
+                    </h:panelGroup>
+                </h:panelGroup>
+
+                <h:panelGroup>
                     <h:outputLabel for="checkboxusecertreqhistory"
                                    value="#{web.text.USECERTREQHISTORY}"/>
                     <h:outputText

@@ -35,11 +35,6 @@ import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import jakarta.ejb.EJBException;
-import jakarta.faces.context.FacesContext;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
@@ -110,6 +105,11 @@ import org.ejbca.ui.web.admin.bean.SessionBeans;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.cert.OID;
 
+import jakarta.ejb.EJBException;
+import jakarta.faces.context.FacesContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+
 /**
  * A class used as an interface between CA jsp pages and CA ejbca functions.
  * <p>
@@ -139,7 +139,7 @@ public class CAInterfaceBean implements Serializable {
     /** The certification request in binary format */
     private byte[] request;
     private Certificate processedcert;
-    
+
     /** Creates a new instance of CaInterfaceBean */
     public CAInterfaceBean() { }
 
@@ -465,7 +465,7 @@ public class CAInterfaceBean implements Serializable {
                 final List<CertificatePolicy> policies = parsePolicies(caInfoDto.getPolicyId());
                 for (CertificatePolicy certificatePolicy : policies) {
                     if (!OID.isValidOid(certificatePolicy.getPolicyID())) {
-                        throw new ParameterException(getEjbcawebbean().getText("INVALIDPOLICYOID"));                                              
+                        throw new ParameterException(getEjbcawebbean().getText("INVALIDPOLICYOID"));
                     }
                 }
                 // Certificate policies from the CA and the CertificateProfile will be merged for cert creation in the CAAdminSession.createCA call
@@ -547,6 +547,7 @@ public class CAInterfaceBean implements Serializable {
                             .setDoEnforceKeyRenewal(caInfoDto.isDoEnforceKeyRenewal())
                             .setDoEnforceUniqueDistinguishedName(caInfoDto.isDoEnforceUniqueDN())
                             .setDoEnforceUniqueSubjectDNSerialnumber(caInfoDto.isDoEnforceUniqueSubjectDNSerialnumber())
+                            .setDoEnforceNameConstraints(caInfoDto.isDoEnforceNameConstraints())
                             .setUseCertReqHistory(caInfoDto.isUseCertReqHistory())
                             .setUseUserStorage(caInfoDto.isUseUserStorage())
                             .setUseCertificateStorage(caInfoDto.isUseCertificateStorage())
@@ -621,7 +622,7 @@ public class CAInterfaceBean implements Serializable {
                             caInfoDto.isUseUserStorage(),
                             caInfoDto.isUseCertificateStorage(),
                             caInfoDto.isAddCompromisedKeysToBlockList(),
-                            caInfoDto.isAcceptRevocationsNonExistingEntry());                  
+                            caInfoDto.isAcceptRevocationsNonExistingEntry());
                     if (buttonCreateCa) {
                         getCaadminsession().createCA(getAuthenticationToken(), cvccainfo);
                     } else if (buttonMakeRequest) {
@@ -754,12 +755,12 @@ public class CAInterfaceBean implements Serializable {
             try {
                 byte[] certreq = null;
                 if (caInfoDto.getCaType() == CAInfo.CATYPE_CITS) {
-                    certreq = getCaadminsession().makeCitsRequest(getAuthenticationToken(), caid, 
+                    certreq = getCaadminsession().makeCitsRequest(getAuthenticationToken(), caid,
                             fileBuffer, caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN),
                             caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN),
                             caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_DEFAULT));
                 } else {
-                    certreq = getCaadminsession().makeRequest(getAuthenticationToken(), caid, 
+                    certreq = getCaadminsession().makeRequest(getAuthenticationToken(), caid,
                                        fileBuffer, caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
                 }
                 saveRequestData(certreq);
@@ -962,10 +963,10 @@ public class CAInterfaceBean implements Serializable {
                final List<CertificatePolicy> policies = parsePolicies(caInfoDto.getPolicyId());
                for (CertificatePolicy certificatePolicy : policies) {
                    if (!OID.isValidOid(certificatePolicy.getPolicyID())) {
-                       throw new ParameterException(getEjbcawebbean().getText("INVALIDPOLICYOID"));                                              
+                       throw new ParameterException(getEjbcawebbean().getText("INVALIDPOLICYOID"));
                    }
                }
-               
+
                // No need to add the Keyrecovery extended service here, because it is only "updated" in EditCA, and there
                // is not need to update it.
                X509CAInfo.X509CAInfoBuilder x509CAInfoBuilder = new X509CAInfo.X509CAInfoBuilder()
@@ -1010,6 +1011,7 @@ public class CAInterfaceBean implements Serializable {
                        .setDoEnforceKeyRenewal(caInfoDto.isDoEnforceKeyRenewal())
                        .setDoEnforceUniqueDistinguishedName(caInfoDto.isDoEnforceUniqueDN())
                        .setDoEnforceUniqueSubjectDNSerialnumber(caInfoDto.isDoEnforceUniqueSubjectDNSerialnumber())
+                       .setDoEnforceNameConstraints(caInfoDto.isDoEnforceNameConstraints())
                        .setUseCertReqHistory(caInfoDto.isUseCertReqHistory())
                        .setUseUserStorage(caInfoDto.isUseUserStorage())
                        .setUseCertificateStorage(caInfoDto.isUseCertificateStorage())
@@ -1055,7 +1057,7 @@ public class CAInterfaceBean implements Serializable {
                        caInfoDto.isUseUserStorage(),
                        caInfoDto.isUseCertificateStorage(),
                        caInfoDto.isAddCompromisedKeysToBlockList(),
-                       caInfoDto.isAcceptRevocationsNonExistingEntry(), 
+                       caInfoDto.isAcceptRevocationsNonExistingEntry(),
                        caInfoDto.getDefaultCertProfileId());
             } else if (caInfoDto.getCaType() == CAInfo.CATYPE_SSH) {
                 final int caSerialNumberOctetSize = (caInfoDto.getCaSerialNumberOctetSize() != null)
