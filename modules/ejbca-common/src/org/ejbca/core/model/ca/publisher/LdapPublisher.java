@@ -588,6 +588,26 @@ public class LdapPublisher extends BasePublisher {
 		return true;
 	}
 
+	/*
+	 * The reason for this logic is that OpenLDAP and AD from Microsoft might have different implementations when
+	 * it comes to deleting certificates. One of them requires the base name (the part before ;) and the other one
+	 * requires the full name.
+	 */
+	boolean isDeleteUserCertAttribute(final LDAPEntry oldEntry, final LDAPAttribute attr) {
+		final LDAPAttribute oldAttrByBaseName = oldEntry.getAttribute(attr.getBaseName());
+		final LDAPAttribute oldAttrByName     = oldEntry.getAttribute(attr.getName());
+
+		// Don't try to remove the cert if it doesn't exist
+		if (oldAttrByBaseName != null || oldAttrByName != null) {
+			return true;
+		}
+		else {
+			String msg = intres.getLocalizedMessage("publisher.inforevokenocert");
+			log.info(msg);
+			return false;
+		}
+	}
+
 	/**
 	 * Revokes a certificate, which means for LDAP that we may remove the certificate or the whole user entry.
 	 * 
@@ -651,21 +671,11 @@ public class LdapPublisher extends BasePublisher {
 			if (oldEntry != null) {          
 				if (removecert) {
 					LDAPAttribute attr = new LDAPAttribute(getUserCertAttribute());
-					LDAPAttribute oldAttrByBaseName = oldEntry.getAttribute(attr.getBaseName());
-					LDAPAttribute oldAttrByName     = oldEntry.getAttribute(attr.getName());
-
-					// Don't try to remove the cert if it doesn't exist
-					if (oldAttrByBaseName != null || oldAttrByName != null) {
+					if (isDeleteUserCertAttribute(oldEntry, attr)) {
 						modSet = getModificationSet(oldEntry, certdn, null, false, true, null, cert);
 						modSet.add(new LDAPModification(LDAPModification.DELETE, attr));
 					}
-					else {
-						String msg = intres.getLocalizedMessage("publisher.inforevokenocert");
-						log.info(msg);
-					}
-
 				}
-
 			} else {
 				String msg = intres.getLocalizedMessage("publisher.errorrevokenoentry");
 				log.warn(msg);
