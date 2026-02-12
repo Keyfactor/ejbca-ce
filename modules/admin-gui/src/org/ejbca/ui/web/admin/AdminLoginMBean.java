@@ -12,13 +12,8 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
+import com.keyfactor.util.RandomHelper;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import jakarta.ejb.EJB;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.context.FacesContext;
@@ -26,7 +21,13 @@ import jakarta.inject.Named;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.core.UriBuilder;
-
+import java.io.IOException;
+import java.io.Serial;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -46,9 +47,6 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.HttpTools;
-
-import com.keyfactor.util.RandomHelper;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import org.ejbca.util.oauth.OAuthTools;
 
 /**
@@ -57,8 +55,10 @@ import org.ejbca.util.oauth.OAuthTools;
 @Named
 @SessionScoped
 public class AdminLoginMBean extends BaseManagedBean implements Serializable {
+    @Serial
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(AdminLoginMBean.class);
+    public static final String STATE_KEY = "state";
 
     private EjbcaWebBean ejbcaWebBean;
 
@@ -77,7 +77,8 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
     @EJB
     private InternalKeyBindingMgmtSessionLocal internalKeyBindings;
 
-    public class OAuthKeyInfoGui implements Serializable {
+    public static class OAuthKeyInfoGui implements Serializable {
+        @Serial
         private static final long serialVersionUID = 1L;
         String label;
 
@@ -156,7 +157,7 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
         final Map<String, Object> requestMap = FacesContext.getCurrentInstance().getExternalContext().getRequestMap();
         final Map<String, String> params = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
         final String authCode = params.get("code");
-        final String state = params.get("state");
+        final String state = params.get(STATE_KEY);
         final String error = params.get("error");
         // Render error caught by CaExceptionHandlerFactory
         if (requestMap.containsKey(CaExceptionHandlerFactory.REQUESTMAP_KEY)) {
@@ -219,7 +220,7 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
     private void requestTokenUsingCode(HttpServletRequest servletRequest, Map<String, String> params) throws IOException {
         log.debug("Received authorization code. Requesting token from authorization server.");
         final String authCode = params.get("code");
-        final String state = params.get("state");
+        final String state = params.get(STATE_KEY);
         if (verifyStateParameter(state)) {
             OAuthKeyInfo oAuthKeyInfo = ejbcaWebBean.getOAuthConfiguration().getOauthKeyByLabel(oauthClicked);
             if (oAuthKeyInfo != null) {
@@ -311,25 +312,27 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
         return addParametersToUrl(oauthKeyInfo, url);
     }
 
-    private String addParametersToUrl(OAuthKeyInfo oauthKeyInfo, String url) {
-        UriBuilder uriBuilder = UriBuilder.fromUri(url);
-        String scope = "openid";
-        if (oauthKeyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_AZURE)) {
-            scope += " offline_access " + oauthKeyInfo.getScope();
+    private String getScopes(final OAuthKeyInfo oAuthKeyInfo) {
+        String scopes = "openid";
+        if (oAuthKeyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_AZURE)) {
+            scopes += " offline_access " + oAuthKeyInfo.getScope();
+        } else if (oAuthKeyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_KEYCLOAK) && !oAuthKeyInfo.isAudienceCheckDisabled()) {
+            scopes += " " + oAuthKeyInfo.getAudience();
+        } else {
+            scopes += " " + oAuthKeyInfo.getScope();
         }
-        if (oauthKeyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_KEYCLOAK) && !oauthKeyInfo.isAudienceCheckDisabled()) {
-            scope += " " + oauthKeyInfo.getAudience();
-        }
-        if (oauthKeyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_PINGID) ||oauthKeyInfo.getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_GENERIC)){
-            scope += " " + oauthKeyInfo.getScope();
-        }
-        uriBuilder
-                .queryParam("scope", scope)
-                .queryParam("client_id", oauthKeyInfo.getClient())
+        return scopes;
+    }
+
+    private String addParametersToUrl(final OAuthKeyInfo oAuthKeyInfo, final String url) {
+        return UriBuilder.fromUri(url)
+                .queryParam("scope", getScopes(oAuthKeyInfo))
+                .queryParam("client_id", oAuthKeyInfo.getClient())
                 .queryParam("response_type", "code")
                 .queryParam("redirect_uri", getRedirectUri())
-                .queryParam("state", stateInSession);
-        return uriBuilder.build().toString();
+                .queryParam(STATE_KEY, stateInSession)
+                .build()
+                .toString();
     }
 
     public void clickLoginLink(String keyLabel) throws IOException {

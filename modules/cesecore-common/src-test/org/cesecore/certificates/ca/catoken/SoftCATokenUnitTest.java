@@ -68,7 +68,8 @@ public class SoftCATokenUnitTest extends CATokenTestBase {
 	@Test
 	public void testCATokenComposite() throws Exception {
 		CryptoToken cryptoToken = createSoftToken(true);
-		doCaTokenComposite("MLDSA87-RSA4096-PSS-SHA512", cryptoToken, getCaTokenProperties("composite-test" + CAToken.DEFAULT_KEYSEQUENCE));
+        // Note: Aliases of composite keys must end with -COMPOSITE (and optionally have a key sequence)
+        doCaTokenComposite("MLDSA87-RSA4096-PSS-SHA512", cryptoToken, getCaTokenProperties("composite-test-COMPOSITE" + CAToken.DEFAULT_KEYSEQUENCE));
 	}
 
 	@Test
