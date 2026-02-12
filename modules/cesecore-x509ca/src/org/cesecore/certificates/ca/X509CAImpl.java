@@ -351,6 +351,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 .setDoEnforceKeyRenewal(isDoEnforceKeyRenewal())
                 .setDoEnforceUniqueDistinguishedName(isDoEnforceUniqueDistinguishedName())
                 .setDoEnforceUniqueSubjectDNSerialnumber(isDoEnforceUniqueSubjectDNSerialnumber())
+                .setDoEnforceNameConstraints(isDoEnforceNameConstraints())
                 .setUseCertReqHistory(isUseCertReqHistory())
                 .setUseUserStorage(isUseUserStorage())
                 .setAddCompromisedKeysToBlockList(isAddCompromisedKeysToBlockList())
@@ -1005,7 +1006,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             generator.addCertificates(new CollectionStore<>(certList));
             CMSSignedData s = null;
             CAToken catoken = getCAToken();
-            if (catoken != null && !(cryptoToken instanceof NullCryptoToken)) {
+            if (catoken != null && !cryptoToken.isInstanceOf(NullCryptoToken.class)) {
                 log.debug("createPKCS7: Provider=" + cryptoToken.getSignProviderName() + " using algorithm "
                         + privateKey.getAlgorithm());
                 s = generator.generate(msg, true);
@@ -1120,7 +1121,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             gen.addCertificates(new CollectionStore<>(certList));
             CMSSignedData s = null;
             CAToken catoken = getCAToken();
-            if (catoken != null && !(cryptoToken instanceof NullCryptoToken)) {
+            if (catoken != null && !cryptoToken.isInstanceOf(NullCryptoToken.class)) {
                 log.debug("createPKCS7Rollover: Provider=" + cryptoToken.getSignProviderName() + " using algorithm "
                         + privateKey.getAlgorithm());
                 // Don't encapsulate any content, i.e. the bytes in the message. This makes data section of the PKCS#7 message completely empty.
@@ -1583,7 +1584,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             if (altName != null && altName.length() > 0) {
                 altNameGNs = DnComponents.getGeneralNamesFromAltName(altName);
             }
-            CABase.checkNameConstraints(cacert, subjectDNName, altNameGNs);
+            CABase.checkNameConstraints(getCAInfo(), cacert, subjectDNName, altNameGNs);
         }
 
         // If the subject has Name Constraints, then name constraints must be enabled in the certificate profile!

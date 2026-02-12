@@ -17,6 +17,7 @@ import java.security.cert.Certificate;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryInformation;
@@ -69,8 +70,9 @@ public interface KeyRecoverySession {
      *
      * @return false if the certificates keyrecovery data already exists.
      * @throws AuthorizationDeniedException if not authorized to administer keys.
+     * @throws CertificateCreateException  throws when key encryption key of the CA is not set
      */
-    boolean addKeyRecoveryData(AuthenticationToken admin, CertificateWrapper certificate, String username, KeyPairWrapper keypair) throws AuthorizationDeniedException;
+    boolean addKeyRecoveryData(AuthenticationToken admin, CertificateWrapper certificate, String username, KeyPairWrapper keypair) throws AuthorizationDeniedException, CertificateCreateException;
 
     /**
      * Removes a certificates keyrecovery data from the database.
