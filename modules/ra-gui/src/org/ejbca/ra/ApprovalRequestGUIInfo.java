@@ -497,10 +497,10 @@ public class ApprovalRequestGUIInfo implements Serializable {
     
     public EndEntityInformation getEndEntityInformation() {
         final ApprovalRequest approvalRequest = request.getApprovalRequest();
-        if (approvalRequest instanceof AddEndEntityApprovalRequest) {
-            return ((AddEndEntityApprovalRequest)approvalRequest).getEndEntityInformation();
-        } else if (approvalRequest instanceof EditEndEntityApprovalRequest) {
-            return ((EditEndEntityApprovalRequest)approvalRequest).getNewEndEntityInformation();
+        if (approvalRequest instanceof AddEndEntityApprovalRequest addEndEntityApprovalRequestrequest) {
+            return addEndEntityApprovalRequestrequest.getEndEntityInformation();
+        } else if (approvalRequest instanceof EditEndEntityApprovalRequest editEndEntityApprovalRequest) {
+            return editEndEntityApprovalRequest.getNewEndEntityInformation();
         } else {
             return null;
         }
