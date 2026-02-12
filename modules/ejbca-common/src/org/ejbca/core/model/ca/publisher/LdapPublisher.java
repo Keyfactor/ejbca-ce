@@ -650,17 +650,22 @@ public class LdapPublisher extends BasePublisher {
 			}
 			if (oldEntry != null) {          
 				if (removecert) {
-					// Don't try to remove the cert if there does not exist any
 					LDAPAttribute attr = new LDAPAttribute(getUserCertAttribute());
-					LDAPAttribute oldAttr = oldEntry.getAttribute(attr.getBaseName());
-					if (oldAttr != null) {
+					LDAPAttribute oldAttrByBaseName = oldEntry.getAttribute(attr.getBaseName());
+					LDAPAttribute oldAttrByName     = oldEntry.getAttribute(attr.getName());
+
+					// Don't try to remove the cert if it doesn't exist
+					if (oldAttrByBaseName != null || oldAttrByName != null) {
 						modSet = getModificationSet(oldEntry, certdn, null, false, true, null, cert);
 						modSet.add(new LDAPModification(LDAPModification.DELETE, attr));
-					} else {
+					}
+					else {
 						String msg = intres.getLocalizedMessage("publisher.inforevokenocert");
 						log.info(msg);
-					}            		
+					}
+
 				}
+
 			} else {
 				String msg = intres.getLocalizedMessage("publisher.errorrevokenoentry");
 				log.warn(msg);
