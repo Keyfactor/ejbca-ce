@@ -43,7 +43,8 @@ public final class OAuthKeyInfo implements Serializable {
         TYPE_GENERIC(0, "Generic"),
         TYPE_AZURE(1, "Azure"),
         TYPE_KEYCLOAK(2, "Keycloak"),
-        TYPE_PINGID(3, "PingID");
+        TYPE_PINGID(3, "PingID"),
+        TYPE_AUTH0(4, "Auth0");
 
         private final int index;
         private final String label;
@@ -83,7 +84,7 @@ public final class OAuthKeyInfo implements Serializable {
     private int skewLimit = 60000;
     private String publicKeyUrl;
 
-    
+
     // PingID fields
     private String tokenUrl;
     private String userInfoUrl;
@@ -92,10 +93,10 @@ public final class OAuthKeyInfo implements Serializable {
     private String audience;
     private boolean audienceCheckDisabled = false;
     private boolean fetchUserInfo = false;
-    
+
     // if null, use client secret
     private Integer keyBinding;
-    
+
     /**
      * Creates a OAuth Key info object
      *
@@ -278,7 +279,7 @@ public final class OAuthKeyInfo implements Serializable {
                 return tokenUrl;
         }
     }
-    
+
     public String getUserInfoUrl() {
         switch (getType()){
             case TYPE_AZURE:
@@ -304,14 +305,14 @@ public final class OAuthKeyInfo implements Serializable {
                 return logoutUrl;
         }
     }
-    
+
     private String getKeycloakSpecificUrl(final String endpoint){
         String uri = getUrl();
         uri += getUrl().endsWith("/") ? "" : "/";
         uri += "realms/" + getRealm() + "/protocol/openid-connect/" + endpoint;
         return uri;
     }
-    
+
     private String getAzureSpecificUrl(final String endpoint){
         String uri = getUrl();
         uri += getUrl().endsWith("/") ? "" : "/";
@@ -359,7 +360,7 @@ public final class OAuthKeyInfo implements Serializable {
     public void setTokenUrl(String tokenUrl) {
         this.tokenUrl = tokenUrl;
     }
-    
+
     public void setUserInfoUrl(String userInfoUrl) {
         this.userInfoUrl = userInfoUrl;
     }
@@ -407,14 +408,14 @@ public final class OAuthKeyInfo implements Serializable {
     public void setKeyBinding(Integer keyBinding) {
         this.keyBinding = keyBinding;
     }
-    
+
     /**
-     * If this is an Azure key info, return the login server's URL, which should be the base 
+     * If this is an Azure key info, return the login server's URL, which should be the base
      * URL for logout/token/auth endpoints.
      */
     public String getLoginServerUrl() {
         Preconditions.checkState(getType() == OAuthProviderType.TYPE_AZURE);
-        
+
         String uri = getUrl();
         uri += getUrl().endsWith("/") ? "" : "/";
         uri += getRealm() + "/v2.0";
@@ -428,7 +429,7 @@ public final class OAuthKeyInfo implements Serializable {
     public void setAudienceCheckDisabled(boolean audienceCheckDisabled) {
         this.audienceCheckDisabled = audienceCheckDisabled;
     }
-    
+
     public boolean isFetchUserInfo() {
         return fetchUserInfo;
     }
