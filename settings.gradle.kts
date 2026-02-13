@@ -50,17 +50,17 @@ dependencyResolutionManagement {
             library("jakarta.xml.ws-api", ":jakarta.xml.ws-api:4.0.1")
             library("cert.cvc", ":cert-cvc:1.6.3")
             library("guava", ":guava:33.0.0-jre")
-            library("log4j-v12-api", ":log4j-1.2-api:2.20.0")
-            library("log4j-api", ":log4j-api:2.20.0")
-            library("log4j-core", ":log4j-core:2.20.0")
+            library("log4j-v12-api", ":log4j-1.2-api:2.25.3")
+            library("log4j-api", ":log4j-api:2.25.3")
+            library("log4j-core", ":log4j-core:2.25.3")
             library("commons-lang3", ":commons-lang3:3.20.0")
             library("commons-configuration2", ":commons-configuration2:2.13.0")
             library("commons-collections4", ":commons-collections4:4.5.0")
             library("nimbus-jose-jwt", ":nimbus-jose-jwt:10.5")
-            library("x509-common-util", ":x509-common-util:5.7.0")
-            library("cryptotokens-api", ":cryptotokens-api:3.5.0")
-            library("cryptotokens-impl", ":cryptotokens-impl:3.5.0")
-            library("cryptotokens-impl-ee", ":cryptotokens-impl-ee:3.5.0")
+            library("x509-common-util", ":x509-common-util:5.9.0")
+            library("cryptotokens-api", ":cryptotokens-api:3.8.4")
+            library("cryptotokens-impl", ":cryptotokens-impl:3.8.4")
+            library("cryptotokens-impl-ee", ":cryptotokens-impl-ee:3.8.4")
             library("adsddl", ":adsddl:1.9")
             library("jakarta.jws-api", ":jakarta.jws-api:3.0.0")
             library("jakarta.xml.soap-api", ":jakarta.xml.soap-api:3.0.2")
@@ -95,7 +95,7 @@ dependencyResolutionManagement {
             library("commons-fileupload2", ":commons-fileupload2-jakarta-servlet6:2.0.0-M4")
             library("commons-fileupload2-core", ":commons-fileupload2-core:2.0.0-M4")
             library("jacknji11", ":jacknji11:1.3.1")
-            library("p11ng", ":p11ng:0.28.3")
+            library("p11ng", ":p11ng:0.29.0")
             library("protobuf-java", ":protobuf-java:3.25.5")
             library("ctlog", ":ctlog:0.1.7")
             library("commons-beanutils", ":commons-beanutils:1.9.4")
@@ -429,7 +429,7 @@ fun loadPropertiesFromFiles(vararg filePaths: String): Properties {
 }
 
 fun Properties.expandPlaceholders(templateKey: String): String {
-    val template = ejbcaProperties.getProperty(templateKey);
+    val template = ejbcaProperties.getProperty(templateKey)
     val placeholderPattern = Regex("\\$\\{([^}]+)\\}")
     return placeholderPattern.replace(template) { matchResult ->
         val propertyKey = matchResult.groupValues[1]

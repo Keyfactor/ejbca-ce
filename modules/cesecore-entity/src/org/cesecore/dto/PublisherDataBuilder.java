@@ -40,7 +40,7 @@ public class PublisherDataBuilder {
     }
 
     public PublisherDataBuilder setName(final String name) {
-        this.name = name;
+        this.name = name != null ? name.trim() : null;
         return this;
     }
 
