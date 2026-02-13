@@ -43,6 +43,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.TimeZone;
 
@@ -658,9 +659,8 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
         sb.append(" AND ABS(a.type+1)-1 IN (:types)");
         
         // Exclude certificates that are in use by key bindings
-        // Use UPPER() for case-insensitive comparison since InternalKeyBindingData stores fingerprints in lowercase
         if (excludedCertificateIds != null && !excludedCertificateIds.isEmpty()) {
-            sb.append(" AND UPPER(a.fingerprint) NOT IN (:excludedCertificateIds)");
+            sb.append(" AND a.fingerprint NOT IN (:excludedCertificateIds)");
         }
 
         final String queryString = sb.toString();
@@ -674,12 +674,14 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
             query.setParameter("issuerDns", issuerDns);
         }
         if (excludedCertificateIds != null && !excludedCertificateIds.isEmpty()) {
-            // Convert to uppercase for comparison
-            final Set<String> uppercaseIds = new HashSet<>();
+            // Normalize to lowercase since CertificateData stores fingerprints in lowercase
+            final Set<String> lowercaseIds = new HashSet<>();
             for (final String id : excludedCertificateIds) {
-                uppercaseIds.add(id.toUpperCase());
+                if (id != null) {
+                    lowercaseIds.add(id.toLowerCase(Locale.ROOT));
+                }
             }
-            query.setParameter("excludedCertificateIds", uppercaseIds);
+            query.setParameter("excludedCertificateIds", lowercaseIds);
         }
         query.setMaxResults(maxNumberOfResults);
         final List<?> dbResults = query.getResultList();
