@@ -158,12 +158,13 @@ public class ExceptionHandler implements ExceptionMapper<Exception> {
                 WaitingForApprovalException e = (WaitingForApprovalException) exception;
                 ExceptionInfoRestResponseBuilder response = ExceptionInfoRestResponse.builder()
                     .statusCode(Status.ACCEPTED.getStatusCode())
-                    .infoMessage(exception.getMessage());
+                    .infoMessage(exception.getMessage())
+                    .requestId(e.getRequestId());
                 // Only link finalize for enrollment related requests
                 if (!(e.getMessage().equals(intres.getLocalizedMessage("ra.approvalrevoke")) ||
                       e.getMessage().equals(intres.getLocalizedMessage("ra.approvalcaactivation")))) {
                     response.link(getRestBaseUrl() + e.getRequestId() + "/finalize");
-                    
+
                 }
                 return response.build();
             default:

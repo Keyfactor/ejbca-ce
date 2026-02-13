@@ -43,6 +43,9 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
+
 import org.apache.commons.lang3.IntegerRange;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -56,9 +59,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.SimpleTime;
-
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.certificate.DnComponents;
 
 
 /**
@@ -112,7 +112,7 @@ public class X509CAInfo extends CAInfo {
      *
      * @param subjectdn the Subject DN of the CA certificate
      * @param name the name of the CA
-     * @param status a value from {@link CAConstantsn}
+     * @param status a value from {@link CAConstants}
      * @param certificateProfileId the certificate profile for the CA's certificate. May be a value from {@link CertificateProfileConstants}
      * @param The validity, expressed in y, d, m, e.g: "365d"
      * @param the ID of the CA signing this CA. CAInfo.SELFSIGNED for Root CAs.
@@ -174,6 +174,7 @@ public class X509CAInfo extends CAInfo {
                 .setDoEnforceKeyRenewal(false)
                 .setDoEnforceUniqueDistinguishedName(true)
                 .setDoEnforceUniqueSubjectDNSerialnumber(false)
+                .setDoEnforceNameConstraints(true)
                 .setUseCertReqHistory(false)
                 .setUseUserStorage(true)
                 .setUseCertificateStorage(true)
@@ -747,6 +748,7 @@ public class X509CAInfo extends CAInfo {
         private boolean doEnforceKeyRenewal = true;
         private boolean doEnforceUniqueDistinguishedName = true;
         private boolean doEnforceUniqueSubjectDNSerialnumber = false;
+        private boolean doEnforceNameConstraints = true;
         private boolean useCertReqHistory = false;
         private boolean useUserStorage = true;
         private boolean useCertificateStorage = true;
@@ -1132,6 +1134,11 @@ public class X509CAInfo extends CAInfo {
             return this;
         }
 
+        public X509CAInfoBuilder setDoEnforceNameConstraints(boolean doEnforceNameConstraints) {
+            this.doEnforceNameConstraints = doEnforceNameConstraints;
+            return this;
+        }
+
         public X509CAInfoBuilder setUseCertReqHistory(boolean useCertReqHistory) {
             this.useCertReqHistory = useCertReqHistory;
             return this;
@@ -1286,6 +1293,7 @@ public class X509CAInfo extends CAInfo {
             caInfo.setSubjectAltName(subjectAltName);
             caInfo.setCertificateProfileId(certificateProfileId);
             caInfo.setRequestPreProcessor(requestPreProcessor);
+            caInfo.setDoEnforceNameConstraints(doEnforceNameConstraints);
             return caInfo;
         }
 
@@ -1303,6 +1311,7 @@ public class X509CAInfo extends CAInfo {
             caInfo.setKeepExpiredCertsOnCrl(keepExpiredCertsOnCrl);
             caInfo.setKeepExpiredCertsOnCrlFormat(keepExpiredCertsOnCrlFormat);
             caInfo.setKeepExpiredCertsOnCrlDate(keepExpiredCertsOnCrlDate);
+            caInfo.setDoEnforceNameConstraints(doEnforceNameConstraints);
             return caInfo;
         }
 
