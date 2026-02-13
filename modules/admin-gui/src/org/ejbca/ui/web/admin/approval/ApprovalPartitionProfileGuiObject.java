@@ -34,6 +34,7 @@ public class ApprovalPartitionProfileGuiObject implements Serializable {
     private static final long serialVersionUID = 2L;
 
     private List<DynamicUiProperty<? extends Serializable>> profileProperties = null;
+    private transient ListDataModel<DynamicUiProperty<? extends Serializable>> profilePropertyList = null;
 
     private final String approvalProfileIdentifier;
     private final int partitionId;
@@ -49,11 +50,14 @@ public class ApprovalPartitionProfileGuiObject implements Serializable {
     }
 
     public ListDataModel<DynamicUiProperty<? extends Serializable>> getProfilePropertyList() {
-        if (profileProperties == null) {
-            return null;
-        } else {
-            return new ListDataModel<>(profileProperties);
+        if (profilePropertyList == null) {
+            if (profileProperties == null) {
+                profilePropertyList = new ListDataModel<>();
+            } else {
+                profilePropertyList = new ListDataModel<>(profileProperties);
+            }
         }
+        return profilePropertyList;
     }
     
     /** @return the current multi-valued property's possible values as JSF friendly SelectItems. */
