@@ -399,6 +399,12 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     random.nextBytes(randomData);
                     autousername = new String(Hex.encode(randomData));
                 }
+                if (StringUtils.isNoneBlank(profile.getUsernamePrefix())) {
+                    autousername = profile.getUsernamePrefix() + autousername;
+                }
+                if (StringUtils.isNoneBlank(profile.getUsernameSuffix())) {
+                    autousername = autousername + profile.getUsernameSuffix();
+                }
                 if(log.isDebugEnabled()){
                     log.debug("Unique username '" + autousername + "' has been generated");
                 }
