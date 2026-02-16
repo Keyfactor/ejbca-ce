@@ -405,6 +405,16 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         return profiledata.getUsernameDefault();
     }
 
+    public String getUsernamePrefix() {
+        return profiledata.getUsernamePrefix();
+    }
+
+    public void setUsernamePrefix(final String usernamePrefix) { profiledata.setUsernamePrefix(usernamePrefix); }
+
+    public String getUsernameSuffix() { return profiledata.getUsernameSuffix(); }
+
+    public void setUsernameSuffix(final String usernameSuffix) { profiledata.setUsernameSuffix(usernameSuffix); }
+
     public void setUseValidationForUsername(final boolean useValidation) {
         profiledata.setUseValidationForUsername(useValidation);
     }
