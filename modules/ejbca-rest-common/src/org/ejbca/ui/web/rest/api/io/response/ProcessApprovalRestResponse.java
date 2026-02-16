@@ -159,7 +159,7 @@ public class ProcessApprovalRestResponse {
         final String endEntityName = getUsername(requestInfo.getApprovalRequest());
 
         // Build approval steps
-        final List<ApprovalStepRestResponse> steps = buildApprovalSteps(requestInfo);
+        final List<ApprovalStepRestResponse> steps = buildApprovalSteps(requestInfo, false);
 
         final Date requestDate = new Date(approvalData.getRequestDate().getTime());
         final long expirationPeriod = requestInfo.getApprovalRequest().getRequestValidity();
@@ -176,61 +176,68 @@ public class ProcessApprovalRestResponse {
                 .build();
     }
 
-    static List<ApprovalStepRestResponse> buildApprovalSteps(final RaApprovalRequestInfo requestInfo) {
+    static List<ApprovalStepRestResponse> buildApprovalSteps(final RaApprovalRequestInfo requestInfo, boolean includeNextStep) {
         final List<ApprovalStepRestResponse> steps = new ArrayList<>();
         final List<RaApprovalStepInfo> previousSteps = requestInfo.getPreviousApprovalSteps();
-
+        int stepNumber = 1;
+        final ApprovalDataVO approvalData = requestInfo.getApprovalData();
+        final Collection<Approval> approvals = approvalData.getApprovals();
         if (previousSteps != null) {
             // Get all approvals from the approval data
-            final ApprovalDataVO approvalData = requestInfo.getApprovalData();
-            final Collection<Approval> approvals = approvalData.getApprovals();
 
-            int stepNumber = 1;
+
             for (RaApprovalStepInfo stepInfo : previousSteps) {
                 for (ApprovalPartition partition : stepInfo.getPartitions()) {
-                    final ApprovalStepRestResponse.Builder stepBuilder = ApprovalStepRestResponse.builder()
-                            .step(stepNumber);
-
-                    // Find the approval record for this step and partition
-                    Approval matchingApproval = null;
-                    if (approvals != null) {
-                        for (Approval approval : approvals) {
-                            if (approval.getStepId() == stepInfo.getStepId() &&
-                                    approval.getPartitionId() == partition.getPartitionIdentifier()) {
-                                matchingApproval = approval;
-                                //break;
-                                // TODO Now we only display in the latest approving admin for this step (i.e. the one which sent this request)
-                                // In the GUI we display all administrators that performed this step (accumulative profile)
-                                // If we want to do the same for the REST API, we'd need to restructure the response objects JSON
-                            }
-                        }
-                    }
-
-                    // Populate approval details if found
-                    if (matchingApproval != null) {
-                        stepBuilder.approvalAction(matchingApproval.isApproved() ? "APPROVED" : "REJECTED");
-
-                        if (matchingApproval.getApprovalDate() != null) {
-                            stepBuilder.approvalDate(new SimpleDateFormat(DATE_FORMAT).format(matchingApproval.getApprovalDate()));
-                        }
-
-                        if (matchingApproval.getAdmin() != null) {
-                            stepBuilder.approvalAdmin(matchingApproval.getAdmin().toString());
-                        }
-
-                        if (matchingApproval.getComment() != null && !matchingApproval.getComment().isEmpty()) {
-                            stepBuilder.approvalComment(matchingApproval.getComment());
-                        }
-                    } else {
-                        // Fallback if no matching approval found
-                        stepBuilder.approvalAction("COMPLETED");
-                    }
-                    steps.add(stepBuilder.build());
+                    steps.add(buildStepPartition(stepInfo.getStepId(), partition, stepNumber, approvals));
                     stepNumber++;
                 }
             }
         }
+        if (includeNextStep && requestInfo.getNextApprovalStep() != null) {
+            steps.add(buildStepPartition(requestInfo.getNextApprovalStep().getStepIdentifier(), requestInfo.getNextApprovalStepPartition(), stepNumber, approvals));
+        }
         return steps;
+    }
+
+    private static ApprovalStepRestResponse buildStepPartition(int stepId, ApprovalPartition partition, int stepNumber, Collection<Approval> approvals) {
+        final ApprovalStepRestResponse.Builder stepBuilder = ApprovalStepRestResponse.builder()
+                .step(stepNumber);
+
+        // Find the approval record for this step and partition
+        Approval matchingApproval = null;
+        if (approvals != null) {
+            for (Approval approval : approvals) {
+                if (approval.getStepId() == stepId &&
+                        approval.getPartitionId() == partition.getPartitionIdentifier()) {
+                    matchingApproval = approval;
+                    //break;
+                    // TODO Now we only display in the latest approving admin for this step (i.e. the one which sent this request)
+                    // In the GUI we display all administrators that performed this step (accumulative profile)
+                    // If we want to do the same for the REST API, we'd need to restructure the response objects JSON
+                }
+            }
+        }
+
+        // Populate approval details if found
+        if (matchingApproval != null) {
+            stepBuilder.approvalAction(matchingApproval.isApproved() ? "APPROVED" : "REJECTED");
+
+            if (matchingApproval.getApprovalDate() != null) {
+                stepBuilder.approvalDate(new SimpleDateFormat(DATE_FORMAT).format(matchingApproval.getApprovalDate()));
+            }
+
+            if (matchingApproval.getAdmin() != null) {
+                stepBuilder.approvalAdmin(matchingApproval.getAdmin().toString());
+            }
+
+            if (matchingApproval.getComment() != null && !matchingApproval.getComment().isEmpty()) {
+                stepBuilder.approvalComment(matchingApproval.getComment());
+            }
+        } else {
+            // Fallback if no matching approval found
+            stepBuilder.approvalAction("COMPLETED");
+        }
+        return stepBuilder.build();
     }
 
     static String getUsername(final ApprovalRequest approvalRequest) {
