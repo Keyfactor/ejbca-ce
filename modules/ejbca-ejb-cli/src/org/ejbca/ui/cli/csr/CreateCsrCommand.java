@@ -26,7 +26,9 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
@@ -131,20 +133,9 @@ public class CreateCsrCommand extends EjbcaCommandBase {
                         + signatureAlgorithmsFormatted));
 
         registerParameter(new Parameter(KEYALG_ARG, "cipher", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
-                "Cipher must be one of [ " + AlgorithmConstants.KEYALGORITHM_RSA + ", " + AlgorithmConstants.KEYALGORITHM_EC + ", "
-                        + AlgorithmConstants.KEYALGORITHM_ED25519 + ", " + AlgorithmConstants.KEYALGORITHM_ED448 + ", "
-                        + AlgorithmConstants.KEYALGORITHM_MLDSA44 + ", " + AlgorithmConstants.KEYALGORITHM_MLDSA65 + ", "
-                        + AlgorithmConstants.KEYALGORITHM_MLDSA87 + ", "
-                        + AlgorithmConstants.KEYALGORITHM_FALCON512 + ", " + AlgorithmConstants.KEYALGORITHM_FALCON1024 + ", "
-                        + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128S + ", " + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_128S + ", "
-                        + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F + ", " + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_128F + ", "
-                        + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_192S + ", " + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_192S + ", "
-                        + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_192F + ", " + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_192F + ", "
-                        + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_256S + ", " + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_256S + ", "
-                        + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_256F + ", " + AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_256F + ", "
-                        + AlgorithmConstants.KEYALGORITHM_MLDSA87_RSA3072_PSS_SHA512 + ", " + AlgorithmConstants.KEYALGORITHM_MLDSA87_RSA4096_PSS_SHA512 + ", "
-                        + AlgorithmConstants.KEYALGORITHM_MLDSA87_ECDSA_P384_SHA512 + ", " + AlgorithmConstants.KEYALGORITHM_MLDSA87_ECDSA_P521_SHA512
-                        + "].  Omit if using existing keys."));
+                "Cipher must be one of [ "
+                        + AlgorithmTools.getAvailableKeyAlgorithms().stream().collect(Collectors.joining(", "))
+                        + "]. \"EC\" works as an alias for \"ECDSA\". Omit if using existing keys."));
 
         StringBuilder ecCurvesFormatted = new StringBuilder();
         ecCurvesFormatted.append("[");
@@ -445,77 +436,14 @@ public class CreateCsrCommand extends EjbcaCommandBase {
                 throw new IOException(keySpec + " is not a known EC curve.");
             }
             break;
-        case "ED25519":
-            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_ED25519;
-            break;
-        case "ED448":
-            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_ED448;
-            break;
-        case "ML-DSA-44":
-            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_MLDSA44;
-            break;
-        case "ML-DSA-65":
-            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_MLDSA65;
-            break;
-        case "ML-DSA-87":
-            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_MLDSA87;
-            break;
-        case "SLH-DSA-SHA2-128S":
-            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128S;
-            break;
-        case "SLH-DSA-SHAKE-128S":
-            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_128S;
-            break;
-        case "SLH-DSA-SHA2-128F":
-            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_128F;
-            break;
-        case "SLH-DSA-SHAKE-128F":
-            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_128F;
-            break;
-        case "SLH-DSA-SHA2-192S":
-            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_192S;
-            break;
-        case "SLH-DSA-SHAKE-192S":
-            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_192S;
-            break;
-        case "SLH-DSA-SHA2-192F":
-            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_192F;
-            break;
-        case "SLH-DSA-SHAKE-192F":
-            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_192F;
-            break;
-        case "SLH-DSA-SHA2-256S":
-            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_256S;
-            break;
-        case "SLH-DSA-SHAKE-256S":
-            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_256S;
-            break;
-        case "SLH-DSA-SHA2-256F":
-            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_256F;
-            break;
-        case "SLH-DSA-SHAKE-256F":
-            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_256F;
-            break;
-        case "FALCON-512":
-            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_FALCON512;
-            break;
-        case "FALCON-1024":
-            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_FALCON1024;
-            break;
-        case "MLDSA87-RSA3072-PSS-SHA512":
-            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_MLDSA87_RSA3072_PSS_SHA512;
-            break;
-        case "MLDSA87-RSA4096-PSS-SHA512":
-            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_MLDSA87_RSA4096_PSS_SHA512;
-            break;
-        case "MLDSA87-ECDSA-P384-SHA512":
-            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_MLDSA87_ECDSA_P384_SHA512;
-            break;
-        case "MLDSA87-ECDSA-P521-SHA512":
-            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_MLDSA87_ECDSA_P521_SHA512;
-            break;
         default:
-            throw new IOException("Key Algorithm " + keyAlg + " was unknown.");
+            // Other algorithms like Ed25519, Ed448, PQC algorithms, etc.
+            final Optional<String> match = AlgorithmTools.getAvailableKeyAlgorithms().stream().
+                    filter(alg -> alg.equalsIgnoreCase(keyAlg)).findAny();
+            if (!match.isPresent()) {
+                throw new IOException("Key algorithm '" + keyAlg + "' was unknown.");
+            }
+            keyAlgorithm = match.get();
         }
         try {
             return KeyTools.genKeys(keySpec, keyAlgorithm);
