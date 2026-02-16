@@ -2328,6 +2328,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 endEntity.setSendNotification(true);
             }
         }
+        if (endEntityProfile.isMaxFailedLoginsUsed()) {
+            endEntity.getExtendedInformation().setMaxLoginAttempts(endEntityProfile.getMaxFailedLogins());
+            endEntity.getExtendedInformation().setRemainingLoginAttempts(endEntityProfile.getMaxFailedLogins());
+        }
 
         boolean isClearPwd = endEntityProfile.isClearTextPasswordUsed() && endEntityProfile.isClearTextPasswordDefault();
         endEntity.getExtendedInformation().removeInternalKeys();
