@@ -338,6 +338,7 @@ public class ApprovalRequestRestResponse extends ProcessApprovalRestResponse {
             return this;
         }
 
+        @Override
         public ApprovalRequestRestResponse build() {
             ApprovalRequestRestResponse approvalRequestRestResponse = new ApprovalRequestRestResponse(this);
             approvalRequestRestResponse.certificateProfileName = this.certificateProfileName;
@@ -376,7 +377,7 @@ public class ApprovalRequestRestResponse extends ProcessApprovalRestResponse {
 
 
         // Build approval steps
-        final List<ApprovalStepRestResponse> steps = buildApprovalSteps(requestInfo);
+        final List<ApprovalStepRestResponse> steps = buildApprovalSteps(requestInfo, true);
 
         final Date requestDate = new Date(approvalData.getRequestDate().getTime());
         final long expirationPeriod = approvalRequest.getRequestValidity();

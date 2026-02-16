@@ -58,6 +58,7 @@ import java.util.Map;
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertJsonContentType;
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertProperJsonStatusResponse;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 @RunWith(EasyMockRunner.class)
@@ -326,5 +327,61 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
 
         // Then
         assertEquals(Response.Status.CONFLICT.getStatusCode(), actualResponse.getStatus());
+    }
+
+
+    @Test
+    public void testDataShouldReturnErrorForInvalidRequest() throws Exception {
+        // When: invalid request id is used
+        final Response actualResponse = newRequest("/v1/approval/-12345").request().get();
+        final String actualJsonString = actualResponse.readEntity(String.class);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+
+        // Then
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), actualResponse.getStatus());
+        assertJsonContentType(actualResponse);
+        assertEquals("Wrong error message", "Invalid request ID '-12345'. Request ID must be a positive integer.", actualJsonObject.get("error_message"));
+    }
+
+    @Test
+    public void testApprovalDataRequest() throws Exception {
+        // Given
+
+
+        // When
+        final Response actualResponse = newRequest("/v1/approval/" + addEndEntityApprovalRequestId)
+                .request().get();
+        final String actualJsonString = actualResponse.readEntity(String.class);
+
+        // Then
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+        final JSONArray steps = (JSONArray) actualJsonObject.get("steps");
+        assertEquals(Response.Status.OK.getStatusCode(), actualResponse.getStatus());
+        assertJsonContentType(actualResponse);
+        assertEquals(String.valueOf(addEndEntityApprovalRequestId), actualJsonObject.get("request_id"));
+        assertEquals("Add End Entity", actualJsonObject.get("request_type"));
+        assertEquals(eeName, actualJsonObject.get("end_entity_name"));
+        assertEquals("PENDING", actualJsonObject.get("status"));
+        // Verify approval step
+        assertNotNull("Steps should not be null", steps);
+        assertEquals("Should have one approval step", 1, steps.size());
+        final JSONObject step = (JSONObject) steps.get(0);
+        assertEquals("Step number should be 1", 1L, step.get("step"));
+        assertEquals("Approval action should be COMPLETED", "COMPLETED", step.get("approval_action"));
+        assertEquals(EndEntityTypes.ENDUSER.toString(), actualJsonObject.get("certificate_profile_name"));
+        assertEquals("Approval EEP should be EMPTY", "EMPTY", actualJsonObject.get("end_entity_profile_name"));
+        assertEquals("Approval EEP should be subject dn is incorrect", "CN="+eeName, actualJsonObject.get("subject_dn"));
+        assertEquals("Approval CA name is incorrect",  CA_NAME, actualJsonObject.get("ca_name"));
+        assertEquals("Approval email is incorrect", "NOVALUE", actualJsonObject.get("email"));
+        assertEquals("Approval key_recoverable is incorrect","NO", actualJsonObject.get("key_recoverable"));
+        assertFalse("Approval subject_name_log_redaction is incorrect", Boolean.getBoolean(actualJsonObject.get("subject_name_log_redaction").toString()));
+        assertEquals("Approval send_notification is incorrect","NO", actualJsonObject.get("send_notification"));
+        assertEquals("Approval subject_directory_attributes is incorrect", "NOVALUE", actualJsonObject.get("subject_directory_attributes"));
+        assertEquals("Approval subject_alternative_name is incorrect", "NOVALUE", actualJsonObject.get("subject_alternative_name"));
+
+
+        // Verify approval was actually processed internally
+        final ApprovalDataVO approvalData = approvalSession.findApprovalDataByRequestId(addEndEntityApprovalRequestId);
+        assertEquals("Approval status is incorrect", ApprovalDataVO.STATUS_WAITINGFORAPPROVAL, approvalData.getStatus());
     }
 }
