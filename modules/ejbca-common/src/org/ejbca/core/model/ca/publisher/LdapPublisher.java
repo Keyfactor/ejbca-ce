@@ -600,8 +600,7 @@ public class LdapPublisher extends BasePublisher {
 		// Don't try to remove the cert if it doesn't exist
 		if (oldAttrByBaseName != null || oldAttrByName != null) {
 			return true;
-		}
-		else {
+		} else {
 			String msg = intres.getLocalizedMessage("publisher.inforevokenocert");
 			log.info(msg);
 			return false;
