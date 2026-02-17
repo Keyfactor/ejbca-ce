@@ -12,6 +12,24 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.cryptotoken;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
@@ -25,20 +43,11 @@ import com.keyfactor.util.keys.token.KeyGenParams.KeyGenParamsBuilder;
 import com.keyfactor.util.keys.token.KeyGenParams.KeyPairTemplate;
 import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabel;
 import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
-import jakarta.annotation.PostConstruct;
-import jakarta.ejb.EJB;
-import jakarta.ejb.EJBException;
-import jakarta.faces.application.FacesMessage;
-import jakarta.faces.context.ExternalContext;
-import jakarta.faces.context.FacesContext;
-import jakarta.faces.model.ListDataModel;
-import jakarta.faces.model.SelectItem;
-import jakarta.faces.view.ViewScoped;
-import jakarta.inject.Named;
+
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.accounts.AccountBindingException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -75,23 +84,16 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import org.ejbca.util.SlotList;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.context.ExternalContext;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.model.ListDataModel;
+import jakarta.faces.model.SelectItem;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Named;
 
 /**
  * JavaServer Faces Managed Bean for managing CryptoTokens.
@@ -903,7 +905,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     private ArrayList<CryptoTokenGuiInfo> cryptoTokenGuiInfos = null;
     private transient ListDataModel<KeyPairGuiInfo> keyPairGuiList = null;
     private ArrayList<KeyPairGuiInfo> keyPairGuiInfos = null;
-    
+
     private List<SelectItem> availablePaddingSchemes;
     private List<SelectItem> internalKeyBindings = null;
     private String keyPairGuiListError = null;
@@ -923,7 +925,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
 
     @EJB
     private CryptoTokenSessionLocal cryptoTokenSession;
-    
+
     private CurrentSessionCryptoTokenChanges currentSessionCryptoTokenChanges = new CurrentSessionCryptoTokenChanges();
     private transient CryptoTokenManagementSessionLocal cryptoTokenManagementSession = null;
     private transient AuthorizationSessionLocal authorizationSession = null;
@@ -931,7 +933,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     private transient InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession = null;
     private transient GlobalConfigurationSessionLocal globalConfigurationSession = null;
     private transient AuthenticationToken authenticationToken = null;
-    
+
     /**
      * Workaround to cache the items used to render the page long enough for actions to be able to use them, but reload on every page view.
      */
@@ -939,7 +941,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         flushCaches();
         return false;
     }
-    
+
     /**
      * Force reload from underlying layer
      */
@@ -959,7 +961,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         p11SlotUsed = false;
         internalKeyBindings = null;
     }
-    
+
     public void actionAuthorizeStart() throws AuthorizationDeniedException {
         authorizeInProgress = true;
         currentKeyPairGuiInfo = getKeyPairGuiList().getRowData();
@@ -1104,7 +1106,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         if (cryptoTokenGuiList == null) {
             cryptoTokenGuiList = new ListDataModel<>(getCryptoTokenGuiInfos());
         }
-        
+
         // If show the list, then we are on the main page and want to flush the two caches
         flushCurrent();
         setCurrentCryptoTokenEditMode(false);
@@ -1631,7 +1633,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                     continue;
                 }
             }
-            
+
             if (availableCryptoToken.getClassPath().equals(AzureCryptoToken.class.getName())) {
                 // Never expose the AzureCryptoToken when creating new tokens if it is not enabled in web.properties
                 if (!WebConfiguration.isAzureKeyVaultEnabled()) {
@@ -1839,10 +1841,21 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_256F, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_256F));
             availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_256S, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHA2_256S));
             availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_256S, AlgorithmConstants.KEYALGORITHM_SLHDSA_SHAKE_256S));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_MLDSA44_RSA2048_PSS_SHA256, AlgorithmConstants.KEYALGORITHM_MLDSA44_RSA2048_PSS_SHA256));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_MLDSA44_ECDSA_P256_SHA256, AlgorithmConstants.KEYALGORITHM_MLDSA44_ECDSA_P256_SHA256));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_MLDSA44_Ed25519_SHA512, AlgorithmConstants.KEYALGORITHM_MLDSA44_Ed25519_SHA512));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_MLDSA65_RSA3072_PSS_SHA512, AlgorithmConstants.KEYALGORITHM_MLDSA65_RSA3072_PSS_SHA512));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_MLDSA65_RSA4096_PSS_SHA512, AlgorithmConstants.KEYALGORITHM_MLDSA65_RSA4096_PSS_SHA512));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_MLDSA65_ECDSA_P256_SHA512, AlgorithmConstants.KEYALGORITHM_MLDSA65_ECDSA_P256_SHA512));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_MLDSA65_ECDSA_P384_SHA512, AlgorithmConstants.KEYALGORITHM_MLDSA65_ECDSA_P384_SHA512));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_MLDSA65_Ed25519_SHA512, AlgorithmConstants.KEYALGORITHM_MLDSA65_Ed25519_SHA512));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_MLDSA65_ECDSA_brainpoolP256r1_SHA512, AlgorithmConstants.KEYALGORITHM_MLDSA65_ECDSA_brainpoolP256r1_SHA512));
             availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_MLDSA87_RSA3072_PSS_SHA512, AlgorithmConstants.KEYALGORITHM_MLDSA87_RSA3072_PSS_SHA512));
             availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_MLDSA87_RSA4096_PSS_SHA512, AlgorithmConstants.KEYALGORITHM_MLDSA87_RSA4096_PSS_SHA512));
             availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_MLDSA87_ECDSA_P384_SHA512, AlgorithmConstants.KEYALGORITHM_MLDSA87_ECDSA_P384_SHA512));
             availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_MLDSA87_ECDSA_P521_SHA512, AlgorithmConstants.KEYALGORITHM_MLDSA87_ECDSA_P521_SHA512));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_MLDSA87_ECDSA_brainpoolP384r1_SHA512, AlgorithmConstants.KEYALGORITHM_MLDSA87_ECDSA_brainpoolP384r1_SHA512));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_MLDSA87_Ed448_SHAKE256, AlgorithmConstants.KEYALGORITHM_MLDSA87_Ed448_SHAKE256));
         }
         return availableKeySpecs;
     }
@@ -1936,7 +1949,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             Collections.sort(ret, (keyPairInfo1, keyPairInfo2) -> keyPairInfo1.getAlias().compareTo(keyPairInfo2.getAlias()));
             keyPairGuiInfos = ret;
         }
-        
+
         return keyPairGuiInfos;
     }
 
@@ -1992,7 +2005,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
 
     /**
      * Invoked when admin requests key pair generation from a template placeholder
-     * @throws AuthorizationDeniedException 
+     * @throws AuthorizationDeniedException
      */
     public void generateFromTemplate() throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
@@ -2033,7 +2046,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
 
     /**
      * Invoked when admin associates KAK with HSM key (specific to CP5 HSMs)
-     * @throws AuthorizationDeniedException 
+     * @throws AuthorizationDeniedException
      */
     public void initializeKey() throws AuthorizationDeniedException {
         final KeyPairGuiInfo keyPairGuiInfo = getKeyPairGuiList().getRowData();
@@ -2091,7 +2104,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
 
     /**
      * Invoked when admin requests a test of a key pair.
-     * @throws AuthorizationDeniedException 
+     * @throws AuthorizationDeniedException
      */
     public void testKeyPair() throws AuthorizationDeniedException {
         final KeyPairGuiInfo keyPairGuiInfo = getKeyPairGuiList().getRowData();
