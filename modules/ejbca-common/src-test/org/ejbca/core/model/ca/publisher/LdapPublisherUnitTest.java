@@ -13,17 +13,31 @@
 package org.ejbca.core.model.ca.publisher;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.Collections;
 
+import com.novell.ldap.LDAPAttribute;
+import com.novell.ldap.LDAPEntry;
 import org.cesecore.certificates.util.DNFieldExtractor;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
  * Unit tests for {@link LdapPublisher}
  */
 public class LdapPublisherUnitTest {
+
+    private LdapPublisher ldapPublisher;
+
+    @Before
+    public void setUp() {
+        ldapPublisher = new LdapPublisher();
+    }
 
     @Test
     public void constructLdapDnSingle() {
@@ -69,5 +83,83 @@ public class LdapPublisherUnitTest {
         publ.setUseFieldInLdapDN(Arrays.asList(DNFieldExtractor.CN, DNFieldExtractor.UID, DNFieldExtractor.OU));
         assertEquals("Wrong DN with fields={UID} ", "CN=name1,CN=name2,UID=abc,OU=devs,OU=ejbca,O=org", publ.constructLDAPDN("CN=name1,CN=name2,OU=devs,OU=ejbca,UID=abc,givenName=john", "O=org"));
     }
-    
+
+    @Test
+    public void isDeleteUserCertAttribute_baseNameMatch() {
+        // Given
+        final LDAPAttribute attr = mock(LDAPAttribute.class);
+        when(attr.getName()).thenReturn("partBefore;partAfter");
+        when(attr.getBaseName()).thenReturn("partBefore");
+
+        final LDAPAttribute serverResponse = mock(LDAPAttribute.class);
+
+        final LDAPEntry oldEntry = mock(LDAPEntry.class);
+        when(oldEntry.getAttribute("partBefore")).thenReturn(serverResponse);
+        when(oldEntry.getAttribute("partBefore;partAfter")).thenReturn(null);
+
+        // When
+        var actual = ldapPublisher.isDeleteUserCertAttribute(oldEntry, attr);
+
+        // Then
+        assertTrue( "User cert should be deleted", actual);
+    }
+
+    @Test
+    public void isDeleteUserCertAttribute_fullNameMatch() {
+        // Given
+        final LDAPAttribute attr = mock(LDAPAttribute.class);
+        when(attr.getName()).thenReturn("partBefore;partAfter");
+        when(attr.getBaseName()).thenReturn("partBefore");
+
+        final LDAPAttribute serverResponse = mock(LDAPAttribute.class);
+
+        final LDAPEntry oldEntry = mock(LDAPEntry.class);
+        when(oldEntry.getAttribute("partBefore")).thenReturn(null);
+        when(oldEntry.getAttribute("partBefore;partAfter")).thenReturn(serverResponse);
+
+        // When
+        var actual = ldapPublisher.isDeleteUserCertAttribute(oldEntry, attr);
+
+        // Then
+        assertTrue( "User cert should be deleted", actual);
+    }
+
+    @Test
+    public void isDeleteUserCertAttribute_noMatch() {
+        // Given
+        final LDAPAttribute attr = mock(LDAPAttribute.class);
+        when(attr.getName()).thenReturn("partBefore;partAfter");
+        when(attr.getBaseName()).thenReturn("partBefore");
+
+        final LDAPEntry oldEntry = mock(LDAPEntry.class);
+        when(oldEntry.getAttribute("partBefore")).thenReturn(null);
+        when(oldEntry.getAttribute("partBefore;partAfter")).thenReturn(null);
+
+        // When
+        var actual = ldapPublisher.isDeleteUserCertAttribute(oldEntry, attr);
+
+        // Then
+        assertFalse( "User cert should NOT be deleted", actual);
+    }
+
+    @Test
+    public void isDeleteUserCertAttribute_bothMatch() {
+        // Given
+        final LDAPAttribute attr = mock(LDAPAttribute.class);
+        when(attr.getName()).thenReturn("partBefore;partAfter");
+        when(attr.getBaseName()).thenReturn("partBefore");
+
+        final LDAPAttribute serverResponse = mock(LDAPAttribute.class);
+
+        final LDAPEntry oldEntry = mock(LDAPEntry.class);
+        when(oldEntry.getAttribute("partBefore")).thenReturn(serverResponse);
+        when(oldEntry.getAttribute("partBefore;partAfter")).thenReturn(serverResponse);
+
+        // When
+        var actual = ldapPublisher.isDeleteUserCertAttribute(oldEntry, attr);
+
+        // Then
+        assertTrue("User cert should be deleted", actual);
+    }
+
 }

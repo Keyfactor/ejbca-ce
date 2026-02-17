@@ -12,10 +12,12 @@
  *************************************************************************/
 package org.cesecore.keybind;
 
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
@@ -26,6 +28,7 @@ import jakarta.ejb.TransactionAttributeType;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
+import jakarta.persistence.TypedQuery;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -266,6 +269,22 @@ public class InternalKeyBindingDataSessionBean implements InternalKeyBindingData
             query.setParameter("keyBindingType", keyBindingType);
             return query.getResultList();
         }
+    }
+
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public Set<String> getAllCertificateIds() {
+        final TypedQuery<String> query = entityManager.createQuery(
+            "SELECT DISTINCT a.certificateId FROM InternalKeyBindingData a WHERE a.certificateId IS NOT NULL", 
+            String.class);
+        final Set<String> result = new HashSet<>(query.getResultList());
+        if (log.isDebugEnabled()) {
+            log.debug("getAllCertificateIds returning " + result.size() + " certificate IDs");
+            for (final String certId : result) {
+                log.debug("Key binding certificate ID: " + certId);
+            }
+        }
+        return result;
     }
 
 }

@@ -330,7 +330,8 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
         
         //add managementCA access to Public Role
         final RoleDataDto publicRole = roleSession.getRole(authenticationToken, null, PUBLIC_ACCESS_ROLE);
-        final Map<String, Boolean> accessRules = Map.of(StandardRules.CAACCESSBASE.resource() + "/" + caId + "/", RoleDataDto.STATE_ALLOW);
+        final Map<String, Boolean> accessRules = new HashMap<String, Boolean>(publicRole.accessRules()); 
+        accessRules.put(StandardRules.CAACCESSBASE.resource() + "/" + caId + "/", RoleDataDto.STATE_ALLOW);
         roleDataSession.persistRole(publicRole.withAccessRules(accessRules));
         return true;
     }

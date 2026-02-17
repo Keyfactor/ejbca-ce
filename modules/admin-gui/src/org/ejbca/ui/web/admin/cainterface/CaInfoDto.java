@@ -55,6 +55,7 @@ public class CaInfoDto implements Serializable {
     private String caSerialNumberOctetSize;
     private String caEncodedValidity;
     private boolean doEnforceUniqueSubjectDNSerialnumber;
+    private boolean doEnforceNameConstraints = true; // Since EJBCA 9.4, default to true
     private boolean useCertReqHistory;
     private boolean finishUser = true; // Default
     private boolean useUserStorage = true;
@@ -111,7 +112,7 @@ public class CaInfoDto implements Serializable {
     private boolean allowInvalidityDate = false;
     private String requestPreProcessor;
     private Map<String, List<String>> alternateCertificateChains;
-    
+
     //cits
     private String certificateId;
     private String region;
@@ -148,11 +149,11 @@ public class CaInfoDto implements Serializable {
     public boolean isCaTypeCVC() {
         return caType == CAInfo.CATYPE_CVC;
     }
-    
+
     public boolean isCaTypeSsh() {
         return caType == CAInfo.CATYPE_SSH;
     }
-    
+
     public boolean isCaTypeCits() {
         return caType == CAInfo.CATYPE_CITS;
     }
@@ -189,7 +190,7 @@ public class CaInfoDto implements Serializable {
     public void setSignatureAlgorithmParam(String signatureAlgorithmParam) {
         this.signatureAlgorithmParam = signatureAlgorithmParam;
     }
-    
+
     public String getAlternativeSignatureAlgorithmParam() {
         return alternativeSignatureAlgorithmParam;
     }
@@ -294,6 +295,15 @@ public class CaInfoDto implements Serializable {
         this.doEnforceUniqueSubjectDNSerialnumber = doEnforceUniqueSubjectDNSerialnumber;
     }
 
+    /** @since 9.4, default to true */
+    public boolean isDoEnforceNameConstraints() {
+        return doEnforceNameConstraints;
+    }
+
+    public void setDoEnforceNameConstraints(boolean doEnforceNameConstraints) {
+        this.doEnforceNameConstraints = doEnforceNameConstraints;
+    }
+
     public boolean isUseCertReqHistory() {
         return useCertReqHistory;
     }
@@ -333,19 +343,19 @@ public class CaInfoDto implements Serializable {
     public void setAcceptRevocationsNonExistingEntry(boolean acceptRevocationsNonExistingEntry) {
         this.acceptRevocationsNonExistingEntry = acceptRevocationsNonExistingEntry;
     }
-    
+
     public boolean isDoPreProduceOcspResponses() {
         return doPreProduceOcspResponses;
     }
-    
+
     public void setDoPreProduceOcspResponses(boolean preProduceOcspResponses) {
         this.doPreProduceOcspResponses = preProduceOcspResponses;
     }
-    
+
     public boolean isAddCompromisedKeysToBlockList() {
         return addCompromisedKeysToBlockList;
     }
-    
+
     public void setAddCompromisedKeysToBlockList(boolean addCompromisedKeysToBlockList) {
         this.addCompromisedKeysToBlockList = addCompromisedKeysToBlockList;
     }
@@ -554,11 +564,11 @@ public class CaInfoDto implements Serializable {
     public void setKeepExpiredCertsOnCrl(boolean keepExpiredCertsOnCrl) {
         this.keepExpiredCertsOnCrl = keepExpiredCertsOnCrl;
     }
-    
+
     public int getKeepExpiredCertsOnCrlFormat() {
         return keepExpiredCertsOnCrlFormat;
     }
-    
+
     public void setKeepExpiredCertsOnCrlFormat(int keepExpiredCertsOnCrlFormat) {
         this.keepExpiredCertsOnCrlFormat = KeepExpiredCertsOnCrlFormat.fromValue(keepExpiredCertsOnCrlFormat).ordinal();
     }
@@ -622,7 +632,7 @@ public class CaInfoDto implements Serializable {
     public void setCryptoTokenCertSignKey(String cryptoTokenCertSignKey) {
         this.cryptoTokenCertSignKey = cryptoTokenCertSignKey;
     }
-    
+
     public String getCryptoTokenAlternativeCertSignKey() {
         return cryptoTokenAlternativeCertSignKey;
     }
@@ -717,11 +727,11 @@ public class CaInfoDto implements Serializable {
     public void setCrlCaDeltaCrlPeriod(String crlCaDeltaCrlPeriod) {
         this.crlCaDeltaCrlPeriod = crlCaDeltaCrlPeriod;
     }
-    
+
     public boolean isGenerateCrlUponRevocation() {
         return generateCrlUponRevocation;
     }
-    
+
     public void setGenerateCrlUponRevocation(boolean generate) {
         generateCrlUponRevocation = generate;
     }
@@ -749,7 +759,7 @@ public class CaInfoDto implements Serializable {
     public void setRequestPreProcessor(String requestPreProcessor) {
         this.requestPreProcessor = requestPreProcessor;
     }
-    
+
     public Map<String, List<String>> getAlternateCertificateChains() {
         return alternateCertificateChains;
     }
@@ -763,7 +773,7 @@ public class CaInfoDto implements Serializable {
         this.crlPartitions = 0;
         this.suspendedCrlPartitions = 0;
     }
-    
+
     public String getCertificateId() {
         return certificateId;
     }
@@ -838,7 +848,7 @@ public class CaInfoDto implements Serializable {
     public void setSansJson(String sansJson) {
         this.sansJson = sansJson;
     }
-    
+
     public ProxyCaInfo buildProxyCaInfo() {
         List<MutablePair<String, String>> pairs = getHeaders().stream().map(triple -> new MutablePair<String, String>(triple.getMiddle(), triple.getRight())).collect(Collectors.toList());
         ProxyCaInfo proxyCaInfo = new ProxyCaInfo.ProxyCaInfoBuilder()

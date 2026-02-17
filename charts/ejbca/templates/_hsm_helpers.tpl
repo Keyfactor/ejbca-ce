@@ -7,17 +7,19 @@ Define HSM container image with versions
 {{- else if .Values.hsm.softhsm.enabled }}
 {{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-softhsm/images/hsm-driver-softhsm:1.1.0" }}
 {{- else if .Values.hsm.luna.enabled }}
-{{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-luna7/images/hsm-driver-luna7:0.5.0" }}
+{{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-luna7/images/hsm-driver-luna7:0.6.0" }}
 {{- else if .Values.hsm.dpod.enabled }}
-{{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-dpod/images/hsm-driver-dpod:0.1.0" }}
+{{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-dpod/images/hsm-driver-dpod:0.2.0" }}
 {{- else if .Values.hsm.utimaco.enabled }}
 {{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-utimaco/images/hsm-driver-utimaco:0.4.0" }}
 {{- else if .Values.hsm.nshield.enabled }}
 {{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-nshield/images/hsm-driver-nshield:0.5.0" }}
 {{- else if .Values.hsm.awsCloudHsm.enabled }}
-{{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-cloudhsm5/images/hsm-driver-cloudhsm5:0.2.0" }}
+{{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-cloudhsm5/images/hsm-driver-cloudhsm5:0.2.1" }}
 {{- else if .Values.hsm.lunatct.enabled }}
 {{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-safenetat/images/hsm-driver-safenetat:1.1.0" }}
+{{- else if .Values.hsm.bullproteccio.enabled }}
+{{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-bull/images/hsm-driver-bull:2.1.0" }}
 {{- end }}
 {{- end -}}
 
@@ -242,4 +244,61 @@ Enable individual sidecars and volumes: AWS CloudHSM
     items:
       - key: "customerCA.crt"
         path: "customerCA.crt"
+{{- end -}}
+
+{{/*
+Enable individual sidecars and volumes: Bull Proteccio HSM
+*/}}
+{{- define "ejbca.hsm.sidecar.bullproteccio" -}}
+{{- if .Values.hsm.bullproteccio.enabled }}
+- name: hsm
+  image: {{ include "ejbca.hsmImage" . }}
+  imagePullPolicy: {{ .Values.hsm.imagePullPolicy }}
+  volumeMounts:
+    - name: hsms-json-secret
+      mountPath: /opt/keyfactor/hsms.json
+      subPath: hsms.json
+    - name: hsm-bullproteccio-client-cert
+      mountPath: /opt/tw_proteccio/certificates/proteccio_client.crt
+      subPath: proteccio_client.crt
+    - name: hsm-bullproteccio-secret-client-cert-key
+      mountPath: /opt/tw_proteccio/certificates/proteccio_client.key
+      subPath: proteccio_client.key
+    - name: hsm-bullproteccio-configmap-client-sec-pub-key
+      mountPath: /opt/tw_proteccio/certificates/proteccio_client_sec_pub.key
+      subPath: proteccio_client_sec_pub.key
+    - name: hsm-bullproteccio-secret-client-sec-priv-key
+      mountPath: /opt/tw_proteccio/certificates/proteccio_client_sec_priv.key
+      subPath: proteccio_client_sec_priv.key
+{{- end }}
+{{- end -}}
+
+{{- define "ejbca.hsm.volume.bullproteccio" -}}
+- name: hsms-json-secret
+  secret:
+    secretName: {{ .Values.hsm.bullproteccio.hsms_json_secret }}
+- name: hsm-bullproteccio-client-cert
+  configMap:
+    name: {{ .Values.hsm.bullproteccio.credentials.certificates.configMap }}
+    items:
+      - key: "proteccio_client.crt"
+        path: "proteccio_client.crt"
+- name: hsm-bullproteccio-configmap-client-sec-pub-key
+  configMap:
+    name: {{ .Values.hsm.bullproteccio.credentials.certificates.configMap }}
+    items:
+      - key: "proteccio_client_sec_pub.key"
+        path: "proteccio_client_sec_pub.key"
+- name: hsm-bullproteccio-secret-client-cert-key
+  secret:
+    secretName: {{ .Values.hsm.bullproteccio.credentials.privateKey.secret }}
+    items:
+      - key: "proteccio_client.key"
+        path: "proteccio_client.key"
+- name: hsm-bullproteccio-secret-client-sec-priv-key
+  secret:
+    secretName: {{ .Values.hsm.bullproteccio.credentials.privateKey.secret }}
+    items:
+      - key: "proteccio_client_sec_priv.key"
+        path: "proteccio_client_sec_priv.key"
 {{- end -}}
