@@ -1235,6 +1235,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
      */
     private List<String> referencedAcmeConfigurationIDs(final int cryptoTokenId) {
         final List<String> result = new ArrayList<>();
+        if (!getEjbcaWebBean().isRunningEnterprise()){
+            return result;
+        }
         final GlobalAcmeConfiguration globalConfig = (GlobalAcmeConfiguration)
                 getGlobalConfigSession().getCachedConfiguration(GlobalAcmeConfiguration.ACME_CONFIGURATION_ID);
         AcmeConfiguration acmeAlias;
