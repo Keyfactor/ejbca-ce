@@ -25,7 +25,13 @@ import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.cms.CMSEnvelopedData;
 import org.bouncycastle.cms.CMSException;
+import org.bouncycastle.cms.CMSProcessable;
+import org.bouncycastle.cms.CMSSignedData;
+import org.bouncycastle.cms.RecipientInformation;
+import org.bouncycastle.cms.RecipientInformationStore;
+import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -37,6 +43,7 @@ import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CACommon;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAFactory;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -48,6 +55,8 @@ import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
+import org.cesecore.certificates.ca.kfenroll.ProxyCa;
+import org.cesecore.certificates.ca.kfenroll.ProxyCaInfo;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
@@ -431,6 +440,30 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
         return defaultCa;
     }
 
+    PKCS10CertificationRequest getPKCS10CertificationRequest(byte[] scepRequestBytes, String caName) throws CMSException, CryptoTokenOfflineException, IOException {
+        //Security.addProvider(new BouncyCastleProvider());
+        CMSSignedData signedData = new CMSSignedData(scepRequestBytes);
+        CMSProcessable signedContent = signedData.getSignedContent();
+        byte[] envelopedBytes = (byte[]) signedContent.getContent();
+        CMSEnvelopedData envelopedData = new CMSEnvelopedData(envelopedBytes);
+
+        RecipientInformationStore recipients = envelopedData.getRecipientInfos();
+        RecipientInformation recipient = recipients.getRecipients().iterator().next();
+
+        var map = cryptoTokenSession.getCryptoTokenIdToNameMap();
+        var id = map.entrySet().stream()
+                .filter(e -> e.getValue().equals("my-token"))
+                .findFirst()
+                .get()
+                .getKey();
+        var cryptoToken = cryptoTokenSession.getCryptoToken(id);
+        PrivateKey privateKey = cryptoToken.getPrivateKey("encryptKey");
+        var jceKeyTransEnvelopedRecipient = new JceKeyTransEnvelopedRecipient(privateKey);
+        var jceKeyTransRecipient = jceKeyTransEnvelopedRecipient.setProvider("BC");
+        byte[] csrBytes = recipient.getContent(jceKeyTransRecipient);
+        return new PKCS10CertificationRequest(csrBytes);
+    }
+
     /**
      * Handles SCEP certificate request
      *
@@ -491,6 +524,8 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
         }
 
         boolean isRAModeOK = scepConfig.getRAMode(alias);
+        CAInfo caInfo = caSession.getCAInfoInternal(-1, scepConfig.getRADefaultCA(alias), true);
+
 
         if (reqmsg.getErrorNo() != 0) {
             log.info("Error '" + reqmsg.getErrorNo() + "' receiving Scep request message.");
@@ -511,10 +546,24 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                     log.debug("Received a SCEP PKCSREQ message, operating in RA mode: " + isRAModeOK);
                 }
                 try {
-                    if (!scepRaModeExtension.performOperation(administrator, reqmsg, scepConfig, alias)) {
-                        String errmsg = "Error. Failed to add or edit user: " + reqmsg.getUsername();
-                        log.info(errmsg);
-                        return null;
+                    if (caInfo instanceof ProxyCaInfo) {
+                        final ProxyCa proxyCa = (ProxyCa) CAFactory.INSTANCE.getProxyCa(caInfo);
+                        var caName = scepConfig.getRADefaultCA(alias);
+                        getPKCS10CertificationRequest(msg, caName);
+
+                        final var id = proxyCa.getCAId();
+                        var map = cryptoTokenSession.getCryptoTokenIdToNameMap();
+                        var cryptoTokenId = reqmsg.getEncryptionCryptoTokenId();
+
+                        log.info("hit iaf");
+                        // proxyCa.generateCertificate(cryptoToken, endEntityInformation, )
+                    }
+                    else {
+                        if (!scepRaModeExtension.performOperation(administrator, reqmsg, scepConfig, alias)) { // *********************
+                            String errmsg = "Error. Failed to add or edit user: " + reqmsg.getUsername();
+                            log.info(errmsg);
+                            return null;
+                        }
                     }
                 } catch (WaitingForApprovalException e) {
                     //Return a pending response message, because this request is now waiting to be approved
@@ -525,6 +574,10 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                     X509CAInfo cainfo = (X509CAInfo) caSession.getCAInfoInternal(-1, scepConfig.getRADefaultCA(alias), true);
                     ResponseMessage resp = createPendingResponseMessage(reqmsg, cainfo);
                     return ScepResponseInfo.onlyResponseBytes(resp.getResponseMessage());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                } catch (CMSException e) {
+                    throw new RuntimeException(e);
                 }
             }
             try {
@@ -544,7 +597,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                     if (log.isDebugEnabled()) {
                         log.debug("SCEP certificate enrollment with alias '" + alias + "'");
                     }
-                    ResponseMessage resp = signSession.createCertificate(administrator, reqmsg, ScepResponseMessage.class, null);
+                    ResponseMessage resp = signSession.createCertificate(administrator, reqmsg, ScepResponseMessage.class, null); // *****************************
                     if (resp != null) {
                         ret = resp.getResponseMessage();
                         ScepResponseMessage scepResponseMessage = (ScepResponseMessage) resp;

@@ -39,6 +39,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
@@ -65,18 +66,30 @@ public class ScepRaCertificateIssuerSessionBean implements ScepRaCertificateIssu
     
     @Override
     public X509Certificate issueEncryptionCertificate(AuthenticationToken authenticationToken, String caName, int cryptoTokenId,
-            String keyAlias) throws ScepEncryptionCertificateIssuanceException {
-        return issueCertificate(authenticationToken, caName, cryptoTokenId, keyAlias, CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_ENCRYPTOR);
+                                                      String keyAlias) throws ScepEncryptionCertificateIssuanceException {
+        return issueCertificate(authenticationToken, caName, cryptoTokenId, keyAlias, CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_ENCRYPTOR, null, null);
+    }
+
+    @Override
+    public X509Certificate issueEncryptionCertificate(AuthenticationToken authenticationToken, String caName, int cryptoTokenId,
+                                                      String keyAlias, String signingAlgorithm, String templateName) throws ScepEncryptionCertificateIssuanceException {
+        return issueCertificate(authenticationToken, caName, cryptoTokenId, keyAlias, CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_ENCRYPTOR, signingAlgorithm, templateName);
     }
 
     @Override
     public X509Certificate issueSigningCertificate(AuthenticationToken authenticationToken, String caName, int cryptoTokenId,
-            String keyAlias) throws ScepEncryptionCertificateIssuanceException {
-        return issueCertificate(authenticationToken, caName, cryptoTokenId, keyAlias, CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_SIGNER);
+                                                   String keyAlias) throws ScepEncryptionCertificateIssuanceException {
+        return issueCertificate(authenticationToken, caName, cryptoTokenId, keyAlias, CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_SIGNER, null, null);
+    }
+
+    @Override
+    public X509Certificate issueSigningCertificate(AuthenticationToken authenticationToken, String caName, int cryptoTokenId,
+                                                   String keyAlias, String signingAlgorithm, String templateName) throws ScepEncryptionCertificateIssuanceException {
+        return issueCertificate(authenticationToken, caName, cryptoTokenId, keyAlias, CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_SIGNER, signingAlgorithm, templateName);
     }
 
     private X509Certificate issueCertificate(AuthenticationToken authenticationToken, String caName, int cryptoTokenId,
-            String keyAlias, int fixedCertificateProfileId) throws ScepEncryptionCertificateIssuanceException {
+            String keyAlias, int fixedCertificateProfileId, String signingAlgorithm, String templateName) throws ScepEncryptionCertificateIssuanceException {
         CertificateResponseMessage certificateResponse;
         try {
             var publicKeyWrapper = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, keyAlias);
@@ -96,7 +109,11 @@ public class ScepRaCertificateIssuerSessionBean implements ScepRaCertificateIssu
             endEntityInformation.setType(new EndEntityType(EndEntityTypes.ENDUSER));
             endEntityInformation.setTokenType(EndEntityConstants.TOKEN_SOFT_P12);
             endEntityInformation.setCAId(caId);
-
+            endEntityInformation.setExtendedInformation(new ExtendedInformation());
+            endEntityInformation.getExtendedInformation().setKeyAlias(keyAlias);
+            endEntityInformation.getExtendedInformation().setCryptoTokenId(cryptoTokenId);
+            endEntityInformation.getExtendedInformation().setSigningAlgorithm(signingAlgorithm);
+            endEntityInformation.getExtendedInformation().setTemplateName(templateName);
             var requestMessage = new SimpleRequestMessage(publicKeyWrapper.getPublicKey(), userName, password);
             certificateResponse = certificateCreateSession.createCertificate(authenticationToken, endEntityInformation, requestMessage,
                     X509ResponseMessage.class, new CertificateGenerationParams());

@@ -110,6 +110,7 @@ import java.security.cert.CRLException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
@@ -174,21 +175,30 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             final CAToken catoken = ca.getCAToken();
             final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(catoken.getCryptoTokenId());
             final String alias;
-            Collection<Certificate> cachain;
-            final Certificate cacert;
-            if (ca.getUseNextCACert(requestMessage)) {
-                alias = catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT);
-                cachain = ca.getRolloverCertificateChain();
-                cacert = cachain.iterator().next();
-            } else {
-                alias = catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
-                cachain = ca.getCertificateChain();
-                cacert = ca.getCACertificate();
+            Collection<Certificate> cachain = new ArrayList<>();
+            Certificate cacert = null;
+            PrivateKey signingKey = null;
+            if (ca.getCAType() == CAInfo.CATYPE_PROXY) {
+                log.info("Creating certificate for proxy CA " + ca.getName());
+            }
+            else {
+                if (ca.getUseNextCACert(requestMessage)) {
+                    alias = catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT);
+                    cachain = ca.getRolloverCertificateChain();
+                    cacert = cachain.iterator().next();
+                } else {
+                    alias = catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+                    cachain = ca.getCertificateChain();
+                    cacert = ca.getCACertificate();
+                }
+                signingKey = cryptoToken.getPrivateKey(alias);
             }
             // See if we need some key material to decrypt request
-            PrivateKey signingKey = cryptoToken.getPrivateKey(alias);
-            String signatureProviderName = cryptoToken.getEncProviderName();
-            String signatureAlgorithm = ca.getCAToken().getSignatureAlgorithm();
+            String signatureProviderName = null;
+            String signatureAlgorithm = null;
+            if (ca != null && ca.getCAToken() != null) {
+                signatureAlgorithm = ca.getCAToken().getSignatureAlgorithm();
+            }
             if (requestMessage.requireKeyInfo()) {
                 if (requestMessage.getEncryptionCryptoTokenId() != null) {
                     // SCEP message encrypted by dedicated encryption key
@@ -201,6 +211,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
 
                 } else {
                     // You go figure...scep encrypts message with the public CA-cert
+                    signatureProviderName = cryptoToken.getEncProviderName();
                     requestMessage.setKeyInfo(cacert, signingKey, signatureProviderName);
                 }
 
@@ -219,7 +230,6 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                         caChainWithSigningCert.addAll(cachain);
                         cachain = caChainWithSigningCert;
                     }
-
                     // set it as the signingKey instead of the CA's key set above
                     CryptoToken signingCryptoToken = cryptoTokenManagementSession.getCryptoToken(signingCryptoTokenId);
                     String signingKeyAlias = requestMessage.getSigningKeyAlias();
@@ -638,8 +648,8 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             CertificateSerialNumberException storeEx = null; // this will not be null if stored == false after the below passage
             String serialNo = "unknown";
             for (int retrycounter = 0; retrycounter < maxRetrys; retrycounter++) {
-                final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
-                if (cryptoToken==null) {
+                CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
+                if (cryptoToken==null && ca.getCAType() != CAInfo.CATYPE_PROXY) {
                     final String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getCAId());
                     log.info(msg);
                     CryptoTokenOfflineException exception = new CryptoTokenOfflineException("CA's CryptoToken not found.");
@@ -661,6 +671,12 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                             // Error
                             throw new CertificateCreateException(ErrorCode.BAD_REQUEST, "Can't use alternative public key with this CA type");
                         } else {
+                            if (cryptoToken == null &&
+                                    endEntityInformation != null &&
+                                    endEntityInformation.getExtendedInformation() != null &&
+                                    endEntityInformation.getExtendedInformation().getCryptoTokenId() != null) {
+                                cryptoToken = cryptoTokenManagementSession.getCryptoToken(endEntityInformation.getExtendedInformation().getCryptoTokenId());
+                            }
                             cert = ca.generateCertificate(cryptoToken, endEntityInformation, request, pk, keyusage, notBefore, notAfter, certProfile,
                                     extensions, sequence, certGenParams, cceConfig);
                         }

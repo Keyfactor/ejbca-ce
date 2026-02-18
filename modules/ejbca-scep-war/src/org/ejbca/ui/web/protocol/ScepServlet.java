@@ -94,7 +94,7 @@ public class ScepServlet extends HttpServlet {
     @EJB
     private ScepMessageDispatcherSessionLocal scepMessageDispatcherSession;
     
-    private static final String DEFAULT_SCEP_ALIAS = "scep";
+    protected static final String DEFAULT_SCEP_ALIAS = "scep";
 
     /**
      * Inits the SCEP servlet
