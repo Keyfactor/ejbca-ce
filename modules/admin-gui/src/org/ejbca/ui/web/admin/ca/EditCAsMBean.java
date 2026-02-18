@@ -1619,11 +1619,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             signerCaToken = caSession.getCAInfoInternal(signerCaId).getCAToken();
             signerAlternativeSignature = signerCaToken.getAlternativeSignatureAlgorithm();
         }
-        if (!creatingSelfSignedCa && ((alternativeSignature == null) && (signerAlternativeSignature != null) )) {
+        if (!creatingSelfSignedCa && (StringUtils.isEmpty(alternativeSignature) && StringUtils.isNotEmpty(signerAlternativeSignature)) ) {
             addErrorMessage("ERROR_NON_HYBRID_SUBCA_UNDER_HYBRID_ROOTCA");
             return true;
         }
-        if (!creatingSelfSignedCa && (alternativeSignature != null && signerAlternativeSignature == null )) {
+        if (!creatingSelfSignedCa && (StringUtils.isNotEmpty(alternativeSignature) && StringUtils.isEmpty(signerAlternativeSignature)) ) {
             addErrorMessage("ERROR_HYBRID_SUBCA_UNDER_NON_HYBRID_ROOTCA");
             return true;
         }
