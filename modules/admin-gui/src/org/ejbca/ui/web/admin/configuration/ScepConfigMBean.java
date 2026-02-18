@@ -1014,12 +1014,12 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
 
                     if (currentAlias.encryptionCertificateMustBeGenerated()) {
                         var certificate = scepRaCertificateIssuerSession.issueEncryptionCertificate(getAuthenticationToken(), currentAlias.getRaDefaultCA(),
-                                currentAlias.encryptionCryptoTokenId, currentAlias.encryptionKeyAlias);
+                                currentAlias.encryptionCryptoTokenId, currentAlias.encryptionKeyAlias, currentAlias.signingAlgorithm, currentAlias.getProxyCaEncryptionCertTemplate());
                         currentAlias.setEncryptionCertificate(currentAlias.encryptionCryptoTokenId, currentAlias.encryptionKeyAlias, certificate);
                     }
                     if (currentAlias.signingCertificateMustBeGenerated()) {
                         var certificate = scepRaCertificateIssuerSession.issueSigningCertificate(getAuthenticationToken(), currentAlias.getRaDefaultCA(),
-                                currentAlias.signingCryptoTokenId, currentAlias.signingKeyAlias);
+                                currentAlias.signingCryptoTokenId, currentAlias.signingKeyAlias, currentAlias.signingAlgorithm, currentAlias.getProxyCaSigningCertTemplate());
                         currentAlias.setSigningCertificate(currentAlias.signingCryptoTokenId, currentAlias.signingKeyAlias, certificate);
                     }
 

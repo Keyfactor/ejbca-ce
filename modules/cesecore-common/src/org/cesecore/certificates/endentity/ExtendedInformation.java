@@ -151,14 +151,10 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     private static final String SCEP_CACHED_APROVAL_TYPE = "SCEP_CACHED_APROVAL_TYPE";
     // ** External account binding id
     private static final String ACCOUNT_BINDING_ID = "ACCOUNT_BINDING_ID";
-    
-    public String getAccountBindingId() {
-        return (String) data.get(ACCOUNT_BINDING_ID);
-    }
-
-    public void setAccountBindingId(final String accountBindingId) {
-        data.put(ACCOUNT_BINDING_ID, accountBindingId);
-    }
+    private static final String KEY_ALIAS = INTERNAL_KEY_PREFIX+"key_alias";
+    private static final String CRYPTO_TOKEN_ID = INTERNAL_KEY_PREFIX+"crypto_token_id";
+    private static final String SIGNING_ALGORITHM = INTERNAL_KEY_PREFIX+"signing_algorithm";
+    private static final String TEMPLATE_NAME = INTERNAL_KEY_PREFIX+"template_name";
 
     /** Creates a new instance of ExtendedInformation */
     public ExtendedInformation() {
@@ -167,6 +163,14 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         setMaxLoginAttempts(DEFAULT_MAXLOGINATTEMPTS);
         setRemainingLoginAttempts(DEFAULT_REMAININGLOGINATTEMPTS);
         setCertificateRequest(null);
+    }
+
+    public String getAccountBindingId() {
+        return (String) data.get(ACCOUNT_BINDING_ID);
+    }
+
+    public void setAccountBindingId(final String accountBindingId) {
+        data.put(ACCOUNT_BINDING_ID, accountBindingId);
     }
 
     /**
@@ -910,6 +914,46 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
 
     public void setSshPrincipalsIpv6(List<String> ipv6Principals) {
         setSshCustomData(SSH_PRINCIPALS_IPV6, ipv6Principals);
+    }
+
+    public String getCaName() {
+        return (String) data.get(CA_NAME);
+    }
+
+    public void setCaName(String caName) {
+        data.put(CA_NAME, caName);
+    }
+
+    public String getKeyAlias() {
+        return (String) data.get(KEY_ALIAS);
+    }
+
+    public void setKeyAlias(String keyAlias) {
+        data.put(KEY_ALIAS, keyAlias);
+    }
+
+    public Integer getCryptoTokenId() {
+        return (Integer) data.get(CRYPTO_TOKEN_ID);
+    }
+
+    public void setCryptoTokenId(Integer cryptoTokenId) {
+        data.put(CRYPTO_TOKEN_ID, cryptoTokenId);
+    }
+
+    public String getSigningAlgorithm() {
+        return (String) data.get(SIGNING_ALGORITHM);
+    }
+
+    public void setSigningAlgorithm(String signingAlgorithm) {
+        data.put(SIGNING_ALGORITHM, signingAlgorithm);
+    }
+
+    public String getTemplateName() {
+        return (String) data.get(TEMPLATE_NAME);
+    }
+
+    public void setTemplateName(String templateName) {
+        data.put(TEMPLATE_NAME, templateName);
     }
 
 }
