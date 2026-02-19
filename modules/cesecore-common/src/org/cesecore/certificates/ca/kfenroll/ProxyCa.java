@@ -12,7 +12,11 @@
  *************************************************************************/
 package org.cesecore.certificates.ca.kfenroll;
 
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.certificate.CertificateCreateException;
+
+import java.security.cert.Certificate;
 
 /**
  * General interface for Proxy CA
@@ -37,5 +41,7 @@ public interface ProxyCa extends CA {
     String getOauthClientSecret();
 
     void setOauthClientSecret(final String oauthClientSecret);
+
+    Certificate generateCertificate(PKCS10CertificationRequest csr, final String templateName) throws CertificateCreateException;
 
 }

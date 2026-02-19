@@ -12,16 +12,23 @@
  *************************************************************************/
 package org.cesecore.certificates.util.cert;
 
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.cert.ocsp.CertificateID;
 import org.bouncycastle.cert.ocsp.OCSPException;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
+import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.bc.BcDigestCalculatorProvider;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder;
 import org.cesecore.certificates.ocsp.exception.OcspFailureException;
 import org.cesecore.util.LogRedactionUtils;
 
@@ -58,4 +65,25 @@ public final class CertificateUtils {
 			throws OperatorCreationException, OCSPException, CertificateEncodingException {
 		return new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(idSha)), certificate, certificate.getSerialNumber());
 	}
+
+	/**
+	 * Creates a PKCS#10 CSR for the given key alias and X500Name using the specified signing algorithm.
+	 *
+	 * @param cryptoToken The crypto token containing the private and public key
+	 * @param keyAlias The alias of the private key to use for signing
+	 * @param x500Name The X500Name for the CSR
+	 * @param signingAlgorithm The signing algorithm to use
+	 * @return The generated PKCS#10 CSR
+	 * @throws CryptoTokenOfflineException If the crypto token is offline
+	 * @throws OperatorCreationException If the content signer cannot be created
+	 */
+	public static PKCS10CertificationRequest createCsr(final CryptoToken cryptoToken, final String keyAlias, final X500Name x500Name, final String signingAlgorithm) throws CryptoTokenOfflineException, OperatorCreationException {
+		var privateKey = cryptoToken.getPrivateKey(keyAlias);
+		var publicKey = cryptoToken.getPublicKey(keyAlias);
+		ContentSigner signer = new JcaContentSignerBuilder(signingAlgorithm)
+				.build(privateKey);
+		return new JcaPKCS10CertificationRequestBuilder(x500Name, publicKey)
+				.build(signer);
+	}
+
 }
