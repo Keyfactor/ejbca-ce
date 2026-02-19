@@ -367,7 +367,7 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
         assertEquals("Should have one approval step", 1, steps.size());
         final JSONObject step = (JSONObject) steps.get(0);
         assertEquals("Step number should be 1", 1L, step.get("step"));
-        assertEquals("Approval action should be COMPLETED", "COMPLETED", step.get("approval_action"));
+        assertEquals("Approval action should be COMPLETED", "PENDING", step.get("approval_action"));
         assertEquals(EndEntityTypes.ENDUSER.toString(), actualJsonObject.get("certificate_profile_name"));
         assertEquals("Approval EEP should be EMPTY", "EMPTY", actualJsonObject.get("end_entity_profile_name"));
         assertEquals("Approval EEP should be subject dn is incorrect", "CN="+eeName, actualJsonObject.get("subject_dn"));

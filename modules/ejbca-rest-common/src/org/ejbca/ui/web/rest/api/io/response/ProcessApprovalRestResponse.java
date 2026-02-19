@@ -194,6 +194,7 @@ public class ProcessApprovalRestResponse {
 
     static List<ApprovalStepRestResponse> buildApprovalSteps(final RaApprovalRequestInfo requestInfo) {
         final List<ApprovalStepRestResponse> steps = new ArrayList<>();
+        String approvalStatus = ApprovalRequestStatus.fromIntWithCombinedStates(requestInfo.getStatus()).getValue();
         final List<RaApprovalStepInfo> previousSteps = requestInfo.getPreviousApprovalSteps();
         final ApprovalProfile approvalProfile = requestInfo.getApprovalProfile();
         int stepNumber = 1;
@@ -205,7 +206,7 @@ public class ProcessApprovalRestResponse {
 
             for (RaApprovalStepInfo stepInfo : previousSteps) {
                 for (ApprovalPartition partition : stepInfo.getPartitions()) {
-                    steps.add(buildStepPartition(stepInfo.getStepId(), partition, stepNumber, approvals, approvalProfile));
+                    steps.add(buildStepPartition(stepInfo.getStepId(), partition, stepNumber, approvals, approvalProfile, approvalStatus));
                     stepNumber++;
                 }
             }
@@ -213,7 +214,7 @@ public class ProcessApprovalRestResponse {
         return steps;
     }
 
-    static ApprovalStepRestResponse buildStepPartition(int stepId, ApprovalPartition partition, int stepNumber, Collection<Approval> approvals, ApprovalProfile approvalProfile) {
+    static ApprovalStepRestResponse buildStepPartition(int stepId, ApprovalPartition partition, int stepNumber, Collection<Approval> approvals, ApprovalProfile approvalProfile, String approvalStatus) {
         final ApprovalStepRestResponse.Builder stepBuilder = ApprovalStepRestResponse.builder()
                 .step(stepNumber);
 
@@ -249,7 +250,7 @@ public class ProcessApprovalRestResponse {
             }
         } else {
             // Fallback if no matching approval found
-            stepBuilder.approvalAction("COMPLETED");
+            stepBuilder.approvalAction(approvalStatus);
         }
         if (partition.getPropertyList() != null && !partition.getPropertyList().isEmpty()) {
             stepBuilder.propertyList(getApprovalPartitionPropertyRestResponses(partition, approvalProfile));
