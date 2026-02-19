@@ -45,16 +45,15 @@ import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAFactory;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.kfenroll.ProxyCa;
-import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.ejbca.config.ScepConfiguration;
 import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeSessionLocal;
-import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -194,9 +193,11 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             this.encryptionCryptoTokenId = scepConfig.getEncryptionCryptoTokenId(alias);
 
             /// Proxy CA
-            this.proxyCaEncryptionCertTemplate = scepConfig.getProxyCaEncryptionCertTemplate(alias);
-            this.proxyCaSigningCertTemplate = scepConfig.getProxyCaSigningCertTemplate(alias);
-            this.proxyCaCaEnrollmentTemplate = scepConfig.getProxyCaEnrollmentTemplate(alias);
+            if (scepConfig.getRAMode(alias) && isProxyCaAvailable() && isProxyCA(this.raDefaultCA)) {
+                this.proxyCaEncryptionCertTemplate = scepConfig.getProxyCaEncryptionCertTemplate(alias);
+                this.proxyCaSigningCertTemplate = scepConfig.getProxyCaSigningCertTemplate(alias);
+                this.proxyCaCaEnrollmentTemplate = scepConfig.getProxyCaEnrollmentTemplate(alias);
+            }
 
             // ra mode RA keys settings
             String pemEncryptionCertificate = scepConfig.getEncryptionCertificate(alias);
@@ -811,15 +812,11 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
     @EJB
     private CaSessionLocal caSession;
     @EJB
-    private CertificateCreateSessionLocal certificateCreateSession;
-    @EJB
     private CertificateProfileSessionLocal certProfileSession;
     @EJB
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
     @EJB
     private EnterpriseEditionEjbBridgeSessionLocal editionEjbBridgeSession;
-    @EJB
-    private EndEntityManagementSessionLocal endEntityManagementSession;
     @EJB
     private EndEntityProfileSessionLocal endentityProfileSession;
     @EJB
@@ -1267,6 +1264,13 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         return List.of();
     }
 
+    public boolean getIsCurrentAliasProxyCA() {
+        if (this.currentAlias == null) {
+            return false;
+        }
+        return isProxyCA(this.currentAlias.getRaDefaultCA());
+    }
+
     public List<SelectItem> getAvailableSchemes() {
         final List<SelectItem> ret = new ArrayList<>();
         ret.add(new SelectItem("DN", "DN Part"));
@@ -1432,5 +1436,13 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         }
         sortedCas.sort((o1, o2) -> o1.getLabel().compareToIgnoreCase(o2.getLabel()));
         return sortedCas;
+    }
+
+    private boolean isProxyCA(final String caName) {
+        if (StringUtils.isBlank(caName)) {
+            return false;
+        }
+        final CAInfo defaultCA = caSession.getCAInfoInternal(-1, caName, true);
+        return defaultCA != null && defaultCA.getCAType() == CAInfo.CATYPE_PROXY;
     }
 }
