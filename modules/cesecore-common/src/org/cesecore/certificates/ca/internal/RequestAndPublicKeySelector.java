@@ -46,7 +46,7 @@ public class RequestAndPublicKeySelector {
      * 
      * @param providedRequestMessage
      * @param providedPublicKey
-     * @param alternativePublicKey alternative Public Key, if creating a hybrid certificate
+     * @param alternativePublicKey alternative Public Key, if creating a Chimera/Catalyst certificate
      * @param endEntityInformation
      */
     public RequestAndPublicKeySelector(final RequestMessage providedRequestMessage, final PublicKey providedPublicKey,

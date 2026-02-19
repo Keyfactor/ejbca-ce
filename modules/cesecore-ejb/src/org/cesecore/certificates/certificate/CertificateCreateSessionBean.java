@@ -55,7 +55,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.CertificateGenerationParams;
-import org.cesecore.certificates.ca.HybridCa;
+import org.cesecore.certificates.ca.ChimeraCa;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
@@ -653,8 +653,8 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
 
                 // Validate ValidatorPhase.PRE_CERTIFICATE_VALIDATION (X.509 CA only)
                 try {
-                    if (ca instanceof HybridCa) {
-                        cert = ((HybridCa) ca).generateCertificate(cryptoToken, endEntityInformation, request, pk, altPK, keyusage, notBefore, notAfter, certProfile,
+                    if (ca instanceof ChimeraCa) {
+                        cert = ((ChimeraCa) ca).generateCertificate(cryptoToken, endEntityInformation, request, pk, altPK, keyusage, notBefore, notAfter, certProfile,
                                 extensions, sequence, certGenParams, cceConfig);
                     } else {
                         if (altPK != null) {

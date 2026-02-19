@@ -338,9 +338,9 @@ public class CertificateRequestSessionSystemTest extends CaTestCase {
     }
     
     @Test
-    public void testHybridCsrEnroll() throws Exception {
-        final String eepName = "EEP_testHybridCsrEnroll";
-        final String username = "USER_testHybridCsrEnroll";
+    public void testChimeraCsrEnroll() throws Exception {
+        final String eepName = "EEP_testChimeraCsrEnroll";
+        final String username = "USER_testChimeraCsrEnroll";
         final String uniqueId = UUID.randomUUID().toString();
         final String suppliedDn = "CN=Test" + uniqueId;
 
@@ -360,13 +360,13 @@ public class CertificateRequestSessionSystemTest extends CaTestCase {
                                                                      EndEntityConstants.TOKEN_USERGEN, null);
             userdata.setPassword(PASSWORD);
 
-            String request = new String(Base64.encode(generateHybridPKCS10Req(CN_IGNORED+uniqueId)));
+            String request = new String(Base64.encode(generateChimeraPKCS10Req(CN_IGNORED+uniqueId)));
 
             byte[] encodedCertificate = certificateRequestSession.processCertReq(admin, userdata, request,
                                                                                  CertificateConstants.CERT_REQ_TYPE_PKCS10,
                                                                                  CertificateConstants.CERT_RES_TYPE_PKCS7);
             
-            assertNotNull("Expected Hybrid Certificate is null", encodedCertificate);
+            assertNotNull("Expected Chimera Certificate is null", encodedCertificate);
 
         } finally {
             endEntityManagementSession.deleteUser(admin, username);
@@ -472,7 +472,7 @@ public class CertificateRequestSessionSystemTest extends CaTestCase {
         return p10request.toASN1Structure().getEncoded();        
     }
     
-    private static byte[] generateHybridPKCS10Req(String dn) throws InvalidAlgorithmParameterException, IOException,
+    private static byte[] generateChimeraPKCS10Req(String dn) throws InvalidAlgorithmParameterException, IOException,
             OperatorCreationException {
         // Generate keys
         KeyPair primaryKeyPair = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);    
