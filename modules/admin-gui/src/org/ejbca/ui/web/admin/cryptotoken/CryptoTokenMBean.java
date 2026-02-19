@@ -1173,10 +1173,11 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         if (getCryptoTokenGuiList() != null) {
             // Check references in ACME EAB with symmetric key.
             final List<String> references = referencedAcmeConfigurationIDs(tokenId);
-            if (references.size() == 0) {
+            if (references.isEmpty()) {
                 getCryptoTokenManagementSession().deleteCryptoToken(getAuthenticationToken(), tokenId);
             } else {
                 addErrorMessage("CRYPTOTOKEN_COULD_NOT_BE_DELETED_BECAUSE_REFERENCE_IN_ACME_ALIAS", String.join(", ", references));
+                return;
             }
             flushCaches();
         }
@@ -1234,6 +1235,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
      */
     private List<String> referencedAcmeConfigurationIDs(final int cryptoTokenId) {
         final List<String> result = new ArrayList<>();
+        if (!getEjbcaWebBean().isRunningEnterprise()){
+            return result;
+        }
         final GlobalAcmeConfiguration globalConfig = (GlobalAcmeConfiguration)
                 getGlobalConfigSession().getCachedConfiguration(GlobalAcmeConfiguration.ACME_CONFIGURATION_ID);
         AcmeConfiguration acmeAlias;
