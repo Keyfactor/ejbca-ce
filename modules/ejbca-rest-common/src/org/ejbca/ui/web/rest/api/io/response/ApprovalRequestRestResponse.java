@@ -492,35 +492,35 @@ public class ApprovalRequestRestResponse extends ProcessApprovalRestResponse {
         final String result;
         if (extendedInformation == null) {
             return null;
-        } else {
-            @SuppressWarnings("rawtypes")
-            Map data = (Map) extendedInformation.getData();
-            Properties properties = new Properties();
-
-            for (Object o : data.keySet()) {
-                if (o instanceof String key && key.startsWith(ExtendedInformation.EXTENSIONDATA)) {
-                        String subKey = key.substring(ExtendedInformation.EXTENSIONDATA.length());
-                        properties.put(subKey, data.get(key));
-                    }
-            }
-
-            // Render the properties and remove the first line created by the Properties class.
-            StringWriter out = new StringWriter();
-            try {
-                properties.store(out, null);
-            } catch (IOException ex) {
-                // Should not happen as we are using a StringWriter
-                throw new RuntimeException(ex);
-            }
-
-            StringBuffer buff = out.getBuffer();
-            String lineSeparator = System.lineSeparator();
-            int firstLineSeparator = buff.indexOf(lineSeparator);
-
-            result = firstLineSeparator >= 0
-                    ? buff.substring(firstLineSeparator + lineSeparator.length())
-                    : buff.toString();
         }
+        @SuppressWarnings("rawtypes")
+        Map data = (Map) extendedInformation.getData();
+        Properties properties = new Properties();
+
+        for (Object o : data.keySet()) {
+            if (o instanceof String key && key.startsWith(ExtendedInformation.EXTENSIONDATA)) {
+                String subKey = key.substring(ExtendedInformation.EXTENSIONDATA.length());
+                properties.put(subKey, data.get(key));
+            }
+        }
+
+        // Render the properties and remove the first line created by the Properties class.
+        StringWriter out = new StringWriter();
+        try {
+            properties.store(out, null);
+        } catch (IOException ex) {
+            // Should not happen as we are using a StringWriter
+            throw new RuntimeException(ex);
+        }
+
+        StringBuffer buff = out.getBuffer();
+        String lineSeparator = System.lineSeparator();
+        int firstLineSeparator = buff.indexOf(lineSeparator);
+
+        result = firstLineSeparator >= 0
+                ? buff.substring(firstLineSeparator + lineSeparator.length())
+                : buff.toString();
+
         return result;
     }
 

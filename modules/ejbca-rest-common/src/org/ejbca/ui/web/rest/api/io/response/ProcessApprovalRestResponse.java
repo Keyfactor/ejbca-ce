@@ -178,6 +178,7 @@ public class ProcessApprovalRestResponse {
 
     static List<ApprovalStepRestResponse> buildApprovalSteps(final RaApprovalRequestInfo requestInfo, boolean includeNextStep) {
         final List<ApprovalStepRestResponse> steps = new ArrayList<>();
+        String approvalStatus = ApprovalRequestStatus.fromIntWithCombinedStates(requestInfo.getStatus()).getValue();
         final List<RaApprovalStepInfo> previousSteps = requestInfo.getPreviousApprovalSteps();
         int stepNumber = 1;
         final ApprovalDataVO approvalData = requestInfo.getApprovalData();
@@ -188,18 +189,18 @@ public class ProcessApprovalRestResponse {
 
             for (RaApprovalStepInfo stepInfo : previousSteps) {
                 for (ApprovalPartition partition : stepInfo.getPartitions()) {
-                    steps.add(buildStepPartition(stepInfo.getStepId(), partition, stepNumber, approvals));
+                    steps.add(buildStepPartition(stepInfo.getStepId(), partition, stepNumber, approvals, approvalStatus));
                     stepNumber++;
                 }
             }
         }
         if (includeNextStep && requestInfo.getNextApprovalStep() != null) {
-            steps.add(buildStepPartition(requestInfo.getNextApprovalStep().getStepIdentifier(), requestInfo.getNextApprovalStepPartition(), stepNumber, approvals));
+            steps.add(buildStepPartition(requestInfo.getNextApprovalStep().getStepIdentifier(), requestInfo.getNextApprovalStepPartition(), stepNumber, approvals, approvalStatus));
         }
         return steps;
     }
 
-    private static ApprovalStepRestResponse buildStepPartition(int stepId, ApprovalPartition partition, int stepNumber, Collection<Approval> approvals) {
+    private static ApprovalStepRestResponse buildStepPartition(int stepId, ApprovalPartition partition, int stepNumber, Collection<Approval> approvals, String approvalStatus) {
         final ApprovalStepRestResponse.Builder stepBuilder = ApprovalStepRestResponse.builder()
                 .step(stepNumber);
 
@@ -235,7 +236,7 @@ public class ProcessApprovalRestResponse {
             }
         } else {
             // Fallback if no matching approval found
-            stepBuilder.approvalAction("COMPLETED");
+            stepBuilder.approvalAction(approvalStatus);
         }
         return stepBuilder.build();
     }

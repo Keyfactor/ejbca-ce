@@ -95,7 +95,7 @@ public class ApprovalRestResource extends BaseRestResource {
 
 
     /**
-     * Gets the status of an approval request.
+     * Gets the data of an approval request.
      *
      * @param requestContext        the HTTP request context
      * @param requestId             the ID of the approval request
