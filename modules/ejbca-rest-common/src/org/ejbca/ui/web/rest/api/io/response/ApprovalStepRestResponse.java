@@ -13,6 +13,7 @@
 package org.ejbca.ui.web.rest.api.io.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
 
 /**
  * Represents a single approval step in an approval request response.
@@ -35,12 +36,16 @@ public class ApprovalStepRestResponse {
     @Schema(description = "Comment provided with the approval action", example = "Approved after verification")
     private String approvalComment;
 
+    @Schema(description = "Partition properties provided with the approval action")
+    List<ApprovalPartitionPropertyRestResponse> propertyList;
+
     private ApprovalStepRestResponse(final Builder builder) {
         this.step = builder.step;
         this.approvalAction = builder.approvalAction;
         this.approvalDate = builder.approvalDate;
         this.approvalAdmin = builder.approvalAdmin;
         this.approvalComment = builder.approvalComment;
+        this.propertyList = builder.propertyList;
     }
 
     public int getStep() {
@@ -63,6 +68,10 @@ public class ApprovalStepRestResponse {
         return approvalComment;
     }
 
+    public List<ApprovalPartitionPropertyRestResponse> getPropertyList() {
+        return propertyList;
+    }
+
     public static Builder builder() {
         return new Builder();
     }
@@ -73,6 +82,7 @@ public class ApprovalStepRestResponse {
         private String approvalDate;
         private String approvalAdmin;
         private String approvalComment;
+        private List<ApprovalPartitionPropertyRestResponse> propertyList;
 
         public Builder step(final int step) {
             this.step = step;
@@ -96,6 +106,10 @@ public class ApprovalStepRestResponse {
 
         public Builder approvalComment(final String approvalComment) {
             this.approvalComment = approvalComment;
+            return this;
+        }
+        public Builder propertyList(final List<ApprovalPartitionPropertyRestResponse> propertyList) {
+            this.propertyList = propertyList;
             return this;
         }
 

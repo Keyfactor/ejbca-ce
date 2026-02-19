@@ -377,7 +377,8 @@ public class ApprovalRequestRestResponse extends ProcessApprovalRestResponse {
 
 
         // Build approval steps
-        final List<ApprovalStepRestResponse> steps = buildApprovalSteps(requestInfo, true);
+        final List<ApprovalStepRestResponse> steps = buildApprovalSteps(requestInfo);
+
 
         final Date requestDate = new Date(approvalData.getRequestDate().getTime());
         final long expirationPeriod = approvalRequest.getRequestValidity();
@@ -391,6 +392,11 @@ public class ApprovalRequestRestResponse extends ProcessApprovalRestResponse {
                 .endEntityName(endEntityName)
                 .status(ApprovalRequestStatus.fromIntWithCombinedStates(requestInfo.getStatus()))
                 .steps(steps);
+        if (requestInfo.getNextApprovalStep() != null) {
+            final ApprovalStepRestResponse nextStep = buildStepPartition(requestInfo.getNextApprovalStep().getStepIdentifier(),
+                    requestInfo.getNextApprovalStepPartition(), 1, requestInfo.getApprovalData().getApprovals(), requestInfo.getApprovalProfile());
+            builder.nextStep(nextStep);
+        }
         builder.certificateProfileName(requestInfo.getCertificateProfileName())
                 .endEntityProfileName(requestInfo.getEndEntityProfileName());
         for (ApprovalDataText approvalDataText: requestInfo.getRequestData()){
