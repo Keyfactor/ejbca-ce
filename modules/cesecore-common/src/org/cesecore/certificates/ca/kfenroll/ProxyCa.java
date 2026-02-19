@@ -20,6 +20,22 @@ import org.cesecore.certificates.ca.CA;
  */
 public interface ProxyCa extends CA {
 
-    public static final String CA_TYPE = "KeyfactorEnrollmentProxyCA";
+    String CA_TYPE = "KeyfactorEnrollmentProxyCA";
+
+    String getEnrollWithCsrUrl();
+
+    void setEnrollWithCsrUrl(final String enrollWithCsrUrl);
+
+    String getOauthTokenUrl();
+
+    void setOauthTokenUrl(final String oauthTokenUrl);
+
+    String getOauthClientName();
+
+    void setOauthClientName(final String oauthClientName);
+
+    String getOauthClientSecret();
+
+    void setOauthClientSecret(final String oauthClientSecret);
 
 }

@@ -428,7 +428,7 @@ fun loadPropertiesFromFiles(vararg filePaths: String): Properties {
 }
 
 fun Properties.expandPlaceholders(templateKey: String): String {
-    val template = ejbcaProperties.getProperty(templateKey);
+    val template = ejbcaProperties.getProperty(templateKey)
     val placeholderPattern = Regex("\\$\\{([^}]+)\\}")
     return placeholderPattern.replace(template) { matchResult ->
         val propertyKey = matchResult.groupValues[1]

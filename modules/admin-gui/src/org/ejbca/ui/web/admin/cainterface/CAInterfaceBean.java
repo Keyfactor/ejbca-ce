@@ -1347,9 +1347,10 @@ public class CAInterfaceBean implements Serializable {
             .setDescription(ca.getDescription())
             .setSubjectDn(ca.getCaSubjectDN())
             .setEnrollWithCsrUrl(ca.getUpstreamUrl())
+            .setOauthTokenUrl(ca.getOauthTokenUrl())
+            .setOauthClientName(ca.getOauthClientName())
+            .setOauthClientSecret(ca.getOauthClientSecret())
             .setHeaders(headerPairs)
-            .setUsername(ca.getUsername())
-            .setPassword(ca.getPassword())
             .setCa(ca.getUpstreamCa())
             .setSans(ca.getSansJson());
         return proxyCaInfoBuilder;

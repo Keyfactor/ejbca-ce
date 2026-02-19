@@ -149,8 +149,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private static final String INVALID_KEK_ERROR_MESSAGE = "Key encryption key must be set to RSA key to allow key export.";
     private static final HashSet<String> ALLOWED_KEK_TYPES = new HashSet<String>(Arrays.asList(new String[] {"RSA"}));
     private static final String CERTIFICATE_UNAVAILABLE = "Certificate unavailable";
-    private final static String HIDDEN_KF_ENROLL_CA_UPSTREAM_PASSWORD = "*********";
-    
+
     @EJB
     private CaSessionLocal caSession;
     @EJB
@@ -2407,10 +2406,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             usedValidators = cainfo.getValidators();
             ProxyCaInfo proxyCaInfo = (ProxyCaInfo)cainfo;
             caInfoDto.setUpstreamUrl(proxyCaInfo.getEnrollWithCsrUrl());
+            caInfoDto.setOauthTokenUrl(proxyCaInfo.getOauthTokenUrl());
+            caInfoDto.setOauthClientName(proxyCaInfo.getOauthClientName());
+            caInfoDto.setOauthClientSecret(proxyCaInfo.getOauthClientSecret());
             List<MutableTriple<Boolean, String, String>> headerTriples = proxyCaInfo.getHeaders().stream().map(pair -> new MutableTriple<Boolean, String, String>(false, pair.getLeft(), pair.getRight())).collect(Collectors.toList());
             caInfoDto.setHeaders(headerTriples);
-            caInfoDto.setUsername(proxyCaInfo.getUsername());
-            caInfoDto.setPassword(proxyCaInfo.getPassword());
             caInfoDto.setUpstreamCa(proxyCaInfo.getUpstreamCertificateAuthority());
             caInfoDto.setSansJson(proxyCaInfo.getSans());
 
@@ -2847,17 +2847,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
     public boolean getHasAnyHeader() {
         return caInfoDto.getHeaders().size() > 0;
-    }
-    
-    public String getUpstreamPassword() {
-        // can never see the pasword
-        return HIDDEN_KF_ENROLL_CA_UPSTREAM_PASSWORD;
-    }
-    
-    public void setUpstreamPassword(String newPassword) {
-        if(!newPassword.equals(HIDDEN_KF_ENROLL_CA_UPSTREAM_PASSWORD)) {
-            caInfoDto.setPassword(newPassword);
-        }
     }
 
     public CAInterfaceBean getCaBean() {
