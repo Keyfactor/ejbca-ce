@@ -16,8 +16,10 @@ package org.ejbca.core.ejb.keyimport;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.junit.Assert.assertThrows;
 
+import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -25,6 +27,7 @@ import java.util.List;
 
 import com.keyfactor.util.certificate.CertificateWrapper;
 import com.keyfactor.util.certificate.DnComponents;
+
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
@@ -33,14 +36,18 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRem
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
 import org.ejbca.core.ejb.ra.KeyImportSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
+import org.ejbca.core.model.era.TestRaMasterApiProxySessionRemote;
 import org.ejbca.core.model.keyimport.KeyImportException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
+import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.EJBTools;
 
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
@@ -57,7 +64,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class KeyImportSystemTest extends CaTestCase {
-
+    
     private static final String TEST_USERNAME = "KeyImportSystemTestUser";
     private static final String TEST_USER_PASSWORD = "foo123";
     private static final String TEST_EEP_NAME = "KeyImportSystemTestEEP";
@@ -82,7 +89,8 @@ public class KeyImportSystemTest extends CaTestCase {
     private static final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private static final InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class);
     private static final KeyRecoverySessionRemote keyRecoverySession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyRecoverySessionRemote.class);
-
+    private static final TestRaMasterApiProxySessionRemote testRaMasterApiSessionBean = EjbRemoteHelper.INSTANCE.getRemoteSession(TestRaMasterApiProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+            
     private AuthenticationToken authenticationToken;
 
     @BeforeClass
@@ -142,7 +150,7 @@ public class KeyImportSystemTest extends CaTestCase {
             if (testCA == null) {
                 throw new IllegalStateException("Test CA with DN '" + TEST_CA_DN + "' does not exist in the system!");
             }
-
+            
             // Build the KeyImportRequestData
             KeyImportKeystoreData singleP12Data = new KeyImportKeystoreData();
             singleP12Data.setUsername(TEST_USERNAME);
@@ -180,6 +188,36 @@ public class KeyImportSystemTest extends CaTestCase {
             for (CertificateWrapper certificate : certificates) {
                 assertTrue("Expected KeyRecoveryData to exist for certificate, but it didn't.", keyRecoverySession.existsKeys(certificate));
             }
+            
+            // attempt key recovery while CA generates a new certificate with stored keys
+            final Certificate certificate = EJBTools.unwrap((CertificateWrapper) certificates.toArray()[0]);
+            byte[] recoveredKeystore = testRaMasterApiSessionBean.keyRecoverEnrollWS(authenticationToken, TEST_USERNAME, 
+                    CertTools.getSerialNumberAsString(certificate), TEST_CA_DN, TEST_USER_PASSWORD, null);
+            assertNotNull(recoveredKeystore);
+            
+            // set EE profile to reuse imported certificate
+            EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(TEST_EEP_NAME);
+            endEntityProfile.setReUseKeyRecoveredCertificate(true);
+            endEntityProfileSession.changeEndEntityProfile(authenticationToken, TEST_EEP_NAME, endEntityProfile);
+            
+            try {
+                recoveredKeystore = testRaMasterApiSessionBean.keyRecoverEnrollWS(authenticationToken, TEST_USERNAME, 
+                        CertTools.getSerialNumberAsString(certificate), TEST_CA_DN, TEST_USER_PASSWORD, null);
+                fail("Failed to check imported EE certificate signature with CA key");
+            } catch (EjbcaException e) {
+                // good: checks that it fails when old certificate i.e. not signed by this CA is reused
+            }
+            
+            // disable signature verification from certificate profile
+            CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(TEST_CP_NAME);
+            certProfile.setUseSignatureVerification(false);
+            certificateProfileSession.changeCertificateProfile(authenticationToken, TEST_CP_NAME, certProfile);
+            
+            // key recover succeeds
+            recoveredKeystore = testRaMasterApiSessionBean.keyRecoverEnrollWS(authenticationToken, TEST_USERNAME, 
+                    CertTools.getSerialNumberAsString(certificate), TEST_CA_DN, TEST_USER_PASSWORD, null);
+            assertNotNull(recoveredKeystore);
+            
         } finally {
             // Clean up
             internalCertStoreSession.removeCertificatesByUsername(TEST_USERNAME);
