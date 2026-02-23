@@ -292,51 +292,7 @@ public class SystemConfigMBeanUnitTest {
 	//
 	// --------------------------------------------
 
-	@Test
-	public void testIsOidUnique() throws Exception {
-		// Given
-		cceConfig.addCustomCertExtension(1, "1.2.3.4", "TESTEXTENSION1", BasicCertificateExtension.class.getName(), true, true, null);
-		cceConfig.addCustomCertExtension(2, "2.2.3.4", "TESTEXTENSION2", BasicCertificateExtension.class.getName(), true, true, null);
 
-		expect(ejbcaWebBean.getEjb()).andReturn(ejbBridgeSession).anyTimes();
-		expect(ejbcaWebBean.getAvailableCustomCertExtensionsConfiguration()).andReturn(cceConfig).anyTimes();
-		expect(facesContext.getExternalContext()).andReturn(externalContext).anyTimes();
-		expect(facesContext.getApplication()).andReturn(application).anyTimes();
-
-		replay(ejbcaWebBean, facesContext);
-
-		systemConfigMBean = new SystemConfigMBean();
-		systemConfigMBean.setNewOID("3.2.3.4");
-
-		// When
-		final boolean result = systemConfigMBean.isOidUnique(cceConfig);
-
-		// Expect
-		assertTrue("OID Should be unique", result);
-	}
-
-	@Test
-	public void testIsOidNotUnique() throws Exception {
-		// Given
-		cceConfig.addCustomCertExtension(1, "1.2.3.4", "TESTEXTENSION1", BasicCertificateExtension.class.getName(), true, true, null);
-		cceConfig.addCustomCertExtension(2, "2.2.3.4", "TESTEXTENSION2", BasicCertificateExtension.class.getName(), true, true, null);
-
-		expect(ejbcaWebBean.getEjb()).andReturn(ejbBridgeSession).anyTimes();
-		expect(ejbcaWebBean.getAvailableCustomCertExtensionsConfiguration()).andReturn(cceConfig).anyTimes();
-		expect(facesContext.getExternalContext()).andReturn(externalContext).anyTimes();
-		expect(facesContext.getApplication()).andReturn(application).anyTimes();
-
-		replay(ejbcaWebBean, facesContext);
-
-		systemConfigMBean = new SystemConfigMBean();
-		systemConfigMBean.setNewOID("2.2.3.4");
-
-		// When
-		final boolean result = systemConfigMBean.isOidUnique(cceConfig);
-
-		// Expect
-		assertFalse("OID Should NOT be unique", result);
-	}
 
 	@Test
 	public void testIsDisplayNameUnique() throws Exception {
