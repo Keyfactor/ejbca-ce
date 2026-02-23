@@ -195,37 +195,6 @@ public class SystemConfigMBeanUnitTest {
 	}
 
 	@Test
-	public void testAddCustomCertExtensionNonUniqueOid() throws Exception {
-		// Given
-		final Capture<FacesMessage> messageCapture = EasyMock.newCapture();
-
-		expect(ejbcaWebBean.getEjb()).andReturn(ejbBridgeSession).anyTimes();
-		expect(ejbcaWebBean.getAvailableCustomCertExtensionsConfiguration()).andReturn(cceConfig).anyTimes();
-
-		expect(facesContext.getExternalContext()).andReturn(externalContext).anyTimes();
-		expect(facesContext.getApplication()).andReturn(application).anyTimes();
-		facesContext.addMessage(isNull(), capture(messageCapture));
-		EasyMock.expectLastCall().once();
-
-		replay(ejbcaWebBean, facesContext);
-
-		cceConfig.addCustomCertExtension(1, "1.2.3.4", "TESTEXTENSION1", BasicCertificateExtension.class.getName(), true, true, null);
-
-		systemConfigMBean = new SystemConfigMBean();
-		systemConfigMBean.setNewOID("1.2.3.4");
-		systemConfigMBean.setNewDisplayName("TESTEXTENSION2");
-
-		// When
-		systemConfigMBean.addCustomCertExtension();
-
-		// Expect
-		assertEquals(FacesMessage.SEVERITY_ERROR, messageCapture.getValue().getSeverity());
-		assertEquals("CustomCertificateExtension OID '1.2.3.4' already exists in the database.", messageCapture.getValue().getSummary());
-
-		verify(ejbcaWebBean, facesContext);
-	}
-
-	@Test
 	public void testAddCustomCertExtensionNonUniqueLabel() throws Exception {
 		// Given
 		final Capture<FacesMessage> messageCapture = EasyMock.newCapture();

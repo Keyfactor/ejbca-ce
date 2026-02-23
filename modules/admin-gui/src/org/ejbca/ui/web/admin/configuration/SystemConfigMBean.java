@@ -2007,11 +2007,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             return;
         }
 
-        if (!isOidUnique(cceConfig)) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "CustomCertificateExtension OID '" + newOID + "' already exists in the database.", null));
-            return;
-        }
-
         if (!isDisplayNameUnique(cceConfig)) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "CustomCertificateExtension Label '" + getNewDisplayName() + "' already exists in the database.", null));
             return;
@@ -2062,12 +2057,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         return i;
     }
 
-    protected boolean isOidUnique(final AvailableCustomCertificateExtensionsConfiguration cceConfig) {
-        final String newOid = getNewOID();
-
-        return cceConfig.getAllAvailableCustomCertificateExtensions().stream()
-                .noneMatch(ce -> ce.getOID().equals(newOid));
-    }
 
     protected boolean isDisplayNameUnique(final AvailableCustomCertificateExtensionsConfiguration cceConfig) {
         final String newDisplayName = getNewDisplayName();
