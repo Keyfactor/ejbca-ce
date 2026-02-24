@@ -63,7 +63,6 @@ import org.cesecore.certificates.certificate.certextensions.standard.NameConstra
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.internal.InternalResources;
 import org.cesecore.util.ValidityDate;
 
 /**
@@ -73,8 +72,6 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
 
     private static final long serialVersionUID = -8755429830955594642L;
 
-    private static final InternalResources intres = InternalResources.getInstance();
-    
     /** Log4j instance */
     private static Logger log = Logger.getLogger(CABase.class);
     /** Internal localization of logs and errors */
@@ -86,6 +83,7 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
     private static final String DO_ENFORCE_KEY_RENEWAL = "doEnforceKeyRenewal";
     private static final String DO_ENFORCE_UNIQUE_DISTINGUISHED_NAME = "doEnforceUniqueDistinguishedName";
     private static final String DO_ENFORCE_UNIQUE_SUBJECTDN_SERIALNUMBER = "doEnforceUniqueSubjectDNSerialnumber";
+    private static final String DO_ENFORCE_NAME_CONSTRAINTS = "doEnforceNameConstraints";
     private static final String USE_CERTREQ_HISTORY = "useCertreqHistory";
     private static final String USE_CERTIFICATE_STORAGE = "useCertificateStorage";
     private static final String ACCEPT_REVOCATION_NONEXISTING_ENTRY = "acceptRevocationNonExistingEntry";
@@ -117,6 +115,7 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         setDoEnforceKeyRenewal(cainfo.isDoEnforceKeyRenewal());
         setDoEnforceUniqueDistinguishedName(cainfo.isDoEnforceUniqueDistinguishedName());
         setDoEnforceUniqueSubjectDNSerialnumber(cainfo.isDoEnforceUniqueSubjectDNSerialnumber());
+        setDoEnforceNameConstraints(cainfo.isDoEnforceNameConstraints());
         setUseCertReqHistory(cainfo.isUseCertReqHistory());
         setUseUserStorage(cainfo.isUseUserStorage());
         setUseCertificateStorage(cainfo.isUseCertificateStorage());
@@ -173,6 +172,7 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         setDoEnforceKeyRenewal(cainfo.isDoEnforceKeyRenewal());
         setDoEnforceUniqueDistinguishedName(cainfo.isDoEnforceUniqueDistinguishedName());
         setDoEnforceUniqueSubjectDNSerialnumber(cainfo.isDoEnforceUniqueSubjectDNSerialnumber());
+        setDoEnforceNameConstraints(cainfo.isDoEnforceNameConstraints());
         setUseCertReqHistory(cainfo.isUseCertReqHistory());
         setUseUserStorage(cainfo.isUseUserStorage());
         setUseCertificateStorage(cainfo.isUseCertificateStorage());
@@ -212,19 +212,19 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         }
     }
 
-    /** 
+    /**
      * Sets the padding algorithm used for PKCS#12 encryption
-     * 
+     *
      * @param keyEncryptionPaddingAlgorithm one of CAInfo.KEY_ENCRYPT_ALGORITHM_RSA_PKCS_1_5, etc
      */
     public void setKeyEncryptionPaddingAlgorithm(final KeyEncryptionPaddingAlgorithm keyEncryptionPaddingAlgorithm) {
         if(keyEncryptionPaddingAlgorithm == null) {
             //null check – if this value is being passed as null, it's by a non-X509 CA-
-            data.put(KEY_ENCRYPTION_PADDING_ALGORITHM, null);        
-        } else {  
-            //This was originally written as a serialized object (9.3.0) instead of a string (9.3.2), which originally 
+            data.put(KEY_ENCRYPTION_PADDING_ALGORITHM, null);
+        } else {
+            //This was originally written as a serialized object (9.3.0) instead of a string (9.3.2), which originally
             //cause 100% uptime issues. To not cause further upgrade issues for users upgrading from 9.3.0, we need to
-            //write the same object to the database as is written, while the changeover is handled in post-upgrade      
+            //write the same object to the database as is written, while the changeover is handled in post-upgrade
             Object currentPadding = data.get(KEY_ENCRYPTION_PADDING_ALGORITHM);
             if (currentPadding instanceof KeyEncryptionPaddingAlgorithm) {
                 data.put(KEY_ENCRYPTION_PADDING_ALGORITHM, keyEncryptionPaddingAlgorithm);
@@ -241,7 +241,7 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
     public KeyEncryptionPaddingAlgorithm getKeyEncryptionPaddingAlgorithm() {
         Object algorithm = data.get(KEY_ENCRYPTION_PADDING_ALGORITHM);
         if (algorithm == null) {
-            //Return PKCS#1.5 as default 
+            //Return PKCS#1.5 as default
             return KeyEncryptionPaddingAlgorithm.PKCS_1_5;
         } else {
             // For 9.3 the enum object was serialized, but this was changed in 9.3.2 to a string to not cause issues during upgrade.
@@ -253,7 +253,7 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
                 return KeyEncryptionPaddingAlgorithm.getByName((String) algorithm);
             }
         }
-        
+
     }
 
     @Override
@@ -278,7 +278,7 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
     public void setDeltaCRLPeriod(long deltacrlperiod) {
         data.put(DELTACRLPERIOD, deltacrlperiod);
     }
-    
+
     @Override
     public boolean getGenerateCrlUponRevocation() {
         return getBoolean(GENERATECRLUPONREVOCATION, false);
@@ -367,7 +367,7 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
             log.warn("failed to add extended CA service: ", e);
         }
     }
-    
+
     /**
      * Method used to perform the service.
      * @throws OperatorCreationException
@@ -387,7 +387,7 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         service.setCA(this);
         return service.extendedService(cryptoToken, request);
     }
-    
+
     // Methods used with extended services
     /**
      * Initializes the ExtendedCAService
@@ -405,11 +405,11 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
             setExtendedCAService(service);
         }
     }
-    
+
     private void setFinishUser(boolean finishuser) {
         putBoolean(FINISHUSER, finishuser);
     }
-    
+
     protected void setIncludeInHealthCheck(boolean includeInHealthCheck) {
         putBoolean(INCLUDEINHEALTHCHECK, includeInHealthCheck);
     }
@@ -420,23 +420,27 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
     private void setDoEnforceKeyRenewal(boolean doEnforceKeyRenewal) {
         putBoolean(DO_ENFORCE_KEY_RENEWAL, doEnforceKeyRenewal);
     }
-    
+
     private void setDoEnforceUniqueDistinguishedName(boolean doEnforceUniqueDistinguishedName) {
         putBoolean(DO_ENFORCE_UNIQUE_DISTINGUISHED_NAME, doEnforceUniqueDistinguishedName);
     }
-    
+
     private void setDoEnforceUniqueSubjectDNSerialnumber(boolean doEnforceUniqueSubjectDNSerialnumber) {
         putBoolean(DO_ENFORCE_UNIQUE_SUBJECTDN_SERIALNUMBER, doEnforceUniqueSubjectDNSerialnumber);
     }
-    
+
+    private void setDoEnforceNameConstraints(boolean doEnforceNameConstraints) {
+        putBoolean(DO_ENFORCE_NAME_CONSTRAINTS, doEnforceNameConstraints);
+    }
+
     private void setUseCertReqHistory(boolean useCertReqHistory) {
         putBoolean(USE_CERTREQ_HISTORY, useCertReqHistory);
     }
-    
+
     private void setUseUserStorage(boolean useUserStorage) {
         putBoolean(USE_USER_STORAGE, useUserStorage);
     }
-    
+
     private void setUseCertificateStorage(boolean useCertificateStorage) {
         putBoolean(USE_CERTIFICATE_STORAGE, useCertificateStorage);
     }
@@ -444,7 +448,7 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
     private void setAcceptRevocationNonExistingEntry(boolean acceptRevocationNonExistingEntry) {
         putBoolean(ACCEPT_REVOCATION_NONEXISTING_ENTRY, acceptRevocationNonExistingEntry);
     }
-    
+
     public CABase(HashMap<Object, Object> data) {
         init(data);
     }
@@ -475,6 +479,11 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
     @Override
     public boolean isDoEnforceUniqueSubjectDNSerialnumber() {
         return getBoolean(DO_ENFORCE_UNIQUE_SUBJECTDN_SERIALNUMBER, false);
+    }
+
+    @Override
+    public boolean isDoEnforceNameConstraints() {
+        return getBoolean(DO_ENFORCE_NAME_CONSTRAINTS, true);
     }
 
     /**
@@ -555,121 +564,129 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         return generateCertificate(cryptoToken, subject, request, publicKey, keyusage, notBefore, notAfter, certProfile, extensions, sequence, null,
                 cceConfig);
     }
-    
+
     /**
      * Checks that the given SubjectDN / SAN satisfies the Name Constraints of the given issuer (if there are any).
      * This method checks the Name Constraints in the given issuer only. A complete implementation of
      * name constraints should check the whole certificate chain.
-     * 
+     *
      * @param subjectDNName Subject DN to check. Optional.
      * @param subjectAltName Subject Alternative Name to check. Optional.
-     * @throws IllegalNameException if the name(s) didn't pass naming constraints 
+     * @throws IllegalNameException if the name(s) didn't pass naming constraints
      */
-    public static void checkNameConstraints(final X509Certificate issuer, final X500Name subjectDNName, final GeneralNames subjectAltName) throws IllegalNameException {
-        final byte[] ncbytes = issuer.getExtensionValue(Extension.nameConstraints.getId());
-        final ASN1OctetString ncstr = (ncbytes != null ? ASN1OctetString.getInstance(ncbytes) : null);
-        final ASN1Sequence ncseq = (ncbytes != null ? ASN1Sequence.getInstance(ncstr.getOctets()) : null);
-        final NameConstraints nc = (ncseq != null ? NameConstraints.getInstance(ncseq) : null);
-        if (nc != null) {
-            if (subjectDNName != null) {
-                // Skip check for root CAs
-                final X500Name issuerDNName = X500Name.getInstance(issuer.getSubjectX500Principal().getEncoded());
-                if (issuerDNName.equals(subjectDNName)) {
-                    if (log.isTraceEnabled()) {
-                        log.trace("Skipping test for Root CA: " + subjectDNName);
-                    }
-                    return;
-                }
-            }
-                  
-            final PKIXNameConstraintValidator validator = new PKIXNameConstraintValidator();
-            
-            GeneralSubtree[] permitted = nc.getPermittedSubtrees();
-            GeneralSubtree[] excluded = nc.getExcludedSubtrees();
-                        
-            if (permitted != null) {
-                
-                GeneralSubtree[] permittedFormatted = new GeneralSubtree[permitted.length];
-                
-                for (int i = 0; i < permitted.length; i++) {
-                    GeneralSubtree subtree = permitted[i];
-                    log.trace("Permitted subtree: " + subtree.getBase());
-                    log.trace(ASN1Dump.dumpAsString(subtree.getBase()));
-                    
-                    if(subtree.getBase().getTagNo() != GeneralName.uniformResourceIdentifier) {
-                        permittedFormatted[i] = subtree;
-                    } else {
-                        String uri = subtree.getBase().getName().toString();
-                        String host = extractHostFromURL(uri);
-                        permittedFormatted[i] = new GeneralSubtree(
-                                    new GeneralName(GeneralName.uniformResourceIdentifier, host));
-                    }
-                }
-            
-                validator.intersectPermittedSubtree(permittedFormatted);
-            }
-        
-            if (excluded != null) {
-                for (GeneralSubtree subtree : excluded) {
-                    if (log.isTraceEnabled()) {
-                        log.trace("Excluded subtree: " + subtree.getBase());
-                        log.trace(ASN1Dump.dumpAsString(subtree.getBase()));
-                    }
-                    if(subtree.getBase().getTagNo() != GeneralName.uniformResourceIdentifier) {
-                        validator.addExcludedSubtree(subtree);
-                    } else {
-                        String uri = subtree.getBase().getName().toString();
-                        String host = extractHostFromURL(uri);
-                        validator.addExcludedSubtree(new GeneralSubtree(
-                                    new GeneralName(GeneralName.uniformResourceIdentifier, host)));
-                    }
-                }
-            }
-
-            if (subjectDNName != null) {
-                GeneralName dngn = new GeneralName(subjectDNName);
-                try {
-                    validator.checkPermitted(dngn);
-                    validator.checkExcluded(dngn);
-                } catch (PKIXNameConstraintValidatorException e) {
-                    final String dnStr = subjectDNName.toString();
-                    final boolean isLdapOrder = DnComponents.dnHasMultipleComponents(dnStr) && !DnComponents.isDNReversed(dnStr);
-                    if (isLdapOrder) {
-                        final String msg = intres.getLocalizedMessage("nameconstraints.x500dnorderrequired");
-                        throw new IllegalNameException(msg);
-                    } else {
-                        final String msg = intres.getLocalizedMessage("nameconstraints.forbiddensubjectdn", subjectDNName);
-                        throw new IllegalNameException(msg, e);
-                    }
-                }
-            }
-            
-            if (subjectAltName != null) {
-                for (GeneralName sangn : subjectAltName.getNames()) {
-                    try {
-                        validator.checkPermitted(sangn);
-                        if (sangn.getTagNo() == 2 && isAllDNSNamesExcluded(excluded)) {
-                            final String msg = intres.getLocalizedMessage("nameconstraints.forbiddensubjectaltname",
-                                    NameConstraint.getNameConstraintFromType(sangn.getTagNo()) + ":" + sangn.toString().substring(2));
-                            throw new IllegalNameException(msg);
+    public static void checkNameConstraints(final CAInfo cainfo, final X509Certificate issuer, final X500Name subjectDNName, final GeneralNames subjectAltName) throws IllegalNameException {
+            final byte[] ncbytes = issuer.getExtensionValue(Extension.nameConstraints.getId());
+            final ASN1OctetString ncstr = (ncbytes != null ? ASN1OctetString.getInstance(ncbytes) : null);
+            final ASN1Sequence ncseq = (ncbytes != null ? ASN1Sequence.getInstance(ncstr.getOctets()) : null);
+            final NameConstraints nc = (ncseq != null ? NameConstraints.getInstance(ncseq) : null);
+            if (nc != null) {
+                // If the CA is configured to not enforce name constraints, just return with logging
+                if (cainfo.isDoEnforceNameConstraints()) {
+                    if (subjectDNName != null) {
+                        // Skip check for root CAs
+                        final X500Name issuerDNName = X500Name.getInstance(issuer.getSubjectX500Principal().getEncoded());
+                        if (issuerDNName.equals(subjectDNName)) {
+                            if (log.isTraceEnabled()) {
+                                log.trace("Skipping test for Root CA: " + subjectDNName);
+                            }
+                            return;
                         }
-                        validator.checkExcluded(sangn);
-                    } catch (PKIXNameConstraintValidatorException e) {
-                        final String msg = intres.getLocalizedMessage("nameconstraints.forbiddensubjectaltname",
-                                NameConstraint.getNameConstraintFromType(sangn.getTagNo()) + ":" + sangn.toString().substring(2));
-                        throw new IllegalNameException(msg, e);
                     }
+
+                    final PKIXNameConstraintValidator validator = new PKIXNameConstraintValidator();
+
+                    GeneralSubtree[] permitted = nc.getPermittedSubtrees();
+                    GeneralSubtree[] excluded = nc.getExcludedSubtrees();
+
+                    if (permitted != null) {
+
+                        GeneralSubtree[] permittedFormatted = new GeneralSubtree[permitted.length];
+
+                        for (int i = 0; i < permitted.length; i++) {
+                            GeneralSubtree subtree = permitted[i];
+                            if (log.isTraceEnabled()) {
+                                log.trace("Permitted subtree: " + subtree.getBase());
+                                log.trace(ASN1Dump.dumpAsString(subtree.getBase()));
+                            }
+
+                            if(subtree.getBase().getTagNo() != GeneralName.uniformResourceIdentifier) {
+                                permittedFormatted[i] = subtree;
+                            } else {
+                                String uri = subtree.getBase().getName().toString();
+                                String host = extractHostFromURL(uri);
+                                permittedFormatted[i] = new GeneralSubtree(
+                                        new GeneralName(GeneralName.uniformResourceIdentifier, host));
+                            }
+                        }
+
+                        validator.intersectPermittedSubtree(permittedFormatted);
+                    }
+
+                    if (excluded != null) {
+                        for (GeneralSubtree subtree : excluded) {
+                            if (log.isTraceEnabled()) {
+                                log.trace("Excluded subtree: " + subtree.getBase());
+                                log.trace(ASN1Dump.dumpAsString(subtree.getBase()));
+                            }
+                            if(subtree.getBase().getTagNo() != GeneralName.uniformResourceIdentifier) {
+                                validator.addExcludedSubtree(subtree);
+                            } else {
+                                String uri = subtree.getBase().getName().toString();
+                                String host = extractHostFromURL(uri);
+                                validator.addExcludedSubtree(new GeneralSubtree(
+                                        new GeneralName(GeneralName.uniformResourceIdentifier, host)));
+                            }
+                        }
+                    }
+
+                    if (subjectDNName != null) {
+                        GeneralName dngn = new GeneralName(subjectDNName);
+                        try {
+                            validator.checkPermitted(dngn);
+                            validator.checkExcluded(dngn);
+                        } catch (PKIXNameConstraintValidatorException e) {
+                            final String dnStr = subjectDNName.toString();
+                            final boolean isLdapOrder = DnComponents.dnHasMultipleComponents(dnStr) && !DnComponents.isDNReversed(dnStr);
+                            if (isLdapOrder) {
+                                throw new IllegalNameException("Must use X.500 DN order (not LDAP DN order) when issuing a certificate with Name Constraints, subject DN '" + subjectDNName + "'");
+                            } else {
+                                final String msg = "Subject DN '" + subjectDNName + "' does not fulfill Name Constraints of issuing CA.";
+                                throw new IllegalNameException(msg, e);
+                            }
+                        }
+                    }
+
+                    if (subjectAltName != null) {
+                        for (GeneralName sangn : subjectAltName.getNames()) {
+                            try {
+                                validator.checkPermitted(sangn);
+                                if (sangn.getTagNo() == 2 && isAllDNSNamesExcluded(excluded)) {
+                                    final String msg = "Subject Alternative Name '" +
+                                            NameConstraint.getNameConstraintFromType(sangn.getTagNo()) + ":" + sangn.toString().substring(2)
+                                            + "' does not fulfill Name Constraints of issuing CA.";
+                                    throw new IllegalNameException(msg);
+                                }
+                                validator.checkExcluded(sangn);
+                            } catch (PKIXNameConstraintValidatorException e) {
+                                final String msg = "Subject Alternative Name '" +
+                                        NameConstraint.getNameConstraintFromType(sangn.getTagNo()) + ":" + sangn.toString().substring(2)
+                                        + "' does not fulfill Name Constraints of issuing CA.";
+                                throw new IllegalNameException(msg, e);
+                            }
+                        }
+                    }
+                } else {
+                    log.info("CA '" + cainfo.getCAId() + "' is configured to not check name constraints on issuance, passing subject DN '" + subjectDNName + "'.");
                 }
             }
-        }
     }
-    
+
     // Check if we should exclude all dns names
     private static boolean isAllDNSNamesExcluded(GeneralSubtree[] excluded) {
         if (Objects.isNull(excluded)) {
             return false;
         }
-        
+
         for (int i = 0; i < excluded.length; i++) {
             if (excluded[i].getBase().toString().equals("2: ")) {
                 return true;
@@ -677,12 +694,12 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         }
         return false;
     }
-    
+
     /**
      * Refers private method from org.bouncycastle.asn1.x509.PKIXNameConstraintValidator.
      * It is used here to extract host from name constraint in CA. Bouncy Castle extracts host
      * from the URIs in subjectDN or subjectAlternativeName.
-     * 
+     *
      * @param url
      * @return
      */

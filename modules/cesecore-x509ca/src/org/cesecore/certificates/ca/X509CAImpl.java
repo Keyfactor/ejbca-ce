@@ -351,6 +351,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 .setDoEnforceKeyRenewal(isDoEnforceKeyRenewal())
                 .setDoEnforceUniqueDistinguishedName(isDoEnforceUniqueDistinguishedName())
                 .setDoEnforceUniqueSubjectDNSerialnumber(isDoEnforceUniqueSubjectDNSerialnumber())
+                .setDoEnforceNameConstraints(isDoEnforceNameConstraints())
                 .setUseCertReqHistory(isUseCertReqHistory())
                 .setUseUserStorage(isUseUserStorage())
                 .setAddCompromisedKeysToBlockList(isAddCompromisedKeysToBlockList())
@@ -1353,7 +1354,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
      * If the certificate profile allows subject DN override this value will be used instead of the value from subject.getDN. Its public key is going to be used if
      * providedPublicKey == null && subject.extendedInformation.certificateRequest == null. Can be null.
      * @param providedPublicKey provided public key which will have precedence over public key from providedRequestMessage but not over subject.extendedInformation.certificateRequest
-     * @param providedAlternativePublicKey alternative key, if the intention is to create a hybrid certificate
+     * @param providedAlternativePublicKey alternative key, if the intention is to create a Chimera/Catalyst certificate
      * @param subject end entity information. If it contains certificateRequest under extendedInformation, it will be used instead of providedRequestMessage and providedPublicKey
      * Otherwise, providedRequestMessage will be used.
      * @param caSigningPackage a holder class containing the CA's public and private keys, and signing algorithm(s)
@@ -1583,7 +1584,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             if (altName != null && altName.length() > 0) {
                 altNameGNs = DnComponents.getGeneralNamesFromAltName(altName);
             }
-            CABase.checkNameConstraints(cacert, subjectDNName, altNameGNs);
+            CABase.checkNameConstraints(getCAInfo(), cacert, subjectDNName, altNameGNs);
         }
 
         // If the subject has Name Constraints, then name constraints must be enabled in the certificate profile!
@@ -1971,7 +1972,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             throw new CertificateCreateException("An exception occurred because too many CT servers were down to satisfy the certificate profile.", e);
         }
 
-        //Add alternative ("hybrid") signature to certificate if defined
+        //Add alternative ("Chimera/Catalyst") signature to certificate if defined
         try {
             if(alternativePublicKey != null) {
                 certbuilder.addExtension(Extension.subjectAltPublicKeyInfo, false, SubjectAltPublicKeyInfo.getInstance(alternativePublicKey.getEncoded()));

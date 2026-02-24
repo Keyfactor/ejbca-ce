@@ -114,6 +114,7 @@ public abstract class CAInfo implements Serializable {
     protected boolean doEnforceKeyRenewal;
     protected boolean doEnforceUniqueDistinguishedName;
     protected boolean doEnforceUniqueSubjectDNSerialnumber;
+    protected boolean doEnforceNameConstraints;
     protected boolean useCertReqHistory;
     protected boolean useUserStorage;
     protected boolean useCertificateStorage;
@@ -577,6 +578,21 @@ public abstract class CAInfo implements Serializable {
     public boolean isDoEnforceUniqueDistinguishedName() {
         return this.doEnforceUniqueDistinguishedName;
     }
+
+    /**
+     * @param doEnforceNameConstraints enforce name constraints when issuing certificates.
+     */
+    public void setDoEnforceNameConstraints(boolean doEnforceNameConstraints) {
+        this.doEnforceNameConstraints = doEnforceNameConstraints;
+    }
+
+    /**
+     * @return answer this: should this CA verify name constraints, if they exists in this CA certificate, when issuing certificates
+     */
+    public boolean isDoEnforceNameConstraints() {
+        return this.doEnforceNameConstraints;
+    }
+
 
     /**
      * Determines which CRL Partition Index a given certificate belongs to. This check is based on the URI in the CRL Distribution Point extension.

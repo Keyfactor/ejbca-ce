@@ -57,6 +57,8 @@ public class EndEntityInformation implements Serializable {
     private static final long serialVersionUID = 3837505643343885941L;
 
     private String username;
+    private String usernamePrefix;
+    private String usernameSuffix;
     private String inputUsernameValue;
     private String subjectDN;
     transient private String subjectDNClean = null;
@@ -90,6 +92,8 @@ public class EndEntityInformation implements Serializable {
      */
     public EndEntityInformation(final EndEntityInformation endEntityInformation) {
         this.username = endEntityInformation.getUsername();
+        this.usernamePrefix = endEntityInformation.getUsernamePrefix();
+        this.usernameSuffix = endEntityInformation.getUsernameSuffix();
         this.subjectDN = endEntityInformation.getDN();
         this.caid = endEntityInformation.getCAId();
         this.subjectAltName = endEntityInformation.getSubjectAltName();
@@ -191,6 +195,15 @@ public class EndEntityInformation implements Serializable {
     }
 
     public String getUsername() {return StringTools.getBase64String(username);}
+
+    public String getUsernamePrefix() {return usernamePrefix;}
+
+    public void setUsernamePrefix(String usernamePrefix) {this.usernamePrefix = usernamePrefix;}
+
+    public String getUsernameSuffix() {return usernameSuffix;}
+
+    public void setUsernameSuffix(String usernameSuffix) {this.usernameSuffix = usernameSuffix;}
+
     public void setDN(String dn) {
         if (dn==null) {
             dn = "";
@@ -476,6 +489,8 @@ public class EndEntityInformation implements Serializable {
         details.put("tokentype", Integer.toString(tokentype));
         details.put("type", Integer.toString(type));
         details.put("username", username);
+        details.put("usernamePrefix", usernamePrefix);
+        details.put("usernameSuffix", usernameSuffix);
         return details;
     }
 

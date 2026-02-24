@@ -51,7 +51,7 @@ body.rtlDirection .contentForm\:more > .pure-g > .pure-u-1:nth-of-type(2) {
 #menu > .pure-g > .pure-u-1:nth-of-type(2) > .pure-menu > .pure-menu-list .pure-menu-item:nth-of-type(2) > .pure-menu-children > .pure-menu-item:nth-of-type(1) > a {
     padding-top: 12%;
     padding-bottom: 0;
-    width: 100px;
+    width: 1%;
 }
 
 #menu > .pure-g > .pure-u-1:nth-of-type(2) > .pure-menu > .pure-menu-list > .pure-menu-item:nth-of-type(1) > .pure-menu-children > .pure-menu-item:nth-of-type(2) > a,
@@ -1117,28 +1117,19 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
     position: fixed;
 }
 
-.errorMessage {
+#globalMessages .errorMessage,
+#globalMessages .warnMessage,
+#globalMessages .infoMessage {
     padding: 1%;
-    margin: 41px 0 0 0;
+    margin-bottom: 0.5rem;
     border-radius: 2px;
-    width: 100%;
-    position: fixed;
-}
-
-.warnMessage {
-    padding: 12px;
-    margin-top: 50px;
-    border-radius: 2px;
-    width: 100%;
-    position: fixed;
-}
-
-.infoMessage {
-    padding: 1%;
-    margin: 41px 0 0 0;
-    border-radius: 2px;
-    width: 100%;
-    position: fixed;
+    position: relative;
+    display: block;
+    background: #000;
+    color: #fff;
+    border-style: solid;
+    border-color: #000;
+    opacity: 0.8;
 }
 
 .validationErrorMessage,
@@ -1148,10 +1139,7 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
 #requestTemplateForm\:selectKeyPairGenerationMessage,
 #requestTemplateForm\:selectCPOneMenuMessage,
 #keyPairForm\:certificateRequestMessage,
-.subjectErrorMessage,
-.infoMessage,
-.warnMessage,
-.errorMessage {
+.subjectErrorMessage {
     background: #000;
     color: #fff;
     border-style: solid;
@@ -2296,7 +2284,8 @@ table#contentForm\:searchCertTable > tbody > tr > td > input:hover, #contentForm
     }
 
     #messages {
-        padding-left: 40px;
+        display: block;
+        padding: 0 1em;
     }
 
     .errorMessage, .infoMessage {
@@ -2308,6 +2297,20 @@ table#contentForm\:searchCertTable > tbody > tr > td > input:hover, #contentForm
     .warnMessage {
         margin-top: 0;
         width: auto;
+    }
+
+
+    #messages ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    #messages li {
+        margin-bottom: 1em;
+        padding: 1em;
+        border-radius: 5px;
+        display: block;
     }
 
     #requestInfoForm\:confirmRequestButton,

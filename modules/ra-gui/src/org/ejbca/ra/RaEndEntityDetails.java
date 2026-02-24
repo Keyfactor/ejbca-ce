@@ -541,7 +541,7 @@ public class RaEndEntityDetails implements Serializable {
     public boolean isClearPasswordAllowed() {
         EndEntityProfile profile = getEndEntityProfile();
         if (profile != null) {
-            boolean allowClearPwd = profile.isClearTextPasswordUsed() && !isTokenTypeUserGenerated();
+            boolean allowClearPwd = profile.isClearTextPasswordUsed();
             if (!clearPasswordDirty) {
                 if (!allowClearPwd) {
                     useClearPassword = false;
