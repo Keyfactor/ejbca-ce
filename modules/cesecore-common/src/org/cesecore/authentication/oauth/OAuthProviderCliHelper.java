@@ -31,6 +31,8 @@ public class OAuthProviderCliHelper {
             validateKeycloakType(provider);
         } else if (OAuthKeyInfo.OAuthProviderType.TYPE_PINGID.getIndex() == provider.getTypeInt()) {
             validatePingIdType(provider);
+        } else if (OAuthKeyInfo.OAuthProviderType.TYPE_AUTH0.getIndex() == provider.getTypeInt()) {
+            validateAuth0IdType(provider);
         } else if (OAuthKeyInfo.OAuthProviderType.TYPE_GENERIC.getIndex() != provider.getTypeInt()) {
             throw new MissingOAuthKeyAttributeException("The Provider Type field is mandatory for all Trusted OAuth Providers.");
         }
@@ -83,6 +85,24 @@ public class OAuthProviderCliHelper {
             throw new MissingOAuthKeyAttributeException("The Client Secret field is mandatory for PingID Trusted OAuth Providers.");
         }
 
+    }
+
+    public static void validateAuth0IdType(final OAuthKeyInfo provider) {
+        if (StringUtils.isEmpty(provider.getUrl())) {
+            throw new MissingOAuthKeyAttributeException("The URL field is mandatory for Auth0 OAuth Providers.");
+        }
+        if (StringUtils.isEmpty(provider.getTokenUrl())) {
+            throw new MissingOAuthKeyAttributeException("The Token URL field is mandatory for Auth0 OAuth Providers.");
+        }
+        if (StringUtils.isEmpty(provider.getLogoutUrl())) {
+            throw new MissingOAuthKeyAttributeException("The Logout URL field is mandatory for Auth0 OAuth Providers.");
+        }
+        if (StringUtils.isEmpty(provider.getClient())) {
+            throw new MissingOAuthKeyAttributeException("The Client Name field is mandatory for Auth0 Trusted OAuth Providers.");
+        }
+        if (StringUtils.isEmpty(provider.getClientSecretAndDecrypt())) {
+            throw new MissingOAuthKeyAttributeException("The Client Secret field is mandatory for Auth0 Trusted OAuth Providers.");
+        }
     }
     
     private static void validateCommonType(final OAuthKeyInfo provider) {

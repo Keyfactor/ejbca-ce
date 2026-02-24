@@ -197,8 +197,8 @@ public class CaInitCommand extends BaseCaAdminCommand {
                         + "Keyspec for ECDSA keys is name of curve."));
         registerParameter(new Parameter(KEY_TYPE_KEY, "Key Type", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Deprecated and not used. Available only to avoid breaking existing scripts."));
-        registerParameter(new Parameter(ALT_KEY_SPEC_KEY, "Alternative Key Specification for Hybrid certs", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
-                "When generating new CA keys, key specification for the Alternative CA signing key (hybrid certificate and soft crypto token). Keyspec for ML-DSA (ML-DSA-44, ML-DSA-65, ML-DSA-87). "));
+        registerParameter(new Parameter(ALT_KEY_SPEC_KEY, "Alternative Key Specification for Chimera/Catalyst certs", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                "When generating new CA keys, key specification for the Alternative CA signing key (Chimera/Catalyst certificate and soft crypto token). Keyspec for ML-DSA (ML-DSA-44, ML-DSA-65, ML-DSA-87). "));
         registerParameter(new Parameter(VALIDITY_KEY, "Validity", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Validity of the CA in days."));
         //Policy ID keyt as mandatory parameter for legacy reasons.
@@ -209,7 +209,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
         registerParameter(new Parameter(SIGNING_ALGORITHM_KEY, "Signing Algorithm", MandatoryMode.MANDATORY, StandaloneMode.ALLOW,
                 ParameterMode.ARGUMENT, "Signing Algorithm may be one of the following: " + availableSignAlgs.toString()));
         registerParameter(new Parameter(ALT_SIGNING_ALGORITHM_KEY, "Alternative Signing Algorithm", MandatoryMode.OPTIONAL, StandaloneMode.FORBID,
-                ParameterMode.ARGUMENT, "Alternative Signing Algorithm for Hybrid certificates, may be one of the following: " + availableSignAlgs.toString()));
+                ParameterMode.ARGUMENT, "Alternative Signing Algorithm for Chimera/Catalyst certificates, may be one of the following: " + availableSignAlgs.toString()));
         registerParameter(new Parameter(CA_TOKEN_PROPERTIES_KEY, "Filename", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "Token properties is a file were you define key aliases, library name and pin for the HSM. Similar to the CA Crypto Token settings in the admin UI."
                         + "An example properties file for creating a new PKCS#11 crypto token is (between dashes):\n"
@@ -231,7 +231,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
                         + "testKey testKey\n"
                         + "defaultKey encryptKey\n"
                         + "---"
-                        + "For hybrid (dual key) CAs you also add the alternative signature algorithm\n"
+                        + "For Chimera/Catalyst (dual key) CAs you also add the alternative signature algorithm\n"
                         + "alternativeCertSignKey altSignKey"
                 ));
         registerParameter(new Parameter(CERTIFICATE_PROFILE_KEY, "Profile name", MandatoryMode.OPTIONAL, StandaloneMode.FORBID,
@@ -736,11 +736,11 @@ public class CaInitCommand extends BaseCaAdminCommand {
         return "Create a CA and its first CRL. Publishes the CRL and CA certificate. Can create a new crypto token for the CA, or re-use an existing crypto token.\n"
                 + "Example to create a new PKCS#11 crypto token and a CA using this token, and the keys already present on it:\n"
                 + " bin/ejbca.sh ca init --caname MyCA --dn CN=MyCA --tokenType org.cesecore.keys.token.PKCS11CryptoToken --tokenprop p11cainit.properties --tokenPass mypin --policy null -v 3 -s SHA256WithRSA\n"
-                + "\nExample to create a new CA using with a soft crypto token, generating new keys (add altkeyspec and altsigalg for a hybrid CA):\n"
+                + "\nExample to create a new CA using with a soft crypto token, generating new keys (add altkeyspec and altsigalg for a Chimera/Catalyst CA):\n"
                 + " bin/ejbca.sh ca init --caname MyCA --dn CN=MyCA --tokenName \"My Token\" --tokenType soft -v 3 --policy null -s SHA256WithECDSA --keyspec P-256 --keytype EC\n"
                 + "\nExample to create a new CA using an existing crypto token:\n"
                 + " bin/ejbca.sh ca init --caname MyCA --dn CN=MyCA --tokenName \"My Token\" -v 3 --policy null -s SHA256WithRSA --tokenprop token.properties\n"
-                + "\nExample to create a new Hybrid (dual key) CA using an existing crypto token:\n"
+                + "\nExample to create a new Chimera/Catalyst (dual key) CA using an existing crypto token:\n"
                 + " bin/ejbca.sh ca init --caname MyCA --dn CN=MyCA --tokenName \"My Token\" -v 3 --policy null -s SHA256WithRSA --altsigalg ML-DSA-87 --tokenprop token.properties";
 
 

@@ -916,7 +916,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     public void shouldPreventRevocationWithInvalidReason() throws Exception {
         // given
         final String serialNumber = generateTestSerialNumber();
-        final String revocationReason = "sticky note with private key got lost";
+        final String revocationReason = "PICK_NICK";
         final int expectedErrorCode = 400;
         final String expectedErrorMessage = "Invalid revocation reason.";
         // when

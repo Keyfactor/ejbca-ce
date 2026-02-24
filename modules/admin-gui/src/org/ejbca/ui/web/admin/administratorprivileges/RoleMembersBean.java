@@ -395,12 +395,14 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
             // Validate that the tokenMatchValue contains no illegal characters
             // (Check this here instead of using an f:validator validatorId="legalCharsValidator" since we might need to do PRG later)
             Set<String> invalidCharacters = StringTools.hasSqlStripChars(tokenMatchValue);
+            //Some OAuth providers (Auth0) use '|' in the sub claim. We need to allow the '|' character in the match value field.
+            invalidCharacters.remove("'|'");
             if (!invalidCharacters.isEmpty()) {
                 StringBuilder sb = new StringBuilder("");
                 for (String error : invalidCharacters) {
                     sb.append(", " + error);
                 }
-                super.addGlobalMessage(FacesMessage.SEVERITY_ERROR, "INVALIDCHARS", sb.substring(2) );
+                super.addGlobalMessage(FacesMessage.SEVERITY_ERROR, "INVALIDCHARS", sb.substring(2));
                 return;
             }
             // If the tokenMatchValue should be a hex number, validate that it is
