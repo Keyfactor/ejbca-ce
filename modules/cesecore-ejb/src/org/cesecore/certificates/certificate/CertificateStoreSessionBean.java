@@ -897,10 +897,11 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     }
 
     @Override
-    public List<CertificateInfo> findExpiredCertificates(final Collection<String> issuerDns, final Date expiredBefore, final int maxNumberOfResults) {
+    public List<CertificateInfo> findExpiredCertificates(final Collection<String> issuerDns, final Date expiredBefore, final int maxNumberOfResults,
+            final Set<String> excludedCertificateIds) {
         Preconditions.checkArgument(!issuerDns.isEmpty(), "List of issuerDNs cannot be empty (but it can be null)");
         Preconditions.checkArgument(expiredBefore.getTime() <= System.currentTimeMillis(), "expiredBefore must be in the past");
-        return certificateDataSession.findOldCertificates(issuerDns, expiredBefore, maxNumberOfResults);
+        return certificateDataSession.findOldCertificates(issuerDns, expiredBefore, maxNumberOfResults, excludedCertificateIds);
     }
 
     @Override
@@ -923,9 +924,9 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     @Override
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public Set<String> deleteExpiredCertificatesInSeparateTransactions(final List<String> issuerDns, final Date maximumExpirationDate, final int batchSize,
-            final AuthenticationToken adminForLogging, final Set<String> previousDeletedFingerprints) {
+            final AuthenticationToken adminForLogging, final Set<String> previousDeletedFingerprints, final Set<String> excludedCertificateIds) {
         final Set<String> currentlyDeletedFingerprints = new HashSet<>();
-        final List<CertificateInfo> certInfos = certificateStoreSession.findExpiredCertificates(issuerDns, maximumExpirationDate, batchSize);
+        final List<CertificateInfo> certInfos = certificateStoreSession.findExpiredCertificates(issuerDns, maximumExpirationDate, batchSize, excludedCertificateIds);
         for (final CertificateInfo certInfo : certInfos) {
             if (previousDeletedFingerprints.contains(certInfo.getFingerprint())) {
                 // This should never happen, because the previously deleted certificates should no be returned by findExpiredCertificates.

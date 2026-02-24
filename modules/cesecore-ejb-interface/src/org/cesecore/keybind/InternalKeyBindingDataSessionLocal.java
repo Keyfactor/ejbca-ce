@@ -14,6 +14,7 @@ package org.cesecore.keybind;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import jakarta.ejb.Local;
 
@@ -63,4 +64,11 @@ public interface InternalKeyBindingDataSessionLocal {
     /** Should only be used internally by other methods. This is an Interface method so that we can specify @TransactionAttribute(TransactionAttributeType.REQUIRED). 
      * @return the a cached reference to the specified InternalKeyBinding that MAY NOT be edited. Null if not found. */
     InternalKeyBindingData readData(int id);
+
+    /**
+     * Gets all certificate IDs (fingerprints) that are currently in use by internal key bindings.
+     * 
+     * @return Set of certificate fingerprints (in lowercase) that are referenced by key bindings, never null
+     */
+    Set<String> getAllCertificateIds();
 }

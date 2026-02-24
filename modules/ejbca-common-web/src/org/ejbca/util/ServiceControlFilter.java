@@ -55,7 +55,7 @@ public class ServiceControlFilter implements Filter {
     
     private static final String REST_PROTOCOL_INDICATOR = "REST";
     private static final String[] BROWSER_FORBIDDEN_HEADERS = new String[] {"Sec-Fetch-Mode", "Sec-Fetch-Dest"};
-        
+    
     private String serviceName;
     private boolean isRestService;
 
@@ -144,7 +144,24 @@ public class ServiceControlFilter implements Filter {
         if (log.isDebugEnabled()) {
             log.debug("Access to service " + serviceName + " is allowed. HTTP request " + httpRequest.getRequestURL() + " is let through.");
         }
+        
+        validateRestQueryParams(httpRequest, httpResponse);
         chain.doFilter(request, response);
+    }
+    
+    private void validateRestQueryParams(final HttpServletRequest httpRequest, 
+            final HttpServletResponse httpResponse) throws IOException {
+        // only process for REST API
+        // protocols may have strange cases
+        // always leave the JSF alone
+        if (isRestService && !serviceName.equalsIgnoreCase(
+                    AvailableProtocolsConfiguration.AvailableProtocols.REST_CONFIGDUMP.getName())) {
+            boolean result = UrlQueryParamsValidator.validateRestApiUrlQueryParams(httpRequest.getQueryString());
+            if (!result) {
+                log.info("Malformed query string in URL: " + httpRequest.getQueryString());
+                httpResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "The URL is malformed");
+            }
+        }
     }
         
     private AuthenticationToken getAdmin(HttpServletRequest requestContext) {
