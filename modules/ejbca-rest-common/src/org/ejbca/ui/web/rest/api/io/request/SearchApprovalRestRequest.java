@@ -15,21 +15,20 @@ package org.ejbca.ui.web.rest.api.io.request;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.ejbca.ui.web.rest.api.validator.ValidSearchPendingApprovalRestRequest;
-
+import org.ejbca.ui.web.rest.api.validator.ValidSearchApprovalRestRequest;
 import java.util.Date;
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-@ValidSearchPendingApprovalRestRequest
+@ValidSearchApprovalRestRequest
 public class SearchApprovalRestRequest {
 
-    @Schema(description = "Search for waiting for this admin approvals", example = "true", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(description = "Search for waiting approvals for this admin", example = "true", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private boolean searchingWaitingForMe;
 
-    @Schema(description = "Search for pending for this admin approvals", example = "true", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(description = "Search for pending approvals for this admin", example = "true", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private boolean searchingPending;
 
-    @Schema(description = "Search for historical admin approvals", example = "true", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(description = "Search for historical approvals for this admin", example = "true", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private boolean searchingHistorical; // processed
 
     @Schema(description = "Search the expired approvals", example = "true", requiredMode = Schema.RequiredMode.NOT_REQUIRED)

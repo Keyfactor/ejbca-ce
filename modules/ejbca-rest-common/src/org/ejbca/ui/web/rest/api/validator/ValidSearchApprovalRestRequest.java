@@ -26,24 +26,24 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Validator annotation for SearchPendingApprovalRestRequest.
+ * Validator annotation for SearchApprovalRestRequest.
  * Validates that the request parameters are correctly set.
  */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = {ValidSearchPendingApprovalRestRequest.Validator.class})
+@Constraint(validatedBy = {ValidSearchApprovalRestRequest.Validator.class})
 @Documented
-public @interface ValidSearchPendingApprovalRestRequest {
+public @interface ValidSearchApprovalRestRequest {
 
-    String message() default "Invalid search pending approval request parameters";
+    String message() default "Invalid search approval request parameters";
 
     Class<?>[] groups() default {};
 
     Class<? extends Payload>[] payload() default {};
 
-    class Validator implements ConstraintValidator<ValidSearchPendingApprovalRestRequest, SearchApprovalRestRequest> {
+    class Validator implements ConstraintValidator<ValidSearchApprovalRestRequest, SearchApprovalRestRequest> {
         @Override
-        public void initialize(final ValidSearchPendingApprovalRestRequest constraintAnnotation) {
+        public void initialize(final ValidSearchApprovalRestRequest constraintAnnotation) {
         }
 
         @Override

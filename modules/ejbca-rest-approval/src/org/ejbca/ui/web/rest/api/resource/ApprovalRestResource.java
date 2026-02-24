@@ -39,6 +39,7 @@ import org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityAppro
 import org.ejbca.core.model.approval.approvalrequests.KeyRecoveryApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
 import org.ejbca.core.model.approval.profile.ApprovalPartition;
+import org.ejbca.core.model.approval.profile.ApprovalStep;
 import org.ejbca.core.model.era.RaApprovalRequestInfo;
 import org.ejbca.core.model.era.RaApprovalResponseRequest;
 import org.ejbca.core.model.era.RaApprovalStepInfo;
@@ -125,7 +126,7 @@ public class ApprovalRestResource extends BaseRestResource {
     public Response getApprovalSearchResults(@Context final HttpServletRequest requestContext,
                                              @Valid @NotNull final SearchApprovalRestRequest searchApprovalRestRequest) throws RestException {
 
-        RaRequestsSearchRequest raRequestsSearchRequest = convertSearchPendingApprovalRestRequestToRaRequestsSearchRequest(searchApprovalRestRequest);
+        RaRequestsSearchRequest raRequestsSearchRequest = convertSearchApprovalRestRequestToRaRequestsSearchRequest(searchApprovalRestRequest);
 
         try {
             final AuthenticationToken authenticationToken = getAdmin(requestContext, false);
@@ -144,6 +145,7 @@ public class ApprovalRestResource extends BaseRestResource {
                                 .expirationDate(approvalRequestInfo.getApprovalData().getExpireDate())
                                 .requestType(getApprovalTypeName(approvalRequestInfo.getApprovalData().getApprovalType()))
                                 .requestedBy(getRequesterAdmin(approvalRequestInfo.getApprovalData().getApprovalRequest().getRequestAdmin().toString()))
+                                .canBeApprovedByMe(isAdminAbleToApproveTheRequest(approvalRequestInfo))
                                 .build();
                 searchApprovalRestResponses.add(searchApprovalRestResponse);
             }
@@ -153,6 +155,14 @@ public class ApprovalRestResource extends BaseRestResource {
             log.error(e.getMessage(), e);
             throw new RestException(Response.Status.FORBIDDEN.getStatusCode(), "Missing or invalid authentication.");
         }
+    }
+
+    private boolean isAdminAbleToApproveTheRequest(final RaApprovalRequestInfo approvalRequestInfo) {
+        final ApprovalStep nextApprovalStep = approvalRequestInfo.getNextApprovalStep();
+
+        final boolean allowSelfEdit = approvalRequestInfo.getApprovalRequest().getApprovalProfile().getAllowSelfEdit();
+        return nextApprovalStep != null && (!approvalRequestInfo.isEditedByMe() || allowSelfEdit) && !approvalRequestInfo.isApprovedByMe() && !approvalRequestInfo.isRequestedByMe();
+
     }
 
     /** Processes an approval request by approving or rejecting it.
@@ -363,7 +373,7 @@ public class ApprovalRestResource extends BaseRestResource {
         }
     }
 
-    private RaRequestsSearchRequest convertSearchPendingApprovalRestRequestToRaRequestsSearchRequest(SearchApprovalRestRequest searchApprovalRestRequest) {
+    private RaRequestsSearchRequest convertSearchApprovalRestRequestToRaRequestsSearchRequest(SearchApprovalRestRequest searchApprovalRestRequest) {
         RaRequestsSearchRequest raRequestsSearchRequest = new RaRequestsSearchRequest();
         raRequestsSearchRequest.setSearchingPending(searchApprovalRestRequest.isSearchingPending());
         raRequestsSearchRequest.setCustomSearchSubjectDn(searchApprovalRestRequest.getSubjectDn());
