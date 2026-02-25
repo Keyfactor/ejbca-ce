@@ -91,7 +91,7 @@ public class CaInitCommandSystemTest {
     private static final String[] ECC_CA_ARGS = {  CA_NAME, CA_DN, "soft", "foo123", "secp256r1", "ECDSA", "365", "null", "SHA256withECDSA" };
     private static final String[] ECC_CA_EXPLICIT_ARGS = {  CA_NAME, CA_DN, "soft", "foo123", "secp256r1", "ECDSA", "365", "null",
             "SHA256withECDSA", "-explicitecc" };
-    private static final String[] HYBRID_CA_ARGS = {  "--caname", CA_NAME, "--dn", CA_DN, "--tokenName", CA_NAME, "--tokenPass", "foo123",
+    private static final String[] CHIMERA_CA_ARGS = {  "--caname", CA_NAME, "--dn", CA_DN, "--tokenName", CA_NAME, "--tokenPass", "foo123",
             "--tokenType", "soft", "-v", "3", "--policy", "null", "-s", "SHA256WithECDSA", "--keyspec", "secp256r1",
             "--altkeyspec", "ML-DSA-44", "--altsigalg", "ML-DSA-44" };
 
@@ -272,17 +272,17 @@ public class CaInitCommandSystemTest {
         }
     }
 
-    /** Test happy path for creating an Hybrid CA with ECDSA and ML-DSA. */
+    /** Test happy path for creating an Chimera CA with ECDSA and ML-DSA. */
     @Test
-    public void testHybridCA() throws Exception {
-        caInitCommand.execute(HYBRID_CA_ARGS);
+    public void testChimeradCA() throws Exception {
+        caInitCommand.execute(CHIMERA_CA_ARGS);
         CAInfo cainfo = caSession.getCAInfo(admin, CA_NAME);
-        assertNotNull("Hybrid CA was not created.", cainfo);
+        assertNotNull("Chimera CA was not created.", cainfo);
         Certificate cert = cainfo.getCertificateChain().iterator().next();
         assertEquals("Public key should be EC", "EC", cert.getPublicKey().getAlgorithm());
         X509CertificateHolder certHolder = new JcaX509CertificateHolder((X509Certificate)cert);
         SubjectAltPublicKeyInfo altPub = SubjectAltPublicKeyInfo.fromExtensions(certHolder.getExtensions());
-        assertNotNull("There must be an alt public key in a hybrid certificate", altPub);
+        assertNotNull("There must be an alt public key in a Chimera certificate", altPub);
         assertEquals("Alt public key is not ML-DSA-44", NISTObjectIdentifiers.id_ml_dsa_44, altPub.getAlgorithm().getAlgorithm());
     }
 

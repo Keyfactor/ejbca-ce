@@ -120,10 +120,12 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
                 } else {
                     result = GlobalConfigurationCacheHolder.INSTANCE.getConfiguration(globalConfigurationData.getData(), configID);
                 }
-                //Perform lazy updates into any external caches 
-                result.updateExternalCaches();
-                // Always cache result
-                GlobalConfigurationCacheHolder.INSTANCE.updateConfiguration(result, configID);
+                if (result != null) {
+                    //Perform lazy updates into any external caches
+                    result.updateExternalCaches();
+                    // Always cache result
+                    GlobalConfigurationCacheHolder.INSTANCE.updateConfiguration(result, configID);
+                }
             }
             return result;
         } finally {

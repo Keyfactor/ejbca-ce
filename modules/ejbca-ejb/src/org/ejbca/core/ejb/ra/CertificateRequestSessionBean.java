@@ -38,11 +38,7 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
-import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.asn1.x500.X500NameBuilder;
-import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.util.Properties;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -189,16 +185,14 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
                     ExtendedUserDataHandler extendedUserDataHandler = (ExtendedUserDataHandler) Class.forName(preProcessorClass).getDeclaredConstructor().newInstance();
                     requestMessage = extendedUserDataHandler.processRequestMessage(requestMessage, certificateProfileSession.getCertificateProfileName(userdata.getCertificateProfileId()));
 
-                    final X500Name x500NameFromRequest = requestMessage.getRequestX500Name();
-                    if (x500NameFromRequest != null && x500NameFromRequest.getRDNs().length != 0) {
-                        userdata.setDN(updateUserDNFromRequest(x500NameFromRequest));
+                    final X500Name x500NameFromRequest = requestMessage.getRequestX500Name(); 
+                    if (x500NameFromRequest != null && x500NameFromRequest.getRDNs().length > 0) {
+                        userdata.setDN(x500NameFromRequest.toString());
                     }
-
                 } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | IllegalArgumentException
                         | InvocationTargetException | NoSuchMethodException | SecurityException e) {
                     throw new IllegalStateException("Request Preprocessor implementation " + preProcessorClass + " could not be instantiated.");
                 }
-
             }
         }
 
@@ -310,9 +304,9 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
                     ExtendedUserDataHandler extendedUserDataHandler = (ExtendedUserDataHandler) Class.forName(preProcessorClass).getDeclaredConstructor().newInstance();
                     req = extendedUserDataHandler.processRequestMessage(req, certificateProfileSession.getCertificateProfileName(userdata.getCertificateProfileId()));
 
-                    final X500Name x500NameFromRequest = req.getRequestX500Name();
-                    if (x500NameFromRequest != null && x500NameFromRequest.getRDNs().length != 0) {
-                        userdata.setDN(updateUserDNFromRequest(x500NameFromRequest));
+                    final X500Name x500NameFromRequest = req.getRequestX500Name(); 
+                    if (x500NameFromRequest != null && x500NameFromRequest.getRDNs().length > 0) {
+                        userdata.setDN(x500NameFromRequest.toString());
                     }
 
                 } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | IllegalArgumentException
@@ -345,37 +339,6 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             throw e;
         }
         return retval;
-    }
-
-    /**
-     * Builds a formatted Distinguished Name (DN) from the X.500 name in the request.
-     * This method processes each Relative Distinguished Name (RDN) from the input
-     * and constructs a new DN using BouncyCastle's X500NameBuilder with BCStyle formatting.
-     *
-     * @param requestX500Name the X500Name object containing the DN information from the request
-     * @return a properly formatted DN string containing all valid RDNs from the request
-     * @see org.bouncycastle.asn1.x500.X500Name
-     */
-
-    private String updateUserDNFromRequest(final X500Name requestX500Name) {
-        try {
-            X500NameBuilder builder = new X500NameBuilder(BCStyle.INSTANCE);
-
-            for (final RDN rdn : requestX500Name.getRDNs()) {
-                AttributeTypeAndValue atv = rdn.getFirst();
-                if (atv != null) {
-                    builder.addRDN(atv);
-                }
-            }
-            return builder.build().toString();
-
-        } catch (IllegalArgumentException e) {
-            log.error("Invalid RDN format in X500Name: " + LogRedactionUtils.getRedactedMessage(requestX500Name.toString()));
-            throw LogRedactionUtils.getRedactedException(e);
-        } catch (NullPointerException e) {
-            log.error("Unexpected null value while processing X500Name: " + LogRedactionUtils.getRedactedMessage(requestX500Name.toString()));
-            throw LogRedactionUtils.getRedactedException(e);
-        }
     }
 
     /**

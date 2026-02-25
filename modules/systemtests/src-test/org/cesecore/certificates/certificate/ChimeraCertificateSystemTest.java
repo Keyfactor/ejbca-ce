@@ -100,11 +100,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
- * System tests focusing on the creation of Hybrid X509 Certificates
+ * System tests focusing on the creation of Chimera/Catalyst X509 Certificates
  */
-public class HybridCertificateSystemTest {
+public class ChimeraCertificateSystemTest {
 
-    private static final Logger log = Logger.getLogger(HybridCertificateSystemTest.class);
+    private static final Logger log = Logger.getLogger(ChimeraCertificateSystemTest.class);
 
     @Rule
     public final TestWatcher traceLogMethodsRule = new TestWatcher() {
