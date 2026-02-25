@@ -191,7 +191,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String MINIMUMAVAILABLEBITLENGTH = "minimumavailablebitlength";
     protected static final String MAXIMUMAVAILABLEBITLENGTH = "maximumavailablebitlength";
 
-    //Alternative key settings, with a focus on hybrid certificates
+    //Alternative key settings, with a focus on Chimera/Catalyst certificates
     private static final String ALTERNATIVE_AVAILABLEKEYALGORITHMS = "alternativeAvailableKeyAlgorithms";
 
     public static final String TYPE = "type";
@@ -1499,7 +1499,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * Returns the alternative chosen algorithm to be used for signing the certificates or null if it is to be inherited from the CA (i.e., it is the same as the
      * algorithm used to sign the CA certificate).
      *
-     * This value is used for alternative key certificates, i.e. quantum safe hybrid certificates containing two keys and signatures
+     * This value is used for alternative key certificates, i.e. quantum safe Chimera/Catalyst certificates containing two keys and signatures
      *
      * @see com.keyfactor.util.crypto.algorithm.core.model.AlgorithmConstants.AVAILABLE_SIGALGS
      * @return JCE identifier for the signature algorithm or null if it is to be inherited from the CA (i.e., it is the same as the algorithm used to
@@ -1527,7 +1527,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * Sets the alternate algorithm to be used for signing the certificates. A null value means that the signature algorithm is to be inherited from the CA
      * (i.e., it is the same as the algorithm used to sign the CA certificate).
      *
-     * This value is used for alternative key certificates, i.e. quantum safe hybrid certificates containing two keys and signatures
+     * This value is used for alternative key certificates, i.e. quantum safe Chimera/Catalyst certificates containing two keys and signatures
      *
      * @param alternativeSignatureAlgorithm JCE identifier for the signature algorithm or null if it is to be inherited from the CA (i.e., it is the same as the algorithm used
      *            to sign the CA certificate).

@@ -85,7 +85,7 @@ import static org.junit.Assert.fail;
  * Unit tests for verifying EJBCA's behavior when the CA has an alternate keypair.
  *
  */
-public class HybridX509CaUnitTest {
+public class ChimeraX509CaUnitTest {
 
     @Rule
     public TestName testName = new TestName();
@@ -131,7 +131,7 @@ public class HybridX509CaUnitTest {
         caToken.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
         caToken.setAlternativeSignatureAlgorithm(AlgorithmConstants.SIGALG_MLDSA44);
 
-        X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo(caDn, "testHybridRootCa", CAConstants.CA_ACTIVE,
+        X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo(caDn, "testChimeraRootCa", CAConstants.CA_ACTIVE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "3650d", CAInfo.SELFSIGNED, null, caToken);
 
         x509ca = (X509CA) CAFactory.INSTANCE.getX509CAImpl(cainfo);
@@ -151,7 +151,7 @@ public class HybridX509CaUnitTest {
      * Construct a vanilla X509 root CA with an P256 key as primary and ML-DSA-44 as alternative
      */
     @Test
-    public void testHybridRootCa() throws CryptoTokenOfflineException, OperatorCreationException,
+    public void testChimeraRootCa() throws CryptoTokenOfflineException, OperatorCreationException,
             CertificateEncodingException, IOException, CertException {
 
         X509Certificate caCertificate = (X509Certificate) x509ca.getCertificateChain().get(0);
@@ -182,7 +182,7 @@ public class HybridX509CaUnitTest {
     }
 
     @Test
-    public void testEnrollHybridEndEntity() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException,
+    public void testEnrollChimeraEndEntity() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException,
             OperatorCreationException, CryptoTokenOfflineException, CAOfflineException, InvalidAlgorithmException, IllegalValidityException,
             IllegalNameException, CertificateCreateException, SignatureException, IllegalKeyException, CertificateExtensionException, IOException,
             CertificateEncodingException, CertException, InvalidKeySpecException {

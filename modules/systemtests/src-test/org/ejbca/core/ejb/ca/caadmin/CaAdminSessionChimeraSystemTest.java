@@ -78,9 +78,9 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
- * Tests CAAdminSessionBean with a focus on hybrid certificates.
+ * Tests CAAdminSessionBean with a focus on Chimera/Catalyst certificates.
  */
-public class CaAdminSessionHybridSystemTest {
+public class CaAdminSessionChimeraSystemTest {
 
     @Rule
     public final TestWatcher traceLogMethodsRule = new TestWatcher() {
@@ -102,7 +102,7 @@ public class CaAdminSessionHybridSystemTest {
 
     private static final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(
             new UsernamePrincipal("CaAdminSessionHybridSystemTest"));
-    private static final Logger log = Logger.getLogger(CaAdminSessionHybridSystemTest.class);
+    private static final Logger log = Logger.getLogger(CaAdminSessionChimeraSystemTest.class);
 
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
@@ -367,7 +367,7 @@ public class CaAdminSessionHybridSystemTest {
     }
 
     @Test
-    public void testCreateProhibitedSubCaCertificateUnderHybridRootShouldFail()
+    public void testCreateProhibitedSubCaCertificateUnderChimeraRootShouldFail()
             throws AuthorizationDeniedException, InvalidKeyException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
             CryptoTokenNameInUseException, InvalidAlgorithmParameterException, NoSuchSlotException, CAExistsException, InvalidAlgorithmException,
             CADoesntExistsException, IOException, CertificateEncodingException, OperatorCreationException, CertException {
@@ -387,9 +387,9 @@ public class CaAdminSessionHybridSystemTest {
                 // when
                 hybridRoot = constructCa(rootCryptoTokenId, rootCaName, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, CAInfo.SELFSIGNED, true);
                 hybridSub = constructCa(subCryptoTokenId, subCaName, CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, hybridRoot.getCAId(), false);
-                fail("Should throw EJBException when Root CA is a Hybrid CA but Sub CA is not a Hybrid CA");
+                fail("Should throw EJBException when Root CA is a Chimera/Catalyst  CA but Sub CA is not a Chimera/Catalyst CA");
             } catch (EJBException e) {
-                String msg = "InvalidConfigurationException: Sub CA '" + subCaName+ "' should be hybrid CA if and only if Root CA is hybrid CA.";
+                String msg = "InvalidConfigurationException: Sub CA '" + subCaName+ "' should be Chimera/Catalyst CA if and only if Root CA is Chimera/Catalyst CA.";
                 // then
                 assertTrue(e.getMessage().endsWith(msg));
             }
@@ -416,7 +416,7 @@ public class CaAdminSessionHybridSystemTest {
     }
 
     @Test
-    public void testCreateProhibitedSubCaCertificateUnderNonHybridRootShouldFail()
+    public void testCreateProhibitedSubCaCertificateUnderNonChimeradRootShouldFail()
             throws AuthorizationDeniedException, InvalidKeyException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
             CryptoTokenNameInUseException, InvalidAlgorithmParameterException, NoSuchSlotException, CAExistsException, InvalidAlgorithmException,
             CADoesntExistsException, IOException, CertificateEncodingException, OperatorCreationException, CertException {
@@ -437,9 +437,9 @@ public class CaAdminSessionHybridSystemTest {
                 // when
                 hybridRoot = constructCa(rootCryptoTokenId, rootCaName, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, CAInfo.SELFSIGNED, false);
                 hybridSub = constructCa(subCryptoTokenId, subCaName, CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, hybridRoot.getCAId(), true);
-                fail("Should throw EJBException when Root CA is not a Hybrid CA but Sub CA is a Hybrid CA");
+                fail("Should throw EJBException when Root CA is not a Chimera/Catalyst  CA but Sub CA is a Chimera/Catalyst  CA");
             } catch (EJBException e) {
-                String msg = "InvalidConfigurationException: Sub CA '" + subCaName+ "' should be hybrid CA if and only if Root CA is hybrid CA.";
+                String msg = "InvalidConfigurationException: Sub CA '" + subCaName+ "' should be Chimera/Catalyst CA if and only if Root CA is Chimera/Catalyst CA.";
                 // then
                 assertTrue(e.getMessage().endsWith(msg));
                 success = true;
