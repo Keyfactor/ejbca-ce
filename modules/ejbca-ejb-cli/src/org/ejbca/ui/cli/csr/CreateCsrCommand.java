@@ -129,7 +129,7 @@ public class CreateCsrCommand extends EjbcaCommandBase {
                         + signatureAlgorithmsFormatted));
         registerParameter(new Parameter(ALT_SIGALG_ARG, "Alternative Signature Algorithm", MandatoryMode.OPTIONAL, StandaloneMode.FORBID,
                 ParameterMode.ARGUMENT,
-                "Alternative signature algorithm to sign the CSR with, if making a hybrid CSR. If omitted, the default 256 bit algorithm for the assigned key will be used. Must be one of: "
+                "Alternative signature algorithm to sign the CSR with, if making a Chimera/Catalyst CSR. If omitted, the default 256 bit algorithm for the assigned key will be used. Must be one of: "
                         + signatureAlgorithmsFormatted));
 
         registerParameter(new Parameter(KEYALG_ARG, "cipher", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
@@ -412,7 +412,7 @@ public class CreateCsrCommand extends EjbcaCommandBase {
 
     @Override
     public String getFullHelpText() {
-        return "Creates a CSR, either using already existing keys or may generate those keys locally. Can create hybrid PKCS#10 requests as well.";
+        return "Creates a CSR, either using already existing keys or may generate those keys locally. Can create Chimera/Catalyst PKCS#10 requests as well.";
     }
 
     @Override
