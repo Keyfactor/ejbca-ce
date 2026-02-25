@@ -135,21 +135,22 @@ public class ApprovalRestResource extends BaseRestResource {
 
             List<RaApprovalRequestInfo> approvalRequestInfoList = raRequestsSearchResponse.getApprovalRequests();
 
-            List<SearchApprovalRestResponse> searchApprovalRestResponses = new java.util.ArrayList<>();
+            final SearchApprovalRestResponse searchApprovalRestResponse = new SearchApprovalRestResponse();
 
             for (RaApprovalRequestInfo approvalRequestInfo : approvalRequestInfoList) {
-                final SearchApprovalRestResponse searchApprovalRestResponse =
-                        SearchApprovalRestResponse.builder()
-                                .requestId(approvalRequestInfo.getId())
-                                .requestDate(approvalRequestInfo.getApprovalData().getRequestDate())
-                                .expirationDate(approvalRequestInfo.getApprovalData().getExpireDate())
-                                .requestType(getApprovalTypeName(approvalRequestInfo.getApprovalData().getApprovalType()))
-                                .requestedBy(getRequesterAdmin(approvalRequestInfo.getApprovalData().getApprovalRequest().getRequestAdmin().toString()))
-                                .canBeApprovedByMe(isAdminAbleToApproveTheRequest(approvalRequestInfo))
-                                .build();
-                searchApprovalRestResponses.add(searchApprovalRestResponse);
+                final Date now = new Date();
+
+                final SearchApprovalRestResponse.Approval approval = SearchApprovalRestResponse.Approval.builder()
+                        .requestId(approvalRequestInfo.getId())
+                        .requestDate(approvalRequestInfo.getApprovalData().getRequestDate())
+                        .expirationDate(approvalRequestInfo.getApprovalData().getExpireDate())
+                        .requestType(getApprovalTypeName(approvalRequestInfo.getApprovalData().getApprovalType()))
+                        .requestedBy(getRequesterAdmin(approvalRequestInfo.getApprovalData().getApprovalRequest().getRequestAdmin().toString()))
+                        .canBeApprovedByMe(isAdminAbleToApproveTheRequest(approvalRequestInfo))
+                        .build();
+                searchApprovalRestResponse.getApprovals().add(approval);
             }
-            return Response.ok(searchApprovalRestResponses).build();
+            return Response.ok(searchApprovalRestResponse).build();
 
         } catch (AuthorizationDeniedException e) {
             log.error(e.getMessage(), e);

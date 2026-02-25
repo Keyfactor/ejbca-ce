@@ -14,122 +14,138 @@ package org.ejbca.ui.web.rest.api.io.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class SearchApprovalRestResponse {
 
-    @Schema(description = "Approval request id", example = "12345")
-    private Integer requestId;
+    private List<Approval> approvals = new ArrayList<>();
 
-    @Schema(description = "Approval request date", example = "2026-02-06 21:50:31+01:00")
-    private Date requestDate;
-
-    @Schema(description = "Approval expiration date", example = "2026-02-06 21:50:31+01:00")
-    private Date expirationDate;
-
-    @Schema(description = "Approval request type", example = "Add End Entity")
-    private String requestType;
-
-    @Schema(description = "Approval request initiator admin", example = "SuperAdmin")
-    private String requestedBy;
-
-    @Schema(description = "Can this approval request be approved by current admin?", example = "true")
-    private boolean canBeApprovedByMe;
-
-    private SearchApprovalRestResponse() {}
-
-    public Integer getRequestId() {
-        return requestId;
+    public List<Approval> getApprovals() {
+        return approvals;
     }
 
-    public void setRequestId(Integer requestId) {
-        this.requestId = requestId;
+    public void setApprovals(final List<Approval> approvals) {
+        this.approvals = approvals;
     }
 
-    public Date getRequestDate() {
-        return requestDate;
-    }
+    public SearchApprovalRestResponse() {}
 
-    public void setRequestDate(Date requestDate) {
-        this.requestDate = requestDate;
-    }
+    public static class Approval {
 
-    public Date getExpirationDate() {
-        return expirationDate;
-    }
+        @Schema(description = "Approval request id", example = "12345")
+        private Integer requestId;
 
-    public void setExpirationDate(Date expirationDate) {
-        this.expirationDate = expirationDate;
-    }
+        @Schema(description = "Approval request date", example = "2026-02-06 21:50:31+01:00")
+        private Date requestDate;
 
-    public String getRequestType() {
-        return requestType;
-    }
+        @Schema(description = "Approval expiration date", example = "2026-02-06 21:50:31+01:00")
+        private Date expirationDate;
 
-    public void setRequestType(String requestType) {
-        this.requestType = requestType;
-    }
+        @Schema(description = "Approval request type", example = "Add End Entity")
+        private String requestType;
 
-    public String getRequestedBy() {
-        return requestedBy;
-    }
+        @Schema(description = "Approval request initiator admin", example = "SuperAdmin")
+        private String requestedBy;
 
-    public void setRequestedBy(String requestedBy) {
-        this.requestedBy = requestedBy;
-    }
+        @Schema(description = "Can this approval request be approved by current admin?", example = "true")
+        private boolean canBeApprovedByMe;
 
-    public boolean isCanBeApprovedByMe() {
-        return canBeApprovedByMe;
-    }
+        public Approval() {}
 
-    public void setCanBeApprovedByMe(boolean canBeApprovedByMe) {
-        this.canBeApprovedByMe = canBeApprovedByMe;
-    }
-
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    public static class Builder {
-        private final SearchApprovalRestResponse response;
-
-        private Builder() {
-            response = new SearchApprovalRestResponse();
+        public Integer getRequestId() {
+            return requestId;
         }
 
-        public Builder requestId(Integer requestId) {
-            response.requestId = requestId;
-            return this;
+        public void setRequestId(final Integer requestId) {
+            this.requestId = requestId;
         }
 
-        public Builder requestDate(Date requestDate) {
-            response.requestDate = requestDate;
-            return this;
+        public Date getRequestDate() {
+            return requestDate;
         }
 
-        public Builder expirationDate(Date expirationDate) {
-            response.expirationDate = expirationDate;
-            return this;
+        public void setRequestDate(final Date requestDate) {
+            this.requestDate = requestDate;
         }
 
-        public Builder requestType(String requestType) {
-            response.requestType = requestType;
-            return this;
+        public Date getExpirationDate() {
+            return expirationDate;
         }
 
-        public Builder requestedBy(String requestedBy) {
-            response.requestedBy = requestedBy;
-            return this;
+        public void setExpirationDate(final Date expirationDate) {
+            this.expirationDate = expirationDate;
         }
 
-        public Builder canBeApprovedByMe(boolean canBeApprovedByMe) {
-            response.canBeApprovedByMe = canBeApprovedByMe;
-            return this;
+        public String getRequestType() {
+            return requestType;
         }
 
-        public SearchApprovalRestResponse build() {
-            return response;
+        public void setRequestType(final String requestType) {
+            this.requestType = requestType;
+        }
+
+        public String getRequestedBy() {
+            return requestedBy;
+        }
+
+        public void setRequestedBy(final String requestedBy) {
+            this.requestedBy = requestedBy;
+        }
+
+        public boolean isCanBeApprovedByMe() {
+            return canBeApprovedByMe;
+        }
+
+        public void setCanBeApprovedByMe(final boolean canBeApprovedByMe) {
+            this.canBeApprovedByMe = canBeApprovedByMe;
+        }
+
+        public static Builder builder() {
+            return new Builder();
+        }
+
+        public static class Builder {
+            private final Approval response;
+
+            private Builder() {
+                response = new Approval();
+            }
+
+            public Builder requestId(final Integer requestId) {
+                response.requestId = requestId;
+                return this;
+            }
+
+            public Builder requestDate(final Date requestDate) {
+                response.requestDate = requestDate;
+                return this;
+            }
+
+            public Builder expirationDate(final Date expirationDate) {
+                response.expirationDate = expirationDate;
+                return this;
+            }
+
+            public Builder requestType(final String requestType) {
+                response.requestType = requestType;
+                return this;
+            }
+
+            public Builder requestedBy(final String requestedBy) {
+                response.requestedBy = requestedBy;
+                return this;
+            }
+
+            public Builder canBeApprovedByMe(final boolean canBeApprovedByMe) {
+                response.canBeApprovedByMe = canBeApprovedByMe;
+                return this;
+            }
+
+            public Approval build() {
+                return response;
+            }
         }
     }
-
 }
