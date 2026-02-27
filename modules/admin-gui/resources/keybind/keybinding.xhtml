@@ -270,11 +270,13 @@
 										 rendered="#{remoteAuthenticationMBean.inEditMode}"
 						/>
 						<f:facet name="footer">
-							<h:commandButton  rendered="#{remoteAuthenticationMBean.inEditMode}"
-											  disabled="#{remoteAuthenticationMBean.availableCertificateAuthorities.size() == 0}"
-											  action="#{remoteAuthenticationMBean.addTrust}"
-											  value="#{web.text.ADD}"
-							/>
+							<div class="action-buttons">
+								<h:commandButton  rendered="#{remoteAuthenticationMBean.inEditMode}"
+												  disabled="#{remoteAuthenticationMBean.availableCertificateAuthorities.size() == 0}"
+												  action="#{remoteAuthenticationMBean.addTrust}"
+												  value="#{web.text.ADD}"
+								/>
+							</div>
 						</f:facet>
 					</p:column>
 				</p:dataTable>
