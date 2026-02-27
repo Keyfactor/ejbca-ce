@@ -162,6 +162,7 @@ import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.DummyCustomPublisher;
@@ -228,7 +229,8 @@ public abstract class CommonEjbcaWs extends CaTestCase {
 
     protected final static String WS_ADMIN_ROLENAME = "WsTestRole";
 
-    
+    protected static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
+
     protected EjbcaWS ejbcaraws;
     /** Either ManagementCA or AdminCA1, or whatever is configured in target.clientcert.name */
     protected static String managementCaName;
@@ -1675,7 +1677,8 @@ public abstract class CommonEjbcaWs extends CaTestCase {
                     CertificateHelper.RESPONSETYPE_CERTIFICATE);
             fail("Calling pkcs10Request for an existing user but invalid password should throw an exception.");
         } catch(EjbcaException_Exception e) {
-            assertTrue(e.getMessage().contains("Got request for user with invalid password"));
+            final String expectedSubString = intres.getLocalizedMessage("ra.wrongusernameorpassword");
+            assertTrue("Expected '" + expectedSubString + "' to be part of the exception message. But the exception message is '" + e.getMessage() + "'", e.getMessage().contains(expectedSubString));
         }
         
         // 2.4 Test some malformed PKCS#10 message.

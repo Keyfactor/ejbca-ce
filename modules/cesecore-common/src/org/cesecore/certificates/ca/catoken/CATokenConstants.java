@@ -33,6 +33,8 @@ public final class CATokenConstants {
 	/** used for testing if the CA token is functioning and on-line */
 	public static final int CAKEYPURPOSE_KEYTEST             = 4;
 	
+	public static final String CAKEY_ANY_PURPOSE_NONE_INDICATOR = "EJBCA_NO_KEY_SELECTED";
+	
 	/** Hard Tokens were removed since release 7.1.0. Can't remove this constant though, it might be refecenced in existing customers' CA's */
 	@Deprecated
 	public static final int CAKEYPURPOSE_HARDTOKENENCRYPT    = 5;

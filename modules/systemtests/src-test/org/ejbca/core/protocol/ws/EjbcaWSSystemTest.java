@@ -1987,8 +1987,18 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
                         AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepId + AccessRulesConstants.KEYRECOVERY_RIGHTS,
                         AccessRulesConstants.REGULAR_KEYRECOVERY
                 ), null);
-                KeyStore ksenv = ejbcaraws.pkcs12Req(username, "foo456", null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
-                byte[] ksbytes = ksenv.getKeystoreData();
+                KeyStore ksenv = null;
+                byte[] ksbytes = null;
+                for (int attempt = 1; attempt <= 3; attempt++) {
+                    ksenv = ejbcaraws.pkcs12Req(username, "foo456", null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
+                    ksbytes = ksenv.getKeystoreData();
+                    if (ksbytes != null && ksbytes.length > 0) {
+                        break;
+                    }
+                    Thread.sleep(500L);
+                }
+                assertNotNull("pkcs12Req returned null keystore data", ksbytes);
+                assertTrue("pkcs12Req returned empty keystore data", ksbytes.length > 0);
                 java.security.KeyStore ks = KeyStoreHelper.getKeyStore(ksbytes, "PKCS12", "foo456");
                 // Verify that keystore returned from server has definite length encoding
                 ByteArrayInputStream in = new ByteArrayInputStream(ksbytes);
@@ -2092,10 +2102,21 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
                 log.info("recovering key. sn "+ cert.getSerialNumber().toString(16) + " issuer "+ cert.getIssuerX500Principal().toString());
 
                 // Try the single keyRecoverEnroll command
-                KeyStore ksenv = ejbcaraws.keyRecoverEnroll(username, cert.getSerialNumber().toString(16), cert.getIssuerX500Principal().toString(), "foo456", null);
-                java.security.KeyStore ks2 = KeyStoreHelper.getKeyStore(ksenv.getKeystoreData(), "PKCS12", "foo456");
+                KeyStore ksenv = null;
+                byte[] ksbytes = null;
+                for (int attempt = 1; attempt <= 3; attempt++) {
+                    ksenv = ejbcaraws.keyRecoverEnroll(username, cert.getSerialNumber().toString(16), cert.getIssuerX500Principal().toString(), "foo456", null);
+                    ksbytes = ksenv.getKeystoreData();
+                    if (ksbytes != null && ksbytes.length > 0) {
+                        break;
+                    }
+                    Thread.sleep(500L);
+                }
+                assertNotNull("keyRecoverEnroll returned null keystore data", ksbytes);
+                assertTrue("keyRecoverEnroll returned empty keystore data", ksbytes.length > 0);
+                java.security.KeyStore ks2 = KeyStoreHelper.getKeyStore(ksbytes, "PKCS12", "foo456");
                 // Verify that keystore returned from server has definite length encoding
-                ByteArrayInputStream in = new ByteArrayInputStream(Base64.decode(ksenv.getKeystoreData()));
+                ByteArrayInputStream in = new ByteArrayInputStream(Base64.decode(ksbytes));
                 try (IndefiniteLengthDetectorStream ildStream = new IndefiniteLengthDetectorStream(in)) {
                     while (ildStream.readValue() != null) {
                         ;

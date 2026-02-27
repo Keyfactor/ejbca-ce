@@ -28,7 +28,7 @@ metadata:
   labels:
     {{- include "ejbca.labels" . | nindent 4 }}
   annotations:
-    nginx.ingress.kubernetes.io/proxy-body-size: 32m
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
     {{- if .Values.ingress.sslBackend}}
     nginx.ingress.kubernetes.io/backend-protocol: HTTPS
     nginx.ingress.kubernetes.io/ssl-passthrough: "true"
