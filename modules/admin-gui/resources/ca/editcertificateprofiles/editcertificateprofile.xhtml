@@ -166,6 +166,17 @@
                         value="#{certProfileBean.signatureAlgorithmAvailable}" />
                     <f:ajax event="change" execute="@this" render="@none"/>
                 </h:selectOneMenu>
+
+                <h:panelGroup rendered="#{!certProfileBean.typeSsh and !certProfileBean.typeIts}">
+                    <h:outputLabel for="checkSignatureVerification" value="#{web.text.CERT_SIGNATURE_VERIFICATION}" />
+                </h:panelGroup>
+                <h:panelGroup id="checkSignatureVerificationGroup" rendered="#{!certProfileBean.typeSsh and !certProfileBean.typeIts}">
+                    <p:selectBooleanCheckbox id="checkSignatureVerification"
+                                             value="#{certProfileBean.useSignatureVerification}"
+                                             disabled="#{certProfileBean.viewOnly}" itemLabel="#{web.text.USE}">
+                        <f:ajax event="change" execute="@this" render="@form"/>
+                    </p:selectBooleanCheckbox>
+                </h:panelGroup>
             </h:panelGrid>
         </h:form>
         <!-- Alternative Signature -->
