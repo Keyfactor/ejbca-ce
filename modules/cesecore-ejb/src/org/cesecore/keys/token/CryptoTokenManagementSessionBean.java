@@ -159,7 +159,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         final boolean isActive = cryptoToken.getTokenStatus() == CryptoToken.STATUS_ACTIVE;
         final Properties cryptoTokenProperties = cryptoToken.getProperties();
         final boolean autoActivation = BaseCryptoToken.getAutoActivatePin(cryptoTokenProperties) != null;
-        return new CryptoTokenInfo(cryptoTokenId, cryptoToken.getTokenName(), isActive, autoActivation, cryptoToken.getClass(), cryptoTokenProperties);
+        return new CryptoTokenInfo(cryptoTokenId, cryptoToken.getTokenName(), isActive, autoActivation, cryptoToken.getConcreteClass(), cryptoTokenProperties);
     }
 
     @Override
@@ -420,7 +420,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
                 // If we entered the wrong PIN, we may have installed the P11 provider (if it is a P11 token)
                 // In that case, remove it again, so we don't have to warn about already used slot when entering the correct PIN
                 // if it was not already used by anyone else that is
-                if (isSlotUsed.isEmpty() && cryptoToken instanceof PKCS11CryptoToken) {
+                if (isSlotUsed.isEmpty() && cryptoToken.isInstanceOf(PKCS11CryptoToken.class)) {
                     Security.removeProvider(cryptoToken.getSignProviderName());
                 }
                 throw e;
@@ -493,7 +493,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
             throw new AuthorizationDeniedException(msg);
         }
         final CryptoToken currentCryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
-        final String className = currentCryptoToken.getClass().getName();
+        final String className = currentCryptoToken.getConcreteClass().getName();
         final byte[] tokendata = currentCryptoToken.getTokenData();
         // Handle presence of auto-activation indicators
         boolean keepAutoActivateIfPresent = Boolean.valueOf(String.valueOf(properties.get(CryptoTokenManagementSession.KEEP_AUTO_ACTIVATION_PIN)));
@@ -682,7 +682,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
             // This is a NOOP call that will not lead to any change
             return false;
         }
-        if (SoftCryptoToken.class.getName().equals(cryptoToken.getClass().getName())) {
+        if (SoftCryptoToken.class.getName().equals(cryptoToken.getConcreteClass().getName())) {
             CryptoProviderTools.installBCProviderIfNotAvailable();
             final KeyStore keystore;
             try {
@@ -927,7 +927,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         // Generate key pair
         cryptoToken.generateKeyPair(KeyGenParams.builder(keyGenParams).setKeySpecification(keySpecification).build(), alias);
         // We don't want to test CP5 keys on creation since they're not authorized yet (would fail).
-        if (!cryptoToken.getClass().getName().equals(CryptoTokenFactory.JACKNJI_NAME)) {
+        if (!cryptoToken.getConcreteClass().getName().equals(CryptoTokenFactory.JACKNJI_NAME)) {
             cryptoToken.testKeyPair(alias);
         }
         // Merge is important for soft tokens where the data is persisted in the database, but will also update lastUpdate
@@ -1015,7 +1015,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         assertAliasNotInUse(cryptoToken, alias);
 
         // If CP5, remove KAK association from database
-        if (CryptoTokenFactory.JACKNJI_SIMPLE_NAME.equals(cryptoToken.getClass().getSimpleName())) {
+        if (CryptoTokenFactory.JACKNJI_SIMPLE_NAME.equals(cryptoToken.getConcreteClass().getSimpleName())) {
             cryptoToken.getProperties().remove(CryptoToken.KAK_ASSOCIATION_PREFIX + alias);
         }
 

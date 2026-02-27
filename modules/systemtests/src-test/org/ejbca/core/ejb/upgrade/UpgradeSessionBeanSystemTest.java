@@ -1199,6 +1199,60 @@ public class UpgradeSessionBeanSystemTest {
         }
     }
 
+    @Test
+    public void testMigrateForbiddenCharacters_9_5_0() throws AuthorizationDeniedException {
+        //Stash the orginal value 
+        char[] originalForbiddenCharacters = cesecoreConfigSession.getForbiddenCharacters();
+        String testValue = "fobar\n\r";
+        //Set the forbidden characters to a verifiable value
+        cesecoreConfigSession.setConfigurationValue("forbidden.characters", testValue);
+          
+        try {
+          //Set the upgrade-from version 
+            final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            guc.setUpgradedToVersion("9.4.0");
+            guc.setPostUpgradedToVersion("9.4.0");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+            //Perform upgrade
+            upgradeSession.upgrade(/* database */ null, /* upgrade from */ "9.4.0", /* post upgrade? */ false);
+            //Retrieve GlobalCesecoreConfig and verify that the value was migrated
+            GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+            assertEquals("forbidden.characters was not migrated into GlobalCesecoreConfiguration", testValue, new String(globalCesecoreConfiguration.getForbiddenCharacters()));
+        } finally {
+            cesecoreConfigSession.setConfigurationValue("forbidden.characters", String.valueOf(originalForbiddenCharacters));
+            GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+            globalCesecoreConfiguration.setForbiddenCharacters(originalForbiddenCharacters);
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, globalCesecoreConfiguration);
+        }
+    }
+    
+    @Test
+    public void testMigrateOcspProperties_9_5_0() throws InvalidConfigurationException, AuthorizationDeniedException {
+        //Stash the original value(s)
+        GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigSession
+                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        final long originalWarningBeforeExpiration = globalOcspConfiguration.getWarningBeforeExpiryTimeSeconds();
+        cesecoreConfigSession.setConfigurationValue("ocsp.warningBeforeExpirationTime", "5");
+        try {
+            //Set the upgrade-from version 
+            final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            guc.setUpgradedToVersion("9.4.0");
+            guc.setPostUpgradedToVersion("9.4.0");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+            //Perform upgrade
+            upgradeSession.upgrade(/* database */ null, /* upgrade from */ "9.4.0", /* post upgrade? */ false);
+            globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            assertEquals("ocsp.warningBeforeExpirationTime was not upgraded", 5, globalOcspConfiguration.getWarningBeforeExpiryTimeSeconds());
+
+        } finally {
+            globalOcspConfiguration.setWarningBeforeExpiryTimeSeconds(originalWarningBeforeExpiration);
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, globalOcspConfiguration);
+        }
+    }
+    
     private EndEntityInformation makeEndEntityInfo(final String username, final String startTime, final String endTime) {
         final ExtendedInformation extInfo = new ExtendedInformation();
         if (startTime != null) {

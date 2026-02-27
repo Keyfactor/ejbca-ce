@@ -70,7 +70,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Public Constants
-    public static final float LATEST_VERSION = (float) 53.0;
+    public static final float LATEST_VERSION = (float) 54.0;
 
     public static final String ROOTCAPROFILENAME = "ROOTCA";
     public static final String SUBCAPROFILENAME = "SUBCA";
@@ -191,7 +191,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String MINIMUMAVAILABLEBITLENGTH = "minimumavailablebitlength";
     protected static final String MAXIMUMAVAILABLEBITLENGTH = "maximumavailablebitlength";
 
-    //Alternative key settings, with a focus on hybrid certificates
+    //Alternative key settings, with a focus on Chimera/Catalyst certificates
     private static final String ALTERNATIVE_AVAILABLEKEYALGORITHMS = "alternativeAvailableKeyAlgorithms";
 
     public static final String TYPE = "type";
@@ -208,6 +208,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String EABNAMESPACES = "eabnamespaces";
 
     protected static final String APPROVALS = "approvals";
+    protected static final String USE_SIGNATURE_VERIFICATION = "usesignatureverification";
 
     protected static final String SIGNATUREALGORITHM = "signaturealgorithm";
     private static final String ALTERNATIVE_SIGNATUREALGORITHM = "alternativeSignatureAlgorithm";
@@ -471,6 +472,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setAvailableEcCurvesAsList(Collections.singletonList(ANY_EC_CURVE));
         setAvailableBitLengthsAsList(AlgorithmTools.getAllBitLengths());
         setSignatureAlgorithm(null);
+        setUseSignatureVerification(true);
         setUseAlternativeSignature(false);
         setAlternativeAvailableKeyAlgorithmsAsList(
                 AlgorithmTools.getAvailableKeyAlgorithms().stream().filter(alg -> AlgorithmTools.isPQC(alg)).collect(Collectors.toList()));
@@ -1094,7 +1096,13 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
     /** @return true if the CertificateData.subjectAltName column should be populated. */
     public boolean getStoreSubjectAlternativeName() {
-        return (Boolean) data.get(STORESUBJECTALTNAME);
+        final Boolean value = (Boolean) data.get(STORESUBJECTALTNAME);
+        if (value == null) {
+            setStoreSubjectAlternativeName(false);
+            return false;
+        } else {
+            return value;
+        }
     }
 
     public void setStoreSubjectAlternativeName(final boolean storeSubjectAlternativeName) {
@@ -1493,7 +1501,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * Returns the alternative chosen algorithm to be used for signing the certificates or null if it is to be inherited from the CA (i.e., it is the same as the
      * algorithm used to sign the CA certificate).
      *
-     * This value is used for alternative key certificates, i.e. quantum safe hybrid certificates containing two keys and signatures
+     * This value is used for alternative key certificates, i.e. quantum safe Chimera/Catalyst certificates containing two keys and signatures
      *
      * @see com.keyfactor.util.crypto.algorithm.core.model.AlgorithmConstants.AVAILABLE_SIGALGS
      * @return JCE identifier for the signature algorithm or null if it is to be inherited from the CA (i.e., it is the same as the algorithm used to
@@ -1518,10 +1526,25 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     /**
+     * @return true if signature verification on the issued certificate should be performed, false otherwise.
+     */
+    public boolean getUseSignatureVerification() {
+        data.putIfAbsent(USE_SIGNATURE_VERIFICATION, true);
+        return (Boolean) data.get(USE_SIGNATURE_VERIFICATION);
+    }
+
+    /**
+     * @param useSignatureVerification true if signature verification on the issued certificate should be performed, false otherwise.
+     */
+    public void setUseSignatureVerification(final boolean useSignatureVerification) {
+        data.put(USE_SIGNATURE_VERIFICATION, useSignatureVerification);
+    }
+
+    /**
      * Sets the alternate algorithm to be used for signing the certificates. A null value means that the signature algorithm is to be inherited from the CA
      * (i.e., it is the same as the algorithm used to sign the CA certificate).
      *
-     * This value is used for alternative key certificates, i.e. quantum safe hybrid certificates containing two keys and signatures
+     * This value is used for alternative key certificates, i.e. quantum safe Chimera/Catalyst certificates containing two keys and signatures
      *
      * @param alternativeSignatureAlgorithm JCE identifier for the signature algorithm or null if it is to be inherited from the CA (i.e., it is the same as the algorithm used
      *            to sign the CA certificate).
@@ -3159,7 +3182,13 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 alternativeAvailableKeyAlgorithms.remove("DSTU4145");
                 setAlternativeAvailableKeyAlgorithmsAsList(alternativeAvailableKeyAlgorithms);
             }
-
+            
+            // v54: Make sure that storeSubjectAlternativeName has a value - should have been done back in 6.7.0
+            final Boolean storeSubjectAlternativeName = (Boolean) data.get(STORESUBJECTALTNAME);
+            if (storeSubjectAlternativeName == null) {
+                setStoreSubjectAlternativeName(false);
+            }
+            
             data.put(VERSION, LATEST_VERSION);
         }
         log.trace("<upgrade");

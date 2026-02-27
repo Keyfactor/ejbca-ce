@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.cesecore.certificate.ca.its.region.ItsGeographicRegion;
 import org.cesecore.certificates.ca.catoken.CAToken;
@@ -69,7 +68,6 @@ public class CitsCaInfo extends CAInfo {
                                                            .setUseCertificateStorage(true)
                                                            .setCaType(CAInfo.CATYPE_CITS)
                                                            .setSignedBy(CAInfo.SIGNEDBYEXTERNALCA)
-                                                           .setApprovals(new HashMap<>())
                                                            .setRegion(null);// To allow absent region field
 
         return builder.build();
@@ -183,7 +181,6 @@ public class CitsCaInfo extends CAInfo {
         private Date expireTime;
         private List<Certificate> certificateChain;
         private CAToken caToken;
-        private Map<ApprovalRequestType, Integer> approvals = new HashMap<>();
         private List<ExtendedCAServiceInfo> extendedCAServiceInfos = new ArrayList<>();
         private List<Integer> validators = new ArrayList<>();
         private boolean finishUser;
@@ -201,8 +198,6 @@ public class CitsCaInfo extends CAInfo {
         private String certificateId;
         private ItsGeographicRegion region;
         private String subjectDN; // Built based on certificateID (prefix + certificateId)
-        private String hexEncodedCert;
-        private String hexEncodedCertHash;
 
         public CitsCaInfoBuilder setCaId(int caId) {
             this.caId = caId;
@@ -286,11 +281,6 @@ public class CitsCaInfo extends CAInfo {
 
         public CitsCaInfoBuilder setCaToken(CAToken caToken) {
             this.caToken = caToken;
-            return this;
-        }
-
-        public CitsCaInfoBuilder setApprovals(Map<ApprovalRequestType, Integer> approvals) {
-            this.approvals = approvals;
             return this;
         }
 

@@ -283,4 +283,9 @@ public class GoogleSafeBrowsingValidator extends ValidatorBase implements DnsNam
     public boolean isValidatorAlwaysApplicable() {
         return true;
     }
+    
+    @Override
+    public boolean validateEmailDomains() {
+        return true;
+    }
 }

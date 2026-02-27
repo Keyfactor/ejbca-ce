@@ -39,8 +39,7 @@
             </h3>
         </h:panelGroup>
         <h:form id="cpf">
-            <h:panelGrid columns="2" styleClass="edit-top"
-                cellspacing="3" cellpadding="3" border="0" width="100%"
+            <h:panelGrid columns="2" styleClass="edit-top ui-md-12"
                 rowClasses="Row0,Row1"
                 columnClasses="editColumn1,editColumn2">
 
@@ -106,8 +105,7 @@
        		</h:panelGrid>
         </h:form>
 		<h:form id="algorithms">
-			<h:panelGrid columns="2" styleClass="edit-ctnd"
-                cellspacing="3" cellpadding="3" border="0" width="100%"
+			<h:panelGrid columns="2" styleClass="edit-ctnd ui-md-12"
                 rowClasses="Row0,Row1"
                 columnClasses="editColumn1,editColumn2">
                 <h:panelGroup rendered="#{!certProfileBean.typeSsh and !certProfileBean.typeIts}">
@@ -168,12 +166,22 @@
                         value="#{certProfileBean.signatureAlgorithmAvailable}" />
                     <f:ajax event="change" execute="@this" render="@none"/>
                 </h:selectOneMenu>
+
+                <h:panelGroup rendered="#{!certProfileBean.typeSsh and !certProfileBean.typeIts}">
+                    <h:outputLabel for="checkSignatureVerification" value="#{web.text.CERT_SIGNATURE_VERIFICATION}" />
+                </h:panelGroup>
+                <h:panelGroup id="checkSignatureVerificationGroup" rendered="#{!certProfileBean.typeSsh and !certProfileBean.typeIts}">
+                    <p:selectBooleanCheckbox id="checkSignatureVerification"
+                                             value="#{certProfileBean.useSignatureVerification}"
+                                             disabled="#{certProfileBean.viewOnly}" itemLabel="#{web.text.USE}">
+                        <f:ajax event="change" execute="@this" render="@form"/>
+                    </p:selectBooleanCheckbox>
+                </h:panelGroup>
             </h:panelGrid>
         </h:form>
         <!-- Alternative Signature -->
         <h:form id="alternativeSignature" rendered="#{!certProfileBean.typeSsh and !certProfileBean.typeIts}">
-            <h:panelGrid columns="2" styleClass="edit-ctnd"
-                cellspacing="3" cellpadding="3" border="0" width="100%"
+            <h:panelGrid columns="2" styleClass="edit-ctnd ui-md-12"
                 rowClasses="Row0,Row0"
                 columnClasses="editColumn1,editColumn2">
                 <h:panelGroup>
@@ -220,8 +228,7 @@
 
         <!-- Validity -->
 		<h:form id="content">
-			<h:panelGrid columns="2" styleClass="edit-ctnd"
-                cellspacing="3" cellpadding="3" border="0" width="100%"
+			<h:panelGrid columns="2" styleClass="edit-ctnd ui-md-12"
                 rowClasses="Row1,Row0"
                 columnClasses="editColumn1,editColumn2">
                 <h:panelGroup>
@@ -389,8 +396,7 @@
             </h:panelGrid>
             
             <!-- SSH Values -->
-            <h:panelGrid columns="2" styleClass="edit-top"
-                cellspacing="3" cellpadding="3" border="0" width="100%"
+            <h:panelGrid columns="2" styleClass="edit-top ui-md-12"
                 rowClasses="Row0,Row1"
                 columnClasses="editColumn1,editColumn2"
                 rendered="#{certProfileBean.typeSsh}">
@@ -455,8 +461,7 @@
              </h:panelGrid>
 
             <!-- ITS Values -->
-            <h:panelGrid columns="2" styleClass="edit-top"
-                cellspacing="3" cellpadding="3" border="0" width="100%"
+            <h:panelGrid columns="2" styleClass="edit-top ui-md-12"
                 rowClasses="Row0,Row1"
                 columnClasses="editColumn1,editColumn2"
                 rendered="#{certProfileBean.typeIts}">
@@ -514,8 +519,7 @@
 	             </h:panelGroup>
              </h:panelGrid>
 
-            <h:panelGrid columns="2" styleClass="edit-top"
-                cellspacing="3" cellpadding="3" border="0" width="100%"
+            <h:panelGrid columns="2" styleClass="edit-top ui-md-12"
                 rowClasses="Row0,Row1"
                 columnClasses="editColumn1,editColumn2">
                 
@@ -723,8 +727,7 @@
             </h:panelGrid>
 
 
-            <h:panelGrid columns="2" styleClass="edit-top"
-                cellspacing="3" cellpadding="3" border="0" width="100%"
+            <h:panelGrid columns="2" styleClass="edit-top ui-md-12"
                 rowClasses="Row0,Row1"
                 columnClasses="editColumn1,editColumn2" rendered="#{!certProfileBean.typeSsh and !certProfileBean.typeIts}">
 
@@ -818,8 +821,7 @@
                 </h:panelGroup>
             </h:panelGrid>
 
-            <h:panelGrid columns="2" styleClass="edit-top subsection"
-                cellspacing="3" cellpadding="3" border="0" width="100%"
+            <h:panelGrid columns="2" styleClass="edit-top subsection ui-md-12"
                 rowClasses="Row0,Row1"
                 columnClasses="editColumn1,editColumn2" rendered="#{!certProfileBean.typeSsh and !certProfileBean.typeIts}">
 
@@ -1100,8 +1102,7 @@
                 </h:panelGrid>
             </h:panelGrid>
 
-            <h:panelGrid columns="2" styleClass="edit-top subsection"
-                cellspacing="3" cellpadding="3" border="0" width="100%"
+            <h:panelGrid columns="2" styleClass="edit-top subsection ui-md-12"
                 rowClasses="Row0,Row1"
                 columnClasses="editColumn1,editColumn2" rendered="#{!certProfileBean.typeSsh and !certProfileBean.typeIts}">
 
@@ -1213,8 +1214,7 @@
             </h:panelGrid>
 
             <h:panelGrid id="extensionsValidationDataGrid" columns="2"
-                styleClass="edit-top subsection" cellspacing="3"
-                cellpadding="3" border="0" width="100%"
+                styleClass="edit-top subsection ui-md-12"
                 rowClasses="Row0,Row1"
                 columnClasses="editColumn1,editColumn2"
                 rendered="#{!certProfileBean.typeSsh and !certProfileBean.typeIts}">
@@ -1528,8 +1528,7 @@
 
 
             <h:panelGrid id="etsiExtensionGrid" columns="2"
-                styleClass="edit-top" cellspacing="3" cellpadding="3"
-                border="0" width="100%" rowClasses="Row0,Row1"
+                styleClass="edit-top ui-md-12" rowClasses="Row0,Row1"
                 columnClasses="editColumn1,editColumn2" rendered="#{!certProfileBean.typeSsh and !certProfileBean.typeIts}">
 
                 <!-- ETSI extensions -->
@@ -1913,8 +1912,7 @@
                 </h:panelGroup>
             </h:panelGrid>
 
-            <h:panelGrid id="ctgrid" columns="2" styleClass="edit-top"
-                cellspacing="3" cellpadding="3" border="0" width="100%"
+            <h:panelGrid id="ctgrid" columns="2" styleClass="edit-top ui-md-12"
                 rowClasses="Row0,Row1"
                 columnClasses="editColumn1,editColumn2"
                 rendered="#{certProfileBean.ctAvailable and !certProfileBean.typeSsh and !certProfileBean.typeIts}">
@@ -2098,8 +2096,7 @@
                     disabled="#{(!certProfileBean.certificateProfile.useCertificateTransparencyInCerts and !certProfileBean.certificateProfile.useCertificateTransparencyInOCSP) || certProfileBean.viewOnly}" />
             </h:panelGrid>
 
-            <h:panelGrid columns="2" styleClass="edit-top"
-                cellspacing="3" cellpadding="3" border="0" width="100%"
+            <h:panelGrid columns="2" styleClass="edit-top ui-md-12"
                 rowClasses="Row0,Row1"
                 columnClasses="editColumn1,editColumn2"
                 rendered="#{!certProfileBean.typeSsh and !certProfileBean.typeIts}">
@@ -2201,8 +2198,7 @@
             </h:panelGrid>
 
 
-            <h:panelGrid id="epassportgrid" columns="2" styleClass="edit-top"
-                cellspacing="3" cellpadding="3" border="0" width="100%"
+            <h:panelGrid id="epassportgrid" columns="2" styleClass="edit-top ui-md-12"
                 rowClasses="Row0,Row1"
                 columnClasses="editColumn1,editColumn2" 
                 rendered="#{!certProfileBean.typeSsh and !certProfileBean.typeIts}">
@@ -2379,8 +2375,7 @@
 
 
             <h:panelGrid columns="2"
-                styleClass="edit-top" cellspacing="3"
-                cellpadding="3" border="0" width="100%"
+                styleClass="edit-top ui-md-12"
                 rowClasses="Row0,Row1"
                 columnClasses="editColumn1,editColumn2"
                 rendered="#{!certProfileBean.typeSsh}">
@@ -2390,9 +2385,8 @@
                     style="font-weight: bold;" />
                 <h:panelGroup id="approvals" />
             </h:panelGrid>
-            <h:dataTable value="#{certProfileBean.approvalRequestItems}"
-                var="requestItem" cellspacing="1" cellpadding="3"
-                border="0" width="100%" rowClasses="Row0,Row1"
+            <h:dataTable value="#{certProfileBean.approvalRequestItems}" styleClass="edit-top ui-md-12"
+                var="requestItem" rowClasses="Row0,Row1"
                 columnClasses="editColumn1,editColumn2"
                 rendered="#{!certProfileBean.typeSsh}">
                 <h:column>
@@ -2411,8 +2405,7 @@
             </h:dataTable>
 
 
-            <h:panelGrid columns="2" styleClass="edit-top"
-                cellspacing="3" cellpadding="3" border="0" width="100%"
+            <h:panelGrid columns="2" styleClass="edit-top ui-md-12"
                 rowClasses="Row0,Row1"
                 columnClasses="editColumn1,editColumn2">
 

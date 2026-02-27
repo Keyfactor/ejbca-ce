@@ -230,6 +230,14 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                 addErrorMessage("ONEAVAILABLEBITLENGTH");
                 success = false;
             }
+
+            if (prof.getUseAlternativeSignature()) {
+                if(prof.getAvailableKeyAlgorithmsAsList().stream().anyMatch(AlgorithmTools::isComposite)) {
+                    addErrorMessage("ALTERNATIVEANDHYBRIDALGORITHM");
+                    success = false;
+                };
+            }
+
             if (isCtEnabled()) {
                 final int numEnabledLabels = prof.getEnabledCtLabels().size();
                 final boolean isNumOfSctsCustom = prof.isNumberOfSctByCustom();
@@ -460,7 +468,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     public List<SelectItem> getAvailableAlternativeKeyAlgorithmsAvailable() {
         final List<SelectItem> ret = new ArrayList<>();
         for (final String current : AlgorithmTools.getAvailableKeyAlgorithms()) {
-            if (AlgorithmTools.isPQC(current)) {
+            if (AlgorithmTools.isPQC(current) && !AlgorithmTools.isComposite(current)) {
                 ret.add(new SelectItem(current));
             }
         }
@@ -553,7 +561,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         if (certificateProfile.getType() != CertificateConstants.CERTTYPE_SSH) {
             for (final String sigAlg : AlgorithmConstants.AVAILABLE_SIGALGS) {
                 final String keyAlg = AlgorithmTools.getKeyAlgorithmFromSigAlg(sigAlg);
-                if (AlgorithmTools.isPQC(keyAlg)) {
+                if (AlgorithmTools.isPQC(keyAlg) && !AlgorithmTools.isComposite(keyAlg)) {
                     ret.add(new SelectItem(sigAlg, sigAlg));
                 }
             }
@@ -621,6 +629,14 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         // Inherit signature algorithm from issuing CA is signaled by null, but is rendered as "".
         final String sigAlg = StringUtils.defaultIfEmpty(signatureAlgorithm, null);
         getCertificateProfile().setAlternativeSignatureAlgorithm(sigAlg);
+    }
+
+    public boolean isUseSignatureVerification() {
+        return getCertificateProfile().getUseSignatureVerification();
+    }
+
+    public void setUseSignatureVerification(final boolean useSignatureVerification) {
+        getCertificateProfile().setUseSignatureVerification(useSignatureVerification);
     }
 
     /**

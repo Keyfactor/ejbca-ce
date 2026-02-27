@@ -60,6 +60,7 @@ import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
+import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStatus;
@@ -178,6 +179,16 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         createTestCA(); // Create also removes any old left over CA
         addDefaultRole();
     }
+    
+    protected void setUpWithoutKek() throws Exception { // NOPMD: this is a base class
+        log.trace(">CaTestCase.setUp()");
+        CryptoProviderTools.installBCProviderIfNotAvailable();
+        super.setUpAuthTokenAndRole(getRoleName()+"Base");
+        removeTestCA(); // We can't be sure this CA was not left over from
+        createTestCA(getTestCAName(), 1024, "CN=" + getTestCAName(), CAInfo.SELFSIGNED, null,
+               CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, null, null, false, false, null, null, true, false);
+        addDefaultRole();
+    }
 
     protected void addDefaultRole() throws RoleExistsException {
         final String commonName = CaTestCase.class.getCanonicalName();
@@ -200,7 +211,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         return EjbRemoteHelper.INSTANCE.getRemoteSession(SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     }
 
-    private static CaSessionRemote getCaSession() {
+    protected static CaSessionRemote getCaSession() {
         return EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     }
 
@@ -366,11 +377,22 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                 certificateProfileId, nameConstraintPermitted, nameConstraintExcluded,
                 relaxUniquenessSubjectDN, relaxUniquenessPublicKey, validators, subjectAltName, true);
     }
-
+    
     public static int createTestCA(String caName, int keyStrength, String dn, int signedBy, Collection<Certificate> certificateChain,
             int certificateProfileId, List<String> nameConstraintPermitted, List<String> nameConstraintExcluded,
             boolean relaxUniquenessSubjectDN, boolean relaxUniquenessPublicKey, List<Integer> validators, String subjectAltName,
             boolean useLdapDnOrder)
+            throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException,
+            CryptoTokenAuthenticationFailedException {
+        return createTestCA(caName, keyStrength, dn, signedBy, certificateChain,
+                certificateProfileId, nameConstraintPermitted, nameConstraintExcluded,
+                relaxUniquenessSubjectDN, relaxUniquenessPublicKey, validators, subjectAltName, true, true);
+    }
+
+    public static int createTestCA(String caName, int keyStrength, String dn, int signedBy, Collection<Certificate> certificateChain,
+            int certificateProfileId, List<String> nameConstraintPermitted, List<String> nameConstraintExcluded,
+            boolean relaxUniquenessSubjectDN, boolean relaxUniquenessPublicKey, List<Integer> validators, String subjectAltName,
+            boolean useLdapDnOrder, boolean setKeyEncryptKey)
             throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException,
             CryptoTokenAuthenticationFailedException {
         log.trace(">createTestCA("+caName+", "+dn+")");
@@ -402,7 +424,8 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         ;
         log.debug("Creating CryptoToken with ID " + cryptoTokenId + " to be used by CA " + caName);
         final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
+                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, 
+                setKeyEncryptKey ? CAToken.SOFTPRIVATEDECKEYALIAS : CATokenConstants.CAKEY_ANY_PURPOSE_NONE_INDICATOR);
         // Create and active Extended CA Services.
         final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<>();
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));

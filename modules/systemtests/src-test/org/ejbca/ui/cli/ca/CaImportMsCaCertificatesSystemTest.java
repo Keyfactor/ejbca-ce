@@ -49,11 +49,11 @@ import com.keyfactor.util.EJBTools;
 
 /**
  * System test for {@link CaImportMsCaCertificates}.
- * 
+ *
  * <p>Run these tests with:
- * 
+ *
  * <pre>ant test:runone -Dtest.runone=CaImportMsCaCertificatesSystemTest</pre>.
- * 
+ *
  * @version $Id$
  */
 public class CaImportMsCaCertificatesSystemTest {
@@ -63,7 +63,7 @@ public class CaImportMsCaCertificatesSystemTest {
 
     @Before
     public void setUp() throws Exception {
-        final String issuerCertificatePem = "-----BEGIN CERTIFICATE-----\n" + 
+        final String issuerCertificatePem = "-----BEGIN CERTIFICATE-----\n" +
                 "MIIEkjCCA3qgAwIBAgIQCgFBQgAAAVOFc2oLheynCDANBgkqhkiG9w0BAQsFADA/\n" + 
                 "MSQwIgYDVQQKExtEaWdpdGFsIFNpZ25hdHVyZSBUcnVzdCBDby4xFzAVBgNVBAMT\n" + 
                 "DkRTVCBSb290IENBIFgzMB4XDTE2MDMxNzE2NDA0NloXDTIxMDMxNzE2NDA0Nlow\n" + 
@@ -96,39 +96,41 @@ public class CaImportMsCaCertificatesSystemTest {
                 "Let's Encrypt Authority X3",
                 Collections.singleton(EJBTools.wrap(CertTools.getCertfromByteArray(issuerCertificatePem.getBytes(), X509Certificate.class)))
         );
-        
-        final int certificateProfileId = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class).addCertificateProfile(
-                getAuthenticationToken(), 
-                "MS_CA_CertificateTemplate", 
-                new CertificateProfile()
+        createProfilesForTemplate("MS_CA_CertificateTemplate");
+        createProfilesForTemplate("Kerberos Authentication");
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        removeProfiles("MS_CA_CertificateTemplate");
+        removeProfiles("Kerberos Authentication");
+        final Map<String, Integer> nameToId = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class)
+                .getAuthorizedCaNamesToIds(getAuthenticationToken());
+        final CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(
+                getAuthenticationToken(),
+                nameToId.get("Let's Encrypt Authority X3")
         );
-        
+        CaTestUtils.removeCa(getAuthenticationToken(), cainfo);
+    }
+
+    private void createProfilesForTemplate(String profileName) throws Exception {
+        final int certificateProfileId = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class).addCertificateProfile(
+                getAuthenticationToken(),
+                profileName,
+                new CertificateProfile());
         final EndEntityProfile eeProfile = new EndEntityProfile(true /* add all standard fields */);
         eeProfile.setAvailableCertificateProfileIds(Collections.singleton(certificateProfileId));
         EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).addEndEntityProfile(
                 getAuthenticationToken(),
-                "MS_CA_CertificateTemplate", 
-                eeProfile
-        );
+                profileName,
+                eeProfile);
     }
-    
-    @After
-    public void tearDown() throws Exception {
-        EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).removeEndEntityProfile(
-                getAuthenticationToken(), 
-                "MS_CA_CertificateTemplate"
-        );
-        EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class).removeCertificateProfile(
-                getAuthenticationToken(), 
-                "MS_CA_CertificateTemplate"
-        );
-        final Map<String, Integer> nameToId = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class)
-                .getAuthorizedCaNamesToIds(getAuthenticationToken());
-        final CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(
-                getAuthenticationToken(), 
-                nameToId.get("Let's Encrypt Authority X3")
-        );
-        CaTestUtils.removeCa(getAuthenticationToken(), cainfo);
+
+    private void removeProfiles(final String profileName) throws Exception {
+        EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class)
+                .removeEndEntityProfile(getAuthenticationToken(), profileName);
+        EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class)
+                .removeCertificateProfile(getAuthenticationToken(), profileName);
     }
 
     @Test
@@ -680,6 +682,77 @@ public class CaImportMsCaCertificatesSystemTest {
             }
             EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST)
                         .removeCertificate("335bdc0a32f9e239e468fb79e1380e017fc5f8be");
+        }
+    }
+
+    @Test
+    public void testImportTemplateWithSpaces() throws Exception {
+        final File file = File.createTempFile("certutil_dump_", ".txt");
+        try {
+            final String testData = "\n" + "Schema:\n" + "  Column Name                   Localized Name                Type    MaxLength\n"
+                    + "  ----------------------------  ----------------------------  ------  ---------\n"
+                    + "  UPN                           User Principal Name           String  2048 -- Indexed\n"
+                    + "  CertificateTemplate           Certificate Template          String  254 -- Indexed\n"
+                    + "  Request.Disposition           Request Disposition           Long    4 -- Indexed\n"
+                    + "  RawCertificate                Binary Certificate            Binary  16384\n"
+                    + "\n"
+                    + "Row 1:\n"
+                    + "  User Principal Name: EMPTY\n"
+                    + "  Certificate Template: \"1.2.3.4.5.6.7.8.9\" Kerberos Authentication\n"
+                    + "  Request Disposition: 0x14 (20) -- Issued\n"
+                    + "  Binary Certificate:\n"
+                    + "-----BEGIN CERTIFICATE-----\n"
+                    + "MIIFXzCCBEegAwIBAgISAynXG4dEDCZRWyqSA/CNv2O8MA0GCSqGSIb3DQEBCwUA\n"
+                    + "MEoxCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MSMwIQYDVQQD\n"
+                    + "ExpMZXQncyBFbmNyeXB0IEF1dGhvcml0eSBYMzAeFw0xOTA4MjYyMTA0NTlaFw0x\n"
+                    + "OTExMjQyMTA0NTlaMBgxFjAUBgNVBAMTDXd3dy5lamJjYS5vcmcwggEiMA0GCSqG\n"
+                    + "SIb3DQEBAQUAA4IBDwAwggEKAoIBAQDZnGWq/pCJHmCJUyYDd+z02I/wVTKTsGG3\n"
+                    + "QMoRO8yvjYUSD2qwJ0riNiBBZamczQHMEi9lMIMLxQTFMdGbaU+aVfH1pR88AJsd\n"
+                    + "cShS1edQxA4s4ZMlVC4ikUbtZ5tZZAuosSdko6sBAVOBSbFR1XDaNlYrG8+NVV4H\n"
+                    + "fA0Pts5BWiltCGJRn7oL+yrOvnnD9a5b8uEM+cN5Yij7gezcmB42rc8VPcFmH/l4\n"
+                    + "LD80z5m8KjzEDA2zC1CgV0YG6AIfkU3NjyEoiP6hhH/OTsHUQcS7h1jYQ4unWacV\n"
+                    + "y+/uRW7MWtaR3WF5SZn8pZ0wJkZLkgRHoMN3C9Zg97R2Crkdadv/AgMBAAGjggJv\n"
+                    + "MIICazAOBgNVHQ8BAf8EBAMCBaAwHQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsGAQUF\n"
+                    + "BwMCMAwGA1UdEwEB/wQCMAAwHQYDVR0OBBYEFCTFE8MCzIVz9jQSg2zxgbvX9wL1\n"
+                    + "MB8GA1UdIwQYMBaAFKhKamMEfd265tE5t6ZFZe/zqOyhMG8GCCsGAQUFBwEBBGMw\n"
+                    + "YTAuBggrBgEFBQcwAYYiaHR0cDovL29jc3AuaW50LXgzLmxldHNlbmNyeXB0Lm9y\n"
+                    + "ZzAvBggrBgEFBQcwAoYjaHR0cDovL2NlcnQuaW50LXgzLmxldHNlbmNyeXB0Lm9y\n"
+                    + "Zy8wIwYDVR0RBBwwGoIJZWpiY2Eub3Jngg13d3cuZWpiY2Eub3JnMEwGA1UdIARF\n"
+                    + "MEMwCAYGZ4EMAQIBMDcGCysGAQQBgt8TAQEBMCgwJgYIKwYBBQUHAgEWGmh0dHA6\n"
+                    + "Ly9jcHMubGV0c2VuY3J5cHQub3JnMIIBBgYKKwYBBAHWeQIEAgSB9wSB9ADyAHcA\n"
+                    + "dH7agzGtMxCRIZzOJU9CcMK//V5CIAjGNzV55hB7zFYAAAFsz/X5oQAABAMASDBG\n"
+                    + "AiEAxAPHY4W84eIE9sfK7vsyFlYW4eFTGQVUmXsLk5SPV0ICIQCoMmmAFII86M2q\n"
+                    + "1/8d9/L5ZAGmD+dJgOLmbZOCeBa4UwB3ACk8UZZUyDlluqpQ/FgH1Ldvv1h6KXLc\n"
+                    + "pMMM9OVFR/R4AAABbM/1+ZAAAAQDAEgwRgIhALVjgDJSRDZY8cBuh0uQgn86Ngxd\n"
+                    + "NXvMsLrfe9W3U4CUAiEA6JoNJwVxhP/WtSgzeVNN6fMuj64uH/3/K8/mUvBDri4w\n"
+                    + "DQYJKoZIhvcNAQELBQADggEBAGbVymSe/daYD0QSVrSQ1xP6AxXmcdQ7qMExBZtt\n"
+                    + "UHZypLdUG+VWtydn0p5wrv4cvrwGs+Me8c7UUp5H0yEM/cvxmgLvyHxzMvts5HNB\n"
+                    + "stK6bnKfO6XwoBCStaFLB6OdEAO+WxuTp3PxUq3xhfKUm8ylWtOUn5CbMDw+KTZq\n"
+                    + "g/AJpJ7dVf/R2ZjZaJIYWBeQTBHbINpQwWO1eDMMHshVuSdVWTzYpnrAypkV+K1i\n"
+                    + "zCdHIbia6zLD6CoWlClMTrP+qakFTCEt497zUn+4W7IRPB5WIotl7iY65aiIPrZH\n"
+                    + "qQVM8q8ClLXRWmzS+ohT8jDbnsSMa5sM4/HCxORE70WdYHc=\n"
+                    + "-----END CERTIFICATE-----\n";
+
+            FileUtils.writeStringToFile(file, testData, StandardCharsets.UTF_16, false);
+            final String[] args = new String[] {
+                    "--caname", "Let's Encrypt Authority X3",
+                    "-f", file.getAbsolutePath(),
+            };
+            assertEquals("Import of certificate dump failed.", CommandResult.SUCCESS, new CaImportMsCaCertificates().execute(args));
+            final X509Certificate certificate = (X509Certificate) EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class)
+                    .findCertificateByFingerprint("335bdc0a32f9e239e468fb79e1380e017fc5f8be");
+            assertNotNull("Certificate should be imported.", certificate);
+            assertTrue("User should be created.", EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class)
+                    .existsUser(certificate.getSerialNumber().toString()));
+        } finally {
+            FileUtils.deleteQuietly(file);
+            if (EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class)
+                    .existsUser("275574361793664725982328236281411623936956")) {
+                EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).deleteUser(getAuthenticationToken(),
+                        "275574361793664725982328236281411623936956");
+            }
+            EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST)
+                    .removeCertificate("335bdc0a32f9e239e468fb79e1380e017fc5f8be");
         }
     }
 }

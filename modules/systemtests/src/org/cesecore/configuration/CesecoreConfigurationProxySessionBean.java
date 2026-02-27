@@ -14,7 +14,6 @@ package org.cesecore.configuration;
 
 import org.cesecore.config.ConfigurationHolder;
 
-import com.keyfactor.util.StringTools;
 import com.keyfactor.util.string.StringConfigurationCache;
 
 import jakarta.ejb.Stateless;
@@ -35,13 +34,7 @@ public class CesecoreConfigurationProxySessionBean implements CesecoreConfigurat
         return ConfigurationHolder.getExpandedString(key);
     }
 
-    @Override
-    public void setForbiddenCharacters(char[] forbiddenCharacters) {
-        StringConfigurationCache.INSTANCE.setForbiddenCharacters(forbiddenCharacters);
-        StringTools.CharSet.reset(); // reset reading of forbidden characters of we changed that
-        
-    }
-
+    @Deprecated(since = "9.5.0")
     @Override
     public char[] getForbiddenCharacters() {
         return StringConfigurationCache.INSTANCE.getForbiddenCharacters();

@@ -71,6 +71,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     private static final String AD_LOGIN_PASSWORD = "adLoginPassword";
     private static final String AUTH_KEY_BINDING = "authKeyBinding";
     private static final String POLICY_UPDATE_INTERVAL = "policyUpdateInterval";
+    private static final String CERTIFICATE_TEMPLATE_CACHE_LIFETIME = "certificateTemplateCacheLifetime";
 
     // Trust Manager Type Settings
     private static final String TRUST_MANAGER_TYPE = "trustManagerType";
@@ -92,6 +93,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     public static final int DEFAULT_AD_CONNECTION_PORT = 389;
     public static final int DEFAULT_LDAP_READ_TIMEOUT = 5000; // In milliseconds    
     public static final int DEFAULT_LDAP_CONNECT_TIMEOUT = 5000; // In milliseconds
+    public static final int DEFAULT_CERTIFICATE_TEMPLATE_CACHE_LIFETIME = 60; // In seconds
     
     private static final int MINIMUM_POLICY_UPDATE_INTERVAL = 1; // In hours
     private static final int MAXIMUM_POLICY_UPDATE_INTERVAL = 2147483647; // In hours
@@ -123,7 +125,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
 
     // Not effective in AdminWeb - create MSAE configuration, since alias is null.
     public void initWithDefaults(String alias) {
-        if(StringUtils.isNotEmpty(alias)) {
+        if (StringUtils.isNotEmpty(alias)) {
             alias = alias + ".";
             data.put(alias + MSAE_FOREST_ROOT, "");
             data.put(alias + MSAE_DOMAIN, "");
@@ -147,6 +149,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
             data.put(alias + KEY_EXCHANGE_CERT_PROFILE_NAME, "");
             data.put(alias + MS_TEMPLATE_SETTINGS, new ArrayList<>());
             data.put(alias + POLICY_UPDATE_INTERVAL, String.valueOf(DEFAULT_POLICY_UPDATE_INTERVAL));
+            data.put(alias + CERTIFICATE_TEMPLATE_CACHE_LIFETIME, String.valueOf(DEFAULT_CERTIFICATE_TEMPLATE_CACHE_LIFETIME));
         } else {
             log.debug("No alias found");
         }
@@ -177,6 +180,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
         keys.add(alias + LDAP_CONNECT_TIMEOUT);
         keys.add(alias + LDAP_READ_TIMEOUT);
         keys.add(alias + POLICY_UPDATE_INTERVAL);
+        keys.add(alias + CERTIFICATE_TEMPLATE_CACHE_LIFETIME);
         return keys;
     }
     
@@ -436,6 +440,17 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     public void setMsTemplateSettings(String alias, final List<MSAutoEnrollmentSettingsTemplate> msTemplateSettings) {
         String key = alias + "." + MS_TEMPLATE_SETTINGS;
         data.put(key, msTemplateSettings);
+    }
+
+    public int getCertificateTemplateCacheLifetime(String alias) {
+        String key = alias + "." + CERTIFICATE_TEMPLATE_CACHE_LIFETIME;
+        String value = getValue(key, alias);
+        return value == null ? DEFAULT_CERTIFICATE_TEMPLATE_CACHE_LIFETIME : Integer.parseInt(value);
+    }
+
+    public void setCertificateTemplateCacheLifetime(String alias, final int certificateTemplateCacheLifetime) {
+        String key = alias + "." + CERTIFICATE_TEMPLATE_CACHE_LIFETIME;
+        setValue(key, String.valueOf(certificateTemplateCacheLifetime), alias);
     }
     
     // Aliases

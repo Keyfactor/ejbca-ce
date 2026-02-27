@@ -30,14 +30,14 @@
         <h3><h:outputText value="#{web.text.CMPALIAS}"/> : <h:outputText value="#{editCmpConfigMBean.selectedCmpAlias}"/></h3>
 		
 		 <h:form id="editcmpaliasform">
-            <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%"
+            <h:panelGrid columns="2" styleClass="edit-top ui-md-12"
                          rowClasses="Row0,Row1" columnClasses="editColumnSystem1,editColumn2">
 	           	<h:panelGroup>&nbsp;</h:panelGroup>
 				<h:outputLink value="cmpaliases.xhtml">
 					<h:outputText value="#{web.text.CMPBACKTOALIASES}"/>
 				</h:outputLink>
 
-				<h:panelGroup><h:outputText styleClass="titles" value="#{web.text.NAME}"/></h:panelGroup>
+				<h:panelGroup><h:outputText  value="#{web.text.NAME}"/></h:panelGroup>
 				<h:panelGroup>
 					<h:inputText id="estName" disabled="#{editCmpConfigMBean.viewOnly}"
 								 value="#{editCmpConfigMBean.cmpDto.alias}"
@@ -50,7 +50,7 @@
 				</h:panelGroup>
 	        	<!--  CMP Operational mode  -->
 	            <h:panelGroup>
-	            	<h:outputText value="#{web.text.CMPOPERATIONALMODE}" styleClass="titles"/>
+	            	<h:outputText value="#{web.text.CMPOPERATIONALMODE}" />
 	        		<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CMP.html')}" escape="false"/>
 	        		<br/>
 	      			<h:outputText value="#{web.text.CMPOPERATIONALMODE_HELP}" styleClass="help"/>
@@ -65,7 +65,7 @@
 				
 			    <!--  CMP Authentication Modules  -->
 				<h:panelGroup>
-	            	<h:outputText value="#{web.text.CMPAUTHENTICATIONMODULE}" styleClass="titles"/>
+	            	<h:outputText value="#{web.text.CMPAUTHENTICATIONMODULE}" />
 	        		<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CMP.html')}" escape="false"/>
 	        		<br/>
 	      			<h:outputText value="#{web.text.CMPAUTHENTICATIONMODULE_HELP}" styleClass="help"/>
@@ -136,14 +136,14 @@
          
             <!--  Client Mode   -->
             <h:panelGroup id="clientmode"> 
-                <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%"
+                <h:panelGrid columns="2" styleClass="edit-top ui-md-12"
                              rowClasses="Row0,Row1" columnClasses="editColumnSystem1,editColumn2" rendered="#{!editCmpConfigMBean.cmpDto.raMode}">
                     <h:panelGroup>
                         <h:outputLabel value="#{web.text.CMPCLIENTMODE}" style="font-weight: bold;"/>
                     </h:panelGroup>
     	        	<h:panelGroup>&nbsp;</h:panelGroup>
     	       		<h:panelGroup>
-    	            	<h:outputText value="#{web.text.CMPEXTRCTUSERNAMECOMPONENT}" styleClass="titles"/>
+    	            	<h:outputText value="#{web.text.CMPEXTRCTUSERNAMECOMPONENT}" />
     	        		<br/>
     	      			<h:outputText value="#{web.text.CMPEXTRCTUSERNAMECOMPONENT_HELP}" styleClass="help"/>
     			       	<br/>
@@ -160,20 +160,20 @@
                  <!-- This part of the code needs to be kept for the backward compatibility and due to the customer's requirements. See https://keyfactor.atlassian.net/browse/ECA-13253
                  for more info -->
                  <h:panelGroup>
-                        <h:outputText value="#{web.text.CMPRANAMEGENERATIONPREFIX}" styleClass="titles"/>
+                        <h:outputText value="#{web.text.CMPRANAMEGENERATIONPREFIX}" />
                         <br/>
                         <h:outputText value="#{web.text.CMPRANAMEGENERATIONPREFIX_HELP}" styleClass="help"/>
                     </h:panelGroup>
                     <h:inputText value="#{editCmpConfigMBean.cmpDto.raNameGenPrefix}" disabled="#{editCmpConfigMBean.viewOnly}"/>
                     <h:panelGroup>
-                        <h:outputText value="#{web.text.CMPRANAMEGENERATIONPOSTFIX}" styleClass="titles"/>
+                        <h:outputText value="#{web.text.CMPRANAMEGENERATIONPOSTFIX}" />
                         <br/>
                         <h:outputText value="#{web.text.CMPRANAMEGENERATIONPOSTFIX_HELP}" styleClass="help"/>
                     </h:panelGroup>
                     <h:inputText value="#{editCmpConfigMBean.cmpDto.raNameGenPostfix}" disabled="#{editCmpConfigMBean.viewOnly}"/>
 
                 	<h:panelGroup rendered="#{web.ejbcaWebBean.runningEnterprise}">
-    	        		<h:outputText value="#{web.text.CMPVENDORCERT}" styleClass="titles"/>
+    	        		<h:outputText value="#{web.text.CMPVENDORCERT}" />
      			       	<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CMP.html')}" escape="false"/>
     	        		<br/>
     	      			<h:outputText value="#{web.text.CMPVENDORCERT_USE_HELP}" styleClass="help"/>
@@ -186,7 +186,7 @@
     	            	</p:selectBooleanCheckbox>
                 	</h:panelGroup>
     	        	<h:panelGroup rendered="#{web.ejbcaWebBean.runningEnterprise}">
-    	        		<h:outputText value="#{web.text.CMPVENDORCERT_VENDORCAS}" styleClass="titles"/>
+    	        		<h:outputText value="#{web.text.CMPVENDORCERT_VENDORCAS}" />
     			       	<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CMP.html')}" escape="false"/>
     	        		<br/>
     	      			<h:outputText value="#{web.text.CMPVENDORCERT_VENDORCAS_HELP}" styleClass="help"/>
@@ -214,14 +214,14 @@
         
             <!--  RA Mode   -->
             <h:panelGroup id="ramode"> 
-                <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%"
+                <h:panelGrid columns="2" styleClass="edit-top ui-md-12"
                              rowClasses="Row0,Row1" columnClasses="editColumnSystem1,editColumn2" rendered="#{editCmpConfigMBean.cmpDto.raMode}">
                     <h:panelGroup>
                         <h:outputLabel value="#{web.text.CMPRAMODE}" style="font-weight: bold;"/>
                     </h:panelGroup>
     	        	<h:panelGroup>&nbsp;</h:panelGroup>
     	        	<h:panelGroup>
-    	        		<h:outputText value="#{web.text.CMPALLOWVERIFYPOPO}" styleClass="titles"/>
+    	        		<h:outputText value="#{web.text.CMPALLOWVERIFYPOPO}" />
     	        		<br/>
     	      			<h:outputText value="#{web.text.CMPALLOWVERIFYPOPO_HELP}" styleClass="help"/>
     	        	</h:panelGroup>
@@ -230,7 +230,7 @@
 							itemLabel="#{web.text.ALLOW}"/>
     	        	</h:panelGroup>
     	        	<h:panelGroup>
-    	        		<h:outputText value="#{web.text.CMPRANAMEGENERATIONSCHEME}" styleClass="titles"/>
+    	        		<h:outputText value="#{web.text.CMPRANAMEGENERATIONSCHEME}" />
     	        		<br/>
     	      			<h:outputText value="#{web.text.CMPRANAMEGENERATIONSCHEME_HELP}" styleClass="help"/>
             			<br/>
@@ -269,25 +269,25 @@
     	            	<h:outputText id="selectedranameschemednparts" value="#{editCmpConfigMBean.cmpDto.raNameGenParams}" rendered="#{editCmpConfigMBean.cmpDto.raNameGenScheme eq 'DN'}"/>
     	        	</h:panelGroup>
     	        	<h:panelGroup>
-    	        		<h:outputText value="#{web.text.CMPRANAMEGENERATIONPREFIX}" styleClass="titles"/>
+    	        		<h:outputText value="#{web.text.CMPRANAMEGENERATIONPREFIX}" />
     	        		<br/>
     	      			<h:outputText value="#{web.text.CMPRANAMEGENERATIONPREFIX_HELP}" styleClass="help"/>
     	        	</h:panelGroup>
     	        	<h:inputText value="#{editCmpConfigMBean.cmpDto.raNameGenPrefix}" disabled="#{editCmpConfigMBean.viewOnly}"/>
        		       	<h:panelGroup>
-    	        		<h:outputText value="#{web.text.CMPRANAMEGENERATIONPOSTFIX}" styleClass="titles"/>
+    	        		<h:outputText value="#{web.text.CMPRANAMEGENERATIONPOSTFIX}" />
     	        		<br/>
     	      			<h:outputText value="#{web.text.CMPRANAMEGENERATIONPOSTFIX_HELP}" styleClass="help"/>
     	        	</h:panelGroup>
     	        	<h:inputText value="#{editCmpConfigMBean.cmpDto.raNameGenPostfix}" disabled="#{editCmpConfigMBean.viewOnly}"/>
     	        	<h:panelGroup>
-    	        		<h:outputText value="#{web.text.CMPRAPASSWORDGENPARAMS}" styleClass="titles"/>
+    	        		<h:outputText value="#{web.text.CMPRAPASSWORDGENPARAMS}" />
     	        		<br/>
     	      			<h:outputText value="#{web.text.CMPRAPASSWORDGENPARAMS_HELP}" styleClass="help"/>
     	        	</h:panelGroup>
     	        	<h:inputText id="rapwdgeninputfield" value="#{editCmpConfigMBean.cmpDto.raPwdGenParams}" disabled="#{editCmpConfigMBean.viewOnly}"/>
     	        	<h:panelGroup>
-    	        		<h:outputText value="#{web.text.CMPRAALLOWCUSTOMSERNO}" styleClass="titles"/>
+    	        		<h:outputText value="#{web.text.CMPRAALLOWCUSTOMSERNO}" />
     	        		<br/>
     	      			<h:outputText value="#{web.text.CMPRAALLOWCUSTOMSERNO_HELP}" styleClass="help"/>
     	      			<br/>
@@ -298,7 +298,7 @@
 							itemLabel="#{web.text.ALLOW}"/>
     	        	</h:panelGroup>
     	        	<h:panelGroup>
-    	        		<h:outputText value="#{web.text.CMPRAEEPROFILE}" styleClass="titles"/>
+    	        		<h:outputText value="#{web.text.CMPRAEEPROFILE}" />
     	        		<br/>
     	      			<h:outputText value="#{web.text.CMPRAEEPROFILE_HELP}" styleClass="help"/>
          			</h:panelGroup>
@@ -307,7 +307,7 @@
     	        		<f:ajax event="change" update="@this" render="editcmpaliasform:selectcertprofilemenu selectracamenu"/>
     	        	</h:selectOneMenu>
             		<h:panelGroup>
-    	        		<h:outputText value="#{web.text.CMPRACERTPROFILE}" styleClass="titles"/>
+    	        		<h:outputText value="#{web.text.CMPRACERTPROFILE}" />
     	        		<br/>
     	      			<h:outputText value="#{web.text.CMPRACERTPROFILE_HELP}" styleClass="help"/>
     	      			<br/>
@@ -317,7 +317,7 @@
     	        		<f:selectItems value="#{editCmpConfigMBean.raCertProfileSelectItems}"/>
     	        	</h:selectOneMenu>
     	        	<h:panelGroup>
-    	        		<h:outputText value="#{web.text.CMPRACANAME}" styleClass="titles"/>
+    	        		<h:outputText value="#{web.text.CMPRACANAME}" />
     	        		<br/>
     	      			<h:outputText value="#{web.text.CMPRACANAME_HELP}" styleClass="help"/>
     	      			<br/>
@@ -330,14 +330,14 @@
             </h:panelGroup>
        		
        		<!--  Response Configuration  -->
-       		<h:panelGrid id="responseconfiggrid" columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%"
+       		<h:panelGrid id="responseconfiggrid" columns="2" styleClass="edit-top ui-md-12"
                          rowClasses="Row0,Row1" columnClasses="editColumnSystem1,editColumn2">
                 <h:panelGroup>
                     <h:outputLabel value="#{web.text.CMPRESPONSECONFIGURATION}" style="font-weight: bold;"/>
                 </h:panelGroup>
 	        	<h:panelGroup>&nbsp;</h:panelGroup>
 	        	<h:panelGroup>
-	        		<h:outputText value="#{web.text.CMPRESPONSEPROTECTION}" styleClass="titles"/>
+	        		<h:outputText value="#{web.text.CMPRESPONSEPROTECTION}" />
         			<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CMP.html')}" escape="false"/>
 	        		<br/>
 	      			<h:outputText value="#{web.text.CMPRESPONSEPROTECTION_HELP}" styleClass="help"/>
@@ -348,7 +348,7 @@
       			</h:selectOneMenu>
 	        	
 	        	<h:panelGroup>
-	        		<h:outputText value="#{web.text.CMPRESPONSECAPUBS}" styleClass="titles"/>
+	        		<h:outputText value="#{web.text.CMPRESPONSECAPUBS}" />
         			<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CMP.html')}" escape="false"/>
 	        		<br/>
 	      			<h:outputText value="#{web.text.CMPRESPONSECAPUBS_HELP}" styleClass="help"/>
@@ -379,7 +379,7 @@
       			</h:panelGroup>
 	        	
 	        	<h:panelGroup rendered="#{editCmpConfigMBean.responseProtection ne 'pbe'}">
-	        		<h:outputText value="#{web.text.PKIRESPONSEMESSAGE_EXTRACERTS}" styleClass="titles"/>
+	        		<h:outputText value="#{web.text.PKIRESPONSEMESSAGE_EXTRACERTS}" />
         			<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CMP.html')}" escape="false"/>
 	        		<br/>
 	      			<h:outputText value="#{web.text.PKIRESPONSEMESSAGE_EXTRACERTS_HELP}" styleClass="help"/>
@@ -406,14 +406,14 @@
        		
        		<!--  Certificate Confirmation  -->
        		<h:panelGroup id="certconfirmationgrid"> <!-- Wrapper required to point ajax render update -->
-	         	<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%"
+	         	<h:panelGrid columns="2" styleClass="edit-top ui-md-12"
 	            		rendered="#{editCmpConfigMBean.responseProtection ne 'pbe'}" rowClasses="Row0,Row1" columnClasses="editColumnSystem1,editColumn2">
 	                <h:panelGroup>
 	                    <h:outputLabel value="#{web.text.CMPCONFIRMATIONMESSAGE}" style="font-weight: bold;"/>
 	                </h:panelGroup>
 		        	<h:panelGroup>&nbsp;</h:panelGroup>
 		        	<h:panelGroup>
-		        		<h:outputText value="#{web.text.CMPDEFAULTCA}" styleClass="titles"/>
+		        		<h:outputText value="#{web.text.CMPDEFAULTCA}" />
 		        		<br/>
 		      			<h:outputText value="#{web.text.CMPDEFAULTCA_HELP}" styleClass="help"/>
 	      			</h:panelGroup>
@@ -424,14 +424,14 @@
          	</h:panelGroup>
          	
          	<!--  Key Update Request  -->
-         	<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%"
+         	<h:panelGrid columns="2" styleClass="edit-top ui-md-12"
                          rowClasses="Row0,Row1" columnClasses="editColumnSystem1,editColumn2">
                 <h:panelGroup>
                     <h:outputLabel value="#{web.text.CMPKEYUPDATEREQUEST}" style="font-weight: bold;"/>
                 </h:panelGroup>
 	        	<h:panelGroup>&nbsp;</h:panelGroup>
 	        	<h:panelGroup>
-	        		<h:outputText value="#{web.text.CMPALLOWAUTOMATICKEYUPDATE}" styleClass="titles"/>
+	        		<h:outputText value="#{web.text.CMPALLOWAUTOMATICKEYUPDATE}" />
         			<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CMP.html')}" escape="false"/>
 	        		<br/>
 	      			<h:outputText value="#{web.text.CMPALLOWAUTOMATICKEYUPDATE_HELP}" styleClass="help"/>
@@ -440,7 +440,7 @@
 	      			<p:selectBooleanCheckbox value="#{editCmpConfigMBean.cmpDto.kurAllowAutomaticUpdate}" disabled="#{editCmpConfigMBean.viewOnly}" itemLabel="#{web.text.ALLOW}"/>
    				</h:panelGroup>
    				<h:panelGroup>
-	        		<h:outputText value="#{web.text.CMPALLOWKURWITHSAMEKEY}" styleClass="titles"/>
+	        		<h:outputText value="#{web.text.CMPALLOWKURWITHSAMEKEY}" />
         			<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CMP.html')}" escape="false"/>
 	        		<br/>
 	      			<h:outputText value="#{web.text.CMPALLOWKURWITHSAMEKEY_HELP}" styleClass="help"/>
@@ -451,14 +451,14 @@
          	</h:panelGrid>
          	
          	<!--  Server Generated Keys  -->
-         	<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%"
+         	<h:panelGrid columns="2" styleClass="edit-top ui-md-12"
                          rowClasses="Row0,Row1" columnClasses="editColumnSystem1,editColumn2">
                 <h:panelGroup>
                     <h:outputLabel value="#{web.text.CMPSERVERGENKEYS}" style="font-weight: bold;"/>
                 </h:panelGroup>
 	        	<h:panelGroup>&nbsp;</h:panelGroup>
 	        	<h:panelGroup>
-	        		<h:outputText value="#{web.text.CMPALLOWSERVERGENERATEDKEYS}" styleClass="titles"/>
+	        		<h:outputText value="#{web.text.CMPALLOWSERVERGENERATEDKEYS}" />
         			<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CMP.html')}" escape="false"/>
 	        		<br/>
 	      			<h:outputText value="#{web.text.CMPALLOWSERVERGENERATEDKEYS_HELP}" styleClass="help"/>
@@ -469,21 +469,21 @@
 			</h:panelGrid>
    			
    			<!--  Nested Message  -->
-   			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%"
+   			<h:panelGrid columns="2" styleClass="edit-top ui-md-12"
                          rowClasses="Row0,Row1" columnClasses="editColumnSystem1,editColumn2">
                 <h:panelGroup>
                     <h:outputLabel value="#{web.text.CMPNESTEDMESSAGECONTENT}" style="font-weight: bold;"/>
                 </h:panelGroup>
 	        	<h:panelGroup>&nbsp;</h:panelGroup>
 	        	<h:panelGroup>
-	        		<h:outputText value="#{web.text.CMPTRUSTEDCERTPATH}" styleClass="titles"/>
+	        		<h:outputText value="#{web.text.CMPTRUSTEDCERTPATH}" />
         			<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CMP.html')}" escape="false"/>
 	        		<br/>
 	      			<h:outputText value="#{web.text.CMPTRUSTEDCERTPATH_HELP}" styleClass="help"/>
       			</h:panelGroup>
       			<h:inputText value="#{editCmpConfigMBean.cmpDto.raCertPath}" disabled="#{editCmpConfigMBean.viewOnly}"/>
       			<h:panelGroup rendered="#{editCmpConfigMBean.cmpDto.raMode}">
-	        		<h:outputText value="#{web.text.CMPOMITVERIFICATIONSINECC}" styleClass="titles"/>
+	        		<h:outputText value="#{web.text.CMPOMITVERIFICATIONSINECC}" />
 	        		<br/>
 	      			<h:outputText value="#{web.text.CMPOMITVERIFICATIONSINECC_HELP}" styleClass="help"/>
 	      			<br/>
@@ -497,7 +497,7 @@
    			</h:panelGrid>
 
             <!--  Other Configuration  -->
-            <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%"
+            <h:panelGrid columns="2" styleClass="edit-top ui-md-12"
                          rowClasses="Row0,Row1" columnClasses="editColumnSystem1,editColumn2"
 						 rendered="#{editCmpConfigMBean.showExtendedConfiguration}">
                 <h:panelGroup>
@@ -505,7 +505,7 @@
                 </h:panelGroup>
                 <h:panelGroup>&nbsp;</h:panelGroup>
                 <h:panelGroup>
-                    <h:outputText value="#{web.text.CMPEXTENDEDVALIDATION}" styleClass="titles"/>
+                    <h:outputText value="#{web.text.CMPEXTENDEDVALIDATION}" />
                     <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CMP.html')}" escape="false"/>
                     <br/>
                     <h:outputText value="#{web.text.CMPEXTENDEDVALIDATION_HELP}" styleClass="help"/>
@@ -516,7 +516,7 @@
             </h:panelGrid>
 
          	<!-- Save & Cancel -->
-       		<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%"
+       		<h:panelGrid columns="2" styleClass="edit-top ui-md-12"
                        rowClasses="Row0,Row1" columnClasses="editColumnSystem1,editColumn2">
 	       		<h:panelGroup>&nbsp;</h:panelGroup>
 	         	<h:panelGroup>
