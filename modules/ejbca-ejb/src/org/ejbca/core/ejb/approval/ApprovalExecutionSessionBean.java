@@ -298,7 +298,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
                 throw new AdminAlreadyApprovedRequestException(msg);
             }
         }
-        // Check that his admin has not approved this partition before
+        // Check that this admin has not approved this partition before
         for (Approval existingApproval : approvalInformation.getApprovals()) {
             if (existingApproval.getStepId() == approval.getStepId() 
                     && existingApproval.getPartitionId() == approval.getPartitionId()

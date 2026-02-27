@@ -1,0 +1,139 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+package org.ejbca.ui.web.rest.api.io.response;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import org.ejbca.core.model.approval.ApprovalRequestStatus;
+
+import java.util.List;
+
+/**
+ * Response containing the result of processing an approval request.
+ */
+@Schema(name = "ProcessApprovalRestResponse", description = "Response after processing an approval request")
+public class ProcessApprovalRestResponse {
+
+    @Schema(description = "The unique identifier of the approval request", example = "1234")
+    private String requestId;
+
+    @Schema(description = "The type of the approval request", example = "Add End Entity")
+    private String requestType;
+
+    @Schema(description = "The date when the request was created", example = "2025-01-01 13:59:00+01:00")
+    private String requestDate;
+
+    @Schema(description = "The date when the request expires", example = "2025-01-02 13:59:00+01:00")
+    private String expirationDate;
+
+    @Schema(description = "The end entity name associated with the request", example = "username")
+    private String endEntityName;
+
+    @Schema(description = "The status of the approval request",
+            example = "PENDING",
+            allowableValues = {"PENDING", "APPROVED", "REJECTED", "EXPIRED", "EXPIRED_AND_NOTIFIED", "EXECUTED", "EXECUTION_FAILED", "EXECUTION_DENIED"})
+    private ApprovalRequestStatus status;
+
+    @Schema(description = "The list of approval steps with their status")
+    private List<ApprovalStepRestResponse> steps;
+
+    private ProcessApprovalRestResponse(final Builder builder) {
+        this.requestId = builder.requestId;
+        this.requestType = builder.requestType;
+        this.requestDate = builder.requestDate;
+        this.expirationDate = builder.expirationDate;
+        this.endEntityName = builder.endEntityName;
+        this.status = builder.status;
+        this.steps = builder.steps;
+    }
+
+    public String getRequestId() {
+        return requestId;
+    }
+
+    public String getRequestType() {
+        return requestType;
+    }
+
+    public String getRequestDate() {
+        return requestDate;
+    }
+
+    public String getExpirationDate() {
+        return expirationDate;
+    }
+
+    public String getEndEntityName() {
+        return endEntityName;
+    }
+
+    public ApprovalRequestStatus getStatus() {
+        return status;
+    }
+
+    public List<ApprovalStepRestResponse> getSteps() {
+        return steps;
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private String requestId;
+        private String requestType;
+        private String requestDate;
+        private String expirationDate;
+        private String endEntityName;
+        private ApprovalRequestStatus status;
+        private List<ApprovalStepRestResponse> steps;
+
+        public Builder requestId(final String requestId) {
+            this.requestId = requestId;
+            return this;
+        }
+
+        public Builder requestType(final String requestType) {
+            this.requestType = requestType;
+            return this;
+        }
+
+        public Builder requestDate(final String requestDate) {
+            this.requestDate = requestDate;
+            return this;
+        }
+
+        public Builder expirationDate(final String expirationDate) {
+            this.expirationDate = expirationDate;
+            return this;
+        }
+
+        public Builder endEntityName(final String endEntityName) {
+            this.endEntityName = endEntityName;
+            return this;
+        }
+
+        public Builder status(final ApprovalRequestStatus status) {
+            this.status = status;
+            return this;
+        }
+
+        public Builder steps(final List<ApprovalStepRestResponse> steps) {
+            this.steps = steps;
+            return this;
+        }
+
+        public ProcessApprovalRestResponse build() {
+            return new ProcessApprovalRestResponse(this);
+        }
+    }
+}
