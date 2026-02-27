@@ -149,6 +149,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private static final String INVALID_KEK_ERROR_MESSAGE = "Key encryption key must be set to RSA key to allow key export.";
     private static final HashSet<String> ALLOWED_KEK_TYPES = new HashSet<>(Arrays.asList(new String[] {"RSA"}));
     private static final String CERTIFICATE_UNAVAILABLE = "Certificate unavailable";
+    private final static String HIDDEN_KF_ENROLL_CA_CLIENT_SECRET = "*********";
+
     @EJB
     private CaSessionLocal caSession;
     @EJB
@@ -2862,6 +2864,17 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
     public boolean getHasAnyHeader() {
         return caInfoDto.getHeaders().size() > 0;
+    }
+
+    public String getOauthClientSecret() {
+        // can never see the client secret
+        return HIDDEN_KF_ENROLL_CA_CLIENT_SECRET;
+    }
+
+    public void setOauthClientSecret(String newPassword) {
+        if(!newPassword.equals(HIDDEN_KF_ENROLL_CA_CLIENT_SECRET)) {
+            caInfoDto.setOauthClientSecret(newPassword);
+        }
     }
 
     public CAInterfaceBean getCaBean() {

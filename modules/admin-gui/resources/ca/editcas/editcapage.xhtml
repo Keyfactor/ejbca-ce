@@ -2477,7 +2477,7 @@
                 <h:panelGroup>
                     <h:inputSecret rendered="#{editCAsMBean.editCA and editCAsMBean.hasEditRight}"
                                    id="textFieldOauthClientSecret" name="oauthClientSecret" size="25" maxlength="225" redisplay="true"
-                                   value="#{editCAsMBean.caInfoDto.oauthClientSecret}" title="#{web.text.OAUTH_CLIENT_SECRET}">
+                                   value="#{editCAsMBean.oauthClientSecret}" title="#{web.text.OAUTH_CLIENT_SECRET}">
                         <f:ajax/>
                         <f:passThroughAttribute name="autocomplete" value="new-password"/>
                     </h:inputSecret>
