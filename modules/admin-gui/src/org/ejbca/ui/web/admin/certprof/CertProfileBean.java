@@ -631,6 +631,14 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         getCertificateProfile().setAlternativeSignatureAlgorithm(sigAlg);
     }
 
+    public boolean isUseSignatureVerification() {
+        return getCertificateProfile().getUseSignatureVerification();
+    }
+
+    public void setUseSignatureVerification(final boolean useSignatureVerification) {
+        getCertificateProfile().setUseSignatureVerification(useSignatureVerification);
+    }
+
     /**
      * Gets the validity.
      * @return the validity as ISO8601 date or relative time.
