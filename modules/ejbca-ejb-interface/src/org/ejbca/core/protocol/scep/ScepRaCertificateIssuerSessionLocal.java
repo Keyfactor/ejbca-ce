@@ -34,8 +34,8 @@ public interface ScepRaCertificateIssuerSessionLocal {
      * @return the encryption certificate
      * @throws ScepEncryptionCertificateIssuanceException if any error happened during issuance
      */
-    X509Certificate issueEncryptionCertificate(AuthenticationToken authenticationToken, String caName, int cryptoTokenId,
-            String keyAlias) throws ScepEncryptionCertificateIssuanceException;
+    //X509Certificate issueEncryptionCertificate(AuthenticationToken authenticationToken, String caName, int cryptoTokenId,
+    //        String keyAlias) throws ScepEncryptionCertificateIssuanceException;
 
     /**
      * Creates a SCEP encryption certificate using an internal certificate profile
@@ -62,8 +62,8 @@ public interface ScepRaCertificateIssuerSessionLocal {
      * @return the signing certificate
      * @throws ScepEncryptionCertificateIssuanceException if any error happened during issuance
      */
-    X509Certificate issueSigningCertificate(AuthenticationToken authenticationToken, String caName, int cryptoTokenId,
-            String keyAlias) throws ScepEncryptionCertificateIssuanceException;
+    //X509Certificate issueSigningCertificate(AuthenticationToken authenticationToken, String caName, int cryptoTokenId,
+    //        String keyAlias) throws ScepEncryptionCertificateIssuanceException;
 
     /**
      * Creates a SCEP signing certificate using an internal certificate profile

@@ -63,23 +63,11 @@ public class ScepRaCertificateIssuerSessionBean implements ScepRaCertificateIssu
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
     @EJB
     private EndEntityManagementSessionLocal endEntityManagementSession;
-    
-    @Override
-    public X509Certificate issueEncryptionCertificate(AuthenticationToken authenticationToken, String caName, int cryptoTokenId,
-                                                      String keyAlias) throws ScepEncryptionCertificateIssuanceException {
-        return issueCertificate(authenticationToken, caName, cryptoTokenId, keyAlias, CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_ENCRYPTOR, null, null);
-    }
 
     @Override
     public X509Certificate issueEncryptionCertificate(AuthenticationToken authenticationToken, String caName, int cryptoTokenId,
                                                       String keyAlias, String signingAlgorithm, String templateName) throws ScepEncryptionCertificateIssuanceException {
         return issueCertificate(authenticationToken, caName, cryptoTokenId, keyAlias, CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_ENCRYPTOR, signingAlgorithm, templateName);
-    }
-
-    @Override
-    public X509Certificate issueSigningCertificate(AuthenticationToken authenticationToken, String caName, int cryptoTokenId,
-                                                   String keyAlias) throws ScepEncryptionCertificateIssuanceException {
-        return issueCertificate(authenticationToken, caName, cryptoTokenId, keyAlias, CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_SIGNER, null, null);
     }
 
     @Override
