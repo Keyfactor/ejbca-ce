@@ -29,13 +29,16 @@ import com.keyfactor.util.certificate.CertificateWrapper;
 import com.keyfactor.util.certificate.DnComponents;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
@@ -59,6 +62,7 @@ import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -90,12 +94,30 @@ public class KeyImportSystemTest extends CaTestCase {
     private static final InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class);
     private static final KeyRecoverySessionRemote keyRecoverySession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyRecoverySessionRemote.class);
     private static final TestRaMasterApiProxySessionRemote testRaMasterApiSessionBean = EjbRemoteHelper.INSTANCE.getRemoteSession(TestRaMasterApiProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-            
+    private static final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(GlobalConfigurationSessionRemote.class);
+    
     private AuthenticationToken authenticationToken;
+    private static boolean wasKeyRecoveryEnabled = false;
 
     @BeforeClass
-    public static void beforeClass() {
+    public static void beforeClass() throws AuthorizationDeniedException {
         CryptoProviderTools.installBCProvider();
+        
+        GlobalConfiguration configuration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        wasKeyRecoveryEnabled = configuration.getEnableKeyRecovery();
+        configuration.setEnableKeyRecovery(true);
+        globalConfigurationSession.saveConfiguration(
+                new TestAlwaysAllowLocalAuthenticationToken("KeyImportSystemTest"), configuration);
+        
+    }
+    
+    @AfterClass
+    public static void afterClass() throws Exception {
+        GlobalConfiguration configuration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        configuration.setEnableKeyRecovery(wasKeyRecoveryEnabled);
+        globalConfigurationSession.saveConfiguration(
+                new TestAlwaysAllowLocalAuthenticationToken("KeyImportSystemTest"), configuration);
     }
 
     @Override
