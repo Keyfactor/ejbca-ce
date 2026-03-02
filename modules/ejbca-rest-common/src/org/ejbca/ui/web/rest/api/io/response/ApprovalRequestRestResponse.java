@@ -395,7 +395,7 @@ public class ApprovalRequestRestResponse extends ProcessApprovalRestResponse {
                 .steps(steps);
         if (requestInfo.getNextApprovalStep() != null) {
             final ApprovalStepRestResponse nextStep = buildStepPartition(requestInfo.getNextApprovalStep().getStepIdentifier(),
-                    requestInfo.getNextApprovalStepPartition(), 1, requestInfo.getApprovalData().getApprovals(),
+                    requestInfo.getNextApprovalStepPartition(), steps.size() + 1, requestInfo.getApprovalData().getApprovals(),
                     requestInfo.getApprovalProfile(), status.getValue());
             builder.nextStep(nextStep);
         }
