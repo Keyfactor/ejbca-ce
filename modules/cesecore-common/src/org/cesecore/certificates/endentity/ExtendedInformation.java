@@ -151,7 +151,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     private static final String SCEP_CACHED_APROVAL_TYPE = "SCEP_CACHED_APROVAL_TYPE";
     // ** External account binding id
     private static final String ACCOUNT_BINDING_ID = "ACCOUNT_BINDING_ID";
-    private static final String KEY_ALIAS = INTERNAL_KEY_PREFIX+"key_alias";
+    private static final String PROXY_CA_SCEP_KEY_ALIAS = INTERNAL_KEY_PREFIX+"proxy_ca_scep_key_alias";
     private static final String CRYPTO_TOKEN_ID = INTERNAL_KEY_PREFIX+"crypto_token_id";
     private static final String SIGNING_ALGORITHM = INTERNAL_KEY_PREFIX+"signing_algorithm";
     private static final String TEMPLATE_NAME = INTERNAL_KEY_PREFIX+"template_name";
@@ -924,12 +924,12 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         data.put(CA_NAME, caName);
     }
 
-    public String getKeyAlias() {
-        return (String) data.get(KEY_ALIAS);
+    public String getProxyCaScepKeyAlias() {
+        return (String) data.get(PROXY_CA_SCEP_KEY_ALIAS);
     }
 
-    public void setKeyAlias(String keyAlias) {
-        data.put(KEY_ALIAS, keyAlias);
+    public void setProxyCaScepKeyAlias(String proxyCaScepKeyAlias) {
+        data.put(PROXY_CA_SCEP_KEY_ALIAS, proxyCaScepKeyAlias);
     }
 
     public Integer getCryptoTokenId() {

@@ -178,10 +178,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             Collection<Certificate> cachain = new ArrayList<>();
             Certificate cacert = null;
             PrivateKey signingKey = null;
-            if (ca.getCAType() == CAInfo.CATYPE_PROXY) {
-                log.info("Creating certificate for proxy CA " + ca.getName());
-            }
-            else {
+            if (ca.getCAType() != CAInfo.CATYPE_PROXY) {
                 if (ca.getUseNextCACert(requestMessage)) {
                     alias = catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT);
                     cachain = ca.getRolloverCertificateChain();
@@ -649,6 +646,12 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             String serialNo = "unknown";
             for (int retrycounter = 0; retrycounter < maxRetrys; retrycounter++) {
                 CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
+                if (cryptoToken == null &&
+                        endEntityInformation != null &&
+                        endEntityInformation.getExtendedInformation() != null &&
+                        endEntityInformation.getExtendedInformation().getCryptoTokenId() != null) {
+                    cryptoToken = cryptoTokenManagementSession.getCryptoToken(endEntityInformation.getExtendedInformation().getCryptoTokenId());
+                }
                 if (cryptoToken==null && ca.getCAType() != CAInfo.CATYPE_PROXY) {
                     final String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getCAId());
                     log.info(msg);
@@ -671,12 +674,6 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                             // Error
                             throw new CertificateCreateException(ErrorCode.BAD_REQUEST, "Can't use alternative public key with this CA type");
                         } else {
-                            if (cryptoToken == null &&
-                                    endEntityInformation != null &&
-                                    endEntityInformation.getExtendedInformation() != null &&
-                                    endEntityInformation.getExtendedInformation().getCryptoTokenId() != null) {
-                                cryptoToken = cryptoTokenManagementSession.getCryptoToken(endEntityInformation.getExtendedInformation().getCryptoTokenId());
-                            }
                             cert = ca.generateCertificate(cryptoToken, endEntityInformation, request, pk, keyusage, notBefore, notAfter, certProfile,
                                     extensions, sequence, certGenParams, cceConfig);
                         }

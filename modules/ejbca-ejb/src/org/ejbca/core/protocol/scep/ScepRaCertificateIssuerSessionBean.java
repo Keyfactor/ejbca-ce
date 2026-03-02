@@ -110,7 +110,7 @@ public class ScepRaCertificateIssuerSessionBean implements ScepRaCertificateIssu
             endEntityInformation.setTokenType(EndEntityConstants.TOKEN_SOFT_P12);
             endEntityInformation.setCAId(caId);
             endEntityInformation.setExtendedInformation(new ExtendedInformation());
-            endEntityInformation.getExtendedInformation().setKeyAlias(keyAlias);
+            endEntityInformation.getExtendedInformation().setProxyCaScepKeyAlias(keyAlias);
             endEntityInformation.getExtendedInformation().setCryptoTokenId(cryptoTokenId);
             endEntityInformation.getExtendedInformation().setSigningAlgorithm(signingAlgorithm);
             endEntityInformation.getExtendedInformation().setTemplateName(templateName);
