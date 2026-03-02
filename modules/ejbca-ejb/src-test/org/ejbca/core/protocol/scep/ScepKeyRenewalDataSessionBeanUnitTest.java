@@ -149,9 +149,9 @@ public class ScepKeyRenewalDataSessionBeanUnitTest {
 		expect(signingCertificateRenewedMock.getSerialNumber()).andReturn(BigInteger.ZERO);
 		final ScepRaCertificateIssuerSessionLocal scepRaCertificateIssuerMock = EasyMock.createMock(ScepRaCertificateIssuerSessionLocal.class);
 		expect(scepRaCertificateIssuerMock.issueEncryptionCertificate(anyObject(), anyString(), anyInt(),
-				anyString())).andReturn(encryptCertificateRenewedMock);
+				anyString(), anyString(), anyString())).andReturn(encryptCertificateRenewedMock);
 		expect(scepRaCertificateIssuerMock.issueSigningCertificate(anyObject(), anyString(), anyInt(),
-				anyString())).andReturn(signingCertificateRenewedMock);
+				anyString(), anyString(), anyString())).andReturn(signingCertificateRenewedMock);
 		inject(scepKeyRenewalDataSessionBean, "globalConfigSession", globalConfigSessionMock);
 		inject(scepKeyRenewalDataSessionBean, "scepRaCertificateIssuer", scepRaCertificateIssuerMock);
 		replay(globalConfigSessionMock, scepConfigurationMock, encryptCertificateMock, signingCertificateMock,
