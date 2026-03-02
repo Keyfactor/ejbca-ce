@@ -159,7 +159,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
         if (log.isDebugEnabled()) {
             log.debug("loadkeys: " + loadKeys);
         }
-        // TO DO Keyrecovery for hybrid certificates
+        // TO DO Keyrecovery for Chimera/Catalyst certificates
         final int endEntityProfileId = endEntity.getEndEntityProfileId();
         final EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(endEntityProfileId);
         final boolean reuseCertificate = endEntityProfile.getReUseKeyRecoveredCertificate();
@@ -274,7 +274,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
                 }
                 rsaKeys = keyData.getKeyPair();
                 if (altKeyalg != null) {
-                    throw new UnsupportedOperationException("Hybrid keyrecovery is not implemented yet");
+                    throw new UnsupportedOperationException("Chimera/Catalyst key recovery is not implemented yet");
                 }
             } finally {
                 Properties.removeThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS);
@@ -437,7 +437,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
                     log.debug("Generating PKCS12 for user: " + username);
                 }
                 if (altKeys != null) { // TODO EJBCAINTER-789
-                    throw new UnsupportedOperationException("Hybrid keystore support is not implemented yet");
+                    throw new UnsupportedOperationException("Chimera/Catalyst keystore support is not implemented yet");
                 }
                 ks = KeyTools.createP12(alias, rsaKeys.getPrivate(), /*altKeys != null ? altKeys.getPrivate() : null, TODO EJBCAINTER-789 */ cert, cachain, eep.getP12Cipher());
             }

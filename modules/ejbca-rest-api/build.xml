@@ -70,6 +70,7 @@
         <path refid="compile-test.classpath"/>
 		<path location="${ejbca-rest-api.build-test.dir}"/>
         <path refid="lib.jee-client.classpath"/>
+        <path refid="lib.guava.classpath"/>
 	</path>
 
     <target name="clean" description="Clean up this module">
