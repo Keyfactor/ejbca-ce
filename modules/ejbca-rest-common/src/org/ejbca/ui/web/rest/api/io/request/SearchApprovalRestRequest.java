@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -34,14 +35,16 @@ public class SearchApprovalRestRequest {
     @Schema(description = "Search the expired approvals", example = "true", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private boolean searchingExpired;
 
-    @Schema(description = "Start date of the approvals to search", example = "2017-01-01", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    private Date startDate;
+    @Schema(description = "Start date of the approvals to search", example = "2017-01-01", type = "string", format = "date", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    private Date createdOnOrAfter;
 
-    @Schema(description = "End date of the approvals to search", example = "2017-01-01", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    private Date endDate;
+    @Schema(description = "End date of the approvals to search", example = "2017-01-01", type = "string", format = "date", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    private Date createdOnOrBefore;
 
     @Schema(description = "Number of days remaining before approval request expires ", example = "100", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    private Date expiresBefore;
+    private String daysRequestsExpireIn;
 
     @Schema(description = "Should other admins be included in the search", example = "false", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private boolean includeOtherAdmins;
@@ -87,28 +90,28 @@ public class SearchApprovalRestRequest {
         this.searchingExpired = searchingExpired;
     }
 
-    public Date getStartDate() {
-        return startDate;
+    public Date getCreatedOnOrAfter() {
+        return createdOnOrAfter;
     }
 
-    public void setStartDate(final Date startDate) {
-        this.startDate = startDate;
+    public void setCreatedOnOrAfter(final Date createdOnOrAfter) {
+        this.createdOnOrAfter = createdOnOrAfter;
     }
 
-    public Date getEndDate() {
-        return endDate;
+    public Date getCreatedOnOrBefore() {
+        return createdOnOrBefore;
     }
 
-    public void setEndDate(final Date endDate) {
-        this.endDate = endDate;
+    public void setCreatedOnOrBefore(final Date createdOnOrBefore) {
+        this.createdOnOrBefore = createdOnOrBefore;
     }
 
-    public Date getExpiresBefore() {
-        return expiresBefore;
+    public String getDaysRequestsExpireIn() {
+        return daysRequestsExpireIn;
     }
 
-    public void setExpiresBefore(final Date expiresBefore) {
-        this.expiresBefore = expiresBefore;
+    public void setDaysRequestsExpireIn(final String expireIn) {
+        this.daysRequestsExpireIn = expireIn;
     }
 
     public boolean isIncludeOtherAdmins() {
@@ -166,18 +169,18 @@ public class SearchApprovalRestRequest {
             return this;
         }
 
-        public Builder startDate(Date startDate) {
-            request.setStartDate(startDate);
+        public Builder setCreatedOnOrAfter(Date createdOnOrAfterDate) {
+            request.setCreatedOnOrAfter(createdOnOrAfterDate);
             return this;
         }
 
-        public Builder endDate(Date endDate) {
-            request.setEndDate(endDate);
+        public Builder setCreatedOnOrBefore(Date createdOnOrBeforeDate) {
+            request.setCreatedOnOrBefore(createdOnOrBeforeDate);
             return this;
         }
 
-        public Builder expiresBefore(Date expiresBefore) {
-            request.setExpiresBefore(expiresBefore);
+        public Builder daysRequestsExpireIn(String expireIn) {
+            request.setDaysRequestsExpireIn(expireIn);
             return this;
         }
 

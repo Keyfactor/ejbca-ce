@@ -59,6 +59,7 @@ import org.ejbca.ui.web.rest.api.io.response.ProcessApprovalRestResponse;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -150,6 +151,7 @@ public class ApprovalRestResource extends BaseRestResource {
                         .requestType(getApprovalTypeName(approvalRequestInfo.getApprovalData().getApprovalType()))
                         .requestedBy(getRequesterAdmin(approvalRequestInfo.getApprovalData().getApprovalRequest().getRequestAdmin().toString()))
                         .canBeApprovedByMe(isAdminAbleToApproveTheRequest(approvalRequestInfo))
+                        .approvalStatus(ApprovalRequestStatus.fromInt(approvalRequestInfo.getStatus()).getValue())
                         .build();
                 searchApprovalRestResponse.getApprovals().add(approval);
             }
@@ -169,14 +171,15 @@ public class ApprovalRestResource extends BaseRestResource {
 
     }
 
-    /** Processes an approval request by approving or rejecting it.
+    /**
+     * Processes an approval request by approving or rejecting it.
      *
      * @param requestContext the HTTP servlet request context
-     * @param requestId the ID of the approval request to process
-     * @param request the request body containing the approval decision
+     * @param requestId      the ID of the approval request to process
+     * @param request        the request body containing the approval decision
      * @return Response containing the updated approval request information
      * @throws AuthorizationDeniedException if the admin is not authorized
-     * @throws RestException if the request is invalid or processing fails
+     * @throws RestException                if the request is invalid or processing fails
      */
     public Response processApprovalRequest(
             final HttpServletRequest requestContext,
@@ -209,8 +212,8 @@ public class ApprovalRestResource extends BaseRestResource {
         }
 
         try {
-            final RaApprovalResponseRequest.Action action = request.getApprove() 
-                    ? RaApprovalResponseRequest.Action.APPROVE 
+            final RaApprovalResponseRequest.Action action = request.getApprove()
+                    ? RaApprovalResponseRequest.Action.APPROVE
                     : RaApprovalResponseRequest.Action.REJECT;
 
             final RaApprovalResponseRequest responseRequest = new RaApprovalResponseRequest(
@@ -256,15 +259,15 @@ public class ApprovalRestResource extends BaseRestResource {
 
     private String getUsername(final ApprovalRequest approvalRequest) {
         if (approvalRequest instanceof AddEndEntityApprovalRequest) {
-            return ((AddEndEntityApprovalRequest)approvalRequest).getEndEntityInformation().getUsername();
+            return ((AddEndEntityApprovalRequest) approvalRequest).getEndEntityInformation().getUsername();
         } else if (approvalRequest instanceof EditEndEntityApprovalRequest) {
-            return ((EditEndEntityApprovalRequest)approvalRequest).getNewEndEntityInformation().getUsername();
+            return ((EditEndEntityApprovalRequest) approvalRequest).getNewEndEntityInformation().getUsername();
         } else if (approvalRequest instanceof RevocationApprovalRequest) {
-            return ((RevocationApprovalRequest)approvalRequest).getUsername();
+            return ((RevocationApprovalRequest) approvalRequest).getUsername();
         } else if (approvalRequest instanceof KeyRecoveryApprovalRequest) {
-            return ((KeyRecoveryApprovalRequest)approvalRequest).getUsername();
+            return ((KeyRecoveryApprovalRequest) approvalRequest).getUsername();
         } else if (approvalRequest instanceof ChangeStatusEndEntityApprovalRequest) {
-            return ((ChangeStatusEndEntityApprovalRequest)approvalRequest).getUsername();
+            return ((ChangeStatusEndEntityApprovalRequest) approvalRequest).getUsername();
         } else {
             return null;
         }
@@ -306,14 +309,14 @@ public class ApprovalRestResource extends BaseRestResource {
             for (RaApprovalStepInfo stepInfo : previousSteps) {
                 for (ApprovalPartition partition : stepInfo.getPartitions()) {
                     final ApprovalStepRestResponse.Builder stepBuilder = ApprovalStepRestResponse.builder()
-                        .step(stepNumber);
+                            .step(stepNumber);
 
                     // Find the approval record for this step and partition
                     Approval matchingApproval = null;
                     if (approvals != null) {
                         for (Approval approval : approvals) {
                             if (approval.getStepId() == stepInfo.getStepId() &&
-                                approval.getPartitionId() == partition.getPartitionIdentifier()) {
+                                    approval.getPartitionId() == partition.getPartitionIdentifier()) {
                                 matchingApproval = approval;
                                 //break;
                                 // TODO Now we only display in the latest approving admin for this step (i.e. the one which sent this request)
@@ -377,14 +380,14 @@ public class ApprovalRestResource extends BaseRestResource {
         }
     }
 
-    private RaRequestsSearchRequest convertSearchApprovalRestRequestToRaRequestsSearchRequest(SearchApprovalRestRequest searchApprovalRestRequest) {
+    private RaRequestsSearchRequest convertSearchApprovalRestRequestToRaRequestsSearchRequest(SearchApprovalRestRequest searchApprovalRestRequest) throws RestException {
         RaRequestsSearchRequest raRequestsSearchRequest = new RaRequestsSearchRequest();
         raRequestsSearchRequest.setSearchingPending(searchApprovalRestRequest.isSearchingPending());
         raRequestsSearchRequest.setCustomSearchSubjectDn(searchApprovalRestRequest.getSubjectDn());
         raRequestsSearchRequest.setCustomSearchEmail(searchApprovalRestRequest.getEmail());
-        raRequestsSearchRequest.setStartDate(searchApprovalRestRequest.getStartDate());
-        raRequestsSearchRequest.setEndDate(searchApprovalRestRequest.getEndDate());
-        raRequestsSearchRequest.setExpiresBefore(searchApprovalRestRequest.getExpiresBefore());
+        raRequestsSearchRequest.setStartDate(searchApprovalRestRequest.getCreatedOnOrAfter());
+        raRequestsSearchRequest.setEndDate(searchApprovalRestRequest.getCreatedOnOrBefore());
+        raRequestsSearchRequest.setExpiresBefore(getDateBeforeExpiration(searchApprovalRestRequest.getDaysRequestsExpireIn()));
         raRequestsSearchRequest.setIncludeOtherAdmins(searchApprovalRestRequest.isIncludeOtherAdmins());
         raRequestsSearchRequest.setSearchingHistorical(searchApprovalRestRequest.isSearchingHistorical());
         raRequestsSearchRequest.setSearchingExpired(searchApprovalRestRequest.isSearchingExpired());
@@ -398,5 +401,29 @@ public class ApprovalRestResource extends BaseRestResource {
                 : adminDn;
     }
 
+    private Date getDateBeforeExpiration(final String customSearchExpiresDays) throws RestException {
+        if (customSearchExpiresDays == null || customSearchExpiresDays.isBlank()) {
+            return null;
+        }
+        final int days;
+        try {
+            days = Integer.parseInt(customSearchExpiresDays.trim());
+        } catch (NumberFormatException e) {
+            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(),
+                    "Invalid days_requests_expire_in '" + customSearchExpiresDays + "'. Must be a non-negative integer.");
+        }
+
+        if (days < 0) {
+            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(),
+                    "Invalid days_requests_expire_in '" + customSearchExpiresDays + "'. Must be a non-negative integer.");
+        }
+
+        final Calendar cal = Calendar.getInstance();
+        cal.setTime(new Date());
+        cal.add(Calendar.DAY_OF_MONTH, days);
+        return cal.getTime();
+    }
 
 }
+
+

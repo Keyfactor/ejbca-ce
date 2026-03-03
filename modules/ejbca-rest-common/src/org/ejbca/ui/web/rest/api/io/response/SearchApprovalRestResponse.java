@@ -52,6 +52,17 @@ public class SearchApprovalRestResponse {
         @Schema(description = "Can this approval request be approved by current admin?", example = "true")
         private boolean canBeApprovedByMe;
 
+        @Schema(description = "Approval status to search", example = "APPROVED", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+        private String status;
+
+        public String getStatus() {
+            return status;
+        }
+
+        public void setStatus(String status) {
+            this.status = status;
+        }
+
         public Approval() {}
 
         public Integer getRequestId() {
@@ -140,6 +151,11 @@ public class SearchApprovalRestResponse {
 
             public Builder canBeApprovedByMe(final boolean canBeApprovedByMe) {
                 response.canBeApprovedByMe = canBeApprovedByMe;
+                return this;
+            }
+
+            public Builder approvalStatus(final String approvalStatus) {
+                response.status = approvalStatus;
                 return this;
             }
 

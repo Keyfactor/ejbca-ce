@@ -50,28 +50,79 @@ public @interface ValidSearchApprovalRestRequest {
         public boolean isValid(final SearchApprovalRestRequest request,
                                final ConstraintValidatorContext context) {
             if (request == null) {
+                context.disableDefaultConstraintViolation();
+                context.buildConstraintViolationWithTemplate("Request body must not be null")
+                        .addConstraintViolation();
                 return false;
             }
 
-            if (!isValidDates(request) || !isValidEmail(request.getEmail())) {
+            if (!isValidDates(request)) {
+                context.disableDefaultConstraintViolation();
+                context.buildConstraintViolationWithTemplate("created_on_or_after must be before created_on_or_before")
+                        .addPropertyNode("createdOnOrAfter")
+                        .addConstraintViolation();
+                return false;
+            }
+
+            if (!isValidEmail(request.getEmail())) {
+                context.disableDefaultConstraintViolation();
+                context.buildConstraintViolationWithTemplate("Invalid email format")
+                        .addPropertyNode("email")
+                        .addConstraintViolation();
+                return false;
+            }
+
+            final String daysExpireIn = request.getDaysRequestsExpireIn();
+            if (daysExpireIn != null && !daysExpireIn.isBlank() && !isNonNegativeInt(daysExpireIn)) {
+                context.disableDefaultConstraintViolation();
+                context.buildConstraintViolationWithTemplate("days_requests_expire_in must be a non-negative integer")
+                        .addPropertyNode("daysRequestsExpireIn")
+                        .addConstraintViolation();
                 return false;
             }
 
             // At least one search criteria should be set
-            return request.isSearchingWaitingForMe() ||
+            final boolean hasAnyCriteria = request.isSearchingWaitingForMe() ||
                     request.isSearchingPending() ||
                     request.isSearchingHistorical() ||
                     request.isSearchingExpired() ||
-                    request.getStartDate() != null ||
-                    request.getEndDate() != null ||
-                    request.getExpiresBefore() != null ||
+                    request.getCreatedOnOrAfter() != null ||
+                    request.getCreatedOnOrBefore() != null ||
                     request.getSubjectDn() != null ||
                     request.getEmail() != null;
+
+            if (!hasAnyCriteria) {
+                context.disableDefaultConstraintViolation();
+                context.buildConstraintViolationWithTemplate("At least one search criteria must be set")
+                        .addConstraintViolation();
+                return false;
+            }
+
+            return true;
         }
 
+        private boolean isNonNegativeInt(final String input) {
+            final String s = input.trim();
+            if (s.isEmpty()) {
+                return false;
+            }
+            for (int i = 0; i < s.length(); i++) {
+                if (!Character.isDigit(s.charAt(i))) {
+                    return false;
+                }
+            }
+            try {
+                Integer.parseInt(s);
+                return true;
+            } catch (NumberFormatException e) {
+                return false; // e.g. too large for int
+            }
+        }
+
+
         private boolean isValidDates(final SearchApprovalRestRequest request) {
-            if (request.getStartDate() != null && request.getEndDate() != null) {
-                return request.getStartDate().before(request.getEndDate());
+            if (request.getCreatedOnOrAfter() != null && request.getCreatedOnOrBefore() != null) {
+                return request.getCreatedOnOrAfter().before(request.getCreatedOnOrBefore());
             }
             return true;
         }
