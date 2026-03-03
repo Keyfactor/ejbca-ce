@@ -74,6 +74,7 @@ import org.ejbca.core.model.approval.approvalrequests.AcmeNewAccountApprovalRequ
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest;
+import org.ejbca.core.model.approval.approvalrequests.KeyRecoveryApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
 import org.ejbca.core.model.approval.profile.ApprovalPartition;
 import org.ejbca.core.model.approval.profile.ApprovalPartitionWorkflowState;
@@ -702,17 +703,21 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     }
     
     private EndEntityInformation getEndEntity(final ApprovalRequest approvalRequest) {
-        if(approvalRequest instanceof AddEndEntityApprovalRequest) {
+        if (approvalRequest instanceof AddEndEntityApprovalRequest) {
             return ((AddEndEntityApprovalRequest) approvalRequest).getEndEntityInformation();
-        } else if(approvalRequest instanceof ChangeStatusEndEntityApprovalRequest) {
+        } else if (approvalRequest instanceof ChangeStatusEndEntityApprovalRequest) {
             //See legacy instantiation in EndEntityManagementSessionBean
             EndEntityInformation endEntityInformation = endEntityAccessSession
                     .findUser(((ChangeStatusEndEntityApprovalRequest) approvalRequest).getUsername());
             return endEntityInformation;
-        } else if(approvalRequest instanceof EditEndEntityApprovalRequest) {
+        } else if (approvalRequest instanceof EditEndEntityApprovalRequest) {
             //See legacy instantiation in EndEntityManagementSessionBean
             return ((EditEndEntityApprovalRequest) approvalRequest).getNewEndEntityInformation();
-        } else if(approvalRequest instanceof RevocationApprovalRequest) {
+        } else if (approvalRequest instanceof KeyRecoveryApprovalRequest) {
+            EndEntityInformation endEntityInformation = endEntityAccessSession
+                    .findUser(((KeyRecoveryApprovalRequest) approvalRequest).getUsername());
+            return endEntityInformation;
+        } else if (approvalRequest instanceof RevocationApprovalRequest) {
             //See legacy instantiation in RevocationSessionBean
             EndEntityInformation endEntityInformation = endEntityAccessSession
                     .findUser(((RevocationApprovalRequest) approvalRequest).getUsername());
