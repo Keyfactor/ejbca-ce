@@ -60,7 +60,8 @@
                         </h:commandButton>
                         <h:commandButton value="#{web.text.CLONE}"
                                          action="#{endEntityProfilesMBean.actionClone(endEntityProfile)}"
-                                         rendered="#{endEntityProfilesMBean.authorizedToEdit}"/>
+                                         rendered="#{endEntityProfilesMBean.authorizedToEdit}"
+                                         disabled="#{endEntityProfile.equals('EMPTY')}"/>
                         <h:commandButton value="#{web.text.EXPORT}"
                                          action="#{endEntityProfilesMBean.actionExportProfile(endEntityProfile)}"
                                          rendered="#{endEntityProfilesMBean.authorizedToEdit}"
