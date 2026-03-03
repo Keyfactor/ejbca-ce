@@ -487,7 +487,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             // selections, since they may not be valid for the newly selected p11 library
             if (p11Library == null || !p11Library.equals(this.p11Library)) {
                 this.p11SlotLabelType = Pkcs11SlotLabelType.SLOT_INDEX;
-                this.p11Slot = null;
+                this.p11Slot = WebConfiguration.getDefaultP11SlotNumber();
             }
             this.p11Library = p11Library;
         }
