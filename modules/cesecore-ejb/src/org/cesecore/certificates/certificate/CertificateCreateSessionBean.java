@@ -191,7 +191,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 signingKey = cryptoToken.getPrivateKey(alias);
             }
             // See if we need some key material to decrypt request
-            String signatureProviderName = null;
+            String signatureProviderName = cryptoToken.getEncProviderName();
             String signatureAlgorithm = null;
             if (ca != null && ca.getCAToken() != null) {
                 signatureAlgorithm = ca.getCAToken().getSignatureAlgorithm();
@@ -205,10 +205,8 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                     log.debug("decrypting scep message using key: " + encryptionKeyAlias);
                     var encryptionPrivateKey = cryptoTokenManagementSession.getCryptoToken(cryptoTokenId).getPrivateKey(encryptionKeyAlias);
                     requestMessage.setKeyInfo(null, encryptionPrivateKey, encryptionKeyAlias);
-
                 } else {
                     // You go figure...scep encrypts message with the public CA-cert
-                    signatureProviderName = cryptoToken.getEncProviderName();
                     requestMessage.setKeyInfo(cacert, signingKey, signatureProviderName);
                 }
 

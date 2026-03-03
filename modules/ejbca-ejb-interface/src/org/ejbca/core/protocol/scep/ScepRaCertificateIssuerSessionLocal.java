@@ -26,19 +26,6 @@ public interface ScepRaCertificateIssuerSessionLocal {
 
     /**
      * Creates a SCEP encryption certificate using an internal certificate profile
-     * 
-     * @param authenticationToken an authentication token  
-     * @param caName the name of the CA
-     * @param cryptoTokenId the id of the crypto token to use
-     * @param keyAlias the alias of the encryption key
-     * @return the encryption certificate
-     * @throws ScepEncryptionCertificateIssuanceException if any error happened during issuance
-     */
-    //X509Certificate issueEncryptionCertificate(AuthenticationToken authenticationToken, String caName, int cryptoTokenId,
-    //        String keyAlias) throws ScepEncryptionCertificateIssuanceException;
-
-    /**
-     * Creates a SCEP encryption certificate using an internal certificate profile
      *
      * @param authenticationToken an authentication token
      * @param caName the name of the CA
@@ -51,19 +38,6 @@ public interface ScepRaCertificateIssuerSessionLocal {
      */
     X509Certificate issueEncryptionCertificate(AuthenticationToken authenticationToken, String caName, int cryptoTokenId,
                                                String keyAlias, String signingAlgorithm, String templateName) throws ScepEncryptionCertificateIssuanceException;
-
-    /**
-     * Creates a SCEP signing certificate using an internal certificate profile
-     * 
-     * @param authenticationToken an authentication token  
-     * @param caName the name of the CA
-     * @param cryptoTokenId the id of the crypto token to use
-     * @param keyAlias the alias of the signing key
-     * @return the signing certificate
-     * @throws ScepEncryptionCertificateIssuanceException if any error happened during issuance
-     */
-    //X509Certificate issueSigningCertificate(AuthenticationToken authenticationToken, String caName, int cryptoTokenId,
-    //        String keyAlias) throws ScepEncryptionCertificateIssuanceException;
 
     /**
      * Creates a SCEP signing certificate using an internal certificate profile

@@ -94,21 +94,22 @@ public class CmpResponseMessageSystemTest extends CmpTestCase {
     private final String tlsSubCaDN = "CN=Tls-Sub-CA";
     private X509CA tls509RootCa;
     private X509CA tls509SubCa;
-    
+
+    private static int testCaseCounter;
     private CryptoTokenRunner cryptoTokenRunner;
-    
+
     @Rule
     public TestName testName = new TestName();
     
     public CmpResponseMessageSystemTest(CryptoTokenRunner cryptoTokenRunner) throws Exception {
         this.cryptoTokenRunner = cryptoTokenRunner;
-        
     }
 
      
     @BeforeClass
     public static void beforeClass() {
         CryptoProviderTools.installBCProvider();
+        testCaseCounter = 1;
     }
     
     @Rule
@@ -131,7 +132,9 @@ public class CmpResponseMessageSystemTest extends CmpTestCase {
 
         if (cryptoTokenRunner.canRun()) {
             super.setUp();
-            ca = cryptoTokenRunner.createX509Ca("CN="+testName.getMethodName(), testName.getMethodName());
+            final String uniqueCaName = testName.getMethodName()+"_"+testCaseCounter;
+            ++testCaseCounter;
+            ca = cryptoTokenRunner.createX509Ca("CN="+uniqueCaName, uniqueCaName);
             caCertificate = (X509Certificate) ca.getCertificateChain().get(0);
             cmpConfiguration = (CmpConfiguration) this.globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
 
@@ -170,9 +173,10 @@ public class CmpResponseMessageSystemTest extends CmpTestCase {
         if (cryptoTokenRunner.canRun()) {
             super.tearDown();
             cryptoTokenRunner.cleanUp();
-            this.cmpConfiguration.removeAlias(cmpAlias);
+            if (this.cmpConfiguration != null) {
+                this.cmpConfiguration.removeAlias(cmpAlias);
+            }
             this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
-
             if (endEntityManagementSession.existsUser(user)) {
                 endEntityManagementSession.revokeAndDeleteUser(ADMIN, user, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
             }
