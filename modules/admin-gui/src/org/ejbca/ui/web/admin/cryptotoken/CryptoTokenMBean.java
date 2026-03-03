@@ -483,6 +483,12 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         }
 
         public void setP11Library(String p11Library) {
+            // we're changing the library, clear out any potential old slot token/label 
+            // selections, since they may not be valid for the newly selected p11 library
+            if (p11Library == null || !p11Library.equals(this.p11Library)) {
+                this.p11SlotLabelType = Pkcs11SlotLabelType.SLOT_INDEX;
+                this.p11Slot = null;
+            }
             this.p11Library = p11Library;
         }
 
