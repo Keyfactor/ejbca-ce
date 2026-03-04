@@ -191,7 +191,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 signingKey = cryptoToken.getPrivateKey(alias);
             }
             // See if we need some key material to decrypt request
-            String signatureProviderName = cryptoToken.getEncProviderName();
+            String signatureProviderName = cryptoToken == null ? null : cryptoToken.getEncProviderName();
             String signatureAlgorithm = null;
             if (ca != null && ca.getCAToken() != null) {
                 signatureAlgorithm = ca.getCAToken().getSignatureAlgorithm();
