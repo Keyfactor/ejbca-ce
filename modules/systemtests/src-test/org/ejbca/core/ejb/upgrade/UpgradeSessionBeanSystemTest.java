@@ -226,9 +226,7 @@ public class UpgradeSessionBeanSystemTest {
             cesecoreConfigSession.setConfigurationValue("ocsp.expiredcert.retentionperiod", null);
             upgradeSession.upgrade(/* database */ null, /* upgrade from */ "7.2.0", /* post upgrade? */ false);
             final InternalKeyBindingInfo ocspResponder = internalKeyBindingSession.getInternalKeyBindingInfo(alwaysAllowtoken, internalKeyBindingId);
-            Assert.assertTrue(
-                    "OCSP key binding should not contain an archive cutoff extension when upgrading without 'ocsp.expiredcert.retentionperiod' configured.",
-                    !ocspResponder.getOcspExtensions().contains(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff.getId()));
+            assertFalse("OCSP key binding should not contain an archive cutoff extension when upgrading without 'ocsp.expiredcert.retentionperiod' configured.", ocspResponder.getOcspExtensions().contains(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff.getId()));
         } finally {
             OcspTestUtils.removeInternalKeyBinding(alwaysAllowtoken, "Upgrade730 OCSP Responder");
             CryptoTokenTestUtils.removeCryptoToken(alwaysAllowtoken, "Upgrade730 Crypto Token");
@@ -249,8 +247,7 @@ public class UpgradeSessionBeanSystemTest {
             cesecoreConfigSession.setConfigurationValue("ocsp.expiredcert.retentionperiod", "-1");
             upgradeSession.upgrade(/* database */ null, /* upgrade from */ "7.2.0", /* post upgrade? */ false);
             final InternalKeyBindingInfo ocspResponder = internalKeyBindingSession.getInternalKeyBindingInfo(alwaysAllowtoken, internalKeyBindingId);
-            Assert.assertTrue("OCSP key binding should not contain an archive cutoff extension when 'ocsp.expiredcert.retentionperiod=-1'.",
-                    !ocspResponder.getOcspExtensions().contains(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff.getId()));
+            assertFalse("OCSP key binding should not contain an archive cutoff extension when 'ocsp.expiredcert.retentionperiod=-1'.", ocspResponder.getOcspExtensions().contains(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff.getId()));
         } finally {
             OcspTestUtils.removeInternalKeyBinding(alwaysAllowtoken, "Upgrade730 OCSP Responder");
             CryptoTokenTestUtils.removeCryptoToken(alwaysAllowtoken, "Upgrade730 Crypto Token");
@@ -1228,7 +1225,7 @@ public class UpgradeSessionBeanSystemTest {
     }
     
     @Test
-    public void testMigrateCrlDatabaseFetchValues_9_5_0() throws AuthorizationDeniedException {
+    public void testMigrateCrlDatabaseFetchValues_9_6_0() throws AuthorizationDeniedException {
         //Stash the orginal values
         GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigSession
                 .getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
@@ -1239,14 +1236,14 @@ public class UpgradeSessionBeanSystemTest {
             //Set the upgrade-from version 
             final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
                     .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
-            guc.setUpgradedToVersion("9.4.0");
-            guc.setPostUpgradedToVersion("9.4.0");
+            guc.setUpgradedToVersion("9.5.0");
+            guc.setPostUpgradedToVersion("9.5.0");
             globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
             //Set some non-default values
             cesecoreConfigSession.setConfigurationValue("database.crlgenfetchsize", "4711");
             cesecoreConfigSession.setConfigurationValue("database.crlgenfetchordered", "true");          
             //Perform upgrade
-            upgradeSession.upgrade(/* database */ null, /* upgrade from */ "9.4.0", /* post upgrade? */ false);
+            upgradeSession.upgrade(/* database */ null, /* upgrade from */ "9.5.0", /* post upgrade? */ false);
             //Retrieve GlobalCesecoreConfig and verify that the valus w migrated
             globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigSession
                     .getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
@@ -1318,7 +1315,7 @@ public class UpgradeSessionBeanSystemTest {
             if (role!=null) {
                 roleSession.deleteRoleIdempotent(alwaysAllowtoken, role.id());
             }
-        } catch (AuthorizationDeniedException e) {
+        } catch (AuthorizationDeniedException ignored) {
         }
     }
 
