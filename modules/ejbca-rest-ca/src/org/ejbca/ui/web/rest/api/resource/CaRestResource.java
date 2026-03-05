@@ -71,6 +71,7 @@ import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.core.EntityPart;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
@@ -261,7 +262,7 @@ public class CaRestResource extends BaseRestResource {
         }
     }
     
-    public Response generateCsr(final HttpServletRequest httpServletRequest, String issuerDn, GenerateCsrCaRequest generateCsrCaRequest)
+    public Response generateCsr(final HttpServletRequest httpServletRequest, String issuerDn, @Valid GenerateCsrCaRequest generateCsrCaRequest)
             throws AuthorizationDeniedException, RestException {
         
         final AuthenticationToken admin = getAdmin(httpServletRequest, false);

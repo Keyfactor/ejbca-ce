@@ -181,7 +181,7 @@ public class CaRestResourceGenerateCsrSystemTest extends RestResourceSystemTestB
         final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
         Response response = newRequest(CA_GENERATE_CSR_URL.replace("issuer_dn", ROOT_CA_DN)).request().put(requestEntity);
         
-        assertEquals(response.getStatus(), 200);
+        assertEquals(200, response.getStatus());
         
         // read file content
         InputStream inputStream = response.readEntity(InputStream.class);
@@ -284,7 +284,7 @@ public class CaRestResourceGenerateCsrSystemTest extends RestResourceSystemTestB
         final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
         Response response = newRequest(CA_GENERATE_CSR_URL.replace("issuer_dn", SUB_CA_DN)).request().put(requestEntity);
         
-        assertEquals(response.getStatus(), 200);
+        assertEquals(200, response.getStatus());
         
         // read file content
         InputStream inputStream = response.readEntity(InputStream.class);
@@ -356,7 +356,7 @@ public class CaRestResourceGenerateCsrSystemTest extends RestResourceSystemTestB
         final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
         Response response = newRequest(CA_GENERATE_CSR_URL.replace("issuer_dn", ROOT_CA_DN)).request().put(requestEntity);
         
-        assertEquals(response.getStatus(), 400);
+        assertEquals(400, response.getStatus());
         assertTrue(response.readEntity(String.class).contains("CA cryptotoken is offline or the key pair not found."));
     }
     
@@ -370,7 +370,7 @@ public class CaRestResourceGenerateCsrSystemTest extends RestResourceSystemTestB
         final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
         Response response = newRequest(CA_GENERATE_CSR_URL.replace("issuer_dn", "CN=Unknown")).request().put(requestEntity);
         
-        assertEquals(response.getStatus(), 400);
+        assertEquals(400, response.getStatus());
         assertTrue(response.readEntity(String.class).contains("CA with DN: CN=Unknown does not exist."));
     }
 
