@@ -151,7 +151,7 @@ public class ApprovalRestResource extends BaseRestResource {
                         .requestType(getApprovalTypeName(approvalRequestInfo.getApprovalData().getApprovalType()))
                         .requestedBy(getRequesterAdmin(approvalRequestInfo.getApprovalData().getApprovalRequest().getRequestAdmin().toString()))
                         .canBeApprovedByMe(isAdminAbleToApproveTheRequest(approvalRequestInfo))
-                        .approvalStatus(ApprovalRequestStatus.fromInt(approvalRequestInfo.getStatus()).getValue())
+                        .approvalStatus(ApprovalRequestStatus.fromIntWithCombinedStates(approvalRequestInfo.getStatus()).getValue())
                         .build();
                 searchApprovalRestResponse.getApprovals().add(approval);
             }

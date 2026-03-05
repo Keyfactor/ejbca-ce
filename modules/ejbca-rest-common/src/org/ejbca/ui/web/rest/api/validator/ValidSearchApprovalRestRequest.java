@@ -89,7 +89,8 @@ public @interface ValidSearchApprovalRestRequest {
                     request.getCreatedOnOrAfter() != null ||
                     request.getCreatedOnOrBefore() != null ||
                     request.getSubjectDn() != null ||
-                    request.getEmail() != null;
+                    request.getEmail() != null ||
+                    request.getDaysRequestsExpireIn() != null;
 
             if (!hasAnyCriteria) {
                 context.disableDefaultConstraintViolation();
@@ -102,23 +103,15 @@ public @interface ValidSearchApprovalRestRequest {
         }
 
         private boolean isNonNegativeInt(final String input) {
-            final String s = input.trim();
-            if (s.isEmpty()) {
+            if (input == null) {
                 return false;
             }
-            for (int i = 0; i < s.length(); i++) {
-                if (!Character.isDigit(s.charAt(i))) {
-                    return false;
-                }
-            }
             try {
-                Integer.parseInt(s);
-                return true;
+                return Integer.parseInt(input.trim()) >= 0;
             } catch (NumberFormatException e) {
-                return false; // e.g. too large for int
+                return false;
             }
         }
-
 
         private boolean isValidDates(final SearchApprovalRestRequest request) {
             if (request.getCreatedOnOrAfter() != null && request.getCreatedOnOrBefore() != null) {
