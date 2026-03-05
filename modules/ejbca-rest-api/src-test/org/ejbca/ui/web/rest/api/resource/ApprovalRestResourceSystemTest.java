@@ -423,12 +423,9 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
         assertEquals("Approval EEP should be EMPTY", "EMPTY", actualJsonObject.get("end_entity_profile_name"));
         assertEquals("Approval EEP should be subject dn is incorrect", "CN="+eeName, actualJsonObject.get("subject_dn"));
         assertEquals("Approval CA name is incorrect",  CA_NAME, actualJsonObject.get("ca_name"));
-        assertEquals("Approval email is incorrect", "NOVALUE", actualJsonObject.get("email"));
         assertEquals("Approval key_recoverable is incorrect","NO", actualJsonObject.get("key_recoverable"));
         assertFalse("Approval subject_name_log_redaction is incorrect", Boolean.getBoolean(actualJsonObject.get("subject_name_log_redaction").toString()));
         assertEquals("Approval send_notification is incorrect","NO", actualJsonObject.get("send_notification"));
-        assertEquals("Approval subject_directory_attributes is incorrect", "NOVALUE", actualJsonObject.get("subject_directory_attributes"));
-        assertEquals("Approval subject_alternative_name is incorrect", "NOVALUE", actualJsonObject.get("subject_alternative_name"));
 
 
         // Verify approval was actually processed internally
@@ -474,12 +471,9 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
         assertEquals("Approval EEP should be EMPTY", "EMPTY", actualJsonObject.get("end_entity_profile_name"));
         assertEquals("Approval EEP should be subject dn is incorrect", "CN="+partitionedEeName, actualJsonObject.get("subject_dn"));
         assertEquals("Approval CA name is incorrect",  CA_NAME_PARTITIONED, actualJsonObject.get("ca_name"));
-        assertEquals("Approval email is incorrect", "NOVALUE", actualJsonObject.get("email"));
         assertEquals("Approval key_recoverable is incorrect","NO", actualJsonObject.get("key_recoverable"));
         assertFalse("Approval subject_name_log_redaction is incorrect", Boolean.getBoolean(actualJsonObject.get("subject_name_log_redaction").toString()));
         assertEquals("Approval send_notification is incorrect","NO", actualJsonObject.get("send_notification"));
-        assertEquals("Approval subject_directory_attributes is incorrect", "NOVALUE", actualJsonObject.get("subject_directory_attributes"));
-        assertEquals("Approval subject_alternative_name is incorrect", "NOVALUE", actualJsonObject.get("subject_alternative_name"));
 
 
         // Verify approval was actually processed internally

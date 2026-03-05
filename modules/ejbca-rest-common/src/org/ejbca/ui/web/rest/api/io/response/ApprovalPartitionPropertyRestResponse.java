@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
@@ -24,6 +25,7 @@ public class ApprovalPartitionPropertyRestResponse {
     @Schema(description = "Property type")
     private String  type;
     @Schema(description = "Property possible values")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<String> possibleValues;
 
     public ApprovalPartitionPropertyRestResponse(Builder builder) {
