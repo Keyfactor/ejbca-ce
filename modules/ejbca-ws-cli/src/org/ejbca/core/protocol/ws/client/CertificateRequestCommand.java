@@ -91,6 +91,7 @@ public class CertificateRequestCommand extends EJBCAWSRABaseCommand implements I
             if(args.length > ARG_OUTPUTPATH){
               outputPath = getOutputPath(args[ARG_OUTPUTPATH]);
             }
+            final var responseType = "PKCS7".equalsIgnoreCase(encoding) ? CertificateHelper.RESPONSETYPE_PKCS7 : CertificateHelper.RESPONSETYPE_CERTIFICATE;
             
             getPrintStream().println("Requesting certificate for end entity:");
             getPrintStream().println("Username: "+userdata.getUsername());
@@ -103,27 +104,34 @@ public class CertificateRequestCommand extends EJBCAWSRABaseCommand implements I
             getPrintStream().println("Certificate profile: "+userdata.getCertificateProfileName());
             getPrintStream().println("Request type: "+requesttype);
             getPrintStream().println("Encoding: "+encoding);
+            getPrintStream().println("Response type: "+responseType);
             getPrintStream().println("Output path: "+outputPath);
 
             try{
-            	//UserDataVOWS userdata, String requestData, int requestType, String responseType)
-            	CertificateResponse result = getEjbcaRAWS().certificateRequest(userdata, requestdata, requesttype, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
-            	
-            	if(result==null){
-            		getPrintStream().println("No certificate could be generated for user, check server logs for error.");
-            	}else{
+                CertificateResponse result = getEjbcaRAWS().certificateRequest(userdata, requestdata, requesttype, null, responseType);
+                if (result==null) {
+                    getPrintStream().println("No certificate could be generated for user, check server logs for error.");
+                } else if (CertificateHelper.RESPONSETYPE_PKCS7.equals(result.getResponseType())) {
+                    String filepath = userdata.getUsername() + ".p7b";
+					if (outputPath != null) {
+                        filepath = outputPath + "/" + filepath;
+                    }
+                    FileOutputStream fos = new FileOutputStream(filepath);
+                    fos.write(CertificateHelper.getCertificate(result.getData()).getEncoded());
+                    fos.close();
+                    getPrintStream().println("Certificate generated, written to " + filepath);
+                } else {
             		String filepath = userdata.getUsername();
-            		if(encoding.equals("DER")){
+                    if (encoding.equalsIgnoreCase("DER")) {
             			filepath += ".cer";
-            		}else{
+                    } else {
             			filepath += ".pem";
             		}
-            		if(outputPath != null){
+                    if (outputPath != null) {
             			filepath = outputPath + "/" + filepath;
             		}
-            		
-            		
-            		if(encoding.equals("DER")){
+
+                    if (encoding.equalsIgnoreCase("DER")) {
             			FileOutputStream fos = new FileOutputStream(filepath);
             			fos.write(CertificateHelper.getCertificate(result.getData()).getEncoded());
             			fos.close();
@@ -185,7 +193,8 @@ public class CertificateRequestCommand extends EJBCAWSRABaseCommand implements I
 	}
 
 	private String getEncoding(String encoding) {
-		if(!encoding.equalsIgnoreCase("PEM") && !encoding.equalsIgnoreCase("DER")){
+        if (!encoding.equalsIgnoreCase("PEM") && !encoding.equalsIgnoreCase("DER") &&
+                !encoding.equalsIgnoreCase("PKCS7")) {
 			usage();
 			System.exit(-1); // NOPMD, it's not a JEE app
 		}
