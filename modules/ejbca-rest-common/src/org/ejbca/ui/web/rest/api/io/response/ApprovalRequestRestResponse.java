@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import org.apache.commons.lang3.StringUtils;
 import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
@@ -488,7 +489,10 @@ public class ApprovalRequestRestResponse extends ProcessApprovalRestResponse {
             if (nameConstraintsExcluded != null && !nameConstraintsExcluded.isEmpty()) {
                 builder.nameConstraintsExcluded(NameConstraint.formatNameConstraintsList(nameConstraintsExcluded));
             }
-            builder.certificateExtensionData(getExtensionData(endEntityInformation.getExtendedInformation()));
+            String extensionData = getExtensionData(endEntityInformation.getExtendedInformation());
+            if (!StringUtils.isEmpty(extensionData)) {
+                builder.certificateExtensionData(extensionData);
+            }
 
         }
         return builder.build();

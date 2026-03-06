@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
@@ -34,6 +35,7 @@ public class ApprovalStepRestResponse {
     private String approvalAdmin;
 
     @Schema(description = "Comment provided with the approval action", example = "Approved after verification")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String approvalComment;
 
     @Schema(description = "Partition properties provided with the approval action")
