@@ -397,9 +397,9 @@ public class ApprovalRequestRestResponse extends ProcessApprovalRestResponse {
                 .status(status)
                 .steps(steps);
         if (requestInfo.getNextApprovalStep() != null) {
-            final List<ApprovalPartitionRestResponse> partitions = new ArrayList<>();
+            final List<ApprovalPartitionRestResponse.ApprovalPartitionStep> partitions = new ArrayList<>();
             for (ApprovalPartition partition : requestInfo.getNextApprovalStep().getPartitionList()) {
-                partitions.add(buildStepPartition(requestInfo.getNextApprovalStep().getStepIdentifier(), partition,
+                partitions.addAll(buildStepPartition(requestInfo.getNextApprovalStep().getStepIdentifier(), partition,
                         requestInfo.getApprovalData().getApprovals(), requestInfo.getApprovalProfile(), status.getValue()));
             }
             final ApprovalStepRestResponse.Builder stepBuilder = ApprovalStepRestResponse.builder()

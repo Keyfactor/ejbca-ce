@@ -15,6 +15,8 @@ package org.ejbca.ui.web.rest.api.io.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -24,88 +26,106 @@ import java.util.List;
 
 public class ApprovalPartitionRestResponse {
 
-    @Schema(description = "The action taken on this step (e.g., APPROVED, REJECTED, PENDING)", example = "APPROVED")
-    private String approvalAction;
 
-    @Schema(description = "The date when the approval action was taken", example = "2025-01-01 14:55:00+01:00")
-    private String approvalDate;
+    private List<ApprovalPartitionStep> approvalPartitions = new ArrayList<>();
 
-    @Schema(description = "The admin who performed the approval action", example = "CN=RAAdmin")
-    private String approvalAdmin;
 
-    @Schema(description = "Comment provided with the approval action", example = "Approved after verification")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String approvalComment;
-    
-    @Schema(description = "Partition properties provided with the approval action")
-    List<ApprovalPartitionPropertyRestResponse> propertyList;
-
-    public ApprovalPartitionRestResponse(final Builder builder) {
-        this.propertyList = builder.propertyList;
-        this.approvalAction = builder.approvalAction;
-        this.approvalDate = builder.approvalDate;
-        this.approvalAdmin = builder.approvalAdmin;
-        this.approvalComment = builder.approvalComment;
+    public List<ApprovalPartitionStep> getApprovalPartitions() {
+        return approvalPartitions;
     }
 
-    public String getApprovalAction() {
-        return approvalAction;
+    public void setApprovalPartitions(List<ApprovalPartitionStep> approvalPartitions) {
+        this.approvalPartitions = approvalPartitions;
     }
 
-    public String getApprovalDate() {
-        return approvalDate;
+    public ApprovalPartitionRestResponse() {
     }
 
-    public String getApprovalAdmin() {
-        return approvalAdmin;
-    }
+    public static class ApprovalPartitionStep {
 
-    public String getApprovalComment() {
-        return approvalComment;
-    }
-    
-    public List<ApprovalPartitionPropertyRestResponse> getPropertyList() {
-        return propertyList;
-    }
 
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    public static class Builder {
+        @Schema(description = "The action taken on this step (e.g., APPROVED, REJECTED, PENDING)", example = "APPROVED")
         private String approvalAction;
+
+        @Schema(description = "The date when the approval action was taken", example = "2025-01-01 14:55:00+01:00")
         private String approvalDate;
+
+        @Schema(description = "The admin who performed the approval action", example = "CN=RAAdmin")
         private String approvalAdmin;
+
+        @Schema(description = "Comment provided with the approval action", example = "Approved after verification")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
         private String approvalComment;
-        private List<ApprovalPartitionPropertyRestResponse> propertyList;
-        public Builder approvalAction(final String approvalAction) {
-            this.approvalAction = approvalAction;
-            return this;
+
+        @Schema(description = "Partition properties provided with the approval action")
+        List<ApprovalPartitionPropertyRestResponse> propertyList;
+
+        public ApprovalPartitionStep() {
         }
 
-        public Builder approvalDate(final String approvalDate) {
-            this.approvalDate = approvalDate;
-            return this;
+        public String getApprovalAction() {
+            return approvalAction;
         }
 
-        public Builder approvalAdmin(final String approvalAdmin) {
-            this.approvalAdmin = approvalAdmin;
-            return this;
+        public String getApprovalDate() {
+            return approvalDate;
         }
 
-        public Builder approvalComment(final String approvalComment) {
-            this.approvalComment = approvalComment;
-            return this;
+        public String getApprovalAdmin() {
+            return approvalAdmin;
         }
 
-        public Builder propertyList(final List<ApprovalPartitionPropertyRestResponse> propertyList) {
-            this.propertyList = propertyList;
-            return this;
+        public String getApprovalComment() {
+            return approvalComment;
         }
 
-        public ApprovalPartitionRestResponse build() {
-            return new ApprovalPartitionRestResponse(this);
+        public List<ApprovalPartitionPropertyRestResponse> getPropertyList() {
+            return propertyList;
         }
-        
+
+        public static Builder builder() {
+            return new Builder();
+        }
+
+        public static class Builder {
+
+            private final ApprovalPartitionStep response;
+
+            private Builder() {
+                response = new ApprovalPartitionStep();
+            }
+
+            private List<ApprovalPartitionPropertyRestResponse> propertyList;
+
+            public Builder approvalAction(final String approvalAction) {
+                response.approvalAction = approvalAction;
+                return this;
+            }
+
+            public Builder approvalDate(final String approvalDate) {
+                response.approvalDate = approvalDate;
+                return this;
+            }
+
+            public Builder approvalAdmin(final String approvalAdmin) {
+                response.approvalAdmin = approvalAdmin;
+                return this;
+            }
+
+            public Builder approvalComment(final String approvalComment) {
+                response.approvalComment = approvalComment;
+                return this;
+            }
+
+            public Builder propertyList(final List<ApprovalPartitionPropertyRestResponse> propertyList) {
+                this.propertyList = propertyList;
+                return this;
+            }
+
+            public ApprovalPartitionStep build() {
+                return response;
+            }
+
+        }
     }
 }
