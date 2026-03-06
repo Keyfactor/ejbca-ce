@@ -31,13 +31,13 @@ public class ScepRaCertificateIssuerTestSessionBean implements ScepRaCertificate
     @Override
     public X509Certificate issueEncryptionCertificate(AuthenticationToken authenticationToken, String caName, int cryptoTokenId, String keyAlias)
             throws ScepEncryptionCertificateIssuanceException {
-        return scepRaCertificateIssuerSession.issueEncryptionCertificate(authenticationToken, caName, cryptoTokenId, keyAlias, null, null);
+        return scepRaCertificateIssuerSession.issueEncryptionCertificate(authenticationToken, caName, cryptoTokenId, keyAlias, null);
     }
 
     @Override
     public X509Certificate issueSigningCertificate(AuthenticationToken authenticationToken, String caName, int cryptoTokenId, String keyAlias)
             throws ScepEncryptionCertificateIssuanceException {
-        return scepRaCertificateIssuerSession.issueSigningCertificate(authenticationToken, caName, cryptoTokenId, keyAlias, null, null);
+        return scepRaCertificateIssuerSession.issueSigningCertificate(authenticationToken, caName, cryptoTokenId, keyAlias, null);
     }
 
 }

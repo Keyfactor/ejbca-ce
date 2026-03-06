@@ -31,13 +31,12 @@ public interface ScepRaCertificateIssuerSessionLocal {
      * @param caName the name of the CA
      * @param cryptoTokenId the id of the crypto token to use
      * @param keyAlias the alias of the encryption key
-     * @param signingAlgorithm The signing algorithm used
      * @param templateName The template used
      * @return the encryption certificate
      * @throws ScepEncryptionCertificateIssuanceException if any error happened during issuance
      */
     X509Certificate issueEncryptionCertificate(AuthenticationToken authenticationToken, String caName, int cryptoTokenId,
-                                               String keyAlias, String signingAlgorithm, String templateName) throws ScepEncryptionCertificateIssuanceException;
+                                               String keyAlias, String templateName) throws ScepEncryptionCertificateIssuanceException;
 
     /**
      * Creates a SCEP signing certificate using an internal certificate profile
@@ -46,12 +45,11 @@ public interface ScepRaCertificateIssuerSessionLocal {
      * @param caName the name of the CA
      * @param cryptoTokenId the id of the crypto token to use
      * @param keyAlias the alias of the signing key
-     * @param signingAlgorithm The signing algorithm used
      * @param templateName The template used
      * @return the signing certificate
      * @throws ScepEncryptionCertificateIssuanceException if any error happened during issuance
      */
     X509Certificate issueSigningCertificate(AuthenticationToken authenticationToken, String caName, int cryptoTokenId,
-                                            String keyAlias, String signingAlgorithm, String templateName) throws ScepEncryptionCertificateIssuanceException;
+                                            String keyAlias, String templateName) throws ScepEncryptionCertificateIssuanceException;
 
 }
