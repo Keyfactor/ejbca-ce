@@ -205,18 +205,22 @@ public class ProcessApprovalRestResponse {
 
 
             for (RaApprovalStepInfo stepInfo : previousSteps) {
+                final List<ApprovalPartitionRestResponse> partitions = new ArrayList<>();
                 for (ApprovalPartition partition : stepInfo.getPartitions()) {
-                    steps.add(buildStepPartition(stepInfo.getStepId(), partition, stepNumber, approvals, approvalProfile, approvalStatus));
-                    stepNumber++;
+                    partitions.add(buildStepPartition(stepInfo.getStepId(), partition, approvals, approvalProfile, approvalStatus));
                 }
+                final ApprovalStepRestResponse.Builder stepBuilder = ApprovalStepRestResponse.builder()
+                        .stepNumber(stepNumber)
+                        .partitionList(partitions);
+                steps.add(stepBuilder.build());
+                stepNumber++;
             }
         }
         return steps;
     }
 
-    static ApprovalStepRestResponse buildStepPartition(int stepId, ApprovalPartition partition, int stepNumber, Collection<Approval> approvals, ApprovalProfile approvalProfile, String approvalStatus) {
-        final ApprovalStepRestResponse.Builder stepBuilder = ApprovalStepRestResponse.builder()
-                .step(stepNumber);
+    static ApprovalPartitionRestResponse buildStepPartition(int stepId, ApprovalPartition partition, Collection<Approval> approvals, ApprovalProfile approvalProfile, String approvalStatus) {
+        final ApprovalPartitionRestResponse.Builder partitionBuilder = ApprovalPartitionRestResponse.builder();
 
         // Find the approval record for this step and partition
         Approval matchingApproval = null;
@@ -235,27 +239,27 @@ public class ProcessApprovalRestResponse {
 
         // Populate approval details if found
         if (matchingApproval != null) {
-            stepBuilder.approvalAction(matchingApproval.isApproved() ? "APPROVED" : "REJECTED");
+            partitionBuilder.approvalAction(matchingApproval.isApproved() ? "APPROVED" : "REJECTED");
 
             if (matchingApproval.getApprovalDate() != null) {
-                stepBuilder.approvalDate(new SimpleDateFormat(DATE_FORMAT).format(matchingApproval.getApprovalDate()));
+                partitionBuilder.approvalDate(new SimpleDateFormat(DATE_FORMAT).format(matchingApproval.getApprovalDate()));
             }
 
             if (matchingApproval.getAdmin() != null) {
-                stepBuilder.approvalAdmin(matchingApproval.getAdmin().toString());
+                partitionBuilder.approvalAdmin(matchingApproval.getAdmin().toString());
             }
 
             if (matchingApproval.getComment() != null && !matchingApproval.getComment().isEmpty()) {
-                stepBuilder.approvalComment(matchingApproval.getComment());
+                partitionBuilder.approvalComment(matchingApproval.getComment());
             }
         } else {
             // Fallback if no matching approval found
-            stepBuilder.approvalAction(approvalStatus);
+            partitionBuilder.approvalAction(approvalStatus);
         }
         if (partition.getPropertyList() != null && !partition.getPropertyList().isEmpty()) {
-            stepBuilder.propertyList(getApprovalPartitionPropertyRestResponses(partition, approvalProfile));
+            partitionBuilder.propertyList(getApprovalPartitionPropertyRestResponses(partition, approvalProfile));
         }
-        return stepBuilder.build();
+        return partitionBuilder.build();
     }
 
     private static List<ApprovalPartitionPropertyRestResponse> getApprovalPartitionPropertyRestResponses(ApprovalPartition partition, ApprovalProfile approvalProfile) {

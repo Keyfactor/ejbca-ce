@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,7 @@ import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestStatus;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest;
+import org.ejbca.core.model.approval.profile.ApprovalPartition;
 import org.ejbca.core.model.era.RaApprovalRequestInfo;
 
 /**
@@ -395,10 +397,15 @@ public class ApprovalRequestRestResponse extends ProcessApprovalRestResponse {
                 .status(status)
                 .steps(steps);
         if (requestInfo.getNextApprovalStep() != null) {
-            final ApprovalStepRestResponse nextStep = buildStepPartition(requestInfo.getNextApprovalStep().getStepIdentifier(),
-                    requestInfo.getNextApprovalStepPartition(), steps.size() + 1, requestInfo.getApprovalData().getApprovals(),
-                    requestInfo.getApprovalProfile(), status.getValue());
-            builder.nextStep(nextStep);
+            final List<ApprovalPartitionRestResponse> partitions = new ArrayList<>();
+            for (ApprovalPartition partition : requestInfo.getNextApprovalStep().getPartitionList()) {
+                partitions.add(buildStepPartition(requestInfo.getNextApprovalStep().getStepIdentifier(), partition,
+                        requestInfo.getApprovalData().getApprovals(), requestInfo.getApprovalProfile(), status.getValue()));
+            }
+            final ApprovalStepRestResponse.Builder stepBuilder = ApprovalStepRestResponse.builder()
+                    .stepNumber(steps.size() + 1)
+                    .partitionList(partitions);
+            builder.nextStep(stepBuilder.build());
         }
         builder.certificateProfileName(requestInfo.getCertificateProfileName())
                 .endEntityProfileName(requestInfo.getEndEntityProfileName());

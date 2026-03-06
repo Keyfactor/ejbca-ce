@@ -291,11 +291,13 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
         // Verify approval step
         assertNotNull("Steps should not be null", steps);
         assertEquals("Should have one approval step", 1, steps.size());
-        assertEquals("Step number should be 1", 1L, step.get("step"));
-        assertEquals("Approval action should be APPROVED", "APPROVED", step.get("approval_action"));
-        assertNotNull("Approval date should be present", step.get("approval_date"));
-        assertEquals("Approval admin should be present", CERTIFICATE_SUBJECT_DN, step.get("approval_admin"));
-        assertEquals("Approval comment should match", "testProcessApprovalRequestApprove", step.get("approval_comment"));
+        assertEquals("Step number should be 1", 1L, step.get("step_number"));
+        final JSONArray partitions = (JSONArray) step.get("partition_list");
+        final JSONObject partition = (JSONObject) partitions.get(0);
+        assertEquals("Approval action should be APPROVED", "APPROVED", partition.get("approval_action"));
+        assertNotNull("Approval date should be present", partition.get("approval_date"));
+        assertEquals("Approval admin should be present", CERTIFICATE_SUBJECT_DN, partition.get("approval_admin"));
+        assertEquals("Approval comment should match", "testProcessApprovalRequestApprove", partition.get("approval_comment"));
 
         // Verify approval was actually processed internally
         final ApprovalDataVO approvalData = approvalSession.findApprovalDataByRequestId(addEndEntityApprovalRequestId);
@@ -417,8 +419,10 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
         assertNotNull("Steps should not be null", steps);
         assertNotNull("Next step should not be null", nextStep);
         assertEquals("Should have none approved step", 0, steps.size());
-        assertEquals("Step number should be 1", 1L, nextStep.get("step"));
-        assertEquals("Approval action should be COMPLETED", "PENDING", nextStep.get("approval_action"));
+        assertEquals("Step number should be 1", 1L, nextStep.get("step_number"));
+        final JSONArray partitions = (JSONArray) nextStep.get("partition_list");
+        final JSONObject partition = (JSONObject) partitions.get(0);
+        assertEquals("Approval action should be PENDING", "PENDING", partition.get("approval_action"));
         assertEquals(EndEntityTypes.ENDUSER.toString(), actualJsonObject.get("certificate_profile_name"));
         assertEquals("Approval EEP should be EMPTY", "EMPTY", actualJsonObject.get("end_entity_profile_name"));
         assertEquals("Approval EEP should be subject dn is incorrect", "CN="+eeName, actualJsonObject.get("subject_dn"));
@@ -456,9 +460,11 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
         assertNotNull("Steps should not be null", steps);
         assertNotNull("Next step should not be null", nextStep);
         assertEquals("Should have none approved step", 0, steps.size());
-        assertEquals("Step number should be 1", 1L, nextStep.get("step"));
-        assertEquals("Approval action should be COMPLETED", "PENDING", nextStep.get("approval_action"));
-        final JSONArray properties = (JSONArray) nextStep.get("property_list");
+        assertEquals("Step number should be 1", 1L, nextStep.get("step_number"));
+        final JSONArray partitions = (JSONArray) nextStep.get("partition_list");
+        final JSONObject partition = (JSONObject) partitions.get(0);
+        assertEquals("Approval action should be PENDING", "PENDING", partition.get("approval_action"));
+        final JSONArray properties = (JSONArray) partition.get("property_list");
         assertEquals("Should have one property", 1, properties.size());
         final JSONObject property = (JSONObject) properties.get(0);
         assertEquals("Property label ", "Radio test", property.get("label"));
