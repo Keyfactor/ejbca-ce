@@ -153,7 +153,6 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     private static final String ACCOUNT_BINDING_ID = "ACCOUNT_BINDING_ID";
     private static final String PROXY_CA_SCEP_KEY_ALIAS = INTERNAL_KEY_PREFIX+"proxy_ca_scep_key_alias";
     private static final String CRYPTO_TOKEN_ID = INTERNAL_KEY_PREFIX+"crypto_token_id";
-    private static final String SIGNING_ALGORITHM = INTERNAL_KEY_PREFIX+"signing_algorithm";
     private static final String TEMPLATE_NAME = INTERNAL_KEY_PREFIX+"template_name";
 
     /** Creates a new instance of ExtendedInformation */
@@ -938,14 +937,6 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
 
     public void setCryptoTokenId(Integer cryptoTokenId) {
         data.put(CRYPTO_TOKEN_ID, cryptoTokenId);
-    }
-
-    public String getSigningAlgorithm() {
-        return (String) data.get(SIGNING_ALGORITHM);
-    }
-
-    public void setSigningAlgorithm(String signingAlgorithm) {
-        data.put(SIGNING_ALGORITHM, signingAlgorithm);
     }
 
     public String getTemplateName() {

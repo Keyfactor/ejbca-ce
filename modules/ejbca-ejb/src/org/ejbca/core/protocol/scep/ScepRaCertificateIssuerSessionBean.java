@@ -66,18 +66,18 @@ public class ScepRaCertificateIssuerSessionBean implements ScepRaCertificateIssu
 
     @Override
     public X509Certificate issueEncryptionCertificate(AuthenticationToken authenticationToken, String caName, int cryptoTokenId,
-                                                      String keyAlias, String signingAlgorithm, String templateName) throws ScepEncryptionCertificateIssuanceException {
-        return issueCertificate(authenticationToken, caName, cryptoTokenId, keyAlias, CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_ENCRYPTOR, signingAlgorithm, templateName);
+                                                      String keyAlias, String templateName) throws ScepEncryptionCertificateIssuanceException {
+        return issueCertificate(authenticationToken, caName, cryptoTokenId, keyAlias, CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_ENCRYPTOR, templateName);
     }
 
     @Override
     public X509Certificate issueSigningCertificate(AuthenticationToken authenticationToken, String caName, int cryptoTokenId,
-                                                   String keyAlias, String signingAlgorithm, String templateName) throws ScepEncryptionCertificateIssuanceException {
-        return issueCertificate(authenticationToken, caName, cryptoTokenId, keyAlias, CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_SIGNER, signingAlgorithm, templateName);
+                                                   String keyAlias, String templateName) throws ScepEncryptionCertificateIssuanceException {
+        return issueCertificate(authenticationToken, caName, cryptoTokenId, keyAlias, CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_SIGNER, templateName);
     }
 
     private X509Certificate issueCertificate(AuthenticationToken authenticationToken, String caName, int cryptoTokenId,
-            String keyAlias, int fixedCertificateProfileId, String signingAlgorithm, String templateName) throws ScepEncryptionCertificateIssuanceException {
+            String keyAlias, int fixedCertificateProfileId, String templateName) throws ScepEncryptionCertificateIssuanceException {
         CertificateResponseMessage certificateResponse;
         try {
             var publicKeyWrapper = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, keyAlias);
@@ -100,7 +100,6 @@ public class ScepRaCertificateIssuerSessionBean implements ScepRaCertificateIssu
             endEntityInformation.setExtendedInformation(new ExtendedInformation());
             endEntityInformation.getExtendedInformation().setProxyCaScepKeyAlias(keyAlias);
             endEntityInformation.getExtendedInformation().setCryptoTokenId(cryptoTokenId);
-            endEntityInformation.getExtendedInformation().setSigningAlgorithm(signingAlgorithm);
             endEntityInformation.getExtendedInformation().setTemplateName(templateName);
             var requestMessage = new SimpleRequestMessage(publicKeyWrapper.getPublicKey(), userName, password);
             certificateResponse = certificateCreateSession.createCertificate(authenticationToken, endEntityInformation, requestMessage,

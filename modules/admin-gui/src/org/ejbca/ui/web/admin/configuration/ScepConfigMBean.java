@@ -1011,12 +1011,12 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
 
                     if (currentAlias.encryptionCertificateMustBeGenerated()) {
                         var certificate = scepRaCertificateIssuerSession.issueEncryptionCertificate(getAuthenticationToken(), currentAlias.getRaDefaultCA(),
-                                currentAlias.encryptionCryptoTokenId, currentAlias.encryptionKeyAlias, currentAlias.signingAlgorithm, currentAlias.getProxyCaEncryptionCertTemplate());
+                                currentAlias.encryptionCryptoTokenId, currentAlias.encryptionKeyAlias, currentAlias.getProxyCaEncryptionCertTemplate());
                         currentAlias.setEncryptionCertificate(currentAlias.encryptionCryptoTokenId, currentAlias.encryptionKeyAlias, certificate);
                     }
                     if (currentAlias.signingCertificateMustBeGenerated()) {
                         var certificate = scepRaCertificateIssuerSession.issueSigningCertificate(getAuthenticationToken(), currentAlias.getRaDefaultCA(),
-                                currentAlias.signingCryptoTokenId, currentAlias.signingKeyAlias, currentAlias.signingAlgorithm, currentAlias.getProxyCaSigningCertTemplate());
+                                currentAlias.signingCryptoTokenId, currentAlias.signingKeyAlias, currentAlias.getProxyCaSigningCertTemplate());
                         currentAlias.setSigningCertificate(currentAlias.signingCryptoTokenId, currentAlias.signingKeyAlias, certificate);
                     }
 
@@ -1055,7 +1055,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                     HashMap<String, String> caToEncryptionCertificate = new HashMap<>();
                     for (var caName : currentAlias.encryptionCAs) {
                         if (!currentAlias.casThatAlreadyHaveEncryptionCerts().contains(caName)) {
-                            var certificate = scepRaCertificateIssuerSession.issueEncryptionCertificate(getAuthenticationToken(), caName, currentAlias.encryptionCryptoTokenId, currentAlias.encryptionKeyAlias, null, null);
+                            var certificate = scepRaCertificateIssuerSession.issueEncryptionCertificate(getAuthenticationToken(), caName, currentAlias.encryptionCryptoTokenId, currentAlias.encryptionKeyAlias, currentAlias.proxyCaEncryptionCertTemplate);
                             var pemEncodedCertificate = CertTools.getPemFromCertificate(certificate);
                             caToEncryptionCertificate.put(caName, pemEncodedCertificate);
                         } 
@@ -1069,7 +1069,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                     HashMap<String, String> caToSigningCertificate = new HashMap<>();
                     for (var caName : currentAlias.encryptionCAs) {
                         if (!currentAlias.casThatAlreadyHaveSigningCerts().contains(caName)) {
-                            var certificate = scepRaCertificateIssuerSession.issueSigningCertificate(getAuthenticationToken(), caName, currentAlias.signingCryptoTokenId, currentAlias.signingKeyAlias, null, null);
+                            var certificate = scepRaCertificateIssuerSession.issueSigningCertificate(getAuthenticationToken(), caName, currentAlias.signingCryptoTokenId, currentAlias.signingKeyAlias, currentAlias.proxyCaSigningCertTemplate);
                             var pemEncodedCertificate = CertTools.getPemFromCertificate(certificate);
                             caToSigningCertificate.put(caName, pemEncodedCertificate);
                         } 
