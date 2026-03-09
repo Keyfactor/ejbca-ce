@@ -238,7 +238,10 @@ public final class CesecoreConfiguration {
         return Boolean.TRUE.toString().equalsIgnoreCase(ConfigurationHolder.getString("databaseprotection.enableverify"));
     }
 
-    /** @return the number of rows that should be fetched at the time when creating CRLs. */
+    /** @return the number of rows that should be fetched at the time when creating CRLs. 
+     * @deprecated since 9.5.0, only retained for upgrades. Use the value from GlobalCesecoreConfiguration
+     */
+    @Deprecated(since = "9.5.0")
     public static int getDatabaseRevokedCertInfoFetchSize() {
         return (int) getLongValue("database.crlgenfetchsize", 500000L, "rows");
     }
@@ -246,7 +249,10 @@ public final class CesecoreConfiguration {
     /**
      * Whether EJBCA should request ordered fetching of revoked certificates when generating CRLs.
      * This is a workaround for MS-SQL.
+     * 
+     * @deprecated since 9.5.0, only retained for upgrades. Use the value from GlobalCesecoreConfiguration
      */
+    @Deprecated(since = "9.5.0")
     public static boolean getDatabaseRevokedCertInfoFetchOrdered() {
         return Boolean.TRUE.toString().equalsIgnoreCase(ConfigurationHolder.getString("database.crlgenfetchordered"));
     }
