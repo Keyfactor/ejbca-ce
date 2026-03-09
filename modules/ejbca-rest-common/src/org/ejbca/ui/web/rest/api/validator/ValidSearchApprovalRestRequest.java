@@ -24,6 +24,8 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 
 /**
  * Validator annotation for SearchApprovalRestRequest.
@@ -114,8 +116,30 @@ public @interface ValidSearchApprovalRestRequest {
         }
 
         private boolean isValidDates(final SearchApprovalRestRequest request) {
+            if (request.getCreatedOnOrAfter() != null) {
+                try {
+                    LocalDate.parse(request.getCreatedOnOrAfter());
+                } catch (DateTimeParseException e) {
+                    return false;
+                }
+            }
+
+            if (request.getCreatedOnOrBefore() != null) {
+                try {
+                    LocalDate.parse(request.getCreatedOnOrBefore());
+                } catch (DateTimeParseException e) {
+                    return false;
+                }
+            }
+
             if (request.getCreatedOnOrAfter() != null && request.getCreatedOnOrBefore() != null) {
-                return request.getCreatedOnOrAfter().before(request.getCreatedOnOrBefore());
+                try {
+                    final LocalDate after = LocalDate.parse(request.getCreatedOnOrAfter());
+                    final LocalDate before = LocalDate.parse(request.getCreatedOnOrBefore());
+                    return after.isBefore(before);
+                } catch (DateTimeParseException e) {
+                    return false;
+                }
             }
             return true;
         }

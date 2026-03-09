@@ -81,8 +81,8 @@ public class ValidSearchApprovalRestRequestUnitTest {
         SearchApprovalRestRequest request = new SearchApprovalRestRequest();
         final ConstraintValidatorContext context = createConstraintValidatorContextMock();
 
-        request.setCreatedOnOrAfter(new Date(System.currentTimeMillis()));
-        request.setCreatedOnOrBefore(new Date(System.currentTimeMillis() - 10000));
+        request.setCreatedOnOrAfter("Invalid Date");
+        request.setCreatedOnOrBefore("Invalid Date");
 
         ValidSearchApprovalRestRequest.Validator validator = new ValidSearchApprovalRestRequest.Validator();
         boolean result = validator.isValid(request, context);

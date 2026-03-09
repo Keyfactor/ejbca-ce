@@ -23,6 +23,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -57,6 +58,7 @@ import org.ejbca.ui.web.rest.api.io.request.ProcessApprovalRestRequest;
 import org.ejbca.ui.web.rest.api.io.response.ApprovalStepRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.ProcessApprovalRestResponse;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -385,14 +387,39 @@ public class ApprovalRestResource extends BaseRestResource {
         raRequestsSearchRequest.setSearchingPending(searchApprovalRestRequest.isSearchingPending());
         raRequestsSearchRequest.setCustomSearchSubjectDn(searchApprovalRestRequest.getSubjectDn());
         raRequestsSearchRequest.setCustomSearchEmail(searchApprovalRestRequest.getEmail());
-        raRequestsSearchRequest.setStartDate(searchApprovalRestRequest.getCreatedOnOrAfter());
-        raRequestsSearchRequest.setEndDate(searchApprovalRestRequest.getCreatedOnOrBefore());
-        raRequestsSearchRequest.setExpiresBefore(getDateBeforeExpiration(searchApprovalRestRequest.getDaysRequestsExpireIn()));
+        try {
+            raRequestsSearchRequest.setStartDate(new SimpleDateFormat("yyyy-MM-dd").parse(searchApprovalRestRequest.getCreatedOnOrAfter().trim()));
+        } catch (ParseException e) {
+            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Invalid start date provided in the request.");
+        }
+        raRequestsSearchRequest.setEndDate(getProperSearchEndDate(searchApprovalRestRequest.getCreatedOnOrBefore()));
+        if (StringUtils.isNoneBlank(searchApprovalRestRequest.getDaysRequestsExpireIn())) {
+            raRequestsSearchRequest.setExpiresBefore(getDateBeforeExpiration(searchApprovalRestRequest.getDaysRequestsExpireIn()));
+            raRequestsSearchRequest.setSearchingHistorical(false);
+            raRequestsSearchRequest.setSearchingExpired(false);
+            raRequestsSearchRequest.setSearchingWaitingForMe(true);
+        } else {
+            raRequestsSearchRequest.setSearchingHistorical(searchApprovalRestRequest.isSearchingHistorical());
+            raRequestsSearchRequest.setSearchingExpired(searchApprovalRestRequest.isSearchingExpired());
+            raRequestsSearchRequest.setSearchingWaitingForMe(searchApprovalRestRequest.isSearchingWaitingForMe());
+        }
         raRequestsSearchRequest.setIncludeOtherAdmins(searchApprovalRestRequest.isIncludeOtherAdmins());
-        raRequestsSearchRequest.setSearchingHistorical(searchApprovalRestRequest.isSearchingHistorical());
-        raRequestsSearchRequest.setSearchingExpired(searchApprovalRestRequest.isSearchingExpired());
-        raRequestsSearchRequest.setSearchingWaitingForMe(searchApprovalRestRequest.isSearchingWaitingForMe());
         return raRequestsSearchRequest;
+    }
+
+    private Date getProperSearchEndDate(String createdOnOrBefore) throws RestException {
+        if (!StringUtils.isBlank(createdOnOrBefore.toString())) {
+            final Calendar cal = Calendar.getInstance();
+            try {
+                cal.setTime(new SimpleDateFormat("yyyy-MM-dd").parse(createdOnOrBefore.trim()));
+            } catch (ParseException e) {
+                throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Invalid end date provided in the request.");
+            }
+            cal.add(Calendar.DAY_OF_MONTH, 1);
+            return cal.getTime();
+        } else {
+            return null;
+        }
     }
 
     private String getRequesterAdmin(final String adminDn) {

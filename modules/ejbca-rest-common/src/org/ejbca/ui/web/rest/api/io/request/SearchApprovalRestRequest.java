@@ -35,13 +35,13 @@ public class SearchApprovalRestRequest {
     @Schema(description = "Search the expired approvals", example = "true", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private boolean searchingExpired;
 
-    @Schema(description = "Start date of the approvals to search", example = "2017-01-01", type = "string", format = "date", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(description = "Start date of the approvals to search", example = "2017-01-01", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    private Date createdOnOrAfter;
+    private String createdOnOrAfter;
 
-    @Schema(description = "End date of the approvals to search", example = "2017-01-01", type = "string", format = "date", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(description = "End date of the approvals to search", example = "2017-01-01", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    private Date createdOnOrBefore;
+    private String createdOnOrBefore;
 
     @Schema(description = "Number of days remaining before approval request expires ", example = "100", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String daysRequestsExpireIn;
@@ -90,19 +90,19 @@ public class SearchApprovalRestRequest {
         this.searchingExpired = searchingExpired;
     }
 
-    public Date getCreatedOnOrAfter() {
+    public String getCreatedOnOrAfter() {
         return createdOnOrAfter;
     }
 
-    public void setCreatedOnOrAfter(final Date createdOnOrAfter) {
+    public void setCreatedOnOrAfter(final String createdOnOrAfter) {
         this.createdOnOrAfter = createdOnOrAfter;
     }
 
-    public Date getCreatedOnOrBefore() {
+    public String getCreatedOnOrBefore() {
         return createdOnOrBefore;
     }
 
-    public void setCreatedOnOrBefore(final Date createdOnOrBefore) {
+    public void setCreatedOnOrBefore(final String createdOnOrBefore) {
         this.createdOnOrBefore = createdOnOrBefore;
     }
 
@@ -169,12 +169,12 @@ public class SearchApprovalRestRequest {
             return this;
         }
 
-        public Builder setCreatedOnOrAfter(Date createdOnOrAfterDate) {
+        public Builder setCreatedOnOrAfter(String createdOnOrAfterDate) {
             request.setCreatedOnOrAfter(createdOnOrAfterDate);
             return this;
         }
 
-        public Builder setCreatedOnOrBefore(Date createdOnOrBeforeDate) {
+        public Builder setCreatedOnOrBefore(String createdOnOrBeforeDate) {
             request.setCreatedOnOrBefore(createdOnOrBeforeDate);
             return this;
         }
