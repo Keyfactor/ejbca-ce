@@ -118,7 +118,7 @@ public class ApprovalPartitionRestResponse {
             }
 
             public Builder propertyList(final List<ApprovalPartitionPropertyRestResponse> propertyList) {
-                this.propertyList = propertyList;
+                response.propertyList = propertyList;
                 return this;
             }
 
