@@ -19,7 +19,6 @@ import java.security.cert.CRLException;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateParsingException;
 import java.security.cert.X509CRL;
 import java.util.Collection;
 import java.util.HashMap;
@@ -292,7 +291,7 @@ public class CaRestResource extends BaseRestResource {
                             .map(c -> {
                                 try {
                                     return CertTools.getCertfromByteArray(c.getBytes(), Certificate.class);
-                                } catch (CertificateParsingException e) {
+                                } catch (Exception e) {
                                     throw new IllegalStateException(e);
                                 }
                             })

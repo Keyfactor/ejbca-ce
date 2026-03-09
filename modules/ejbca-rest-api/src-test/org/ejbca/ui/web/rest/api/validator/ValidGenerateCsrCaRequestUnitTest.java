@@ -60,7 +60,7 @@ public class ValidGenerateCsrCaRequestUnitTest {
     @Test
     public void errorResponseFormatInvalid() {
         // given
-        final String expectedMessage = "Invalid GenerateCsrCaRequest responseFormat, valid values 'DER' or 'PEM'.";
+        final String expectedMessage = "Invalid GenerateCsrCaRequest responseFormat, valid values 'DER'(default) or 'PEM'.";
         final GenerateCsrCaRequest testClass = new GenerateCsrCaRequest();
         testClass.setKeyPair("signKey");
         testClass.setResponseFormat("PKCS12");
@@ -74,7 +74,7 @@ public class ValidGenerateCsrCaRequestUnitTest {
     @Test
     public void errorResponseFormatEmpty() {
         // given
-        final String expectedMessage = "Invalid GenerateCsrCaRequest responseFormat, valid values 'DER' or 'PEM'.";
+        final String expectedMessage = "Invalid GenerateCsrCaRequest responseFormat, valid values 'DER'(default) or 'PEM'.";
         final GenerateCsrCaRequest testClass = new GenerateCsrCaRequest();
         testClass.setKeyPair("signKey");
         testClass.setResponseFormat("");
