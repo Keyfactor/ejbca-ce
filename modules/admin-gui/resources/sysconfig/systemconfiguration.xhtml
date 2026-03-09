@@ -237,6 +237,22 @@
             </h:panelGroup>
             <h:inputText id="forbiddenCharacters" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}" value="#{systemConfigMBean.currentConfig.forbiddenCharacters}"
                  size="40" />
+            <!-- CRL Generation Fetch Size -->
+            <h:panelGroup>
+                <h:outputLabel for="crlGenerationFetchSize" value="#{web.text.CRL_GENERATION_FETCH_SIZE}" />
+                <br/>
+                <h:outputText value="#{web.text.CRL_GENERATION_FETCH_SIZE_HELP}" styleClass="help"/>
+            </h:panelGroup>
+            <h:inputText id="crlGenerationFetchSize" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}" value="#{systemConfigMBean.currentConfig.crlGenerationFetchSize}"
+                 size="20"/>
+            <!-- CRL Genereation fetch ordered -->
+            <h:panelGroup>
+                <h:outputLabel for="crlGenerationFetchOrdered" value="#{web.text.CRL_GENERATION_FETCH_ORDERED}" />
+                <br/>
+                <h:outputText value="#{web.text.CRL_GENERATION_FETCH_ORDERED_HELP}" styleClass="help"/>
+            </h:panelGroup>
+            <p:selectBooleanCheckbox id="crlGenerationFetchOrdered" value="#{systemConfigMBean.currentConfig.crlGenerationFetchOrdered}"
+                    disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}" />
             
 
 		</h:panelGrid>

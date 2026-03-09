@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.TimeZone;
 
+import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
@@ -28,6 +29,8 @@ import org.apache.commons.lang3.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.config.GlobalCesecoreConfiguration;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.util.ValidityDate;
 
 /**
@@ -41,6 +44,9 @@ public class NoConflictCertificateDataSessionBean extends BaseCertificateDataSes
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
+    
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
     
     @Override
     protected EntityManager getEntityManager() {
@@ -108,7 +114,9 @@ public class NoConflictCertificateDataSessionBean extends BaseCertificateDataSes
         } else {
             excludeExpiredExpression = " AND a.expireDate >= :expiredAfter";
         }
-        if (CesecoreConfiguration.getDatabaseRevokedCertInfoFetchOrdered()) {
+        GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+        if (globalCesecoreConfiguration.getCrlGenerationFetchOrdered()) {
             ordering = " ORDER BY revocationDate, fingerprint ASC";
         } else {
             ordering = "";
@@ -137,7 +145,7 @@ public class NoConflictCertificateDataSessionBean extends BaseCertificateDataSes
         query.setParameter("status1", CertificateConstants.CERT_REVOKED);
         query.setParameter("status2", CertificateConstants.CERT_ACTIVE); // in case the certificate has been changed from on hold, we need to include it as "removeFromCRL" in the Delta CRL
         query.setParameter("status3", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION); // could happen if a cert is re-activated just before expiration
-        return getRevokedCertInfosInternal(query, allowInvalidityDate);
+        return getRevokedCertInfosInternal(query, allowInvalidityDate, globalCesecoreConfiguration.getCrlGenerationFetchSize());
     }
     
 }
