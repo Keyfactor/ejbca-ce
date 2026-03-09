@@ -31,6 +31,8 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase implements Se
     public static final boolean DEFAULT_REDACT_PII_DATA_BY_DEFAULT = false;
     public static final boolean DEFAULT_REDACT_PII_DATA_ENFORCED = false;
     public static final char[] DEFAULT_FORBIDDEN_CHARACTERS = new char[] {'\n', '\r',';','!','\u0000','%','`', '?', '$', '~'};
+    public static final int DEFAULT_DATABASE_CRL_FETCH_SIZE = 500000;
+    public static final boolean DEFAULT_DATABASE_CRL_FETCH_ORDERED = false;
     
     
     /** A fixed maximum value to ensure that max query count does not exceed sane values  */
@@ -45,6 +47,9 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase implements Se
     private static final String REDACT_PII_DATA_ENFORCED = "redact.pii.enforced";
     
     private static final String FORBIDDEN_CHARACTERS = "forbidden.characters";
+    
+    private static final String DATABASE_CRL_FETCH_SIZE = "database.crlgenfetchsize";
+    private static final String DATABASE_CRL_FETCH_ORDERED = "database.crlgenfetchordered";
     
     @Deprecated(since = "9.4.0")
     private static final String CT_CACHE_ENABLED_KEY = "ct_cache_enabled";
@@ -156,6 +161,46 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase implements Se
     
     private String unescapeSqlChars(String input) {
         return new String(Base64.decode(input.getBytes()));
+    }
+    
+    /**
+     *  When generating large CRLs, the RAM of the Java process will limit how many entries that can be fetched from the database at the time. A small value will lead to 
+     *  multiple round-trips to the database and CRL generation will take more time.
+     *  
+     *  The heap usage can be estimated to roughly 600 bytes * rows per database read. The default of 0.5M revoked entries per database round trip will usually fit within 
+     *  a 2GiB heap assigned to the application server. If multiple large CRLs are generated at the same time, the used heap will be the sum of the heap used by each CRL generation.
+     *  
+     *  If you have plenty of RAM assigned to the application server you should increase this value.
+     */
+    public int getCrlGenerationFetchSize() {
+        Object databaseValue = data.get(DATABASE_CRL_FETCH_SIZE);
+        if(databaseValue != null) {
+            return (int) databaseValue;
+        } else {
+            return DEFAULT_DATABASE_CRL_FETCH_SIZE;
+        }
+    }
+    
+    public void setCrlGenerationFetchSize(int size) {
+        data.put(DATABASE_CRL_FETCH_SIZE, size);
+    }
+    
+    /**
+     * Whether EJBCA should request ordered fetching of revoked certificates when generating CRLs. EJBCA relies on Hibernate to return data in batches (getCrlGenerationFetchSize to control 
+     * the read batch size). However, Microsoft SQL Server 2016 is known to return duplicates and/or missing entries when multiple batches are read. The setting below is a workaround for 
+     * this problem.
+     */
+    public boolean getCrlGenerationFetchOrdered() {
+        Object databaseValue = data.get(DATABASE_CRL_FETCH_ORDERED);
+        if(databaseValue != null) {
+            return (boolean) databaseValue;
+        } else {
+            return DEFAULT_DATABASE_CRL_FETCH_ORDERED;
+        }
+    }
+    
+    public void setCrlGenerationFetchOrdered(boolean ordered) {
+        data.put(DATABASE_CRL_FETCH_ORDERED, ordered);
     }
     
     
