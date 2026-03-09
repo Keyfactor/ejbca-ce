@@ -120,14 +120,11 @@ import org.bouncycastle.cms.CMSSignedDataGenerator;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.cms.CMSTypedData;
 import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
-import org.bouncycastle.jcajce.CompositePrivateKey;
-import org.bouncycastle.jcajce.CompositePublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.ContentVerifierProvider;
-import org.bouncycastle.operator.ExtendedContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
@@ -996,12 +993,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             // Find the signature algorithm from the public key, because it is more granular, i.e. can differnetiate between ML-DSA-44 and ML-DSA-65
             final String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(CMSSignedGenerator.DIGEST_SHA256, publicKey.getAlgorithm());
 
-            CMSSignedDataGenerator generator;
-            if (privateKey instanceof CompositePrivateKey && publicKey instanceof CompositePublicKey) {
-                generator = createCompositePkcs7Response(signatureAlgorithmName, cryptoToken.getSignProviderName(), ((CompositePrivateKey) privateKey), ((CompositePublicKey) publicKey), cacert);
-            } else {
-                generator = createPkcs7Response(signatureAlgorithmName, cryptoToken.getSignProviderName(), privateKey, publicKey, cacert);
-            }
+            final CMSSignedDataGenerator generator = createPkcs7Response(signatureAlgorithmName, cryptoToken.getSignProviderName(), privateKey, publicKey, cacert);
 
             generator.addCertificates(new CollectionStore<>(certList));
             CMSSignedData s = null;
@@ -1035,36 +1027,6 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             throw new IllegalStateException("BouncyCastle failed in creating signature provider.", e);
         }
     }
-
-    private CMSSignedDataGenerator createCompositePkcs7Response(final String signatureAlgorithmName, final String signProviderName, final CompositePrivateKey privKey, final CompositePublicKey pubKey, final X509Certificate cacert) throws CertificateEncodingException {
-        try {
-            final CMSSignedDataGenerator generator = new CMSSignedDataGenerator();
-
-            final ExtendedContentSigner contentSigner = new BufferingContentSigner(new JcaContentSignerBuilder(privKey.getPrivateKeys().get(0).getAlgorithm())
-                    .setProvider(signProviderName).build(privKey.getPrivateKeys().get(0)), 20480);
-
-            // For the PoC we only have SHA512.
-            String sigAlg = AlgorithmConstants.SIGALG_SHA512_WITH_RSA;
-            if (signatureAlgorithmName.contains("ECDSA")) {
-                sigAlg = AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA;
-            }
-
-            final ExtendedContentSigner contentSigner2 = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg)
-                    .setProvider(signProviderName).build(privKey.getPrivateKeys().get(1)), 20480);
-
-            final JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME);
-            final JcaSignerInfoGeneratorBuilder builder = new JcaSignerInfoGeneratorBuilder(calculatorProviderBuilder.build());
-            generator.addSignerInfoGenerator(builder.build(contentSigner, cacert));
-
-            final JcaDigestCalculatorProviderBuilder calculatorProviderBuilder2 = new JcaDigestCalculatorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME);
-            final JcaSignerInfoGeneratorBuilder builder2 = new JcaSignerInfoGeneratorBuilder(calculatorProviderBuilder2.build());
-            generator.addSignerInfoGenerator(builder2.build(contentSigner2, cacert));
-            return generator;
-        } catch (OperatorCreationException e) {
-            throw new IllegalStateException("BouncyCastle failed in creating signature provider.", e);
-        }
-    }
-
 
     /* (non-Javadoc)
      * @see org.cesecore.certificates.ca.X509CA#createPKCS7Rollover(om.keyfactor.util.keys.token.CryptoToken)
