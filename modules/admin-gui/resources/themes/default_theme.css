@@ -1623,7 +1623,7 @@ table.ui-md-1, table.ui-md-2, table.ui-md-3, table.ui-md-4, table.ui-md-5, table
     font-weight: bold;
     max-width: 35vw;
     min-width: 3rem;
-    word-break: break-all;
+    word-break: break-word;
 }
 
 .vertical-padding-1 {

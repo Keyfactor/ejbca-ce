@@ -2033,26 +2033,34 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         // Verify using the CA certificate before returning
         // If we can not verify the issued certificate using the CA certificate we don't want to issue this cert
         // because something is wrong...
-        final PublicKey verifyKey;
-        // We must use the configured public key if this is a rootCA, because then we can renew our own certificate, after changing
-        // the keys. In this case the _new_ key will not match the current CA certificate.
-        if ((cacert != null) && (!isRootCA) && (!linkCertificate)) {
-            verifyKey = cacert.getPublicKey();
+        //
+        // ECA-13882: Ability to disable certificate signature verification on issuance
+        if (certProfile.getUseSignatureVerification()) {
+            final PublicKey verifyKey;
+            // We must use the configured public key if this is a rootCA, because then we can renew our own certificate, after changing
+            // the keys. In this case the _new_ key will not match the current CA certificate.
+            if ((cacert != null) && (!isRootCA) && (!linkCertificate)) {
+                verifyKey = cacert.getPublicKey();
+            } else {
+                verifyKey = caSigningPackage.getPrimaryPublicKey();
+            }
+            try {
+                cert.verify(verifyKey);
+            } catch (SignatureException e) {
+                final String msg = "Public key in the CA certificate does not match the configured certSignKey, is the CA in renewal process? : " + e.getMessage();
+                log.warn(msg);
+                throw new CertificateCreateException(msg, e);
+            } catch (InvalidKeyException e) {
+                throw new CertificateCreateException("CA's public key was invalid,", e);
+            } catch (NoSuchAlgorithmException | CertificateException e) {
+                throw new CertificateCreateException(e);
+            } catch (NoSuchProviderException e) {
+                throw new IllegalStateException("Provider was unknown", e);
+            }
         } else {
-            verifyKey = caSigningPackage.getPrimaryPublicKey();
-        }
-        try {
-            cert.verify(verifyKey);
-        } catch (SignatureException e) {
-            final String msg = "Public key in the CA certificate does not match the configured certSignKey, is the CA in renewal process? : " + e.getMessage();
-            log.warn(msg);
-            throw new CertificateCreateException(msg, e);
-        } catch (InvalidKeyException e) {
-            throw new CertificateCreateException("CA's public key was invalid,", e);
-        } catch (NoSuchAlgorithmException | CertificateException e) {
-           throw new CertificateCreateException(e);
-        } catch (NoSuchProviderException e) {
-            throw new IllegalStateException("Provider was unknown", e);
+            if (log.isDebugEnabled()) {
+                log.debug("Skipping signature verification as requested by certificate profile " + subject.getCertificateProfileId() + ", for CA " + this.getCAId() + " [" + this.getName() + "].");
+            }
         }
 
         // Verify any Signed Certificate Timestamps (SCTs) in the certificate before returning. If one of the (embedded) SCTs does
