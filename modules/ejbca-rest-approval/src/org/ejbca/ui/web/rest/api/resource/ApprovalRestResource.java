@@ -418,8 +418,8 @@ public class ApprovalRestResource extends BaseRestResource {
         return raRequestsSearchRequest;
     }
 
-    private Date getProperSearchEndDate(String createdOnOrBefore) throws RestException {
-        if (!StringUtils.isBlank(createdOnOrBefore.toString())) {
+    private Date getProperSearchEndDate(final String createdOnOrBefore) throws RestException {
+        if (!StringUtils.isBlank(createdOnOrBefore)) {
             final Calendar cal = Calendar.getInstance();
             try {
                 cal.setTime(new SimpleDateFormat("yyyy-MM-dd").parse(createdOnOrBefore.trim()));
