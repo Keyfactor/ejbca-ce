@@ -22,27 +22,28 @@ import java.util.List;
 /**
  * Represents a single approval partition in an approval request response.
  */
-@Schema(name = "ApprovalPartitionRestResponse", description = "Information about an approval partition")
-
+@Schema(name = "ApprovalPartitionRestResponse", description = "Information about approval partitions")
 public class ApprovalPartitionRestResponse {
 
-
+    @Schema(description = "List of approval partitions")
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private List<ApprovalPartitionStep> approvalPartitions = new ArrayList<>();
 
+    public ApprovalPartitionRestResponse() {
+    }
 
     public List<ApprovalPartitionStep> getApprovalPartitions() {
         return approvalPartitions;
     }
 
-    public void setApprovalPartitions(List<ApprovalPartitionStep> approvalPartitions) {
+    public void setApprovalPartitions(final List<ApprovalPartitionStep> approvalPartitions) {
         this.approvalPartitions = approvalPartitions;
-    }
-
-    public ApprovalPartitionRestResponse() {
     }
 
     public static class ApprovalPartitionStep {
 
+        @Schema(description = "Partition name", example = "APPROVED")
+        private String name;
 
         @Schema(description = "The action taken on this step (e.g., APPROVED, REJECTED, PENDING)", example = "APPROVED")
         private String approvalAction;
@@ -58,9 +59,14 @@ public class ApprovalPartitionRestResponse {
         private String approvalComment;
 
         @Schema(description = "Partition properties provided with the approval action")
-        List<ApprovalPartitionPropertyRestResponse> propertyList;
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
+        private List<ApprovalPartitionPropertyRestResponse> propertyList = new ArrayList<>();
 
         public ApprovalPartitionStep() {
+        }
+
+        public String getName() {
+            return name;
         }
 
         public String getApprovalAction() {
@@ -95,7 +101,10 @@ public class ApprovalPartitionRestResponse {
                 response = new ApprovalPartitionStep();
             }
 
-            private List<ApprovalPartitionPropertyRestResponse> propertyList;
+            public Builder name(final String name) {
+                response.name = name;
+                return this;
+            }
 
             public Builder approvalAction(final String approvalAction) {
                 response.approvalAction = approvalAction;
@@ -125,7 +134,6 @@ public class ApprovalPartitionRestResponse {
             public ApprovalPartitionStep build() {
                 return response;
             }
-
         }
     }
 }
