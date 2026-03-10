@@ -388,7 +388,18 @@ public class ApprovalRestResource extends BaseRestResource {
         raRequestsSearchRequest.setCustomSearchSubjectDn(searchApprovalRestRequest.getSubjectDn());
         raRequestsSearchRequest.setCustomSearchEmail(searchApprovalRestRequest.getEmail());
         try {
-            raRequestsSearchRequest.setStartDate(new SimpleDateFormat("yyyy-MM-dd").parse(searchApprovalRestRequest.getCreatedOnOrAfter().trim()));
+
+            String createdOnOrAfter = searchApprovalRestRequest.getCreatedOnOrAfter();
+
+            if (createdOnOrAfter != null) {
+                createdOnOrAfter = createdOnOrAfter.trim();
+                if (!createdOnOrAfter.isEmpty()) {
+                    raRequestsSearchRequest.setStartDate(
+                            new SimpleDateFormat("yyyy-MM-dd").parse(createdOnOrAfter)
+                    );
+                }
+            }
+
         } catch (ParseException e) {
             throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Invalid start date provided in the request.");
         }
