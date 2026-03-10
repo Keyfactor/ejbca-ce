@@ -20,7 +20,9 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import org.apache.commons.lang3.StringUtils;
 import org.cesecore.util.ui.DynamicUiProperty;
+import org.cesecore.util.ui.StringValidator;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalRequest;
@@ -257,6 +259,11 @@ public class ProcessApprovalRestResponse {
             partitionBuilder.approvalAction(approvalStatus);
         }
         if (partition.getPropertyList() != null && !partition.getPropertyList().isEmpty()) {
+            if (partition.getPropertyList().get("name") != null
+                    && partition.getPropertyList().get("name").getValueAsString() != null
+                    && !partition.getPropertyList().get("name").getValueAsString().isEmpty()) {
+                partitionBuilder.name(partition.getPropertyList().get("name").getValueAsString());
+            }
             partitionBuilder.propertyList(getApprovalPartitionPropertyRestResponses(partition, approvalProfile));
         }
         return partitionBuilder.build();

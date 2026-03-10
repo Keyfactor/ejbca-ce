@@ -24,6 +24,9 @@ import java.util.List;
 
 public class ApprovalPartitionRestResponse {
 
+    @Schema(description = "Partition name", example = "APPROVED")
+    private String name;
+
     @Schema(description = "The action taken on this step (e.g., APPROVED, REJECTED, PENDING)", example = "APPROVED")
     private String approvalAction;
 
@@ -41,11 +44,15 @@ public class ApprovalPartitionRestResponse {
     List<ApprovalPartitionPropertyRestResponse> propertyList;
 
     public ApprovalPartitionRestResponse(final Builder builder) {
+        this.name = builder.name;
         this.propertyList = builder.propertyList;
         this.approvalAction = builder.approvalAction;
         this.approvalDate = builder.approvalDate;
         this.approvalAdmin = builder.approvalAdmin;
         this.approvalComment = builder.approvalComment;
+    }
+    public String getName() {
+        return name;
     }
 
     public String getApprovalAction() {
@@ -73,11 +80,18 @@ public class ApprovalPartitionRestResponse {
     }
 
     public static class Builder {
+        private  String name;
         private String approvalAction;
         private String approvalDate;
         private String approvalAdmin;
         private String approvalComment;
         private List<ApprovalPartitionPropertyRestResponse> propertyList;
+
+        public Builder name(final String name) {
+            this.name = name;
+            return this;
+        }
+
         public Builder approvalAction(final String approvalAction) {
             this.approvalAction = approvalAction;
             return this;
