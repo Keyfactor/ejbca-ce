@@ -120,9 +120,9 @@ public class DummyApprovalRequest extends ApprovalRequest {
 		ArrayList<ApprovalDataText> newText = new ArrayList<ApprovalDataText>();
 		newText.add(new ApprovalDataText("DUMMYDATAROW1: ", "YES" , false, false));
 		newText.add(new ApprovalDataText("DUMMYDATAROW2: ", "YES" , false, false));
-		newText.add(new ApprovalDataText(ApprovalDataText.REDACT_PII, Boolean.toString(redactPii), false, false));
-		newText.add(new ApprovalDataText(ApprovalDataText.SUBJECT_DN, "DUMMY SUBJECT DN", false, false));
-		newText.add(new ApprovalDataText(ApprovalDataText.SUBJECT_ALT_NAME, "DUMMY SAN", false, false));
+		newText.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.REDACTPII.name(), Boolean.toString(redactPii), false, false));
+		newText.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.SUBJECTDN.name(), "DUMMY SUBJECT DN", false, false));
+		newText.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.SUBJECTALTNAME.name(), "DUMMY SAN", false, false));
 
 		return newText;
 	}

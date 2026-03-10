@@ -174,22 +174,22 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 	public List<ApprovalDataText> getNewRequestDataAsText(AuthenticationToken admin) {
 		ArrayList<ApprovalDataText> retval = new ArrayList<>();
 		if ( username != null ) {
-			retval.add(new ApprovalDataText("USERNAME",username,true,false));
+			retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.USERNAME.name(),username,true,false));
 		}
 		if ( reason == RevokedCertInfo.NOT_REVOKED) {
-			retval.add(new ApprovalDataText("REASON","UNREVOKE",true,true));
+			retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.REASON.name(),"UNREVOKE",true,true));
 		} else {
-			retval.add(new ApprovalDataText("REASON",SecConst.reasontexts[reason],true,true));
+			retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.REASON.name(),SecConst.reasontexts[reason],true,true));
 		}
 		if ( certificateSerialNumber != null && issuerDN != null ) {
-			retval.add(new ApprovalDataText("CERTSERIALNUMBER",certificateSerialNumber.toString(16),true,false));
-			retval.add(new ApprovalDataText("ISSUERDN",issuerDN,true,false));
+			retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.CERTSERIALNUMBER.name(),certificateSerialNumber.toString(16),true,false));
+			retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.ISSUERDN.name(),issuerDN,true,false));
 		}
 		if (revocationDate != null) {
-            retval.add(new ApprovalDataText("REVOCATIONDATE", ValidityDate.formatAsISO8601ServerTZ(revocationDate.getTime(), TimeZone.getDefault()), true, false));
+            retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.REVOCATIONDATE.name(), ValidityDate.formatAsISO8601ServerTZ(revocationDate.getTime(), TimeZone.getDefault()), true, false));
 		}
 		if (invalidityDate != null) {
-            retval.add(new ApprovalDataText("INVALIDITYDATE", ValidityDate.formatAsISO8601ServerTZ(invalidityDate.getTime(), TimeZone.getDefault()), true, false));
+            retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.INVALIDITYDATE.name(), ValidityDate.formatAsISO8601ServerTZ(invalidityDate.getTime(), TimeZone.getDefault()), true, false));
 		}
 		return retval;
 	}

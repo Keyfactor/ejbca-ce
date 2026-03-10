@@ -25,28 +25,23 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
-import org.ejbca.core.model.approval.*;
-import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
-import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest;
-import org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityApprovalRequest;
-import org.ejbca.core.model.approval.approvalrequests.KeyRecoveryApprovalRequest;
-import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
+import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
+import org.ejbca.core.model.approval.ApprovalDataVO;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
+import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
+import org.ejbca.core.model.approval.ApprovalRequestStatus;
+import org.ejbca.core.model.approval.SelfApprovalException;
 import org.ejbca.core.model.approval.profile.ApprovalPartition;
 import org.ejbca.core.model.era.RaApprovalRequestInfo;
 import org.ejbca.core.model.era.RaApprovalResponseRequest;
-import org.ejbca.core.model.era.RaApprovalStepInfo;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.request.ProcessApprovalRestRequest;
+import org.ejbca.ui.web.rest.api.io.response.ApprovalRequestRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.ApprovalRequestStatusRestResponse;
-import org.ejbca.ui.web.rest.api.io.response.ApprovalStepRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.ProcessApprovalRestResponse;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
 
 /**
  * JAX-RS resource handling approval request operations.
@@ -56,7 +51,7 @@ import java.util.List;
 public class ApprovalRestResource extends BaseRestResource {
 
     private static final Logger log = Logger.getLogger(ApprovalRestResource.class);
-    private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ssXXX";
+
 
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApi;
@@ -74,10 +69,7 @@ public class ApprovalRestResource extends BaseRestResource {
      * @throws RestException if the request ID is invalid or not found
      */
     public Response getApprovalRequestStatus(final HttpServletRequest requestContext, final int requestId) throws RestException {
-        if (requestId <= 0) {
-            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(),
-                    "Invalid request ID '" + requestId + "'. Request ID must be a positive integer.");
-        }
+        validateRequestId(requestId);
 
         try {
             final AuthenticationToken authenticationToken = getAdmin(requestContext, false);
@@ -102,6 +94,45 @@ public class ApprovalRestResource extends BaseRestResource {
             throw new RestException(Response.Status.FORBIDDEN.getStatusCode(), "Missing or invalid authentication.");
         }
 
+    }
+
+
+    /**
+     * Gets the data of an approval request.
+     *
+     * @param requestContext        the HTTP request context
+     * @param requestId             the ID of the approval request
+     * @return                      Approval request status
+     * @throws RestException if the request ID is invalid or not found
+     */
+    public Response getApprovalRequest(final HttpServletRequest requestContext, final int requestId) throws RestException {
+        validateRequestId(requestId);
+
+        try {
+            final AuthenticationToken authenticationToken = getAdmin(requestContext, false);
+            final RaApprovalRequestInfo approvalRequestInfo = raMasterApi.getApprovalRequest(authenticationToken, requestId);
+
+            // getApprovalRequest also returns null if the user is not authorized to view the request.
+            if (approvalRequestInfo == null) {
+                throw new RestException(
+                        Response.Status.NOT_FOUND.getStatusCode(),
+                        "Approval request with ID '" + requestId + "' not found, or user not authorized to view.");
+            }
+
+            final ApprovalRequestRestResponse response = ApprovalRequestRestResponse.buildApprovalResponse(approvalRequestInfo);
+            return Response.ok(response).build();
+        } catch (AuthorizationDeniedException e) {
+            log.error(e.getMessage(), e);
+            throw new RestException(Response.Status.FORBIDDEN.getStatusCode(), "Missing or invalid authentication.");
+        }
+
+    }
+
+    private static void validateRequestId(int requestId) throws RestException {
+        if (requestId <= 0) {
+            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(),
+                    "Invalid request ID '" + requestId + "'. Request ID must be a positive integer.");
+        }
     }
 
     /**
@@ -186,130 +217,8 @@ public class ApprovalRestResource extends BaseRestResource {
         }
 
         // Build the response
-        final ProcessApprovalRestResponse response = buildApprovalResponse(updatedRequestInfo);
+        final ProcessApprovalRestResponse response = ProcessApprovalRestResponse.buildApprovalResponse(updatedRequestInfo);
         return Response.ok(response).build();
     }
 
-    private String getUsername(final ApprovalRequest approvalRequest) {
-        if (approvalRequest instanceof AddEndEntityApprovalRequest) {
-            return ((AddEndEntityApprovalRequest)approvalRequest).getEndEntityInformation().getUsername();
-        } else if (approvalRequest instanceof EditEndEntityApprovalRequest) {
-            return ((EditEndEntityApprovalRequest)approvalRequest).getNewEndEntityInformation().getUsername();
-        } else if (approvalRequest instanceof RevocationApprovalRequest) {
-            return ((RevocationApprovalRequest)approvalRequest).getUsername();
-        } else if (approvalRequest instanceof KeyRecoveryApprovalRequest) {
-            return ((KeyRecoveryApprovalRequest)approvalRequest).getUsername();
-        } else if (approvalRequest instanceof ChangeStatusEndEntityApprovalRequest) {
-            return ((ChangeStatusEndEntityApprovalRequest)approvalRequest).getUsername();
-        } else {
-            return null;
-        }
-    }
-
-    private ProcessApprovalRestResponse buildApprovalResponse(final RaApprovalRequestInfo requestInfo) {
-        final SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
-        final ApprovalDataVO approvalData = requestInfo.getApprovalData();
-        final String endEntityName = getUsername(requestInfo.getApprovalRequest());
-
-        // Build approval steps
-        final List<ApprovalStepRestResponse> steps = buildApprovalSteps(requestInfo);
-
-        final Date requestDate = new Date(approvalData.getRequestDate().getTime());
-        final long expirationPeriod = requestInfo.getApprovalRequest().getRequestValidity();
-        final Date expirationDate = new Date(requestDate.getTime() + expirationPeriod);
-
-        return ProcessApprovalRestResponse.builder()
-                .requestId(String.valueOf(requestInfo.getId()))
-                .requestType(getApprovalTypeName(approvalData.getApprovalType()))
-                .requestDate(dateFormat.format(requestDate))
-                .expirationDate(dateFormat.format(expirationDate))
-                .endEntityName(endEntityName)
-                .status(ApprovalRequestStatus.fromIntWithCombinedStates(requestInfo.getStatus()))
-                .steps(steps)
-                .build();
-    }
-
-    private List<ApprovalStepRestResponse> buildApprovalSteps(final RaApprovalRequestInfo requestInfo) {
-        final List<ApprovalStepRestResponse> steps = new ArrayList<>();
-        final List<RaApprovalStepInfo> previousSteps = requestInfo.getPreviousApprovalSteps();
-
-        if (previousSteps != null) {
-            // Get all approvals from the approval data
-            final ApprovalDataVO approvalData = requestInfo.getApprovalData();
-            final Collection<Approval> approvals = approvalData.getApprovals();
-
-            int stepNumber = 1;
-            for (RaApprovalStepInfo stepInfo : previousSteps) {
-                for (ApprovalPartition partition : stepInfo.getPartitions()) {
-                    final ApprovalStepRestResponse.Builder stepBuilder = ApprovalStepRestResponse.builder()
-                        .step(stepNumber);
-
-                    // Find the approval record for this step and partition
-                    Approval matchingApproval = null;
-                    if (approvals != null) {
-                        for (Approval approval : approvals) {
-                            if (approval.getStepId() == stepInfo.getStepId() &&
-                                approval.getPartitionId() == partition.getPartitionIdentifier()) {
-                                matchingApproval = approval;
-                                //break;
-                                // TODO Now we only display in the latest approving admin for this step (i.e. the one which sent this request)
-                                // In the GUI we display all administrators that performed this step (accumulative profile)
-                                // If we want to do the same for the REST API, we'd need to restructure the response objects JSON
-                            }
-                        }
-                    }
-
-                    // Populate approval details if found
-                    if (matchingApproval != null) {
-                        stepBuilder.approvalAction(matchingApproval.isApproved() ? "APPROVED" : "REJECTED");
-
-                        if (matchingApproval.getApprovalDate() != null) {
-                            stepBuilder.approvalDate(new SimpleDateFormat(DATE_FORMAT).format(matchingApproval.getApprovalDate()));
-                        }
-
-                        if (matchingApproval.getAdmin() != null) {
-                            stepBuilder.approvalAdmin(matchingApproval.getAdmin().toString());
-                        }
-
-                        if (matchingApproval.getComment() != null && !matchingApproval.getComment().isEmpty()) {
-                            stepBuilder.approvalComment(matchingApproval.getComment());
-                        }
-                    } else {
-                        // Fallback if no matching approval found
-                        stepBuilder.approvalAction("COMPLETED");
-                    }
-                    steps.add(stepBuilder.build());
-                    stepNumber++;
-                }
-            }
-        }
-        return steps;
-    }
-
-    private String getApprovalTypeName(final int approvalType) {
-        switch (approvalType) {
-            case ApprovalDataVO.APPROVALTYPE_ADDENDENTITY:
-                return "Add End Entity";
-            case ApprovalDataVO.APPROVALTYPE_EDITENDENTITY:
-                return "Edit End Entity";
-            case ApprovalDataVO.APPROVALTYPE_REVOKEENDENTITY:
-                return "Revoke End Entity";
-            case ApprovalDataVO.APPROVALTYPE_CHANGESTATUSENDENTITY:
-                return "Change Status of End Entity";
-            case ApprovalDataVO.APPROVALTYPE_KEYRECOVERY:
-                return "Key Recovery";
-            case ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE:
-                return "Revoke Certificate";
-            case ApprovalDataVO.APPROVALTYPE_REVOKEANDDELETEENDENTITY:
-                return "Revoke and Delete End Entity";
-            case ApprovalDataVO.APPROVALTYPE_ACME_ACCOUNT_KEYCHANGE:
-                return "ACME Account Key Change";
-            case ApprovalDataVO.APPROVALTYPE_ACME_ACCOUNT_REGISTRATION:
-                return "ACME Account Registration";
-            case ApprovalDataVO.APPROVALTYPE_ACTIVATECATOKEN:
-                return "Activate CA Token";
-            default:
-                return "Unknown Type (" + approvalType + ")";
-        }
-    }
 }

@@ -162,7 +162,7 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest implements End
 	@Override
 	public List<ApprovalDataText> getNewRequestDataAsText(AuthenticationToken admin) {
 	    ArrayList<ApprovalDataText> retval = new ArrayList<>();
-        retval.add(new ApprovalDataText("USERNAME",newuserdata.getUsername(),true,false));
+        retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.USERNAME.name(),newuserdata.getUsername(),true,false));
         String passwordtext = "NOTSHOWN";
         if((newuserdata.getPassword() == null && !StringUtils.isEmpty(orguserdata.getPassword())) ||
            (!StringUtils.isEmpty(newuserdata.getPassword()) && orguserdata.getPassword() == null)) {
@@ -173,23 +173,23 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest implements End
                 passwordtext = "NEWPASSWORD";
             }
         }
-        retval.add(new ApprovalDataText("PASSWORD",passwordtext,true,true));
-		retval.add(new ApprovalDataText(ApprovalDataText.REDACT_PII, Boolean.toString(LogRedactionUtils.isRedactPii(newuserdata.getEndEntityProfileId())), true, false));
-		retval.add(new ApprovalDataText(ApprovalDataText.SUBJECT_DN, DnComponents.stringToBCDNString(newuserdata.getDN()),true,false));
-        retval.add(getTextWithNoValueString(ApprovalDataText.SUBJECT_ALT_NAME, newuserdata.getSubjectAltName()));
+        retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.PASSWORD.name(),passwordtext,true,true));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.REDACTPII.name(), Boolean.toString(LogRedactionUtils.isRedactPii(newuserdata.getEndEntityProfileId())), true, false));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.SUBJECTDN.name(), DnComponents.stringToBCDNString(newuserdata.getDN()),true,false));
+        retval.add(getTextWithNoValueString(ApprovalDataText.ApprovalDataHeader.SUBJECTALTNAME.name(), newuserdata.getSubjectAltName()));
         String dirattrs = newuserdata.getExtendedInformation() != null ? newuserdata.getExtendedInformation().getSubjectDirectoryAttributes() : null;
-        retval.add(getTextWithNoValueString("SUBJECTDIRATTRIBUTES",dirattrs));
-        retval.add(getTextWithNoValueString("EMAIL",newuserdata.getEmail()));
-        retval.add(new ApprovalDataText("KEYRECOVERABLE",newuserdata.getKeyRecoverable() ? "YES" : "NO",true,true));
-        retval.add(new ApprovalDataText("SENDNOTIFICATION",newuserdata.getSendNotification() ? "YES" : "NO",true,true));
-        retval.add(new ApprovalDataText("STATUS",EndEntityConstants.getTranslatableStatusText(newuserdata.getStatus()),true,true));
+        retval.add(getTextWithNoValueString(ApprovalDataText.ApprovalDataHeader.SUBJECTDIRATTRIBUTES.name(),dirattrs));
+        retval.add(getTextWithNoValueString(ApprovalDataText.ApprovalDataHeader.EMAIL.name(),newuserdata.getEmail()));
+        retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.KEYRECOVERABLE.name(),newuserdata.getKeyRecoverable() ? "YES" : "NO",true,true));
+        retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.SENDNOTIFICATION.name(),newuserdata.getSendNotification() ? "YES" : "NO",true,true));
+        retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.STATUS.name(),EndEntityConstants.getTranslatableStatusText(newuserdata.getStatus()),true,true));
         return retval;
 	}
 
 	public List<ApprovalDataText> getNewRequestDataAsText(CaSessionLocal caSession, EndEntityProfileSession endEntityProfileSession,
 			CertificateProfileSession certificateProfileSession) {
 		ArrayList<ApprovalDataText> retval = new ArrayList<>();
-		retval.add(new ApprovalDataText("USERNAME",newuserdata.getUsername(),true,false));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.USERNAME.name(),newuserdata.getUsername(),true,false));
 		String passwordtext = "NOTSHOWN";
 		if((newuserdata.getPassword() == null && !StringUtils.isEmpty(orguserdata.getPassword())) ||
 		   (!StringUtils.isEmpty(newuserdata.getPassword()) && orguserdata.getPassword() == null)) {
@@ -200,13 +200,13 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest implements End
 				passwordtext = "NEWPASSWORD";
 			}
 		}
-		retval.add(new ApprovalDataText("PASSWORD",passwordtext,true,true));
-		retval.add(new ApprovalDataText(ApprovalDataText.REDACT_PII, Boolean.toString(LogRedactionUtils.isRedactPii(newuserdata.getEndEntityProfileId())), true, false));
-		retval.add(new ApprovalDataText(ApprovalDataText.SUBJECT_DN, DnComponents.stringToBCDNString(newuserdata.getDN()),true,false));
-		retval.add(getTextWithNoValueString(ApprovalDataText.SUBJECT_ALT_NAME, newuserdata.getSubjectAltName()));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.PASSWORD.name(),passwordtext,true,true));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.REDACTPII.name(), Boolean.toString(LogRedactionUtils.isRedactPii(newuserdata.getEndEntityProfileId())), true, false));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.SUBJECTDN.name(), DnComponents.stringToBCDNString(newuserdata.getDN()),true,false));
+		retval.add(getTextWithNoValueString(ApprovalDataText.ApprovalDataHeader.SUBJECTALTNAME.name(), newuserdata.getSubjectAltName()));
 		String dirattrs = newuserdata.getExtendedInformation() != null ? newuserdata.getExtendedInformation().getSubjectDirectoryAttributes() : null;
-		retval.add(getTextWithNoValueString("SUBJECTDIRATTRIBUTES",dirattrs));
-		retval.add(getTextWithNoValueString("EMAIL",newuserdata.getEmail()));
+		retval.add(getTextWithNoValueString(ApprovalDataText.ApprovalDataHeader.SUBJECTDIRATTRIBUTES.name(),dirattrs));
+		retval.add(getTextWithNoValueString(ApprovalDataText.ApprovalDataHeader.EMAIL.name(),newuserdata.getEmail()));
 		CAInfo caInfo = caSession.getCAInfoInternal(newuserdata.getCAId());
 		String caname;
 		if(caInfo != null) {
@@ -214,20 +214,20 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest implements End
 		} else {
 			caname = "NotExist";
 		}
-		retval.add(new ApprovalDataText("CA", caname, true, false));
-		retval.add(new ApprovalDataText(ApprovalDataText.END_ENTITY_PROFILE_NAME, endEntityProfileSession.getEndEntityProfileName(newuserdata.getEndEntityProfileId()),true,false));
-		retval.add(new ApprovalDataText("CERTIFICATEPROFILE", certificateProfileSession.getCertificateProfileName(newuserdata.getCertificateProfileId()),true,false));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.CA.name(), caname, true, false));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.ENDENTITYPROFILE.name(), endEntityProfileSession.getEndEntityProfileName(newuserdata.getEndEntityProfileId()),true,false));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.CERTIFICATEPROFILE.name(), certificateProfileSession.getCertificateProfileName(newuserdata.getCertificateProfileId()),true,false));
 		final ExtendedInformation neweei = newuserdata.getExtendedInformation();
 		if (neweei != null && neweei.getKeyStoreAlgorithmType() != null) {
 		    String keyTypeString = neweei.getKeyStoreAlgorithmType();
 		    if (neweei.getKeyStoreAlgorithmSubType() != null) {
 		        keyTypeString += " " + neweei.getKeyStoreAlgorithmSubType();
 		    }
-		    retval.add(new ApprovalDataText("KEYALGORITHM", keyTypeString, true, false));
+		    retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.KEYALGORITHM.name(), keyTypeString, true, false));
 		}
-		retval.add(new ApprovalDataText("KEYRECOVERABLE",newuserdata.getKeyRecoverable() ? "YES" : "NO",true,true));
-		retval.add(new ApprovalDataText("SENDNOTIFICATION",newuserdata.getSendNotification() ? "YES" : "NO",true,true));
-		retval.add(new ApprovalDataText("STATUS",EndEntityConstants.getTranslatableStatusText(newuserdata.getStatus()),true,true));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.KEYRECOVERABLE.name(),newuserdata.getKeyRecoverable() ? "YES" : "NO",true,true));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.SENDNOTIFICATION.name(),newuserdata.getSendNotification() ? "YES" : "NO",true,true));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.STATUS.name(), EndEntityConstants.getTranslatableStatusText(newuserdata.getStatus()),true,true));
 		return retval;
 	}
 
@@ -246,14 +246,14 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest implements End
 	public List<ApprovalDataText> getOldRequestDataAsText(AuthenticationToken admin, CaSession caSession, EndEntityProfileSession endEntityProfileSession,
 			CertificateProfileSession certificateProfileSession) {
 		final List<ApprovalDataText> retval = new ArrayList<>();
-		retval.add(new ApprovalDataText("USERNAME", orguserdata.getUsername(), true, false));
-		retval.add(new ApprovalDataText("PASSWORD", "NOTSHOWN", true, true));
-		retval.add(new ApprovalDataText(ApprovalDataText.REDACT_PII, Boolean.toString(LogRedactionUtils.isRedactPii(newuserdata.getEndEntityProfileId())), true, false));
-		retval.add(new ApprovalDataText(ApprovalDataText.SUBJECT_DN, DnComponents.stringToBCDNString(orguserdata.getDN()), true, false));
-		retval.add(getTextWithNoValueString(ApprovalDataText.SUBJECT_ALT_NAME, orguserdata.getSubjectAltName()));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.USERNAME.name(), orguserdata.getUsername(), true, false));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.PASSWORD.name(), "NOTSHOWN", true, true));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.REDACTPII.name(), Boolean.toString(LogRedactionUtils.isRedactPii(newuserdata.getEndEntityProfileId())), true, false));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.SUBJECTDN.name(), DnComponents.stringToBCDNString(orguserdata.getDN()), true, false));
+		retval.add(getTextWithNoValueString(ApprovalDataText.ApprovalDataHeader.SUBJECTALTNAME.name(), orguserdata.getSubjectAltName()));
 		String dirattrs = orguserdata.getExtendedInformation() != null ? orguserdata.getExtendedInformation().getSubjectDirectoryAttributes() : null;
-		retval.add(getTextWithNoValueString("SUBJECTDIRATTRIBUTES", dirattrs));
-		retval.add(getTextWithNoValueString("EMAIL", orguserdata.getEmail()));
+		retval.add(getTextWithNoValueString(ApprovalDataText.ApprovalDataHeader.SUBJECTDIRATTRIBUTES.name(), dirattrs));
+		retval.add(getTextWithNoValueString(ApprovalDataText.ApprovalDataHeader.EMAIL.name(), orguserdata.getEmail()));
 		String caname;
         try {
             CAInfo caInfo = caSession.getCAInfo(admin, orguserdata.getCAId());
@@ -265,12 +265,12 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest implements End
         } catch (AuthorizationDeniedException e) {
             caname = "AuthDenied";
         }
-		retval.add(new ApprovalDataText("CA", caname, true, false));
-		retval.add(new ApprovalDataText(ApprovalDataText.END_ENTITY_PROFILE_NAME, endEntityProfileSession.getEndEntityProfileName(orguserdata.getEndEntityProfileId()), true, false));
-		retval.add(new ApprovalDataText("CERTIFICATEPROFILE", certificateProfileSession.getCertificateProfileName(orguserdata.getCertificateProfileId()), true, false));
-		retval.add(new ApprovalDataText("KEYRECOVERABLE", orguserdata.getKeyRecoverable() ? "YES" : "NO", true, true));
-		retval.add(new ApprovalDataText("SENDNOTIFICATION", orguserdata.getSendNotification() ? "YES" : "NO", true, true));
-		retval.add(new ApprovalDataText("STATUS", EndEntityConstants.getTranslatableStatusText(orguserdata.getStatus()), true, true));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.CA.name(), caname, true, false));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.ENDENTITYPROFILE.name(), endEntityProfileSession.getEndEntityProfileName(orguserdata.getEndEntityProfileId()), true, false));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.CERTIFICATEPROFILE.name(), certificateProfileSession.getCertificateProfileName(orguserdata.getCertificateProfileId()), true, false));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.KEYRECOVERABLE.name(), orguserdata.getKeyRecoverable() ? "YES" : "NO", true, true));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.SENDNOTIFICATION.name(), orguserdata.getSendNotification() ? "YES" : "NO", true, true));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.STATUS.name(), EndEntityConstants.getTranslatableStatusText(orguserdata.getStatus()), true, true));
 		return retval;
 	}
 

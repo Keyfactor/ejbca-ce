@@ -86,10 +86,10 @@ public class AcmeNewAccountApprovalRequest extends ApprovalRequest {
 	public List<ApprovalDataText> getNewRequestDataAsText(AuthenticationToken admin) {
 		ArrayList<ApprovalDataText> retval = new ArrayList<ApprovalDataText>();
 		if ( acmeAccountId != null ) {
-			retval.add(new ApprovalDataText("ACMEACCOUNTID", acmeAccountId, true, false));
+			retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.ACMEACCOUNTID.name(), acmeAccountId, true, false));
 		}
-		retval.add(new ApprovalDataText("CAID", Integer.toString(caId), true, false));
-        retval.add(new ApprovalDataText(ApprovalDataText.END_ENTITY_PROFILE_ID, Integer.toString(endEntityProfileId), true, false));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.CAID.name(), Integer.toString(caId), true, false));
+        retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.EEPID.name(), Integer.toString(endEntityProfileId), true, false));
 		return retval;
 	}
 

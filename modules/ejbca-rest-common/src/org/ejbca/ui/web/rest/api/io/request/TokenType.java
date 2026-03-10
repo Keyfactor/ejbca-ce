@@ -45,5 +45,22 @@ public enum TokenType {
         }
         return null;
     }
+    
+    /**
+     * Resolves the TokenType using its token value or returns null.
+     *
+     * @param value token value.
+     * @return TokenType using its token value or null.
+     */
+    public static TokenType resolveTokenTypeByValue(final int value) {
+        for (TokenType tokenType : values()) {
+            if (tokenType.tokenValue == value) {
+                return tokenType;
+            }
+        }
+        return null;
+    }
+    
+    
 
 }

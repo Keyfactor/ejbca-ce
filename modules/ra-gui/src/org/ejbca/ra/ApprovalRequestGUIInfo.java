@@ -319,8 +319,8 @@ public class ApprovalRequestGUIInfo implements Serializable {
         requestDate = ValidityDate.formatAsISO8601ServerTZ(approvalData.getRequestDate().getTime(), TimeZone.getDefault());
         requestExpireDate = ValidityDate.formatAsISO8601ServerTZ(approvalData.getExpireDate().getTime(), TimeZone.getDefault());
         // These must be added last, so the "Extend" button appears under the Expiration Date field.
-        requestData.add(new RequestDataRow(raLocaleBean, new ApprovalDataText("REQUESTDATE", getRequestDate(), true, false), false, null));
-        requestData.add(new RequestDataRow(raLocaleBean, new ApprovalDataText("REQUESTEXPIRATIONDATE", getRequestExpireDate(), true, false), false, null));
+        requestData.add(new RequestDataRow(raLocaleBean, new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.REQUESTDATE.name(), getRequestDate(), true, false), false, null));
+        requestData.add(new RequestDataRow(raLocaleBean, new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.REQUESTEXPIRATIONDATE.name(), getRequestExpireDate(), true, false), false, null));
         
         if (approvalData.getCAId() == CAConstants.ALLCAS) {
             caName = raLocaleBean.getMessage("manage_requests_no_ca");
@@ -497,10 +497,10 @@ public class ApprovalRequestGUIInfo implements Serializable {
     
     public EndEntityInformation getEndEntityInformation() {
         final ApprovalRequest approvalRequest = request.getApprovalRequest();
-        if (approvalRequest instanceof AddEndEntityApprovalRequest) {
-            return ((AddEndEntityApprovalRequest)approvalRequest).getEndEntityInformation();
-        } else if (approvalRequest instanceof EditEndEntityApprovalRequest) {
-            return ((EditEndEntityApprovalRequest)approvalRequest).getNewEndEntityInformation();
+        if (approvalRequest instanceof AddEndEntityApprovalRequest addEndEntityApprovalRequestrequest) {
+            return addEndEntityApprovalRequestrequest.getEndEntityInformation();
+        } else if (approvalRequest instanceof EditEndEntityApprovalRequest editEndEntityApprovalRequest) {
+            return editEndEntityApprovalRequest.getNewEndEntityInformation();
         } else {
             return null;
         }
