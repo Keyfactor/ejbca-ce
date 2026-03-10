@@ -471,6 +471,14 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 return false;
             }
         }
+
+        if (isLesserThan(oldVersion, "9.6.0")) {
+            try {
+                upgradeSession.migrateDatabase9_6_0();
+            } catch (UpgradeFailedException e) {
+                return false;
+            }
+        }
            
         setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
@@ -1629,6 +1637,12 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         migrateGlobalCesecoreConfiguration9_5_0();
         migrateGlobalOcspConfiguration9_5_0();       
     }
+
+    @Override
+    public void migrateDatabase9_6_0() throws UpgradeFailedException {
+        log.info("Starting upgrade to 9.6.0");
+        migrateGlobalCesecoreConfiguration9_6_0();
+    }
     
     @SuppressWarnings("deprecation")
     private void migrateGlobalOcspConfiguration9_5_0() throws UpgradeFailedException{
@@ -1651,6 +1665,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     }
     
+    @SuppressWarnings("deprecation")
     private void migrateGlobalCesecoreConfiguration9_5_0() throws UpgradeFailedException {
         log.info("Upgrade: Migrating values from cesecore.properties files into GlobalCesecoreConfiguration.");
         //First check if it's defined in config
@@ -1658,8 +1673,28 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
         //If not, get it from StringConfigurationCache
         globalCesecoreConfiguration.setForbiddenCharacters(forbiddenCharacters != null ? forbiddenCharacters.toCharArray() :  StringConfigurationCache.INSTANCE.getForbiddenCharacters());
-        
+
         try {
+            globalConfigurationSession.saveConfiguration(authenticationToken, globalCesecoreConfiguration);
+        } catch(AuthorizationDeniedException e) {
+            String msg = "Always allow token was denied authorisation to GlobalConfigurationData table.";
+            log.error(msg, e);
+            throw new UpgradeFailedException(msg, e);
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    private void migrateGlobalCesecoreConfiguration9_6_0() throws UpgradeFailedException {
+        log.info("Upgrade: Migrating values from cesecore.properties files into GlobalCesecoreConfiguration.");
+        GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+
+        int crlGenFetchSize = CesecoreConfiguration.getDatabaseRevokedCertInfoFetchSize();
+        globalCesecoreConfiguration.setCrlGenerationFetchSize(crlGenFetchSize);
+
+        boolean crlGenFetchOrdered = CesecoreConfiguration.getDatabaseRevokedCertInfoFetchOrdered();
+        globalCesecoreConfiguration.setCrlGenerationFetchOrdered(crlGenFetchOrdered);
+
+       try {
             globalConfigurationSession.saveConfiguration(authenticationToken, globalCesecoreConfiguration);
         } catch(AuthorizationDeniedException e) {
             String msg = "Always allow token was denied authorisation to GlobalConfigurationData table.";
