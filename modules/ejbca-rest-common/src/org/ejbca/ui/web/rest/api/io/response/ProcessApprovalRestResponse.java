@@ -13,22 +13,25 @@
 package org.ejbca.ui.web.rest.api.io.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
+import java.util.Set;
+import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestStatus;
-
-import java.util.List;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.KeyRecoveryApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
 import org.ejbca.core.model.approval.profile.ApprovalPartition;
+import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.era.RaApprovalRequestInfo;
 import org.ejbca.core.model.era.RaApprovalStepInfo;
 
@@ -62,6 +65,9 @@ public class ProcessApprovalRestResponse {
     @Schema(description = "The list of approval steps with their status")
     private List<ApprovalStepRestResponse> steps;
 
+    @Schema(description = "Next steps with it properties")
+    private ApprovalStepRestResponse nextStep;
+
     ProcessApprovalRestResponse(final Builder builder) {
         this.requestId = builder.requestId;
         this.requestType = builder.requestType;
@@ -70,6 +76,7 @@ public class ProcessApprovalRestResponse {
         this.endEntityName = builder.endEntityName;
         this.status = builder.status;
         this.steps = builder.steps;
+        this.nextStep = builder.nextStep;
     }
 
     public String getRequestId() {
@@ -100,6 +107,10 @@ public class ProcessApprovalRestResponse {
         return steps;
     }
 
+    public ApprovalStepRestResponse getNextStep() {
+        return nextStep;
+    }
+
     public static Builder builder() {
         return new Builder();
     }
@@ -112,6 +123,7 @@ public class ProcessApprovalRestResponse {
         private String endEntityName;
         private ApprovalRequestStatus status;
         private List<ApprovalStepRestResponse> steps;
+        private ApprovalStepRestResponse nextStep;
 
         public Builder requestId(final String requestId) {
             this.requestId = requestId;
@@ -147,6 +159,10 @@ public class ProcessApprovalRestResponse {
             this.steps = steps;
             return this;
         }
+        public Builder nextStep(final ApprovalStepRestResponse nextStep) {
+            this.nextStep = nextStep;
+            return this;
+        }
 
         public ProcessApprovalRestResponse build() {
             return new ProcessApprovalRestResponse(this);
@@ -159,7 +175,7 @@ public class ProcessApprovalRestResponse {
         final String endEntityName = getUsername(requestInfo.getApprovalRequest());
 
         // Build approval steps
-        final List<ApprovalStepRestResponse> steps = buildApprovalSteps(requestInfo, false);
+        final List<ApprovalStepRestResponse> steps = buildApprovalSteps(requestInfo);
 
         final Date requestDate = new Date(approvalData.getRequestDate().getTime());
         final long expirationPeriod = requestInfo.getApprovalRequest().getRequestValidity();
@@ -176,10 +192,11 @@ public class ProcessApprovalRestResponse {
                 .build();
     }
 
-    static List<ApprovalStepRestResponse> buildApprovalSteps(final RaApprovalRequestInfo requestInfo, boolean includeNextStep) {
+    static List<ApprovalStepRestResponse> buildApprovalSteps(final RaApprovalRequestInfo requestInfo) {
         final List<ApprovalStepRestResponse> steps = new ArrayList<>();
         String approvalStatus = ApprovalRequestStatus.fromIntWithCombinedStates(requestInfo.getStatus()).getValue();
         final List<RaApprovalStepInfo> previousSteps = requestInfo.getPreviousApprovalSteps();
+        final ApprovalProfile approvalProfile = requestInfo.getApprovalProfile();
         int stepNumber = 1;
         final ApprovalDataVO approvalData = requestInfo.getApprovalData();
         final Collection<Approval> approvals = approvalData.getApprovals();
@@ -188,21 +205,22 @@ public class ProcessApprovalRestResponse {
 
 
             for (RaApprovalStepInfo stepInfo : previousSteps) {
+                final List<ApprovalPartitionRestResponse> partitions = new ArrayList<>();
                 for (ApprovalPartition partition : stepInfo.getPartitions()) {
-                    steps.add(buildStepPartition(stepInfo.getStepId(), partition, stepNumber, approvals, approvalStatus));
-                    stepNumber++;
+                    partitions.add(buildStepPartition(stepInfo.getStepId(), partition, approvals, approvalProfile, approvalStatus));
                 }
+                final ApprovalStepRestResponse.Builder stepBuilder = ApprovalStepRestResponse.builder()
+                        .stepNumber(stepNumber)
+                        .partitionList(partitions);
+                steps.add(stepBuilder.build());
+                stepNumber++;
             }
-        }
-        if (includeNextStep && requestInfo.getNextApprovalStep() != null) {
-            steps.add(buildStepPartition(requestInfo.getNextApprovalStep().getStepIdentifier(), requestInfo.getNextApprovalStepPartition(), stepNumber, approvals, approvalStatus));
         }
         return steps;
     }
 
-    private static ApprovalStepRestResponse buildStepPartition(int stepId, ApprovalPartition partition, int stepNumber, Collection<Approval> approvals, String approvalStatus) {
-        final ApprovalStepRestResponse.Builder stepBuilder = ApprovalStepRestResponse.builder()
-                .step(stepNumber);
+    static ApprovalPartitionRestResponse buildStepPartition(int stepId, ApprovalPartition partition, Collection<Approval> approvals, ApprovalProfile approvalProfile, String approvalStatus) {
+        final ApprovalPartitionRestResponse.Builder partitionBuilder = ApprovalPartitionRestResponse.builder();
 
         // Find the approval record for this step and partition
         Approval matchingApproval = null;
@@ -221,24 +239,52 @@ public class ProcessApprovalRestResponse {
 
         // Populate approval details if found
         if (matchingApproval != null) {
-            stepBuilder.approvalAction(matchingApproval.isApproved() ? "APPROVED" : "REJECTED");
+            partitionBuilder.approvalAction(matchingApproval.isApproved() ? "APPROVED" : "REJECTED");
 
             if (matchingApproval.getApprovalDate() != null) {
-                stepBuilder.approvalDate(new SimpleDateFormat(DATE_FORMAT).format(matchingApproval.getApprovalDate()));
+                partitionBuilder.approvalDate(new SimpleDateFormat(DATE_FORMAT).format(matchingApproval.getApprovalDate()));
             }
 
             if (matchingApproval.getAdmin() != null) {
-                stepBuilder.approvalAdmin(matchingApproval.getAdmin().toString());
+                partitionBuilder.approvalAdmin(matchingApproval.getAdmin().toString());
             }
 
             if (matchingApproval.getComment() != null && !matchingApproval.getComment().isEmpty()) {
-                stepBuilder.approvalComment(matchingApproval.getComment());
+                partitionBuilder.approvalComment(matchingApproval.getComment());
             }
         } else {
             // Fallback if no matching approval found
-            stepBuilder.approvalAction(approvalStatus);
+            partitionBuilder.approvalAction(approvalStatus);
         }
-        return stepBuilder.build();
+        if (partition.getPropertyList() != null && !partition.getPropertyList().isEmpty()) {
+            if (partition.getPropertyList().get("name") != null
+                    && partition.getPropertyList().get("name").getValueAsString() != null
+                    && !partition.getPropertyList().get("name").getValueAsString().isEmpty()) {
+                partitionBuilder.name(partition.getPropertyList().get("name").getValueAsString());
+            }
+            partitionBuilder.propertyList(getApprovalPartitionPropertyRestResponses(partition, approvalProfile));
+        }
+        return partitionBuilder.build();
+    }
+
+    private static List<ApprovalPartitionPropertyRestResponse> getApprovalPartitionPropertyRestResponses(ApprovalPartition partition, ApprovalProfile approvalProfile) {
+        Set<String> hiddenPropertyNames = approvalProfile.getHiddenProperties();
+        List<ApprovalPartitionPropertyRestResponse> propertyList = new ArrayList<>();
+        for (String propertyName : partition.getPropertyList().keySet()) {
+            if (!hiddenPropertyNames.contains(propertyName)) {
+                DynamicUiProperty<? extends Serializable> dynamicUiProperty = partition.getPropertyList().get(propertyName);
+                ApprovalPartitionPropertyRestResponse.Builder builder = ApprovalPartitionPropertyRestResponse.builder()
+                        .label(dynamicUiProperty.getName())
+                        .value(dynamicUiProperty.getValueAsString())
+                        .type(dynamicUiProperty.getType().getSimpleName()
+                        );
+                if (dynamicUiProperty.getPossibleValuesAsStrings() != null && !dynamicUiProperty.getPossibleValuesAsStrings().isEmpty()) {
+                    builder.possibleValues(dynamicUiProperty.getPossibleValuesAsStrings());
+                }
+                propertyList.add(builder.build());
+            }
+        }
+        return propertyList;
     }
 
     static String getUsername(final ApprovalRequest approvalRequest) {

@@ -18,10 +18,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import org.apache.commons.lang3.StringUtils;
 import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
@@ -31,6 +33,7 @@ import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestStatus;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest;
+import org.ejbca.core.model.approval.profile.ApprovalPartition;
 import org.ejbca.core.model.era.RaApprovalRequestInfo;
 
 /**
@@ -377,89 +380,104 @@ public class ApprovalRequestRestResponse extends ProcessApprovalRestResponse {
 
 
         // Build approval steps
-        final List<ApprovalStepRestResponse> steps = buildApprovalSteps(requestInfo, true);
+        final List<ApprovalStepRestResponse> steps = buildApprovalSteps(requestInfo);
+
 
         final Date requestDate = new Date(approvalData.getRequestDate().getTime());
         final long expirationPeriod = approvalRequest.getRequestValidity();
         final Date expirationDate = new Date(requestDate.getTime() + expirationPeriod);
         ApprovalRequestRestResponseBuilder builder = ApprovalRequestRestResponse.builder();
+        ApprovalRequestStatus status = ApprovalRequestStatus.fromIntWithCombinedStates(requestInfo.getStatus());
         builder
                 .requestId(String.valueOf(requestInfo.getId()))
                 .requestType(ApprovalType.getNameByCode(approvalData.getApprovalType()))
                 .requestDate(dateFormat.format(requestDate))
                 .expirationDate(dateFormat.format(expirationDate))
                 .endEntityName(endEntityName)
-                .status(ApprovalRequestStatus.fromIntWithCombinedStates(requestInfo.getStatus()))
+                .status(status)
                 .steps(steps);
+        if (requestInfo.getNextApprovalStep() != null) {
+            final List<ApprovalPartitionRestResponse> partitions = new ArrayList<>();
+            for (ApprovalPartition partition : requestInfo.getNextApprovalStep().getPartitionList()) {
+                partitions.add(buildStepPartition(requestInfo.getNextApprovalStep().getStepIdentifier(), partition,
+                        requestInfo.getApprovalData().getApprovals(), requestInfo.getApprovalProfile(), status.getValue()));
+            }
+            final ApprovalStepRestResponse.Builder stepBuilder = ApprovalStepRestResponse.builder()
+                    .stepNumber(steps.size() + 1)
+                    .partitionList(partitions);
+            builder.nextStep(stepBuilder.build());
+        }
         builder.certificateProfileName(requestInfo.getCertificateProfileName())
                 .endEntityProfileName(requestInfo.getEndEntityProfileName());
         for (ApprovalDataText approvalDataText: requestInfo.getRequestData()){
-            switch (ApprovalDataText.ApprovalDataHeader.valueOf(approvalDataText.getHeader())) {
-                case CA, CANAME:
-                    builder.caName(approvalDataText.getData());
-                    break;
-                case ACMEACCOUNTID:
-                    builder.acmeAccountId(approvalDataText.getData());
-                    break;
-                case  CAID:
-                    builder.caId(approvalDataText.getData());
-                    break;
-                case EEPID:
-                    builder.endEntityProfileId(approvalDataText.getData());
-                    break;
-                case CERTIFICATEPROFILE:
-                    builder.certificateProfileName(approvalDataText.getData());
-                    break;
-                case CERTSERIALNUMBER:
-                    builder.serialNumber(approvalDataText.getData());
-                    break;
-                case EMAIL:
-                    builder.email(approvalDataText.getData());
-                    break;
-                case ENDENTITYPROFILE:
-                    builder.endEntityProfileName(approvalDataText.getData());
-                    break;
-                case INVALIDITYDATE:
-                    builder.invalidityDate(approvalDataText.getData());
-                    break;
-                case ISSUERDN:
-                    builder.issuerDn(approvalDataText.getData());
-                    break;
-                case KEYALGORITHM:
-                    builder.keyAlgorithm(approvalDataText.getData());
-                    break;
-                case KEYRECOVERABLE:
-                    builder.keyRecoverable(approvalDataText.getData());
-                    break;
-                case REASON:
-                    builder.reason(RevocationReason.getTextByCode(approvalDataText.getData()));
-                    break;
-                case REDACTPII:
-                    builder.subjectNameLogRedaction(approvalDataText.getData());
-                    break;
-                case REVOCATIONDATE:
-                    builder.revocationDate(approvalDataText.getData());
-                    break;
-                case SENDNOTIFICATION:
-                    builder.sendNotification(approvalDataText.getData());
-                    break;
-                case STATUS:
-                    builder.endEntityStatus(approvalDataText.getData());
-                    break;
-                case SUBJECTDIRATTRIBUTES:
-                    builder.subjectDirectoryAttributes(approvalDataText.getData());
-                    break;
-                case SUBJECTALTNAME:
-                    builder.subjectAlternativeName(approvalDataText.getData());
-                    break;
-                case SUBJECTDN:
-                    builder.subjectDn(approvalDataText.getData());
-                    break;
-                case USERNAME:
-                    builder.endEntityName(approvalDataText.getData());
-                    break;
-                case PASSWORD, REQUESTEXPIRATIONDATE, REQUESTDATE:
-                    break;
+            if (!approvalDataText.getData().isEmpty() && !approvalDataText.getData().equals("NOVALUE")) {
+                switch (ApprovalDataText.ApprovalDataHeader.valueOf(approvalDataText.getHeader())) {
+                    case CA, CANAME:
+                        builder.caName(approvalDataText.getData());
+                        break;
+                    case ACMEACCOUNTID:
+                        builder.acmeAccountId(approvalDataText.getData());
+                        break;
+                    case CAID:
+                        builder.caId(approvalDataText.getData());
+                        break;
+                    case EEPID:
+                        builder.endEntityProfileId(approvalDataText.getData());
+                        break;
+                    case CERTIFICATEPROFILE:
+                        builder.certificateProfileName(approvalDataText.getData());
+                        break;
+                    case CERTSERIALNUMBER:
+                        builder.serialNumber(approvalDataText.getData());
+                        break;
+                    case EMAIL:
+                        builder.email(approvalDataText.getData());
+                        break;
+                    case ENDENTITYPROFILE:
+                        builder.endEntityProfileName(approvalDataText.getData());
+                        break;
+                    case INVALIDITYDATE:
+                        builder.invalidityDate(approvalDataText.getData());
+                        break;
+                    case ISSUERDN:
+                        builder.issuerDn(approvalDataText.getData());
+                        break;
+                    case KEYALGORITHM:
+                        builder.keyAlgorithm(approvalDataText.getData());
+                        break;
+                    case KEYRECOVERABLE:
+                        builder.keyRecoverable(approvalDataText.getData());
+                        break;
+                    case REASON:
+                        builder.reason(RevocationReason.getTextByCode(approvalDataText.getData()));
+                        break;
+                    case REDACTPII:
+                        builder.subjectNameLogRedaction(approvalDataText.getData());
+                        break;
+                    case REVOCATIONDATE:
+                        builder.revocationDate(approvalDataText.getData());
+                        break;
+                    case SENDNOTIFICATION:
+                        builder.sendNotification(approvalDataText.getData());
+                        break;
+                    case STATUS:
+                        builder.endEntityStatus(approvalDataText.getData());
+                        break;
+                    case SUBJECTDIRATTRIBUTES:
+                        builder.subjectDirectoryAttributes(approvalDataText.getData());
+                        break;
+                    case SUBJECTALTNAME:
+                        builder.subjectAlternativeName(approvalDataText.getData());
+                        break;
+                    case SUBJECTDN:
+                        builder.subjectDn(approvalDataText.getData());
+                        break;
+                    case USERNAME:
+                        builder.endEntityName(approvalDataText.getData());
+                        break;
+                    case PASSWORD, REQUESTEXPIRATIONDATE, REQUESTDATE:
+                        break;
+                }
             }
         }
         EndEntityInformation endEntityInformation = null;
@@ -478,7 +496,10 @@ public class ApprovalRequestRestResponse extends ProcessApprovalRestResponse {
             if (nameConstraintsExcluded != null && !nameConstraintsExcluded.isEmpty()) {
                 builder.nameConstraintsExcluded(NameConstraint.formatNameConstraintsList(nameConstraintsExcluded));
             }
-            builder.certificateExtensionData(getExtensionData(endEntityInformation.getExtendedInformation()));
+            String extensionData = getExtensionData(endEntityInformation.getExtendedInformation());
+            if (!StringUtils.isEmpty(extensionData)) {
+                builder.certificateExtensionData(extensionData);
+            }
 
         }
         return builder.build();
