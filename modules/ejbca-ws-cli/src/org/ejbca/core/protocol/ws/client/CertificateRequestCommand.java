@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package org.ejbca.core.protocol.ws.client;
 
 import java.io.File;
@@ -20,6 +20,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import com.keyfactor.util.CertTools;
+
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
 import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
@@ -28,16 +30,12 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
 
-import com.keyfactor.util.CertTools;
-
 /**
  * Request a certificate given a pkcs10
- *
- * @version $Id$
  */
 public class CertificateRequestCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 
-	
+
 	private static final int ARG_USERNAME                 = 1;
 	private static final int ARG_SUBJECTDN                = 2;
 	private static final int ARG_SUBJECTALTNAME           = 3;
@@ -48,7 +46,7 @@ public class CertificateRequestCommand extends EJBCAWSRABaseCommand implements I
 	private static final int ARG_REQTYPE                  = 8;
 	private static final int ARG_ENCODING                 = 9;
 	private static final int ARG_OUTPUTPATH               = 10;
-	
+
     /**
      * Creates a new instance of CertificateRequestCommand
      *
@@ -66,18 +64,18 @@ public class CertificateRequestCommand extends EJBCAWSRABaseCommand implements I
      */
     @Override
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
- 
-        try {   
-           
+
+        try {
+
             if(args.length <  11 || args.length > 12){
             	usage();
             	System.exit(-1); // NOPMD, it's not a JEE app
             }
-            
+
             UserDataVOWS userdata = new UserDataVOWS();
             userdata.setUsername(args[ARG_USERNAME]);
             userdata.setSubjectDN(args[ARG_SUBJECTDN]);
-            if(!args[ARG_SUBJECTALTNAME].equalsIgnoreCase("NULL")){                        
+            if (!args[ARG_SUBJECTALTNAME].equalsIgnoreCase("NULL")) {
             	userdata.setSubjectAltName(args[ARG_SUBJECTALTNAME]);
             }
             userdata.setCaName(args[ARG_CANAME]);
@@ -91,55 +89,61 @@ public class CertificateRequestCommand extends EJBCAWSRABaseCommand implements I
             if(args.length > ARG_OUTPUTPATH){
               outputPath = getOutputPath(args[ARG_OUTPUTPATH]);
             }
-            
+            final var responseType = "PKCS7".equalsIgnoreCase(encoding) ? CertificateHelper.RESPONSETYPE_PKCS7 : CertificateHelper.RESPONSETYPE_CERTIFICATE;
+
             getPrintStream().println("Requesting certificate for end entity:");
             getPrintStream().println("Username: "+userdata.getUsername());
             getPrintStream().println("Subject DN: "+userdata.getSubjectDN());
             getPrintStream().println("Subject Altname: "+userdata.getSubjectAltName());
             getPrintStream().println("Email: "+userdata.getEmail());
-            getPrintStream().println("CA Name: "+userdata.getCaName());                        
+            getPrintStream().println("CA Name: "+userdata.getCaName());
             getPrintStream().println("Token: "+userdata.getTokenType());
             getPrintStream().println("End entity profile: "+userdata.getEndEntityProfileName());
             getPrintStream().println("Certificate profile: "+userdata.getCertificateProfileName());
             getPrintStream().println("Request type: "+requesttype);
             getPrintStream().println("Encoding: "+encoding);
+            getPrintStream().println("Response type: "+responseType);
             getPrintStream().println("Output path: "+outputPath);
 
             try{
-            	//UserDataVOWS userdata, String requestData, int requestType, String responseType)
-            	CertificateResponse result = getEjbcaRAWS().certificateRequest(userdata, requestdata, requesttype, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
-            	
-            	if(result==null){
-            		getPrintStream().println("No certificate could be generated for user, check server logs for error.");
-            	}else{
+                CertificateResponse result = getEjbcaRAWS().certificateRequest(userdata, requestdata, requesttype, null, responseType);
+                if (result==null) {
+                    getPrintStream().println("No certificate could be generated for user, check server logs for error.");
+                } else if (CertificateHelper.RESPONSETYPE_PKCS7.equals(result.getResponseType())) {
+                    String filepath = userdata.getUsername() + ".p7b";
+                    if (outputPath != null) {
+                        filepath = outputPath + "/" + filepath;
+                    }
+                    FileOutputStream fos = new FileOutputStream(filepath);
+                    fos.write(CertificateHelper.getCertificate(result.getData()).getEncoded());
+                    fos.close();
+                    getPrintStream().println("Certificate generated, written to " + filepath);
+                } else {
             		String filepath = userdata.getUsername();
-            		if(encoding.equals("DER")){
+                    if (encoding.equalsIgnoreCase("DER")) {
             			filepath += ".cer";
-            		}else{
+                    } else {
             			filepath += ".pem";
             		}
-            		if(outputPath != null){
+                    if (outputPath != null) {
             			filepath = outputPath + "/" + filepath;
             		}
-            		
-            		
-            		if(encoding.equals("DER")){
+
+                    if (encoding.equalsIgnoreCase("DER")) {
             			FileOutputStream fos = new FileOutputStream(filepath);
             			fos.write(CertificateHelper.getCertificate(result.getData()).getEncoded());
             			fos.close();
             		}else{
             			FileOutputStream fos = new FileOutputStream(filepath);
-            			ArrayList<java.security.cert.Certificate> list = new ArrayList<java.security.cert.Certificate>();
+            			ArrayList<java.security.cert.Certificate> list = new ArrayList<>();
             			list.add(CertificateHelper.getCertificate(result.getData()));
             			fos.write(CertTools.getPemFromCertificateChain(list));
-            			fos.close();            				            				
+            			fos.close();
             		}
             		getPrintStream().println("Certificate generated, written to " + filepath);
             	}
-            	             
-
             }catch(AuthorizationDeniedException_Exception e){
-            	getPrintStream().println("Error : " + e.getMessage());            
+            	getPrintStream().println("Error : " + e.getMessage());
             }
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
@@ -151,18 +155,18 @@ public class CertificateRequestCommand extends EJBCAWSRABaseCommand implements I
 		try {
 			FileInputStream fis = new FileInputStream(requestDataPath);
 			byte[] contents = new byte[fis.available()];
-			fis.read(contents);			
+			fis.read(contents);
 			fis.close();
 			retval = new String(contents);
 		} catch (FileNotFoundException e) {
 			getPrintStream().println("Error : request data file could not be found: " + e.getMessage());
-			System.exit(-1); // NOPMD, it's not a JEE app		
+			System.exit(-1); // NOPMD, it's not a JEE app
 		} catch (IOException e) {
 			getPrintStream().println("Error reading content of request data file: " + e.getMessage());
-			System.exit(-1); // NOPMD, it's not a JEE app	
+			System.exit(-1); // NOPMD, it's not a JEE app
 		}
-		
-		
+
+
 		return retval;
 	}
 
@@ -174,7 +178,7 @@ public class CertificateRequestCommand extends EJBCAWSRABaseCommand implements I
 		}
 		if(!dir.isDirectory()){
 			getPrintStream().println("Error : Output directory is not a directory: " + outputpath);
-			System.exit(-1); // NOPMD, it's not a JEE app			
+			System.exit(-1); // NOPMD, it's not a JEE app
 		}
 		if(!dir.canWrite()){
 			getPrintStream().println("Error : Output directory is not writeable: " + outputpath);
@@ -185,11 +189,11 @@ public class CertificateRequestCommand extends EJBCAWSRABaseCommand implements I
 	}
 
 	private String getEncoding(String encoding) {
-		if(!encoding.equalsIgnoreCase("PEM") && !encoding.equalsIgnoreCase("DER")){
+        if (!encoding.equalsIgnoreCase("PEM") && !encoding.equalsIgnoreCase("DER") &&
+                !encoding.equalsIgnoreCase("PKCS7")) {
 			usage();
 			System.exit(-1); // NOPMD, it's not a JEE app
 		}
-		
 		return encoding.toUpperCase();
 	}
 
@@ -216,7 +220,7 @@ public class CertificateRequestCommand extends EJBCAWSRABaseCommand implements I
 	@Override
     protected void usage() {
 		getPrintStream().println("Command used to generate a users certificate. If the user does not exist it will be created, and if it exists it will be edited. This command uses a single WS call, certificateRequest.");
-        getPrintStream().println("Usage : certreq <username> <subjectdn> <subjectaltname or NULL> <caname> <endentityprofilename> <certificateprofilename> <reqpath> <reqtype (PKCS10|SPKAC|CRMF|PUBKEY)> <encoding (DER|PEM)> <outputpath (optional)> \n\n"); 
+        getPrintStream().println("Usage : certreq <username> <subjectdn> <subjectaltname or NULL> <caname> <endentityprofilename> <certificateprofilename> <reqpath> <reqtype (PKCS10|SPKAC|CRMF|PUBKEY)> <encoding (DER|PEM|PKCS7)> <outputpath (optional)> \n\n");
         getPrintStream().println("outputpath : directory where certificate is written in form outputpath/username+.cer|.pem ");
    }
 
