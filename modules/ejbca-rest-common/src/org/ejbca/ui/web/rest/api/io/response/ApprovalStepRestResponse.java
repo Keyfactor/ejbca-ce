@@ -12,7 +12,9 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
 
 /**
  * Represents a single approval step in an approval request response.
@@ -21,46 +23,25 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public class ApprovalStepRestResponse {
 
     @Schema(description = "The step number", example = "1")
-    private int step;
+    private int stepNumber;
 
-    @Schema(description = "The action taken on this step (e.g., APPROVED, REJECTED, PENDING)", example = "APPROVED")
-    private String approvalAction;
+    
+    @Schema(description = "Partitions provided with the approval step")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private List<ApprovalPartitionRestResponse.ApprovalPartitionStep> partitionList;
 
-    @Schema(description = "The date when the approval action was taken", example = "2025-01-01 14:55:00+01:00")
-    private String approvalDate;
-
-    @Schema(description = "The admin who performed the approval action", example = "CN=RAAdmin")
-    private String approvalAdmin;
-
-    @Schema(description = "Comment provided with the approval action", example = "Approved after verification")
-    private String approvalComment;
 
     private ApprovalStepRestResponse(final Builder builder) {
-        this.step = builder.step;
-        this.approvalAction = builder.approvalAction;
-        this.approvalDate = builder.approvalDate;
-        this.approvalAdmin = builder.approvalAdmin;
-        this.approvalComment = builder.approvalComment;
+        this.stepNumber = builder.stepNumber;
+        this.partitionList = builder.partitionList;
     }
 
-    public int getStep() {
-        return step;
+    public int getStepNumber() {
+        return stepNumber;
     }
 
-    public String getApprovalAction() {
-        return approvalAction;
-    }
-
-    public String getApprovalDate() {
-        return approvalDate;
-    }
-
-    public String getApprovalAdmin() {
-        return approvalAdmin;
-    }
-
-    public String getApprovalComment() {
-        return approvalComment;
+    public List<ApprovalPartitionRestResponse.ApprovalPartitionStep> getPartitionList() {
+        return partitionList;
     }
 
     public static Builder builder() {
@@ -68,34 +49,16 @@ public class ApprovalStepRestResponse {
     }
 
     public static class Builder {
-        private int step;
-        private String approvalAction;
-        private String approvalDate;
-        private String approvalAdmin;
-        private String approvalComment;
+        private int stepNumber;
+        private List<ApprovalPartitionRestResponse.ApprovalPartitionStep> partitionList;
 
-        public Builder step(final int step) {
-            this.step = step;
+        public Builder stepNumber(final int step) {
+            this.stepNumber = step;
             return this;
         }
 
-        public Builder approvalAction(final String approvalAction) {
-            this.approvalAction = approvalAction;
-            return this;
-        }
-
-        public Builder approvalDate(final String approvalDate) {
-            this.approvalDate = approvalDate;
-            return this;
-        }
-
-        public Builder approvalAdmin(final String approvalAdmin) {
-            this.approvalAdmin = approvalAdmin;
-            return this;
-        }
-
-        public Builder approvalComment(final String approvalComment) {
-            this.approvalComment = approvalComment;
+        public Builder partitionList(final List<ApprovalPartitionRestResponse.ApprovalPartitionStep> partitionList) {
+            this.partitionList = partitionList;
             return this;
         }
 

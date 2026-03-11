@@ -36,6 +36,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.request.SearchApprovalRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.ProcessApprovalRestRequest;
+import org.ejbca.ui.web.rest.api.io.response.ApprovalRequestRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.ProcessApprovalRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.ApprovalRequestStatusRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
@@ -154,5 +155,28 @@ public class ApprovalRestResourceSwagger extends ApprovalRestResource {
             ProcessApprovalRestRequest request
     ) throws AuthorizationDeniedException, RestException {
         return super.processApprovalRequest(requestContext, requestId, request);
+    }
+
+    @GET
+    @Path("/{request_id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Get approval request data",
+            description = "Returns the specified approval request. ",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Approval request retrieved successfully",
+                            content = @Content(schema = @Schema(implementation = ApprovalRequestRestResponse.class))
+                    ),
+                    @ApiResponse(responseCode = "400", description = "Invalid request ID provided", content = @Content),
+                    @ApiResponse(responseCode = "403", description = "Authorization denied", content = @Content),
+                    @ApiResponse(responseCode = "404", description = "Approval request not found", content = @Content)
+            })
+    public Response getApprovalRequest(
+            @Context final HttpServletRequest requestContext,
+            @Parameter(description = "The ID of the approval request", required = true, example = "12345")
+            @PathParam("request_id") final int requestId) throws RestException {
+
+        return super.getApprovalRequest(requestContext, requestId);
     }
 }

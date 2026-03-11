@@ -1613,7 +1613,7 @@ textarea:disabled:not(.ui-state-disabled) {
     font-weight: bold;
     max-width: 35vw;
     min-width: 3rem;
-    word-break: break-all;
+    word-break: break-word;
 }
 
 .vertical-padding-1 {
