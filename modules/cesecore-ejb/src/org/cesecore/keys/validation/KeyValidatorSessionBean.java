@@ -53,6 +53,7 @@ import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.config.ExternalScriptsConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.InternalResources;
@@ -438,8 +439,16 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                         }
                     }
 
-                    ValidationRequestParameters validationRequestParameters = new ValidationRequestParameters();
+                    final ValidationRequestParameters validationRequestParameters = new ValidationRequestParameters();
                     validationRequestParameters.setCertificateProfile(certificateProfile);
+                    
+                    final ExtendedInformation extendedInformation = endEntityInformation.getExtendedInformation();
+                    if (extendedInformation != null) {
+                        validationRequestParameters.setValidateAcmeAccountUri(extendedInformation.isValidateAcmeAccountUri());
+                        validationRequestParameters.setAcmeAccountUri(extendedInformation.getAcmeAccountUri());
+                        validationRequestParameters.setValidateAcmeValidationMethods(extendedInformation.isValidateAcmeValidationMethods());
+                        validationRequestParameters.setAcmeValidationMethods(extendedInformation.getAcmeValidationMethods());
+                    }
 
                     final Entry<Boolean, List<String>> result = validator.validate(executorService, validationRequestParameters,
                             dnsNames.toArray(new String[dnsNames.size()]));

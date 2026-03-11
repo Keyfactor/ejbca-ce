@@ -149,17 +149,15 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     public static final String SCEP_CACHED_REQUEST = "SCEP_CACHED_REQUEST";
     /** If using SCEP in RA mode with approvals, the incoming approval type (add or edit) needs to be cached. */
     private static final String SCEP_CACHED_APROVAL_TYPE = "SCEP_CACHED_APROVAL_TYPE";
-    // ** External account binding id
+    /** RFC-8555 External account binding id */
     private static final String ACCOUNT_BINDING_ID = "ACCOUNT_BINDING_ID";
+    /** RFC-8657 section 3. accounturi */
+    private static final String VALIDATE_ACME_ACCOUNT_URI = "VALIDATE_ACME_ACCOUNT_URI";
+    private static final String ACME_ACCOUNT_URI = "ACME_ACCOUNT_URI";
+    /** RFC-8657 section 4. validationmethods */
+    private static final String VALIDATE_ACME_VALIDATION_METHODS = "VALIDATE_ACME_VALIDATION_METHODS";
+    private static final String ACME_VALIDATION_METHODS = "ACME_VALIDATION_METHODS";
     
-    public String getAccountBindingId() {
-        return (String) data.get(ACCOUNT_BINDING_ID);
-    }
-
-    public void setAccountBindingId(final String accountBindingId) {
-        data.put(ACCOUNT_BINDING_ID, accountBindingId);
-    }
-
     /** Creates a new instance of ExtendedInformation */
     public ExtendedInformation() {
         setType(TYPE_BASIC);
@@ -912,4 +910,45 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         setSshCustomData(SSH_PRINCIPALS_IPV6, ipv6Principals);
     }
 
+    /** ACME specific fields. */
+    
+    public String getAccountBindingId() {
+        return (String) data.get(ACCOUNT_BINDING_ID);
+    }
+
+    public void setAccountBindingId(final String accountBindingId) {
+        data.put(ACCOUNT_BINDING_ID, accountBindingId);
+    }
+    
+    public boolean isValidateAcmeAccountUri() {
+        return data.get(VALIDATE_ACME_ACCOUNT_URI) instanceof Boolean ? (Boolean) data.get(VALIDATE_ACME_ACCOUNT_URI) : false;
+    }
+    
+    public void setValidateAcmeAccountUri(final boolean validate) {
+        data.put(VALIDATE_ACME_ACCOUNT_URI, (Boolean) validate);
+    }
+    
+    public String getAcmeAccountUri() {
+        return (String) data.get(ACME_ACCOUNT_URI);
+    }
+
+    public void setAcmeAccountUri(final String accountUri) {
+        data.put(ACME_ACCOUNT_URI, accountUri);
+    }
+ 
+    public boolean isValidateAcmeValidationMethods() {
+        return data.get(VALIDATE_ACME_VALIDATION_METHODS) instanceof Boolean ? (Boolean) data.get(VALIDATE_ACME_VALIDATION_METHODS) : false;
+    }
+    
+    public void setValidateAcmeValidationMethods(final boolean validate) {
+        data.put(VALIDATE_ACME_VALIDATION_METHODS, (Boolean) validate);
+    }
+    
+    public String getAcmeValidationMethods() {
+        return (String) data.get(ACME_VALIDATION_METHODS);
+    }
+
+    public void setAcmeValidationMethods(final String validationMethods) {
+        data.put(ACME_VALIDATION_METHODS, validationMethods);
+    }
 }
