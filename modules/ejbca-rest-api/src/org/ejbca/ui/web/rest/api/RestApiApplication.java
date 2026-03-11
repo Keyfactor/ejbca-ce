@@ -52,6 +52,7 @@ public class RestApiApplication extends Application {
         resources.add(org.ejbca.ui.web.rest.api.config.ExceptionHandler.class);
         resources.add(org.ejbca.ui.web.rest.api.exception.IllegalWildCardSyntaxExceptionWrapper.class);
         resources.add(org.ejbca.ui.web.rest.api.exception.ValidationExceptionMapper.class);
+        resources.add(org.ejbca.ui.web.rest.api.exception.JsonProcessingExceptionMapper.class);
 
         Reflections restResourceDefinitions = new Reflections("org.ejbca.ui.web.rest.api.resource.swagger");
         Set<Class<?>> restResources = restResourceDefinitions.getTypesAnnotatedWith(OpenAPIDefinition.class);

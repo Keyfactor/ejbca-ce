@@ -17,20 +17,16 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.ejbca.ui.web.rest.api.validator.ValidSearchApprovalRestRequest;
-import java.util.Date;
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @ValidSearchApprovalRestRequest
 public class SearchApprovalRestRequest {
 
     @Schema(description = "Search for waiting approvals for this admin", example = "true", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    private boolean searchingWaitingForMe;
-
-    @Schema(description = "Search for pending approvals for this admin", example = "true", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    private boolean searchingPending;
+    private boolean searchingWaiting;
 
     @Schema(description = "Search for historical approvals for this admin", example = "true", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    private boolean searchingHistorical; // processed
+    private boolean searchingProcessed;
 
     @Schema(description = "Search the expired approvals", example = "true", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private boolean searchingExpired;
@@ -46,9 +42,6 @@ public class SearchApprovalRestRequest {
     @Schema(description = "Number of days remaining before approval request expires ", example = "100", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String daysRequestsExpireIn;
 
-    @Schema(description = "Should other admins be included in the search", example = "false", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    private boolean includeOtherAdmins;
-
     @Schema(description = "Custom Subject Distinguished Name for search", example = "CN=John Doe,SURNAME=Doe,GIVENNAME=John,C=SE", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String subjectDn;
 
@@ -58,28 +51,20 @@ public class SearchApprovalRestRequest {
     public SearchApprovalRestRequest() {
     }
 
-    public boolean isSearchingWaitingForMe() {
-        return searchingWaitingForMe;
+    public boolean isSearchingWaiting() {
+        return searchingWaiting;
     }
 
-    public void setSearchingWaitingForMe(final boolean searchingWaitingForMe) {
-        this.searchingWaitingForMe = searchingWaitingForMe;
+    public void setSearchingWaiting(final boolean searchingWaiting) {
+        this.searchingWaiting = searchingWaiting;
     }
 
-    public boolean isSearchingPending() {
-        return searchingPending;
+    public boolean isSearchingProcessed() {
+        return searchingProcessed;
     }
 
-    public void setSearchingPending(final boolean searchingPending) {
-        this.searchingPending = searchingPending;
-    }
-
-    public boolean isSearchingHistorical() {
-        return searchingHistorical;
-    }
-
-    public void setSearchingHistorical(final boolean searchingHistorical) {
-        this.searchingHistorical = searchingHistorical;
+    public void setSearchingProcessed(final boolean searchingProcessed) {
+        this.searchingProcessed = searchingProcessed;
     }
 
     public boolean isSearchingExpired() {
@@ -114,14 +99,6 @@ public class SearchApprovalRestRequest {
         this.daysRequestsExpireIn = expireIn;
     }
 
-    public boolean isIncludeOtherAdmins() {
-        return includeOtherAdmins;
-    }
-
-    public void setIncludeOtherAdmins(final boolean includeOtherAdmins) {
-        this.includeOtherAdmins = includeOtherAdmins;
-    }
-
     public String getSubjectDn() {
         return subjectDn;
     }
@@ -149,18 +126,13 @@ public class SearchApprovalRestRequest {
             request = new SearchApprovalRestRequest();
         }
 
-        public Builder searchingWaitingForMe(boolean searchingWaitingForMe) {
-            request.setSearchingWaitingForMe(searchingWaitingForMe);
+        public Builder searchingWaiting(boolean searchingWaiting) {
+            request.setSearchingWaiting(searchingWaiting);
             return this;
         }
 
-        public Builder searchingPending(boolean searchingPending) {
-            request.setSearchingPending(searchingPending);
-            return this;
-        }
-
-        public Builder searchingHistorical(boolean searchingHistorical) {
-            request.setSearchingHistorical(searchingHistorical);
+        public Builder searchingProcessed(boolean searchingHistorical) {
+            request.setSearchingProcessed(searchingHistorical);
             return this;
         }
 
@@ -181,11 +153,6 @@ public class SearchApprovalRestRequest {
 
         public Builder daysRequestsExpireIn(String expireIn) {
             request.setDaysRequestsExpireIn(expireIn);
-            return this;
-        }
-
-        public Builder includeOtherAdmins(boolean includeOtherAdmins) {
-            request.setIncludeOtherAdmins(includeOtherAdmins);
             return this;
         }
 

@@ -84,9 +84,8 @@ public @interface ValidSearchApprovalRestRequest {
             }
 
             // At least one search criteria should be set
-            final boolean hasAnyCriteria = request.isSearchingWaitingForMe() ||
-                    request.isSearchingPending() ||
-                    request.isSearchingHistorical() ||
+            final boolean hasAnyCriteria = request.isSearchingWaiting() ||
+                    request.isSearchingProcessed() ||
                     request.isSearchingExpired() ||
                     request.getCreatedOnOrAfter() != null ||
                     request.getCreatedOnOrBefore() != null ||

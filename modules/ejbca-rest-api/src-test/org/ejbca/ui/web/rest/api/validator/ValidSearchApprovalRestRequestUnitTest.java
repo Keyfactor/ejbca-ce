@@ -17,10 +17,7 @@ import org.easymock.EasyMock;
 import org.ejbca.ui.web.rest.api.io.request.SearchApprovalRestRequest;
 import org.junit.Test;
 
-import java.util.Date;
-
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 /**
  * A unit test class for annotation @ValidSearchApprovalRestRequest and its validator.
@@ -54,19 +51,6 @@ public class ValidSearchApprovalRestRequestUnitTest {
     }
 
     @Test
-    public void testValidRequest() {
-        SearchApprovalRestRequest request = new SearchApprovalRestRequest();
-        final ConstraintValidatorContext context = createConstraintValidatorContextMock();
-
-        request.setSearchingPending(true);
-
-        ValidSearchApprovalRestRequest.Validator validator = new ValidSearchApprovalRestRequest.Validator();
-        boolean result = validator.isValid(request, context);
-
-        assertTrue("The request should be valid when a search criterion is set.", result);
-    }
-
-    @Test
     public void testNullRequest() {
         final ConstraintValidatorContext context = createConstraintValidatorContextMock();
 
@@ -95,7 +79,6 @@ public class ValidSearchApprovalRestRequestUnitTest {
         SearchApprovalRestRequest request = new SearchApprovalRestRequest();
         final ConstraintValidatorContext context = createConstraintValidatorContextMock();
 
-        request.setSearchingPending(true);
         request.setEmail("invalid email");
 
         ValidSearchApprovalRestRequest.Validator validator = new ValidSearchApprovalRestRequest.Validator();
@@ -109,7 +92,6 @@ public class ValidSearchApprovalRestRequestUnitTest {
         SearchApprovalRestRequest request = new SearchApprovalRestRequest();
         final ConstraintValidatorContext context = createConstraintValidatorContextMock();
 
-        request.setSearchingPending(true);
         request.setDaysRequestsExpireIn("-1");
 
         ValidSearchApprovalRestRequest.Validator validator = new ValidSearchApprovalRestRequest.Validator();
@@ -123,7 +105,6 @@ public class ValidSearchApprovalRestRequestUnitTest {
         SearchApprovalRestRequest request = new SearchApprovalRestRequest();
         final ConstraintValidatorContext context = createConstraintValidatorContextMock();
 
-        request.setSearchingPending(true);
         request.setDaysRequestsExpireIn("1blabla");
 
         ValidSearchApprovalRestRequest.Validator validator = new ValidSearchApprovalRestRequest.Validator();

@@ -185,9 +185,8 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
 
         SearchApprovalRestRequest searchApprovalRestRequest = SearchApprovalRestRequest.builder()
                 .searchingExpired(true)
-                .searchingPending(true)
-                .searchingWaitingForMe(true)
-                .searchingHistorical(true)
+                .searchingWaiting(true)
+                .searchingProcessed(true)
                 .build();
 
         // Construct POST  request
@@ -200,9 +199,14 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
         final String actualJsonString = actualResponse.readEntity(String.class);
         // Verify response
         assertJsonContentType(actualResponse);
-        final JSONArray actualJsonArray = (JSONArray) jsonParser.parse(actualJsonString);
+
+        final JSONObject rootJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+        final JSONArray actualJsonArray = (JSONArray) rootJsonObject.get("approvals");
+
         assertEquals(1, actualJsonArray.size());
+
         final JSONObject actualJsonObject = (JSONObject) actualJsonArray.get(0);
+
         final Long approvalRequestId = (Long) actualJsonObject.get("request_id");
         assertNotNull(approvalRequestId);
         assertEquals(addEndEntityApprovalRequestId.intValue(), approvalRequestId.intValue());

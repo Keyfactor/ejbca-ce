@@ -384,7 +384,7 @@ public class ApprovalRestResource extends BaseRestResource {
 
     private RaRequestsSearchRequest convertSearchApprovalRestRequestToRaRequestsSearchRequest(SearchApprovalRestRequest searchApprovalRestRequest) throws RestException {
         RaRequestsSearchRequest raRequestsSearchRequest = new RaRequestsSearchRequest();
-        raRequestsSearchRequest.setSearchingPending(searchApprovalRestRequest.isSearchingPending());
+        raRequestsSearchRequest.setSearchingPending(searchApprovalRestRequest.isSearchingWaiting()); // Adapt the behaviour of Custom Search in RA GUI
         raRequestsSearchRequest.setCustomSearchSubjectDn(searchApprovalRestRequest.getSubjectDn());
         raRequestsSearchRequest.setCustomSearchEmail(searchApprovalRestRequest.getEmail());
         try {
@@ -410,11 +410,11 @@ public class ApprovalRestResource extends BaseRestResource {
             raRequestsSearchRequest.setSearchingExpired(false);
             raRequestsSearchRequest.setSearchingWaitingForMe(true);
         } else {
-            raRequestsSearchRequest.setSearchingHistorical(searchApprovalRestRequest.isSearchingHistorical());
+            raRequestsSearchRequest.setSearchingHistorical(searchApprovalRestRequest.isSearchingProcessed());
             raRequestsSearchRequest.setSearchingExpired(searchApprovalRestRequest.isSearchingExpired());
-            raRequestsSearchRequest.setSearchingWaitingForMe(searchApprovalRestRequest.isSearchingWaitingForMe());
+            raRequestsSearchRequest.setSearchingWaitingForMe(searchApprovalRestRequest.isSearchingWaiting());
         }
-        raRequestsSearchRequest.setIncludeOtherAdmins(searchApprovalRestRequest.isIncludeOtherAdmins());
+        raRequestsSearchRequest.setIncludeOtherAdmins(true); // Adapt the behaviour of Custom Search in RA GUI
         return raRequestsSearchRequest;
     }
 
