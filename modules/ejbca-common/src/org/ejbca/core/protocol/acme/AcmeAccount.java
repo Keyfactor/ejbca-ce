@@ -35,6 +35,10 @@ public interface AcmeAccount extends Serializable, IUpgradeableData {
 
     void setAccountId(String accountId);
     
+    String getAccountUri();
+
+    void setAccountUri(String accountUri);
+    
     String getApprovalRequestIdForAccountRegistration();
 
     void setApprovalRequestIdForAccountRegistration(String id);
