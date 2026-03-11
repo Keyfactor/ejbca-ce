@@ -120,8 +120,12 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
                 } else {
                     result = GlobalConfigurationCacheHolder.INSTANCE.getConfiguration(globalConfigurationData.getData(), configID);
                 }
-                // Always cache result
-                GlobalConfigurationCacheHolder.INSTANCE.updateConfiguration(result, configID);
+                if (result != null) {
+                    //Perform lazy updates into any external caches
+                    result.updateExternalCaches();
+                    // Always cache result
+                    GlobalConfigurationCacheHolder.INSTANCE.updateConfiguration(result, configID);
+                }
             }
             return result;
         } finally {
@@ -196,6 +200,9 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
                         authenticationToken.toString(), null, null, null, details);
             }
         }
+        //Perform updates into any external caches 
+        conf.updateExternalCaches();
+        
         if (log.isTraceEnabled()) {
             log.trace("<saveGlobalConfiguration()");
         }
@@ -354,6 +361,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
         }
 
     }
+    
 }
 
 

@@ -53,6 +53,7 @@ public class GlobalOcspConfiguration extends ConfigurationBase implements Serial
     private static final String NON_EXISTING_BEHAVIOR = "nonExistingBehavior";
     private static final String REQUEST_SIGNER_REVOCATION_STATUS_CACHE_TIME = "ocspRequestSignerRevocationStatusCacheTime";
     private static final String SIGNING_CERTIFICATE_VALIDITY_TIME = "signingCertificateValidityTime";
+    private static final String WARNING_BEFORE_EXPIRY_TIME = "warningBeforeExpiryTime";
     // OCSP Cleanup
     private static final String PROPERTY_OCSP_CLEANUP_USE = "ocsp.cleanup.use";
     private static final boolean PROPERTY_OCSP_CLEANUP_USE_DEFAULT = false;
@@ -61,6 +62,34 @@ public class GlobalOcspConfiguration extends ConfigurationBase implements Serial
     private static final String PROPERTY_OCSP_CLEANUP_SCHEDULE_UNIT = "ocsp.cleanup.schedule_unit";
     private static final String PROPERTY_OCSP_CLEANUP_SCHEDULE_UNIT_DEFAULT = TimeUnit.HOURS.toString();
 
+    /**
+     * 
+     * @return the time in seconds to start warning for expired signing certificates, or 0 if not to warn at all. 
+     */
+    public long getWarningBeforeExpiryTimeSeconds() {
+        if(data.get(WARNING_BEFORE_EXPIRY_TIME) == null) {
+            //set the default
+            try {
+                setWarningBeforeExpiryTimeSeconds(604800); //default is one week
+            } catch (InvalidConfigurationException e) {    
+                throw new IllegalStateException("Default value of 604800 was somehow negative.", e);
+            }  
+        }
+        return (long) data.get(WARNING_BEFORE_EXPIRY_TIME);
+    }
+    
+    /**
+     * Sets the time in seconds for EJBCA to warn before signing certificate expiration
+     * 
+     * @param warningTime the time in seconds to start warning. Set to 0 to not warn at all. 
+     * @throws InvalidConfigurationException if the time was less than 0
+     */
+    public void setWarningBeforeExpiryTimeSeconds(long warningTime) throws InvalidConfigurationException {
+        if(warningTime < 0) {
+            throw new InvalidConfigurationException("Warning time must be a greater than or equal to 0, was " + warningTime);
+        }
+        data.put(WARNING_BEFORE_EXPIRY_TIME, warningTime);
+    }
     
     public long getSigningCertificateValidityTimeMilliseconds() {
         if(data.get(SIGNING_CERTIFICATE_VALIDITY_TIME) == null) {
@@ -152,7 +181,11 @@ public class GlobalOcspConfiguration extends ConfigurationBase implements Serial
     
     public OcspKeyBinding.ResponderIdType getOcspResponderIdType() {
         OcspKeyBinding.ResponderIdType ocspResponderIdType = (ResponderIdType) data.get(OCSP_RESPONDER_ID_TYPE_REFERENCE);
-        return ocspResponderIdType;
+        if(ocspResponderIdType == null) {
+            return OcspKeyBinding.ResponderIdType.NAME;
+        } else {
+            return ocspResponderIdType;
+        }
     }
     
     public void setOcspResponderIdType(OcspKeyBinding.ResponderIdType ocspResponderIdType) {

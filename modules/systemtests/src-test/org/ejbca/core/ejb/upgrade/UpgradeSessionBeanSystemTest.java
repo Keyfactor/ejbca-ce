@@ -226,9 +226,7 @@ public class UpgradeSessionBeanSystemTest {
             cesecoreConfigSession.setConfigurationValue("ocsp.expiredcert.retentionperiod", null);
             upgradeSession.upgrade(/* database */ null, /* upgrade from */ "7.2.0", /* post upgrade? */ false);
             final InternalKeyBindingInfo ocspResponder = internalKeyBindingSession.getInternalKeyBindingInfo(alwaysAllowtoken, internalKeyBindingId);
-            Assert.assertTrue(
-                    "OCSP key binding should not contain an archive cutoff extension when upgrading without 'ocsp.expiredcert.retentionperiod' configured.",
-                    !ocspResponder.getOcspExtensions().contains(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff.getId()));
+            assertFalse("OCSP key binding should not contain an archive cutoff extension when upgrading without 'ocsp.expiredcert.retentionperiod' configured.", ocspResponder.getOcspExtensions().contains(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff.getId()));
         } finally {
             OcspTestUtils.removeInternalKeyBinding(alwaysAllowtoken, "Upgrade730 OCSP Responder");
             CryptoTokenTestUtils.removeCryptoToken(alwaysAllowtoken, "Upgrade730 Crypto Token");
@@ -249,8 +247,7 @@ public class UpgradeSessionBeanSystemTest {
             cesecoreConfigSession.setConfigurationValue("ocsp.expiredcert.retentionperiod", "-1");
             upgradeSession.upgrade(/* database */ null, /* upgrade from */ "7.2.0", /* post upgrade? */ false);
             final InternalKeyBindingInfo ocspResponder = internalKeyBindingSession.getInternalKeyBindingInfo(alwaysAllowtoken, internalKeyBindingId);
-            Assert.assertTrue("OCSP key binding should not contain an archive cutoff extension when 'ocsp.expiredcert.retentionperiod=-1'.",
-                    !ocspResponder.getOcspExtensions().contains(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff.getId()));
+            assertFalse("OCSP key binding should not contain an archive cutoff extension when 'ocsp.expiredcert.retentionperiod=-1'.", ocspResponder.getOcspExtensions().contains(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff.getId()));
         } finally {
             OcspTestUtils.removeInternalKeyBinding(alwaysAllowtoken, "Upgrade730 OCSP Responder");
             CryptoTokenTestUtils.removeCryptoToken(alwaysAllowtoken, "Upgrade730 Crypto Token");
@@ -1199,6 +1196,96 @@ public class UpgradeSessionBeanSystemTest {
         }
     }
 
+    @Test
+    public void testMigrateForbiddenCharacters_9_5_0() throws AuthorizationDeniedException {
+        //Stash the orginal value 
+        char[] originalForbiddenCharacters = cesecoreConfigSession.getForbiddenCharacters();
+        String testValue = "fobar\n\r";
+        //Set the forbidden characters to a verifiable value
+        cesecoreConfigSession.setConfigurationValue("forbidden.characters", testValue);
+          
+        try {
+          //Set the upgrade-from version 
+            final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            guc.setUpgradedToVersion("9.4.0");
+            guc.setPostUpgradedToVersion("9.4.0");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+            //Perform upgrade
+            upgradeSession.upgrade(/* database */ null, /* upgrade from */ "9.4.0", /* post upgrade? */ false);
+            //Retrieve GlobalCesecoreConfig and verify that the value was migrated
+            GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+            assertEquals("forbidden.characters was not migrated into GlobalCesecoreConfiguration", testValue, new String(globalCesecoreConfiguration.getForbiddenCharacters()));
+        } finally {
+            cesecoreConfigSession.setConfigurationValue("forbidden.characters", String.valueOf(originalForbiddenCharacters));
+            GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+            globalCesecoreConfiguration.setForbiddenCharacters(originalForbiddenCharacters);
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, globalCesecoreConfiguration);
+        }
+    }
+    
+    @Test
+    public void testMigrateCrlDatabaseFetchValues_9_6_0() throws AuthorizationDeniedException {
+        //Stash the orginal values
+        GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigSession
+                .getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+        final int originalFetchSize = globalCesecoreConfiguration.getCrlGenerationFetchSize();
+        final boolean originalOrdered = globalCesecoreConfiguration.getCrlGenerationFetchOrdered();
+
+        try {
+            //Set the upgrade-from version 
+            final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            guc.setUpgradedToVersion("9.5.0");
+            guc.setPostUpgradedToVersion("9.5.0");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+            //Set some non-default values
+            cesecoreConfigSession.setConfigurationValue("database.crlgenfetchsize", "4711");
+            cesecoreConfigSession.setConfigurationValue("database.crlgenfetchordered", "true");          
+            //Perform upgrade
+            upgradeSession.upgrade(/* database */ null, /* upgrade from */ "9.5.0", /* post upgrade? */ false);
+            //Retrieve GlobalCesecoreConfig and verify that the valus w migrated
+            globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+            assertEquals("database.crlgenfetchsize was not migrated.", 4711, globalCesecoreConfiguration.getCrlGenerationFetchSize());
+            assertTrue("database.crlgenfetchordered was not migrated", globalCesecoreConfiguration.getCrlGenerationFetchOrdered());
+        } finally {
+            globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+            globalCesecoreConfiguration.setCrlGenerationFetchOrdered(false);
+            globalCesecoreConfiguration.setCrlGenerationFetchSize(originalFetchSize);
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, globalCesecoreConfiguration);
+            cesecoreConfigSession.setConfigurationValue("database.crlgenfetchsize", String.valueOf(originalFetchSize));
+            cesecoreConfigSession.setConfigurationValue("database.crlgenfetchordered", String.valueOf(originalOrdered));
+        }
+    }
+    
+    @Test
+    public void testMigrateOcspProperties_9_5_0() throws InvalidConfigurationException, AuthorizationDeniedException {
+        //Stash the original value(s)
+        GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigSession
+                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        final long originalWarningBeforeExpiration = globalOcspConfiguration.getWarningBeforeExpiryTimeSeconds();
+        cesecoreConfigSession.setConfigurationValue("ocsp.warningBeforeExpirationTime", "5");
+        try {
+            //Set the upgrade-from version 
+            final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            guc.setUpgradedToVersion("9.4.0");
+            guc.setPostUpgradedToVersion("9.4.0");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+            //Perform upgrade
+            upgradeSession.upgrade(/* database */ null, /* upgrade from */ "9.4.0", /* post upgrade? */ false);
+            globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            assertEquals("ocsp.warningBeforeExpirationTime was not upgraded", 5, globalOcspConfiguration.getWarningBeforeExpiryTimeSeconds());
+
+        } finally {
+            globalOcspConfiguration.setWarningBeforeExpiryTimeSeconds(originalWarningBeforeExpiration);
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, globalOcspConfiguration);
+        }
+    }
+    
     private EndEntityInformation makeEndEntityInfo(final String username, final String startTime, final String endTime) {
         final ExtendedInformation extInfo = new ExtendedInformation();
         if (startTime != null) {
@@ -1228,7 +1315,7 @@ public class UpgradeSessionBeanSystemTest {
             if (role!=null) {
                 roleSession.deleteRoleIdempotent(alwaysAllowtoken, role.id());
             }
-        } catch (AuthorizationDeniedException e) {
+        } catch (AuthorizationDeniedException ignored) {
         }
     }
 

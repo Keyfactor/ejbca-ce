@@ -33,6 +33,9 @@ dependencies {
     compileOnly(libs.x509.common.util)
     compileOnly(libs.bundles.cryptotokens)
     compileOnly(libs.jldap)
+    compileOnly(libs.json.simple)
+    compileOnly(libs.httpclient)
+    compileOnly(libs.httpcore)
     if (project.extra["edition"] == "ee") {
         compileOnly(project(":modules:peerconnector:common"))
         compileOnly(project(":modules:peerconnector:interface"))

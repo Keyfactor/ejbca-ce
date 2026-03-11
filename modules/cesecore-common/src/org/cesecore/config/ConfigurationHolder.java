@@ -503,7 +503,6 @@ public final class ConfigurationHolder {
      * StringConfigurationCache:
      * - password.encryption.key
      * - password.encryption.count
-     * - forbidden.characters
      * 
      * CryptoProviderConfigurationCache:
      * - pkcs11.disableHashingSignMechanisms
@@ -528,9 +527,6 @@ public final class ConfigurationHolder {
                 } else {
                     log.warn("Failed to updated property password.encryption.count: Value is no positive integer: '" + value + "'.");
                 }
-            } else if ("forbidden.characters".equals(key) && value != null && !value.toCharArray().equals(StringConfigurationCache.INSTANCE.getForbiddenCharacters())) {
-                StringConfigurationCache.INSTANCE.setForbiddenCharacters(value.toCharArray());
-                updated.add(key);
             } else if ("pkcs11.disableHashingSignMechanisms".equals(key) && !Boolean.valueOf(value).equals(CryptoProviderConfigurationCache.INSTANCE.isP11disableHashingSignMechanisms())) {
                 CryptoProviderConfigurationCache.INSTANCE.setP11disableHashingSignMechanisms(Boolean.parseBoolean(value));
                 updated.add(key);
@@ -545,8 +541,7 @@ public final class ConfigurationHolder {
         }
     }
     
-    private static class InternalPeriodicReloadingTrigger
-    {
+    private static class InternalPeriodicReloadingTrigger {
         /** The executor service used by this trigger. */
         private final ScheduledExecutorService executorService;
 
@@ -583,8 +578,7 @@ public final class ConfigurationHolder {
          */
         public InternalPeriodicReloadingTrigger(final ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration> builder, final Object ctrlParam,
                 final long triggerPeriod, final TimeUnit unit, final ManagedScheduledExecutorService exec) {
-            if (builder.getReloadingController() == null)
-            {
+            if (builder.getReloadingController() == null) {
                 throw new IllegalArgumentException(
                         "ReloadingController must not be null!");
             }
@@ -593,8 +587,7 @@ public final class ConfigurationHolder {
             controllerParam = ctrlParam;
             period = triggerPeriod;
             timeUnit = unit;
-            executorService =
-                    exec != null ? exec : createDefaultExecutorService();
+            executorService = exec != null ? exec : createDefaultExecutorService();
         }
 
         /**
@@ -606,7 +599,6 @@ public final class ConfigurationHolder {
          *        when doing reloading checks
          * @param triggerPeriod the period in which the controller is triggered
          * @param unit the time unit for the period
-         * @throws IllegalArgumentException if a required argument is missing
          */
         public InternalPeriodicReloadingTrigger(ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration> builder, final Object ctrlParam,
                 final long triggerPeriod, final TimeUnit unit) {
@@ -619,6 +611,7 @@ public final class ConfigurationHolder {
          * after a period. If this trigger is already started, this invocation has
          * no effect.
          */
+
         public synchronized void start() {
             if (!isRunning()) {
                 triggerTask =

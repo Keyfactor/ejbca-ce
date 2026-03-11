@@ -50,7 +50,6 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
-import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -297,8 +296,7 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
             boolean finishUser = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caId)
                     .getFinishUser();
             if (finishUser) {
-
-                EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSession.class).finishUser(userdata);
+                EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).finishUser(userdata);
             }
 
         } else {

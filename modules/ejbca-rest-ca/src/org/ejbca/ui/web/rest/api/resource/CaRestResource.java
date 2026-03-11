@@ -16,6 +16,7 @@ package org.ejbca.ui.web.rest.api.resource;
 import java.io.File;
 import java.io.IOException;
 import java.security.cert.CRLException;
+import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509CRL;
@@ -41,6 +42,8 @@ import org.cesecore.certificates.crl.CrlStoreException;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.crl.DeltaCrlException;
 import org.cesecore.certificates.util.cert.CrlExtensions;
+import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.crl.CrlCreationParams;
 import org.ejbca.core.ejb.crl.ImportCrlSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
@@ -49,6 +52,7 @@ import org.ejbca.core.model.era.RaCaListRequest;
 import org.ejbca.core.model.era.RaCrlSearchRequest;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.exception.RestException;
+import org.ejbca.ui.web.rest.api.io.request.GenerateCsrCaRequest;
 import org.ejbca.ui.web.rest.api.io.response.CaInfoRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.CaInfosRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.CreateCrlRestResponse;
@@ -61,10 +65,12 @@ import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.core.EntityPart;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
@@ -89,6 +95,10 @@ public class CaRestResource extends BaseRestResource {
     private CrlStoreSessionLocal crlStoreSession;
     @EJB
     private ImportCrlSessionLocal importCrlSession;
+    @EJB
+    private CAAdminSessionLocal caAdminSession;
+    @EJB
+    private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
 
     /**
      * @param subjectDn CA subjectDn
@@ -250,4 +260,68 @@ public class CaRestResource extends BaseRestResource {
             throw new RestException(Status.BAD_REQUEST.getStatusCode(), "No file uploaded.");
         }
     }
+    
+    public Response generateCsr(final HttpServletRequest httpServletRequest, String issuerDn, @Valid GenerateCsrCaRequest generateCsrCaRequest)
+            throws AuthorizationDeniedException, RestException {
+        
+        final AuthenticationToken admin = getAdmin(httpServletRequest, false);
+
+        issuerDn = issuerDn.trim();
+        final CAInfo cainfo = caSession.getCAInfo(admin, issuerDn.hashCode());
+
+        if (cainfo == null) {
+            throw new RestException(Status.BAD_REQUEST.getStatusCode(), "CA with DN: " + issuerDn + " does not exist.");
+        }
+        
+        String keyAlias = generateCsrCaRequest.getKeyPair()
+                .equals(GenerateCsrCaRequest.GENERATE_NEW_KEY_INDICATOR) ? null : generateCsrCaRequest.getKeyPair();        
+        byte[] generatedCsr = null;
+        try {
+            if (keyAlias!=null) {
+                var keyInfo = cryptoTokenManagementSession.getKeyPairInfo(admin, cainfo.getCAToken().getCryptoTokenId(), keyAlias);
+                if (keyInfo == null) {
+                    throw new RestException(Status.BAD_REQUEST.getStatusCode(), "CA cryptotoken is offline or the key pair not found.");
+                }
+            }
+            List<Certificate> certChain = null;
+            if (generateCsrCaRequest.getCertificateChain()!=null &&
+                    !generateCsrCaRequest.getCertificateChain().isEmpty()) {
+                certChain =
+                    generateCsrCaRequest.getCertificateChain().stream()
+                            .map(c -> {
+                                try {
+                                    return CertTools.getCertfromByteArray(c.getBytes(), Certificate.class);
+                                } catch (Exception e) {
+                                    throw new IllegalStateException(e);
+                                }
+                            })
+                            .toList();
+            }
+            
+            generatedCsr = caAdminSession.makeRequest(admin, issuerDn.hashCode(), certChain, keyAlias);
+            if (generateCsrCaRequest.getResponseFormat().equals("PEM")) {
+                generatedCsr = CertTools.getPEMFromCertificateRequest(generatedCsr);
+            }
+        } catch (IllegalStateException e) {
+            log.info("Error reading provided ceritificate chain: ", e.getCause());
+            throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Error reading provided ceritificate chain.");
+        } catch (CryptoTokenOfflineException e) {
+            log.info("Crypto token is offline: ", e);
+            throw new RestException(Status.BAD_REQUEST.getStatusCode(), "CA cryptotoken is offline or the key pair not found.");
+        } catch (AuthorizationDeniedException e) {
+            log.info("Authorization denied: ", e);
+            throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Invalid request");
+        } catch (EJBException|CertPathValidatorException e) {
+            log.info("Something wrong happened: ", e);
+            throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Invalid request");
+        }
+        
+        return Response.ok(generatedCsr)
+                    .header("Content-disposition", "attachment; filename=\"" 
+                                + StringTools.stripFilename(issuerDn + "_csr." + generateCsrCaRequest.getResponseFormat().toLowerCase()) + "\"")
+                    .header("Content-Length", generatedCsr.length)
+                    .build();
+        
+    }
+    
 }

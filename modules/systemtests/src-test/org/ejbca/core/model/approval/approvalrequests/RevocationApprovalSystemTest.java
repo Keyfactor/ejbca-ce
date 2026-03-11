@@ -586,7 +586,7 @@ public class RevocationApprovalSystemTest extends CaTestCase {
             } catch (WaitingForApprovalException e) {
                 log.info(e.getMessage() + ": " + e.getRequestId());
             }
-            int id = RevocationApprovalRequest.generateApprovalId(ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, username, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE,
+            RevocationApprovalRequest.generateApprovalId(ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, username, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE,
                     usercertTest06.getSerialNumber(), CertTools.getIssuerDN(usercertTest06),
                     approvalProfile.getProfileName(), newBackdatedRevocationDate);
             int partitionId = approvalProfile.getStep(AccumulativeApprovalProfile.FIXED_STEP_ID).getPartitions().values().iterator().next()

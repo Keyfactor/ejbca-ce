@@ -26,6 +26,7 @@ data:
       access_log  /var/log/nginx/access.log  main;
       sendfile        on;
       keepalive_timeout  65;
+      client_max_body_size 0;
 
       {{- if .Values.nginx.service.httpPort }}
       server {

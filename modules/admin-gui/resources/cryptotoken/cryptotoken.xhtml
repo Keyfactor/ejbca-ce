@@ -711,6 +711,7 @@
                          rendered="#{!cryptoTokenMBean.keyPairGuiListEmpty}"
                          styleClass="grid table-layout-auto vertical-padding-1"
                          stripedRows="true"
+                         rowStyleClass="cryptoTokenKeyPairAliasName"
                          showGridlines="true">
 
                 <p:column rendered="#{cryptoTokenMBean.allowedToKeyRemoval and cryptoTokenMBean.currentCryptoTokenEditMode}">
@@ -721,7 +722,15 @@
                     <f:facet name="header">
                         <h:outputText value="#{web.text.CRYPTOTOKEN_KPM_ALIAS}"/>
                     </f:facet>
-                    <h:outputText id="kpAlias" value="#{keyPairGuiInfo.alias}"/>
+                    <h:outputText value="#{keyPairGuiInfo.alias}" rendered="#{!keyPairGuiInfo.composite}"/>
+                    <h:outputText id="kpAlias" value="#{keyPairGuiInfo.alias}" rendered="#{keyPairGuiInfo.composite}" styleClass="compositeKeyColor" />
+                    <p:tooltip for="kpAlias" rendered="#{keyPairGuiInfo.composite}" autoHide="false" my="center bottom" showEffect="clip" hideEffect="fold">
+                        <p class="compositeText">
+                        <b><h:outputText value="#{web.text.CRYPTOTOKEN_KEY_COMPOSITE_INFO}"/></b>
+                        <br /><h:outputText value="#{web.text.CRYPTOTOKEN_KEY_COMPOSITE_PQ_KEY}: "/> <h:outputText value="#{keyPairGuiInfo.compositeComponentPqc}"/>
+                        <br /><h:outputText value="#{web.text.CRYPTOTOKEN_KEY_COMPOSITE_CLASSIC_KEY}: "/> <h:outputText value="#{keyPairGuiInfo.compositeComponentClassical}"/>
+                        </p>
+                    </p:tooltip>
                 </p:column>
                 <p:column styleClass="text-align-center">
                     <f:facet name="header">
@@ -850,7 +859,8 @@
                     <f:validator validatorId="legalCharsValidator"/>
                 </h:inputText>
                 <h:selectOneMenu id="genNewKeyPairSpec" value="#{cryptoTokenMBean.newKeyPairSpec}"
-                                 rendered="#{cryptoTokenMBean.allowedToKeyGeneration}">
+                                 rendered="#{cryptoTokenMBean.allowedToKeyGeneration}"
+                                 onchange="addOrRemoveCompositeSuffix()">
                     <f:selectItems value="#{cryptoTokenMBean.availableKeySpecs}"/>
                 </h:selectOneMenu>
                 <h:selectOneMenu id="genNewKeyPairUsage" value="#{cryptoTokenMBean.keyUsage}"
@@ -872,6 +882,32 @@
             </h:panelGrid>
 
         </h:form>
+        <script>
+            function addOrRemoveCompositeSuffix() {
+                var aliasBox = document.getElementById('currentCryptoTokenAliasesForm:genNewKeyPairAlias');
+                var alias = aliasBox.value;
+                if (alias === '') {
+                    return;
+                }
+                var hasSuffix = /-COMPOSITE[0-9A-Z]*$/.test(alias);
+                var keyspec = document.getElementById('currentCryptoTokenAliasesForm:genNewKeyPairSpec').value;
+                var shouldHaveSuffix = /MLDSA[0-9]+-/.test(keyspec);
+                if (hasSuffix != shouldHaveSuffix) {
+                    if (shouldHaveSuffix) {
+                        // If a key sequence might possibly be present (there's no way to know for sure whether the
+                        // key alias ends with a key sequence), let the user manually put the "-COMPOSITE" suffix
+                        // in the correct place.
+                        // (Note that it is uncommon to manually create a key with a key sequence, it is mainly
+                        // added automatically on rekey)
+                        if (!/.[0-9A-Z]{5,5}$/.test(alias)) {
+                            aliasBox.value = alias + '-COMPOSITE';
+                        }
+                    } else {
+                        aliasBox.value = alias.replace(/-COMPOSITE([0-9A-Z]*)$/, '$1');
+                    }
+                }
+            }
+        </script>
     </ui:define>
 
     <ui:remove><!-- Template will render this when element ":modalBlockContainer" is rendered and "renderModal" param is true. --></ui:remove>

@@ -120,14 +120,11 @@ import org.bouncycastle.cms.CMSSignedDataGenerator;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.cms.CMSTypedData;
 import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
-import org.bouncycastle.jcajce.CompositePrivateKey;
-import org.bouncycastle.jcajce.CompositePublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.ContentVerifierProvider;
-import org.bouncycastle.operator.ExtendedContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
@@ -351,6 +348,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 .setDoEnforceKeyRenewal(isDoEnforceKeyRenewal())
                 .setDoEnforceUniqueDistinguishedName(isDoEnforceUniqueDistinguishedName())
                 .setDoEnforceUniqueSubjectDNSerialnumber(isDoEnforceUniqueSubjectDNSerialnumber())
+                .setDoEnforceNameConstraints(isDoEnforceNameConstraints())
                 .setUseCertReqHistory(isUseCertReqHistory())
                 .setUseUserStorage(isUseUserStorage())
                 .setAddCompromisedKeysToBlockList(isAddCompromisedKeysToBlockList())
@@ -995,17 +993,12 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             // Find the signature algorithm from the public key, because it is more granular, i.e. can differnetiate between ML-DSA-44 and ML-DSA-65
             final String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(CMSSignedGenerator.DIGEST_SHA256, publicKey.getAlgorithm());
 
-            CMSSignedDataGenerator generator;
-            if (privateKey instanceof CompositePrivateKey && publicKey instanceof CompositePublicKey) {
-                generator = createCompositePkcs7Response(signatureAlgorithmName, cryptoToken.getSignProviderName(), ((CompositePrivateKey) privateKey), ((CompositePublicKey) publicKey), cacert);
-            } else {
-                generator = createPkcs7Response(signatureAlgorithmName, cryptoToken.getSignProviderName(), privateKey, publicKey, cacert);
-            }
+            final CMSSignedDataGenerator generator = createPkcs7Response(signatureAlgorithmName, cryptoToken.getSignProviderName(), privateKey, publicKey, cacert);
 
             generator.addCertificates(new CollectionStore<>(certList));
             CMSSignedData s = null;
             CAToken catoken = getCAToken();
-            if (catoken != null && !(cryptoToken instanceof NullCryptoToken)) {
+            if (catoken != null && !cryptoToken.isInstanceOf(NullCryptoToken.class)) {
                 log.debug("createPKCS7: Provider=" + cryptoToken.getSignProviderName() + " using algorithm "
                         + privateKey.getAlgorithm());
                 s = generator.generate(msg, true);
@@ -1034,36 +1027,6 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             throw new IllegalStateException("BouncyCastle failed in creating signature provider.", e);
         }
     }
-
-    private CMSSignedDataGenerator createCompositePkcs7Response(final String signatureAlgorithmName, final String signProviderName, final CompositePrivateKey privKey, final CompositePublicKey pubKey, final X509Certificate cacert) throws CertificateEncodingException {
-        try {
-            final CMSSignedDataGenerator generator = new CMSSignedDataGenerator();
-
-            final ExtendedContentSigner contentSigner = new BufferingContentSigner(new JcaContentSignerBuilder(privKey.getPrivateKeys().get(0).getAlgorithm())
-                    .setProvider(signProviderName).build(privKey.getPrivateKeys().get(0)), 20480);
-
-            // For the PoC we only have SHA512.
-            String sigAlg = AlgorithmConstants.SIGALG_SHA512_WITH_RSA;
-            if (signatureAlgorithmName.contains("ECDSA")) {
-                sigAlg = AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA;
-            }
-
-            final ExtendedContentSigner contentSigner2 = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg)
-                    .setProvider(signProviderName).build(privKey.getPrivateKeys().get(1)), 20480);
-
-            final JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME);
-            final JcaSignerInfoGeneratorBuilder builder = new JcaSignerInfoGeneratorBuilder(calculatorProviderBuilder.build());
-            generator.addSignerInfoGenerator(builder.build(contentSigner, cacert));
-
-            final JcaDigestCalculatorProviderBuilder calculatorProviderBuilder2 = new JcaDigestCalculatorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME);
-            final JcaSignerInfoGeneratorBuilder builder2 = new JcaSignerInfoGeneratorBuilder(calculatorProviderBuilder2.build());
-            generator.addSignerInfoGenerator(builder2.build(contentSigner2, cacert));
-            return generator;
-        } catch (OperatorCreationException e) {
-            throw new IllegalStateException("BouncyCastle failed in creating signature provider.", e);
-        }
-    }
-
 
     /* (non-Javadoc)
      * @see org.cesecore.certificates.ca.X509CA#createPKCS7Rollover(om.keyfactor.util.keys.token.CryptoToken)
@@ -1120,7 +1083,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             gen.addCertificates(new CollectionStore<>(certList));
             CMSSignedData s = null;
             CAToken catoken = getCAToken();
-            if (catoken != null && !(cryptoToken instanceof NullCryptoToken)) {
+            if (catoken != null && !cryptoToken.isInstanceOf(NullCryptoToken.class)) {
                 log.debug("createPKCS7Rollover: Provider=" + cryptoToken.getSignProviderName() + " using algorithm "
                         + privateKey.getAlgorithm());
                 // Don't encapsulate any content, i.e. the bytes in the message. This makes data section of the PKCS#7 message completely empty.
@@ -1353,7 +1316,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
      * If the certificate profile allows subject DN override this value will be used instead of the value from subject.getDN. Its public key is going to be used if
      * providedPublicKey == null && subject.extendedInformation.certificateRequest == null. Can be null.
      * @param providedPublicKey provided public key which will have precedence over public key from providedRequestMessage but not over subject.extendedInformation.certificateRequest
-     * @param providedAlternativePublicKey alternative key, if the intention is to create a hybrid certificate
+     * @param providedAlternativePublicKey alternative key, if the intention is to create a Chimera/Catalyst certificate
      * @param subject end entity information. If it contains certificateRequest under extendedInformation, it will be used instead of providedRequestMessage and providedPublicKey
      * Otherwise, providedRequestMessage will be used.
      * @param caSigningPackage a holder class containing the CA's public and private keys, and signing algorithm(s)
@@ -1583,7 +1546,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             if (altName != null && altName.length() > 0) {
                 altNameGNs = DnComponents.getGeneralNamesFromAltName(altName);
             }
-            CABase.checkNameConstraints(cacert, subjectDNName, altNameGNs);
+            CABase.checkNameConstraints(getCAInfo(), cacert, subjectDNName, altNameGNs);
         }
 
         // If the subject has Name Constraints, then name constraints must be enabled in the certificate profile!
@@ -1971,7 +1934,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             throw new CertificateCreateException("An exception occurred because too many CT servers were down to satisfy the certificate profile.", e);
         }
 
-        //Add alternative ("hybrid") signature to certificate if defined
+        //Add alternative ("Chimera/Catalyst") signature to certificate if defined
         try {
             if(alternativePublicKey != null) {
                 certbuilder.addExtension(Extension.subjectAltPublicKeyInfo, false, SubjectAltPublicKeyInfo.getInstance(alternativePublicKey.getEncoded()));
@@ -2032,26 +1995,34 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         // Verify using the CA certificate before returning
         // If we can not verify the issued certificate using the CA certificate we don't want to issue this cert
         // because something is wrong...
-        final PublicKey verifyKey;
-        // We must use the configured public key if this is a rootCA, because then we can renew our own certificate, after changing
-        // the keys. In this case the _new_ key will not match the current CA certificate.
-        if ((cacert != null) && (!isRootCA) && (!linkCertificate)) {
-            verifyKey = cacert.getPublicKey();
+        //
+        // ECA-13882: Ability to disable certificate signature verification on issuance
+        if (certProfile.getUseSignatureVerification()) {
+            final PublicKey verifyKey;
+            // We must use the configured public key if this is a rootCA, because then we can renew our own certificate, after changing
+            // the keys. In this case the _new_ key will not match the current CA certificate.
+            if ((cacert != null) && (!isRootCA) && (!linkCertificate)) {
+                verifyKey = cacert.getPublicKey();
+            } else {
+                verifyKey = caSigningPackage.getPrimaryPublicKey();
+            }
+            try {
+                cert.verify(verifyKey);
+            } catch (SignatureException e) {
+                final String msg = "Public key in the CA certificate does not match the configured certSignKey, is the CA in renewal process? : " + e.getMessage();
+                log.warn(msg);
+                throw new CertificateCreateException(msg, e);
+            } catch (InvalidKeyException e) {
+                throw new CertificateCreateException("CA's public key was invalid,", e);
+            } catch (NoSuchAlgorithmException | CertificateException e) {
+                throw new CertificateCreateException(e);
+            } catch (NoSuchProviderException e) {
+                throw new IllegalStateException("Provider was unknown", e);
+            }
         } else {
-            verifyKey = caSigningPackage.getPrimaryPublicKey();
-        }
-        try {
-            cert.verify(verifyKey);
-        } catch (SignatureException e) {
-            final String msg = "Public key in the CA certificate does not match the configured certSignKey, is the CA in renewal process? : " + e.getMessage();
-            log.warn(msg);
-            throw new CertificateCreateException(msg, e);
-        } catch (InvalidKeyException e) {
-            throw new CertificateCreateException("CA's public key was invalid,", e);
-        } catch (NoSuchAlgorithmException | CertificateException e) {
-           throw new CertificateCreateException(e);
-        } catch (NoSuchProviderException e) {
-            throw new IllegalStateException("Provider was unknown", e);
+            if (log.isDebugEnabled()) {
+                log.debug("Skipping signature verification as requested by certificate profile " + subject.getCertificateProfileId() + ", for CA " + this.getCAId() + " [" + this.getName() + "].");
+            }
         }
 
         // Verify any Signed Certificate Timestamps (SCTs) in the certificate before returning. If one of the (embedded) SCTs does

@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.validator;
 
-import org.apache.log4j.Logger;
 import org.easymock.EasyMock;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificateCriteriaRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequest;
@@ -40,7 +39,6 @@ import static org.junit.Assert.assertTrue;
  */
 public class ValidSearchCertificateCriteriaRestRequestListUnitTest {
 
-    private static Logger log = Logger.getLogger(ValidSearchCertificateCriteriaRestRequestListUnitTest.class);
     private ConstraintValidatorContext constraintValidatorContextMock;
     private ConstraintValidatorContext.ConstraintViolationBuilder constraintViolationBuilderMock;
     ValidSearchCertificateCriteriaRestRequestList.Validator validator;

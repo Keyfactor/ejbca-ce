@@ -120,6 +120,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 
     // Field constants, used in the map below. Please use the getters/setters instead when possible!
     private static final String USERNAME           = "USERNAME";
+    private static final String USERNAME_PREFIX      = "USERNAME_PREFIX";
+    private static final String USERNAME_SUFFIX     = "USERNAME_SUFFIX";
     private static final String PASSWORD           = "PASSWORD";
     public static final String CLEARTEXTPASSWORD  = "CLEARTEXTPASSWORD";
     private static final String AUTOGENPASSWORDTYPE   = "AUTOGENPASSWORDTYPE";
@@ -182,6 +184,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	DATA_CONSTANTS.put(AUTOGENPASSWORDTYPE, 95);
     	DATA_CONSTANTS.put(AUTOGENPASSWORDLENGTH, 96);
     	DATA_CONSTANTS.put(PROFILEDESCRIPTION, 110);
+        DATA_CONSTANTS.put(USERNAME_PREFIX, 124);
+        DATA_CONSTANTS.put(USERNAME_SUFFIX, 125);
         // DN components
 
     	DATA_CONSTANTS.put(EMAIL, 26);
@@ -1029,6 +1033,14 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     public void setUsernameDefault(final String username) {
         setValue(USERNAME, 0, username);
     }
+
+    public String getUsernamePrefix() { return getValue(USERNAME_PREFIX, 0); }
+
+    public void setUsernamePrefix(final String usernamePrefix) { setValue(USERNAME_PREFIX, 0, usernamePrefix); }
+
+    public String getUsernameSuffix() { return getValue(USERNAME_SUFFIX, 0); }
+
+    public void setUsernameSuffix(final String usernameSuffix) { setValue(USERNAME_SUFFIX, 0, usernameSuffix); }
 
     public String getUsernameDefaultValidation() {
         if (null != getValidation(USERNAME, 0)) {
@@ -2829,7 +2841,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             }
         }
 
-        if(subjectaltnames==null) {
+        if (subjectaltnames == null) {
             return;
         }
         final List<String> sanFields = DnComponents.getAltNameFields();
@@ -2839,15 +2851,20 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             final int profileId = DnComponents.dnIdToProfileId(dnId);
             final String fieldName = sanFields.get(i);
             final int num = subjectaltnames.getNumberOfFields(dnId);
+            int numberOfCopiedFields = 0;
             for (int j = 0; j < num; j++) {
+                final boolean isCopy = getCopy(profileId, j);
                 final Map<String,Serializable> validators = getValidation(profileId, j);
-                if (validators != null) {
-                    final String fieldValue = subjectaltnames.getField(dnId, j);
+                if (!isCopy && validators != null) {
+                    final String fieldValue = subjectaltnames.getField(dnId, j-numberOfCopiedFields);
                     try {
                         EndEntityValidationHelper.checkValue(fieldName, validators, fieldValue);
                     } catch (EndEntityFieldValidatorException e) {
                         throw new EndEntityProfileValidationException("Did not pass validation of field " + fieldName + " (in SAN). " + e.getMessage());
                     }
+                }
+                if (isCopy) {
+                    numberOfCopiedFields++;
                 }
             }
         }

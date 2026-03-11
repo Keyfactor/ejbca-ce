@@ -214,6 +214,7 @@ import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.store.CertReqHistory;
+import org.ejbca.core.model.certificate.CertificateRequestParseException;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryNotAvailableException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.CustomFieldException;
@@ -2327,6 +2328,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 endEntity.setSendNotification(true);
             }
         }
+        if (endEntityProfile.isMaxFailedLoginsUsed()) {
+            endEntity.getExtendedInformation().setMaxLoginAttempts(endEntityProfile.getMaxFailedLogins());
+            endEntity.getExtendedInformation().setRemainingLoginAttempts(endEntityProfile.getMaxFailedLogins());
+        }
 
         boolean isClearPwd = endEntityProfile.isClearTextPasswordUsed() && endEntityProfile.isClearTextPasswordDefault();
         endEntity.getExtendedInformation().removeInternalKeys();
@@ -3512,6 +3517,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             return signSessionLocal.createCertificateWS(authenticationToken, username, password, req, reqType, responseType);
         } catch (ParseException | ConstructionException | NoSuchFieldException e) {
             throw new EjbcaException(ErrorCode.INTERNAL_ERROR, LogRedactionUtils.getRedactedMessage(e.getMessage()));
+        } catch (IOException exception) {
+            throw new CertificateRequestParseException(LogRedactionUtils.getRedactedMessage(exception.getMessage()));
         }
     }
 

@@ -32,6 +32,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.tokens.OAuth2AuthenticationToken;
@@ -219,6 +220,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         //Database preferences
         private int maximumQueryCount;
         private long maximumQueryTimeout;
+        private char[] forbiddenCharacters;
         
         //redact pii
         private boolean redactPiiByDefault;
@@ -230,6 +232,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         private long ctCacheCleanupInterval;
         private boolean ctCacheFastFailEnabled;
         private long ctCacheFastFailBackoff;
+        
+        private int crlGenerationFetchSize;
+        private boolean crlGenerationFetchOrdered;
 
         private GuiInfo(AdminPreference adminPreference) {
             final GlobalConfiguration globalConfig = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
@@ -263,15 +268,21 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
                 this.maximumQueryCount = globalCesecoreConfiguration.getMaximumQueryCount();
                 this.maximumQueryTimeout= globalCesecoreConfiguration.getMaximumQueryTimeout();
+                this.forbiddenCharacters = globalCesecoreConfiguration.getForbiddenCharacters();
                 
                 this.redactPiiByDefault = globalCesecoreConfiguration.getRedactPiiByDefault();
                 this.redactPiiEnforced = globalCesecoreConfiguration.getRedactPiiEnforced();
+                
+                this.crlGenerationFetchSize = globalCesecoreConfiguration.getCrlGenerationFetchSize();
+                this.crlGenerationFetchOrdered = globalCesecoreConfiguration.getCrlGenerationFetchOrdered();
                 
                 this.ctCacheEnabled = globalCtConfiguration.getCtCacheEnabled();
                 this.ctCacheSize = globalCtConfiguration.getCtCacheSize();
                 this.ctCacheCleanupInterval = globalCtConfiguration.getCtCacheCleanupInterval();
                 this.ctCacheFastFailEnabled = globalCtConfiguration.getCtCacheFastFailEnabled();
                 this.ctCacheFastFailBackoff = globalCtConfiguration.getCtCacheFastFailBackoff();
+                
+                
             } catch (RuntimeException e) {
                 log.error(e.getMessage(), e);
             }
@@ -327,6 +338,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public void setMaximumQueryCount(int maximumQueryCount) { this.maximumQueryCount = maximumQueryCount; }
         public long getMaximumQueryTimeout() { return maximumQueryTimeout; }
         public void setMaximumQueryTimeout(final long maximumQueryTimeout) { this.maximumQueryTimeout = maximumQueryTimeout; }
+        public String getForbiddenCharacters() { return StringEscapeUtils.escapeJava(new String(forbiddenCharacters)); }
+        public char[] getForbiddenCharactersAsCharArray() { return forbiddenCharacters; }
+        public void setForbiddenCharacters(final String forbiddenCharacters) { this.forbiddenCharacters = StringEscapeUtils.unescapeJava(forbiddenCharacters).toCharArray(); }
 
         public boolean isRedactPiiByDefault() { return redactPiiByDefault; }
         public void setRedactPiiByDefault(boolean redactPiiByDefault) { this.redactPiiByDefault = redactPiiByDefault; }
@@ -344,6 +358,22 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public void setCtCacheFastFailEnabled(boolean fastFailEnabled) { this.ctCacheFastFailEnabled = fastFailEnabled; }
         public long getCtCacheFastFailBackoff() { return ctCacheFastFailBackoff; }
         public void setCtCacheFastFailBackoff(final long backoff) { this.ctCacheFastFailBackoff = backoff; }
+
+        public int getCrlGenerationFetchSize() {
+            return crlGenerationFetchSize;
+        }
+
+        public void setCrlGenerationFetchSize(int crlGenerationFetchSize) {
+            this.crlGenerationFetchSize = crlGenerationFetchSize;
+        }
+
+        public boolean getCrlGenerationFetchOrdered() {
+            return crlGenerationFetchOrdered;
+        }
+
+        public void setCrlGenerationFetchOrdered(boolean crlGenerationFetchOrdered) {
+            this.crlGenerationFetchOrdered = crlGenerationFetchOrdered;
+        }
     }
 
     public class EKUInfo implements Serializable {
@@ -1142,6 +1172,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalCesecoreConfiguration.setMaximumQueryTimeout(currentConfig.getMaximumQueryTimeout());
                 globalCesecoreConfiguration.setRedactPiiByDefault(currentConfig.isRedactPiiByDefault());
                 globalCesecoreConfiguration.setRedactPiiEnforced(currentConfig.isRedactPiiEnforced());
+                globalCesecoreConfiguration.setForbiddenCharacters(currentConfig.getForbiddenCharactersAsCharArray());
+                globalCesecoreConfiguration.setCrlGenerationFetchSize(currentConfig.getCrlGenerationFetchSize());
+                globalCesecoreConfiguration.setCrlGenerationFetchOrdered(currentConfig.getCrlGenerationFetchOrdered());
                 globalConfigurationSession.saveConfiguration(getAdmin(), globalCesecoreConfiguration);
 
                 globalCtConfiguration.setCtCacheEnabled(currentConfig.isCtCacheEnabled());

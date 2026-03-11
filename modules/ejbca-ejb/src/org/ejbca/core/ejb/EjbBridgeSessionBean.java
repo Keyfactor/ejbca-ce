@@ -69,6 +69,7 @@ import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.era.RaMasterApiSessionLocal;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 import org.ejbca.core.protocol.scep.ScepKeyRenewalSessionLocal;
+import org.ejbca.core.protocol.scep.ScepRaCertificateIssuerSessionLocal;
 
 /**
  * Due to the lack of standardization in JEE5 there is no way to lookup local interfaces.
@@ -136,6 +137,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@EJB OcspDataSessionLocal ocspDataSession;
 	@EJB OcspResponseCleanupSessionLocal ocspResponseCleanupSession;
 	@EJB ScepKeyRenewalSessionLocal scepKeyRenewalSession;
+	@EJB ScepRaCertificateIssuerSessionLocal scepRaCertificateIssuerSession;
 
     @Override public AdminPreferenceSessionLocal getAdminPreferenceSession() { return adminPreferenceSession; }
 	@Override public ApprovalExecutionSessionLocal getApprovalExecutionSession() { return approvalExecutionSession; }
@@ -188,4 +190,5 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
     @Override public SctDataSessionLocal getSctDataSession() { return sctDataSession; }
     @Override public OcspDataSessionLocal getOcspDataSession() { return ocspDataSession; }
     @Override public ScepKeyRenewalSessionLocal getScepKeyRenewalSession() { return scepKeyRenewalSession; }
+    @Override public ScepRaCertificateIssuerSessionLocal getScepRaCertificateIssuerSession() { return scepRaCertificateIssuerSession; }
 }

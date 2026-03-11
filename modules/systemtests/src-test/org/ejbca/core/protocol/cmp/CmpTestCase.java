@@ -27,6 +27,8 @@ import java.math.BigInteger;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.Socket;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
@@ -910,16 +912,16 @@ public abstract class CmpTestCase extends CaTestCase {
         }
     }
 
-    protected byte[] sendCmpHttp(byte[] message, int httpRespCode) throws IOException {
+    protected byte[] sendCmpHttp(byte[] message, int httpRespCode) throws IOException, URISyntaxException {
         return sendCmpHttp(message, httpRespCode, null);
     }
 
-    protected byte[] sendCmpHttp(byte[] message, int httpRespCode, String cmpAlias) throws IOException {
+    protected byte[] sendCmpHttp(byte[] message, int httpRespCode, String cmpAlias) throws IOException, URISyntaxException {
         // POST the CMP request
         // we are going to do a POST
         final String urlString = getProperty("httpCmpProxyURL", this.httpReqPath + '/' + resourceCmp) + '/' + cmpAlias;
         log.info("http URL: " + urlString);
-        URL url = new URL(urlString);
+        URL url = new URI(urlString).toURL();
         final HttpURLConnection con = (HttpURLConnection) url.openConnection();
         con.setDoOutput(true);
         con.setRequestMethod("POST");
@@ -964,10 +966,10 @@ public abstract class CmpTestCase extends CaTestCase {
             return respBytes;
     }
 
-    protected void clearCmpCaches() throws IOException {
+    protected void clearCmpCaches() throws IOException, URISyntaxException {
         final String urlString = getProperty("httpCmpProxyURL", this.httpReqPath + '/' + resourceCmp) + "/?clearcache=true";
         log.info("http URL: " + urlString);
-        URL url = new URL(urlString);
+        URL url = new URI(urlString).toURL();
         final HttpURLConnection con = (HttpURLConnection) url.openConnection();
         con.connect();
         assertEquals("HTTP request to clear caches was unsuccessful.", 200, con.getResponseCode());

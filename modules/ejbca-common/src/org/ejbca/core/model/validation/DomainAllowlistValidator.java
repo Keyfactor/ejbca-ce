@@ -80,6 +80,8 @@ public class DomainAllowlistValidator extends ValidatorBase implements DnsNameVa
     private static final String TEST_BUTTON_TEXT = "test_button_text";
     private static final String TEST_RESULT_KEY = "test_result";
     
+    private static final String VALIDATE_EMAIL_DOMAINS = "validate_email_domains";
+    
     /** Dynamic UI model extension. */
     protected DynamicUiModel uiModel;
     
@@ -137,7 +139,7 @@ public class DomainAllowlistValidator extends ValidatorBase implements DnsNameVa
         if (getWhitelistDate() != null) {
             addTestControls();
         }
-        
+        populateUiValidateEmailDomainsOptional();
     }
     
     public void changeWhitelist(final byte[] bytes) throws DomainListFileException {
@@ -260,6 +262,12 @@ public class DomainAllowlistValidator extends ValidatorBase implements DnsNameVa
         resultLabel.setTransientValue(true);
         uiModel.add(resultLabel);
     }
+    
+    private void populateUiValidateEmailDomainsOptional() {
+        final DynamicUiProperty<Boolean> uiProperty = new DynamicUiProperty<>(Boolean.class, VALIDATE_EMAIL_DOMAINS, getValidateEmailDomains());
+        uiProperty.setRenderingHint(DynamicUiProperty.RENDER_CHECKBOX);
+        uiModel.add(uiProperty);
+    }
 
     @Override
     public DynamicUiModel getDynamicUiModel() {
@@ -362,10 +370,23 @@ public class DomainAllowlistValidator extends ValidatorBase implements DnsNameVa
     public void setWhitelistSha256(final String sha256) {
         putData(WHITELIST_SHA256_KEY, sha256);
     }
+    
+    public boolean getValidateEmailDomains() {
+        return getData(VALIDATE_EMAIL_DOMAINS, true);
+    }
+
+    public void setValidateEmailDomains(final boolean validateEmailDomains) {
+        putData(VALIDATE_EMAIL_DOMAINS, validateEmailDomains);
+    }
 
     @Override
     public boolean isValidatorAlwaysApplicable() {
         return true;
+    }
+    
+    @Override
+    public boolean validateEmailDomains() {
+        return getValidateEmailDomains();
     }
     
 }

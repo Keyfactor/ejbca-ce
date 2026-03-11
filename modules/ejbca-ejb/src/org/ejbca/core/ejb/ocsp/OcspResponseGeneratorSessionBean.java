@@ -478,7 +478,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         log.warn("OCSP Responder certificate with subject DN '" + CertTools.getSubjectDN(ocspSigningCertificate)
                                 + "' and serial number " + CertTools.getSerialNumber(ocspSigningCertificate) + " is revoked.");
                     }
-                    final long warnBeforeExpirationTime = OcspConfiguration.getWarningBeforeExpirationTime();
+                    GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+                    final long warnBeforeExpirationTime = globalOcspConfiguration.getWarningBeforeExpiryTimeSeconds()*1000L;
                     //Check if signing cert is expired
                     if (!CertTools.isCertificateValid(ocspSigningCertificate, true, warnBeforeExpirationTime)) {
                         log.warn("OCSP Responder certificate with subject DN '" + CertTools.getSubjectDN(ocspSigningCertificate)
@@ -602,7 +603,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     + ".");
         }
         //Check if CA cert is expired
-        final long warnBeforeExpirationTime = OcspConfiguration.getWarningBeforeExpirationTime();
+        GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        final long warnBeforeExpirationTime = globalOcspConfiguration.getWarningBeforeExpiryTimeSeconds()*1000L;
         if (!CertTools.isCertificateValid(caCertificate, true, warnBeforeExpirationTime)) {
             log.warn("Active CA with subject DN '" + CertTools.getSubjectDN(caCertificate) + "' and serial number "
                     + CertTools.getSerialNumber(caCertificate) + " has an expired certificate with expiration date "
@@ -2576,7 +2578,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         log.error("No key available. " + errMsg);
                         continue;
                     }
-                    final long warnBeforeExpirationTime = OcspConfiguration.getWarningBeforeExpirationTime();
+                    GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+                    final long warnBeforeExpirationTime = globalOcspConfiguration.getWarningBeforeExpiryTimeSeconds()*1000L;
                     if (OcspConfiguration.getHealthCheckCertificateValidity() && !CertTools.isCertificateValid(ocspSigningCertificate, true, warnBeforeExpirationTime) ) {
                         sb.append('\n').append(errMsg);
                         continue;

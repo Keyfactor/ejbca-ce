@@ -291,17 +291,18 @@ h4.margin-bottom {
 	margin:0 0 .5em 0;
 }
 a {
+	color:#000000;
 	background-color: transparent;
 	text-decoration: none;
 }
 a:link,
 a:visited {
-	color: #00A;
+	color:#000000;
 }
 a:hover,
 a:focus,
 a:active {
-	color: #A00;
+	color: #284E81;
 }
 input,
 textarea,
@@ -349,7 +350,7 @@ input.selectButton.disabled {
 }
 input.selectButton.selected {
 	border: 2px solid #666;
-	padding: 0px 4px;
+	padding: .5rem .5rem;
 	background: #66c;
 	color: #fff;
 	/* Parsed if supported by the browser */
@@ -384,8 +385,7 @@ table {
 table th,
 table td {
 	margin: 0px;
-	padding: 2px 3px;
-	border: none;
+	padding: 1rem 1rem;
 	vertical-align: top;
 }
 table h3 {
@@ -452,6 +452,7 @@ table p.help {
 	margin: .2em .1em;
 }
 table span.help {
+	font-weight:normal;
 }
 /* Add End-Entity */
 table#addendentity .help {
@@ -537,8 +538,8 @@ table.edit-top tr td,
 table.edit-ctnd tr td,
 table.edit-bottom tr td,
 table.edit tr td {
-	padding: .25em .5em;
-	line-height: 1.60em;
+	border: 1px solid rgba(0, 0, 0, .08);
+	padding: 1rem 1rem;
 }
 /* Columns */
 .editColumn-eeProfile1 {
@@ -559,10 +560,38 @@ table.edit tr td {
 .editColumn1 {
 	width: 35%;
 	text-align: right;
+	font-weight: 700;
+}
+.editColumnEE1 {
+	width: 45%;
+	font-weight: 700;
+	text-align: right;
+	word-wrap: break-word;
+	word-break: break-all;
+}
+.editColumnEE2 {
+	width: 55%;
+	text-align: left;
+	word-wrap: break-word;
+	word-break: break-all;
+}
+.viewEeColumn1 {
+	width: 50%;
+	font-weight: 700;
+	text-align: right;
+	word-wrap: break-word;
+	word-break: break-all;
+}
+.viewEeColumn2 {
+	width: 50%;
+	text-align: left;
+	word-wrap: break-word;
+	word-break: break-all;
 }
 .editColumnSystem1 {
 	width: 35%;
-	text-align: left;
+	text-align: right;
+	font-weight: 700;
 }
 .editColumn2 {
 	width: 65%;
@@ -637,9 +666,9 @@ table.edit-top tr:first-child td,
 table.edit tr:first-child td,
 table.edit-bottom tr.section td,
 table.edit tr.section td {
-	background-color: #FEEECD;
-	border-top: 3px solid #FEDD9A;
-	color: #A00;
+	background-color: #f8f9fa;
+	border: 1px solid #e9ecef;
+	color: #284E81;
 }
 table.edit-top tr:first-child td.field,		/* For JSF */
 table.edit tr:first-child td.field {
@@ -647,9 +676,9 @@ table.edit tr:first-child td.field {
 }
 table.edit-bottom tr:last-child td,
 table.edit tr:last-child td {
-	background-color: #FEEECD;
-	border-bottom: 3px solid #FEDD9A;
-	color: #A00;
+	background-color: #f8f9fa;
+	border: 1px solid #e9ecef;
+	color: #495057;
 }
 /* Titles */
 table.edit-top tr.title td,
@@ -1150,8 +1179,8 @@ table#config tr td:first-child {
 /*--------------------------------------------------------------------------*/
 /* TABLES */
 
-.Row0, #Row0 { color: black; font-size: 9pt; background-color: #F7F9FF; }
-.Row1, #Row1 { color: black; font-size: 9pt; background-color: #E5ECFF; }
+.Row0, #Row0 { color: #495057; font-size: 1em; background-color: #fbfcfc; }
+.Row1, #Row1 { color: #495057; font-size: 1em; background-color: #FFFFFF; }
 
 .label { vertical-align: top; text-align: right; }
 .field { vertical-align: top; text-align: left; }
@@ -1306,6 +1335,10 @@ body.popup {
 
 .alert, .errorMessage { color: red; font-size: 11pt; font-weight: bold; background-color: white; white-space: pre-line; }
 .info { color: black; font-size: 11pt; font-weight: bold; background-color: white; white-space: pre-line; }
+
+.mandatory {
+	border:2px solid #D32F2F !important;
+}
 
 .commandLink { font-size: 9pt; font-weight: bold; text-decoration: none; text-align: right; margin-left: .5em; margin-right: .5em; }
 .commandButton { font-size: 9pt; vertical-align: bottom; margin-left: .5em; margin-right: .5em; }
@@ -1580,7 +1613,7 @@ textarea:disabled:not(.ui-state-disabled) {
     font-weight: bold;
     max-width: 35vw;
     min-width: 3rem;
-    word-break: break-all;
+    word-break: break-word;
 }
 
 .vertical-padding-1 {
@@ -1598,6 +1631,10 @@ textarea:disabled:not(.ui-state-disabled) {
 
 .text-align-left {
 	text-align: left !important;
+}
+
+.text-align-right {
+	text-align: right !important;
 }
 
 .action-buttons {
@@ -1655,6 +1692,18 @@ table.row-padding-bottom-1-rem tr td {
     margin-top: 1rem;
 }
 
+.margin-top-half-rem {
+	margin-top: .5rem;
+}
+
+.margin-left-half-rem {
+	margin-left: .5rem;
+}
+
+.margin-right-half-rem {
+	margin-right: .5rem;
+}
+
 .cell-padding-right-1-rem,
 .cell-padding-right-1-rem table tr td {
     padding-right: 1rem;
@@ -1678,6 +1727,36 @@ label.align-label > span.ui-outputlabel-label {
     display: flex;
     align-items: center;
     height: 100%;
+}
+
+.form-vertical-align {
+	table-layout: auto !important;
+}
+
+.form-vertical-align td {
+	vertical-align: middle !important;
+	padding: .5rem .5rem .5rem 0 !important;
+}
+
+.form-vertical-align td:first-child {
+	vertical-align: middle !important;
+}
+
+.form-label-col {
+	width: 1%;
+	white-space: nowrap;
+}
+
+.form-label-col label {
+	font-size: 1rem;
+}
+
+p.compositeText {
+	line-height:1.8rem;
+}
+
+.compositeKeyColor {
+	color:#284E81;
 }
 
 /*--------------------------------------------------------------------------*/
