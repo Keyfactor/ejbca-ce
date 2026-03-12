@@ -1014,12 +1014,14 @@ public class EnrollMakeNewRequestBean implements Serializable {
                                     logRedactedInfo(type, eepId, fieldInstance);
                                 }
                                 if (StringUtils.isEmpty(fieldInstance.getValue()) || fieldInstance.getValue().equals(fieldInstance.getDefaultValue())) {
-                                    fieldInstance.setValue(nameValue[1]);
-                                    if (log.isDebugEnabled()) {
-                                        log.debug("Modifiable subject field '" + LogRedactionUtils.getSubjectDnLogSafe(subjectField, eepId)
-                                                + "' successfully parsed from CSR");
-                                    }
-                                    continue bothLoops;
+                                    if (!fieldInstance.isCopyDns() && !fieldInstance.isCopyUpn()) {
+										fieldInstance.setValue(nameValue[1]);
+										if (log.isDebugEnabled()) {
+											log.debug("Modifiable subject field '" + LogRedactionUtils.getSubjectDnLogSafe(subjectField, eepId)
+													+ "' successfully parsed from CSR");
+										}
+										continue bothLoops;
+									}
                                 }
                             } else if (fieldInstance.isSelectable()) {
                                 if (log.isDebugEnabled()) {
