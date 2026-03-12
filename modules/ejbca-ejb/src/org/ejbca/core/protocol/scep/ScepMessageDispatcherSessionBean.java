@@ -491,8 +491,6 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
         }
 
         boolean isRAModeOK = scepConfig.getRAMode(alias);
-        CAInfo caInfo = caSession.getCAInfoInternal(-1, scepConfig.getRADefaultCA(alias), true);
-
 
         if (reqmsg.getErrorNo() != 0) {
             log.info("Error '" + reqmsg.getErrorNo() + "' receiving Scep request message.");
@@ -547,7 +545,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                     if (log.isDebugEnabled()) {
                         log.debug("SCEP certificate enrollment with alias '" + alias + "'");
                     }
-                    ResponseMessage resp = signSession.createCertificate(administrator, reqmsg, ScepResponseMessage.class, null); // *****************************
+                    ResponseMessage resp = signSession.createCertificate(administrator, reqmsg, ScepResponseMessage.class, null);
                     if (resp != null) {
                         ret = resp.getResponseMessage();
                         ScepResponseMessage scepResponseMessage = (ScepResponseMessage) resp;
