@@ -754,6 +754,18 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
 
         final ApprovalRequest approvalRequest = approvalDataVO.getApprovalRequest();
+
+        // Check view_approvals access rule, unless the admin is the one who created the request
+        final AuthenticationToken requestAdmin = approvalRequest.getRequestAdmin();
+        final boolean isRequestCreator = requestAdmin != null && requestAdmin.equals(authenticationToken);
+        if (!isRequestCreator && !authorizationSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_VIEWAPPROVALS)) {
+            if (log.isDebugEnabled()) {
+                log.debug("Administrator " + authenticationToken + " is not authorized to " + AccessRulesConstants.REGULAR_VIEWAPPROVALS
+                        + " and is not the creator of approval request " + approvalDataVO.getId() + ". Returning null.");
+            }
+            return null;
+        }
+
         final String endEntityProfileName = endEntityProfileSession.getEndEntityProfileName(approvalDataVO.getEndEntityProfileId());
         final EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(approvalDataVO.getEndEntityProfileId());
         final String certificateProfileName;

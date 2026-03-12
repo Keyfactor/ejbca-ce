@@ -399,13 +399,18 @@ public class ApprovalRequestRestResponse extends ProcessApprovalRestResponse {
         if (requestInfo.getNextApprovalStep() != null) {
             final List<ApprovalPartitionRestResponse> partitions = new ArrayList<>();
             for (ApprovalPartition partition : requestInfo.getNextApprovalStep().getPartitionList()) {
-                partitions.add(buildStepPartition(requestInfo.getNextApprovalStep().getStepIdentifier(), partition,
-                        requestInfo.getApprovalData().getApprovals(), requestInfo.getApprovalProfile(), status.getValue()));
+                if (requestInfo.getApprovalProfile().canView(requestInfo.getRolesTokenIsMemberOf(), partition) ||
+                        requestInfo.getApprovalProfile().canApprove(requestInfo.getRolesTokenIsMemberOf(), partition)) {
+                    partitions.add(buildStepPartition(requestInfo.getNextApprovalStep().getStepIdentifier(), partition,
+                            requestInfo.getApprovalData().getApprovals(), requestInfo.getApprovalProfile(), status.getValue()));
+                }
             }
-            final ApprovalStepRestResponse.Builder stepBuilder = ApprovalStepRestResponse.builder()
-                    .stepNumber(steps.size() + 1)
-                    .partitionList(partitions);
-            builder.nextStep(stepBuilder.build());
+            if (!partitions.isEmpty()) {
+                final ApprovalStepRestResponse.Builder stepBuilder = ApprovalStepRestResponse.builder()
+                        .stepNumber(steps.size() + 1)
+                        .partitionList(partitions);
+                builder.nextStep(stepBuilder.build());
+            }
         }
         builder.certificateProfileName(requestInfo.getCertificateProfileName())
                 .endEntityProfileName(requestInfo.getEndEntityProfileName());
