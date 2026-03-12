@@ -58,4 +58,5 @@ public final class CertificateUtils {
 			throws OperatorCreationException, OCSPException, CertificateEncodingException {
 		return new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(idSha)), certificate, certificate.getSerialNumber());
 	}
+
 }
