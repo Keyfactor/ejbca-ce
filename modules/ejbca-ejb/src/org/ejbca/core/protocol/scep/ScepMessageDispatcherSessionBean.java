@@ -37,6 +37,7 @@ import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CACommon;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAFactory;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -48,6 +49,7 @@ import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
+import org.cesecore.certificates.ca.kfenroll.ProxyCaInfo;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
@@ -491,6 +493,8 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
         }
 
         boolean isRAModeOK = scepConfig.getRAMode(alias);
+        CAInfo caInfo = caSession.getCAInfoInternal(-1, scepConfig.getRADefaultCA(alias), true);
+
 
         if (reqmsg.getErrorNo() != 0) {
             log.info("Error '" + reqmsg.getErrorNo() + "' receiving Scep request message.");
@@ -511,10 +515,29 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                     log.debug("Received a SCEP PKCSREQ message, operating in RA mode: " + isRAModeOK);
                 }
                 try {
-                    if (!scepRaModeExtension.performOperation(administrator, reqmsg, scepConfig, alias)) {
-                        String errmsg = "Error. Failed to add or edit user: " + reqmsg.getUsername();
-                        log.info(errmsg);
-                        return null;
+                    if (caInfo instanceof ProxyCaInfo) {
+                        log.warn("Received a SCEP PKCSREQ message, but the CA is a proxy CA. This is not implemented yet.");
+                        /*
+                        final ProxyCa proxyCa = (ProxyCa) CAFactory.INSTANCE.getProxyCa(caInfo);
+                        var cryptoToken = cryptoTokenSession.getCryptoToken(reqmsg.getEncryptionCryptoTokenId());
+                        var signingAlgorithm = scepConfig.getSigningAlgorithm(alias);
+                        var subject = ((X509Certificate) reqmsg.getSigningCertificate()).getSubjectX500Principal().getName();
+                        var csr = CertificateUtils.createCsr(
+                                cryptoToken,
+                                reqmsg.getSigningKeyAlias(),
+                                new X500Name(subject),
+                                signingAlgorithm);
+                        var certificate = proxyCa.generateCertificate(csr, scepConfig.getProxyCaEnrollmentTemplate(alias));
+                        var scepResponseInfo = ScepResponseInfo.onlyResponseBytes(certificate.getEncoded());
+                        return scepResponseInfo;
+                         */
+                    }
+                    else {
+                        if (!scepRaModeExtension.performOperation(administrator, reqmsg, scepConfig, alias)) { // *********************
+                            String errmsg = "Error. Failed to add or edit user: " + reqmsg.getUsername();
+                            log.info(errmsg);
+                            return null;
+                        }
                     }
                     //}
                 } catch (WaitingForApprovalException e) {
@@ -545,7 +568,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                     if (log.isDebugEnabled()) {
                         log.debug("SCEP certificate enrollment with alias '" + alias + "'");
                     }
-                    ResponseMessage resp = signSession.createCertificate(administrator, reqmsg, ScepResponseMessage.class, null);
+                    ResponseMessage resp = signSession.createCertificate(administrator, reqmsg, ScepResponseMessage.class, null); // *****************************
                     if (resp != null) {
                         ret = resp.getResponseMessage();
                         ScepResponseMessage scepResponseMessage = (ScepResponseMessage) resp;
