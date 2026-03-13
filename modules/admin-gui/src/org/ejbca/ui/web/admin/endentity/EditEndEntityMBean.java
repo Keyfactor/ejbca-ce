@@ -271,6 +271,13 @@ public class EditEndEntityMBean extends EndEntityBaseManagedBean implements Seri
             selectPasswordList.add(eeProfile.getPredefinedPassword().trim());
         }
 
+        if (eeProfile.getUse(EndEntityProfile.SENDNOTIFICATION, 0)) {
+            final boolean profileSendNotification = eeProfile.getValue(EndEntityProfile.SENDNOTIFICATION, 0).equals(EndEntityProfile.TRUE);
+            final boolean profileSendNotificationRequired = eeProfile.isRequired(EndEntityProfile.SENDNOTIFICATION, 0);
+            final boolean sendNotification = userData.getSendNotification() || (profileSendNotification && profileSendNotificationRequired);
+
+            setSendNotification(sendNotification);
+        }
     }
 
     private void updateMainCertDataSection() {
